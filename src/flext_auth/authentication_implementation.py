@@ -32,9 +32,7 @@ logger = get_logger(__name__)
 
 # Type aliases for Python < 3.12 compatibility
 TokenPair = tuple[str, str]  # (access_token, refresh_token)
-AuthResult = ServiceResult[
-    tuple[Any, str, str]
-]  # (user, access_token, refresh_token)
+AuthResult = ServiceResult[tuple[Any, str, str]]  # (user, access_token, refresh_token)
 ValidationResult = ServiceResult[dict[str, Any]]
 
 

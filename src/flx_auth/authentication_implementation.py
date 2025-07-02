@@ -72,9 +72,7 @@ class User:
 
 # Python 3.13 type aliases
 TokenPair = tuple[str, str]  # (access_token, refresh_token)
-AuthResult = ServiceResult[
-    tuple[Any, str, str]
-]  # (user, access_token, refresh_token)
+AuthResult = ServiceResult[tuple[Any, str, str]]  # (user, access_token, refresh_token)
 ValidationResult = ServiceResult[dict[str, Any]]
 
 

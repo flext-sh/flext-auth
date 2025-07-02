@@ -47,7 +47,7 @@ class InMemoryTokenStorage:
             self._storage[key] = {
                 "value": value,
                 "expiry": expiry,
-                "created_at": datetime.datetime.now(UTC)
+                "created_at": datetime.datetime.now(UTC),
             }
 
     async def get(self, key: str) -> T | None:
