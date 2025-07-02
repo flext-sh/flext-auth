@@ -17,8 +17,8 @@ from pydantic import Field
 from flext_auth.models import Claims, TokenInfo, User
 
 # Python 3.13 type aliases
-type TokenString = str
-type SecretKey = bytes | str
+TokenString = str
+SecretKey = bytes | str
 
 
 def _get_jwt_config() -> JWTConfig:
@@ -33,8 +33,8 @@ def _get_jwt_config() -> JWTConfig:
     )
 
 
-type PublicKey = bytes | str
-type PrivateKey = bytes | str
+PublicKey = bytes | str
+PrivateKey = bytes | str
 
 
 class TokenStorageProtocol(Protocol):
@@ -269,7 +269,9 @@ class JWTService:
     """JWT service with zero boilerplate using reflection."""
 
     def __init__(
-        self, config: JWTConfig, storage: TokenStorageProtocol | None = None,
+        self,
+        config: JWTConfig,
+        storage: TokenStorageProtocol | None = None,
     ) -> None:
         """Initialize JWT service with configuration and storage.
 
@@ -322,7 +324,9 @@ class JWTService:
         )
 
     def create_access_token(
-        self, user: User, additional_claims: Claims | None = None,
+        self,
+        user: User,
+        additional_claims: Claims | None = None,
     ) -> TokenString:
         """Create access token for authenticated user.
 
@@ -434,7 +438,9 @@ class JWTService:
         return str(token) if isinstance(token, bytes) else token
 
     def create_token_pair(
-        self, user: User, additional_claims: Claims | None = None,
+        self,
+        user: User,
+        additional_claims: Claims | None = None,
     ) -> TokenPair:
         """Create access and refresh token pair."""
         access_token = self.create_access_token(user, additional_claims)
@@ -565,7 +571,9 @@ class JWTService:
         raise jwt.InvalidTokenError(msg)
 
     async def verify_token(
-        self, token: TokenString, token_type: str = "access",
+        self,
+        token: TokenString,
+        token_type: str = "access",
     ) -> Claims | None:
         """Verify and decode JWT token with comprehensive validation.
 
@@ -633,7 +641,9 @@ class JWTService:
         return self.create_token_pair(user)
 
     def refresh_token(
-        self, _refresh_token: TokenString, user: User,
+        self,
+        _refresh_token: TokenString,
+        user: User,
     ) -> tuple[TokenString, TokenString] | None:
         """Refresh token and return tuple for compatibility.
 

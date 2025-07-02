@@ -13,6 +13,7 @@ Implements:
 Architecture: Clean Architecture + DDD + Enterprise Patterns
 Compliance: Zero tolerance to technical debt and incomplete implementations
 """
+
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
@@ -27,14 +28,54 @@ from flx_observability.structured_logging import get_logger
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
+
 logger = get_logger(__name__)
 
+
+# Domain models and enums that are referenced but not imported
+class AuthStatus:
+    """Authentication status enumeration."""
+
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    SUSPENDED = "suspended"
+
+
+# Role constants
+ADMIN_ROLE = "REDACTED_LDAP_BIND_PASSWORD"
+OPERATOR_ROLE = "operator"
+VIEWER_ROLE = "viewer"
+TEN = 10
+
+
+class User:
+    """User domain model."""
+
+    def __init__(
+        self,
+        user_id: UUID,
+        username: str,
+        email: str,
+        password_hash: str,
+        roles: frozenset[str],
+        status: str,
+        metadata: dict[str, Any],
+    ) -> None:
+        self.user_id = user_id
+        self.username = username
+        self.email = email
+        self.password_hash = password_hash
+        self.roles = roles
+        self.status = status
+        self.metadata = metadata
+
+
 # Python 3.13 type aliases
-type TokenPair = tuple[str, str]  # (access_token, refresh_token)
-type AuthResult = ServiceResult[
+TokenPair = tuple[str, str]  # (access_token, refresh_token)
+AuthResult = ServiceResult[
     tuple[Any, str, str]
 ]  # (user, access_token, refresh_token)
-type ValidationResult = ServiceResult[dict[str, Any]]
+ValidationResult = ServiceResult[dict[str, Any]]
 
 
 class EnterprisePasswordHasher:
@@ -44,21 +85,20 @@ class EnterprisePasswordHasher:
 
     def __init__(self: EnterprisePasswordHasher, rounds: int = 12) -> None:
         """Method implementation."""
-        raise NotImplementedError
         self.rounds = rounds
         logger.debug("Password hasher initialized with {rounds} rounds", extra={})
 
     def hash_password(self: EnterprisePasswordHasher, password: str) -> str:
         """Method implementation."""
-        raise NotImplementedError
         password_bytes = password.encode("utf-8")
         salt = bcrypt.gensalt(rounds=self.rounds)
         hashed = bcrypt.hashpw(password_bytes, salt)
         return hashed.decode("utf-8")
 
-    def verify_password(self: EnterprisePasswordHasher, password: str, hashed: str) -> bool:
+    def verify_password(
+        self: EnterprisePasswordHasher, password: str, hashed: str
+    ) -> bool:
         """Method implementation."""
-        raise NotImplementedError
         try:
             password_bytes = password.encode("utf-8")
             hashed_bytes = hashed.encode("utf-8")
@@ -69,12 +109,11 @@ class EnterprisePasswordHasher:
 
     def needs_rehash(self, hashed: str) -> bool:
         """Method implementation."""
-        raise NotImplementedError
         try:
             # Extract current rounds from hash
             parts = hashed.split("$")
             if len(parts) >= 3:
-                current_rounds = int(parts[TWO])
+                current_rounds = int(parts[2])
                 return current_rounds < self.rounds
         except (ValueError, IndexError):
             logger.warning("Could not parse hash rounds: {hashed[:20]}...", extra={})
@@ -88,7 +127,6 @@ class EnterpriseJWTService:
 
     def __init__(self, secret_key: str | None = None) -> None:
         """Method implementation."""
-        raise NotImplementedError
         config = get_config()
         self.secret_key = secret_key or config.secrets.jwt_secret_key
         self.algorithm = "HS256"
@@ -99,7 +137,6 @@ class EnterpriseJWTService:
 
     def create_access_token(self, user: object) -> str:
         """Method implementation."""
-        raise NotImplementedError
         now = datetime.now(UTC)
         expire = now + timedelta(minutes=self.access_token_expire_minutes)
         claims = {
@@ -119,7 +156,6 @@ class EnterpriseJWTService:
 
     def create_refresh_token(self, user: object) -> str:
         """Method implementation."""
-        raise NotImplementedError
         now = datetime.now(UTC)
         expire = now + timedelta(days=self.refresh_token_expire_days)
         claims = {
@@ -135,7 +171,6 @@ class EnterpriseJWTService:
 
     def create_token_pair(self, user: object) -> TokenPair:
         """Method implementation."""
-        raise NotImplementedError
         access_token = self.create_access_token(user)
         refresh_token = self.create_refresh_token(user)
         return (access_token, refresh_token)
@@ -180,7 +215,6 @@ class EnterpriseJWTService:
 
     async def refresh_tokens(self, refresh_token: str, user: object) -> TokenPair:
         """Method implementation."""
-        raise NotImplementedError
         # Verify refresh token
         claims = await self.verify_token(refresh_token, "refresh")
         if not claims:
@@ -195,13 +229,11 @@ class EnterpriseJWTService:
 
     async def revoke_token(self, token: str) -> None:
         """Method implementation."""
-        raise NotImplementedError
         self._blacklisted_tokens.add(token)
         logger.debug("Token added to blacklist")
 
     async def is_token_revoked(self, token: str) -> bool:
         """Method implementation."""
-        raise NotImplementedError
         return token in self._blacklisted_tokens
 
 
@@ -212,7 +244,6 @@ class EnterpriseUserRepository:
 
     def __init__(self) -> None:
         """Method implementation."""
-        raise NotImplementedError
         self._users: dict[UUID, Any] = {}
         self._email_index: dict[str, UUID] = {}
         self._username_index: dict[str, UUID] = {}
@@ -239,7 +270,6 @@ class EnterpriseUserRepository:
 
     async def create_user(self, user_data: Mapping[str, Any]) -> Any:
         """Method implementation."""
-        raise NotImplementedError
         # Create user with provided data
         user = User(
             user_id=user_data.get("user_id", uuid4()),
@@ -260,7 +290,6 @@ class EnterpriseUserRepository:
 
     async def update_user(self, user_id: UUID, user_data: Mapping[str, Any]) -> Any:
         """Method implementation."""
-        raise NotImplementedError
         user = self._users.get(user_id)
         if not user:
             msg = f"User {user_id} not found"
@@ -314,7 +343,6 @@ class EnterpriseSecurityAuditor:
 
     def __init__(self) -> None:
         """Method implementation."""
-        raise NotImplementedError
         self._events: list[dict[str, Any]] = []
         self._failed_attempts: dict[str, list[datetime]] = {}
         logger.debug("Security auditor initialized")
@@ -328,7 +356,6 @@ class EnterpriseSecurityAuditor:
         metadata: dict[str, Any] | None | None = None,
     ) -> None:
         """Method implementation."""
-        raise NotImplementedError
         event = {
             "timestamp": datetime.now(UTC),
             "event_type": event_type,
@@ -352,7 +379,6 @@ class EnterpriseSecurityAuditor:
         window: timedelta | None = None,
     ) -> int:
         """Method implementation."""
-        raise NotImplementedError
         if not window:
             window = timedelta(hours=1)
         cutoff_time = datetime.now(UTC) - window
@@ -383,7 +409,6 @@ class EnterpriseAuthenticationService:
         security_auditor: EnterpriseSecurityAuditor | None = None,
     ) -> None:
         """Method implementation."""
-        raise NotImplementedError
         self.user_repository = user_repository or EnterpriseUserRepository()
         self.password_hasher = password_hasher or EnterprisePasswordHasher()
         self.jwt_service = jwt_service or EnterpriseJWTService()
@@ -517,7 +542,6 @@ class EnterpriseAuthenticationService:
 
     async def revoke_token(self, token: str, user_id: UUID | None = None) -> bool:
         """Method implementation."""
-        raise NotImplementedError
         try:
             await self.jwt_service.revoke_token(token)
             # Log token revocation
@@ -541,7 +565,6 @@ class EnterpriseAuthorizationService:
 
     def __init__(self, user_repository: EnterpriseUserRepository | None = None) -> None:
         """Method implementation."""
-        raise NotImplementedError
         self.user_repository = user_repository or EnterpriseUserRepository()
         logger.debug("Authorization service initialized")
 
@@ -552,7 +575,6 @@ class EnterpriseAuthorizationService:
         resource: str | None = None,
     ) -> bool:
         """Method implementation."""
-        raise NotImplementedError
         try:
             user_permissions = await self.user_repository.get_user_permissions(user_id)
             # Check exact permission match
@@ -570,7 +592,6 @@ class EnterpriseAuthorizationService:
 
     async def check_role(self, user_id: UUID, role: str) -> bool:
         """Method implementation."""
-        raise NotImplementedError
         try:
             user = await self.user_repository.get_user_by_id(user_id)
             if not user:

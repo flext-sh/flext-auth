@@ -494,7 +494,9 @@ class EnterpriseSessionManager:
             )
 
     async def extend_session(
-        self, session_id: str, duration: timedelta,
+        self,
+        session_id: str,
+        duration: timedelta,
     ) -> ServiceResult[SessionMetadata]:
         """Extend session expiration time.
 
@@ -563,7 +565,9 @@ class EnterpriseSessionManager:
             )
 
     async def terminate_session(
-        self, session_id: str, reason: str = "user_logout",
+        self,
+        session_id: str,
+        reason: str = "user_logout",
     ) -> ServiceResult[dict[str, str]]:
         """Terminate a specific session.
 
@@ -696,7 +700,9 @@ class EnterpriseSessionManager:
             )
 
     async def get_user_sessions(
-        self, user_id: UserID, include_expired: bool = False,
+        self,
+        user_id: UserID,
+        include_expired: bool = False,
     ) -> ServiceResult[list[SessionMetadata]]:
         """Get all sessions for a user.
 

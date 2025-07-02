@@ -58,7 +58,9 @@ class PasswordHasherImpl(PasswordHasher):
         return str(result) if result is not None else ""
 
     def verify_password(
-        self, password: PlaintextPassword, hashed: HashedPassword,
+        self,
+        password: PlaintextPassword,
+        hashed: HashedPassword,
     ) -> bool:
         """Verify a password against its hash."""
         result = self.context.verify(password, hashed)
@@ -562,7 +564,9 @@ class UserService(AuthenticationServiceProtocol):
         )
 
     async def create_user(
-        self, request: UserCreationRequest, roles: list[UserRoleEnum] | None = None,
+        self,
+        request: UserCreationRequest,
+        roles: list[UserRoleEnum] | None = None,
     ) -> User:
         """Create a new user account with validation and security logging.
 
@@ -742,7 +746,9 @@ class UserService(AuthenticationServiceProtocol):
         return user, access_token, refresh_token
 
     async def authenticate_token(
-        self, token: JWTToken, required_permissions: Sequence[str] | None = None,
+        self,
+        token: JWTToken,
+        required_permissions: Sequence[str] | None = None,
     ) -> User | None:
         """Authenticate user using JWT token with permission validation.
 
@@ -878,7 +884,9 @@ class UserService(AuthenticationServiceProtocol):
         return new_access_token, new_refresh_token
 
     async def revoke_token(
-        self, token: JWTToken, user_id: UserID | None = None,
+        self,
+        token: JWTToken,
+        user_id: UserID | None = None,
     ) -> bool:
         """Revoke a JWT token with security event logging.
 

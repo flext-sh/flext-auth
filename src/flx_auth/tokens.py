@@ -222,7 +222,8 @@ class TokenStorage[T](ABC):
             ensure data persistence according to configured retention policies.
 
         """
-        raise NotImplementedError
+        msg = "Abstract method - subclasses must implement"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     async def get(self, key: str) -> T | None:
@@ -245,7 +246,8 @@ class TokenStorage[T](ABC):
             and return None for expired or non-existent values.
 
         """
-        raise NotImplementedError
+        msg = "Abstract method - subclasses must implement"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     async def delete(self, key: str) -> bool:
@@ -268,7 +270,8 @@ class TokenStorage[T](ABC):
             exceptions for non-existent keys.
 
         """
-        raise NotImplementedError
+        msg = "Abstract method - subclasses must implement"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     async def exists(self, key: str) -> bool:
@@ -291,7 +294,8 @@ class TokenStorage[T](ABC):
             returning False for logically expired entries.
 
         """
-        raise NotImplementedError
+        msg = "Abstract method - subclasses must implement"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     async def keys(self, pattern: str) -> list[str]:
@@ -314,12 +318,14 @@ class TokenStorage[T](ABC):
             key discovery across different storage implementations.
 
         """
-        raise NotImplementedError
+        msg = "Abstract method - subclasses must implement"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     async def cleanup_expired(self) -> int:
         """Remove expired entries and return count."""
-        raise NotImplementedError
+        msg = "Abstract method - subclasses must implement"
+        raise NotImplementedError(msg)
 
 
 class RedisTokenStorage(TokenStorage[str]):

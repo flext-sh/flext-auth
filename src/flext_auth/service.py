@@ -33,20 +33,23 @@ class ServiceInMemoryRoleRepository:
 class AuthenticationService:
     """Authentication service."""
 
-    def __init__(self, user_repository: ServiceInMemoryUserRepository,
-                 role_repository: ServiceInMemoryRoleRepository) -> None:
+    def __init__(
+        self,
+        user_repository: ServiceInMemoryUserRepository,
+        role_repository: ServiceInMemoryRoleRepository,
+    ) -> None:
         self.user_repository = user_repository
         self.role_repository = role_repository
 
     def register(self, user_data: dict[str, Any]) -> Any:
         """Register new user."""
         # Simulate user registration
-        user = type('User', (), user_data)()
+        user = type("User", (), user_data)()
         return self.user_repository.save(user)
 
     def authenticate(self, email: str, password: str) -> Optional[Any]:
         """Authenticate user."""
         user = self.user_repository.find_by_email(email)
-        if user and hasattr(user, 'password') and user.password == password:
+        if user and hasattr(user, "password") and user.password == password:
             return user
         return None

@@ -15,9 +15,9 @@ from flx_core.domain.pydantic_base import DomainBaseModel, DomainValueObject
 from pydantic import Field
 
 # Python 3.13 type alias for security types
-type Salt = bytes
-type Hash = str
-type Token = str
+Salt = bytes
+Hash = str
+Token = str
 
 
 @runtime_checkable

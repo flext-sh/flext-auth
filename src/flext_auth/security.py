@@ -15,9 +15,9 @@ from flext_core.domain.pydantic_base import DomainBaseModel, DomainValueObject
 from pydantic import Field
 
 # Python 3.13 type alias for security types
-type Salt = bytes
-type Hash = str
-type Token = str
+Salt = bytes
+Hash = str
+Token = str
 
 
 @runtime_checkable
@@ -163,7 +163,9 @@ class PasswordHasher(DomainBaseModel):
     def _hasher(self) -> Argon2Hasher:
         """Backward compatibility property."""
         if self.argon2_hasher is None:
-            raise RuntimeError("PasswordHasher not initialized. Call model_post_init first.")
+            raise RuntimeError(
+                "PasswordHasher not initialized. Call model_post_init first."
+            )
         return self.argon2_hasher
 
     def model_post_init(self, __context: object) -> None:
@@ -366,7 +368,8 @@ class TokenGenerator:
 
 
 def create_access_token(
-    data: dict[str, Any], expires_delta: timedelta | None = None,
+    data: dict[str, Any],
+    expires_delta: timedelta | None = None,
 ) -> str:
     """Create a new JWT access token."""
     to_encode = data.copy()
@@ -389,7 +392,9 @@ def create_access_token(
 
 
 def decode_jwt_token(
-    token: str, secret_key: str, algorithm: str = "HS256",
+    token: str,
+    secret_key: str,
+    algorithm: str = "HS256",
 ) -> dict[str, Any] | None:
     """Decode a JWT token and return its payload."""
     try:

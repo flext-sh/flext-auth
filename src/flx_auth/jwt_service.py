@@ -17,8 +17,8 @@ from pydantic import Field
 from flx_auth.models import Claims, TokenInfo, User
 
 # Python 3.13 type aliases
-type TokenString = str
-type SecretKey = bytes | str
+TokenString = str
+SecretKey = bytes | str
 
 
 def _get_jwt_config() -> JWTConfig:
@@ -33,8 +33,8 @@ def _get_jwt_config() -> JWTConfig:
     )
 
 
-type PublicKey = bytes | str
-type PrivateKey = bytes | str
+PublicKey = bytes | str
+PrivateKey = bytes | str
 
 
 class TokenStorageProtocol(Protocol):

@@ -13,6 +13,7 @@ Implements:
 Architecture: Clean Architecture + DDD + Enterprise Patterns
 Compliance: Zero tolerance to technical debt and incomplete implementations
 """
+
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
@@ -30,9 +31,11 @@ if TYPE_CHECKING:
 logger = get_logger(__name__)
 
 # Type aliases for Python < 3.12 compatibility
-type TokenPair = tuple[str, str]  # (access_token, refresh_token)
-type AuthResult = ServiceResult[tuple[Any, str, str]]  # (user, access_token, refresh_token)
-type ValidationResult = ServiceResult[dict[str, Any]]
+TokenPair = tuple[str, str]  # (access_token, refresh_token)
+AuthResult = ServiceResult[
+    tuple[Any, str, str]
+]  # (user, access_token, refresh_token)
+ValidationResult = ServiceResult[dict[str, Any]]
 
 
 # Simplified domain models for this module
@@ -46,8 +49,16 @@ class AuthStatus:
 class User:
     """Simplified user entity for authentication."""
 
-    def __init__(self, user_id: UUID, username: str, email: str, password_hash: str,
-                 roles: frozenset[str], status: str = AuthStatus.ACTIVE, metadata: dict[str, Any] | None = None) -> None:
+    def __init__(
+        self,
+        user_id: UUID,
+        username: str,
+        email: str,
+        password_hash: str,
+        roles: frozenset[str],
+        status: str = AuthStatus.ACTIVE,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
         self.user_id = user_id
         self.username = username
         self.email = email
@@ -78,20 +89,46 @@ class Role:
 
 
 # Predefined roles for enterprise use
-ADMIN_ROLE = Role("REDACTED_LDAP_BIND_PASSWORD", frozenset([
-    "pipeline:create", "pipeline:read", "pipeline:update", "pipeline:delete",
-    "user:create", "user:read", "user:update", "user:delete",
-    "system:REDACTED_LDAP_BIND_PASSWORD", "plugin:manage",
-]))
+ADMIN_ROLE = Role(
+    "REDACTED_LDAP_BIND_PASSWORD",
+    frozenset(
+        [
+            "pipeline:create",
+            "pipeline:read",
+            "pipeline:update",
+            "pipeline:delete",
+            "user:create",
+            "user:read",
+            "user:update",
+            "user:delete",
+            "system:REDACTED_LDAP_BIND_PASSWORD",
+            "plugin:manage",
+        ]
+    ),
+)
 
-OPERATOR_ROLE = Role("operator", frozenset([
-    "pipeline:create", "pipeline:read", "pipeline:update", "pipeline:execute",
-    "plugin:read",
-]))
+OPERATOR_ROLE = Role(
+    "operator",
+    frozenset(
+        [
+            "pipeline:create",
+            "pipeline:read",
+            "pipeline:update",
+            "pipeline:execute",
+            "plugin:read",
+        ]
+    ),
+)
 
-VIEWER_ROLE = Role("viewer", frozenset([
-    "pipeline:read", "plugin:read",
-]))
+VIEWER_ROLE = Role(
+    "viewer",
+    frozenset(
+        [
+            "pipeline:read",
+            "plugin:read",
+        ]
+    ),
+)
 
 
 class EnterprisePasswordHasher:
@@ -109,7 +146,9 @@ class EnterprisePasswordHasher:
         hashed = bcrypt.hashpw(password_bytes, salt)
         return hashed.decode("utf-8")
 
-    def verify_password(self: EnterprisePasswordHasher, password: str, hashed: str) -> bool:
+    def verify_password(
+        self: EnterprisePasswordHasher, password: str, hashed: str
+    ) -> bool:
         """Method implementation."""
         try:
             password_bytes = password.encode("utf-8")
@@ -186,7 +225,9 @@ class EnterpriseJWTService:
         return (access_token, refresh_token)
 
     async def verify_token(
-        self, token: str, token_type: str | None = None,
+        self,
+        token: str,
+        token_type: str | None = None,
     ) -> dict[str, Any] | None:
         """Method implementation."""
         try:
@@ -209,7 +250,8 @@ class EnterpriseJWTService:
                 )
                 return None
             logger.debug(
-                "Token verified successfully for user {claims.get('sub')}", extra={},
+                "Token verified successfully for user {claims.get('sub')}",
+                extra={},
             )
             return claims
         except jwt.ExpiredSignatureError:
@@ -469,7 +511,11 @@ class EnterpriseAuthenticationService:
         except Exception as e:
             logger.exception("Authentication error: {e}", extra={})
             await self.security_auditor.log_security_event(
-                "login_error", None, ip_address, user_agent, {"error": str(e)},
+                "login_error",
+                None,
+                ip_address,
+                user_agent,
+                {"error": str(e)},
             )
             return None
 

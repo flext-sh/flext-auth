@@ -142,7 +142,9 @@ class TokenValidator(Protocol):
     """Protocol for JWT token validation."""
 
     async def validate_token(
-        self, token: JWTToken, token_type: TokenType,
+        self,
+        token: JWTToken,
+        token_type: TokenType,
     ) -> JWTClaims | None:
         """Validate a JWT token and return claims if valid.
 
@@ -492,7 +494,9 @@ class AuthenticationServiceProtocol(Protocol):
         ...
 
     async def authenticate_token(
-        self, token: JWTToken, required_permissions: Sequence[str] | None = None,
+        self,
+        token: JWTToken,
+        required_permissions: Sequence[str] | None = None,
     ) -> User | None:
         """Authenticate using JWT token.
 
@@ -537,7 +541,9 @@ class AuthenticationServiceProtocol(Protocol):
         ...
 
     async def revoke_token(
-        self, token: JWTToken, user_id: UserID | None = None,
+        self,
+        token: JWTToken,
+        user_id: UserID | None = None,
     ) -> bool:
         """Revoke a JWT token.
 
@@ -606,7 +612,10 @@ class AuthorizationService(Protocol):
     """Protocol for user authorization operations."""
 
     async def check_permission(
-        self, user_id: UserID, permission: str, resource: str | None = None,
+        self,
+        user_id: UserID,
+        permission: str,
+        resource: str | None = None,
     ) -> bool:
         """Check if user has specific permission.
 
@@ -653,7 +662,9 @@ class AuthorizationService(Protocol):
         ...
 
     async def get_resource_permissions(
-        self, user_id: UserID, resource: str,
+        self,
+        user_id: UserID,
+        resource: str,
     ) -> UserPermissions:
         """Get permissions for a specific resource.
 

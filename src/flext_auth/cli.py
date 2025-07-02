@@ -124,23 +124,33 @@ Examples:
     create_user_parser = subparsers.add_parser("create-user", help="Create a new user")
     create_user_parser.add_argument("username", help="Username")
     create_user_parser.add_argument("email", help="Email address")
-    create_user_parser.add_argument("--password", help="Password (will prompt if not provided)")
+    create_user_parser.add_argument(
+        "--password", help="Password (will prompt if not provided)"
+    )
     create_user_parser.set_defaults(func=create_user_command)
 
     # Validate token command
-    validate_token_parser = subparsers.add_parser("validate-token", help="Validate JWT token")
+    validate_token_parser = subparsers.add_parser(
+        "validate-token", help="Validate JWT token"
+    )
     validate_token_parser.add_argument("token", help="JWT token to validate")
     validate_token_parser.set_defaults(func=validate_token_command)
 
     # Generate token command
-    generate_token_parser = subparsers.add_parser("generate-token", help="Generate JWT token")
+    generate_token_parser = subparsers.add_parser(
+        "generate-token", help="Generate JWT token"
+    )
     generate_token_parser.add_argument("user_id", help="User ID")
     generate_token_parser.add_argument("username", help="Username")
     generate_token_parser.set_defaults(func=generate_token_command)
 
     # Hash password command
-    hash_password_parser = subparsers.add_parser("hash-password", help="Hash a password")
-    hash_password_parser.add_argument("--password", help="Password to hash (will prompt if not provided)")
+    hash_password_parser = subparsers.add_parser(
+        "hash-password", help="Hash a password"
+    )
+    hash_password_parser.add_argument(
+        "--password", help="Password to hash (will prompt if not provided)"
+    )
     hash_password_parser.set_defaults(func=hash_password_command)
 
     # Parse arguments

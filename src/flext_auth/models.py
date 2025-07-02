@@ -18,9 +18,9 @@ if TYPE_CHECKING:
 from flext_auth.types import PermissionScope
 
 # Python 3.13 type aliases for zero boilerplate
-type PermissionSet = frozenset[str]
-type RoleSet = frozenset[str]
-type Claims = dict[str, Any]
+PermissionSet = frozenset[str]
+RoleSet = frozenset[str]
+Claims = dict[str, Any]
 
 
 class AuthStatus(Enum):
@@ -55,7 +55,10 @@ class UserRoleEnum(Enum):
 
     @classmethod
     def create(
-        cls, name: str, permissions: list[Permission], description: str = "",
+        cls,
+        name: str,
+        permissions: list[Permission],
+        description: str = "",
     ) -> Role:
         """Create a Role object from enum values."""
         permission_names = {perm.name for perm in permissions}
@@ -82,7 +85,11 @@ class Permission(DomainValueObject):
 
     @classmethod
     def create(
-        cls, name: str, scope: PermissionScope, resource: str, description: str = "",
+        cls,
+        name: str,
+        scope: PermissionScope,
+        resource: str,
+        description: str = "",
     ) -> Permission:
         """Create a new permission with proper naming."""
         # Extract action from name if it follows pattern "action_resource"
@@ -175,7 +182,9 @@ class User(DomainEntity):
         self.locked_until = None
 
     def record_failed_attempt(
-        self, lock_after: int = 5, lock_duration_minutes: int = 30,
+        self,
+        lock_after: int = 5,
+        lock_duration_minutes: int = 30,
     ) -> None:
         """Record failed login attempt."""
         self.failed_attempts += 1

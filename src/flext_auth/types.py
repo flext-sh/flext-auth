@@ -8,32 +8,32 @@ from enum import Enum, auto
 from typing import Any
 
 # Python 3.11 compatible type aliases for security types
-type JWTToken = str
-type UserID = str
-type RoleID = str
-type PermissionID = str
-type IPAddress = str
-type UserAgent = str
-type SecretKey = str
-type PublicKey = str
-type PrivateKey = str
-type HashedPassword = str
-type PlaintextPassword = str
+JWTToken = str
+UserID = str
+RoleID = str
+PermissionID = str
+IPAddress = str
+UserAgent = str
+SecretKey = str
+PublicKey = str
+PrivateKey = str
+HashedPassword = str
+PlaintextPassword = str
 
 # JWT Claims type
-type JWTClaims = Mapping[str, Any]
+JWTClaims = Mapping[str, Any]
 
 # Token metadata
-type TokenMetadata = Mapping[str, Any]
+TokenMetadata = Mapping[str, Any]
 
 # Rate limit configuration
-type RateLimitConfig = Mapping[str, int]
+RateLimitConfig = Mapping[str, int]
 
 # Security headers
-type SecurityHeaders = Mapping[str, str]
+SecurityHeaders = Mapping[str, str]
 
 # User permissions
-type UserPermissions = Sequence[str]
+UserPermissions = Sequence[str]
 
 
 class TokenType(Enum):

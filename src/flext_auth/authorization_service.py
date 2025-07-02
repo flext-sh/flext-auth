@@ -11,7 +11,7 @@ from flext_auth.models import Permission, Role, UserRoleEnum
 from flext_auth.types import PermissionScope, UserID, UserPermissions
 
 # Python 3.13 type alias for generic callables
-type CallableT = Callable[..., object]
+CallableT = Callable[..., object]
 
 
 class PermissionCheckMode(Enum):
@@ -41,7 +41,10 @@ class RoleBasedAuthorizationService(AuthorizationService):
         self._permission_cache: dict[str, UserPermissions] = {}
 
     async def check_permission(
-        self, user_id: UserID, permission: str, resource: str | None = None,
+        self,
+        user_id: UserID,
+        permission: str,
+        resource: str | None = None,
     ) -> bool:
         """Check if user has specific permission."""
         user_permissions = await self.get_user_permissions(user_id)
@@ -94,7 +97,9 @@ class RoleBasedAuthorizationService(AuthorizationService):
         return user_permissions
 
     async def get_resource_permissions(
-        self, user_id: UserID, resource: str,
+        self,
+        user_id: UserID,
+        resource: str,
     ) -> UserPermissions:
         """Get permissions for a specific resource."""
         all_permissions = await self.get_user_permissions(user_id)
@@ -225,7 +230,8 @@ def require_permission(
 
 
 def require_role(
-    role: str, auth_service: AuthorizationService | None = None,
+    role: str,
+    auth_service: AuthorizationService | None = None,
 ) -> Callable[[CallableT], CallableT]:
     """Require specific role for a function."""
 

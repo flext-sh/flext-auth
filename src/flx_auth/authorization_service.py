@@ -11,7 +11,7 @@ from flx_auth.models import Permission, Role, UserRoleEnum
 from flx_auth.types import PermissionScope, UserID, UserPermissions
 
 # Python 3.13 type alias for generic callables
-type CallableT = Callable[..., object]
+CallableT = Callable[..., object]
 
 
 class PermissionCheckMode(Enum):

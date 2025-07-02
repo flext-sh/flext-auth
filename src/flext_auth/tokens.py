@@ -136,7 +136,9 @@ class TokenMetadata(DomainValueObject):
         return not self.is_expired and not self.is_revoked
 
     def revoke(
-        self, revoked_by: UserID | None = None, reason: str | None = None,
+        self,
+        revoked_by: UserID | None = None,
+        reason: str | None = None,
     ) -> TokenMetadata:
         """Create a revoked copy of this token metadata."""
         return TokenMetadata(
@@ -199,7 +201,10 @@ class TokenStorage[T](ABC):
 
     @abstractmethod
     async def store(
-        self, key: str, value: T, ttl: datetime.timedelta | None = None,
+        self,
+        key: str,
+        value: T,
+        ttl: datetime.timedelta | None = None,
     ) -> None:
         """Store a value with optional TTL.
 
@@ -222,7 +227,8 @@ class TokenStorage[T](ABC):
             ensure data persistence according to configured retention policies.
 
         """
-        raise NotImplementedError
+        # Base implementation - subclasses provide concrete storage
+        pass
 
     @abstractmethod
     async def get(self, key: str) -> T | None:
@@ -245,7 +251,8 @@ class TokenStorage[T](ABC):
             and return None for expired or non-existent values.
 
         """
-        raise NotImplementedError
+        # Base implementation - subclasses provide concrete storage
+        pass
 
     @abstractmethod
     async def delete(self, key: str) -> bool:
@@ -268,7 +275,8 @@ class TokenStorage[T](ABC):
             exceptions for non-existent keys.
 
         """
-        raise NotImplementedError
+        # Base implementation - subclasses provide concrete storage
+        pass
 
     @abstractmethod
     async def exists(self, key: str) -> bool:
@@ -291,7 +299,8 @@ class TokenStorage[T](ABC):
             returning False for logically expired entries.
 
         """
-        raise NotImplementedError
+        # Base implementation - subclasses provide concrete storage
+        pass
 
     @abstractmethod
     async def keys(self, pattern: str) -> list[str]:
@@ -314,12 +323,14 @@ class TokenStorage[T](ABC):
             key discovery across different storage implementations.
 
         """
-        raise NotImplementedError
+        # Base implementation - subclasses provide concrete storage
+        pass
 
     @abstractmethod
     async def cleanup_expired(self) -> int:
         """Remove expired entries and return count."""
-        raise NotImplementedError
+        # Base implementation - subclasses provide concrete storage
+        pass
 
 
 class RedisTokenStorage(TokenStorage[str]):
@@ -367,7 +378,9 @@ class RedisTokenStorage(TokenStorage[str]):
     """Redis-based token storage implementation."""
 
     def __init__(
-        self, redis_client: Redis[str] | None = None, key_prefix: str = "flext:tokens",
+        self,
+        redis_client: Redis[str] | None = None,
+        key_prefix: str = "flext:tokens",
     ) -> None:
         """Initialize with Redis client.
 
@@ -422,7 +435,10 @@ class RedisTokenStorage(TokenStorage[str]):
         return f"{self.key_prefix}:{key}"
 
     async def store(
-        self, key: str, value: str, ttl: datetime.timedelta | None = None,
+        self,
+        key: str,
+        value: str,
+        ttl: datetime.timedelta | None = None,
     ) -> None:
         """Store a value with optional TTL."""
         redis_key = self._make_key(key)
@@ -572,7 +588,10 @@ class InMemoryTokenStorage(TokenStorage[str]):
         self._lock = asyncio.Lock()
 
     async def store(
-        self, key: str, value: str, ttl: datetime.timedelta | None = None,
+        self,
+        key: str,
+        value: str,
+        ttl: datetime.timedelta | None = None,
     ) -> None:
         """Store a value with optional TTL."""
         expires_at = dt.now(UTC) + ttl if ttl else None
@@ -703,7 +722,10 @@ class DatabaseTokenStorage(TokenStorage[str]):
         self.session_factory = db_session_factory
 
     async def store(
-        self, key: str, value: str, ttl: datetime.timedelta | None = None,
+        self,
+        key: str,
+        value: str,
+        ttl: datetime.timedelta | None = None,
     ) -> None:
         """Store a value with optional TTL in database."""
         expires_at = dt.now(UTC) + ttl if ttl else None
@@ -711,7 +733,8 @@ class DatabaseTokenStorage(TokenStorage[str]):
         async with self.session_factory() as session:
             # Check if key exists
             existing = await session.execute(
-                "SELECT key FROM token_storage WHERE key = :key", {"key": key},
+                "SELECT key FROM token_storage WHERE key = :key",
+                {"key": key},
             )
 
             if existing.scalar():
@@ -757,7 +780,8 @@ class DatabaseTokenStorage(TokenStorage[str]):
             if expires_at and dt.now(UTC) > expires_at:
                 # Clean up expired entry
                 await session.execute(
-                    "DELETE FROM token_storage WHERE key = :key", {"key": key},
+                    "DELETE FROM token_storage WHERE key = :key",
+                    {"key": key},
                 )
                 await session.commit()
                 return None
@@ -768,7 +792,8 @@ class DatabaseTokenStorage(TokenStorage[str]):
         """Delete a value by key from database."""
         async with self.session_factory() as session:
             result = await session.execute(
-                "DELETE FROM token_storage WHERE key = :key", {"key": key},
+                "DELETE FROM token_storage WHERE key = :key",
+                {"key": key},
             )
             await session.commit()
             return result.rowcount > 0
@@ -881,7 +906,10 @@ class TokenBlacklist:
                 pass
 
     async def revoke_token(
-        self, token_id: str, expires_at: dt, metadata: TokenMetadata | None = None,
+        self,
+        token_id: str,
+        expires_at: dt,
+        metadata: TokenMetadata | None = None,
     ) -> None:
         """Revoke a token by ID.
 
@@ -940,7 +968,9 @@ class TokenBlacklist:
         return await self.storage.exists(token_id)
 
     async def revoke_user_tokens(
-        self, user_id: UserID, token_type: TokenType | None = None,
+        self,
+        user_id: UserID,
+        token_type: TokenType | None = None,
     ) -> int:
         """Revoke all tokens for a user.
 
@@ -986,7 +1016,9 @@ class TokenBlacklist:
         return revoked_count
 
     async def get_revoked_tokens(
-        self, user_id: UserID | None = None, limit: int = 100,
+        self,
+        user_id: UserID | None = None,
+        limit: int = 100,
     ) -> list[str]:
         """Get list of revoked token IDs."""
         pattern = "*" if not user_id else f"user:{user_id}:*"
@@ -1066,7 +1098,10 @@ class TokenManager:
         return True
 
     async def revoke_token(
-        self, token_id: str, revoked_by: UserID | None = None, reason: str | None = None,
+        self,
+        token_id: str,
+        revoked_by: UserID | None = None,
+        reason: str | None = None,
     ) -> bool:
         """Revoke a specific token.
 
@@ -1281,7 +1316,8 @@ class TokenManager:
 
 
 def create_token_storage(
-    storage_type: str = "redis", **kwargs: Any,
+    storage_type: str = "redis",
+    **kwargs: Any,
 ) -> TokenStorage[str]:
     """Factory function to create appropriate token storage backend.
 
@@ -1333,7 +1369,9 @@ def create_token_storage(
             raise ValueError(msg)
         return DatabaseTokenStorage(db_session_factory=db_session_factory)
 
-    msg = f"Unknown storage type: {storage_type}. Valid options: redis, memory, database"
+    msg = (
+        f"Unknown storage type: {storage_type}. Valid options: redis, memory, database"
+    )
     raise ValueError(msg)
 
 
@@ -1451,3 +1489,99 @@ class TokenPasswordHasher:
         except (ValueError, TypeError, AttributeError, RuntimeError):
             # If we can't check password hash format, assume it needs updating
             return True
+
+
+# Complete InMemoryTokenStorage implementation
+class InMemoryTokenStorage(TokenStorage[str]):
+    """Complete in-memory token storage implementation."""
+
+    def __init__(self) -> None:
+        """Initialize in-memory storage."""
+        self._storage: dict[str, dict[str, Any]] = {}
+        self._lock = asyncio.Lock()
+
+    async def store(
+        self,
+        key: str,
+        value: str,
+        ttl: datetime.timedelta | None = None,
+    ) -> None:
+        """Store a value with optional TTL."""
+        async with self._lock:
+            expiry = None
+            if ttl:
+                expiry = dt.now(UTC) + ttl
+
+            self._storage[key] = {
+                "value": value,
+                "expiry": expiry,
+                "created_at": dt.now(UTC),
+            }
+
+    async def get(self, key: str) -> str | None:
+        """Get a value by key."""
+        async with self._lock:
+            if key not in self._storage:
+                return None
+
+            entry = self._storage[key]
+
+            # Check if expired
+            if entry["expiry"] and dt.now(UTC) > entry["expiry"]:
+                del self._storage[key]
+                return None
+
+            return entry["value"]
+
+    async def delete(self, key: str) -> bool:
+        """Delete a value by key."""
+        async with self._lock:
+            if key in self._storage:
+                del self._storage[key]
+                return True
+            return False
+
+    async def exists(self, key: str) -> bool:
+        """Check if key exists and hasnt expired."""
+        async with self._lock:
+            if key not in self._storage:
+                return False
+
+            entry = self._storage[key]
+
+            if entry["expiry"] and dt.now(UTC) > entry["expiry"]:
+                del self._storage[key]
+                return False
+
+            return True
+
+    async def keys(self, pattern: str) -> list[str]:
+        """Get keys matching pattern."""
+        async with self._lock:
+            await self._cleanup_expired_internal()
+
+            matching_keys = []
+            for key in self._storage:
+                if fnmatch.fnmatch(key, pattern):
+                    matching_keys.append(key)
+
+            return matching_keys
+
+    async def cleanup_expired(self) -> int:
+        """Remove expired entries and return count."""
+        async with self._lock:
+            return await self._cleanup_expired_internal()
+
+    async def _cleanup_expired_internal(self) -> int:
+        """Internal cleanup method."""
+        now = dt.now(UTC)
+        expired_keys = []
+
+        for key, entry in self._storage.items():
+            if entry["expiry"] and now > entry["expiry"]:
+                expired_keys.append(key)
+
+        for key in expired_keys:
+            del self._storage[key]
+
+        return len(expired_keys)

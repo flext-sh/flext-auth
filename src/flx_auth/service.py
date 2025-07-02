@@ -25,9 +25,9 @@ if TYPE_CHECKING:
     from flx_core.domain.advanced_types import UserId
 
 # Python 3.13 type aliases
-type Username = str
-type Email = str
-type Password = str
+Username = str
+Email = str
+Password = str
 
 
 @runtime_checkable

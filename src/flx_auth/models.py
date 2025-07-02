@@ -16,9 +16,9 @@ if TYPE_CHECKING:
     from flx_auth.types import PermissionScope
 
 # Python 3.13 type aliases for zero boilerplate
-type PermissionSet = frozenset[str]
-type RoleSet = frozenset[str]
-type Claims = dict[str, Any]
+PermissionSet = frozenset[str]
+RoleSet = frozenset[str]
+Claims = dict[str, Any]
 
 
 class AuthStatus(Enum):

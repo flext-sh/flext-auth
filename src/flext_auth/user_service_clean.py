@@ -1,5 +1,5 @@
-
 """User authentication service with practical FIVE-level logging."""
+
 from __future__ import annotations
 
 import datetime
@@ -47,7 +47,9 @@ class PasswordHasherImpl(PasswordHasher):
         """Initialize password hasher with bcrypt configuration."""
         try:
             constants = get_domain_constants()
-            actual_rounds = rounds if rounds is not None else constants.DEFAULT_BCRYPT_ROUNDS
+            actual_rounds = (
+                rounds if rounds is not None else constants.DEFAULT_BCRYPT_ROUNDS
+            )
             self.context = CryptContext(
                 schemes=["bcrypt"],
                 deprecated="auto",
@@ -71,7 +73,9 @@ class PasswordHasherImpl(PasswordHasher):
             logger.exception("Password hashing failed")
             raise
 
-    def verify_password(self, password: PlaintextPassword, hashed: HashedPassword) -> bool:
+    def verify_password(
+        self, password: PlaintextPassword, hashed: HashedPassword
+    ) -> bool:
         """Verify a plaintext password against its hash."""
         try:
             result = self.context.verify(password, hashed)
@@ -235,7 +239,14 @@ class SecurityAuditorImpl(SecurityAuditor):
         """Method implementation."""
         self._events: list[dict[str, Any]] = []
 
-    async def log_security_event(self, event_type: str, user_id: UserID | None, ip_address: IPAddress | None, user_agent: UserAgent | None, metadata: Mapping[str, Any] | None = None) -> None:
+    async def log_security_event(
+        self,
+        event_type: str,
+        user_id: UserID | None,
+        ip_address: IPAddress | None,
+        user_agent: UserAgent | None,
+        metadata: Mapping[str, Any] | None = None,
+    ) -> None:
         """Method implementation."""
         event = {
             "timestamp": dt.now(UTC).isoformat(),
@@ -250,7 +261,12 @@ class SecurityAuditorImpl(SecurityAuditor):
         security_logger = structlog.get_logger("security_audit")
         security_logger.info("Security event", **event)
 
-    async def get_failed_login_attempts(self, ip_address: IPAddress | None = None, user_id: UserID | None = None, window: datetime.timedelta | None = None) -> int:
+    async def get_failed_login_attempts(
+        self,
+        ip_address: IPAddress | None = None,
+        user_id: UserID | None = None,
+        window: datetime.timedelta | None = None,
+    ) -> int:
         """Method implementation."""
         constants = get_domain_constants()
         window = window or datetime.timedelta(hours=constants.AUDIT_WINDOW_HOURS)
@@ -273,7 +289,14 @@ class SecurityAuditorImpl(SecurityAuditor):
 class UserService(AuthenticationServiceProtocol):
     """Complete user authentication and management service with enterprise features."""
 
-    def __init__(self, user_repository: UserRepository, jwt_service: JWTService, token_manager: TokenManager, password_hasher: PasswordHasher | None = None, security_auditor: SecurityAuditor | None = None) -> None:
+    def __init__(
+        self,
+        user_repository: UserRepository,
+        jwt_service: JWTService,
+        token_manager: TokenManager,
+        password_hasher: PasswordHasher | None = None,
+        security_auditor: SecurityAuditor | None = None,
+    ) -> None:
         """Method implementation."""
         try:
             self.user_repository = user_repository
@@ -295,12 +318,16 @@ class UserService(AuthenticationServiceProtocol):
             token_manager=TokenManager(TokenBlacklist()),
         )
 
-    async def create_user(self, request: UserCreationRequest, roles: list[UserRoleEnum] | None = None) -> User:
+    async def create_user(
+        self, request: UserCreationRequest, roles: list[UserRoleEnum] | None = None
+    ) -> User:
         """Method implementation."""
         # Check if user already exists
         existing_user = await self.user_repository.get_user_by_email(request.email)
         if existing_user:
-            logger.warning("User creation failed - email already exists: %s", request.email)
+            logger.warning(
+                "User creation failed - email already exists: %s", request.email
+            )
             msg = "User with this email already exists"
             raise ValueError(msg)
         # Hash password
@@ -311,7 +338,10 @@ class UserService(AuthenticationServiceProtocol):
             email=request.email,
             password_hash=password_hash,
             username=f"{request.first_name} {request.last_name}",
-            roles=frozenset(role.value if isinstance(role, UserRoleEnum) else role for role in (roles or [])),
+            roles=frozenset(
+                role.value if isinstance(role, UserRoleEnum) else role
+                for role in (roles or [])
+            ),
         )
         # Save to repository
         result = await self.user_repository.create_user(
@@ -333,7 +363,13 @@ class UserService(AuthenticationServiceProtocol):
         logger.info("User created successfully: %s", request.email)
         return result
 
-    async def authenticate_user(self, email: str, password: PlaintextPassword, ip_address: IPAddress | None = None, user_agent: UserAgent | None = None) -> tuple[User, JWTToken, JWTToken] | None:
+    async def authenticate_user(
+        self,
+        email: str,
+        password: PlaintextPassword,
+        ip_address: IPAddress | None = None,
+        user_agent: UserAgent | None = None,
+    ) -> tuple[User, JWTToken, JWTToken] | None:
         """Method implementation."""
         logger.info("Authentication attempt for: %s", email)
         try:
@@ -394,7 +430,9 @@ class UserService(AuthenticationServiceProtocol):
             refresh_token = token_pair.refresh_token
             # Register tokens
             access_claims = await self.jwt_service.verify_token(access_token, "access")
-            refresh_claims = await self.jwt_service.verify_token(refresh_token, "refresh")
+            refresh_claims = await self.jwt_service.verify_token(
+                refresh_token, "refresh"
+            )
             if access_claims and refresh_claims:
                 await self.token_manager.register_token(
                     access_claims["jti"],
@@ -442,7 +480,9 @@ class UserService(AuthenticationServiceProtocol):
             logger.exception("Authentication process failed")
             return None
 
-    async def authenticate_token(self, token: JWTToken, required_permissions: Sequence[str] | None = None) -> User | None:
+    async def authenticate_token(
+        self, token: JWTToken, required_permissions: Sequence[str] | None = None
+    ) -> User | None:
         """Method implementation."""
         # Verify token
         claims = await self.jwt_service.verify_token(token, "access")
@@ -477,7 +517,12 @@ class UserService(AuthenticationServiceProtocol):
                 return None
         return user
 
-    async def refresh_tokens(self, refresh_token: JWTToken, ip_address: IPAddress | None = None, user_agent: UserAgent | None = None) -> tuple[JWTToken, JWTToken] | None:
+    async def refresh_tokens(
+        self,
+        refresh_token: JWTToken,
+        ip_address: IPAddress | None = None,
+        user_agent: UserAgent | None = None,
+    ) -> tuple[JWTToken, JWTToken] | None:
         """Method implementation."""
         # Verify refresh token
         claims = await self.jwt_service.verify_token(refresh_token, "refresh")
@@ -545,7 +590,9 @@ class UserService(AuthenticationServiceProtocol):
         logger.info("Tokens refreshed for user: %s", str(user.user_id))
         return new_access_token, new_refresh_token
 
-    async def revoke_token(self, token: JWTToken, user_id: UserID | None = None) -> bool:
+    async def revoke_token(
+        self, token: JWTToken, user_id: UserID | None = None
+    ) -> bool:
         """Method implementation."""
         # Extract token claims
         claims = self.jwt_service.extract_token_claims(token)
@@ -571,7 +618,12 @@ class UserService(AuthenticationServiceProtocol):
             logger.info("Token revoked: %s", token_id)
         return revoked
 
-    async def change_password(self, user_id: UserID, old_password: PlaintextPassword, new_password: PlaintextPassword) -> bool:
+    async def change_password(
+        self,
+        user_id: UserID,
+        old_password: PlaintextPassword,
+        new_password: PlaintextPassword,
+    ) -> bool:
         """Method implementation."""
         # Get user
         user = await self.user_repository.get_user_by_id(user_id)
@@ -608,7 +660,14 @@ class UserService(AuthenticationServiceProtocol):
         logger.info("Password changed for user: %s", user_id)
         return True
 
-    async def _log_failed_login(self, user_id: UserID | None, email: str, ip_address: IPAddress | None, user_agent: UserAgent | None, reason: str) -> None:
+    async def _log_failed_login(
+        self,
+        user_id: UserID | None,
+        email: str,
+        ip_address: IPAddress | None,
+        user_agent: UserAgent | None,
+        reason: str,
+    ) -> None:
         """Method implementation."""
         await self.security_auditor.log_security_event(
             event_type=SecurityEvent.LOGIN_FAILURE.value,
