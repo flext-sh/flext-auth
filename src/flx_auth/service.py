@@ -355,6 +355,7 @@ class ServiceInMemoryUserRepository:
 
         Note:
         ----
+        This method uses in-memory storage and is suitable for development only.
 
         """
         return self._users.get(user_id)
@@ -375,6 +376,7 @@ class ServiceInMemoryUserRepository:
 
         Note:
         ----
+        This method uses in-memory storage and is suitable for development only.
 
         """
         user_id = self._username_index.get(username)
@@ -396,6 +398,7 @@ class ServiceInMemoryUserRepository:
 
         Note:
         ----
+        This method uses in-memory storage and is suitable for development only.
 
         """
         user_id = self._email_index.get(email)
@@ -414,6 +417,7 @@ class ServiceInMemoryUserRepository:
 
         Note:
         ----
+        This method uses in-memory storage and is suitable for development only.
 
         """
         self._users[user.user_id] = user
@@ -433,6 +437,7 @@ class ServiceInMemoryUserRepository:
 
         Note:
         ----
+        This method uses in-memory storage and is suitable for development only.
 
         """
         user = self._users.pop(user_id, None)
@@ -469,6 +474,7 @@ class ServiceInMemoryRoleRepository:
 
         Note:
         ----
+        This method uses in-memory storage and is suitable for development only.
 
         """
         return self._roles.get(name)
@@ -489,6 +495,7 @@ class ServiceInMemoryRoleRepository:
 
         Note:
         ----
+        This method uses in-memory storage and is suitable for development only.
 
         """
         role_names = self._user_roles.get(user_id, set())
@@ -506,6 +513,7 @@ class ServiceInMemoryRoleRepository:
 
         Note:
         ----
+        This method uses in-memory storage and is suitable for development only.
 
         """
         self._roles[role.name] = role

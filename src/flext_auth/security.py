@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, ClassVar, Protocol, runtime_checkable
 
 import jwt
 from argon2 import PasswordHasher as Argon2Hasher
@@ -141,7 +141,7 @@ class PasswordHasher(DomainBaseModel):
 
     """Advanced password hasher with zero boilerplate."""
 
-    model_config = {"arbitrary_types_allowed": True}
+    model_config: ClassVar = {"arbitrary_types_allowed": True}
 
     # Argon2 parameters for security
     time_cost: int = Field(default=2, description="Argon2 time cost parameter")
@@ -163,12 +163,13 @@ class PasswordHasher(DomainBaseModel):
     def _hasher(self) -> Argon2Hasher:
         """Backward compatibility property."""
         if self.argon2_hasher is None:
+            msg = "PasswordHasher not initialized. Call model_post_init first."
             raise RuntimeError(
-                "PasswordHasher not initialized. Call model_post_init first."
+                msg
             )
         return self.argon2_hasher
 
-    def model_post_init(self, __context: object) -> None:
+    def model_post_init(self, __context: object, /) -> None:
         """Initialize Argon2 hasher with parameters."""
         self.argon2_hasher = Argon2Hasher(
             time_cost=self.time_cost,

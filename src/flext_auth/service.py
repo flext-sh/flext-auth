@@ -1,6 +1,6 @@
 """Authentication service implementation."""
 
-from typing import Any, Optional
+from typing import Any
 
 
 class ServiceInMemoryUserRepository:
@@ -9,7 +9,7 @@ class ServiceInMemoryUserRepository:
     def __init__(self) -> None:
         self.users: dict[str, Any] = {}
 
-    def find_by_email(self, email: str) -> Optional[Any]:
+    def find_by_email(self, email: str) -> Any | None:
         """Find user by email."""
         return self.users.get(email)
 
@@ -25,7 +25,7 @@ class ServiceInMemoryRoleRepository:
     def __init__(self) -> None:
         self.roles: dict[str, Any] = {}
 
-    def find_by_name(self, name: str) -> Optional[Any]:
+    def find_by_name(self, name: str) -> Any | None:
         """Find role by name."""
         return self.roles.get(name)
 
@@ -47,7 +47,7 @@ class AuthenticationService:
         user = type("User", (), user_data)()
         return self.user_repository.save(user)
 
-    def authenticate(self, email: str, password: str) -> Optional[Any]:
+    def authenticate(self, email: str, password: str) -> Any | None:
         """Authenticate user."""
         user = self.user_repository.find_by_email(email)
         if user and hasattr(user, "password") and user.password == password:

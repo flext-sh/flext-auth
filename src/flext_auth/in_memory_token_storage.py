@@ -128,13 +128,8 @@ class InMemoryTokenStorage:
             # Clean up expired entries first
             await self._cleanup_expired_internal()
 
-            # Filter keys by pattern
-            matching_keys = []
-            for key in self._storage:
-                if fnmatch.fnmatch(key, pattern):
-                    matching_keys.append(key)
-
-            return matching_keys
+            # Filter keys by pattern using list comprehension
+            return [key for key in self._storage if fnmatch.fnmatch(key, pattern)]
 
     async def cleanup_expired(self) -> int:
         """Remove expired entries and return count.
@@ -177,4 +172,3 @@ class InMemoryTokenStorage:
 
     async def close(self) -> None:
         """Close storage (no-op for in-memory storage)."""
-        pass

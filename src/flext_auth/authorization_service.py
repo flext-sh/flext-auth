@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Authorization service with role-based access control using Python 3.13 patterns."""
+
+from __future__ import annotations
 
 import functools
 from collections.abc import Callable

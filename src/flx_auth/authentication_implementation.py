@@ -79,8 +79,6 @@ ValidationResult = ServiceResult[dict[str, Any]]
 class EnterprisePasswordHasher:
     """Class implementation."""
 
-    pass
-
     def __init__(self: EnterprisePasswordHasher, rounds: int = 12) -> None:
         """Method implementation."""
         self.rounds = rounds
@@ -120,8 +118,6 @@ class EnterprisePasswordHasher:
 
 class EnterpriseJWTService:
     """Class implementation."""
-
-    pass
 
     def __init__(self, secret_key: str | None = None) -> None:
         """Method implementation."""
@@ -177,7 +173,6 @@ class EnterpriseJWTService:
         self, token: str, token_type: str | None = None
     ) -> dict[str, Any] | None:
         """Method implementation."""
-        pass
         try:
             # Check if token is blacklisted
             if token in self._blacklisted_tokens:
@@ -238,8 +233,6 @@ class EnterpriseJWTService:
 class EnterpriseUserRepository:
     """Class implementation."""
 
-    pass
-
     def __init__(self) -> None:
         """Method implementation."""
         self._users: dict[UUID, Any] = {}
@@ -249,7 +242,6 @@ class EnterpriseUserRepository:
 
     async def get_user_by_id(self, user_id: UUID) -> Any | None:
         """Method implementation."""
-        pass
         user = self._users.get(user_id)
         if user:
             logger.debug("User found by ID: {user_id}", extra={})
@@ -257,7 +249,6 @@ class EnterpriseUserRepository:
 
     async def get_user_by_email(self, email: str) -> Any | None:
         """Method implementation."""
-        pass
         user_id = self._email_index.get(email.lower())
         if user_id:
             user = self._users.get(user_id)
@@ -316,7 +307,6 @@ class EnterpriseUserRepository:
         user_id: UUID,
     ) -> frozenset[str]:
         """Method implementation."""
-        pass
         user = self._users.get(user_id)
         if not user:
             return frozenset()
@@ -337,8 +327,6 @@ class EnterpriseUserRepository:
 class EnterpriseSecurityAuditor:
     """Class implementation."""
 
-    pass
-
     def __init__(self) -> None:
         """Method implementation."""
         self._events: list[dict[str, Any]] = []
@@ -351,7 +339,7 @@ class EnterpriseSecurityAuditor:
         user_id: UUID | None,
         ip_address: str | None,
         user_agent: str | None,
-        metadata: dict[str, Any] | None | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         """Method implementation."""
         event = {
@@ -397,8 +385,6 @@ class EnterpriseSecurityAuditor:
 class EnterpriseAuthenticationService:
     """Class implementation."""
 
-    pass
-
     def __init__(
         self,
         user_repository: EnterpriseUserRepository | None = None,
@@ -421,7 +407,6 @@ class EnterpriseAuthenticationService:
         user_agent: str | None = None,
     ) -> tuple[Any, str, str] | None:
         """Method implementation."""
-        pass
         try:
             # Find user by email
             user = await self.user_repository.get_user_by_email(email)
@@ -478,7 +463,6 @@ class EnterpriseAuthenticationService:
         required_permissions: Sequence[str] | None = None,
     ) -> Any | None:
         """Method implementation."""
-        pass
         try:
             # Verify token
             claims = await self.jwt_service.verify_token(token, "access")
@@ -513,7 +497,6 @@ class EnterpriseAuthenticationService:
         user_agent: str | None = None,
     ) -> tuple[str, str] | None:
         """Method implementation."""
-        pass
         try:
             # Verify refresh token
             claims = await self.jwt_service.verify_token(refresh_token, "refresh")
@@ -559,8 +542,6 @@ class EnterpriseAuthenticationService:
 class EnterpriseAuthorizationService:
     """Class implementation."""
 
-    pass
-
     def __init__(self, user_repository: EnterpriseUserRepository | None = None) -> None:
         """Method implementation."""
         self.user_repository = user_repository or EnterpriseUserRepository()
@@ -601,7 +582,6 @@ class EnterpriseAuthorizationService:
 
     async def get_user_permissions(self, user_id: UUID) -> frozenset[str]:
         """Method implementation."""
-        pass
         return await self.user_repository.get_user_permissions(user_id)
 
     async def get_resource_permissions(
@@ -610,7 +590,6 @@ class EnterpriseAuthorizationService:
         resource: str,
     ) -> frozenset[str]:
         """Method implementation."""
-        pass
         try:
             all_permissions = await self.user_repository.get_user_permissions(user_id)
             # Filter permissions for specific resource

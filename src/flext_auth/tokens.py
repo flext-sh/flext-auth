@@ -228,7 +228,6 @@ class TokenStorage[T](ABC):
 
         """
         # Base implementation - subclasses provide concrete storage
-        pass
 
     @abstractmethod
     async def get(self, key: str) -> T | None:
@@ -252,7 +251,6 @@ class TokenStorage[T](ABC):
 
         """
         # Base implementation - subclasses provide concrete storage
-        pass
 
     @abstractmethod
     async def delete(self, key: str) -> bool:
@@ -276,7 +274,6 @@ class TokenStorage[T](ABC):
 
         """
         # Base implementation - subclasses provide concrete storage
-        pass
 
     @abstractmethod
     async def exists(self, key: str) -> bool:
@@ -300,7 +297,6 @@ class TokenStorage[T](ABC):
 
         """
         # Base implementation - subclasses provide concrete storage
-        pass
 
     @abstractmethod
     async def keys(self, pattern: str) -> list[str]:
@@ -324,13 +320,11 @@ class TokenStorage[T](ABC):
 
         """
         # Base implementation - subclasses provide concrete storage
-        pass
 
     @abstractmethod
     async def cleanup_expired(self) -> int:
         """Remove expired entries and return count."""
         # Base implementation - subclasses provide concrete storage
-        pass
 
 
 class RedisTokenStorage(TokenStorage[str]):
@@ -1491,8 +1485,8 @@ class TokenPasswordHasher:
             return True
 
 
-# Complete InMemoryTokenStorage implementation
-class InMemoryTokenStorage(TokenStorage[str]):
+# Alternative complete InMemoryTokenStorage implementation
+class InMemoryTokenStorageAlternative(TokenStorage[str]):
     """Complete in-memory token storage implementation."""
 
     def __init__(self) -> None:
@@ -1560,12 +1554,7 @@ class InMemoryTokenStorage(TokenStorage[str]):
         async with self._lock:
             await self._cleanup_expired_internal()
 
-            matching_keys = []
-            for key in self._storage:
-                if fnmatch.fnmatch(key, pattern):
-                    matching_keys.append(key)
-
-            return matching_keys
+            return [key for key in self._storage if fnmatch.fnmatch(key, pattern)]
 
     async def cleanup_expired(self) -> int:
         """Remove expired entries and return count."""

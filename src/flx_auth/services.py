@@ -33,11 +33,11 @@ __all__ = [
     "AuthenticationResponse",
     "DefaultRoleManager",
     "InMemoryTokenStorage",
-    "InMemoryUserRepository",
+    # "InMemoryUserRepository",  # Not implemented in this module
     "JWTConfig",
     # JWT Services
     "JWTService",
-    "LoginRequest",
+    # "LoginRequest",  # Not implemented in this module
     "PasswordHasherImpl",
     # Modern Rate Limiting
     "RedisRateLimitManager",

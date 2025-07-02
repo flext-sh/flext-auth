@@ -7,15 +7,15 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
-from flext_core.domain.advanced_types import UserId
 from flext_core.domain.pydantic_base import DomainEntity, DomainValueObject
 from pydantic import Field
 
 if TYPE_CHECKING:
-    pass
+    from flext_core.domain.advanced_types import UserId
+
+    from flext_auth.types import PermissionScope
 
 # Import PermissionScope directly for use in model
-from flext_auth.types import PermissionScope
 
 # Python 3.13 type aliases for zero boilerplate
 PermissionSet = frozenset[str]

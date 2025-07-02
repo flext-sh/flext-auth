@@ -159,9 +159,8 @@ Examples:
     # Execute command
     if hasattr(args, "func"):
         return args.func(args)
-    else:
-        parser.print_help()
-        return 1
+    parser.print_help()
+    return 1
 
 
 if __name__ == "__main__":

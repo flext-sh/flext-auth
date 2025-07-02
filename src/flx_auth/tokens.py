@@ -1329,19 +1329,18 @@ def create_token_storage(
         key_prefix = kwargs.get("key_prefix", "flx:tokens")
         return RedisTokenStorage(redis_client=redis_client, key_prefix=key_prefix)
 
-    elif storage_type == "memory":
+    if storage_type == "memory":
         return InMemoryTokenStorage()
 
-    elif storage_type == "database":
+    if storage_type == "database":
         db_session_factory = kwargs.get("db_session_factory")
         if not db_session_factory:
             msg = "Database storage requires db_session_factory parameter"
             raise ValueError(msg)
         return DatabaseTokenStorage(db_session_factory=db_session_factory)
 
-    else:
-        msg = f"Unknown storage type: {storage_type}. Valid options: redis, memory, database"
-        raise ValueError(msg)
+    msg = f"Unknown storage type: {storage_type}. Valid options: redis, memory, database"
+    raise ValueError(msg)
 
 
 class TokenPasswordHasher:

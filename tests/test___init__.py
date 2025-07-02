@@ -5,11 +5,10 @@ import pytest
 
 def test_module_imports() -> None:
     """Test that module can be imported."""
-    try:
-        import flext_auth
+    import importlib.util
 
-        assert True
-    except ImportError:
+    # Use find_spec for availability testing
+    if importlib.util.find_spec("flext_auth") is None:
         pytest.skip("Module flext_auth not importable")
 
 

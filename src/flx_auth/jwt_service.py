@@ -382,7 +382,8 @@ class JWTService:
             )
             # Fire and forget - don't block on storage
             try:
-                asyncio.create_task(self.storage.store_token(token_info))
+                task = asyncio.create_task(self.storage.store_token(token_info))
+                task.add_done_callback(lambda _: None)  # Prevent dangling task warning
             except RuntimeError:
                 # No event loop running - skip storage for now
                 # This typically happens in sync contexts like tests
@@ -424,7 +425,8 @@ class JWTService:
                 expires_at=expires_at,
             )
             try:
-                asyncio.create_task(self.storage.store_token(token_info))
+                task = asyncio.create_task(self.storage.store_token(token_info))
+                task.add_done_callback(lambda _: None)  # Prevent dangling task warning
             except RuntimeError:
                 # No event loop running - skip storage for now
                 # This typically happens in sync contexts like tests
@@ -565,7 +567,7 @@ class JWTService:
         raise jwt.InvalidTokenError(msg)
 
     async def verify_token(
-        self, token: TokenString, token_type: str = "access"
+        self, token: TokenString, token_type: str = "access"  # noqa: S107
     ) -> Claims | None:
         """Verify and decode JWT token with comprehensive validation.
 

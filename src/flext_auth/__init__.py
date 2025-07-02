@@ -8,6 +8,6 @@ from .service import (
 
 __all__ = [
     "AuthenticationService",
-    "ServiceInMemoryUserRepository",
     "ServiceInMemoryRoleRepository",
+    "ServiceInMemoryUserRepository",
 ]
