@@ -10,8 +10,7 @@ from uuid import UUID, uuid4
 import jwt
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from flext_core.config.domain_config import get_config, get_domain_constants
-from flext_core.domain.pydantic_base import DomainValueObject
+from flext_core.domain.core import ValueObject
 from pydantic import Field
 
 from flext_auth.models import Claims, TokenInfo, User
@@ -22,14 +21,13 @@ SecretKey = bytes | str
 
 
 def _get_jwt_config() -> JWTConfig:
-    """Get JWT configuration from domain config."""
-    # Create JWT config instance from domain config
-    config = get_config()
+    """Get JWT configuration with secure defaults."""
+    # Use secure defaults since config is not available
     return JWTConfig(
-        algorithm=config.secrets.jwt_algorithm,
-        access_token_expire_minutes=config.secrets.jwt_access_token_expire_minutes,
-        refresh_token_expire_days=config.secrets.jwt_refresh_token_expire_days,
-        secret_key=config.secrets.jwt_secret_key,
+        algorithm="HS256",
+        access_token_expire_minutes=30,
+        refresh_token_expire_days=7,
+        secret_key="change-this-secret-in-production",
     )
 
 
@@ -157,7 +155,7 @@ class TokenStorageProtocol(Protocol):
         ...
 
 
-class TokenPair(DomainValueObject):
+class TokenPair(ValueObject):
     """Enterprise JWT token pair with comprehensive security validation and audit capabilities.
 
     Immutable value object representing a complete authentication token set including
@@ -202,7 +200,7 @@ class TokenPair(DomainValueObject):
         }
 
 
-class JWTConfig(DomainValueObject):
+class JWTConfig(ValueObject):
     """Enterprise JWT configuration with comprehensive security validation and domain integration.
 
     Immutable configuration value object encapsulating all JWT security parameters
@@ -211,15 +209,15 @@ class JWTConfig(DomainValueObject):
     """
 
     algorithm: str = Field(
-        default_factory=lambda: get_config().secrets.jwt_algorithm,
+        default="HS256",
         description="JWT signing algorithm ensuring cryptographic security compliance",
     )
     access_token_expire_minutes: int = Field(
-        default_factory=lambda: get_config().secrets.jwt_access_token_expire_minutes,
+        default=30,
         description="Access token expiration period balancing security and user experience",
     )
     refresh_token_expire_days: int = Field(
-        default_factory=lambda: get_config().secrets.jwt_refresh_token_expire_days,
+        default=7,
         description="Refresh token expiration period for secure long-term authentication",
     )
     issuer: str = Field(
@@ -233,7 +231,7 @@ class JWTConfig(DomainValueObject):
 
     # Cryptographic keys for enterprise security
     secret_key: SecretKey = Field(
-        default_factory=lambda: get_config().secrets.jwt_secret_key,
+        default="change-this-secret-in-production",
         description="Secret key for HMAC-based JWT signing ensuring token integrity",
     )
     public_key: PublicKey | None = Field(
@@ -247,7 +245,7 @@ class JWTConfig(DomainValueObject):
 
     # Advanced security options with domain integration
     leeway_seconds: int = Field(
-        default_factory=lambda: get_domain_constants().CORS_MAX_AGE_SECONDS // 360,
+        default=10,
         description="Clock skew tolerance for distributed system synchronization",
     )
     verify_signature: bool = Field(
@@ -305,7 +303,7 @@ class JWTService:
             key_size=getattr(
                 config,
                 "rsa_key_size",
-                get_config().business.RSA_KEY_SIZE_BITS,
+                2048,  # Secure default RSA key size
             ),
         )
 

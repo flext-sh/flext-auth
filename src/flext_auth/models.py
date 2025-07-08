@@ -7,15 +7,13 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
 
-from flext_core.domain.pydantic_base import DomainEntity, DomainValueObject
+from flext_core.domain.core import Entity, ValueObject
 from pydantic import Field
 
+# Import PermissionScope directly for use in model - MUST be outside TYPE_CHECKING
+
 if TYPE_CHECKING:
-    from flext_core.domain.advanced_types import UserId
-
-    from flext_auth.types import PermissionScope
-
-# Import PermissionScope directly for use in model
+    from flext_auth.types import PermissionScope, UserID
 
 # Python 3.13 type aliases for zero boilerplate
 PermissionSet = frozenset[str]
@@ -69,7 +67,7 @@ class UserRoleEnum(Enum):
         )
 
 
-class Permission(DomainValueObject):
+class Permission(ValueObject):
     """Permission value object with Pydantic validation and Python 3.13 features."""
 
     id: str | None = None
@@ -107,7 +105,7 @@ class Permission(DomainValueObject):
         )
 
 
-class Role(DomainValueObject):
+class Role(ValueObject):
     """Role value object with automatic permission aggregation and Pydantic validation."""
 
     name: str = Field(min_length=1)
@@ -124,10 +122,10 @@ class Role(DomainValueObject):
         return permission.name in self.permissions
 
 
-class User(DomainEntity):
+class User(Entity):
     """User entity with Pydantic validation and domain entity patterns."""
 
-    user_id: UserId = Field(default_factory=uuid4)
+    user_id: UserID = Field(default_factory=lambda: str(uuid4()))
     username: str = ""
     email: str = ""
     password_hash: str = ""
@@ -212,11 +210,11 @@ class User(DomainEntity):
         }
 
 
-class TokenInfo(DomainValueObject):
+class TokenInfo(ValueObject):
     """Token information with Pydantic validation and automatic validation."""
 
     token_id: UUID = Field(default_factory=uuid4)
-    user_id: UserId = Field(default_factory=uuid4)
+    user_id: UserID = Field(default_factory=lambda: str(uuid4()))
     token_type: str = Field(default="access", description="Token type identifier")
     issued_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     expires_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

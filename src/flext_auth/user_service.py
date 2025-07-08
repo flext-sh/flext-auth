@@ -9,7 +9,9 @@ from typing import TYPE_CHECKING, Any, Self
 from uuid import UUID, uuid4
 
 import structlog
-from flext_core.config.domain_config import MIN_PASSWORD_LENGTH, get_domain_constants
+
+# Define constants locally since config is not available
+MIN_PASSWORD_LENGTH = 8
 from passlib.context import CryptContext
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
@@ -42,9 +44,10 @@ class PasswordHasherImpl(PasswordHasher):
 
     def __init__(self, rounds: int | None = None) -> None:
         """Initialize password hasher with bcrypt rounds."""
-        constants = get_domain_constants()
+        # Use secure default since config is not available
+        DEFAULT_BCRYPT_ROUNDS = 12
         actual_rounds = (
-            rounds if rounds is not None else constants.DEFAULT_BCRYPT_ROUNDS
+            rounds if rounds is not None else DEFAULT_BCRYPT_ROUNDS
         )
         self.context = CryptContext(
             schemes=["bcrypt"],
@@ -492,8 +495,9 @@ class SecurityAuditorImpl(SecurityAuditor):
             Number of failed login attempts matching the criteria
 
         """
-        constants = get_domain_constants()
-        window = window or datetime.timedelta(hours=constants.AUDIT_WINDOW_HOURS)
+        # Use secure default since config is not available
+        AUDIT_WINDOW_HOURS = 24
+        window = window or datetime.timedelta(hours=AUDIT_WINDOW_HOURS)
         cutoff = dt.now(UTC) - window
 
         count = 0

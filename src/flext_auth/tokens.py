@@ -13,8 +13,9 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, TypeVar
 
 import redis.asyncio as redis
-from flext_core.config.domain_config import get_domain_constants
-from flext_core.domain.pydantic_base import DomainValueObject
+
+# Define constants locally since config is not available
+from flext_core.domain.core import ValueObject
 from passlib.context import CryptContext
 from pydantic import Field
 
@@ -44,7 +45,7 @@ class TokenInclusionMode(Enum):
     INCLUDE_EXPIRED = "include_expired"
 
 
-class TokenMetadata(DomainValueObject):
+class TokenMetadata(ValueObject):
     """Enterprise JWT token metadata with comprehensive security audit capabilities.
 
     Encapsulates all relevant information about a JWT token including identity,
