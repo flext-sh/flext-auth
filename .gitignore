@@ -121,6 +121,15 @@ oauth_tokens/
 *.swo
 *~
 
+# Cursor AI
+.cursor/
+.cursorrules
+
+# Claude AI
+.claude/
+CLAUDE.md
+internal.invalid.md
+
 # ============================================================================
 # OS SPECIFIC FILES
 # ============================================================================
@@ -147,26 +156,35 @@ auth.log
 access.log
 
 # ============================================================================
-# PROJECT SPECIFIC
+# PROJECT SPECIFIC - FLEXT-AUTH
 # ============================================================================
 
 # Archive directory
 archive/
 
-# ============================================================================
-# AI GENERATED CONTENT (ARCHIVED)
-# ============================================================================
+# Reports directory
+reports/
 
-# AI assistant files
-.claude/
-.cursor/
-CLAUDE*.md
+# Old requirements.txt (use pyproject.toml)
+requirements.txt
+
+# Dev backups
+.dev_deps_backup_*
+*_backup_*
+
+# AI-generated reports and migration files
 *_REPORT.md
+*_REPORT_*.md
+CONFIG_MIGRATION*.md
+FLEXT_*_MIGRATION*.md
+DEVELOPMENT_STANDARDS.md
 DUPLICATION_REPORT.md
 
 # Manual fix scripts
 fix_*.py
 *_fix.py
+*_validation.py
+validate_*.*
 
 # ============================================================================
 # ALWAYS INCLUDE EXCEPTIONS

@@ -152,7 +152,6 @@ class Container:
         from unittest.mock import MagicMock
         return MagicMock()
 
-
     def auth_service(self) -> object:
         """Get auth service instance."""
         from unittest.mock import MagicMock

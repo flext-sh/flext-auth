@@ -40,7 +40,7 @@ class TestAuthInMemoryRoleRepository:
         """Test finding existing roles by names."""
         role_names = frozenset(["REDACTED_LDAP_BIND_PASSWORD", "viewer"])
         roles = await repo.find_by_names(role_names)
-        
+
         assert len(roles) == 2
         role_names_found = {role.name for role in roles}
         assert "REDACTED_LDAP_BIND_PASSWORD" in role_names_found
@@ -51,7 +51,7 @@ class TestAuthInMemoryRoleRepository:
         """Test finding non-existent roles by names."""
         role_names = frozenset(["nonexistent", "fake"])
         roles = await repo.find_by_names(role_names)
-        
+
         assert len(roles) == 0
 
     @pytest.mark.asyncio
@@ -59,7 +59,7 @@ class TestAuthInMemoryRoleRepository:
         """Test finding mix of existing and non-existent roles."""
         role_names = frozenset(["REDACTED_LDAP_BIND_PASSWORD", "nonexistent", "operator"])
         roles = await repo.find_by_names(role_names)
-        
+
         assert len(roles) == 2
         role_names_found = {role.name for role in roles}
         assert "REDACTED_LDAP_BIND_PASSWORD" in role_names_found
@@ -70,7 +70,7 @@ class TestAuthInMemoryRoleRepository:
     async def test_find_by_id_found(self, repo: AuthInMemoryRoleRepository) -> None:
         """Test finding role by existing ID."""
         role = await repo.find_by_id("REDACTED_LDAP_BIND_PASSWORD")
-        
+
         assert role is not None
         assert role.name == "REDACTED_LDAP_BIND_PASSWORD"
 
@@ -78,7 +78,7 @@ class TestAuthInMemoryRoleRepository:
     async def test_find_by_id_not_found(self, repo: AuthInMemoryRoleRepository) -> None:
         """Test finding role by non-existent ID."""
         role = await repo.find_by_id("nonexistent")
-        
+
         assert role is None
 
     @pytest.mark.asyncio
@@ -97,7 +97,7 @@ class TestAuthInMemoryRoleRepository:
     async def test_get_all_roles(self, repo: AuthInMemoryRoleRepository) -> None:
         """Test getting all roles."""
         roles = await repo.get_all()
-        
+
         assert len(roles) == 3
         role_names = {role.name for role in roles}
         assert "REDACTED_LDAP_BIND_PASSWORD" in role_names

@@ -37,11 +37,12 @@ def get_domain_constants():
 
 
 # Import types outside TYPE_CHECKING for runtime use
-from flext_auth.types import TokenType
-from flext_auth.types import UserID
 
 if TYPE_CHECKING:
     from redis.asyncio import Redis
+
+    from flext_auth.types import TokenType
+    from flext_auth.types import UserID
 
 T = TypeVar("T")
 

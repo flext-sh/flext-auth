@@ -9,16 +9,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from typing import Any
 
-from flext_auth.domain.commands import AuthenticateUserCommand
-from flext_auth.domain.commands import ChangePasswordCommand
-from flext_auth.domain.commands import CreateUserCommand
-from flext_auth.domain.commands import ValidateTokenCommand
 from flext_core.domain.types import ServiceResult
 
 if TYPE_CHECKING:
-    from flext_auth.user_service import UserService
+    from flext_auth.domain.commands import AuthenticateUserCommand
+    from flext_auth.domain.commands import ChangePasswordCommand
+    from flext_auth.domain.commands import CreateUserCommand
+    from flext_auth.domain.commands import ValidateTokenCommand
     from flext_auth.jwt_service import JWTService
     from flext_auth.tokens import TokenManager
+    from flext_auth.user_service import UserService
 
 
 class AuthService:
@@ -58,13 +58,11 @@ class AuthService:
         user = auth_result.value
 
         # Create tokens
-        token_result = await self.jwt_service.create_tokens(
+        return await self.jwt_service.create_tokens(
             user=user,
             ip_address=command.ip_address,
             user_agent=command.user_agent,
         )
-
-        return token_result
 
     async def validate_token(self, command: ValidateTokenCommand) -> ServiceResult[dict[str, Any]]:
         """Validate a token."""

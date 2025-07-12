@@ -5,16 +5,19 @@ Command pattern implementation for CQRS architecture.
 
 from __future__ import annotations
 
-from datetime import timedelta
+from typing import TYPE_CHECKING
 from typing import Any
 from typing import Literal
-from uuid import UUID
 
 from pydantic import BaseModel
 from pydantic import ConfigDict
 from pydantic import Field
 
-from flext_auth.domain.value_objects import UserStatus
+if TYPE_CHECKING:
+    from datetime import timedelta
+    from uuid import UUID
+
+    from flext_auth.domain.value_objects import UserStatus
 
 # Type alias for token types based on AuthToken validation
 TokenType = Literal["access", "refresh", "api", "session"]

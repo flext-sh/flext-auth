@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
+from unittest.mock import Mock
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import Mock, patch
 
 from flext_auth.config import AuthSettings
-from flext_auth.config import get_auth_settings
 from flext_auth.config import JWTSettings
 from flext_auth.config import RedisSettings
+from flext_auth.config import get_auth_settings
 
 
 class TestJWTSettings:
@@ -28,7 +30,7 @@ class TestJWTSettings:
             algorithm="RS256",
             access_token_expire_minutes=60,
             refresh_token_expire_days=14,
-            secret_key="custom-secret"
+            secret_key="custom-secret",
         )
         assert settings.algorithm == "RS256"
         assert settings.access_token_expire_minutes == 60
@@ -49,7 +51,7 @@ class TestRedisSettings:
         """Test Redis settings with custom values."""
         settings = RedisSettings(
             url="redis://prod:6379/1",
-            max_connections=100
+            max_connections=100,
         )
         assert settings.url == "redis://prod:6379/1"
         assert settings.max_connections == 100
@@ -74,7 +76,7 @@ class TestAuthSettings:
         settings = AuthSettings(
             environment="production",
             debug=False,
-            database_url="postgresql://prod:5432/flext_auth"
+            database_url="postgresql://prod:5432/flext_auth",
         )
         assert settings.environment == "production"
         assert settings.debug is False
@@ -96,21 +98,21 @@ class TestAuthSettings:
 class TestGetAuthSettings:
     """Test get_auth_settings function."""
 
-    @patch('flext_auth.config.AuthSettings')
+    @patch("flext_auth.config.AuthSettings")
     def test_get_auth_settings_caching(self, mock_auth_settings) -> None:
         """Test that settings are cached on subsequent calls."""
         mock_instance = Mock()
         mock_auth_settings.return_value = mock_instance
-        
+
         # Clear any cached settings
         get_auth_settings._cache = None
-        
+
         # First call
         result1 = get_auth_settings()
-        
+
         # Second call
         result2 = get_auth_settings()
-        
+
         # Should be the same instance (cached)
         assert result1 is result2
         mock_auth_settings.assert_called_once()
@@ -119,18 +121,18 @@ class TestGetAuthSettings:
         """Test that get_auth_settings returns AuthSettings instance."""
         # Clear cache first
         get_auth_settings._cache = None
-        
+
         settings = get_auth_settings()
         assert isinstance(settings, AuthSettings)
 
-    @patch('flext_auth.config.AuthSettings')
+    @patch("flext_auth.config.AuthSettings")
     def test_get_auth_settings_error_handling(self, mock_auth_settings) -> None:
         """Test error handling in get_auth_settings."""
         mock_auth_settings.side_effect = Exception("Configuration error")
-        
+
         # Clear cache
         get_auth_settings._cache = None
-        
+
         with pytest.raises(Exception, match="Configuration error"):
             get_auth_settings()
 
@@ -138,20 +140,20 @@ class TestGetAuthSettings:
         """Test that returned settings have expected attributes."""
         # Clear cache
         get_auth_settings._cache = None
-        
+
         settings = get_auth_settings()
-        
+
         # Verify required attributes exist
-        assert hasattr(settings, 'project_name')
-        assert hasattr(settings, 'project_version')
-        assert hasattr(settings, 'environment')
-        assert hasattr(settings, 'debug')
-        assert hasattr(settings, 'jwt')
-        assert hasattr(settings, 'redis')
-        assert hasattr(settings, 'database_url')
-        
+        assert hasattr(settings, "project_name")
+        assert hasattr(settings, "project_version")
+        assert hasattr(settings, "environment")
+        assert hasattr(settings, "debug")
+        assert hasattr(settings, "jwt")
+        assert hasattr(settings, "redis")
+        assert hasattr(settings, "database_url")
+
         # Verify nested settings
-        assert hasattr(settings.jwt, 'algorithm')
-        assert hasattr(settings.jwt, 'secret_key')
-        assert hasattr(settings.redis, 'url')
-        assert hasattr(settings.redis, 'max_connections')
+        assert hasattr(settings.jwt, "algorithm")
+        assert hasattr(settings.jwt, "secret_key")
+        assert hasattr(settings.redis, "url")
+        assert hasattr(settings.redis, "max_connections")

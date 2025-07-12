@@ -198,7 +198,7 @@ class TestJWTService:
         mock_token_storage.store_token.return_value = ServiceResult.success(None)
         create_result = await jwt_service.create_access_token(sample_user)
         assert create_result.is_success
-        
+
         token_info = create_result.value
         token = token_info.token
 
@@ -267,7 +267,7 @@ class TestJWTService:
 
         # Mock token storage to indicate token is revoked
         mock_token_storage.get_token.return_value = ServiceResult.failure(
-            "Token not found"
+            "Token not found",
         )
 
         result = await jwt_service.validate_token(token)
@@ -299,7 +299,7 @@ class TestJWTService:
         """Test failing to revoke a token."""
         token_id = str(uuid4())
         mock_token_storage.revoke_token.return_value = ServiceResult.failure(
-            "Token not found"
+            "Token not found",
         )
 
         result = await jwt_service.revoke_token(token_id)
@@ -322,7 +322,7 @@ class TestJWTService:
 
         # Mock token validation and storage
         mock_token_storage.get_token.return_value = ServiceResult.success(
-            create_result.value
+            create_result.value,
         )
 
         result = await jwt_service.refresh_tokens(refresh_token)
@@ -374,7 +374,7 @@ class TestJWTService:
     def test_generate_token_id(self, jwt_service: JWTService) -> None:
         """Test generating token ID."""
         token_id = jwt_service._generate_token_id()
-        
+
         assert isinstance(token_id, str)
         assert len(token_id) > 0
 

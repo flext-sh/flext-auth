@@ -92,7 +92,7 @@ class TestTokenGenerator:
 
         assert isinstance(token, str)
         assert len(token) == 64  # 32 bytes = 64 hex chars
-        
+
     def test_generate_token_different_lengths(self, generator: TokenGenerator) -> None:
         """Test token generation with different lengths."""
         token16 = generator.generate(length=16)
@@ -106,7 +106,7 @@ class TestTokenGenerator:
     def test_generate_unique_tokens(self, generator: TokenGenerator) -> None:
         """Test that generated tokens are unique."""
         tokens = [generator.generate() for _ in range(10)]
-        
+
         # All tokens should be unique
         assert len(set(tokens)) == len(tokens)
 
@@ -136,7 +136,7 @@ class TestTokenGenerator:
         """Test JWT token verification with invalid token."""
         secret = "test_secret"
         algorithm = "HS256"
-        
+
         with pytest.raises(Exception):  # JWT verification should raise exception
             generator.verify_jwt("invalid.jwt.token", secret, algorithm)
 
@@ -219,7 +219,7 @@ class TestSecureTokenGeneration:
     def test_generate_secure_token_uniqueness(self) -> None:
         """Test that secure tokens are unique."""
         tokens = [generate_secure_token() for _ in range(10)]
-        
+
         # All tokens should be unique
         assert len(set(tokens)) == len(tokens)
 
@@ -230,13 +230,13 @@ class TestSecurityProtocols:
     def test_hashing_protocol_exists(self) -> None:
         """Test that HashingProtocol can be imported."""
         from flext_auth.security import HashingProtocol
-        
+
         assert HashingProtocol is not None
 
     def test_password_hasher_implements_protocol(self) -> None:
         """Test that PasswordHasher implements HashingProtocol."""
         from flext_auth.security import HashingProtocol
-        
+
         hasher = PasswordHasher()
         assert isinstance(hasher, HashingProtocol)
 
@@ -245,7 +245,7 @@ class TestSecurityProtocols:
         from flext_auth.security import Hash
         from flext_auth.security import Salt
         from flext_auth.security import Token
-        
+
         # These should be type aliases
         assert Hash is not None
         assert Salt is not None

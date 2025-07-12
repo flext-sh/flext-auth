@@ -27,20 +27,20 @@ class TestCLI:
     def test_config_command(self, mock_echo, mock_get_settings) -> None:
         """Test config command."""
         # Mock settings
-        mock_settings = type('Settings', (), {
-            'project_name': 'flext-auth',
-            'project_version': '1.0.0',
-            'environment': 'development',
-            'debug': True,
-            'jwt': type('JWT', (), {'algorithm': 'HS256'})(),
-            'database_url': 'postgresql://localhost/flext_auth',
-            'redis': type('Redis', (), {'url': 'redis://localhost:6379'})(),
+        mock_settings = type("Settings", (), {
+            "project_name": "flext-auth",
+            "project_version": "1.0.0",
+            "environment": "development",
+            "debug": True,
+            "jwt": type("JWT", (), {"algorithm": "HS256"})(),
+            "database_url": "postgresql://localhost/flext_auth",
+            "redis": type("Redis", (), {"url": "redis://localhost:6379"})(),
         })()
         mock_get_settings.return_value = mock_settings
 
         runner = CliRunner()
         result = runner.invoke(config)
-        
+
         assert result.exit_code == 0
         mock_get_settings.assert_called_once()
 
@@ -49,15 +49,15 @@ class TestCLI:
     def test_test_command_success(self, mock_echo, mock_get_settings) -> None:
         """Test test command success."""
         # Mock settings
-        mock_settings = type('Settings', (), {
-            'project_name': 'flext-auth',
-            'environment': 'development',
+        mock_settings = type("Settings", (), {
+            "project_name": "flext-auth",
+            "environment": "development",
         })()
         mock_get_settings.return_value = mock_settings
 
         runner = CliRunner()
         result = runner.invoke(test)
-        
+
         assert result.exit_code == 0
         mock_get_settings.assert_called_once()
 
@@ -69,7 +69,7 @@ class TestCLI:
 
         runner = CliRunner()
         result = runner.invoke(test)
-        
+
         assert result.exit_code == 1  # click.Abort
 
     @patch("flext_auth.cli.cli")

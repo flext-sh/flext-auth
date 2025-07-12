@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import TYPE_CHECKING
 
-from flext_auth.application.command_auth_service import AuthService
 from flext_auth.infrastructure.container import Container
+
+if TYPE_CHECKING:
+    from flext_auth.application.command_auth_service import AuthService
 
 
 @lru_cache

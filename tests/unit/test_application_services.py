@@ -210,7 +210,7 @@ class TestAuthService:
         mock_session_repository.save.return_value = ServiceResult.success(mock_session)
 
         result = await auth_service.authenticate_user(
-            username, password, "192.168.1.1", "Test Browser"
+            username, password, "192.168.1.1", "Test Browser",
         )
 
         assert result.is_success
@@ -534,17 +534,17 @@ class TestAuthService:
         mock_token_info.session_id = session_id
         mock_token_info.is_valid = True
         mock_token_repository.validate_refresh_token.return_value = ServiceResult.success(
-            mock_token_info
+            mock_token_info,
         )
 
         # Mock new token generation
         new_access_token = AuthToken("new.access.token")
         new_refresh_token = AuthToken("new.refresh.token")
         mock_token_generator.generate_access_token.return_value = ServiceResult.success(
-            new_access_token
+            new_access_token,
         )
         mock_token_generator.generate_refresh_token.return_value = ServiceResult.success(
-            new_refresh_token
+            new_refresh_token,
         )
 
         # Mock session update
@@ -568,7 +568,7 @@ class TestAuthService:
         refresh_token = AuthToken("invalid.refresh.token")
 
         mock_token_repository.validate_refresh_token.return_value = ServiceResult.failure(
-            "Invalid refresh token"
+            "Invalid refresh token",
         )
 
         result = await auth_service.refresh_token(refresh_token)

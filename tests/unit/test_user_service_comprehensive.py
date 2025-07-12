@@ -6,6 +6,7 @@ import datetime
 from datetime import UTC
 from datetime import datetime as dt
 from datetime import timedelta
+from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock
 from unittest.mock import MagicMock
 from unittest.mock import patch
@@ -16,7 +17,6 @@ import pytest
 import pytest_asyncio
 from pydantic import ValidationError
 
-from flext_auth.domain.entities import User
 from flext_auth.types import SecurityEvent
 from flext_auth.types import TokenType
 from flext_auth.user_service import AuthenticationResponse
@@ -27,6 +27,9 @@ from flext_auth.user_service import UserService
 from flext_auth.user_service import UserServiceInMemoryUserRepository
 from flext_auth.user_service import UserServiceLoginRequest
 from flext_core.domain.types import ServiceResult
+
+if TYPE_CHECKING:
+    from flext_auth.domain.entities import User
 
 # Add async test marker for all tests in this module
 pytestmark = pytest.mark.asyncio
@@ -252,8 +255,7 @@ class TestUserServiceComprehensive:
             first_name="John",
             last_name="Doe",
         )
-        user_result = await user_service.create_user(request)
-        user = user_result.data
+        await user_service.create_user(request)
 
         # Test token authentication
         result = await user_service.authenticate_token("valid_token_for_user")
@@ -548,7 +550,7 @@ class TestUserServiceInMemoryUserRepository:
             "last_name": "Doe",
         }
 
-        created_user = await repository.create_user(user_data)
+        await repository.create_user(user_data)
         result = await repository.find_by_email("test@example.com")
 
         assert result.is_successful
