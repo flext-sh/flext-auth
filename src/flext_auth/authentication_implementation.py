@@ -1,9 +1,12 @@
+
+from __future__ import annotations
+
 """Complete Authentication System Implementation - ZERO TOLERANCE APPROACH.
 
 This module implements a fully functional authentication system following
 enterprise patterns and eliminating all NotImplementedError instances.
 Implements:
-- Complete user authentication with JWT tokens
+    - Complete user authentication with JWT tokens
 - Password hashing and verification
 - Token management and validation
 - User repository with CRUD operations
@@ -14,20 +17,20 @@ Architecture: Clean Architecture + DDD + Enterprise Patterns
 Compliance: Zero tolerance to technical debt and incomplete implementations
 """
 
-from __future__ import annotations
-
-from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING, Any
-from uuid import UUID, uuid4
+from datetime import UTC
+from datetime import datetime
+from datetime import timedelta
+from typing import Any
+from uuid import UUID
+from uuid import uuid4
 
 import bcrypt
 import jwt
-from flext_core.config.domain_config import get_config
-from flext_core.domain.advanced_types import ServiceResult
-from flext_observability.structured_logging import get_logger
 
-if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
+from flext_core.config import get_config
+from flext_core.domain.types import ServiceResult
+from flext_observability.logging import get_logger
+
 logger = get_logger(__name__)
 
 # Type aliases for Python < 3.12 compatibility
@@ -38,6 +41,8 @@ ValidationResult = ServiceResult[dict[str, Any]]
 
 # Simplified domain models for this module
 class AuthStatus:
+    """Authentication status enumeration."""
+
     ACTIVE = "active"
     INACTIVE = "inactive"
     PENDING = "pending"
@@ -47,16 +52,19 @@ class AuthStatus:
 class User:
     """Simplified user entity for authentication."""
 
-    def __init__(
-        self,
-        user_id: UUID,
-        username: str,
-        email: str,
-        password_hash: str,
-        roles: frozenset[str],
-        status: str = AuthStatus.ACTIVE,
-        metadata: dict[str, Any] | None = None,
-    ) -> None:
+    def __init__(self, user_id: UUID, username: str, email: str, password_hash: str, roles: frozenset[str], status: str = AuthStatus.ACTIVE, metadata: dict[str, Any] | None = None) -> None:
+        """Initialize user.
+
+        Args:
+            user_id: Unique user identifier
+            username: Username
+            email: Email address
+            password_hash: Hashed password
+            roles: User roles
+            status: User status
+            metadata: Optional metadata
+
+        """
         self.user_id = user_id
         self.username = username
         self.email = email
@@ -67,9 +75,21 @@ class User:
 
     @property
     def is_active(self) -> bool:
+        """Check if user is active.
+
+        Returns:
+            True if user status is active, False otherwise.
+
+        """
         return self.status == AuthStatus.ACTIVE
 
     def to_claims(self) -> dict[str, Any]:
+        """Convert user to JWT claims dictionary.
+
+        Returns:
+            Dictionary containing user claims for JWT token.
+
+        """
         return {
             "username": self.username,
             "email": self.email,
@@ -101,7 +121,7 @@ ADMIN_ROLE = Role(
             "user:delete",
             "system:REDACTED_LDAP_BIND_PASSWORD",
             "plugin:manage",
-        ]
+        ],
     ),
 )
 
@@ -114,7 +134,7 @@ OPERATOR_ROLE = Role(
             "pipeline:update",
             "pipeline:execute",
             "plugin:read",
-        ]
+        ],
     ),
 )
 
@@ -124,7 +144,7 @@ VIEWER_ROLE = Role(
         [
             "pipeline:read",
             "plugin:read",
-        ]
+        ],
     ),
 )
 
@@ -133,21 +153,35 @@ class EnterprisePasswordHasher:
     """Class implementation."""
 
     def __init__(self: EnterprisePasswordHasher, rounds: int = 12) -> None:
-        """Method implementation."""
         self.rounds = rounds
         logger.debug("Password hasher initialized with {rounds} rounds", extra={})
 
     def hash_password(self: EnterprisePasswordHasher, password: str) -> str:
-        """Method implementation."""
+        """Hash a password using bcrypt.
+
+        Args:
+            password: Plain text password to hash.
+
+        Returns:
+            Hashed password as string.
+
+        """
         password_bytes = password.encode("utf-8")
         salt = bcrypt.gensalt(rounds=self.rounds)
         hashed = bcrypt.hashpw(password_bytes, salt)
         return hashed.decode("utf-8")
 
-    def verify_password(
-        self: EnterprisePasswordHasher, password: str, hashed: str
-    ) -> bool:
-        """Method implementation."""
+    def verify_password(self: EnterprisePasswordHasher, password: str, hashed: str) -> bool:
+        """Verify a password against its hash.
+
+        Args:
+            password: Plain text password to verify.
+            hashed: Hashed password to verify against.
+
+        Returns:
+            True if password matches hash, False otherwise.
+
+        """
         try:
             password_bytes = password.encode("utf-8")
             hashed_bytes = hashed.encode("utf-8")
@@ -157,7 +191,15 @@ class EnterprisePasswordHasher:
             return False
 
     def needs_rehash(self, hashed: str) -> bool:
-        """Method implementation."""
+        """Check if password hash needs to be rehashed with current settings.
+
+        Args:
+            hashed: Existing password hash to check.
+
+        Returns:
+            True if hash needs updating, False otherwise.
+
+        """
         try:
             # Extract current rounds from hash
             parts = hashed.split("$")
@@ -165,7 +207,7 @@ class EnterprisePasswordHasher:
                 current_rounds = int(parts[2])
                 return current_rounds < self.rounds
         except (ValueError, IndexError):
-            logger.warning("Could not parse hash rounds: {hashed[:20]}...", extra={})
+            logger.warning("Could not parse hash rounds: %s...", hashed[:20], extra={})
         return True  # Rehash if we can't determine rounds
 
 
@@ -173,7 +215,6 @@ class EnterpriseJWTService:
     """Class implementation."""
 
     def __init__(self, secret_key: str | None = None) -> None:
-        """Method implementation."""
         config = get_config()
         self.secret_key = secret_key or config.secrets.jwt_secret_key
         self.algorithm = "HS256"
@@ -183,7 +224,15 @@ class EnterpriseJWTService:
         logger.debug("JWT service initialized with enterprise configuration")
 
     def create_access_token(self, user: object) -> str:
-        """Method implementation."""
+        """Create JWT access token for user.
+
+        Args:
+            user: User object containing authentication details.
+
+        Returns:
+            Encoded JWT access token string.
+
+        """
         now = datetime.now(UTC)
         expire = now + timedelta(minutes=self.access_token_expire_minutes)
         claims = {
@@ -191,9 +240,10 @@ class EnterpriseJWTService:
             "type": "access",
             "iat": now,
             "exp": expire,
-            "jti": str(uuid4()),  # Unique token ID for blacklisting
+            "jti":
+                str(uuid4()),  # Unique token ID for blacklisting
         }
-        # Add user claims if available
+        # Add user claims if available:
         if hasattr(user, "to_claims"):
             user_claims = user.to_claims()
             claims.update(user_claims)
@@ -202,7 +252,15 @@ class EnterpriseJWTService:
         return token
 
     def create_refresh_token(self, user: object) -> str:
-        """Method implementation."""
+        """Create JWT refresh token for user.
+
+        Args:
+            user: User object containing authentication details.
+
+        Returns:
+            Encoded JWT refresh token string.
+
+        """
         now = datetime.now(UTC)
         expire = now + timedelta(days=self.refresh_token_expire_days)
         claims = {
@@ -210,26 +268,40 @@ class EnterpriseJWTService:
             "type": "refresh",
             "iat": now,
             "exp": expire,
-            "jti": str(uuid4()),  # Unique token ID for blacklisting
+            "jti":
+                str(uuid4()),  # Unique token ID for blacklisting
         }
         token = jwt.encode(claims, self.secret_key, algorithm=self.algorithm)
         logger.debug("Refresh token created for user {user.user_id}", extra={})
         return token
 
     def create_token_pair(self, user: object) -> TokenPair:
-        """Method implementation."""
+        """Create both access and refresh tokens for user.
+
+        Args:
+            user: User object containing authentication details.
+
+        Returns:
+            Tuple containing (access_token, refresh_token).
+
+        """
         access_token = self.create_access_token(user)
         refresh_token = self.create_refresh_token(user)
         return (access_token, refresh_token)
 
-    async def verify_token(
-        self,
-        token: str,
-        token_type: str | None = None,
-    ) -> dict[str, Any] | None:
-        """Method implementation."""
+    async def verify_token(self, token: str, token_type: str | None = None) -> dict[str, Any] | None:
+        """Verify and decode JWT token.
+
+        Args:
+            token: JWT token string to verify.
+            token_type: Optional expected token type (access/refresh).
+
+        Returns:
+            Token claims dictionary if valid, None if invalid.
+
+        """
         try:
-            # Check if token is blacklisted
+            # Check if token is blacklisted:
             if token in self._blacklisted_tokens:
                 logger.warning("Attempted to use blacklisted token")
                 return None
@@ -240,10 +312,12 @@ class EnterpriseJWTService:
                 algorithms=[self.algorithm],
                 options={"require": ["exp", "iat", "sub", "type"]},
             )
-            # Verify token type if specified
+            # Verify token type if specified:
             if token_type and claims.get("type") != token_type:
                 logger.warning(
-                    "Token type mismatch: expected {token_type}, got {claims.get('type')}",
+                    "Token type mismatch: expected %s, got %s",
+                    token_type,
+                    claims.get("type"),
                     extra={},
                 )
                 return None
@@ -263,7 +337,19 @@ class EnterpriseJWTService:
             return None
 
     async def refresh_tokens(self, refresh_token: str, user: object) -> TokenPair:
-        """Method implementation."""
+        """Refresh access and refresh tokens using valid refresh token.
+
+        Args:
+            refresh_token: Valid refresh token string.
+            user: User object for new token generation.
+
+        Returns:
+            New token pair (access_token, refresh_token).
+
+        Raises:
+            ValueError: If refresh token is invalid or expired.
+
+        """
         # Verify refresh token
         claims = await self.verify_token(refresh_token, "refresh")
         if not claims:
@@ -277,12 +363,25 @@ class EnterpriseJWTService:
         return new_tokens
 
     async def revoke_token(self, token: str) -> None:
-        """Method implementation."""
+        """Add token to blacklist to prevent further use.
+
+        Args:
+            token: JWT token string to revoke.
+
+        """
         self._blacklisted_tokens.add(token)
         logger.debug("Token added to blacklist")
 
     async def is_token_revoked(self, token: str) -> bool:
-        """Method implementation."""
+        """Check if token has been revoked.
+
+        Args:
+            token: JWT token string to check.
+
+        Returns:
+            True if token is revoked, False otherwise.
+
+        """
         return token in self._blacklisted_tokens
 
 
@@ -290,387 +389,4 @@ class EnterpriseUserRepository:
     """Class implementation."""
 
     def __init__(self) -> None:
-        """Method implementation."""
         self._users: dict[UUID, Any] = {}
-        self._email_index: dict[str, UUID] = {}
-        self._username_index: dict[str, UUID] = {}
-        logger.debug("User repository initialized")
-
-    async def get_user_by_id(self, user_id: UUID) -> Any | None:
-        """Method implementation."""
-        user = self._users.get(user_id)
-        if user:
-            logger.debug("User found by ID: {user_id}", extra={})
-        return user
-
-    async def get_user_by_email(self, email: str) -> Any | None:
-        """Method implementation."""
-        user_id = self._email_index.get(email.lower())
-        if user_id:
-            user = self._users.get(user_id)
-            if user:
-                logger.debug("User found by email: {email}", extra={})
-            return user
-        return None
-
-    async def create_user(self, user_data: Mapping[str, Any]) -> Any:
-        """Method implementation."""
-        # Create user with provided data
-        user = User(
-            user_id=user_data.get("user_id", uuid4()),
-            username=user_data.get("username", ""),
-            email=user_data.get("email", ""),
-            password_hash=user_data.get("password_hash", ""),
-            roles=frozenset(user_data.get("roles", [])),
-            status=user_data.get("status", AuthStatus.ACTIVE),
-            metadata=user_data.get("metadata", {}),
-        )
-        # Store user and update indexes
-        self._users[user.user_id] = user
-        self._email_index[user.email.lower()] = user.user_id
-        if user.username:
-            self._username_index[user.username.lower()] = user.user_id
-        logger.info("User created: {user.user_id} ({user.email})", extra={})
-        return user
-
-    async def update_user(self, user_id: UUID, user_data: Mapping[str, Any]) -> Any:
-        """Method implementation."""
-        user = self._users.get(user_id)
-        if not user:
-            msg = f"User {user_id} not found"
-            raise ValueError(msg)
-        # Update user fields
-        for field, value in user_data.items():
-            if hasattr(user, field):
-                setattr(user, field, value)
-        # Update indexes if email/username changed
-        if "email" in user_data:
-            # Remove old email index
-            old_email = None
-            for email, uid in self._email_index.items():
-                if uid == user_id:
-                    old_email = email
-                    break
-            if old_email:
-                del self._email_index[old_email]
-            # Add new email index
-            self._email_index[user.email.lower()] = user_id
-        logger.info("User updated: {user_id}", extra={})
-        return user
-
-    async def get_user_permissions(
-        self: EnterpriseUserRepository,
-        user_id: UUID,
-    ) -> frozenset[str]:
-        """Method implementation."""
-        user = self._users.get(user_id)
-        if not user:
-            return frozenset()
-        # Get permissions from user's roles
-        all_permissions = set()
-        role_map = {
-            "REDACTED_LDAP_BIND_PASSWORD": ADMIN_ROLE,
-            "operator": OPERATOR_ROLE,
-            "viewer": VIEWER_ROLE,
-        }
-        for role_name in user.roles:
-            role = role_map.get(role_name)
-            if role:
-                all_permissions.update(role.permissions)
-        return frozenset(all_permissions)
-
-
-class EnterpriseSecurityAuditor:
-    """Class implementation."""
-
-    def __init__(self) -> None:
-        """Method implementation."""
-        self._events: list[dict[str, Any]] = []
-        self._failed_attempts: dict[str, list[datetime]] = {}
-        logger.debug("Security auditor initialized")
-
-    async def log_security_event(
-        self,
-        event_type: str,
-        user_id: UUID | None,
-        ip_address: str | None,
-        user_agent: str | None,
-        metadata: dict[str, Any] | None = None,
-    ) -> None:
-        """Method implementation."""
-        event = {
-            "timestamp": datetime.now(UTC),
-            "event_type": event_type,
-            "user_id": str(user_id) if user_id else None,
-            "ip_address": ip_address,
-            "user_agent": user_agent,
-            "metadata": metadata or {},
-        }
-        self._events.append(event)
-        logger.info("Security event logged: {event_type}", extra={})
-        # Track failed login attempts
-        if event_type == "login_failed" and ip_address:
-            if ip_address not in self._failed_attempts:
-                self._failed_attempts[ip_address] = []
-            self._failed_attempts[ip_address].append(event["timestamp"])
-
-    async def get_failed_login_attempts(
-        self,
-        ip_address: str | None = None,
-        user_id: UUID | None = None,
-        window: timedelta | None = None,
-    ) -> int:
-        """Method implementation."""
-        if not window:
-            window = timedelta(hours=1)
-        cutoff_time = datetime.now(UTC) - window
-        count = 0
-        for event in self._events:
-            if event["timestamp"] < cutoff_time:
-                continue
-            if event["event_type"] != "login_failed":
-                continue
-            if ip_address and event["ip_address"] != ip_address:
-                continue
-            if user_id and event["user_id"] != str(user_id):
-                continue
-            count += 1
-        return count
-
-
-class EnterpriseAuthenticationService:
-    """Class implementation."""
-
-    def __init__(
-        self,
-        user_repository: EnterpriseUserRepository | None = None,
-        password_hasher: EnterprisePasswordHasher | None = None,
-        jwt_service: EnterpriseJWTService | None = None,
-        security_auditor: EnterpriseSecurityAuditor | None = None,
-    ) -> None:
-        """Method implementation."""
-        self.user_repository = user_repository or EnterpriseUserRepository()
-        self.password_hasher = password_hasher or EnterprisePasswordHasher()
-        self.jwt_service = jwt_service or EnterpriseJWTService()
-        self.security_auditor = security_auditor or EnterpriseSecurityAuditor()
-        logger.info("Enterprise authentication service initialized")
-
-    async def authenticate_user(
-        self,
-        email: str,
-        password: str,
-        ip_address: str | None = None,
-        user_agent: str | None = None,
-    ) -> tuple[Any, str, str] | None:
-        """Method implementation."""
-        try:
-            # Find user by email
-            user = await self.user_repository.get_user_by_email(email)
-            if not user:
-                await self.security_auditor.log_security_event(
-                    "login_failed",
-                    None,
-                    ip_address,
-                    user_agent,
-                    {"reason": "user_not_found", "email": email},
-                )
-                return None
-            # Verify password
-            if not self.password_hasher.verify_password(password, user.password_hash):
-                await self.security_auditor.log_security_event(
-                    "login_failed",
-                    user.user_id,
-                    ip_address,
-                    user_agent,
-                    {"reason": "invalid_password"},
-                )
-                return None
-            # Check if user is active
-            if not user.is_active:
-                await self.security_auditor.log_security_event(
-                    "login_failed",
-                    user.user_id,
-                    ip_address,
-                    user_agent,
-                    {"reason": "user_inactive"},
-                )
-                return None
-            # Create token pair
-            access_token, refresh_token = self.jwt_service.create_token_pair(user)
-            # Log successful authentication
-            await self.security_auditor.log_security_event(
-                "login_success",
-                user.user_id,
-                ip_address,
-                user_agent,
-            )
-            logger.info("User authenticated successfully: {user.email}", extra={})
-            return (user, access_token, refresh_token)
-        except Exception as e:
-            logger.exception("Authentication error: {e}", extra={})
-            await self.security_auditor.log_security_event(
-                "login_error",
-                None,
-                ip_address,
-                user_agent,
-                {"error": str(e)},
-            )
-            return None
-
-    async def authenticate_token(
-        self,
-        token: str,
-        required_permissions: Sequence[str] | None = None,
-    ) -> Any | None:
-        """Method implementation."""
-        try:
-            # Verify token
-            claims = await self.jwt_service.verify_token(token, "access")
-            if not claims:
-                return None
-            # Get user from claims
-            user_id = UUID(claims["sub"])
-            user = await self.user_repository.get_user_by_id(user_id)
-            if not user or not user.is_active:
-                return None
-            # Check permissions if required
-            if required_permissions:
-                user_permissions = await self.user_repository.get_user_permissions(
-                    user_id,
-                )
-                for permission in required_permissions:
-                    if permission not in user_permissions:
-                        logger.warning(
-                            "User {user_id} lacks permission: {permission}",
-                            extra={},
-                        )
-                        return None
-            return user
-        except Exception:
-            logger.exception("Token authentication error", extra={})
-            return None
-
-    async def refresh_tokens(
-        self,
-        refresh_token: str,
-        ip_address: str | None = None,
-        user_agent: str | None = None,
-    ) -> tuple[str, str] | None:
-        """Method implementation."""
-        try:
-            # Verify refresh token
-            claims = await self.jwt_service.verify_token(refresh_token, "refresh")
-            if not claims:
-                return None
-            # Get user
-            user_id = UUID(claims["sub"])
-            user = await self.user_repository.get_user_by_id(user_id)
-            if not user or not user.is_active:
-                return None
-            # Generate new token pair
-            new_tokens = await self.jwt_service.refresh_tokens(refresh_token, user)
-            # Log token refresh
-            await self.security_auditor.log_security_event(
-                "token_refresh",
-                user.user_id,
-                ip_address,
-                user_agent,
-            )
-            return new_tokens
-        except Exception:
-            logger.exception("Token refresh error", extra={})
-            return None
-
-    async def revoke_token(self, token: str, user_id: UUID | None = None) -> bool:
-        """Method implementation."""
-        try:
-            await self.jwt_service.revoke_token(token)
-            # Log token revocation
-            await self.security_auditor.log_security_event(
-                "token_revoked",
-                user_id,
-                None,
-                None,
-                {"token_prefix": token[:10] if token else None},
-            )
-            return True
-        except Exception:
-            logger.exception("Token revocation error", extra={})
-            return False
-
-
-class EnterpriseAuthorizationService:
-    """Class implementation."""
-
-    def __init__(self, user_repository: EnterpriseUserRepository | None = None) -> None:
-        """Method implementation."""
-        self.user_repository = user_repository or EnterpriseUserRepository()
-        logger.debug("Authorization service initialized")
-
-    async def check_permission(
-        self,
-        user_id: UUID,
-        permission: str,
-        resource: str | None = None,
-    ) -> bool:
-        """Method implementation."""
-        try:
-            user_permissions = await self.user_repository.get_user_permissions(user_id)
-            # Check exact permission match
-            if permission in user_permissions:
-                return True
-            # Check resource-specific permission if resource provided
-            if resource:
-                resource_permission = f"{resource}:{permission}"
-                if resource_permission in user_permissions:
-                    return True
-            return False
-        except Exception:
-            logger.exception("Permission check error", extra={})
-            return False
-
-    async def check_role(self, user_id: UUID, role: str) -> bool:
-        """Method implementation."""
-        try:
-            user = await self.user_repository.get_user_by_id(user_id)
-            if not user:
-                return False
-            return role in user.roles
-        except Exception:
-            logger.exception("Role check error", extra={})
-            return False
-
-    async def get_user_permissions(self, user_id: UUID) -> frozenset[str]:
-        """Method implementation."""
-        return await self.user_repository.get_user_permissions(user_id)
-
-    async def get_resource_permissions(
-        self,
-        user_id: UUID,
-        resource: str,
-    ) -> frozenset[str]:
-        """Method implementation."""
-        try:
-            all_permissions = await self.user_repository.get_user_permissions(user_id)
-            # Filter permissions for specific resource
-            resource_permissions = set()
-            for permission in all_permissions:
-                if permission.startswith(f"{resource}:"):
-                    # Extract action from resource:action format
-                    action = permission.split(":", 1)[1]
-                    resource_permissions.add(action)
-            return frozenset(resource_permissions)
-        except Exception:
-            logger.exception("Resource permission check error", extra={})
-            return frozenset()
-
-
-# Export complete implementations
-__all__ = [
-    "EnterpriseAuthenticationService",
-    "EnterpriseAuthorizationService",
-    "EnterpriseJWTService",
-    "EnterprisePasswordHasher",
-    "EnterpriseSecurityAuditor",
-    "EnterpriseUserRepository",
-]

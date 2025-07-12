@@ -5,10 +5,18 @@ from __future__ import annotations
 import functools
 from collections.abc import Callable
 from enum import Enum
+from typing import TYPE_CHECKING
 
-from flext_auth.interfaces import AuthorizationService, UserRepository
-from flext_auth.models import Permission, Role, UserRoleEnum
-from flext_auth.types import PermissionScope, UserID, UserPermissions
+from flext_auth.interfaces import AuthorizationService
+from flext_auth.models import Permission
+from flext_auth.models import UserRoleEnum
+from flext_auth.types import PermissionScope
+
+if TYPE_CHECKING:
+    from flext_auth.interfaces import UserRepository
+    from flext_auth.models import Role
+    from flext_auth.types import UserID
+    from flext_auth.types import UserPermissions
 
 # Python 3.13 type alias for generic callables
 CallableT = Callable[..., object]
@@ -23,7 +31,8 @@ class PermissionCheckMode(Enum):
 
     Attributes
     ----------
-        REQUIRE_ALL: All permissions must be satisfied for authorization.
+        REQUIRE_ALL:
+            All permissions must be satisfied for authorization.
         REQUIRE_ANY: Any single permission satisfies authorization requirement.
 
     """
@@ -36,17 +45,23 @@ class RoleBasedAuthorizationService(AuthorizationService):
     """Role-based authorization service with permission inheritance."""
 
     def __init__(self, user_repository: UserRepository) -> None:
-        """Initialize authorization service."""
         self.user_repository = user_repository
-        self._permission_cache: dict[str, UserPermissions] = {}
+        self._permission_cache: dict[str, UserPermissions] = (
+            None  # TODO: Initialize in __post_init__
+        )
 
-    async def check_permission(
-        self,
-        user_id: UserID,
-        permission: str,
-        resource: str | None = None,
-    ) -> bool:
-        """Check if user has specific permission."""
+    async def check_permission(self, user_id: UserID, permission: str, resource: str | None = None) -> bool:
+        """Check if user has permission for resource.
+
+        Args:
+            user_id: User identifier
+            permission: Permission to check
+            resource: Optional resource identifier
+
+        Returns:
+            True if user has permission
+
+        """
         user_permissions = await self.get_user_permissions(user_id)
 
         if resource:
@@ -64,7 +79,16 @@ class RoleBasedAuthorizationService(AuthorizationService):
         return permission in user_permissions
 
     async def check_role(self, user_id: UserID, role: str) -> bool:
-        """Check if user has specific role."""
+        """Check if user has specific role.
+
+        Args:
+            user_id: User identifier to check.
+            role: Role name to verify.
+
+        Returns:
+            True if user has the role, False otherwise.
+
+        """
         user = await self.user_repository.get_user_by_id(user_id)
         if not user:
             return False
@@ -72,7 +96,15 @@ class RoleBasedAuthorizationService(AuthorizationService):
         return user.has_role(role)
 
     async def get_user_permissions(self, user_id: UserID) -> UserPermissions:
-        """Get all permissions for a user."""
+        """Get all permissions for a user based on their roles.
+
+        Args:
+            user_id: User identifier to get permissions for.
+
+        Returns:
+            List of permission strings the user has through their roles.
+
+        """
         # Check cache first
         if user_id in self._permission_cache:
             return self._permission_cache[user_id]
@@ -96,12 +128,17 @@ class RoleBasedAuthorizationService(AuthorizationService):
 
         return user_permissions
 
-    async def get_resource_permissions(
-        self,
-        user_id: UserID,
-        resource: str,
-    ) -> UserPermissions:
-        """Get permissions for a specific resource."""
+    async def get_resource_permissions(self, user_id: UserID, resource: str) -> UserPermissions:
+        """Get user permissions specific to a resource.
+
+        Args:
+            user_id: User identifier to get permissions for.
+            resource: Resource name to filter permissions by.
+
+        Returns:
+            List of permission strings specific to the resource.
+
+        """
         all_permissions = await self.get_user_permissions(user_id)
 
         # Filter permissions for the specific resource
@@ -118,7 +155,6 @@ class RoleBasedAuthorizationService(AuthorizationService):
         return resource_permissions
 
     def _get_derived_permissions(self, permission: Permission) -> set[str]:
-        """Get derived permissions based on scope hierarchy."""
         derived = set()
 
         # Permission hierarchy: REDACTED_LDAP_BIND_PASSWORD > manage > write > read
@@ -153,21 +189,31 @@ class RoleBasedAuthorizationService(AuthorizationService):
         return derived
 
     def clear_permission_cache(self, user_id: UserID | None = None) -> None:
-        """Clear permission cache for a user or all users."""
+        """Clear permission cache for specific user or all users.
+
+        Args:
+            user_id: Optional user ID to clear cache for. If None, clears entire cache.
+
+        """
         if user_id:
             self._permission_cache.pop(user_id, None)
         else:
             self._permission_cache.clear()
 
-    async def check_multiple_permissions(
-        self,
-        user_id: UserID,
-        permissions: list[str],
-        resource: str | None = None,
-        check_mode: PermissionCheckMode = PermissionCheckMode.REQUIRE_ALL,
-    ) -> bool:
-        """Check multiple permissions at once."""
-        results = []
+    async def check_multiple_permissions(self, user_id: UserID, permissions: list[str], resource: str | None = None, check_mode: PermissionCheckMode = PermissionCheckMode.REQUIRE_ALL) -> bool:
+        """Check multiple permissions for a user with different modes.
+
+        Args:
+            user_id: User identifier to check permissions for.
+            permissions: List of permission strings to check.
+            resource: Optional resource context for permissions.
+            check_mode: How to evaluate multiple permissions (ALL or ANY).
+
+        Returns:
+            True if permissions are satisfied according to check_mode.
+
+        """
+        results = {}
         for permission in permissions:
             result = await self.check_permission(user_id, permission, resource)
             results.append(result)
@@ -177,13 +223,18 @@ class RoleBasedAuthorizationService(AuthorizationService):
         return any(results)
 
 
-def require_permission(
-    permission: str,
-    resource: str | None = None,
-    auth_service: AuthorizationService | None = None,
-) -> Callable[[CallableT], CallableT]:
-    """Require specific permission for a function."""
+def require_permission(permission: str, resource: str | None = None, auth_service: AuthorizationService | None = None) -> Callable[[CallableT], CallableT]:
+    """Decorator to require permission for function execution.
 
+    Args:
+        permission: Required permission
+        resource: Optional resource identifier
+        auth_service: Authorization service instance
+
+    Returns:
+        Decorator function
+
+    """
     def decorator(func: CallableT) -> CallableT:
         @functools.wraps(func)
         async def wrapper(*args: object, **kwargs: object) -> object:
@@ -218,7 +269,7 @@ def require_permission(
             # Call function and handle both sync and async using try/except
             result = func(*args, **kwargs)
             try:
-                # Try to await the result if it's awaitable
+                # Try to await the result if it's awaitable:
                 return await result
             except AttributeError:
                 # Not awaitable, return synchronously
@@ -229,12 +280,17 @@ def require_permission(
     return decorator
 
 
-def require_role(
-    role: str,
-    auth_service: AuthorizationService | None = None,
-) -> Callable[[CallableT], CallableT]:
-    """Require specific role for a function."""
+def require_role(role: str, auth_service: AuthorizationService | None = None) -> Callable[[CallableT], CallableT]:
+    """Decorator to require role for function execution.
 
+    Args:
+        role: Required role
+        auth_service: Authorization service instance
+
+    Returns:
+        Decorator function
+
+    """
     def decorator(func: CallableT) -> CallableT:
         @functools.wraps(func)
         async def wrapper(*args: object, **kwargs: object) -> object:
@@ -265,7 +321,7 @@ def require_role(
             # Call function and handle both sync and async using try/except
             result = func(*args, **kwargs)
             try:
-                # Try to await the result if it's awaitable
+                # Try to await the result if it's awaitable:
                 return await result
             except AttributeError:
                 # Not awaitable, return synchronously
@@ -281,7 +337,12 @@ class DefaultRoleManager:
 
     @classmethod
     def create_REDACTED_LDAP_BIND_PASSWORD_role(cls) -> Role:
-        """Create REDACTED_LDAP_BIND_PASSWORD role with full permissions."""
+        """Create an REDACTED_LDAP_BIND_PASSWORD role with full system permissions.
+
+        Returns:
+            Role object configured with REDACTED_LDAP_BIND_PASSWORD permissions.
+
+        """
         permissions = [
             Permission.create("REDACTED_LDAP_BIND_PASSWORD_users", PermissionScope.ADMIN, "users"),
             Permission.create("REDACTED_LDAP_BIND_PASSWORD_pipelines", PermissionScope.ADMIN, "pipelines"),
@@ -299,7 +360,12 @@ class DefaultRoleManager:
 
     @classmethod
     def create_developer_role(cls) -> Role:
-        """Create developer role with pipeline and plugin management."""
+        """Create a developer role with pipeline and plugin management permissions.
+
+        Returns:
+            Role object configured with developer permissions.
+
+        """
         permissions = [
             Permission.create("manage_pipelines", PermissionScope.MANAGE, "pipelines"),
             Permission.create("write_plugins", PermissionScope.WRITE, "plugins"),
@@ -320,7 +386,12 @@ class DefaultRoleManager:
 
     @classmethod
     def create_user_role(cls) -> Role:
-        """Create standard user role with basic access."""
+        """Create a standard user role with basic permissions.
+
+        Returns:
+            Role object configured with user permissions.
+
+        """
         permissions = [
             Permission.create("read_pipelines", PermissionScope.READ, "pipelines"),
             Permission.create(
@@ -344,7 +415,12 @@ class DefaultRoleManager:
 
     @classmethod
     def create_readonly_role(cls) -> Role:
-        """Create read-only role for auditors and monitoring."""
+        """Create a read-only role with view-only permissions.
+
+        Returns:
+            Role object configured with read-only permissions.
+
+        """
         permissions = [
             Permission.create("read_all_pipelines", PermissionScope.READ, "pipelines"),
             Permission.create("read_all_plugins", PermissionScope.READ, "plugins"),
@@ -361,7 +437,15 @@ class DefaultRoleManager:
 
     @classmethod
     def create_service_role(cls, service_name: str) -> Role:
-        """Create service role for automated systems."""
+        """Create a service role for automated systems.
+
+        Args:
+            service_name: Name of the service for role identification.
+
+        Returns:
+            Role object configured with service permissions.
+
+        """
         permissions = [
             Permission.create(
                 f"execute_{service_name}",
@@ -388,7 +472,12 @@ class DefaultRoleManager:
 
     @classmethod
     def get_all_default_roles(cls) -> list[Role]:
-        """Get all default roles for enterprise setup."""
+        """Get all predefined default roles.
+
+        Returns:
+            List of all default role objects.
+
+        """
         return [
             cls.create_REDACTED_LDAP_BIND_PASSWORD_role(),
             cls.create_developer_role(),

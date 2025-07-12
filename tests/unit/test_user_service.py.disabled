@@ -1,0 +1,1082 @@
+"""Comprehensive tests for flext_auth.user_service module."""
+
+from __future__ import annotations
+
+import datetime
+from datetime import UTC
+from datetime import timedelta
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
+from unittest.mock import patch
+from uuid import UUID
+from uuid import uuid4
+
+import pytest
+import pytest_asyncio
+from pydantic import ValidationError
+
+from flext_auth.domain.entities import Role
+from flext_auth.domain.entities import User
+from flext_auth.types import SecurityEvent
+from flext_auth.user_service import AuthenticationResponse
+from flext_auth.user_service import PasswordHasherImpl
+from flext_auth.user_service import SecurityAuditorImpl
+from flext_auth.user_service import UserCreationRequest
+from flext_auth.user_service import UserService
+from flext_auth.user_service import UserServiceInMemoryUserRepository
+from flext_auth.user_service import UserServiceLoginRequest
+from flext_core.domain.types import ServiceResult
+
+# Add async test marker for all tests in this module
+pytestmark = pytest.mark.asyncio
+
+
+class TestPasswordHasherImpl:
+    """Test PasswordHasherImpl functionality."""
+
+    @pytest.fixture
+    def mock_settings(self) -> MagicMock:
+        """Create mock settings for testing."""
+        settings = MagicMock()
+        settings.password.bcrypt_rounds = 12
+        return settings
+
+    @pytest.fixture
+    def password_hasher(self, mock_settings: MagicMock) -> PasswordHasherImpl:
+        """Create PasswordHasherImpl for testing."""
+        return PasswordHasherImpl(mock_settings)
+
+    def test_password_hasher_initialization(self, mock_settings: MagicMock) -> None:
+        """Test PasswordHasherImpl initialization."""
+        hasher = PasswordHasherImpl(mock_settings)
+
+        assert hasher.settings == mock_settings
+        assert hasher.context is not None
+
+    def test_password_hasher_initialization_default_settings(self) -> None:
+        """Test PasswordHasherImpl initialization with default settings."""
+        with patch("flext_auth.user_service.get_auth_settings") as mock_get_settings:
+            mock_settings = MagicMock()
+            mock_settings.password.bcrypt_rounds = 10
+            mock_get_settings.return_value = mock_settings
+
+            hasher = PasswordHasherImpl()
+
+            assert hasher.settings == mock_settings
+            mock_get_settings.assert_called_once()
+
+    def test_hash_password(self, password_hasher: PasswordHasherImpl) -> None:
+        """Test password hashing."""
+        password = "test_password_123"
+        hashed = password_hasher.hash_password(password)
+
+        assert hashed != password
+        assert len(hashed) > 0
+        assert hashed.startswith("$2b$")
+
+    def test_verify_password_correct(self, password_hasher: PasswordHasherImpl) -> None:
+        """Test password verification with correct password."""
+        password = "test_password_123"
+        hashed = password_hasher.hash_password(password)
+
+        assert password_hasher.verify_password(password, hashed)
+
+    def test_verify_password_incorrect(self, password_hasher: PasswordHasherImpl) -> None:
+        """Test password verification with incorrect password."""
+        password = "test_password_123"
+        wrong_password = "wrong_password"
+        hashed = password_hasher.hash_password(password)
+
+        assert not password_hasher.verify_password(wrong_password, hashed)
+
+    def test_needs_update(self, password_hasher: PasswordHasherImpl) -> None:
+        """Test checking if password hash needs update."""
+        password = "test_password_123"
+        hashed = password_hasher.hash_password(password)
+
+        # Fresh hash should not need update
+        assert not password_hasher.needs_update(hashed)
+
+    def test_hash_password_none_result(self, password_hasher: PasswordHasherImpl) -> None:
+        """Test hash_password when context returns None."""
+        with patch.object(password_hasher.context, "hash", return_value=None):
+            result = password_hasher.hash_password("password")
+            assert result == ""
+
+    def test_verify_password_none_result(self, password_hasher: PasswordHasherImpl) -> None:
+        """Test verify_password when context returns None."""
+        with patch.object(password_hasher.context, "verify", return_value=None):
+            result = password_hasher.verify_password("password", "hash")
+            assert result is False
+
+    def test_needs_update_none_result(self, password_hasher: PasswordHasherImpl) -> None:
+        """Test needs_update when context returns None."""
+        with patch.object(password_hasher.context, "needs_update", return_value=None):
+            result = password_hasher.needs_update("hash")
+            assert result is True
+
+
+class TestUserCreationRequest:
+    """Test UserCreationRequest validation and functionality."""
+
+    def test_user_creation_request_valid(self) -> None:
+        """Test valid UserCreationRequest creation."""
+        request = UserCreationRequest(
+            email="test@example.com",
+            password="SecurePass123!",
+            first_name="John",
+            last_name="Doe",
+            roles=["user", "REDACTED_LDAP_BIND_PASSWORD"],
+        )
+
+        assert request.email == "test@example.com"
+        assert request.password == "SecurePass123!"
+        assert request.first_name == "John"
+        assert request.last_name == "Doe"
+        assert request.roles == ["user", "REDACTED_LDAP_BIND_PASSWORD"]
+
+    def test_user_creation_request_defaults(self) -> None:
+        """Test UserCreationRequest with default values."""
+        request = UserCreationRequest(
+            email="test@example.com",
+            password="SecurePass123!",
+            first_name="John",
+            last_name="Doe",
+        )
+
+        assert request.roles == []
+
+    def test_user_creation_request_email_normalization(self) -> None:
+        """Test email normalization in UserCreationRequest."""
+        request = UserCreationRequest(
+            email="  TEST@EXAMPLE.COM  ",
+            password="SecurePass123!",
+            first_name="John",
+            last_name="Doe",
+        )
+
+        assert request.email == "test@example.com"
+
+    def test_user_creation_request_password_validation_short(self) -> None:
+        """Test password validation for too short password."""
+        with patch("flext_auth.user_service.get_auth_settings") as mock_get_settings:
+            mock_settings = MagicMock()
+            mock_settings.password.min_length = 10
+            mock_settings.password.require_uppercase = False
+            mock_settings.password.require_lowercase = False
+            mock_settings.password.require_numbers = False
+            mock_settings.password.require_special = False
+            mock_get_settings.return_value = mock_settings
+
+            with pytest.raises(ValidationError) as exc_info:
+                UserCreationRequest(
+                    email="test@example.com",
+                    password="short",
+                    first_name="John",
+                    last_name="Doe",
+                )
+
+            assert "at least" in str(exc_info.value) and "characters" in str(exc_info.value)
+
+    def test_user_creation_request_password_validation_uppercase(self) -> None:
+        """Test password validation for missing uppercase."""
+        with patch("flext_auth.user_service.get_auth_settings") as mock_get_settings:
+            mock_settings = MagicMock()
+            mock_settings.password.min_length = 8
+            mock_settings.password.require_uppercase = True
+            mock_settings.password.require_lowercase = False
+            mock_settings.password.require_numbers = False
+            mock_settings.password.require_special = False
+            mock_get_settings.return_value = mock_settings
+
+            with pytest.raises(ValidationError) as exc_info:
+                UserCreationRequest(
+                    email="test@example.com",
+                    password="lowercase123",
+                    first_name="John",
+                    last_name="Doe",
+                )
+
+            assert "Password must contain uppercase letters" in str(exc_info.value)
+
+    def test_user_creation_request_password_validation_lowercase(self) -> None:
+        """Test password validation for missing lowercase."""
+        with patch("flext_auth.user_service.get_auth_settings") as mock_get_settings:
+            mock_settings = MagicMock()
+            mock_settings.password.min_length = 8
+            mock_settings.password.require_uppercase = False
+            mock_settings.password.require_lowercase = True
+            mock_settings.password.require_numbers = False
+            mock_settings.password.require_special = False
+            mock_get_settings.return_value = mock_settings
+
+            with pytest.raises(ValidationError) as exc_info:
+                UserCreationRequest(
+                    email="test@example.com",
+                    password="UPPERCASE123",
+                    first_name="John",
+                    last_name="Doe",
+                )
+
+            assert "Password must contain lowercase letters" in str(exc_info.value)
+
+    def test_user_creation_request_password_validation_numbers(self) -> None:
+        """Test password validation for missing numbers."""
+        with patch("flext_auth.user_service.get_auth_settings") as mock_get_settings:
+            mock_settings = MagicMock()
+            mock_settings.password.min_length = 8
+            mock_settings.password.require_uppercase = False
+            mock_settings.password.require_lowercase = False
+            mock_settings.password.require_numbers = True
+            mock_settings.password.require_special = False
+            mock_get_settings.return_value = mock_settings
+
+            with pytest.raises(ValidationError) as exc_info:
+                UserCreationRequest(
+                    email="test@example.com",
+                    password="NoNumbers",
+                    first_name="John",
+                    last_name="Doe",
+                )
+
+            assert "Password must contain digits" in str(exc_info.value)
+
+    def test_user_creation_request_password_validation_special(self) -> None:
+        """Test password validation for missing special characters."""
+        with patch("flext_auth.user_service.get_auth_settings") as mock_get_settings:
+            mock_settings = MagicMock()
+            mock_settings.password.min_length = 8
+            mock_settings.password.require_uppercase = False
+            mock_settings.password.require_lowercase = False
+            mock_settings.password.require_numbers = False
+            mock_settings.password.require_special = True
+            mock_get_settings.return_value = mock_settings
+
+            with pytest.raises(ValidationError) as exc_info:
+                UserCreationRequest(
+                    email="test@example.com",
+                    password="NoSpecial123",
+                    first_name="John",
+                    last_name="Doe",
+                )
+
+            assert "Password must contain special characters" in str(exc_info.value)
+
+    def test_user_creation_request_field_validations(self) -> None:
+        """Test field length validations."""
+        # Test minimum lengths
+        with pytest.raises(ValidationError):
+            UserCreationRequest(
+                email="test@example.com",
+                password="ValidPass123!",
+                first_name="",  # Too short
+                last_name="Doe",
+            )
+
+        with pytest.raises(ValidationError):
+            UserCreationRequest(
+                email="test@example.com",
+                password="ValidPass123!",
+                first_name="John",
+                last_name="",  # Too short
+            )
+
+        # Test maximum lengths
+        with pytest.raises(ValidationError):
+            UserCreationRequest(
+                email="test@example.com",
+                password="ValidPass123!",
+                first_name="A" * 51,  # Too long
+                last_name="Doe",
+            )
+
+
+class TestUserServiceLoginRequest:
+    """Test UserServiceLoginRequest validation and functionality."""
+
+    def test_login_request_valid(self) -> None:
+        """Test valid UserServiceLoginRequest creation."""
+        request = UserServiceLoginRequest(
+            email="test@example.com",
+            password="password123",
+            user_agent="Mozilla/5.0",
+        )
+
+        assert request.email == "test@example.com"
+        assert request.password == "password123"
+        assert request.user_agent == "Mozilla/5.0"
+
+    def test_login_request_optional_user_agent(self) -> None:
+        """Test UserServiceLoginRequest with optional user_agent."""
+        request = UserServiceLoginRequest(
+            email="test@example.com",
+            password="password123",
+        )
+
+        assert request.user_agent is None
+
+    def test_login_request_email_normalization(self) -> None:
+        """Test email normalization in UserServiceLoginRequest."""
+        request = UserServiceLoginRequest(
+            email="  TEST@EXAMPLE.COM  ",
+            password="password123",
+        )
+
+        assert request.email == "test@example.com"
+
+
+class TestAuthenticationResponse:
+    """Test AuthenticationResponse functionality."""
+
+    def test_authentication_response_creation(self) -> None:
+        """Test AuthenticationResponse creation."""
+        user_id = uuid4()
+        response = AuthenticationResponse(
+            user_id=user_id,
+            email="test@example.com",
+            access_token="access_token_here",
+            refresh_token="refresh_token_here",
+            expires_in=3600,
+        )
+
+        assert response.user_id == user_id
+        assert response.email == "test@example.com"
+        assert response.access_token == "access_token_here"
+        assert response.refresh_token == "refresh_token_here"
+        assert response.expires_in == 3600
+        assert response.token_type == "Bearer"
+
+    def test_authentication_response_custom_token_type(self) -> None:
+        """Test AuthenticationResponse with custom token type."""
+        user_id = uuid4()
+        response = AuthenticationResponse(
+            user_id=user_id,
+            email="test@example.com",
+            access_token="access_token_here",
+            refresh_token="refresh_token_here",
+            expires_in=3600,
+            token_type="Custom",
+        )
+
+        assert response.token_type == "Custom"
+
+    def test_authentication_response_immutable(self) -> None:
+        """Test that AuthenticationResponse is immutable."""
+        user_id = uuid4()
+        response = AuthenticationResponse(
+            user_id=user_id,
+            email="test@example.com",
+            access_token="access_token_here",
+            refresh_token="refresh_token_here",
+            expires_in=3600,
+        )
+
+        # Should not be able to modify
+        with pytest.raises(ValidationError):
+            response.user_id = "new_user_id"
+
+
+class TestUserServiceInMemoryUserRepository:
+    """Test UserServiceInMemoryUserRepository functionality."""
+
+    @pytest.fixture
+    def repository(self) -> UserServiceInMemoryUserRepository:
+        """Create UserServiceInMemoryUserRepository for testing."""
+        return UserServiceInMemoryUserRepository()
+
+    @pytest.fixture
+    def sample_user(self) -> User:
+        """Create sample user for testing."""
+        return User(
+            id=uuid4(),
+            email="test@example.com",
+            password_hash="hashed_password",
+            username="testuser",
+            role="user",
+        )
+
+    async def test_find_by_id_existing(self, repository: UserServiceInMemoryUserRepository, sample_user: User) -> None:
+        """Test finding user by ID when user exists."""
+        # Add user to repository
+        repository._users[str(sample_user.id)] = sample_user
+
+        result = await repository.find_by_id(sample_user.id)
+
+        assert result.is_successful
+        assert result.data == sample_user
+
+    async def test_find_by_id_non_existing(self, repository: UserServiceInMemoryUserRepository) -> None:
+        """Test finding user by ID when user doesn't exist."""
+        non_existing_id = uuid4()
+
+        result = await repository.find_by_id(non_existing_id)
+
+        assert result.is_successful
+        assert result.data is None
+
+    async def test_find_by_email_existing(self, repository: UserServiceInMemoryUserRepository, sample_user: User) -> None:
+        """Test finding user by email when user exists."""
+        # Add user to repository
+        repository._users[str(sample_user.id)] = sample_user
+        repository._email_index[sample_user.email.lower()] = str(sample_user.id)
+
+        result = await repository.find_by_email(sample_user.email)
+
+        assert result.is_successful
+        assert result.data == sample_user
+
+    async def test_find_by_email_non_existing(self, repository: UserServiceInMemoryUserRepository) -> None:
+        """Test finding user by email when user doesn't exist."""
+        result = await repository.find_by_email("nonexistent@example.com")
+
+        assert result.is_successful
+        assert result.data is None
+
+    async def test_find_by_username_existing(self, repository: UserServiceInMemoryUserRepository, sample_user: User) -> None:
+        """Test finding user by username when user exists."""
+        # Add user to repository
+        repository._users[str(sample_user.id)] = sample_user
+
+        result = await repository.find_by_username(sample_user.username)
+
+        assert result.is_successful
+        assert result.data == sample_user
+
+    async def test_find_by_username_non_existing(self, repository: UserServiceInMemoryUserRepository) -> None:
+        """Test finding user by username when user doesn't exist."""
+        result = await repository.find_by_username("nonexistent")
+
+        assert result.is_successful
+        assert result.data is None
+
+    async def test_username_exists_true(self, repository: UserServiceInMemoryUserRepository, sample_user: User) -> None:
+        """Test username_exists when username exists."""
+        # Add user to repository
+        repository._users[str(sample_user.id)] = sample_user
+
+        result = await repository.username_exists(sample_user.username)
+
+        assert result.is_successful
+        assert result.data is True
+
+    async def test_username_exists_false(self, repository: UserServiceInMemoryUserRepository) -> None:
+        """Test username_exists when username doesn't exist."""
+        result = await repository.username_exists("nonexistent")
+
+        assert result.is_successful
+        assert result.data is False
+
+    async def test_email_exists_true(self, repository: UserServiceInMemoryUserRepository, sample_user: User) -> None:
+        """Test email_exists when email exists."""
+        # Add user to repository
+        repository._users[str(sample_user.id)] = sample_user
+        repository._email_index[sample_user.email.lower()] = str(sample_user.id)
+
+        result = await repository.email_exists(sample_user.email)
+
+        assert result.is_successful
+        assert result.data is True
+
+    async def test_email_exists_false(self, repository: UserServiceInMemoryUserRepository) -> None:
+        """Test email_exists when email doesn't exist."""
+        result = await repository.email_exists("nonexistent@example.com")
+
+        assert result.is_successful
+        assert result.data is False
+
+    async def test_create_user(self, repository: UserServiceInMemoryUserRepository) -> None:
+        """Test creating a user."""
+        user_data = {
+            "email": "test@example.com",
+            "password_hash": "hashed_password",
+            "first_name": "John",
+            "last_name": "Doe",
+            "roles": [],
+        }
+
+        user = await repository.create_user(user_data)
+
+        assert user.email == "test@example.com"
+        assert user.password_hash == "hashed_password"
+        assert user.username == "John Doe"
+        assert str(user.id) in repository._users
+        assert repository._email_index["test@example.com"] == str(user.id)
+
+    async def test_create_user_with_id(self, repository: UserServiceInMemoryUserRepository) -> None:
+        """Test creating a user with provided ID."""
+        user_id = uuid4()
+        user_data = {
+            "user_id": str(user_id),
+            "email": "test@example.com",
+            "password_hash": "hashed_password",
+            "username": "testuser",
+        }
+
+        user = await repository.create_user(user_data)
+
+        assert user.id == user_id
+        assert str(user.id) in repository._users
+
+    async def test_update_user(self, repository: UserServiceInMemoryUserRepository, sample_user: User) -> None:
+        """Test updating a user."""
+        # Add user to repository
+        repository._users[str(sample_user.id)] = sample_user
+
+        update_data = {
+            "username": "updated_username",
+            "email": "updated@example.com",
+        }
+
+        updated_user = await repository.update_user(str(sample_user.id), update_data)
+
+        assert updated_user.username == "updated_username"
+        assert updated_user.email == "updated@example.com"
+        assert updated_user.updated_at is not None
+
+    async def test_update_user_non_existing(self, repository: UserServiceInMemoryUserRepository) -> None:
+        """Test updating a non-existing user."""
+        with pytest.raises(ValueError, match="User with ID .* not found"):
+            await repository.update_user("non_existing_id", {"username": "new_name"})
+
+    async def test_update_user_invalid_field(self, repository: UserServiceInMemoryUserRepository, sample_user: User) -> None:
+        """Test updating user with invalid field."""
+        # Add user to repository
+        repository._users[str(sample_user.id)] = sample_user
+
+        # This should not raise an error, just skip the invalid field
+        updated_user = await repository.update_user(str(sample_user.id), {"invalid_field": "value"})
+
+        assert updated_user == sample_user
+
+    async def test_get_user_permissions(self, repository: UserServiceInMemoryUserRepository) -> None:
+        """Test getting user permissions."""
+        # Create user with REDACTED_LDAP_BIND_PASSWORD role
+        user = User(
+            id=uuid4(),
+            email="REDACTED_LDAP_BIND_PASSWORD@example.com",
+            password_hash="hash",
+            username="REDACTED_LDAP_BIND_PASSWORD",
+            role="REDACTED_LDAP_BIND_PASSWORD",
+        )
+
+        user_id = str(user.id)
+        repository._users[user_id] = user
+
+        permissions = await repository.get_user_permissions(user_id)
+
+        assert "read" in permissions
+        assert "write" in permissions
+        assert "REDACTED_LDAP_BIND_PASSWORD" in permissions
+
+    async def test_get_user_permissions_non_existing(self, repository: UserServiceInMemoryUserRepository) -> None:
+        """Test getting permissions for non-existing user."""
+        permissions = await repository.get_user_permissions("non_existing")
+
+        assert permissions == []
+
+    async def test_create_repository_method(self, repository: UserServiceInMemoryUserRepository, sample_user: User) -> None:
+        """Test create method following repository interface."""
+        result = await repository.create(sample_user)
+
+        assert result.is_successful
+        assert result.data == sample_user
+        assert str(sample_user.id) in repository._users
+
+    async def test_create_duplicate_user(self, repository: UserServiceInMemoryUserRepository, sample_user: User) -> None:
+        """Test creating duplicate user."""
+        # Add user first
+        repository._users[str(sample_user.id)] = sample_user
+
+        result = await repository.create(sample_user)
+
+        assert not result.is_successful
+        assert "already exists" in result.error
+
+    async def test_delete_user(self, repository: UserServiceInMemoryUserRepository, sample_user: User) -> None:
+        """Test deleting a user."""
+        # Add user to repository
+        repository._users[str(sample_user.id)] = sample_user
+        repository._email_index[sample_user.email.lower()] = str(sample_user.id)
+
+        result = await repository.delete(sample_user.id)
+
+        assert result.is_successful
+        assert result.data is True
+        assert str(sample_user.id) not in repository._users
+        assert sample_user.email.lower() not in repository._email_index
+
+    async def test_delete_non_existing_user(self, repository: UserServiceInMemoryUserRepository) -> None:
+        """Test deleting non-existing user."""
+        non_existing_id = uuid4()
+
+        result = await repository.delete(non_existing_id)
+
+        assert not result.is_successful
+        assert "not found" in result.error
+
+    async def test_list_users(self, repository: UserServiceInMemoryUserRepository) -> None:
+        """Test listing users with pagination."""
+        # Add multiple users
+        users = []
+        for i in range(5):
+            user = User(
+                id=uuid4(),
+                email=f"user{i}@example.com",
+                password_hash="hash",
+                username=f"user{i}",
+                role="user",
+            )
+            users.append(user)
+            repository._users[str(user.id)] = user
+
+        result = await repository.list_users(limit=3, offset=1)
+
+        assert result.is_successful
+        assert len(result.data) == 3
+
+    async def test_update_repository_method(self, repository: UserServiceInMemoryUserRepository, sample_user: User) -> None:
+        """Test update method following repository interface."""
+        # Add user first
+        repository._users[str(sample_user.id)] = sample_user
+        repository._email_index[sample_user.email.lower()] = str(sample_user.id)
+
+        # Create updated user with new email (User entities are immutable)
+        updated_user = User(
+            id=sample_user.id,
+            email="updated@example.com",
+            password_hash=sample_user.password_hash,
+            username=sample_user.username,
+            role=sample_user.role,
+            status=sample_user.status,
+            created_at=sample_user.created_at,
+        )
+
+        result = await repository.update(updated_user)
+
+        assert result.is_successful
+        assert result.data.email == "updated@example.com"
+        assert "updated@example.com" in repository._email_index
+
+    async def test_update_non_existing_user_repository(self, repository: UserServiceInMemoryUserRepository, sample_user: User) -> None:
+        """Test updating non-existing user via repository interface."""
+        result = await repository.update(sample_user)
+
+        assert not result.is_successful
+        assert "not found" in result.error
+
+
+class TestSecurityAuditorImpl:
+    """Test SecurityAuditorImpl functionality."""
+
+    @pytest.fixture
+    def auditor(self) -> SecurityAuditorImpl:
+        """Create SecurityAuditorImpl for testing."""
+        return SecurityAuditorImpl()
+
+    async def test_log_security_event(self, auditor: SecurityAuditorImpl) -> None:
+        """Test logging security events."""
+        with patch("structlog.get_logger") as mock_get_logger:
+            mock_logger = MagicMock()
+            mock_get_logger.return_value = mock_logger
+
+            await auditor.log_security_event(
+                event_type="login_success",
+                user_id="user123",
+                ip_address="192.168.1.1",
+                user_agent="Mozilla/5.0",
+                metadata={"key": "value"},
+            )
+
+            # Check event was stored
+            assert len(auditor._events) == 1
+            event = auditor._events[0]
+            assert event["event_type"] == "login_success"
+            assert event["user_id"] == "user123"
+            assert event["ip_address"] == "192.168.1.1"
+            assert event["user_agent"] == "Mozilla/5.0"
+            assert event["metadata"]["key"] == "value"
+
+            # Check logging was called
+            mock_logger.info.assert_called_once()
+
+    async def test_log_security_event_minimal(self, auditor: SecurityAuditorImpl) -> None:
+        """Test logging security event with minimal parameters."""
+        await auditor.log_security_event(
+            event_type="test_event",
+            user_id=None,
+            ip_address=None,
+            user_agent=None,
+        )
+
+        assert len(auditor._events) == 1
+        event = auditor._events[0]
+        assert event["event_type"] == "test_event"
+        assert event["user_id"] is None
+        assert event["metadata"] == {}
+
+    async def test_get_failed_login_attempts_no_events(self, auditor: SecurityAuditorImpl) -> None:
+        """Test getting failed login attempts when no events exist."""
+        count = await auditor.get_failed_login_attempts()
+
+        assert count == 0
+
+    async def test_get_failed_login_attempts_with_events(self, auditor: SecurityAuditorImpl) -> None:
+        """Test getting failed login attempts with matching events."""
+        # Add some failed login events
+        for i in range(3):
+            await auditor.log_security_event(
+                event_type=SecurityEvent.LOGIN_FAILURE,
+                user_id=f"user{i}",
+                ip_address="192.168.1.1",
+                user_agent="Mozilla/5.0",
+            )
+
+        # Add a successful login (should not be counted)
+        await auditor.log_security_event(
+            event_type=SecurityEvent.LOGIN_SUCCESS,
+            user_id="user1",
+            ip_address="192.168.1.1",
+            user_agent="Mozilla/5.0",
+        )
+
+        count = await auditor.get_failed_login_attempts()
+
+        assert count == 3
+
+    async def test_get_failed_login_attempts_filtered_by_ip(self, auditor: SecurityAuditorImpl) -> None:
+        """Test getting failed login attempts filtered by IP address."""
+        # Add events with different IPs
+        await auditor.log_security_event(
+            event_type=SecurityEvent.LOGIN_FAILURE,
+            user_id="user1",
+            ip_address="192.168.1.1",
+            user_agent="Mozilla/5.0",
+        )
+        await auditor.log_security_event(
+            event_type=SecurityEvent.LOGIN_FAILURE,
+            user_id="user2",
+            ip_address="192.168.1.2",
+            user_agent="Mozilla/5.0",
+        )
+
+        count = await auditor.get_failed_login_attempts(ip_address="192.168.1.1")
+
+        assert count == 1
+
+    async def test_get_failed_login_attempts_filtered_by_user(self, auditor: SecurityAuditorImpl) -> None:
+        """Test getting failed login attempts filtered by user ID."""
+        # Add events with different users
+        await auditor.log_security_event(
+            event_type=SecurityEvent.LOGIN_FAILURE,
+            user_id="user1",
+            ip_address="192.168.1.1",
+            user_agent="Mozilla/5.0",
+        )
+        await auditor.log_security_event(
+            event_type=SecurityEvent.LOGIN_FAILURE,
+            user_id="user2",
+            ip_address="192.168.1.1",
+            user_agent="Mozilla/5.0",
+        )
+
+        count = await auditor.get_failed_login_attempts(user_id="user1")
+
+        assert count == 1
+
+    async def test_get_failed_login_attempts_with_time_window(self, auditor: SecurityAuditorImpl) -> None:
+        """Test getting failed login attempts within time window."""
+        # Create event manually with old timestamp
+        old_event = {
+            "timestamp": (datetime.datetime.now(UTC) - timedelta(hours=25)).isoformat(),
+            "event_type": SecurityEvent.LOGIN_FAILURE,
+            "user_id": "user1",
+            "ip_address": "192.168.1.1",
+            "user_agent": "Mozilla/5.0",
+            "metadata": {},
+        }
+        auditor._events.append(old_event)
+
+        # Add recent event
+        await auditor.log_security_event(
+            event_type=SecurityEvent.LOGIN_FAILURE,
+            user_id="user2",
+            ip_address="192.168.1.1",
+            user_agent="Mozilla/5.0",
+        )
+
+        # Should only count recent event (within 24 hour window)
+        count = await auditor.get_failed_login_attempts()
+
+        assert count == 1
+
+
+class TestUserService:
+    """Test UserService functionality."""
+
+    @pytest.fixture
+    def mock_repository(self) -> AsyncMock:
+        """Create mock user repository."""
+        return AsyncMock()
+
+    @pytest.fixture
+    def mock_hasher(self) -> MagicMock:
+        """Create mock password hasher."""
+        return MagicMock()
+
+    @pytest.fixture
+    def mock_auditor(self) -> AsyncMock:
+        """Create mock security auditor."""
+        return AsyncMock()
+
+    @pytest.fixture
+    def user_service(
+        self,
+        mock_repository: AsyncMock,
+        mock_hasher: MagicMock,
+        mock_auditor: AsyncMock,
+    ) -> UserService:
+        """Create UserService for testing."""
+        with patch("flext_auth.user_service.get_auth_settings") as mock_get_settings:
+            mock_settings = MagicMock()
+            mock_get_settings.return_value = mock_settings
+
+            # Create mock JWT service and token manager
+            mock_jwt_service = MagicMock()
+            mock_token_manager = AsyncMock()
+            
+            return UserService(mock_repository, mock_hasher, mock_auditor, mock_jwt_service, mock_token_manager)
+
+    @pytest.fixture
+    def sample_user(self) -> User:
+        """Create sample user for testing."""
+        return User(
+            id=uuid4(),
+            email="test@example.com",
+            password_hash="hashed_password",
+            username="testuser",
+            role="user",
+        )
+
+    async def test_create_user_success(
+        self,
+        user_service: UserService,
+        mock_repository: AsyncMock,
+        mock_hasher: MagicMock,
+        mock_auditor: AsyncMock,
+    ) -> None:
+        """Test successful user creation."""
+        # Setup mocks
+        mock_repository.find_by_email.return_value = ServiceResult.success(None)
+        mock_hasher.hash_password.return_value = "hashed_password"
+
+        mock_user = MagicMock()
+        mock_user.id = uuid4()
+        mock_user.email = "test@example.com"
+        mock_user.username = "John Doe"
+        mock_user.password_hash = "hashed_password"
+        mock_user.role = "user"
+
+        mock_repository.create_user.return_value = mock_user
+
+        request = UserCreationRequest(
+            email="test@example.com",
+            password="SecurePass123!",
+            first_name="John",
+            last_name="Doe",
+        )
+
+        result = await user_service.create_user(request)
+
+        assert result.is_successful
+        assert result.data == mock_user
+        mock_hasher.hash_password.assert_called_once_with("SecurePass123!")
+        mock_repository.create_user.assert_called_once()
+        mock_auditor.log_security_event.assert_called_once()
+
+    async def test_create_user_existing_email(
+        self,
+        user_service: UserService,
+        mock_repository: AsyncMock,
+        sample_user: User,
+    ) -> None:
+        """Test user creation with existing email."""
+        # Setup mocks
+        mock_repository.find_by_email.return_value = ServiceResult.success(sample_user)
+
+        request = UserCreationRequest(
+            email="test@example.com",
+            password="SecurePass123!",
+            first_name="John",
+            last_name="Doe",
+        )
+
+        result = await user_service.create_user(request)
+
+        assert not result.is_successful
+        assert "already exists" in result.error
+
+    async def test_create_user_with_default_role(
+        self,
+        user_service: UserService,
+        mock_repository: AsyncMock,
+        mock_hasher: MagicMock,
+    ) -> None:
+        """Test user creation with default role."""
+        # Setup mocks
+        mock_repository.find_by_email.return_value = None
+        mock_hasher.hash_password.return_value = "hashed_password"
+
+        mock_user = MagicMock()
+        mock_repository.create_user.return_value = mock_user
+
+        request = UserCreationRequest(
+            email="test@example.com",
+            password="SecurePass123!",
+            first_name="John",
+            last_name="Doe",
+        )
+
+        result = await user_service.create_user(request)
+
+        if not result.is_successful:
+            print(f"Creation failed: {result.error}")
+        assert result.is_successful
+        mock_repository.create_user.assert_called_once()
+
+    async def test_create_user_exception(
+        self,
+        user_service: UserService,
+        mock_repository: AsyncMock,
+    ) -> None:
+        """Test user creation with exception."""
+        # Setup mocks
+        mock_repository.find_by_email.side_effect = Exception("Database error")
+
+        request = UserCreationRequest(
+            email="test@example.com",
+            password="SecurePass123!",
+            first_name="John",
+            last_name="Doe",
+        )
+
+        result = await user_service.create_user(request)
+
+        assert not result.is_successful
+        assert "Database error" in result.error
+
+    def test_create_default(self) -> None:
+        """Test creating default UserService instance."""
+        with patch("flext_auth.user_service.get_container") as mock_get_container:
+            mock_container = MagicMock()
+            mock_service = MagicMock()
+            mock_container.resolve.return_value = mock_service
+            mock_get_container.return_value = mock_container
+
+            result = UserService.create_default()
+
+            assert result == mock_service
+            mock_container.resolve.assert_called_once_with(UserService)
+
+
+class TestUserServiceIntegration:
+    """Test UserService integration scenarios."""
+
+    @pytest.fixture
+    def user_service_integration(self) -> UserService:
+        """Create UserService with real implementations for integration testing."""
+        repository = UserServiceInMemoryUserRepository()
+        hasher = PasswordHasherImpl()
+        auditor = SecurityAuditorImpl()
+        
+        # Create mock JWT service and token manager
+        jwt_service = MagicMock()
+        jwt_service.create_token_pair = MagicMock()
+        jwt_service.verify_token = AsyncMock()
+        jwt_service.extract_token_claims = MagicMock()
+        jwt_service.refresh_token = MagicMock()
+        
+        token_manager = MagicMock()
+        token_manager.register_token = AsyncMock()
+        token_manager.validate_token = AsyncMock()
+        token_manager.revoke_token = AsyncMock()
+        token_manager.revoke_user_tokens = AsyncMock()
+
+        return UserService(repository, hasher, auditor, jwt_service, token_manager)
+
+    async def test_full_user_lifecycle(self, user_service_integration: UserService) -> None:
+        """Test complete user lifecycle: create, authenticate, update."""
+        # 1. Create user
+        request = UserCreationRequest(
+            email="integration@example.com",
+            password="SecurePass123!",
+            first_name="Integration",
+            last_name="Test",
+        )
+
+        create_result = await user_service_integration.create_user(request)
+        assert create_result.is_successful
+
+        user = create_result.data
+        assert user.email == "integration@example.com"
+        assert user.username == "Integration Test"
+
+        # 2. Verify password hashing
+        assert user.password_hash != "SecurePass123!"
+        assert user.password_hash.startswith("$2b$")
+
+        # 3. Verify user was stored in repository
+        find_result = await user_service_integration.user_repository.find_by_email("integration@example.com")
+        assert find_result.is_successful
+        assert find_result.data.id == user.id
+
+        # 4. Verify security audit
+        assert len(user_service_integration.security_auditor._events) == 1
+        event = user_service_integration.security_auditor._events[0]
+        assert event["event_type"] == "user_created"
+
+    async def test_password_validation_integration(self, user_service_integration: UserService) -> None:
+        """Test password validation in integration scenario."""
+        # Test weak password
+        with pytest.raises(ValidationError):
+            UserCreationRequest(
+                email="test@example.com",
+                password="weak",  # Too short
+                first_name="Test",
+                last_name="User",
+            )
+
+        # Test strong password
+        request = UserCreationRequest(
+            email="test@example.com",
+            password="VerySecurePassword123!",
+            first_name="Test",
+            last_name="User",
+        )
+
+        result = await user_service_integration.create_user(request)
+        assert result.is_successful
+
+    async def test_duplicate_email_prevention(self, user_service_integration: UserService) -> None:
+        """Test prevention of duplicate email addresses."""
+        # Create first user
+        request1 = UserCreationRequest(
+            email="duplicate@example.com",
+            password="SecurePass123!",
+            first_name="First",
+            last_name="User",
+        )
+
+        result1 = await user_service_integration.create_user(request1)
+        assert result1.is_successful
+
+        # Try to create second user with same email
+        request2 = UserCreationRequest(
+            email="duplicate@example.com",
+            password="AnotherPass123!",
+            first_name="Second",
+            last_name="User",
+        )
+
+        result2 = await user_service_integration.create_user(request2)
+        assert not result2.is_successful
+        assert "already exists" in result2.error

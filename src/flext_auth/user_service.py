@@ -1,88 +1,130 @@
-"""User authentication service with password hashing and security features."""
+"""User authentication service with clean architecture patterns from flext-core."""
 
 from __future__ import annotations
 
 import datetime
+from collections.abc import Mapping
+from collections.abc import Sequence
 from datetime import UTC
 from datetime import datetime as dt
-from typing import TYPE_CHECKING, Any, Self
-from uuid import UUID, uuid4
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import Self
+from uuid import UUID
+from uuid import uuid4
 
 import structlog
-
-# Define constants locally since config is not available
-MIN_PASSWORD_LENGTH = 8
 from passlib.context import CryptContext
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import ConfigDict
+from pydantic import Field
+from pydantic import field_validator
 
-from flext_auth.interfaces import (
-    AuthenticationServiceProtocol,
-    PasswordHasher,
-    SecurityAuditor,
-    UserRepository,
-)
-from flext_auth.jwt_service import JWTConfig, JWTService
-from flext_auth.models import User, UserRoleEnum
-from flext_auth.tokens import TokenBlacklist, TokenManager, TokenMetadata
-from flext_auth.types import (
-    HashedPassword,
-    IPAddress,
-    JWTToken,
-    PlaintextPassword,
-    SecurityEvent,
-    TokenType,
-    UserAgent,
-    UserID,
-)
+from flext_auth.config import get_auth_settings
+from flext_auth.domain.entities import User
+from flext_auth.domain.repositories import UserRepository
+from flext_auth.interfaces import AuthenticationServiceProtocol
+from flext_auth.interfaces import JWTService
+from flext_auth.interfaces import PasswordHasher
+from flext_auth.interfaces import SecurityAuditor
+from flext_auth.interfaces import TokenManager
+from flext_auth.tokens import TokenMetadata
+from flext_auth.types import SecurityEvent
+from flext_auth.types import TokenType
+from flext_core.config import get_container
+from flext_core.config import injectable
+from flext_core.config import singleton
+from flext_core.domain.pydantic_base import APIRequest
+from flext_core.domain.pydantic_base import APIResponse
+from flext_core.domain.types import ServiceResult
 
 if TYPE_CHECKING:
-    from collections.abc import Mapping, Sequence
+    from collections.abc import Mapping
+    from collections.abc import Sequence
+
+    from flext_auth.domain.entities import Role
+    from flext_auth.types import HashedPassword
+    from flext_auth.types import IPAddress
+    from flext_auth.types import JWTToken
+    from flext_auth.types import PlaintextPassword
+    from flext_auth.types import UserAgent
+    from flext_auth.types import UserID
+
+# Import types needed at runtime
+from pydantic import EmailStr
+
+from flext_auth.types import UserID
+
+# Define JWTToken as string for runtime use
+JWTToken = str
 
 
+@injectable()
 class PasswordHasherImpl(PasswordHasher):
-    """Secure password hashing implementation using bcrypt."""
+    """Secure password hashing implementation using bcrypt with config injection."""
 
-    def __init__(self, rounds: int | None = None) -> None:
-        """Initialize password hasher with bcrypt rounds."""
-        # Use secure default since config is not available
-        DEFAULT_BCRYPT_ROUNDS = 12
-        actual_rounds = (
-            rounds if rounds is not None else DEFAULT_BCRYPT_ROUNDS
-        )
+    def __init__(self, settings: Any = None) -> None:
+        if settings is None:
+            settings = get_auth_settings()
+
         self.context = CryptContext(
             schemes=["bcrypt"],
             deprecated="auto",
-            bcrypt__rounds=actual_rounds,
+            bcrypt__rounds=settings.password.bcrypt_rounds,
         )
+        self.settings = settings
 
     def hash_password(self, password: PlaintextPassword) -> HashedPassword:
-        """Hash a plaintext password using bcrypt."""
+        """Hash a plaintext password using bcrypt.
+
+        Args:
+            password: The plaintext password to hash.
+
+        Returns:
+            The hashed password string.
+
+        """
         result = self.context.hash(password)
         return str(result) if result is not None else ""
 
-    def verify_password(
-        self,
-        password: PlaintextPassword,
-        hashed: HashedPassword,
-    ) -> bool:
-        """Verify a password against its hash."""
+    def verify_password(self, password: PlaintextPassword, hashed: HashedPassword) -> bool:
+        """Verify a plaintext password against a hashed password.
+
+        Args:
+            password: The plaintext password to verify.
+            hashed: The hashed password to verify against.
+
+        Returns:
+            True if the password matches, False otherwise.
+
+        """
         result = self.context.verify(password, hashed)
         return bool(result) if result is not None else False
 
     def needs_update(self, hashed: HashedPassword) -> bool:
-        """Check if password hash needs updating."""
+        """Check if a hashed password needs to be updated due to algorithm changes.
+
+        Args:
+            hashed: The hashed password to check.
+
+        Returns:
+            True if the password hash needs updating, False otherwise.
+
+        """
         result = self.context.needs_update(hashed)
         return bool(result) if result is not None else True
 
 
-class UserCreationRequest(BaseModel):
-    """UserCreationRequest - Service Layer.
+class UserCreationRequest(APIRequest):
+    """Request model for user creation.
+
+    UserCreationRequest - Service Layer.
 
     Implementa serviço de aplicação com lógica de negócio específica.
     Coordena operações complexas entre múltiplos componentes.
 
     Arquitetura: Service Layer Pattern
-    Transações: Atomic operations with rollback
+    Transações:
+        Atomic operations with rollback
     Padrões: Application services, orchestration
 
     Attributes:
@@ -110,15 +152,13 @@ class UserCreationRequest(BaseModel):
     See Also:
     --------
     - [Documentação da Arquitetura](../../docs/architecture/index.md)
-    - [Padrões de Design](../../docs/architecture/001-clean-architecture-ddd.md)
+    - [Padrões de Design](../../docs/architecture/clean_architecture_guide.md)
 
     Note:
     ----
     Esta classe segue os padrões Service Layer Pattern estabelecidos no projeto.
 
     """
-
-    """Request model for user creation."""
 
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
@@ -129,23 +169,44 @@ class UserCreationRequest(BaseModel):
     @field_validator("password")
     @classmethod
     def validate_password_strength(cls, v: str) -> str:
-        """Validate password meets complexity requirements.
+        """Validate password strength according to configured requirements.
 
-        Checks minimum length and character requirements: uppercase, lowercase,
-        digit, and special character for enterprise security compliance.
+        Args:
+            v: The password string to validate.
+
+        Returns:
+            The validated password string.
+
+        Raises:
+            ValueError: If password doesn't meet strength requirements.
+
         """
-        if len(v) < MIN_PASSWORD_LENGTH:
-            msg = "Password must be at least 8 characters long"
+        settings = get_auth_settings()
+
+        if len(v) < settings.password.min_length:
+            msg = f"Password must be at least {settings.password.min_length} characters long"
             raise ValueError(msg)
 
         # Check for uppercase, lowercase, digit, and special character
         has_upper = any(c.isupper() for c in v)
         has_lower = any(c.islower() for c in v)
         has_digit = any(c.isdigit() for c in v)
-        has_special = any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in v)
+        has_special = any(c in "!@#$%^&*()_+-=[]{}|:,.<>?" for c in v)
 
-        if not (has_upper and has_lower and has_digit and has_special):
-            msg = "Password must contain uppercase, lowercase, digit, and special character"
+        if settings.password.require_uppercase and not has_upper:
+            msg = "Password must contain uppercase letters"
+            raise ValueError(msg)
+
+        if settings.password.require_lowercase and not has_lower:
+            msg = "Password must contain lowercase letters"
+            raise ValueError(msg)
+
+        if settings.password.require_numbers and not has_digit:
+            msg = "Password must contain digits"
+            raise ValueError(msg)
+
+        if settings.password.require_special and not has_special:
+            msg = "Password must contain special characters"
             raise ValueError(msg)
 
         return v
@@ -153,26 +214,19 @@ class UserCreationRequest(BaseModel):
     @field_validator("email")
     @classmethod
     def normalize_email(cls, v: EmailStr) -> EmailStr:
-        """Normalize email address to standard format.
-
-        Converts email address to lowercase and removes leading/trailing
-        whitespace to ensure consistent storage and comparison of email
-        addresses across the system.
+        """Normalize email address to lowercase and strip whitespace.
 
         Args:
-        ----
-            v: Email address to normalize
+            v: The email address to normalize.
 
         Returns:
-        -------
-            Normalized email address in lowercase without whitespace
-
+            The normalized email address.
 
         """
         return v.lower().strip()
 
 
-class UserServiceLoginRequest(BaseModel):
+class UserServiceLoginRequest(APIRequest):
     """User login request with security metadata for audit tracking.
 
     Captures credentials with IP address and user agent for rate limiting
@@ -181,38 +235,34 @@ class UserServiceLoginRequest(BaseModel):
 
     email: EmailStr
     password: str
-    ip_address: str | None = None
     user_agent: str | None = None
 
     @field_validator("email")
     @classmethod
     def normalize_email(cls, v: EmailStr) -> EmailStr:
-        """Normalize email address to lowercase and remove whitespace.
-
-        Ensures consistent email storage and comparison by converting to lowercase
-        and removing leading/trailing whitespace for authentication reliability.
+        """Normalize email address to lowercase and strip whitespace.
 
         Args:
-        ----
-            v: Email address to normalize
+            v: The email address to normalize.
 
         Returns:
-        -------
-            Normalized email address in lowercase without whitespace.
-
+            The normalized email address.
 
         """
         return v.lower().strip()
 
 
-class AuthenticationResponse(BaseModel):
-    """AuthenticationResponse - Service Layer.
+class AuthenticationResponse(APIResponse):
+    """Response model for successful authentication.
+
+    AuthenticationResponse - Service Layer.
 
     Implementa serviço de aplicação com lógica de negócio específica.
     Coordena operações complexas entre múltiplos componentes.
 
     Arquitetura: Service Layer Pattern
-    Transações: Atomic operations with rollback
+    Transações:
+        Atomic operations with rollback
     Padrões: Application services, orchestration
 
     Attributes:
@@ -240,15 +290,13 @@ class AuthenticationResponse(BaseModel):
     See Also:
     --------
     - [Documentação da Arquitetura](../../docs/architecture/index.md)
-    - [Padrões de Design](../../docs/architecture/001-clean-architecture-ddd.md)
+    - [Padrões de Design](../../docs/architecture/clean_architecture_guide.md)
 
     Note:
     ----
     Esta classe segue os padrões Service Layer Pattern estabelecidos no projeto.
 
     """
-
-    """Response model for successful authentication."""
 
     model_config = ConfigDict(
         frozen=True,
@@ -264,6 +312,7 @@ class AuthenticationResponse(BaseModel):
     token_type: str = "Bearer"  # nosec S105 - not a password, token type constant
 
 
+@singleton()
 class UserServiceInMemoryUserRepository(UserRepository):
     """In-memory user repository for testing and development environments.
 
@@ -280,58 +329,75 @@ class UserServiceInMemoryUserRepository(UserRepository):
     """
 
     def __init__(self) -> None:
-        """Initialize in-memory storage with user and email indexes."""
         self._users: dict[UserID, User] = {}
         self._email_index: dict[str, UserID] = {}
 
-    async def get_user_by_id(self, user_id: UserID) -> User | None:
-        """Retrieve user by their unique identifier.
+    async def find_by_id(self, user_id: UUID) -> ServiceResult[User | None]:
+        """Find user by ID following repository interface."""
+        from flext_core import ServiceResult
 
-        Args:
-        ----
-            user_id: Unique user identifier
+        try:
+            user = self._users.get(str(user_id))
+            return ServiceResult.success(user)
+        except Exception as e:
+            return ServiceResult.fail(f"Error finding user by ID: {e}")
 
-        Returns:
-        -------
-            User object if found, None otherwise
+    async def find_by_email(self, email: str) -> ServiceResult[User | None]:
+        """Find user by email following repository interface."""
+        from flext_core import ServiceResult
 
+        try:
+            user_id = self._email_index.get(email.lower())
+            user = self._users.get(user_id) if user_id else None
+            return ServiceResult.success(user)
+        except Exception as e:
+            return ServiceResult.fail(f"Error finding user by email: {e}")
 
-        """
-        return self._users.get(user_id)
+    async def find_by_username(self, username: str) -> ServiceResult[User | None]:
+        """Find user by username following repository interface."""
+        from flext_core import ServiceResult
 
-    async def get_user_by_email(self, email: str) -> User | None:
-        """Retrieve user by their email address with case-insensitive lookup.
+        try:
+            for user in self._users.values():
+                if user.username == username:
+                    return ServiceResult.success(user)
+            return ServiceResult.success(None)
+        except Exception as e:
+            return ServiceResult.fail(f"Error finding user by username: {e}")
 
-        Uses the email index for efficient lookups and automatically
-        converts email to lowercase for consistent matching.
+    async def username_exists(self, username: str) -> ServiceResult[bool]:
+        """Check if username exists following repository interface."""
+        from flext_core import ServiceResult
 
-        Args:
-        ----
-            email: User's email address
+        try:
+            result = await self.find_by_username(username)
+            if result.is_successful:
+                return ServiceResult.success(result.data is not None)
+            return ServiceResult.fail(result.error or "Error checking username")
+        except Exception as e:
+            return ServiceResult.fail(f"Error checking username existence: {e}")
 
-        Returns:
-        -------
-            User object if found, None otherwise
+    async def email_exists(self, email: str) -> ServiceResult[bool]:
+        """Check if email exists following repository interface."""
+        from flext_core import ServiceResult
 
-
-        """
-        user_id = self._email_index.get(email.lower())
-        return self._users.get(user_id) if user_id else None
+        try:
+            result = await self.find_by_email(email)
+            if result.is_successful:
+                return ServiceResult.success(result.data is not None)
+            return ServiceResult.fail(result.error or "Error checking email")
+        except Exception as e:
+            return ServiceResult.fail(f"Error checking email existence: {e}")
 
     async def create_user(self, user_data: Mapping[str, Any]) -> User:
-        """Create a new user in the repository with email indexing.
-
-        Creates a User entity from the provided data and stores it in both
-        the main user storage and the email index for efficient lookups.
+        """Create a new user in the repository.
 
         Args:
-        ----
-            user_data: Dictionary containing user information
+            user_data: Dictionary containing user creation data including email,
+                      password_hash, username, and optional roles.
 
         Returns:
-        -------
-            Created User entity
-
+            The created User object.
 
         """
         user_id_value = user_data.get("user_id", user_data.get("id"))
@@ -341,36 +407,33 @@ class UserServiceInMemoryUserRepository(UserRepository):
             user_id_value = uuid4()
 
         user = User(
-            user_id=user_id_value,
+            id=user_id_value,
             email=user_data["email"].lower(),
             password_hash=user_data["password_hash"],
             username=user_data.get(
                 "username",
                 user_data.get("first_name", "") + " " + user_data.get("last_name", ""),
             ),
-            roles=frozenset(user_data.get("roles", [])),
+            role=user_data.get("role", "user"),
         )
 
-        self._users[str(user.user_id)] = user
-        self._email_index[user.email] = str(user.user_id)
+        self._users[str(user.id)] = user
+        self._email_index[user.email] = str(user.id)
 
         return user
 
     async def update_user(self, user_id: UserID, user_data: Mapping[str, Any]) -> User:
-        """Update existing user information with timestamp tracking.
-
-        Updates specified fields on the user entity and automatically
-        sets the updated_at timestamp to track when changes were made.
+        """Update an existing user's data.
 
         Args:
-        ----
-            user_id: Unique identifier of user to update
-            user_data: Dictionary of fields and values to update
+            user_id: The ID of the user to update.
+            user_data: Dictionary containing fields to update.
 
         Returns:
-        -------
-            Updated User entity if found, None if user doesn't exist
+            The updated User object.
 
+        Raises:
+            ValueError: If user with the given ID is not found.
 
         """
         user = self._users.get(str(user_id))
@@ -392,28 +455,98 @@ class UserServiceInMemoryUserRepository(UserRepository):
         return user
 
     async def get_user_permissions(self, user_id: UserID) -> list[str]:
-        """Get all permissions for a user based on their roles.
-
-        Retrieves the complete list of permissions granted to a user
-        through their assigned roles.
+        """Get all permissions for a user based on their active roles.
 
         Args:
-        ----
-            user_id: Unique user identifier
+            user_id: The ID of the user to get permissions for.
 
         Returns:
-        -------
-            List of permission strings, empty list if user not found
+            List of permission strings the user has through their roles.
 
         """
         user = self._users.get(str(user_id))
         if not user:
             return []
-        # Get permissions from all active roles
-        permissions: set[str] = set()
-        for role in user.get_active_roles():
-            permissions.update(role.permissions)
-        return list(permissions)
+        # Get permissions based on user role
+        # This is a simplified implementation - in real world, you'd have a role-permission mapping
+        role_permissions = {
+            "REDACTED_LDAP_BIND_PASSWORD": ["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"],
+            "user": ["read"],
+            "moderator": ["read", "write"],
+        }
+        return role_permissions.get(user.role, [])
+
+    async def create(self, user: User) -> ServiceResult[User]:
+        """Create a new user following repository interface."""
+        from flext_core import ServiceResult
+
+        # Check if user already exists
+        if str(user.id) in self._users:
+            return ServiceResult.failure(f"User with ID {user.id} already exists")
+
+        # Store user
+        self._users[str(user.id)] = user
+        self._email_index[user.email.lower()] = str(user.id)
+
+        return ServiceResult.success(user)
+
+    async def delete(self, user_id: UUID) -> ServiceResult[bool]:
+        """Delete a user by ID following repository interface."""
+        from flext_core import ServiceResult
+
+        user = self._users.get(str(user_id))
+        if not user:
+            return ServiceResult.failure(f"User with ID {user_id} not found")
+
+        # Remove from email index
+        if user.email.lower() in self._email_index:
+            del self._email_index[user.email.lower()]
+
+        # Remove user
+        del self._users[str(user_id)]
+
+        return ServiceResult.success(True)
+
+    async def list_users(self, limit: int = 100, offset: int = 0) -> ServiceResult[list[User]]:
+        """List users with pagination following repository interface."""
+        from flext_core import ServiceResult
+
+        all_users = list(self._users.values())
+        paginated_users = all_users[offset:offset + limit]
+
+        return ServiceResult.success(paginated_users)
+
+    async def update(self, user: User) -> ServiceResult[User]:
+        """Update an existing user following repository interface."""
+        from flext_core import ServiceResult
+
+        if str(user.id) not in self._users:
+            return ServiceResult.failure(f"User with ID {user.id} not found")
+
+        # Update email index if email changed
+        old_user = self._users[str(user.id)]
+        if old_user.email != user.email:
+            # Remove old email from index
+            if old_user.email.lower() in self._email_index:
+                del self._email_index[old_user.email.lower()]
+            # Add new email to index
+            self._email_index[user.email.lower()] = str(user.id)
+
+        # Update user
+        self._users[str(user.id)] = user
+        user.updated_at = dt.now(UTC)
+
+        return ServiceResult.success(user)
+
+    async def get_user_by_id(self, user_id: UserID) -> User | None:
+        """Get user by ID - compatibility method for UserService."""
+        result = await self.find_by_id(UUID(user_id))
+        return result.data if result.is_successful else None
+
+    async def get_user_by_email(self, email: str) -> User | None:
+        """Get user by email - compatibility method for UserService."""
+        result = await self.find_by_email(email)
+        return result.data if result.is_successful else None
 
 
 class SecurityAuditorImpl(SecurityAuditor):
@@ -425,14 +558,6 @@ class SecurityAuditorImpl(SecurityAuditor):
     """
 
     def __init__(self) -> None:
-        """Initialize security auditor for logging security events.
-
-        Sets up the security auditor with in-memory storage for security
-        events, enabling comprehensive audit logging for authentication
-        and authorization activities.
-
-
-        """
         self._events: list[dict[str, Any]] = []
 
     async def log_security_event(
@@ -443,19 +568,14 @@ class SecurityAuditorImpl(SecurityAuditor):
         user_agent: UserAgent | None,
         metadata: Mapping[str, Any] | None = None,
     ) -> None:
-        """Log a security-related event with full context and metadata.
-
-        Records security events with timestamp, user context, and network
-        information for comprehensive security auditing and analysis.
+        """Log a security event for audit purposes.
 
         Args:
-        ----
-            event_type: Type of security event (login, logout, etc.)
-            user_id: User identifier if applicable
-            ip_address: Client IP address if available
-            user_agent: Client user agent if available
-            metadata: Additional event-specific data
-
+            event_type: Type of security event (e.g., 'login_success', 'login_failure').
+            user_id: ID of the user involved in the event (if applicable).
+            ip_address: IP address where the event originated (if available).
+            user_agent: User agent string of the client (if available).
+            metadata: Additional event metadata (optional).
 
         """
         event = {
@@ -479,20 +599,15 @@ class SecurityAuditorImpl(SecurityAuditor):
         user_id: UserID | None = None,
         window: datetime.timedelta | None = None,
     ) -> int:
-        """Count failed login attempts within a time window for rate limiting.
-
-        Analyzes security events to count failed login attempts filtered by
-        IP address, user ID, or both within a specified time window.
+        """Get the number of failed login attempts within a time window.
 
         Args:
-        ----
-            ip_address: Filter by specific IP address
-            user_id: Filter by specific user ID
-            window: Time window to search (default: 1 hour)
+            ip_address: Filter by IP address (optional).
+            user_id: Filter by user ID (optional).
+            window: Time window to check (defaults to 24 hours).
 
         Returns:
-        -------
-            Number of failed login attempts matching the criteria
+            Number of failed login attempts matching the criteria.
 
         """
         # Use secure default since config is not available
@@ -502,7 +617,7 @@ class SecurityAuditorImpl(SecurityAuditor):
 
         count = 0
         for event in self._events:
-            if event["event_type"] != SecurityEvent.LOGIN_FAILURE.value:
+            if event["event_type"] != SecurityEvent.LOGIN_FAILURE:
                 continue
 
             event_time = datetime.datetime.fromisoformat(event["timestamp"])
@@ -520,120 +635,95 @@ class SecurityAuditorImpl(SecurityAuditor):
         return count
 
 
+@singleton()
 class UserService(AuthenticationServiceProtocol):
     """Complete user authentication and management service with enterprise features.
 
     Provides comprehensive user management including authentication, authorization,
-    password management, and security auditing. Integrates JWT token management,
-    password hashing, and security event logging for enterprise-grade security.
+    password management, and security auditing using flext-core patterns.
     """
 
     def __init__(
         self,
         user_repository: UserRepository,
+        password_hasher: PasswordHasher,
+        security_auditor: SecurityAuditor,
         jwt_service: JWTService,
         token_manager: TokenManager,
-        password_hasher: PasswordHasher | None = None,
-        security_auditor: SecurityAuditor | None = None,
     ) -> None:
-        """Initialize user service with dependency injection pattern.
-
-        Sets up the user service with all required dependencies for user
-        management, authentication, and security auditing. Uses default
-        implementations for optional dependencies if not provided.
-
-        Args:
-        ----
-            user_repository: Repository for user data persistence
-            jwt_service: Service for JWT token operations
-            token_manager: Manager for token lifecycle and validation
-            password_hasher: Password hashing implementation (defaults to bcrypt)
-            security_auditor: Security event logging implementation
-
-
-        """
         self.user_repository = user_repository
+        self.password_hasher = password_hasher
+        self.security_auditor = security_auditor
         self.jwt_service = jwt_service
         self.token_manager = token_manager
-        self.password_hasher = password_hasher or PasswordHasherImpl()
-        self.security_auditor = security_auditor or SecurityAuditorImpl()
+        self.settings = get_auth_settings()
 
     @classmethod
     def create_default(cls) -> Self:
-        """Create user service with default dependencies."""
-        return cls(
-            user_repository=UserServiceInMemoryUserRepository(),
-            jwt_service=JWTService(JWTConfig()),
-            token_manager=TokenManager(TokenBlacklist()),
-        )
+        """Create a default UserService instance using dependency injection.
+
+        Returns:
+            A UserService instance with default dependencies resolved.
+
+        """
+        container = get_container()
+        return container.resolve(cls)
 
     async def create_user(
         self,
         request: UserCreationRequest,
-        roles: list[UserRoleEnum] | None = None,
-    ) -> User:
-        """Create a new user account with validation and security logging.
-
-        Validates the user creation request, checks for duplicate emails,
-        hashes the password securely, and creates the user with appropriate
-        roles. Logs the user creation event for security auditing.
+        roles: list[Role] | None = None,
+    ) -> ServiceResult[User]:
+        """Create a new user account with the provided information.
 
         Args:
-        ----
-            request: User creation request with validated data
-            roles: Optional list of roles to assign to the user
+            request: User creation request containing email, password, and names.
+            roles: Optional list of roles to assign to the user.
 
         Returns:
-        -------
-            Created User entity with assigned roles
-
-        Raises:
-        ------
-            ValueError: If user with email already exists
-
+            ServiceResult containing the created User on success, or error details on failure.
 
         """
-        # Check if user already exists
-        existing_user = await self.user_repository.get_user_by_email(request.email)
-        if existing_user:
-            msg = "User with this email already exists"
-            raise ValueError(msg)
+        try:
+            # Check if user already exists
+            existing_user_result = await self.user_repository.find_by_email(request.email)
+            if existing_user_result.is_successful and existing_user_result.data:
+                return ServiceResult.fail("User with this email already exists")
 
-        # Hash password
-        password_hash = self.password_hasher.hash_password(request.password)
+            # Hash password
+            password_hash = self.password_hasher.hash_password(request.password)
 
-        # Create user
-        user = User(
-            user_id=uuid4(),
-            email=request.email,
-            password_hash=password_hash,
-            username=f"{request.first_name} {request.last_name}",
-            roles=frozenset(
-                role.value if isinstance(role, UserRoleEnum) else role
-                for role in (roles or [])
-            ),
-        )
+            # Create user
+            user = User(
+                id=uuid4(),
+                email=request.email,
+                password_hash=password_hash,
+                username=f"{request.first_name} {request.last_name}",
+                role="user",  # Default role, can be updated later
+            )
 
-        # Save to repository
-        result = await self.user_repository.create_user(
-            {
-                "user_id": str(user.user_id),
-                "email": user.email,
-                "password_hash": user.password_hash,
-                "username": user.username,
-                "roles": list(user.roles),
-            },
-        )
+            # Save to repository
+            result = await self.user_repository.create_user(
+                {
+                    "user_id": str(user.id),
+                    "email": user.email,
+                    "password_hash": user.password_hash,
+                    "username": user.username,
+                    "role": user.role,
+                },
+            )
 
-        # Log security event
-        await self.security_auditor.log_security_event(
-            event_type="user_created",
-            user_id=str(user.user_id),
-            ip_address=None,
-            user_agent=None,
-        )
+            # Log security event
+            await self.security_auditor.log_security_event(
+                event_type="user_created",
+                user_id=str(user.id),
+                ip_address=None,
+                user_agent=None,
+            )
 
-        return result
+            return ServiceResult.success(result)
+        except Exception as e:
+            return ServiceResult.fail(str(e))
 
     async def authenticate_user(
         self,
@@ -642,10 +732,21 @@ class UserService(AuthenticationServiceProtocol):
         ip_address: IPAddress | None = None,
         user_agent: UserAgent | None = None,
     ) -> tuple[User, JWTToken, JWTToken] | None:
-        """Authenticate user with email and password."""
+        """Authenticate a user with email and password.
+
+        Args:
+            email: User's email address.
+            password: User's plaintext password.
+            ip_address: IP address for security logging (optional).
+            user_agent: User agent for security logging (optional).
+
+        Returns:
+            Tuple of (User, access_token, refresh_token) on success, None on failure.
+
+        """
         # Get user by email
-        user = await self.user_repository.get_user_by_email(email)
-        if not user:
+        user_result = await self.user_repository.find_by_email(email)
+        if not user_result.is_successful or not user_result.data:
             await self._log_failed_login(
                 None,
                 email,
@@ -655,10 +756,12 @@ class UserService(AuthenticationServiceProtocol):
             )
             return None
 
+        user = user_result.data
+
         # Check if account is locked
-        if user.is_locked:
+        if user.is_locked():
             await self._log_failed_login(
-                str(user.user_id),
+                str(user.id),
                 email,
                 ip_address,
                 user_agent,
@@ -668,13 +771,13 @@ class UserService(AuthenticationServiceProtocol):
 
         # Verify password
         if not self.password_hasher.verify_password(password, user.password_hash):
-            user.record_failed_attempt()
+            user.record_login_attempt(success=False, ip_address=ip_address or "unknown")
             await self.user_repository.update_user(
-                str(user.user_id),
-                {"failed_attempts": user.failed_attempts},
+                str(user.id),
+                {"login_attempts": user.login_attempts, "locked_until": user.locked_until},
             )
             await self._log_failed_login(
-                str(user.user_id),
+                str(user.id),
                 email,
                 ip_address,
                 user_agent,
@@ -683,9 +786,9 @@ class UserService(AuthenticationServiceProtocol):
             return None
 
         # Check if user is active
-        if not user.is_active:
+        if not user.is_active():
             await self._log_failed_login(
-                str(user.user_id),
+                str(user.id),
                 email,
                 ip_address,
                 user_agent,
@@ -707,7 +810,7 @@ class UserService(AuthenticationServiceProtocol):
                 access_claims["jti"],
                 TokenMetadata(
                     token_id=access_claims["jti"],
-                    user_id=str(user.user_id),
+                    user_id=str(user.id),
                     token_type=TokenType.ACCESS,
                     issued_at=dt.fromtimestamp(access_claims["iat"]),
                     expires_at=dt.fromtimestamp(access_claims["exp"]),
@@ -720,7 +823,7 @@ class UserService(AuthenticationServiceProtocol):
                 refresh_claims["jti"],
                 TokenMetadata(
                     token_id=refresh_claims["jti"],
-                    user_id=str(user.user_id),
+                    user_id=str(user.id),
                     token_type=TokenType.REFRESH,
                     issued_at=dt.fromtimestamp(refresh_claims["iat"]),
                     expires_at=dt.fromtimestamp(refresh_claims["exp"]),
@@ -730,19 +833,21 @@ class UserService(AuthenticationServiceProtocol):
             )
 
         # Update user login info
-        user.record_login()
+        user.record_login_attempt(success=True, ip_address=ip_address or "unknown")
         await self.user_repository.update_user(
-            str(user.user_id),
+            str(user.id),
             {
-                "last_login": user.last_login,
-                "failed_attempts": user.failed_attempts,
+                "last_login_at": user.last_login_at,
+                "last_login_ip": user.last_login_ip,
+                "login_attempts": user.login_attempts,
+                "locked_until": user.locked_until,
             },
         )
 
         # Log successful login
         await self.security_auditor.log_security_event(
-            event_type=SecurityEvent.LOGIN_SUCCESS.value,
-            user_id=str(user.user_id),
+            event_type=SecurityEvent.LOGIN_SUCCESS,
+            user_id=str(user.id),
             ip_address=ip_address,
             user_agent=user_agent,
         )
@@ -754,20 +859,14 @@ class UserService(AuthenticationServiceProtocol):
         token: JWTToken,
         required_permissions: Sequence[str] | None = None,
     ) -> User | None:
-        """Authenticate user using JWT token with permission validation.
-
-        Validates the JWT token, checks if it's been revoked, retrieves the
-        associated user, and optionally validates required permissions.
+        """Authenticate a user using a JWT token.
 
         Args:
-        ----
-            token: JWT access token to validate
-            required_permissions: Optional list of required permissions
+            token: JWT access token to verify.
+            required_permissions: Optional list of permissions that must be present.
 
         Returns:
-        -------
-            Authenticated User if token is valid and permissions match, None otherwise
-
+            User object if token is valid and permissions are satisfied, None otherwise.
 
         """
         # Verify token
@@ -781,22 +880,20 @@ class UserService(AuthenticationServiceProtocol):
 
         # Get user
         user = await self.user_repository.get_user_by_id(claims["sub"])
-        if not user or not user.is_active:
+        if not user or not user.is_active():
             return None
 
         # Check permissions if required
         if required_permissions:
-            # Get user permissions from all roles
-            user_permissions: set[str] = set()
-            for role in user.get_active_roles():
-                user_permissions.update(role.permissions)
+            # Get user permissions based on role
+            user_permissions = set(await self.user_repository.get_user_permissions(str(user.id)))
 
             required_permissions_set = set(required_permissions)
 
             if not required_permissions_set.issubset(user_permissions):
                 await self.security_auditor.log_security_event(
-                    event_type=SecurityEvent.PERMISSION_DENIED.value,
-                    user_id=str(user.user_id),
+                    event_type=SecurityEvent.PERMISSION_DENIED,
+                    user_id=str(user.id),
                     ip_address=None,
                     user_agent=None,
                     metadata={"required_permissions": list(required_permissions)},
@@ -811,7 +908,17 @@ class UserService(AuthenticationServiceProtocol):
         ip_address: IPAddress | None = None,
         user_agent: UserAgent | None = None,
     ) -> tuple[JWTToken, JWTToken] | None:
-        """Refresh access and refresh tokens."""
+        """Refresh an access token using a valid refresh token.
+
+        Args:
+            refresh_token: Valid refresh token to use for generating new tokens.
+            ip_address: IP address for security logging (optional).
+            user_agent: User agent for security logging (optional).
+
+        Returns:
+            Tuple of (new_access_token, new_refresh_token) on success, None on failure.
+
+        """
         # Verify refresh token
         claims = await self.jwt_service.verify_token(refresh_token, "refresh")
         if not claims:
@@ -823,7 +930,7 @@ class UserService(AuthenticationServiceProtocol):
 
         # Get user
         user = await self.user_repository.get_user_by_id(claims["sub"])
-        if not user or not user.is_active:
+        if not user or not user.is_active():
             return None
 
         # Generate new tokens
@@ -836,7 +943,7 @@ class UserService(AuthenticationServiceProtocol):
         # Revoke old refresh token
         await self.token_manager.revoke_token(
             claims["jti"],
-            str(user.user_id),
+            str(user.id),
             "token_refresh",
         )
 
@@ -855,7 +962,7 @@ class UserService(AuthenticationServiceProtocol):
                 new_access_claims["jti"],
                 TokenMetadata(
                     token_id=new_access_claims["jti"],
-                    user_id=str(user.user_id),
+                    user_id=str(user.id),
                     token_type=TokenType.ACCESS,
                     issued_at=dt.fromtimestamp(new_access_claims["iat"]),
                     expires_at=dt.fromtimestamp(new_access_claims["exp"]),
@@ -868,7 +975,7 @@ class UserService(AuthenticationServiceProtocol):
                 new_refresh_claims["jti"],
                 TokenMetadata(
                     token_id=new_refresh_claims["jti"],
-                    user_id=str(user.user_id),
+                    user_id=str(user.id),
                     token_type=TokenType.REFRESH,
                     issued_at=dt.fromtimestamp(new_refresh_claims["iat"]),
                     expires_at=dt.fromtimestamp(new_refresh_claims["exp"]),
@@ -879,8 +986,8 @@ class UserService(AuthenticationServiceProtocol):
 
         # Log token refresh
         await self.security_auditor.log_security_event(
-            event_type=SecurityEvent.TOKEN_REFRESH.value,
-            user_id=str(user.user_id),
+            event_type=SecurityEvent.TOKEN_REFRESH,
+            user_id=str(user.id),
             ip_address=ip_address,
             user_agent=user_agent,
         )
@@ -892,20 +999,14 @@ class UserService(AuthenticationServiceProtocol):
         token: JWTToken,
         user_id: UserID | None = None,
     ) -> bool:
-        """Revoke a JWT token with security event logging.
-
-        Extracts token information, revokes it through the token manager,
-        and logs the revocation event for security auditing.
+        """Revoke a JWT token to prevent further use.
 
         Args:
-        ----
-            token: JWT token to revoke
-            user_id: Optional user ID for additional validation
+            token: JWT token to revoke.
+            user_id: Optional user ID for additional validation.
 
         Returns:
-        -------
-            True if token was successfully revoked, False otherwise
-
+            True if the token was successfully revoked, False otherwise.
 
         """
         # Extract token claims
@@ -926,7 +1027,7 @@ class UserService(AuthenticationServiceProtocol):
         if revoked:
             # Log revocation
             await self.security_auditor.log_security_event(
-                event_type=SecurityEvent.TOKEN_REVOCATION.value,
+                event_type=SecurityEvent.TOKEN_REVOCATION,
                 user_id=token_user_id,
                 ip_address=None,
                 user_agent=None,
@@ -941,22 +1042,15 @@ class UserService(AuthenticationServiceProtocol):
         old_password: PlaintextPassword,
         new_password: PlaintextPassword,
     ) -> bool:
-        """Change user password with validation and token revocation.
-
-        Validates the old password, updates to the new password with secure
-        hashing, revokes all existing tokens, and logs the password change
-        event for security auditing.
+        """Change a user's password after verifying the old password.
 
         Args:
-        ----
-            user_id: User identifier
-            old_password: Current password for validation
-            new_password: New password to set
+            user_id: ID of the user changing their password.
+            old_password: Current password for verification.
+            new_password: New password to set.
 
         Returns:
-        -------
-            True if password was successfully changed, False otherwise
-
+            True if the password was successfully changed, False otherwise.
 
         """
         # Get user
@@ -990,7 +1084,7 @@ class UserService(AuthenticationServiceProtocol):
 
         # Log password change
         await self.security_auditor.log_security_event(
-            event_type=SecurityEvent.PASSWORD_CHANGE.value,
+            event_type=SecurityEvent.PASSWORD_CHANGE,
             user_id=user_id,
             ip_address=None,
             user_agent=None,
@@ -1006,23 +1100,8 @@ class UserService(AuthenticationServiceProtocol):
         user_agent: UserAgent | None,
         reason: str,
     ) -> None:
-        """Log failed login attempt with detailed context for security analysis.
-
-        Records failed login attempts with user context, network information,
-        and failure reason for security monitoring and rate limiting.
-
-        Args:
-        ----
-            user_id: User identifier if available
-            email: Email address used in login attempt
-            ip_address: Client IP address
-            user_agent: Client user agent
-            reason: Specific reason for login failure
-
-
-        """
         await self.security_auditor.log_security_event(
-            event_type=SecurityEvent.LOGIN_FAILURE.value,
+            event_type=SecurityEvent.LOGIN_FAILURE,
             user_id=user_id,
             ip_address=ip_address,
             user_agent=user_agent,

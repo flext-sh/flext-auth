@@ -1,0 +1,1080 @@
+"""Comprehensive tests for flext_auth.application.services module."""
+
+from __future__ import annotations
+
+from datetime import UTC
+from datetime import datetime
+from datetime import timedelta
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
+from unittest.mock import patch
+from uuid import uuid4
+
+import pytest
+import pytest_asyncio
+
+from flext_auth.application.services import AuthService
+from flext_auth.application.services import SessionService
+from flext_auth.application.services import TokenService
+from flext_auth.application.services import UserService
+from flext_auth.domain.entities import Session
+from flext_auth.domain.entities import User
+from flext_auth.domain.value_objects import AuthToken
+from flext_auth.domain.value_objects import UserEmail
+from flext_auth.domain.value_objects import Username
+from flext_core.domain.types import ServiceResult
+
+pytestmark = pytest.mark.asyncio
+
+
+class TestAuthService:
+    """Test AuthService functionality."""
+
+    @pytest.fixture
+    def mock_user_repository(self) -> MagicMock:
+        """Create mock user repository."""
+        return MagicMock()
+
+    @pytest.fixture
+    def mock_token_repository(self) -> MagicMock:
+        """Create mock token repository."""
+        return MagicMock()
+
+    @pytest.fixture
+    def mock_session_repository(self) -> MagicMock:
+        """Create mock session repository."""
+        return MagicMock()
+
+    @pytest.fixture
+    def mock_password_hasher(self) -> MagicMock:
+        """Create mock password hasher."""
+        return MagicMock()
+
+    @pytest.fixture
+    def mock_token_generator(self) -> MagicMock:
+        """Create mock token generator."""
+        return MagicMock()
+
+    @pytest.fixture
+    def mock_event_bus(self) -> MagicMock:
+        """Create mock event bus."""
+        return MagicMock()
+
+    @pytest.fixture
+    def auth_service(
+        self,
+        mock_user_repository: MagicMock,
+        mock_token_repository: MagicMock,
+        mock_session_repository: MagicMock,
+        mock_password_hasher: MagicMock,
+        mock_token_generator: MagicMock,
+        mock_event_bus: MagicMock,
+    ) -> AuthService:
+        """Create AuthService instance with mocked dependencies."""
+        return AuthService(
+            user_repository=mock_user_repository,
+            token_repository=mock_token_repository,
+            session_repository=mock_session_repository,
+            password_hasher=mock_password_hasher,
+            token_generator=mock_token_generator,
+            event_bus=mock_event_bus,
+        )
+
+    @pytest.fixture
+    def sample_user(self) -> User:
+        """Create a sample user for testing."""
+        user = User(
+            username="testuser",
+            email="test@example.com",
+            password_hash="$2b$12$hashedpassword",
+            role="user",
+            status="active",
+        )
+        # Ensure user status is active and not locked
+        user.status = "active"
+        user.locked_until = None
+        user.record_failed_login = MagicMock()
+        user.record_successful_login = MagicMock()
+        user.password_hash = MagicMock()
+        user.password_hash.verify = MagicMock(return_value=True)
+        return user
+
+    async def test_authenticate_user_success(
+        self,
+        auth_service: AuthService,
+        mock_user_repository: MagicMock,
+        mock_event_bus: MagicMock,
+        sample_user: User,
+    ) -> None:
+        """Test successful user authentication."""
+        # Setup mocks
+        username = Username(value="testuser")
+        mock_user_repository.get_by_username = AsyncMock(
+            return_value=ServiceResult.success(sample_user),
+        )
+        mock_user_repository.update = AsyncMock(
+            return_value=ServiceResult.success(sample_user),
+        )
+        mock_event_bus.publish = AsyncMock()
+
+        # Test authentication
+        result = await auth_service.authenticate_user(
+            username=username,
+            password="correct_password",
+            ip_address="192.168.1.100",
+            user_agent="Test Agent",
+        )
+
+        # Verify result
+        assert result.is_success
+        assert result.value == sample_user
+
+        # Verify method calls
+        mock_user_repository.get_by_username.assert_called_once_with(username)
+        sample_user.password_hash.verify.assert_called_once_with("correct_password")
+        sample_user.record_successful_login.assert_called_once()
+        mock_user_repository.update.assert_called_once_with(sample_user)
+        mock_event_bus.publish.assert_called_once()
+
+    async def test_authenticate_user_not_found(
+        self,
+        auth_service: AuthService,
+        mock_user_repository: MagicMock,
+    ) -> None:
+        """Test authentication with user not found."""
+        # Setup mocks
+        username = Username(value="nonexistent")
+        mock_user_repository.get_by_username = AsyncMock(
+            return_value=ServiceResult.failure("User not found"),
+        )
+
+        # Test authentication
+        result = await auth_service.authenticate_user(
+            username=username,
+            password="password",
+        )
+
+        # Verify result
+        assert result.is_failure
+        assert "Invalid username or password" in result.error_message
+
+    async def test_authenticate_user_inactive(
+        self,
+        auth_service: AuthService,
+        mock_user_repository: MagicMock,
+        sample_user: User,
+    ) -> None:
+        """Test authentication with inactive user."""
+        # Setup mocks
+        username = Username(value="testuser")
+        sample_user.status = "inactive"  # Change status instead of trying to set method
+        mock_user_repository.get_by_username = AsyncMock(
+            return_value=ServiceResult.success(sample_user),
+        )
+
+        # Test authentication
+        result = await auth_service.authenticate_user(
+            username=username,
+            password="password",
+        )
+
+        # Verify result
+        assert result.is_failure
+        assert "not active" in result.error_message
+
+    async def test_authenticate_user_locked(
+        self,
+        auth_service: AuthService,
+        mock_user_repository: MagicMock,
+        sample_user: User,
+    ) -> None:
+        """Test authentication with locked user."""
+        # Setup mocks
+        username = Username(value="testuser")
+        sample_user.locked_until = datetime.now(UTC) + timedelta(hours=1)  # Set lock time instead of trying to set method
+        mock_user_repository.get_by_username = AsyncMock(
+            return_value=ServiceResult.success(sample_user),
+        )
+
+        # Test authentication
+        result = await auth_service.authenticate_user(
+            username=username,
+            password="password",
+        )
+
+        # Verify result
+        assert result.is_failure
+        assert "locked" in result.error_message
+
+    async def test_authenticate_user_wrong_password(
+        self,
+        auth_service: AuthService,
+        mock_user_repository: MagicMock,
+        sample_user: User,
+    ) -> None:
+        """Test authentication with wrong password."""
+        # Setup mocks
+        username = Username(value="testuser")
+        sample_user.password_hash.verify = MagicMock(return_value=False)
+        mock_user_repository.get_by_username = AsyncMock(
+            return_value=ServiceResult.success(sample_user),
+        )
+        mock_user_repository.update = AsyncMock(
+            return_value=ServiceResult.success(sample_user),
+        )
+
+        # Test authentication
+        result = await auth_service.authenticate_user(
+            username=username,
+            password="wrong_password",
+        )
+
+        # Verify result
+        assert result.is_failure
+        assert "Invalid username or password" in result.error_message
+
+        # Verify failed login was recorded
+        sample_user.record_failed_login.assert_called_once()
+        mock_user_repository.update.assert_called_once_with(sample_user)
+
+    async def test_logout_user_success(
+        self,
+        auth_service: AuthService,
+        mock_user_repository: MagicMock,
+        mock_session_repository: MagicMock,
+        mock_event_bus: MagicMock,
+        sample_user: User,
+    ) -> None:
+        """Test successful user logout."""
+        # Setup mocks
+        user_id = sample_user.id
+        session_id = "session123"
+        mock_session = MagicMock()
+        mock_session.deactivate = MagicMock()
+
+        mock_user_repository.get_by_id = AsyncMock(
+            return_value=ServiceResult.success(sample_user),
+        )
+        mock_session_repository.get_by_id = AsyncMock(
+            return_value=ServiceResult.success(mock_session),
+        )
+        mock_session_repository.update = AsyncMock(
+            return_value=ServiceResult.success(mock_session),
+        )
+        mock_event_bus.publish = AsyncMock()
+
+        # Test logout
+        result = await auth_service.logout_user(user_id, session_id)
+
+        # Verify result
+        assert result.is_success
+        assert result.value is None
+
+        # Verify method calls
+        mock_user_repository.get_by_id.assert_called_once_with(user_id)
+        mock_session_repository.get_by_id.assert_called_once_with(session_id)
+        mock_session.deactivate.assert_called_once()
+        mock_session_repository.update.assert_called_once_with(mock_session)
+        mock_event_bus.publish.assert_called_once()
+
+    async def test_logout_user_not_found(
+        self,
+        auth_service: AuthService,
+        mock_user_repository: MagicMock,
+    ) -> None:
+        """Test logout with user not found."""
+        # Setup mocks
+        user_id = uuid4()
+        session_id = "session123"
+        mock_user_repository.get_by_id = AsyncMock(
+            return_value=ServiceResult.failure("User not found"),
+        )
+
+        # Test logout
+        result = await auth_service.logout_user(user_id, session_id)
+
+        # Verify result
+        assert result.is_failure
+        assert "not found" in result.error_message
+
+    async def test_change_password_success(
+        self,
+        auth_service: AuthService,
+        mock_user_repository: MagicMock,
+        mock_password_hasher: MagicMock,
+        mock_event_bus: MagicMock,
+        sample_user: User,
+    ) -> None:
+        """Test successful password change."""
+        # Setup mocks
+        user_id = sample_user.id
+        old_password = "old_password"
+        new_password = "new_password"
+        new_hash = "new_hash"
+
+        sample_user.change_password = MagicMock()
+        mock_user_repository.get_by_id = AsyncMock(
+            return_value=ServiceResult.success(sample_user),
+        )
+        mock_password_hasher.hash_password = MagicMock(return_value=new_hash)
+        mock_user_repository.update = AsyncMock(
+            return_value=ServiceResult.success(sample_user),
+        )
+        mock_event_bus.publish = AsyncMock()
+
+        # Test password change
+        result = await auth_service.change_password(
+            user_id=user_id,
+            old_password=old_password,
+            new_password=new_password,
+        )
+
+        # Verify result
+        assert result.is_success
+        assert result.value is None
+
+        # Verify method calls
+        sample_user.password_hash.verify.assert_called_once_with(old_password)
+        mock_password_hasher.hash_password.assert_called_once_with(new_password)
+        sample_user.change_password.assert_called_once_with(new_hash)
+        mock_user_repository.update.assert_called_once_with(sample_user)
+        mock_event_bus.publish.assert_called_once()
+
+    async def test_change_password_user_not_found(
+        self,
+        auth_service: AuthService,
+        mock_user_repository: MagicMock,
+    ) -> None:
+        """Test password change with user not found."""
+        # Setup mocks
+        user_id = uuid4()
+        mock_user_repository.get_by_id = AsyncMock(
+            return_value=ServiceResult.failure("User not found"),
+        )
+
+        # Test password change
+        result = await auth_service.change_password(
+            user_id=user_id,
+            old_password="old_password",
+            new_password="new_password",
+        )
+
+        # Verify result
+        assert result.is_failure
+        assert "not found" in result.error_message
+
+    async def test_change_password_incorrect_old_password(
+        self,
+        auth_service: AuthService,
+        mock_user_repository: MagicMock,
+        sample_user: User,
+    ) -> None:
+        """Test password change with incorrect old password."""
+        # Setup mocks
+        user_id = sample_user.id
+        sample_user.password_hash.verify = MagicMock(return_value=False)
+        mock_user_repository.get_by_id = AsyncMock(
+            return_value=ServiceResult.success(sample_user),
+        )
+
+        # Test password change
+        result = await auth_service.change_password(
+            user_id=user_id,
+            old_password="wrong_password",
+            new_password="new_password",
+        )
+
+        # Verify result
+        assert result.is_failure
+        assert "Invalid current password" in result.error_message
+
+
+class TestUserService:
+    """Test UserService functionality."""
+
+    @pytest.fixture
+    def mock_user_repository(self) -> MagicMock:
+        """Create mock user repository."""
+        return MagicMock()
+
+    @pytest.fixture
+    def mock_role_repository(self) -> MagicMock:
+        """Create mock role repository."""
+        return MagicMock()
+
+    @pytest.fixture
+    def mock_password_hasher(self) -> MagicMock:
+        """Create mock password hasher."""
+        return MagicMock()
+
+    @pytest.fixture
+    def mock_event_bus(self) -> MagicMock:
+        """Create mock event bus."""
+        return MagicMock()
+
+    @pytest.fixture
+    def user_service(
+        self,
+        mock_user_repository: MagicMock,
+        mock_role_repository: MagicMock,
+        mock_password_hasher: MagicMock,
+        mock_event_bus: MagicMock,
+    ) -> UserService:
+        """Create UserService instance with mocked dependencies."""
+        return UserService(
+            user_repository=mock_user_repository,
+            role_repository=mock_role_repository,
+            password_hasher=mock_password_hasher,
+            event_bus=mock_event_bus,
+        )
+
+    async def test_create_user_success(
+        self,
+        user_service: UserService,
+        mock_user_repository: MagicMock,
+        mock_password_hasher: MagicMock,
+        mock_event_bus: MagicMock,
+    ) -> None:
+        """Test successful user creation."""
+        # Setup mocks
+        username = Username(value="newuser")
+        email = UserEmail(value="new@example.com")
+        password = "StrongPassword123!"
+        password_hash = "hashed_password"
+
+        mock_user_repository.get_by_username = AsyncMock(
+            return_value=ServiceResult.failure("User not found"),
+        )
+        mock_user_repository.get_by_email = AsyncMock(
+            return_value=ServiceResult.failure("User not found"),
+        )
+        mock_password_hasher.hash_password = MagicMock(return_value=password_hash)
+
+        # Create expected user
+        expected_user = User(
+            username=username,
+            email=email,
+            password_hash=password_hash,
+            roles=[],
+        )
+        mock_user_repository.save = AsyncMock(
+            return_value=ServiceResult.success(expected_user),
+        )
+        mock_event_bus.publish = AsyncMock()
+
+        # Test user creation
+        result = await user_service.create_user(
+            username=username,
+            email=email,
+            password=password,
+        )
+
+        # Verify result
+        assert result.is_success
+
+        # Verify method calls
+        mock_user_repository.get_by_username.assert_called_once_with(username)
+        mock_user_repository.get_by_email.assert_called_once_with(email)
+        mock_password_hasher.hash_password.assert_called_once_with(password)
+        mock_user_repository.save.assert_called_once()
+        mock_event_bus.publish.assert_called_once()
+
+    async def test_create_user_username_exists(
+        self,
+        user_service: UserService,
+        mock_user_repository: MagicMock,
+    ) -> None:
+        """Test user creation with existing username."""
+        # Setup mocks
+        username = Username(value="existinguser")
+        email = UserEmail(value="new@example.com")
+        existing_user = User(
+            username=username,
+            email="existing@example.com",
+            password_hash="hash",
+        )
+
+        mock_user_repository.get_by_username = AsyncMock(
+            return_value=ServiceResult.success(existing_user),
+        )
+
+        # Test user creation
+        result = await user_service.create_user(
+            username=username,
+            email=email,
+            password="password",
+        )
+
+        # Verify result
+        assert result.is_failure
+        assert "already exists" in result.error_message
+
+    async def test_create_user_email_exists(
+        self,
+        user_service: UserService,
+        mock_user_repository: MagicMock,
+    ) -> None:
+        """Test user creation with existing email."""
+        # Setup mocks
+        username = Username(value="newuser")
+        email = UserEmail(value="existing@example.com")
+        existing_user = User(
+            username="existinguser",
+            email=email,
+            password_hash="hash",
+        )
+
+        mock_user_repository.get_by_username = AsyncMock(
+            return_value=ServiceResult.failure("User not found"),
+        )
+        mock_user_repository.get_by_email = AsyncMock(
+            return_value=ServiceResult.success(existing_user),
+        )
+
+        # Test user creation
+        result = await user_service.create_user(
+            username=username,
+            email=email,
+            password="password",
+        )
+
+        # Verify result
+        assert result.is_failure
+        assert "already exists" in result.error_message
+
+    async def test_update_user_roles_success(
+        self,
+        user_service: UserService,
+        mock_user_repository: MagicMock,
+        mock_event_bus: MagicMock,
+    ) -> None:
+        """Test successful user role update."""
+        # Setup mocks
+        user_id = uuid4()
+        updated_by = uuid4()
+        new_roles = ["REDACTED_LDAP_BIND_PASSWORD", "user"]
+
+        # Create user with existing roles
+        user = User(
+            username="testuser",
+            email="test@example.com",
+            password_hash="hash",
+        )
+        user.roles = ["user"]
+        user.add_role = MagicMock()
+        user.roles.clear = MagicMock()
+        user.roles.copy = MagicMock(return_value=["user"])
+
+        mock_user_repository.get_by_id = AsyncMock(
+            return_value=ServiceResult.success(user),
+        )
+        mock_user_repository.update = AsyncMock(
+            return_value=ServiceResult.success(user),
+        )
+        mock_event_bus.publish = AsyncMock()
+
+        # Test role update
+        result = await user_service.update_user_roles(
+            user_id=user_id,
+            roles=new_roles,
+            updated_by=updated_by,
+        )
+
+        # Verify result
+        assert result.is_success
+        assert result.value == user
+
+        # Verify method calls
+        mock_user_repository.get_by_id.assert_called_once_with(user_id)
+        user.roles.clear.assert_called_once()
+        mock_user_repository.update.assert_called_once_with(user)
+        # Event should be published for added role
+        mock_event_bus.publish.assert_called()
+
+    async def test_lock_user_account_success(
+        self,
+        user_service: UserService,
+        mock_user_repository: MagicMock,
+        mock_event_bus: MagicMock,
+    ) -> None:
+        """Test successful user account lock."""
+        # Setup mocks
+        user_id = uuid4()
+        locked_by = uuid4()
+        duration = timedelta(hours=24)
+        reason = "Suspicious activity"
+
+        user = User(
+            username="testuser",
+            email="test@example.com",
+            password_hash="hash",
+        )
+        user.lock_account = MagicMock()
+
+        mock_user_repository.get_by_id = AsyncMock(
+            return_value=ServiceResult.success(user),
+        )
+        mock_user_repository.update = AsyncMock(
+            return_value=ServiceResult.success(user),
+        )
+        mock_event_bus.publish = AsyncMock()
+
+        # Test account lock
+        result = await user_service.lock_user_account(
+            user_id=user_id,
+            duration=duration,
+            locked_by=locked_by,
+            reason=reason,
+        )
+
+        # Verify result
+        assert result.is_success
+        assert result.value is None
+
+        # Verify method calls
+        mock_user_repository.get_by_id.assert_called_once_with(user_id)
+        user.lock_account.assert_called_once_with(duration)
+        mock_user_repository.update.assert_called_once_with(user)
+        mock_event_bus.publish.assert_called_once()
+
+
+class TestTokenService:
+    """Test TokenService functionality."""
+
+    @pytest.fixture
+    def mock_token_repository(self) -> MagicMock:
+        """Create mock token repository."""
+        return MagicMock()
+
+    @pytest.fixture
+    def mock_token_generator(self) -> MagicMock:
+        """Create mock token generator."""
+        return MagicMock()
+
+    @pytest.fixture
+    def mock_event_bus(self) -> MagicMock:
+        """Create mock event bus."""
+        return MagicMock()
+
+    @pytest.fixture
+    def token_service(
+        self,
+        mock_token_repository: MagicMock,
+        mock_token_generator: MagicMock,
+        mock_event_bus: MagicMock,
+    ) -> TokenService:
+        """Create TokenService instance with mocked dependencies."""
+        return TokenService(
+            token_repository=mock_token_repository,
+            token_generator=mock_token_generator,
+            event_bus=mock_event_bus,
+        )
+
+    async def test_create_token_success(
+        self,
+        token_service: TokenService,
+        mock_token_repository: MagicMock,
+        mock_token_generator: MagicMock,
+        mock_event_bus: MagicMock,
+    ) -> None:
+        """Test successful token creation."""
+        # Setup mocks
+        user_id = uuid4()
+        username = Username(value="testuser")
+        token_type = "access"
+        expires_in = timedelta(hours=1)
+        token_value = "generated_token_value"
+
+        mock_token_generator.generate_token = MagicMock(return_value=token_value)
+
+        # Create expected token
+        expected_token = AuthToken(
+            value=token_value,
+            token_type=token_type,
+        )
+        mock_token_repository.save = AsyncMock(
+            return_value=ServiceResult.success(expected_token),
+        )
+        mock_event_bus.publish = AsyncMock()
+
+        # Test token creation
+        result = await token_service.create_token(
+            user_id=user_id,
+            username=username,
+            token_type=token_type,
+            expires_in=expires_in,
+        )
+
+        # Verify result
+        assert result.is_success
+
+        # Verify method calls
+        mock_token_generator.generate_token.assert_called_once()
+        mock_token_repository.save.assert_called_once()
+        mock_event_bus.publish.assert_called_once()
+
+    async def test_validate_token_success(
+        self,
+        token_service: TokenService,
+        mock_token_repository: MagicMock,
+    ) -> None:
+        """Test successful token validation."""
+        # Setup mocks
+        token_value = "valid_token"
+        token = AuthToken(value=token_value, token_type="access")
+        token.is_valid = True
+        token.record_use = MagicMock()
+
+        mock_token_repository.get_by_value = AsyncMock(
+            return_value=ServiceResult.success(token),
+        )
+        mock_token_repository.update = AsyncMock(
+            return_value=ServiceResult.success(token),
+        )
+
+        # Test token validation
+        result = await token_service.validate_token(token_value)
+
+        # Verify result
+        assert result.is_success
+        assert result.value == token
+
+        # Verify method calls
+        mock_token_repository.get_by_value.assert_called_once_with(token_value)
+        token.record_use.assert_called_once()
+        mock_token_repository.update.assert_called_once_with(token)
+
+    async def test_validate_token_invalid(
+        self,
+        token_service: TokenService,
+        mock_token_repository: MagicMock,
+    ) -> None:
+        """Test token validation with invalid token."""
+        # Setup mocks
+        token_value = "invalid_token"
+        mock_token_repository.get_by_value = AsyncMock(
+            return_value=ServiceResult.failure("Token not found"),
+        )
+
+        # Test token validation
+        result = await token_service.validate_token(token_value)
+
+        # Verify result
+        assert result.is_failure
+        assert "Invalid token" in result.error_message
+
+    async def test_revoke_token_success(
+        self,
+        token_service: TokenService,
+        mock_token_repository: MagicMock,
+        mock_event_bus: MagicMock,
+    ) -> None:
+        """Test successful token revocation."""
+        # Setup mocks
+        token_id = uuid4()
+        revoked_by = uuid4()
+        reason = "Security breach"
+
+        # Create a mock token instead of a real AuthToken
+        token = MagicMock()
+        token.revoke = MagicMock()
+        token.user_id = uuid4()
+        token.token_type = "access"
+        token.id = token_id
+
+        # Mock user repository for username lookup
+        token_service.user_repository = MagicMock()
+        user = User(username="testuser", email="test@example.com", password_hash="hash")
+        token_service.user_repository.get_by_id = AsyncMock(
+            return_value=ServiceResult.success(user),
+        )
+
+        mock_token_repository.get_by_id = AsyncMock(
+            return_value=ServiceResult.success(token),
+        )
+        mock_token_repository.update = AsyncMock(
+            return_value=ServiceResult.success(token),
+        )
+        mock_event_bus.publish = AsyncMock()
+
+        # Test token revocation
+        result = await token_service.revoke_token(
+            token_id=token_id,
+            revoked_by=revoked_by,
+            reason=reason,
+        )
+
+        # Verify result
+        assert result.is_success
+        assert result.value is None
+
+        # Verify method calls
+        mock_token_repository.get_by_id.assert_called_once_with(token_id)
+        token.revoke.assert_called_once_with(revoked_by)
+        mock_token_repository.update.assert_called_once_with(token)
+        mock_event_bus.publish.assert_called_once()
+
+
+class TestSessionService:
+    """Test SessionService functionality."""
+
+    @pytest.fixture
+    def mock_session_repository(self) -> MagicMock:
+        """Create mock session repository."""
+        return MagicMock()
+
+    @pytest.fixture
+    def mock_session_generator(self) -> MagicMock:
+        """Create mock session generator."""
+        return MagicMock()
+
+    @pytest.fixture
+    def mock_event_bus(self) -> MagicMock:
+        """Create mock event bus."""
+        return MagicMock()
+
+    @pytest.fixture
+    def session_service(
+        self,
+        mock_session_repository: MagicMock,
+        mock_session_generator: MagicMock,
+        mock_event_bus: MagicMock,
+    ) -> SessionService:
+        """Create SessionService instance with mocked dependencies."""
+        return SessionService(
+            session_repository=mock_session_repository,
+            session_generator=mock_session_generator,
+            event_bus=mock_event_bus,
+        )
+
+    async def test_create_session_success(
+        self,
+        session_service: SessionService,
+        mock_session_repository: MagicMock,
+        mock_session_generator: MagicMock,
+        mock_event_bus: MagicMock,
+    ) -> None:
+        """Test successful session creation."""
+        # Setup mocks
+        user_id = uuid4()
+        username = Username(value="testuser")
+        duration = timedelta(hours=1)
+        session_id = "generated_session_id"
+
+        mock_session_generator.generate_session_id = MagicMock(return_value=session_id)
+
+        # Create expected session
+        expected_session = Session(
+            user_id=user_id,
+            session_token=session_id,
+            expires_at=datetime.now(UTC) + duration,
+        )
+        mock_session_repository.save = AsyncMock(
+            return_value=ServiceResult.success(expected_session),
+        )
+        mock_event_bus.publish = AsyncMock()
+
+        # Test session creation
+        result = await session_service.create_session(
+            user_id=user_id,
+            username=username,
+            duration=duration,
+        )
+
+        # Verify result
+        assert result.is_success
+
+        # Verify method calls
+        mock_session_generator.generate_session_id.assert_called_once()
+        mock_session_repository.save.assert_called_once()
+        mock_event_bus.publish.assert_called_once()
+
+    async def test_validate_session_success(
+        self,
+        session_service: SessionService,
+        mock_session_repository: MagicMock,
+    ) -> None:
+        """Test successful session validation."""
+        # Setup mocks
+        session_id = "valid_session_id"
+        session = Session(
+            user_id=uuid4(),
+            session_token=session_id,
+            expires_at=datetime.now(UTC) + timedelta(hours=1),
+        )
+        session.is_valid = True
+
+        mock_session_repository.get_by_token = AsyncMock(
+            return_value=ServiceResult.success(session),
+        )
+        mock_session_repository.update = AsyncMock(
+            return_value=ServiceResult.success(session),
+        )
+
+        # Test session validation
+        result = await session_service.validate_session(session_id)
+
+        # Verify result
+        assert result.is_success
+        assert result.value == session
+
+        # Verify method calls
+        mock_session_repository.get_by_token.assert_called_once_with(session_id)
+        mock_session_repository.update.assert_called_once_with(session)
+
+    async def test_validate_session_not_found(
+        self,
+        session_service: SessionService,
+        mock_session_repository: MagicMock,
+    ) -> None:
+        """Test session validation with session not found."""
+        # Setup mocks
+        session_id = "invalid_session_id"
+        mock_session_repository.get_by_token = AsyncMock(
+            return_value=ServiceResult.failure("Session not found"),
+        )
+
+        # Test session validation
+        result = await session_service.validate_session(session_id)
+
+        # Verify result
+        assert result.is_failure
+        assert "Invalid session" in result.error_message
+
+    async def test_refresh_session_success(
+        self,
+        session_service: SessionService,
+        mock_session_repository: MagicMock,
+    ) -> None:
+        """Test successful session refresh."""
+        # Setup mocks
+        session_id = "session_id"
+        duration = timedelta(hours=2)
+        session = Session(
+            user_id=uuid4(),
+            session_token=session_id,
+            expires_at=datetime.now(UTC) + timedelta(hours=1),
+        )
+        session.refresh = MagicMock()
+
+        mock_session_repository.get_by_token = AsyncMock(
+            return_value=ServiceResult.success(session),
+        )
+        mock_session_repository.update = AsyncMock(
+            return_value=ServiceResult.success(session),
+        )
+
+        # Test session refresh
+        result = await session_service.refresh_session(session_id, duration)
+
+        # Verify result
+        assert result.is_success
+        assert result.value == session
+
+        # Verify method calls
+        mock_session_repository.get_by_token.assert_called_once_with(session_id)
+        session.refresh.assert_called_once_with(duration)
+        mock_session_repository.update.assert_called_once_with(session)
+
+
+class TestServiceIntegration:
+    """Test integration between services."""
+
+    async def test_full_authentication_flow(self) -> None:
+        """Test complete authentication flow integration."""
+        # Create mocked dependencies
+        mock_user_repo = MagicMock()
+        mock_token_repo = MagicMock()
+        mock_session_repo = MagicMock()
+        mock_password_hasher = MagicMock()
+        mock_token_generator = MagicMock()
+        mock_session_generator = MagicMock()
+        mock_event_bus = MagicMock()
+
+        # Create services
+        auth_service = AuthService(
+            user_repository=mock_user_repo,
+            token_repository=mock_token_repo,
+            session_repository=mock_session_repo,
+            password_hasher=mock_password_hasher,
+            token_generator=mock_token_generator,
+            event_bus=mock_event_bus,
+        )
+
+        session_service = SessionService(
+            session_repository=mock_session_repo,
+            session_generator=mock_session_generator,
+            event_bus=mock_event_bus,
+        )
+
+        token_service = TokenService(
+            token_repository=mock_token_repo,
+            token_generator=mock_token_generator,
+            event_bus=mock_event_bus,
+        )
+
+        # Create test user
+        user = User(
+            username="testuser",
+            email="test@example.com",
+            password_hash="hash",
+            status="active",  # Set status to active so is_active() returns True
+            locked_until=None,  # Explicitly ensure user is not locked
+            login_attempts=0,  # Reset login attempts
+        )
+        # Mock the actual password verification by replacing the hash
+        original_password_hash = user.password_hash
+        user.password_hash = "mock_hash"
+
+        # Setup mocks for authentication
+        username = Username(value="testuser")
+        mock_user_repo.get_by_username = AsyncMock(
+            return_value=ServiceResult.success(user),
+        )
+        mock_user_repo.update = AsyncMock(return_value=ServiceResult.success(user))
+        mock_event_bus.publish = AsyncMock()
+
+        # 1. Authenticate user
+        auth_result = await auth_service.authenticate_user(
+            username=username,
+            password="password",
+        )
+        if not auth_result.is_success:
+            print(f"Authentication failed: {auth_result.error}")
+        assert auth_result.is_success
+
+        # 2. Create session for authenticated user
+        mock_session_generator.generate_session_id = MagicMock(return_value="session_id")
+        session = Session(
+            user_id=user.id,
+            session_token="session_id",
+            expires_at=datetime.now(UTC) + timedelta(hours=1),
+        )
+        mock_session_repo.save = AsyncMock(return_value=ServiceResult.success(session))
+
+        session_result = await session_service.create_session(
+            user_id=user.id,
+            username=username,
+            duration=timedelta(hours=1),
+        )
+        assert session_result.is_success
+
+        # 3. Create token for authenticated user
+        mock_token_generator.generate_token = MagicMock(return_value="token_value")
+        token = AuthToken(value="token_value", token_type="access")
+        mock_token_repo.save = AsyncMock(return_value=ServiceResult.success(token))
+
+        token_result = await token_service.create_token(
+            user_id=user.id,
+            username=username,
+            token_type="access",
+            expires_in=timedelta(hours=1),
+        )
+        assert token_result.is_success
+
+        # Verify all operations completed successfully
+        assert all([
+            auth_result.is_success,
+            session_result.is_success,
+            token_result.is_success,
+        ])

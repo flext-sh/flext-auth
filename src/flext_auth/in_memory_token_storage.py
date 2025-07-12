@@ -5,10 +5,11 @@ resolves all NotImplementedError instances in the token storage system.
 """
 
 import asyncio
-import datetime
 import fnmatch
 from datetime import UTC
-from typing import Any, TypeVar
+from datetime import datetime
+from typing import Any
+from typing import TypeVar
 
 T = TypeVar("T")
 
@@ -21,22 +22,16 @@ class InMemoryTokenStorage:
     """
 
     def __init__(self) -> None:
-        """Initialize in-memory storage."""
         self._storage: dict[str, dict[str, Any]] = {}
         self._lock = asyncio.Lock()
 
-    async def store(
-        self,
-        key: str,
-        value: T,
-        ttl: datetime.timedelta | None = None,
-    ) -> None:
-        """Store a value with optional TTL.
+    async def store(self, key: str, value: T, ttl: datetime.timedelta | None = None) -> None:
+        """Store a value with optional TTL expiration.
 
         Args:
-            key: The key to store the value under
-            value: The value to store
-            ttl: Optional time-to-live for automatic expiration
+            key: Storage key for the value.
+            value: Value to store.
+            ttl: Optional time-to-live for expiration.
 
         """
         async with self._lock:
@@ -51,13 +46,13 @@ class InMemoryTokenStorage:
             }
 
     async def get(self, key: str) -> T | None:
-        """Get a value by key.
+        """Retrieve a value by key, removing if expired.
 
         Args:
-            key: The key to look up
+            key: Storage key to retrieve.
 
         Returns:
-            The stored value or None if not found or expired
+            Stored value if found and not expired, None otherwise.
 
         """
         async with self._lock:
@@ -66,7 +61,7 @@ class InMemoryTokenStorage:
 
             entry = self._storage[key]
 
-            # Check if expired
+            # Check if expired:
             if entry["expiry"] and datetime.datetime.now(UTC) > entry["expiry"]:
                 # Remove expired entry
                 del self._storage[key]
@@ -75,13 +70,13 @@ class InMemoryTokenStorage:
             return entry["value"]
 
     async def delete(self, key: str) -> bool:
-        """Delete a value by key.
+        """Delete a stored value by key.
 
         Args:
-            key: The key to delete
+            key: Storage key to delete.
 
         Returns:
-            True if deleted, False if key didn't exist
+            True if key was found and deleted, False otherwise.
 
         """
         async with self._lock:
@@ -91,13 +86,13 @@ class InMemoryTokenStorage:
             return False
 
     async def exists(self, key: str) -> bool:
-        """Check if key exists and hasn't expired.
+        """Check if a key exists and is not expired.
 
         Args:
-            key: The key to check
+            key: Storage key to check.
 
         Returns:
-            True if key exists and hasn't expired, False otherwise
+            True if key exists and is not expired, False otherwise.
 
         """
         async with self._lock:
@@ -106,7 +101,7 @@ class InMemoryTokenStorage:
 
             entry = self._storage[key]
 
-            # Check if expired
+            # Check if expired:
             if entry["expiry"] and datetime.datetime.now(UTC) > entry["expiry"]:
                 # Remove expired entry
                 del self._storage[key]
@@ -115,13 +110,13 @@ class InMemoryTokenStorage:
             return True
 
     async def keys(self, pattern: str) -> list[str]:
-        """Get keys matching pattern.
+        """Get all keys matching a pattern.
 
         Args:
-            pattern: Pattern to match keys against (supports * and ?)
+            pattern: Wildcard pattern to match keys against.
 
         Returns:
-            List of matching keys
+            List of keys matching the pattern.
 
         """
         async with self._lock:
@@ -132,22 +127,16 @@ class InMemoryTokenStorage:
             return [key for key in self._storage if fnmatch.fnmatch(key, pattern)]
 
     async def cleanup_expired(self) -> int:
-        """Remove expired entries and return count.
+        """Remove all expired entries from storage.
 
         Returns:
-            Number of expired entries removed
+            Number of expired entries that were removed.
 
         """
         async with self._lock:
             return await self._cleanup_expired_internal()
 
     async def _cleanup_expired_internal(self) -> int:
-        """Internal cleanup method (assumes lock is already held).
-
-        Returns:
-            Number of expired entries removed
-
-        """
         now = datetime.datetime.now(UTC)
         expired_keys = []
 
@@ -161,14 +150,19 @@ class InMemoryTokenStorage:
         return len(expired_keys)
 
     async def clear_all(self) -> None:
-        """Clear all stored data (for testing)."""
+        """Clear all stored entries."""
         async with self._lock:
             self._storage.clear()
 
     async def size(self) -> int:
-        """Get number of stored entries."""
+        """Get the number of stored entries.
+
+        Returns:
+            Number of entries currently in storage.
+
+        """
         async with self._lock:
             return len(self._storage)
 
     async def close(self) -> None:
-        """Close storage (no-op for in-memory storage)."""
+        """Close storage - no-op for in-memory storage."""

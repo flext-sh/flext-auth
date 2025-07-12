@@ -4,15 +4,24 @@ from __future__ import annotations
 
 import hashlib
 import secrets
-from datetime import UTC, datetime, timedelta
-from typing import Any, ClassVar, Protocol, runtime_checkable
+from datetime import UTC
+from datetime import datetime
+from datetime import timedelta
+from typing import Any
+from typing import ClassVar
+from typing import Protocol
+from typing import runtime_checkable
 
 import jwt
 from argon2 import PasswordHasher as Argon2Hasher
-from argon2.exceptions import InvalidHash, VerificationError, VerifyMismatchError
-from flext_core.config.domain_config import get_config
-from flext_core.domain.pydantic_base import DomainBaseModel, DomainValueObject
+from argon2.exceptions import InvalidHash
+from argon2.exceptions import VerificationError
+from argon2.exceptions import VerifyMismatchError
 from pydantic import Field
+
+from flext_core.config.domain_config import get_config
+from flext_core.domain.pydantic_base import DomainBaseModel
+from flext_core.domain.pydantic_base import DomainValueObject
 
 # Python 3.13 type alias for security types
 Salt = bytes
@@ -22,7 +31,7 @@ Token = str
 
 @runtime_checkable
 class HashingProtocol(Protocol):
-    r"""HashingProtocol - Framework Component.
+    """HashingProtocol - Framework Component.
 
     Implementa componente central do framework com funcionalidades específicas.
     Segue padrões arquiteturais estabelecidos.
@@ -44,7 +53,8 @@ class HashingProtocol(Protocol):
     Uso típico da classe:
 
     ```python
-    instance = HashingProtocol()\n    result = instance.method()
+    instance = HashingProtocol()
+    result = instance.method()
     ```
 
     See Also:
@@ -56,23 +66,18 @@ class HashingProtocol(Protocol):
     ----
     Esta classe segue os padrões Enterprise Patterns estabelecidos no projeto.
 
+    Protocol for password hashing implementations.
+
     """
 
-    """Protocol for password hashing implementations."""
-
     def hash(self, password: str) -> Hash:
-        """Hash a password securely.
-
-        Generates a secure hash of the provided password using
-        industry-standard hashing algorithms with proper salting.
+        """Hash a password using secure algorithm.
 
         Args:
-        ----
-            password: Plain text password to hash
+            password: Plain text password to hash.
 
         Returns:
-        -------
-            Hash: Secure hash string suitable for storage
+            Hashed password string.
 
         """
         ...
@@ -80,24 +85,19 @@ class HashingProtocol(Protocol):
     def verify(self, password: str, hash_str: Hash) -> bool:
         """Verify password against hash.
 
-        Verifies that the provided password matches the stored hash
-        using secure comparison methods to prevent timing attacks.
-
         Args:
-        ----
-            password: Plain text password to verify
-            hash_str: Stored hash to verify against
+            password: Plain text password to verify.
+            hash_str: Hashed password to verify against.
 
         Returns:
-        -------
-            bool: True if password matches hash, False otherwise
+            True if password matches hash, False otherwise.
 
         """
         ...
 
 
 class PasswordHasher(DomainBaseModel):
-    r"""PasswordHasher - Framework Component.
+    """PasswordHasher - Framework Component.
 
     Implementa componente central do framework com funcionalidades específicas.
     Segue padrões arquiteturais estabelecidos.
@@ -125,7 +125,8 @@ class PasswordHasher(DomainBaseModel):
     Uso típico da classe:
 
     ```python
-    instance = PasswordHasher()\n    result = instance.method()
+    instance = PasswordHasher()
+    result = instance.method()
     ```
 
     See Also:
@@ -137,9 +138,9 @@ class PasswordHasher(DomainBaseModel):
     ----
     Esta classe segue os padrões Enterprise Patterns estabelecidos no projeto.
 
-    """
+    Advanced password hasher with zero boilerplate.
 
-    """Advanced password hasher with zero boilerplate."""
+    """
 
     model_config: ClassVar = {"arbitrary_types_allowed": True}
 
@@ -161,16 +162,18 @@ class PasswordHasher(DomainBaseModel):
 
     @property
     def _hasher(self) -> Argon2Hasher:
-        """Backward compatibility property."""
         if self.argon2_hasher is None:
             msg = "PasswordHasher not initialized. Call model_post_init first."
-            raise RuntimeError(
-                msg
-            )
+            raise RuntimeError(msg)
         return self.argon2_hasher
 
     def model_post_init(self, __context: object, /) -> None:
-        """Initialize Argon2 hasher with parameters."""
+        """Initialize Argon2 hasher after model validation.
+
+        Args:
+            __context: Pydantic validation context (unused).
+
+        """
         self.argon2_hasher = Argon2Hasher(
             time_cost=self.time_cost,
             memory_cost=self.memory_cost,
@@ -180,38 +183,26 @@ class PasswordHasher(DomainBaseModel):
         )
 
     def hash(self, password: str) -> Hash:
-        """Hash password using Argon2id algorithm.
-
-        Hashes the provided password using the Argon2id algorithm with
-        enterprise-grade security parameters for memory-hard hashing
-        resistant to GPU and ASIC attacks.
+        """Hash a password using Argon2.
 
         Args:
-        ----
-            password: Plain text password to hash
+            password: Plain text password to hash.
 
         Returns:
-        -------
-            Argon2id hash string suitable for secure storage
+            Argon2 hashed password string.
 
         """
         return self._hasher.hash(password)
 
     def verify(self, password: str, hash_str: Hash) -> bool:
-        """Verify password against stored hash.
-
-        Verifies the provided plain text password against the stored
-        Argon2id hash using constant-time comparison to prevent
-        timing attacks.
+        """Verify password against Argon2 hash.
 
         Args:
-        ----
-            password: Plain text password to verify
-            hash_str: Stored Argon2id hash string
+            password: Plain text password to verify.
+            hash_str: Argon2 hash to verify against.
 
         Returns:
-        -------
-            True if password matches hash, False otherwise
+            True if password matches hash, False otherwise.
 
         """
         try:
@@ -222,7 +213,15 @@ class PasswordHasher(DomainBaseModel):
             return True
 
     def needs_rehash(self, hash_str: Hash) -> bool:
-        """Check if hash needs rehashing with updated parameters."""
+        """Check if hash needs to be updated with current parameters.
+
+        Args:
+            hash_str: Existing hash to check.
+
+        Returns:
+            True if hash should be updated, False otherwise.
+
+        """
         try:
             return self._hasher.check_needs_rehash(hash_str)
         except InvalidHash:
@@ -270,7 +269,12 @@ class SecurityHeaders(DomainValueObject):
     )
 
     def to_dict(self) -> dict[str, str]:
-        """Convert to dictionary for gRPC metadata."""
+        """Convert security headers to dictionary format.
+
+        Returns:
+            Dictionary containing all security headers.
+
+        """
         return {
             "x-content-type-options": self.x_content_type_options,
             "x-frame-options": self.x_frame_options,
@@ -285,7 +289,7 @@ class SecurityHeaders(DomainValueObject):
 
 
 class TokenGenerator:
-    r"""TokenGenerator - Framework Component.
+    """TokenGenerator - Framework Component.
 
     Implementa componente central do framework com funcionalidades específicas.
     Segue padrões arquiteturais estabelecidos.
@@ -309,7 +313,8 @@ class TokenGenerator:
     Uso típico da classe:
 
     ```python
-    instance = TokenGenerator()\n    result = instance.method()
+    instance = TokenGenerator()
+    result = instance.method()
     ```
 
     See Also:
@@ -321,26 +326,29 @@ class TokenGenerator:
     ----
     Esta classe segue os padrões Enterprise Patterns estabelecidos no projeto.
 
-    """
+    Secure token generator using secrets module.
 
-    """Secure token generator using secrets module."""
+    """
 
     @staticmethod
     def generate_token(length: int = 32) -> Token:
-        """Generate cryptographically secure token."""
+        """Generate cryptographically secure token.
+
+        Args:
+            length: Length of token in bytes (default: 32).
+
+        Returns:
+            URL-safe base64 encoded token string.
+
+        """
         return secrets.token_urlsafe(length)
 
     @staticmethod
     def generate_api_key() -> Token:
         """Generate API key with FLEXT prefix.
 
-        Generates a cryptographically secure API key with the FLEXT prefix
-        for easy identification and consistent formatting across the
-        platform.
-
-        Returns
-        -------
-            API key string with flext_ prefix and secure random token
+        Returns:
+            API key string with 'flext_' prefix.
 
         """
         prefix = "flext"
@@ -349,30 +357,30 @@ class TokenGenerator:
 
     @staticmethod
     def generate_refresh_token() -> Token:
-        """Generate cryptographically secure refresh token.
+        """Generate long-lived refresh token.
 
-        Generates a long-lived refresh token using 64 bytes of
-        cryptographically secure random data for JWT token refresh
-        operations.
-
-        Returns
-        -------
-            URL-safe base64 encoded refresh token string
+        Returns:
+            URL-safe base64 encoded refresh token (64 bytes).
 
         """
         return secrets.token_urlsafe(64)
 
     @staticmethod
     def constant_time_compare(a: str, b: str) -> bool:
-        """Compare two strings in constant time."""
+        """Compare strings in constant time to prevent timing attacks.
+
+        Args:
+            a: First string to compare.
+            b: Second string to compare.
+
+        Returns:
+            True if strings are equal, False otherwise.
+
+        """
         return secrets.compare_digest(a, b)
 
 
-def create_access_token(
-    data: dict[str, Any],
-    expires_delta: timedelta | None = None,
-) -> str:
-    """Create a new JWT access token."""
+def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
     config = get_config()
 
@@ -392,12 +400,7 @@ def create_access_token(
     return encoded_jwt.decode("utf-8")
 
 
-def decode_jwt_token(
-    token: str,
-    secret_key: str,
-    algorithm: str = "HS256",
-) -> dict[str, Any] | None:
-    """Decode a JWT token and return its payload."""
+def decode_jwt_token(token: str, secret_key: str, algorithm: str = "HS256") -> dict[str, Any] | None:
     try:
         return jwt.decode(token, secret_key, algorithms=[algorithm])
     except jwt.PyJWTError:
@@ -406,15 +409,12 @@ def decode_jwt_token(
 
 # Cryptographic utilities
 def generate_secret_key(length: int = 32) -> bytes:
-    """Generate a URL-safe secret key."""
     return secrets.token_bytes(length)
 
 
 def hash_token(token: str) -> str:
-    """Hash a token using SHA256 for safe storage."""
     return hashlib.sha256(token.encode()).hexdigest()
 
 
 def generate_nonce() -> str:
-    """Generate a secure nonce for cryptographic operations."""
     return secrets.token_hex(16)

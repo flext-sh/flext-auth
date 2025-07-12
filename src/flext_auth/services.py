@@ -2,32 +2,23 @@
 
 from __future__ import annotations
 
-# ZERO TOLERANCE: Import modern rate limiting from canonical location
-from flext_core.security.redis_rate_limiting import (
-    RedisRateLimitManager,
-    RedisSlidingWindowLimiter,
-    RedisTokenBucketLimiter,
-)
+from flext_auth.authorization_service import DefaultRoleManager
+from flext_auth.authorization_service import RoleBasedAuthorizationService
+from flext_auth.jwt_service import JWTConfig
+from flext_auth.jwt_service import JWTService
+from flext_auth.tokens import InMemoryTokenStorage
+from flext_auth.tokens import RedisTokenStorage
+from flext_auth.tokens import TokenBlacklist
+from flext_auth.tokens import TokenManager
+from flext_auth.tokens import TokenMetadata
+from flext_auth.user_service import AuthenticationResponse
+from flext_auth.user_service import PasswordHasherImpl
+from flext_auth.user_service import SecurityAuditorImpl
+from flext_auth.user_service import UserCreationRequest
+from flext_auth.user_service import UserService
 
-from flext_auth.authorization_service import (
-    DefaultRoleManager,
-    RoleBasedAuthorizationService,
-)
-from flext_auth.jwt_service import JWTConfig, JWTService
-from flext_auth.tokens import (
-    InMemoryTokenStorage,
-    RedisTokenStorage,
-    TokenBlacklist,
-    TokenManager,
-    TokenMetadata,
-)
-from flext_auth.user_service import (
-    AuthenticationResponse,
-    PasswordHasherImpl,
-    SecurityAuditorImpl,
-    UserCreationRequest,
-    UserService,
-)
+# Rate limiting will be implemented when flext_core.security is available
+# TODO: Implement rate limiting when security module is added to flext-core
 
 __all__ = [
     "AuthenticationResponse",

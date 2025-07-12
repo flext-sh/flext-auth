@@ -1,34 +1,53 @@
-"""Token management and blacklisting system with Python 3.13 patterns."""
-
 from __future__ import annotations
+
+"""Token management and blacklisting system with Python 3.13 patterns."""
 
 import asyncio
 import contextlib
-import datetime
 import fnmatch
-from abc import ABC, abstractmethod
+from abc import ABC
+from abc import abstractmethod
 from datetime import UTC
 from datetime import datetime as dt
-from enum import Enum
-from typing import TYPE_CHECKING, Any, TypeVar
+from datetime import timedelta
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import TypeVar
 
 import redis.asyncio as redis
-
-# Define constants locally since config is not available
-from flext_core.domain.core import ValueObject
 from passlib.context import CryptContext
 from pydantic import Field
+
+# Define constants locally since config is not available
+from flext_core import DomainValueObject as ValueObject
+from flext_core.domain.types import StrEnum
+
+
+# Simple constants for token management - avoid dependency on config module
+class _TokenConstants:
+    REDIS_KEY_PREFIX = "flext:token:"
+    DEFAULT_TTL_SECONDS = 3600
+    CLEANUP_BATCH_SIZE = 100
+    MAXIMUM_PASSWORD_LENGTH = 128
+
+
+def get_domain_constants():
+    """Get local domain constants for token management."""
+    return _TokenConstants()
+
+
+# Import types outside TYPE_CHECKING for runtime use
+from flext_auth.types import TokenType
+from flext_auth.types import UserID
 
 if TYPE_CHECKING:
     from redis.asyncio import Redis
 
-    from flext_auth.types import TokenType, UserID
-
 T = TypeVar("T")
 
 
-class TokenInclusionMode(Enum):
-    """Token inclusion mode for filtering token retrieval operations.
+class TokenInclusionMode(StrEnum):
+    """Token inclusion mode for filtering token retrieval operations using flext-core patterns.
 
     Defines whether expired tokens should be included in token listing
     and retrieval operations, replacing boolean include_expired parameters
@@ -62,7 +81,7 @@ class TokenMetadata(ValueObject):
     user_id: UserID = Field(
         description="Owner user identifier for security association",
     )
-    token_type: TokenType = Field(
+    token_type: str = Field(
         description="Token classification for access control policies",
     )
     issued_at: dt = Field(description="Token issuance timestamp for lifecycle tracking")
@@ -96,52 +115,45 @@ class TokenMetadata(ValueObject):
 
     @property
     def is_expired(self) -> bool:
-        """Check if token is expired.
-
-        Compares the current UTC time with the token's expiration time
-        to determine if the token has expired.
+        """Check if the token has expired.
 
         Returns:
-        -------
-            bool: True if the token has expired, False otherwise.
-
-        Note:
-        ----
-            Uses UTC time for consistency across time zones.
+            bool: True if current time is past the expiration timestamp.
 
         """
         return dt.now(UTC) > self.expires_at
 
     @property
     def is_revoked(self) -> bool:
-        """Check if token is revoked.
-
-        Determines if the token has been revoked by checking if
-        the revoked_at timestamp is set.
+        """Check if the token has been revoked.
 
         Returns:
-        -------
-            bool: True if the token has been revoked, False otherwise.
-
-        Note:
-        ----
-            A token is considered revoked if it has a revoked_at timestamp,
-            regardless of the reason or who revoked it.
+            bool: True if the token has a revocation timestamp.
 
         """
         return self.revoked_at is not None
 
     @property
     def is_valid(self) -> bool:
-        """Check if token is valid (not expired and not revoked)."""
+        """Check if the token is valid (not expired and not revoked).
+
+        Returns:
+            bool: True if the token is both non-expired and non-revoked.
+
+        """
         return not self.is_expired and not self.is_revoked
 
-    def revoke(
-        self,
-        revoked_by: UserID | None = None,
-        reason: str | None = None,
-    ) -> TokenMetadata:
-        """Create a revoked copy of this token metadata."""
+    def revoke(self, revoked_by: UserID | None = None, reason: str | None = None) -> TokenMetadata:
+        """Create a revoked copy of this token metadata.
+
+        Args:
+            revoked_by: User ID who performed the revocation.
+            reason: Reason for the revocation.
+
+        Returns:
+            TokenMetadata: New instance with revocation information populated.
+
+        """
         return TokenMetadata(
             token_id=self.token_id,
             user_id=self.user_id,
@@ -158,97 +170,35 @@ class TokenMetadata(ValueObject):
 
 
 class TokenStorage[T](ABC):
-    r"""TokenStorage - Framework Component.
-
-    Implementa componente central do framework com funcionalidades específicas.
-    Segue padrões arquiteturais estabelecidos.
-
-    Arquitetura: Enterprise Patterns
-    Padrões: SOLID principles, clean code
-
-    Attributes:
-    ----------
-    Sem atributos públicos documentados.
-
-    Methods:
-    -------
-    store(): Método específico da classe
-    get(): Obtém dados
-    delete(): Remove dados
-    exists(): Método específico da classe
-    keys(): Método específico da classe
-    cleanup_expired(): Método específico da classe
-
-    Examples:
-    --------
-    Uso típico da classe:
-
-    ```python
-    instance = TokenStorage()\n    result = instance.method()
-    ```
-
-    See Also:
-    --------
-    - [Documentação da Arquitetura](../../docs/architecture/index.md)
-    - [Padrões de Design](../../docs/architecture/001-clean-architecture-ddd.md)
-
-    Note:
-    ----
-    Esta classe segue os padrões Enterprise Patterns estabelecidos no projeto.
-
-    """
-
     """Abstract base class for token storage backends."""
 
     @abstractmethod
-    async def store(
-        self,
-        key: str,
-        value: T,
-        ttl: datetime.timedelta | None = None,
-    ) -> None:
-        """Store a value with optional TTL.
-
-        Stores a value in the storage backend with an optional time-to-live (TTL).
-        If TTL is provided, the value will expire after that duration.
+    async def store(self, key: str, value: T, ttl: timedelta | None = None) -> None:
+        """Store a value with optional time-to-live.
 
         Args:
-        ----
-            key: The key to store the value under
-            value: The value to store
-            ttl: Optional time-to-live for the value
+            key: Storage key identifier.
+            value: Value to store.
+            ttl: Optional time-to-live duration.
 
-        Returns:
-        -------
-            None: Indicates successful storage
-
-        Note:
-        ----
-            Storage backends should handle TTL expiration automatically and
-            ensure data persistence according to configured retention policies.
+        Raises:
+            NotImplementedError: This is an abstract method.
 
         """
         # Base implementation - subclasses provide concrete storage
 
     @abstractmethod
     async def get(self, key: str) -> T | None:
-        """Get a value by key.
-
-        Retrieves a value from the storage backend by its key. Returns
-        None if the key doesn't exist or has expired.
+        """Retrieve a value by key.
 
         Args:
-        ----
-            key: The key to look up
+            key: Storage key identifier.
 
         Returns:
-        -------
-            T | None: The stored value or None if not found
+            T | None: Stored value or None if not found or expired.
 
-        Note:
-        ----
-            Storage backends automatically handle expiration checking
-            and return None for expired or non-existent values.
+        Raises:
+            NotImplementedError: This is an abstract method.
 
         """
         # Base implementation - subclasses provide concrete storage
@@ -257,44 +207,30 @@ class TokenStorage[T](ABC):
     async def delete(self, key: str) -> bool:
         """Delete a value by key.
 
-        Removes a value from the storage backend. Returns True if the
-        key existed and was deleted, False otherwise.
-
         Args:
-        ----
-            key: The key to delete
+            key: Storage key identifier.
 
         Returns:
-        -------
-            bool: True if deleted, False if key didn't exist
+            bool: True if the key was found and deleted, False otherwise.
 
-        Note:
-        ----
-            Deletion operations should be idempotent and not raise
-            exceptions for non-existent keys.
+        Raises:
+            NotImplementedError: This is an abstract method.
 
         """
         # Base implementation - subclasses provide concrete storage
 
     @abstractmethod
     async def exists(self, key: str) -> bool:
-        """Check if key exists.
-
-        Checks whether a key exists in the storage backend. This should
-        also check if the value has expired.
+        """Check if a key exists and is not expired.
 
         Args:
-        ----
-            key: The key to check
+            key: Storage key identifier.
 
         Returns:
-        -------
-            bool: True if key exists and hasn't expired, False otherwise
+            bool: True if the key exists and is not expired.
 
-        Note:
-        ----
-            Existence checking includes automatic expiration validation
-            returning False for logically expired entries.
+        Raises:
+            NotImplementedError: This is an abstract method.
 
         """
         # Base implementation - subclasses provide concrete storage
@@ -324,118 +260,45 @@ class TokenStorage[T](ABC):
 
     @abstractmethod
     async def cleanup_expired(self) -> int:
-        """Remove expired entries and return count."""
+        """Remove expired entries from storage.
+
+        Returns:
+            int: Number of expired entries removed.
+
+        Raises:
+            NotImplementedError: This is an abstract method.
+
+        """
         # Base implementation - subclasses provide concrete storage
 
 
 class RedisTokenStorage(TokenStorage[str]):
-    r"""RedisTokenStorage - Framework Component.
-
-    Implementa componente central do framework com funcionalidades específicas.
-    Segue padrões arquiteturais estabelecidos.
-
-    Arquitetura: Enterprise Patterns
-    Padrões: SOLID principles, clean code
-
-    Attributes:
-    ----------
-    Sem atributos públicos documentados.
-
-    Methods:
-    -------
-    store(): Método específico da classe
-    get(): Obtém dados
-    delete(): Remove dados
-    exists(): Método específico da classe
-    keys(): Método específico da classe
-    cleanup_expired(): Método específico da classe
-    close(): Fecha conexão/recurso
-
-    Examples:
-    --------
-    Uso típico da classe:
-
-    ```python
-    instance = RedisTokenStorage()\n    result = instance.method()
-    ```
-
-    See Also:
-    --------
-    - [Documentação da Arquitetura](../../docs/architecture/index.md)
-    - [Padrões de Design](../../docs/architecture/001-clean-architecture-ddd.md)
-
-    Note:
-    ----
-    Esta classe segue os padrões Enterprise Patterns estabelecidos no projeto.
-
-    """
-
     """Redis-based token storage implementation."""
 
-    def __init__(
-        self,
-        redis_client: Redis[str] | None = None,
-        key_prefix: str = "flext:tokens",
-    ) -> None:
-        """Initialize with Redis client.
-
-        Sets up the Redis storage backend with an optional custom client
-        and key prefix for namespacing.
-
-        Args:
-        ----
-            redis_client: Optional pre-configured Redis client
-            key_prefix: Prefix for all keys to avoid collisions
-
-        Note:
-        ----
-            Creates Redis connection with default localhost settings
-            when no custom client configuration is provided.
-
-        """
+    def __init__(self, redis_client: Redis[str] | None = None, key_prefix: str = "flext:tokens") -> None:
         # Get Redis configuration from unified domain config - with strict validation
         if redis_client:
             self.redis = redis_client
         else:
-            # Use import from TYPE_CHECKING to avoid circular dependencies
-            get_config = __import__(
-                "flext_core.config.domain_config",
-                fromlist=["get_config"],
-            ).get_config
-            config = get_config()
-            redis_url = f"{config.business.REDIS_PROTOCOL_SCHEME}://{config.network.redis_host}:{config.network.redis_port}/{config.network.redis_database_index}"
+            # Use import from flext_auth config
+            from flext_auth.config import get_auth_settings
+            config = get_auth_settings()
+            redis_url = getattr(config, "redis_url", "redis://localhost:6379/0")
             self.redis = redis.from_url(redis_url)
         self.key_prefix = key_prefix
 
     def _make_key(self, key: str) -> str:
-        """Create prefixed key.
-
-        Adds the configured prefix to a key to create a namespaced
-        Redis key, preventing collisions with other applications.
-
-        Args:
-        ----
-            key: The raw key
-
-        Returns:
-        -------
-            str: The prefixed key
-
-        Note:
-        ----
-            Prevents key collisions in shared Redis instances through
-            consistent prefix application for namespace isolation.
-
-        """
         return f"{self.key_prefix}:{key}"
 
-    async def store(
-        self,
-        key: str,
-        value: str,
-        ttl: datetime.timedelta | None = None,
-    ) -> None:
-        """Store a value with optional TTL."""
+    async def store(self, key: str, value: str, ttl: timedelta | None = None) -> None:
+        """Store a value in Redis with optional TTL.
+
+        Args:
+            key: Storage key identifier.
+            value: String value to store.
+            ttl: Optional time-to-live duration.
+
+        """
         redis_key = self._make_key(key)
         if ttl:
             await self.redis.setex(redis_key, int(ttl.total_seconds()), value)
@@ -443,46 +306,26 @@ class RedisTokenStorage(TokenStorage[str]):
             await self.redis.set(redis_key, value)
 
     async def get(self, key: str) -> str | None:
-        """Get a value by key.
-
-        Retrieves a value from Redis by its key. Returns None if the
-        key doesn't exist or has expired (handled by Redis TTL).
+        """Retrieve a value from Redis by key.
 
         Args:
-        ----
-            key: The key to look up
+            key: Storage key identifier.
 
         Returns:
-        -------
-            str | None: The stored value or None if not found
-
-        Note:
-        ----
-            Leverages Redis native TTL functionality for automatic
-            expiration handling without manual cleanup.
+            str | None: Stored value or None if not found.
 
         """
         redis_key = self._make_key(key)
         return await self.redis.get(redis_key)
 
     async def delete(self, key: str) -> bool:
-        """Delete a value by key.
-
-        Removes a value from Redis. Returns True if the key existed
-        and was deleted, False otherwise.
+        """Delete a value from Redis by key.
 
         Args:
-        ----
-            key: The key to delete
+            key: Storage key identifier.
 
         Returns:
-        -------
-            bool: True if deleted, False if key didn't exist
-
-        Note:
-        ----
-            Uses Redis delete operation return value to determine
-            whether the key existed before deletion.
+            bool: True if the key was found and deleted.
 
         """
         redis_key = self._make_key(key)
@@ -490,23 +333,13 @@ class RedisTokenStorage(TokenStorage[str]):
         return result > 0
 
     async def exists(self, key: str) -> bool:
-        """Check if key exists.
-
-        Checks whether a key exists in Redis. Expired keys are
-        automatically removed by Redis so this handles expiration.
+        """Check if a key exists in Redis.
 
         Args:
-        ----
-            key: The key to check
+            key: Storage key identifier.
 
         Returns:
-        -------
-            bool: True if key exists, False otherwise
-
-        Note:
-        ----
-            Leverages Redis exists command which returns count
-            of existing keys matching the specified pattern.
+            bool: True if the key exists.
 
         """
         redis_key = self._make_key(key)
@@ -539,78 +372,51 @@ class RedisTokenStorage(TokenStorage[str]):
         return [key[prefix_len:] for key in keys]
 
     async def cleanup_expired(self) -> int:
-        """Remove expired entries and return count."""
+        """Redis handles expiration automatically.
+
+        Returns:
+            int: Always returns 0 as Redis handles cleanup automatically.
+
+        """
         # Redis automatically removes expired keys
         return 0
 
     async def close(self) -> None:
-        """Close Redis connection.
+        """Close the Redis connection.
 
-        Gracefully closes the Redis connection when the storage is
-        no longer needed. This should be called during shutdown.
-
-        Note:
-        ----
-            Performs graceful shutdown of Redis connections to prevent
-            resource leaks during application termination.
-
+        Gracefully closes the underlying Redis connection to free resources.
         """
-        # Try modern async close first, fallback to older version
-        try:
-            await self.redis.aclose()
-        except AttributeError:
-            # Fallback for older redis versions that don't have aclose
-            await self.redis.close()
+        await self.redis.aclose()
 
 
 class InMemoryTokenStorage(TokenStorage[str]):
     """In-memory token storage for testing and development."""
 
     def __init__(self) -> None:
-        """Initialize in-memory storage.
-
-        Creates an in-memory dictionary for storing tokens with TTL
-        support. This is suitable for testing and development but
-        not for production use.
-
-        Note:
-        ----
-            Provides thread-safe in-memory storage suitable for development
-            and testing environments with proper concurrency handling.
-
-        """
         self._data: dict[str, tuple[str, dt | None]] = {}
         self._lock = asyncio.Lock()
 
-    async def store(
-        self,
-        key: str,
-        value: str,
-        ttl: datetime.timedelta | None = None,
-    ) -> None:
-        """Store a value with optional TTL."""
+    async def store(self, key: str, value: str, ttl: timedelta | None = None) -> None:
+        """Store a value in memory with optional TTL.
+
+        Args:
+            key: Storage key identifier.
+            value: String value to store.
+            ttl: Optional time-to-live duration.
+
+        """
         expires_at = dt.now(UTC) + ttl if ttl else None
         async with self._lock:
             self._data[key] = (value, expires_at)
 
     async def get(self, key: str) -> str | None:
-        """Get a value by key.
-
-        Retrieves a value from memory, checking for expiration. If the
-        value has expired, it's automatically removed.
+        """Retrieve a value from memory by key.
 
         Args:
-        ----
-            key: The key to look up
+            key: Storage key identifier.
 
         Returns:
-        -------
-            str | None: The stored value or None if not found/expired
-
-        Note:
-        ----
-            Implements lazy expiration by checking TTL on access
-            and automatically removing expired entries.
+            str | None: Stored value or None if not found or expired.
 
         """
         async with self._lock:
@@ -619,7 +425,7 @@ class InMemoryTokenStorage(TokenStorage[str]):
 
             value, expires_at = self._data[key]
 
-            # Check if expired
+            # Check if expired:
             if expires_at and dt.now(UTC) > expires_at:
                 del self._data[key]
                 return None
@@ -627,23 +433,13 @@ class InMemoryTokenStorage(TokenStorage[str]):
             return value
 
     async def delete(self, key: str) -> bool:
-        """Delete a value by key.
-
-        Removes a value from memory. Returns True if the key existed
-        and was deleted, False otherwise.
+        """Delete a value from memory by key.
 
         Args:
-        ----
-            key: The key to delete
+            key: Storage key identifier.
 
         Returns:
-        -------
-            bool: True if deleted, False if key didn't exist
-
-        Note:
-        ----
-            Ensures atomic deletion operations through async locking
-            to prevent race conditions in concurrent access.
+            bool: True if the key was found and deleted.
 
         """
         async with self._lock:
@@ -653,34 +449,37 @@ class InMemoryTokenStorage(TokenStorage[str]):
             return False
 
     async def exists(self, key: str) -> bool:
-        """Check if key exists.
-
-        Checks whether a key exists and hasn't expired. Uses get()
-        internally to handle expiration checking.
+        """Check if a key exists in memory and is not expired.
 
         Args:
-        ----
-            key: The key to check
+            key: Storage key identifier.
 
         Returns:
-        -------
-            bool: True if key exists and hasn't expired
-
-        Note:
-        ----
-            Utilizes existing get() method for consistent expiration
-            checking without duplicating TTL validation logic.
+            bool: True if the key exists and is not expired.
 
         """
         return await self.get(key) is not None
 
     async def keys(self, pattern: str) -> list[str]:
-        """Get keys matching pattern (simple wildcard support)."""
+        """Get keys matching a glob pattern.
+
+        Args:
+            pattern: Glob pattern to match keys against.
+
+        Returns:
+            list[str]: List of matching keys.
+
+        """
         async with self._lock:
             return [key for key in self._data if fnmatch.fnmatch(key, pattern)]
 
     async def cleanup_expired(self) -> int:
-        """Remove expired entries and return count."""
+        """Remove expired entries from memory storage.
+
+        Returns:
+            int: Number of expired entries removed.
+
+        """
         now = dt.now(UTC)
         expired_keys = []
 
@@ -699,34 +498,21 @@ class DatabaseTokenStorage(TokenStorage[str]):
     """Database-based token storage implementation using SQLAlchemy."""
 
     def __init__(self, db_session_factory: Any) -> None:
-        """Initialize with database session factory.
-
-        Sets up the database storage backend with a session factory
-        for creating database connections.
-
-        Args:
-        ----
-            db_session_factory: SQLAlchemy session factory
-
-        Note:
-        ----
-            Provides persistent token storage across application restarts
-            with transactional consistency for enterprise deployments.
-
-        """
         self.session_factory = db_session_factory
 
-    async def store(
-        self,
-        key: str,
-        value: str,
-        ttl: datetime.timedelta | None = None,
-    ) -> None:
-        """Store a value with optional TTL in database."""
+    async def store(self, key: str, value: str, ttl: timedelta | None = None) -> None:
+        """Store a value in database with optional TTL.
+
+        Args:
+            key: Storage key identifier.
+            value: String value to store.
+            ttl: Optional time-to-live duration.
+
+        """
         expires_at = dt.now(UTC) + ttl if ttl else None
 
         async with self.session_factory() as session:
-            # Check if key exists
+            # Check if key exists:
             existing = await session.execute(
                 "SELECT key FROM token_storage WHERE key = :key",
                 {"key": key},
@@ -735,7 +521,7 @@ class DatabaseTokenStorage(TokenStorage[str]):
             if existing.scalar():
                 # Update existing
                 await session.execute(
-                    "UPDATE token_storage SET value = :value, expires_at = :expires_at, updated_at = :now WHERE key = :key",
+                    "UPDATE token_storage SET value = :value, expires_at = :expires_at, updated_at = :now WHERE key = :key",  # TODO: Break long line
                     {
                         "key": key,
                         "value": value,
@@ -746,7 +532,7 @@ class DatabaseTokenStorage(TokenStorage[str]):
             else:
                 # Insert new
                 await session.execute(
-                    "INSERT INTO token_storage (key, value, expires_at, created_at) VALUES (:key, :value, :expires_at, :now)",
+                    "INSERT INTO token_storage (key, value, expires_at, created_at) VALUES (:key, :value, :expires_at, :now)",  # TODO: Break long line
                     {
                         "key": key,
                         "value": value,
@@ -758,7 +544,15 @@ class DatabaseTokenStorage(TokenStorage[str]):
             await session.commit()
 
     async def get(self, key: str) -> str | None:
-        """Get a value by key from database."""
+        """Retrieve a value from database by key.
+
+        Args:
+            key: Storage key identifier.
+
+        Returns:
+            str | None: Stored value or None if not found or expired.
+
+        """
         async with self.session_factory() as session:
             result = await session.execute(
                 "SELECT value, expires_at FROM token_storage WHERE key = :key",
@@ -784,7 +578,15 @@ class DatabaseTokenStorage(TokenStorage[str]):
             return value
 
     async def delete(self, key: str) -> bool:
-        """Delete a value by key from database."""
+        """Delete a value from database by key.
+
+        Args:
+            key: Storage key identifier.
+
+        Returns:
+            bool: True if the key was found and deleted.
+
+        """
         async with self.session_factory() as session:
             result = await session.execute(
                 "DELETE FROM token_storage WHERE key = :key",
@@ -794,28 +596,49 @@ class DatabaseTokenStorage(TokenStorage[str]):
             return result.rowcount > 0
 
     async def exists(self, key: str) -> bool:
-        """Check if key exists in database."""
+        """Check if a key exists in database and is not expired.
+
+        Args:
+            key: Storage key identifier.
+
+        Returns:
+            bool: True if the key exists and is not expired.
+
+        """
         async with self.session_factory() as session:
             result = await session.execute(
-                "SELECT 1 FROM token_storage WHERE key = :key AND (expires_at IS NULL OR expires_at > :now)",
+                "SELECT 1 FROM token_storage WHERE key = :key AND (expires_at IS NULL OR expires_at > :now)",  # TODO: Break long line
                 {"key": key, "now": dt.now(UTC)},
             )
             return result.scalar() is not None
 
     async def keys(self, pattern: str) -> list[str]:
-        """Get keys matching pattern from database."""
+        """Get keys matching a glob pattern from database.
+
+        Args:
+            pattern: Glob pattern to match keys against.
+
+        Returns:
+            list[str]: List of matching keys that are not expired.
+
+        """
         # Convert glob pattern to SQL LIKE pattern
         sql_pattern = pattern.replace("*", "%").replace("?", "_")
 
         async with self.session_factory() as session:
             result = await session.execute(
-                "SELECT key FROM token_storage WHERE key LIKE :pattern AND (expires_at IS NULL OR expires_at > :now)",
+                "SELECT key FROM token_storage WHERE key LIKE :pattern AND (expires_at IS NULL OR expires_at > :now)",  # TODO: Break long line
                 {"pattern": sql_pattern, "now": dt.now(UTC)},
             )
             return [row[0] for row in result]
 
     async def cleanup_expired(self) -> int:
-        """Remove expired entries from database."""
+        """Remove expired entries from database storage.
+
+        Returns:
+            int: Number of expired entries removed.
+
+        """
         async with self.session_factory() as session:
             result = await session.execute(
                 "DELETE FROM token_storage WHERE expires_at IS NOT NULL AND expires_at < :now",
@@ -829,41 +652,14 @@ class TokenBlacklist:
     """Token blacklisting service with automatic cleanup."""
 
     def __init__(self, storage: TokenStorage[str] | None = None) -> None:
-        """Initialize token blacklist.
-
-        Sets up the blacklist service with a storage backend. Defaults
-        to in-memory storage if none provided.
-
-        Args:
-        ----
-            storage: Optional storage backend for blacklisted tokens
-
-        Note:
-        ----
-            Default in-memory storage works for single-instance deployments
-            but requires Redis for distributed production environments.
-
-        """
         self.storage = storage or InMemoryTokenStorage()
         self._cleanup_task: asyncio.Task[None] | None = None
 
-    async def start_cleanup_task(
-        self,
-        interval: datetime.timedelta = datetime.timedelta(hours=1),
-    ) -> None:
-        """Start periodic cleanup task.
-
-        Starts a background task that periodically removes expired
-        tokens from the blacklist to prevent memory bloat.
+    async def start_cleanup_task(self, interval: timedelta = timedelta(hours=1)) -> None:
+        """Start the automatic cleanup task.
 
         Args:
-        ----
-            interval: How often to run cleanup (default: 1 hour)
-
-        Note:
-        ----
-            Prevents duplicate cleanup tasks by checking existing
-            task status before creating new background processes.
+            interval: Time interval between cleanup runs (default: 1 hour).
 
         """
         if self._cleanup_task and not self._cleanup_task.done():
@@ -872,24 +668,16 @@ class TokenBlacklist:
         self._cleanup_task = asyncio.create_task(self._periodic_cleanup(interval))
 
     async def stop_cleanup_task(self) -> None:
-        """Stop periodic cleanup task.
+        """Stop the automatic cleanup task.
 
-        Gracefully stops the background cleanup task if it's running.
-        Suppresses CancelledError to avoid propagation.
-
-        Note:
-        ----
-            Essential for clean application shutdown to prevent
-            orphaned background tasks and resource leaks.
-
+        Cancels the running cleanup task and waits for clean shutdown.
         """
         if self._cleanup_task and not self._cleanup_task.done():
             self._cleanup_task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await self._cleanup_task
 
-    async def _periodic_cleanup(self, interval: datetime.timedelta) -> None:
-        """Periodic cleanup of expired tokens."""
+    async def _periodic_cleanup(self, interval: timedelta) -> None:
         while True:
             try:
                 await asyncio.sleep(interval.total_seconds())
@@ -900,28 +688,13 @@ class TokenBlacklist:
                 # Log error but continue cleanup loop
                 pass
 
-    async def revoke_token(
-        self,
-        token_id: str,
-        expires_at: dt,
-        metadata: TokenMetadata | None = None,
-    ) -> None:
-        """Revoke a token by ID.
-
-        Adds a token to the blacklist with TTL matching its original
-        expiration time. This ensures revoked tokens stay blacklisted
-        until they would have naturally expired.
+    async def revoke_token(self, token_id: str, expires_at: dt, metadata: TokenMetadata | None = None) -> None:
+        """Revoke a token by adding it to the blacklist.
 
         Args:
-        ----
-            token_id: Unique identifier of the token to revoke
-            expires_at: Original expiration time of the token
-            metadata: Optional metadata about the revocation
-
-        Note:
-        ----
-            Optimization to avoid storing already-expired tokens
-            in the blacklist since they're naturally invalid.
+            token_id: Unique identifier of the token to revoke.
+            expires_at: When the token expires naturally.
+            metadata: Optional token metadata for audit information.
 
         """
         ttl = expires_at - dt.now(UTC)
@@ -931,7 +704,8 @@ class TokenBlacklist:
         # Store revocation info
         revocation_data = {
             "revoked_at": dt.now(UTC).isoformat(),
-            "metadata": metadata.device_info if metadata else {},
+            "metadata":
+                metadata.device_info if metadata else {},
         }
 
         await self.storage.store(
@@ -941,56 +715,31 @@ class TokenBlacklist:
         )
 
     async def is_token_revoked(self, token_id: str) -> bool:
-        """Check if a token is revoked.
-
-        Checks the blacklist to see if a token has been revoked.
-        A token present in the blacklist is considered revoked.
+        """Check if a token is in the blacklist.
 
         Args:
-        ----
-            token_id: The token ID to check
+            token_id: Unique identifier of the token to check.
 
         Returns:
-        -------
-            bool: True if the token is in the blacklist
-
-        Note:
-        ----
-            Storage backend handles TTL expiration automatically
-            so revoked tokens are cleaned up when they would expire.
+            bool: True if the token is revoked.
 
         """
         return await self.storage.exists(token_id)
 
-    async def revoke_user_tokens(
-        self,
-        user_id: UserID,
-        token_type: TokenType | None = None,
-    ) -> int:
-        """Revoke all tokens for a user.
-
-        Revokes all tokens belonging to a specific user, optionally
-        filtered by token type. This is useful for logout-all-devices
-        or security incident response.
+    async def revoke_user_tokens(self, user_id: UserID, token_type: TokenType | None = None) -> int:
+        """Revoke all tokens for a specific user.
 
         Args:
-        ----
-            user_id: The user whose tokens to revoke
-            token_type: Optional filter by token type (access/refresh)
+            user_id: User whose tokens should be revoked.
+            token_type: Optional filter for specific token type.
 
         Returns:
-        -------
-            int: Number of tokens revoked
-
-        Note:
-        ----
-            Employs glob pattern matching to efficiently locate
-            all tokens belonging to specific users for bulk operations.
+            int: Number of tokens revoked.
 
         """
         pattern = f"user:{user_id}:*"
         if token_type:
-            pattern = f"user:{user_id}:{token_type.name.lower()}:*"
+            pattern = f"user:{user_id}:{token_type.lower()}:*"
 
         keys = await self.storage.keys(pattern)
 
@@ -1004,18 +753,23 @@ class TokenBlacklist:
             await self.storage.store(
                 key=token_id,
                 value="revoked",
-                ttl=datetime.timedelta(days=30),  # Keep revocation record
+                ttl=timedelta(days=30),  # Keep revocation record
             )
             revoked_count += 1
 
         return revoked_count
 
-    async def get_revoked_tokens(
-        self,
-        user_id: UserID | None = None,
-        limit: int = 100,
-    ) -> list[str]:
-        """Get list of revoked token IDs."""
+    async def get_revoked_tokens(self, user_id: UserID | None = None, limit: int = 100) -> list[str]:
+        """Get list of revoked tokens.
+
+        Args:
+            user_id: Optional filter for specific user's revoked tokens.
+            limit: Maximum number of tokens to return (default: 100).
+
+        Returns:
+            list[str]: List of revoked token identifiers.
+
+        """
         pattern = "*" if not user_id else f"user:{user_id}:*"
         keys = await self.storage.keys(pattern)
         return keys[:limit]
@@ -1024,46 +778,17 @@ class TokenBlacklist:
 class TokenManager:
     """Comprehensive token management with automatic renewal and cleanup."""
 
-    def __init__(
-        self,
-        blacklist: TokenBlacklist | None = None,
-        storage: TokenStorage[str] | None = None,
-    ) -> None:
-        """Initialize token manager.
-
-        Sets up comprehensive token management with blacklisting,
-        metadata tracking, and user token associations.
-
-        Args:
-        ----
-            blacklist: Optional custom blacklist service
-            storage: Optional storage backend for the blacklist
-
-        Note:
-        ----
-            Optimizes token operations through in-memory indexing
-            of user-token relationships for efficient user-based queries.
-
-        """
+    def __init__(self, blacklist: TokenBlacklist | None = None, storage: TokenStorage[str] | None = None) -> None:
         self.blacklist = blacklist or TokenBlacklist(storage)
         self._active_tokens: dict[str, TokenMetadata] = {}
         self._user_tokens: dict[UserID, set[str]] = {}
 
     async def register_token(self, token_id: str, metadata: TokenMetadata) -> None:
-        """Register a new token.
-
-        Registers a token with its metadata for tracking and associates
-        it with the owning user for efficient user-based operations.
+        """Register a new token with its metadata.
 
         Args:
-        ----
-            token_id: Unique identifier for the token
-            metadata: Complete metadata about the token
-
-        Note:
-        ----
-            Establishes bidirectional mapping between users and tokens
-            for efficient user-based token management operations.
+            token_id: Unique identifier of the token.
+            metadata: Complete token metadata for tracking.
 
         """
         self._active_tokens[token_id] = metadata
@@ -1071,15 +796,18 @@ class TokenManager:
         # Track tokens by user
         if metadata.user_id not in self._user_tokens:
             self._user_tokens[metadata.user_id] = set()
-        user_tokens = self._user_tokens[metadata.user_id]
-        if isinstance(user_tokens, set):
-            user_tokens.add(token_id)
-        else:
-            # Fallback for type safety
-            self._user_tokens[metadata.user_id] = {token_id}
+        self._user_tokens[metadata.user_id].add(token_id)
 
     async def validate_token(self, token_id: str) -> bool:
-        """Validate a token (check if not revoked and not expired)."""
+        """Validate if a token is still valid.
+
+        Args:
+            token_id: Unique identifier of the token to validate.
+
+        Returns:
+            bool: True if the token is valid (not revoked and not expired).
+
+        """
         # Check blacklist first
         if await self.blacklist.is_token_revoked(token_id):
             return False
@@ -1092,32 +820,16 @@ class TokenManager:
         # Token not found, assume valid (will be validated by JWT service)
         return True
 
-    async def revoke_token(
-        self,
-        token_id: str,
-        revoked_by: UserID | None = None,
-        reason: str | None = None,
-    ) -> bool:
+    async def revoke_token(self, token_id: str, revoked_by: UserID | None = None, reason: str | None = None) -> bool:
         """Revoke a specific token.
 
-        Revokes a token by marking it in metadata and adding it to
-        the blacklist. The token remains blacklisted until its
-        original expiration time.
-
         Args:
-        ----
-            token_id: The token to revoke
-            revoked_by: Optional user who performed the revocation
-            reason: Optional reason for revocation
+            token_id: Unique identifier of the token to revoke.
+            revoked_by: User who performed the revocation.
+            reason: Reason for the revocation.
 
         Returns:
-        -------
-            bool: True if token was revoked, False if not found
-
-        Note:
-        ----
-            Maintains consistency between memory cache and persistent
-            storage for immediate revocation effect across instances.
+            bool: True if the token was successfully revoked.
 
         """
         # Get token metadata
@@ -1138,33 +850,17 @@ class TokenManager:
 
         return True
 
-    async def revoke_user_tokens(
-        self,
-        user_id: UserID,
-        token_type: TokenType | None = None,
-        revoked_by: UserID | None = None,
-        reason: str | None = None,
-    ) -> int:
+    async def revoke_user_tokens(self, user_id: UserID, token_type: TokenType | None = None, revoked_by: UserID | None = None, reason: str | None = None) -> int:
         """Revoke all tokens for a specific user.
 
-        Revokes all active tokens belonging to a user, optionally filtering by token type.
-        This is useful for security scenarios like account compromise or logout from all devices.
-
         Args:
-        ----
-            user_id: User whose tokens should be revoked
-            token_type: Optional filter for specific token type
-            revoked_by: User performing the revocation (for audit trail)
-            reason: Optional reason for revocation
+            user_id: User whose tokens should be revoked.
+            token_type: Optional filter for specific token type.
+            revoked_by: User who performed the revocation.
+            reason: Reason for the revocation.
 
         Returns:
-        -------
-            int: Number of tokens successfully revoked
-
-        Note:
-        ----
-            Provides comprehensive audit logging for security compliance
-            and forensic analysis of bulk token revocation events.
+            int: Number of tokens successfully revoked.
 
         """
         if user_id not in self._user_tokens:
@@ -1178,7 +874,7 @@ class TokenManager:
             if not metadata:
                 continue
 
-            # Filter by token type if specified
+            # Filter by token type if specified:
             if token_type and metadata.token_type != token_type:
                 continue
 
@@ -1189,7 +885,12 @@ class TokenManager:
         return revoked_count
 
     async def cleanup_expired_tokens(self) -> int:
-        """Remove expired tokens from memory."""
+        """Remove expired tokens from the manager.
+
+        Returns:
+            int: Number of expired tokens removed.
+
+        """
         now = dt.now(UTC)
         expired_tokens = []
 
@@ -1219,31 +920,16 @@ class TokenManager:
 
         return len(expired_tokens)
 
-    async def get_user_tokens(
-        self,
-        user_id: UserID,
-        token_type: TokenType | None = None,
-        inclusion_mode: TokenInclusionMode = TokenInclusionMode.ACTIVE_ONLY,
-    ) -> list[TokenMetadata]:
-        """Get all tokens for a user.
-
-        Retrieves all tokens belonging to a user with optional
-        filtering by token type and expiration status.
+    async def get_user_tokens(self, user_id: UserID, token_type: TokenType | None = None, inclusion_mode: TokenInclusionMode = TokenInclusionMode.ACTIVE_ONLY) -> list[TokenMetadata]:
+        """Get tokens for a specific user.
 
         Args:
-        ----
-            user_id: The user whose tokens to retrieve
-            token_type: Optional filter for specific token type
-            inclusion_mode: Token inclusion mode - ACTIVE_ONLY or INCLUDE_EXPIRED
+            user_id: User whose tokens to retrieve.
+            token_type: Optional filter for specific token type.
+            inclusion_mode: Whether to include expired tokens.
 
         Returns:
-        -------
-            list[TokenMetadata]: List of token metadata objects
-
-        Note:
-        ----
-            Returns active tokens by default, with option to include
-            expired tokens via inclusion_mode parameter.
+            list[TokenMetadata]: List of token metadata matching the criteria.
 
         """
         if user_id not in self._user_tokens:
@@ -1268,20 +954,10 @@ class TokenManager:
         return tokens
 
     async def get_token_stats(self) -> dict[str, Any]:
-        """Get token statistics.
-
-        Computes statistics about managed tokens including counts
-        by status, type, and user distribution.
+        """Get comprehensive statistics about managed tokens.
 
         Returns:
-        -------
-            dict: Statistics including total, active, expired, revoked
-                  tokens, unique users, and breakdown by token type
-
-        Note:
-        ----
-            Enables operational monitoring and security analytics
-            through comprehensive token usage and lifecycle metrics.
+            dict[str, Any]: Statistics including counts by status and type.
 
         """
         now = dt.now(UTC)
@@ -1297,7 +973,7 @@ class TokenManager:
         # Count by token type
         type_counts: dict[str, int] = {}
         for metadata in self._active_tokens.values():
-            token_type = metadata.token_type.name
+            token_type = metadata.token_type
             type_counts[token_type] = type_counts.get(token_type, 0) + 1
 
         return {
@@ -1310,10 +986,7 @@ class TokenManager:
         }
 
 
-def create_token_storage(
-    storage_type: str = "redis",
-    **kwargs: Any,
-) -> TokenStorage[str]:
+def create_token_storage(storage_type: str = "redis", **kwargs: Any) -> TokenStorage[str]:
     """Factory function to create appropriate token storage backend.
 
     Creates and configures the appropriate token storage implementation
@@ -1374,18 +1047,6 @@ class TokenPasswordHasher:
     """Password hashing and verification using Argon2 with Python 3.13 patterns."""
 
     def __init__(self) -> None:
-        """Initialize password hasher with secure defaults.
-
-        Configures Argon2 with security-focused parameters including
-        memory cost, time cost, and parallelism settings optimized
-        for security over speed.
-
-        Note:
-        ----
-            Configured for security-first password hashing with high
-            memory requirements to resist GPU-based attacks.
-
-        """
         self._crypt_context = CryptContext(
             schemes=["argon2"],
             deprecated="auto",
@@ -1395,20 +1056,17 @@ class TokenPasswordHasher:
         )
 
     def hash_password(self, password: str) -> str:
-        """Hash a password with Argon2.
+        """Hash a password using Argon2.
 
         Args:
-        ----
-            password: Plain text password to hash
+            password: Plain text password to hash.
 
         Returns:
-        -------
-            Hashed password string
+            str: Hashed password string.
 
         Raises:
-        ------
-            ValueError: If password is empty or too long
-            TypeError: If password is not a string
+            TypeError: If password is not a string.
+            ValueError: If password is empty or too long, or hashing fails.
 
         """
         if not isinstance(password, str):
@@ -1436,18 +1094,15 @@ class TokenPasswordHasher:
         """Verify a password against its hash.
 
         Args:
-        ----
-            password: Plain text password to verify
-            hashed_password: Previously hashed password
+            password: Plain text password to verify.
+            hashed_password: Previously hashed password to compare against.
 
         Returns:
-        -------
-            True if password matches hash, False otherwise
+            bool: True if the password matches the hash.
 
         Raises:
-        ------
-            ValueError: If inputs are invalid
-            TypeError: If inputs are not strings
+            TypeError: If password or hash are not strings.
+            ValueError: If password or hash are empty, or verification fails.
 
         """
         if not isinstance(password, str) or not isinstance(hashed_password, str):
@@ -1467,15 +1122,13 @@ class TokenPasswordHasher:
             raise ValueError(msg) from e
 
     def needs_update(self, hashed_password: str) -> bool:
-        """Check if a hashed password needs to be updated.
+        """Check if a hashed password needs to be rehashed.
 
         Args:
-        ----
-            hashed_password: Previously hashed password
+            hashed_password: Previously hashed password to check.
 
         Returns:
-        -------
-            True if hash needs updating (deprecated algorithm/params)
+            bool: True if the password hash needs updating.
 
         """
         try:
@@ -1491,17 +1144,18 @@ class InMemoryTokenStorageAlternative(TokenStorage[str]):
     """Complete in-memory token storage implementation."""
 
     def __init__(self) -> None:
-        """Initialize in-memory storage."""
         self._storage: dict[str, dict[str, Any]] = {}
         self._lock = asyncio.Lock()
 
-    async def store(
-        self,
-        key: str,
-        value: str,
-        ttl: datetime.timedelta | None = None,
-    ) -> None:
-        """Store a value with optional TTL."""
+    async def store(self, key: str, value: str, ttl: timedelta | None = None) -> None:
+        """Store a value in memory with detailed metadata tracking.
+
+        Args:
+            key: Storage key identifier.
+            value: String value to store.
+            ttl: Optional time-to-live duration.
+
+        """
         async with self._lock:
             expiry = None
             if ttl:
@@ -1514,14 +1168,22 @@ class InMemoryTokenStorageAlternative(TokenStorage[str]):
             }
 
     async def get(self, key: str) -> str | None:
-        """Get a value by key."""
+        """Retrieve a value from memory with expiration checking.
+
+        Args:
+            key: Storage key identifier.
+
+        Returns:
+            str | None: Stored value or None if not found or expired.
+
+        """
         async with self._lock:
             if key not in self._storage:
                 return None
 
             entry = self._storage[key]
 
-            # Check if expired
+            # Check if expired:
             if entry["expiry"] and dt.now(UTC) > entry["expiry"]:
                 del self._storage[key]
                 return None
@@ -1529,7 +1191,15 @@ class InMemoryTokenStorageAlternative(TokenStorage[str]):
             return entry["value"]
 
     async def delete(self, key: str) -> bool:
-        """Delete a value by key."""
+        """Delete a value from memory storage.
+
+        Args:
+            key: Storage key identifier.
+
+        Returns:
+            bool: True if the key was found and deleted.
+
+        """
         async with self._lock:
             if key in self._storage:
                 del self._storage[key]
@@ -1537,7 +1207,15 @@ class InMemoryTokenStorageAlternative(TokenStorage[str]):
             return False
 
     async def exists(self, key: str) -> bool:
-        """Check if key exists and hasnt expired."""
+        """Check if a key exists and is not expired.
+
+        Args:
+            key: Storage key identifier.
+
+        Returns:
+            bool: True if the key exists and is not expired.
+
+        """
         async with self._lock:
             if key not in self._storage:
                 return False
@@ -1551,19 +1229,31 @@ class InMemoryTokenStorageAlternative(TokenStorage[str]):
             return True
 
     async def keys(self, pattern: str) -> list[str]:
-        """Get keys matching pattern."""
+        """Get keys matching a glob pattern with automatic cleanup.
+
+        Args:
+            pattern: Glob pattern to match keys against.
+
+        Returns:
+            list[str]: List of matching non-expired keys.
+
+        """
         async with self._lock:
             await self._cleanup_expired_internal()
 
             return [key for key in self._storage if fnmatch.fnmatch(key, pattern)]
 
     async def cleanup_expired(self) -> int:
-        """Remove expired entries and return count."""
+        """Remove expired entries from storage.
+
+        Returns:
+            int: Number of expired entries removed.
+
+        """
         async with self._lock:
             return await self._cleanup_expired_internal()
 
     async def _cleanup_expired_internal(self) -> int:
-        """Internal cleanup method."""
         now = dt.now(UTC)
         expired_keys = []
 

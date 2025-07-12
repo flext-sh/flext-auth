@@ -3,17 +3,26 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import UTC, datetime, timedelta
-from typing import Any, Protocol
-from uuid import UUID, uuid4
+from datetime import UTC
+from datetime import datetime
+from datetime import timedelta
+from typing import TYPE_CHECKING
+from typing import Any
+from typing import Protocol
+from uuid import UUID
+from uuid import uuid4
 
 import jwt
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
-from flext_core.domain.core import ValueObject
 from pydantic import Field
 
-from flext_auth.models import Claims, TokenInfo, User
+from flext_auth.models import TokenInfo
+from flext_core import DomainValueObject
+
+if TYPE_CHECKING:
+    from flext_auth.models import Claims
+    from flext_auth.models import User
 
 # Python 3.13 type aliases
 TokenString = str
@@ -21,7 +30,6 @@ SecretKey = bytes | str
 
 
 def _get_jwt_config() -> JWTConfig:
-    """Get JWT configuration with secure defaults."""
     # Use secure defaults since config is not available
     return JWTConfig(
         algorithm="HS256",
@@ -42,7 +50,8 @@ class TokenStorageProtocol(Protocol):
     Coordena operações complexas entre múltiplos componentes.
 
     Arquitetura: Service Layer Pattern
-    Transações: Atomic operations with rollback
+    Transações:
+        Atomic operations with rollback
     Padrões: Application services, orchestration
 
     Attributes:
@@ -76,86 +85,50 @@ class TokenStorageProtocol(Protocol):
 
     """
 
-    """Protocol for token storage implementations."""
-
     async def store_token(self, token_info: TokenInfo) -> None:
-        """Store token information.
-
-        Persists token information to the storage backend for later
-        retrieval and validation operations.
+        """Store token information for tracking and validation.
 
         Args:
-        ----
-            token_info: Token information to store
-
-        Raises:
-        ------
-            StorageError: If token storage fails
+            token_info: Token information to store including metadata.
 
         """
         ...
 
     async def get_token(self, token_id: str) -> TokenInfo | None:
-        """Retrieve token information.
-
-        Retrieves token information from storage using the token ID
-        for validation and refresh operations.
+        """Retrieve token information by token ID.
 
         Args:
-        ----
-            token_id: Unique token identifier
+            token_id: The unique token identifier.
 
         Returns:
-        -------
-            TokenInfo: Token information if found, None otherwise
-
-        Raises:
-        ------
-            StorageError: If token retrieval fails
+            TokenInfo if found, None otherwise.
 
         """
         ...
 
     async def revoke_token(self, token_id: str) -> None:
-        """Revoke a token.
-
-        Marks a token as revoked in the storage backend to prevent
-        further use in authentication operations.
+        """Revoke a token to prevent further use.
 
         Args:
-        ----
-            token_id: Unique token identifier to revoke
-
-        Raises:
-        ------
-            StorageError: If token revocation fails
+            token_id: The unique token identifier to revoke.
 
         """
         ...
 
     async def is_blacklisted(self, token_id: str) -> bool:
-        """Check if token is blacklisted.
-
-        Verifies whether a token has been revoked or blacklisted
-        to prevent unauthorized access.
+        """Check if a token is blacklisted (revoked).
 
         Args:
-        ----
-            token_id: Unique token identifier to check
+            token_id: The unique token identifier to check.
 
         Returns:
-        -------
-            bool: True if token is blacklisted, False otherwise
-
-        Raises:
-        ------
-            StorageError: If blacklist check fails
+            True if the token is blacklisted, False otherwise.
 
         """
         ...
 
 
-class TokenPair(ValueObject):
+class TokenPair(DomainValueObject):
     """Enterprise JWT token pair with comprehensive security validation and audit capabilities.
 
     Immutable value object representing a complete authentication token set including
@@ -182,14 +155,10 @@ class TokenPair(ValueObject):
     )
 
     def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for API response.
+        """Convert the token pair to a dictionary representation.
 
-        Transforms the token pair into a dictionary format suitable for
-        JSON responses in authentication endpoints.
-
-        Returns
-        -------
-            Dictionary containing token information for API responses
+        Returns:
+            Dictionary containing access_token, refresh_token, token_type, and expires_in.
 
         """
         return {
@@ -200,7 +169,7 @@ class TokenPair(ValueObject):
         }
 
 
-class JWTConfig(ValueObject):
+class JWTConfig(DomainValueObject):
     """Enterprise JWT configuration with comprehensive security validation and domain integration.
 
     Immutable configuration value object encapsulating all JWT security parameters
@@ -266,36 +235,15 @@ class JWTConfig(ValueObject):
 class JWTService:
     """JWT service with zero boilerplate using reflection."""
 
-    def __init__(
-        self,
-        config: JWTConfig,
-        storage: TokenStorageProtocol | None = None,
-    ) -> None:
-        """Initialize JWT service with configuration and storage.
-
-        Initializes the JWT service with the provided configuration and optional
-        token storage backend, setting up RSA keys if using RS256 algorithm.
-
-        Args:
-        ----
-            config: JWT configuration with algorithm, expiration, and keys
-            storage: Optional token storage backend for blacklisting
-
-        Note:
-        ----
-            Automatically generates RSA keys for RS256 if not provided in config.
-            Supports both symmetric (HS256) and asymmetric (RS256) algorithms.
-
-        """
+    def __init__(self, config: JWTConfig, storage: TokenStorageProtocol | None = None) -> None:
         self.config = config
         self.storage = storage
 
-        # Generate RSA keys if using RS256 and not provided
+        # Generate RSA keys if using RS256 and not provided:
         if config.algorithm == "RS256" and not config.private_key:
             self._generate_rsa_keys()
 
     def _generate_rsa_keys(self) -> None:
-        """Generate RSA key pair for RS256."""
         # ZERO TOLERANCE - Use configuration for RSA parameters
         config = _get_jwt_config()
         private_key = rsa.generate_private_key(
@@ -321,29 +269,15 @@ class JWTService:
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )
 
-    def create_access_token(
-        self,
-        user: User,
-        additional_claims: Claims | None = None,
-    ) -> TokenString:
-        """Create access token for authenticated user.
-
-        Generates a signed JWT access token with user claims, audience validation,
-        and configurable expiration. Optionally stores token metadata if storage
-        backend is configured.
+    def create_access_token(self, user: User, additional_claims: Claims | None = None) -> TokenString:
+        """Create a JWT access token for the user.
 
         Args:
-        ----
-            user: Authenticated user object with claims
-            additional_claims: Optional additional JWT claims
+            user: User to create the token for.
+            additional_claims: Optional additional claims to include in the token.
 
         Returns:
-        -------
-            Signed JWT access token string
-
-        Example:
-        -------
-            token = jwt_service.create_access_token(user, {'role': 'REDACTED_LDAP_BIND_PASSWORD'})
+            The encoded JWT access token string.
 
         """
         now = datetime.now(UTC)
@@ -372,7 +306,7 @@ class JWTService:
         key = self._get_signing_key()
         token = jwt.encode(claims, key, algorithm=self.config.algorithm)
 
-        # Store token info if storage available
+        # Store token info if storage available:
         if self.storage:
             # Use the jti UUID we generated
             token_info = TokenInfo(
@@ -395,7 +329,15 @@ class JWTService:
         return str(token) if isinstance(token, bytes) else token
 
     def create_refresh_token(self, user: User) -> TokenString:
-        """Create refresh token for user."""
+        """Create a JWT refresh token for the user.
+
+        Args:
+            user: User to create the token for.
+
+        Returns:
+            The encoded JWT refresh token string.
+
+        """
         now = datetime.now(UTC)
         expires_at = now + timedelta(days=self.config.refresh_token_expire_days)
 
@@ -416,7 +358,7 @@ class JWTService:
         key = self._get_signing_key()
         token = jwt.encode(claims, key, algorithm=self.config.algorithm)
 
-        # Store token info if storage available
+        # Store token info if storage available:
         if self.storage:
             # Use the jti UUID we generated
             token_info = TokenInfo(
@@ -437,12 +379,17 @@ class JWTService:
         # Ensure token is returned as string
         return str(token) if isinstance(token, bytes) else token
 
-    def create_token_pair(
-        self,
-        user: User,
-        additional_claims: Claims | None = None,
-    ) -> TokenPair:
-        """Create access and refresh token pair."""
+    def create_token_pair(self, user: User, additional_claims: Claims | None = None) -> TokenPair:
+        """Create a complete token pair (access and refresh tokens) for the user.
+
+        Args:
+            user: User to create the tokens for.
+            additional_claims: Optional additional claims to include in the access token.
+
+        Returns:
+            TokenPair containing both access and refresh tokens with metadata.
+
+        """
         access_token = self.create_access_token(user, additional_claims)
         refresh_token = self.create_refresh_token(user)
 
@@ -453,24 +400,6 @@ class JWTService:
         )
 
     def _decode_jwt_token(self, token: TokenString) -> Claims:
-        """Decode JWT token with comprehensive validation.
-
-        Extracts and validates token claims using cryptographic verification
-        with configurable algorithm, audience, and issuer validation.
-
-        Args:
-        ----
-            token: JWT token string to decode
-
-        Returns:
-        -------
-            Decoded token claims dictionary
-
-        Raises:
-        ------
-            jwt.InvalidTokenError: If token decoding fails
-
-        """
         key = self._get_verification_key()
         return jwt.decode(
             token,
@@ -488,40 +417,11 @@ class JWTService:
         )
 
     def _validate_token_type(self, claims: Claims, expected_type: str) -> None:
-        """Validate token type matches expected type.
-
-        Verifies that the token type claim matches the expected token type
-        for proper access/refresh token distinction.
-
-        Args:
-        ----
-            claims: Decoded token claims
-            expected_type: Expected token type (access or refresh)
-
-        Raises:
-        ------
-            jwt.InvalidTokenError: If token type doesn't match
-
-        """
         if claims.get("token_type") != expected_type:
             msg = f"Invalid token type. Expected {expected_type}"
             raise jwt.InvalidTokenError(msg)
 
     async def _check_token_blacklist(self, claims: Claims) -> None:
-        """Check if token is blacklisted in storage backend.
-
-        Verifies token blacklist status using the storage backend if configured,
-        preventing revoked tokens from being used for authentication.
-
-        Args:
-        ----
-            claims: Decoded token claims containing token ID
-
-        Raises:
-        ------
-            jwt.InvalidTokenError: If token is blacklisted
-
-        """
         if self.storage:
             token_id = claims.get("jti")
             if token_id and await self.storage.is_blacklisted(token_id):
@@ -529,20 +429,6 @@ class JWTService:
                 raise jwt.InvalidTokenError(msg)
 
     def _handle_jwt_exceptions(self, exc: Exception) -> None:
-        """Handle JWT-specific exceptions with descriptive error messages.
-
-        Converts PyJWT exceptions into standardized InvalidTokenError with
-        descriptive messages for security audit logging.
-
-        Args:
-        ----
-            exc: The exception to handle
-
-        Raises:
-        ------
-            jwt.InvalidTokenError: Standardized token error with message
-
-        """
         if isinstance(exc, jwt.ExpiredSignatureError):
             msg = "Token has expired"
         elif isinstance(exc, jwt.InvalidAudienceError):
@@ -553,15 +439,7 @@ class JWTService:
             msg = "Invalid token signature"
         elif isinstance(exc, jwt.DecodeError):
             msg = "Malformed token"
-        elif isinstance(
-            exc,
-            ValueError
-            | TypeError
-            | RuntimeError
-            | ImportError
-            | KeyError
-            | AttributeError,
-        ):
+        elif isinstance(exc, ValueError | TypeError | RuntimeError | ImportError | KeyError | AttributeError):
             # ZERO TOLERANCE - Specific exception types for JWT token validation failures
             msg = f"Token validation failed: {exc}"
             raise jwt.InvalidTokenError(msg) from exc
@@ -570,34 +448,18 @@ class JWTService:
 
         raise jwt.InvalidTokenError(msg)
 
-    async def verify_token(
-        self,
-        token: TokenString,
-        token_type: str = "access",  # noqa: S107
-    ) -> Claims | None:
-        """Verify and decode JWT token with comprehensive validation.
-
-        Validates JWT signature, expiration, issuer, audience, and token type.
-        Checks token blacklist if storage backend is configured and provides
-        detailed error messages for security audit logging.
+    async def verify_token(self, token: TokenString, token_type: str = "access") -> Claims | None:
+        """Verify and decode a JWT token.
 
         Args:
-        ----
-            token: JWT token string to verify
-            token_type: Expected token type (access or refresh)
+            token: The JWT token string to verify.
+            token_type: Expected token type ('access' or 'refresh').
 
         Returns:
-        -------
-            Decoded token claims dictionary
+            Decoded token claims if valid, None if invalid.
 
         Raises:
-        ------
-            jwt.InvalidTokenError: If token is invalid, expired, or revoked
-
-        Example:
-        -------
-            claims = jwt_service.verify_token(token, 'access')
-            user_id = claims['sub']
+            jwt.InvalidTokenError: If token verification fails.
 
         """
         try:
@@ -621,7 +483,19 @@ class JWTService:
             return claims
 
     async def refresh_tokens(self, refresh_token: TokenString, user: User) -> TokenPair:
-        """Refresh token pair using refresh token."""
+        """Refresh tokens using a valid refresh token.
+
+        Args:
+            refresh_token: Valid refresh token to use for generating new tokens.
+            user: User the token belongs to.
+
+        Returns:
+            New TokenPair with fresh access and refresh tokens.
+
+        Raises:
+            jwt.InvalidTokenError: If refresh token is invalid or doesn't belong to user.
+
+        """
         # Verify refresh token
         claims = await self.verify_token(refresh_token, token_type="refresh")
         if not claims:
@@ -640,24 +514,15 @@ class JWTService:
         # Create new token pair
         return self.create_token_pair(user)
 
-    def refresh_token(
-        self,
-        _refresh_token: TokenString,
-        user: User,
-    ) -> tuple[TokenString, TokenString] | None:
-        """Refresh token and return tuple for compatibility.
-
-        Synchronous version that returns a tuple of (access_token, refresh_token)
-        for compatibility with user service expectations.
+    def refresh_token(self, _refresh_token: TokenString, user: User) -> tuple[TokenString, TokenString] | None:
+        """Synchronous version of token refresh (simplified).
 
         Args:
-        ----
-            refresh_token: Valid refresh token string
-            user: User object for new token generation
+            _refresh_token: Refresh token (not validated in this simplified version).
+            user: User to create new tokens for.
 
         Returns:
-        -------
-            Tuple of (new_access_token, new_refresh_token) or None if invalid
+            Tuple of (new_access_token, new_refresh_token) on success, None on failure.
 
         """
         try:
@@ -670,7 +535,15 @@ class JWTService:
             return (new_access, new_refresh)
 
     async def revoke_token(self, token: TokenString) -> None:
-        """Revoke token by adding to blacklist."""
+        """Revoke a JWT token to prevent further use.
+
+        Args:
+            token: JWT token string to revoke.
+
+        Raises:
+            RuntimeError: If token storage is not configured.
+
+        """
         if not self.storage:
             msg = "Token storage not configured"
             raise RuntimeError(msg)
@@ -686,23 +559,13 @@ class JWTService:
             pass
 
     def extract_token_claims(self, token: TokenString) -> Claims | None:
-        """Extract token claims without verification for metadata extraction.
-
-        Decodes token without signature verification to extract claims for
-        revocation and metadata operations. This is safe for operations that
-        don't require authentication.
+        """Extract claims from a JWT token without signature verification.
 
         Args:
-        ----
-            token: JWT token string to extract claims from
+            token: JWT token string to extract claims from.
 
         Returns:
-        -------
-            Token claims dictionary if successful, None if token is malformed
-
-        Note:
-        ----
-            Does not verify signature or expiration - use verify_token for authentication.
+            Token claims dictionary if token is decodable, None otherwise.
 
         """
         try:
@@ -711,21 +574,6 @@ class JWTService:
             return None
 
     def _get_signing_key(self) -> str | bytes:
-        """Get key for signing JWT tokens based on algorithm.
-
-        Returns the appropriate signing key based on the configured algorithm.
-        For RS256, returns the private key; for HMAC algorithms, returns the
-        secret key.
-
-        Returns:
-        -------
-            Signing key as string or bytes
-
-        Note:
-        ----
-            Selects appropriate cryptographic keys based on JWT algorithm configuration.
-
-        """
         if self.config.algorithm == "RS256":
             key = self.config.private_key
             return key if key is not None else ""
@@ -733,21 +581,6 @@ class JWTService:
         return key if key is not None else ""
 
     def _get_verification_key(self) -> str | bytes:
-        """Get key for verifying JWT tokens based on algorithm.
-
-        Returns the appropriate verification key based on the configured algorithm.
-        For RS256, returns the public key; for HMAC algorithms, returns the
-        secret key.
-
-        Returns:
-        -------
-            Verification key as string or bytes
-
-        Note:
-        ----
-            Selects appropriate cryptographic keys based on JWT algorithm configuration.
-
-        """
         if self.config.algorithm == "RS256":
             key = self.config.public_key
             return key if key is not None else ""
@@ -765,7 +598,8 @@ class JwtInMemoryTokenStorage:
     Coordena operações complexas entre múltiplos componentes.
 
     Arquitetura: Service Layer Pattern
-    Transações: Atomic operations with rollback
+    Transações:
+        Atomic operations with rollback
     Padrões: Application services, orchestration
 
     Attributes:
@@ -802,23 +636,14 @@ class JwtInMemoryTokenStorage:
     """Simple in-memory token storage."""
 
     def __init__(self) -> None:
-        """Initialize in-memory token storage."""
         self._tokens: dict[str, TokenInfo] = {}
         self._blacklist: set[str] = set()
 
     async def store_token(self, token_info: TokenInfo) -> None:
         """Store token information in memory.
 
-        Stores token metadata in the in-memory dictionary for tracking
-        issued tokens and enabling revocation capabilities.
-
         Args:
-        ----
-            token_info: Token metadata containing ID, user, and expiration
-
-        Note:
-        ----
-            Selects appropriate cryptographic keys based on JWT algorithm configuration.
+            token_info: Token information to store including metadata.
 
         """
         # Convert UUID to string for dictionary key
@@ -830,28 +655,24 @@ class JwtInMemoryTokenStorage:
         self._tokens[token_id_str] = token_info
 
     async def get_token(self, token_id: str) -> TokenInfo | None:
-        """Get token information by token ID.
-
-        Retrieves stored token metadata from the in-memory dictionary
-        for token validation and management operations.
+        """Retrieve token information by token ID from memory.
 
         Args:
-        ----
-            token_id: Unique token identifier (JTI claim)
+            token_id: The unique token identifier.
 
         Returns:
-        -------
-            Token metadata if found, None otherwise
-
-        Note:
-        ----
-            Selects appropriate cryptographic keys based on JWT algorithm configuration.
+            TokenInfo if found in memory, None otherwise.
 
         """
         return self._tokens.get(token_id)
 
     async def revoke_token(self, token_id: str) -> None:
-        """Revoke token by adding to blacklist."""
+        """Revoke a token by adding it to the blacklist.
+
+        Args:
+            token_id: The unique token identifier to revoke.
+
+        """
         self._blacklist.add(token_id)
         if token_id in self._tokens:
             # TokenInfo is immutable, we need to replace it with a new instance
@@ -868,5 +689,13 @@ class JwtInMemoryTokenStorage:
             self._tokens[token_id] = revoked_token_info
 
     async def is_blacklisted(self, token_id: str) -> bool:
-        """Check if token is blacklisted."""
+        """Check if a token is blacklisted (revoked).
+
+        Args:
+            token_id: The unique token identifier to check.
+
+        Returns:
+            True if the token is in the blacklist, False otherwise.
+
+        """
         return token_id in self._blacklist

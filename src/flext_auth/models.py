@@ -2,18 +2,25 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
-from enum import Enum, auto
-from typing import TYPE_CHECKING, Any
-from uuid import UUID, uuid4
+from datetime import UTC
+from datetime import datetime
+from enum import StrEnum
+from typing import TYPE_CHECKING
+from typing import Any
+from uuid import uuid4
 
-from flext_core.domain.core import Entity, ValueObject
 from pydantic import Field
+
+from flext_core import DomainEntity
+from flext_core import DomainValueObject
+from flext_core import EntityId
+from flext_core import UserId
 
 # Import PermissionScope directly for use in model - MUST be outside TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from flext_auth.types import PermissionScope, UserID
+
+    from flext_auth.types import PermissionScope
 
 # Python 3.13 type aliases for zero boilerplate
 PermissionSet = frozenset[str]
@@ -21,8 +28,8 @@ RoleSet = frozenset[str]
 Claims = dict[str, Any]
 
 
-class AuthStatus(Enum):
-    """Authentication status enum.
+class AuthStatus(StrEnum):
+    """Authentication status enum using flext-core patterns.
 
     This enumeration defines the possible authentication states for a user
     account, including active, inactive, locked, suspended, and expired
@@ -34,15 +41,15 @@ class AuthStatus(Enum):
 
     """
 
-    ACTIVE = auto()
-    INACTIVE = auto()
-    LOCKED = auto()
-    SUSPENDED = auto()
-    EXPIRED = auto()
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    LOCKED = "locked"
+    SUSPENDED = "suspended"
+    EXPIRED = "expired"
 
 
-class UserRoleEnum(Enum):
-    """User role enum for access control."""
+class UserRoleEnum(StrEnum):
+    """User role enum for access control using flext-core patterns."""
 
     ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
     USER = "user"
@@ -52,13 +59,18 @@ class UserRoleEnum(Enum):
     AUDITOR = "auditor"
 
     @classmethod
-    def create(
-        cls,
-        name: str,
-        permissions: list[Permission],
-        description: str = "",
-    ) -> Role:
-        """Create a Role object from enum values."""
+    def create(cls, name: str, permissions: list[Permission], description: str = "") -> Role:
+        """Create a new role with the given permissions.
+
+        Args:
+            name: The name of the role.
+            permissions: List of Permission objects to assign to this role.
+            description: Optional description of the role.
+
+        Returns:
+            A new Role instance with the specified permissions.
+
+        """
         permission_names = {perm.name for perm in permissions}
         return Role(
             name=name,
@@ -67,30 +79,40 @@ class UserRoleEnum(Enum):
         )
 
 
-class Permission(ValueObject):
+class Permission(DomainValueObject):
     """Permission value object with Pydantic validation and Python 3.13 features."""
 
     id: str | None = None
     resource: str
-    action: str
-    scope: PermissionScope
+    action: str = ""
+    scope: str = ""
     description: str = ""
 
     @property
     def name(self) -> str:
-        """Permission identifier."""
+        """Get the permission name in resource:action format.
+
+        Returns:
+            Permission name formatted as "resource:action".
+
+        """
         return f"{self.resource}:{self.action}"
 
     @classmethod
-    def create(
-        cls,
-        name: str,
-        scope: PermissionScope,
-        resource: str,
-        description: str = "",
-    ) -> Permission:
-        """Create a new permission with proper naming."""
-        # Extract action from name if it follows pattern "action_resource"
+    def create(cls, name: str, scope: PermissionScope, resource: str, description: str = "") -> Permission:
+        """Create a new permission with the given parameters.
+
+        Args:
+            name: The permission name (may be in action_resource format).
+            scope: The scope of the permission.
+            resource: The resource this permission applies to.
+            description: Optional description of the permission.
+
+        Returns:
+            A new Permission instance.
+
+        """
+        # Extract action from name if it follows pattern "action_resource":
         if "_" in name:
             action, _resource_part = name.split("_", 1)
         else:
@@ -105,7 +127,7 @@ class Permission(ValueObject):
         )
 
 
-class Role(ValueObject):
+class Role(DomainValueObject):
     """Role value object with automatic permission aggregation and Pydantic validation."""
 
     name: str = Field(min_length=1)
@@ -114,18 +136,31 @@ class Role(ValueObject):
 
     @property
     def id(self) -> str:
-        """Return the role name as its ID."""
+        """Get the role identifier, which is the role name.
+
+        Returns:
+            The role name as identifier.
+
+        """
         return self.name
 
     def has_permission(self, permission: Permission) -> bool:
-        """Check if role has permission."""
+        """Check if this role has a specific permission.
+
+        Args:
+            permission: The Permission to check for.
+
+        Returns:
+            True if the role has the permission, False otherwise.
+
+        """
         return permission.name in self.permissions
 
 
-class User(Entity):
+class User(DomainEntity):
     """User entity with Pydantic validation and domain entity patterns."""
 
-    user_id: UserID = Field(default_factory=lambda: str(uuid4()))
+    user_id: UserId = Field(default_factory=uuid4)
     username: str = ""
     email: str = ""
     password_hash: str = ""
@@ -138,30 +173,58 @@ class User(Entity):
 
     @property
     def is_active(self) -> bool:
-        """Check if user is active."""
+        """Check if the user account is active and not locked.
+
+        Returns:
+            True if the user is active and not locked, False otherwise.
+
+        """
         # Handle both enum and enum value due to Pydantic use_enum_values=True
         status_active = self.status in {AuthStatus.ACTIVE, AuthStatus.ACTIVE.value}
         return status_active and not self.is_locked
 
     @property
     def is_locked(self) -> bool:
-        """Check if user is locked."""
+        """Check if the user account is currently locked.
+
+        Returns:
+            True if the account is locked (either temporarily or by status), False otherwise.
+
+        """
         if self.locked_until:
             return datetime.now(UTC) < self.locked_until
         # Handle both enum and enum value due to Pydantic use_enum_values=True
         return self.status in {AuthStatus.LOCKED, AuthStatus.LOCKED.value}
 
     def has_role(self, role_name: str) -> bool:
-        """Check if user has role."""
+        """Check if the user has a specific role.
+
+        Args:
+            role_name: The name of the role to check for.
+
+        Returns:
+            True if the user has the role, False otherwise.
+
+        """
         return role_name in self.roles
 
     def add_role(self, role: Role) -> None:
-        """Add role to user."""
+        """Add a role to the user and update the timestamp.
+
+        Args:
+            role: The Role to add to this user.
+
+        """
         self.roles |= {role.name}
         self.updated_at = datetime.now(UTC)
 
     def get_active_roles(self) -> list[Role]:
-        """Get all active roles for this user."""
+        """Get all active roles for this user.
+
+        Returns:
+            List of Role objects that are currently active for this user.
+
+        """
         # Import here to avoid circular imports
         active_roles = []
         for role_name in self.roles:
@@ -174,17 +237,19 @@ class User(Entity):
         return active_roles
 
     def record_login(self) -> None:
-        """Record successful login."""
+        """Record a successful login, clearing failed attempts and locks."""
         self.last_login = datetime.now(UTC)
         self.failed_attempts = 0
         self.locked_until = None
 
-    def record_failed_attempt(
-        self,
-        lock_after: int = 5,
-        lock_duration_minutes: int = 30,
-    ) -> None:
-        """Record failed login attempt."""
+    def record_failed_attempt(self, lock_after: int = 5, lock_duration_minutes: int = 30) -> None:
+        """Record a failed login attempt and lock the account if threshold is reached.
+
+        Args:
+            lock_after: Number of failed attempts before locking (default: 5).
+            lock_duration_minutes: Duration to lock the account in minutes (default: 30).
+
+        """
         self.failed_attempts += 1
         if self.failed_attempts >= lock_after:
             self.locked_until = datetime.now(UTC).replace(
@@ -192,7 +257,12 @@ class User(Entity):
             )
 
     def to_claims(self) -> Claims:
-        """Convert user to JWT claims."""
+        """Convert user data to JWT claims dictionary.
+
+        Returns:
+            Dictionary containing user claims suitable for JWT tokens.
+
+        """
         # Handle enum serialization using try/except for better error handling
         try:
             status_name = self.status.name
@@ -210,11 +280,11 @@ class User(Entity):
         }
 
 
-class TokenInfo(ValueObject):
+class TokenInfo(DomainValueObject):
     """Token information with Pydantic validation and automatic validation."""
 
-    token_id: UUID = Field(default_factory=uuid4)
-    user_id: UserID = Field(default_factory=lambda: str(uuid4()))
+    token_id: EntityId = Field(default_factory=uuid4)
+    user_id: UserId = Field(default_factory=uuid4)
     token_type: str = Field(default="access", description="Token type identifier")
     issued_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     expires_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
@@ -222,56 +292,30 @@ class TokenInfo(ValueObject):
 
     @property
     def is_expired(self) -> bool:
-        """Check if token is expired.
-
-        This property determines if the token has exceeded its expiration
-        time by comparing the current time with the token's expiration
-        timestamp.
+        """Check if the token has expired.
 
         Returns:
-        -------
-            bool: True if the token is expired, False otherwise.
-
-        Note:
-        ----
-            Implements token lifecycle validation.
+            True if the token has expired, False otherwise.
 
         """
         return datetime.now(UTC) > self.expires_at
 
     @property
     def is_revoked(self) -> bool:
-        """Check if token is revoked.
-
-        This property determines if the token has been explicitly revoked
-        by checking for the presence of a revocation timestamp.
+        """Check if the token has been revoked.
 
         Returns:
-        -------
-            bool: True if the token is revoked, False otherwise.
-
-        Note:
-        ----
-            Implements token revocation validation.
+            True if the token has been revoked, False otherwise.
 
         """
         return self.revoked_at is not None
 
     @property
     def is_valid(self) -> bool:
-        """Check if token is valid.
-
-        This property performs comprehensive token validation by ensuring
-        the token is neither expired nor revoked. A token is only valid
-        if it passes both checks.
+        """Check if the token is valid (not expired and not revoked).
 
         Returns:
-        -------
-            bool: True if the token is valid, False otherwise.
-
-        Note:
-        ----
-            Implements complete token lifecycle validation.
+            True if the token is valid, False otherwise.
 
         """
         return not self.is_expired and not self.is_revoked
@@ -322,7 +366,5 @@ VIEWER_ROLE = Role(
     description="Read-only access to system resources",
 )
 
-# Model rebuild to resolve forward references and circular dependencies
-Permission.model_rebuild()
-Role.model_rebuild()
-User.model_rebuild()
+# NOTE: Model rebuild removed to avoid import issues during development
+# These models use proper forward references and don't need explicit rebuild

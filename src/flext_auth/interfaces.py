@@ -1,32 +1,37 @@
-"""Protocol interfaces for authentication system using Python 3.13 patterns."""
-
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol, runtime_checkable
+"""Protocol interfaces for authentication system using Python 3.13 patterns."""
+
+from typing import TYPE_CHECKING
+from typing import Protocol
+from typing import runtime_checkable
 
 if TYPE_CHECKING:
     import datetime
-    from collections.abc import Mapping, Sequence
+    from collections.abc import Mapping
+    from collections.abc import Sequence
     from typing import Any
 
+    from flext_auth.domain.entities import User as DomainUser
     from flext_auth.models import User
-    from flext_auth.types import (
-        IPAddress,
-        JWTClaims,
-        JWTToken,
-        PlaintextPassword,
-        SecurityHeaders,
-        TokenMetadata,
-        TokenType,
-        UserAgent,
-        UserID,
-        UserPermissions,
-    )
+    from flext_auth.types import IPAddress
+    from flext_auth.types import JWTClaims
+    from flext_auth.types import JWTToken
+    from flext_auth.types import PlaintextPassword
+    from flext_auth.types import SecurityHeaders
+    from flext_auth.types import TokenMetadata
+    from flext_auth.types import TokenType
+    from flext_auth.types import UserAgent
+    from flext_auth.types import UserID
+    from flext_auth.types import UserPermissions
+
+# Forward reference for TokenPair
+TokenPair = "TokenPair"
 
 
 @runtime_checkable
 class PasswordHasher(Protocol):
-    r"""PasswordHasher - Framework Component.
+    """PasswordHasher - Framework Component.
 
     Implementa componente central do framework com funcionalidades específicas.
     Segue padrões arquiteturais estabelecidos.
@@ -48,13 +53,14 @@ class PasswordHasher(Protocol):
     Uso típico da classe:
 
     ```python
-    instance = PasswordHasher()\n    result = instance.method()
+    instance = PasswordHasher()
+    result = instance.method()
     ```
 
     See Also:
     --------
     - [Documentação da Arquitetura](../../docs/architecture/index.md)
-    - [Padrões de Design](../../docs/architecture/001-clean-architecture-ddd.md)
+    - [Padrões de Design](../../docs/architecture/001_clean_architecture_ddd.md)
 
     Note:
     ----
@@ -62,40 +68,33 @@ class PasswordHasher(Protocol):
 
     """
 
-    """Protocol for password hashing operations."""
-
     def hash_password(self, password: PlaintextPassword) -> str:
-        """Hash a plaintext password securely.
-
-        Transforms a plaintext password into a secure hash using enterprise-grade
-        hashing algorithms following security best practices.
+        """Hash a plaintext password using secure algorithms.
 
         Args:
-        ----
-            password: The plaintext password to hash
+            password: The plaintext password to hash.
 
         Returns:
-        -------
-            Secure hash of the password
+            str: The hashed password string.
 
-        Note:
-        ----
-            Implements enterprise security patterns with proper salt and timing.
+        Raises:
+            ValueError: If password is invalid or hashing fails.
 
         """
         ...
 
     def verify_password(self, password: PlaintextPassword, hashed: str) -> bool:
-        """Verify a password against its hash.
+        """Verify a plaintext password against its hash.
 
         Args:
-        ----
-            password: The plaintext password to verify
-            hashed: The stored hash to verify against
+            password: The plaintext password to verify.
+            hashed: The hashed password to compare against.
 
         Returns:
-        -------
-            True if password matches hash, False otherwise
+            bool: True if the password matches the hash.
+
+        Raises:
+            ValueError: If verification fails or inputs are invalid.
 
         """
         ...
@@ -103,7 +102,7 @@ class PasswordHasher(Protocol):
 
 @runtime_checkable
 class TokenValidator(Protocol):
-    r"""TokenValidator - Framework Component.
+    """TokenValidator - Framework Component.
 
     Implementa componente central do framework com funcionalidades específicas.
     Segue padrões arquiteturais estabelecidos.
@@ -125,13 +124,14 @@ class TokenValidator(Protocol):
     Uso típico da classe:
 
     ```python
-    instance = TokenValidator()\n    result = instance.method()
+    instance = TokenValidator()
+    result = instance.method()
     ```
 
     See Also:
     --------
     - [Documentação da Arquitetura](../../docs/architecture/index.md)
-    - [Padrões de Design](../../docs/architecture/001-clean-architecture-ddd.md)
+    - [Padrões de Design](../../docs/architecture/001_clean_architecture_ddd.md)
 
     Note:
     ----
@@ -139,23 +139,18 @@ class TokenValidator(Protocol):
 
     """
 
-    """Protocol for JWT token validation."""
-
-    async def validate_token(
-        self,
-        token: JWTToken,
-        token_type: TokenType,
-    ) -> JWTClaims | None:
-        """Validate a JWT token and return claims if valid.
+    async def validate_token(self, token: JWTToken, token_type: TokenType) -> JWTClaims | None:
+        """Validate a JWT token and extract its claims.
 
         Args:
-        ----
-            token: The JWT token to validate
-            token_type: Expected type of the token
+            token: The JWT token to validate.
+            token_type: Expected type of the token.
 
         Returns:
-        -------
-            Token claims if valid, None if invalid
+            JWTClaims | None: Token claims if valid, None if invalid.
+
+        Raises:
+            TokenValidationError: If token validation fails.
 
         """
         ...
@@ -164,12 +159,13 @@ class TokenValidator(Protocol):
         """Check if a token has been revoked.
 
         Args:
-        ----
-            token: The JWT token to check
+            token: The JWT token to check.
 
         Returns:
-        -------
-            True if token is revoked, False otherwise
+            bool: True if the token is revoked.
+
+        Raises:
+            TokenValidationError: If token check fails.
 
         """
         ...
@@ -210,7 +206,7 @@ class UserRepository(Protocol):
     See Also:
     --------
     - [Documentação da Arquitetura](../../docs/architecture/index.md)
-    - [Padrões de Design](../../docs/architecture/001-clean-architecture-ddd.md)
+    - [Padrões de Design](../../docs/architecture/001_clean_architecture_ddd.md)
 
     Note:
     ----
@@ -218,89 +214,66 @@ class UserRepository(Protocol):
 
     """
 
-    """Protocol for user data access."""
-
     async def get_user_by_id(self, user_id: UserID) -> User | None:
-        """Retrieve user by unique identifier.
-
-        Finds and returns user information based on the provided user ID
-        with secure data access patterns.
+        """Retrieve a user by their unique identifier.
 
         Args:
-        ----
-            user_id: Unique identifier for the user
+            user_id: The unique identifier of the user.
 
         Returns:
-        -------
-            User object if found, None otherwise
+            User | None: The user if found, None otherwise.
 
-        Note:
-        ----
-            Provides data integrity validation.
+        Raises:
+            RepositoryError: If database access fails.
 
         """
         ...
 
     async def get_user_by_email(self, email: str) -> User | None:
-        """Retrieve user by email address.
-
-        Searches for and returns user information based on the provided
-        email address with secure data access patterns.
+        """Retrieve a user by their email address.
 
         Args:
-        ----
-            email: Email address to search for
+            email: The email address of the user.
 
         Returns:
-        -------
-            User object if found, None otherwise
+            User | None: The user if found, None otherwise.
 
-        Note:
-        ----
-            Provides email validation and security.
+        Raises:
+            RepositoryError: If database access fails.
 
         """
         ...
 
     async def create_user(self, user_data: Mapping[str, Any]) -> User:
-        """Create a new user in the system.
-
-        Creates a new user account with the provided data following
-        enterprise user management patterns and validation rules.
+        """Create a new user with the provided data.
 
         Args:
-        ----
-            user_data: Dictionary containing user information
+            user_data: Dictionary containing user information.
 
         Returns:
-        -------
-            Newly created User object
+            User: The newly created user.
 
-        Note:
-        ----
-            Provides validation and audit trails for user operations.
+        Raises:
+            RepositoryError: If user creation fails.
+            ValidationError: If user data is invalid.
 
         """
         ...
 
     async def update_user(self, user_id: UserID, user_data: Mapping[str, Any]) -> User:
-        """Update existing user information.
-
-        Updates user account data with the provided information following
-        enterprise data modification patterns and validation rules.
+        """Update an existing user with new data.
 
         Args:
-        ----
-            user_id: Unique identifier for the user to update
-            user_data: Dictionary containing updated user information
+            user_id: The unique identifier of the user to update.
+            user_data: Dictionary containing updated user information.
 
         Returns:
-        -------
-            Updated User object
+            User: The updated user.
 
-        Note:
-        ----
-            Provides change tracking and validation.
+        Raises:
+            RepositoryError: If user update fails.
+            ValidationError: If user data is invalid.
+            UserNotFoundError: If user does not exist.
 
         """
         ...
@@ -308,37 +281,23 @@ class UserRepository(Protocol):
     async def get_user_permissions(self, user_id: UserID) -> UserPermissions:
         """Get all permissions for a user.
 
-        Retrieves comprehensive permission set for the specified user including
-        role-based permissions and direct grants with security validation.
-
         Args:
-        ----
-            user_id: Unique identifier for the user
+            user_id: The unique identifier of the user.
 
         Returns:
-        -------
-            Complete set of user permissions for authorization checks
+            UserPermissions: The permissions associated with the user.
 
-        Note:
-        ----
-            Provides permission aggregation from roles and direct assignments.
+        Raises:
+            RepositoryError: If database access fails.
+            UserNotFoundError: If user does not exist.
 
         """
         ...
 
 
-# ZERO TOLERANCE: Import canonical implementation for bridging
-
-
-# ZERO TOLERANCE - Deprecated RateLimiter protocol removed
-# Modern rate limiting available from:
-# - flext_core.security.rate_limiting.RateLimiter (protocol interface)
-# - flext_core.security.redis_rate_limiting.RedisRateLimitManager (Redis implementation)
-
-
 @runtime_checkable
 class SecurityAuditor(Protocol):
-    r"""SecurityAuditor - Framework Component.
+    """SecurityAuditor - Framework Component.
 
     Implementa componente central do framework com funcionalidades específicas.
     Segue padrões arquiteturais estabelecidos.
@@ -360,21 +319,20 @@ class SecurityAuditor(Protocol):
     Uso típico da classe:
 
     ```python
-    instance = SecurityAuditor()\n    result = instance.method()
+    instance = SecurityAuditor()
+    result = instance.method()
     ```
 
     See Also:
     --------
     - [Documentação da Arquitetura](../../docs/architecture/index.md)
-    - [Padrões de Design](../../docs/architecture/001-clean-architecture-ddd.md)
+    - [Padrões de Design](../../docs/architecture/001_clean_architecture_ddd.md)
 
     Note:
     ----
     Esta classe segue os padrões Enterprise Patterns estabelecidos no projeto.
 
     """
-
-    """Protocol for security event auditing."""
 
     async def log_security_event(
         self,
@@ -384,22 +342,14 @@ class SecurityAuditor(Protocol):
         user_agent: UserAgent | None,
         metadata: TokenMetadata | None = None,
     ) -> None:
-        """Log a security-related event for audit trails.
-
-        Records security events for compliance and monitoring following
-        enterprise auditing patterns and regulatory requirements.
+        """Log a security event for audit purposes.
 
         Args:
-        ----
-            event_type: Type of security event
-            user_id: User involved in the event (if applicable)
-            ip_address: Client IP address
-            user_agent: Client user agent string
-            metadata: Additional event metadata
-
-        Note:
-        ----
-            Provides tamper-proof logging and retention.
+            event_type: Type of security event (e.g., 'login_success', 'login_failure').
+            user_id: ID of the user involved in the event (if applicable).
+            ip_address: IP address where the event originated (if available).
+            user_agent: User agent string of the client (if available).
+            metadata: Additional event metadata (optional).
 
         """
         ...
@@ -410,17 +360,15 @@ class SecurityAuditor(Protocol):
         user_id: UserID | None = None,
         window: datetime.timedelta | None = None,
     ) -> int:
-        """Get count of failed login attempts.
+        """Get the number of failed login attempts within a time window.
 
         Args:
-        ----
-            ip_address: IP address to check (optional)
-            user_id: User ID to check (optional)
-            window: Time window for the count
+            ip_address: Filter by IP address (optional).
+            user_id: Filter by user ID (optional).
+            window: Time window to check (defaults to a reasonable period).
 
         Returns:
-        -------
-            Number of failed login attempts
+            Number of failed login attempts matching the criteria.
 
         """
         ...
@@ -460,15 +408,13 @@ class AuthenticationServiceProtocol(Protocol):
     See Also:
     --------
     - [Documentação da Arquitetura](../../docs/architecture/index.md)
-    - [Padrões de Design](../../docs/architecture/001-clean-architecture-ddd.md)
+    - [Padrões de Design](../../docs/architecture/001_clean_architecture_ddd.md)
 
     Note:
     ----
     Esta classe segue os padrões Service Layer Pattern estabelecidos no projeto.
 
     """
-
-    """Protocol for user authentication operations."""
 
     async def authenticate_user(
         self,
@@ -477,18 +423,16 @@ class AuthenticationServiceProtocol(Protocol):
         ip_address: IPAddress | None = None,
         user_agent: UserAgent | None = None,
     ) -> tuple[Any, JWTToken, JWTToken] | None:
-        """Authenticate user and return user, access token, and refresh token.
+        """Authenticate a user with email and password.
 
         Args:
-        ----
-            email: User email address
-            password: Plaintext password
-            ip_address: Client IP address
-            user_agent: Client user agent string
+            email: User's email address.
+            password: User's plaintext password.
+            ip_address: IP address for security logging (optional).
+            user_agent: User agent for security logging (optional).
 
         Returns:
-        -------
-            Tuple of (user, access_token, refresh_token) if successful, None otherwise
+            Tuple of (User, access_token, refresh_token) on success, None on failure.
 
         """
         ...
@@ -498,23 +442,14 @@ class AuthenticationServiceProtocol(Protocol):
         token: JWTToken,
         required_permissions: Sequence[str] | None = None,
     ) -> User | None:
-        """Authenticate using JWT token.
-
-        Validates a JWT token and returns the associated user if the token
-        is valid and the user has required permissions.
+        """Authenticate a user using a JWT token.
 
         Args:
-        ----
-            token: JWT token to authenticate
-            required_permissions: List of permissions required for access
+            token: JWT access token to verify.
+            required_permissions: Optional list of permissions that must be present.
 
         Returns:
-        -------
-            User object if authentication successful, None otherwise
-
-        Note:
-        ----
-            Provides token validation and permission checks.
+            User object if token is valid and permissions are satisfied, None otherwise.
 
         """
         ...
@@ -525,17 +460,15 @@ class AuthenticationServiceProtocol(Protocol):
         ip_address: IPAddress | None = None,
         user_agent: UserAgent | None = None,
     ) -> tuple[JWTToken, JWTToken] | None:
-        """Refresh access and refresh tokens.
+        """Refresh an access token using a valid refresh token.
 
         Args:
-        ----
-            refresh_token: Valid refresh token
-            ip_address: Client IP address
-            user_agent: Client user agent string
+            refresh_token: Valid refresh token to use for generating new tokens.
+            ip_address: IP address for security logging (optional).
+            user_agent: User agent for security logging (optional).
 
         Returns:
-        -------
-            Tuple of (new_access_token, new_refresh_token) if successful, None otherwise
+            Tuple of (new_access_token, new_refresh_token) on success, None on failure.
 
         """
         ...
@@ -545,23 +478,14 @@ class AuthenticationServiceProtocol(Protocol):
         token: JWTToken,
         user_id: UserID | None = None,
     ) -> bool:
-        """Revoke a JWT token.
-
-        Marks a JWT token as revoked, preventing its future use following
-        enterprise security patterns for token lifecycle management.
+        """Revoke a JWT token to prevent further use.
 
         Args:
-        ----
-            token: JWT token to revoke
-            user_id: User ID for additional validation
+            token: JWT token to revoke.
+            user_id: Optional user ID for additional validation.
 
         Returns:
-        -------
-            True if token was successfully revoked, False otherwise
-
-        Note:
-        ----
-            Provides secure token blacklisting.
+            True if the token was successfully revoked, False otherwise.
 
         """
         ...
@@ -601,7 +525,7 @@ class AuthorizationService(Protocol):
     See Also:
     --------
     - [Documentação da Arquitetura](../../docs/architecture/index.md)
-    - [Padrões de Design](../../docs/architecture/001-clean-architecture-ddd.md)
+    - [Padrões de Design](../../docs/architecture/001_clean_architecture_ddd.md)
 
     Note:
     ----
@@ -609,54 +533,46 @@ class AuthorizationService(Protocol):
 
     """
 
-    """Protocol for user authorization operations."""
-
     async def check_permission(
         self,
         user_id: UserID,
         permission: str,
         resource: str | None = None,
     ) -> bool:
-        """Check if user has specific permission.
+        """Check if a user has a specific permission.
 
         Args:
-        ----
-            user_id: User to check permissions for
-            permission: Permission to verify
-            resource: Specific resource (optional)
+            user_id: The unique identifier of the user.
+            permission: The permission string to check for.
+            resource: Optional resource context for the permission.
 
         Returns:
-        -------
-            True if user has permission, False otherwise
+            True if the user has the permission, False otherwise.
 
         """
         ...
 
     async def check_role(self, user_id: UserID, role: str) -> bool:
-        """Check if user has specific role.
+        """Check if a user has a specific role.
 
         Args:
-        ----
-            user_id: User to check role for
-            role: Role to verify
+            user_id: The unique identifier of the user.
+            role: The role name to check for.
 
         Returns:
-        -------
-            True if user has role, False otherwise
+            True if the user has the role, False otherwise.
 
         """
         ...
 
     async def get_user_permissions(self, user_id: UserID) -> UserPermissions:
-        """Get all permissions for a user.
+        """Get all permissions for a user based on their roles.
 
         Args:
-        ----
-            user_id: User to get permissions for
+            user_id: The unique identifier of the user.
 
         Returns:
-        -------
-            Complete set of user permissions
+            UserPermissions: All permissions the user has through their roles.
 
         """
         ...
@@ -666,16 +582,14 @@ class AuthorizationService(Protocol):
         user_id: UserID,
         resource: str,
     ) -> UserPermissions:
-        """Get permissions for a specific resource.
+        """Get user permissions specific to a resource.
 
         Args:
-        ----
-            user_id: User to get permissions for
-            resource: Specific resource to check
+            user_id: The unique identifier of the user.
+            resource: The resource to get permissions for.
 
         Returns:
-        -------
-            Permissions for the specified resource
+            UserPermissions: User permissions specific to the resource.
 
         """
         ...
@@ -683,7 +597,7 @@ class AuthorizationService(Protocol):
 
 @runtime_checkable
 class SecurityHeaderValidator(Protocol):
-    r"""SecurityHeaderValidator - Framework Component.
+    """SecurityHeaderValidator - Framework Component.
 
     Implementa componente central do framework com funcionalidades específicas.
     Segue padrões arquiteturais estabelecidos.
@@ -706,13 +620,14 @@ class SecurityHeaderValidator(Protocol):
     Uso típico da classe:
 
     ```python
-    instance = SecurityHeaderValidator()\n    result = instance.method()
+    instance = SecurityHeaderValidator()
+    result = instance.method()
     ```
 
     See Also:
     --------
     - [Documentação da Arquitetura](../../docs/architecture/index.md)
-    - [Padrões de Design](../../docs/architecture/001-clean-architecture-ddd.md)
+    - [Padrões de Design](../../docs/architecture/001_clean_architecture_ddd.md)
 
     Note:
     ----
@@ -720,53 +635,89 @@ class SecurityHeaderValidator(Protocol):
 
     """
 
-    """Protocol for validating security headers."""
-
     def validate_headers(self, headers: SecurityHeaders) -> bool:
-        """Validate security headers for compliance.
-
-        Checks security headers against enterprise security policies
-        and compliance requirements for proper client authentication.
+        """Validate security headers for proper format and values.
 
         Args:
-        ----
-            headers: Security headers to validate
+            headers: Security headers to validate.
 
         Returns:
-        -------
-            True if headers are valid, False otherwise
-
-        Note:
-        ----
-            Provides comprehensive header validation.
+            True if headers are valid, False otherwise.
 
         """
         ...
 
     def extract_client_info(self, headers: SecurityHeaders) -> Mapping[str, str]:
-        """Extract client information from headers.
+        """Extract client information from security headers.
 
         Args:
-        ----
-            headers: Security headers to extract from
+            headers: Security headers to extract information from.
 
         Returns:
-        -------
-            Dictionary containing extracted client information
+            Dictionary containing extracted client information.
 
         """
         ...
 
     def detect_suspicious_patterns(self, headers: SecurityHeaders) -> Sequence[str]:
-        """Detect suspicious patterns in headers.
+        """Detect suspicious patterns in security headers.
 
         Args:
-        ----
-            headers: Security headers to analyze
+            headers: Security headers to analyze for suspicious patterns.
 
         Returns:
-        -------
-            List of detected suspicious patterns
+            List of detected suspicious patterns or anomalies.
 
         """
         ...
+
+
+@runtime_checkable
+class JWTService(Protocol):
+    """JWT service for token creation and validation."""
+
+    def create_token_pair(self, user: DomainUser) -> TokenPair:
+        """Create access and refresh token pair for user."""
+        ...
+
+    async def verify_token(self, token: JWTToken, token_type: str) -> JWTClaims | None:
+        """Verify JWT token and return claims."""
+        ...
+
+    def extract_token_claims(self, token: JWTToken) -> JWTClaims | None:
+        """Extract claims from token without validation."""
+        ...
+
+    def refresh_token(self, refresh_token: JWTToken, user: DomainUser) -> tuple[JWTToken, JWTToken] | None:
+        """Create new token pair from refresh token."""
+        ...
+
+
+@runtime_checkable
+class TokenManager(Protocol):
+    """Token storage and management service."""
+
+    async def register_token(self, token_id: str, metadata: TokenMetadata) -> None:
+        """Register a token with metadata."""
+        ...
+
+    async def validate_token(self, token_id: str) -> bool:
+        """Check if token is still valid (not revoked)."""
+        ...
+
+    async def revoke_token(self, token_id: str, user_id: str | None, reason: str) -> bool:
+        """Revoke a token."""
+        ...
+
+    async def revoke_user_tokens(self, user_id: str, token_type: str | None, requesting_user_id: str | None, reason: str) -> int:
+        """Revoke all tokens for a user."""
+        ...
+
+
+# Add missing type aliases
+class TokenPair:
+    """Token pair containing access and refresh tokens."""
+
+    def __init__(self, access_token: JWTToken, refresh_token: JWTToken) -> None:
+        self.access_token = access_token
+        self.refresh_token = refresh_token

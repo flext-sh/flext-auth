@@ -69,7 +69,7 @@ storage = create_token_storage("memory")
 
 ## Architecture Decisions
 
-### Why Three Backends?
+### Why Three Backends
 
 1. **Redis**: Best for production
 
