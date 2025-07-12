@@ -29,7 +29,9 @@ class UserCreated(DomainEvent):
     username: Username = Field(..., description="Username")
     email: UserEmail = Field(..., description="User email")
     created_by: UserId | None = Field(None, description="User who created this user")
-    initial_roles: list[SecurityRole] = Field(default_factory=list, description="Initial roles")
+    initial_roles: list[SecurityRole] = Field(
+        default_factory=list, description="Initial roles",
+    )
 
 
 class UserLoggedIn(DomainEvent):

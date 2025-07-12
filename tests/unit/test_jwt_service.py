@@ -53,33 +53,34 @@ class TestTokenInfo:
 
     def test_token_info_creation(self) -> None:
         """Test creating TokenInfo."""
+        token_id = uuid4()
+        user_id = uuid4()
         token_info = TokenInfo(
-            token_id=str(uuid4()),
-            user_id=uuid4(),
+            token_id=token_id,
+            user_id=user_id,
             token_type="access",
             expires_at=datetime.now(UTC) + timedelta(hours=1),
         )
 
-        assert isinstance(token_info.token_id, str)
-        assert isinstance(token_info.user_id, type(uuid4()))
+        assert token_info.token_id == token_id
+        assert token_info.user_id == user_id
         assert token_info.token_type == "access"
         assert isinstance(token_info.expires_at, datetime)
 
     def test_token_info_with_optional_fields(self) -> None:
-        """Test TokenInfo with optional fields."""
+        """Test TokenInfo with revoked_at field."""
+        now = datetime.now(UTC)
         token_info = TokenInfo(
-            token_id=str(uuid4()),
+            token_id=uuid4(),
             user_id=uuid4(),
-            token_type="access",
-            expires_at=datetime.now(UTC) + timedelta(hours=1),
-            ip_address="192.168.1.1",
-            user_agent="Test Browser",
-            device_info={"platform": "test"},
+            token_type="refresh",
+            expires_at=now + timedelta(hours=1),
+            revoked_at=now,
         )
 
-        assert token_info.ip_address == "192.168.1.1"
-        assert token_info.user_agent == "Test Browser"
-        assert token_info.device_info == {"platform": "test"}
+        assert token_info.token_type == "refresh"
+        assert token_info.revoked_at == now
+        assert not token_info.is_valid  # Token is revoked
 
 
 class TestJWTService:
@@ -109,7 +110,7 @@ class TestJWTService:
         """Create JWT service with mocked dependencies."""
         return JWTService(
             config=jwt_config,
-            token_storage=mock_token_storage,
+            storage=mock_token_storage,
         )
 
     @pytest.fixture

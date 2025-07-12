@@ -44,7 +44,9 @@ class AuthService:
             roles=command.roles,
         )
 
-    async def authenticate(self, command: AuthenticateUserCommand) -> ServiceResult[dict[str, Any]]:
+    async def authenticate(
+        self, command: AuthenticateUserCommand,
+    ) -> ServiceResult[dict[str, Any]]:
         """Authenticate user and return tokens."""
         # First authenticate the user
         auth_result = await self.user_service.authenticate(
@@ -64,7 +66,9 @@ class AuthService:
             user_agent=command.user_agent,
         )
 
-    async def validate_token(self, command: ValidateTokenCommand) -> ServiceResult[dict[str, Any]]:
+    async def validate_token(
+        self, command: ValidateTokenCommand,
+    ) -> ServiceResult[dict[str, Any]]:
         """Validate a token."""
         # First validate with JWT service
         jwt_result = await self.jwt_service.validate_token(command.token)
@@ -81,7 +85,9 @@ class AuthService:
 
         return ServiceResult.success(token_data)
 
-    async def change_password(self, command: ChangePasswordCommand) -> ServiceResult[None]:
+    async def change_password(
+        self, command: ChangePasswordCommand,
+    ) -> ServiceResult[None]:
         """Change user password."""
         return await self.user_service.change_password(
             user_id=command.user_id,

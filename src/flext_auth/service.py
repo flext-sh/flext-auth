@@ -35,7 +35,11 @@ class ServiceInMemoryRoleRepository:
 class AuthenticationService:
     """Authentication service."""
 
-    def __init__(self, user_repository: ServiceInMemoryUserRepository, role_repository: ServiceInMemoryRoleRepository) -> None:
+    def __init__(
+        self,
+        user_repository: ServiceInMemoryUserRepository,
+        role_repository: ServiceInMemoryRoleRepository,
+    ) -> None:
         """Initialize authentication service with repositories."""
         self.user_repository = user_repository
         self.role_repository = role_repository

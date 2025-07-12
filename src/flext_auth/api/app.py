@@ -33,7 +33,7 @@ security = HTTPBearer()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> None:
+async def lifespan(app: FastAPI) -> None:  # noqa: ARG001
     """Manage application lifespan."""
     logger.info("auth_api_starting")
     yield
@@ -56,7 +56,7 @@ async def get_current_user(
     """Get current authenticated user from token."""
     command = ValidateTokenCommand(
         token=credentials.credentials,
-        token_type="access",
+        token_type="access",  # noqa: S106
     )
 
     result = await auth_service.validate_token(command)
@@ -90,7 +90,7 @@ async def register(
 
     result = await auth_service.create_user(command)
     if result.is_failure:
-            raise HTTPException(status_code=400, detail=result.error)
+        raise HTTPException(status_code=400, detail=result.error)
 
     user = result.value
     return UserResponse(
@@ -164,7 +164,7 @@ async def change_password(
 
     result = await auth_service.change_password(command)
     if result.is_failure:
-            raise HTTPException(status_code=400, detail=result.error)
+        raise HTTPException(status_code=400, detail=result.error)
 
     return {"message": "Password changed successfully"}
 

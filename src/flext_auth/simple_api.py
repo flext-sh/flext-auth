@@ -48,7 +48,9 @@ def setup_auth(settings: AuthSettings | None = None) -> ServiceResult[bool]:
         return ServiceResult.fail(f"Failed to setup auth: {e}")
 
 
-def create_user(username: str, email: str, password: str, roles: list[str] | None = None) -> ServiceResult[User]:
+def create_user(
+    username: str, email: str, password: str, roles: list[str] | None = None,
+) -> ServiceResult[User]:
     """Create a new user with specified credentials.
 
     Args:

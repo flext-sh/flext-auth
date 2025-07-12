@@ -63,7 +63,9 @@ class UserRepository(ABC):
         ...
 
     @abstractmethod
-    async def list_users(self, limit: int = 100, offset: int = 0) -> ServiceResult[list[User]]:
+    async def list_users(
+        self, limit: int = 100, offset: int = 0,
+    ) -> ServiceResult[list[User]]:
         """List users with pagination."""
         ...
 

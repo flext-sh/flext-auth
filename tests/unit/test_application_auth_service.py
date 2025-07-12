@@ -114,11 +114,13 @@ class TestAuthService:
         mock_user.username = "testuser"
 
         mock_user_service.authenticate.return_value = ServiceResult.success(mock_user)
-        mock_jwt_service.create_tokens.return_value = ServiceResult.success({
-            "access_token": "access_token",
-            "refresh_token": "refresh_token",
-            "expires_in": 3600,
-        })
+        mock_jwt_service.create_tokens.return_value = ServiceResult.success(
+            {
+                "access_token": "access_token",
+                "refresh_token": "refresh_token",
+                "expires_in": 3600,
+            },
+        )
 
         command = AuthenticateUserCommand(
             username="testuser",
@@ -402,11 +404,13 @@ class TestAuthServiceIntegration:
 
         # 2. Authenticate user
         mock_user_service.authenticate.return_value = ServiceResult.success(mock_user)
-        mock_jwt_service.create_tokens.return_value = ServiceResult.success({
-            "access_token": "access_token",
-            "refresh_token": "refresh_token",
-            "expires_in": 3600,
-        })
+        mock_jwt_service.create_tokens.return_value = ServiceResult.success(
+            {
+                "access_token": "access_token",
+                "refresh_token": "refresh_token",
+                "expires_in": 3600,
+            },
+        )
 
         auth_command = AuthenticateUserCommand(
             username="testuser",

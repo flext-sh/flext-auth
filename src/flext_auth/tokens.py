@@ -144,7 +144,9 @@ class TokenMetadata(ValueObject):
         """
         return not self.is_expired and not self.is_revoked
 
-    def revoke(self, revoked_by: UserID | None = None, reason: str | None = None) -> TokenMetadata:
+    def revoke(
+        self, revoked_by: UserID | None = None, reason: str | None = None,
+    ) -> TokenMetadata:
         """Create a revoked copy of this token metadata.
 
         Args:
@@ -276,13 +278,16 @@ class TokenStorage[T](ABC):
 class RedisTokenStorage(TokenStorage[str]):
     """Redis-based token storage implementation."""
 
-    def __init__(self, redis_client: Redis[str] | None = None, key_prefix: str = "flext:tokens") -> None:
+    def __init__(
+        self, redis_client: Redis[str] | None = None, key_prefix: str = "flext:tokens",
+    ) -> None:
         # Get Redis configuration from unified domain config - with strict validation
         if redis_client:
             self.redis = redis_client
         else:
             # Use import from flext_auth config
             from flext_auth.config import get_auth_settings
+
             config = get_auth_settings()
             redis_url = getattr(config, "redis_url", "redis://localhost:6379/0")
             self.redis = redis.from_url(redis_url)
@@ -656,7 +661,9 @@ class TokenBlacklist:
         self.storage = storage or InMemoryTokenStorage()
         self._cleanup_task: asyncio.Task[None] | None = None
 
-    async def start_cleanup_task(self, interval: timedelta = timedelta(hours=1)) -> None:
+    async def start_cleanup_task(
+        self, interval: timedelta = timedelta(hours=1),
+    ) -> None:
         """Start the automatic cleanup task.
 
         Args:
@@ -689,7 +696,9 @@ class TokenBlacklist:
                 # Log error but continue cleanup loop
                 pass
 
-    async def revoke_token(self, token_id: str, expires_at: dt, metadata: TokenMetadata | None = None) -> None:
+    async def revoke_token(
+        self, token_id: str, expires_at: dt, metadata: TokenMetadata | None = None,
+    ) -> None:
         """Revoke a token by adding it to the blacklist.
 
         Args:
@@ -705,8 +714,7 @@ class TokenBlacklist:
         # Store revocation info
         revocation_data = {
             "revoked_at": dt.now(UTC).isoformat(),
-            "metadata":
-                metadata.device_info if metadata else {},
+            "metadata": metadata.device_info if metadata else {},
         }
 
         await self.storage.store(
@@ -727,7 +735,9 @@ class TokenBlacklist:
         """
         return await self.storage.exists(token_id)
 
-    async def revoke_user_tokens(self, user_id: UserID, token_type: TokenType | None = None) -> int:
+    async def revoke_user_tokens(
+        self, user_id: UserID, token_type: TokenType | None = None,
+    ) -> int:
         """Revoke all tokens for a specific user.
 
         Args:
@@ -760,7 +770,9 @@ class TokenBlacklist:
 
         return revoked_count
 
-    async def get_revoked_tokens(self, user_id: UserID | None = None, limit: int = 100) -> list[str]:
+    async def get_revoked_tokens(
+        self, user_id: UserID | None = None, limit: int = 100,
+    ) -> list[str]:
         """Get list of revoked tokens.
 
         Args:
@@ -779,7 +791,11 @@ class TokenBlacklist:
 class TokenManager:
     """Comprehensive token management with automatic renewal and cleanup."""
 
-    def __init__(self, blacklist: TokenBlacklist | None = None, storage: TokenStorage[str] | None = None) -> None:
+    def __init__(
+        self,
+        blacklist: TokenBlacklist | None = None,
+        storage: TokenStorage[str] | None = None,
+    ) -> None:
         self.blacklist = blacklist or TokenBlacklist(storage)
         self._active_tokens: dict[str, TokenMetadata] = {}
         self._user_tokens: dict[UserID, set[str]] = {}
@@ -821,7 +837,9 @@ class TokenManager:
         # Token not found, assume valid (will be validated by JWT service)
         return True
 
-    async def revoke_token(self, token_id: str, revoked_by: UserID | None = None, reason: str | None = None) -> bool:
+    async def revoke_token(
+        self, token_id: str, revoked_by: UserID | None = None, reason: str | None = None,
+    ) -> bool:
         """Revoke a specific token.
 
         Args:
@@ -851,7 +869,13 @@ class TokenManager:
 
         return True
 
-    async def revoke_user_tokens(self, user_id: UserID, token_type: TokenType | None = None, revoked_by: UserID | None = None, reason: str | None = None) -> int:
+    async def revoke_user_tokens(
+        self,
+        user_id: UserID,
+        token_type: TokenType | None = None,
+        revoked_by: UserID | None = None,
+        reason: str | None = None,
+    ) -> int:
         """Revoke all tokens for a specific user.
 
         Args:
@@ -921,7 +945,12 @@ class TokenManager:
 
         return len(expired_tokens)
 
-    async def get_user_tokens(self, user_id: UserID, token_type: TokenType | None = None, inclusion_mode: TokenInclusionMode = TokenInclusionMode.ACTIVE_ONLY) -> list[TokenMetadata]:
+    async def get_user_tokens(
+        self,
+        user_id: UserID,
+        token_type: TokenType | None = None,
+        inclusion_mode: TokenInclusionMode = TokenInclusionMode.ACTIVE_ONLY,
+    ) -> list[TokenMetadata]:
         """Get tokens for a specific user.
 
         Args:
@@ -987,7 +1016,9 @@ class TokenManager:
         }
 
 
-def create_token_storage(storage_type: str = "redis", **kwargs: Any) -> TokenStorage[str]:
+def create_token_storage(
+    storage_type: str = "redis", **kwargs: Any,
+) -> TokenStorage[str]:
     """Factory function to create appropriate token storage backend.
 
     Creates and configures the appropriate token storage implementation

@@ -99,7 +99,9 @@ class HashedPassword(DomainValueObject):
 class PlainPassword(DomainValueObject):
     """Plain text password for validation before hashing."""
 
-    value: str = Field(..., min_length=8, max_length=128, description="Plain text password")
+    value: str = Field(
+        ..., min_length=8, max_length=128, description="Plain text password",
+    )
 
     @field_validator("value")
     @classmethod
@@ -332,6 +334,7 @@ class IPAddress(DomainValueObject):
     def validate_ip_format(cls, v: str) -> str:
         """Validate IP address format."""
         import ipaddress
+
         try:
             ipaddress.ip_address(v)
             return v
@@ -343,12 +346,14 @@ class IPAddress(DomainValueObject):
     def is_private(self) -> bool:
         """Check if IP address is private."""
         import ipaddress
+
         return ipaddress.ip_address(self.value).is_private
 
     @property
     def is_loopback(self) -> bool:
         """Check if IP address is loopback."""
         import ipaddress
+
         return ipaddress.ip_address(self.value).is_loopback
 
 
@@ -387,5 +392,7 @@ class UserAgent(DomainValueObject):
         return {
             "browser": browser,
             "platform": platform,
-            "is_mobile": any(mobile in value for mobile in ["mobile", "android", "iphone"]),
+            "is_mobile": any(
+                mobile in value for mobile in ["mobile", "android", "iphone"]
+            ),
         }

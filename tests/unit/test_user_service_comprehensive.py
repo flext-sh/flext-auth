@@ -82,12 +82,19 @@ class MockTokenManager:
         """Mock token validation."""
         return "invalid" not in token_id
 
-    async def revoke_token(self, token_id: str, user_id: str | None, reason: str) -> bool:
+    async def revoke_token(
+        self, token_id: str, user_id: str | None, reason: str,
+    ) -> bool:
         """Mock token revocation."""
         return True
 
-    async def revoke_user_tokens(self, user_id: str, token_type: str | None,
-                                requesting_user_id: str | None, reason: str) -> int:
+    async def revoke_user_tokens(
+        self,
+        user_id: str,
+        token_type: str | None,
+        requesting_user_id: str | None,
+        reason: str,
+    ) -> int:
         """Mock user tokens revocation."""
         return 2  # Simulate revoking 2 tokens
 
@@ -167,7 +174,9 @@ class TestUserServiceComprehensive:
         assert result.data.username == "John Doe"
         assert result.data.role == "user"
 
-    async def test_user_creation_duplicate_email(self, user_service: UserService) -> None:
+    async def test_user_creation_duplicate_email(
+        self, user_service: UserService,
+    ) -> None:
         """Test user creation with duplicate email."""
         request = UserCreationRequest(
             email="test@example.com",
@@ -197,7 +206,9 @@ class TestUserServiceComprehensive:
         await user_service.create_user(request)
 
         # Check the created user status
-        user_result = await user_service.user_repository.find_by_email("test@example.com")
+        user_result = await user_service.user_repository.find_by_email(
+            "test@example.com",
+        )
         created_user = user_result.data
         print(f"DEBUG: User locked_until: {created_user.locked_until}")
         print(f"DEBUG: User is_locked: {created_user.is_locked()}")
@@ -218,7 +229,9 @@ class TestUserServiceComprehensive:
         assert access_token.startswith("access_token_for_")
         assert refresh_token.startswith("refresh_token_for_")
 
-    async def test_authenticate_user_invalid_email(self, user_service: UserService) -> None:
+    async def test_authenticate_user_invalid_email(
+        self, user_service: UserService,
+    ) -> None:
         """Test authentication with invalid email."""
         result = await user_service.authenticate_user(
             email="nonexistent@example.com",
@@ -227,7 +240,9 @@ class TestUserServiceComprehensive:
 
         assert result is None
 
-    async def test_authenticate_user_invalid_password(self, user_service: UserService) -> None:
+    async def test_authenticate_user_invalid_password(
+        self, user_service: UserService,
+    ) -> None:
         """Test authentication with invalid password."""
         # First create a user
         request = UserCreationRequest(
@@ -319,7 +334,9 @@ class TestUserServiceComprehensive:
 
         assert result is True
 
-    async def test_change_password_invalid_old_password(self, user_service: UserService) -> None:
+    async def test_change_password_invalid_old_password(
+        self, user_service: UserService,
+    ) -> None:
         """Test password change with invalid old password."""
         # Create a user first
         request = UserCreationRequest(
@@ -389,7 +406,9 @@ class TestPasswordHasherImpl:
 
         assert password_hasher.verify_password(password, hashed)
 
-    def test_verify_password_incorrect(self, password_hasher: PasswordHasherImpl) -> None:
+    def test_verify_password_incorrect(
+        self, password_hasher: PasswordHasherImpl,
+    ) -> None:
         """Test password verification with incorrect password."""
         password = "test_password_123"
         wrong_password = "wrong_password"
@@ -406,7 +425,9 @@ class TestSecurityAuditorImpl:
         """Create SecurityAuditorImpl for testing."""
         return SecurityAuditorImpl()
 
-    async def test_log_security_event(self, security_auditor: SecurityAuditorImpl) -> None:
+    async def test_log_security_event(
+        self, security_auditor: SecurityAuditorImpl,
+    ) -> None:
         """Test security event logging."""
         await security_auditor.log_security_event(
             event_type=SecurityEvent.LOGIN_SUCCESS,
@@ -423,7 +444,9 @@ class TestSecurityAuditorImpl:
         assert event["user_id"] == "user_123"
         assert event["ip_address"] == "192.168.1.1"
 
-    async def test_get_failed_login_attempts(self, security_auditor: SecurityAuditorImpl) -> None:
+    async def test_get_failed_login_attempts(
+        self, security_auditor: SecurityAuditorImpl,
+    ) -> None:
         """Test getting failed login attempts count."""
         # Log some failed login attempts
         await security_auditor.log_security_event(
@@ -526,7 +549,9 @@ class TestUserServiceInMemoryUserRepository:
         """Create in-memory user repository for testing."""
         return UserServiceInMemoryUserRepository()
 
-    async def test_create_user(self, repository: UserServiceInMemoryUserRepository) -> None:
+    async def test_create_user(
+        self, repository: UserServiceInMemoryUserRepository,
+    ) -> None:
         """Test user creation in repository."""
         user_data = {
             "email": "test@example.com",
@@ -541,7 +566,9 @@ class TestUserServiceInMemoryUserRepository:
         assert user.password_hash == "hashed_password"
         assert user.username == "John Doe"
 
-    async def test_find_user_by_email(self, repository: UserServiceInMemoryUserRepository) -> None:
+    async def test_find_user_by_email(
+        self, repository: UserServiceInMemoryUserRepository,
+    ) -> None:
         """Test finding user by email."""
         user_data = {
             "email": "test@example.com",
@@ -557,7 +584,9 @@ class TestUserServiceInMemoryUserRepository:
         assert result.data is not None
         assert result.data.email == "test@example.com"
 
-    async def test_find_user_by_id(self, repository: UserServiceInMemoryUserRepository) -> None:
+    async def test_find_user_by_id(
+        self, repository: UserServiceInMemoryUserRepository,
+    ) -> None:
         """Test finding user by ID."""
         user_data = {
             "email": "test@example.com",
@@ -573,7 +602,9 @@ class TestUserServiceInMemoryUserRepository:
         assert result.data is not None
         assert result.data.id == created_user.id
 
-    async def test_email_exists(self, repository: UserServiceInMemoryUserRepository) -> None:
+    async def test_email_exists(
+        self, repository: UserServiceInMemoryUserRepository,
+    ) -> None:
         """Test checking if email exists."""
         user_data = {
             "email": "test@example.com",
@@ -592,7 +623,9 @@ class TestUserServiceInMemoryUserRepository:
         assert result.is_successful
         assert result.data is False
 
-    async def test_get_user_permissions(self, repository: UserServiceInMemoryUserRepository) -> None:
+    async def test_get_user_permissions(
+        self, repository: UserServiceInMemoryUserRepository,
+    ) -> None:
         """Test getting user permissions."""
         user_data = {
             "email": "REDACTED_LDAP_BIND_PASSWORD@example.com",

@@ -48,7 +48,9 @@ class Container:
                     "true",
                 ).lower()
                 == "true",
-                database_url=os.getenv("DATABASE_URL", "postgresql://localhost/flext_auth"),
+                database_url=os.getenv(
+                    "DATABASE_URL", "postgresql://localhost/flext_auth",
+                ),
                 redis_url=os.getenv("REDIS_URL", "redis://localhost:6379/0"),
                 smtp_host=os.getenv("SMTP_HOST", "localhost"),
                 smtp_port=int(os.getenv("SMTP_PORT", "587")),
@@ -64,24 +66,28 @@ class Container:
     def user_repository(self) -> UserRepository:
         """Get user repository (interface placeholder)."""
         from unittest.mock import MagicMock
+
         return MagicMock()
 
     @property
     def role_repository(self) -> RoleRepository:
         """Get role repository (interface placeholder)."""
         from unittest.mock import MagicMock
+
         return MagicMock()
 
     @property
     def token_repository(self) -> TokenRepository:
         """Get token repository (interface placeholder)."""
         from unittest.mock import MagicMock
+
         return MagicMock()
 
     @property
     def session_repository(self) -> SessionRepository:
         """Get session repository (interface placeholder)."""
         from unittest.mock import MagicMock
+
         return MagicMock()
 
     # Service properties (stubbed for interface compatibility)
@@ -89,24 +95,28 @@ class Container:
     def password_service(self) -> PasswordService:
         """Get password service (interface placeholder)."""
         from unittest.mock import MagicMock
+
         return MagicMock()
 
     @property
     def token_service(self) -> TokenService:
         """Get token service (interface placeholder)."""
         from unittest.mock import MagicMock
+
         return MagicMock()
 
     @property
     def token_storage(self) -> TokenStorage:
         """Get token storage (interface placeholder)."""
         from unittest.mock import MagicMock
+
         return MagicMock()
 
     @property
     def email_service(self) -> EmailService:
         """Get email service (interface placeholder)."""
         from unittest.mock import MagicMock
+
         return MagicMock()
 
     # Handler properties (stubbed for interface compatibility)
@@ -114,47 +124,55 @@ class Container:
     def create_user_handler(self) -> object:
         """Get create user handler (interface placeholder)."""
         from unittest.mock import MagicMock
+
         return MagicMock()
 
     @property
     def update_user_handler(self) -> object:
         """Get update user handler (interface placeholder)."""
         from unittest.mock import MagicMock
+
         return MagicMock()
 
     @property
     def authenticate_user_handler(self) -> object:
         """Get authenticate user handler (interface placeholder)."""
         from unittest.mock import MagicMock
+
         return MagicMock()
 
     @property
     def change_password_handler(self) -> object:
         """Get change password handler (interface placeholder)."""
         from unittest.mock import MagicMock
+
         return MagicMock()
 
     @property
     def create_token_handler(self) -> object:
         """Get create token handler (interface placeholder)."""
         from unittest.mock import MagicMock
+
         return MagicMock()
 
     @property
     def revoke_token_handler(self) -> object:
         """Get revoke token handler (interface placeholder)."""
         from unittest.mock import MagicMock
+
         return MagicMock()
 
     @property
     def verify_email_handler(self) -> object:
         """Get verify email handler (interface placeholder)."""
         from unittest.mock import MagicMock
+
         return MagicMock()
 
     def auth_service(self) -> object:
         """Get auth service instance."""
         from unittest.mock import MagicMock
+
         return MagicMock()
 
 

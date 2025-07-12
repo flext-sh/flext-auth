@@ -25,7 +25,9 @@ class InMemoryTokenStorage:
         self._storage: dict[str, dict[str, Any]] = {}
         self._lock = asyncio.Lock()
 
-    async def store(self, key: str, value: T, ttl: datetime.timedelta | None = None) -> None:
+    async def store(
+        self, key: str, value: T, ttl: datetime.timedelta | None = None,
+    ) -> None:
         """Store a value with optional TTL expiration.
 
         Args:

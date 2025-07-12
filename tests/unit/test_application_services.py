@@ -105,8 +105,12 @@ class TestAuthService:
             created_at=datetime.now(UTC),
         )
         mock_user_repository.save.return_value = ServiceResult.success(mock_user)
-        mock_user_repository.get_by_username.return_value = ServiceResult.failure("User not found")
-        mock_user_repository.get_by_email.return_value = ServiceResult.failure("User not found")
+        mock_user_repository.get_by_username.return_value = ServiceResult.failure(
+            "User not found",
+        )
+        mock_user_repository.get_by_email.return_value = ServiceResult.failure(
+            "User not found",
+        )
 
         result = await auth_service.create_user(username, email, password)
 
@@ -130,7 +134,9 @@ class TestAuthService:
 
         # Mock existing user
         existing_user = MagicMock()
-        mock_user_repository.get_by_username.return_value = ServiceResult.success(existing_user)
+        mock_user_repository.get_by_username.return_value = ServiceResult.success(
+            existing_user,
+        )
 
         result = await auth_service.create_user(username, email, password)
 
@@ -149,9 +155,13 @@ class TestAuthService:
         password = "password123"
 
         # Mock username check passes, email exists
-        mock_user_repository.get_by_username.return_value = ServiceResult.failure("User not found")
+        mock_user_repository.get_by_username.return_value = ServiceResult.failure(
+            "User not found",
+        )
         existing_user = MagicMock()
-        mock_user_repository.get_by_email.return_value = ServiceResult.success(existing_user)
+        mock_user_repository.get_by_email.return_value = ServiceResult.success(
+            existing_user,
+        )
 
         result = await auth_service.create_user(username, email, password)
 
@@ -183,7 +193,9 @@ class TestAuthService:
             is_active=True,
             created_at=datetime.now(UTC),
         )
-        mock_user_repository.get_by_username.return_value = ServiceResult.success(mock_user)
+        mock_user_repository.get_by_username.return_value = ServiceResult.success(
+            mock_user,
+        )
 
         # Mock password verification
         mock_password_hasher.verify_password.return_value = True
@@ -191,8 +203,12 @@ class TestAuthService:
         # Mock token generation
         access_token = AuthToken("access.token.here")
         refresh_token = AuthToken("refresh.token.here")
-        mock_token_generator.generate_access_token.return_value = ServiceResult.success(access_token)
-        mock_token_generator.generate_refresh_token.return_value = ServiceResult.success(refresh_token)
+        mock_token_generator.generate_access_token.return_value = ServiceResult.success(
+            access_token,
+        )
+        mock_token_generator.generate_refresh_token.return_value = (
+            ServiceResult.success(refresh_token)
+        )
 
         # Mock session creation
         session_id = uuid4()
@@ -210,13 +226,18 @@ class TestAuthService:
         mock_session_repository.save.return_value = ServiceResult.success(mock_session)
 
         result = await auth_service.authenticate_user(
-            username, password, "192.168.1.1", "Test Browser",
+            username,
+            password,
+            "192.168.1.1",
+            "Test Browser",
         )
 
         assert result.is_success
         assert result.value.access_token == access_token
         assert result.value.refresh_token == refresh_token
-        mock_password_hasher.verify_password.assert_called_once_with(password, hashed_password)
+        mock_password_hasher.verify_password.assert_called_once_with(
+            password, hashed_password,
+        )
         mock_event_bus.publish.assert_called()
 
     @pytest.mark.asyncio
@@ -229,7 +250,9 @@ class TestAuthService:
         username = Username("nonexistent")
         password = "password123"
 
-        mock_user_repository.get_by_username.return_value = ServiceResult.failure("User not found")
+        mock_user_repository.get_by_username.return_value = ServiceResult.failure(
+            "User not found",
+        )
 
         result = await auth_service.authenticate_user(username, password)
 
@@ -257,7 +280,9 @@ class TestAuthService:
             is_active=True,
             created_at=datetime.now(UTC),
         )
-        mock_user_repository.get_by_username.return_value = ServiceResult.success(mock_user)
+        mock_user_repository.get_by_username.return_value = ServiceResult.success(
+            mock_user,
+        )
 
         # Mock password verification failure
         mock_password_hasher.verify_password.return_value = False
@@ -286,7 +311,9 @@ class TestAuthService:
             is_active=False,  # Inactive user
             created_at=datetime.now(UTC),
         )
-        mock_user_repository.get_by_username.return_value = ServiceResult.success(mock_user)
+        mock_user_repository.get_by_username.return_value = ServiceResult.success(
+            mock_user,
+        )
 
         result = await auth_service.authenticate_user(username, password)
 
@@ -310,7 +337,9 @@ class TestAuthService:
         mock_token_info.user_id = user_id
         mock_token_info.session_id = session_id
         mock_token_info.is_valid = True
-        mock_token_repository.validate_token.return_value = ServiceResult.success(mock_token_info)
+        mock_token_repository.validate_token.return_value = ServiceResult.success(
+            mock_token_info,
+        )
 
         # Mock session validation
         mock_session = Session(
@@ -324,7 +353,9 @@ class TestAuthService:
             is_active=True,
             created_at=datetime.now(UTC),
         )
-        mock_session_repository.get_by_id.return_value = ServiceResult.success(mock_session)
+        mock_session_repository.get_by_id.return_value = ServiceResult.success(
+            mock_session,
+        )
 
         result = await auth_service.validate_token(token)
 
@@ -340,7 +371,9 @@ class TestAuthService:
         """Test validation of invalid token."""
         token = AuthToken("invalid.token.here")
 
-        mock_token_repository.validate_token.return_value = ServiceResult.failure("Invalid token")
+        mock_token_repository.validate_token.return_value = ServiceResult.failure(
+            "Invalid token",
+        )
 
         result = await auth_service.validate_token(token)
 
@@ -389,10 +422,14 @@ class TestAuthService:
         )
         mock_user_repository.save.return_value = ServiceResult.success(updated_user)
 
-        result = await auth_service.change_password(user_id, current_password, new_password)
+        result = await auth_service.change_password(
+            user_id, current_password, new_password,
+        )
 
         assert result.is_success
-        mock_password_hasher.verify_password.assert_called_once_with(current_password, current_hash)
+        mock_password_hasher.verify_password.assert_called_once_with(
+            current_password, current_hash,
+        )
         mock_password_hasher.hash_password.assert_called_once_with(new_password)
         mock_user_repository.save.assert_called_once()
         mock_event_bus.publish.assert_called()
@@ -408,9 +445,13 @@ class TestAuthService:
         current_password = "oldpassword"
         new_password = "newpassword123"
 
-        mock_user_repository.get_by_id.return_value = ServiceResult.failure("User not found")
+        mock_user_repository.get_by_id.return_value = ServiceResult.failure(
+            "User not found",
+        )
 
-        result = await auth_service.change_password(user_id, current_password, new_password)
+        result = await auth_service.change_password(
+            user_id, current_password, new_password,
+        )
 
         assert result.is_failure
         assert "not found" in result.error.lower()
@@ -442,10 +483,15 @@ class TestAuthService:
         # Mock password verification failure
         mock_password_hasher.verify_password.return_value = False
 
-        result = await auth_service.change_password(user_id, current_password, new_password)
+        result = await auth_service.change_password(
+            user_id, current_password, new_password,
+        )
 
         assert result.is_failure
-        assert "current password" in result.error.lower() or "incorrect" in result.error.lower()
+        assert (
+            "current password" in result.error.lower()
+            or "incorrect" in result.error.lower()
+        )
 
     @pytest.mark.asyncio
     async def test_logout_user_success(
@@ -471,7 +517,9 @@ class TestAuthService:
             is_active=True,
             created_at=datetime.now(UTC),
         )
-        mock_session_repository.get_by_id.return_value = ServiceResult.success(mock_session)
+        mock_session_repository.get_by_id.return_value = ServiceResult.success(
+            mock_session,
+        )
 
         # Mock session deactivation
         deactivated_session = Session(
@@ -486,7 +534,9 @@ class TestAuthService:
             created_at=datetime.now(UTC),
             updated_at=datetime.now(UTC),
         )
-        mock_session_repository.save.return_value = ServiceResult.success(deactivated_session)
+        mock_session_repository.save.return_value = ServiceResult.success(
+            deactivated_session,
+        )
 
         # Mock token revocation
         mock_token_repository.revoke_token.return_value = ServiceResult.success(None)
@@ -507,7 +557,9 @@ class TestAuthService:
         """Test logout when session not found."""
         session_id = uuid4()
 
-        mock_session_repository.get_by_id.return_value = ServiceResult.failure("Session not found")
+        mock_session_repository.get_by_id.return_value = ServiceResult.failure(
+            "Session not found",
+        )
 
         result = await auth_service.logout_user(session_id)
 
@@ -533,8 +585,10 @@ class TestAuthService:
         mock_token_info.user_id = user_id
         mock_token_info.session_id = session_id
         mock_token_info.is_valid = True
-        mock_token_repository.validate_refresh_token.return_value = ServiceResult.success(
-            mock_token_info,
+        mock_token_repository.validate_refresh_token.return_value = (
+            ServiceResult.success(
+                mock_token_info,
+            )
         )
 
         # Mock new token generation
@@ -543,13 +597,17 @@ class TestAuthService:
         mock_token_generator.generate_access_token.return_value = ServiceResult.success(
             new_access_token,
         )
-        mock_token_generator.generate_refresh_token.return_value = ServiceResult.success(
-            new_refresh_token,
+        mock_token_generator.generate_refresh_token.return_value = (
+            ServiceResult.success(
+                new_refresh_token,
+            )
         )
 
         # Mock session update
         updated_session = MagicMock()
-        mock_session_repository.save.return_value = ServiceResult.success(updated_session)
+        mock_session_repository.save.return_value = ServiceResult.success(
+            updated_session,
+        )
 
         result = await auth_service.refresh_token(refresh_token)
 
@@ -567,8 +625,10 @@ class TestAuthService:
         """Test refresh with invalid token."""
         refresh_token = AuthToken("invalid.refresh.token")
 
-        mock_token_repository.validate_refresh_token.return_value = ServiceResult.failure(
-            "Invalid refresh token",
+        mock_token_repository.validate_refresh_token.return_value = (
+            ServiceResult.failure(
+                "Invalid refresh token",
+            )
         )
 
         result = await auth_service.refresh_token(refresh_token)

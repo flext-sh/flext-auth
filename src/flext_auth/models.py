@@ -19,7 +19,6 @@ from flext_core import UserId
 # Import PermissionScope directly for use in model - MUST be outside TYPE_CHECKING
 
 if TYPE_CHECKING:
-
     from flext_auth.types import PermissionScope
 
 # Python 3.13 type aliases for zero boilerplate
@@ -59,7 +58,9 @@ class UserRoleEnum(StrEnum):
     AUDITOR = "auditor"
 
     @classmethod
-    def create(cls, name: str, permissions: list[Permission], description: str = "") -> Role:
+    def create(
+        cls, name: str, permissions: list[Permission], description: str = "",
+    ) -> Role:
         """Create a new role with the given permissions.
 
         Args:
@@ -99,7 +100,9 @@ class Permission(DomainValueObject):
         return f"{self.resource}:{self.action}"
 
     @classmethod
-    def create(cls, name: str, scope: PermissionScope, resource: str, description: str = "") -> Permission:
+    def create(
+        cls, name: str, scope: PermissionScope, resource: str, description: str = "",
+    ) -> Permission:
         """Create a new permission with the given parameters.
 
         Args:
@@ -242,7 +245,9 @@ class User(DomainEntity):
         self.failed_attempts = 0
         self.locked_until = None
 
-    def record_failed_attempt(self, lock_after: int = 5, lock_duration_minutes: int = 30) -> None:
+    def record_failed_attempt(
+        self, lock_after: int = 5, lock_duration_minutes: int = 30,
+    ) -> None:
         """Record a failed login attempt and lock the account if threshold is reached.
 
         Args:

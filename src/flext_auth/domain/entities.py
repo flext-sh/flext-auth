@@ -28,13 +28,19 @@ class User(DomainEntity):
     role: str = Field(default="user", description="User role")
     status: str = Field(default="active", description="User status")
     email_verified: bool = Field(default=False, description="Email verification status")
-    email_verified_at: datetime | None = Field(None, description="Email verification timestamp")
+    email_verified_at: datetime | None = Field(
+        None, description="Email verification timestamp",
+    )
     last_login_at: datetime | None = Field(None, description="Last login timestamp")
     last_login_ip: str | None = Field(None, description="Last login IP address")
     login_attempts: int = Field(default=0, description="Failed login attempts")
     locked_until: datetime | None = Field(None, description="Account lock expiry")
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Creation timestamp")
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Last update timestamp")
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(UTC), description="Creation timestamp",
+    )
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(UTC), description="Last update timestamp",
+    )
 
     def is_active(self) -> bool:
         """Check if user account is active."""
@@ -42,10 +48,7 @@ class User(DomainEntity):
 
     def is_locked(self) -> bool:
         """Check if user account is locked."""
-        return (
-            self.locked_until is not None and
-            self.locked_until > datetime.now(UTC)
-        )
+        return self.locked_until is not None and self.locked_until > datetime.now(UTC)
 
     def is_email_verified(self) -> bool:
         """Check if email is verified."""
@@ -101,8 +104,12 @@ class Role(DomainEntity):
     description: str = Field("", description="Role description")
     permissions: list[str] = Field(default_factory=list, description="Role permissions")
     is_system_role: bool = Field(default=False, description="System role flag")
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Creation timestamp")
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Last update timestamp")
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(UTC), description="Creation timestamp",
+    )
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(UTC), description="Last update timestamp",
+    )
 
     def add_permission(self, permission: str) -> None:
         """Add permission to role."""
@@ -132,8 +139,12 @@ class Session(DomainEntity):
     user_agent: str = Field(..., description="Client user agent")
     status: str = Field(default="active", description="Session status")
     expires_at: datetime = Field(..., description="Session expiration")
-    last_activity_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Last activity timestamp")
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Creation timestamp")
+    last_activity_at: datetime = Field(
+        default_factory=lambda: datetime.now(UTC), description="Last activity timestamp",
+    )
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(UTC), description="Creation timestamp",
+    )
 
     @classmethod
     def create_new(
@@ -188,7 +199,9 @@ class Permission(DomainEntity):
     description: str = Field("", description="Permission description")
     resource: str = Field(..., description="Resource this permission applies to")
     action: str = Field(..., description="Action this permission allows")
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC), description="Creation timestamp")
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(UTC), description="Creation timestamp",
+    )
 
     @property
     def full_name(self) -> str:
@@ -197,6 +210,7 @@ class Permission(DomainEntity):
 
 
 # Domain Events
+
 
 class UserCreatedEvent(DomainEvent):
     """Event raised when a user is created."""

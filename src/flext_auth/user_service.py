@@ -86,7 +86,9 @@ class PasswordHasherImpl(PasswordHasher):
         result = self.context.hash(password)
         return str(result) if result is not None else ""
 
-    def verify_password(self, password: PlaintextPassword, hashed: HashedPassword) -> bool:
+    def verify_password(
+        self, password: PlaintextPassword, hashed: HashedPassword,
+    ) -> bool:
         """Verify a plaintext password against a hashed password.
 
         Args:
@@ -507,12 +509,14 @@ class UserServiceInMemoryUserRepository(UserRepository):
 
         return ServiceResult.success(True)
 
-    async def list_users(self, limit: int = 100, offset: int = 0) -> ServiceResult[list[User]]:
+    async def list_users(
+        self, limit: int = 100, offset: int = 0,
+    ) -> ServiceResult[list[User]]:
         """List users with pagination following repository interface."""
         from flext_core import ServiceResult
 
         all_users = list(self._users.values())
-        paginated_users = all_users[offset:offset + limit]
+        paginated_users = all_users[offset : offset + limit]
 
         return ServiceResult.success(paginated_users)
 
@@ -686,7 +690,9 @@ class UserService(AuthenticationServiceProtocol):
         """
         try:
             # Check if user already exists
-            existing_user_result = await self.user_repository.find_by_email(request.email)
+            existing_user_result = await self.user_repository.find_by_email(
+                request.email,
+            )
             if existing_user_result.is_successful and existing_user_result.data:
                 return ServiceResult.fail("User with this email already exists")
 
@@ -774,7 +780,10 @@ class UserService(AuthenticationServiceProtocol):
             user.record_login_attempt(success=False, ip_address=ip_address or "unknown")
             await self.user_repository.update_user(
                 str(user.id),
-                {"login_attempts": user.login_attempts, "locked_until": user.locked_until},
+                {
+                    "login_attempts": user.login_attempts,
+                    "locked_until": user.locked_until,
+                },
             )
             await self._log_failed_login(
                 str(user.id),
@@ -886,7 +895,9 @@ class UserService(AuthenticationServiceProtocol):
         # Check permissions if required
         if required_permissions:
             # Get user permissions based on role
-            user_permissions = set(await self.user_repository.get_user_permissions(str(user.id)))
+            user_permissions = set(
+                await self.user_repository.get_user_permissions(str(user.id)),
+            )
 
             required_permissions_set = set(required_permissions)
 

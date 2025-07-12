@@ -29,7 +29,14 @@ cli, cli_instance = create_cli_group(
 @standard_options
 @handle_errors
 @click.pass_context
-def info(ctx: click.Context, output_format: str, quiet: bool, verbose: bool, debug: bool, no_color: bool) -> None:
+def info(
+    ctx: click.Context,
+    output_format: str,
+    quiet: bool,
+    verbose: bool,
+    debug: bool,
+    no_color: bool,
+) -> None:
     cli = ctx.obj["cli"]
 
     # Update settings
@@ -72,7 +79,17 @@ def info(ctx: click.Context, output_format: str, quiet: bool, verbose: bool, deb
 @handle_errors
 @with_spinner("Creating user...")
 @click.pass_context
-def create_user(ctx: click.Context, username: str, email: str, password: str, output_format: str, quiet: bool, verbose: bool, debug: bool, no_color: bool) -> None:
+def create_user(
+    ctx: click.Context,
+    username: str,
+    email: str,
+    password: str,
+    output_format: str,
+    quiet: bool,
+    verbose: bool,
+    debug: bool,
+    no_color: bool,
+) -> None:
     cli = ctx.obj["cli"]
 
     # Update settings
@@ -123,7 +140,15 @@ def create_user(ctx: click.Context, username: str, email: str, password: str, ou
 @standard_options
 @handle_errors
 @click.pass_context
-def validate_token(ctx: click.Context, token: str, output_format: str, quiet: bool, verbose: bool, debug: bool, no_color: bool) -> None:
+def validate_token(
+    ctx: click.Context,
+    token: str,
+    output_format: str,
+    quiet: bool,
+    verbose: bool,
+    debug: bool,
+    no_color: bool,
+) -> None:
     cli = ctx.obj["cli"]
 
     # Update settings
@@ -178,7 +203,17 @@ def validate_token(ctx: click.Context, token: str, output_format: str, quiet: bo
 @standard_options
 @handle_errors
 @click.pass_context
-def generate_token(ctx: click.Context, user_id: str, username: str, expires_in: int, output_format: str, quiet: bool, verbose: bool, debug: bool, no_color: bool) -> None:
+def generate_token(
+    ctx: click.Context,
+    user_id: str,
+    username: str,
+    expires_in: int,
+    output_format: str,
+    quiet: bool,
+    verbose: bool,
+    debug: bool,
+    no_color: bool,
+) -> None:
     cli = ctx.obj["cli"]
 
     # Update settings
@@ -227,7 +262,15 @@ def generate_token(ctx: click.Context, user_id: str, username: str, expires_in: 
 @standard_options
 @handle_errors
 @click.pass_context
-def hash_password(ctx: click.Context, password: str, output_format: str, quiet: bool, verbose: bool, debug: bool, no_color: bool) -> None:
+def hash_password(
+    ctx: click.Context,
+    password: str,
+    output_format: str,
+    quiet: bool,
+    verbose: bool,
+    debug: bool,
+    no_color: bool,
+) -> None:
     cli = ctx.obj["cli"]
 
     # Update settings
@@ -267,7 +310,14 @@ def hash_password(ctx: click.Context, password: str, output_format: str, quiet: 
 @standard_options
 @handle_errors
 @click.pass_context
-def examples(ctx: click.Context, output_format: str, quiet: bool, verbose: bool, debug: bool, no_color: bool) -> None:
+def examples(
+    ctx: click.Context,
+    output_format: str,
+    quiet: bool,
+    verbose: bool,
+    debug: bool,
+    no_color: bool,
+) -> None:
     cli = ctx.obj["cli"]
 
     # Update settings

@@ -1,6 +1,3 @@
-
-from __future__ import annotations
-
 """Complete Authentication System Implementation - ZERO TOLERANCE APPROACH.
 
 This module implements a fully functional authentication system following
@@ -16,6 +13,8 @@ Implements:
 Architecture: Clean Architecture + DDD + Enterprise Patterns
 Compliance: Zero tolerance to technical debt and incomplete implementations
 """
+
+from __future__ import annotations
 
 from datetime import UTC
 from datetime import datetime
@@ -52,7 +51,16 @@ class AuthStatus:
 class User:
     """Simplified user entity for authentication."""
 
-    def __init__(self, user_id: UUID, username: str, email: str, password_hash: str, roles: frozenset[str], status: str = AuthStatus.ACTIVE, metadata: dict[str, Any] | None = None) -> None:
+    def __init__(
+        self,
+        user_id: UUID,
+        username: str,
+        email: str,
+        password_hash: str,
+        roles: frozenset[str],
+        status: str = AuthStatus.ACTIVE,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
         """Initialize user.
 
         Args:
@@ -171,7 +179,9 @@ class EnterprisePasswordHasher:
         hashed = bcrypt.hashpw(password_bytes, salt)
         return hashed.decode("utf-8")
 
-    def verify_password(self: EnterprisePasswordHasher, password: str, hashed: str) -> bool:
+    def verify_password(
+        self: EnterprisePasswordHasher, password: str, hashed: str,
+    ) -> bool:
         """Verify a password against its hash.
 
         Args:
@@ -240,8 +250,7 @@ class EnterpriseJWTService:
             "type": "access",
             "iat": now,
             "exp": expire,
-            "jti":
-                str(uuid4()),  # Unique token ID for blacklisting
+            "jti": str(uuid4()),  # Unique token ID for blacklisting
         }
         # Add user claims if available:
         if hasattr(user, "to_claims"):
@@ -268,8 +277,7 @@ class EnterpriseJWTService:
             "type": "refresh",
             "iat": now,
             "exp": expire,
-            "jti":
-                str(uuid4()),  # Unique token ID for blacklisting
+            "jti": str(uuid4()),  # Unique token ID for blacklisting
         }
         token = jwt.encode(claims, self.secret_key, algorithm=self.algorithm)
         logger.debug("Refresh token created for user {user.user_id}", extra={})
@@ -289,7 +297,9 @@ class EnterpriseJWTService:
         refresh_token = self.create_refresh_token(user)
         return (access_token, refresh_token)
 
-    async def verify_token(self, token: str, token_type: str | None = None) -> dict[str, Any] | None:
+    async def verify_token(
+        self, token: str, token_type: str | None = None,
+    ) -> dict[str, Any] | None:
         """Verify and decode JWT token.
 
         Args:

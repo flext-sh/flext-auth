@@ -50,7 +50,9 @@ class RoleBasedAuthorizationService(AuthorizationService):
             None  # TODO: Initialize in __post_init__
         )
 
-    async def check_permission(self, user_id: UserID, permission: str, resource: str | None = None) -> bool:
+    async def check_permission(
+        self, user_id: UserID, permission: str, resource: str | None = None,
+    ) -> bool:
         """Check if user has permission for resource.
 
         Args:
@@ -128,7 +130,9 @@ class RoleBasedAuthorizationService(AuthorizationService):
 
         return user_permissions
 
-    async def get_resource_permissions(self, user_id: UserID, resource: str) -> UserPermissions:
+    async def get_resource_permissions(
+        self, user_id: UserID, resource: str,
+    ) -> UserPermissions:
         """Get user permissions specific to a resource.
 
         Args:
@@ -200,7 +204,13 @@ class RoleBasedAuthorizationService(AuthorizationService):
         else:
             self._permission_cache.clear()
 
-    async def check_multiple_permissions(self, user_id: UserID, permissions: list[str], resource: str | None = None, check_mode: PermissionCheckMode = PermissionCheckMode.REQUIRE_ALL) -> bool:
+    async def check_multiple_permissions(
+        self,
+        user_id: UserID,
+        permissions: list[str],
+        resource: str | None = None,
+        check_mode: PermissionCheckMode = PermissionCheckMode.REQUIRE_ALL,
+    ) -> bool:
         """Check multiple permissions for a user with different modes.
 
         Args:
@@ -223,7 +233,11 @@ class RoleBasedAuthorizationService(AuthorizationService):
         return any(results)
 
 
-def require_permission(permission: str, resource: str | None = None, auth_service: AuthorizationService | None = None) -> Callable[[CallableT], CallableT]:
+def require_permission(
+    permission: str,
+    resource: str | None = None,
+    auth_service: AuthorizationService | None = None,
+) -> Callable[[CallableT], CallableT]:
     """Decorator to require permission for function execution.
 
     Args:
@@ -235,6 +249,7 @@ def require_permission(permission: str, resource: str | None = None, auth_servic
         Decorator function
 
     """
+
     def decorator(func: CallableT) -> CallableT:
         @functools.wraps(func)
         async def wrapper(*args: object, **kwargs: object) -> object:
@@ -280,7 +295,9 @@ def require_permission(permission: str, resource: str | None = None, auth_servic
     return decorator
 
 
-def require_role(role: str, auth_service: AuthorizationService | None = None) -> Callable[[CallableT], CallableT]:
+def require_role(
+    role: str, auth_service: AuthorizationService | None = None,
+) -> Callable[[CallableT], CallableT]:
     """Decorator to require role for function execution.
 
     Args:
@@ -291,6 +308,7 @@ def require_role(role: str, auth_service: AuthorizationService | None = None) ->
         Decorator function
 
     """
+
     def decorator(func: CallableT) -> CallableT:
         @functools.wraps(func)
         async def wrapper(*args: object, **kwargs: object) -> object:

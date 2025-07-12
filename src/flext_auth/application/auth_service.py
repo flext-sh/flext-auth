@@ -72,6 +72,7 @@ class AuthenticationService:
 
             # Create user entity
             from flext_auth.domain.entities import User
+
             user = User(
                 username=username,
                 email=email,
@@ -114,7 +115,9 @@ class AuthenticationService:
 
             # Check if account is locked
             if user.is_locked():
-                return ServiceResult.failure("Account is locked due to too many failed attempts")
+                return ServiceResult.failure(
+                    "Account is locked due to too many failed attempts",
+                )
 
             # Check if account is active
             if not user.is_active():
@@ -132,9 +135,11 @@ class AuthenticationService:
 
             # Create session
             from flext_auth.domain.value_objects import SessionToken
+
             session_token = SessionToken.generate()
 
             from flext_auth.domain.entities import Session
+
             session = Session.create_new(
                 user_id=user.id,
                 token=session_token.value,
@@ -334,6 +339,7 @@ class PasswordService:
         """Generate password reset token."""
         try:
             from flext_auth.domain.value_objects import PasswordResetToken
+
             token = PasswordResetToken.generate()
 
             # In a real implementation, you would:
@@ -377,6 +383,7 @@ class EmailVerificationService:
         """Generate email verification token."""
         try:
             from flext_auth.domain.value_objects import EmailVerificationToken
+
             token = EmailVerificationToken.generate()
 
             # In a real implementation, you would:

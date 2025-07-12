@@ -218,6 +218,7 @@ class TestHashedPassword:
 
     def test_algorithm_property_unknown(self) -> None:
         """Test algorithm property with unknown format."""
+
         # Create with invalid format that passes initial validation but has no $
         # We'll create a mock object to test the edge case
         class MockHashedPassword:
@@ -245,7 +246,9 @@ class TestPlainPassword:
     def test_password_length_validation(self) -> None:
         """Test password length validation."""
         # Too short
-        with pytest.raises(ValidationError, match="String should have at least 8 characters"):
+        with pytest.raises(
+            ValidationError, match="String should have at least 8 characters",
+        ):
             PlainPassword(value="Short1!")
 
         # Minimum valid length
@@ -605,7 +608,9 @@ class TestUserAgent:
 
         # Actual behavior: Linux is detected first in the string
         assert android_info["platform"] == "linux"  # Due to order in logic
-        assert android_info["is_mobile"] is True  # Android keyword triggers mobile detection
+        assert (
+            android_info["is_mobile"] is True
+        )  # Android keyword triggers mobile detection
 
         # iOS mobile test - note that "mac" is detected first in the logic
         ios_ua = "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15"

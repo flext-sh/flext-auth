@@ -72,7 +72,9 @@ class TestTokenMetadata:
             expires_at=dt.now(UTC) + timedelta(hours=1),
         )
 
-    def test_token_metadata_creation(self, sample_token_metadata: TokenMetadata) -> None:
+    def test_token_metadata_creation(
+        self, sample_token_metadata: TokenMetadata,
+    ) -> None:
         """Test creating TokenMetadata instance."""
         assert sample_token_metadata.token_id == "token123"
         assert sample_token_metadata.user_id is not None  # UUID generated in fixture
@@ -324,7 +326,9 @@ class TestTokenBlacklist:
         )
 
     @pytest.mark.asyncio
-    async def test_revoke_token(self, blacklist: TokenBlacklist, sample_metadata: TokenMetadata) -> None:
+    async def test_revoke_token(
+        self, blacklist: TokenBlacklist, sample_metadata: TokenMetadata,
+    ) -> None:
         """Test revoking a token."""
         await blacklist.revoke_token(
             sample_metadata.token_id,
@@ -378,6 +382,7 @@ class TestTokenBlacklist:
 
         # Revoke user tokens by type
         from flext_auth.types import TokenType
+
         await blacklist.revoke_user_tokens(user_id, TokenType.ACCESS)
 
         # Verify tokens are revoked
@@ -441,7 +446,9 @@ class TestTokenManager:
         )
 
     @pytest.mark.asyncio
-    async def test_register_token(self, token_manager: TokenManager, sample_metadata: TokenMetadata) -> None:
+    async def test_register_token(
+        self, token_manager: TokenManager, sample_metadata: TokenMetadata,
+    ) -> None:
         """Test registering a token."""
         await token_manager.register_token(sample_metadata.token_id, sample_metadata)
 
@@ -449,7 +456,9 @@ class TestTokenManager:
         # Note: This test assumes the implementation stores metadata in some way
 
     @pytest.mark.asyncio
-    async def test_validate_token(self, token_manager: TokenManager, sample_metadata: TokenMetadata) -> None:
+    async def test_validate_token(
+        self, token_manager: TokenManager, sample_metadata: TokenMetadata,
+    ) -> None:
         """Test validating a token."""
         # Register token first
         await token_manager.register_token(sample_metadata.token_id, sample_metadata)
@@ -460,11 +469,15 @@ class TestTokenManager:
 
         # Revoke token and test validation
         await token_manager.revoke_token(sample_metadata.token_id)
-        is_valid_after_revoke = await token_manager.validate_token(sample_metadata.token_id)
+        is_valid_after_revoke = await token_manager.validate_token(
+            sample_metadata.token_id,
+        )
         assert not is_valid_after_revoke
 
     @pytest.mark.asyncio
-    async def test_revoke_token(self, token_manager: TokenManager, sample_metadata: TokenMetadata) -> None:
+    async def test_revoke_token(
+        self, token_manager: TokenManager, sample_metadata: TokenMetadata,
+    ) -> None:
         """Test revoking a token."""
         # Register token first
         await token_manager.register_token(sample_metadata.token_id, sample_metadata)
@@ -651,7 +664,9 @@ class TestCreateTokenStorage:
     def test_create_database_storage(self) -> None:
         """Test creating database storage."""
         mock_session_factory = MagicMock()
-        storage = create_token_storage("database", db_session_factory=mock_session_factory)
+        storage = create_token_storage(
+            "database", db_session_factory=mock_session_factory,
+        )
         assert isinstance(storage, DatabaseTokenStorage)
 
     def test_create_invalid_storage(self) -> None:
@@ -691,7 +706,9 @@ class TestRedisTokenStorage:
         assert prefixed == "flext:tokens:test_key"
 
     @pytest.mark.asyncio
-    async def test_store(self, redis_storage: RedisTokenStorage, mock_redis: MagicMock) -> None:
+    async def test_store(
+        self, redis_storage: RedisTokenStorage, mock_redis: MagicMock,
+    ) -> None:
         """Test storing value in Redis."""
         await redis_storage.store("test_key", "test_value")
 
@@ -701,7 +718,9 @@ class TestRedisTokenStorage:
         )
 
     @pytest.mark.asyncio
-    async def test_store_with_ttl(self, redis_storage: RedisTokenStorage, mock_redis: MagicMock) -> None:
+    async def test_store_with_ttl(
+        self, redis_storage: RedisTokenStorage, mock_redis: MagicMock,
+    ) -> None:
         """Test storing value with TTL."""
         ttl = timedelta(seconds=3600)
         await redis_storage.store("test_key", "test_value", ttl)
@@ -713,7 +732,9 @@ class TestRedisTokenStorage:
         )
 
     @pytest.mark.asyncio
-    async def test_get(self, redis_storage: RedisTokenStorage, mock_redis: MagicMock) -> None:
+    async def test_get(
+        self, redis_storage: RedisTokenStorage, mock_redis: MagicMock,
+    ) -> None:
         """Test getting value from Redis."""
         mock_redis.get.return_value = "test_value"
 
@@ -723,7 +744,9 @@ class TestRedisTokenStorage:
         mock_redis.get.assert_called_once_with("flext:tokens:test_key")
 
     @pytest.mark.asyncio
-    async def test_delete(self, redis_storage: RedisTokenStorage, mock_redis: MagicMock) -> None:
+    async def test_delete(
+        self, redis_storage: RedisTokenStorage, mock_redis: MagicMock,
+    ) -> None:
         """Test deleting value from Redis."""
         mock_redis.delete.return_value = 1
 
@@ -733,7 +756,9 @@ class TestRedisTokenStorage:
         mock_redis.delete.assert_called_once_with("flext:tokens:test_key")
 
     @pytest.mark.asyncio
-    async def test_exists(self, redis_storage: RedisTokenStorage, mock_redis: MagicMock) -> None:
+    async def test_exists(
+        self, redis_storage: RedisTokenStorage, mock_redis: MagicMock,
+    ) -> None:
         """Test checking if key exists in Redis."""
         mock_redis.exists.return_value = 1
 
@@ -743,7 +768,9 @@ class TestRedisTokenStorage:
         mock_redis.exists.assert_called_once_with("flext:tokens:test_key")
 
     @pytest.mark.asyncio
-    async def test_keys(self, redis_storage: RedisTokenStorage, mock_redis: MagicMock) -> None:
+    async def test_keys(
+        self, redis_storage: RedisTokenStorage, mock_redis: MagicMock,
+    ) -> None:
         """Test getting keys by pattern from Redis."""
         mock_redis.keys.return_value = [b"flext:tokens:key1", b"flext:tokens:key2"]
 
@@ -753,7 +780,9 @@ class TestRedisTokenStorage:
         mock_redis.keys.assert_called_once_with("flext:tokens:pattern*")
 
     @pytest.mark.asyncio
-    async def test_close(self, redis_storage: RedisTokenStorage, mock_redis: MagicMock) -> None:
+    async def test_close(
+        self, redis_storage: RedisTokenStorage, mock_redis: MagicMock,
+    ) -> None:
         """Test closing Redis connection."""
         await redis_storage.close()
         mock_redis.aclose.assert_called_once()
@@ -773,7 +802,9 @@ class TestDatabaseTokenStorage:
         return DatabaseTokenStorage(db_session_factory=mock_session_factory)
 
     @pytest.mark.asyncio
-    async def test_database_storage_methods(self, db_storage: DatabaseTokenStorage) -> None:
+    async def test_database_storage_methods(
+        self, db_storage: DatabaseTokenStorage,
+    ) -> None:
         """Test that DatabaseTokenStorage has all required methods implemented."""
         # Just verify the methods exist and are callable
         assert callable(db_storage.store)
@@ -795,7 +826,9 @@ class TestInMemoryTokenStorageAlternative:
         return InMemoryTokenStorageAlternative()
 
     @pytest.mark.asyncio
-    async def test_alternative_storage_basic_operations(self, alt_storage: InMemoryTokenStorageAlternative) -> None:
+    async def test_alternative_storage_basic_operations(
+        self, alt_storage: InMemoryTokenStorageAlternative,
+    ) -> None:
         """Test basic operations of alternative storage."""
         # Store and retrieve
         await alt_storage.store("key1", "value1")
@@ -812,7 +845,9 @@ class TestInMemoryTokenStorageAlternative:
         assert not await alt_storage.exists("key1")
 
     @pytest.mark.asyncio
-    async def test_alternative_storage_ttl(self, alt_storage: InMemoryTokenStorageAlternative) -> None:
+    async def test_alternative_storage_ttl(
+        self, alt_storage: InMemoryTokenStorageAlternative,
+    ) -> None:
         """Test TTL functionality in alternative storage."""
         await alt_storage.store("ttl_key", "ttl_value", timedelta(seconds=1))
 
@@ -826,7 +861,9 @@ class TestInMemoryTokenStorageAlternative:
         assert not await alt_storage.exists("ttl_key")
 
     @pytest.mark.asyncio
-    async def test_alternative_storage_cleanup(self, alt_storage: InMemoryTokenStorageAlternative) -> None:
+    async def test_alternative_storage_cleanup(
+        self, alt_storage: InMemoryTokenStorageAlternative,
+    ) -> None:
         """Test cleanup in alternative storage."""
         # Store some tokens with short TTL
         await alt_storage.store("expire1", "value1", timedelta(seconds=0.5))

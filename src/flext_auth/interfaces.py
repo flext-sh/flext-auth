@@ -139,7 +139,9 @@ class TokenValidator(Protocol):
 
     """
 
-    async def validate_token(self, token: JWTToken, token_type: TokenType) -> JWTClaims | None:
+    async def validate_token(
+        self, token: JWTToken, token_type: TokenType,
+    ) -> JWTClaims | None:
         """Validate a JWT token and extract its claims.
 
         Args:
@@ -688,7 +690,9 @@ class JWTService(Protocol):
         """Extract claims from token without validation."""
         ...
 
-    def refresh_token(self, refresh_token: JWTToken, user: DomainUser) -> tuple[JWTToken, JWTToken] | None:
+    def refresh_token(
+        self, refresh_token: JWTToken, user: DomainUser,
+    ) -> tuple[JWTToken, JWTToken] | None:
         """Create new token pair from refresh token."""
         ...
 
@@ -705,11 +709,19 @@ class TokenManager(Protocol):
         """Check if token is still valid (not revoked)."""
         ...
 
-    async def revoke_token(self, token_id: str, user_id: str | None, reason: str) -> bool:
+    async def revoke_token(
+        self, token_id: str, user_id: str | None, reason: str,
+    ) -> bool:
         """Revoke a token."""
         ...
 
-    async def revoke_user_tokens(self, user_id: str, token_type: str | None, requesting_user_id: str | None, reason: str) -> int:
+    async def revoke_user_tokens(
+        self,
+        user_id: str,
+        token_type: str | None,
+        requesting_user_id: str | None,
+        reason: str,
+    ) -> int:
         """Revoke all tokens for a user."""
         ...
 

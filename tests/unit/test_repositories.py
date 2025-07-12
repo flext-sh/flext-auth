@@ -47,7 +47,9 @@ class TestAuthInMemoryRoleRepository:
         assert "viewer" in role_names_found
 
     @pytest.mark.asyncio
-    async def test_find_by_names_not_found(self, repo: AuthInMemoryRoleRepository) -> None:
+    async def test_find_by_names_not_found(
+        self, repo: AuthInMemoryRoleRepository,
+    ) -> None:
         """Test finding non-existent roles by names."""
         role_names = frozenset(["nonexistent", "fake"])
         roles = await repo.find_by_names(role_names)
@@ -55,7 +57,9 @@ class TestAuthInMemoryRoleRepository:
         assert len(roles) == 0
 
     @pytest.mark.asyncio
-    async def test_find_by_names_partial(self, repo: AuthInMemoryRoleRepository) -> None:
+    async def test_find_by_names_partial(
+        self, repo: AuthInMemoryRoleRepository,
+    ) -> None:
         """Test finding mix of existing and non-existent roles."""
         role_names = frozenset(["REDACTED_LDAP_BIND_PASSWORD", "nonexistent", "operator"])
         roles = await repo.find_by_names(role_names)

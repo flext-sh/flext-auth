@@ -254,7 +254,8 @@ class AuthSettings(BaseSettings):
             "public_key": self.jwt.public_key,
             "private_key": (
                 self.jwt.private_key.get_secret_value()
-                if self.jwt.private_key else None
+                if self.jwt.private_key
+                else None
             ),
         }
 

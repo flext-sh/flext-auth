@@ -72,7 +72,9 @@ QIDAQAB
 
         return private_key, public_key
 
-    def test_jwt_service_initialization_hs256(self, auth_config_hs256: AuthConfig) -> None:
+    def test_jwt_service_initialization_hs256(
+        self, auth_config_hs256: AuthConfig,
+    ) -> None:
         """Test JWTService initialization with HS256 algorithm."""
         service = JWTService(auth_config_hs256)
 
@@ -80,7 +82,9 @@ QIDAQAB
         assert service._private_key == "test-secret-key"
         assert service._public_key == "test-secret-key"
 
-    def test_jwt_service_initialization_rs256_with_key_paths(self, rsa_key_pair: tuple[str, str]) -> None:
+    def test_jwt_service_initialization_rs256_with_key_paths(
+        self, rsa_key_pair: tuple[str, str],
+    ) -> None:
         """Test JWTService initialization with RS256 and key file paths."""
         private_key, public_key = rsa_key_pair
 
@@ -148,7 +152,9 @@ QIDAQAB
         assert "exp" in decoded
         assert "iat" in decoded
 
-    def test_create_token_with_custom_token_type(self, jwt_service_hs256: JWTService) -> None:
+    def test_create_token_with_custom_token_type(
+        self, jwt_service_hs256: JWTService,
+    ) -> None:
         """Test token creation with custom token type."""
         user_id = "user123"
         username = "testuser"
@@ -173,7 +179,9 @@ QIDAQAB
         assert decoded["sub"] == user_id
         assert decoded["username"] == username
 
-    def test_create_token_with_additional_claims(self, jwt_service_hs256: JWTService) -> None:
+    def test_create_token_with_additional_claims(
+        self, jwt_service_hs256: JWTService,
+    ) -> None:
         """Test token creation with additional claims."""
         user_id = "user123"
         username = "testuser"
@@ -203,7 +211,9 @@ QIDAQAB
         assert decoded["permissions"] == ["read", "write", "delete"]
         assert decoded["tenant_id"] == "tenant123"
 
-    def test_create_token_default_expiration_access(self, jwt_service_hs256: JWTService) -> None:
+    def test_create_token_default_expiration_access(
+        self, jwt_service_hs256: JWTService,
+    ) -> None:
         """Test token creation with default access token expiration."""
         user_id = "user123"
         username = "testuser"
@@ -231,7 +241,9 @@ QIDAQAB
         expected_exp = before_creation + timedelta(minutes=30)
         assert abs((exp_datetime - expected_exp).total_seconds()) < 60
 
-    def test_create_token_default_expiration_refresh(self, jwt_service_hs256: JWTService) -> None:
+    def test_create_token_default_expiration_refresh(
+        self, jwt_service_hs256: JWTService,
+    ) -> None:
         """Test token creation with default refresh token expiration."""
         user_id = "user123"
         username = "testuser"
@@ -295,7 +307,9 @@ QIDAQAB
         assert claims["username"] == username
         assert claims["token_type"] == "access"
 
-    def test_decode_token_invalid_signature(self, jwt_service_hs256: JWTService) -> None:
+    def test_decode_token_invalid_signature(
+        self, jwt_service_hs256: JWTService,
+    ) -> None:
         """Test token decoding with invalid signature."""
         # Create token with different secret
         fake_token = jwt.encode(

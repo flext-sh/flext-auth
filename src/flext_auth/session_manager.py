@@ -1,4 +1,3 @@
-
 from __future__ import annotations
 
 """Enterprise Session Management with RBAC and Multi-Factor Authentication.
@@ -51,7 +50,17 @@ if TYPE_CHECKING:
 class SessionMetadata:
     """Enterprise session metadata with comprehensive tracking."""
 
-    def __init__(self, session_id: str, user_id: UserID, ip_address: IPAddress | None = None, user_agent: UserAgent | None = None, device_info: dict[str, Any] | None = None, created_at: datetime | None = None, last_accessed: datetime | None = None, expires_at: datetime | None = None) -> None:
+    def __init__(
+        self,
+        session_id: str,
+        user_id: UserID,
+        ip_address: IPAddress | None = None,
+        user_agent: UserAgent | None = None,
+        device_info: dict[str, Any] | None = None,
+        created_at: datetime | None = None,
+        last_accessed: datetime | None = None,
+        expires_at: datetime | None = None,
+    ) -> None:
         self.session_id = session_id
         self.user_id = user_id
         self.ip_address = ip_address
@@ -214,7 +223,10 @@ class RBACManager:
 
         # Check if any user role inherits the required role:
         for user_role in user_roles:
-            if user_role in self._role_hierarchy and required_role in self._role_hierarchy[user_role]:
+            if (
+                user_role in self._role_hierarchy
+                and required_role in self._role_hierarchy[user_role]
+            ):
                 return True
 
         return False
@@ -300,7 +312,14 @@ class EnterpriseSessionManager:
         self.config = get_config()
         self.constants = get_domain_constants()
 
-    async def create_session(self, user_id: UserID, ip_address: IPAddress | None = None, user_agent: UserAgent | None = None, device_info: dict[str, Any] | None = None, session_duration: timedelta | None = None) -> ServiceResult[SessionMetadata]:
+    async def create_session(
+        self,
+        user_id: UserID,
+        ip_address: IPAddress | None = None,
+        user_agent: UserAgent | None = None,
+        device_info: dict[str, Any] | None = None,
+        session_duration: timedelta | None = None,
+    ) -> ServiceResult[SessionMetadata]:
         """Create a new session for a user with RBAC and security features.
 
         Args:
@@ -382,7 +401,13 @@ class EnterpriseSessionManager:
                 ),
             )
 
-    async def validate_session(self, session_id: str, required_permission: str | None = None, required_role: str | None = None, ip_address: IPAddress | None = None) -> ServiceResult[SessionMetadata]:
+    async def validate_session(
+        self,
+        session_id: str,
+        required_permission: str | None = None,
+        required_role: str | None = None,
+        ip_address: IPAddress | None = None,
+    ) -> ServiceResult[SessionMetadata]:
         """Validate a session and optionally check permissions and roles.
 
         Args:
@@ -422,9 +447,11 @@ class EnterpriseSessionManager:
                 )
 
             # Validate IP address if provided:
-            if (ip_address
+            if (
+                ip_address
                 and session_metadata.ip_address
-                and ip_address != session_metadata.ip_address):
+                and ip_address != session_metadata.ip_address
+            ):
                 await self._log_security_event(
                     event_type="session_ip_mismatch",
                     user_id=session_metadata.user_id,
@@ -513,7 +540,9 @@ class EnterpriseSessionManager:
                 ),
             )
 
-    async def extend_session(self, session_id: str, duration: timedelta) -> ServiceResult[SessionMetadata]:
+    async def extend_session(
+        self, session_id: str, duration: timedelta,
+    ) -> ServiceResult[SessionMetadata]:
         """Extend the expiration time of an existing session.
 
         Args:
@@ -574,12 +603,13 @@ class EnterpriseSessionManager:
             return ServiceResult.fail(
                 ServiceError.internal_error(
                     message="Failed to extend session",
-                    details={"error":
-            str(e), "session_id": session_id},
+                    details={"error": str(e), "session_id": session_id},
                 ),
             )
 
-    async def terminate_session(self, session_id: str, reason: str = "user_logout") -> ServiceResult[dict[str, str]]:
+    async def terminate_session(
+        self, session_id: str, reason: str = "user_logout",
+    ) -> ServiceResult[dict[str, str]]:
         """Terminate a specific session.
 
         Args:
@@ -638,12 +668,16 @@ class EnterpriseSessionManager:
             return ServiceResult.fail(
                 ServiceError.internal_error(
                     message="Failed to terminate session",
-                    details={"error":
-            str(e), "session_id": session_id},
+                    details={"error": str(e), "session_id": session_id},
                 ),
             )
 
-    async def terminate_user_sessions(self, user_id: UserID, exclude_session_id: str | None = None, reason: str = "security_logout") -> ServiceResult[dict[str, Any]]:
+    async def terminate_user_sessions(
+        self,
+        user_id: UserID,
+        exclude_session_id: str | None = None,
+        reason: str = "security_logout",
+    ) -> ServiceResult[dict[str, Any]]:
         """Terminate all sessions for a specific user.
 
         Args:
@@ -682,8 +716,7 @@ class EnterpriseSessionManager:
                     "user_id": user_id,
                     "terminated_count": terminated_count,
                     "reason": reason,
-                    "message":
-                        f"Terminated {terminated_count} sessions for user {user_id}",
+                    "message": f"Terminated {terminated_count} sessions for user {user_id}",
                 },
             )
 
@@ -699,12 +732,13 @@ class EnterpriseSessionManager:
             return ServiceResult.fail(
                 ServiceError.internal_error(
                     message="Failed to terminate user sessions",
-                    details={"error":
-            str(e), "user_id": user_id},
+                    details={"error": str(e), "user_id": user_id},
                 ),
             )
 
-    async def get_user_sessions(self, user_id: UserID, include_expired: bool = False) -> ServiceResult[list[SessionMetadata]]:
+    async def get_user_sessions(
+        self, user_id: UserID, include_expired: bool = False,
+    ) -> ServiceResult[list[SessionMetadata]]:
         """Get all sessions for a specific user.
 
         Args:
@@ -766,7 +800,9 @@ class EnterpriseSessionManager:
 
         return expired_count
 
-    async def start_cleanup_task(self, interval: timedelta = timedelta(minutes=30)) -> None:
+    async def start_cleanup_task(
+        self, interval: timedelta = timedelta(minutes=30),
+    ) -> None:
         """Start the periodic cleanup task for expired sessions.
 
         Args:
@@ -853,7 +889,14 @@ class EnterpriseSessionManager:
                 if not self._user_sessions[session_metadata.user_id]:
                     del self._user_sessions[session_metadata.user_id]
 
-    async def _log_security_event(self, event_type: str, user_id: UserID | None, ip_address: IPAddress | None = None, user_agent: UserAgent | None = None, metadata: dict[str, Any] | None = None) -> None:
+    async def _log_security_event(
+        self,
+        event_type: str,
+        user_id: UserID | None,
+        ip_address: IPAddress | None = None,
+        user_agent: UserAgent | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> None:
         # In production, this would integrate with a proper logging system
         # TODO(flext): Integrate with proper audit logging system - https://github.com/flext/flext-auth/issues/audit-logging
         # For now, just track locally for development

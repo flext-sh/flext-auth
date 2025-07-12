@@ -225,7 +225,10 @@ class TestAuthConfig:
             database_max_overflow=200,
         )
 
-        assert config.database_url == "postgresql://user:pass@db.example.com:5432/auth_prod"
+        assert (
+            config.database_url
+            == "postgresql://user:pass@db.example.com:5432/auth_prod"
+        )
         assert config.database_pool_size == 100
         assert config.database_max_overflow == 200
 
@@ -250,7 +253,9 @@ class TestAuthConfig:
         assert new_config.jwt_secret_key == config.jwt_secret_key
         assert new_config.jwt_algorithm == config.jwt_algorithm
         assert new_config.password_min_length == config.password_min_length
-        assert new_config.require_email_verification == config.require_email_verification
+        assert (
+            new_config.require_email_verification == config.require_email_verification
+        )
 
     def test_auth_config_validation(self) -> None:
         """Test AuthConfig validation rules."""

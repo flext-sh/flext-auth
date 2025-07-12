@@ -107,7 +107,9 @@ class JWTService:
             algorithm=self._algorithm,
         )
 
-        logger.debug(f"token_created: user_id={user_id}, token_type={token_type}, expires_at={expire.isoformat()}")
+        logger.debug(
+            f"token_created: user_id={user_id}, token_type={token_type}, expires_at={expire.isoformat()}",
+        )
 
         return token
 
@@ -143,7 +145,9 @@ class JWTService:
                 },
             )
 
-            logger.debug(f"token_decoded: user_id={payload.get('sub')}, token_type={payload.get('token_type')}")
+            logger.debug(
+                f"token_decoded: user_id={payload.get('sub')}, token_type={payload.get('token_type')}",
+            )
 
             return payload
 

@@ -235,7 +235,9 @@ class JWTConfig(DomainValueObject):
 class JWTService:
     """JWT service with zero boilerplate using reflection."""
 
-    def __init__(self, config: JWTConfig, storage: TokenStorageProtocol | None = None) -> None:
+    def __init__(
+        self, config: JWTConfig, storage: TokenStorageProtocol | None = None,
+    ) -> None:
         self.config = config
         self.storage = storage
 
@@ -269,7 +271,9 @@ class JWTService:
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )
 
-    def create_access_token(self, user: User, additional_claims: Claims | None = None) -> TokenString:
+    def create_access_token(
+        self, user: User, additional_claims: Claims | None = None,
+    ) -> TokenString:
         """Create a JWT access token for the user.
 
         Args:
@@ -379,7 +383,9 @@ class JWTService:
         # Ensure token is returned as string
         return str(token) if isinstance(token, bytes) else token
 
-    def create_token_pair(self, user: User, additional_claims: Claims | None = None) -> TokenPair:
+    def create_token_pair(
+        self, user: User, additional_claims: Claims | None = None,
+    ) -> TokenPair:
         """Create a complete token pair (access and refresh tokens) for the user.
 
         Args:
@@ -439,7 +445,15 @@ class JWTService:
             msg = "Invalid token signature"
         elif isinstance(exc, jwt.DecodeError):
             msg = "Malformed token"
-        elif isinstance(exc, ValueError | TypeError | RuntimeError | ImportError | KeyError | AttributeError):
+        elif isinstance(
+            exc,
+            ValueError
+            | TypeError
+            | RuntimeError
+            | ImportError
+            | KeyError
+            | AttributeError,
+        ):
             # ZERO TOLERANCE - Specific exception types for JWT token validation failures
             msg = f"Token validation failed: {exc}"
             raise jwt.InvalidTokenError(msg) from exc
@@ -448,7 +462,9 @@ class JWTService:
 
         raise jwt.InvalidTokenError(msg)
 
-    async def verify_token(self, token: TokenString, token_type: str = "access") -> Claims | None:
+    async def verify_token(
+        self, token: TokenString, token_type: str = "access",
+    ) -> Claims | None:
         """Verify and decode a JWT token.
 
         Args:
@@ -514,7 +530,9 @@ class JWTService:
         # Create new token pair
         return self.create_token_pair(user)
 
-    def refresh_token(self, _refresh_token: TokenString, user: User) -> tuple[TokenString, TokenString] | None:
+    def refresh_token(
+        self, _refresh_token: TokenString, user: User,
+    ) -> tuple[TokenString, TokenString] | None:
         """Synchronous version of token refresh (simplified).
 
         Args:

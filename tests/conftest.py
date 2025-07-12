@@ -155,9 +155,11 @@ def mock_user_service() -> AsyncMock:
 @pytest.fixture
 def mock_jwt_service() -> AsyncMock:
     service = AsyncMock()
-    service.generate_tokens.return_value = ServiceResult.success({
-        "access_token": "mock_access_token",
-        "refresh_token": "mock_refresh_token",
-    })
+    service.generate_tokens.return_value = ServiceResult.success(
+        {
+            "access_token": "mock_access_token",
+            "refresh_token": "mock_refresh_token",
+        },
+    )
     service.verify_token.return_value = ServiceResult.success({"user_id": str(uuid4())})
     return service

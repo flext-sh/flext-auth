@@ -380,7 +380,9 @@ class TokenGenerator:
         return secrets.compare_digest(a, b)
 
 
-def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> str:
+def create_access_token(
+    data: dict[str, Any], expires_delta: timedelta | None = None,
+) -> str:
     to_encode = data.copy()
     config = get_config()
 
@@ -400,7 +402,9 @@ def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = 
     return encoded_jwt.decode("utf-8")
 
 
-def decode_jwt_token(token: str, secret_key: str, algorithm: str = "HS256") -> dict[str, Any] | None:
+def decode_jwt_token(
+    token: str, secret_key: str, algorithm: str = "HS256",
+) -> dict[str, Any] | None:
     try:
         return jwt.decode(token, secret_key, algorithms=[algorithm])
     except jwt.PyJWTError:

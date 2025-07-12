@@ -734,7 +734,9 @@ class TestCommandIntegration:
         # Test serialization to dict
         command_dict = command.model_dump()
         # UUID might be serialized as UUID object or string depending on mode
-        assert command_dict["user_id"] == user_id or command_dict["user_id"] == str(user_id)
+        assert command_dict["user_id"] == user_id or command_dict["user_id"] == str(
+            user_id,
+        )
         assert command_dict["token_type"] == "access"
         assert command_dict["scopes"] == ["read", "write"]
         assert command_dict["metadata"] == {"client": "test"}
@@ -812,15 +814,17 @@ class TestCommandIntegration:
         assert logout_cmd.user_id == user_id
 
         # All commands should be valid
-        assert all([
-            create_cmd.username == "testuser",
-            verify_cmd.user_id == user_id,
-            auth_cmd.username == "testuser",
-            session_cmd.user_id == user_id,
-            assign_role_cmd.user_id == user_id,
-            change_password_cmd.user_id == user_id,
-            logout_cmd.user_id == user_id,
-        ])
+        assert all(
+            [
+                create_cmd.username == "testuser",
+                verify_cmd.user_id == user_id,
+                auth_cmd.username == "testuser",
+                session_cmd.user_id == user_id,
+                assign_role_cmd.user_id == user_id,
+                change_password_cmd.user_id == user_id,
+                logout_cmd.user_id == user_id,
+            ],
+        )
 
     def test_REDACTED_LDAP_BIND_PASSWORD_workflow_commands(self) -> None:
         """Test commands for REDACTED_LDAP_BIND_PASSWORD workflow."""
@@ -868,10 +872,12 @@ class TestCommandIntegration:
         assert unlock_cmd.user_id == user_id
 
         # All REDACTED_LDAP_BIND_PASSWORD commands should be valid
-        assert all([
-            create_role_cmd.name == "moderator",
-            update_user_cmd.updated_by == REDACTED_LDAP_BIND_PASSWORD_id,
-            lock_cmd.reason == "Policy violation",
-            revoke_token_cmd.revoked_by == REDACTED_LDAP_BIND_PASSWORD_id,
-            unlock_cmd.unlocked_by == REDACTED_LDAP_BIND_PASSWORD_id,
-        ])
+        assert all(
+            [
+                create_role_cmd.name == "moderator",
+                update_user_cmd.updated_by == REDACTED_LDAP_BIND_PASSWORD_id,
+                lock_cmd.reason == "Policy violation",
+                revoke_token_cmd.revoked_by == REDACTED_LDAP_BIND_PASSWORD_id,
+                unlock_cmd.unlocked_by == REDACTED_LDAP_BIND_PASSWORD_id,
+            ],
+        )

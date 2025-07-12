@@ -99,8 +99,8 @@ class TestTokenGenerator:
         token32 = generator.generate(length=32)
         token64 = generator.generate(length=64)
 
-        assert len(token16) == 32   # 16 bytes = 32 hex chars
-        assert len(token32) == 64   # 32 bytes = 64 hex chars
+        assert len(token16) == 32  # 16 bytes = 32 hex chars
+        assert len(token32) == 64  # 32 bytes = 64 hex chars
         assert len(token64) == 128  # 64 bytes = 128 hex chars
 
     def test_generate_unique_tokens(self, generator: TokenGenerator) -> None:

@@ -40,7 +40,14 @@ class AuthService:
     """Authentication service using flext-core patterns."""
 
     def __init__(
-        self, user_repository: UserRepository, token_repository: TokenRepository, session_repository: SessionRepository, password_hasher: PasswordHasher, token_generator: TokenGenerator, event_bus: EventBus) -> None:
+        self,
+        user_repository: UserRepository,
+        token_repository: TokenRepository,
+        session_repository: SessionRepository,
+        password_hasher: PasswordHasher,
+        token_generator: TokenGenerator,
+        event_bus: EventBus,
+    ) -> None:
         self.user_repository = user_repository
         self.token_repository = token_repository
         self.session_repository = session_repository
@@ -49,7 +56,12 @@ class AuthService:
         self.event_bus = event_bus
 
     async def authenticate_user(
-        self, username: Username, password: str, ip_address: str | None = None, user_agent: str | None = None) -> ServiceResult[User]:
+        self,
+        username: Username,
+        password: str,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+    ) -> ServiceResult[User]:
         """Authenticate a user with username and password.
 
         Args:
@@ -107,7 +119,8 @@ class AuthService:
             return ServiceResult.failure(f"Authentication failed: {e!s}")
 
     async def logout_user(
-        self, user_id: UserId, session_id: str) -> ServiceResult[None]:
+        self, user_id: UserId, session_id: str,
+    ) -> ServiceResult[None]:
         """Log out a user and invalidate their session.
 
         Args:
@@ -147,7 +160,12 @@ class AuthService:
             return ServiceResult.failure(f"Logout failed: {e!s}")
 
     async def change_password(
-        self, user_id: UserId, old_password: str, new_password: str, changed_by: UserId | None = None) -> ServiceResult[None]:
+        self,
+        user_id: UserId,
+        old_password: str,
+        new_password: str,
+        changed_by: UserId | None = None,
+    ) -> ServiceResult[None]:
         """Change a user's password with verification.
 
         Args:
@@ -199,14 +217,25 @@ class UserService:
     """User management service using flext-core patterns."""
 
     def __init__(
-        self, user_repository: UserRepository, role_repository: RoleRepository, password_hasher: PasswordHasher, event_bus: EventBus) -> None:
+        self,
+        user_repository: UserRepository,
+        role_repository: RoleRepository,
+        password_hasher: PasswordHasher,
+        event_bus: EventBus,
+    ) -> None:
         self.user_repository = user_repository
         self.role_repository = role_repository
         self.password_hasher = password_hasher
         self.event_bus = event_bus
 
     async def create_user(
-        self, username: Username, email: UserEmail, password: str, roles: list[SecurityRole] | None = None, created_by: UserId | None = None) -> ServiceResult[User]:
+        self,
+        username: Username,
+        email: UserEmail,
+        password: str,
+        roles: list[SecurityRole] | None = None,
+        created_by: UserId | None = None,
+    ) -> ServiceResult[User]:
         """Create a new user account.
 
         Args:
@@ -264,7 +293,8 @@ class UserService:
             return ServiceResult.failure(f"User creation failed: {e!s}")
 
     async def update_user_roles(
-        self, user_id: UserId, roles: list[SecurityRole], updated_by: UserId) -> ServiceResult[User]:
+        self, user_id: UserId, roles: list[SecurityRole], updated_by: UserId,
+    ) -> ServiceResult[User]:
         """Update a user's role assignments.
 
         Args:
@@ -327,7 +357,12 @@ class UserService:
             return ServiceResult.failure(f"Role update failed: {e!s}")
 
     async def lock_user_account(
-        self, user_id: UserId, duration: timedelta, locked_by: UserId, reason: str = "manual_lock") -> ServiceResult[None]:
+        self,
+        user_id: UserId,
+        duration: timedelta,
+        locked_by: UserId,
+        reason: str = "manual_lock",
+    ) -> ServiceResult[None]:
         """Lock a user account for a specified duration.
 
         Args:
@@ -373,13 +408,25 @@ class TokenService:
     """Token management service using flext-core patterns."""
 
     def __init__(
-        self, token_repository: TokenRepository, token_generator: TokenGenerator, event_bus: EventBus) -> None:
+        self,
+        token_repository: TokenRepository,
+        token_generator: TokenGenerator,
+        event_bus: EventBus,
+    ) -> None:
         self.token_repository = token_repository
         self.token_generator = token_generator
         self.event_bus = event_bus
 
     async def create_token(
-        self, user_id: UserId, username: Username, token_type: str, expires_in: timedelta, scopes: list[str] | None = None, client_id: str | None = None, ip_address: str | None = None) -> ServiceResult[AuthToken]:
+        self,
+        user_id: UserId,
+        username: Username,
+        token_type: str,
+        expires_in: timedelta,
+        scopes: list[str] | None = None,
+        client_id: str | None = None,
+        ip_address: str | None = None,
+    ) -> ServiceResult[AuthToken]:
         """Create a new authentication token for a user.
 
         Args:
@@ -432,8 +479,7 @@ class TokenService:
         except Exception as e:
             return ServiceResult.failure(f"Token creation failed: {e!s}")
 
-    async def validate_token(
-        self, token_value: str) -> ServiceResult[AuthToken]:
+    async def validate_token(self, token_value: str) -> ServiceResult[AuthToken]:
         """Validate an authentication token.
 
         Args:
@@ -466,7 +512,11 @@ class TokenService:
             return ServiceResult.failure(f"Token validation failed: {e!s}")
 
     async def revoke_token(
-        self, token_id: EntityId, revoked_by: UserId | None = None, reason: str = "manual_revocation") -> ServiceResult[None]:
+        self,
+        token_id: EntityId,
+        revoked_by: UserId | None = None,
+        reason: str = "manual_revocation",
+    ) -> ServiceResult[None]:
         """Revoke an authentication token.
 
         Args:
@@ -519,13 +569,24 @@ class TokenService:
 class SessionService:
     """Session management service using flext-core patterns."""
 
-    def __init__(self, session_repository: SessionRepository, session_generator: SessionGenerator, event_bus: EventBus) -> None:
+    def __init__(
+        self,
+        session_repository: SessionRepository,
+        session_generator: SessionGenerator,
+        event_bus: EventBus,
+    ) -> None:
         self.session_repository = session_repository
         self.session_generator = session_generator
         self.event_bus = event_bus
 
     async def create_session(
-        self, user_id: UserId, username: Username, duration: timedelta, ip_address: str | None = None, user_agent: str | None = None) -> ServiceResult[Session]:
+        self,
+        user_id: UserId,
+        username: Username,
+        duration: timedelta,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+    ) -> ServiceResult[Session]:
         """Create a new user session.
 
         Args:
@@ -572,10 +633,9 @@ class SessionService:
             return ServiceResult.success(session)
 
         except Exception as e:
-                return ServiceResult.failure(f"Session creation failed: {e!s}")
+            return ServiceResult.failure(f"Session creation failed: {e!s}")
 
-    async def validate_session(
-        self, session_id: str) -> ServiceResult[Session]:
+    async def validate_session(self, session_id: str) -> ServiceResult[Session]:
         """Validate a user session.
 
         Args:
@@ -608,7 +668,8 @@ class SessionService:
             return ServiceResult.failure(f"Session validation failed: {e!s}")
 
     async def refresh_session(
-        self, session_id: str, duration: timedelta) -> ServiceResult[Session]:
+        self, session_id: str, duration: timedelta,
+    ) -> ServiceResult[Session]:
         """Refresh a user session with new expiration time.
 
         Args:
