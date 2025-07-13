@@ -339,7 +339,10 @@ def examples(
             },
             {
                 "description": "Create user with password",
-                "command": "flext-auth create-user REDACTED_LDAP_BIND_PASSWORD REDACTED_LDAP_BIND_PASSWORD@company.com --password secret123",
+                "command": (
+                    "flext-auth create-user REDACTED_LDAP_BIND_PASSWORD REDACTED_LDAP_BIND_PASSWORD@company.com "
+                    "--password secret123"
+                ),
             },
         ],
         "token_management": [

@@ -1,5 +1,41 @@
 from __future__ import annotations
 
+import asyncio
+import contextlib
+from datetime import UTC
+from datetime import datetime
+from datetime import timedelta
+from typing import TYPE_CHECKING
+from typing import Any
+from uuid import uuid4
+
+from sqlalchemy import select
+
+from flext_auth.tokens import InMemoryTokenStorage
+from flext_auth.tokens import TokenManager
+from flext_core import ServiceResult
+from flext_core.infrastructure.persistence.models import UserModel
+
+
+# Simple ServiceError implementation
+class ServiceError:
+    def __init__(self, message: str, details: dict | None = None) -> None:
+        self.message = message
+        self.details = details or {}
+
+    @classmethod
+    def internal_error(cls, message: str, details: dict | None = None) -> str:
+        return f"Internal error: {message}"
+
+    @classmethod
+    def not_found_error(cls, message: str, details: dict | None = None) -> str:
+        return f"Not found: {message}"
+
+    @classmethod
+    def validation_error(cls, message: str, details: dict | None = None) -> str:
+        return f"Validation error: {message}"
+
+
 """Enterprise Session Management with RBAC and Multi-Factor Authentication.
 
 This module provides a production-ready session management system with enterprise
@@ -19,25 +55,6 @@ ENTERPRISE AUTHENTICATION FEATURES:
 This represents the completion of Tier 2A authentication enterprise features
 with production-ready RBAC and session management capabilities.
 """
-
-import asyncio
-import contextlib
-from datetime import UTC
-from datetime import datetime
-from datetime import timedelta
-from typing import TYPE_CHECKING
-from typing import Any
-from uuid import uuid4
-
-from sqlalchemy import select
-
-from flext_auth.tokens import InMemoryTokenStorage
-from flext_auth.tokens import TokenManager
-from flext_core.config.domain_config import get_config
-from flext_core.config.domain_config import get_domain_constants
-from flext_core.domain.advanced_types import ServiceError
-from flext_core.domain.advanced_types import ServiceResult
-from flext_core.infrastructure.persistence.models import UserModel
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -308,9 +325,8 @@ class EnterpriseSessionManager:
         self._user_sessions: dict[UserID, set[str]] = {}
         self._cleanup_task: asyncio.Task[None] | None = None
 
-        # Get configuration
-        self.config = get_config()
-        self.constants = get_domain_constants()
+        # Session configuration defaults
+        self.default_session_timeout_hours = 24
 
     async def create_session(
         self,
@@ -340,7 +356,7 @@ class EnterpriseSessionManager:
             # Set session duration
             if not session_duration:
                 session_duration = timedelta(
-                    hours=self.constants.DEFAULT_SESSION_TIMEOUT_HOURS,
+                    hours=self.default_session_timeout_hours,
                 )
 
             # Get user roles and permissions from database

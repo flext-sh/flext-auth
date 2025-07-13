@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Token management and blacklisting system with Python 3.13 patterns."""
+
+from __future__ import annotations
 
 import asyncio
 import contextlib

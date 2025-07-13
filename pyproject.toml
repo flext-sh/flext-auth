@@ -16,7 +16,6 @@ dependencies = [
     "pyjwt>=2.9.0",
     "bcrypt>=4.2.0",
     "cryptography>=44.0.0",
-    "redis>=5.0.0",
     "passlib[bcrypt]>=1.7.4",
     "python-jose[cryptography]>=3.3.0",
     "argon2 (>=0.1.10,<0.2.0)",
@@ -36,6 +35,7 @@ dependencies = [
     "slowapi (>=0.1.9,<0.2.0)",
     "sqlalchemy (>=2.0.41,<3.0.0)",
     "structlog (>=25.4.0,<26.0.0)",
+    "redis (>=6.2.0,<7.0.0)",
 ]
 keywords = [
     "flext",
@@ -87,7 +87,6 @@ flext-observability = { path = "../flext-observability", develop = true }
 pyjwt = ">=2.9.0"
 bcrypt = ">=4.2.0"
 cryptography = ">=44.0.0"
-redis = ">=5.0.0"
 passlib = { extras = ["bcrypt"], version = ">=1.7.4" }
 python-jose = { extras = ["cryptography"], version = ">=3.3.0" }
 
@@ -161,7 +160,6 @@ click = "^8.2.1"
 fastapi = "^0.116.1"
 jwt = "^1.4.0"
 pydantic = "^2.11.7"
-redis = "^6.2.0"
 
 
 [tool.poetry.group.typings.dependencies]

@@ -1,6 +1,6 @@
-from __future__ import annotations
-
 """Protocol interfaces for authentication system using Python 3.13 patterns."""
+
+from __future__ import annotations
 
 from typing import TYPE_CHECKING
 from typing import Protocol
@@ -26,7 +26,6 @@ if TYPE_CHECKING:
     from flext_auth.types import UserPermissions
 
 # Forward reference for TokenPair
-TokenPair = "TokenPair"
 
 
 @runtime_checkable
