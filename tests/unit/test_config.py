@@ -8,8 +8,8 @@ from unittest.mock import patch
 import pytest
 
 from flext_auth.config import AuthSettings
-from flext_auth.config import JWTSettings
-from flext_auth.config import RedisSettings
+from flext_auth.config import JWTConfig as JWTSettings
+from flext_auth.config import RedisConfig as RedisSettings
 from flext_auth.config import get_auth_settings
 
 
