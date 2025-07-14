@@ -53,15 +53,15 @@ class User(DomainEntity):
         """Check if user account is locked."""
         if self.locked_until is None:
             return False
-        
+
         current_time = datetime.now(UTC)
-        
+
         # Handle timezone-naive datetime by assuming UTC
         if self.locked_until.tzinfo is None:
             locked_until_utc = self.locked_until.replace(tzinfo=UTC)
         else:
             locked_until_utc = self.locked_until
-            
+
         return locked_until_utc > current_time
 
     def is_email_verified(self) -> bool:

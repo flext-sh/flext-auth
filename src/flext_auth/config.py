@@ -17,14 +17,11 @@ from pydantic_settings import SettingsConfigDict
 
 from flext_core.config import BaseSettings
 from flext_core.config import get_container
-from typing import TYPE_CHECKING
 
-from flext_core.config import singleton
 from flext_core.domain.pydantic_base import DomainValueObject
 
 
-if TYPE_CHECKING:
-    from flext_core.domain.types import EnvironmentLiteral
+from flext_core.domain.types import EnvironmentLiteral
 
 
 class JWTConfig(DomainValueObject):
@@ -296,7 +293,7 @@ def get_auth_settings() -> AuthSettings:
         AuthSettings.model_rebuild()
     except Exception:
         pass  # Already built or not needed
-        
+
     return AuthSettings(
         project_name="flext-auth",
         project_version="0.7.0",

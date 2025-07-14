@@ -54,7 +54,7 @@ class AuthenticationService:
             # Check if username exists
             username_exists = await self.user_repo.username_exists(username)
             if not username_exists.is_success:
-                return username_exists
+                return ServiceResult.failure(f"Failed to check username: {username_exists.error}")
 
             if username_exists.value:
                 return ServiceResult.failure(f"Username '{username}' already exists")
@@ -62,7 +62,7 @@ class AuthenticationService:
             # Check if email exists
             email_exists = await self.user_repo.email_exists(email)
             if not email_exists.is_success:
-                return email_exists
+                return ServiceResult.failure(f"Failed to check email: {email_exists.error}")
 
             if email_exists.value:
                 return ServiceResult.failure(f"Email '{email}' already exists")

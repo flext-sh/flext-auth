@@ -9,7 +9,6 @@ from __future__ import annotations
 from datetime import UTC
 from datetime import datetime
 from datetime import timedelta
-from typing import TYPE_CHECKING
 from typing import Any
 
 from flext_auth.domain.entities import Session
@@ -25,7 +24,6 @@ from flext_auth.domain.events import UserPasswordChanged
 from flext_auth.domain.events import UserRoleChanged
 from flext_auth.domain.value_objects import AuthToken
 from flext_auth.domain.value_objects import Username
-from flext_core.config import injectable
 from flext_core.domain.types import EntityId
 from flext_core.domain.types import ServiceResult
 from flext_core.domain.types import UserId
@@ -272,6 +270,10 @@ class UserService:
                 email=str(email),
                 password_hash=password_hash,
                 role=roles[0] if roles else "user",  # Use first role or default
+                email_verified_at=None,  # Explicit default for MyPy
+                last_login_at=None,      # Explicit default for MyPy
+                last_login_ip=None,      # Explicit default for MyPy
+                locked_until=None,       # Explicit default for MyPy
             )
 
             # Save user
@@ -282,8 +284,8 @@ class UserService:
             # Publish event
             event = UserCreated(
                 user_id=user.id,
-                username=Username(user.username),
-                email=UserEmail(user.email),
+                username=Username(value=user.username),
+                email=UserEmail(value=user.email),
                 created_by=created_by,
                 initial_roles=roles or [],
             )
@@ -455,9 +457,6 @@ class TokenService:
             token = AuthToken(
                 value=token_value,
                 token_type=token_type,
-                user_id=user_id,
-                expires_at=datetime.now(UTC) + expires_in,
-                scopes=scopes or [],
             )
 
             # Save token
@@ -467,11 +466,11 @@ class TokenService:
 
             # Publish event
             event = TokenIssued(
-                token_id=token.id,
+                token_id=EntityId(),  # Generate new token ID
                 user_id=user_id,
                 username=username,
                 token_type=token_type,
-                expires_at=token.expires_at,
+                expires_at=datetime.now(UTC) + expires_in,  # Calculate expiry
                 scopes=scopes or [],
                 client_id=client_id,
                 ip_address=ip_address,
@@ -611,10 +610,10 @@ class SessionService:
             # Create session
             session = Session(
                 user_id=user_id,
-                session_token=session_id,
+                token=session_id,
                 expires_at=datetime.now(UTC) + duration,
-                ip_address=ip_address,
-                user_agent=user_agent,
+                ip_address=ip_address or "unknown",
+                user_agent=user_agent or "unknown",
             )
 
             # Save session

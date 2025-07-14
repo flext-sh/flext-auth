@@ -31,7 +31,6 @@ from flext_auth.tokens import TokenMetadata
 from flext_auth.types import SecurityEvent
 from flext_auth.types import TokenType
 from flext_core.config import get_container
-from flext_core.config import injectable
 from flext_core.config import singleton
 from flext_core.domain.pydantic_base import APIRequest
 from flext_core.domain.pydantic_base import APIResponse

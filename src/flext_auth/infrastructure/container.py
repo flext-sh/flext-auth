@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from flext_auth.interfaces import TokenManager as TokenRepository
     from flext_auth.interfaces import JWTService as TokenService
     from flext_auth.tokens import TokenStorage
-    
+
     # For services that don't exist yet, use generic types
     from typing import Any
     EmailService = Any

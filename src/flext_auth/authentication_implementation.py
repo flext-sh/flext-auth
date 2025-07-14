@@ -26,7 +26,6 @@ from uuid import uuid4
 import bcrypt
 import jwt
 
-from flext_core.config import get_config
 from flext_core.domain.types import ServiceResult
 from flext_observability.logging import get_logger
 

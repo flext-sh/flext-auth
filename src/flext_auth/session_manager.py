@@ -9,12 +9,10 @@ from typing import TYPE_CHECKING
 from typing import Any
 from uuid import uuid4
 
-from sqlalchemy import select
 
 from flext_auth.tokens import InMemoryTokenStorage
 from flext_auth.tokens import TokenManager
 from flext_core import ServiceResult
-from flext_auth.domain.entities import User
 
 
 # Simple ServiceError implementation
