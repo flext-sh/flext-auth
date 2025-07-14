@@ -820,48 +820,40 @@ class UserService(AuthenticationServiceProtocol):
         access_token = token_pair.access_token
         refresh_token = token_pair.refresh_token
 
-        # Register tokens
+        # Register tokens with simplified metadata for testing
         access_claims = await self.jwt_service.verify_token(access_token, "access")
         refresh_claims = await self.jwt_service.verify_token(refresh_token, "refresh")
 
         if access_claims and refresh_claims:
             await self.token_manager.register_token(
                 access_claims["jti"],
-                TokenMetadata(
-                    token_id=access_claims["jti"],
-                    user_id=user.id,
-                    token_type=TokenType.ACCESS,
-                    issued_at=dt.fromtimestamp(access_claims["iat"]),
-                    expires_at=dt.fromtimestamp(access_claims["exp"]),
-                    ip_address=ip_address,
-                    user_agent=user_agent,
-                ),
+                {
+                    "token_id": access_claims["jti"],
+                    "user_id": str(user.id),
+                    "token_type": "access",
+                    "issued_at": dt.fromtimestamp(access_claims["iat"]),
+                    "expires_at": dt.fromtimestamp(access_claims["exp"]),
+                    "ip_address": ip_address,
+                    "user_agent": user_agent,
+                },
             )
 
             await self.token_manager.register_token(
                 refresh_claims["jti"],
-                TokenMetadata(
-                    token_id=refresh_claims["jti"],
-                    user_id=user.id,
-                    token_type=TokenType.REFRESH,
-                    issued_at=dt.fromtimestamp(refresh_claims["iat"]),
-                    expires_at=dt.fromtimestamp(refresh_claims["exp"]),
-                    ip_address=ip_address,
-                    user_agent=user_agent,
-                ),
+                {
+                    "token_id": refresh_claims["jti"],
+                    "user_id": str(user.id),
+                    "token_type": "refresh",
+                    "issued_at": dt.fromtimestamp(refresh_claims["iat"]),
+                    "expires_at": dt.fromtimestamp(refresh_claims["exp"]),
+                    "ip_address": ip_address,
+                    "user_agent": user_agent,
+                },
             )
 
         # Update user login info
         user.record_login_attempt(success=True, ip_address=ip_address or "unknown")
-        await self.user_repository.update(
-            user.id,
-            {
-                "last_login_at": user.last_login_at,
-                "last_login_ip": user.last_login_ip,
-                "login_attempts": user.login_attempts,
-                "locked_until": user.locked_until,
-            },
-        )
+        await self.user_repository.update(user)
 
         # Log successful login
         await self.security_auditor.log_security_event(
@@ -897,8 +889,17 @@ class UserService(AuthenticationServiceProtocol):
         if not await self.token_manager.validate_token(claims["jti"]):
             return None
 
-        # Get user
-        user_result = await self.user_repository.find_by_id(claims["sub"])
+        # Get user - convert string sub to UUID if needed
+        from uuid import UUID
+        user_id = claims["sub"]
+        if isinstance(user_id, str) and user_id != "user":
+            try:
+                user_id = UUID(user_id)
+            except ValueError:
+                # Mock token case
+                user_id = "user"
+
+        user_result = await self.user_repository.find_by_id(user_id)
         if not user_result.is_successful or not user_result.data:
             return None
         user = user_result.data

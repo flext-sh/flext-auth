@@ -8,7 +8,7 @@ Zero tolerance for duplication.
 from __future__ import annotations
 
 from datetime import timedelta
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from pydantic import Field
 from pydantic import SecretStr
@@ -21,7 +21,9 @@ from flext_core.config import get_container
 from flext_core.domain.pydantic_base import DomainValueObject
 
 
-from flext_core.domain.types import EnvironmentLiteral
+
+if TYPE_CHECKING:
+    from flext_core.domain.types import EnvironmentLiteral
 
 
 class JWTConfig(DomainValueObject):

@@ -110,7 +110,7 @@ class AuthenticationService:
             # Find user
             user_result = await self.user_repo.find_by_username(username)
             if not user_result.is_success:
-                return user_result
+                return ServiceResult.failure("Authentication failed")
 
             if not user_result.value:
                 return ServiceResult.failure("Invalid username or password")
@@ -157,7 +157,7 @@ class AuthenticationService:
             session_result = await self.session_repo.create(session)
 
             if not session_result.is_success:
-                return session_result
+                return ServiceResult.failure("Failed to create session")
 
             logger.info("User authenticated successfully: %s", username)
             return ServiceResult.success((user, session_result.value))
@@ -171,8 +171,8 @@ class AuthenticationService:
         try:
             # Find session by token
             session_result = await self.session_repo.find_by_token(token)
-            if session_result.is_success:
-                return session_result
+            if not session_result.is_success:
+                return ServiceResult.failure("Session not found")
 
             if not session_result.value:
                 return ServiceResult.failure("Invalid session token")
@@ -185,8 +185,8 @@ class AuthenticationService:
 
             # Find user
             user_result = await self.user_repo.find_by_id(session.user_id)
-            if user_result.is_success:
-                return user_result
+            if not user_result.is_success:
+                return ServiceResult.failure("User not found")
 
             if not user_result.value:
                 return ServiceResult.failure("User not found")

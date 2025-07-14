@@ -134,13 +134,55 @@ def create_user_service() -> UserService:
     class MinimalSecurityAuditor:
         def log_event(self, event): pass
 
+        async def log_security_event(self, event_type, user_id, ip_address, user_agent, metadata=None):
+            """Log security event for audit purposes."""
+
     class MinimalJWTService:
         def create_token(self, payload): return "mock_jwt_token"
-        def verify_token(self, token): return {"sub": "user"}
+
+        async def verify_token(self, token, token_type="access"):
+            # Extract user ID from token format: mock_{user_id}_access or mock_{user_id}_refresh
+            if "_access" in token:
+                user_id = token.replace("mock_", "").replace("_access", "")
+            elif "_refresh" in token:
+                user_id = token.replace("mock_", "").replace("_refresh", "")
+            else:
+                user_id = "user"
+            return {"sub": user_id, "jti": "mock_jti", "iat": 1234567890, "exp": 1234567890}
+
+        def create_token_pair(self, user):
+            """Create access and refresh token pair."""
+            class TokenPair:
+                def __init__(self, user_id) -> None:
+                    self.access_token = f"mock_{user_id}_access"
+                    self.refresh_token = f"mock_{user_id}_refresh"
+            return TokenPair(str(user.id))
+
+        def refresh_token(self, refresh_token, user):
+            """Refresh tokens."""
+            return ("new_access_token", "new_refresh_token")
+
+        def extract_token_claims(self, token):
+            """Extract claims from token."""
+            return {"jti": "mock_jti", "sub": "user"}
 
     class MinimalTokenManager:
         def create_token(self, user_id): return "mock_token"
         def verify_token(self, token): return True
+
+        async def register_token(self, token_id, metadata):
+            """Register token in storage."""
+
+        async def validate_token(self, token_id):
+            """Validate token is not revoked."""
+            return True
+
+        async def revoke_token(self, token_id, user_id, reason):
+            """Revoke a token."""
+            return True
+
+        async def revoke_user_tokens(self, user_id, token_id, user_id_param, reason):
+            """Revoke all user tokens."""
 
     password_hasher = MinimalPasswordHasher()
     security_auditor = MinimalSecurityAuditor()
