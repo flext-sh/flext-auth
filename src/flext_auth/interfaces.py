@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from flext_auth.types import JWTToken
     from flext_auth.types import PlaintextPassword
     from flext_auth.types import SecurityHeaders
-    from flext_auth.types import TokenMetadata
+    from flext_auth.tokens import TokenMetadata
     from flext_auth.types import TokenType
     from flext_auth.types import UserAgent
     from flext_auth.types import UserID
@@ -139,7 +139,9 @@ class TokenValidator(Protocol):
     """
 
     async def validate_token(
-        self, token: JWTToken, token_type: TokenType,
+        self,
+        token: JWTToken,
+        token_type: TokenType,
     ) -> JWTClaims | None:
         """Validate a JWT token and extract its claims.
 
@@ -690,7 +692,9 @@ class JWTService(Protocol):
         ...
 
     def refresh_token(
-        self, refresh_token: JWTToken, user: DomainUser,
+        self,
+        refresh_token: JWTToken,
+        user: DomainUser,
     ) -> tuple[JWTToken, JWTToken] | None:
         """Create new token pair from refresh token."""
         ...
@@ -709,7 +713,10 @@ class TokenManager(Protocol):
         ...
 
     async def revoke_token(
-        self, token_id: str, user_id: str | None, reason: str,
+        self,
+        token_id: str,
+        user_id: str | None,
+        reason: str,
     ) -> bool:
         """Revoke a token."""
         ...

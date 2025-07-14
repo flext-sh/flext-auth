@@ -100,7 +100,10 @@ class PlainPassword(DomainValueObject):
     """Plain text password for validation before hashing."""
 
     value: str = Field(
-        ..., min_length=8, max_length=128, description="Plain text password",
+        ...,
+        min_length=8,
+        max_length=128,
+        description="Plain text password",
     )
 
     @field_validator("value")
@@ -338,9 +341,9 @@ class IPAddress(DomainValueObject):
         try:
             ipaddress.ip_address(v)
             return v
-        except ValueError:
+        except ValueError as e:
             msg = "Invalid IP address format"
-            raise ValueError(msg)
+            raise ValueError(msg) from e
 
     @property
     def is_private(self) -> bool:

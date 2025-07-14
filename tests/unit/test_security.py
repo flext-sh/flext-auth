@@ -137,7 +137,7 @@ class TestTokenGenerator:
         secret = "test_secret"
         algorithm = "HS256"
 
-        with pytest.raises(Exception):  # JWT verification should raise exception
+        with pytest.raises((ValueError, Exception)):  # JWT verification should raise exception
             generator.verify_jwt("invalid.jwt.token", secret, algorithm)
 
 

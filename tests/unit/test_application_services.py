@@ -87,12 +87,12 @@ class TestAuthService:
     ) -> None:
         """Test successful user creation."""
         user_id = uuid4()
-        username = Username("testuser")
+        username = Username(value="testuser")
         email = "test@example.com"
         password = "password123"
 
         # Mock password hashing
-        hashed_password = "$2b$12$hashedpassword"
+        hashed_password = "$2b$12$xIKJRSQMr4JFA6/ogklLzuvSqW/oBtPYW4akeAJv.bFoSQG8VddG."
         mock_password_hasher.hash_password.return_value = hashed_password
 
         # Mock user creation
@@ -128,7 +128,7 @@ class TestAuthService:
         mock_user_repository: AsyncMock,
     ) -> None:
         """Test user creation when username already exists."""
-        username = Username("testuser")
+        username = Username(value="testuser")
         email = "test@example.com"
         password = "password123"
 
@@ -150,7 +150,7 @@ class TestAuthService:
         mock_user_repository: AsyncMock,
     ) -> None:
         """Test user creation when email already exists."""
-        username = Username("testuser")
+        username = Username(value="testuser")
         email = "test@example.com"
         password = "password123"
 
@@ -179,9 +179,9 @@ class TestAuthService:
         mock_event_bus: AsyncMock,
     ) -> None:
         """Test successful user authentication."""
-        username = Username("testuser")
+        username = Username(value="testuser")
         password = "password123"
-        hashed_password = "$2b$12$hashedpassword"
+        hashed_password = "$2b$12$xIKJRSQMr4JFA6/ogklLzuvSqW/oBtPYW4akeAJv.bFoSQG8VddG."
 
         # Mock user retrieval
         user_id = uuid4()
@@ -247,7 +247,7 @@ class TestAuthService:
         mock_user_repository: AsyncMock,
     ) -> None:
         """Test authentication when user not found."""
-        username = Username("nonexistent")
+        username = Username(value="nonexistent")
         password = "password123"
 
         mock_user_repository.get_by_username.return_value = ServiceResult.failure(
@@ -267,9 +267,9 @@ class TestAuthService:
         mock_password_hasher: AsyncMock,
     ) -> None:
         """Test authentication with wrong password."""
-        username = Username("testuser")
+        username = Username(value="testuser")
         password = "wrongpassword"
-        hashed_password = "$2b$12$hashedpassword"
+        hashed_password = "$2b$12$xIKJRSQMr4JFA6/ogklLzuvSqW/oBtPYW4akeAJv.bFoSQG8VddG."
 
         # Mock user retrieval
         mock_user = User(
@@ -299,17 +299,16 @@ class TestAuthService:
         mock_user_repository: AsyncMock,
     ) -> None:
         """Test authentication of inactive user."""
-        username = Username("testuser")
+        username = Username(value="testuser")
         password = "password123"
 
         # Mock inactive user
         mock_user = User(
             id=uuid4(),
-            username=username,
+            username=username.value,
             email="test@example.com",
-            password_hash="$2b$12$hashedpassword",
-            is_active=False,  # Inactive user
-            created_at=datetime.now(UTC),
+            password_hash="$2b$12$xIKJRSQMr4JFA6/ogklLzuvSqW/oBtPYW4akeAJv.bFoSQG8VddG.",
+            status="inactive",  # Inactive user
         )
         mock_user_repository.get_by_username.return_value = ServiceResult.success(
             mock_user,
@@ -328,7 +327,7 @@ class TestAuthService:
         mock_session_repository: AsyncMock,
     ) -> None:
         """Test successful token validation."""
-        token = AuthToken("valid.token.here")
+        token = AuthToken(value="valid.token.here")
         user_id = uuid4()
         session_id = uuid4()
 
@@ -398,7 +397,7 @@ class TestAuthService:
         # Mock user retrieval
         mock_user = User(
             id=user_id,
-            username=Username("testuser"),
+            username=Username(value="testuser"),
             email="test@example.com",
             password_hash=current_hash,
             is_active=True,
@@ -413,7 +412,7 @@ class TestAuthService:
         # Mock user update
         updated_user = User(
             id=user_id,
-            username=Username("testuser"),
+            username=Username(value="testuser"),
             email="test@example.com",
             password_hash=new_hash,
             is_active=True,
@@ -472,7 +471,7 @@ class TestAuthService:
         # Mock user retrieval
         mock_user = User(
             id=user_id,
-            username=Username("testuser"),
+            username=Username(value="testuser"),
             email="test@example.com",
             password_hash=current_hash,
             is_active=True,

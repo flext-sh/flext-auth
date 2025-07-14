@@ -3,6 +3,72 @@
 from typing import Any
 
 
+class AuthService:
+    """Abstract authentication service interface."""
+
+    def __init__(self) -> None:
+        """Initialize authentication service."""
+
+    async def authenticate(self, username: str | None, password: str | None) -> Any:
+        """Authenticate user with username and password.
+
+        Args:
+            username: Username or email for authentication.
+            password: Password for authentication.
+
+        Returns:
+            User object if authentication successful.
+
+        Raises:
+            NotImplementedError: This is an abstract method.
+        """
+        raise NotImplementedError("AuthService.authenticate must be implemented")
+
+    async def register(self, user_data: dict[str, Any]) -> Any:
+        """Register a new user.
+
+        Args:
+            user_data: User registration data.
+
+        Returns:
+            Created user object.
+
+        Raises:
+            NotImplementedError: This is an abstract method.
+        """
+        raise NotImplementedError("AuthService.register must be implemented")
+
+    async def create_user(self, username: str | None, password: str | None, user_data: dict[str, Any] | None) -> Any:
+        """Create a new user.
+
+        Args:
+            username: Username for the new user.
+            password: Password for the new user.
+            user_data: Additional user data.
+
+        Returns:
+            Created user object.
+
+        Raises:
+            NotImplementedError: This is an abstract method.
+        """
+        raise NotImplementedError("AuthService.create_user must be implemented")
+
+    async def get_user(self, user_id: str | None) -> Any:
+        """Get user by ID.
+
+        Args:
+            user_id: User identifier.
+
+        Returns:
+            User object if found, None otherwise.
+
+        Raises:
+            NotImplementedError: This is an abstract method.
+        """
+        raise NotImplementedError("AuthService.get_user must be implemented")
+
+
 class ServiceInMemoryUserRepository:
     """In-memory user repository for testing."""
 

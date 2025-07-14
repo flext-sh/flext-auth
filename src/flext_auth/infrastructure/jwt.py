@@ -28,14 +28,14 @@ class JWTService:
         if self._algorithm.startswith("RS"):
             # RSA algorithms
             if settings.jwt_private_key_path:
-                self._private_key = Path(settings.jwt_private_key_path).read_text(
+                self._private_key: str | None = Path(settings.jwt_private_key_path).read_text(
                     encoding="utf-8",
                 )
             else:
                 self._private_key = None
 
             if settings.jwt_public_key_path:
-                self._public_key = Path(settings.jwt_public_key_path).read_text(
+                self._public_key: str | None = Path(settings.jwt_public_key_path).read_text(
                     encoding="utf-8",
                 )
             else:
@@ -149,7 +149,8 @@ class JWTService:
                 f"token_decoded: user_id={payload.get('sub')}, token_type={payload.get('token_type')}",
             )
 
-            return payload
+            typed_payload: dict[str, Any] = payload
+            return typed_payload
 
         except jwt.ExpiredSignatureError as e:
             logger.warning("token_expired")

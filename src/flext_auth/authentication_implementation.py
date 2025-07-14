@@ -180,7 +180,9 @@ class EnterprisePasswordHasher:
         return hashed.decode("utf-8")
 
     def verify_password(
-        self: EnterprisePasswordHasher, password: str, hashed: str,
+        self: EnterprisePasswordHasher,
+        password: str,
+        hashed: str,
     ) -> bool:
         """Verify a password against its hash.
 
@@ -225,15 +227,16 @@ class EnterpriseJWTService:
     """Class implementation."""
 
     def __init__(self, secret_key: str | None = None) -> None:
-        config = get_config()
-        self.secret_key = secret_key or config.secrets.jwt_secret_key
+        from flext_auth.config import get_auth_settings
+        auth_settings = get_auth_settings()
+        self.secret_key = secret_key or auth_settings.jwt.secret_key.get_secret_value()
         self.algorithm = "HS256"
         self.access_token_expire_minutes = 30
         self.refresh_token_expire_days = 7
         self._blacklisted_tokens: set[str] = set()
         logger.debug("JWT service initialized with enterprise configuration")
 
-    def create_access_token(self, user: object) -> str:
+    def create_access_token(self, user: User) -> str:
         """Create JWT access token for user.
 
         Args:
@@ -260,7 +263,7 @@ class EnterpriseJWTService:
         logger.debug("Access token created for user {user.user_id}", extra={})
         return token
 
-    def create_refresh_token(self, user: object) -> str:
+    def create_refresh_token(self, user: User) -> str:
         """Create JWT refresh token for user.
 
         Args:
@@ -283,7 +286,7 @@ class EnterpriseJWTService:
         logger.debug("Refresh token created for user {user.user_id}", extra={})
         return token
 
-    def create_token_pair(self, user: object) -> TokenPair:
+    def create_token_pair(self, user: User) -> TokenPair:
         """Create both access and refresh tokens for user.
 
         Args:
@@ -298,7 +301,9 @@ class EnterpriseJWTService:
         return (access_token, refresh_token)
 
     async def verify_token(
-        self, token: str, token_type: str | None = None,
+        self,
+        token: str,
+        token_type: str | None = None,
     ) -> dict[str, Any] | None:
         """Verify and decode JWT token.
 
@@ -335,7 +340,8 @@ class EnterpriseJWTService:
                 "Token verified successfully for user {claims.get('sub')}",
                 extra={},
             )
-            return claims
+            typed_claims: dict[str, Any] = claims
+            return typed_claims
         except jwt.ExpiredSignatureError:
             logger.warning("Token has expired")
             return None
@@ -346,7 +352,7 @@ class EnterpriseJWTService:
             logger.exception("Unexpected error verifying token", extra={})
             return None
 
-    async def refresh_tokens(self, refresh_token: str, user: object) -> TokenPair:
+    async def refresh_tokens(self, refresh_token: str, user: User) -> TokenPair:
         """Refresh access and refresh tokens using valid refresh token.
 
         Args:

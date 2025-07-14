@@ -79,6 +79,10 @@ class AuthenticationService:
                 password_hash=password_hash,
                 role=role,
                 status="active",
+                email_verified_at=None,  # Explicit default for mypy strict
+                last_login_at=None,      # Explicit default for mypy strict
+                last_login_ip=None,      # Explicit default for mypy strict
+                locked_until=None,       # Explicit default for mypy strict
             )
 
             # Save user
@@ -399,8 +403,8 @@ class EmailVerificationService:
 
     async def verify_email_token(
         self,
-        token: str,
-        auth_service: AuthenticationService,
+        _token: str,
+        _auth_service: AuthenticationService,
     ) -> ServiceResult[bool]:
         """Verify email using token."""
         try:

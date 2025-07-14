@@ -19,7 +19,8 @@ from argon2.exceptions import VerificationError
 from argon2.exceptions import VerifyMismatchError
 from pydantic import Field
 
-from flext_core.config.domain_config import get_config
+from flext_core.config import get_settings
+from flext_auth.config import AuthSettings
 from flext_core.domain.pydantic_base import DomainBaseModel
 from flext_core.domain.pydantic_base import DomainValueObject
 
@@ -381,32 +382,36 @@ class TokenGenerator:
 
 
 def create_access_token(
-    data: dict[str, Any], expires_delta: timedelta | None = None,
+    data: dict[str, Any],
+    expires_delta: timedelta | None = None,
 ) -> str:
     to_encode = data.copy()
-    config = get_config()
+    config = get_settings(AuthSettings)
 
     if expires_delta:
         expire = datetime.now(UTC) + expires_delta
     else:
         expire = datetime.now(UTC) + timedelta(
-            minutes=config.secrets.jwt_access_token_expire_minutes,
+            minutes=config.jwt.access_token_expire_minutes,
         )
 
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(
         to_encode,
-        config.secrets.jwt_secret_key,
-        algorithm=config.secrets.jwt_algorithm,
+        config.jwt.secret_key.get_secret_value(),
+        algorithm=config.jwt.algorithm,
     )
-    return encoded_jwt.decode("utf-8")
+    return str(encoded_jwt)
 
 
 def decode_jwt_token(
-    token: str, secret_key: str, algorithm: str = "HS256",
+    token: str,
+    secret_key: str,
+    algorithm: str = "HS256",
 ) -> dict[str, Any] | None:
     try:
-        return jwt.decode(token, secret_key, algorithms=[algorithm])
+        result = jwt.decode(token, secret_key, algorithms=[algorithm])
+        return dict(result) if result is not None else None
     except jwt.PyJWTError:
         return None
 
@@ -422,3 +427,95 @@ def hash_token(token: str) -> str:
 
 def generate_nonce() -> str:
     return secrets.token_hex(16)
+
+
+def generate_secure_token(length: int = 32) -> str:
+    """Generate a cryptographically secure token.
+
+    Args:
+        length: Length of the token in bytes.
+
+    Returns:
+        Hex-encoded token string (length * 2 characters).
+    """
+    return secrets.token_hex(length)
+
+
+class SecurityManager:
+    """Security manager that coordinates password hashing and token generation."""
+
+    def __init__(self) -> None:
+        """Initialize security manager with password hasher and token generator."""
+        self.password_hasher = PasswordHasher()
+        self.password_hasher.model_post_init(None)  # Initialize the Argon2 hasher
+        self.token_generator = TokenGenerator()
+
+    def hash_password(self, password: str) -> str:
+        """Hash a password using the password hasher.
+
+        Args:
+            password: Plain text password to hash.
+
+        Returns:
+            Hashed password string.
+        """
+        return self.password_hasher.hash(password)
+
+    def verify_password(self, password: str, hashed_password: str) -> bool:
+        """Verify a password against its hash.
+
+        Args:
+            password: Plain text password to verify.
+            hashed_password: Hashed password to verify against.
+
+        Returns:
+            True if password matches hash, False otherwise.
+        """
+        return self.password_hasher.verify(password, hashed_password)
+
+    def generate_token(self, length: int = 32) -> str:
+        """Generate a secure token.
+
+        Args:
+            length: Length of the token in bytes.
+
+        Returns:
+            Hex-encoded token string.
+        """
+        return self.token_generator.generate_token(length)
+
+    def generate_jwt(
+        self, payload: dict[str, Any], secret: str, algorithm: str = "HS256"
+    ) -> str:
+        """Generate a JWT token.
+
+        Args:
+            payload: JWT payload data.
+            secret: Secret key for signing.
+            algorithm: Signing algorithm.
+
+        Returns:
+            Encoded JWT token string.
+        """
+        # TokenGenerator doesn't have generate_jwt, use create_access_token instead
+        from flext_auth.security import create_access_token
+
+        return create_access_token(payload)
+
+    def verify_jwt(
+        self, token: str, secret: str, algorithm: str = "HS256"
+    ) -> dict[str, Any] | None:
+        """Verify and decode a JWT token.
+
+        Args:
+            token: JWT token to verify.
+            secret: Secret key for verification.
+            algorithm: Signing algorithm.
+
+        Returns:
+            Decoded payload if valid, None if invalid.
+        """
+        # TokenGenerator doesn't have verify_jwt, use decode_jwt_token instead
+        from flext_auth.security import decode_jwt_token
+
+        return decode_jwt_token(token, secret, algorithm)

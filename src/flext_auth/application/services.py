@@ -30,12 +30,12 @@ from flext_core.domain.types import EntityId
 from flext_core.domain.types import ServiceResult
 from flext_core.domain.types import UserId
 
-if TYPE_CHECKING:
-    from flext_auth.domain.value_objects import SecurityRole
-    from flext_auth.domain.value_objects import UserEmail
+
+# Runtime imports - used in actual code execution
+from flext_auth.domain.value_objects import UserEmail
+from flext_auth.domain.value_objects import UserRole as SecurityRole
 
 
-@injectable()
 class AuthService:
     """Authentication service using flext-core patterns."""
 
@@ -119,7 +119,9 @@ class AuthService:
             return ServiceResult.failure(f"Authentication failed: {e!s}")
 
     async def logout_user(
-        self, user_id: UserId, session_id: str,
+        self,
+        user_id: UserId,
+        session_id: str,
     ) -> ServiceResult[None]:
         """Log out a user and invalidate their session.
 
@@ -187,9 +189,10 @@ class AuthService:
             user = user_result.value
 
             # Verify old password (unless REDACTED_LDAP_BIND_PASSWORD changing)
-            if changed_by is None or changed_by == user_id:
-                if not user.password_hash.verify(old_password):
-                    return ServiceResult.failure("Invalid current password")
+            if (
+                changed_by is None or changed_by == user_id
+            ) and not user.password_hash.verify(old_password):
+                return ServiceResult.failure("Invalid current password")
 
             # Hash new password
             new_hash = self.password_hasher.hash_password(new_password)
@@ -212,7 +215,6 @@ class AuthService:
             return ServiceResult.failure(f"Password change failed: {e!s}")
 
 
-@injectable()
 class UserService:
     """User management service using flext-core patterns."""
 
@@ -266,10 +268,10 @@ class UserService:
 
             # Create user
             user = User(
-                username=username,
-                email=email,
+                username=str(username),
+                email=str(email),
                 password_hash=password_hash,
-                roles=roles or [],
+                role=roles[0] if roles else "user",  # Use first role or default
             )
 
             # Save user
@@ -280,8 +282,8 @@ class UserService:
             # Publish event
             event = UserCreated(
                 user_id=user.id,
-                username=user.username,
-                email=user.email,
+                username=Username(user.username),
+                email=UserEmail(user.email),
                 created_by=created_by,
                 initial_roles=roles or [],
             )
@@ -293,7 +295,10 @@ class UserService:
             return ServiceResult.failure(f"User creation failed: {e!s}")
 
     async def update_user_roles(
-        self, user_id: UserId, roles: list[SecurityRole], updated_by: UserId,
+        self,
+        user_id: UserId,
+        roles: list[SecurityRole],
+        updated_by: UserId,
     ) -> ServiceResult[User]:
         """Update a user's role assignments.
 
@@ -403,7 +408,6 @@ class UserService:
             return ServiceResult.failure(f"Account lock failed: {e!s}")
 
 
-@injectable()
 class TokenService:
     """Token management service using flext-core patterns."""
 
@@ -565,7 +569,6 @@ class TokenService:
             return ServiceResult.failure(f"Token revocation failed: {e!s}")
 
 
-@injectable()
 class SessionService:
     """Session management service using flext-core patterns."""
 
@@ -668,7 +671,9 @@ class SessionService:
             return ServiceResult.failure(f"Session validation failed: {e!s}")
 
     async def refresh_session(
-        self, session_id: str, duration: timedelta,
+        self,
+        session_id: str,
+        duration: timedelta,
     ) -> ServiceResult[Session]:
         """Refresh a user session with new expiration time.
 

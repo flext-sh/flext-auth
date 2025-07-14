@@ -59,7 +59,10 @@ class UserRoleEnum(StrEnum):
 
     @classmethod
     def create(
-        cls, name: str, permissions: list[Permission], description: str = "",
+        cls,
+        name: str,
+        permissions: list[Permission],
+        description: str = "",
     ) -> Role:
         """Create a new role with the given permissions.
 
@@ -101,7 +104,11 @@ class Permission(DomainValueObject):
 
     @classmethod
     def create(
-        cls, name: str, scope: PermissionScope, resource: str, description: str = "",
+        cls,
+        name: str,
+        scope: PermissionScope,
+        resource: str,
+        description: str = "",
     ) -> Permission:
         """Create a new permission with the given parameters.
 
@@ -246,7 +253,9 @@ class User(DomainEntity):
         self.locked_until = None
 
     def record_failed_attempt(
-        self, lock_after: int = 5, lock_duration_minutes: int = 30,
+        self,
+        lock_after: int = 5,
+        lock_duration_minutes: int = 30,
     ) -> None:
         """Record a failed login attempt and lock the account if threshold is reached.
 

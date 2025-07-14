@@ -7,11 +7,22 @@ Zero tolerance for duplication.
 from __future__ import annotations
 
 from enum import StrEnum
+from typing import Any
 
 from flext_core.domain.types import UserId as CoreUserId
 
 # Re-export core types for auth module
 UserID = CoreUserId
+
+# Type aliases for authentication system
+HashedPassword = str
+PlaintextPassword = str
+JWTToken = str
+IPAddress = str
+UserAgent = str
+JWTClaims = dict[str, Any]
+SecurityHeaders = dict[str, str]
+UserPermissions = list[str]
 
 
 class TokenType:
@@ -165,13 +176,21 @@ class RateLimitWindow:
 __all__ = [
     "AuthProvider",
     "AuthenticationStatus",
+    "HashedPassword",
+    "IPAddress",
     "JWTAlgorithm",
+    "JWTClaims",
+    "JWTToken",
     "PermissionLevel",
+    "PlaintextPassword",
     "RateLimitWindow",
     "RoleType",
     "SecurityEvent",
+    "SecurityHeaders",
     "SessionStatus",
     "TokenType",
+    "UserAgent",
     "UserID",
+    "UserPermissions",
     "UserStatus",
 ]

@@ -8,6 +8,7 @@ import asyncio
 import fnmatch
 from datetime import UTC
 from datetime import datetime
+from datetime import timedelta
 from typing import Any
 from typing import TypeVar
 
@@ -26,7 +27,10 @@ class InMemoryTokenStorage:
         self._lock = asyncio.Lock()
 
     async def store(
-        self, key: str, value: T, ttl: datetime.timedelta | None = None,
+        self,
+        key: str,
+        value: T,
+        ttl: timedelta | None = None,
     ) -> None:
         """Store a value with optional TTL expiration.
 
@@ -39,12 +43,12 @@ class InMemoryTokenStorage:
         async with self._lock:
             expiry = None
             if ttl:
-                expiry = datetime.datetime.now(UTC) + ttl
+                expiry = datetime.now(UTC) + ttl
 
             self._storage[key] = {
                 "value": value,
                 "expiry": expiry,
-                "created_at": datetime.datetime.now(UTC),
+                "created_at": datetime.now(UTC),
             }
 
     async def get(self, key: str) -> T | None:
@@ -64,12 +68,12 @@ class InMemoryTokenStorage:
             entry = self._storage[key]
 
             # Check if expired:
-            if entry["expiry"] and datetime.datetime.now(UTC) > entry["expiry"]:
+            if entry["expiry"] and datetime.now(UTC) > entry["expiry"]:
                 # Remove expired entry
                 del self._storage[key]
                 return None
 
-            return entry["value"]
+            return entry["value"]  # type: ignore[no-any-return]
 
     async def delete(self, key: str) -> bool:
         """Delete a stored value by key.
@@ -104,7 +108,7 @@ class InMemoryTokenStorage:
             entry = self._storage[key]
 
             # Check if expired:
-            if entry["expiry"] and datetime.datetime.now(UTC) > entry["expiry"]:
+            if entry["expiry"] and datetime.now(UTC) > entry["expiry"]:
                 # Remove expired entry
                 del self._storage[key]
                 return False
@@ -139,7 +143,7 @@ class InMemoryTokenStorage:
             return await self._cleanup_expired_internal()
 
     async def _cleanup_expired_internal(self) -> int:
-        now = datetime.datetime.now(UTC)
+        now = datetime.now(UTC)
         expired_keys = []
 
         for key, entry in self._storage.items():

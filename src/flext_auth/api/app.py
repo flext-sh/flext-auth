@@ -5,6 +5,7 @@ Using clean architecture with dependency injection.
 
 from contextlib import asynccontextmanager
 from typing import Annotated
+from typing import Any
 
 from fastapi import Depends
 from fastapi import FastAPI
@@ -33,7 +34,7 @@ security = HTTPBearer()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> None:  # noqa: ARG001
+async def lifespan(app: FastAPI) -> None:
     """Manage application lifespan."""
     logger.info("auth_api_starting")
     yield
@@ -52,11 +53,11 @@ app = FastAPI(
 async def get_current_user(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
-) -> dict[str, any]:
+) -> dict[str, Any]:
     """Get current authenticated user from token."""
     command = ValidateTokenCommand(
         token=credentials.credentials,
-        token_type="access",  # noqa: S106
+        token_type="access",
     )
 
     result = await auth_service.validate_token(command)
@@ -172,7 +173,7 @@ async def change_password(
 @app.get("/auth/me", response_model=dict)
 async def get_me(
     current_user: Annotated[dict, Depends(get_current_user)],
-) -> dict[str, any]:
+) -> dict[str, Any]:
     """Get current user info.
 
     Args:

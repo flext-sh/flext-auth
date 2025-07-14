@@ -678,7 +678,7 @@ class TestValueObjectIntegration:
         assert plain_password.strength_score > 80
 
         # Create hashed password
-        hashed_password = HashedPassword(value="$2b$12$hashedpassword")
+        hashed_password = HashedPassword(value="$2b$12$xIKJRSQMr4JFA6/ogklLzuvSqW/oBtPYW4akeAJv.bFoSQG8VddG.")
         assert hashed_password.algorithm == "2b"
 
         # Create tokens

@@ -51,7 +51,10 @@ class RoleBasedAuthorizationService(AuthorizationService):
         )
 
     async def check_permission(
-        self, user_id: UserID, permission: str, resource: str | None = None,
+        self,
+        user_id: UserID,
+        permission: str,
+        resource: str | None = None,
     ) -> bool:
         """Check if user has permission for resource.
 
@@ -131,7 +134,9 @@ class RoleBasedAuthorizationService(AuthorizationService):
         return user_permissions
 
     async def get_resource_permissions(
-        self, user_id: UserID, resource: str,
+        self,
+        user_id: UserID,
+        resource: str,
     ) -> UserPermissions:
         """Get user permissions specific to a resource.
 
@@ -296,7 +301,8 @@ def require_permission(
 
 
 def require_role(
-    role: str, auth_service: AuthorizationService | None = None,
+    role: str,
+    auth_service: AuthorizationService | None = None,
 ) -> Callable[[CallableT], CallableT]:
     """Decorator to require role for function execution.
 

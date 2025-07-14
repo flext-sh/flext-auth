@@ -11,17 +11,20 @@ from typing import TYPE_CHECKING
 from flext_auth.infrastructure.config import AuthConfig
 
 if TYPE_CHECKING:
-    from flext_auth.domain.ports import EmailService
-    from flext_auth.domain.ports import PasswordService
-    from flext_auth.domain.ports import RoleRepository
-    from flext_auth.domain.ports import SessionRepository
-    from flext_auth.domain.ports import TokenRepository
-    from flext_auth.domain.ports import TokenService
-    from flext_auth.domain.ports import TokenStorage
-    from flext_auth.domain.ports import UserRepository
+    from flext_auth.interfaces import PasswordHasher as PasswordService
+    from flext_auth.interfaces import UserRepository
+    from flext_auth.interfaces import UserRepository as RoleRepository
+    from flext_auth.interfaces import TokenManager as TokenRepository
+    from flext_auth.interfaces import JWTService as TokenService
+    from flext_auth.tokens import TokenStorage
+    
+    # For services that don't exist yet, use generic types
+    from typing import Any
+    EmailService = Any
+    SessionRepository = Any
 
 
-class Container:
+class AuthContainer:
     """Simple dependency injection container for FLEXT-AUTH."""
 
     def __init__(self) -> None:
@@ -49,7 +52,8 @@ class Container:
                 ).lower()
                 == "true",
                 database_url=os.getenv(
-                    "DATABASE_URL", "postgresql://localhost/flext_auth",
+                    "DATABASE_URL",
+                    "postgresql://localhost/flext_auth",
                 ),
                 redis_url=os.getenv("REDIS_URL", "redis://localhost:6379/0"),
                 smtp_host=os.getenv("SMTP_HOST", "localhost"),
@@ -176,9 +180,9 @@ class Container:
         return MagicMock()
 
 
-def create_auth_container() -> Container:
+def create_auth_container() -> AuthContainer:
     """Create and initialize authentication container."""
-    return Container()
+    return AuthContainer()
 
 
 # Global container instance

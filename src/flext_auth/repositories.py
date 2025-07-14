@@ -12,7 +12,7 @@ from flext_auth.models import VIEWER_ROLE
 
 if TYPE_CHECKING:
     from flext_auth.models import Role
-    from flext_core.contracts.repository_contracts import EntityId
+    from flext_core.domain.types import EntityId
 
 
 @runtime_checkable

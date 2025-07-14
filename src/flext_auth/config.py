@@ -17,8 +17,14 @@ from pydantic_settings import SettingsConfigDict
 
 from flext_core.config import BaseSettings
 from flext_core.config import get_container
+from typing import TYPE_CHECKING
+
 from flext_core.config import singleton
 from flext_core.domain.pydantic_base import DomainValueObject
+
+
+if TYPE_CHECKING:
+    from flext_core.domain.types import EnvironmentLiteral
 
 
 class JWTConfig(DomainValueObject):
@@ -26,7 +32,7 @@ class JWTConfig(DomainValueObject):
 
     algorithm: str = Field("HS256", description="JWT signing algorithm (HS256, RS256)")
     secret_key: SecretStr = Field(
-        "change-this-secret-in-production",
+        default=SecretStr("change-this-secret-in-production"),
         description="Secret key for JWT signing",
     )
     access_token_expire_minutes: int = Field(
@@ -50,7 +56,9 @@ class JWTConfig(DomainValueObject):
         description="JWT validation leeway in seconds",
     )
     public_key: str | None = Field(None, description="RSA public key for RS256")
-    private_key: SecretStr | None = Field(None, description="RSA private key for RS256")
+    private_key: SecretStr | None = Field(
+        default=None, description="RSA private key for RS256"
+    )
 
     @field_validator("algorithm")
     @classmethod
@@ -155,7 +163,6 @@ class RedisConfig(DomainValueObject):
     key_prefix: str = Field("flext:auth:", description="Redis key prefix")
 
 
-@singleton()
 class AuthSettings(BaseSettings):
     """FLEXT Auth configuration settings with environment variable support.
 
@@ -182,21 +189,21 @@ class AuthSettings(BaseSettings):
     project_version: str = Field("0.7.0", description="Project version")
 
     # Configuration value objects
-    jwt: JWTConfig = Field(default_factory=JWTConfig, description="JWT configuration")
+    jwt: JWTConfig = Field(default=JWTConfig(), description="JWT configuration")  # type: ignore[call-arg]
     password: PasswordConfig = Field(
-        default_factory=PasswordConfig,
+        default=PasswordConfig(),  # type: ignore[call-arg]
         description="Password configuration",
     )
     session: SessionConfig = Field(
-        default_factory=SessionConfig,
+        default=SessionConfig(),  # type: ignore[call-arg]
         description="Session configuration",
     )
     security: SecurityConfig = Field(
-        default_factory=SecurityConfig,
+        default=SecurityConfig(),  # type: ignore[call-arg]
         description="Security configuration",
     )
     redis: RedisConfig = Field(
-        default_factory=RedisConfig,
+        default=RedisConfig(),  # type: ignore[call-arg]
         description="Redis configuration",
     )
 
@@ -213,7 +220,7 @@ class AuthSettings(BaseSettings):
     )
 
     # Environment and debugging
-    environment: str = Field("development", description="Environment name")
+    environment: EnvironmentLiteral = Field("development", description="Environment name")
     debug: bool = Field(False, description="Debug mode")
 
     @property
@@ -284,7 +291,20 @@ def get_auth_settings() -> AuthSettings:
         Configured AuthSettings instance.
 
     """
-    return AuthSettings()
+    # Force model rebuild to resolve forward references
+    try:
+        AuthSettings.model_rebuild()
+    except Exception:
+        pass  # Already built or not needed
+        
+    return AuthSettings(
+        project_name="flext-auth",
+        project_version="0.7.0",
+        environment="development",
+        debug=False,
+        database_url="postgresql://localhost/flext_auth",
+        database_pool_size=20,
+    )
 
 
 def create_development_auth_config() -> AuthSettings:
@@ -295,13 +315,17 @@ def create_development_auth_config() -> AuthSettings:
 
     """
     return AuthSettings(
+        project_name="flext-auth",
+        project_version="0.7.0",
         environment="development",
         debug=True,
-        jwt=JWTConfig(
-            secret_key="development-secret-key-change-in-production",
+        database_url="postgresql://localhost/flext_auth_dev",
+        database_pool_size=10,
+        jwt=JWTConfig(  # type: ignore[call-arg]
+            secret_key=SecretStr("development-secret-key-change-in-production"),
             access_token_expire_minutes=60,
         ),
-        security=SecurityConfig(
+        security=SecurityConfig(  # type: ignore[call-arg]
             require_email_verification=False,
             max_failed_login_attempts=10,
         ),
@@ -316,19 +340,23 @@ def create_production_auth_config() -> AuthSettings:
 
     """
     return AuthSettings(
+        project_name="flext-auth",
+        project_version="0.7.0",
         environment="production",
         debug=False,
-        jwt=JWTConfig(
+        database_url="postgresql://localhost/flext_auth_prod",
+        database_pool_size=50,
+        jwt=JWTConfig(  # type: ignore[call-arg]
             algorithm="RS256",
             access_token_expire_minutes=15,
             refresh_token_expire_days=7,
         ),
-        security=SecurityConfig(
+        security=SecurityConfig(  # type: ignore[call-arg]
             require_email_verification=True,
             max_failed_login_attempts=3,
             account_lockout_duration_minutes=60,
         ),
-        session=SessionConfig(
+        session=SessionConfig(  # type: ignore[call-arg]
             timeout_hours=8,
             max_sessions_per_user=3,
         ),

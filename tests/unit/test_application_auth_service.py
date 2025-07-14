@@ -61,7 +61,7 @@ class TestAuthenticationService:
         return User(
             username="testuser",
             email="test@example.com",
-            password_hash="$2b$12$hashedpassword",
+            password_hash="$2b$12$xIKJRSQMr4JFA6/ogklLzuvSqW/oBtPYW4akeAJv.bFoSQG8VddG.",
             role="user",
             status="active",
         )
@@ -72,7 +72,7 @@ class TestAuthenticationService:
         user = User(
             username="lockeduser",
             email="locked@example.com",
-            password_hash="$2b$12$hashedpassword",
+            password_hash="$2b$12$xIKJRSQMr4JFA6/ogklLzuvSqW/oBtPYW4akeAJv.bFoSQG8VddG.",
             role="user",
             status="active",
         )
@@ -85,7 +85,7 @@ class TestAuthenticationService:
         return User(
             username="inactiveuser",
             email="inactive@example.com",
-            password_hash="$2b$12$hashedpassword",
+            password_hash="$2b$12$xIKJRSQMr4JFA6/ogklLzuvSqW/oBtPYW4akeAJv.bFoSQG8VddG.",
             role="user",
             status="suspended",
         )
@@ -104,7 +104,7 @@ class TestAuthenticationService:
                 User(
                     username="newuser",
                     email="new@example.com",
-                    password_hash="$2b$12$hashedpassword",
+                    password_hash="$2b$12$xIKJRSQMr4JFA6/ogklLzuvSqW/oBtPYW4akeAJv.bFoSQG8VddG.",
                 ),
             ),
         )
@@ -697,7 +697,7 @@ class TestServiceIntegration:
                 User(
                     username="testuser",
                     email="test@example.com",
-                    password_hash="$2b$12$hashedpassword",
+                    password_hash="$2b$12$xIKJRSQMr4JFA6/ogklLzuvSqW/oBtPYW4akeAJv.bFoSQG8VddG.",
                 ),
             ),
         )

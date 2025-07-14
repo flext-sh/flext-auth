@@ -236,7 +236,9 @@ class JWTService:
     """JWT service with zero boilerplate using reflection."""
 
     def __init__(
-        self, config: JWTConfig, storage: TokenStorageProtocol | None = None,
+        self,
+        config: JWTConfig,
+        storage: TokenStorageProtocol | None = None,
     ) -> None:
         self.config = config
         self.storage = storage
@@ -272,7 +274,9 @@ class JWTService:
         )
 
     def create_access_token(
-        self, user: User, additional_claims: Claims | None = None,
+        self,
+        user: User,
+        additional_claims: Claims | None = None,
     ) -> TokenString:
         """Create a JWT access token for the user.
 
@@ -329,8 +333,8 @@ class JWTService:
                 # This typically happens in sync contexts like tests
                 pass
 
-        # Ensure token is returned as string
-        return str(token) if isinstance(token, bytes) else token
+        # PyJWT returns string in modern versions
+        return token
 
     def create_refresh_token(self, user: User) -> TokenString:
         """Create a JWT refresh token for the user.
@@ -380,11 +384,13 @@ class JWTService:
                 # This typically happens in sync contexts like tests
                 pass
 
-        # Ensure token is returned as string
-        return str(token) if isinstance(token, bytes) else token
+        # PyJWT returns string in modern versions
+        return token
 
     def create_token_pair(
-        self, user: User, additional_claims: Claims | None = None,
+        self,
+        user: User,
+        additional_claims: Claims | None = None,
     ) -> TokenPair:
         """Create a complete token pair (access and refresh tokens) for the user.
 
@@ -407,7 +413,7 @@ class JWTService:
 
     def _decode_jwt_token(self, token: TokenString) -> Claims:
         key = self._get_verification_key()
-        return jwt.decode(
+        decoded: Claims = jwt.decode(
             token,
             key,
             algorithms=[self.config.algorithm],
@@ -421,6 +427,7 @@ class JWTService:
                 "require_exp": self.config.require_exp,
             },
         )
+        return decoded
 
     def _validate_token_type(self, claims: Claims, expected_type: str) -> None:
         if claims.get("token_type") != expected_type:
@@ -463,7 +470,9 @@ class JWTService:
         raise jwt.InvalidTokenError(msg)
 
     async def verify_token(
-        self, token: TokenString, token_type: str = "access",
+        self,
+        token: TokenString,
+        token_type: str = "access",
     ) -> Claims | None:
         """Verify and decode a JWT token.
 
@@ -531,7 +540,9 @@ class JWTService:
         return self.create_token_pair(user)
 
     def refresh_token(
-        self, _refresh_token: TokenString, user: User,
+        self,
+        _refresh_token: TokenString,
+        user: User,
     ) -> tuple[TokenString, TokenString] | None:
         """Synchronous version of token refresh (simplified).
 
@@ -587,7 +598,8 @@ class JWTService:
 
         """
         try:
-            return jwt.decode(token, options={"verify_signature": False})
+            decoded: dict[str, Any] = jwt.decode(token, options={"verify_signature": False})
+            return decoded
         except (jwt.DecodeError, ValueError, TypeError, KeyError):
             return None
 

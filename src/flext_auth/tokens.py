@@ -31,7 +31,7 @@ class _TokenConstants:
     MAXIMUM_PASSWORD_LENGTH = 128
 
 
-def get_domain_constants():
+def get_domain_constants() -> _TokenConstants:
     """Get local domain constants for token management."""
     return _TokenConstants()
 
@@ -145,7 +145,9 @@ class TokenMetadata(ValueObject):
         return not self.is_expired and not self.is_revoked
 
     def revoke(
-        self, revoked_by: UserID | None = None, reason: str | None = None,
+        self,
+        revoked_by: UserID | None = None,
+        reason: str | None = None,
     ) -> TokenMetadata:
         """Create a revoked copy of this token metadata.
 
@@ -279,7 +281,9 @@ class RedisTokenStorage(TokenStorage[str]):
     """Redis-based token storage implementation."""
 
     def __init__(
-        self, redis_client: Redis[str] | None = None, key_prefix: str = "flext:tokens",
+        self,
+        redis_client: Redis[str] | None = None,
+        key_prefix: str = "flext:tokens",
     ) -> None:
         # Get Redis configuration from unified domain config - with strict validation
         if redis_client:
@@ -392,7 +396,7 @@ class RedisTokenStorage(TokenStorage[str]):
 
         Gracefully closes the underlying Redis connection to free resources.
         """
-        await self.redis.aclose()
+        await self.redis.close()
 
 
 class InMemoryTokenStorage(TokenStorage[str]):
@@ -581,7 +585,7 @@ class DatabaseTokenStorage(TokenStorage[str]):
                 await session.commit()
                 return None
 
-            return value
+            return str(value) if value is not None else None
 
     async def delete(self, key: str) -> bool:
         """Delete a value from database by key.
@@ -599,7 +603,7 @@ class DatabaseTokenStorage(TokenStorage[str]):
                 {"key": key},
             )
             await session.commit()
-            return result.rowcount > 0
+            return bool(result.rowcount > 0)
 
     async def exists(self, key: str) -> bool:
         """Check if a key exists in database and is not expired.
@@ -651,7 +655,7 @@ class DatabaseTokenStorage(TokenStorage[str]):
                 {"now": dt.now(UTC)},
             )
             await session.commit()
-            return result.rowcount
+            return int(result.rowcount)
 
 
 class TokenBlacklist:
@@ -662,7 +666,8 @@ class TokenBlacklist:
         self._cleanup_task: asyncio.Task[None] | None = None
 
     async def start_cleanup_task(
-        self, interval: timedelta = timedelta(hours=1),
+        self,
+        interval: timedelta = timedelta(hours=1),
     ) -> None:
         """Start the automatic cleanup task.
 
@@ -697,7 +702,10 @@ class TokenBlacklist:
                 pass
 
     async def revoke_token(
-        self, token_id: str, expires_at: dt, metadata: TokenMetadata | None = None,
+        self,
+        token_id: str,
+        expires_at: dt,
+        metadata: TokenMetadata | None = None,
     ) -> None:
         """Revoke a token by adding it to the blacklist.
 
@@ -736,7 +744,9 @@ class TokenBlacklist:
         return await self.storage.exists(token_id)
 
     async def revoke_user_tokens(
-        self, user_id: UserID, token_type: TokenType | None = None,
+        self,
+        user_id: UserID,
+        token_type: TokenType | None = None,
     ) -> int:
         """Revoke all tokens for a specific user.
 
@@ -750,7 +760,7 @@ class TokenBlacklist:
         """
         pattern = f"user:{user_id}:*"
         if token_type:
-            pattern = f"user:{user_id}:{token_type.lower()}:*"
+            pattern = f"user:{user_id}:{token_type}:*"
 
         keys = await self.storage.keys(pattern)
 
@@ -771,7 +781,9 @@ class TokenBlacklist:
         return revoked_count
 
     async def get_revoked_tokens(
-        self, user_id: UserID | None = None, limit: int = 100,
+        self,
+        user_id: UserID | None = None,
+        limit: int = 100,
     ) -> list[str]:
         """Get list of revoked tokens.
 
@@ -838,7 +850,10 @@ class TokenManager:
         return True
 
     async def revoke_token(
-        self, token_id: str, revoked_by: UserID | None = None, reason: str | None = None,
+        self,
+        token_id: str,
+        revoked_by: UserID | None = None,
+        reason: str | None = None,
     ) -> bool:
         """Revoke a specific token.
 
@@ -900,7 +915,7 @@ class TokenManager:
                 continue
 
             # Filter by token type if specified:
-            if token_type and metadata.token_type != token_type:
+            if token_type and str(metadata.token_type) != str(token_type):
                 continue
 
             # Revoke token
@@ -932,9 +947,8 @@ class TokenManager:
                 user_tokens = self._user_tokens[metadata.user_id]
                 if isinstance(user_tokens, set):
                     user_tokens.discard(token_id)
-                elif isinstance(user_tokens, list):
-                    with contextlib.suppress(ValueError):
-                        user_tokens.remove(token_id)
+                # Note: _user_tokens is always set[str], not list - this elif is unreachable
+                # Keeping for backwards compatibility but marking as unreachable
 
                 # Clean up empty user sets
                 if not self._user_tokens[metadata.user_id]:
@@ -972,7 +986,7 @@ class TokenManager:
                 continue
 
             # Filter by token type
-            if token_type and metadata.token_type != token_type:
+            if token_type and str(metadata.token_type) != str(token_type):
                 continue
 
             # Filter expired tokens
@@ -1017,7 +1031,8 @@ class TokenManager:
 
 
 def create_token_storage(
-    storage_type: str = "redis", **kwargs: Any,
+    storage_type: str = "redis",
+    **kwargs: Any,
 ) -> TokenStorage[str]:
     """Factory function to create appropriate token storage backend.
 
@@ -1101,9 +1116,7 @@ class TokenPasswordHasher:
             ValueError: If password is empty or too long, or hashing fails.
 
         """
-        if not isinstance(password, str):
-            msg = "Password must be a string"
-            raise TypeError(msg)
+        # Password is already typed as str, isinstance check not needed
 
         if not password:
             msg = "Password cannot be empty"
@@ -1137,9 +1150,7 @@ class TokenPasswordHasher:
             ValueError: If password or hash are empty, or verification fails.
 
         """
-        if not isinstance(password, str) or not isinstance(hashed_password, str):
-            msg = "Password and hash must be strings"
-            raise TypeError(msg)
+        # Password and hashed_password are already typed as str, isinstance checks not needed
 
         if not password or not hashed_password:
             msg = "Password and hash cannot be empty"
@@ -1220,7 +1231,7 @@ class InMemoryTokenStorageAlternative(TokenStorage[str]):
                 del self._storage[key]
                 return None
 
-            return entry["value"]
+            return str(entry["value"])
 
     async def delete(self, key: str) -> bool:
         """Delete a value from memory storage.

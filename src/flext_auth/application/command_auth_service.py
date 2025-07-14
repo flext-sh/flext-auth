@@ -45,7 +45,8 @@ class AuthService:
         )
 
     async def authenticate(
-        self, command: AuthenticateUserCommand,
+        self,
+        command: AuthenticateUserCommand,
     ) -> ServiceResult[dict[str, Any]]:
         """Authenticate user and return tokens."""
         # First authenticate the user
@@ -67,7 +68,8 @@ class AuthService:
         )
 
     async def validate_token(
-        self, command: ValidateTokenCommand,
+        self,
+        command: ValidateTokenCommand,
     ) -> ServiceResult[dict[str, Any]]:
         """Validate a token."""
         # First validate with JWT service
@@ -86,7 +88,8 @@ class AuthService:
         return ServiceResult.success(token_data)
 
     async def change_password(
-        self, command: ChangePasswordCommand,
+        self,
+        command: ChangePasswordCommand,
     ) -> ServiceResult[None]:
         """Change user password."""
         return await self.user_service.change_password(

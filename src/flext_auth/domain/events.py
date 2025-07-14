@@ -15,7 +15,7 @@ from flext_core.domain.pydantic_base import DomainEvent
 if TYPE_CHECKING:
     from datetime import datetime
 
-    from flext_auth.domain.value_objects import SecurityRole
+    from flext_auth.domain.value_objects import UserRole as SecurityRole
     from flext_auth.domain.value_objects import UserEmail
     from flext_auth.domain.value_objects import Username
     from flext_core.domain.types import EntityId
@@ -30,7 +30,8 @@ class UserCreated(DomainEvent):
     email: UserEmail = Field(..., description="User email")
     created_by: UserId | None = Field(None, description="User who created this user")
     initial_roles: list[SecurityRole] = Field(
-        default_factory=list, description="Initial roles",
+        default_factory=list,
+        description="Initial roles",
     )
 
 

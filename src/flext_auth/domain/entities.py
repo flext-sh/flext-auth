@@ -29,17 +29,20 @@ class User(DomainEntity):
     status: str = Field(default="active", description="User status")
     email_verified: bool = Field(default=False, description="Email verification status")
     email_verified_at: datetime | None = Field(
-        None, description="Email verification timestamp",
+        None,
+        description="Email verification timestamp",
     )
     last_login_at: datetime | None = Field(None, description="Last login timestamp")
     last_login_ip: str | None = Field(None, description="Last login IP address")
     login_attempts: int = Field(default=0, description="Failed login attempts")
     locked_until: datetime | None = Field(None, description="Account lock expiry")
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC), description="Creation timestamp",
+        default_factory=lambda: datetime.now(UTC),
+        description="Creation timestamp",
     )
     updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC), description="Last update timestamp",
+        default_factory=lambda: datetime.now(UTC),
+        description="Last update timestamp",
     )
 
     def is_active(self) -> bool:
@@ -48,7 +51,18 @@ class User(DomainEntity):
 
     def is_locked(self) -> bool:
         """Check if user account is locked."""
-        return self.locked_until is not None and self.locked_until > datetime.now(UTC)
+        if self.locked_until is None:
+            return False
+        
+        current_time = datetime.now(UTC)
+        
+        # Handle timezone-naive datetime by assuming UTC
+        if self.locked_until.tzinfo is None:
+            locked_until_utc = self.locked_until.replace(tzinfo=UTC)
+        else:
+            locked_until_utc = self.locked_until
+            
+        return locked_until_utc > current_time
 
     def is_email_verified(self) -> bool:
         """Check if email is verified."""
@@ -105,10 +119,12 @@ class Role(DomainEntity):
     permissions: list[str] = Field(default_factory=list, description="Role permissions")
     is_system_role: bool = Field(default=False, description="System role flag")
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC), description="Creation timestamp",
+        default_factory=lambda: datetime.now(UTC),
+        description="Creation timestamp",
     )
     updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC), description="Last update timestamp",
+        default_factory=lambda: datetime.now(UTC),
+        description="Last update timestamp",
     )
 
     def add_permission(self, permission: str) -> None:
@@ -140,10 +156,12 @@ class Session(DomainEntity):
     status: str = Field(default="active", description="Session status")
     expires_at: datetime = Field(..., description="Session expiration")
     last_activity_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC), description="Last activity timestamp",
+        default_factory=lambda: datetime.now(UTC),
+        description="Last activity timestamp",
     )
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC), description="Creation timestamp",
+        default_factory=lambda: datetime.now(UTC),
+        description="Creation timestamp",
     )
 
     @classmethod
@@ -200,7 +218,8 @@ class Permission(DomainEntity):
     resource: str = Field(..., description="Resource this permission applies to")
     action: str = Field(..., description="Action this permission allows")
     created_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC), description="Creation timestamp",
+        default_factory=lambda: datetime.now(UTC),
+        description="Creation timestamp",
     )
 
     @property

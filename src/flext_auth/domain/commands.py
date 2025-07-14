@@ -3,64 +3,73 @@
 Using flext-core patterns - no duplication.
 """
 
+from dataclasses import dataclass, field
 from uuid import UUID
 
 from pydantic import EmailStr
-from pydantic import Field
 
 
+@dataclass
 class CreateUserCommand:
     """Command to create a new user."""
 
-    username: str = Field(..., min_length=3, max_length=50)
+    username: str
     email: EmailStr
-    password = Field(..., min_length=8)
-    roles: list[str] = Field(default_factory=list)
+    password: str
+    roles: list[str] = field(default_factory=list)
 
 
+@dataclass
 class AuthenticateUserCommand:
     """Command to authenticate a user."""
 
     username: str
-    password = None
+    password: str
     user_agent: str | None = None
 
 
+@dataclass
 class GenerateTokenCommand:
     """Command to generate a token."""
 
     user_id: UUID
-    token_type = "access"  # access, refresh
+    token_type: str = "access"  # access, refresh
     expires_in: int | None = None  # seconds
 
 
+@dataclass
 class ValidateTokenCommand:
     """Command to validate a token."""
 
     token: str
-    token_type = "access"
+    token_type: str = "access"
 
 
+@dataclass
 class RefreshTokenCommand:
     """Command to refresh an access token."""
 
     refresh_token: str
 
 
+@dataclass
 class RevokeTokenCommand:
     """Command to revoke a token."""
 
     token: str
-    reason = None
+    reason: str | None = None
 
 
+@dataclass
 class ChangePasswordCommand:
     """Command to change user password."""
 
     user_id: UUID
-    current_password = Field(..., min_length=8)
+    current_password: str
+    new_password: str
 
 
+@dataclass
 class AssignRoleCommand:
     """Command to assign role to user."""
 
