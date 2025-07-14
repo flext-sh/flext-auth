@@ -418,10 +418,12 @@ class TokenService:
         token_repository: TokenRepository,
         token_generator: TokenGenerator,
         event_bus: EventBus,
+        user_repository: UserRepository,
     ) -> None:
         self.token_repository = token_repository
         self.token_generator = token_generator
         self.event_bus = event_bus
+        self.user_repository = user_repository
 
     async def create_token(
         self,
