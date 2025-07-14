@@ -68,14 +68,6 @@ Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
 flext-auth = "flext_auth.cli_new:cli"
 flext-auth-legacy = "flext_auth.cli:main"
 
-[tool.poetry]
-name = "flext-auth"
-version = "0.7.0"
-description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
-authors = ["FLEXT Team <team@flext.sh>"]
-readme = "README.md"
-packages = [{ include = "flext_auth", from = "src" }]
-
 [tool.poetry.dependencies]
 python = ">=3.13,<3.14"
 
