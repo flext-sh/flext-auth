@@ -25,7 +25,7 @@ class TestPasswordHasher:
     def test_password_hasher_creation(self, hasher: PasswordHasher) -> None:
         """Test PasswordHasher can be created."""
         assert hasher is not None
-        assert hasattr(hasher, "argon2_hasher")
+        assert hasattr(hasher, "context")
 
     def test_hash_password(self, hasher: PasswordHasher) -> None:
         """Test password hashing."""
@@ -138,10 +138,9 @@ class TestTokenGenerator:
         secret = "test_secret"
         algorithm = "HS256"
 
-        with pytest.raises(
-            (ValueError, Exception),
-        ):  # JWT verification should raise exception
-            generator.verify_jwt("invalid.jwt.token", secret, algorithm)
+        # JWT verification should return None for invalid tokens
+        result = generator.verify_jwt("invalid.jwt.token", secret, algorithm)
+        assert result is None
 
 
 class TestSecurityManager:

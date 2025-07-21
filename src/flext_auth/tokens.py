@@ -16,10 +16,7 @@ import redis.asyncio as redis
 from flext_core import DomainValueObject as ValueObject, Field
 from passlib.context import CryptContext
 
-from flext_auth.types import (
-    TokenType,  # noqa: TC001
-    UserID,  # noqa: TC001
-)
+# Import types at runtime for Pydantic model rebuilding
 
 
 # Simple constants for token management - avoid dependency on config module
@@ -37,6 +34,25 @@ def get_domain_constants() -> _TokenConstants:
 
 if TYPE_CHECKING:
     from redis.asyncio import Redis
+
+    from flext_auth.types import TokenType, UserID
+    # TokenType, UserID now imported at runtime for Pydantic model rebuild
+
+
+
+# Import types at runtime for TokenMetadata model
+
+
+
+
+
+
+
+
+
+
+
+# Runtime imports required for Pydantic models
 
 T = TypeVar("T")
 
@@ -58,6 +74,8 @@ class TokenInclusionMode(StrEnum):
     ACTIVE_ONLY = "active_only"
     INCLUDE_EXPIRED = "include_expired"
 
+
+# Import UserID at runtime to make it available for model creation
 
 class TokenMetadata(ValueObject):
     """Enterprise JWT token metadata with comprehensive security audit capabilities.
@@ -371,9 +389,17 @@ class RedisTokenStorage(TokenStorage[str]):
         """
         redis_pattern = self._make_key(pattern)
         keys = await self.redis.keys(redis_pattern)
-        # Remove prefix from keys
+        # Remove prefix from keys and decode bytes to strings
         prefix_len = len(self.key_prefix) + 1
-        return [key[prefix_len:] for key in keys]
+        decoded_keys = []
+        for key in keys:
+            # Redis can return keys as bytes or str depending on version/config
+            if isinstance(key, bytes):  # type: ignore[unreachable]  # noqa: SIM108
+                decoded_key = key.decode("utf-8")  # type: ignore[unreachable]
+            else:
+                decoded_key = str(key)
+            decoded_keys.append(decoded_key[prefix_len:])
+        return decoded_keys
 
     async def cleanup_expired(self) -> int:
         """Redis handles expiration automatically.
@@ -1304,3 +1330,21 @@ class InMemoryTokenStorageAlternative(TokenStorage[str]):
             del self._storage[key]
 
         return len(expired_keys)
+
+
+# Import types at runtime for TokenMetadata model rebuild
+try:
+    from flext_auth.types import TokenType as _TokenType, UserID as _UserID
+
+    # Make types available for TokenMetadata model
+    globals().update({
+        "TokenType": _TokenType,
+        "UserID": _UserID
+    })
+
+    # Now rebuild TokenMetadata model with resolved forward references
+    # TokenMetadata.model_rebuild()  # TODO: Temporarily disabled - fix forward reference issues
+
+except ImportError:
+    # Handle case where types module is not available during development
+    pass

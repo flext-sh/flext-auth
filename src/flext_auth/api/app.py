@@ -20,6 +20,7 @@ from flext_auth.api.models import (
     CreateUserRequest,
     UserResponse,
 )
+from flext_auth.application.command_auth_service import AuthService
 from flext_auth.domain.commands import (
     AuthenticateUserCommand,
     ChangePasswordCommand,
@@ -27,10 +28,13 @@ from flext_auth.domain.commands import (
     ValidateTokenCommand,
 )
 
+# Type alias for cleaner annotations
+AuthServiceType = AuthService
+
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
-    from flext_auth.application.command_auth_service import AuthService
+
 
 logger = get_logger(__name__)
 
@@ -75,7 +79,7 @@ async def get_current_user(
 @app.post("/auth/register")
 async def register(
     request: CreateUserRequest,
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+    auth_service: Annotated[AuthServiceType, Depends(get_auth_service)],
 ) -> UserResponse:
     """Register a new user.
 
@@ -115,7 +119,7 @@ async def register(
 async def login(
     request: AuthenticateRequest,
     req: Request,
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+    auth_service: Annotated[AuthServiceType, Depends(get_auth_service)],
 ) -> AuthenticateResponse:
     """Authenticate user and return tokens.
 
@@ -152,7 +156,7 @@ async def login(
 async def change_password(
     request: ChangePasswordRequest,
     current_user: Annotated[dict[str, Any], Depends(get_current_user)],
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
+    auth_service: Annotated[AuthServiceType, Depends(get_auth_service)],
 ) -> dict[str, str]:
     """Change user password.
 

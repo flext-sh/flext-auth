@@ -61,7 +61,7 @@ class AuthService:
             if not user_result.is_success:
                 return ServiceResult.fail("Invalid username or password")
 
-            user = user_result.value
+            user = user_result.data
 
             # Check if user can login
             if not user.is_active():
@@ -114,12 +114,12 @@ class AuthService:
             if not user_result.is_success:
                 return ServiceResult.fail("User not found")
 
-            user = user_result.value
+            user = user_result.data
 
             # Invalidate session
             session_result = await self.session_repository.get_by_id(session_id)
             if session_result.is_success:
-                session = session_result.value
+                session = session_result.data
                 session.revoke()
                 await self.session_repository.save(session)
 
@@ -144,7 +144,9 @@ class AuthService:
             if not token_result.is_success:
                 return ServiceResult.fail("Invalid token")
 
-            token = token_result.value
+            token = token_result.data
+            if token is None:
+                return ServiceResult.fail("Token not found")
 
             # Check if token is valid
             if not token.is_valid:
@@ -214,7 +216,7 @@ class AuthService:
             if not user_result.is_success:
                 return ServiceResult.fail("User not found")
 
-            user = user_result.value
+            user = user_result.data
 
             # Verify current password
             password_valid = await self.password_hasher.verify_password(

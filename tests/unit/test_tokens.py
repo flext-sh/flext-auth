@@ -381,8 +381,6 @@ class TestTokenBlacklist:
         await blacklist.revoke_token("token2", metadata2.expires_at, metadata2)
 
         # Revoke user tokens by type
-        from flext_auth.types import TokenType
-
         await blacklist.revoke_user_tokens(user_id, TokenType.ACCESS)
 
         # Verify tokens are revoked

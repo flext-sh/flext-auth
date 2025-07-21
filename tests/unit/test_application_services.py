@@ -108,7 +108,6 @@ class TestAuthService:
 
         # Debug output
         if not result.is_success:
-            # Use pytest's built-in assertion for better error reporting
             pass
         assert result.is_success
         assert result.data is not None

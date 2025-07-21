@@ -214,7 +214,7 @@ class TestValidateTokenCommand:
         result = runner.invoke(validate_token, ["--help"])
 
         assert result.exit_code == 0
-        assert "Validate JWT token." in result.output
+        assert "Validate a JWT token." in result.output
         assert "TOKEN" in result.output
 
 

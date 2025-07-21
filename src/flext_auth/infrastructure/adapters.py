@@ -27,12 +27,6 @@ from flext_auth.infrastructure.abstractions import (
 if TYPE_CHECKING:
     from pathlib import Path
 
-    from flext_auth.infrastructure.abstractions import (
-        LoggerInterface,
-        TimeProvider,
-        UUIDGenerator,
-    )
-
 
 class EnvironmentConfigurationAdapter(ConfigurationAdapter):
     """Configuration adapter that reads from environment variables."""

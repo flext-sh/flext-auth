@@ -640,19 +640,21 @@ class TestEnterpriseSessionManager:
             assert create_result.data is not None
             session_id = create_result.data.session_id
 
+            # Capture original expiry before extension (in case object is modified in place)
+            original_expiry = create_result.data.expires_at
+            assert original_expiry is not None
+
             # Extend session
-            before_extension = datetime.now(UTC)
             result = await manager.extend_session(session_id, extension_duration)
-            after_extension = datetime.now(UTC)
 
             assert result.is_success
             assert result.data is not None
 
-            # The new expiry should be approximately now + extension_duration
-            expected_expiry_min = before_extension + extension_duration
-            expected_expiry_max = after_extension + extension_duration
+            # The new expiry should be approximately original_expiry + extension_duration
+            assert original_expiry is not None
+            expected_expiry = original_expiry + extension_duration
             assert result.data.expires_at is not None
-            assert expected_expiry_min <= result.data.expires_at <= expected_expiry_max
+            assert result.data.expires_at == expected_expiry
 
             # Check security event was logged
             security_calls = [

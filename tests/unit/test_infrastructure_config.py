@@ -46,7 +46,7 @@ class TestAuthConfig:
         assert config.session_expire_hours == 24
         assert config.session_extend_on_activity is True
 
-        # Database settings
+        # Database settings - actual default configuration
         assert config.database_url == "postgresql://localhost:5432/flext_auth"
         assert config.database_pool_size == 10
         assert config.database_max_overflow == 20

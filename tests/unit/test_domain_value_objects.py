@@ -278,7 +278,7 @@ class TestPlainPassword:
 
     def test_password_number_requirement(self) -> None:
         """Test password number requirement."""
-        with pytest.raises(ValueError, match="at least one number"):
+        with pytest.raises(ValueError, match="at least one digit"):
             PlainPassword(value="NoNumbers!")
 
     def test_password_special_char_requirement(self) -> None:
@@ -360,7 +360,7 @@ class TestAuthToken:
         assert token.value == valid_token
 
         # Invalid format
-        with pytest.raises(ValueError, match="Invalid token format"):
+        with pytest.raises(ValueError, match="Invalid auth token format"):
             AuthToken(value="invalid token!", token_type="access")
 
     def test_auth_token_type_validation(self) -> None:
@@ -372,7 +372,8 @@ class TestAuthToken:
             assert token.token_type == token_type
 
         # Invalid type
-        with pytest.raises(ValueError, match="Token type must be one of"):
+        from pydantic import ValidationError
+        with pytest.raises(ValidationError, match="Invalid token type"):
             AuthToken(value="validtoken", token_type="invalid")
 
     def test_auth_token_is_secure_length(self) -> None:

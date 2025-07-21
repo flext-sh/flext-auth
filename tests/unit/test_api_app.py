@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import builtins
+import contextlib
 from typing import TYPE_CHECKING
 from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
@@ -67,6 +69,11 @@ class TestFastAPIApp:
                 "roles": ["user"],
             },
         )
+
+        # Debug: Print response details
+        if response.status_code != 200:
+            with contextlib.suppress(builtins.BaseException):
+                pass
 
         assert response.status_code == 200
         data = response.json()

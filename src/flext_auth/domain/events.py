@@ -6,30 +6,22 @@ Clean architecture with domain events for business logic orchestration.
 
 from __future__ import annotations
 
-from datetime import datetime  # noqa: TC003
 from typing import TYPE_CHECKING
 
 from flext_core import Field
 
 if TYPE_CHECKING:
-    from flext_core.domain.types import EntityId, UserId
-else:
-    # Runtime imports needed for model_rebuild()
-    pass
+    from datetime import datetime
 
-if TYPE_CHECKING:
+    from flext_core.domain.types import EntityId, UserId
+
     from flext_auth.domain.value_objects import (
         UserEmail,
         Username,
         UserRole as SecurityRole,
     )
-else:
-    # Runtime imports needed for model_rebuild()
-    from flext_auth.domain.value_objects import (
-        UserEmail,  # noqa: TC001
-        Username,  # noqa: TC001
-        UserRole as SecurityRole,  # noqa: TC001
-    )
+
+
 
 from flext_core.domain.pydantic_base import DomainEvent
 
@@ -130,5 +122,20 @@ class TokenRevoked(DomainEvent):
     revocation_reason: str = Field(..., description="Reason for revocation")
 
 
-# NOTE: model_rebuild() calls removed to prevent import circular dependency issues
-# Pydantic will resolve forward references automatically when needed
+# TODO: Fix Pydantic model rebuild issues - temporarily disabled to fix import cycles
+# Import types at runtime for model rebuild
+# if not TYPE_CHECKING:
+#     from datetime import datetime
+#     from flext_core.domain.types import EntityId, UserId
+#     from flext_auth.domain.value_objects import UserEmail, UserRole, Username
+#
+#     # Rebuild all event models to resolve forward references
+#     UserCreated.model_rebuild()
+#     UserLoggedIn.model_rebuild()
+#     UserLoggedOut.model_rebuild()
+#     UserPasswordChanged.model_rebuild()
+#     UserRoleChanged.model_rebuild()
+#     UserAccountLocked.model_rebuild()
+#     SessionCreated.model_rebuild()
+#     TokenIssued.model_rebuild()
+#     TokenRevoked.model_rebuild()

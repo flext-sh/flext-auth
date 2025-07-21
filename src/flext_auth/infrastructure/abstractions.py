@@ -149,11 +149,15 @@ class DatabaseInterface(Protocol):
         """Execute database query."""
         ...
 
-    async def fetch_one(self, query: str, params: dict[str, Any] | None = None) -> dict[str, Any] | None:
+    async def fetch_one(
+        self, query: str, params: dict[str, Any] | None = None,
+    ) -> dict[str, Any] | None:
         """Fetch one record."""
         ...
 
-    async def fetch_all(self, query: str, params: dict[str, Any] | None = None) -> list[dict[str, Any]]:
+    async def fetch_all(
+        self, query: str, params: dict[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
         """Fetch all records."""
         ...
 
@@ -231,6 +235,7 @@ class UUIDGenerator(Protocol):
 
 
 # Base classes for adapter implementations
+
 
 class ConfigurationAdapter(ABC):
     """Base class for configuration adapters."""

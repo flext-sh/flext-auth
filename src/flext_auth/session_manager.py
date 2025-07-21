@@ -44,7 +44,8 @@ class SessionMetadata:
         self.device_info = device_info or {}
         self.created_at = created_at or datetime.now(UTC)
         self.last_accessed = last_accessed or self.created_at
-        self.expires_at = expires_at
+        # Default session expiration: 24 hours from creation
+        self.expires_at = expires_at or (self.created_at + timedelta(hours=24))
         self.roles: set[str] = set()
         self.permissions: set[str] = set()
 
@@ -365,7 +366,9 @@ class EnterpriseSessionManager:
                 metadata={
                     "session_id": session_id,
                     "extension_duration": duration.total_seconds(),
-                    "new_expiry": session_metadata.expires_at.isoformat() if session_metadata.expires_at else None,
+                    "new_expiry": session_metadata.expires_at.isoformat()
+                    if session_metadata.expires_at
+                    else None,
                 },
             )
 

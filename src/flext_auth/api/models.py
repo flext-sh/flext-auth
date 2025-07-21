@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import datetime  # noqa: TC003
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from flext_core import Field
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class CreateUserRequest(BaseModel):

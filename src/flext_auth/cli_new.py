@@ -36,6 +36,7 @@ def info() -> None:
 @click.argument("email")
 @click.option("--password", help="Password (will prompt if not provided)")
 def create_user(username: str, email: str, password: str | None) -> None:
+    """Create a new user."""
     # Get password securely if not provided
     if not password:
         password = getpass.getpass("Password: ")

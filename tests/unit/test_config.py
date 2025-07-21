@@ -41,6 +41,7 @@ class TestAuthConfigRedisSettings:
     def test_redis_settings_creation(self) -> None:
         """Test Redis settings can be created with defaults."""
         settings = AuthConfig()
+        # redis_url uses database 0 as the default
         assert settings.redis_url == "redis://localhost:6379/0"
         assert settings.redis_pool_size == 10
 
@@ -63,9 +64,11 @@ class TestAuthSettings:
         assert settings.project_name == "flext-auth"
         assert settings.project_version == "0.1.0"
         assert settings.environment == "development"
+        # debug defaults to False (use create_development_auth_config() for debug=True)
         assert settings.debug is False
         # JWT and Redis settings are now part of the same config
         assert settings.jwt_algorithm == "HS256"
+        # redis_url uses database 0 by default
         assert settings.redis_url == "redis://localhost:6379/0"
         assert settings.database_url is not None
 

@@ -270,9 +270,7 @@ class TestAuthenticationService:
         # Verify result - locked account should FAIL authentication
         assert not result.is_success
         assert result.error is not None
-        assert (
-            "Account is locked due to too many failed attempts" in result.error
-        )
+        assert "Account is locked due to too many failed attempts" in result.error
 
     async def test_authenticate_user_inactive_account(
         self,
@@ -366,9 +364,7 @@ class TestAuthenticationService:
         # Verify result - should be account locked message
         assert not result.is_success
         assert result.error is not None
-        assert (
-            "Account is locked due to too many failed attempts" in result.error
-        )
+        assert "Account is locked due to too many failed attempts" in result.error
 
         # Verify failed login was recorded
         mock_user_repo.update.assert_called_once()

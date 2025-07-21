@@ -39,12 +39,12 @@ class TestAuthContainer:
     def test_config_provider_with_environment_variables(self) -> None:
         """Test configuration provider with environment variables."""
         env_vars = {
-            "JWT_SECRET_KEY": "test-env-secret-key",
-            "JWT_ALGORITHM": "RS256",
-            "JWT_ACCESS_TOKEN_EXPIRE_MINUTES": "60",
-            "BCRYPT_ROUNDS": "14",
-            "DATABASE_URL": "postgresql://test:test@localhost/test_auth",
-            "REDIS_URL": "redis://localhost:6379/1",
+            "FLEXT_AUTH_JWT_SECRET_KEY": "test-env-secret-key",
+            "FLEXT_AUTH_JWT_ALGORITHM": "RS256",
+            "FLEXT_AUTH_JWT_ACCESS_TOKEN_EXPIRE_MINUTES": "60",
+            "FLEXT_AUTH_BCRYPT_ROUNDS": "14",
+            "FLEXT_AUTH_DATABASE_URL": "postgresql://test:test@localhost/test_auth",
+            "FLEXT_AUTH_REDIS_URL": "redis://localhost:6379/1",
         }
 
         # Store original values
@@ -213,12 +213,12 @@ class TestAuthContainer:
     def test_smtp_configuration(self) -> None:
         """Test SMTP configuration from environment variables."""
         env_vars = {
-            "SMTP_HOST": "smtp.gmail.com",
-            "SMTP_PORT": "587",
-            "SMTP_USERNAME": "user@gmail.com",
-            "SMTP_PASSWORD": "password123",
-            "SMTP_USE_TLS": "true",
-            "FROM_EMAIL": "noreply@example.com",
+            "FLEXT_AUTH_SMTP_HOST": "smtp.gmail.com",
+            "FLEXT_AUTH_SMTP_PORT": "587",
+            "FLEXT_AUTH_SMTP_USERNAME": "user@gmail.com",
+            "FLEXT_AUTH_SMTP_PASSWORD": "password123",
+            "FLEXT_AUTH_SMTP_USE_TLS": "true",
+            "FLEXT_AUTH_FROM_EMAIL": "noreply@example.com",
         }
 
         original_values = {}
@@ -278,20 +278,20 @@ class TestAuthContainerIntegration:
     def test_container_with_production_config(self) -> None:
         """Test container with production-like configuration."""
         env_vars = {
-            "JWT_SECRET_KEY": "production-secret-key-with-sufficient-length",
-            "JWT_ALGORITHM": "RS256",
-            "JWT_ACCESS_TOKEN_EXPIRE_MINUTES": "15",
-            "JWT_REFRESH_TOKEN_EXPIRE_DAYS": "30",
-            "BCRYPT_ROUNDS": "14",
-            "PASSWORD_MIN_LENGTH": "12",
-            "REQUIRE_EMAIL_VERIFICATION": "true",
-            "DATABASE_URL": "postgresql://prod_user:prod_pass@db.example.com:5432/auth_prod",
-            "REDIS_URL": "redis://redis.example.com:6379/0",
-            "SMTP_HOST": "smtp.sendgrid.net",
-            "SMTP_PORT": "587",
-            "SMTP_USERNAME": "apikey",
-            "SMTP_PASSWORD": "SG.api_key_here",
-            "FROM_EMAIL": "noreply@company.com",
+            "FLEXT_AUTH_JWT_SECRET_KEY": "production-secret-key-with-sufficient-length",
+            "FLEXT_AUTH_JWT_ALGORITHM": "RS256",
+            "FLEXT_AUTH_JWT_ACCESS_TOKEN_EXPIRE_MINUTES": "15",
+            "FLEXT_AUTH_JWT_REFRESH_TOKEN_EXPIRE_DAYS": "30",
+            "FLEXT_AUTH_PASSWORD_BCRYPT_ROUNDS": "14",
+            "FLEXT_AUTH_PASSWORD_MIN_LENGTH": "12",
+            "FLEXT_AUTH_REQUIRE_EMAIL_VERIFICATION": "true",
+            "FLEXT_AUTH_DATABASE_URL": "postgresql://prod_user:prod_pass@db.example.com:5432/auth_prod",
+            "FLEXT_AUTH_REDIS_URL": "redis://redis.example.com:6379/0",
+            "FLEXT_AUTH_SMTP_HOST": "smtp.sendgrid.net",
+            "FLEXT_AUTH_SMTP_PORT": "587",
+            "FLEXT_AUTH_SMTP_USERNAME": "apikey",
+            "FLEXT_AUTH_SMTP_PASSWORD": "SG.api_key_here",
+            "FLEXT_AUTH_FROM_EMAIL": "noreply@company.com",
         }
 
         original_values = {}
@@ -306,7 +306,7 @@ class TestAuthContainerIntegration:
             # Verify production-appropriate settings
             assert config.jwt_algorithm == "RS256"
             assert config.jwt_access_token_expire_minutes == 15
-            assert config.bcrypt_rounds == 14
+            assert config.password_bcrypt_rounds == 14
             assert config.password_min_length == 12
             assert config.require_email_verification is True
             assert "prod" in config.database_url
@@ -323,16 +323,16 @@ class TestAuthContainerIntegration:
     def test_container_with_development_config(self) -> None:
         """Test container with development-friendly configuration."""
         env_vars = {
-            "JWT_SECRET_KEY": "dev-secret-key-for-local-testing",
-            "JWT_ALGORITHM": "HS256",
-            "JWT_ACCESS_TOKEN_EXPIRE_MINUTES": "60",
-            "BCRYPT_ROUNDS": "4",
-            "PASSWORD_MIN_LENGTH": "6",
-            "REQUIRE_EMAIL_VERIFICATION": "false",
-            "DATABASE_URL": "postgresql://dev:dev@localhost:5432/auth_dev",
-            "REDIS_URL": "redis://localhost:6379/1",
-            "SMTP_HOST": "localhost",
-            "FROM_EMAIL": "dev@localhost",
+            "FLEXT_AUTH_JWT_SECRET_KEY": "dev-secret-key-for-local-testing",
+            "FLEXT_AUTH_JWT_ALGORITHM": "HS256",
+            "FLEXT_AUTH_JWT_ACCESS_TOKEN_EXPIRE_MINUTES": "60",
+            "FLEXT_AUTH_BCRYPT_ROUNDS": "4",
+            "FLEXT_AUTH_PASSWORD_MIN_LENGTH": "6",
+            "FLEXT_AUTH_REQUIRE_EMAIL_VERIFICATION": "false",
+            "FLEXT_AUTH_DATABASE_URL": "postgresql://dev:dev@localhost:5432/auth_dev",
+            "FLEXT_AUTH_REDIS_URL": "redis://localhost:6379/1",
+            "FLEXT_AUTH_SMTP_HOST": "localhost",
+            "FLEXT_AUTH_FROM_EMAIL": "dev@localhost",
         }
 
         original_values = {}

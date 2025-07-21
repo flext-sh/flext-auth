@@ -59,7 +59,9 @@ def create_jwt_service_from_config(config: AuthConfig) -> JWTService:
         def get_bool(self, key: str, default: bool | None = None) -> bool:
             return default or False
 
-        def get_timedelta(self, key: str, default: timedelta | None = None) -> timedelta:
+        def get_timedelta(
+            self, key: str, default: timedelta | None = None,
+        ) -> timedelta:
             return default or timedelta(seconds=0)
 
     config_adapter = MockConfigurationAdapter(config)
@@ -343,7 +345,7 @@ QIDAQAB
         )
         service = create_jwt_service_from_config(config)
 
-        with pytest.raises(ValueError, match="Private key not configured"):
+        with pytest.raises(ValueError, match="Private key is not configured"):
             service.create_token(
                 user_id="user123",
                 username="testuser",
@@ -431,7 +433,7 @@ QIDAQAB
         )
         service = create_jwt_service_from_config(config)
 
-        with pytest.raises(ValueError, match="Public key not configured"):
+        with pytest.raises(ValueError, match="Public key is not configured"):
             service.decode_token("some.jwt.token")
 
     @patch("flext_auth.infrastructure.jwt.Path.read_text")

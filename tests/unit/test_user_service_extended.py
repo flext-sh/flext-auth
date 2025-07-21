@@ -509,22 +509,26 @@ class TestSecurityAuditorImplExtended:
         """Test getting failed login attempts filtered by user ID."""
         auditor = SecurityAuditorImpl()
 
+        # Create specific user IDs
+        user1_id = uuid4()
+        user2_id = uuid4()
+
         # Add events for different users
         await auditor.log_security_event(
             event_type=SecurityEvent.LOGIN_FAILURE,
-            user_id=uuid4(),
+            user_id=user1_id,
             ip_address="192.168.1.100",
             user_agent="Mozilla/5.0",
         )
         await auditor.log_security_event(
             event_type=SecurityEvent.LOGIN_FAILURE,
-            user_id=uuid4(),
+            user_id=user2_id,
             ip_address="192.168.1.100",
             user_agent="Mozilla/5.0",
         )
 
         # Get attempts for specific user
-        count = await auditor.get_failed_login_attempts(user_id=uuid4())
+        count = await auditor.get_failed_login_attempts(user_id=user1_id)
         assert count == 1
 
     @pytest.mark.asyncio

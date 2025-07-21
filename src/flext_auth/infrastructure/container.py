@@ -5,17 +5,15 @@ Simple dependency injection pattern for clean architecture.
 
 from __future__ import annotations
 
-import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     # Use real implementations
+    from flext_auth.domain.repositories import UserRepository
     from flext_auth.infrastructure.config import AuthConfig
     from flext_auth.interfaces import (
-        JWTService,
         PasswordHasher,
-        TokenManager,
-        UserRepository,
+        SecurityAuditor,
     )
 
 
@@ -37,15 +35,27 @@ class AuthContainer:
 
             # Create AuthConfig from environment using the adapter
             auth_config = AuthConfig(
-                jwt_secret_key=env_config.get_string("jwt_secret_key", "dev-secret-key"),
+                jwt_secret_key=env_config.get_string(
+                    "jwt_secret_key", "dev-secret-key",
+                ),
                 jwt_algorithm=env_config.get_string("jwt_algorithm", "HS256"),
-                jwt_access_token_expire_minutes=env_config.get_int("jwt_access_token_expire_minutes", 30),
-                jwt_refresh_token_expire_days=env_config.get_int("jwt_refresh_token_expire_days", 7),
+                jwt_access_token_expire_minutes=env_config.get_int(
+                    "jwt_access_token_expire_minutes", 30,
+                ),
+                jwt_refresh_token_expire_days=env_config.get_int(
+                    "jwt_refresh_token_expire_days", 7,
+                ),
                 bcrypt_rounds=env_config.get_int("bcrypt_rounds", 12),
                 password_min_length=env_config.get_int("password_min_length", 8),
-                require_email_verification=env_config.get_bool("require_email_verification", True),
-                database_url=env_config.get_string("database_url", "postgresql://localhost/flext_auth"),
-                redis_url=env_config.get_string("redis_url", "redis://localhost:6379/0"),
+                require_email_verification=env_config.get_bool(
+                    "require_email_verification", True,
+                ),
+                database_url=env_config.get_string(
+                    "database_url", "postgresql://localhost/flext_auth",
+                ),
+                redis_url=env_config.get_string(
+                    "redis_url", "redis://localhost:6379/0",
+                ),
                 smtp_host=env_config.get_string("smtp_host", "localhost"),
                 smtp_port=env_config.get_int("smtp_port", 587),
                 smtp_username=env_config.get_string("smtp_username", ""),
@@ -55,7 +65,8 @@ class AuthContainer:
             )
 
             self._instances["config"] = auth_config
-        return self._instances["config"]
+
+        return self._instances["config"]  # type: ignore[return-value]
 
     # Repository properties - Real implementations only
     @property
@@ -120,7 +131,7 @@ class AuthContainer:
         return self._instances["password_service"]  # type: ignore[return-value]
 
     @property
-    def token_service(self) -> JWTService:
+    def token_service(self) -> Any:
         """Get JWT token service implementation."""
         if "token_service" not in self._instances:
             from flext_auth.infrastructure.adapters import (
@@ -134,7 +145,7 @@ class AuthContainer:
 
             # Create dependency adapters
             jwt_library = create_jwt_adapter()
-            config = create_environment_config("JWT_")
+            config = create_environment_config("FLEXT_AUTH_")
             filesystem = create_filesystem()
             time_provider = create_time_provider()
             logger = create_logger("flext_auth.jwt")
@@ -147,15 +158,15 @@ class AuthContainer:
                 time_provider=time_provider,
                 logger=logger,
             )
-        return self._instances["token_service"]  # type: ignore[return-value]
+        return self._instances["token_service"]
 
     @property
-    def jwt_service(self) -> JWTService:
+    def jwt_service(self) -> Any:
         """Get JWT service implementation."""
         return self.token_service
 
     @property
-    def token_manager(self) -> TokenManager:
+    def token_manager(self) -> Any:
         """Get token manager implementation."""
         if "token_manager" not in self._instances:
             from flext_auth.infrastructure.adapters import (
@@ -176,7 +187,7 @@ class AuthContainer:
                 redis_client=redis_adapter.client,  # Use public property
                 jwt_service=jwt_service,
             )
-        return self._instances["token_manager"]  # type: ignore[return-value]
+        return self._instances["token_manager"]
 
     @property
     def token_storage(self) -> object:
@@ -200,6 +211,15 @@ class AuthContainer:
 
             self._instances["email_service"] = PlaceholderEmailService()
         return self._instances["email_service"]
+
+    @property
+    def security_auditor(self) -> SecurityAuditor:
+        """Get security auditor implementation."""
+        if "security_auditor" not in self._instances:
+            from flext_auth.user_service import SecurityAuditorImpl
+
+            self._instances["security_auditor"] = SecurityAuditorImpl()
+        return self._instances["security_auditor"]  # type: ignore[return-value]
 
     # Handler properties - Real implementations only
     @property
@@ -260,7 +280,7 @@ class AuthContainer:
 
             self._instances["create_token_handler"] = CreateTokenHandler(
                 user_repository=self.user_repository,  # type: ignore[arg-type]
-                token_service=self.token_service,  # type: ignore[arg-type]
+                token_service=self.token_service,
             )
         return self._instances["create_token_handler"]
 
@@ -271,7 +291,7 @@ class AuthContainer:
             from flext_auth.infrastructure.implementations import RevokeTokenHandler
 
             self._instances["revoke_token_handler"] = RevokeTokenHandler(
-                token_service=self.token_service,  # type: ignore[arg-type]
+                token_service=self.token_service,
             )
         return self._instances["revoke_token_handler"]
 
@@ -288,16 +308,30 @@ class AuthContainer:
         return self._instances["verify_email_handler"]
 
     @property
+    def user_service(self) -> Any:
+        """Get user service implementation."""
+        if "user_service" not in self._instances:
+            from flext_auth.user_service import UserService
+
+            self._instances["user_service"] = UserService(
+                user_repository=self.user_repository,
+                password_hasher=self.password_service,
+                jwt_service=self.jwt_service,
+                token_manager=self.token_manager,
+                security_auditor=self.security_auditor,
+            )
+        return self._instances["user_service"]
+
+    @property
     def auth_service(self) -> object:
         """Get authentication service implementation."""
         if "auth_service" not in self._instances:
-            from flext_auth.infrastructure.implementations import EnterpriseAuthService
+            from flext_auth.application.command_auth_service import AuthService
 
-            self._instances["auth_service"] = EnterpriseAuthService(
-                user_repository=self.user_repository,  # type: ignore[arg-type]
-                password_service=self.password_service,  # type: ignore[arg-type]
-                token_service=self.token_service,
-                token_manager=self.token_manager,  # type: ignore[arg-type]
+            self._instances["auth_service"] = AuthService(
+                user_service=self.user_service,
+                jwt_service=self.jwt_service,
+                token_manager=self.token_manager,
             )
         return self._instances["auth_service"]
 

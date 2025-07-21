@@ -204,7 +204,8 @@ class UserCreationRequest(DomainBaseModel):
     def normalize_email(cls, v: EmailStr) -> EmailStr:
         """Normalize email address to lowercase."""
         # EmailStr is already validated by Pydantic, so it's always a string
-        return EmailStr(str(v).lower())
+        # In Pydantic v2, EmailStr constructor doesn't accept arguments
+        return str(v).lower()
 
 
 class UserServiceLoginRequest(DomainBaseModel):
@@ -223,7 +224,8 @@ class UserServiceLoginRequest(DomainBaseModel):
     def normalize_email(cls, v: EmailStr) -> EmailStr:
         """Normalize email address to lowercase."""
         # EmailStr is already validated by Pydantic, so it's always a string
-        return EmailStr(str(v).lower())
+        # In Pydantic v2, EmailStr constructor doesn't accept arguments
+        return str(v).lower()
 
 
 class AuthenticationResponse(DomainBaseModel):
@@ -504,14 +506,24 @@ class UserServiceInMemoryUserRepository(UserRepository):
         if str(user.id) not in self._users:
             return ServiceResult.fail(f"User with ID {user.id} not found")
 
+        # Find the current email from the email index (reverse lookup)
+        old_email = None
+        user_id_str = str(user.id)
+        for email, stored_user_id in self._email_index.items():
+            if stored_user_id == user_id_str:
+                old_email = email
+                break
+
         # Update email index if email changed
-        old_user = self._users[str(user.id)]
-        if old_user.email != user.email:
+        new_email_lower = user.email.lower()
+        if old_email and old_email != new_email_lower:
             # Remove old email from index
-            if old_user.email.lower() in self._email_index:
-                del self._email_index[old_user.email.lower()]
+            del self._email_index[old_email]
             # Add new email to index
-            self._email_index[user.email.lower()] = str(user.id)
+            self._email_index[new_email_lower] = user_id_str
+        elif not old_email:
+            # First time setting email for this user
+            self._email_index[new_email_lower] = user_id_str
 
         # Update user
         self._users[str(user.id)] = user
@@ -809,8 +821,8 @@ class UserService(AuthenticationServiceProtocol):
                     token_id=access_claims["jti"],
                     user_id=user.id,
                     token_type=TokenType.ACCESS,
-                    issued_at=dt.fromtimestamp(access_claims["iat"], UTC),
-                    expires_at=dt.fromtimestamp(access_claims["exp"], UTC),
+                    issued_at=dt.fromtimestamp(int(access_claims["iat"]), UTC),
+                    expires_at=dt.fromtimestamp(int(access_claims["exp"]), UTC),
                     ip_address=ip_address,
                     user_agent=user_agent,
                 ),
@@ -822,8 +834,8 @@ class UserService(AuthenticationServiceProtocol):
                     token_id=refresh_claims["jti"],
                     user_id=user.id,
                     token_type=TokenType.REFRESH,
-                    issued_at=dt.fromtimestamp(refresh_claims["iat"], UTC),
-                    expires_at=dt.fromtimestamp(refresh_claims["exp"], UTC),
+                    issued_at=dt.fromtimestamp(int(refresh_claims["iat"]), UTC),
+                    expires_at=dt.fromtimestamp(int(refresh_claims["exp"]), UTC),
                     ip_address=ip_address,
                     user_agent=user_agent,
                 ),
@@ -970,8 +982,8 @@ class UserService(AuthenticationServiceProtocol):
                     token_id=new_access_claims["jti"],
                     user_id=user.id,
                     token_type=TokenType.ACCESS,
-                    issued_at=dt.fromtimestamp(new_access_claims["iat"], UTC),
-                    expires_at=dt.fromtimestamp(new_access_claims["exp"], UTC),
+                    issued_at=dt.fromtimestamp(int(new_access_claims["iat"]), UTC),
+                    expires_at=dt.fromtimestamp(int(new_access_claims["exp"]), UTC),
                     ip_address=ip_address,
                     user_agent=user_agent,
                 ),
@@ -983,8 +995,8 @@ class UserService(AuthenticationServiceProtocol):
                     token_id=new_refresh_claims["jti"],
                     user_id=user.id,
                     token_type=TokenType.REFRESH,
-                    issued_at=dt.fromtimestamp(new_refresh_claims["iat"], UTC),
-                    expires_at=dt.fromtimestamp(new_refresh_claims["exp"], UTC),
+                    issued_at=dt.fromtimestamp(int(new_refresh_claims["iat"]), UTC),
+                    expires_at=dt.fromtimestamp(int(new_refresh_claims["exp"]), UTC),
                     ip_address=ip_address,
                     user_agent=user_agent,
                 ),

@@ -452,10 +452,9 @@ class TestSecurityAuditorImpl:
             user_agent="TestAgent/1.0",
         )
 
-        # Get failed attempts count
+        # Get failed attempts count by IP address (not filtering by user_id)
         count = await security_auditor.get_failed_login_attempts(
             ip_address="192.168.1.1",
-            user_id=uuid4(),
         )
 
         assert count == 2

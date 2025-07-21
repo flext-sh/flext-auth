@@ -594,10 +594,10 @@ class JWTService:
         try:
             claims = await self.verify_token(token, token_type)
             if claims is None:
-                return ValidationResult(False, "Token validation failed")
+                return ValidationResult(False, "Invalid token format or malformed token")
             return ValidationResult(True)
-        except jwt.InvalidTokenError:
-            return ValidationResult(False, "Token validation failed")
+        except jwt.InvalidTokenError as e:
+            return ValidationResult(False, f"Invalid token: {e}")
 
     async def refresh_tokens(self, refresh_token: TokenString, user: User) -> TokenPair:
         """Refresh tokens using a valid refresh token.

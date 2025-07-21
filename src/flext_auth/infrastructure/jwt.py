@@ -43,8 +43,12 @@ class JWTService:
 
         # Load configuration
         self._algorithm = self._config.get_string("jwt_algorithm", "HS256")
-        self._access_token_expire_minutes = self._config.get_int("jwt_access_token_expire_minutes", 30)
-        self._refresh_token_expire_days = self._config.get_int("jwt_refresh_token_expire_days", 7)
+        self._access_token_expire_minutes = self._config.get_int(
+            "jwt_access_token_expire_minutes", 30,
+        )
+        self._refresh_token_expire_days = self._config.get_int(
+            "jwt_refresh_token_expire_days", 7,
+        )
 
         # Load keys based on algorithm
         if self._algorithm.startswith("RS"):
@@ -54,18 +58,26 @@ class JWTService:
 
             if private_key_path:
                 try:
-                    self._private_key: str | None = self._filesystem.read_text(Path(private_key_path))
+                    self._private_key: str | None = self._filesystem.read_text(
+                        Path(private_key_path),
+                    )
                 except ValueError as e:
-                    self._logger.exception(f"Failed to load private key from {private_key_path}: {e}")
+                    self._logger.exception(
+                        f"Failed to load private key from {private_key_path}: {e}",
+                    )
                     self._private_key = None
             else:
                 self._private_key = None
 
             if public_key_path:
                 try:
-                    self._public_key: str | None = self._filesystem.read_text(Path(public_key_path))
+                    self._public_key: str | None = self._filesystem.read_text(
+                        Path(public_key_path),
+                    )
                 except ValueError as e:
-                    self._logger.exception(f"Failed to load public key from {public_key_path}: {e}")
+                    self._logger.exception(
+                        f"Failed to load public key from {public_key_path}: {e}",
+                    )
                     self._public_key = None
             else:
                 self._public_key = None
