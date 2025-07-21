@@ -1,5 +1,7 @@
 """Infrastructure layer for FLEXT Auth - External concerns and adapters."""
 
+from __future__ import annotations
+
 from flext_auth.infrastructure.config import AuthConfig
 from flext_auth.infrastructure.container import create_auth_container
 from flext_auth.infrastructure.jwt import JWTService

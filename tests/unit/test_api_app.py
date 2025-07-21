@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
-import json
-from unittest.mock import AsyncMock
-from unittest.mock import MagicMock
+from typing import TYPE_CHECKING
+from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
+from flext_core.domain.types import ServiceResult
 
 from flext_auth.api.app import app
 from flext_auth.api.dependencies import get_auth_service
-from flext_core.domain.types import ServiceResult
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 
 class TestFastAPIApp:
@@ -24,7 +26,7 @@ class TestFastAPIApp:
         return AsyncMock()
 
     @pytest.fixture
-    def client(self, mock_auth_service: AsyncMock) -> TestClient:
+    def client(self, mock_auth_service: AsyncMock) -> Generator[TestClient]:
         """Create test client with mocked dependencies."""
         app.dependency_overrides[get_auth_service] = lambda: mock_auth_service
         client = TestClient(app)
@@ -35,7 +37,10 @@ class TestFastAPIApp:
         """Test health check endpoint."""
         response = client.get("/health")
         assert response.status_code == 200
-        assert response.json() == {"status": "healthy", "service": "flext-auth"}
+        assert response.json() == {
+            "status": "healthy",
+            "service": "flext-api.auth.flext-auth",
+        }
 
     def test_register_user_success(
         self,
@@ -51,7 +56,7 @@ class TestFastAPIApp:
         mock_user.is_active = True
         mock_user.created_at = "2023-01-01T00:00:00"
 
-        mock_auth_service.create_user.return_value = ServiceResult.success(mock_user)
+        mock_auth_service.create_user.return_value = ServiceResult.ok(mock_user)
 
         response = client.post(
             "/auth/register",
@@ -75,7 +80,7 @@ class TestFastAPIApp:
         mock_auth_service: AsyncMock,
     ) -> None:
         """Test failed user registration."""
-        mock_auth_service.create_user.return_value = ServiceResult.failure(
+        mock_auth_service.create_user.return_value = ServiceResult.fail(
             "Username already exists",
         )
 
@@ -117,7 +122,7 @@ class TestFastAPIApp:
             "expires_in": 3600,
         }
 
-        mock_auth_service.authenticate.return_value = ServiceResult.success(
+        mock_auth_service.authenticate.return_value = ServiceResult.ok(
             auth_response,
         )
 
@@ -142,7 +147,7 @@ class TestFastAPIApp:
         mock_auth_service: AsyncMock,
     ) -> None:
         """Test failed user login."""
-        mock_auth_service.authenticate.return_value = ServiceResult.failure(
+        mock_auth_service.authenticate.return_value = ServiceResult.fail(
             "Invalid credentials",
         )
 
@@ -169,7 +174,7 @@ class TestFastAPIApp:
             "token_type": "access",
         }
 
-        mock_auth_service.validate_token.return_value = ServiceResult.success(user_data)
+        mock_auth_service.validate_token.return_value = ServiceResult.ok(user_data)
 
         response = client.get(
             "/auth/me",
@@ -188,7 +193,7 @@ class TestFastAPIApp:
         mock_auth_service: AsyncMock,
     ) -> None:
         """Test getting current user info without valid token."""
-        mock_auth_service.validate_token.return_value = ServiceResult.failure(
+        mock_auth_service.validate_token.return_value = ServiceResult.fail(
             "Invalid token",
         )
 
@@ -217,9 +222,9 @@ class TestFastAPIApp:
         }
 
         # Mock token validation
-        mock_auth_service.validate_token.return_value = ServiceResult.success(user_data)
+        mock_auth_service.validate_token.return_value = ServiceResult.ok(user_data)
         # Mock password change
-        mock_auth_service.change_password.return_value = ServiceResult.success(None)
+        mock_auth_service.change_password.return_value = ServiceResult.ok(None)
 
         response = client.post(
             "/auth/change-password",
@@ -246,9 +251,9 @@ class TestFastAPIApp:
         }
 
         # Mock token validation
-        mock_auth_service.validate_token.return_value = ServiceResult.success(user_data)
+        mock_auth_service.validate_token.return_value = ServiceResult.ok(user_data)
         # Mock password change failure
-        mock_auth_service.change_password.return_value = ServiceResult.failure(
+        mock_auth_service.change_password.return_value = ServiceResult.fail(
             "Current password is incorrect",
         )
 
@@ -270,7 +275,7 @@ class TestFastAPIApp:
         mock_auth_service: AsyncMock,
     ) -> None:
         """Test password change without valid token."""
-        mock_auth_service.validate_token.return_value = ServiceResult.failure(
+        mock_auth_service.validate_token.return_value = ServiceResult.fail(
             "Invalid token",
         )
 
@@ -297,7 +302,7 @@ class TestFastAPIApp:
             "token_type": "access",
         }
 
-        mock_auth_service.validate_token.return_value = ServiceResult.success(user_data)
+        mock_auth_service.validate_token.return_value = ServiceResult.ok(user_data)
 
         response = client.post(
             "/auth/change-password",

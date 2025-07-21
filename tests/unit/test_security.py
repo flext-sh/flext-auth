@@ -2,17 +2,16 @@
 
 from __future__ import annotations
 
-from datetime import UTC
-from datetime import datetime
-from datetime import timedelta
-from unittest.mock import patch
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from flext_auth.security import PasswordHasher
-from flext_auth.security import SecurityManager
-from flext_auth.security import TokenGenerator
-from flext_auth.security import generate_secure_token
+from flext_auth.security import (
+    PasswordHasher,
+    SecurityManager,
+    TokenGenerator,
+    generate_secure_token,
+)
 
 
 class TestPasswordHasher:
@@ -130,6 +129,8 @@ class TestTokenGenerator:
         token = generator.generate_jwt(payload, secret, algorithm)
         decoded = generator.verify_jwt(token, secret, algorithm)
 
+        assert decoded is not None
+        assert isinstance(decoded, dict)
         assert decoded["user_id"] == "123"
 
     def test_verify_jwt_token_invalid(self, generator: TokenGenerator) -> None:
@@ -137,7 +138,9 @@ class TestTokenGenerator:
         secret = "test_secret"
         algorithm = "HS256"
 
-        with pytest.raises((ValueError, Exception)):  # JWT verification should raise exception
+        with pytest.raises(
+            (ValueError, Exception),
+        ):  # JWT verification should raise exception
             generator.verify_jwt("invalid.jwt.token", secret, algorithm)
 
 
@@ -196,6 +199,7 @@ class TestSecurityManager:
         token = security_manager.generate_jwt(payload, secret)
         decoded = security_manager.verify_jwt(token, secret)
 
+        assert decoded is not None
         assert decoded["user_id"] == "123"
 
 
@@ -242,9 +246,7 @@ class TestSecurityProtocols:
 
     def test_security_types_exist(self) -> None:
         """Test that security types are defined."""
-        from flext_auth.security import Hash
-        from flext_auth.security import Salt
-        from flext_auth.security import Token
+        from flext_auth.security import Hash, Salt, Token
 
         # These should be type aliases
         assert Hash is not None

@@ -2,11 +2,8 @@
 
 from __future__ import annotations
 
-import os
 import tempfile
 from pathlib import Path
-
-import pytest
 
 from flext_auth.infrastructure.config import AuthConfig
 
@@ -19,7 +16,7 @@ class TestAuthConfig:
         config = AuthConfig()
 
         # JWT settings
-        assert config.jwt_secret_key == "dev-secret-key"
+        assert config.jwt_secret_key == "dev-secret-key-change-in-production"
         assert config.jwt_public_key_path is None
         assert config.jwt_private_key_path is None
         assert config.jwt_algorithm == "HS256"
@@ -27,7 +24,7 @@ class TestAuthConfig:
         assert config.jwt_refresh_token_expire_days == 7
 
         # Password settings
-        assert config.bcrypt_rounds == 12
+        assert config.password_bcrypt_rounds == 12
         assert config.password_min_length == 8
         assert config.password_require_uppercase is True
         assert config.password_require_lowercase is True
@@ -50,9 +47,9 @@ class TestAuthConfig:
         assert config.session_extend_on_activity is True
 
         # Database settings
-        assert config.database_url == "postgresql://localhost/flext_auth"
-        assert config.database_pool_size == 20
-        assert config.database_max_overflow == 40
+        assert config.database_url == "postgresql://localhost:5432/flext_auth"
+        assert config.database_pool_size == 10
+        assert config.database_max_overflow == 20
 
     def test_auth_config_custom_values(self) -> None:
         """Test AuthConfig with custom values."""
@@ -61,7 +58,7 @@ class TestAuthConfig:
             jwt_algorithm="RS256",
             jwt_access_token_expire_minutes=60,
             jwt_refresh_token_expire_days=14,
-            bcrypt_rounds=14,
+            password_bcrypt_rounds=14,
             password_min_length=12,
             password_require_symbols=True,
             require_email_verification=False,
@@ -76,7 +73,7 @@ class TestAuthConfig:
         assert config.jwt_algorithm == "RS256"
         assert config.jwt_access_token_expire_minutes == 60
         assert config.jwt_refresh_token_expire_days == 14
-        assert config.bcrypt_rounds == 14
+        assert config.password_bcrypt_rounds == 14
         assert config.password_min_length == 12
         assert config.password_require_symbols is True
         assert config.require_email_verification is False
@@ -93,7 +90,7 @@ class TestAuthConfig:
             jwt_secret_key="manual-secret-key",
             jwt_algorithm="RS256",
             jwt_access_token_expire_minutes=45,
-            bcrypt_rounds=10,
+            password_bcrypt_rounds=10,
             password_min_length=10,
             require_email_verification=False,
             max_failed_login_attempts=3,
@@ -104,7 +101,7 @@ class TestAuthConfig:
         assert config.jwt_secret_key == "manual-secret-key"
         assert config.jwt_algorithm == "RS256"
         assert config.jwt_access_token_expire_minutes == 45
-        assert config.bcrypt_rounds == 10
+        assert config.password_bcrypt_rounds == 10
         assert config.password_min_length == 10
         assert config.require_email_verification is False
         assert config.max_failed_login_attempts == 3
@@ -202,19 +199,15 @@ class TestAuthConfig:
     def test_auth_config_security_settings(self) -> None:
         """Test AuthConfig security-related settings."""
         config = AuthConfig(
-            bcrypt_rounds=16,
+            password_bcrypt_rounds=16,
             max_failed_login_attempts=10,
             account_lockout_duration_minutes=120,
-            login_rate_limit_per_minute=60,
-            rate_limit_enabled=True,
             password_require_symbols=True,
         )
 
-        assert config.bcrypt_rounds == 16
+        assert config.password_bcrypt_rounds == 16
         assert config.max_failed_login_attempts == 10
         assert config.account_lockout_duration_minutes == 120
-        assert config.login_rate_limit_per_minute == 60
-        assert config.rate_limit_enabled is True
         assert config.password_require_symbols is True
 
     def test_auth_config_database_connection_settings(self) -> None:
@@ -262,11 +255,11 @@ class TestAuthConfig:
         # Test valid configuration
         valid_config = AuthConfig(
             password_min_length=8,
-            bcrypt_rounds=12,
+            password_bcrypt_rounds=12,
             max_failed_login_attempts=5,
         )
         assert valid_config.password_min_length == 8
-        assert valid_config.bcrypt_rounds == 12
+        assert valid_config.password_bcrypt_rounds == 12
         assert valid_config.max_failed_login_attempts == 5
 
         # Test invalid values would be caught by Pydantic validation
@@ -292,7 +285,7 @@ class TestAuthConfigIntegration:
             jwt_algorithm="RS256",
             jwt_access_token_expire_minutes=15,
             jwt_refresh_token_expire_days=30,
-            bcrypt_rounds=14,
+            password_bcrypt_rounds=14,
             password_min_length=12,
             password_require_uppercase=True,
             password_require_lowercase=True,
@@ -309,7 +302,7 @@ class TestAuthConfigIntegration:
         # Verify production-appropriate values
         assert prod_config.jwt_algorithm == "RS256"  # More secure than HS256
         assert prod_config.jwt_access_token_expire_minutes == 15  # Short-lived tokens
-        assert prod_config.bcrypt_rounds == 14  # Higher security
+        assert prod_config.password_bcrypt_rounds == 14  # Higher security
         assert prod_config.password_min_length == 12  # Stronger passwords
         assert prod_config.max_failed_login_attempts == 3  # Stricter lockout
         assert prod_config.require_email_verification is True  # Security requirement
@@ -320,7 +313,7 @@ class TestAuthConfigIntegration:
             jwt_secret_key="dev-secret-key-for-testing",
             jwt_algorithm="HS256",
             jwt_access_token_expire_minutes=60,
-            bcrypt_rounds=4,  # Faster for development
+            password_bcrypt_rounds=4,  # Faster for development
             password_min_length=6,
             require_email_verification=False,
             max_failed_login_attempts=10,
@@ -330,7 +323,7 @@ class TestAuthConfigIntegration:
 
         # Verify development-appropriate values
         assert dev_config.jwt_algorithm == "HS256"  # Simpler for development
-        assert dev_config.bcrypt_rounds == 4  # Faster hashing
+        assert dev_config.password_bcrypt_rounds == 4  # Faster hashing
         assert dev_config.password_min_length == 6  # Less restrictive
         assert dev_config.require_email_verification is False  # Skip email verification
         assert dev_config.max_failed_login_attempts == 10  # More lenient
@@ -340,7 +333,7 @@ class TestAuthConfigIntegration:
         """Test AuthConfig with all security features enabled."""
         secure_config = AuthConfig(
             jwt_algorithm="RS256",
-            bcrypt_rounds=16,
+            password_bcrypt_rounds=16,
             password_require_uppercase=True,
             password_require_lowercase=True,
             password_require_numbers=True,
@@ -348,15 +341,11 @@ class TestAuthConfigIntegration:
             require_email_verification=True,
             max_failed_login_attempts=3,
             account_lockout_duration_minutes=120,
-            session_expire_hours=4,
-            login_rate_limit_per_minute=30,
         )
 
         # Verify all security features
         assert secure_config.jwt_algorithm == "RS256"
-        assert secure_config.bcrypt_rounds == 16
+        assert secure_config.password_bcrypt_rounds == 16
         assert secure_config.password_require_symbols is True
         assert secure_config.require_email_verification is True
         assert secure_config.max_failed_login_attempts == 3
-        assert secure_config.session_expire_hours == 4
-        assert secure_config.login_rate_limit_per_minute == 30

@@ -10,13 +10,16 @@ REFACTORED:
 from __future__ import annotations
 
 import click
+from flext_core.domain.constants import FlextFramework
 
 from flext_auth.config import get_auth_settings
-from flext_core.domain.constants import FlextFramework
 
 
 @click.group()
-@click.version_option(version=FlextFramework.VERSION, prog_name="flext-auth")
+@click.version_option(
+    version=FlextFramework.VERSION,
+    prog_name="flext-api.auth.flext-auth",
+)
 def cli() -> None:
     """FLEXT Auth CLI main group."""
 
@@ -32,9 +35,9 @@ def config() -> None:
     click.echo(f"Version: {settings.project_version}")
     click.echo(f"Environment: {settings.environment}")
     click.echo(f"Debug: {settings.debug}")
-    click.echo(f"JWT Algorithm: {settings.jwt.algorithm}")
+    click.echo(f"JWT Algorithm: {settings.jwt_algorithm}")
     click.echo(f"Database URL: {settings.database_url}")
-    click.echo(f"Redis URL: {settings.redis.url}")
+    click.echo(f"Redis URL: {settings.redis_url}")
 
 
 @cli.command()
@@ -48,7 +51,7 @@ def test() -> None:
         click.echo("✅ Configuration loaded successfully")
         click.echo(f"Project: {settings.project_name}")
         click.echo(f"Environment: {settings.environment}")
-        click.echo("✅ FLEXT Auth system is working")
+
     except Exception as e:
         click.echo(f"❌ Error: {e}")
         raise click.Abort from e

@@ -6,16 +6,10 @@ Uses modern Python 3.13 patterns and comprehensive domain modeling.
 
 from __future__ import annotations
 
-from datetime import UTC
-from datetime import datetime
-from datetime import timedelta
-from uuid import UUID
-from uuid import uuid4
+from datetime import UTC, datetime, timedelta
+from uuid import UUID, uuid4
 
-from pydantic import Field
-
-from flext_core import DomainEntity
-from flext_core import DomainEvent
+from flext_core import DomainEntity, DomainEvent, Field
 
 
 class User(DomainEntity):
@@ -188,7 +182,15 @@ class Session(DomainEntity):
 
     def is_expired(self) -> bool:
         """Check if session is expired."""
-        return datetime.now(UTC) > self.expires_at
+        current_time = datetime.now(UTC)
+
+        # Handle timezone-naive datetime by assuming UTC
+        if self.expires_at.tzinfo is None:
+            expires_at_utc = self.expires_at.replace(tzinfo=UTC)
+        else:
+            expires_at_utc = self.expires_at
+
+        return current_time > expires_at_utc
 
     def is_active(self) -> bool:
         """Check if session is active."""

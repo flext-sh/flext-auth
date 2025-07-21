@@ -12,19 +12,33 @@ class TestAuthService:
 
     def test_auth_service_creation(self) -> None:
         """Test AuthService can be created."""
-        service = AuthService()
+        from unittest.mock import Mock
+
+        from flext_auth.infrastructure.implementations.authentication_implementation import (
+            EnterpriseAuthService,
+        )
+
+        mock_enterprise_service = Mock(spec=EnterpriseAuthService)
+        service = AuthService(mock_enterprise_service)
         assert service is not None
 
     @pytest.mark.asyncio
-    async def test_auth_service_methods_not_implemented(self) -> None:
-        """Test AuthService methods raise NotImplementedError."""
-        service = AuthService()
+    async def test_auth_service_authenticate_with_invalid_params(self) -> None:
+        """Test AuthService authenticate returns None for invalid params."""
+        from unittest.mock import AsyncMock, Mock
 
-        with pytest.raises(NotImplementedError):
-            await service.authenticate(None, None)
+        from flext_auth.infrastructure.implementations.authentication_implementation import (
+            EnterpriseAuthService,
+        )
 
-        with pytest.raises(NotImplementedError):
-            await service.create_user(None, None, None)
+        mock_enterprise_service = Mock(spec=EnterpriseAuthService)
+        mock_enterprise_service.authenticate_user = AsyncMock(return_value=None)
+        service = AuthService(mock_enterprise_service)
 
-        with pytest.raises(NotImplementedError):
-            await service.get_user(None)
+        # Test with None parameters
+        result = await service.authenticate(None, None)
+        assert result is None
+
+        # Test with empty parameters
+        result = await service.authenticate("", "")
+        assert result is None

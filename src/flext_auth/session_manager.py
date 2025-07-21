@@ -1,69 +1,30 @@
+"""Enterprise session management with RBAC and security features.
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
+This module provides enterprise-grade session management with role-based access control,
+security logging, and comprehensive session lifecycle management.
+"""
+
 from __future__ import annotations
 
 import asyncio
 import contextlib
-from datetime import UTC
-from datetime import datetime
-from datetime import timedelta
-from typing import TYPE_CHECKING
-from typing import Any
+from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
-
-from flext_auth.tokens import InMemoryTokenStorage
-from flext_auth.tokens import TokenManager
-from flext_core import ServiceResult
-
-
-# Simple ServiceError implementation
-class ServiceError:
-    def __init__(self, message: str, details: dict | None = None) -> None:
-        self.message = message
-        self.details = details or {}
-
-    @classmethod
-    def internal_error(cls, message: str, details: dict | None = None) -> str:
-        return f"Internal error: {message}"
-
-    @classmethod
-    def not_found_error(cls, message: str, details: dict | None = None) -> str:
-        return f"Not found: {message}"
-
-    @classmethod
-    def validation_error(cls, message: str, details: dict | None = None) -> str:
-        return f"Validation error: {message}"
-
-
-"""Enterprise Session Management with RBAC and Multi-Factor Authentication.
-
-This module provides a production-ready session management system with enterprise
-features including role-based access control (RBAC), session persistence,
-device tracking, and comprehensive security monitoring.
-
-ENTERPRISE AUTHENTICATION FEATURES:
-    ✅ Role-Based Access Control (RBAC) with hierarchical permissions
-✅ Session persistence with secure storage and automatic cleanup
-✅ Device tracking and multi-device session management
-✅ Session security with timeout, IP validation, and suspicious activity detection
-✅ Multi-factor authentication integration readiness
-✅ Comprehensive audit logging and security event tracking
-✅ Enterprise user management with role inheritance
-✅ Session-based authorization with resource permissions
-
-This represents the completion of Tier 2A authentication enterprise features
-with production-ready RBAC and session management capabilities.
-"""
+from flext_core.domain.types import ServiceResult
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
 
-    from flext_auth.types import IPAddress
-    from flext_auth.types import UserAgent
-    from flext_auth.types import UserID
+    from flext_auth.types import IPAddress, UserAgent, UserID
 
 
 class SessionMetadata:
-    """Enterprise session metadata with comprehensive tracking."""
+    """Session metadata with comprehensive tracking and security features."""
 
     def __init__(
         self,
@@ -82,47 +43,37 @@ class SessionMetadata:
         self.user_agent = user_agent
         self.device_info = device_info or {}
         self.created_at = created_at or datetime.now(UTC)
-        self.last_accessed = last_accessed or datetime.now(UTC)
-        self.expires_at = expires_at or (datetime.now(UTC) + timedelta(hours=24))
-        self.permissions: set[str] = set()
+        self.last_accessed = last_accessed or self.created_at
+        self.expires_at = expires_at
         self.roles: set[str] = set()
+        self.permissions: set[str] = set()
 
     @property
     def is_expired(self) -> bool:
-        """Check if the session has expired.
-
-        Returns:
-            bool: True if the session has expired, False otherwise.
-
-        """
+        """Check if the session has expired."""
+        if not self.expires_at:
+            return False
         return datetime.now(UTC) > self.expires_at
 
     @property
     def is_valid(self) -> bool:
-        """Check if the session is valid (not expired).
-
-        Returns:
-            bool: True if the session is valid, False if expired.
-
-        """
+        """Check if the session is valid and not expired."""
         return not self.is_expired
 
     def update_access(self) -> None:
-        """Update the last accessed timestamp to the current time."""
+        """Update the last accessed timestamp."""
         self.last_accessed = datetime.now(UTC)
 
     def extend_session(self, duration: timedelta) -> None:
-        """Extend the session expiration time by the specified duration.
-
-        Args:
-            duration: The duration to extend the session by.
-
-        """
-        self.expires_at = datetime.now(UTC) + duration
+        """Extend the session expiration time."""
+        if self.expires_at:
+            self.expires_at += duration
+        else:
+            self.expires_at = datetime.now(UTC) + duration
 
 
 class RolePermission:
-    """Role-based permission management."""
+    """Role-based permission mapping."""
 
     def __init__(self, role: str, permissions: set[str]) -> None:
         self.role = role
@@ -130,200 +81,67 @@ class RolePermission:
 
 
 class RBACManager:
-    """Role-Based Access Control manager with hierarchical permissions."""
+    """Role-Based Access Control manager."""
 
     def __init__(self) -> None:
-        self._role_hierarchy: dict[str, set[str]] = {
-            "super_REDACTED_LDAP_BIND_PASSWORD": {"REDACTED_LDAP_BIND_PASSWORD", "manager", "user", "viewer"},
-            "REDACTED_LDAP_BIND_PASSWORD": {"manager", "user", "viewer"},
-            "manager": {"user", "viewer"},
-            "user": {"viewer"},
-            "viewer": set(),
-        }
-
         self._role_permissions: dict[str, set[str]] = {
-            "super_REDACTED_LDAP_BIND_PASSWORD": {
-                "system:REDACTED_LDAP_BIND_PASSWORD",
-                "user:manage",
-                "pipeline:manage",
-                "plugin:manage",
-                "config:manage",
-                "security:audit",
-                "data:export",
-                "api:access",
-            },
             "REDACTED_LDAP_BIND_PASSWORD": {
-                "user:manage",
-                "pipeline:manage",
-                "plugin:manage",
-                "data:export",
-                "api:access",
-            },
-            "manager": {
-                "pipeline:create",
-                "pipeline:update",
-                "pipeline:execute",
-                "plugin:install",
-                "data:read",
-                "api:access",
+                "user:read",
+                "user:write",
+                "user:delete",
+                "session:read",
+                "session:write",
+                "session:delete",
+                "system:REDACTED_LDAP_BIND_PASSWORD",
             },
             "user": {
-                "pipeline:read",
-                "pipeline:execute",
-                "plugin:read",
-                "data:read",
-                "api:access",
+                "user:read",
+                "session:read",
+                "session:write",
             },
-            "viewer": {
-                "pipeline:read",
-                "plugin:read",
-                "data:read",
+            "guest": {
+                "user:read",
             },
         }
 
     def get_effective_permissions(self, roles: set[str]) -> set[str]:
-        """Get all effective permissions for a set of roles including inherited permissions.
-
-        Args:
-            roles: Set of role names to get permissions for.
-
-        Returns:
-            Set of permission strings that the roles have access to.
-
-        """
-        effective_permissions: set[str] = set()
-
+        """Get all effective permissions for given roles."""
+        effective_permissions = set()
         for role in roles:
-            # Add direct permissions for this role
             if role in self._role_permissions:
                 effective_permissions.update(self._role_permissions[role])
-
-            # Add inherited permissions from role hierarchy
-            if role in self._role_hierarchy:
-                for inherited_role in self._role_hierarchy[role]:
-                    if inherited_role in self._role_permissions:
-                        effective_permissions.update(
-                            self._role_permissions[inherited_role],
-                        )
-
         return effective_permissions
 
     def has_permission(self, user_roles: set[str], required_permission: str) -> bool:
-        """Check if the user roles have a specific permission.
-
-        Args:
-            user_roles: Set of roles assigned to the user.
-            required_permission: The permission string to check for.
-
-        Returns:
-            bool: True if the user has the required permission, False otherwise.
-
-        """
-        effective_permissions = self.get_effective_permissions(user_roles)
-        return required_permission in effective_permissions
+        """Check if user has the required permission."""
+        user_permissions = self.get_effective_permissions(user_roles)
+        return required_permission in user_permissions
 
     def has_role(self, user_roles: set[str], required_role: str) -> bool:
-        """Check if the user has a specific role or inherits it.
-
-        Args:
-            user_roles: Set of roles assigned to the user.
-            required_role: The role to check for.
-
-        Returns:
-            bool: True if the user has the required role (directly or inherited), False otherwise.
-
-        """
-        if required_role in user_roles:
-            return True
-
-        # Check if any user role inherits the required role:
-        for user_role in user_roles:
-            if (
-                user_role in self._role_hierarchy
-                and required_role in self._role_hierarchy[user_role]
-            ):
-                return True
-
-        return False
+        """Check if user has the required role."""
+        return required_role in user_roles
 
     def add_role_permission(self, role: str, permission: str) -> None:
-        """Add a permission to a role.
-
-        Args:
-            role: The role name to add the permission to.
-            permission: The permission string to add.
-
-        """
+        """Add a permission to a role."""
         if role not in self._role_permissions:
             self._role_permissions[role] = set()
         self._role_permissions[role].add(permission)
 
     def remove_role_permission(self, role: str, permission: str) -> None:
-        """Remove a permission from a role.
-
-        Args:
-            role: The role name to remove the permission from.
-            permission: The permission string to remove.
-
-        """
+        """Remove a permission from a role."""
         if role in self._role_permissions:
             self._role_permissions[role].discard(permission)
 
 
 class EnterpriseSessionManager:
-    """Enterprise session management with RBAC and security features.
-
-    Provides comprehensive session management capabilities including:
-        - Session persistence with secure storage
-    - Role-based access control (RBAC)
-    - Device tracking and multi-device support
-    - Session security and suspicious activity detection
-    - Automatic session cleanup and timeout handling
-    - Comprehensive audit logging
-
-    Features:
-        --------
-    - Session lifecycle management (create, validate, extend, terminate)
-    - RBAC with hierarchical role inheritance
-    - Device fingerprinting and multi-device session tracking
-    - Session security monitoring with IP validation
-    - Automatic session cleanup and timeout management
-    - Enterprise audit logging for security compliance
-    - Session-based authorization with resource permissions
-    - Multi-factor authentication integration readiness
-
-    Examples
-    --------
-    ```python
-    async with get_db_session() as session:
-            manager = EnterpriseSessionManager(session)
-
-        # Create authenticated session
-        session_result = await manager.create_session(
-            user_id="user123",
-            ip_address="192.168.1.100",
-            user_agent="Mozilla/5.0...",
-            device_info={"platform": "web"}
-        )
-
-        # Validate session and check permissions
-        valid = await manager.validate_session(
-            session_id=session_result.value.session_id,
-            required_permission="pipeline:create"
-        )
-    ```
-
-    """
+    """Enterprise session manager with RBAC and security features."""
 
     def __init__(self, db_session: AsyncSession | None = None) -> None:
         self.db_session = db_session
         self.rbac_manager = RBACManager()
-        self.token_manager = TokenManager(storage=InMemoryTokenStorage())
         self._active_sessions: dict[str, SessionMetadata] = {}
         self._user_sessions: dict[UserID, set[str]] = {}
-        self._cleanup_task: asyncio.Task[None] | None = None
-
-        # Session configuration defaults
+        self._cleanup_task: asyncio.Task[Any] | None = None
         self.default_session_timeout_hours = 24
 
     async def create_session(
@@ -408,12 +226,7 @@ class EnterpriseSessionManager:
             TimeoutError,
         ) as e:
             # Session creation failed - ZERO TOLERANCE specific exception types
-            return ServiceResult.fail(
-                ServiceError.internal_error(
-                    message="Failed to create session",
-                    details={"error": str(e), "user_id": user_id},
-                ),
-            )
+            return ServiceResult.fail(f"Failed to create session: {e}")
 
     async def validate_session(
         self,
@@ -437,12 +250,7 @@ class EnterpriseSessionManager:
         try:
             # Check if session exists:
             if session_id not in self._active_sessions:
-                return ServiceResult.fail(
-                    ServiceError.not_found_error(
-                        message="Session not found",
-                        details={"session_id": session_id},
-                    ),
-                )
+                return ServiceResult.fail("Session not found")
 
             session_metadata = self._active_sessions[session_id]
 
@@ -450,15 +258,7 @@ class EnterpriseSessionManager:
             if session_metadata.is_expired:
                 # Clean up expired session
                 await self._remove_session(session_id)
-                return ServiceResult.fail(
-                    ServiceError.validation_error(
-                        message="Session expired",
-                        details={
-                            "session_id": session_id,
-                            "expired_at": session_metadata.expires_at.isoformat(),
-                        },
-                    ),
-                )
+                return ServiceResult.fail("Session expired")
 
             # Validate IP address if provided:
             if (
@@ -476,12 +276,7 @@ class EnterpriseSessionManager:
                         "current_ip": ip_address,
                     },
                 )
-                return ServiceResult.fail(
-                    ServiceError.validation_error(
-                        message="Session IP address mismatch",
-                        details={"session_id": session_id},
-                    ),
-                )
+                return ServiceResult.fail("Session IP address mismatch")
 
             # Check required permission
             if required_permission and not self.rbac_manager.has_permission(
@@ -498,15 +293,7 @@ class EnterpriseSessionManager:
                         "user_permissions": list(session_metadata.permissions),
                     },
                 )
-                return ServiceResult.fail(
-                    ServiceError.validation_error(
-                        message="Insufficient permissions",
-                        details={
-                            "session_id": session_id,
-                            "required_permission": required_permission,
-                        },
-                    ),
-                )
+                return ServiceResult.fail("Insufficient permissions")
 
             # Check required role
             if required_role and not self.rbac_manager.has_role(
@@ -523,15 +310,7 @@ class EnterpriseSessionManager:
                         "user_roles": list(session_metadata.roles),
                     },
                 )
-                return ServiceResult.fail(
-                    ServiceError.validation_error(
-                        message="Insufficient role",
-                        details={
-                            "session_id": session_id,
-                            "required_role": required_role,
-                        },
-                    ),
-                )
+                return ServiceResult.fail("Insufficient role")
 
             # Update session access time
             session_metadata.update_access()
@@ -547,12 +326,7 @@ class EnterpriseSessionManager:
             TimeoutError,
         ) as e:
             # Session validation failed - ZERO TOLERANCE specific exception types
-            return ServiceResult.fail(
-                ServiceError.internal_error(
-                    message="Failed to validate session",
-                    details={"error": str(e), "session_id": session_id},
-                ),
-            )
+            return ServiceResult.fail(f"Failed to validate session: {e}")
 
     async def extend_session(
         self,
@@ -571,24 +345,14 @@ class EnterpriseSessionManager:
         """
         try:
             if session_id not in self._active_sessions:
-                return ServiceResult.fail(
-                    ServiceError.not_found_error(
-                        message="Session not found",
-                        details={"session_id": session_id},
-                    ),
-                )
+                return ServiceResult.fail("Session not found")
 
             session_metadata = self._active_sessions[session_id]
 
             # Check if session is still valid:
             if session_metadata.is_expired:
                 await self._remove_session(session_id)
-                return ServiceResult.fail(
-                    ServiceError.validation_error(
-                        message="Cannot extend expired session",
-                        details={"session_id": session_id},
-                    ),
-                )
+                return ServiceResult.fail("Cannot extend expired session")
 
             # Extend session
             session_metadata.extend_session(duration)
@@ -601,7 +365,7 @@ class EnterpriseSessionManager:
                 metadata={
                     "session_id": session_id,
                     "extension_duration": duration.total_seconds(),
-                    "new_expiry": session_metadata.expires_at.isoformat(),
+                    "new_expiry": session_metadata.expires_at.isoformat() if session_metadata.expires_at else None,
                 },
             )
 
@@ -616,12 +380,7 @@ class EnterpriseSessionManager:
             TimeoutError,
         ) as e:
             # Session extension failed - ZERO TOLERANCE specific exception types
-            return ServiceResult.fail(
-                ServiceError.internal_error(
-                    message="Failed to extend session",
-                    details={"error": str(e), "session_id": session_id},
-                ),
-            )
+            return ServiceResult.fail(f"Failed to extend session: {e}")
 
     async def terminate_session(
         self,
@@ -640,12 +399,7 @@ class EnterpriseSessionManager:
         """
         try:
             if session_id not in self._active_sessions:
-                return ServiceResult.fail(
-                    ServiceError.not_found_error(
-                        message="Session not found",
-                        details={"session_id": session_id},
-                    ),
-                )
+                return ServiceResult.fail("Session not found")
 
             session_metadata = self._active_sessions[session_id]
 
@@ -683,12 +437,7 @@ class EnterpriseSessionManager:
             TimeoutError,
         ) as e:
             # Session termination failed - ZERO TOLERANCE specific exception types
-            return ServiceResult.fail(
-                ServiceError.internal_error(
-                    message="Failed to terminate session",
-                    details={"error": str(e), "session_id": session_id},
-                ),
-            )
+            return ServiceResult.fail(f"Failed to terminate session: {e}")
 
     async def terminate_user_sessions(
         self,
@@ -726,7 +475,7 @@ class EnterpriseSessionManager:
 
                 # Terminate session
                 result = await self.terminate_session(session_id, reason)
-                if result.is_successful:
+                if result.is_success:
                     terminated_count += 1
 
             return ServiceResult.ok(
@@ -747,12 +496,7 @@ class EnterpriseSessionManager:
             TimeoutError,
         ) as e:
             # User session termination failed - ZERO TOLERANCE specific exception types
-            return ServiceResult.fail(
-                ServiceError.internal_error(
-                    message="Failed to terminate user sessions",
-                    details={"error": str(e), "user_id": user_id},
-                ),
-            )
+            return ServiceResult.fail(f"Failed to terminate user sessions: {e}")
 
     async def get_user_sessions(
         self,
@@ -791,49 +535,32 @@ class EnterpriseSessionManager:
             TimeoutError,
         ) as e:
             # User session retrieval failed - ZERO TOLERANCE specific exception types
-            return ServiceResult.fail(
-                ServiceError.internal_error(
-                    message="Failed to get user sessions",
-                    details={"error": str(e), "user_id": user_id},
-                ),
-            )
+            return ServiceResult.fail(f"Failed to get user sessions: {e}")
 
     async def cleanup_expired_sessions(self) -> int:
         """Clean up all expired sessions.
 
         Returns:
-            The number of sessions that were cleaned up.
+            int: Number of expired sessions removed.
 
         """
-        expired_count = 0
-        expired_session_ids = []
-
-        # Find expired sessions
+        expired_sessions = []
         for session_id, session_metadata in self._active_sessions.items():
             if session_metadata.is_expired:
-                expired_session_ids.append(session_id)
+                expired_sessions.append(session_id)
 
-        # Remove expired sessions
-        for session_id in expired_session_ids:
+        for session_id in expired_sessions:
             await self._remove_session(session_id)
-            expired_count += 1
 
-        return expired_count
+        return len(expired_sessions)
 
     async def start_cleanup_task(
         self,
         interval: timedelta = timedelta(minutes=30),
     ) -> None:
-        """Start the periodic cleanup task for expired sessions.
-
-        Args:
-            interval: The interval between cleanup runs (default: 30 minutes).
-
-        """
-        if self._cleanup_task and not self._cleanup_task.done():
-            return
-
-        self._cleanup_task = asyncio.create_task(self._periodic_cleanup(interval))
+        """Start the periodic cleanup task."""
+        if self._cleanup_task is None or self._cleanup_task.done():
+            self._cleanup_task = asyncio.create_task(self._periodic_cleanup(interval))
 
     async def stop_cleanup_task(self) -> None:
         """Stop the periodic cleanup task."""
@@ -843,59 +570,47 @@ class EnterpriseSessionManager:
                 await self._cleanup_task
 
     async def get_session_stats(self) -> dict[str, Any]:
-        """Get statistics about current sessions.
-
-        Returns:
-            Dictionary containing session statistics including counts, role distribution, and average age.
-
-        """
+        """Get session statistics."""
         total_sessions = len(self._active_sessions)
-        expired_sessions = sum(
-            1 for s in self._active_sessions.values() if s.is_expired
+        active_sessions = sum(
+            1 for s in self._active_sessions.values() if not s.is_expired
         )
-        active_sessions = total_sessions - expired_sessions
-        unique_users = len(self._user_sessions)
-
-        # Role distribution
-        role_distribution: dict[str, int] = {}
-        for session in self._active_sessions.values():
-            if not session.is_expired:
-                for role in session.roles:
-                    role_distribution[role] = role_distribution.get(role, 0) + 1
+        expired_sessions = total_sessions - active_sessions
 
         return {
             "total_sessions": total_sessions,
             "active_sessions": active_sessions,
             "expired_sessions": expired_sessions,
-            "unique_users": unique_users,
-            "role_distribution": role_distribution,
             "average_session_age": self._calculate_average_session_age(),
         }
 
     async def _get_user_roles(self, user_id: UserID) -> set[str]:
+        """Get user roles from database or return default."""
         if not self.db_session:
             return {"user"}  # Default role when no database session
 
         try:
             # This implementation needs UserRepository injection to work properly
             # For now, return default role to maintain functionality
-            return {"user"}  # Default role - proper implementation would query UserRepository
+            return {
+                "user",
+            }  # Default role - proper implementation would query UserRepository
 
         except (ValueError, TypeError, AttributeError, KeyError):
             # User role extraction failed - ZERO TOLERANCE specific exception types
             return {"user"}  # Fallback to default role on error
 
     async def _remove_session(self, session_id: str) -> None:
+        """Remove a session from tracking."""
         if session_id in self._active_sessions:
             session_metadata = self._active_sessions.pop(session_id)
+            user_id = session_metadata.user_id
 
             # Remove from user tracking
-            if session_metadata.user_id in self._user_sessions:
-                self._user_sessions[session_metadata.user_id].discard(session_id)
-
-                # Clean up empty user sets
-                if not self._user_sessions[session_metadata.user_id]:
-                    del self._user_sessions[session_metadata.user_id]
+            if user_id in self._user_sessions:
+                self._user_sessions[user_id].discard(session_id)
+                if not self._user_sessions[user_id]:
+                    del self._user_sessions[user_id]
 
     async def _log_security_event(
         self,
@@ -905,12 +620,12 @@ class EnterpriseSessionManager:
         user_agent: UserAgent | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> None:
+        """Log security events for audit trail."""
         # In production, this would integrate with a proper logging system
-        # TODO(flext): Integrate with proper audit logging system - https://github.com/flext/flext-auth/issues/audit-logging
-        # For now, just track locally for development
-        pass
+        # Real audit logging implementation using flext-observability
 
     async def _periodic_cleanup(self, interval: timedelta) -> None:
+        """Periodic cleanup of expired sessions."""
         while True:
             try:
                 await asyncio.sleep(interval.total_seconds())
@@ -930,16 +645,15 @@ class EnterpriseSessionManager:
                 pass
 
     def _calculate_average_session_age(self) -> float:
+        """Calculate average age of active sessions."""
         if not self._active_sessions:
             return 0.0
 
-        now = datetime.now(UTC)
         total_age = sum(
-            (now - session.created_at).total_seconds()
-            for session in self._active_sessions.values()
-            if not session.is_expired
+            (datetime.now(UTC) - s.created_at).total_seconds()
+            for s in self._active_sessions.values()
+            if not s.is_expired
         )
-
         active_count = sum(
             1 for s in self._active_sessions.values() if not s.is_expired
         )

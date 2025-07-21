@@ -12,46 +12,49 @@ __version__ = "0.1.0"
 
 # Domain layer exports
 # Application layer exports
-from flext_auth.application.auth_service import AuthenticationService
-from flext_auth.application.auth_service import EmailVerificationService
-from flext_auth.application.auth_service import PasswordService
-from flext_auth.domain.entities import Permission
-from flext_auth.domain.entities import Role
-from flext_auth.domain.entities import Session
-from flext_auth.domain.entities import User
-from flext_auth.domain.repositories import RoleRepository
-from flext_auth.domain.repositories import SessionRepository
-from flext_auth.domain.repositories import UserRepository
-from flext_auth.domain.value_objects import EmailVerificationToken
-from flext_auth.domain.value_objects import HashedPassword
-from flext_auth.domain.value_objects import PasswordResetToken
-from flext_auth.domain.value_objects import PlainPassword
-from flext_auth.domain.value_objects import RefreshToken
-from flext_auth.domain.value_objects import SessionToken
-from flext_auth.domain.value_objects import UserEmail
-from flext_auth.domain.value_objects import Username
-
 # Legacy configuration imports (backward compatibility)
-try:
-    from flext_auth.config import AuthSettings
-    from flext_auth.config import create_development_auth_config
-    from flext_auth.config import create_production_auth_config
-    from flext_auth.config import get_auth_settings
-except ImportError:
-    # Configuration module not available yet
-    pass
+from contextlib import suppress
+
+from flext_auth.application.auth_service import (
+    AuthenticationService,
+    EmailVerificationService,
+    PasswordService,
+)
+from flext_auth.domain.entities import Permission, Role, Session, User
+from flext_auth.domain.repositories import (
+    RoleRepository,
+    SessionRepository,
+    UserRepository,
+)
+from flext_auth.domain.value_objects import (
+    EmailVerificationToken,
+    HashedPassword,
+    PasswordResetToken,
+    PlainPassword,
+    RefreshToken,
+    SessionToken,
+    UserEmail,
+    Username,
+)
+
+with suppress(ImportError):
+    from flext_auth.config import (
+        AuthSettings,
+        create_development_auth_config,
+        create_production_auth_config,
+        get_auth_settings,
+    )
 
 # Simple API for easy adoption (backward compatibility)
-try:
-    from flext_auth.simple_api import authenticate_user
-    from flext_auth.simple_api import create_user
-    from flext_auth.simple_api import get_user_by_id
-    from flext_auth.simple_api import revoke_token
-    from flext_auth.simple_api import setup_auth
-    from flext_auth.simple_api import validate_token
-except ImportError:
-    # Simple API not available - use domain/application services
-    pass
+with suppress(ImportError):
+    from flext_auth.core.legacy.simple_api import (
+        authenticate_user,
+        create_user,
+        get_user_by_id,
+        revoke_token,
+        setup_auth,
+        validate_token,
+    )
 
 # Make common types and services available at package level
 __all__ = [

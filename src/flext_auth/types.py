@@ -1,35 +1,64 @@
-"""FLEXT Auth types - Modern Python 3.13 patterns.
+"""FLEXT Auth types - Unified typing system using flext-core.
 
-REFACTORED: Uses flext-core types and StrEnum patterns.
-Zero tolerance for duplication.
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
+This module imports from the unified typing system in flext-core and defines
+auth-specific types using modern Python 3.13 patterns and Pydantic v2.
 """
 
 from __future__ import annotations
 
 from enum import StrEnum
-from typing import Any
+from typing import Annotated, Any
 
-from flext_core.domain.types import UserId as CoreUserId
+# Import from unified core typing system
+from flext_core.domain.shared_types import IPAddress, Password, Token, UserId, Username
+from pydantic import Field, StringConstraints
 
-# Re-export core types for auth module
-UserID = CoreUserId
+# ==============================================================================
+# AUTH-SPECIFIC TYPE ALIASES USING CORE TYPES
+# ==============================================================================
 
-# Type aliases for authentication system
-HashedPassword = str
-PlaintextPassword = str
-JWTToken = str
-IPAddress = str
-UserAgent = str
-JWTClaims = dict[str, Any]
-SecurityHeaders = dict[str, str]
-UserPermissions = list[str]
+# Re-export core types with auth-specific aliases
+UserID = UserId  # Backward compatibility
+HashedPassword = Annotated[
+    str,
+    StringConstraints(min_length=60, max_length=60, pattern=r"^\$2[ayb]\$.{56}$"),
+    Field(description="Bcrypt hashed password"),
+]
+PlaintextPassword = Password
+JWTToken = Token
+UserAgent = Annotated[
+    str,
+    StringConstraints(min_length=1, max_length=512),
+    Field(description="HTTP User-Agent header"),
+]
+
+# Complex auth types
+type JWTClaims = dict[str, Any]
+type SecurityHeaders = dict[str, str]
+type UserPermissions = list[str]
+type RolePermissions = dict[str, list[str]]
+
+# JWT specific types
+type JWTSubject = str
+type JWTIssuer = str
+type JWTAudience = str | list[str]
+type JWTTokenId = str
+
+# Session types
+type SessionToken = str
+type DeviceFingerprint = str
+type SessionData = dict[str, Any]
+
+# ==============================================================================
+# AUTH-SPECIFIC ENUMS USING STRENUM
+# ==============================================================================
 
 
-class TokenType:
-    """Token types for authentication system.
-
-    Defines available token types for the authentication system.
-    """
+class TokenType(StrEnum):
+    """JWT token types for authentication system."""
 
     ACCESS = "access"
     REFRESH = "refresh"
@@ -37,13 +66,13 @@ class TokenType:
     VERIFICATION = "verification"
     API = "api"
     TEMPORARY = "temporary"
+    RESET_PASSWORD = "reset_password"
+    EMAIL_VERIFICATION = "email_verification"
+    PHONE_VERIFICATION = "phone_verification"
 
 
-class AuthenticationStatus:
-    """Authentication status enumeration.
-
-    Defines possible authentication outcomes.
-    """
+class AuthenticationStatus(StrEnum):
+    """Authentication status outcomes."""
 
     SUCCESS = "success"
     FAILED = "failed"
@@ -51,16 +80,19 @@ class AuthenticationStatus:
     REVOKED = "revoked"
     INVALID = "invalid"
     PENDING = "pending"
+    LOCKED = "locked"
+    RATE_LIMITED = "rate_limited"
+    REQUIRES_MFA = "requires_mfa"
 
 
-class SessionStatus:
-    """Session status enumeration.
-
-    Defines possible session states.
-    """
+class SessionStatus(StrEnum):
+    """Session status states."""
 
     ACTIVE = "active"
     EXPIRED = "expired"
+    TERMINATED = "terminated"
+    SUSPENDED = "suspended"
+    INVALID = "invalid"
 
 
 class PermissionScope(StrEnum):
@@ -72,40 +104,42 @@ class PermissionScope(StrEnum):
     ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
     EXECUTE = "execute"
     MANAGE = "manage"
+    CREATE = "create"
+    UPDATE = "update"
+    LIST = "list"
+    VIEW = "view"
     REVOKED = "revoked"
     INACTIVE = "inactive"
 
 
-class PermissionLevel:
-    """Permission levels for RBAC.
-
-    Defines hierarchical permission levels.
-    """
+class PermissionLevel(StrEnum):
+    """Hierarchical permission levels for RBAC."""
 
     READ = "read"
     WRITE = "write"
     ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
     SUPER_ADMIN = "super_REDACTED_LDAP_BIND_PASSWORD"
+    SYSTEM = "system"
+    ROOT = "root"
 
 
-class AuthProvider:
-    """Authentication providers.
-
-    Defines supported authentication provider types.
-    """
+class AuthProvider(StrEnum):
+    """Supported authentication provider types."""
 
     LOCAL = "local"
     LDAP = "ldap"
     OAUTH = "oauth"
+    OAUTH2 = "oauth2"
     SAML = "saml"
     JWT = "jwt"
+    GOOGLE = "google"
+    MICROSOFT = "microsoft"
+    GITHUB = "github"
+    FACEBOOK = "facebook"
 
 
-class JWTAlgorithm:
-    """JWT signing algorithms.
-
-    Defines supported JWT signing algorithms.
-    """
+class JWTAlgorithm(StrEnum):
+    """JWT signing algorithms."""
 
     HS256 = "HS256"
     HS384 = "HS384"
@@ -116,26 +150,26 @@ class JWTAlgorithm:
     ES256 = "ES256"
     ES384 = "ES384"
     ES512 = "ES512"
+    PS256 = "PS256"
+    PS384 = "PS384"
+    PS512 = "PS512"
 
 
-class UserStatus:
-    """User account status enumeration.
-
-    Defines possible user account states.
-    """
+class UserStatus(StrEnum):
+    """User account status states."""
 
     ACTIVE = "active"
     INACTIVE = "inactive"
     SUSPENDED = "suspended"
     PENDING_VERIFICATION = "pending_verification"
     LOCKED = "locked"
+    DELETED = "deleted"
+    ARCHIVED = "archived"
+    PENDING_APPROVAL = "pending_approval"
 
 
-class RoleType:
-    """User role types for authorization.
-
-    Defines standard role types in the system.
-    """
+class RoleType(StrEnum):
+    """Standard user role types."""
 
     ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
     USER = "user"
@@ -143,13 +177,13 @@ class RoleType:
     READONLY = "readonly"
     DEVELOPER = "developer"
     AUDITOR = "auditor"
+    GUEST = "guest"
+    MODERATOR = "moderator"
+    SUPER_ADMIN = "super_REDACTED_LDAP_BIND_PASSWORD"
 
 
-class SecurityEvent:
-    """Security events for audit logging.
-
-    Defines security events that should be logged for auditing.
-    """
+class SecurityEvent(StrEnum):
+    """Security events for audit logging."""
 
     LOGIN_SUCCESS = "login_success"
     LOGIN_FAILURE = "login_failure"
@@ -159,38 +193,64 @@ class SecurityEvent:
     PERMISSION_DENIED = "permission_denied"
     RATE_LIMIT_EXCEEDED = "rate_limit_exceeded"
     SUSPICIOUS_ACTIVITY = "suspicious_activity"
+    ACCOUNT_LOCKED = "account_locked"
+    ACCOUNT_UNLOCKED = "account_unlocked"
+    ROLE_ASSIGNED = "role_assigned"
+    ROLE_REVOKED = "role_revoked"
+    SESSION_CREATED = "session_created"
+    SESSION_TERMINATED = "session_terminated"
+    PASSWORD_RESET_REQUESTED = "password_reset_requested"
+    PASSWORD_RESET_COMPLETED = "password_reset_completed"
+    MFA_ENABLED = "mfa_enabled"
+    MFA_DISABLED = "mfa_disabled"
 
 
-class RateLimitWindow:
-    """Rate limiting time windows.
+class RateLimitWindow(StrEnum):
+    """Rate limiting time windows."""
 
-    Defines time windows for rate limiting calculations.
-    """
-
+    SECOND = "second"
     MINUTE = "minute"
     HOUR = "hour"
     DAY = "day"
     WEEK = "week"
+    MONTH = "month"
 
+
+# ==============================================================================
+# EXPORTS - ALL AUTH TYPES
+# ==============================================================================
 
 __all__ = [
     "AuthProvider",
     "AuthenticationStatus",
+    "DeviceFingerprint",
     "HashedPassword",
     "IPAddress",
     "JWTAlgorithm",
+    "JWTAudience",
     "JWTClaims",
+    "JWTIssuer",
+    "JWTSubject",
     "JWTToken",
+    "JWTTokenId",
+    "Password",
     "PermissionLevel",
+    "PermissionScope",
     "PlaintextPassword",
     "RateLimitWindow",
+    "RolePermissions",
     "RoleType",
     "SecurityEvent",
     "SecurityHeaders",
+    "SessionData",
     "SessionStatus",
+    "SessionToken",
+    "Token",
     "TokenType",
     "UserAgent",
     "UserID",
+    "UserId",
     "UserPermissions",
     "UserStatus",
+    "Username",
 ]

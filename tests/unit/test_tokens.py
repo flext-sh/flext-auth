@@ -3,29 +3,26 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import UTC
-from datetime import datetime as dt
-from datetime import timedelta
-from typing import Any
-from unittest.mock import AsyncMock
-from unittest.mock import MagicMock
-from unittest.mock import patch
+from datetime import UTC, datetime as dt, timedelta
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
-import pytest_asyncio
 
-from flext_auth.tokens import DatabaseTokenStorage
-from flext_auth.tokens import InMemoryTokenStorage
-from flext_auth.tokens import InMemoryTokenStorageAlternative
-from flext_auth.tokens import RedisTokenStorage
-from flext_auth.tokens import TokenBlacklist
-from flext_auth.tokens import TokenInclusionMode
-from flext_auth.tokens import TokenManager
-from flext_auth.tokens import TokenMetadata
-from flext_auth.tokens import TokenPasswordHasher
-from flext_auth.tokens import create_token_storage
-from flext_auth.tokens import get_domain_constants
+from flext_auth.tokens import (
+    DatabaseTokenStorage,
+    InMemoryTokenStorage,
+    InMemoryTokenStorageAlternative,
+    RedisTokenStorage,
+    TokenBlacklist,
+    TokenInclusionMode,
+    TokenManager,
+    TokenMetadata,
+    TokenPasswordHasher,
+    create_token_storage,
+    get_domain_constants,
+)
+from flext_auth.types import TokenType
 
 # NOTE: Only async tests should be marked with @pytest.mark.asyncio individually
 # Removed global pytestmark to avoid warnings on non-async tests
@@ -48,8 +45,8 @@ class TestTokenInclusionMode:
 
     def test_token_inclusion_mode_values(self) -> None:
         """Test TokenInclusionMode enum values."""
-        assert TokenInclusionMode.ACTIVE_ONLY == "active_only"
-        assert TokenInclusionMode.INCLUDE_EXPIRED == "include_expired"
+        assert TokenInclusionMode.ACTIVE_ONLY.value == "active_only"
+        assert TokenInclusionMode.INCLUDE_EXPIRED.value == "include_expired"
 
     def test_token_inclusion_mode_membership(self) -> None:
         """Test TokenInclusionMode enum membership."""
@@ -67,13 +64,14 @@ class TestTokenMetadata:
         return TokenMetadata(
             token_id="token123",
             user_id=uuid4(),
-            token_type="access",
+            token_type=TokenType.ACCESS,
             issued_at=dt.now(UTC),
             expires_at=dt.now(UTC) + timedelta(hours=1),
         )
 
     def test_token_metadata_creation(
-        self, sample_token_metadata: TokenMetadata,
+        self,
+        sample_token_metadata: TokenMetadata,
     ) -> None:
         """Test creating TokenMetadata instance."""
         assert sample_token_metadata.token_id == "token123"
@@ -87,7 +85,7 @@ class TestTokenMetadata:
         metadata = TokenMetadata(
             token_id="token123",
             user_id=uuid4(),
-            token_type="access",
+            token_type=TokenType.ACCESS,
             issued_at=dt.now(UTC),
             expires_at=dt.now(UTC) + timedelta(hours=1),
             ip_address="192.168.1.1",
@@ -105,7 +103,7 @@ class TestTokenMetadata:
         future_metadata = TokenMetadata(
             token_id="token123",
             user_id=uuid4(),
-            token_type="access",
+            token_type=TokenType.ACCESS,
             issued_at=dt.now(UTC),
             expires_at=dt.now(UTC) + timedelta(hours=1),
         )
@@ -115,7 +113,7 @@ class TestTokenMetadata:
         past_metadata = TokenMetadata(
             token_id="token123",
             user_id=uuid4(),
-            token_type="access",
+            token_type=TokenType.ACCESS,
             issued_at=dt.now(UTC) - timedelta(hours=2),
             expires_at=dt.now(UTC) - timedelta(hours=1),
         )
@@ -130,7 +128,7 @@ class TestTokenMetadata:
         revoked_metadata = TokenMetadata(
             token_id="token123",
             user_id=uuid4(),
-            token_type="access",
+            token_type=TokenType.ACCESS,
             issued_at=dt.now(UTC),
             expires_at=dt.now(UTC) + timedelta(hours=1),
             revoked_at=dt.now(UTC),
@@ -145,7 +143,7 @@ class TestTokenMetadata:
         valid_metadata = TokenMetadata(
             token_id="token123",
             user_id=uuid4(),
-            token_type="access",
+            token_type=TokenType.ACCESS,
             issued_at=dt.now(UTC),
             expires_at=dt.now(UTC) + timedelta(hours=1),
         )
@@ -155,7 +153,7 @@ class TestTokenMetadata:
         expired_metadata = TokenMetadata(
             token_id="token123",
             user_id=uuid4(),
-            token_type="access",
+            token_type=TokenType.ACCESS,
             issued_at=dt.now(UTC) - timedelta(hours=2),
             expires_at=dt.now(UTC) - timedelta(hours=1),
         )
@@ -165,7 +163,7 @@ class TestTokenMetadata:
         revoked_metadata = TokenMetadata(
             token_id="token123",
             user_id=uuid4(),
-            token_type="access",
+            token_type=TokenType.ACCESS,
             issued_at=dt.now(UTC),
             expires_at=dt.now(UTC) + timedelta(hours=1),
             revoked_at=dt.now(UTC),
@@ -320,14 +318,16 @@ class TestTokenBlacklist:
         return TokenMetadata(
             token_id="token123",
             user_id=uuid4(),
-            token_type="access",
+            token_type=TokenType.ACCESS,
             issued_at=dt.now(UTC),
             expires_at=dt.now(UTC) + timedelta(hours=1),
         )
 
     @pytest.mark.asyncio
     async def test_revoke_token(
-        self, blacklist: TokenBlacklist, sample_metadata: TokenMetadata,
+        self,
+        blacklist: TokenBlacklist,
+        sample_metadata: TokenMetadata,
     ) -> None:
         """Test revoking a token."""
         await blacklist.revoke_token(
@@ -364,14 +364,14 @@ class TestTokenBlacklist:
         metadata1 = TokenMetadata(
             token_id="token1",
             user_id=user_id,
-            token_type="access",
+            token_type=TokenType.ACCESS,
             issued_at=dt.now(UTC),
             expires_at=dt.now(UTC) + timedelta(hours=1),
         )
         metadata2 = TokenMetadata(
             token_id="token2",
             user_id=user_id,
-            token_type="refresh",
+            token_type=TokenType.REFRESH,
             issued_at=dt.now(UTC),
             expires_at=dt.now(UTC) + timedelta(days=7),
         )
@@ -440,14 +440,16 @@ class TestTokenManager:
         return TokenMetadata(
             token_id="token123",
             user_id=uuid4(),
-            token_type="access",
+            token_type=TokenType.ACCESS,
             issued_at=dt.now(UTC),
             expires_at=dt.now(UTC) + timedelta(hours=1),
         )
 
     @pytest.mark.asyncio
     async def test_register_token(
-        self, token_manager: TokenManager, sample_metadata: TokenMetadata,
+        self,
+        token_manager: TokenManager,
+        sample_metadata: TokenMetadata,
     ) -> None:
         """Test registering a token."""
         await token_manager.register_token(sample_metadata.token_id, sample_metadata)
@@ -457,7 +459,9 @@ class TestTokenManager:
 
     @pytest.mark.asyncio
     async def test_validate_token(
-        self, token_manager: TokenManager, sample_metadata: TokenMetadata,
+        self,
+        token_manager: TokenManager,
+        sample_metadata: TokenMetadata,
     ) -> None:
         """Test validating a token."""
         # Register token first
@@ -476,7 +480,9 @@ class TestTokenManager:
 
     @pytest.mark.asyncio
     async def test_revoke_token(
-        self, token_manager: TokenManager, sample_metadata: TokenMetadata,
+        self,
+        token_manager: TokenManager,
+        sample_metadata: TokenMetadata,
     ) -> None:
         """Test revoking a token."""
         # Register token first
@@ -518,7 +524,7 @@ class TestTokenManager:
         # Revoke all access tokens for user
         revoked_count = await token_manager.revoke_user_tokens(
             user_id,
-            token_type="access",
+            token_type=TokenType.ACCESS,
             revoked_by=uuid4(),
             reason="Policy change",
         )
@@ -533,7 +539,7 @@ class TestTokenManager:
         expired_metadata = TokenMetadata(
             token_id="expired_token",
             user_id=uuid4(),
-            token_type="access",
+            token_type=TokenType.ACCESS,
             issued_at=dt.now(UTC) - timedelta(hours=2),
             expires_at=dt.now(UTC) - timedelta(hours=1),
         )
@@ -554,7 +560,7 @@ class TestTokenManager:
         active_metadata = TokenMetadata(
             token_id="active_token",
             user_id=user_id,
-            token_type="access",
+            token_type=TokenType.ACCESS,
             issued_at=dt.now(UTC),
             expires_at=dt.now(UTC) + timedelta(hours=1),
         )
@@ -562,7 +568,7 @@ class TestTokenManager:
         expired_metadata = TokenMetadata(
             token_id="expired_token",
             user_id=user_id,
-            token_type="access",
+            token_type=TokenType.ACCESS,
             issued_at=dt.now(UTC) - timedelta(hours=2),
             expires_at=dt.now(UTC) - timedelta(hours=1),
         )
@@ -665,7 +671,8 @@ class TestCreateTokenStorage:
         """Test creating database storage."""
         mock_session_factory = MagicMock()
         storage = create_token_storage(
-            "database", db_session_factory=mock_session_factory,
+            "database",
+            db_session_factory=mock_session_factory,
         )
         assert isinstance(storage, DatabaseTokenStorage)
 
@@ -707,7 +714,9 @@ class TestRedisTokenStorage:
 
     @pytest.mark.asyncio
     async def test_store(
-        self, redis_storage: RedisTokenStorage, mock_redis: MagicMock,
+        self,
+        redis_storage: RedisTokenStorage,
+        mock_redis: MagicMock,
     ) -> None:
         """Test storing value in Redis."""
         await redis_storage.store("test_key", "test_value")
@@ -719,7 +728,9 @@ class TestRedisTokenStorage:
 
     @pytest.mark.asyncio
     async def test_store_with_ttl(
-        self, redis_storage: RedisTokenStorage, mock_redis: MagicMock,
+        self,
+        redis_storage: RedisTokenStorage,
+        mock_redis: MagicMock,
     ) -> None:
         """Test storing value with TTL."""
         ttl = timedelta(seconds=3600)
@@ -733,7 +744,9 @@ class TestRedisTokenStorage:
 
     @pytest.mark.asyncio
     async def test_get(
-        self, redis_storage: RedisTokenStorage, mock_redis: MagicMock,
+        self,
+        redis_storage: RedisTokenStorage,
+        mock_redis: MagicMock,
     ) -> None:
         """Test getting value from Redis."""
         mock_redis.get.return_value = "test_value"
@@ -745,7 +758,9 @@ class TestRedisTokenStorage:
 
     @pytest.mark.asyncio
     async def test_delete(
-        self, redis_storage: RedisTokenStorage, mock_redis: MagicMock,
+        self,
+        redis_storage: RedisTokenStorage,
+        mock_redis: MagicMock,
     ) -> None:
         """Test deleting value from Redis."""
         mock_redis.delete.return_value = 1
@@ -757,7 +772,9 @@ class TestRedisTokenStorage:
 
     @pytest.mark.asyncio
     async def test_exists(
-        self, redis_storage: RedisTokenStorage, mock_redis: MagicMock,
+        self,
+        redis_storage: RedisTokenStorage,
+        mock_redis: MagicMock,
     ) -> None:
         """Test checking if key exists in Redis."""
         mock_redis.exists.return_value = 1
@@ -769,23 +786,27 @@ class TestRedisTokenStorage:
 
     @pytest.mark.asyncio
     async def test_keys(
-        self, redis_storage: RedisTokenStorage, mock_redis: MagicMock,
+        self,
+        redis_storage: RedisTokenStorage,
+        mock_redis: MagicMock,
     ) -> None:
         """Test getting keys by pattern from Redis."""
         mock_redis.keys.return_value = [b"flext:tokens:key1", b"flext:tokens:key2"]
 
         result = await redis_storage.keys("pattern*")
 
-        assert result == [b"key1", b"key2"]
+        assert result == ["key1", "key2"]
         mock_redis.keys.assert_called_once_with("flext:tokens:pattern*")
 
     @pytest.mark.asyncio
     async def test_close(
-        self, redis_storage: RedisTokenStorage, mock_redis: MagicMock,
+        self,
+        redis_storage: RedisTokenStorage,
+        mock_redis: MagicMock,
     ) -> None:
         """Test closing Redis connection."""
         await redis_storage.close()
-        mock_redis.aclose.assert_called_once()
+        mock_redis.close.assert_called_once()
 
 
 class TestDatabaseTokenStorage:
@@ -803,7 +824,8 @@ class TestDatabaseTokenStorage:
 
     @pytest.mark.asyncio
     async def test_database_storage_methods(
-        self, db_storage: DatabaseTokenStorage,
+        self,
+        db_storage: DatabaseTokenStorage,
     ) -> None:
         """Test that DatabaseTokenStorage has all required methods implemented."""
         # Just verify the methods exist and are callable
@@ -827,7 +849,8 @@ class TestInMemoryTokenStorageAlternative:
 
     @pytest.mark.asyncio
     async def test_alternative_storage_basic_operations(
-        self, alt_storage: InMemoryTokenStorageAlternative,
+        self,
+        alt_storage: InMemoryTokenStorageAlternative,
     ) -> None:
         """Test basic operations of alternative storage."""
         # Store and retrieve
@@ -846,7 +869,8 @@ class TestInMemoryTokenStorageAlternative:
 
     @pytest.mark.asyncio
     async def test_alternative_storage_ttl(
-        self, alt_storage: InMemoryTokenStorageAlternative,
+        self,
+        alt_storage: InMemoryTokenStorageAlternative,
     ) -> None:
         """Test TTL functionality in alternative storage."""
         await alt_storage.store("ttl_key", "ttl_value", timedelta(seconds=1))
@@ -862,7 +886,8 @@ class TestInMemoryTokenStorageAlternative:
 
     @pytest.mark.asyncio
     async def test_alternative_storage_cleanup(
-        self, alt_storage: InMemoryTokenStorageAlternative,
+        self,
+        alt_storage: InMemoryTokenStorageAlternative,
     ) -> None:
         """Test cleanup in alternative storage."""
         # Store some tokens with short TTL
@@ -896,7 +921,7 @@ class TestIntegrationScenarios:
         metadata = TokenMetadata(
             token_id="integration_token",
             user_id=uuid4(),
-            token_type="access",
+            token_type=TokenType.ACCESS,
             issued_at=dt.now(UTC),
             expires_at=dt.now(UTC) + timedelta(hours=1),
             ip_address="192.168.1.1",

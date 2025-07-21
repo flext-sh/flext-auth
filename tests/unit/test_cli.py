@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-from unittest.mock import patch
+from typing import Any
+from unittest.mock import MagicMock, patch
 
 from click.testing import CliRunner
 
-from flext_auth.cli import cli
-from flext_auth.cli import config
-from flext_auth.cli import main
-from flext_auth.cli import test
+from flext_auth.cli import cli, config, main, test
 
 
 class TestCLI:
@@ -24,9 +22,9 @@ class TestCLI:
 
     @patch("flext_auth.cli.get_auth_settings")
     @patch("flext_auth.cli.click.echo")
-    def test_config_command(self, mock_echo, mock_get_settings) -> None:
+    def test_config_command(self, mock_echo: Any, mock_get_settings: Any) -> None:
         """Test config command."""
-        # Mock settings
+        # Mock settings matching AuthConfig structure
         mock_settings = type(
             "Settings",
             (),
@@ -35,9 +33,9 @@ class TestCLI:
                 "project_version": "1.0.0",
                 "environment": "development",
                 "debug": True,
-                "jwt": type("JWT", (), {"algorithm": "HS256"})(),
+                "jwt_algorithm": "HS256",  # Direct attribute from AuthConfigMixin
                 "database_url": "postgresql://localhost/flext_auth",
-                "redis": type("Redis", (), {"url": "redis://localhost:6379"})(),
+                "redis_url": "redis://localhost:6379/0",  # Correct redis attribute name
             },
         )()
         mock_get_settings.return_value = mock_settings
@@ -50,14 +48,14 @@ class TestCLI:
 
     @patch("flext_auth.cli.get_auth_settings")
     @patch("flext_auth.cli.click.echo")
-    def test_test_command_success(self, mock_echo, mock_get_settings) -> None:
+    def test_test_command_success(self, mock_echo: Any, mock_get_settings: Any) -> None:
         """Test test command success."""
         # Mock settings
         mock_settings = type(
             "Settings",
             (),
             {
-                "project_name": "flext-auth",
+                "project_name": "flext-api.auth.flext-auth",
                 "environment": "development",
             },
         )()
@@ -70,7 +68,7 @@ class TestCLI:
         mock_get_settings.assert_called_once()
 
     @patch("flext_auth.cli.get_auth_settings")
-    def test_test_command_failure(self, mock_get_settings) -> None:
+    def test_test_command_failure(self, mock_get_settings: MagicMock) -> None:
         """Test test command failure."""
         # Mock settings to raise exception
         mock_get_settings.side_effect = Exception("Configuration error")
@@ -81,7 +79,7 @@ class TestCLI:
         assert result.exit_code == 1  # click.Abort
 
     @patch("flext_auth.cli.cli")
-    def test_main_function(self, mock_cli) -> None:
+    def test_main_function(self, mock_cli: MagicMock) -> None:
         """Test main function calls CLI."""
         main()
         mock_cli.assert_called_once()

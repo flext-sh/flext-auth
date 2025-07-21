@@ -3,17 +3,74 @@
 from __future__ import annotations
 
 import tempfile
-from datetime import UTC
-from datetime import datetime
-from datetime import timedelta
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from unittest.mock import patch
+from typing import TYPE_CHECKING
+from unittest.mock import MagicMock, patch
 
 import jwt
 import pytest
 
 from flext_auth.infrastructure.config import AuthConfig
-from flext_auth.infrastructure.jwt import JWTService
+
+if TYPE_CHECKING:
+    from flext_auth.infrastructure.jwt import JWTService
+
+
+def create_jwt_service_from_config(config: AuthConfig) -> JWTService:
+    """Helper function to create JWTService using dependency injection."""
+    from flext_auth.infrastructure.adapters import (
+        create_filesystem,
+        create_jwt_adapter,
+        create_logger,
+        create_time_provider,
+    )
+    from flext_auth.infrastructure.jwt import create_jwt_service
+
+    # Create dependency adapters
+    jwt_library = create_jwt_adapter()
+    filesystem = create_filesystem()
+    time_provider = create_time_provider()
+    logger = create_logger("flext_auth.jwt")
+
+    # Create a mock configuration adapter from AuthConfig
+    class MockConfigurationAdapter:
+        def __init__(self, config: AuthConfig) -> None:
+            self._config = config
+
+        def get_string(self, key: str, default: str | None = None) -> str:
+            if key == "jwt_algorithm":
+                return self._config.jwt_algorithm
+            if key == "jwt_secret_key":
+                return self._config.jwt_secret_key
+            if key == "jwt_private_key_path":
+                return getattr(self._config, "jwt_private_key_path", "")
+            if key == "jwt_public_key_path":
+                return getattr(self._config, "jwt_public_key_path", "")
+            return default or ""
+
+        def get_int(self, key: str, default: int | None = None) -> int:
+            if key == "jwt_access_token_expire_minutes":
+                return self._config.jwt_access_token_expire_minutes
+            if key == "jwt_refresh_token_expire_days":
+                return self._config.jwt_refresh_token_expire_days
+            return default or 0
+
+        def get_bool(self, key: str, default: bool | None = None) -> bool:
+            return default or False
+
+        def get_timedelta(self, key: str, default: timedelta | None = None) -> timedelta:
+            return default or timedelta(seconds=0)
+
+    config_adapter = MockConfigurationAdapter(config)
+
+    return create_jwt_service(
+        jwt_library=jwt_library,
+        config=config_adapter,
+        filesystem=filesystem,
+        time_provider=time_provider,
+        logger=logger,
+    )
 
 
 class TestJWTService:
@@ -43,7 +100,7 @@ class TestJWTService:
     @pytest.fixture
     def jwt_service_hs256(self, auth_config_hs256: AuthConfig) -> JWTService:
         """Create JWTService with HS256 algorithm."""
-        return JWTService(auth_config_hs256)
+        return create_jwt_service_from_config(auth_config_hs256)
 
     @pytest.fixture
     def rsa_key_pair(self) -> tuple[str, str]:
@@ -73,17 +130,19 @@ QIDAQAB
         return private_key, public_key
 
     def test_jwt_service_initialization_hs256(
-        self, auth_config_hs256: AuthConfig,
+        self,
+        auth_config_hs256: AuthConfig,
     ) -> None:
         """Test JWTService initialization with HS256 algorithm."""
-        service = JWTService(auth_config_hs256)
+        service = create_jwt_service_from_config(auth_config_hs256)
 
         assert service._algorithm == "HS256"
         assert service._private_key == "test-secret-key"
         assert service._public_key == "test-secret-key"
 
     def test_jwt_service_initialization_rs256_with_key_paths(
-        self, rsa_key_pair: tuple[str, str],
+        self,
+        rsa_key_pair: tuple[str, str],
     ) -> None:
         """Test JWTService initialization with RS256 and key file paths."""
         private_key, public_key = rsa_key_pair
@@ -102,7 +161,7 @@ QIDAQAB
                 jwt_public_key_path=str(public_key_path),
             )
 
-            service = JWTService(config)
+            service = create_jwt_service_from_config(config)
 
             assert service._algorithm == "RS256"
             assert service._private_key == private_key
@@ -116,7 +175,7 @@ QIDAQAB
             jwt_public_key_path=None,
         )
 
-        service = JWTService(config)
+        service = create_jwt_service_from_config(config)
 
         assert service._algorithm == "RS256"
         assert service._private_key is None
@@ -153,7 +212,8 @@ QIDAQAB
         assert "iat" in decoded
 
     def test_create_token_with_custom_token_type(
-        self, jwt_service_hs256: JWTService,
+        self,
+        jwt_service_hs256: JWTService,
     ) -> None:
         """Test token creation with custom token type."""
         user_id = "user123"
@@ -180,7 +240,8 @@ QIDAQAB
         assert decoded["username"] == username
 
     def test_create_token_with_additional_claims(
-        self, jwt_service_hs256: JWTService,
+        self,
+        jwt_service_hs256: JWTService,
     ) -> None:
         """Test token creation with additional claims."""
         user_id = "user123"
@@ -212,7 +273,8 @@ QIDAQAB
         assert decoded["tenant_id"] == "tenant123"
 
     def test_create_token_default_expiration_access(
-        self, jwt_service_hs256: JWTService,
+        self,
+        jwt_service_hs256: JWTService,
     ) -> None:
         """Test token creation with default access token expiration."""
         user_id = "user123"
@@ -242,7 +304,8 @@ QIDAQAB
         assert abs((exp_datetime - expected_exp).total_seconds()) < 60
 
     def test_create_token_default_expiration_refresh(
-        self, jwt_service_hs256: JWTService,
+        self,
+        jwt_service_hs256: JWTService,
     ) -> None:
         """Test token creation with default refresh token expiration."""
         user_id = "user123"
@@ -278,7 +341,7 @@ QIDAQAB
             jwt_private_key_path=None,
             jwt_public_key_path=None,
         )
-        service = JWTService(config)
+        service = create_jwt_service_from_config(config)
 
         with pytest.raises(ValueError, match="Private key not configured"):
             service.create_token(
@@ -308,7 +371,8 @@ QIDAQAB
         assert claims["token_type"] == "access"
 
     def test_decode_token_invalid_signature(
-        self, jwt_service_hs256: JWTService,
+        self,
+        jwt_service_hs256: JWTService,
     ) -> None:
         """Test token decoding with invalid signature."""
         # Create token with different secret
@@ -320,7 +384,7 @@ QIDAQAB
 
         # Should raise ValueError for invalid signature
         with pytest.raises(ValueError, match="Invalid token"):
-            jwt_service_hs256.decode_token(fake_token)
+            jwt_service_hs256.decode_token(str(fake_token))
 
     def test_decode_token_expired(self, jwt_service_hs256: JWTService) -> None:
         """Test token decoding with expired token."""
@@ -341,7 +405,7 @@ QIDAQAB
 
         # Should raise ValueError for expired token
         with pytest.raises(ValueError, match="Token has expired"):
-            jwt_service_hs256.decode_token(expired_token)
+            jwt_service_hs256.decode_token(str(expired_token))
 
     def test_decode_token_malformed(self, jwt_service_hs256: JWTService) -> None:
         """Test token decoding with malformed token."""
@@ -365,13 +429,13 @@ QIDAQAB
             jwt_private_key_path=None,
             jwt_public_key_path=None,
         )
-        service = JWTService(config)
+        service = create_jwt_service_from_config(config)
 
         with pytest.raises(ValueError, match="Public key not configured"):
             service.decode_token("some.jwt.token")
 
     @patch("flext_auth.infrastructure.jwt.Path.read_text")
-    def test_jwt_service_rs256_file_not_found(self, mock_read_text) -> None:
+    def test_jwt_service_rs256_file_not_found(self, mock_read_text: MagicMock) -> None:
         """Test JWTService with RS256 when key files don't exist."""
         mock_read_text.side_effect = FileNotFoundError("Key file not found")
 
@@ -382,7 +446,7 @@ QIDAQAB
         )
 
         with pytest.raises(FileNotFoundError):
-            JWTService(config)
+            create_jwt_service_from_config(config)
 
     def test_jwt_service_algorithm_variants(self) -> None:
         """Test JWTService with various JWT algorithms."""
@@ -393,7 +457,7 @@ QIDAQAB
                 jwt_secret_key="test-secret",
                 jwt_algorithm=algorithm,
             )
-            service = JWTService(config)
+            service = create_jwt_service_from_config(config)
             assert service._algorithm == algorithm
             assert service._private_key == "test-secret"
             assert service._public_key == "test-secret"
@@ -406,7 +470,7 @@ QIDAQAB
                 jwt_private_key_path=None,
                 jwt_public_key_path=None,
             )
-            service = JWTService(config)
+            service = create_jwt_service_from_config(config)
             assert service._algorithm == algorithm
             assert service._private_key is None
             assert service._public_key is None
@@ -423,7 +487,7 @@ class TestJWTServiceIntegration:
             jwt_access_token_expire_minutes=30,
             jwt_refresh_token_expire_days=7,
         )
-        service = JWTService(config)
+        service = create_jwt_service_from_config(config)
 
         user_id = "user123"
         username = "testuser"
@@ -464,7 +528,7 @@ class TestJWTServiceIntegration:
             jwt_secret_key="test-secret",
             jwt_algorithm="HS256",
         )
-        service = JWTService(config)
+        service = create_jwt_service_from_config(config)
 
         token = service.create_token(
             user_id="user123",
@@ -489,7 +553,7 @@ class TestJWTServiceIntegration:
             jwt_secret_key="test-secret",
             jwt_algorithm="HS256",
         )
-        service = JWTService(config)
+        service = create_jwt_service_from_config(config)
 
         # Create token with unique identifier
         token = service.create_token(
@@ -515,7 +579,7 @@ class TestJWTServiceIntegration:
             jwt_secret_key="test-secret",
             jwt_algorithm="HS256",
         )
-        service = JWTService(config)
+        service = create_jwt_service_from_config(config)
 
         user_id = "user123"
         username = "testuser"

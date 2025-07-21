@@ -2,59 +2,56 @@
 
 from __future__ import annotations
 
-from unittest.mock import Mock
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pytest
+from flext_core.domain.shared_types import Environment
 
-from flext_auth.config import AuthSettings
-from flext_auth.config import JWTConfig as JWTSettings
-from flext_auth.config import RedisConfig as RedisSettings
-from flext_auth.config import get_auth_settings
+from flext_auth.config import AuthConfig, AuthSettings, get_auth_settings
 
 
-class TestJWTSettings:
-    """Test JWT configuration settings."""
+class TestAuthConfigJWTSettings:
+    """Test JWT configuration settings in AuthConfig."""
 
     def test_jwt_settings_creation(self) -> None:
         """Test JWT settings can be created with defaults."""
-        settings = JWTSettings()
-        assert settings.algorithm == "HS256"
-        assert settings.access_token_expire_minutes == 30
-        assert settings.refresh_token_expire_days == 7
-        assert settings.secret_key is not None
+        settings = AuthConfig()
+        assert settings.jwt_algorithm == "HS256"
+        assert settings.jwt_access_token_expire_minutes == 30
+        assert settings.jwt_refresh_token_expire_days == 7
+        assert settings.jwt_secret_key is not None
 
     def test_jwt_settings_custom_values(self) -> None:
         """Test JWT settings with custom values."""
-        settings = JWTSettings(
-            algorithm="RS256",
-            access_token_expire_minutes=60,
-            refresh_token_expire_days=14,
-            secret_key="custom-secret",
+        settings = AuthConfig(
+            jwt_algorithm="RS256",
+            jwt_access_token_expire_minutes=60,
+            jwt_refresh_token_expire_days=14,
+            jwt_secret_key="custom-secret",
         )
-        assert settings.algorithm == "RS256"
-        assert settings.access_token_expire_minutes == 60
-        assert settings.refresh_token_expire_days == 14
-        assert settings.secret_key == "custom-secret"
+        assert settings.jwt_algorithm == "RS256"
+        assert settings.jwt_access_token_expire_minutes == 60
+        assert settings.jwt_refresh_token_expire_days == 14
+        assert settings.jwt_secret_key == "custom-secret"
 
 
-class TestRedisSettings:
-    """Test Redis configuration settings."""
+class TestAuthConfigRedisSettings:
+    """Test Redis configuration settings in AuthConfig."""
 
     def test_redis_settings_creation(self) -> None:
         """Test Redis settings can be created with defaults."""
-        settings = RedisSettings()
-        assert settings.url == "redis://localhost:6379/0"
-        assert settings.max_connections == 50
+        settings = AuthConfig()
+        assert settings.redis_url == "redis://localhost:6379/0"
+        assert settings.redis_pool_size == 10
 
     def test_redis_settings_custom_values(self) -> None:
         """Test Redis settings with custom values."""
-        settings = RedisSettings(
-            url="redis://prod:6379/1",
-            max_connections=100,
+        settings = AuthConfig(
+            redis_url="redis://prod:6379/1",
+            redis_pool_size=100,
         )
-        assert settings.url == "redis://prod:6379/1"
-        assert settings.max_connections == 100
+        assert settings.redis_url == "redis://prod:6379/1"
+        assert settings.redis_pool_size == 100
 
 
 class TestAuthSettings:
@@ -64,48 +61,49 @@ class TestAuthSettings:
         """Test auth settings can be created with defaults."""
         settings = AuthSettings()
         assert settings.project_name == "flext-auth"
-        assert settings.project_version == "0.7.0"
+        assert settings.project_version == "0.1.0"
         assert settings.environment == "development"
-        assert settings.debug is True
-        assert isinstance(settings.jwt, JWTSettings)
-        assert isinstance(settings.redis, RedisSettings)
+        assert settings.debug is False
+        # JWT and Redis settings are now part of the same config
+        assert settings.jwt_algorithm == "HS256"
+        assert settings.redis_url == "redis://localhost:6379/0"
         assert settings.database_url is not None
 
     def test_auth_settings_production(self) -> None:
         """Test auth settings for production environment."""
         settings = AuthSettings(
-            environment="production",
+            environment=Environment.PRODUCTION,
             debug=False,
             database_url="postgresql://prod:5432/flext_auth",
         )
-        assert settings.environment == "production"
+        assert settings.environment == Environment.PRODUCTION
         assert settings.debug is False
         assert settings.database_url == "postgresql://prod:5432/flext_auth"
 
-    def test_auth_settings_jwt_nested(self) -> None:
-        """Test auth settings with nested JWT configuration."""
-        jwt_config = JWTSettings(algorithm="RS256")
-        settings = AuthSettings(jwt=jwt_config)
-        assert settings.jwt.algorithm == "RS256"
+    def test_auth_settings_jwt_configuration(self) -> None:
+        """Test auth settings with JWT configuration."""
+        settings = AuthSettings(jwt_algorithm="RS256")
+        assert settings.jwt_algorithm == "RS256"
 
-    def test_auth_settings_redis_nested(self) -> None:
-        """Test auth settings with nested Redis configuration."""
-        redis_config = RedisSettings(url="redis://custom:6379/2")
-        settings = AuthSettings(redis=redis_config)
-        assert settings.redis.url == "redis://custom:6379/2"
+    def test_auth_settings_redis_configuration(self) -> None:
+        """Test auth settings with Redis configuration."""
+        settings = AuthSettings(redis_url="redis://custom:6379/2")
+        assert settings.redis_url == "redis://custom:6379/2"
 
 
 class TestGetAuthSettings:
     """Test get_auth_settings function."""
 
-    @patch("flext_auth.config.AuthSettings")
-    def test_get_auth_settings_caching(self, mock_auth_settings) -> None:
+    @patch("flext_auth.config.AuthConfig")
+    def test_get_auth_settings_caching(self, mock_auth_config: Mock) -> None:
         """Test that settings are cached on subsequent calls."""
         mock_instance = Mock()
-        mock_auth_settings.return_value = mock_instance
+        mock_auth_config.return_value = mock_instance
 
         # Clear any cached settings
-        get_auth_settings._cache = None
+        import flext_auth.config
+
+        flext_auth.config._settings = None
 
         # First call
         result1 = get_auth_settings()
@@ -115,23 +113,27 @@ class TestGetAuthSettings:
 
         # Should be the same instance (cached)
         assert result1 is result2
-        mock_auth_settings.assert_called_once()
+        mock_auth_config.assert_called_once()
 
     def test_get_auth_settings_returns_auth_settings(self) -> None:
         """Test that get_auth_settings returns AuthSettings instance."""
         # Clear cache first
-        get_auth_settings._cache = None
+        import flext_auth.config
+
+        flext_auth.config._settings = None
 
         settings = get_auth_settings()
         assert isinstance(settings, AuthSettings)
 
-    @patch("flext_auth.config.AuthSettings")
-    def test_get_auth_settings_error_handling(self, mock_auth_settings) -> None:
+    @patch("flext_auth.config.AuthConfig")
+    def test_get_auth_settings_error_handling(self, mock_auth_config: Mock) -> None:
         """Test error handling in get_auth_settings."""
-        mock_auth_settings.side_effect = Exception("Configuration error")
+        mock_auth_config.side_effect = Exception("Configuration error")
 
         # Clear cache
-        get_auth_settings._cache = None
+        import flext_auth.config
+
+        flext_auth.config._settings = None
 
         with pytest.raises(Exception, match="Configuration error"):
             get_auth_settings()
@@ -139,7 +141,9 @@ class TestGetAuthSettings:
     def test_get_auth_settings_validates_settings(self) -> None:
         """Test that returned settings have expected attributes."""
         # Clear cache
-        get_auth_settings._cache = None
+        import flext_auth.config
+
+        flext_auth.config._settings = None
 
         settings = get_auth_settings()
 
@@ -148,12 +152,16 @@ class TestGetAuthSettings:
         assert hasattr(settings, "project_version")
         assert hasattr(settings, "environment")
         assert hasattr(settings, "debug")
-        assert hasattr(settings, "jwt")
-        assert hasattr(settings, "redis")
         assert hasattr(settings, "database_url")
 
-        # Verify nested settings
-        assert hasattr(settings.jwt, "algorithm")
-        assert hasattr(settings.jwt, "secret_key")
-        assert hasattr(settings.redis, "url")
-        assert hasattr(settings.redis, "max_connections")
+        # Verify JWT settings (direct attributes from AuthConfigMixin)
+        assert hasattr(settings, "jwt_algorithm")
+        assert hasattr(settings, "jwt_secret_key")
+        assert hasattr(settings, "jwt_access_token_expire_minutes")
+        assert hasattr(settings, "jwt_refresh_token_expire_days")
+
+        # Verify Redis settings (direct attributes from RedisConfigMixin)
+        assert hasattr(settings, "redis_url")
+        assert hasattr(settings, "redis_pool_size")
+        assert hasattr(settings, "redis_max_connections")
+        assert hasattr(settings, "redis_timeout")

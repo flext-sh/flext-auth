@@ -5,19 +5,14 @@ Command pattern implementation for CQRS architecture.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-from typing import Any
-from typing import Literal
+from datetime import timedelta  # noqa: TC003
+from typing import Any, Literal
+from uuid import UUID  # noqa: TC003
 
-from pydantic import BaseModel
-from pydantic import ConfigDict
-from pydantic import Field
+from flext_core import Field
+from pydantic import BaseModel, ConfigDict
 
-if TYPE_CHECKING:
-    from datetime import timedelta
-    from uuid import UUID
-
-    from flext_auth.domain.value_objects import UserStatus
+from flext_auth.domain.value_objects import UserStatus  # noqa: TC001
 
 # Type alias for token types based on AuthToken validation
 TokenType = Literal["access", "refresh", "api", "session"]
@@ -65,15 +60,15 @@ class ChangePasswordCommand(Command):
 
     user_id: UUID
     current_password: str | None = None
-    new_password: str
+    new_password: str = Field(..., min_length=1)
 
 
 class ResetPasswordCommand(Command):
     """Command to reset user password."""
 
     user_id: UUID
-    new_password: str
-    reset_token: str
+    new_password: str = Field(..., min_length=1)
+    reset_token: str = Field(..., min_length=1)
 
 
 class AuthenticateUserCommand(Command):
@@ -82,6 +77,7 @@ class AuthenticateUserCommand(Command):
     username: str = Field(..., min_length=1)
     password: str | None = None
     user_agent: str | None = None
+    ip_address: str | None = None
 
 
 class LogoutUserCommand(Command):
@@ -167,7 +163,7 @@ class VerifyEmailCommand(Command):
     """Command to verify user email."""
 
     user_id: UUID
-    verification_token: str
+    verification_token: str = Field(..., min_length=1)
 
 
 class SendPasswordResetCommand(Command):

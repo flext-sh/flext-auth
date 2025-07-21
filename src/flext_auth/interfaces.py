@@ -2,28 +2,26 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-from typing import Protocol
-from typing import runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
     import datetime
-    from collections.abc import Mapping
-    from collections.abc import Sequence
+    from collections.abc import Mapping, Sequence
     from typing import Any
 
     from flext_auth.domain.entities import User as DomainUser
-    from flext_auth.models import User
-    from flext_auth.types import IPAddress
-    from flext_auth.types import JWTClaims
-    from flext_auth.types import JWTToken
-    from flext_auth.types import PlaintextPassword
-    from flext_auth.types import SecurityHeaders
     from flext_auth.tokens import TokenMetadata
-    from flext_auth.types import TokenType
-    from flext_auth.types import UserAgent
-    from flext_auth.types import UserID
-    from flext_auth.types import UserPermissions
+    from flext_auth.types import (
+        IPAddress,
+        JWTClaims,
+        JWTToken,
+        PlaintextPassword,
+        SecurityHeaders,
+        TokenType,
+        UserAgent,
+        UserID,
+        UserPermissions,
+    )
 
 # Forward reference for TokenPair
 
@@ -174,50 +172,16 @@ class TokenValidator(Protocol):
         ...
 
 
+# ==============================================================================
+# INTERFACE SEGREGATION PRINCIPLE - SEGREGATED REPOSITORY PROTOCOLS
+# ==============================================================================
+
+
 @runtime_checkable
-class UserRepository(Protocol):
-    """UserRepository - Repository Pattern.
+class UserReader(Protocol):
+    """Protocol for user read operations - ISP compliant."""
 
-    Implementa padrão Repository para abstração de acesso a dados.
-    Fornece interface unificada para operações de persistência.
-
-    Arquitetura: Repository Pattern + Unit of Work
-    Persistência: SQLAlchemy 2.0 com async support
-    Padrões: Generic repositories, query abstraction
-
-    Attributes:
-    ----------
-    Sem atributos públicos documentados.
-
-    Methods:
-    -------
-    get_user_by_id(): Obtém dados
-    get_user_by_email(): Obtém dados
-    create_user(): Cria nova instância
-    update_user(): Atualiza dados existentes
-    get_user_permissions(): Obtém dados
-
-    Examples:
-    --------
-    Uso típico da classe:
-
-    ```python
-    repo = UserRepository(session)
-    entity = await repo.get_by_id(id)
-    ```
-
-    See Also:
-    --------
-    - [Documentação da Arquitetura](../../docs/architecture/index.md)
-    - [Padrões de Design](../../docs/architecture/001_clean_architecture_ddd.md)
-
-    Note:
-    ----
-    Esta classe segue os padrões Repository Pattern estabelecidos no projeto.
-
-    """
-
-    async def get_user_by_id(self, user_id: UserID) -> User | None:
+    async def get_user_by_id(self, user_id: UserID) -> DomainUser | None:
         """Retrieve a user by their unique identifier.
 
         Args:
@@ -232,7 +196,7 @@ class UserRepository(Protocol):
         """
         ...
 
-    async def get_user_by_email(self, email: str) -> User | None:
+    async def get_user_by_email(self, email: str) -> DomainUser | None:
         """Retrieve a user by their email address.
 
         Args:
@@ -247,7 +211,12 @@ class UserRepository(Protocol):
         """
         ...
 
-    async def create_user(self, user_data: Mapping[str, Any]) -> User:
+
+@runtime_checkable
+class UserWriter(Protocol):
+    """Protocol for user write operations - ISP compliant."""
+
+    async def create_user(self, user_data: Mapping[str, Any]) -> DomainUser:
         """Create a new user with the provided data.
 
         Args:
@@ -263,7 +232,11 @@ class UserRepository(Protocol):
         """
         ...
 
-    async def update_user(self, user_id: UserID, user_data: Mapping[str, Any]) -> User:
+    async def update_user(
+        self,
+        user_id: UserID,
+        user_data: Mapping[str, Any],
+    ) -> DomainUser:
         """Update an existing user with new data.
 
         Args:
@@ -280,6 +253,11 @@ class UserRepository(Protocol):
 
         """
         ...
+
+
+@runtime_checkable
+class UserPermissionReader(Protocol):
+    """Protocol for user permission read operations - ISP compliant."""
 
     async def get_user_permissions(self, user_id: UserID) -> UserPermissions:
         """Get all permissions for a user.
@@ -299,43 +277,18 @@ class UserRepository(Protocol):
 
 
 @runtime_checkable
-class SecurityAuditor(Protocol):
-    """SecurityAuditor - Framework Component.
+class UserRepository(UserReader, UserWriter, UserPermissionReader, Protocol):
+    """Composite user repository - combines focused protocols via composition."""
 
-    Implementa componente central do framework com funcionalidades específicas.
-    Segue padrões arquiteturais estabelecidos.
 
-    Arquitetura: Enterprise Patterns
-    Padrões: SOLID principles, clean code
+# ==============================================================================
+# INTERFACE SEGREGATION PRINCIPLE - SEGREGATED SECURITY PROTOCOLS
+# ==============================================================================
 
-    Attributes:
-    ----------
-    Sem atributos públicos documentados.
 
-    Methods:
-    -------
-    log_security_event(): Método específico da classe
-    get_failed_login_attempts(): Obtém dados
-
-    Examples:
-    --------
-    Uso típico da classe:
-
-    ```python
-    instance = SecurityAuditor()
-    result = instance.method()
-    ```
-
-    See Also:
-    --------
-    - [Documentação da Arquitetura](../../docs/architecture/index.md)
-    - [Padrões de Design](../../docs/architecture/001_clean_architecture_ddd.md)
-
-    Note:
-    ----
-    Esta classe segue os padrões Enterprise Patterns estabelecidos no projeto.
-
-    """
+@runtime_checkable
+class SecurityEventLogger(Protocol):
+    """Protocol for security event logging - ISP compliant."""
 
     async def log_security_event(
         self,
@@ -356,6 +309,11 @@ class SecurityAuditor(Protocol):
 
         """
         ...
+
+
+@runtime_checkable
+class SecurityMetricsProvider(Protocol):
+    """Protocol for security metrics and analysis - ISP compliant."""
 
     async def get_failed_login_attempts(
         self,
@@ -378,46 +336,18 @@ class SecurityAuditor(Protocol):
 
 
 @runtime_checkable
-class AuthenticationServiceProtocol(Protocol):
-    """AuthenticationServiceProtocol - Service Layer.
+class SecurityAuditor(SecurityEventLogger, SecurityMetricsProvider, Protocol):
+    """Composite security auditor - combines focused protocols via composition."""
 
-    Implementa serviço de aplicação com lógica de negócio específica.
-    Coordena operações complexas entre múltiplos componentes.
 
-    Arquitetura: Service Layer Pattern
-    Transações: Atomic operations with rollback
-    Padrões: Application services, orchestration
+# ==============================================================================
+# INTERFACE SEGREGATION PRINCIPLE - SEGREGATED AUTHENTICATION PROTOCOLS
+# ==============================================================================
 
-    Attributes:
-    ----------
-    Sem atributos públicos documentados.
 
-    Methods:
-    -------
-    authenticate_user(): Método específico da classe
-    authenticate_token(): Método específico da classe
-    refresh_tokens(): Método específico da classe
-    revoke_token(): Método específico da classe
-
-    Examples:
-    --------
-    Uso típico da classe:
-
-    ```python
-    service = AuthenticationServiceProtocol(config)
-    result = await service.process(data)
-    ```
-
-    See Also:
-    --------
-    - [Documentação da Arquitetura](../../docs/architecture/index.md)
-    - [Padrões de Design](../../docs/architecture/001_clean_architecture_ddd.md)
-
-    Note:
-    ----
-    Esta classe segue os padrões Service Layer Pattern estabelecidos no projeto.
-
-    """
+@runtime_checkable
+class UserAuthenticator(Protocol):
+    """Protocol for user credential authentication - ISP compliant."""
 
     async def authenticate_user(
         self,
@@ -425,7 +355,7 @@ class AuthenticationServiceProtocol(Protocol):
         password: PlaintextPassword,
         ip_address: IPAddress | None = None,
         user_agent: UserAgent | None = None,
-    ) -> tuple[Any, JWTToken, JWTToken] | None:
+    ) -> tuple[DomainUser, JWTToken, JWTToken] | None:
         """Authenticate a user with email and password.
 
         Args:
@@ -435,27 +365,37 @@ class AuthenticationServiceProtocol(Protocol):
             user_agent: User agent for security logging (optional).
 
         Returns:
-            Tuple of (User, access_token, refresh_token) on success, None on failure.
+            Tuple of (User, access_token, refresh_token) on success, None otherwise.
 
         """
         ...
+
+
+@runtime_checkable
+class TokenAuthenticator(Protocol):
+    """Protocol for token-based authentication - ISP compliant."""
 
     async def authenticate_token(
         self,
         token: JWTToken,
-        required_permissions: Sequence[str] | None = None,
-    ) -> User | None:
+        token_type: str = "access",
+    ) -> DomainUser | None:
         """Authenticate a user using a JWT token.
 
         Args:
-            token: JWT access token to verify.
-            required_permissions: Optional list of permissions that must be present.
+            token: JWT token to verify.
+            token_type: Type of token to validate.
 
         Returns:
-            User object if token is valid and permissions are satisfied, None otherwise.
+            User object if token is valid, None otherwise.
 
         """
         ...
+
+
+@runtime_checkable
+class TokenRefresher(Protocol):
+    """Protocol for token refresh operations - ISP compliant."""
 
     async def refresh_tokens(
         self,
@@ -476,6 +416,11 @@ class AuthenticationServiceProtocol(Protocol):
         """
         ...
 
+
+@runtime_checkable
+class TokenRevoker(Protocol):
+    """Protocol for token revocation operations - ISP compliant."""
+
     async def revoke_token(
         self,
         token: JWTToken,
@@ -492,6 +437,17 @@ class AuthenticationServiceProtocol(Protocol):
 
         """
         ...
+
+
+@runtime_checkable
+class AuthenticationServiceProtocol(
+    UserAuthenticator,
+    TokenAuthenticator,
+    TokenRefresher,
+    TokenRevoker,
+    Protocol,
+):
+    """Composite authentication service - combines focused protocols via composition."""
 
 
 @runtime_checkable

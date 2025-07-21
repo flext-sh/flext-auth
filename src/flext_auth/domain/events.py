@@ -6,20 +6,32 @@ Clean architecture with domain events for business logic orchestration.
 
 from __future__ import annotations
 
+from datetime import datetime  # noqa: TC003
 from typing import TYPE_CHECKING
 
-from pydantic import Field
-
-from flext_core.domain.pydantic_base import DomainEvent
+from flext_core import Field
 
 if TYPE_CHECKING:
-    from datetime import datetime
+    from flext_core.domain.types import EntityId, UserId
+else:
+    # Runtime imports needed for model_rebuild()
+    pass
 
-    from flext_auth.domain.value_objects import UserRole as SecurityRole
-    from flext_auth.domain.value_objects import UserEmail
-    from flext_auth.domain.value_objects import Username
-    from flext_core.domain.types import EntityId
-    from flext_core.domain.types import UserId
+if TYPE_CHECKING:
+    from flext_auth.domain.value_objects import (
+        UserEmail,
+        Username,
+        UserRole as SecurityRole,
+    )
+else:
+    # Runtime imports needed for model_rebuild()
+    from flext_auth.domain.value_objects import (
+        UserEmail,  # noqa: TC001
+        Username,  # noqa: TC001
+        UserRole as SecurityRole,  # noqa: TC001
+    )
+
+from flext_core.domain.pydantic_base import DomainEvent
 
 
 class UserCreated(DomainEvent):
@@ -116,3 +128,7 @@ class TokenRevoked(DomainEvent):
     token_type: str = Field(..., description="Token type")
     revoked_by: UserId | None = Field(None, description="User who revoked the token")
     revocation_reason: str = Field(..., description="Reason for revocation")
+
+
+# NOTE: model_rebuild() calls removed to prevent import circular dependency issues
+# Pydantic will resolve forward references automatically when needed

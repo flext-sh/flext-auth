@@ -3,10 +3,15 @@
 Using flext-core patterns - no duplication.
 """
 
-from dataclasses import dataclass, field
-from uuid import UUID
+from __future__ import annotations
 
-from pydantic import EmailStr
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from uuid import UUID
+
+    from pydantic import EmailStr
 
 
 @dataclass
@@ -26,6 +31,7 @@ class AuthenticateUserCommand:
     username: str
     password: str
     user_agent: str | None = None
+    ip_address: str | None = None
 
 
 @dataclass

@@ -1,63 +1,26 @@
 [build-system]
-requires = ["poetry-core>=1.9.0"]
+requires = [ "poetry-core>=1.9.0",]
 build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "flext-auth"
 version = "0.7.0"
 description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
-authors = [{ name = "FLEXT Team", email = "team@flext.sh" }]
-maintainers = [{ name = "FLEXT Team", email = "team@flext.sh" }]
-license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.13,<3.14"
-dependencies = [
-    # Authentication & Authorization specific dependencies
-    "pyjwt>=2.9.0",
-    "bcrypt>=4.2.0",
-    "cryptography",
-    "passlib[bcrypt]>=1.7.4",
-    "python-jose[cryptography]>=3.3.0",
-    "argon2 (>=0.1.10,<0.2.0)",
-    "asyncpg (>=0.30.0,<0.31.0)",
-    "click (>=8.2.1,<9.0.0)",
-    "email-validator (>=2.2.0,<3.0.0)",
-    "fastapi (>=0.116.1,<0.117.0)",
-    "httpx (>=0.28.1,<0.29.0)",
-    "itsdangerous (>=2.2.0,<3.0.0)",
-    "jinja2 (>=3.1.6,<4.0.0)",
-    "jwt (>=1.4.0,<2.0.0)",
-    "prometheus-client (>=0.22.1,<0.23.0)",
-    "pydantic (>=2.11.7,<3.0.0)",
-    "pydantic-settings (>=2.10.1,<3.0.0)",
-    "python-dotenv (>=1.1.1,<2.0.0)",
-    "rich (>=14.0.0,<15.0.0)",
-    "slowapi (>=0.1.9,<0.2.0)",
-    "sqlalchemy (>=2.0.41,<3.0.0)",
-    "structlog (>=25.4.0,<26.0.0)",
-    "redis (>=6.2.0,<7.0.0)",
-]
-keywords = [
-    "flext",
-    "auth",
-    "authentication",
-    "authorization",
-    "jwt",
-    "security",
-]
-classifiers = [
-    "Development Status :: 5 - Production/Stable",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3.13",
-    "Programming Language :: Python :: 3 :: Only",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Security",
-    "Topic :: Security :: Cryptography",
-    "Topic :: System :: Systems Administration :: Authentication/Directory",
-    "Typing :: Typed",
-]
+keywords = [ "flext", "enterprise", "async", "typed", "authentication", "authorization", "security", "jwt",]
+classifiers = [ "Development Status :: 5 - Production/Stable", "Intended Audience :: Developers", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent", "Programming Language :: Python :: 3.13", "Programming Language :: Python :: 3 :: Only", "Topic :: Software Development :: Libraries :: Python Modules", "Typing :: Typed", "Topic :: System :: Systems Administration :: Authentication/Directory",]
+dependencies = [ "argon2-cffi (>=25.1.0)", "bcrypt (>=4.3.0)", "click (>=8.2.1)", "cryptography (>=45.0.5)", "fastapi (>=0.116.1)", "passlib (>=1.7.4)", "pydantic (>=2.11.7)", "pydantic-settings (>=2.10.1)", "pyjwt (>=2.10.1)", "redis (>=6.2.0)", "sqlalchemy (>=2.0.41)", "structlog (>=25.4.0)", "flext-core @ file:///home/marlonsc/flext/flext-core", "flext-observability @ file:///home/marlonsc/flext/flext-observability",]
+[[project.authors]]
+name = "FLEXT Team"
+email = "team@flext.sh"
+
+[[project.maintainers]]
+name = "FLEXT Team"
+email = "team@flext.sh"
+
+[project.license]
+text = "MIT"
 
 [project.urls]
 Homepage = "https://github.com/flext-sh/flext"
@@ -68,265 +31,18 @@ Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
 flext-auth = "flext_auth.cli_new:cli"
 flext-auth-legacy = "flext_auth.cli:main"
 
-[tool.poetry.dependencies]
-python = ">=3.13,<3.14"
-
-# Core FLEXT dependencies - primary source of truth
-flext-core = { path = "../flext-core", develop = true }
-flext-observability = { path = "../flext-observability", develop = true }
-
-# Authentication & Authorization specific dependencies
-pyjwt = ">=2.9.0"
-bcrypt = ">=4.2.0"
-cryptography = "*"
-passlib = { extras = ["bcrypt"], version = ">=1.7.4" }
-python-jose = { extras = ["cryptography"], version = ">=3.3.0" }
-
-# Core dependencies are managed by flext-core - no need to duplicate
-# pydantic, pydantic-settings, fastapi, uvicorn, structlog, click, etc.
-# are all provided by flext-core
-
-[tool.poetry.group.dev.dependencies]
-# Development dependencies
-pytest = ">=8.0.0"
-pytest-asyncio = ">=0.23.0"
-pytest-cov = ">=4.0.0"
-pytest-mock = ">=3.12.0"
-pytest-xdist = ">=3.6.0"
-pytest-timeout = ">=2.3.1"
-pytest-sugar = ">=1.0.0"
-pytest-clarity = ">=1.0.1"
-pytest-benchmark = ">=4.0.0"
-
-# Code quality
-ruff = "^0.12.3"
-mypy = "^1.13.0"
-pre-commit = "^4.0.1"
-bandit = ">=1.8.0"
-
-# Documentation
-mkdocs = "^1.6.1"
-mkdocs-material = "^9.6.15"
-mkdocs-mermaid2-plugin = ">=1.1.0"
-
-# Testing utilities
-respx = ">=0.21.0"
-# Note: httpx is provided at workspace level
-black = "^25.1.0"
-isort = "^6.0.1"
-pylint = "^3.3.0"
-vulture = "^2.13"
-radon = "^6.0.1"
-codespell = "^2.3.0"
-pyupgrade = "^3.19.0"
-autoflake = "^2.3.1"
-sphinx = "^8.2.3"
-sphinx-rtd-theme = "^3.0.2"
-myst-parser = "^4.0.1"
-mkdocstrings = "^0.27.0"
-mkdocs-gen-files = "^0.5.0"
-mkdocs-literate-nav = "^0.6.0"
-ipython = "^9.4.0"
-jupyter = "^1.1.1"
-rich-traceback = "^1.0.3"
-
-
-[tool.poetry.group.test.dependencies]
-pytest = "^8.4.0"
-pytest-asyncio = "^1.0.0"
-pytest-cov = "^6.2.0"
-pytest-xdist = "^3.8.0"
-pytest-mock = "^3.14.0"
-pytest-timeout = "^2.4.0"
-pytest-benchmark = "^5.1.0"
-pytest-randomly = "^3.16.0"
-pytest-sugar = "^1.0.0"
-pytest-clarity = "^1.0.1"
-pytest-deadfixtures = "^2.2.1"
-pytest-env = "^1.1.5"
-pytest-httpx = "^0.35.0"
-hypothesis = "^6.125.0"
-factory-boy = "^3.3.1"
-faker = "^37.4.0"
-click = "^8.2.1"
-fastapi = "^0.116.1"
-jwt = "^1.4.0"
-pydantic = "^2.11.7"
-
-
-[tool.poetry.group.typings.dependencies]
-types-python-dateutil = "^2.9.0"
-types-pyyaml = "^6.0.12"
-types-setuptools = "^80.9.0"
-types-toml = "^0.10.8.20240310"
-types-requests = "^2.32.4"
-types-redis = "^4.6.0"
-types-psutil = "^7.0.0"
-
-
-[tool.poetry.group.security.dependencies]
-bandit = "^1.8.0"
-pip-audit = "^2.7.3"
-
-[tool.poetry.scripts]
-flext-auth = "flext_auth.cli:main"
-
-# Project-specific tool configurations
-[tool.pytest.ini_options]
-minversion = "8.0"
-addopts = [
-    "-ra",
-    "--strict-markers",
-    "--strict-config",
-    "--cov=flext_auth",
-    "--cov-branch",
-    "--cov-report=term-missing:skip-covered",
-    "--cov-report=html:reports/coverage",
-    "--cov-report=xml:reports/coverage.xml",
-    "--cov-fail-under=90",
-    "--maxfail=1",
-    "--tb=short",
-]
-markers = [
-    "unit: Unit tests",
-    "integration: Integration tests",
-    "slow: Slow tests",
-    "smoke: Smoke tests",
-    "auth: marks tests as authentication tests",
-    "jwt: marks tests as JWT tests",
-    "redis: marks tests as Redis tests",
-    "requires_redis: tests that need Redis",
-    "requires_crypto: tests that need cryptography",
-]
-
 [tool.ruff]
 target-version = "py313"
 line-length = 88
-src = ["src", "tests"]
+fix = true
+show-fixes = true
+respect-gitignore = true
+src = [ "src", "tests",]
+extend-exclude = [ "__pycache__", ".git", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".venv", "venv", "build", "dist", "htmlcov",]
 
-[tool.ruff.lint]
-select = [
-    "ALL",
-]
-ignore = [
-    # Line length and formatting (handled by formatter)
-    "E501",    # line too long
-    "W505",    # doc line too long
-    "COM812",  # trailing comma missing (conflicts with formatter)
-    "ISC001",  # single line implicit string concatenation
-    
-    # Import and dependency issues (common in auth modules)
-    "I001",    # import block unsorted (handled by isort)
-    "F401",    # unused imports (common in __init__.py files)
-    "F403",    # star imports (common in __init__.py)
-    "F405",    # star import usage
-    "F841",    # unused variable (common in development)
-    
-    # Documentation style flexibility (auth modules need flexibility)
-    "D100",    # missing docstring in public module
-    "D101",    # missing docstring in public class
-    "D102",    # missing docstring in public method
-    "D103",    # missing docstring in public function
-    "D104",    # missing docstring in public package
-    "D105",    # missing docstring in magic method
-    "D106",    # missing docstring in public nested class
-    "D107",    # missing docstring in __init__
-    "D203",    # blank line before class docstring (conflicts with D211)
-    "D213",    # multi-line docstring summary second line (conflicts with D212)
-    
-    # Code style flexibility (auth patterns)
-    "ERA001",  # commented out code (common during development)
-    "TD002",   # missing author in TODO
-    "TD003",   # missing issue link in TODO
-    "FIX002",  # line contains TODO
-    "T201",    # print statement (common in CLI/debug)
-    "T203",    # pprint statement
-    
-    # Complexity (auth logic is inherently complex)
-    "C901",    # function too complex
-    "PLR0913", # too many arguments (auth functions need many params)
-    "PLR0915", # too many statements
-    "PLR2004", # magic value used in comparison (auth constants)
-    "PLR0912", # too many branches
-    "PLR0911", # too many return statements
-    
-    # Type checking flexibility
-    "ANN401",  # any type usage (sometimes necessary in auth)
-    
-    # Security exceptions (auth-specific patterns)
-    "S105",    # possible hardcoded password (auth tokens/config)
-    "S106",    # possible hardcoded password (test secrets)
-    "S108",    # probable insecure usage of temp file (auth temp files)
-    "S603",    # subprocess call (auth external tools)
-    "S607",    # starting process with partial executable path
-    "S608",    # possible SQL injection (handled by ORM in auth)
-    
-    # Error handling flexibility (auth needs specific error patterns)
-    "EM101",   # raw string in exception
-    "EM102",   # f-string in exception
-    "TRY003",  # avoid long exception messages
-    "TRY300",  # consider moving to else block
-    "TRY301",  # raise within try block
-    "TRY401",  # redundant exception object in logging
-    
-    # Auth-specific patterns
-    "FBT001",  # boolean trap (auth boolean parameters are expected)
-    "FBT002",  # boolean default positional argument
-    "FBT003",  # boolean positional value in function call (auth flags)
-    "PLC0415", # import should be at top-level (lazy imports in auth)
-    
-    # Auth-specific issues found in current codebase
-    "BLE001",  # blind except (auth error handling needs broad catches)
-    "DTZ005",  # timezone naive datetime (auth timestamps often local)
-    "DTZ006",  # fromtimestamp without timezone (auth session timestamps)
-    "W293",    # blank line contains whitespace
-    "ARG001",  # unused function argument (auth interface compatibility)
-    "ARG002",  # unused method argument (auth protocol requirements)
-    "PT011",   # pytest.raises too broad (auth exception testing)
-    "D413",    # missing blank line after last section
-    "D401",    # first line should be in imperative mood (auth descriptions)
-    "G004",    # logging statement uses f-string (auth rich logging)
-    "ARG003",  # unused class method argument (auth method signatures)
-    "ANN001",  # missing type annotation for function argument (test fixtures)
-    "ANN202",  # missing return type annotation for private function
-    "S107",    # possible hardcoded password (auth test credentials)
-    "SLF001",  # private member accessed (auth internal testing)
-    "SIM117",  # use single with statement (auth context managers)
-]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/*" = [
-    "S101",    # assert allowed in tests
-    "PLR2004", # magic values allowed in tests
-    "SLF001",  # private member access allowed in tests
-    "ARG001",  # unused function arguments allowed in tests
-    "FBT001",  # boolean positional args allowed in tests
-    "FBT003",  # boolean positional args allowed in tests
-]
-
-"tests/**/*.py" = ["S101", "D102", "N801", "N802", "N806", "PLR2004", "F401", "PLC0415", "G004", "T201"]
-"**/tests/*.py" = ["S101", "D102", "N801", "N802", "N806", "PLR2004", "F401", "PLC0415", "G004", "T201"]
-"test_*.py" = ["S101", "D102", "N801", "N802", "N806", "PLR2004", "F401", "PLC0415", "G004", "T201"]
-"**/test_*.py" = ["S101", "D102", "N801", "N802", "N806", "PLR2004", "F401", "PLC0415", "G004", "T201"]
-
-# Auto-generated files - exclude from ALL linting
-"**/proto/*_pb2.py" = ["ALL"]
-"**/proto/*_pb2_grpc.py" = ["ALL"]
-"**/*_pb2.py" = ["ALL"]
-"**/*_pb2_grpc.py" = ["ALL"]
-"**/generated/**/*.py" = ["ALL"]
-[tool.ruff.lint.isort]
-known-first-party = [
-    "flext_auth",
-    "flext_core",
-    "flext_observability",
-]
-force-single-line = true
-
-# MyPy configuration - compatible with Poetry editable installs
 [tool.mypy]
-files = ["src/flext_auth", "tests"]
 python_version = "3.13"
+strict = true
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -342,26 +58,132 @@ strict_equality = true
 show_error_codes = true
 show_error_context = true
 pretty = true
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+ignore_missing_imports = false
+no_implicit_reexport = true
+files = [ "src", "tests",]
+plugins = [ "pydantic.mypy",]
+exclude = [ "build", "dist", ".venv", ".mypy_cache",]
 
-[[tool.mypy.overrides]]
-module = ["redis.*", "bcrypt.*", "cryptography.*", "passlib.*", "jwt.*"]
-ignore_missing_imports = true
+[tool.bandit]
+exclude_dirs = [ "tests", "build", "dist",]
+skips = [ "B101", "B601",]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+[tool.poetry]
+[[tool.poetry.packages]]
+include = "flext_auth"
+from = "src"
+
+[tool.deptry]
+known_first_party = [ "flext_auth",]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+asyncio_mode = "auto"
+addopts = [ "-ra", "--strict-markers", "--strict-config", "--cov=flext_auth", "--cov-branch", "--cov-report=term-missing:skip-covered", "--cov-report=html:reports/coverage", "--cov-report=xml:reports/coverage.xml", "--cov-fail-under=90", "--maxfail=1", "--tb=short",]
+testpaths = [ "tests",]
+markers = [ "unit: Unit tests", "integration: Integration tests", "slow: Slow tests", "smoke: Smoke tests", "e2e: End-to-end tests",]
+filterwarnings = [ "error", "ignore::UserWarning", "ignore::DeprecationWarning",]
+
+[tool.ruff.lint]
+select = [ "ALL",]
+ignore = [ "COM812", "D203", "D213", "ISC001", "ANN401", "ARG001", "ARG002", "BLE001", "C901", "D102", "D103", "D105", "D107", "D401", "DTZ001", "DTZ005", "E401", "E501", "EM101", "EM102", "ERA001", "EXE001", "F401", "F823", "FBT001", "FBT002", "FBT003", "FIX002", "G004", "PLC0415", "PLR0911", "PLR0912", "PLR0913", "PLR0915", "PLR2004", "PLW0603", "PTH118", "PTH123", "RUF001", "S103", "S104", "S105", "S106", "S107", "S603", "S607", "SIM102", "TD002", "TD003", "TRY003", "TRY203", "TRY300", "TRY301", "TRY401",]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+docstring-code-format = true
 
 [tool.coverage.run]
-source = ["src"]
+source = [ "src",]
 branch = true
-omit = ["*/tests/*", "*/test_*", "*/__pycache__/*", "*/venv/*", "*/.venv/*"]
+omit = [ "*/tests/*", "*/test_*", "*/__pycache__/*", "*/venv/*", "*/.venv/*",]
 
 [tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "def __repr__",
-    "if self.debug:",
-    "if settings.DEBUG",
-    "raise AssertionError",
-    "raise NotImplementedError",
-    "if 0:",
-    "if __name__ == .__main__.:",
-    "class .*\\bProtocol\\):",
-    "@(abc\\.)?abstractmethod",
-]
+exclude_lines = [ "pragma: no cover", "def __repr__", "if self.debug:", "if settings.DEBUG", "raise AssertionError", "raise NotImplementedError", "if 0:", "if __name__ == .__main__.:", "class .*\\bProtocol\\):", "@(abc\\.)?abstractmethod",]
+
+[tool.coverage.html]
+directory = "reports/coverage"
+
+[tool.coverage.xml]
+output = "reports/coverage.xml"
+
+[tool.poetry.dependencies]
+python = ">=3.13,<3.14"
+
+
+[tool.ruff.lint.isort]
+known-first-party = [ "flext",]
+force-single-line = false
+split-on-trailing-comma = true
+combine-as-imports = true
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = [ "S101", "S103", "S104", "S105", "S106", "S107", "PLR2004", "ARG", "SLF001", "PLC0415",]
+"**/scripts/**" = [ "T201", "S603", "S607", "ANN",]
+"**/__init__.py" = [ "F401",]
+"**/proto/*_pb2.py" = [ "ALL",]
+"**/proto/*_pb2_grpc.py" = [ "ALL",]
+"**/*_pb2.py" = [ "ALL",]
+"**/*_pb2_grpc.py" = [ "ALL",]
+"**/generated/**/*.py" = [ "ALL",]
+
+[tool.poetry.dependencies.flext-core]
+path = "../flext-core"
+develop = true
+
+[tool.poetry.dependencies.python-jose]
+extras = [ "cryptography",]
+version = ">=3.3.0"
+
+[tool.poetry.group.dev.dependencies]
+autoflake = "^2.3.1"
+black = "^25.1.0"
+codespell = "^2.3.0"
+isort = "^6.0.1"
+mypy = "^1.13.0"
+pre-commit = "^4.0.1"
+pylint = "^3.3.0"
+pyupgrade = "^3.19.0"
+radon = "^6.0.1"
+ruff = "^0.12.3"
+vulture = "^2.13"
+types-psutil = "^7.0.0"
+types-python-dateutil = "^2.9.0"
+types-pyyaml = "^6.0.12"
+types-redis = "^4.6.0"
+types-requests = "^2.32.4"
+types-setuptools = "^80.9.0"
+types-toml = "^0.10.8.20240310"
+types-pyjwt = "^1.7.1"
+types-passlib = "^1.7.7"
+
+[tool.poetry.group.test.dependencies]
+factory-boy = "^3.3.1"
+faker = "^37.4.0"
+hypothesis = "^6.125.0"
+pytest = "^8.4.0"
+pytest-asyncio = "^1.0.0"
+pytest-benchmark = "^5.1.0"
+pytest-clarity = "^1.0.1"
+pytest-cov = "^6.2.0"
+pytest-deadfixtures = "^2.2.1"
+pytest-env = "^1.1.5"
+pytest-httpx = "^0.35.0"
+pytest-mock = "^3.14.0"
+pytest-randomly = "^3.16.0"
+pytest-sugar = "^1.0.0"
+pytest-timeout = "^2.4.0"
+pytest-xdist = "^3.8.0"
+
+[tool.poetry.group.security.dependencies]
+bandit = "^1.8.0"
+pip-audit = "^2.7.3"

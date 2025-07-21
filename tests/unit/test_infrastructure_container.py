@@ -3,14 +3,9 @@
 from __future__ import annotations
 
 import os
-from unittest.mock import MagicMock
-from unittest.mock import patch
-
-import pytest
 
 from flext_auth.infrastructure.config import AuthConfig
-from flext_auth.infrastructure.container import AuthContainer
-from flext_auth.infrastructure.container import create_auth_container
+from flext_auth.infrastructure.container import AuthContainer, create_auth_container
 
 
 class TestAuthContainer:

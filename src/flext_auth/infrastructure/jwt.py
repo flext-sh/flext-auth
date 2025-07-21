@@ -1,49 +1,79 @@
-"""JWT implementation for FLEXT Auth.
+"""JWT implementation for FLEXT Auth following Dependency Inversion Principle.
 
-No duplication - uses standard libraries only.
+This module implements JWT services using abstract interfaces instead of
+direct dependencies on external libraries, following the Dependency Inversion Principle.
 """
 
-from datetime import UTC
-from datetime import datetime
+from __future__ import annotations
+
 from datetime import timedelta
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-import jwt
-
-from flext_auth.infrastructure.config import AuthConfig
-from flext_observability.logging import get_logger
-
-logger = get_logger(__name__)
+if TYPE_CHECKING:
+    from flext_auth.infrastructure.abstractions import (
+        ConfigurationProvider,
+        FileSystemInterface,
+        JWTLibrary,
+        LoggerInterface,
+        TimeProvider,
+    )
 
 
 class JWTService:
-    """JWT token service."""
+    """JWT token service following Dependency Inversion Principle.
 
-    def __init__(self, settings: AuthConfig) -> None:
-        self._settings = settings
-        self._algorithm = settings.jwt_algorithm
+    Depends on abstractions instead of concrete implementations,
+    enabling easier testing and flexibility in dependency choices.
+    """
+
+    def __init__(
+        self,
+        jwt_library: JWTLibrary,
+        config: ConfigurationProvider,
+        filesystem: FileSystemInterface,
+        time_provider: TimeProvider,
+        logger: LoggerInterface,
+    ) -> None:
+        self._jwt_library = jwt_library
+        self._config = config
+        self._filesystem = filesystem
+        self._time_provider = time_provider
+        self._logger = logger
+
+        # Load configuration
+        self._algorithm = self._config.get_string("jwt_algorithm", "HS256")
+        self._access_token_expire_minutes = self._config.get_int("jwt_access_token_expire_minutes", 30)
+        self._refresh_token_expire_days = self._config.get_int("jwt_refresh_token_expire_days", 7)
 
         # Load keys based on algorithm
         if self._algorithm.startswith("RS"):
-            # RSA algorithms
-            if settings.jwt_private_key_path:
-                self._private_key: str | None = Path(settings.jwt_private_key_path).read_text(
-                    encoding="utf-8",
-                )
+            # RSA algorithms - load from files
+            private_key_path = self._config.get_string("jwt_private_key_path", "")
+            public_key_path = self._config.get_string("jwt_public_key_path", "")
+
+            if private_key_path:
+                try:
+                    self._private_key: str | None = self._filesystem.read_text(Path(private_key_path))
+                except ValueError as e:
+                    self._logger.exception(f"Failed to load private key from {private_key_path}: {e}")
+                    self._private_key = None
             else:
                 self._private_key = None
 
-            if settings.jwt_public_key_path:
-                self._public_key: str | None = Path(settings.jwt_public_key_path).read_text(
-                    encoding="utf-8",
-                )
+            if public_key_path:
+                try:
+                    self._public_key: str | None = self._filesystem.read_text(Path(public_key_path))
+                except ValueError as e:
+                    self._logger.exception(f"Failed to load public key from {public_key_path}: {e}")
+                    self._public_key = None
             else:
                 self._public_key = None
         else:
-            # Symmetric algorithms
-            self._private_key = settings.jwt_secret_key
-            self._public_key = settings.jwt_secret_key
+            # Symmetric algorithms - use secret key
+            secret_key = self._config.get_string("jwt_secret_key")
+            self._private_key = secret_key
+            self._public_key = secret_key
 
     def create_token(
         self,
@@ -70,21 +100,18 @@ class JWTService:
 
         """
         if not self._private_key:
-            msg = "Private key not configured for token creation"
+            msg = "Private key is not configured"
             raise ValueError(msg)
 
-        # Set expiration
+        # Set expiration using time provider
+        now = self._time_provider.now_utc()
         if expires_delta:
-            expire = datetime.now(UTC) + expires_delta
+            expire = now + expires_delta
         elif token_type == "access":
-            expire = datetime.now(UTC) + timedelta(
-                minutes=self._settings.jwt_access_token_expire_minutes,
-            )
+            expire = now + timedelta(minutes=self._access_token_expire_minutes)
         else:
             # refresh token
-            expire = datetime.now(UTC) + timedelta(
-                days=self._settings.jwt_refresh_token_expire_days,
-            )
+            expire = now + timedelta(days=self._refresh_token_expire_days)
 
         # Build payload
         payload = {
@@ -92,23 +119,28 @@ class JWTService:
             "username": username,
             "token_type": token_type,
             "exp": expire,
-            "iat": datetime.now(UTC),
-            "nbf": datetime.now(UTC),
+            "iat": now,
+            "nbf": now,
         }
 
         # Add additional claims
         if additional_claims:
             payload.update(additional_claims)
 
-        # Create token
-        token = jwt.encode(
-            payload,
-            self._private_key,
-            algorithm=self._algorithm,
-        )
+        # Create token using injected JWT library
+        try:
+            token = self._jwt_library.encode(
+                payload,
+                self._private_key,
+                self._algorithm,
+            )
+        except ValueError as e:
+            self._logger.exception(f"Failed to create JWT token: {e}")
+            raise
 
-        logger.debug(
-            f"token_created: user_id={user_id}, token_type={token_type}, expires_at={expire.isoformat()}",
+        self._logger.debug(
+            f"token_created: user_id={user_id}, token_type={token_type}, "
+            f"expires_at={expire.isoformat()}",
         )
 
         return token
@@ -123,16 +155,16 @@ class JWTService:
             Dictionary containing token claims.
 
         Raises:
-            ValueError: If public key is not configured.
-            jwt.InvalidTokenError: If token is invalid or expired.
+            ValueError: If public key is not configured or token is invalid.
 
         """
         if not self._public_key:
-            msg = "Public key not configured for token validation"
+            msg = "Public key is not configured"
             raise ValueError(msg)
 
         try:
-            payload = jwt.decode(
+            # Use injected JWT library to decode token
+            payload = self._jwt_library.decode(
                 token,
                 self._public_key,
                 algorithms=[self._algorithm],
@@ -145,18 +177,43 @@ class JWTService:
                 },
             )
 
-            logger.debug(
-                f"token_decoded: user_id={payload.get('sub')}, token_type={payload.get('token_type')}",
+            self._logger.debug(
+                f"token_decoded: user_id={payload.get('sub')}, "
+                f"token_type={payload.get('token_type')}",
             )
 
-            typed_payload: dict[str, Any] = payload
-            return typed_payload
+            return payload
 
-        except jwt.ExpiredSignatureError as e:
-            logger.warning("token_expired")
-            msg = "Token has expired"
-            raise ValueError(msg) from e
-        except jwt.InvalidTokenError as e:
-            logger.warning(f"token_invalid: {e}")
-            msg = f"Invalid token: {e}"
-            raise ValueError(msg) from e
+        except ValueError as e:
+            # All JWT errors are converted to ValueError by the adapter
+            self._logger.warning(f"token_validation_failed: {e}")
+            raise
+
+
+def create_jwt_service(
+    jwt_library: JWTLibrary,
+    config: ConfigurationProvider,
+    filesystem: FileSystemInterface,
+    time_provider: TimeProvider,
+    logger: LoggerInterface,
+) -> JWTService:
+    """Factory function to create JWTService with proper dependency injection.
+
+    Args:
+        jwt_library: JWT library implementation (e.g., PyJWTAdapter)
+        config: Configuration provider implementation
+        filesystem: File system interface implementation
+        time_provider: Time provider implementation
+        logger: Logger interface implementation
+
+    Returns:
+        JWTService: Configured JWT service instance
+
+    """
+    return JWTService(
+        jwt_library=jwt_library,
+        config=config,
+        filesystem=filesystem,
+        time_provider=time_provider,
+        logger=logger,
+    )

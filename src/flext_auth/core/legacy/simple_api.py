@@ -9,14 +9,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_auth.user_service import UserService
 from flext_core.config import get_container
 from flext_core.domain.types import ServiceResult
+from flext_observability.logging import get_logger
+
+from flext_auth.user_service import UserService
 
 if TYPE_CHECKING:
     from flext_auth.config import AuthSettings
     from flext_auth.domain.entities import User
     from flext_auth.domain.value_objects import AuthToken
+
+logger = get_logger(__name__)
 
 
 def setup_auth(settings: AuthSettings | None = None) -> ServiceResult[bool]:
@@ -33,18 +37,19 @@ def setup_auth(settings: AuthSettings | None = None) -> ServiceResult[bool]:
 
     """
     try:
-        from flext_auth.infrastructure.config import get_auth_settings
+        from flext_auth.config import get_auth_settings
 
         if settings is None:
             settings = get_auth_settings()
 
         # Configure DI container
-        container = get_container()
-        settings.configure_dependencies(container)
+        get_container()
+        # Note: DI container configuration is handled by the container itself
 
         return ServiceResult.ok(True)
 
     except Exception as e:
+        logger.exception("Failed to setup auth")
         return ServiceResult.fail(f"Failed to setup auth: {e}")
 
 
@@ -76,9 +81,9 @@ def create_user(
         # This would need to be implemented in UserService
         # For now, return a placeholder
         return ServiceResult.fail("User creation not yet implemented")
-
     except Exception as e:
-        return ServiceResult.fail(f"Failed to create user: {e}")
+        logger.exception("Failed to create user")
+        return ServiceResult.fail(f"User creation failed: {e}")
 
 
 def authenticate_user(username: str, password: str) -> ServiceResult[AuthToken]:
@@ -97,14 +102,16 @@ def authenticate_user(username: str, password: str) -> ServiceResult[AuthToken]:
     """
     try:
         container = get_container()
-        container.resolve("AuthService")
+        from flext_auth.application.command_auth_service import AuthService
+
+        container.resolve(AuthService)
 
         # This would need to be implemented in AuthService
         # For now, return a placeholder
         return ServiceResult.fail("Authentication not yet implemented")
-
     except Exception as e:
-        return ServiceResult.fail(f"Failed to authenticate user: {e}")
+        logger.exception("Failed to authenticate user")
+        return ServiceResult.fail(f"Authentication failed: {e}")
 
 
 def validate_token(token: str) -> ServiceResult[User]:
@@ -122,14 +129,16 @@ def validate_token(token: str) -> ServiceResult[User]:
     """
     try:
         container = get_container()
-        container.resolve("TokenService")
+        from flext_auth.tokens import TokenManager
+
+        container.resolve(TokenManager)
 
         # This would need to be implemented in TokenService
         # For now, return a placeholder
         return ServiceResult.fail("Token validation not yet implemented")
-
     except Exception as e:
-        return ServiceResult.fail(f"Failed to validate token: {e}")
+        logger.exception("Failed to validate token")
+        return ServiceResult.fail(f"Token validation failed: {e}")
 
 
 def revoke_token(token: str) -> ServiceResult[bool]:
@@ -147,14 +156,16 @@ def revoke_token(token: str) -> ServiceResult[bool]:
     """
     try:
         container = get_container()
-        container.resolve("TokenService")
+        from flext_auth.tokens import TokenManager
+
+        container.resolve(TokenManager)
 
         # This would need to be implemented in TokenService
         # For now, return a placeholder
         return ServiceResult.fail("Token revocation not yet implemented")
-
     except Exception as e:
-        return ServiceResult.fail(f"Failed to revoke token: {e}")
+        logger.exception("Failed to revoke token")
+        return ServiceResult.fail(f"Token revocation failed: {e}")
 
 
 def get_user_by_id(user_id: str) -> ServiceResult[User]:
@@ -172,14 +183,16 @@ def get_user_by_id(user_id: str) -> ServiceResult[User]:
     """
     try:
         container = get_container()
-        container.resolve("UserService")
+        from flext_auth.user_service import UserService
+
+        container.resolve(UserService)
 
         # This would need to be implemented in UserService
         # For now, return a placeholder
         return ServiceResult.fail("User retrieval not yet implemented")
-
     except Exception as e:
-        return ServiceResult.fail(f"Failed to get user: {e}")
+        logger.exception("Failed to get user")
+        return ServiceResult.fail(f"User retrieval failed: {e}")
 
 
 __all__ = [

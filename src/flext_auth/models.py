@@ -2,19 +2,12 @@
 
 from __future__ import annotations
 
-from datetime import UTC
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import StrEnum
-from typing import TYPE_CHECKING
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
-from pydantic import Field
-
-from flext_core import DomainEntity
-from flext_core import DomainValueObject
-from flext_core import EntityId
-from flext_core import UserId
+from flext_core import DomainEntity, DomainValueObject, EntityId, Field, UserId
 
 # Import PermissionScope directly for use in model - MUST be outside TYPE_CHECKING
 
@@ -277,7 +270,6 @@ class User(DomainEntity):
             Dictionary containing user claims suitable for JWT tokens.
 
         """
-        # Handle enum serialization using try/except for better error handling
         try:
             status_name = self.status.name
         except AttributeError:

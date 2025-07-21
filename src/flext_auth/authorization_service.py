@@ -8,15 +8,13 @@ from enum import Enum
 from typing import TYPE_CHECKING
 
 from flext_auth.interfaces import AuthorizationService
-from flext_auth.models import Permission
-from flext_auth.models import UserRoleEnum
+from flext_auth.models import Permission, UserRoleEnum
 from flext_auth.types import PermissionScope
 
 if TYPE_CHECKING:
     from flext_auth.interfaces import UserRepository
     from flext_auth.models import Role
-    from flext_auth.types import UserID
-    from flext_auth.types import UserPermissions
+    from flext_auth.types import UserID, UserPermissions
 
 # Python 3.13 type alias for generic callables
 CallableT = Callable[..., object]
@@ -46,9 +44,7 @@ class RoleBasedAuthorizationService(AuthorizationService):
 
     def __init__(self, user_repository: UserRepository) -> None:
         self.user_repository = user_repository
-        self._permission_cache: dict[str, UserPermissions] = (
-            None  # TODO: Initialize in __post_init__
-        )
+        self._permission_cache: dict[str, UserPermissions] = {}
 
     async def check_permission(
         self,
@@ -98,7 +94,7 @@ class RoleBasedAuthorizationService(AuthorizationService):
         if not user:
             return False
 
-        return user.has_role(role)
+        return user.role == role
 
     async def get_user_permissions(self, user_id: UserID) -> UserPermissions:
         """Get all permissions for a user based on their roles.
@@ -111,25 +107,25 @@ class RoleBasedAuthorizationService(AuthorizationService):
 
         """
         # Check cache first
-        if user_id in self._permission_cache:
-            return self._permission_cache[user_id]
+        user_id_str = str(user_id)
+        if user_id_str in self._permission_cache:
+            return self._permission_cache[user_id_str]
 
         user = await self.user_repository.get_user_by_id(user_id)
         if not user:
             return []
 
-        # Get all permissions from active roles
+        # Get all permissions from user role
         permissions: set[str] = set()
-        for role in user.get_active_roles():
-            permissions.update(role.permissions)
 
-            # Permission hierarchy not needed for current requirements
-            # Using flat permission structure for optimal performance
+        # Get permissions based on user's role
+        role_permissions = self._get_permissions_for_role(user.role)
+        permissions.update(role_permissions)
 
         user_permissions = list(permissions)
 
         # Cache permissions
-        self._permission_cache[user_id] = user_permissions
+        self._permission_cache[user_id_str] = user_permissions
 
         return user_permissions
 
@@ -184,16 +180,21 @@ class RoleBasedAuthorizationService(AuthorizationService):
             ],
         }
 
-        if permission.scope in scope_hierarchy:
-            for inherited_scope in scope_hierarchy[permission.scope]:
-                inherited_permission = Permission(
-                    id=f"derived_{permission.id}",
-                    resource=permission.resource,
-                    action=inherited_scope.value,
-                    scope=inherited_scope,
-                    description=f"Derived from {permission.scope.value}",
-                )
-                derived.add(str(inherited_permission))
+        try:
+            permission_scope = PermissionScope(permission.scope)
+            if permission_scope in scope_hierarchy:
+                for inherited_scope in scope_hierarchy[permission_scope]:
+                    inherited_permission = Permission(
+                        id=f"derived_{permission.id}",
+                        resource=permission.resource,
+                        action=inherited_scope.value,
+                        scope=inherited_scope.value,
+                        description=f"Derived from {permission_scope.value}",
+                    )
+                    derived.add(str(inherited_permission))
+        except (ValueError, TypeError):
+            # Invalid scope, skip hierarchy processing
+            pass
 
         return derived
 
@@ -205,7 +206,7 @@ class RoleBasedAuthorizationService(AuthorizationService):
 
         """
         if user_id:
-            self._permission_cache.pop(user_id, None)
+            self._permission_cache.pop(str(user_id), None)
         else:
             self._permission_cache.clear()
 
@@ -228,7 +229,7 @@ class RoleBasedAuthorizationService(AuthorizationService):
             True if permissions are satisfied according to check_mode.
 
         """
-        results = {}
+        results: list[bool] = []
         for permission in permissions:
             result = await self.check_permission(user_id, permission, resource)
             results.append(result)
@@ -236,6 +237,77 @@ class RoleBasedAuthorizationService(AuthorizationService):
         if check_mode == PermissionCheckMode.REQUIRE_ALL:
             return all(results)
         return any(results)
+
+    def _get_permissions_for_role(self, role: str) -> list[str]:
+        """Get permissions for a specific role.
+
+        Args:
+            role: Role name to get permissions for.
+
+        Returns:
+            List of permission strings for the role.
+
+        """
+        # Define role-permission mapping based on standard enterprise roles
+        role_permissions = {
+            "REDACTED_LDAP_BIND_PASSWORD": [
+                "user:create",
+                "user:read",
+                "user:update",
+                "user:delete",
+                "pipeline:create",
+                "pipeline:read",
+                "pipeline:update",
+                "pipeline:delete",
+                "plugin:install",
+                "plugin:remove",
+                "plugin:configure",
+                "system:REDACTED_LDAP_BIND_PASSWORD",
+                "config:manage",
+            ],
+            "operator": [
+                "pipeline:read",
+                "pipeline:update",
+                "pipeline:execute",
+                "plugin:read",
+                "plugin:configure",
+                "execution:create",
+                "execution:read",
+                "execution:cancel",
+            ],
+            "user": [
+                "pipeline:read",
+                "execution:read",
+            ],
+            "service": [
+                "pipeline:execute",
+                "execution:create",
+                "execution:read",
+            ],
+            "readonly": [
+                "pipeline:read",
+                "plugin:read",
+                "execution:read",
+            ],
+            "developer": [
+                "pipeline:create",
+                "pipeline:read",
+                "pipeline:update",
+                "plugin:read",
+                "plugin:configure",
+                "execution:create",
+                "execution:read",
+            ],
+            "auditor": [
+                "pipeline:read",
+                "plugin:read",
+                "execution:read",
+                "audit:read",
+                "logs:read",
+            ],
+        }
+
+        return role_permissions.get(role, [])
 
 
 def require_permission(
@@ -258,42 +330,57 @@ def require_permission(
     def decorator(func: CallableT) -> CallableT:
         @functools.wraps(func)
         async def wrapper(*args: object, **kwargs: object) -> object:
+            from uuid import UUID
+
             # Extract user_id from arguments or context using try/except
             user_id = kwargs.get("user_id")
-            if not user_id and args:
+            if not user_id:
                 try:
-                    user_id = args[0].user_id
+                    # Try to get user_id from first argument
+                    first_arg = args[0]
+                    if hasattr(first_arg, "user_id"):
+                        user_id = first_arg.user_id
                 except (AttributeError, IndexError):
                     user_id = None
 
             if not user_id:
-                msg = "User ID not found in function arguments"
+                msg = "User ID not found in arguments or context"
                 raise ValueError(msg)
 
             if not auth_service:
-                msg = "Authorization service not provided"
+                msg = "Authorization service not configured"
                 raise ValueError(msg)
 
-            # Check permission - ensure user_id is str
-            user_id_str = str(user_id) if user_id else ""
+            # Convert user_id to UUID if needed
+            if isinstance(user_id, str):
+                try:
+                    user_id_uuid = UUID(user_id)
+                except ValueError as err:
+                    msg = f"Invalid user ID format: {user_id}"
+                    raise ValueError(msg) from err
+            elif isinstance(user_id, UUID):
+                user_id_uuid = user_id
+            else:
+                msg = f"User ID must be string or UUID, got {type(user_id)}"
+                raise TypeError(msg)
+
             has_permission = await auth_service.check_permission(
-                user_id_str,
+                user_id_uuid,
                 permission,
                 resource,
             )
 
             if not has_permission:
-                msg = f"User {user_id} lacks permission {permission}"
+                msg = f"Permission denied: {permission}"
                 raise PermissionError(msg)
 
-            # Call function and handle both sync and async using try/except
+            # Call function and handle both sync and async
             result = func(*args, **kwargs)
-            try:
-                # Try to await the result if it's awaitable:
+            if hasattr(result, "__await__"):
+                # It's awaitable, so await it
                 return await result
-            except AttributeError:
-                # Not awaitable, return synchronously
-                return result
+            # It's not awaitable, return directly
+            return result
 
         return wrapper
 
@@ -318,38 +405,53 @@ def require_role(
     def decorator(func: CallableT) -> CallableT:
         @functools.wraps(func)
         async def wrapper(*args: object, **kwargs: object) -> object:
+            from uuid import UUID
+
             # Extract user_id from arguments or context using try/except
             user_id = kwargs.get("user_id")
-            if not user_id and args:
+            if not user_id:
                 try:
-                    user_id = args[0].user_id
+                    # Try to get user_id from first argument
+                    first_arg = args[0]
+                    if hasattr(first_arg, "user_id"):
+                        user_id = first_arg.user_id
                 except (AttributeError, IndexError):
                     user_id = None
 
             if not user_id:
-                msg = "User ID not found in function arguments"
+                msg = "User ID not found in arguments or context"
                 raise ValueError(msg)
 
             if not auth_service:
-                msg = "Authorization service not provided"
+                msg = "Authorization service not configured"
                 raise ValueError(msg)
 
-            # Check role - ensure user_id is str
-            user_id_str = str(user_id) if user_id else ""
-            has_role = await auth_service.check_role(user_id_str, role)
+            # Convert user_id to UUID if needed
+            if isinstance(user_id, str):
+                try:
+                    user_id_uuid = UUID(user_id)
+                except ValueError as err:
+                    msg = f"Invalid user ID format: {user_id}"
+                    raise ValueError(msg) from err
+            elif isinstance(user_id, UUID):
+                user_id_uuid = user_id
+            else:
+                msg = f"User ID must be string or UUID, got {type(user_id)}"
+                raise TypeError(msg)
+
+            has_role = await auth_service.check_role(user_id_uuid, role)
 
             if not has_role:
-                msg = f"User {user_id} lacks role {role}"
+                msg = f"Role access denied: {role}"
                 raise PermissionError(msg)
 
-            # Call function and handle both sync and async using try/except
+            # Call function and handle both sync and async
             result = func(*args, **kwargs)
-            try:
-                # Try to await the result if it's awaitable:
+            if hasattr(result, "__await__"):
+                # It's awaitable, so await it
                 return await result
-            except AttributeError:
-                # Not awaitable, return synchronously
-                return result
+            # It's not awaitable, return directly
+            return result
 
         return wrapper
 

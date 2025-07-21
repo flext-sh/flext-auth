@@ -3,29 +3,34 @@
 Using clean architecture with dependency injection.
 """
 
-from contextlib import asynccontextmanager
-from typing import Annotated
-from typing import Any
+from __future__ import annotations
 
-from fastapi import Depends
-from fastapi import FastAPI
-from fastapi import HTTPException
-from fastapi import Request
-from fastapi.security import HTTPAuthorizationCredentials
-from fastapi.security import HTTPBearer
+from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING, Annotated, Any
+
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from flext_observability.logging import get_logger
 
 from flext_auth.api.dependencies import get_auth_service
-from flext_auth.api.models import AuthenticateRequest
-from flext_auth.api.models import AuthenticateResponse
-from flext_auth.api.models import ChangePasswordRequest
-from flext_auth.api.models import CreateUserRequest
-from flext_auth.api.models import UserResponse
-from flext_auth.application.command_auth_service import AuthService
-from flext_auth.domain.commands import AuthenticateUserCommand
-from flext_auth.domain.commands import ChangePasswordCommand
-from flext_auth.domain.commands import CreateUserCommand
-from flext_auth.domain.commands import ValidateTokenCommand
-from flext_observability.logging import get_logger
+from flext_auth.api.models import (
+    AuthenticateRequest,
+    AuthenticateResponse,
+    ChangePasswordRequest,
+    CreateUserRequest,
+    UserResponse,
+)
+from flext_auth.domain.commands import (
+    AuthenticateUserCommand,
+    ChangePasswordCommand,
+    CreateUserCommand,
+    ValidateTokenCommand,
+)
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
+    from flext_auth.application.command_auth_service import AuthService
 
 logger = get_logger(__name__)
 
@@ -34,7 +39,7 @@ security = HTTPBearer()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> None:
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Manage application lifespan."""
     logger.info("auth_api_starting")
     yield
@@ -61,10 +66,10 @@ async def get_current_user(
     )
 
     result = await auth_service.validate_token(command)
-    if result.is_failure:
-        raise HTTPException(status_code=401, detail=result.error)
+    if result.is_failure or result.data is None:
+        raise HTTPException(status_code=401, detail=result.error or "Invalid token")
 
-    return result.value
+    return result.data
 
 
 @app.post("/auth/register")
@@ -90,15 +95,18 @@ async def register(
     )
 
     result = await auth_service.create_user(command)
-    if result.is_failure:
-        raise HTTPException(status_code=400, detail=result.error)
+    if result.is_failure or result.data is None:
+        raise HTTPException(
+            status_code=400,
+            detail=result.error or "Failed to create user",
+        )
 
-    user = result.value
+    user = result.data
     return UserResponse(
         id=str(user.id),
         username=user.username,
         email=user.email,
-        is_active=user.is_active,
+        is_active=user.is_active() if callable(user.is_active) else user.is_active,
         created_at=user.created_at,
     )
 
@@ -131,16 +139,19 @@ async def login(
     )
 
     result = await auth_service.authenticate(command)
-    if result.is_failure:
-        raise HTTPException(status_code=401, detail=result.error)
+    if result.is_failure or result.data is None:
+        raise HTTPException(
+            status_code=401,
+            detail=result.error or "Authentication failed",
+        )
 
-    return AuthenticateResponse(**result.value)
+    return AuthenticateResponse(**result.data)
 
 
 @app.post("/auth/change-password")
 async def change_password(
     request: ChangePasswordRequest,
-    current_user: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[dict[str, Any], Depends(get_current_user)],
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
 ) -> dict[str, str]:
     """Change user password.
@@ -172,7 +183,7 @@ async def change_password(
 
 @app.get("/auth/me", response_model=dict)
 async def get_me(
-    current_user: Annotated[dict, Depends(get_current_user)],
+    current_user: Annotated[dict[str, Any], Depends(get_current_user)],
 ) -> dict[str, Any]:
     """Get current user info.
 
@@ -198,7 +209,7 @@ async def health() -> dict[str, str]:
         Health status information.
 
     """
-    return {"status": "healthy", "service": "flext-auth"}
+    return {"status": "healthy", "service": "flext-api.auth.flext-auth"}
 
 
 def create_app() -> FastAPI:

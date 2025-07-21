@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from flext_auth.services import UserService
 
 
@@ -17,7 +15,7 @@ class TestServicesUserService:
     def test_services_module_exports(self) -> None:
         """Test services module has expected exports."""
         from flext_auth import services
-        
+
         # Test key services are available
         assert hasattr(services, "UserService")
         assert hasattr(services, "JWTService")

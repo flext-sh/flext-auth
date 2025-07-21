@@ -4,18 +4,17 @@ This module provides a complete in-memory token storage implementation that
 resolves all NotImplementedError instances in the token storage system.
 """
 
+from __future__ import annotations
+
 import asyncio
 import fnmatch
-from datetime import UTC
-from datetime import datetime
-from datetime import timedelta
-from typing import Any
-from typing import TypeVar
+from datetime import UTC, datetime, timedelta
+from typing import Any, TypeVar, cast
 
 T = TypeVar("T")
 
 
-class InMemoryTokenStorage:
+class InMemoryTokenStorage[T]:
     """Complete in-memory token storage implementation.
 
     Provides a fully functional token storage backend for development
@@ -73,7 +72,7 @@ class InMemoryTokenStorage:
                 del self._storage[key]
                 return None
 
-            return entry["value"]  # type: ignore[no-any-return]
+            return cast("T", entry["value"])
 
     async def delete(self, key: str) -> bool:
         """Delete a stored value by key.

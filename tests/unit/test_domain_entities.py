@@ -2,25 +2,22 @@
 
 from __future__ import annotations
 
-from datetime import UTC
-from datetime import datetime
-from datetime import timedelta
-from uuid import UUID
-from uuid import uuid4
+from datetime import UTC, datetime, timedelta
+from uuid import UUID, uuid4
 
-import pytest
-
-from flext_auth.domain.entities import Permission
-from flext_auth.domain.entities import Role
-from flext_auth.domain.entities import Session
-from flext_auth.domain.entities import SessionRevokedEvent
-from flext_auth.domain.entities import User
-from flext_auth.domain.entities import UserAccountLockedEvent
-from flext_auth.domain.entities import UserCreatedEvent
-from flext_auth.domain.entities import UserEmailVerifiedEvent
-from flext_auth.domain.entities import UserLoggedInEvent
-from flext_auth.domain.entities import UserLoggedOutEvent
-from flext_auth.domain.entities import UserPasswordChangedEvent
+from flext_auth.domain.entities import (
+    Permission,
+    Role,
+    Session,
+    SessionRevokedEvent,
+    User,
+    UserAccountLockedEvent,
+    UserCreatedEvent,
+    UserEmailVerifiedEvent,
+    UserLoggedInEvent,
+    UserLoggedOutEvent,
+    UserPasswordChangedEvent,
+)
 
 
 class TestUser:
@@ -32,6 +29,10 @@ class TestUser:
             username="testuser",
             email="test@example.com",
             password_hash="hashed_password",
+            email_verified_at=None,
+            last_login_at=None,
+            last_login_ip=None,
+            locked_until=None,
         )
 
         assert isinstance(user.id, UUID)
@@ -63,6 +64,10 @@ class TestUser:
             status="suspended",
             email_verified=True,
             created_at=created_time,
+            email_verified_at=None,
+            last_login_at=None,
+            last_login_ip=None,
+            locked_until=None,
         )
 
         assert user.id == user_id
@@ -78,6 +83,10 @@ class TestUser:
             email="active@example.com",
             password_hash="hash",
             status="active",
+            email_verified_at=None,
+            last_login_at=None,
+            last_login_ip=None,
+            locked_until=None,
         )
 
         inactive_user = User(
@@ -85,6 +94,10 @@ class TestUser:
             email="inactive@example.com",
             password_hash="hash",
             status="suspended",
+            email_verified_at=None,
+            last_login_at=None,
+            last_login_ip=None,
+            locked_until=None,
         )
 
         assert active_user.is_active() is True
@@ -97,6 +110,10 @@ class TestUser:
             username="test",
             email="test@example.com",
             password_hash="hash",
+            email_verified_at=None,
+            last_login_at=None,
+            last_login_ip=None,
+            locked_until=None,
         )
         assert user.is_locked() is False
 
@@ -114,6 +131,10 @@ class TestUser:
             username="test",
             email="test@example.com",
             password_hash="hash",
+            email_verified_at=None,
+            last_login_at=None,
+            last_login_ip=None,
+            locked_until=None,
         )
 
         assert user.is_email_verified() is False
@@ -127,6 +148,10 @@ class TestUser:
             username="test",
             email="test@example.com",
             password_hash="hash",
+            email_verified_at=None,
+            last_login_at=None,
+            last_login_ip=None,
+            locked_until=None,
         )
 
         original_updated_at = user.updated_at
@@ -145,6 +170,9 @@ class TestUser:
             password_hash="hash",
             login_attempts=3,
             locked_until=datetime.now(UTC) + timedelta(minutes=10),
+            email_verified_at=None,
+            last_login_at=None,
+            last_login_ip=None,
         )
 
         ip_address = "192.168.1.100"
@@ -161,6 +189,10 @@ class TestUser:
             username="test",
             email="test@example.com",
             password_hash="hash",
+            email_verified_at=None,
+            last_login_at=None,
+            last_login_ip=None,
+            locked_until=None,
         )
 
         # Record 4 failed attempts (should not lock)
@@ -183,6 +215,9 @@ class TestUser:
             password_hash="hash",
             login_attempts=5,
             locked_until=datetime.now(UTC) + timedelta(minutes=30),
+            email_verified_at=None,
+            last_login_at=None,
+            last_login_ip=None,
         )
 
         user.unlock_account()
@@ -196,6 +231,10 @@ class TestUser:
             username="test",
             email="test@example.com",
             password_hash="old_hash",
+            email_verified_at=None,
+            last_login_at=None,
+            last_login_ip=None,
+            locked_until=None,
         )
 
         original_updated_at = user.updated_at
@@ -213,6 +252,10 @@ class TestUser:
             email="test@example.com",
             password_hash="hash",
             status="active",
+            email_verified_at=None,
+            last_login_at=None,
+            last_login_ip=None,
+            locked_until=None,
         )
 
         user.suspend_account()
@@ -227,6 +270,10 @@ class TestUser:
             email="test@example.com",
             password_hash="hash",
             status="suspended",
+            email_verified_at=None,
+            last_login_at=None,
+            last_login_ip=None,
+            locked_until=None,
         )
 
         user.activate_account()
@@ -240,7 +287,7 @@ class TestRole:
 
     def test_role_creation(self) -> None:
         """Test Role entity can be created."""
-        role = Role(name="REDACTED_LDAP_BIND_PASSWORD")
+        role = Role(name="REDACTED_LDAP_BIND_PASSWORD", description="")
 
         assert isinstance(role.id, UUID)
         assert role.name == "REDACTED_LDAP_BIND_PASSWORD"
@@ -267,7 +314,7 @@ class TestRole:
 
     def test_add_permission(self) -> None:
         """Test Role add_permission method."""
-        role = Role(name="test")
+        role = Role(name="test", description="")
         original_updated_at = role.updated_at
 
         permission = "read:posts"
@@ -278,7 +325,7 @@ class TestRole:
 
     def test_add_duplicate_permission(self) -> None:
         """Test Role add_permission with duplicate permission."""
-        role = Role(name="test", permissions=["read:posts"])
+        role = Role(name="test", description="", permissions=["read:posts"])
         original_permissions = role.permissions.copy()
         original_updated_at = role.updated_at
 
@@ -290,7 +337,11 @@ class TestRole:
 
     def test_remove_permission(self) -> None:
         """Test Role remove_permission method."""
-        role = Role(name="test", permissions=["read:posts", "write:posts"])
+        role = Role(
+            name="test",
+            description="",
+            permissions=["read:posts", "write:posts"],
+        )
         original_updated_at = role.updated_at
 
         role.remove_permission("read:posts")
@@ -301,7 +352,7 @@ class TestRole:
 
     def test_remove_nonexistent_permission(self) -> None:
         """Test Role remove_permission with nonexistent permission."""
-        role = Role(name="test", permissions=["read:posts"])
+        role = Role(name="test", description="", permissions=["read:posts"])
         original_permissions = role.permissions.copy()
         original_updated_at = role.updated_at
 
@@ -313,7 +364,11 @@ class TestRole:
 
     def test_has_permission(self) -> None:
         """Test Role has_permission method."""
-        role = Role(name="test", permissions=["read:posts", "write:posts"])
+        role = Role(
+            name="test",
+            description="",
+            permissions=["read:posts", "write:posts"],
+        )
 
         assert role.has_permission("read:posts") is True
         assert role.has_permission("write:posts") is True
@@ -334,6 +389,7 @@ class TestSession:
         session = Session(
             user_id=user_id,
             token=token,
+            refresh_token=None,
             ip_address=ip_address,
             user_agent=user_agent,
             expires_at=expires_at,
@@ -383,6 +439,7 @@ class TestSession:
         active_session = Session(
             user_id=user_id,
             token="token",
+            refresh_token=None,
             ip_address="192.168.1.100",
             user_agent="Agent",
             expires_at=datetime.now(UTC) + timedelta(minutes=30),
@@ -393,6 +450,7 @@ class TestSession:
         expired_session = Session(
             user_id=user_id,
             token="token",
+            refresh_token=None,
             ip_address="192.168.1.100",
             user_agent="Agent",
             expires_at=datetime.now(UTC) - timedelta(minutes=30),
@@ -407,6 +465,7 @@ class TestSession:
         active_session = Session(
             user_id=user_id,
             token="token",
+            refresh_token=None,
             ip_address="192.168.1.100",
             user_agent="Agent",
             expires_at=datetime.now(UTC) + timedelta(minutes=30),
@@ -418,6 +477,7 @@ class TestSession:
         revoked_session = Session(
             user_id=user_id,
             token="token",
+            refresh_token=None,
             ip_address="192.168.1.100",
             user_agent="Agent",
             expires_at=datetime.now(UTC) + timedelta(minutes=30),
@@ -429,6 +489,7 @@ class TestSession:
         expired_session = Session(
             user_id=user_id,
             token="token",
+            refresh_token=None,
             ip_address="192.168.1.100",
             user_agent="Agent",
             expires_at=datetime.now(UTC) - timedelta(minutes=30),
@@ -441,6 +502,7 @@ class TestSession:
         session = Session(
             user_id=uuid4(),
             token="token",
+            refresh_token=None,
             ip_address="192.168.1.100",
             user_agent="Agent",
             expires_at=datetime.now(UTC) + timedelta(minutes=30),
@@ -456,6 +518,7 @@ class TestSession:
         session = Session(
             user_id=uuid4(),
             token="old_token",
+            refresh_token=None,
             ip_address="192.168.1.100",
             user_agent="Agent",
             expires_at=datetime.now(UTC) + timedelta(minutes=30),
@@ -475,6 +538,7 @@ class TestSession:
         session = Session(
             user_id=uuid4(),
             token="token",
+            refresh_token=None,
             ip_address="192.168.1.100",
             user_agent="Agent",
             expires_at=datetime.now(UTC) + timedelta(minutes=30),
@@ -494,6 +558,7 @@ class TestPermission:
         """Test Permission entity can be created."""
         permission = Permission(
             name="read_users",
+            description="",
             resource="users",
             action="read",
         )
@@ -520,6 +585,7 @@ class TestPermission:
         """Test Permission full_name property."""
         permission = Permission(
             name="delete_comments",
+            description="",
             resource="comments",
             action="delete",
         )
@@ -663,6 +729,10 @@ class TestEntityIntegration:
             username="testuser",
             email="test@example.com",
             password_hash="hashed_password",
+            email_verified_at=None,
+            last_login_at=None,
+            last_login_ip=None,
+            locked_until=None,
         )
 
         # Verify email
@@ -695,6 +765,10 @@ class TestEntityIntegration:
             username="testuser",
             email="test@example.com",
             password_hash="hashed_password",
+            email_verified_at=None,
+            last_login_at=None,
+            last_login_ip=None,
+            locked_until=None,
         )
 
         # Simulate 5 failed login attempts
@@ -713,7 +787,7 @@ class TestEntityIntegration:
     def test_role_permission_workflow(self) -> None:
         """Test role and permission workflow."""
         # Create role
-        role = Role(name="content_manager")
+        role = Role(name="content_manager", description="")
 
         # Add permissions
         permissions = ["read:posts", "write:posts", "edit:posts"]

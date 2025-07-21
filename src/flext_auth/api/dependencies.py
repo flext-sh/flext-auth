@@ -3,12 +3,11 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import TYPE_CHECKING
 
 from flext_auth.infrastructure.container import AuthContainer
-
-if TYPE_CHECKING:
-    from flext_auth.application.command_auth_service import AuthService
+from flext_auth.infrastructure.implementations.authentication_implementation import (
+    EnterpriseAuthService,
+)
 
 
 @lru_cache
@@ -17,7 +16,12 @@ def get_container() -> AuthContainer:
     return AuthContainer()
 
 
-def get_auth_service() -> AuthService:
+def get_auth_service() -> EnterpriseAuthService:
     """Get authentication service dependency."""
     container = get_container()
-    return container.auth_service()
+    auth_service = container.auth_service
+    # Type assertion for mypy - container should return correct type
+    if not isinstance(auth_service, EnterpriseAuthService):
+        msg = f"Expected EnterpriseAuthService, got {type(auth_service)}"
+        raise TypeError(msg)
+    return auth_service

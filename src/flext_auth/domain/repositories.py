@@ -6,17 +6,15 @@ Defines abstract interfaces for data access operations.
 
 from __future__ import annotations
 
-from abc import ABC
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from flext_auth.domain.entities import Role
-    from flext_auth.domain.entities import Session
-    from flext_auth.domain.entities import User
     from flext_core import ServiceResult
+
+    from flext_auth.domain.entities import Role, Session, User
 
 
 class UserRepository(ABC):

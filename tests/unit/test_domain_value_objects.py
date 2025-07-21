@@ -3,27 +3,28 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import pytest
 from pydantic import ValidationError
 
-from flext_auth.domain.value_objects import AuthenticationMethod
-from flext_auth.domain.value_objects import AuthToken
-from flext_auth.domain.value_objects import EmailVerificationToken
-from flext_auth.domain.value_objects import HashedPassword
-from flext_auth.domain.value_objects import IPAddress
-from flext_auth.domain.value_objects import PasswordResetToken
-from flext_auth.domain.value_objects import PlainPassword
-from flext_auth.domain.value_objects import RefreshToken
-from flext_auth.domain.value_objects import SessionStatus
-from flext_auth.domain.value_objects import SessionToken
-from flext_auth.domain.value_objects import UserAgent
-from flext_auth.domain.value_objects import UserEmail
-from flext_auth.domain.value_objects import Username
-from flext_auth.domain.value_objects import UserRole
-from flext_auth.domain.value_objects import UserStatus
+from flext_auth.domain.value_objects import (
+    AuthenticationMethod,
+    AuthToken,
+    EmailVerificationToken,
+    HashedPassword,
+    IPAddress,
+    PasswordResetToken,
+    PlainPassword,
+    RefreshToken,
+    SessionStatus,
+    SessionToken,
+    UserAgent,
+    UserEmail,
+    Username,
+    UserRole,
+    UserStatus,
+)
 
 
 class TestUserEmail:
@@ -55,7 +56,7 @@ class TestUserEmail:
                 UserEmail(value=invalid_email)
 
         # Test empty string separately (raises different error)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=".*"):
             UserEmail(value="")
 
     def test_email_domain_property(self) -> None:
@@ -89,7 +90,7 @@ class TestUserEmail:
     def test_email_length_validation(self) -> None:
         """Test email length validation."""
         # Test minimum length (empty string should fail)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=".*"):
             UserEmail(value="")
 
         # Test maximum length (255 characters)
@@ -101,7 +102,7 @@ class TestUserEmail:
         # Test over maximum length
         too_long_local = "a" * 250
         too_long_email = f"{too_long_local}@example.com"
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=".*"):
             UserEmail(value=too_long_email)
 
 
@@ -164,7 +165,7 @@ class TestUsername:
     def test_username_length_validation(self) -> None:
         """Test username length validation."""
         # Too short
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=".*"):
             Username(value="ab")
 
         # Minimum valid length
@@ -177,7 +178,7 @@ class TestUsername:
         assert username.value == max_username
 
         # Too long
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=".*"):
             Username(value="a" * 51)
 
     def test_is_valid_length_property(self) -> None:
@@ -247,7 +248,8 @@ class TestPlainPassword:
         """Test password length validation."""
         # Too short
         with pytest.raises(
-            ValidationError, match="String should have at least 8 characters",
+            ValidationError,
+            match="String should have at least 8 characters",
         ):
             PlainPassword(value="Short1!")
 
@@ -312,7 +314,7 @@ class TestSessionToken:
     def test_session_token_length_validation(self) -> None:
         """Test session token length validation."""
         # Too short
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=".*"):
             SessionToken(value="short")
 
         # Minimum valid length
@@ -577,7 +579,7 @@ class TestUserAgent:
         assert len(ua.value) == 512
 
         # Too long
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=".*"):
             UserAgent(value="a" * 513)
 
     def test_browser_info_chrome(self) -> None:
@@ -637,31 +639,31 @@ class TestEnumerations:
 
     def test_user_role_enum(self) -> None:
         """Test UserRole enumeration."""
-        assert UserRole.ADMIN == "REDACTED_LDAP_BIND_PASSWORD"
-        assert UserRole.USER == "user"
-        assert UserRole.MODERATOR == "moderator"
-        assert UserRole.GUEST == "guest"
+        assert UserRole.ADMIN.value == "REDACTED_LDAP_BIND_PASSWORD"
+        assert UserRole.USER.value == "user"
+        assert UserRole.MODERATOR.value == "moderator"
+        assert UserRole.GUEST.value == "guest"
 
     def test_user_status_enum(self) -> None:
         """Test UserStatus enumeration."""
-        assert UserStatus.ACTIVE == "active"
-        assert UserStatus.INACTIVE == "inactive"
-        assert UserStatus.SUSPENDED == "suspended"
-        assert UserStatus.PENDING_VERIFICATION == "pending_verification"
+        assert UserStatus.ACTIVE.value == "active"
+        assert UserStatus.INACTIVE.value == "inactive"
+        assert UserStatus.SUSPENDED.value == "suspended"
+        assert UserStatus.PENDING_VERIFICATION.value == "pending_verification"
 
     def test_session_status_enum(self) -> None:
         """Test SessionStatus enumeration."""
-        assert SessionStatus.ACTIVE == "active"
-        assert SessionStatus.EXPIRED == "expired"
-        assert SessionStatus.REVOKED == "revoked"
-        assert SessionStatus.INVALID == "invalid"
+        assert SessionStatus.ACTIVE.value == "active"
+        assert SessionStatus.EXPIRED.value == "expired"
+        assert SessionStatus.REVOKED.value == "revoked"
+        assert SessionStatus.INVALID.value == "invalid"
 
     def test_authentication_method_enum(self) -> None:
         """Test AuthenticationMethod enumeration."""
-        assert AuthenticationMethod.PASSWORD == "password"
-        assert AuthenticationMethod.TWO_FACTOR == "two_factor"
-        assert AuthenticationMethod.OAUTH == "oauth"
-        assert AuthenticationMethod.API_KEY == "api_key"
+        assert AuthenticationMethod.PASSWORD.value == "password"
+        assert AuthenticationMethod.TWO_FACTOR.value == "two_factor"
+        assert AuthenticationMethod.OAUTH.value == "oauth"
+        assert AuthenticationMethod.API_KEY.value == "api_key"
 
 
 class TestValueObjectIntegration:
@@ -678,7 +680,9 @@ class TestValueObjectIntegration:
         assert plain_password.strength_score > 80
 
         # Create hashed password
-        hashed_password = HashedPassword(value="$2b$12$xIKJRSQMr4JFA6/ogklLzuvSqW/oBtPYW4akeAJv.bFoSQG8VddG.")
+        hashed_password = HashedPassword(
+            value="$2b$12$xIKJRSQMr4JFA6/ogklLzuvSqW/oBtPYW4akeAJv.bFoSQG8VddG.",
+        )
         assert hashed_password.algorithm == "2b"
 
         # Create tokens

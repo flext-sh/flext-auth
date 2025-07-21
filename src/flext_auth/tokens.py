@@ -5,22 +5,21 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import fnmatch
-from abc import ABC
-from abc import abstractmethod
-from datetime import UTC
-from datetime import datetime as dt
-from datetime import timedelta
-from typing import TYPE_CHECKING
-from typing import Any
-from typing import TypeVar
+from abc import ABC, abstractmethod
+from datetime import UTC, datetime as dt, timedelta
+from enum import StrEnum
+from typing import TYPE_CHECKING, Any, TypeVar
 
 import redis.asyncio as redis
-from passlib.context import CryptContext
-from pydantic import Field
 
 # Define constants locally since config is not available
-from flext_core import DomainValueObject as ValueObject
-from flext_core.domain.types import StrEnum
+from flext_core import DomainValueObject as ValueObject, Field
+from passlib.context import CryptContext
+
+from flext_auth.types import (
+    TokenType,  # noqa: TC001
+    UserID,  # noqa: TC001
+)
 
 
 # Simple constants for token management - avoid dependency on config module
@@ -36,13 +35,8 @@ def get_domain_constants() -> _TokenConstants:
     return _TokenConstants()
 
 
-# Import types outside TYPE_CHECKING for runtime use
-
 if TYPE_CHECKING:
     from redis.asyncio import Redis
-
-    from flext_auth.types import TokenType
-    from flext_auth.types import UserID
 
 T = TypeVar("T")
 
@@ -190,7 +184,7 @@ class TokenStorage[T](ABC):
             NotImplementedError: This is an abstract method.
 
         """
-        # Base implementation - subclasses provide concrete storage
+        raise NotImplementedError
 
     @abstractmethod
     async def get(self, key: str) -> T | None:
@@ -206,7 +200,7 @@ class TokenStorage[T](ABC):
             NotImplementedError: This is an abstract method.
 
         """
-        # Base implementation - subclasses provide concrete storage
+        raise NotImplementedError
 
     @abstractmethod
     async def delete(self, key: str) -> bool:
@@ -222,7 +216,7 @@ class TokenStorage[T](ABC):
             NotImplementedError: This is an abstract method.
 
         """
-        # Base implementation - subclasses provide concrete storage
+        raise NotImplementedError
 
     @abstractmethod
     async def exists(self, key: str) -> bool:
@@ -238,7 +232,7 @@ class TokenStorage[T](ABC):
             NotImplementedError: This is an abstract method.
 
         """
-        # Base implementation - subclasses provide concrete storage
+        raise NotImplementedError
 
     @abstractmethod
     async def keys(self, pattern: str) -> list[str]:
@@ -261,7 +255,7 @@ class TokenStorage[T](ABC):
             key discovery across different storage implementations.
 
         """
-        # Base implementation - subclasses provide concrete storage
+        raise NotImplementedError
 
     @abstractmethod
     async def cleanup_expired(self) -> int:
@@ -274,7 +268,7 @@ class TokenStorage[T](ABC):
             NotImplementedError: This is an abstract method.
 
         """
-        # Base implementation - subclasses provide concrete storage
+        raise NotImplementedError
 
 
 class RedisTokenStorage(TokenStorage[str]):
@@ -531,7 +525,7 @@ class DatabaseTokenStorage(TokenStorage[str]):
             if existing.scalar():
                 # Update existing
                 await session.execute(
-                    "UPDATE token_storage SET value = :value, expires_at = :expires_at, updated_at = :now WHERE key = :key",  # TODO: Break long line
+                    "UPDATE token_storage SET value = :value, expires_at = :expires_at, updated_at = :now WHERE key = :key",
                     {
                         "key": key,
                         "value": value,
@@ -542,7 +536,7 @@ class DatabaseTokenStorage(TokenStorage[str]):
             else:
                 # Insert new
                 await session.execute(
-                    "INSERT INTO token_storage (key, value, expires_at, created_at) VALUES (:key, :value, :expires_at, :now)",  # TODO: Break long line
+                    "INSERT INTO token_storage (key, value, expires_at, created_at) VALUES (:key, :value, :expires_at, :now)",
                     {
                         "key": key,
                         "value": value,
@@ -617,7 +611,7 @@ class DatabaseTokenStorage(TokenStorage[str]):
         """
         async with self.session_factory() as session:
             result = await session.execute(
-                "SELECT 1 FROM token_storage WHERE key = :key AND (expires_at IS NULL OR expires_at > :now)",  # TODO: Break long line
+                "SELECT 1 FROM token_storage WHERE key = :key AND (expires_at IS NULL OR expires_at > :now)",
                 {"key": key, "now": dt.now(UTC)},
             )
             return result.scalar() is not None
@@ -637,7 +631,7 @@ class DatabaseTokenStorage(TokenStorage[str]):
 
         async with self.session_factory() as session:
             result = await session.execute(
-                "SELECT key FROM token_storage WHERE key LIKE :pattern AND (expires_at IS NULL OR expires_at > :now)",  # TODO: Break long line
+                "SELECT key FROM token_storage WHERE key LIKE :pattern AND (expires_at IS NULL OR expires_at > :now)",
                 {"pattern": sql_pattern, "now": dt.now(UTC)},
             )
             return [row[0] for row in result]
@@ -1080,7 +1074,7 @@ def create_token_storage(
     if storage_type == "database":
         db_session_factory = kwargs.get("db_session_factory")
         if not db_session_factory:
-            msg = "Database storage requires db_session_factory parameter"
+            msg = "db_session_factory must be provided for database storage"
             raise ValueError(msg)
         return DatabaseTokenStorage(db_session_factory=db_session_factory)
 
@@ -1124,8 +1118,10 @@ class TokenPasswordHasher:
 
         constants = get_domain_constants()
         if len(password) > constants.MAXIMUM_PASSWORD_LENGTH:
-            msg = f"Password too long (max {constants.MAXIMUM_PASSWORD_LENGTH} characters)"
-            raise ValueError(msg)
+            msg = f"Password too long. Max length: {constants.MAXIMUM_PASSWORD_LENGTH}"
+            raise ValueError(
+                msg,
+            )
 
         try:
             result = self._crypt_context.hash(password)
@@ -1153,7 +1149,7 @@ class TokenPasswordHasher:
         # Password and hashed_password are already typed as str, isinstance checks not needed
 
         if not password or not hashed_password:
-            msg = "Password and hash cannot be empty"
+            msg = "Password and hashed_password cannot be empty"
             raise ValueError(msg)
 
         try:

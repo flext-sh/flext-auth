@@ -8,15 +8,12 @@ from __future__ import annotations
 
 import re
 import secrets
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 from enum import StrEnum
 from typing import Any
 
-from pydantic import Field
+from flext_core import DomainValueObject, Field
 from pydantic import field_validator
-
-from flext_core import DomainValueObject
 
 
 class UserEmail(DomainValueObject):
@@ -30,7 +27,7 @@ class UserEmail(DomainValueObject):
         """Validate email format using RFC-compliant pattern."""
         pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         if not re.match(pattern, v):
-            msg = "Invalid email format"
+            msg = f"Invalid email format: {v}"
             raise ValueError(msg)
         return v.lower()
 
@@ -61,11 +58,11 @@ class Username(DomainValueObject):
     def validate_username_format(cls, v: str) -> str:
         """Validate username format and characters."""
         if not re.match(r"^[a-zA-Z0-9_-]+$", v):
-            msg = "Username can only contain letters, numbers, underscores, and hyphens"
+            msg = "Username can only contain letters, numbers, hyphens, and underscores"
             raise ValueError(msg)
 
         if v.startswith(("-", "_")) or v.endswith(("-", "_")):
-            msg = "Username cannot start or end with special characters"
+            msg = "Username cannot start or end with hyphens or underscores"
             raise ValueError(msg)
 
         return v.lower()
@@ -86,7 +83,7 @@ class HashedPassword(DomainValueObject):
     def validate_hash_format(cls, v: str) -> str:
         """Validate bcrypt hash format."""
         if not v.startswith("$2"):
-            msg = "Invalid password hash format"
+            msg = "Invalid bcrypt hash format"
             raise ValueError(msg)
         return v
 
@@ -123,7 +120,7 @@ class PlainPassword(DomainValueObject):
             raise ValueError(msg)
 
         if not re.search(r"\d", v):
-            msg = "Password must contain at least one number"
+            msg = "Password must contain at least one digit"
             raise ValueError(msg)
 
         if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", v):
@@ -167,7 +164,7 @@ class SessionToken(DomainValueObject):
     def validate_token_format(cls, v: str) -> str:
         """Validate token format."""
         if not re.match(r"^[a-zA-Z0-9_-]+$", v):
-            msg = "Invalid token format"
+            msg = "Invalid session token format"
             raise ValueError(msg)
         return v
 
@@ -189,7 +186,7 @@ class AuthToken(DomainValueObject):
     def validate_token_format(cls, v: str) -> str:
         """Validate token format."""
         if not re.match(r"^[a-zA-Z0-9._-]+$", v):
-            msg = "Invalid token format"
+            msg = "Invalid auth token format"
             raise ValueError(msg)
         return v
 
@@ -199,7 +196,7 @@ class AuthToken(DomainValueObject):
         """Validate token type."""
         allowed_types = {"access", "refresh", "api", "session"}
         if v not in allowed_types:
-            msg = f"Token type must be one of: {allowed_types}"
+            msg = f"Invalid token type: {v}. Must be one of {allowed_types}"
             raise ValueError(msg)
         return v
 
@@ -207,6 +204,21 @@ class AuthToken(DomainValueObject):
     def is_secure_length(self) -> bool:
         """Check if token has secure length."""
         return len(self.value) >= 32
+
+    @property
+    def is_valid(self) -> bool:
+        """Check if token is valid.
+
+        For now, just check if it has secure length.
+        In a real implementation, this would check expiration, revocation, etc.
+        """
+        return self.is_secure_length
+
+    def record_use(self) -> None:
+        """Record token usage.
+
+        This is a placeholder method that would track usage in a real implementation.
+        """
 
 
 class RefreshToken(DomainValueObject):
@@ -274,7 +286,7 @@ class PasswordResetToken(DomainValueObject):
     def validate_token_format(cls, v: str) -> str:
         """Validate reset token format."""
         if not re.match(r"^[a-zA-Z0-9_-]+$", v):
-            msg = "Invalid reset token format"
+            msg = "Invalid password reset token format"
             raise ValueError(msg)
         return v
 
@@ -342,7 +354,7 @@ class IPAddress(DomainValueObject):
             ipaddress.ip_address(v)
             return v
         except ValueError as e:
-            msg = "Invalid IP address format"
+            msg = f"Invalid IP address format: {v}"
             raise ValueError(msg) from e
 
     @property

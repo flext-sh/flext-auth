@@ -1,4 +1,4 @@
-"""Modern pytest configuration for flext-auth using flext-core patterns.
+"""Modern pytest configuration for flext-api.auth.flext-auth using flext-core patterns.
 
 This configuration provides standardized fixtures and test setup for authentication
 testing using ServiceResult patterns and modern async testing approaches.
@@ -7,19 +7,14 @@ testing using ServiceResult patterns and modern async testing approaches.
 from __future__ import annotations
 
 import asyncio
-from datetime import UTC
-from datetime import datetime
-from datetime import timedelta
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
-import pytest_asyncio
-
-from flext_auth.models import AuthStatus
-from flext_auth.models import UserRoleEnum
-from flext_auth.tokens import TokenInclusionMode
 from flext_core.domain.types import ServiceResult
+
+from flext_auth.models import AuthStatus, UserRoleEnum
 
 # ============================================================================
 # Pytest Configuration
@@ -146,20 +141,20 @@ def sample_user_data(
 @pytest.fixture
 def mock_user_service() -> AsyncMock:
     service = AsyncMock()
-    service.authenticate.return_value = ServiceResult.success(True)
-    service.create_user.return_value = ServiceResult.success({"id": str(uuid4())})
-    service.get_user.return_value = ServiceResult.success({"id": str(uuid4())})
+    service.authenticate.return_value = ServiceResult.ok(True)
+    service.create_user.return_value = ServiceResult.ok({"id": str(uuid4())})
+    service.get_user.return_value = ServiceResult.ok({"id": str(uuid4())})
     return service
 
 
 @pytest.fixture
 def mock_jwt_service() -> AsyncMock:
     service = AsyncMock()
-    service.generate_tokens.return_value = ServiceResult.success(
+    service.generate_tokens.return_value = ServiceResult.ok(
         {
             "access_token": "mock_access_token",
             "refresh_token": "mock_refresh_token",
         },
     )
-    service.verify_token.return_value = ServiceResult.success({"user_id": str(uuid4())})
+    service.verify_token.return_value = ServiceResult.ok({"user_id": str(uuid4())})
     return service

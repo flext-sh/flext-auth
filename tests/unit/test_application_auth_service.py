@@ -2,23 +2,19 @@
 
 from __future__ import annotations
 
-import asyncio
-from datetime import datetime
-from datetime import timedelta
-from unittest.mock import AsyncMock
-from unittest.mock import MagicMock
-from unittest.mock import patch
+from datetime import UTC, datetime, timedelta
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
-import pytest_asyncio
-
-from flext_auth.application.auth_service import AuthenticationService
-from flext_auth.application.auth_service import EmailVerificationService
-from flext_auth.application.auth_service import PasswordService
-from flext_auth.domain.entities import Session
-from flext_auth.domain.entities import User
 from flext_core import ServiceResult
+
+from flext_auth.application.auth_service import (
+    AuthenticationService,
+    EmailVerificationService,
+    PasswordService,
+)
+from flext_auth.domain.entities import Session, User
 
 pytestmark = pytest.mark.asyncio
 
@@ -76,7 +72,7 @@ class TestAuthenticationService:
             role="user",
             status="active",
         )
-        user.locked_until = datetime.now() + timedelta(minutes=30)
+        user.locked_until = datetime.now(UTC) + timedelta(minutes=30)
         return user
 
     @pytest.fixture
@@ -91,16 +87,20 @@ class TestAuthenticationService:
         )
 
     async def test_create_user_success(
-        self, auth_service: AuthenticationService, mock_user_repo: MagicMock,
+        self,
+        auth_service: AuthenticationService,
+        mock_user_repo: MagicMock,
     ) -> None:
         """Test successful user creation."""
         # Setup mocks
         mock_user_repo.username_exists = AsyncMock(
-            return_value=ServiceResult.success(False),
+            return_value=ServiceResult.ok(False),
         )
-        mock_user_repo.email_exists = AsyncMock(return_value=ServiceResult.success(False))
+        mock_user_repo.email_exists = AsyncMock(
+            return_value=ServiceResult.ok(False),
+        )
         mock_user_repo.create = AsyncMock(
-            return_value=ServiceResult.success(
+            return_value=ServiceResult.ok(
                 User(
                     username="newuser",
                     email="new@example.com",
@@ -118,9 +118,10 @@ class TestAuthenticationService:
         )
 
         # Verify result
-        assert result.is_successful
-        assert result.value.username == "newuser"
-        assert result.value.email == "new@example.com"
+        assert result.is_success
+        assert result.data is not None
+        assert result.data.username == "newuser"
+        assert result.data.email == "new@example.com"
 
         # Verify repository calls
         mock_user_repo.username_exists.assert_called_once_with("newuser")
@@ -128,12 +129,14 @@ class TestAuthenticationService:
         mock_user_repo.create.assert_called_once()
 
     async def test_create_user_username_exists(
-        self, auth_service: AuthenticationService, mock_user_repo: MagicMock,
+        self,
+        auth_service: AuthenticationService,
+        mock_user_repo: MagicMock,
     ) -> None:
         """Test user creation with existing username."""
         # Setup mocks
         mock_user_repo.username_exists = AsyncMock(
-            return_value=ServiceResult.success(True),
+            return_value=ServiceResult.ok(True),
         )
 
         # Test user creation
@@ -144,18 +147,23 @@ class TestAuthenticationService:
         )
 
         # Verify result
-        assert not result.is_successful
-        assert "already exists" in result.error_message
+        assert not result.is_success
+        assert result.error is not None
+        assert "already exists" in result.error
 
     async def test_create_user_email_exists(
-        self, auth_service: AuthenticationService, mock_user_repo: MagicMock,
+        self,
+        auth_service: AuthenticationService,
+        mock_user_repo: MagicMock,
     ) -> None:
         """Test user creation with existing email."""
         # Setup mocks
         mock_user_repo.username_exists = AsyncMock(
-            return_value=ServiceResult.success(False),
+            return_value=ServiceResult.ok(False),
         )
-        mock_user_repo.email_exists = AsyncMock(return_value=ServiceResult.success(True))
+        mock_user_repo.email_exists = AsyncMock(
+            return_value=ServiceResult.ok(True),
+        )
 
         # Test user creation
         result = await auth_service.create_user(
@@ -165,8 +173,9 @@ class TestAuthenticationService:
         )
 
         # Verify result
-        assert result.is_successful
-        assert "already exists" in result.error_message
+        assert not result.is_success
+        assert result.error is not None
+        assert "already exists" in result.error
 
     async def test_authenticate_user_success(
         self,
@@ -178,11 +187,13 @@ class TestAuthenticationService:
         """Test successful user authentication."""
         # Setup mocks
         mock_user_repo.find_by_username = AsyncMock(
-            return_value=ServiceResult.success(sample_user),
+            return_value=ServiceResult.ok(sample_user),
         )
-        mock_user_repo.update = AsyncMock(return_value=ServiceResult.success(sample_user))
+        mock_user_repo.update = AsyncMock(
+            return_value=ServiceResult.ok(sample_user),
+        )
         mock_session_repo.create = AsyncMock(
-            return_value=ServiceResult.success(
+            return_value=ServiceResult.ok(
                 Session(
                     user_id=sample_user.id,
                     token="session_token",
@@ -203,18 +214,21 @@ class TestAuthenticationService:
             )
 
         # Verify result
-        assert result.is_successful
-        user, session = result.value
+        assert result.is_success
+        assert result.data is not None
+        user, session = result.data
         assert user.username == "testuser"
         assert session.user_id == sample_user.id
 
     async def test_authenticate_user_invalid_username(
-        self, auth_service: AuthenticationService, mock_user_repo: MagicMock,
+        self,
+        auth_service: AuthenticationService,
+        mock_user_repo: MagicMock,
     ) -> None:
         """Test authentication with invalid username."""
         # Setup mocks
         mock_user_repo.find_by_username = AsyncMock(
-            return_value=ServiceResult.success(None),
+            return_value=ServiceResult.ok(None),
         )
 
         # Test authentication
@@ -225,9 +239,10 @@ class TestAuthenticationService:
             user_agent="Test Agent",
         )
 
-        # Verify result
-        assert result.is_successful
-        assert "Invalid username or password" in result.error_message
+        # Verify result - invalid username should FAIL authentication
+        assert not result.is_success
+        assert result.error is not None
+        assert "Invalid username or password" in result.error
 
     async def test_authenticate_user_locked_account(
         self,
@@ -238,7 +253,10 @@ class TestAuthenticationService:
         """Test authentication with locked account."""
         # Setup mocks
         mock_user_repo.find_by_username = AsyncMock(
-            return_value=ServiceResult.success(locked_user),
+            return_value=ServiceResult.ok(locked_user),
+        )
+        mock_user_repo.update = AsyncMock(
+            return_value=ServiceResult.ok(locked_user),
         )
 
         # Test authentication
@@ -249,9 +267,12 @@ class TestAuthenticationService:
             user_agent="Test Agent",
         )
 
-        # Verify result
-        assert result.is_successful
-        assert "locked" in result.error_message
+        # Verify result - locked account should FAIL authentication
+        assert not result.is_success
+        assert result.error is not None
+        assert (
+            "Account is locked due to too many failed attempts" in result.error
+        )
 
     async def test_authenticate_user_inactive_account(
         self,
@@ -262,7 +283,7 @@ class TestAuthenticationService:
         """Test authentication with inactive account."""
         # Setup mocks
         mock_user_repo.find_by_username = AsyncMock(
-            return_value=ServiceResult.success(inactive_user),
+            return_value=ServiceResult.ok(inactive_user),
         )
 
         # Test authentication
@@ -273,9 +294,10 @@ class TestAuthenticationService:
             user_agent="Test Agent",
         )
 
-        # Verify result
-        assert result.is_successful
-        assert "not active" in result.error_message
+        # Verify result - inactive account should FAIL authentication
+        assert not result.is_success
+        assert result.error is not None
+        assert "not active" in result.error
 
     async def test_authenticate_user_wrong_password(
         self,
@@ -284,11 +306,17 @@ class TestAuthenticationService:
         sample_user: User,
     ) -> None:
         """Test authentication with wrong password."""
+        # Reset login attempts to ensure we don't trigger lockout
+        sample_user.login_attempts = 0
+        sample_user.locked_until = None
+
         # Setup mocks
         mock_user_repo.find_by_username = AsyncMock(
-            return_value=ServiceResult.success(sample_user),
+            return_value=ServiceResult.ok(sample_user),
         )
-        mock_user_repo.update = AsyncMock(return_value=ServiceResult.success(sample_user))
+        mock_user_repo.update = AsyncMock(
+            return_value=ServiceResult.ok(sample_user),
+        )
 
         # Mock password verification
         with patch.object(auth_service, "_verify_password", return_value=False):
@@ -300,8 +328,47 @@ class TestAuthenticationService:
             )
 
         # Verify result
-        assert result.is_successful
-        assert "Invalid username or password" in result.error_message
+        assert not result.is_success
+        assert result.error is not None
+        assert "Invalid username or password" in result.error
+
+        # Verify failed login was recorded
+        mock_user_repo.update.assert_called_once()
+
+    async def test_authenticate_user_wrong_password_triggers_lockout(
+        self,
+        auth_service: AuthenticationService,
+        mock_user_repo: MagicMock,
+        sample_user: User,
+    ) -> None:
+        """Test authentication with wrong password that triggers account lockout."""
+        # Set user to one attempt away from lockout
+        sample_user.login_attempts = 4
+        sample_user.locked_until = None
+
+        # Setup mocks
+        mock_user_repo.find_by_username = AsyncMock(
+            return_value=ServiceResult.ok(sample_user),
+        )
+        mock_user_repo.update = AsyncMock(
+            return_value=ServiceResult.ok(sample_user),
+        )
+
+        # Mock password verification
+        with patch.object(auth_service, "_verify_password", return_value=False):
+            result = await auth_service.authenticate_user(
+                username="testuser",
+                password="wrong_password",
+                ip_address="192.168.1.100",
+                user_agent="Test Agent",
+            )
+
+        # Verify result - should be account locked message
+        assert not result.is_success
+        assert result.error is not None
+        assert (
+            "Account is locked due to too many failed attempts" in result.error
+        )
 
         # Verify failed login was recorded
         mock_user_repo.update.assert_called_once()
@@ -320,44 +387,48 @@ class TestAuthenticationService:
             token="valid_token",
             ip_address="192.168.1.100",
             user_agent="Test Agent",
-            expires_at=datetime.now() + timedelta(hours=1),
+            expires_at=datetime.now(UTC) + timedelta(hours=1),
         )
 
         # Setup mocks
         mock_session_repo.find_by_token = AsyncMock(
-            return_value=ServiceResult.success(session),
+            return_value=ServiceResult.ok(session),
         )
         mock_session_repo.update = AsyncMock(
-            return_value=ServiceResult.success(session),
+            return_value=ServiceResult.ok(session),
         )
         mock_user_repo.find_by_id = AsyncMock(
-            return_value=ServiceResult.success(sample_user),
+            return_value=ServiceResult.ok(sample_user),
         )
 
         # Test session validation
         result = await auth_service.validate_session("valid_token")
 
         # Verify result
-        assert result.is_successful
-        user, session_result = result.value
+        assert result.is_success
+        assert result.data is not None
+        user, session_result = result.data
         assert user.username == "testuser"
         assert session_result.token == "valid_token"
 
     async def test_validate_session_invalid_token(
-        self, auth_service: AuthenticationService, mock_session_repo: MagicMock,
+        self,
+        auth_service: AuthenticationService,
+        mock_session_repo: MagicMock,
     ) -> None:
         """Test session validation with invalid token."""
         # Setup mocks
         mock_session_repo.find_by_token = AsyncMock(
-            return_value=ServiceResult.success(None),
+            return_value=ServiceResult.ok(None),
         )
 
         # Test session validation
         result = await auth_service.validate_session("invalid_token")
 
         # Verify result
-        assert result.is_successful
-        assert "Invalid session token" in result.error_message
+        assert not result.is_success
+        assert result.error is not None
+        assert "Invalid session token" in result.error
 
     async def test_validate_session_expired(
         self,
@@ -377,15 +448,16 @@ class TestAuthenticationService:
 
         # Setup mocks
         mock_session_repo.find_by_token = AsyncMock(
-            return_value=ServiceResult.success(session),
+            return_value=ServiceResult.ok(session),
         )
 
         # Test session validation
         result = await auth_service.validate_session("expired_token")
 
         # Verify result
-        assert result.is_successful
-        assert "expired or revoked" in result.error_message
+        assert not result.is_success
+        assert result.error is not None
+        assert "expired or revoked" in result.error
 
     async def test_logout_user_success(
         self,
@@ -405,37 +477,40 @@ class TestAuthenticationService:
 
         # Setup mocks
         mock_session_repo.find_by_token = AsyncMock(
-            return_value=ServiceResult.success(session),
+            return_value=ServiceResult.ok(session),
         )
         mock_session_repo.update = AsyncMock(
-            return_value=ServiceResult.success(session),
+            return_value=ServiceResult.ok(session),
         )
 
         # Test logout
         result = await auth_service.logout_user("session_token")
 
         # Verify result
-        assert result.is_successful
-        assert result.value is True
+        assert result.is_success
+        assert result.data is True
 
         # Verify session was revoked
         mock_session_repo.update.assert_called_once()
 
     async def test_logout_user_session_not_found(
-        self, auth_service: AuthenticationService, mock_session_repo: MagicMock,
+        self,
+        auth_service: AuthenticationService,
+        mock_session_repo: MagicMock,
     ) -> None:
         """Test logout with session not found."""
         # Setup mocks
         mock_session_repo.find_by_token = AsyncMock(
-            return_value=ServiceResult.success(None),
+            return_value=ServiceResult.ok(None),
         )
 
         # Test logout
         result = await auth_service.logout_user("nonexistent_token")
 
         # Verify result
-        assert result.is_successful
-        assert "not found" in result.error_message
+        assert not result.is_success
+        assert result.error is not None
+        assert "not found" in result.error
 
     async def test_change_password_success(
         self,
@@ -446,32 +521,38 @@ class TestAuthenticationService:
         """Test successful password change."""
         # Setup mocks
         mock_user_repo.find_by_id = AsyncMock(
-            return_value=ServiceResult.success(sample_user),
+            return_value=ServiceResult.ok(sample_user),
         )
-        mock_user_repo.update = AsyncMock(return_value=ServiceResult.success(sample_user))
+        mock_user_repo.update = AsyncMock(
+            return_value=ServiceResult.ok(sample_user),
+        )
 
         # Mock password verification
-        with patch.object(auth_service, "_verify_password", return_value=True):
-            with patch.object(auth_service, "_hash_password", return_value="new_hash"):
-                result = await auth_service.change_password(
-                    user_id=sample_user.id,
-                    current_password="current_password",
-                    new_password="new_password",
-                )
+        with (
+            patch.object(auth_service, "_verify_password", return_value=True),
+            patch.object(auth_service, "_hash_password", return_value="new_hash"),
+        ):
+            result = await auth_service.change_password(
+                user_id=sample_user.id,
+                current_password="current_password",
+                new_password="new_password",
+            )
 
         # Verify result
-        assert result.is_successful
-        assert result.value is True
+        assert result.is_success
+        assert result.data is True
 
         # Verify password was changed
         mock_user_repo.update.assert_called_once()
 
     async def test_change_password_user_not_found(
-        self, auth_service: AuthenticationService, mock_user_repo: MagicMock,
+        self,
+        auth_service: AuthenticationService,
+        mock_user_repo: MagicMock,
     ) -> None:
         """Test password change with user not found."""
         # Setup mocks
-        mock_user_repo.find_by_id = AsyncMock(return_value=ServiceResult.success(None))
+        mock_user_repo.find_by_id = AsyncMock(return_value=ServiceResult.ok(None))
 
         # Test password change
         result = await auth_service.change_password(
@@ -481,8 +562,9 @@ class TestAuthenticationService:
         )
 
         # Verify result
-        assert result.is_successful
-        assert "not found" in result.error_message
+        assert not result.is_success
+        assert result.error is not None
+        assert "not found" in result.error
 
     async def test_change_password_incorrect_current(
         self,
@@ -493,7 +575,7 @@ class TestAuthenticationService:
         """Test password change with incorrect current password."""
         # Setup mocks
         mock_user_repo.find_by_id = AsyncMock(
-            return_value=ServiceResult.success(sample_user),
+            return_value=ServiceResult.ok(sample_user),
         )
 
         # Mock password verification
@@ -505,8 +587,9 @@ class TestAuthenticationService:
             )
 
         # Verify result
-        assert result.is_successful
-        assert "incorrect" in result.error_message
+        assert not result.is_success
+        assert result.error is not None
+        assert "incorrect" in result.error
 
     async def test_verify_email_success(
         self,
@@ -517,16 +600,18 @@ class TestAuthenticationService:
         """Test successful email verification."""
         # Setup mocks
         mock_user_repo.find_by_id = AsyncMock(
-            return_value=ServiceResult.success(sample_user),
+            return_value=ServiceResult.ok(sample_user),
         )
-        mock_user_repo.update = AsyncMock(return_value=ServiceResult.success(sample_user))
+        mock_user_repo.update = AsyncMock(
+            return_value=ServiceResult.ok(sample_user),
+        )
 
         # Test email verification
         result = await auth_service.verify_email(sample_user.id)
 
         # Verify result
-        assert result.is_successful
-        assert result.value is True
+        assert result.is_success
+        assert result.data is True
 
         # Verify email was verified
         mock_user_repo.update.assert_called_once()
@@ -540,31 +625,33 @@ class TestAuthenticationService:
         """Test successful revocation of all user sessions."""
         # Setup mocks
         mock_session_repo.revoke_all_user_sessions = AsyncMock(
-            return_value=ServiceResult.success(3),
+            return_value=ServiceResult.ok(3),
         )
 
         # Test session revocation
         result = await auth_service.revoke_all_user_sessions(sample_user.id)
 
         # Verify result
-        assert result.is_successful
-        assert result.value == 3
+        assert result.is_success
+        assert result.data == 3
 
     async def test_cleanup_expired_sessions_success(
-        self, auth_service: AuthenticationService, mock_session_repo: MagicMock,
+        self,
+        auth_service: AuthenticationService,
+        mock_session_repo: MagicMock,
     ) -> None:
         """Test successful cleanup of expired sessions."""
         # Setup mocks
         mock_session_repo.cleanup_expired_sessions = AsyncMock(
-            return_value=ServiceResult.success(5),
+            return_value=ServiceResult.ok(5),
         )
 
         # Test session cleanup
         result = await auth_service.cleanup_expired_sessions()
 
         # Verify result
-        assert result.is_successful
-        assert result.value == 5
+        assert result.is_success
+        assert result.data == 5
 
     def test_hash_password(self, auth_service: AuthenticationService) -> None:
         """Test password hashing."""
@@ -596,17 +683,20 @@ class TestPasswordService:
         return PasswordService()
 
     async def test_generate_reset_token_success(
-        self, password_service: PasswordService,
+        self,
+        password_service: PasswordService,
     ) -> None:
         """Test successful reset token generation."""
         result = await password_service.generate_reset_token("test@example.com")
 
         # Verify result
-        assert result.is_successful
-        assert len(result.value) >= 32  # Token should be reasonably long
+        assert result.is_success
+        assert result.data is not None
+        assert len(result.data) >= 32
 
     async def test_reset_password_success(
-        self, password_service: PasswordService,
+        self,
+        password_service: PasswordService,
     ) -> None:
         """Test successful password reset."""
         mock_user_repo = MagicMock()
@@ -618,8 +708,8 @@ class TestPasswordService:
         )
 
         # Verify result (placeholder implementation always succeeds)
-        assert result.is_successful
-        assert result.value is True
+        assert result.is_success
+        assert result.data is True
 
 
 class TestEmailVerificationService:
@@ -631,18 +721,21 @@ class TestEmailVerificationService:
         return EmailVerificationService()
 
     async def test_generate_verification_token_success(
-        self, email_service: EmailVerificationService,
+        self,
+        email_service: EmailVerificationService,
     ) -> None:
         """Test successful verification token generation."""
         user_id = uuid4()
         result = await email_service.generate_verification_token(user_id)
 
         # Verify result
-        assert result.is_successful
-        assert len(result.value) >= 32  # Token should be reasonably long
+        assert result.is_success
+        assert result.data is not None
+        assert len(result.data) >= 32
 
     async def test_verify_email_token_success(
-        self, email_service: EmailVerificationService,
+        self,
+        email_service: EmailVerificationService,
     ) -> None:
         """Test successful email token verification."""
         mock_auth_service = MagicMock()
@@ -653,15 +746,17 @@ class TestEmailVerificationService:
         )
 
         # Verify result (placeholder implementation always succeeds)
-        assert result.is_successful
-        assert result.value is True
+        assert result.is_success
+        assert result.data is True
 
 
 class TestServiceIntegration:
     """Test integration between services."""
 
     @pytest.fixture
-    def services(self) -> tuple[AuthenticationService, PasswordService, EmailVerificationService]:
+    def services(
+        self,
+    ) -> tuple[AuthenticationService, PasswordService, EmailVerificationService]:
         """Create all services for integration testing."""
         # Create mock repositories
         mock_user_repo = MagicMock()
@@ -680,56 +775,77 @@ class TestServiceIntegration:
         return auth_service, password_service, email_service
 
     async def test_full_user_lifecycle(
-        self, services: tuple[AuthenticationService, PasswordService, EmailVerificationService],
+        self,
+        services: tuple[
+            AuthenticationService,
+            PasswordService,
+            EmailVerificationService,
+        ],
     ) -> None:
         """Test full user lifecycle workflow."""
         auth_service, password_service, email_service = services
 
         # Mock repositories for successful operations
-        auth_service.user_repo.username_exists = AsyncMock(
-            return_value=ServiceResult.success(False),
-        )
-        auth_service.user_repo.email_exists = AsyncMock(
-            return_value=ServiceResult.success(False),
-        )
-        auth_service.user_repo.create = AsyncMock(
-            return_value=ServiceResult.success(
-                User(
-                    username="testuser",
-                    email="test@example.com",
-                    password_hash="$2b$12$xIKJRSQMr4JFA6/ogklLzuvSqW/oBtPYW4akeAJv.bFoSQG8VddG.",
+        with (
+            patch.object(
+                auth_service.user_repo,
+                "username_exists",
+                new=AsyncMock(return_value=ServiceResult.ok(False)),
+            ),
+            patch.object(
+                auth_service.user_repo,
+                "email_exists",
+                new=AsyncMock(return_value=ServiceResult.ok(False)),
+            ),
+            patch.object(
+                auth_service.user_repo,
+                "create",
+                new=AsyncMock(
+                    return_value=ServiceResult.ok(
+                        User(
+                            username="testuser",
+                            email="test@example.com",
+                            password_hash="$2b$12$xIKJRSQMr4JFA6/ogklLzuvSqW/oBtPYW4akeAJv.bFoSQG8VddG.",
+                        ),
+                    ),
                 ),
             ),
-        )
+        ):
+            # 1. Create user
+            create_result = await auth_service.create_user(
+                username="testuser",
+                email="test@example.com",
+                password="StrongPassword123!",
+            )
+            assert create_result.is_success
 
-        # 1. Create user
-        create_result = await auth_service.create_user(
-            username="testuser",
-            email="test@example.com",
-            password="StrongPassword123!",
-        )
-        assert create_result.is_successful
+            # 2. Generate email verification token
+            user = create_result.data
+            assert user is not None
+            verify_token_result = await email_service.generate_verification_token(
+                user.id,
+            )
+            assert verify_token_result.is_success
 
-        # 2. Generate email verification token
-        user = create_result.value
-        verify_token_result = await email_service.generate_verification_token(user.id)
-        assert verify_token_result.is_successful
+            # 3. Verify email
+            assert verify_token_result.data is not None
+            verify_result = await email_service.verify_email_token(
+                token=verify_token_result.data,
+                auth_service=auth_service,
+            )
+            assert verify_result.is_success
 
-        # 3. Verify email
-        verify_result = await email_service.verify_email_token(
-            token=verify_token_result.value,
-            auth_service=auth_service,
-        )
-        assert verify_result.is_successful
+            # 4. Generate password reset token
+            assert user.email is not None
+            reset_token_result = await password_service.generate_reset_token(user.email)
+            assert reset_token_result.is_success
 
-        # 4. Generate password reset token
-        reset_token_result = await password_service.generate_reset_token(user.email)
-        assert reset_token_result.is_successful
-
-        # All operations should complete successfully
-        assert all([
-            create_result.is_successful,
-            verify_token_result.is_successful,
-            verify_result.is_successful,
-            reset_token_result.is_successful,
-        ])
+            # All operations should complete successfully
+            assert all(
+                [
+                    create_result.is_success,
+                    verify_token_result.is_success,
+                    verify_result.is_success,
+                    reset_token_result.is_success,
+                ],
+            )

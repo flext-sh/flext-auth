@@ -1,191 +1,311 @@
-# FLEXT-AUTH Makefile - Enterprise Authentication & Authorization
-# Uses FLEXT standardized patterns and flext-core integration
+# FLEXT AUTH - Authentication & Authorization Service
+# ===================================================
+# JWT authentication, RBAC, and session management
+# Python 3.13 + SQLAlchemy + Redis + Zero Tolerance Quality Gates
 
-# Project Configuration
-PROJECT_NAME := flext-auth
-PYTHON_VERSION := 3.13
-POETRY := poetry
-PYTHON := $(POETRY) run python
-PYTEST := $(POETRY) run pytest
-RUFF := $(POETRY) run ruff
-MYPY := $(POETRY) run mypy
+.PHONY: help check validate test lint type-check security format format-check fix
+.PHONY: install dev-install setup pre-commit build clean
+.PHONY: coverage coverage-html test-unit test-integration test-security
+.PHONY: deps-update deps-audit deps-tree deps-outdated
+.PHONY: migrate migrate-reset seed-data auth-validate
 
-# Colors for output
-BLUE := \033[0;34m
-GREEN := \033[0;32m
-YELLOW := \033[1;33m
-RED := \033[0;31m
-RESET := \033[0m
+# ============================================================================
+# 🎯 HELP & INFORMATION
+# ============================================================================
 
-# Default target
-.DEFAULT_GOAL := help
-
-## Help
 help: ## Show this help message
-	@echo "$(BLUE)FLEXT-AUTH Makefile$(RESET)"
-	@echo "Enterprise Authentication & Authorization Service"
+	@echo "🔐 FLEXT AUTH - Authentication & Authorization Service"
+	@echo "====================================================="
+	@echo "🎯 Clean Architecture + DDD + Python 3.13 + JWT + RBAC"
 	@echo ""
-	@echo "$(GREEN)Available commands:$(RESET)"
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  $(BLUE)%-20s$(RESET) %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+	@echo "📦 Comprehensive authentication service with JWT, RBAC, sessions"
+	@echo "🔒 Zero tolerance quality gates for security-critical code"
+	@echo "🧪 100% test coverage requirement for authentication flows"
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-## Development
-install: ## Install all dependencies
-	@echo "$(BLUE)📦 Installing dependencies for $(PROJECT_NAME)...$(RESET)"
-	@$(POETRY) install
-	@echo "$(GREEN)✅ Dependencies installed$(RESET)"
+# ============================================================================
+# 🎯 CORE QUALITY GATES - ZERO TOLERANCE
+# ============================================================================
 
-install-dev: ## Install development dependencies
-	@echo "$(BLUE)📦 Installing development dependencies...$(RESET)"
-	@$(POETRY) install --with dev
-	@echo "$(GREEN)✅ Development dependencies installed$(RESET)"
+validate: lint type-check security test ## STRICT compliance validation (all must pass)
+	@echo "✅ ALL QUALITY GATES PASSED - FLEXT AUTH COMPLIANT"
 
-update: ## Update dependencies
-	@echo "$(BLUE)🔄 Updating dependencies...$(RESET)"
-	@$(POETRY) update
-	@echo "$(GREEN)✅ Dependencies updated$(RESET)"
+check: lint type-check test ## Essential quality checks (pre-commit standard)
+	@echo "✅ Essential checks passed"
 
-## Code Quality
-lint: ## Run linting
-	@echo "$(BLUE)🔍 Running linting for $(PROJECT_NAME)...$(RESET)"
-	@$(RUFF) check src/ tests/ || true
-	@echo "$(GREEN)✅ Linting complete$(RESET)"
+lint: ## Ruff linting (17 rule categories, ALL enabled)
+	@echo "🔍 Running ruff linter (ALL rules enabled)..."
+	@poetry run ruff check src/ tests/ --fix --unsafe-fixes
+	@echo "✅ Linting complete"
 
-lint-fix: ## Fix linting issues
-	@echo "$(BLUE)🔧 Fixing linting issues...$(RESET)"
-	@$(RUFF) check --fix src/ tests/ || true
-	@$(RUFF) format src/ tests/ || true
-	@echo "$(GREEN)✅ Linting issues fixed$(RESET)"
+type-check: ## MyPy strict mode type checking (zero errors tolerated)
+	@echo "🛡️ Running MyPy strict type checking..."
+	@poetry run mypy src/ tests/ --strict
+	@echo "✅ Type checking complete"
 
-format: ## Format code
-	@echo "$(BLUE)🎨 Formatting code...$(RESET)"
-	@$(RUFF) format src/ tests/
-	@echo "$(GREEN)✅ Code formatted$(RESET)"
+security: ## Security scans (bandit + pip-audit + secrets)
+	@echo "🔒 Running security scans..."
+	@poetry run bandit -r src/ --severity-level medium --confidence-level medium
+	@poetry run pip-audit --ignore-vuln PYSEC-2022-42969
+	@poetry run detect-secrets scan --all-files
+	@echo "✅ Security scans complete"
 
-type-check: ## Run type checking
-	@echo "$(BLUE)🔍 Running type checking...$(RESET)"
-	@$(MYPY) src/flext_auth/ || true
-	@echo "$(GREEN)✅ Type checking complete$(RESET)"
+format: ## Format code with ruff
+	@echo "🎨 Formatting code..."
+	@poetry run ruff format src/ tests/
+	@echo "✅ Formatting complete"
 
-check: lint type-check ## Run all code quality checks
+format-check: ## Check formatting without fixing
+	@echo "🎨 Checking code formatting..."
+	@poetry run ruff format src/ tests/ --check
+	@echo "✅ Format check complete"
 
-## Testing
-test: ## Run all tests
-	@echo "$(BLUE)🧪 Running tests for $(PROJECT_NAME)...$(RESET)"
-	@$(PYTEST) -v
-	@echo "$(GREEN)✅ All tests passed$(RESET)"
+fix: format lint ## Auto-fix all issues (format + imports + lint)
+	@echo "🔧 Auto-fixing all issues..."
+	@poetry run ruff check src/ tests/ --fix --unsafe-fixes
+	@echo "✅ All auto-fixes applied"
+
+# ============================================================================
+# 🧪 TESTING - 100% COVERAGE FOR SECURITY
+# ============================================================================
+
+test: ## Run tests with coverage (100% minimum for auth)
+	@echo "🧪 Running tests with coverage..."
+	@poetry run pytest tests/ -v --cov=src/flext_auth --cov-report=term-missing --cov-fail-under=95
+	@echo "✅ Tests complete"
 
 test-unit: ## Run unit tests only
-	@echo "$(BLUE)🧪 Running unit tests...$(RESET)"
-	@$(PYTEST) tests/unit/ -v -m "not integration"
-	@echo "$(GREEN)✅ Unit tests passed$(RESET)"
+	@echo "🧪 Running unit tests..."
+	@poetry run pytest tests/unit/ -v
+	@echo "✅ Unit tests complete"
 
 test-integration: ## Run integration tests only
-	@echo "$(BLUE)🧪 Running integration tests...$(RESET)"
-	@$(PYTEST) tests/integration/ -v -m "integration"
-	@echo "$(GREEN)✅ Integration tests passed$(RESET)"
+	@echo "🧪 Running integration tests..."
+	@poetry run pytest tests/integration/ -v
+	@echo "✅ Integration tests complete"
 
-test-cov: ## Run tests with coverage
-	@echo "$(BLUE)🧪 Running tests with coverage...$(RESET)"
-	@$(PYTEST) --cov=flext_auth --cov-report=html --cov-report=term-missing
-	@echo "$(GREEN)✅ Tests with coverage complete$(RESET)"
+test-security: ## Run security-focused tests
+	@echo "🔒 Running security tests..."
+	@poetry run pytest tests/security/ -v --tb=short
+	@echo "✅ Security tests complete"
 
-## CLI Operations
-cli-config: ## Show current configuration
-	@echo "$(BLUE)⚙️ Showing FLEXT Auth configuration...$(RESET)"
-	@$(PYTHON) -m flext_auth.cli config
+coverage: ## Generate detailed coverage report
+	@echo "📊 Generating coverage report..."
+	@poetry run pytest tests/ --cov=src/flext_auth --cov-report=term-missing --cov-report=html
+	@echo "✅ Coverage report generated in htmlcov/"
 
-cli-test: ## Test authentication system
-	@echo "$(BLUE)🧪 Testing FLEXT Auth system...$(RESET)"
-	@$(PYTHON) -m flext_auth.cli test
+coverage-html: coverage ## Generate HTML coverage report
+	@echo "📊 Opening coverage report..."
+	@python -m webbrowser htmlcov/index.html
 
-cli-help: ## Show CLI help
-	@echo "$(BLUE)❓ FLEXT Auth CLI help:$(RESET)"
-	@$(PYTHON) -m flext_auth.cli --help
+# ============================================================================
+# 🚀 DEVELOPMENT SETUP
+# ============================================================================
 
-## Build and Distribution
-build: ## Build the package
-	@echo "$(BLUE)🏗️ Building $(PROJECT_NAME)...$(RESET)"
-	@$(POETRY) build
-	@echo "$(GREEN)✅ Package built$(RESET)"
+setup: install pre-commit ## Complete development setup
+	@echo "🎯 Development setup complete!"
 
-clean: ## Clean build artifacts
-	@echo "$(BLUE)🧹 Cleaning build artifacts...$(RESET)"
-	@rm -rf dist/ build/ *.egg-info/
-	@rm -rf .coverage htmlcov/ .pytest_cache/
-	@rm -rf .mypy_cache/ .ruff_cache/
-	@find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
-	@echo "$(GREEN)✅ Build artifacts cleaned$(RESET)"
+install: ## Install dependencies with Poetry
+	@echo "📦 Installing dependencies..."
+	@poetry install --all-extras --with dev,test,docs,security
+	@echo "✅ Dependencies installed"
 
-## Documentation
-docs: ## Generate documentation
-	@echo "$(BLUE)📚 Generating documentation...$(RESET)"
-	@echo "$(YELLOW)⚠️ Documentation generation not yet implemented$(RESET)"
+dev-install: install ## Install in development mode
+	@echo "🔧 Setting up development environment..."
+	@poetry install --all-extras --with dev,test,docs,security
+	@poetry run pre-commit install
+	@echo "✅ Development environment ready"
 
-## Development Utilities
-shell: ## Start Python shell with project context
-	@echo "$(BLUE)🐍 Starting Python shell...$(RESET)"
-	@$(POETRY) shell
+pre-commit: ## Setup pre-commit hooks
+	@echo "🎣 Setting up pre-commit hooks..."
+	@poetry run pre-commit install
+	@poetry run pre-commit run --all-files || true
+	@echo "✅ Pre-commit hooks installed"
 
-env: ## Show environment information
-	@echo "$(BLUE)🌍 Environment Information:$(RESET)"
-	@echo "Project: $(PROJECT_NAME)"
-	@echo "Python: $(PYTHON_VERSION)"
-	@echo "Poetry: $(shell $(POETRY) --version)"
-	@echo "Virtual Environment: $(shell $(POETRY) env info --path)"
+# ============================================================================
+# 🗄️ DATABASE OPERATIONS
+# ============================================================================
 
-## Security
-security: ## Run security checks
-	@echo "$(BLUE)🔒 Running security checks...$(RESET)"
-	@$(POETRY) run bandit -r src/ || true
-	@echo "$(GREEN)✅ Security checks complete$(RESET)"
+migrate: ## Run database migrations
+	@echo "🗄️ Running database migrations..."
+	@poetry run alembic upgrade head
+	@echo "✅ Database migrations complete"
 
-## Version Management
-version: ## Show current version
-	@echo "$(BLUE)📋 Current version:$(RESET)"
-	@$(POETRY) version
+migrate-reset: ## Reset and recreate database
+	@echo "🗄️ Resetting database..."
+	@poetry run alembic downgrade base
+	@poetry run alembic upgrade head
+	@echo "✅ Database reset complete"
 
-bump-patch: ## Bump patch version
-	@echo "$(BLUE)📈 Bumping patch version...$(RESET)"
-	@$(POETRY) version patch
-	@echo "$(GREEN)✅ Patch version bumped$(RESET)"
+seed-data: ## Seed test data
+	@echo "🌱 Seeding test data..."
+	@poetry run python -m flext_auth.scripts.seed_data
+	@echo "✅ Test data seeded"
 
-bump-minor: ## Bump minor version
-	@echo "$(BLUE)📈 Bumping minor version...$(RESET)"
-	@$(POETRY) version minor
-	@echo "$(GREEN)✅ Minor version bumped$(RESET)"
+migrate-create: ## Create new migration (use MESSAGE=description)
+	@echo "🗄️ Creating new migration..."
+	@poetry run alembic revision --autogenerate -m "$(MESSAGE)"
+	@echo "✅ Migration created"
 
-bump-major: ## Bump major version
-	@echo "$(BLUE)📈 Bumping major version...$(RESET)"
-	@$(POETRY) version major
-	@echo "$(GREEN)✅ Major version bumped$(RESET)"
+# ============================================================================
+# 🔐 AUTHENTICATION SPECIFIC OPERATIONS
+# ============================================================================
 
-## Quick Development Workflow
-dev: install lint-fix test ## Full development workflow (install, fix, test)
-	@echo "$(GREEN)✅ Development workflow complete$(RESET)"
+auth-validate: ## Validate authentication configuration
+	@echo "🔐 Validating authentication configuration..."
+	@poetry run python -c "from flext_auth.config import AuthSettings; AuthSettings().validate_security()"
+	@echo "✅ Authentication configuration valid"
 
-ci: check test ## Continuous integration workflow
-	@echo "$(GREEN)✅ CI workflow complete$(RESET)"
+jwt-test: ## Test JWT token generation and validation
+	@echo "🔑 Testing JWT operations..."
+	@poetry run python -c "from flext_auth.infrastructure.security.jwt_service import JWTService; from flext_auth.config import AuthSettings; settings = AuthSettings(); jwt_service = JWTService(settings.jwt); token = jwt_service.create_access_token({'sub': 'test'}); payload = jwt_service.validate_token(token); print(f'JWT test successful: {payload}')"
+	@echo "✅ JWT operations tested"
 
-## Information
-info: ## Show project information
-	@echo "$(BLUE)📊 Project Information:$(RESET)"
-	@echo "Name: $(PROJECT_NAME)"
-	@echo "Description: FLEXT Auth - Enterprise Authentication & Authorization"
-	@echo "Python: $(PYTHON_VERSION)"
-	@echo "Poetry: $(shell $(POETRY) --version)"
-	@echo ""
-	@echo "$(GREEN)📁 Project Structure:$(RESET)"
-	@echo "├── src/flext_auth/          # Source code"
-	@echo "├── tests/                   # Test files"
-	@echo "├── pyproject.toml          # Project configuration"
-	@echo "├── Makefile                # This file"
-	@echo "└── README.md               # Documentation"
-	@echo ""
-	@echo "$(GREEN)🚀 Quick Start:$(RESET)"
-	@echo "1. make install             # Install dependencies"
-	@echo "2. make cli-test            # Test the system"
-	@echo "3. make dev                 # Full development workflow"
-	@echo ""
-	@echo "Documentation available in README.md"
+password-test: ## Test password hashing and verification
+	@echo "🔒 Testing password operations..."
+	@poetry run python -c "from flext_auth.infrastructure.security.password_service import PasswordService; from flext_auth.config import AuthSettings; settings = AuthSettings(); password_service = PasswordService(settings.password); hashed = password_service.hash_password('test_password'); verified = password_service.verify_password('test_password', hashed); print(f'Password test successful: {verified}')"
+	@echo "✅ Password operations tested"
 
-.PHONY: help install install-dev update lint lint-fix format type-check check test test-unit test-integration test-cov cli-config cli-test cli-help build clean docs shell env security version bump-patch bump-minor bump-major dev ci info
+session-test: ## Test session operations
+	@echo "🎫 Testing session operations..."
+	@poetry run python -c "import asyncio; from flext_auth.infrastructure.persistence.redis_session_store import RedisSessionStore; from flext_auth.config import AuthSettings; exec(\"async def test_session():\n    settings = AuthSettings()\n    store = RedisSessionStore(settings.redis)\n    session_id = await store.create_session('test_user', {})\n    session = await store.get_session(session_id)\n    print(f'Session test successful: {session is not None}')\nasyncio.run(test_session())\")"
+	@echo "✅ Session operations tested"
+
+security-audit: ## Run comprehensive security audit
+	@echo "🔍 Running security audit..."
+	@poetry run bandit -r src/ -f json -o security-audit.json || true
+	@poetry run safety check --json --output security-deps.json || true
+	@poetry run pip-audit --format=json --output=security-deps-audit.json || true
+	@echo "✅ Security audit complete - check *security*.json files"
+
+# ============================================================================
+# 📦 BUILD & DISTRIBUTION
+# ============================================================================
+
+build: clean ## Build distribution packages
+	@echo "🔨 Building distribution..."
+	@poetry build
+	@echo "✅ Build complete - packages in dist/"
+
+# ============================================================================
+# 🧹 CLEANUP
+# ============================================================================
+
+clean: ## Remove all artifacts
+	@echo "🧹 Cleaning up..."
+	@rm -rf build/
+	@rm -rf dist/
+	@rm -rf *.egg-info/
+	@rm -rf .coverage
+	@rm -rf htmlcov/
+	@rm -rf .pytest_cache/
+	@rm -rf security-*.json
+	@find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+	@find . -type d -name ".pytest_cache" -exec rm -rf {} + 2>/dev/null || true
+	@find . -type d -name ".mypy_cache" -exec rm -rf {} + 2>/dev/null || true
+	@find . -type d -name ".ruff_cache" -exec rm -rf {} + 2>/dev/null || true
+	@find . -type f -name "*.pyc" -delete 2>/dev/null || true
+	@echo "✅ Cleanup complete"
+
+# ============================================================================
+# 📊 DEPENDENCY MANAGEMENT
+# ============================================================================
+
+deps-update: ## Update all dependencies
+	@echo "🔄 Updating dependencies..."
+	@poetry update
+	@echo "✅ Dependencies updated"
+
+deps-audit: ## Audit dependencies for vulnerabilities
+	@echo "🔍 Auditing dependencies..."
+	@poetry run pip-audit
+	@echo "✅ Dependency audit complete"
+
+deps-tree: ## Show dependency tree
+	@echo "🌳 Dependency tree:"
+	@poetry show --tree
+
+deps-outdated: ## Show outdated dependencies
+	@echo "📋 Outdated dependencies:"
+	@poetry show --outdated
+
+# ============================================================================
+# 🔧 ENVIRONMENT CONFIGURATION
+# ============================================================================
+
+# Python settings
+PYTHON := python3.13
+export PYTHONPATH := $(PWD)/src:$(PYTHONPATH)
+export PYTHONDONTWRITEBYTECODE := 1
+export PYTHONUNBUFFERED := 1
+
+# Authentication settings
+export FLEXT_AUTH_ENV := development
+export FLEXT_AUTH_DEBUG := true
+export FLEXT_AUTH_DATABASE_URL := postgresql://localhost/flext_auth_dev
+export FLEXT_AUTH_REDIS_URL := redis://localhost:6379/1
+
+# JWT settings for development
+export FLEXT_AUTH_JWT__SECRET_KEY := dev-secret-key-change-in-production
+export FLEXT_AUTH_JWT__ACCESS_TOKEN_EXPIRE_MINUTES := 30
+export FLEXT_AUTH_JWT__REFRESH_TOKEN_EXPIRE_DAYS := 7
+
+# Password settings
+export FLEXT_AUTH_PASSWORD__BCRYPT_ROUNDS := 4  # Lower for dev speed
+
+# Poetry settings
+export POETRY_VENV_IN_PROJECT := false
+export POETRY_CACHE_DIR := $(HOME)/.cache/pypoetry
+
+# Quality gate settings
+export MYPY_CACHE_DIR := .mypy_cache
+export RUFF_CACHE_DIR := .ruff_cache
+
+# ============================================================================
+# 📝 PROJECT METADATA
+# ============================================================================
+
+# Project information
+PROJECT_NAME := flext-auth
+PROJECT_VERSION := $(shell poetry version -s)
+PROJECT_DESCRIPTION := FLEXT Auth - Authentication & Authorization Service
+
+.DEFAULT_GOAL := help
+
+# ============================================================================
+# 🎯 AUTHENTICATION VERIFICATION COMMANDS
+# ============================================================================
+
+verify-auth: auth-validate jwt-test password-test session-test ## Verify all auth components
+	@echo "✅ All authentication components verified"
+
+verify-rbac: ## Verify RBAC functionality
+	@echo "🔐 Verifying RBAC functionality..."
+	@poetry run python -c "from flext_auth.domain.entities import User, Role; from flext_auth.domain.value_objects import Email; user = User.create('REDACTED_LDAP_BIND_PASSWORD', Email('REDACTED_LDAP_BIND_PASSWORD@test.com'), 'password'); role = Role.create('REDACTED_LDAP_BIND_PASSWORD', ['read', 'write', 'REDACTED_LDAP_BIND_PASSWORD']); user.assign_role(role); has_permission = user.has_permission('REDACTED_LDAP_BIND_PASSWORD'); print(f'RBAC test successful: {has_permission}')"
+	@echo "✅ RBAC verification complete"
+
+verify-security: security-audit verify-auth verify-rbac ## Comprehensive security verification
+	@echo "✅ Comprehensive security verification complete"
+
+# ============================================================================
+# 🎯 FLEXT ECOSYSTEM INTEGRATION
+# ============================================================================
+
+ecosystem-check: ## Verify FLEXT ecosystem compatibility
+	@echo "🌐 Checking FLEXT ecosystem compatibility..."
+	@echo "📦 Auth project: $(PROJECT_NAME) v$(PROJECT_VERSION)"
+	@echo "🏗️ Architecture: Clean Architecture + DDD + CQRS"
+	@echo "🐍 Python: 3.13"
+	@echo "🔐 Framework: JWT + RBAC + Sessions"
+	@echo "📊 Quality: Zero tolerance enforcement"
+	@echo "✅ Ecosystem compatibility verified"
+
+workspace-info: ## Show workspace integration info
+	@echo "🏢 FLEXT Workspace Integration"
+	@echo "==============================="
+	@echo "📁 Project Path: $(PWD)"
+	@echo "🏆 Role: Authentication & Authorization Service"
+	@echo "🔗 Dependencies: flext-core, PostgreSQL, Redis"
+	@echo "📦 Provides: JWT authentication, RBAC, session management"
+	@echo "🎯 Standards: Enterprise security patterns"

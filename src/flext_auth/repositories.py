@@ -2,17 +2,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-from typing import Protocol
-from typing import runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
-from flext_auth.models import ADMIN_ROLE
-from flext_auth.models import OPERATOR_ROLE
-from flext_auth.models import VIEWER_ROLE
+from flext_auth.models import ADMIN_ROLE, OPERATOR_ROLE, VIEWER_ROLE
 
 if TYPE_CHECKING:
-    from flext_auth.models import Role
     from flext_core.domain.types import EntityId
+
+    from flext_auth.models import Role
 
 
 @runtime_checkable

@@ -3,26 +3,41 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import UTC
-from datetime import datetime
-from datetime import timedelta
-from typing import TYPE_CHECKING
-from typing import Any
-from typing import Protocol
-from uuid import UUID
-from uuid import uuid4
+from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING, Any, Protocol
+from uuid import UUID, uuid4
 
 import jwt
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
+from flext_core.domain.pydantic_base import DomainValueObject
 from pydantic import Field
 
-from flext_auth.models import TokenInfo
-from flext_core import DomainValueObject
+from flext_auth.models import Claims, TokenInfo
 
 if TYPE_CHECKING:
-    from flext_auth.models import Claims
     from flext_auth.models import User
+
+
+# Simple result class for validation
+class ValidationResult:
+    """Simple validation result."""
+
+    def __init__(self, success: bool, error: str = "", data: Any | None = None) -> None:
+        self.success = success
+        self.error = error
+        self.data = data
+
+    @property
+    def is_failure(self) -> bool:
+        """Check if validation failed."""
+        return not self.success
+
+    @property
+    def is_success(self) -> bool:
+        """Check if validation succeeded."""
+        return self.success
+
 
 # Python 3.13 type aliases
 TokenString = str
@@ -129,7 +144,7 @@ class TokenStorageProtocol(Protocol):
 
 
 class TokenPair(DomainValueObject):
-    """Enterprise JWT token pair with comprehensive security validation and audit capabilities.
+    """Enterprise JWT token pair with comprehensive security validation.
 
     Immutable value object representing a complete authentication token set including
     access token, refresh token, and comprehensive metadata for enterprise security
@@ -143,7 +158,7 @@ class TokenPair(DomainValueObject):
         description="JWT access token for API authentication and authorization",
     )
     refresh_token: TokenString = Field(
-        description="JWT refresh token for secure token renewal without re-authentication",
+        description="JWT refresh token for secure token renewal",
     )
     token_type: str = Field(
         default="Bearer",  # nosec S105 - not a password, token type constant
@@ -260,7 +275,7 @@ class JWTService:
         )
 
         # Export private key
-        self.config.private_key = private_key.private_bytes(
+        private_key_bytes = private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.PKCS8,
             encryption_algorithm=serialization.NoEncryption(),
@@ -268,9 +283,26 @@ class JWTService:
 
         # Export public key
         public_key = private_key.public_key()
-        self.config.public_key = public_key.public_bytes(
+        public_key_bytes = public_key.public_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+
+        # Create new immutable config with keys (JWTConfig is a DomainValueObject)
+        self.config = JWTConfig(
+            algorithm=self.config.algorithm,
+            access_token_expire_minutes=self.config.access_token_expire_minutes,
+            refresh_token_expire_days=self.config.refresh_token_expire_days,
+            issuer=self.config.issuer,
+            audience=self.config.audience,
+            secret_key=self.config.secret_key,
+            public_key=public_key_bytes,
+            private_key=private_key_bytes,
+            leeway_seconds=self.config.leeway_seconds,
+            verify_signature=self.config.verify_signature,
+            verify_exp=self.config.verify_exp,
+            verify_aud=self.config.verify_aud,
+            require_exp=self.config.require_exp,
         )
 
     def create_access_token(
@@ -312,7 +344,7 @@ class JWTService:
 
         # Encode token
         key = self._get_signing_key()
-        token = jwt.encode(claims, key, algorithm=self.config.algorithm)
+        token = str(jwt.encode(claims, key, algorithm=self.config.algorithm))
 
         # Store token info if storage available:
         if self.storage:
@@ -324,7 +356,6 @@ class JWTService:
                 issued_at=now,
                 expires_at=expires_at,
             )
-            # Fire and forget - don't block on storage
             try:
                 task = asyncio.create_task(self.storage.store_token(token_info))
                 task.add_done_callback(lambda _: None)  # Prevent dangling task warning
@@ -364,19 +395,19 @@ class JWTService:
 
         # Encode token
         key = self._get_signing_key()
-        token = jwt.encode(claims, key, algorithm=self.config.algorithm)
+        token = str(jwt.encode(claims, key, algorithm=self.config.algorithm))
 
         # Store token info if storage available:
         if self.storage:
-            # Use the jti UUID we generated
-            token_info = TokenInfo(
-                token_id=jti_uuid,
-                user_id=user.user_id,
-                token_type="refresh",
-                issued_at=now,
-                expires_at=expires_at,
-            )
             try:
+                # Use the jti UUID we generated
+                token_info = TokenInfo(
+                    token_id=jti_uuid,
+                    user_id=user.user_id,
+                    token_type="refresh",
+                    issued_at=now,
+                    expires_at=expires_at,
+                )
                 task = asyncio.create_task(self.storage.store_token(token_info))
                 task.add_done_callback(lambda _: None)  # Prevent dangling task warning
             except RuntimeError:
@@ -411,23 +442,51 @@ class JWTService:
             expires_in=self.config.access_token_expire_minutes * 60,
         )
 
-    def _decode_jwt_token(self, token: TokenString) -> Claims:
-        key = self._get_verification_key()
-        decoded: Claims = jwt.decode(
-            token,
-            key,
-            algorithms=[self.config.algorithm],
-            audience=self.config.audience,
-            issuer=self.config.issuer,
-            leeway=timedelta(seconds=self.config.leeway_seconds),
-            options={
-                "verify_signature": self.config.verify_signature,
-                "verify_exp": self.config.verify_exp,
-                "verify_aud": self.config.verify_aud,
-                "require_exp": self.config.require_exp,
-            },
-        )
-        return decoded
+    def _encode_jwt_token(self, payload: Claims) -> TokenString:
+        """Encode JWT token from payload.
+
+        Args:
+            payload: Claims dictionary to encode.
+
+        Returns:
+            Encoded JWT token string.
+
+        """
+        key = self._get_signing_key()
+        return str(jwt.encode(payload, key, algorithm=self.config.algorithm))
+
+    def _decode_jwt_token(self, token: TokenString) -> ValidationResult:
+        """Decode JWT token and return validation result.
+
+        Args:
+            token: JWT token string to decode.
+
+        Returns:
+            ValidationResult with decoded claims on success or error info on failure.
+
+        """
+        try:
+            key = self._get_verification_key()
+            decoded: Claims = jwt.decode(
+                token,
+                key,
+                algorithms=[self.config.algorithm],
+                audience=self.config.audience,
+                issuer=self.config.issuer,
+                leeway=timedelta(seconds=self.config.leeway_seconds),
+                options={
+                    "verify_signature": self.config.verify_signature,
+                    "verify_exp": self.config.verify_exp,
+                    "verify_aud": self.config.verify_aud,
+                    "require_exp": self.config.require_exp,
+                },
+            )
+            # Create success result with data attribute
+            return ValidationResult(success=True, data=decoded)
+        except Exception as e:
+            self._handle_jwt_exceptions(e)
+            # This line shouldn't be reached due to _handle_jwt_exceptions raising
+            return ValidationResult(success=False, error=str(e))
 
     def _validate_token_type(self, claims: Claims, expected_type: str) -> None:
         if claims.get("token_type") != expected_type:
@@ -442,6 +501,7 @@ class JWTService:
                 raise jwt.InvalidTokenError(msg)
 
     def _handle_jwt_exceptions(self, exc: Exception) -> None:
+        """Handle JWT exceptions and convert to InvalidTokenError with specific messages."""
         if isinstance(exc, jwt.ExpiredSignatureError):
             msg = "Token has expired"
         elif isinstance(exc, jwt.InvalidAudienceError):
@@ -463,11 +523,10 @@ class JWTService:
         ):
             # ZERO TOLERANCE - Specific exception types for JWT token validation failures
             msg = f"Token validation failed: {exc}"
-            raise jwt.InvalidTokenError(msg) from exc
         else:
             msg = f"Unexpected token error: {exc}"
 
-        raise jwt.InvalidTokenError(msg)
+        raise jwt.InvalidTokenError(msg) from exc
 
     async def verify_token(
         self,
@@ -489,7 +548,17 @@ class JWTService:
         """
         try:
             # Decode and validate token
-            claims = self._decode_jwt_token(token)
+            decode_result = self._decode_jwt_token(token)
+
+            if not decode_result.is_success:
+                return None
+
+            claims = decode_result.data
+
+            # Ensure claims is not None before proceeding
+            if claims is None:
+                msg = "Token claims are None"
+                raise ValueError(msg)
 
             # Validate token type
             self._validate_token_type(claims, token_type)
@@ -505,7 +574,30 @@ class JWTService:
             self._handle_jwt_exceptions(e)
             return None  # Explicit return for missing return statement
         else:
-            return claims
+            return dict(claims)  # Explicit cast to ensure proper typing
+
+    async def validate_token(
+        self,
+        token: TokenString,
+        token_type: str = "access",
+    ) -> ValidationResult:
+        """Validate a JWT token and return a result object.
+
+        Args:
+            token: The JWT token string to validate.
+            token_type: Expected token type ('access' or 'refresh').
+
+        Returns:
+            ValidationResult with success status and error message if failed.
+
+        """
+        try:
+            claims = await self.verify_token(token, token_type)
+            if claims is None:
+                return ValidationResult(False, "Token validation failed")
+            return ValidationResult(True)
+        except jwt.InvalidTokenError:
+            return ValidationResult(False, "Token validation failed")
 
     async def refresh_tokens(self, refresh_token: TokenString, user: User) -> TokenPair:
         """Refresh tokens using a valid refresh token.
@@ -574,10 +666,9 @@ class JWTService:
 
         """
         if not self.storage:
-            msg = "Token storage not configured"
+            msg = "Token storage not configured for revocation"
             raise RuntimeError(msg)
 
-        # Decode token without verification to get JTI
         try:
             unverified = jwt.decode(token, options={"verify_signature": False})
             token_id = unverified.get("jti")
@@ -598,7 +689,10 @@ class JWTService:
 
         """
         try:
-            decoded: dict[str, Any] = jwt.decode(token, options={"verify_signature": False})
+            decoded: dict[str, Any] = jwt.decode(
+                token,
+                options={"verify_signature": False},
+            )
             return decoded
         except (jwt.DecodeError, ValueError, TypeError, KeyError):
             return None
@@ -662,8 +756,6 @@ class JwtInMemoryTokenStorage:
     Esta classe segue os padrões Service Layer Pattern estabelecidos no projeto.
 
     """
-
-    """Simple in-memory token storage."""
 
     def __init__(self) -> None:
         self._tokens: dict[str, TokenInfo] = {}
