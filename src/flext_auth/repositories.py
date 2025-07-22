@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Protocol, runtime_checkable
 from flext_auth.models import ADMIN_ROLE, OPERATOR_ROLE, VIEWER_ROLE
 
 if TYPE_CHECKING:
-    from flext_core.domain.types import EntityId
+    from flext_core.domain.shared_types import EntityId
 
     from flext_auth.models import Role
 

@@ -7,7 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import uuid4
 
 import pytest
-from flext_core import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 
 from flext_auth.application.auth_service import (
     AuthenticationService,
@@ -100,12 +100,8 @@ class TestAuthenticationService:
             return_value=ServiceResult.ok(False),
         )
         mock_user_repo.create = AsyncMock(
-            return_value=ServiceResult.ok(
-                User(
-                    username="newuser",
-                    email="new@example.com",
-                    password_hash="$2b$12$xIKJRSQMr4JFA6/ogklLzuvSqW/oBtPYW4akeAJv.bFoSQG8VddG.",
-                ),
+            return_value=ServiceResult.ok(User(
+                    username="newuser"),
             ),
         )
 
@@ -118,7 +114,7 @@ class TestAuthenticationService:
         )
 
         # Verify result
-        assert result.is_success
+        assert result.success
         assert result.data is not None
         assert result.data.username == "newuser"
         assert result.data.email == "new@example.com"
@@ -147,7 +143,7 @@ class TestAuthenticationService:
         )
 
         # Verify result
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "already exists" in result.error
 
@@ -173,7 +169,7 @@ class TestAuthenticationService:
         )
 
         # Verify result
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "already exists" in result.error
 
@@ -193,15 +189,10 @@ class TestAuthenticationService:
             return_value=ServiceResult.ok(sample_user),
         )
         mock_session_repo.create = AsyncMock(
-            return_value=ServiceResult.ok(
-                Session(
-                    user_id=sample_user.id,
-                    token="session_token",
-                    ip_address="192.168.1.100",
-                    user_agent="Test Agent",
-                    expires_at=datetime.now() + timedelta(hours=1),
-                ),
-            ),
+            return_value=ServiceResult.ok(Session(
+                user_id=sample_user.id,
+                expires_at=datetime.now(UTC) + timedelta(hours=1)
+            )),
         )
 
         # Mock password verification
@@ -214,7 +205,7 @@ class TestAuthenticationService:
             )
 
         # Verify result
-        assert result.is_success
+        assert result.success
         assert result.data is not None
         user, session = result.data
         assert user.username == "testuser"
@@ -240,7 +231,7 @@ class TestAuthenticationService:
         )
 
         # Verify result - invalid username should FAIL authentication
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Invalid username or password" in result.error
 
@@ -268,7 +259,7 @@ class TestAuthenticationService:
         )
 
         # Verify result - locked account should FAIL authentication
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Account is locked due to too many failed attempts" in result.error
 
@@ -293,7 +284,7 @@ class TestAuthenticationService:
         )
 
         # Verify result - inactive account should FAIL authentication
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "not active" in result.error
 
@@ -326,7 +317,7 @@ class TestAuthenticationService:
             )
 
         # Verify result
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Invalid username or password" in result.error
 
@@ -362,7 +353,7 @@ class TestAuthenticationService:
             )
 
         # Verify result - should be account locked message
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Account is locked due to too many failed attempts" in result.error
 
@@ -401,7 +392,7 @@ class TestAuthenticationService:
         result = await auth_service.validate_session("valid_token")
 
         # Verify result
-        assert result.is_success
+        assert result.success
         assert result.data is not None
         user, session_result = result.data
         assert user.username == "testuser"
@@ -422,7 +413,7 @@ class TestAuthenticationService:
         result = await auth_service.validate_session("invalid_token")
 
         # Verify result
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Invalid session token" in result.error
 
@@ -451,7 +442,7 @@ class TestAuthenticationService:
         result = await auth_service.validate_session("expired_token")
 
         # Verify result
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "expired or revoked" in result.error
 
@@ -483,7 +474,7 @@ class TestAuthenticationService:
         result = await auth_service.logout_user("session_token")
 
         # Verify result
-        assert result.is_success
+        assert result.success
         assert result.data is True
 
         # Verify session was revoked
@@ -504,7 +495,7 @@ class TestAuthenticationService:
         result = await auth_service.logout_user("nonexistent_token")
 
         # Verify result
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "not found" in result.error
 
@@ -535,7 +526,7 @@ class TestAuthenticationService:
             )
 
         # Verify result
-        assert result.is_success
+        assert result.success
         assert result.data is True
 
         # Verify password was changed
@@ -558,7 +549,7 @@ class TestAuthenticationService:
         )
 
         # Verify result
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "not found" in result.error
 
@@ -583,7 +574,7 @@ class TestAuthenticationService:
             )
 
         # Verify result
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "incorrect" in result.error
 
@@ -606,7 +597,7 @@ class TestAuthenticationService:
         result = await auth_service.verify_email(sample_user.id)
 
         # Verify result
-        assert result.is_success
+        assert result.success
         assert result.data is True
 
         # Verify email was verified
@@ -628,7 +619,7 @@ class TestAuthenticationService:
         result = await auth_service.revoke_all_user_sessions(sample_user.id)
 
         # Verify result
-        assert result.is_success
+        assert result.success
         assert result.data == 3
 
     async def test_cleanup_expired_sessions_success(
@@ -646,7 +637,7 @@ class TestAuthenticationService:
         result = await auth_service.cleanup_expired_sessions()
 
         # Verify result
-        assert result.is_success
+        assert result.success
         assert result.data == 5
 
     def test_hash_password(self, auth_service: AuthenticationService) -> None:
@@ -686,7 +677,7 @@ class TestPasswordService:
         result = await password_service.generate_reset_token("test@example.com")
 
         # Verify result
-        assert result.is_success
+        assert result.success
         assert result.data is not None
         assert len(result.data) >= 32
 
@@ -704,7 +695,7 @@ class TestPasswordService:
         )
 
         # Verify result (placeholder implementation always succeeds)
-        assert result.is_success
+        assert result.success
         assert result.data is True
 
 
@@ -725,7 +716,7 @@ class TestEmailVerificationService:
         result = await email_service.generate_verification_token(user_id)
 
         # Verify result
-        assert result.is_success
+        assert result.success
         assert result.data is not None
         assert len(result.data) >= 32
 
@@ -742,7 +733,7 @@ class TestEmailVerificationService:
         )
 
         # Verify result (placeholder implementation always succeeds)
-        assert result.is_success
+        assert result.success
         assert result.data is True
 
 
@@ -797,12 +788,8 @@ class TestServiceIntegration:
                 auth_service.user_repo,
                 "create",
                 new=AsyncMock(
-                    return_value=ServiceResult.ok(
-                        User(
-                            username="testuser",
-                            email="test@example.com",
-                            password_hash="$2b$12$xIKJRSQMr4JFA6/ogklLzuvSqW/oBtPYW4akeAJv.bFoSQG8VddG.",
-                        ),
+                    return_value=ServiceResult.ok(User(
+                            username="testuser"),
                     ),
                 ),
             ),
@@ -813,7 +800,7 @@ class TestServiceIntegration:
                 email="test@example.com",
                 password="StrongPassword123!",
             )
-            assert create_result.is_success
+            assert create_result.success
 
             # 2. Generate email verification token
             user = create_result.data
@@ -821,7 +808,7 @@ class TestServiceIntegration:
             verify_token_result = await email_service.generate_verification_token(
                 user.id,
             )
-            assert verify_token_result.is_success
+            assert verify_token_result.success
 
             # 3. Verify email
             assert verify_token_result.data is not None
@@ -829,19 +816,19 @@ class TestServiceIntegration:
                 token=verify_token_result.data,
                 auth_service=auth_service,
             )
-            assert verify_result.is_success
+            assert verify_result.success
 
             # 4. Generate password reset token
             assert user.email is not None
             reset_token_result = await password_service.generate_reset_token(user.email)
-            assert reset_token_result.is_success
+            assert reset_token_result.success
 
             # All operations should complete successfully
             assert all(
                 [
-                    create_result.is_success,
-                    verify_token_result.is_success,
-                    verify_result.is_success,
-                    reset_token_result.is_success,
+                    create_result.success,
+                    verify_token_result.success,
+                    verify_result.success,
+                    reset_token_result.success,
                 ],
             )

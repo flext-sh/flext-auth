@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 
 from flext_auth.models import AuthStatus, UserRoleEnum
 
@@ -142,19 +142,21 @@ def sample_user_data(
 def mock_user_service() -> AsyncMock:
     service = AsyncMock()
     service.authenticate.return_value = ServiceResult.ok(True)
-    service.create_user.return_value = ServiceResult.ok({"id": str(uuid4())})
-    service.get_user.return_value = ServiceResult.ok({"id": str(uuid4())})
+    service.create_user.return_value = ServiceResult.ok({"id": str(uuid4())},
+    )
+    service.get_user.return_value = ServiceResult.ok({"id": str(uuid4())},
+    )
     return service
 
 
 @pytest.fixture
 def mock_jwt_service() -> AsyncMock:
     service = AsyncMock()
-    service.generate_tokens.return_value = ServiceResult.ok(
-        {
+    service.generate_tokens.return_value = ServiceResult.ok({
             "access_token": "mock_access_token",
             "refresh_token": "mock_refresh_token",
         },
     )
-    service.verify_token.return_value = ServiceResult.ok({"user_id": str(uuid4())})
+    service.verify_token.return_value = ServiceResult.ok({"user_id": str(uuid4())},
+    )
     return service

@@ -330,7 +330,7 @@ class FlextObservabilityLogger:
 
     def exception(self, message: str, **kwargs: Any) -> None:
         """Log exception with traceback."""
-        self._logger.exception(message, **kwargs)
+        self._logger.error(message, **kwargs)
 
 
 # Factory functions for easy creation

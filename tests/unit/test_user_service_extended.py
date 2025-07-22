@@ -12,7 +12,7 @@ from unittest.mock import Mock, patch
 from uuid import uuid4
 
 import pytest
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 from pydantic import ValidationError
 
 from flext_auth.types import SecurityEvent, TokenType
@@ -30,7 +30,11 @@ class TestPasswordHasherImplExtended:
 
     def test_needs_update_true(self) -> None:
         """Test needs_update returns True for outdated hash."""
-        hasher = PasswordHasherImpl()
+        # Create mock settings with proper bcrypt rounds
+        mock_settings = Mock()
+        mock_settings.password_bcrypt_rounds = 12
+
+        hasher = PasswordHasherImpl(settings=mock_settings)
 
         # Mock context to return True for needs_update
         with patch.object(hasher.context, "needs_update", return_value=True):
@@ -39,7 +43,11 @@ class TestPasswordHasherImplExtended:
 
     def test_needs_update_false(self) -> None:
         """Test needs_update returns False for current hash."""
-        hasher = PasswordHasherImpl()
+        # Create mock settings with proper bcrypt rounds
+        mock_settings = Mock()
+        mock_settings.password_bcrypt_rounds = 12
+
+        hasher = PasswordHasherImpl(settings=mock_settings)
 
         # Mock context to return False for needs_update
         with patch.object(hasher.context, "needs_update", return_value=False):
@@ -48,7 +56,11 @@ class TestPasswordHasherImplExtended:
 
     def test_needs_update_none_result(self) -> None:
         """Test needs_update returns True when context returns None."""
-        hasher = PasswordHasherImpl()
+        # Create mock settings with proper bcrypt rounds
+        mock_settings = Mock()
+        mock_settings.password_bcrypt_rounds = 12
+
+        hasher = PasswordHasherImpl(settings=mock_settings)
 
         # Mock context to return None for needs_update
         with patch.object(hasher.context, "needs_update", return_value=None):
@@ -57,7 +69,11 @@ class TestPasswordHasherImplExtended:
 
     def test_hash_password_empty_result(self) -> None:
         """Test hash_password returns empty string when result is None."""
-        hasher = PasswordHasherImpl()
+        # Create mock settings with proper bcrypt rounds
+        mock_settings = Mock()
+        mock_settings.password_bcrypt_rounds = 12
+
+        hasher = PasswordHasherImpl(settings=mock_settings)
 
         # Mock context to return None for hash
         with patch.object(hasher.context, "hash", return_value=None):
@@ -66,7 +82,11 @@ class TestPasswordHasherImplExtended:
 
     def test_verify_password_none_result(self) -> None:
         """Test verify_password returns False when context returns None."""
-        hasher = PasswordHasherImpl()
+        # Create mock settings with proper bcrypt rounds
+        mock_settings = Mock()
+        mock_settings.password_bcrypt_rounds = 12
+
+        hasher = PasswordHasherImpl(settings=mock_settings)
 
         # Mock context to return None for verify
         with patch.object(hasher.context, "verify", return_value=None):
@@ -288,7 +308,7 @@ class TestUserServiceInMemoryUserRepositoryExtended:
         )
 
         result = await repo.create(duplicate_user)
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "already exists" in result.error
 
@@ -299,7 +319,7 @@ class TestUserServiceInMemoryUserRepositoryExtended:
         non_existent_id = uuid4()
 
         result = await repo.delete(non_existent_id)
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "not found" in result.error
 
@@ -314,7 +334,7 @@ class TestUserServiceInMemoryUserRepositoryExtended:
 
         # Delete user
         result = await repo.delete(created_user.id)
-        assert result.is_success
+        assert result.success
         assert result.data is True
 
         # Verify user is deleted
@@ -334,7 +354,7 @@ class TestUserServiceInMemoryUserRepositoryExtended:
         created_user.username = "updated_username"
         result = await repo.update(created_user)
 
-        assert result.is_success
+        assert result.success
         assert result.data is not None
         assert result.data.username == "updated_username"
 
@@ -354,7 +374,7 @@ class TestUserServiceInMemoryUserRepositoryExtended:
         )
 
         result = await repo.update(non_existent_user)
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "not found" in result.error
 
@@ -372,7 +392,7 @@ class TestUserServiceInMemoryUserRepositoryExtended:
         created_user.email = "new@example.com"
         result = await repo.update(created_user)
 
-        assert result.is_success
+        assert result.success
 
         # Old email should no longer find user
         old_result = await repo.find_by_email(old_email)
@@ -395,7 +415,7 @@ class TestUserServiceInMemoryUserRepositoryExtended:
 
         # Test pagination
         result = await repo.list_users(limit=2, offset=1)
-        assert result.is_success
+        assert result.success
         assert result.data is not None
         assert len(result.data) == 2
 
@@ -410,7 +430,7 @@ class TestUserServiceInMemoryUserRepositoryExtended:
         repo._users = mock_users
 
         result = await repo.find_by_id(uuid4())
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Error finding user by ID" in result.error
 
@@ -420,7 +440,7 @@ class TestUserServiceInMemoryUserRepositoryExtended:
         repo._email_index = mock_email_index
 
         result = await repo.find_by_email("test@example.com")
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Error finding user by email" in result.error
 
@@ -614,27 +634,37 @@ class TestUserServiceExtended:
         mock_dependencies: dict[str, Any],
     ) -> None:
         """Test create_user fails when email already exists."""
-        service = UserService(**mock_dependencies)
+        # Mock auth settings for password validation
+        with patch("flext_auth.user_service.get_auth_settings") as mock_settings:
+            mock_config = Mock()
+            mock_config.password_min_length = 8
+            mock_config.password_require_uppercase = True
+            mock_config.password_require_lowercase = True
+            mock_config.password_require_numbers = True
+            mock_config.password_require_special = False
+            mock_settings.return_value = mock_config
 
-        # Mock repository to return existing user
-        mock_user = Mock()
-        existing_result = ServiceResult.ok(mock_user)
-        mock_dependencies[
-            "user_repository"
-        ].find_by_email.return_value = existing_result
+            service = UserService(**mock_dependencies)
 
-        request = UserCreationRequest(
-            email="existing@example.com",
-            password="Password123!",
-            first_name="Test",
-            last_name="User",
-        )
+            # Mock repository to return existing user
+            mock_user = Mock()
+            existing_result = ServiceResult.ok(mock_user)
+            mock_dependencies[
+                "user_repository"
+            ].find_by_email.return_value = existing_result
 
-        result = await service.create_user(request)
+            request = UserCreationRequest(
+                email="existing@example.com",
+                password="Password123!",
+                first_name="Test",
+                last_name="User",
+            )
 
-        assert not result.is_success
-        assert result.error is not None
-        assert "already exists" in result.error
+            result = await service.create_user(request)
+
+            assert not result.success
+            assert result.error is not None
+            assert "already exists" in result.error
 
     @pytest.mark.asyncio
     async def test_create_user_repository_failure(
@@ -649,7 +679,8 @@ class TestUserServiceExtended:
         mock_dependencies["user_repository"].find_by_email.return_value = no_user_result
 
         # Mock repository create to fail
-        create_failure: ServiceResult[Any] = ServiceResult.fail("Database error")
+        create_failure: ServiceResult[Any] = ServiceResult.fail("Database error",
+        )
         mock_dependencies["user_repository"].create.return_value = create_failure
 
         # Mock password hasher
@@ -664,7 +695,7 @@ class TestUserServiceExtended:
 
         result = await service.create_user(request)
 
-        assert not result.is_success
+        assert not result.success
 
     @pytest.mark.asyncio
     async def test_create_user_exception_handling(
@@ -688,6 +719,6 @@ class TestUserServiceExtended:
 
         result = await service.create_user(request)
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Database connection failed" in result.error

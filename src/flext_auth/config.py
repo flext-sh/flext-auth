@@ -19,7 +19,6 @@ from flext_core.config.unified_config import (
     RedisConfigMixin,
 )
 from flext_core.domain.constants import ConfigDefaults
-from flext_core.domain.shared_types import Environment
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -86,7 +85,7 @@ class AuthConfig(
     )
 
     # All authentication fields are inherited from AuthConfigMixin:
-    # - jwt_secret_key, jwt_algorithm, jwt_access_token_expire_minutes
+    # - jwt_secret_key, auth_algorithm, auth_token_expire_minutes
     # - password_min_length, password_require_uppercase, etc.
     # - max_failed_login_attempts, account_lockout_duration_minutes
 
@@ -104,6 +103,72 @@ class AuthConfig(
     password_require_special: bool = Field(
         default=False,
         description="Require special characters in password",
+    )
+
+    # Auth attributes not provided by basic AuthConfigMixin
+    jwt_refresh_token_expire_days: int = Field(
+        default=7,
+        description="JWT refresh token expiration in days",
+    )
+    password_bcrypt_rounds: int = Field(
+        default=12,
+        description="Bcrypt hashing rounds",
+    )
+    password_min_length: int = Field(
+        default=8,
+        description="Minimum password length",
+    )
+    password_require_uppercase: bool = Field(
+        default=True,
+        description="Require uppercase letters in password",
+    )
+    password_require_lowercase: bool = Field(
+        default=True,
+        description="Require lowercase letters in password",
+    )
+    password_require_numbers: bool = Field(
+        default=True,
+        description="Require numbers in password",
+    )
+    password_require_symbols: bool = Field(
+        default=False,
+        description="Require symbols in password",
+    )
+    max_failed_login_attempts: int = Field(
+        default=5,
+        description="Maximum failed login attempts before lockout",
+    )
+    account_lockout_duration_minutes: int = Field(
+        default=30,
+        description="Account lockout duration in minutes",
+    )
+    email_verification_token_expire_hours: int = Field(
+        default=24,
+        description="Email verification token expiration in hours",
+    )
+    password_reset_token_expire_hours: int = Field(
+        default=1,
+        description="Password reset token expiration in hours",
+    )
+    session_expire_hours: int = Field(
+        default=24,
+        description="Session expiration in hours",
+    )
+    session_extend_on_activity: bool = Field(
+        default=True,
+        description="Extend session on user activity",
+    )
+    database_pool_size: int = Field(
+        default=10,
+        description="Database connection pool size",
+    )
+    database_max_overflow: int = Field(
+        default=20,
+        description="Database connection pool max overflow",
+    )
+    bcrypt_rounds: int = Field(
+        default=12,
+        description="Bcrypt rounds (alias for password_bcrypt_rounds)",
     )
 
     # Note: Most auth fields now inherited from AuthConfigMixin:
@@ -193,7 +258,7 @@ class AuthConfig(
         if self.session_timeout_minutes < 1:
             errors.append("Session timeout must be at least 1 minute")
 
-        if self.jwt_access_token_expire_minutes < 1:
+        if self.auth_token_expire_minutes < 1:
             errors.append("Access token expiration must be at least 1 minute")
 
         return errors
@@ -220,7 +285,7 @@ def get_auth_settings() -> AuthConfig:
 def create_development_auth_config() -> AuthConfig:
     """Create development-specific auth configuration."""
     return AuthConfig(
-        environment=Environment.DEVELOPMENT,
+        environment="development",
         debug=True,
         jwt_secret_key="dev-secret-key-change-in-production",
         database_url="postgresql://localhost:5432/flext_auth_dev",
@@ -231,7 +296,7 @@ def create_development_auth_config() -> AuthConfig:
 def create_production_auth_config() -> AuthConfig:
     """Create production-specific auth configuration."""
     return AuthConfig(
-        environment=Environment.PRODUCTION,
+        environment="production",
         debug=False,
         # Secret key must be set via environment variable in production
         database_url="postgresql://localhost:5432/flext_auth",

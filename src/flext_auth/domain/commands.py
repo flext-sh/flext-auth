@@ -12,7 +12,6 @@ if TYPE_CHECKING:
     from uuid import UUID
 
 
-
 @dataclass
 class CreateUserCommand:
     """Command to create a new user."""

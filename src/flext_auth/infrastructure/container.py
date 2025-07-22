@@ -9,12 +9,21 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     # Use real implementations
+    from datetime import timedelta
+
+    from flext_auth.application.auth_service import PasswordService
     from flext_auth.domain.repositories import UserRepository
     from flext_auth.infrastructure.config import AuthConfig
+    from flext_auth.infrastructure.implementations.authentication_implementation import (
+        PlaceholderEmailService,
+    )
     from flext_auth.interfaces import (
         PasswordHasher,
         SecurityAuditor,
     )
+
+    # Type alias for email service
+    EmailService = PlaceholderEmailService
 
 
 class AuthContainer:
@@ -38,9 +47,9 @@ class AuthContainer:
                 jwt_secret_key=env_config.get_string(
                     "jwt_secret_key", "dev-secret-key",
                 ),
-                jwt_algorithm=env_config.get_string("jwt_algorithm", "HS256"),
-                jwt_access_token_expire_minutes=env_config.get_int(
-                    "jwt_access_token_expire_minutes", 30,
+                auth_algorithm=env_config.get_string("auth_algorithm", "HS256"),
+                auth_token_expire_minutes=env_config.get_int(
+                    "auth_token_expire_minutes", 30,
                 ),
                 jwt_refresh_token_expire_days=env_config.get_int(
                     "jwt_refresh_token_expire_days", 7,
@@ -66,7 +75,10 @@ class AuthContainer:
 
             self._instances["config"] = auth_config
 
-        return self._instances["config"]  # type: ignore[return-value]
+        from typing import cast
+
+        from flext_auth.config import AuthConfig
+        return cast("AuthConfig", self._instances["config"])
 
     # Repository properties - Real implementations only
     @property
@@ -78,7 +90,9 @@ class AuthContainer:
             )
 
             self._instances["user_repository"] = EnterpriseUserRepository()
-        return self._instances["user_repository"]  # type: ignore[return-value]
+        from typing import cast
+
+        return cast("UserRepository", self._instances["user_repository"])
 
     @property
     def role_repository(self) -> object:
@@ -128,14 +142,14 @@ class AuthContainer:
             self._instances["password_service"] = EnterprisePasswordHasher(
                 rounds=rounds,
             )
-        return self._instances["password_service"]  # type: ignore[return-value]
+        from typing import cast
+        return cast("object", self._instances["password_service"])
 
     @property
     def token_service(self) -> Any:
         """Get JWT token service implementation."""
         if "token_service" not in self._instances:
             from flext_auth.infrastructure.adapters import (
-                create_environment_config,
                 create_filesystem,
                 create_jwt_adapter,
                 create_logger,
@@ -145,7 +159,27 @@ class AuthContainer:
 
             # Create dependency adapters
             jwt_library = create_jwt_adapter()
-            config = create_environment_config("FLEXT_AUTH_")
+            # Create a simple config adapter that uses AuthConfig values
+
+            class AuthConfigAdapter:
+                def __init__(self, auth_config: AuthConfig) -> None:
+                    self._auth_config = auth_config
+
+                def get_string(self, key: str, default: str | None = None) -> str:
+                    return getattr(self._auth_config, key, default or "")
+
+                def get_int(self, key: str, default: int | None = None) -> int:
+                    return getattr(self._auth_config, key, default or 0)
+
+                def get_bool(self, key: str, default: bool | None = None) -> bool:
+                    return getattr(self._auth_config, key, default or False)
+
+                def get_timedelta(self, key: str, default: timedelta | None = None) -> timedelta:
+                    from datetime import timedelta as td
+                    value = getattr(self._auth_config, key, default)
+                    return value if value is not None else td(seconds=0)
+
+            config = AuthConfigAdapter(self.config())
             filesystem = create_filesystem()
             time_provider = create_time_provider()
             logger = create_logger("flext_auth.jwt")
@@ -219,18 +253,20 @@ class AuthContainer:
             from flext_auth.user_service import SecurityAuditorImpl
 
             self._instances["security_auditor"] = SecurityAuditorImpl()
-        return self._instances["security_auditor"]  # type: ignore[return-value]
+        from typing import cast
+        return cast("object", self._instances["security_auditor"])
 
     # Handler properties - Real implementations only
     @property
     def create_user_handler(self) -> object:
         """Get create user handler implementation."""
         if "create_user_handler" not in self._instances:
-            from flext_auth.infrastructure.implementations import CreateUserHandler
+            from typing import cast
 
+            from flext_auth.infrastructure.implementations import CreateUserHandler
             self._instances["create_user_handler"] = CreateUserHandler(
-                user_repository=self.user_repository,  # type: ignore[arg-type]
-                password_service=self.password_service,  # type: ignore[arg-type]
+                user_repository=cast("UserRepository", self.user_repository),
+                password_service=cast("PasswordService", self.password_service),
             )
         return self._instances["create_user_handler"]
 
@@ -238,10 +274,11 @@ class AuthContainer:
     def update_user_handler(self) -> object:
         """Get update user handler implementation."""
         if "update_user_handler" not in self._instances:
-            from flext_auth.infrastructure.implementations import UpdateUserHandler
+            from typing import cast
 
+            from flext_auth.infrastructure.implementations import UpdateUserHandler
             self._instances["update_user_handler"] = UpdateUserHandler(
-                user_repository=self.user_repository,  # type: ignore[arg-type]
+                user_repository=cast("UserRepository", self.user_repository),
             )
         return self._instances["update_user_handler"]
 
@@ -249,13 +286,14 @@ class AuthContainer:
     def authenticate_user_handler(self) -> object:
         """Get authenticate user handler implementation."""
         if "authenticate_user_handler" not in self._instances:
+            from typing import cast
+
             from flext_auth.infrastructure.implementations import (
                 AuthenticateUserHandler,
             )
-
             self._instances["authenticate_user_handler"] = AuthenticateUserHandler(
-                user_repository=self.user_repository,  # type: ignore[arg-type]
-                password_service=self.password_service,  # type: ignore[arg-type]
+                user_repository=cast("UserRepository", self.user_repository),
+                password_service=cast("PasswordService", self.password_service),
                 token_service=self.token_service,
             )
         return self._instances["authenticate_user_handler"]
@@ -264,11 +302,12 @@ class AuthContainer:
     def change_password_handler(self) -> object:
         """Get change password handler implementation."""
         if "change_password_handler" not in self._instances:
-            from flext_auth.infrastructure.implementations import ChangePasswordHandler
+            from typing import cast
 
+            from flext_auth.infrastructure.implementations import ChangePasswordHandler
             self._instances["change_password_handler"] = ChangePasswordHandler(
-                user_repository=self.user_repository,  # type: ignore[arg-type]
-                password_service=self.password_service,  # type: ignore[arg-type]
+                user_repository=cast("UserRepository", self.user_repository),
+                password_service=cast("PasswordService", self.password_service),
             )
         return self._instances["change_password_handler"]
 
@@ -276,10 +315,11 @@ class AuthContainer:
     def create_token_handler(self) -> object:
         """Get create token handler implementation."""
         if "create_token_handler" not in self._instances:
-            from flext_auth.infrastructure.implementations import CreateTokenHandler
+            from typing import cast
 
+            from flext_auth.infrastructure.implementations import CreateTokenHandler
             self._instances["create_token_handler"] = CreateTokenHandler(
-                user_repository=self.user_repository,  # type: ignore[arg-type]
+                user_repository=cast("UserRepository", self.user_repository),
                 token_service=self.token_service,
             )
         return self._instances["create_token_handler"]
@@ -299,11 +339,12 @@ class AuthContainer:
     def verify_email_handler(self) -> object:
         """Get verify email handler implementation."""
         if "verify_email_handler" not in self._instances:
-            from flext_auth.infrastructure.implementations import VerifyEmailHandler
+            from typing import cast
 
+            from flext_auth.infrastructure.implementations import VerifyEmailHandler
             self._instances["verify_email_handler"] = VerifyEmailHandler(
-                user_repository=self.user_repository,  # type: ignore[arg-type]
-                email_service=self.email_service,  # type: ignore[arg-type]
+                user_repository=cast("UserRepository", self.user_repository),
+                email_service=cast("EmailService", self.email_service),
             )
         return self._instances["verify_email_handler"]
 

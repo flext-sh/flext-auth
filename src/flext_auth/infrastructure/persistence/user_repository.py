@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from flext_core import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 from flext_observability.logging import get_logger
 from sqlalchemy import delete, func, select
 
@@ -74,7 +74,7 @@ class PostgreSQLUserRepository(UserRepository):
             updated_at=entity.updated_at,
         )
 
-    async def find_by_id(self, user_id: UUID) -> ServiceResult[User | None]:
+    async def find_by_id(self, user_id: UUID) -> ServiceResult[Any]:
         """Find user by ID.
 
         Args:
@@ -98,7 +98,7 @@ class PostgreSQLUserRepository(UserRepository):
             logger.exception("Failed to get user by ID")
             return ServiceResult.fail(f"Failed to get user: {e}")
 
-    async def find_by_username(self, username: str) -> ServiceResult[User | None]:
+    async def find_by_username(self, username: str) -> ServiceResult[Any]:
         """Find user by username.
 
         Args:
@@ -120,9 +120,10 @@ class PostgreSQLUserRepository(UserRepository):
                 return ServiceResult.ok(user)
         except Exception as e:
             logger.exception("Failed to find user by username")
-            return ServiceResult.fail(f"Database error finding user by username: {e}")
+            return ServiceResult.fail(f"Database error finding user by username: {e}",
+            )
 
-    async def find_by_email(self, email: str) -> ServiceResult[User | None]:
+    async def find_by_email(self, email: str) -> ServiceResult[Any]:
         """Find user by email address.
 
         Args:
@@ -144,9 +145,10 @@ class PostgreSQLUserRepository(UserRepository):
                 return ServiceResult.ok(user)
         except Exception as e:
             logger.exception("Failed to find user by email")
-            return ServiceResult.fail(f"Database error finding user by email: {e}")
+            return ServiceResult.fail(f"Database error finding user by email: {e}",
+            )
 
-    async def create(self, user: User) -> ServiceResult[User]:
+    async def create(self, user: User) -> ServiceResult[Any]:
         """Create a new user.
 
         Args:
@@ -166,9 +168,10 @@ class PostgreSQLUserRepository(UserRepository):
                 return ServiceResult.ok(created_user)
         except Exception as e:
             logger.exception("Failed to create user")
-            return ServiceResult.fail(f"Database error creating user: {e}")
+            return ServiceResult.fail(f"Database error creating user: {e}",
+            )
 
-    async def update(self, user: User) -> ServiceResult[User]:
+    async def update(self, user: User) -> ServiceResult[Any]:
         """Update an existing user.
 
         Args:
@@ -188,9 +191,10 @@ class PostgreSQLUserRepository(UserRepository):
                 return ServiceResult.ok(updated_user)
         except Exception as e:
             logger.exception("Failed to update user")
-            return ServiceResult.fail(f"Database error updating user: {e}")
+            return ServiceResult.fail(f"Database error updating user: {e}",
+            )
 
-    async def delete(self, user_id: UUID) -> ServiceResult[bool]:
+    async def delete(self, user_id: UUID) -> ServiceResult[Any]:
         """Delete a user by ID.
 
         Args:
@@ -210,9 +214,10 @@ class PostgreSQLUserRepository(UserRepository):
                 return ServiceResult.ok(deleted)
         except Exception as e:
             logger.exception("Failed to delete user")
-            return ServiceResult.fail(f"Database error deleting user: {e}")
+            return ServiceResult.fail(f"Database error deleting user: {e}",
+            )
 
-    async def username_exists(self, username: str) -> ServiceResult[bool]:
+    async def username_exists(self, username: str) -> ServiceResult[Any]:
         """Check if username already exists.
 
         Args:
@@ -234,9 +239,10 @@ class PostgreSQLUserRepository(UserRepository):
                 return ServiceResult.ok(exists)
         except Exception as e:
             logger.exception("Failed to check username exists")
-            return ServiceResult.fail(f"Database error checking username exists: {e}")
+            return ServiceResult.fail(f"Database error checking username exists: {e}",
+            )
 
-    async def email_exists(self, email: str) -> ServiceResult[bool]:
+    async def email_exists(self, email: str) -> ServiceResult[Any]:
         """Check if email already exists.
 
         Args:
@@ -256,13 +262,14 @@ class PostgreSQLUserRepository(UserRepository):
                 return ServiceResult.ok(exists)
         except Exception as e:
             logger.exception("Failed to check email exists")
-            return ServiceResult.fail(f"Database error checking email exists: {e}")
+            return ServiceResult.fail(f"Database error checking email exists: {e}",
+            )
 
     async def list_users(
         self,
         limit: int = 100,
         offset: int = 0,
-    ) -> ServiceResult[list[User]]:
+    ) -> ServiceResult[Any]:
         """List users with pagination.
 
         Args:
@@ -286,9 +293,10 @@ class PostgreSQLUserRepository(UserRepository):
                 return ServiceResult.ok(users)
         except Exception as e:
             logger.exception("Failed to list users")
-            return ServiceResult.fail(f"Database error listing users: {e}")
+            return ServiceResult.fail(f"Database error listing users: {e}",
+            )
 
-    async def get_by_id(self, user_id: UUID) -> ServiceResult[User]:
+    async def find_by_id(self, user_id: UUID) -> ServiceResult[Any]:
         """Get user by ID (required variant that raises if not found).
 
         Args:
@@ -299,7 +307,7 @@ class PostgreSQLUserRepository(UserRepository):
 
         """
         result = await self.find_by_id(user_id)
-        if not result.is_success:
+        if not result.success:
             return ServiceResult.fail(result.error or "Database error")
 
         if result.data is None:
@@ -307,7 +315,7 @@ class PostgreSQLUserRepository(UserRepository):
 
         return ServiceResult.ok(result.data)
 
-    async def get_by_username(self, username: str) -> ServiceResult[User]:
+    async def get_by_username(self, username: str) -> ServiceResult[Any]:
         """Get user by username (required variant that raises if not found).
 
         Args:
@@ -318,7 +326,7 @@ class PostgreSQLUserRepository(UserRepository):
 
         """
         result = await self.find_by_username(username)
-        if not result.is_success:
+        if not result.success:
             return ServiceResult.fail(result.error or "Database error")
 
         if result.data is None:
@@ -326,7 +334,7 @@ class PostgreSQLUserRepository(UserRepository):
 
         return ServiceResult.ok(result.data)
 
-    async def get_by_email(self, email: str) -> ServiceResult[User]:
+    async def get_by_email(self, email: str) -> ServiceResult[Any]:
         """Get user by email (required variant that raises if not found).
 
         Args:
@@ -337,7 +345,7 @@ class PostgreSQLUserRepository(UserRepository):
 
         """
         result = await self.find_by_email(email)
-        if not result.is_success:
+        if not result.success:
             return ServiceResult.fail(result.error or "Database error")
 
         if result.data is None:
@@ -345,7 +353,7 @@ class PostgreSQLUserRepository(UserRepository):
 
         return ServiceResult.ok(result.data)
 
-    async def save(self, user: User) -> ServiceResult[User]:
+    async def save(self, user: User) -> ServiceResult[Any]:
         """Save user (create or update based on existence).
 
         Args:
@@ -358,7 +366,7 @@ class PostgreSQLUserRepository(UserRepository):
         # Check if user exists
         if hasattr(user, "id") and user.id:
             existing_result = await self.find_by_id(user.id)
-            if existing_result.is_success and existing_result.data is not None:
+            if existing_result.success and existing_result.data is not None:
                 # User exists, update it
                 return await self.update(user)
 

@@ -46,8 +46,8 @@ class TestTokenInfo:
 
     def test_token_info_creation(self) -> None:
         """Test creating TokenInfo."""
-        token_id = uuid4()
-        user_id = uuid4()
+        token_id = uuid4()  # EntityId type alias
+        user_id = uuid4()  # UserId type alias
         token_info = TokenInfo(
             token_id=token_id,
             user_id=user_id,
@@ -64,8 +64,8 @@ class TestTokenInfo:
         """Test TokenInfo with revoked_at field."""
         now = datetime.now(UTC)
         token_info = TokenInfo(
-            token_id=uuid4(),
-            user_id=uuid4(),
+            token_id=uuid4(),  # EntityId accepts UUID
+            user_id=uuid4(),  # UserId accepts UUID
             token_type="refresh",
             expires_at=now + timedelta(hours=1),
             revoked_at=now,
@@ -110,7 +110,9 @@ class TestJWTService:
     def sample_user(self) -> MagicMock:
         """Create sample user for testing."""
         user = MagicMock()
-        user.user_id = uuid4()  # Use user_id instead of id to match User model
+        user.user_id = (
+            uuid4()
+        )  # Use user_id instead of id to match User model (UserId type alias)
         user.username = "testuser"
         user.email = "test@example.com"
         user.roles = ["user"]
@@ -215,7 +217,7 @@ class TestJWTService:
         # Validate the token
         result = await jwt_service.validate_token(token)
 
-        assert result.is_success
+        assert result.success
 
     @pytest.mark.asyncio
     async def test_validate_token_invalid_format(
@@ -284,7 +286,7 @@ class TestJWTService:
         """Test revoking a token."""
         # Create a valid token first
         user = MagicMock()
-        user.user_id = uuid4()
+        user.user_id = uuid4()  # UserId type alias accepts UUID
         user.username = "testuser"
         user.to_claims.return_value = {
             "username": "testuser",

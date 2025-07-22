@@ -17,7 +17,6 @@ if TYPE_CHECKING:
         CreateUserCommand,
         ValidateTokenCommand,
     )
-    from flext_auth.domain.entities import User
     from flext_auth.jwt_service import JWTService
     from flext_auth.tokens import TokenManager
     from flext_auth.user_service import UserService
@@ -36,7 +35,9 @@ class AuthService:
         self.jwt_service = jwt_service
         self.token_manager = token_manager
 
-    async def create_user(self, command: CreateUserCommand) -> ServiceResult[User]:
+    async def create_user(
+        self, command: CreateUserCommand,
+    ) -> ServiceResult[dict[str, Any]]:
         """Create a new user."""
         from flext_auth.user_service import UserCreationRequest
 
@@ -115,15 +116,15 @@ class AuthService:
     async def change_password(
         self,
         command: ChangePasswordCommand,
-    ) -> ServiceResult[None]:
+    ) -> ServiceResult[bool]:
         """Change user password."""
         # Use the correct method signature from UserService
         success = await self.user_service.change_password(
-            user_id=command.user_id,
+            user_id=str(command.user_id),
             old_password=command.current_password,
             new_password=command.new_password,
         )
 
         if success:
-            return ServiceResult.ok(None)
+            return ServiceResult.ok(True)
         return ServiceResult.fail("Failed to change password")

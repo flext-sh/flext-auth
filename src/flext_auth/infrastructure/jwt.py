@@ -42,9 +42,9 @@ class JWTService:
         self._logger = logger
 
         # Load configuration
-        self._algorithm = self._config.get_string("jwt_algorithm", "HS256")
+        self._algorithm = self._config.get_string("auth_algorithm", "HS256")
         self._access_token_expire_minutes = self._config.get_int(
-            "jwt_access_token_expire_minutes", 30,
+            "auth_token_expire_minutes", 30,
         )
         self._refresh_token_expire_days = self._config.get_int(
             "jwt_refresh_token_expire_days", 7,

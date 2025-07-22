@@ -13,7 +13,7 @@ from enum import StrEnum
 from typing import Annotated, Any
 
 # Import from unified core typing system
-from flext_core.domain.shared_types import IPAddress, Password, Token, UserId, Username
+from flext_core.domain.shared_types import Password, Token, UserId, Username
 from pydantic import Field, StringConstraints
 
 # ==============================================================================
@@ -33,6 +33,11 @@ UserAgent = Annotated[
     str,
     StringConstraints(min_length=1, max_length=512),
     Field(description="HTTP User-Agent header"),
+]
+IPAddress = Annotated[
+    str,
+    StringConstraints(pattern=r"^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$|^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$"),
+    Field(description="IPv4 or IPv6 address"),
 ]
 
 # Complex auth types

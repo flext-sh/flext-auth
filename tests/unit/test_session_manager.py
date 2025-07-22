@@ -138,18 +138,19 @@ class TestSessionMetadata:
         """Test extend_session method extends expiration time."""
         session = SessionMetadata(session_id="test", user_id=uuid4())
 
+        # Store the original expiry time (created_at + 24h by default)
+        original_expires_at = session.expires_at
+        assert original_expires_at is not None
+
         extension = timedelta(hours=2)
-        before_extension = datetime.now(UTC)
         session.extend_session(extension)
-        after_extension = datetime.now(UTC)
 
-        # The new expiry should be approximately now + extension
-        expected_expiry_min = before_extension + extension
-        expected_expiry_max = after_extension + extension
+        # The new expiry should be the original expiry + extension
+        expected_expires_at = original_expires_at + extension
 
-        # Verify the session was extended (new expiry should be within expected range)
+        # Verify the session was extended
         assert session.expires_at is not None
-        assert expected_expiry_min <= session.expires_at <= expected_expiry_max
+        assert session.expires_at == expected_expires_at
 
 
 class TestRolePermission:
@@ -354,7 +355,7 @@ class TestEnterpriseSessionManager:
                 device_info=device_info,
             )
 
-            assert result.is_success
+            assert result.success
             session_metadata = result.data
             assert isinstance(session_metadata, SessionMetadata)
             assert session_metadata.user_id == user_id
@@ -387,7 +388,7 @@ class TestEnterpriseSessionManager:
                 session_duration=custom_duration,
             )
 
-            assert result.is_success
+            assert result.success
             assert result.data is not None
             session_metadata = result.data
 
@@ -411,7 +412,7 @@ class TestEnterpriseSessionManager:
         ):
             result = await manager.create_session(user_id=user_id)
 
-            assert not result.is_success
+            assert not result.success
             assert result.error is not None
             assert "Failed to create session" in result.error
 
@@ -434,7 +435,7 @@ class TestEnterpriseSessionManager:
             # Validate the session
             validate_result = await manager.validate_session(session_id=session_id)
 
-            assert validate_result.is_success
+            assert validate_result.success
             assert validate_result.data is not None
             assert validate_result.data.session_id == session_id
 
@@ -445,7 +446,7 @@ class TestEnterpriseSessionManager:
 
         result = await manager.validate_session(session_id="nonexistent_session")
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert result.error is not None
         assert "Session not found" in result.error
@@ -475,7 +476,7 @@ class TestEnterpriseSessionManager:
             # Validate expired session
             result = await manager.validate_session(session_id=session_id)
 
-            assert not result.is_success
+            assert not result.success
             assert result.error is not None
             assert "Session expired" in result.error
             # Session should be removed after expiration check
@@ -498,7 +499,7 @@ class TestEnterpriseSessionManager:
                 user_id=user_id,
                 ip_address=original_ip,
             )
-            assert create_result.is_success
+            assert create_result.success
             assert create_result.data is not None
             assert create_result.data is not None
             session_id = create_result.data.session_id
@@ -509,7 +510,7 @@ class TestEnterpriseSessionManager:
                 ip_address=different_ip,
             )
 
-            assert not result.is_success
+            assert not result.success
             assert result.error is not None
             assert "IP address mismatch" in result.error
 
@@ -533,7 +534,7 @@ class TestEnterpriseSessionManager:
         ):
             # Create session with viewer role
             create_result = await manager.create_session(user_id=user_id)
-            assert create_result.is_success
+            assert create_result.success
             assert create_result.data is not None
             assert create_result.data is not None
             session_id = create_result.data.session_id
@@ -544,7 +545,7 @@ class TestEnterpriseSessionManager:
                 required_permission="user:manage",
             )
 
-            assert not result.is_success
+            assert not result.success
             assert result.error is not None
             assert "Insufficient permissions" in result.error
 
@@ -578,7 +579,7 @@ class TestEnterpriseSessionManager:
                 required_role="REDACTED_LDAP_BIND_PASSWORD",
             )
 
-            assert not result.is_success
+            assert not result.success
             assert result.error is not None
             assert "Insufficient role" in result.error
 
@@ -602,7 +603,7 @@ class TestEnterpriseSessionManager:
         ):
             # Create session first
             create_result = await manager.create_session(user_id=user_id)
-            assert create_result.is_success
+            assert create_result.success
             assert create_result.data is not None
             assert create_result.data is not None
             session_id = create_result.data.session_id
@@ -618,7 +619,7 @@ class TestEnterpriseSessionManager:
                     required_permission="test:permission",
                 )
 
-                assert not result.is_success
+                assert not result.success
                 assert result.error is not None
                 assert "Failed to validate session" in result.error
 
@@ -635,7 +636,7 @@ class TestEnterpriseSessionManager:
         ):
             # Create session
             create_result = await manager.create_session(user_id=user_id)
-            assert create_result.is_success
+            assert create_result.success
             assert create_result.data is not None
             assert create_result.data is not None
             session_id = create_result.data.session_id
@@ -647,7 +648,7 @@ class TestEnterpriseSessionManager:
             # Extend session
             result = await manager.extend_session(session_id, extension_duration)
 
-            assert result.is_success
+            assert result.success
             assert result.data is not None
 
             # The new expiry should be approximately original_expiry + extension_duration
@@ -671,7 +672,7 @@ class TestEnterpriseSessionManager:
 
         result = await manager.extend_session("nonexistent_session", timedelta(hours=1))
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Session not found" in result.error
 
@@ -699,7 +700,7 @@ class TestEnterpriseSessionManager:
             # Try to extend expired session
             result = await manager.extend_session(session_id, timedelta(hours=1))
 
-            assert not result.is_success
+            assert not result.success
             assert result.error is not None
             assert "Cannot extend expired session" in result.error
 
@@ -727,7 +728,7 @@ class TestEnterpriseSessionManager:
             ):
                 result = await manager.extend_session(session_id, timedelta(hours=1))
 
-                assert not result.is_success
+                assert not result.success
                 assert result.error is not None
                 assert "Failed to extend session" in result.error
 
@@ -749,7 +750,7 @@ class TestEnterpriseSessionManager:
             # Terminate session
             result = await manager.terminate_session(session_id, "user_logout")
 
-            assert result.is_success
+            assert result.success
             assert result.data is not None
             assert "terminated successfully" in result.data["message"]
             assert session_id not in manager._active_sessions
@@ -769,7 +770,7 @@ class TestEnterpriseSessionManager:
 
         result = await manager.terminate_session("nonexistent_session")
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "Session not found" in result.error
 
@@ -796,7 +797,7 @@ class TestEnterpriseSessionManager:
             ):
                 result = await manager.terminate_session(session_id)
 
-                assert not result.is_success
+                assert not result.success
                 assert result.error is not None
                 assert "Failed to terminate session" in result.error
 
@@ -823,7 +824,7 @@ class TestEnterpriseSessionManager:
                 reason="security_logout",
             )
 
-            assert terminate_result.is_success
+            assert terminate_result.success
             assert terminate_result.data is not None
             assert terminate_result.data["terminated_count"] == 3
             assert user_id not in manager._user_sessions
@@ -853,7 +854,7 @@ class TestEnterpriseSessionManager:
                 reason="security_logout",
             )
 
-            assert termination_result.is_success
+            assert termination_result.success
             assert termination_result.data is not None
             assert termination_result.data["terminated_count"] == 2
             assert excluded_session in manager._active_sessions
@@ -866,7 +867,7 @@ class TestEnterpriseSessionManager:
 
         result = await manager.terminate_user_sessions(user_id)
 
-        assert result.is_success
+        assert result.success
         assert result.data is not None
         assert result.data["terminated_count"] == 0
         assert "No active sessions found" in result.data["message"]
@@ -892,7 +893,7 @@ class TestEnterpriseSessionManager:
             ):
                 result = await manager.terminate_user_sessions(user_id)
 
-                assert not result.is_success
+                assert not result.success
                 assert result.error is not None
                 assert "Failed to terminate user sessions" in result.error
 
@@ -913,7 +914,7 @@ class TestEnterpriseSessionManager:
             # Get user sessions
             result = await manager.get_user_sessions(user_id)
 
-            assert result.is_success
+            assert result.success
             assert result.data is not None
             assert len(result.data) == 2
             for session in result.data:
@@ -964,7 +965,7 @@ class TestEnterpriseSessionManager:
 
         result = await manager.get_user_sessions(user_id)
 
-        assert result.is_success
+        assert result.success
         assert result.data == []
 
     @pytest.mark.asyncio
@@ -994,7 +995,7 @@ class TestEnterpriseSessionManager:
             ):
                 result = await manager.get_user_sessions(user_id)
 
-                assert not result.is_success
+                assert not result.success
                 assert result.error is not None
                 assert "Failed to get user sessions" in result.error
 

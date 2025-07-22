@@ -33,7 +33,7 @@ class TestCLI:
                 "project_version": "1.0.0",
                 "environment": "development",
                 "debug": True,
-                "jwt_algorithm": "HS256",  # Direct attribute from AuthConfigMixin
+                "auth_algorithm": "HS256",  # Direct attribute from AuthConfigMixin
                 "database_url": "postgresql://localhost/flext_auth",
                 "redis_url": "redis://localhost:6379/0",  # Correct redis attribute name
             },

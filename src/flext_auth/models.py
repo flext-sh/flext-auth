@@ -7,11 +7,13 @@ from enum import StrEnum
 from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
-from flext_core import DomainEntity, DomainValueObject, EntityId, Field, UserId
+from flext_core import DomainEntity, DomainValueObject, Field
 
-# Import PermissionScope directly for use in model - MUST be outside TYPE_CHECKING
+# Import types needed for Pydantic model_rebuild at runtime
 
 if TYPE_CHECKING:
+    from flext_core.domain.shared_types import EntityId, UserId
+
     from flext_auth.types import PermissionScope
 
 # Python 3.13 type aliases for zero boilerplate
@@ -372,5 +374,8 @@ VIEWER_ROLE = Role(
     description="Read-only access to system resources",
 )
 
-# NOTE: Model rebuild removed to avoid import issues during development
-# These models use proper forward references and don't need explicit rebuild
+# Rebuild models to resolve forward references after all definitions
+User.model_rebuild()
+TokenInfo.model_rebuild()
+Permission.model_rebuild()
+Role.model_rebuild()

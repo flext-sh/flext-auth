@@ -163,7 +163,7 @@ class TestUserServiceComprehensive:
 
         result = await user_service.create_user(request)
 
-        assert result.is_success
+        assert result.success
         assert result.data is not None
         assert result.data.email == "test@example.com"
         assert result.data.username == "John Doe"
@@ -187,7 +187,7 @@ class TestUserServiceComprehensive:
         # Try to create second user with same email
         result = await user_service.create_user(request)
 
-        assert not result.is_success
+        assert not result.success
         assert result.error is not None
         assert "already exists" in result.error
 
@@ -570,7 +570,7 @@ class TestUserServiceInMemoryUserRepository:
         await repository.create_user(user_data)
         result = await repository.find_by_email("test@example.com")
 
-        assert result.is_success
+        assert result.success
         assert result.data is not None
         assert result.data.email == "test@example.com"
 
@@ -589,7 +589,7 @@ class TestUserServiceInMemoryUserRepository:
         created_user = await repository.create_user(user_data)
         result = await repository.find_by_id(created_user.id)
 
-        assert result.is_success
+        assert result.success
         assert result.data is not None
         assert result.data.id == created_user.id
 
@@ -608,11 +608,11 @@ class TestUserServiceInMemoryUserRepository:
         await repository.create_user(user_data)
         result = await repository.email_exists("test@example.com")
 
-        assert result.is_success
+        assert result.success
         assert result.data is True
 
         result = await repository.email_exists("nonexistent@example.com")
-        assert result.is_success
+        assert result.success
         assert result.data is False
 
     async def test_get_user_permissions(

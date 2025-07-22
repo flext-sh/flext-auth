@@ -7,7 +7,7 @@ import importlib.util
 try:
     import flext_auth
 except ImportError:
-    flext_auth = None  # type: ignore[assignment]
+    flext_auth = None  # Module import failed
 
 
 def test_module_imports() -> None:

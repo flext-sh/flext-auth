@@ -22,7 +22,7 @@ from uuid import UUID, uuid4
 
 import bcrypt
 import jwt
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 
 # Type aliases for Python 3.13 compatibility
 TokenPair = tuple[str, str]  # (access_token, refresh_token)
@@ -204,7 +204,7 @@ class EnterpriseJWTService:
         """Create an access token for the user."""
         now = datetime.now(UTC)
         expiry = now + timedelta(
-            minutes=getattr(self.config, "jwt_access_token_expire_minutes", 30),
+            minutes=getattr(self.config, "auth_token_expire_minutes", 30),
         )
 
         payload = {
@@ -216,7 +216,7 @@ class EnterpriseJWTService:
         }
 
         secret = getattr(self.config, "jwt_secret_key", "dev-secret")
-        algorithm = getattr(self.config, "jwt_algorithm", "HS256")
+        algorithm = getattr(self.config, "auth_algorithm", "HS256")
 
         return str(jwt.encode(payload, secret, algorithm=algorithm))
 
@@ -235,7 +235,7 @@ class EnterpriseJWTService:
         }
 
         secret = getattr(self.config, "jwt_secret_key", "dev-secret")
-        algorithm = getattr(self.config, "jwt_algorithm", "HS256")
+        algorithm = getattr(self.config, "auth_algorithm", "HS256")
 
         return str(jwt.encode(payload, secret, algorithm=algorithm))
 
@@ -399,14 +399,13 @@ class EnterpriseAuthService:
 
             # Create tokens
             if hasattr(self.token_service, "create_access_token"):
-                access_token = self.token_service.create_access_token(user)
-                refresh_token = self.token_service.create_refresh_token(user)
+                self.token_service.create_access_token(user)
+                self.token_service.create_refresh_token(user)
             else:
                 # Fallback for different JWT service interface
-                access_token = "fake_access_token"
-                refresh_token = "fake_refresh_token"
+                pass
 
-            return ServiceResult.ok((user, access_token, refresh_token))
+            return ServiceResult.ok(user)
 
         except Exception as e:
             return ServiceResult.fail(f"Authentication failed: {e}")

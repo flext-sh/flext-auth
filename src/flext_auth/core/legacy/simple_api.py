@@ -7,23 +7,21 @@ Provides a simple interface for common authentication operations.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import logging
+from typing import TYPE_CHECKING, Any
 
 from flext_core.config import get_container
-from flext_core.domain.types import ServiceResult
-from flext_observability.logging import get_logger
+from flext_core.domain.shared_types import ServiceResult
 
 from flext_auth.user_service import UserService
 
 if TYPE_CHECKING:
     from flext_auth.config import AuthSettings
-    from flext_auth.domain.entities import User
-    from flext_auth.domain.value_objects import AuthToken
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
-def setup_auth(settings: AuthSettings | None = None) -> ServiceResult[bool]:
+def setup_auth(settings: AuthSettings | None = None) -> ServiceResult[Any]:
     """Set up authentication system with provided settings.
 
     Args:
@@ -46,7 +44,7 @@ def setup_auth(settings: AuthSettings | None = None) -> ServiceResult[bool]:
         get_container()
         # Note: DI container configuration is handled by the container itself
 
-        return ServiceResult.ok(True)
+        return ServiceResult.ok({"success": True})
 
     except Exception as e:
         logger.exception("Failed to setup auth")
@@ -58,7 +56,7 @@ def create_user(
     email: str,
     password: str,
     roles: list[str] | None = None,
-) -> ServiceResult[User]:
+) -> ServiceResult[Any]:
     """Create a new user with specified credentials.
 
     Args:
@@ -86,7 +84,7 @@ def create_user(
         return ServiceResult.fail(f"User creation failed: {e}")
 
 
-def authenticate_user(username: str, password: str) -> ServiceResult[AuthToken]:
+def authenticate_user(username: str, password: str) -> ServiceResult[Any]:
     """Authenticate user with username and password.
 
     Args:
@@ -114,7 +112,7 @@ def authenticate_user(username: str, password: str) -> ServiceResult[AuthToken]:
         return ServiceResult.fail(f"Authentication failed: {e}")
 
 
-def validate_token(token: str) -> ServiceResult[User]:
+def validate_token(token: str) -> ServiceResult[Any]:
     """Validate authentication token and return user.
 
     Args:
@@ -135,13 +133,14 @@ def validate_token(token: str) -> ServiceResult[User]:
 
         # This would need to be implemented in TokenService
         # For now, return a placeholder
-        return ServiceResult.fail("Token validation not yet implemented")
+        return ServiceResult.fail("Token validation not yet implemented",
+        )
     except Exception as e:
         logger.exception("Failed to validate token")
         return ServiceResult.fail(f"Token validation failed: {e}")
 
 
-def revoke_token(token: str) -> ServiceResult[bool]:
+def revoke_token(token: str) -> ServiceResult[Any]:
     """Revoke authentication token.
 
     Args:
@@ -162,13 +161,14 @@ def revoke_token(token: str) -> ServiceResult[bool]:
 
         # This would need to be implemented in TokenService
         # For now, return a placeholder
-        return ServiceResult.fail("Token revocation not yet implemented")
+        return ServiceResult.fail("Token revocation not yet implemented",
+        )
     except Exception as e:
         logger.exception("Failed to revoke token")
         return ServiceResult.fail(f"Token revocation failed: {e}")
 
 
-def get_user_by_id(user_id: str) -> ServiceResult[User]:
+def get_user_by_id(user_id: str) -> ServiceResult[Any]:
     """Retrieve user by ID.
 
     Args:

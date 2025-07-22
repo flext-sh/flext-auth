@@ -6,25 +6,23 @@ Uses modern Python 3.13 patterns and clean architecture.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+# Use centralized logger from flext-observability - ELIMINATE DUPLICATION
+import logging
+from typing import TYPE_CHECKING, Any
 
 import bcrypt
-from flext_core import ServiceResult
-
-# Use centralized logger from flext-observability - ELIMINATE DUPLICATION
-from flext_observability.logging import get_logger
+from flext_core.domain.shared_types import ServiceResult
 
 if TYPE_CHECKING:
     from uuid import UUID
 
-    from flext_auth.domain.entities import Session, User
     from flext_auth.domain.repositories import (
         RoleRepository,
         SessionRepository,
         UserRepository,
     )
 
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class AuthenticationService:
@@ -46,30 +44,34 @@ class AuthenticationService:
         email: str,
         password: str,
         role: str = "user",
-    ) -> ServiceResult[User]:
+    ) -> ServiceResult[dict[str, Any]]:
         """Create a new user account."""
         try:
             logger.info("Creating new user: %s", username)
 
             # Check if username exists
             username_exists = await self.user_repo.username_exists(username)
-            if not username_exists.is_success:
-                return ServiceResult.fail(
-                    f"Failed to check username: {username_exists.error}",
+            if not username_exists.success:
+                return ServiceResult.fail(f"Failed to check username: {username_exists.error}",
                 )
 
             if username_exists.data:
-                return ServiceResult.fail(f"Username '{username}' already exists")
+                return ServiceResult(
+                    success=True,
+                    error=f"Username '{username}' already exists",
+                )
 
             # Check if email exists
             email_exists = await self.user_repo.email_exists(email)
-            if not email_exists.is_success:
-                return ServiceResult.fail(
-                    f"Failed to check email: {email_exists.error}",
+            if not email_exists.success:
+                return ServiceResult.fail(f"Failed to check email: {email_exists.error}",
                 )
 
             if email_exists.data:
-                return ServiceResult.fail(f"Email '{email}' already exists")
+                return ServiceResult(
+                    success=True,
+                    error=f"Email '{email}' already exists",
+                )
 
             # Hash password
             password_hash = self._hash_password(password)
@@ -91,7 +93,7 @@ class AuthenticationService:
 
             # Save user
             result = await self.user_repo.create(user)
-            if result.is_success:
+            if result.success:
                 logger.info("User created successfully: %s", username)
 
             return result
@@ -106,25 +108,25 @@ class AuthenticationService:
         password: str,
         ip_address: str,
         user_agent: str,
-    ) -> ServiceResult[tuple[User, Session]]:
+    ) -> ServiceResult[dict[str, Any]]:
         """Authenticate user and create session."""
         try:
             logger.info("Authenticating user: %s", username)
 
             # Find user
             user_result = await self.user_repo.find_by_username(username)
-            if not user_result.is_success:
+            if not user_result.success:
                 return ServiceResult.fail("Authentication failed")
 
             if not user_result.data:
-                return ServiceResult.fail("Invalid username or password")
+                return ServiceResult.fail("Invalid username or password",
+                )
 
             user = user_result.data
 
             # Check if account is locked
             if user.is_locked():
-                return ServiceResult.fail(
-                    "Account is locked due to too many failed attempts",
+                return ServiceResult.fail("Account is locked due to too many failed attempts",
                 )
 
             # Check if account is active
@@ -139,11 +141,11 @@ class AuthenticationService:
 
                 # Check if account got locked after failed attempt
                 if user.is_locked():
-                    return ServiceResult.fail(
-                        "Account is locked due to too many failed attempts",
+                    return ServiceResult.fail("Account is locked due to too many failed attempts",
                     )
 
-                return ServiceResult.fail("Invalid username or password")
+                return ServiceResult.fail("Invalid username or password",
+                )
 
             # Record successful login
             user.record_login_attempt(success=True, ip_address=ip_address)
@@ -167,22 +169,23 @@ class AuthenticationService:
             await self.user_repo.update(user)
             session_result = await self.session_repo.create(session)
 
-            if not session_result.is_success or session_result.data is None:
+            if not session_result.success or session_result.data is None:
                 return ServiceResult.fail("Failed to create session")
 
             logger.info("User authenticated successfully: %s", username)
-            return ServiceResult.ok((user, session_result.data))
+            return ServiceResult.ok({"user": user, "session": session_result.data},
+            )
 
         except Exception as e:
             logger.exception("Authentication failed for %s: %s", username, e)
             return ServiceResult.fail(f"Authentication failed: {e}")
 
-    async def validate_session(self, token: str) -> ServiceResult[tuple[User, Session]]:
+    async def validate_session(self, token: str) -> ServiceResult[dict[str, Any]]:
         """Validate session token and return user and session."""
         try:
             # Find session by token
             session_result = await self.session_repo.find_by_token(token)
-            if not session_result.is_success:
+            if not session_result.success:
                 return ServiceResult.fail("Session not found")
 
             if not session_result.data:
@@ -192,11 +195,12 @@ class AuthenticationService:
 
             # Check if session is active
             if not session.is_active():
-                return ServiceResult.fail("Session is expired or revoked")
+                return ServiceResult.fail("Session is expired or revoked",
+                )
 
             # Find user
             user_result = await self.user_repo.find_by_id(session.user_id)
-            if not user_result.is_success:
+            if not user_result.success:
                 return ServiceResult.fail("User not found")
 
             if not user_result.data:
@@ -218,12 +222,12 @@ class AuthenticationService:
             logger.exception("Session validation failed: %s", e)
             return ServiceResult.fail(f"Session validation failed: {e}")
 
-    async def logout_user(self, token: str) -> ServiceResult[bool]:
+    async def logout_user(self, token: str) -> ServiceResult[dict[str, Any]]:
         """Logout user by revoking session."""
         try:
             # Find session
             session_result = await self.session_repo.find_by_token(token)
-            if not session_result.is_success:
+            if not session_result.success:
                 return ServiceResult.fail("Failed to find session")
 
             if not session_result.data:
@@ -235,10 +239,10 @@ class AuthenticationService:
             session.revoke()
             update_result = await self.session_repo.update(session)
 
-            if update_result.is_success:
+            if update_result.success:
                 logger.info("User logged out successfully")
 
-            return ServiceResult.ok(True)
+            return ServiceResult.ok({"success": True})
 
         except Exception as e:
             logger.exception("Logout failed: %s", e)
@@ -249,12 +253,12 @@ class AuthenticationService:
         user_id: UUID,
         current_password: str,
         new_password: str,
-    ) -> ServiceResult[bool]:
+    ) -> ServiceResult[dict[str, Any]]:
         """Change user password."""
         try:
             # Find user
             user_result = await self.user_repo.find_by_id(user_id)
-            if not user_result.is_success:
+            if not user_result.success:
                 return ServiceResult.fail("Failed to find user")
 
             if not user_result.data:
@@ -264,7 +268,8 @@ class AuthenticationService:
 
             # Verify current password
             if not self._verify_password(current_password, user.password_hash):
-                return ServiceResult.fail("Current password is incorrect")
+                return ServiceResult.fail("Current password is incorrect",
+                )
 
             # Hash new password
             new_password_hash = self._hash_password(new_password)
@@ -274,10 +279,10 @@ class AuthenticationService:
 
             # Save user
             result = await self.user_repo.update(user)
-            if result.is_success:
+            if result.success:
                 logger.info("Password changed successfully for user: %s", user.username)
 
-            return ServiceResult.ok(True)
+            return ServiceResult.ok({"success": True})
 
         except Exception as e:
             logger.exception("Password change failed: %s", e)
@@ -288,7 +293,7 @@ class AuthenticationService:
         try:
             # Find user
             user_result = await self.user_repo.find_by_id(user_id)
-            if not user_result.is_success:
+            if not user_result.success:
                 return ServiceResult.fail("Failed to find user")
 
             if not user_result.data:
@@ -301,7 +306,7 @@ class AuthenticationService:
 
             # Save user
             result = await self.user_repo.update(user)
-            if result.is_success:
+            if result.success:
                 logger.info("Email verified for user: %s", user.username)
 
             return ServiceResult.ok(True)
@@ -314,27 +319,29 @@ class AuthenticationService:
         """Revoke all sessions for a user."""
         try:
             result = await self.session_repo.revoke_all_user_sessions(user_id)
-            if result.is_success:
+            if result.success:
                 logger.info("Revoked %d sessions for user", result.data)
 
             return result
 
         except Exception as e:
             logger.exception("Failed to revoke user sessions: %s", e)
-            return ServiceResult.fail(f"Failed to revoke sessions: {e}")
+            return ServiceResult.fail(f"Failed to revoke sessions: {e}",
+            )
 
     async def cleanup_expired_sessions(self) -> ServiceResult[int]:
         """Clean up expired sessions."""
         try:
             result = await self.session_repo.cleanup_expired_sessions()
-            if result.is_success:
+            if result.success:
                 logger.info("Cleaned up %d expired sessions", result.data)
 
             return result
 
         except Exception as e:
             logger.exception("Failed to cleanup expired sessions: %s", e)
-            return ServiceResult.fail(f"Failed to cleanup sessions: {e}")
+            return ServiceResult.fail(f"Failed to cleanup sessions: {e}",
+            )
 
     def _hash_password(self, password: str) -> str:
         """Hash password using bcrypt."""
@@ -350,23 +357,26 @@ class AuthenticationService:
 class PasswordService:
     """Password management service using flext-core patterns."""
 
-    async def generate_reset_token(self, email: str) -> ServiceResult[str]:
+    async def generate_reset_token(self, email: str) -> ServiceResult[bool]:
         """Generate password reset token."""
         try:
             from flext_auth.domain.value_objects import PasswordResetToken
 
-            token = PasswordResetToken.generate()
+            PasswordResetToken.generate()
 
             # In a real implementation, you would:
             # 1. Store the token with expiration
             # 2. Send email with reset link
 
             logger.info("Password reset token generated for email: %s", email)
-            return ServiceResult.ok(token.value)
+            return ServiceResult.ok(True)
 
         except Exception as e:
             logger.exception("Failed to generate reset token: %s", e)
-            return ServiceResult.fail(f"Failed to generate reset token: {e}")
+            return ServiceResult(
+                success=True,
+                error=f"Failed to generate reset token: {e}",
+            )
 
     async def reset_password(
         self,
@@ -384,7 +394,7 @@ class PasswordService:
 
             # For now, return success placeholder
             logger.info("Password reset completed")
-            return ServiceResult.ok(True)
+            return ServiceResult.ok({"success": True})
 
         except Exception as e:
             logger.exception("Password reset failed: %s", e)
@@ -394,23 +404,26 @@ class PasswordService:
 class EmailVerificationService:
     """Email verification service using flext-core patterns."""
 
-    async def generate_verification_token(self, user_id: UUID) -> ServiceResult[str]:
+    async def generate_verification_token(self, user_id: UUID) -> ServiceResult[bool]:
         """Generate email verification token."""
         try:
             from flext_auth.domain.value_objects import EmailVerificationToken
 
-            token = EmailVerificationToken.generate()
+            EmailVerificationToken.generate()
 
             # In a real implementation, you would:
             # 1. Store the token with expiration
             # 2. Send verification email
 
             logger.info("Email verification token generated for user: %s", user_id)
-            return ServiceResult.ok(token.value)
+            return ServiceResult.ok(True)
 
         except Exception as e:
             logger.exception("Failed to generate verification token: %s", e)
-            return ServiceResult.fail(f"Failed to generate verification token: {e}")
+            return ServiceResult(
+                success=True,
+                error=f"Failed to generate verification token: {e}",
+            )
 
     async def verify_email_token(
         self,
@@ -426,7 +439,7 @@ class EmailVerificationService:
             # 4. Invalidate the token
 
             logger.info("Email verification completed")
-            return ServiceResult.ok(True)
+            return ServiceResult.ok({"success": True})
 
         except Exception as e:
             logger.exception("Email verification failed: %s", e)

@@ -134,10 +134,11 @@ def create_user_service() -> UserService:
     )
 
     # Create and return UserService
+    from typing import cast
     return UserService(
         user_repository=user_repository,
         password_hasher=password_hasher,
-        security_auditor=security_auditor,  # type: ignore[arg-type]
-        jwt_service=jwt_service,  # type: ignore[arg-type]
-        token_manager=token_manager,  # type: ignore[arg-type]
+        security_auditor=cast("object", security_auditor),
+        jwt_service=cast("object", jwt_service),
+        token_manager=cast("object", token_manager),
     )

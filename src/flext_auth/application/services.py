@@ -7,10 +7,10 @@ Clean architecture with dependency injection and type safety.
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
-from flext_core.domain.types import ServiceResult, UserId
+from flext_core.domain.shared_types import ServiceResult
 
 from flext_auth.domain.entities import Session, User
 from flext_auth.domain.events import (
@@ -19,6 +19,7 @@ from flext_auth.domain.events import (
     UserCreated,
     UserLoggedIn,
     UserLoggedOut,
+    ensure_models_rebuilt,
 )
 from flext_auth.domain.value_objects import (
     AuthToken,
@@ -26,6 +27,12 @@ from flext_auth.domain.value_objects import (
     Username,
     UserRole as SecurityRole,
 )
+
+if TYPE_CHECKING:
+    from flext_core.domain.shared_types import UserId
+
+# Ensure domain event models are rebuilt when ap    plication services are used
+ensure_models_rebuilt()
 
 
 class AuthService:
@@ -53,13 +60,14 @@ class AuthService:
         password: str,
         ip_address: str | None = None,
         user_agent: str | None = None,
-    ) -> ServiceResult[User]:
+    ) -> ServiceResult[Any]:
         """Authenticate a user with username and password."""
         try:
             # Find user by username
             user_result = await self.user_repository.get_by_username(username)
-            if not user_result.is_success:
-                return ServiceResult.fail("Invalid username or password")
+            if not user_result.success:
+                return ServiceResult.fail("Invalid username or password",
+                )
 
             user = user_result.data
 
@@ -81,7 +89,8 @@ class AuthService:
                     ip_address=ip_address or "unknown",
                 )
                 await self.user_repository.update(user)
-                return ServiceResult.fail("Invalid username or password")
+                return ServiceResult.fail("Invalid username or password",
+                )
 
             # Success - record login
             user.record_login_attempt(success=True, ip_address=ip_address or "unknown")
@@ -106,19 +115,19 @@ class AuthService:
         self,
         user_id: UserId,
         session_id: str,
-    ) -> ServiceResult[None]:
+    ) -> ServiceResult[Any]:
         """Log out a user and invalidate their session."""
         try:
             # Get user
-            user_result = await self.user_repository.get_by_id(user_id)
-            if not user_result.is_success:
+            user_result = await self.user_repository.find_by_id(user_id)
+            if not user_result.success:
                 return ServiceResult.fail("User not found")
 
             user = user_result.data
 
             # Invalidate session
-            session_result = await self.session_repository.get_by_id(session_id)
-            if session_result.is_success:
+            session_result = await self.session_repository.find_by_id(session_id)
+            if session_result.success:
                 session = session_result.data
                 session.revoke()
                 await self.session_repository.save(session)
@@ -136,12 +145,12 @@ class AuthService:
         except Exception as e:
             return ServiceResult.fail(f"Logout failed: {e!s}")
 
-    async def validate_token(self, token_value: str) -> ServiceResult[AuthToken]:
+    async def validate_token(self, token_value: str) -> ServiceResult[Any]:
         """Validate an authentication token."""
         try:
             # Get token
             token_result = await self.token_repository.get_by_value(token_value)
-            if not token_result.is_success:
+            if not token_result.success:
                 return ServiceResult.fail("Invalid token")
 
             token = token_result.data
@@ -167,9 +176,21 @@ class AuthService:
         email: str,
         password: str,
         roles: list[str] | None = None,
-    ) -> ServiceResult[User]:
+    ) -> ServiceResult[Any]:
         """Create a new user account."""
         try:
+            # Check if username already exists
+            existing_username_result = await self.user_repository.get_by_username(
+                username,
+            )
+            if existing_username_result.success:
+                return ServiceResult.fail("Username already exists")
+
+            # Check if email already exists
+            existing_email_result = await self.user_repository.get_by_email(email)
+            if existing_email_result.success:
+                return ServiceResult.fail("Email already exists")
+
             # Hash password
             password_hash = await self.password_hasher.hash_password(password)
 
@@ -187,7 +208,7 @@ class AuthService:
 
             # Save to repository
             save_result = await self.user_repository.save(user)
-            if not save_result.is_success:
+            if not save_result.success:
                 return ServiceResult.fail("Failed to create user")
 
             # Emit domain event
@@ -208,12 +229,12 @@ class AuthService:
         user_id: UserId,
         current_password: str,
         new_password: str,
-    ) -> ServiceResult[bool]:
+    ) -> ServiceResult[Any]:
         """Change a user's password."""
         try:
             # Get user
-            user_result = await self.user_repository.get_by_id(user_id)
-            if not user_result.is_success:
+            user_result = await self.user_repository.find_by_id(user_id)
+            if not user_result.success:
                 return ServiceResult.fail("User not found")
 
             user = user_result.data
@@ -224,7 +245,8 @@ class AuthService:
                 user.password_hash,
             )
             if not password_valid:
-                return ServiceResult.fail("Current password is incorrect")
+                return ServiceResult.fail("Current password is incorrect",
+                )
 
             # Hash new password
             new_password_hash = await self.password_hasher.hash_password(new_password)
@@ -232,7 +254,7 @@ class AuthService:
             # Update user password
             user.password_hash = new_password_hash
             save_result = await self.user_repository.save(user)
-            if not save_result.is_success:
+            if not save_result.success:
                 return ServiceResult.fail("Failed to update password")
 
             return ServiceResult.ok(True)
@@ -263,7 +285,7 @@ class UserService:
         password: str,
         roles: list[SecurityRole] | None = None,
         created_by: UserId | None = None,
-    ) -> ServiceResult[User]:
+    ) -> ServiceResult[Any]:
         """Create a new user account."""
         try:
             # Check if username exists
@@ -293,7 +315,7 @@ class UserService:
 
             # Save user
             save_result = await self.user_repository.save(user)
-            if not save_result.is_success:
+            if not save_result.success:
                 return ServiceResult.fail("Failed to save user")
 
             # Publish event
@@ -336,7 +358,7 @@ class TokenService:
         scopes: list[str] | None = None,
         client_id: str | None = None,
         ip_address: str | None = None,
-    ) -> ServiceResult[AuthToken]:
+    ) -> ServiceResult[Any]:
         """Create a new authentication token for a user."""
         try:
             # Generate token
@@ -350,7 +372,7 @@ class TokenService:
 
             # Save token
             save_result = await self.token_repository.save(token)
-            if not save_result.is_success:
+            if not save_result.success:
                 return ServiceResult.fail("Failed to save token")
 
             # Publish event
@@ -392,7 +414,7 @@ class SessionService:
         duration: timedelta,
         ip_address: str | None = None,
         user_agent: str | None = None,
-    ) -> ServiceResult[Session]:
+    ) -> ServiceResult[Any]:
         """Create a new user session."""
         try:
             # Generate session ID
@@ -410,7 +432,7 @@ class SessionService:
 
             # Save session
             save_result = await self.session_repository.save(session)
-            if not save_result.is_success:
+            if not save_result.success:
                 return ServiceResult.fail("Failed to save session")
 
             # Publish event
@@ -423,7 +445,6 @@ class SessionService:
                 user_agent=user_agent,
             )
             await self.event_bus.publish(event)
-
             return ServiceResult.ok(session)
 
         except Exception as e:

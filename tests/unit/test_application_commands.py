@@ -28,8 +28,12 @@ from flext_auth.application.commands import (
     UpdateRoleCommand,
     UpdateUserCommand,
     VerifyEmailCommand,
+    ensure_command_models_rebuilt,
 )
 from flext_auth.domain.value_objects import UserStatus
+
+# Ensure models are rebuilt when this test module is loaded
+ensure_command_models_rebuilt()
 
 
 class TestCreateUserCommand:
@@ -719,7 +723,8 @@ class TestCommandIntegration:
         # Commands should be frozen/immutable
         # Since Pydantic 2.x with frozen=True, attempting to change will raise ValidationError
         with pytest.raises((ValidationError, AttributeError)):
-            command.username = "changed_username"  # type: ignore[misc]
+            # Attempt to modify frozen command - this should fail
+            command.username = "changed_username"
 
     def test_user_lifecycle_commands(self) -> None:
         """Test commands for complete user lifecycle."""

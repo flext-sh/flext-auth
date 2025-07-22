@@ -10,7 +10,7 @@ from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 
 from flext_auth.api.app import app
 from flext_auth.api.dependencies import get_auth_service
@@ -58,7 +58,8 @@ class TestFastAPIApp:
         mock_user.is_active = True
         mock_user.created_at = "2023-01-01T00:00:00"
 
-        mock_auth_service.create_user.return_value = ServiceResult.ok(mock_user)
+        mock_auth_service.create_user.return_value = ServiceResult.ok(mock_user,
+        )
 
         response = client.post(
             "/auth/register",
@@ -87,8 +88,7 @@ class TestFastAPIApp:
         mock_auth_service: AsyncMock,
     ) -> None:
         """Test failed user registration."""
-        mock_auth_service.create_user.return_value = ServiceResult.fail(
-            "Username already exists",
+        mock_auth_service.create_user.return_value = ServiceResult.fail("Username already exists",
         )
 
         response = client.post(
@@ -129,8 +129,7 @@ class TestFastAPIApp:
             "expires_in": 3600,
         }
 
-        mock_auth_service.authenticate.return_value = ServiceResult.ok(
-            auth_response,
+        mock_auth_service.authenticate.return_value = ServiceResult.ok(auth_response,
         )
 
         response = client.post(
@@ -154,8 +153,7 @@ class TestFastAPIApp:
         mock_auth_service: AsyncMock,
     ) -> None:
         """Test failed user login."""
-        mock_auth_service.authenticate.return_value = ServiceResult.fail(
-            "Invalid credentials",
+        mock_auth_service.authenticate.return_value = ServiceResult.fail("Invalid credentials",
         )
 
         response = client.post(
@@ -181,7 +179,8 @@ class TestFastAPIApp:
             "token_type": "access",
         }
 
-        mock_auth_service.validate_token.return_value = ServiceResult.ok(user_data)
+        mock_auth_service.validate_token.return_value = ServiceResult.ok(user_data,
+        )
 
         response = client.get(
             "/auth/me",
@@ -200,8 +199,7 @@ class TestFastAPIApp:
         mock_auth_service: AsyncMock,
     ) -> None:
         """Test getting current user info without valid token."""
-        mock_auth_service.validate_token.return_value = ServiceResult.fail(
-            "Invalid token",
+        mock_auth_service.validate_token.return_value = ServiceResult.fail("Invalid token",
         )
 
         response = client.get(
@@ -229,9 +227,11 @@ class TestFastAPIApp:
         }
 
         # Mock token validation
-        mock_auth_service.validate_token.return_value = ServiceResult.ok(user_data)
+        mock_auth_service.validate_token.return_value = ServiceResult.ok(user_data,
+        )
         # Mock password change
-        mock_auth_service.change_password.return_value = ServiceResult.ok(None)
+        mock_auth_service.change_password.return_value = ServiceResult.ok(None,
+        )
 
         response = client.post(
             "/auth/change-password",
@@ -258,10 +258,10 @@ class TestFastAPIApp:
         }
 
         # Mock token validation
-        mock_auth_service.validate_token.return_value = ServiceResult.ok(user_data)
+        mock_auth_service.validate_token.return_value = ServiceResult.ok(user_data,
+        )
         # Mock password change failure
-        mock_auth_service.change_password.return_value = ServiceResult.fail(
-            "Current password is incorrect",
+        mock_auth_service.change_password.return_value = ServiceResult.fail("Current password is incorrect",
         )
 
         response = client.post(
@@ -282,8 +282,7 @@ class TestFastAPIApp:
         mock_auth_service: AsyncMock,
     ) -> None:
         """Test password change without valid token."""
-        mock_auth_service.validate_token.return_value = ServiceResult.fail(
-            "Invalid token",
+        mock_auth_service.validate_token.return_value = ServiceResult.fail("Invalid token",
         )
 
         response = client.post(
@@ -309,7 +308,8 @@ class TestFastAPIApp:
             "token_type": "access",
         }
 
-        mock_auth_service.validate_token.return_value = ServiceResult.ok(user_data)
+        mock_auth_service.validate_token.return_value = ServiceResult.ok(user_data,
+        )
 
         response = client.post(
             "/auth/change-password",
@@ -443,9 +443,12 @@ class TestDependencies:
         container2 = get_container()
         assert container is container2
 
-    def test_get_auth_service(self) -> None:
+    def test_get_auth_service(self, monkeypatch: pytest.MonkeyPatch) -> None:
         """Test getting auth service."""
         from flext_auth.api.dependencies import get_auth_service
+
+        # Set required environment variable for JWT service
+        monkeypatch.setenv("FLEXT_AUTH_JWT_SECRET_KEY", "test-secret-key")
 
         auth_service = get_auth_service()
         assert auth_service is not None

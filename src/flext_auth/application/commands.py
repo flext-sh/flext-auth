@@ -2,7 +2,6 @@
 
 Command pattern implementation for CQRS architecture.
 """
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Literal
@@ -15,7 +14,6 @@ if TYPE_CHECKING:
     from uuid import UUID
 
     from flext_auth.domain.value_objects import UserStatus
-
 # Type alias for token types based on AuthToken validation
 TokenType = Literal["access", "refresh", "api", "session"]
 
@@ -187,3 +185,61 @@ class UnlockUserCommand(Command):
 
     user_id: UUID
     unlocked_by: UUID | None = None
+
+
+# Rebuild models to resolve forward references
+def rebuild_command_models() -> None:
+    """Rebuild all command models with proper type resolution."""
+    # Import types directly and add them to the current module's globals
+    # Add types to module globals so Pydantic can resolve them
+    import sys
+    from datetime import timedelta
+    from uuid import UUID
+
+    from flext_auth.domain.value_objects import UserStatus
+    current_module = sys.modules[__name__]
+    # Add types to module globals for Pydantic model resolution
+    # Use setattr to properly expose types for Pydantic model resolution
+    current_module.UUID = UUID
+    current_module.timedelta = timedelta
+    current_module.UserStatus = UserStatus
+    # Rebuild all command models that use forward references
+    CreateUserCommand.model_rebuild()
+    UpdateUserCommand.model_rebuild()
+    ChangePasswordCommand.model_rebuild()
+    AuthenticateUserCommand.model_rebuild()
+    CreateSessionCommand.model_rebuild()
+    RefreshSessionCommand.model_rebuild()
+    LogoutUserCommand.model_rebuild()
+    DeactivateSessionCommand.model_rebuild()
+    CreateTokenCommand.model_rebuild()
+    RevokeTokenCommand.model_rebuild()
+    CreateRoleCommand.model_rebuild()
+    UpdateRoleCommand.model_rebuild()
+    AssignRoleCommand.model_rebuild()
+    RemoveRoleCommand.model_rebuild()
+    VerifyEmailCommand.model_rebuild()
+    SendPasswordResetCommand.model_rebuild()
+    ResetPasswordCommand.model_rebuild()
+    LockUserCommand.model_rebuild()
+    UnlockUserCommand.model_rebuild()
+
+
+# Only rebuild if not in TYPE_CHECKING
+_models_rebuilt = False
+
+
+def ensure_command_models_rebuilt() -> None:
+    """Ensure command models are rebuilt with proper type resolution."""
+    import typing
+    global _models_rebuilt
+    if _models_rebuilt:
+        return
+    # Only rebuild in runtime, not during static analysis
+    if not typing.TYPE_CHECKING:
+        try:
+            rebuild_command_models()
+            _models_rebuilt = True
+        except ImportError:
+            # If there are still import issues, models will work with limited type safety
+            pass

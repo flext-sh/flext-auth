@@ -5,12 +5,13 @@ Using clean architecture with dependency injection.
 
 from __future__ import annotations
 
+import logging
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Annotated, Any
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from flext_observability.logging import get_logger
+from flext_core.domain.shared_types import ServiceResult
 
 from flext_auth.api.dependencies import get_auth_service
 from flext_auth.api.models import (
@@ -19,6 +20,7 @@ from flext_auth.api.models import (
     ChangePasswordRequest,
     CreateUserRequest,
     UserResponse,
+    ensure_api_models_rebuilt,
 )
 from flext_auth.application.command_auth_service import AuthService
 from flext_auth.domain.commands import (
@@ -35,8 +37,10 @@ if TYPE_CHECKING:
     from collections.abc import AsyncIterator
 
 
+logger = logging.getLogger(__name__)
 
-logger = get_logger(__name__)
+# Ensure API models are properly rebuilt
+ensure_api_models_rebuilt()
 
 # Security
 security = HTTPBearer()
@@ -62,7 +66,7 @@ app = FastAPI(
 async def get_current_user(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
-) -> dict[str, Any]:
+) -> ServiceResult[dict[str, Any]]:
     """Get current authenticated user from token."""
     command = ValidateTokenCommand(
         token=credentials.credentials,
@@ -73,7 +77,7 @@ async def get_current_user(
     if result.is_failure or result.data is None:
         raise HTTPException(status_code=401, detail=result.error or "Invalid token")
 
-    return result.data
+    return ServiceResult.ok(result.data)
 
 
 @app.post("/auth/register")

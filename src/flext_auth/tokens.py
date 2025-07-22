@@ -39,17 +39,7 @@ if TYPE_CHECKING:
     # TokenType, UserID now imported at runtime for Pydantic model rebuild
 
 
-
 # Import types at runtime for TokenMetadata model
-
-
-
-
-
-
-
-
-
 
 
 # Runtime imports required for Pydantic models
@@ -394,10 +384,8 @@ class RedisTokenStorage(TokenStorage[str]):
         decoded_keys = []
         for key in keys:
             # Redis can return keys as bytes or str depending on version/config
-            if isinstance(key, bytes):  # type: ignore[unreachable]  # noqa: SIM108
-                decoded_key = key.decode("utf-8")  # type: ignore[unreachable]
-            else:
-                decoded_key = str(key)
+            # Use str() for consistent handling regardless of type
+            decoded_key = key.decode("utf-8") if isinstance(key, bytes) else str(key)
             decoded_keys.append(decoded_key[prefix_len:])
         return decoded_keys
 
@@ -1339,7 +1327,7 @@ try:
     # Make types available for TokenMetadata model
     globals().update({
         "TokenType": _TokenType,
-        "UserID": _UserID
+        "UserID": _UserID,
     })
 
     # Now rebuild TokenMetadata model with resolved forward references

@@ -268,7 +268,7 @@ class TestRevokeTokenCommand:
         result = runner.invoke(revoke_token, ["--help"])
 
         assert result.exit_code == 0
-        assert "Revoke JWT token." in result.output
+        assert "Revoke a JWT token." in result.output
         assert "TOKEN" in result.output
 
 

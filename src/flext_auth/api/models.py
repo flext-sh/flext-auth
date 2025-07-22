@@ -1,5 +1,4 @@
 """API models for FLEXT Auth endpoints."""
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
@@ -58,3 +57,36 @@ class ErrorResponse(BaseModel):
     message: str
     error_type: str | None = None
     details: dict[str, Any] | None = None
+
+
+# Rebuild models to resolve forward references
+def rebuild_api_models() -> None:
+    """Rebuild all API models with proper type resolution."""
+    import sys
+    from datetime import datetime
+    current_module = sys.modules[__name__]
+    # Add types to module globals for Pydantic model resolution
+    # Use setattr to properly expose types for Pydantic model resolution
+    current_module.datetime = datetime
+    # Rebuild models that use forward references
+    UserResponse.model_rebuild()
+
+
+# Only rebuild if not in TYPE_CHECKING
+_models_rebuilt = False
+
+
+def ensure_api_models_rebuilt() -> None:
+    """Ensure API models are rebuilt with proper type resolution."""
+    import typing
+    global _models_rebuilt
+    if _models_rebuilt:
+        return
+    # Only rebuild in runtime, not during static analysis
+    if not typing.TYPE_CHECKING:
+        try:
+            rebuild_api_models()
+            _models_rebuilt = True
+        except ImportError:
+            # If there are still import issues, models will work with limited type safety
+            pass

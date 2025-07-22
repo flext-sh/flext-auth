@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Self
 from uuid import UUID, uuid4
 
 import structlog
-from flext_core import Field, ServiceResult
+from flext_core import Field
 from flext_core.config import get_container, singleton
 from flext_core.domain.pydantic_base import DomainBaseModel
 from passlib.context import CryptContext
@@ -29,6 +29,8 @@ from flext_auth.types import SecurityEvent, TokenType
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
+
+    from flext_core.domain.shared_types import ServiceResult
 
     from flext_auth.domain.entities import Role
     from flext_auth.interfaces import JWTService, TokenManager
@@ -307,9 +309,9 @@ class UserServiceInMemoryUserRepository(UserRepository):
         self._users: dict[str, User] = {}  # Store by string ID for compatibility
         self._email_index: dict[str, str] = {}  # Email -> string user ID mapping
 
-    async def find_by_id(self, user_id: UUID) -> ServiceResult[User | None]:
+    async def find_by_id(self, user_id: UUID) -> ServiceResult[Any]:
         """Find user by ID following repository interface."""
-        from flext_core import ServiceResult
+        from flext_core.domain.shared_types import ServiceResult
 
         try:
             user = self._users.get(str(user_id))
@@ -317,9 +319,9 @@ class UserServiceInMemoryUserRepository(UserRepository):
         except Exception as e:
             return ServiceResult.fail(f"Error finding user by ID: {e}")
 
-    async def find_by_email(self, email: str) -> ServiceResult[User | None]:
+    async def find_by_email(self, email: str) -> ServiceResult[Any]:
         """Find user by email following repository interface."""
-        from flext_core import ServiceResult
+        from flext_core.domain.shared_types import ServiceResult
 
         try:
             user_id = self._email_index.get(email.lower())
@@ -328,9 +330,9 @@ class UserServiceInMemoryUserRepository(UserRepository):
         except Exception as e:
             return ServiceResult.fail(f"Error finding user by email: {e}")
 
-    async def find_by_username(self, username: str) -> ServiceResult[User | None]:
+    async def find_by_username(self, username: str) -> ServiceResult[Any]:
         """Find user by username following repository interface."""
-        from flext_core import ServiceResult
+        from flext_core.domain.shared_types import ServiceResult
 
         try:
             for user in self._users.values():
@@ -340,41 +342,32 @@ class UserServiceInMemoryUserRepository(UserRepository):
         except Exception as e:
             return ServiceResult.fail(f"Error finding user by username: {e}")
 
-    async def username_exists(self, username: str) -> ServiceResult[bool]:
+    async def username_exists(self, username: str) -> ServiceResult[Any]:
         """Check if username exists following repository interface."""
-        from flext_core import ServiceResult
+        from flext_core.domain.shared_types import ServiceResult
 
         try:
             result = await self.find_by_username(username)
-            if result.is_success:
+            if result.success:
                 return ServiceResult.ok(result.data is not None)
             return ServiceResult.fail(result.error or "Error checking username")
         except Exception as e:
             return ServiceResult.fail(f"Error checking username existence: {e}")
 
-    async def email_exists(self, email: str) -> ServiceResult[bool]:
+    async def email_exists(self, email: str) -> ServiceResult[Any]:
         """Check if email exists following repository interface."""
-        from flext_core import ServiceResult
+        from flext_core.domain.shared_types import ServiceResult
 
         try:
             result = await self.find_by_email(email)
-            if result.is_success:
+            if result.success:
                 return ServiceResult.ok(result.data is not None)
             return ServiceResult.fail(result.error or "Error checking email")
         except Exception as e:
             return ServiceResult.fail(f"Error checking email existence: {e}")
 
     async def create_user(self, user_data: Mapping[str, Any]) -> User:
-        """Create a new user in the repository.
-
-        Args:
-            user_data: Dictionary containing user creation data including email,
-                      password_hash, username, and optional roles.
-
-        Returns:
-            The created User object.
-
-        """
+        """Implementation of UserWriter protocol."""
         user_id_value = user_data.get("user_id", user_data.get("id"))
         if isinstance(user_id_value, str):
             user_id_value = UUID(user_id_value)
@@ -455,9 +448,9 @@ class UserServiceInMemoryUserRepository(UserRepository):
         }
         return role_permissions.get(user.role, [])
 
-    async def create(self, user: User) -> ServiceResult[User]:
+    async def create(self, user: User) -> ServiceResult[Any]:
         """Create a new user following repository interface."""
-        from flext_core import ServiceResult
+        from flext_core.domain.shared_types import ServiceResult
 
         # Check if user already exists
         if str(user.id) in self._users:
@@ -469,9 +462,9 @@ class UserServiceInMemoryUserRepository(UserRepository):
 
         return ServiceResult.ok(user)
 
-    async def delete(self, user_id: UUID) -> ServiceResult[bool]:
+    async def delete(self, user_id: UUID) -> ServiceResult[Any]:
         """Delete a user by ID following repository interface."""
-        from flext_core import ServiceResult
+        from flext_core.domain.shared_types import ServiceResult
 
         user = self._users.get(str(user_id))
         if not user:
@@ -490,18 +483,18 @@ class UserServiceInMemoryUserRepository(UserRepository):
         self,
         limit: int = 100,
         offset: int = 0,
-    ) -> ServiceResult[list[User]]:
+    ) -> ServiceResult[Any]:
         """List users with pagination following repository interface."""
-        from flext_core import ServiceResult
+        from flext_core.domain.shared_types import ServiceResult
 
         all_users = list(self._users.values())
         paginated_users = all_users[offset : offset + limit]
 
         return ServiceResult.ok(paginated_users)
 
-    async def update(self, user: User) -> ServiceResult[User]:
+    async def update(self, user: User) -> ServiceResult[Any]:
         """Update an existing user following repository interface."""
-        from flext_core import ServiceResult
+        from flext_core.domain.shared_types import ServiceResult
 
         if str(user.id) not in self._users:
             return ServiceResult.fail(f"User with ID {user.id} not found")
@@ -534,12 +527,12 @@ class UserServiceInMemoryUserRepository(UserRepository):
     async def get_user_by_id(self, user_id: UserID) -> User | None:
         """Get user by ID - compatibility method for UserService."""
         result = await self.find_by_id(user_id)  # user_id is already UUID
-        return result.data if result.is_success else None
+        return result.data if result.success else None
 
     async def get_user_by_email(self, email: str) -> User | None:
         """Get user by email - compatibility method for UserService."""
         result = await self.find_by_email(email)
-        return result.data if result.is_success else None
+        return result.data if result.success else None
 
 
 class SecurityAuditorImpl(SecurityAuditor):
@@ -561,16 +554,7 @@ class SecurityAuditorImpl(SecurityAuditor):
         user_agent: UserAgent | None,
         metadata: TokenMetadata | dict[str, Any] | None = None,
     ) -> None:
-        """Log a security event for audit purposes.
-
-        Args:
-            event_type: Type of security event (e.g., 'login_success', 'login_failure').
-            user_id: ID of the user involved in the event (if applicable).
-            ip_address: IP address where the event originated (if available).
-            user_agent: User agent string of the client (if available).
-            metadata: Additional event metadata (optional).
-
-        """
+        """Implementation of SecurityEventLogger protocol."""
         # Convert TokenMetadata to dict for storage
         metadata_dict = {}
         if metadata:
@@ -685,25 +669,16 @@ class UserService(AuthenticationServiceProtocol):
         self,
         request: UserCreationRequest,
         roles: list[Role] | None = None,
-    ) -> ServiceResult[User]:
-        """Create a new user account with the provided information.
-
-        Args:
-            request: User creation request containing email, password, and names.
-            roles: Optional list of roles to assign to the user.
-
-        Returns:
-            ServiceResult containing the created User on success, or error details on failure.
-
-        """
-        from flext_core import ServiceResult
+    ) -> ServiceResult[Any]:
+        """Create user account with validation and security."""
+        from flext_core.domain.shared_types import ServiceResult
 
         try:
             # Check if user already exists
             existing_user_result = await self.user_repository.find_by_email(
                 request.email,
             )
-            if existing_user_result.is_success and existing_user_result.data:
+            if existing_user_result.success and existing_user_result.data:
                 return ServiceResult.fail("User with this email already exists")
 
             # Hash password
@@ -744,21 +719,10 @@ class UserService(AuthenticationServiceProtocol):
         ip_address: IPAddress | None = None,
         user_agent: UserAgent | None = None,
     ) -> tuple[User, JWTToken, JWTToken] | None:
-        """Authenticate a user with email and password.
-
-        Args:
-            email: User's email address.
-            password: User's plaintext password.
-            ip_address: IP address for security logging (optional).
-            user_agent: User agent for security logging (optional).
-
-        Returns:
-            Tuple of (User, access_token, refresh_token) on success, None on failure.
-
-        """
+        """Implementation of UserAuthenticator protocol."""
         # Get user by email
         user_result = await self.user_repository.find_by_email(email)
-        if not user_result.is_success or not user_result.data:
+        if not user_result.success or not user_result.data:
             await self._log_failed_login(
                 None,
                 email,
@@ -860,16 +824,7 @@ class UserService(AuthenticationServiceProtocol):
         token: JWTToken,
         required_permissions: Sequence[str] | None = None,
     ) -> User | None:
-        """Authenticate a user using a JWT token.
-
-        Args:
-            token: JWT access token to verify.
-            required_permissions: Optional list of permissions that must be present.
-
-        Returns:
-            User object if token is valid and permissions are satisfied, None otherwise.
-
-        """
+        """Implementation of TokenAuthenticator protocol."""
         # Verify token
         claims = await self.jwt_service.verify_token(token, "access")
         if not claims:
@@ -891,7 +846,7 @@ class UserService(AuthenticationServiceProtocol):
                 user_id = "user"
 
         user_result = await self.user_repository.find_by_id(user_id)
-        if not user_result.is_success or not user_result.data:
+        if not user_result.success or not user_result.data:
             return None
         user = user_result.data
         if not user.is_active():
@@ -922,17 +877,7 @@ class UserService(AuthenticationServiceProtocol):
         ip_address: IPAddress | None = None,
         user_agent: UserAgent | None = None,
     ) -> tuple[JWTToken, JWTToken] | None:
-        """Refresh an access token using a valid refresh token.
-
-        Args:
-            refresh_token: Valid refresh token to use for generating new tokens.
-            ip_address: IP address for security logging (optional).
-            user_agent: User agent for security logging (optional).
-
-        Returns:
-            Tuple of (new_access_token, new_refresh_token) on success, None on failure.
-
-        """
+        """Implementation of TokenRefresher protocol."""
         # Verify refresh token
         claims = await self.jwt_service.verify_token(refresh_token, "refresh")
         if not claims:
@@ -944,7 +889,7 @@ class UserService(AuthenticationServiceProtocol):
 
         # Get user
         user_result = await self.user_repository.find_by_id(claims["sub"])
-        if not user_result.is_success or not user_result.data:
+        if not user_result.success or not user_result.data:
             return None
 
         user = user_result.data
@@ -1017,16 +962,7 @@ class UserService(AuthenticationServiceProtocol):
         token: JWTToken,
         user_id: UserID | None = None,
     ) -> bool:
-        """Revoke a JWT token to prevent further use.
-
-        Args:
-            token: JWT token to revoke.
-            user_id: Optional user ID for additional validation.
-
-        Returns:
-            True if the token was successfully revoked, False otherwise.
-
-        """
+        """Implementation of TokenRevoker protocol."""
         # Extract token claims
         claims = self.jwt_service.extract_token_claims(token)
         if not claims or "jti" not in claims:
@@ -1060,20 +996,10 @@ class UserService(AuthenticationServiceProtocol):
         old_password: PlaintextPassword,
         new_password: PlaintextPassword,
     ) -> bool:
-        """Change a user's password after verifying the old password.
-
-        Args:
-            user_id: ID of the user changing their password.
-            old_password: Current password for verification.
-            new_password: New password to set.
-
-        Returns:
-            True if the password was successfully changed, False otherwise.
-
-        """
+        """Change user password with verification."""
         # Get user
         user_result = await self.user_repository.find_by_id(user_id)
-        if not user_result.is_success or not user_result.data:
+        if not user_result.success or not user_result.data:
             return False
 
         user = user_result.data
@@ -1115,7 +1041,7 @@ class UserService(AuthenticationServiceProtocol):
             # For now, return basic permissions for all users
             # TODO: Implement proper role-based permission system
             # Real implementation: user_result = await self.user_repository.find_by_id(user_id)
-            # Real implementation: return user.get_permissions() if user_result.is_success else set()
+            # Real implementation: return user.get_permissions() if user_result.success else set()
             return {"read", "write", "execute"}
         except Exception:
             # Return empty permissions set on error

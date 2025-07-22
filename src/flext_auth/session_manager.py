@@ -15,7 +15,7 @@ from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 from uuid import uuid4
 
-from flext_core.domain.types import ServiceResult
+from flext_core.domain.shared_types import ServiceResult
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -86,23 +86,71 @@ class RBACManager:
 
     def __init__(self) -> None:
         self._role_permissions: dict[str, set[str]] = {
-            "REDACTED_LDAP_BIND_PASSWORD": {
+            "super_REDACTED_LDAP_BIND_PASSWORD": {
                 "user:read",
                 "user:write",
                 "user:delete",
+                "user:manage",
                 "session:read",
                 "session:write",
                 "session:delete",
                 "system:REDACTED_LDAP_BIND_PASSWORD",
+                "system:super_REDACTED_LDAP_BIND_PASSWORD",
+                "pipeline:create",
+                "pipeline:read",
+                "plugin:read",
+                "data:read",
+            },
+            "REDACTED_LDAP_BIND_PASSWORD": {
+                "user:read",
+                "user:write",
+                "user:delete",
+                "user:manage",
+                "session:read",
+                "session:write",
+                "session:delete",
+                "system:REDACTED_LDAP_BIND_PASSWORD",
+                "pipeline:create",
+                "pipeline:read",
+                "plugin:read",
+                "data:read",
+            },
+            "manager": {
+                "user:read",
+                "user:write",
+                "session:read",
+                "session:write",
+                "pipeline:create",
+                "pipeline:read",
+                "plugin:read",
+                "data:read",
             },
             "user": {
                 "user:read",
                 "session:read",
                 "session:write",
+                "pipeline:read",
+                "plugin:read",
+                "data:read",
+            },
+            "viewer": {
+                "pipeline:read",
+                "plugin:read",
+                "data:read",
             },
             "guest": {
                 "user:read",
             },
+        }
+
+        # Define role hierarchy: child -> parents
+        self._role_hierarchy: dict[str, set[str]] = {
+            "super_REDACTED_LDAP_BIND_PASSWORD": {"REDACTED_LDAP_BIND_PASSWORD", "manager", "user", "viewer"},
+            "REDACTED_LDAP_BIND_PASSWORD": {"manager", "user", "viewer"},
+            "manager": {"user", "viewer"},
+            "user": {"viewer"},
+            "viewer": set(),
+            "guest": set(),
         }
 
     def get_effective_permissions(self, roles: set[str]) -> set[str]:
@@ -119,8 +167,19 @@ class RBACManager:
         return required_permission in user_permissions
 
     def has_role(self, user_roles: set[str], required_role: str) -> bool:
-        """Check if user has the required role."""
-        return required_role in user_roles
+        """Check if user has the required role (including inherited roles)."""
+        # Check direct role
+        if required_role in user_roles:
+            return True
+
+        # Check inherited roles
+        for user_role in user_roles:
+            if user_role in self._role_hierarchy:
+                inherited_roles = self._role_hierarchy[user_role]
+                if required_role in inherited_roles:
+                    return True
+
+        return False
 
     def add_role_permission(self, role: str, permission: str) -> None:
         """Add a permission to a role."""
@@ -152,7 +211,7 @@ class EnterpriseSessionManager:
         user_agent: UserAgent | None = None,
         device_info: dict[str, Any] | None = None,
         session_duration: timedelta | None = None,
-    ) -> ServiceResult[SessionMetadata]:
+    ) -> ServiceResult[Any]:
         """Create a new session for a user with RBAC and security features.
 
         Args:
@@ -235,7 +294,7 @@ class EnterpriseSessionManager:
         required_permission: str | None = None,
         required_role: str | None = None,
         ip_address: IPAddress | None = None,
-    ) -> ServiceResult[SessionMetadata]:
+    ) -> ServiceResult[Any]:
         """Validate a session and optionally check permissions and roles.
 
         Args:
@@ -327,13 +386,14 @@ class EnterpriseSessionManager:
             TimeoutError,
         ) as e:
             # Session validation failed - ZERO TOLERANCE specific exception types
-            return ServiceResult.fail(f"Failed to validate session: {e}")
+            return ServiceResult.fail(f"Failed to validate session: {e}",
+            )
 
     async def extend_session(
         self,
         session_id: str,
         duration: timedelta,
-    ) -> ServiceResult[SessionMetadata]:
+    ) -> ServiceResult[Any]:
         """Extend the expiration time of an existing session.
 
         Args:
@@ -353,7 +413,8 @@ class EnterpriseSessionManager:
             # Check if session is still valid:
             if session_metadata.is_expired:
                 await self._remove_session(session_id)
-                return ServiceResult.fail("Cannot extend expired session")
+                return ServiceResult.fail("Cannot extend expired session",
+                )
 
             # Extend session
             session_metadata.extend_session(duration)
@@ -389,7 +450,7 @@ class EnterpriseSessionManager:
         self,
         session_id: str,
         reason: str = "user_logout",
-    ) -> ServiceResult[dict[str, str]]:
+    ) -> ServiceResult[Any]:
         """Terminate a specific session.
 
         Args:
@@ -423,8 +484,7 @@ class EnterpriseSessionManager:
             # Remove session
             await self._remove_session(session_id)
 
-            return ServiceResult.ok(
-                {
+            return ServiceResult.ok({
                     "session_id": session_id,
                     "message": f"Session terminated successfully: {reason}",
                     "terminated_at": datetime.now(UTC).isoformat(),
@@ -440,14 +500,15 @@ class EnterpriseSessionManager:
             TimeoutError,
         ) as e:
             # Session termination failed - ZERO TOLERANCE specific exception types
-            return ServiceResult.fail(f"Failed to terminate session: {e}")
+            return ServiceResult.fail(f"Failed to terminate session: {e}",
+            )
 
     async def terminate_user_sessions(
         self,
         user_id: UserID,
         exclude_session_id: str | None = None,
         reason: str = "security_logout",
-    ) -> ServiceResult[dict[str, Any]]:
+    ) -> ServiceResult[Any]:
         """Terminate all sessions for a specific user.
 
         Args:
@@ -461,8 +522,7 @@ class EnterpriseSessionManager:
         """
         try:
             if user_id not in self._user_sessions:
-                return ServiceResult.ok(
-                    {
+                return ServiceResult.ok({
                         "user_id": user_id,
                         "terminated_count": 0,
                         "message": "No active sessions found",
@@ -478,11 +538,10 @@ class EnterpriseSessionManager:
 
                 # Terminate session
                 result = await self.terminate_session(session_id, reason)
-                if result.is_success:
+                if result.success:
                     terminated_count += 1
 
-            return ServiceResult.ok(
-                {
+            return ServiceResult.ok({
                     "user_id": user_id,
                     "terminated_count": terminated_count,
                     "reason": reason,
@@ -499,13 +558,14 @@ class EnterpriseSessionManager:
             TimeoutError,
         ) as e:
             # User session termination failed - ZERO TOLERANCE specific exception types
-            return ServiceResult.fail(f"Failed to terminate user sessions: {e}")
+            return ServiceResult.fail(f"Failed to terminate user sessions: {e}",
+            )
 
     async def get_user_sessions(
         self,
         user_id: UserID,
         include_expired: bool = False,
-    ) -> ServiceResult[list[SessionMetadata]]:
+    ) -> ServiceResult[Any]:
         """Get all sessions for a specific user.
 
         Args:
@@ -538,7 +598,8 @@ class EnterpriseSessionManager:
             TimeoutError,
         ) as e:
             # User session retrieval failed - ZERO TOLERANCE specific exception types
-            return ServiceResult.fail(f"Failed to get user sessions: {e}")
+            return ServiceResult.fail(f"Failed to get user sessions: {e}",
+            )
 
     async def cleanup_expired_sessions(self) -> int:
         """Clean up all expired sessions.
@@ -580,10 +641,21 @@ class EnterpriseSessionManager:
         )
         expired_sessions = total_sessions - active_sessions
 
+        # Calculate unique users
+        unique_users = len({s.user_id for s in self._active_sessions.values()})
+
+        # Calculate role distribution
+        role_distribution: dict[str, int] = {}
+        for session in self._active_sessions.values():
+            for role in session.roles:
+                role_distribution[role] = role_distribution.get(role, 0) + 1
+
         return {
             "total_sessions": total_sessions,
             "active_sessions": active_sessions,
             "expired_sessions": expired_sessions,
+            "unique_users": unique_users,
+            "role_distribution": role_distribution,
             "average_session_age": self._calculate_average_session_age(),
         }
 
@@ -624,8 +696,23 @@ class EnterpriseSessionManager:
         metadata: dict[str, Any] | None = None,
     ) -> None:
         """Log security events for audit trail."""
-        # In production, this would integrate with a proper logging system
         # Real audit logging implementation using flext-observability
+        from flext_observability.logging import get_logger
+
+        logger = get_logger("flext_auth.audit")
+
+        log_data: dict[str, Any] = {
+            "event_type": event_type,
+            "user_id": str(user_id) if user_id else None,
+            "ip_address": str(ip_address) if ip_address else None,
+            "user_agent": str(user_agent) if user_agent else None,
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
+
+        if metadata:
+            log_data["metadata"] = metadata
+
+        logger.info("Security event", extra=log_data)
 
     async def _periodic_cleanup(self, interval: timedelta) -> None:
         """Periodic cleanup of expired sessions."""

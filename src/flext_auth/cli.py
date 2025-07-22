@@ -35,7 +35,7 @@ def config() -> None:
     click.echo(f"Version: {settings.project_version}")
     click.echo(f"Environment: {settings.environment}")
     click.echo(f"Debug: {settings.debug}")
-    click.echo(f"JWT Algorithm: {settings.jwt_algorithm}")
+    click.echo(f"JWT Algorithm: {settings.auth_algorithm}")
     click.echo(f"Database URL: {settings.database_url}")
     click.echo(f"Redis URL: {settings.redis_url}")
 

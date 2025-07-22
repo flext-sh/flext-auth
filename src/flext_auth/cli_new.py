@@ -37,17 +37,20 @@ def info() -> None:
 @click.option("--password", help="Password (will prompt if not provided)")
 def create_user(username: str, email: str, password: str | None) -> None:
     """Create a new user."""
-    # Get password securely if not provided
-    if not password:
-        password = getpass.getpass("Password: ")
-        confirm_password = getpass.getpass("Confirm password: ")
+    try:
+        # Get password securely if not provided
+        if not password:
+            password = getpass.getpass("Password: ")
+            confirm_password = getpass.getpass("Confirm password: ")
 
-        if password != confirm_password:
-            click.echo("Error: Passwords do not match!", err=True)
-            return
+            if password != confirm_password:
+                click.echo("Error: Passwords do not match!", err=True)
+                return
 
-    click.echo(f"User '{username}' would be created with email: {email}")
-    click.echo("Note: Full implementation requires async support")
+        click.echo(f"User '{username}' would be created with email: {email}")
+        click.echo("Note: Full implementation requires async support")
+    except Exception as e:
+        click.echo(f"Error: Failed to create user: {e}", err=True)
 
 
 @cli.command("validate-token")
@@ -55,7 +58,7 @@ def create_user(username: str, email: str, password: str | None) -> None:
 def validate_token(token: str) -> None:
     """Validate a JWT token."""
     click.echo(f"Validating token: {token[:20]}...")
-    click.echo("Note: Full implementation requires async support")
+    click.echo("Note: Full implementation requires JWT service integration")
 
 
 @cli.command("revoke-token")
@@ -63,7 +66,7 @@ def validate_token(token: str) -> None:
 def revoke_token(token: str) -> None:
     """Revoke a JWT token."""
     click.echo(f"Revoking token: {token[:20]}...")
-    click.echo("Note: Full implementation requires async support")
+    click.echo("Note: Full implementation requires token manager integration")
 
 
 @cli.command("get-user")
@@ -71,14 +74,14 @@ def revoke_token(token: str) -> None:
 def get_user_by_id(user_id: str) -> None:
     """Get user by ID."""
     click.echo(f"Looking up user: {user_id}")
-    click.echo("Note: Full implementation requires async support")
+    click.echo("Note: Full implementation requires user service integration")
 
 
 @cli.command("list-users")
 def list_users() -> None:
     """List all users."""
     click.echo("Listing users...")
-    click.echo("Note: Full implementation requires async support")
+    click.echo("Note: Full implementation requires user service integration")
 
 
 if __name__ == "__main__":

@@ -39,8 +39,8 @@ def create_jwt_service_from_config(config: AuthConfig) -> JWTService:
             self._config = config
 
         def get_string(self, key: str, default: str | None = None) -> str:
-            if key == "jwt_algorithm":
-                return self._config.jwt_algorithm
+            if key == "auth_algorithm":
+                return self._config.auth_algorithm
             if key == "jwt_secret_key":
                 return self._config.jwt_secret_key
             if key == "jwt_private_key_path":
@@ -50,8 +50,8 @@ def create_jwt_service_from_config(config: AuthConfig) -> JWTService:
             return default or ""
 
         def get_int(self, key: str, default: int | None = None) -> int:
-            if key == "jwt_access_token_expire_minutes":
-                return self._config.jwt_access_token_expire_minutes
+            if key == "auth_token_expire_minutes":
+                return self._config.auth_token_expire_minutes
             if key == "jwt_refresh_token_expire_days":
                 return self._config.jwt_refresh_token_expire_days
             return default or 0
@@ -83,8 +83,8 @@ class TestJWTService:
         """Create AuthConfig for HS256 algorithm."""
         return AuthConfig(
             jwt_secret_key="test-secret-key",
-            jwt_algorithm="HS256",
-            jwt_access_token_expire_minutes=30,
+            auth_algorithm="HS256",
+            auth_token_expire_minutes=30,
             jwt_refresh_token_expire_days=7,
         )
 
@@ -92,10 +92,10 @@ class TestJWTService:
     def auth_config_rs256(self) -> AuthConfig:
         """Create AuthConfig for RS256 algorithm."""
         return AuthConfig(
-            jwt_algorithm="RS256",
+            auth_algorithm="RS256",
             jwt_private_key_path="path/to/private.pem",
             jwt_public_key_path="path/to/public.pem",
-            jwt_access_token_expire_minutes=15,
+            auth_token_expire_minutes=15,
             jwt_refresh_token_expire_days=30,
         )
 
@@ -158,7 +158,7 @@ QIDAQAB
             public_key_path.write_text(public_key, encoding="utf-8")
 
             config = AuthConfig(
-                jwt_algorithm="RS256",
+                auth_algorithm="RS256",
                 jwt_private_key_path=str(private_key_path),
                 jwt_public_key_path=str(public_key_path),
             )
@@ -172,7 +172,7 @@ QIDAQAB
     def test_jwt_service_initialization_rs256_without_keys(self) -> None:
         """Test JWTService initialization with RS256 but no key paths."""
         config = AuthConfig(
-            jwt_algorithm="RS256",
+            auth_algorithm="RS256",
             jwt_private_key_path=None,
             jwt_public_key_path=None,
         )
@@ -339,7 +339,7 @@ QIDAQAB
     def test_create_token_without_private_key(self) -> None:
         """Test token creation fails without private key."""
         config = AuthConfig(
-            jwt_algorithm="RS256",
+            auth_algorithm="RS256",
             jwt_private_key_path=None,
             jwt_public_key_path=None,
         )
@@ -427,7 +427,7 @@ QIDAQAB
     def test_decode_token_without_public_key(self) -> None:
         """Test token decoding fails without public key."""
         config = AuthConfig(
-            jwt_algorithm="RS256",
+            auth_algorithm="RS256",
             jwt_private_key_path=None,
             jwt_public_key_path=None,
         )
@@ -442,13 +442,18 @@ QIDAQAB
         mock_read_text.side_effect = FileNotFoundError("Key file not found")
 
         config = AuthConfig(
-            jwt_algorithm="RS256",
+            auth_algorithm="RS256",
             jwt_private_key_path="nonexistent/private.pem",
             jwt_public_key_path="nonexistent/public.pem",
         )
 
-        with pytest.raises(FileNotFoundError):
-            create_jwt_service_from_config(config)
+        # Service should handle missing files gracefully by logging errors
+        # and setting keys to None instead of raising exceptions
+        jwt_service = create_jwt_service_from_config(config)
+        assert jwt_service is not None
+        # Keys should be None when files are not found
+        assert jwt_service._private_key is None
+        assert jwt_service._public_key is None
 
     def test_jwt_service_algorithm_variants(self) -> None:
         """Test JWTService with various JWT algorithms."""
@@ -457,7 +462,7 @@ QIDAQAB
         for algorithm in hmac_algorithms:
             config = AuthConfig(
                 jwt_secret_key="test-secret",
-                jwt_algorithm=algorithm,
+                auth_algorithm=algorithm,
             )
             service = create_jwt_service_from_config(config)
             assert service._algorithm == algorithm
@@ -468,7 +473,7 @@ QIDAQAB
         rsa_algorithms = ["RS256", "RS384", "RS512"]
         for algorithm in rsa_algorithms:
             config = AuthConfig(
-                jwt_algorithm=algorithm,
+                auth_algorithm=algorithm,
                 jwt_private_key_path=None,
                 jwt_public_key_path=None,
             )
@@ -485,8 +490,8 @@ class TestJWTServiceIntegration:
         """Test complete token lifecycle: create and decode."""
         config = AuthConfig(
             jwt_secret_key="integration-test-secret",
-            jwt_algorithm="HS256",
-            jwt_access_token_expire_minutes=30,
+            auth_algorithm="HS256",
+            auth_token_expire_minutes=30,
             jwt_refresh_token_expire_days=7,
         )
         service = create_jwt_service_from_config(config)
@@ -528,7 +533,7 @@ class TestJWTServiceIntegration:
         """Test token creation and decoding with additional metadata."""
         config = AuthConfig(
             jwt_secret_key="test-secret",
-            jwt_algorithm="HS256",
+            auth_algorithm="HS256",
         )
         service = create_jwt_service_from_config(config)
 
@@ -553,7 +558,7 @@ class TestJWTServiceIntegration:
         """Test token creation with unique identifier for blacklisting."""
         config = AuthConfig(
             jwt_secret_key="test-secret",
-            jwt_algorithm="HS256",
+            auth_algorithm="HS256",
         )
         service = create_jwt_service_from_config(config)
 
@@ -579,7 +584,7 @@ class TestJWTServiceIntegration:
         """Test creating different types of tokens."""
         config = AuthConfig(
             jwt_secret_key="test-secret",
-            jwt_algorithm="HS256",
+            auth_algorithm="HS256",
         )
         service = create_jwt_service_from_config(config)
 

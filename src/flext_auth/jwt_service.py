@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any, Protocol
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import jwt
 from cryptography.hazmat.primitives import serialization
@@ -350,7 +350,7 @@ class JWTService:
         if self.storage:
             # Use the jti UUID we generated
             token_info = TokenInfo(
-                token_id=jti_uuid,
+                token_id=jti_uuid,  # EntityId is UUID type alias
                 user_id=user.user_id,
                 token_type="access",
                 issued_at=now,
@@ -402,7 +402,7 @@ class JWTService:
             try:
                 # Use the jti UUID we generated
                 token_info = TokenInfo(
-                    token_id=jti_uuid,
+                    token_id=jti_uuid,  # EntityId is UUID type alias
                     user_id=user.user_id,
                     token_type="refresh",
                     issued_at=now,
@@ -550,7 +550,7 @@ class JWTService:
             # Decode and validate token
             decode_result = self._decode_jwt_token(token)
 
-            if not decode_result.is_success:
+            if not decode_result.success:
                 return None
 
             claims = decode_result.data
@@ -594,7 +594,9 @@ class JWTService:
         try:
             claims = await self.verify_token(token, token_type)
             if claims is None:
-                return ValidationResult(False, "Invalid token format or malformed token")
+                return ValidationResult(
+                    False, "Invalid token format or malformed token",
+                )
             return ValidationResult(True)
         except jwt.InvalidTokenError as e:
             return ValidationResult(False, f"Invalid token: {e}")
@@ -768,12 +770,8 @@ class JwtInMemoryTokenStorage:
             token_info: Token information to store including metadata.
 
         """
-        # Convert UUID to string for dictionary key
-        token_id_str = (
-            str(token_info.token_id)
-            if isinstance(token_info.token_id, UUID)
-            else token_info.token_id
-        )
+        # Convert token_id to string for dictionary key
+        token_id_str = str(token_info.token_id)
         self._tokens[token_id_str] = token_info
 
     async def get_token(self, token_id: str) -> TokenInfo | None:
