@@ -1,291 +1,200 @@
-"""FLEXT Auth domain entities.
-
-Built on flext-core foundation for authentication domain models.
-Uses modern Python 3.13 patterns and comprehensive domain modeling.
-"""
+"""Domain entities for authentication system."""
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
-from uuid import UUID, uuid4
+from datetime import UTC, datetime
+from enum import Enum
 
-from flext_core import DomainEntity, DomainEvent, Field
+from pydantic import BaseModel, EmailStr, Field
 
 
-class User(DomainEntity):
-    """User entity representing an authenticated user."""
+class UserStatus(str, Enum):
+    """User account status."""
 
-    id: UUID = Field(default_factory=uuid4, description="User unique identifier")
-    username: str = Field(..., description="Username")
-    email: str = Field(..., description="Email address")
-    password_hash: str = Field(..., description="Hashed password")
-    role: str = Field(default="user", description="User role")
-    status: str = Field(default="active", description="User status")
-    email_verified: bool = Field(default=False, description="Email verification status")
-    email_verified_at: datetime | None = Field(
-        None,
-        description="Email verification timestamp",
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    LOCKED = "locked"
+    PENDING_VERIFICATION = "pending_verification"
+
+
+class UserRole(str, Enum):
+    """User roles in the system."""
+
+    USER = "user"
+    ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
+    MODERATOR = "moderator"
+
+
+class User(BaseModel):
+    """User entity representing a system user."""
+
+    id: str = Field(..., description="Unique user identifier")
+    username: str = Field(..., min_length=3, max_length=50, description="Username")
+    email: EmailStr = Field(..., description="User email address")
+    password_hash: str = Field(..., description="Bcrypt password hash")
+    role: UserRole = Field(default=UserRole.USER, description="User role")
+    status: UserStatus = Field(default=UserStatus.ACTIVE, description="Account status")
+    failed_login_attempts: int = Field(
+        default=0, ge=0, description="Failed login count"
     )
-    last_login_at: datetime | None = Field(None, description="Last login timestamp")
-    last_login_ip: str | None = Field(None, description="Last login IP address")
-    login_attempts: int = Field(default=0, description="Failed login attempts")
-    locked_until: datetime | None = Field(None, description="Account lock expiry")
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="Creation timestamp",
+    locked_until: datetime | None = Field(
+        default=None, description="Account lock expiration"
     )
-    updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="Last update timestamp",
+    last_login: datetime | None = Field(
+        default=None, description="Last successful login"
     )
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     def is_active(self) -> bool:
         """Check if user account is active."""
-        return self.status == "active"
+        return self.status == UserStatus.ACTIVE
 
     def is_locked(self) -> bool:
         """Check if user account is locked."""
-        if self.locked_until is None:
-            return False
+        if self.status == UserStatus.LOCKED:
+            return True
 
-        current_time = datetime.now(UTC)
-
-        # Handle timezone-naive datetime by assuming UTC
-        if self.locked_until.tzinfo is None:
-            locked_until_utc = self.locked_until.replace(tzinfo=UTC)
-        else:
-            locked_until_utc = self.locked_until
-
-        return locked_until_utc > current_time
-
-    def is_email_verified(self) -> bool:
-        """Check if email is verified."""
-        return self.email_verified
-
-    def verify_email(self) -> None:
-        """Mark email as verified."""
-        self.email_verified = True
-        self.email_verified_at = datetime.now(UTC)
-        self.updated_at = datetime.now(UTC)
-
-    def record_login_attempt(self, success: bool, ip_address: str) -> None:
-        """Record a login attempt."""
-        if success:
-            self.login_attempts = 0
-            self.last_login_at = datetime.now(UTC)
-            self.last_login_ip = ip_address
-            self.locked_until = None
-        else:
-            self.login_attempts += 1
-            if self.login_attempts >= 5:
-                self.locked_until = datetime.now(UTC) + timedelta(minutes=30)
-
-        self.updated_at = datetime.now(UTC)
+        return bool(self.locked_until and datetime.now(UTC) < self.locked_until)
 
     def unlock_account(self) -> None:
-        """Unlock user account."""
+        """Unlock user account and reset failed attempts."""
+        self.status = UserStatus.ACTIVE
         self.locked_until = None
-        self.login_attempts = 0
+        self.failed_login_attempts = 0
         self.updated_at = datetime.now(UTC)
 
-    def change_password(self, new_password_hash: str) -> None:
-        """Change user password."""
-        self.password_hash = new_password_hash
+    def increment_failed_login(self) -> None:
+        """Increment failed login attempts."""
+        self.failed_login_attempts += 1
         self.updated_at = datetime.now(UTC)
 
-    def suspend_account(self) -> None:
-        """Suspend user account."""
-        self.status = "suspended"
-        self.updated_at = datetime.now(UTC)
-
-    def activate_account(self) -> None:
-        """Activate user account."""
-        self.status = "active"
+    def reset_failed_login(self) -> None:
+        """Reset failed login attempts after successful login."""
+        self.failed_login_attempts = 0
+        self.last_login = datetime.now(UTC)
         self.updated_at = datetime.now(UTC)
 
 
-class Role(DomainEntity):
-    """Role entity representing user permissions."""
+class SessionStatus(str, Enum):
+    """Session status."""
 
-    id: UUID = Field(default_factory=uuid4, description="Role unique identifier")
-    name: str = Field(..., description="Role name")
-    description: str = Field("", description="Role description")
-    permissions: list[str] = Field(default_factory=list, description="Role permissions")
-    is_system_role: bool = Field(default=False, description="System role flag")
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="Creation timestamp",
+    ACTIVE = "active"
+    EXPIRED = "expired"
+    REVOKED = "revoked"
+
+
+class Session(BaseModel):
+    """User session entity."""
+
+    id: str = Field(..., description="Unique session identifier")
+    user_id: str = Field(..., description="User ID owning this session")
+    access_token: str = Field(..., description="JWT access token")
+    refresh_token: str | None = Field(default=None, description="JWT refresh token")
+    status: SessionStatus = Field(
+        default=SessionStatus.ACTIVE, description="Session status"
     )
-    updated_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="Last update timestamp",
-    )
+    ip_address: str | None = Field(default=None, description="Client IP address")
+    user_agent: str | None = Field(default=None, description="Client user agent")
+    expires_at: datetime = Field(..., description="Session expiration time")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    last_accessed: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
-    def add_permission(self, permission: str) -> None:
-        """Add permission to role."""
-        if permission not in self.permissions:
-            self.permissions.append(permission)
-            self.updated_at = datetime.now(UTC)
+    def is_valid(self) -> bool:
+        """Check if session is valid (active and not expired)."""
+        if self.status != SessionStatus.ACTIVE:
+            return False
 
-    def remove_permission(self, permission: str) -> None:
-        """Remove permission from role."""
-        if permission in self.permissions:
-            self.permissions.remove(permission)
-            self.updated_at = datetime.now(UTC)
+        return datetime.now(UTC) < self.expires_at
 
-    def has_permission(self, permission: str) -> bool:
-        """Check if role has specific permission."""
-        return permission in self.permissions
+    def extend_session(self, minutes: int = 30) -> None:
+        """Extend session expiration."""
+        from datetime import timedelta
 
-
-class Session(DomainEntity):
-    """Session entity representing user authentication session."""
-
-    id: UUID = Field(default_factory=uuid4, description="Session unique identifier")
-    user_id: UUID = Field(..., description="User identifier")
-    token: str = Field(..., description="Session token")
-    refresh_token: str | None = Field(None, description="Refresh token")
-    ip_address: str = Field(..., description="Client IP address")
-    user_agent: str = Field(..., description="Client user agent")
-    status: str = Field(default="active", description="Session status")
-    expires_at: datetime = Field(..., description="Session expiration")
-    last_activity_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="Last activity timestamp",
-    )
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="Creation timestamp",
-    )
-
-    @classmethod
-    def create_new(
-        cls,
-        user_id: UUID,
-        token: str,
-        ip_address: str,
-        user_agent: str,
-        expires_in_minutes: int = 60,
-        refresh_token: str | None = None,
-    ) -> Session:
-        """Create a new session."""
-        expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
-
-        return cls(
-            user_id=user_id,
-            token=token,
-            refresh_token=refresh_token,
-            ip_address=ip_address,
-            user_agent=user_agent,
-            expires_at=expires_at,
-        )
-
-    def is_expired(self) -> bool:
-        """Check if session is expired."""
-        current_time = datetime.now(UTC)
-
-        # Handle timezone-naive datetime by assuming UTC
-        if self.expires_at.tzinfo is None:
-            expires_at_utc = self.expires_at.replace(tzinfo=UTC)
-        else:
-            expires_at_utc = self.expires_at
-
-        return current_time > expires_at_utc
-
-    def is_active(self) -> bool:
-        """Check if session is active."""
-        return self.status == "active" and not self.is_expired()
+        self.expires_at = datetime.now(UTC) + timedelta(minutes=minutes)
+        self.last_accessed = datetime.now(UTC)
 
     def revoke(self) -> None:
         """Revoke the session."""
-        self.status = "revoked"
-
-    def refresh(self, new_token: str, expires_in_minutes: int = 60) -> None:
-        """Refresh the session with new token."""
-        self.token = new_token
-        self.expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
-        self.last_activity_at = datetime.now(UTC)
-
-    def update_activity(self) -> None:
-        """Update last activity timestamp."""
-        self.last_activity_at = datetime.now(UTC)
+        self.status = SessionStatus.REVOKED
 
 
-class Permission(DomainEntity):
-    """Permission entity representing system permissions."""
+class Permission(BaseModel):
+    """Permission entity."""
 
-    id: UUID = Field(default_factory=uuid4, description="Permission unique identifier")
+    id: str = Field(..., description="Permission identifier")
     name: str = Field(..., description="Permission name")
-    description: str = Field("", description="Permission description")
+    description: str = Field(..., description="Permission description")
     resource: str = Field(..., description="Resource this permission applies to")
-    action: str = Field(..., description="Action this permission allows")
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC),
-        description="Creation timestamp",
+    action: str = Field(..., description="Action allowed by this permission")
+
+
+class Role(BaseModel):
+    """Role entity with permissions."""
+
+    id: str = Field(..., description="Role identifier")
+    name: str = Field(..., description="Role name")
+    description: str = Field(..., description="Role description")
+    permissions: list[Permission] = Field(
+        default_factory=list, description="Role permissions"
     )
+    is_system_role: bool = Field(
+        default=False, description="Whether this is a system role"
+    )
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
-    @property
-    def full_name(self) -> str:
-        """Get full permission name."""
-        return f"{self.resource}:{self.action}"
-
-
-# Domain Events
-
-
-class UserCreatedEvent(DomainEvent):
-    """Event raised when a user is created."""
-
-    user_id: UUID = Field(..., description="Created user ID")
-    username: str = Field(..., description="Username")
-    email: str = Field(..., description="Email address")
+    def has_permission(self, resource: str, action: str) -> bool:
+        """Check if role has specific permission."""
+        return any(
+            p.resource == resource and p.action == action for p in self.permissions
+        )
 
 
-class UserEmailVerifiedEvent(DomainEvent):
-    """Event raised when user email is verified."""
+class LoginAttempt(BaseModel):
+    """Login attempt tracking."""
 
-    user_id: UUID = Field(..., description="User ID")
-    email: str = Field(..., description="Verified email")
-    verified_at: datetime = Field(..., description="Verification timestamp")
-
-
-class UserLoggedInEvent(DomainEvent):
-    """Event raised when user logs in."""
-
-    user_id: UUID = Field(..., description="User ID")
-    session_id: UUID = Field(..., description="Session ID")
-    ip_address: str = Field(..., description="Login IP address")
-    user_agent: str = Field(..., description="User agent")
-    login_at: datetime = Field(..., description="Login timestamp")
+    id: str = Field(..., description="Attempt identifier")
+    username: str = Field(..., description="Username attempted")
+    ip_address: str = Field(..., description="Client IP address")
+    user_agent: str | None = Field(default=None, description="Client user agent")
+    success: bool = Field(..., description="Whether login was successful")
+    failure_reason: str | None = Field(default=None, description="Reason for failure")
+    attempted_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
-class UserLoggedOutEvent(DomainEvent):
-    """Event raised when user logs out."""
+class PasswordResetToken(BaseModel):
+    """Password reset token entity."""
 
-    user_id: UUID = Field(..., description="User ID")
-    session_id: UUID = Field(..., description="Session ID")
-    logout_at: datetime = Field(..., description="Logout timestamp")
+    id: str = Field(..., description="Token identifier")
+    user_id: str = Field(..., description="User ID")
+    token: str = Field(..., description="Reset token")
+    expires_at: datetime = Field(..., description="Token expiration")
+    used: bool = Field(default=False, description="Whether token has been used")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
+    def is_valid(self) -> bool:
+        """Check if token is valid."""
+        return not self.used and datetime.now(UTC) < self.expires_at
 
-class UserPasswordChangedEvent(DomainEvent):
-    """Event raised when user password is changed."""
-
-    user_id: UUID = Field(..., description="User ID")
-    changed_at: datetime = Field(..., description="Change timestamp")
-
-
-class UserAccountLockedEvent(DomainEvent):
-    """Event raised when user account is locked."""
-
-    user_id: UUID = Field(..., description="User ID")
-    locked_until: datetime = Field(..., description="Lock expiry timestamp")
-    reason: str = Field(..., description="Lock reason")
+    def use_token(self) -> None:
+        """Mark token as used."""
+        self.used = True
 
 
-class SessionRevokedEvent(DomainEvent):
-    """Event raised when session is revoked."""
+class EmailVerificationToken(BaseModel):
+    """Email verification token entity."""
 
-    session_id: UUID = Field(..., description="Session ID")
-    user_id: UUID = Field(..., description="User ID")
-    revoked_at: datetime = Field(..., description="Revocation timestamp")
-    reason: str = Field(default="manual_revocation", description="Revocation reason")
+    id: str = Field(..., description="Token identifier")
+    user_id: str = Field(..., description="User ID")
+    token: str = Field(..., description="Verification token")
+    expires_at: datetime = Field(..., description="Token expiration")
+    used: bool = Field(default=False, description="Whether token has been used")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+    def is_valid(self) -> bool:
+        """Check if token is valid."""
+        return not self.used and datetime.now(UTC) < self.expires_at
+
+    def use_token(self) -> None:
+        """Mark token as used."""
+        self.used = True

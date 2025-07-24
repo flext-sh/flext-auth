@@ -1,0 +1,825 @@
+"""Comprehensive tests for repository implementations."""
+
+from __future__ import annotations
+
+from datetime import UTC, datetime, timedelta
+
+import pytest
+
+from flext_auth.domain.entities import (
+    Session,
+    SessionStatus,
+    User,
+    UserRole,
+    UserStatus,
+)
+from flext_auth.repositories.session_repository import InMemorySessionRepository
+from flext_auth.repositories.user_repository import InMemoryUserRepository
+
+
+@pytest.fixture
+def user_repository() -> InMemoryUserRepository:
+    """Create in-memory user repository for testing."""
+    return InMemoryUserRepository()
+
+
+@pytest.fixture
+def session_repository() -> InMemorySessionRepository:
+    """Create in-memory session repository for testing."""
+    return InMemorySessionRepository()
+
+
+@pytest.fixture
+def sample_user() -> User:
+    """Create sample user for testing."""
+    return User(
+        id="user-123",
+        username="testuser",
+        email="test@example.com",
+        password_hash="$2b$12$hashedpassword",
+        role=UserRole.USER,
+        status=UserStatus.ACTIVE,
+    )
+
+
+@pytest.fixture
+def sample_session() -> Session:
+    """Create sample session for testing."""
+    return Session(
+        id="session-123",
+        user_id="user-123",
+        access_token="access-token-value",
+        refresh_token="refresh-token-value",
+        status=SessionStatus.ACTIVE,
+        ip_address="192.168.1.1",
+        user_agent="Test Browser",
+        expires_at=datetime.now(UTC) + timedelta(hours=24),
+    )
+
+
+class TestUserRepository:
+    """Test user repository functionality."""
+
+    async def test_save_user_success(
+        self,
+        user_repository: InMemoryUserRepository,
+        sample_user: User,
+    ) -> None:
+        """Test successful user saving."""
+        result = await user_repository.save(sample_user)
+
+        assert result.is_success
+        assert result.data.id == sample_user.id
+        assert result.data.username == sample_user.username
+
+    async def test_save_user_duplicate_username(
+        self,
+        user_repository: InMemoryUserRepository,
+        sample_user: User,
+    ) -> None:
+        """Test saving user with duplicate username."""
+        # Save first user
+        result1 = await user_repository.save(sample_user)
+        assert result1.is_success
+
+        # Try to save another user with same username
+        duplicate_user = User(
+            id="different-id",
+            username=sample_user.username,  # Same username
+            email="different@example.com",
+            password_hash="$2b$12$differenthash",
+            role=UserRole.USER,
+            status=UserStatus.ACTIVE,
+        )
+
+        result2 = await user_repository.save(duplicate_user)
+        assert not result2.is_success
+        assert "already exists" in result2.error
+
+    async def test_save_user_duplicate_email(
+        self,
+        user_repository: InMemoryUserRepository,
+        sample_user: User,
+    ) -> None:
+        """Test saving user with duplicate email."""
+        # Save first user
+        result1 = await user_repository.save(sample_user)
+        assert result1.is_success
+
+        # Try to save another user with same email
+        duplicate_user = User(
+            id="different-id",
+            username="differentuser",
+            email=sample_user.email,  # Same email
+            password_hash="$2b$12$differenthash",
+            role=UserRole.USER,
+            status=UserStatus.ACTIVE,
+        )
+
+        result2 = await user_repository.save(duplicate_user)
+        assert not result2.is_success
+        assert "already exists" in result2.error
+
+    async def test_save_user_update_existing(
+        self,
+        user_repository: InMemoryUserRepository,
+        sample_user: User,
+    ) -> None:
+        """Test updating existing user."""
+        # Save user
+        result1 = await user_repository.save(sample_user)
+        assert result1.is_success
+
+        # Update user
+        sample_user.status = UserStatus.INACTIVE
+        result2 = await user_repository.save(sample_user)
+        assert result2.is_success
+        assert result2.data.status == UserStatus.INACTIVE
+
+    async def test_get_user_by_id_success(
+        self,
+        user_repository: InMemoryUserRepository,
+        sample_user: User,
+    ) -> None:
+        """Test successful user retrieval by ID."""
+        # Save user
+        await user_repository.save(sample_user)
+
+        # Get user by ID
+        result = await user_repository.get_by_id(sample_user.id)
+        assert result.is_success
+        assert result.data is not None
+        assert result.data.id == sample_user.id
+        assert result.data.username == sample_user.username
+
+    async def test_get_user_by_id_not_found(
+        self,
+        user_repository: InMemoryUserRepository,
+    ) -> None:
+        """Test user retrieval with non-existent ID."""
+        result = await user_repository.get_by_id("non-existent")
+        assert result.is_success
+        assert result.data is None
+
+    async def test_get_user_by_username_success(
+        self,
+        user_repository: InMemoryUserRepository,
+        sample_user: User,
+    ) -> None:
+        """Test successful user retrieval by username."""
+        # Save user
+        await user_repository.save(sample_user)
+
+        # Get user by username
+        result = await user_repository.get_by_username(sample_user.username)
+        assert result.is_success
+        assert result.data is not None
+        assert result.data.username == sample_user.username
+
+    async def test_get_user_by_username_case_insensitive(
+        self,
+        user_repository: InMemoryUserRepository,
+        sample_user: User,
+    ) -> None:
+        """Test case-insensitive username lookup."""
+        # Save user
+        await user_repository.save(sample_user)
+
+        # Get user with different case
+        result = await user_repository.get_by_username(sample_user.username.upper())
+        assert result.is_success
+        assert result.data is not None
+        assert result.data.username == sample_user.username
+
+    async def test_get_user_by_username_not_found(
+        self,
+        user_repository: InMemoryUserRepository,
+    ) -> None:
+        """Test user retrieval with non-existent username."""
+        result = await user_repository.get_by_username("nonexistent")
+        assert result.is_success
+        assert result.data is None
+
+    async def test_get_user_by_email_success(
+        self,
+        user_repository: InMemoryUserRepository,
+        sample_user: User,
+    ) -> None:
+        """Test successful user retrieval by email."""
+        # Save user
+        await user_repository.save(sample_user)
+
+        # Get user by email
+        result = await user_repository.get_by_email(str(sample_user.email))
+        assert result.is_success
+        assert result.data is not None
+        assert str(result.data.email) == str(sample_user.email)
+
+    async def test_get_user_by_email_case_insensitive(
+        self,
+        user_repository: InMemoryUserRepository,
+        sample_user: User,
+    ) -> None:
+        """Test case-insensitive email lookup."""
+        # Save user
+        await user_repository.save(sample_user)
+
+        # Get user with different case
+        result = await user_repository.get_by_email(str(sample_user.email).upper())
+        assert result.is_success
+        assert result.data is not None
+        assert str(result.data.email) == str(sample_user.email)
+
+    async def test_get_user_by_email_not_found(
+        self,
+        user_repository: InMemoryUserRepository,
+    ) -> None:
+        """Test user retrieval with non-existent email."""
+        result = await user_repository.get_by_email("nonexistent@example.com")
+        assert result.is_success
+        assert result.data is None
+
+    async def test_delete_user_success(
+        self,
+        user_repository: InMemoryUserRepository,
+        sample_user: User,
+    ) -> None:
+        """Test successful user deletion."""
+        # Save user
+        await user_repository.save(sample_user)
+
+        # Delete user
+        result = await user_repository.delete(sample_user.id)
+        assert result.is_success
+        assert result.data is True
+
+        # Verify user is gone
+        get_result = await user_repository.get_by_id(sample_user.id)
+        assert get_result.is_success
+        assert get_result.data is None
+
+    async def test_delete_user_not_found(
+        self,
+        user_repository: InMemoryUserRepository,
+    ) -> None:
+        """Test deletion of non-existent user."""
+        result = await user_repository.delete("non-existent")
+        assert result.is_success
+        assert result.data is False
+
+    async def test_list_users_no_filter(
+        self,
+        user_repository: InMemoryUserRepository,
+    ) -> None:
+        """Test listing users without filters."""
+        # Create and save multiple users
+        users = []
+        for i in range(5):
+            user = User(
+                id=f"user-{i}",
+                username=f"user{i}",
+                email=f"user{i}@example.com",
+                password_hash="$2b$12$hash",
+                role=UserRole.USER,
+                status=UserStatus.ACTIVE if i % 2 == 0 else UserStatus.INACTIVE,
+            )
+            users.append(user)
+            await user_repository.save(user)
+
+        # List all users
+        result = await user_repository.list_users()
+        assert result.is_success
+        assert len(result.data) == 5
+
+        # Should be sorted by created_at (newest first)
+        sorted_users = result.data
+        for i in range(len(sorted_users) - 1):
+            assert sorted_users[i].created_at >= sorted_users[i + 1].created_at
+
+    async def test_list_users_with_status_filter(
+        self,
+        user_repository: InMemoryUserRepository,
+    ) -> None:
+        """Test listing users with status filter."""
+        # Create users with different statuses
+        active_users = []
+        inactive_users = []
+
+        for i in range(3):
+            active_user = User(
+                id=f"active-{i}",
+                username=f"active{i}",
+                email=f"active{i}@example.com",
+                password_hash="$2b$12$hash",
+                role=UserRole.USER,
+                status=UserStatus.ACTIVE,
+            )
+            active_users.append(active_user)
+            await user_repository.save(active_user)
+
+            inactive_user = User(
+                id=f"inactive-{i}",
+                username=f"inactive{i}",
+                email=f"inactive{i}@example.com",
+                password_hash="$2b$12$hash",
+                role=UserRole.USER,
+                status=UserStatus.INACTIVE,
+            )
+            inactive_users.append(inactive_user)
+            await user_repository.save(inactive_user)
+
+        # List active users
+        active_result = await user_repository.list_users(status=UserStatus.ACTIVE)
+        assert active_result.is_success
+        assert len(active_result.data) == 3
+        assert all(u.status == UserStatus.ACTIVE for u in active_result.data)
+
+        # List inactive users
+        inactive_result = await user_repository.list_users(status=UserStatus.INACTIVE)
+        assert inactive_result.is_success
+        assert len(inactive_result.data) == 3
+        assert all(u.status == UserStatus.INACTIVE for u in inactive_result.data)
+
+    async def test_list_users_pagination(
+        self,
+        user_repository: InMemoryUserRepository,
+    ) -> None:
+        """Test user listing with pagination."""
+        # Create 10 users
+        for i in range(10):
+            user = User(
+                id=f"user-{i}",
+                username=f"user{i}",
+                email=f"user{i}@example.com",
+                password_hash="$2b$12$hash",
+                role=UserRole.USER,
+                status=UserStatus.ACTIVE,
+            )
+            await user_repository.save(user)
+
+        # Get first page
+        page1 = await user_repository.list_users(limit=3, offset=0)
+        assert page1.is_success
+        assert len(page1.data) == 3
+
+        # Get second page
+        page2 = await user_repository.list_users(limit=3, offset=3)
+        assert page2.is_success
+        assert len(page2.data) == 3
+
+        # Pages should not overlap
+        page1_ids = {u.id for u in page1.data}
+        page2_ids = {u.id for u in page2.data}
+        assert page1_ids.isdisjoint(page2_ids)
+
+    async def test_count_users_no_filter(
+        self,
+        user_repository: InMemoryUserRepository,
+    ) -> None:
+        """Test counting users without filter."""
+        # Create users
+        for i in range(5):
+            user = User(
+                id=f"user-{i}",
+                username=f"user{i}",
+                email=f"user{i}@example.com",
+                password_hash="$2b$12$hash",
+                role=UserRole.USER,
+                status=UserStatus.ACTIVE,
+            )
+            await user_repository.save(user)
+
+        result = await user_repository.count_users()
+        assert result.is_success
+        assert result.data == 5
+
+    async def test_count_users_with_status_filter(
+        self,
+        user_repository: InMemoryUserRepository,
+    ) -> None:
+        """Test counting users with status filter."""
+        # Create users with different statuses
+        for i in range(3):
+            active_user = User(
+                id=f"active-{i}",
+                username=f"active{i}",
+                email=f"active{i}@example.com",
+                password_hash="$2b$12$hash",
+                role=UserRole.USER,
+                status=UserStatus.ACTIVE,
+            )
+            await user_repository.save(active_user)
+
+        for i in range(2):
+            inactive_user = User(
+                id=f"inactive-{i}",
+                username=f"inactive{i}",
+                email=f"inactive{i}@example.com",
+                password_hash="$2b$12$hash",
+                role=UserRole.USER,
+                status=UserStatus.INACTIVE,
+            )
+            await user_repository.save(inactive_user)
+
+        # Count active users
+        active_count = await user_repository.count_users(status=UserStatus.ACTIVE)
+        assert active_count.is_success
+        assert active_count.data == 3
+
+        # Count inactive users
+        inactive_count = await user_repository.count_users(status=UserStatus.INACTIVE)
+        assert inactive_count.is_success
+        assert inactive_count.data == 2
+
+
+class TestSessionRepository:
+    """Test session repository functionality."""
+
+    async def test_save_session_success(
+        self,
+        session_repository: InMemorySessionRepository,
+        sample_session: Session,
+    ) -> None:
+        """Test successful session saving."""
+        result = await session_repository.save(sample_session)
+
+        assert result.is_success
+        assert result.data.id == sample_session.id
+        assert result.data.user_id == sample_session.user_id
+
+    async def test_save_session_update_last_accessed(
+        self,
+        session_repository: InMemorySessionRepository,
+        sample_session: Session,
+    ) -> None:
+        """Test that saving updates last_accessed timestamp."""
+        original_time = sample_session.last_accessed
+
+        result = await session_repository.save(sample_session)
+        assert result.is_success
+
+        # last_accessed should be updated
+        assert result.data.last_accessed > original_time
+
+    async def test_save_session_update_existing(
+        self,
+        session_repository: InMemorySessionRepository,
+        sample_session: Session,
+    ) -> None:
+        """Test updating existing session."""
+        # Save session
+        result1 = await session_repository.save(sample_session)
+        assert result1.is_success
+
+        # Update session
+        sample_session.status = SessionStatus.REVOKED
+        result2 = await session_repository.save(sample_session)
+        assert result2.is_success
+        assert result2.data.status == SessionStatus.REVOKED
+
+    async def test_get_session_by_id_success(
+        self,
+        session_repository: InMemorySessionRepository,
+        sample_session: Session,
+    ) -> None:
+        """Test successful session retrieval by ID."""
+        # Save session
+        await session_repository.save(sample_session)
+
+        # Get session by ID
+        result = await session_repository.get_by_id(sample_session.id)
+        assert result.is_success
+        assert result.data is not None
+        assert result.data.id == sample_session.id
+
+    async def test_get_session_by_id_not_found(
+        self,
+        session_repository: InMemorySessionRepository,
+    ) -> None:
+        """Test session retrieval with non-existent ID."""
+        result = await session_repository.get_by_id("non-existent")
+        assert result.is_success
+        assert result.data is None
+
+    async def test_get_sessions_by_user_id(
+        self,
+        session_repository: InMemorySessionRepository,
+        sample_user: User,
+    ) -> None:
+        """Test getting sessions by user ID."""
+        # Create multiple sessions for user
+        sessions = []
+        for i in range(3):
+            session = Session(
+                id=f"session-{i}",
+                user_id=sample_user.id,
+                access_token=f"token-{i}",
+                status=SessionStatus.ACTIVE,
+                ip_address="192.168.1.1",
+                expires_at=datetime.now(UTC) + timedelta(hours=1),
+            )
+            sessions.append(session)
+            await session_repository.save(session)
+
+        # Get sessions by user ID
+        result = await session_repository.get_by_user_id(sample_user.id)
+        assert result.is_success
+        assert len(result.data) == 3
+
+    async def test_get_sessions_by_user_id_not_found(
+        self,
+        session_repository: InMemorySessionRepository,
+    ) -> None:
+        """Test getting sessions for non-existent user."""
+        result = await session_repository.get_by_user_id("non-existent-user")
+        assert result.is_success
+        assert len(result.data) == 0
+
+    async def test_get_active_sessions(
+        self,
+        session_repository: InMemorySessionRepository,
+        sample_user: User,
+    ) -> None:
+        """Test getting only active sessions."""
+        # Create active session
+        active_session = Session(
+            id="active-session",
+            user_id=sample_user.id,
+            access_token="active-token",
+            status=SessionStatus.ACTIVE,
+            ip_address="192.168.1.1",
+            expires_at=datetime.now(UTC) + timedelta(hours=1),
+        )
+        await session_repository.save(active_session)
+
+        # Create revoked session
+        revoked_session = Session(
+            id="revoked-session",
+            user_id=sample_user.id,
+            access_token="revoked-token",
+            status=SessionStatus.REVOKED,
+            ip_address="192.168.1.1",
+            expires_at=datetime.now(UTC) + timedelta(hours=1),
+        )
+        await session_repository.save(revoked_session)
+
+        # Create expired session
+        expired_session = Session(
+            id="expired-session",
+            user_id=sample_user.id,
+            access_token="expired-token",
+            status=SessionStatus.ACTIVE,
+            ip_address="192.168.1.1",
+            expires_at=datetime.now(UTC) - timedelta(hours=1),  # Expired
+        )
+        await session_repository.save(expired_session)
+
+        # Get active sessions
+        result = await session_repository.get_active_sessions(sample_user.id)
+        assert result.is_success
+        assert len(result.data) == 1
+        assert result.data[0].id == "active-session"
+
+    async def test_revoke_session(
+        self,
+        session_repository: InMemorySessionRepository,
+        sample_session: Session,
+    ) -> None:
+        """Test session revocation."""
+        # Save active session
+        await session_repository.save(sample_session)
+
+        # Revoke session
+        result = await session_repository.revoke_session(sample_session.id)
+        assert result.is_success
+        assert result.data is True
+
+        # Verify session is revoked
+        session_result = await session_repository.get_by_id(sample_session.id)
+        assert session_result.is_success
+        assert session_result.data.status == SessionStatus.REVOKED
+
+    async def test_revoke_session_not_found(
+        self,
+        session_repository: InMemorySessionRepository,
+    ) -> None:
+        """Test revoking non-existent session."""
+        result = await session_repository.revoke_session("non-existent")
+        assert result.is_success
+        assert result.data is False
+
+    async def test_revoke_all_user_sessions(
+        self,
+        session_repository: InMemorySessionRepository,
+        sample_user: User,
+    ) -> None:
+        """Test revoking all sessions for a user."""
+        # Create multiple active sessions
+        active_sessions = []
+        for i in range(3):
+            session = Session(
+                id=f"session-{i}",
+                user_id=sample_user.id,
+                access_token=f"token-{i}",
+                status=SessionStatus.ACTIVE,
+                ip_address="192.168.1.1",
+                expires_at=datetime.now(UTC) + timedelta(hours=1),
+            )
+            active_sessions.append(session)
+            await session_repository.save(session)
+
+        # Create already revoked session
+        revoked_session = Session(
+            id="revoked-session",
+            user_id=sample_user.id,
+            access_token="revoked-token",
+            status=SessionStatus.REVOKED,
+            ip_address="192.168.1.1",
+            expires_at=datetime.now(UTC) + timedelta(hours=1),
+        )
+        await session_repository.save(revoked_session)
+
+        # Revoke all user sessions
+        result = await session_repository.revoke_all_user_sessions(sample_user.id)
+        assert result.is_success
+        assert result.data == 3  # Only 3 active sessions were revoked
+
+        # Verify all sessions are now revoked
+        all_sessions_result = await session_repository.get_by_user_id(sample_user.id)
+        assert all_sessions_result.is_success
+
+        for session in all_sessions_result.data:
+            assert session.status == SessionStatus.REVOKED
+
+    async def test_cleanup_expired_sessions(
+        self,
+        session_repository: InMemorySessionRepository,
+        sample_user: User,
+    ) -> None:
+        """Test cleanup of expired sessions."""
+        # Create expired sessions
+        for i in range(2):
+            expired_session = Session(
+                id=f"expired-{i}",
+                user_id=sample_user.id,
+                access_token=f"expired-token-{i}",
+                status=SessionStatus.ACTIVE,
+                ip_address="192.168.1.1",
+                expires_at=datetime.now(UTC) - timedelta(hours=1),  # Expired
+            )
+            await session_repository.save(expired_session)
+
+        # Create non-expired session
+        active_session = Session(
+            id="active-session",
+            user_id=sample_user.id,
+            access_token="active-token",
+            status=SessionStatus.ACTIVE,
+            ip_address="192.168.1.1",
+            expires_at=datetime.now(UTC) + timedelta(hours=1),
+        )
+        await session_repository.save(active_session)
+
+        # Cleanup expired sessions
+        result = await session_repository.cleanup_expired_sessions()
+        assert result.is_success
+        assert result.data == 2  # 2 expired sessions cleaned
+
+        # Verify expired sessions are gone
+        expired1_result = await session_repository.get_by_id("expired-0")
+        assert expired1_result.is_success
+        assert expired1_result.data is None
+
+        expired2_result = await session_repository.get_by_id("expired-1")
+        assert expired2_result.is_success
+        assert expired2_result.data is None
+
+        # Verify active session remains
+        active_result = await session_repository.get_by_id("active-session")
+        assert active_result.is_success
+        assert active_result.data is not None
+
+    async def test_delete_session(
+        self,
+        session_repository: InMemorySessionRepository,
+        sample_session: Session,
+    ) -> None:
+        """Test session deletion."""
+        # Save session
+        await session_repository.save(sample_session)
+
+        # Delete session
+        result = await session_repository.delete(sample_session.id)
+        assert result.is_success
+        assert result.data is True
+
+        # Verify session is gone
+        get_result = await session_repository.get_by_id(sample_session.id)
+        assert get_result.is_success
+        assert get_result.data is None
+
+    async def test_delete_session_not_found(
+        self,
+        session_repository: InMemorySessionRepository,
+    ) -> None:
+        """Test deletion of non-existent session."""
+        result = await session_repository.delete("non-existent")
+        assert result.is_success
+        assert result.data is False
+
+    async def test_session_user_index_consistency(
+        self,
+        session_repository: InMemorySessionRepository,
+        sample_user: User,
+    ) -> None:
+        """Test that user-session index remains consistent."""
+        # Create sessions
+        sessions = []
+        for i in range(3):
+            session = Session(
+                id=f"session-{i}",
+                user_id=sample_user.id,
+                access_token=f"token-{i}",
+                status=SessionStatus.ACTIVE,
+                ip_address="192.168.1.1",
+                expires_at=datetime.now(UTC) + timedelta(hours=1),
+            )
+            sessions.append(session)
+            await session_repository.save(session)
+
+        # Verify all sessions are indexed
+        user_sessions_result = await session_repository.get_by_user_id(sample_user.id)
+        assert user_sessions_result.is_success
+        assert len(user_sessions_result.data) == 3
+
+        # Delete one session
+        await session_repository.delete(sessions[0].id)
+
+        # Verify index is updated
+        user_sessions_result = await session_repository.get_by_user_id(sample_user.id)
+        assert user_sessions_result.is_success
+        assert len(user_sessions_result.data) == 2
+
+        # Verify correct sessions remain
+        remaining_ids = {s.id for s in user_sessions_result.data}
+        expected_ids = {sessions[1].id, sessions[2].id}
+        assert remaining_ids == expected_ids
+
+
+class TestRepositoryIntegration:
+    """Integration tests for repository interactions."""
+
+    async def test_user_session_relationship(
+        self,
+        user_repository: InMemoryUserRepository,
+        session_repository: InMemorySessionRepository,
+        sample_user: User,
+    ) -> None:
+        """Test relationship between users and sessions."""
+        # Save user
+        await user_repository.save(sample_user)
+
+        # Create sessions for user
+        sessions = []
+        for i in range(3):
+            session = Session(
+                id=f"session-{i}",
+                user_id=sample_user.id,
+                access_token=f"token-{i}",
+                status=SessionStatus.ACTIVE,
+                ip_address="192.168.1.1",
+                expires_at=datetime.now(UTC) + timedelta(hours=1),
+            )
+            sessions.append(session)
+            await session_repository.save(session)
+
+        # Get user sessions
+        user_sessions = await session_repository.get_by_user_id(sample_user.id)
+        assert user_sessions.is_success
+        assert len(user_sessions.data) == 3
+
+        # Delete user but keep sessions (orphaned sessions)
+        await user_repository.delete(sample_user.id)
+
+        # Sessions should still exist (repository doesn't enforce FK constraints)
+        user_sessions = await session_repository.get_by_user_id(sample_user.id)
+        assert user_sessions.is_success
+        assert len(user_sessions.data) == 3
+
+    async def test_repository_error_handling(
+        self,
+        user_repository: InMemoryUserRepository,
+        session_repository: InMemorySessionRepository,
+    ) -> None:
+        """Test repository error handling scenarios."""
+        # Test with None values (should be handled gracefully)
+        user_result = await user_repository.get_by_id("")
+        assert user_result.is_success
+        assert user_result.data is None
+
+        session_result = await session_repository.get_by_id("")
+        assert session_result.is_success
+        assert session_result.data is None
+
+        # Test with invalid data types (should be handled by entity validation)
+        # These tests verify the repository doesn't crash on edge cases

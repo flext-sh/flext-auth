@@ -1,225 +1,199 @@
-"""FastAPI application for FLEXT Auth.
-
-Using clean architecture with dependency injection.
-"""
+"""FastAPI application factory for flext-auth."""
 
 from __future__ import annotations
 
-import logging
+import os
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Annotated, Any
+from typing import TYPE_CHECKING
 
-from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from flext_core.domain.shared_types import ServiceResult
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.responses import JSONResponse
 
-from flext_auth.api.dependencies import get_auth_service
-from flext_auth.api.models import (
-    AuthenticateRequest,
-    AuthenticateResponse,
-    ChangePasswordRequest,
-    CreateUserRequest,
-    UserResponse,
-    ensure_api_models_rebuilt,
+from flext_auth.api.dependencies import configure_dependencies
+from flext_auth.api.middleware import SecurityHeadersMiddleware
+from flext_auth.api.models import ErrorResponse, ValidationErrorResponse
+from flext_auth.api.routes import router
+from flext_auth.repositories.session_repository import (
+    InMemorySessionRepository,
+    PostgreSQLSessionRepository,
+    SessionRepository,
 )
-from flext_auth.application.command_auth_service import AuthService
-from flext_auth.domain.commands import (
-    AuthenticateUserCommand,
-    ChangePasswordCommand,
-    CreateUserCommand,
-    ValidateTokenCommand,
+from flext_auth.repositories.user_repository import (
+    InMemoryUserRepository,
+    PostgreSQLUserRepository,
+    UserRepository,
 )
-
-# Type alias for cleaner annotations
-AuthServiceType = AuthService
+from flext_auth.services.auth_service import AuthService
+from flext_auth.services.jwt_service import JWTService
+from flext_auth.services.password_service import PasswordService
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncIterator
-
-
-logger = logging.getLogger(__name__)
-
-# Ensure API models are properly rebuilt
-ensure_api_models_rebuilt()
-
-# Security
-security = HTTPBearer()
+    from collections.abc import AsyncGenerator, Callable
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """Manage application lifespan."""
-    logger.info("auth_api_starting")
-    yield
-    logger.info("auth_api_stopping")
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
+    """Application lifespan manager."""
+    # Startup
+    await startup_handler(app)
+
+    try:
+        yield
+    finally:
+        # Shutdown
+        await shutdown_handler(app)
 
 
-# Create app
-app = FastAPI(
-    title="FLEXT Auth API",
-    version="0.7.0",
-    description="Enterprise Authentication & Authorization Service",
-    lifespan=lifespan,
-)
+async def startup_handler(app: FastAPI) -> None:
+    """Handle application startup."""
+    # Initialize services based on configuration
+    db_url = os.getenv("DATABASE_URL")
+    jwt_secret = os.getenv("JWT_SECRET_KEY", "dev-secret-key-change-in-production")
 
+    # Create repositories
+    if db_url and db_url != "":
+        user_repo: UserRepository = PostgreSQLUserRepository(db_url)
+        session_repo: SessionRepository = PostgreSQLSessionRepository(db_url)
+    else:
+        user_repo = InMemoryUserRepository()
+        session_repo = InMemorySessionRepository()
 
-async def get_current_user(
-    credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
-) -> ServiceResult[dict[str, Any]]:
-    """Get current authenticated user from token."""
-    command = ValidateTokenCommand(
-        token=credentials.credentials,
-        token_type="access",
+    # Create services
+    password_service = PasswordService(rounds=12)
+    jwt_service = JWTService(
+        secret_key=jwt_secret,
+        access_token_expire_minutes=30,
+        refresh_token_expire_days=7,
     )
 
-    result = await auth_service.validate_token(command)
-    if result.is_failure or result.data is None:
-        raise HTTPException(status_code=401, detail=result.error or "Invalid token")
-
-    return ServiceResult.ok(result.data)
-
-
-@app.post("/auth/register")
-async def register(
-    request: CreateUserRequest,
-    auth_service: Annotated[AuthServiceType, Depends(get_auth_service)],
-) -> UserResponse:
-    """Register a new user.
-
-    Args:
-        request: User registration request.
-        auth_service: Authentication service dependency.
-
-    Returns:
-        UserResponse with created user details.
-
-    """
-    command = CreateUserCommand(
-        username=request.username,
-        email=request.email,
-        password=request.password,
-        roles=request.roles or [],
+    auth_service = AuthService(
+        user_repository=user_repo,
+        session_repository=session_repo,
+        password_service=password_service,
+        jwt_service=jwt_service,
+        max_failed_attempts=5,
+        lockout_duration_minutes=30,
+        session_expire_hours=24,
+        max_concurrent_sessions=5,
     )
 
-    result = await auth_service.create_user(command)
-    if result.is_failure or result.data is None:
-        raise HTTPException(
-            status_code=400,
-            detail=result.error or "Failed to create user",
-        )
+    # Configure dependencies
+    configure_dependencies(auth_service)
 
-    user = result.data
-    return UserResponse(
-        id=str(user.id),
-        username=user.username,
-        email=user.email,
-        is_active=user.is_active() if callable(user.is_active) else user.is_active,
-        created_at=user.created_at,
-    )
+    # Store services in app state for cleanup
+    app.state.auth_service = auth_service
+    app.state.user_repo = user_repo
+    app.state.session_repo = session_repo
 
 
-@app.post("/auth/login")
-async def login(
-    request: AuthenticateRequest,
-    req: Request,
-    auth_service: Annotated[AuthServiceType, Depends(get_auth_service)],
-) -> AuthenticateResponse:
-    """Authenticate user and return tokens.
+async def shutdown_handler(app: FastAPI) -> None:
+    """Handle application shutdown."""
+    # Close database connections if using PostgreSQL
+    if hasattr(app.state, "user_repo") and hasattr(app.state.user_repo, "close"):
+        await app.state.user_repo.close()
 
-    Args:
-        request: Authentication request with credentials.
-        req: FastAPI request object for client info.
-        auth_service: Authentication service dependency.
-
-    Returns:
-        AuthenticateResponse with access and refresh tokens.
-
-    Raises:
-        HTTPException: If authentication fails.
-
-    """
-    command = AuthenticateUserCommand(
-        username=request.username,
-        password=request.password,
-        ip_address=req.client.host if req.client else None,
-        user_agent=req.headers.get("user-agent"),
-    )
-
-    result = await auth_service.authenticate(command)
-    if result.is_failure or result.data is None:
-        raise HTTPException(
-            status_code=401,
-            detail=result.error or "Authentication failed",
-        )
-
-    return AuthenticateResponse(**result.data)
+    if hasattr(app.state, "session_repo") and hasattr(app.state.session_repo, "close"):
+        await app.state.session_repo.close()
 
 
-@app.post("/auth/change-password")
-async def change_password(
-    request: ChangePasswordRequest,
-    current_user: Annotated[dict[str, Any], Depends(get_current_user)],
-    auth_service: Annotated[AuthServiceType, Depends(get_auth_service)],
-) -> dict[str, str]:
-    """Change user password.
-
-    Args:
-        request: Password change request.
-        current_user: Current authenticated user.
-        auth_service: Authentication service dependency.
-
-    Returns:
-        Success message.
-
-    Raises:
-        HTTPException: If password change fails.
-
-    """
-    command = ChangePasswordCommand(
-        user_id=current_user["sub"],
-        current_password=request.current_password,
-        new_password=request.new_password,
-    )
-
-    result = await auth_service.change_password(command)
-    if result.is_failure:
-        raise HTTPException(status_code=400, detail=result.error)
-
-    return {"message": "Password changed successfully"}
-
-
-@app.get("/auth/me", response_model=dict)
-async def get_me(
-    current_user: Annotated[dict[str, Any], Depends(get_current_user)],
-) -> dict[str, Any]:
-    """Get current user info.
-
-    Args:
-        current_user: Current authenticated user.
-
-    Returns:
-        Current user information.
-
-    """
-    return {
-        "user_id": current_user["sub"],
-        "username": current_user["username"],
-        "token_type": current_user["token_type"],
-    }
-
-
-@app.get("/health")
-async def health() -> dict[str, str]:
-    """Health check endpoint.
-
-    Returns:
-        Health status information.
-
-    """
-    return {"status": "healthy", "service": "flext-api.auth.flext-auth"}
-
-
-def create_app() -> FastAPI:
+def create_app(
+    title: str = "FLEXT Authentication API",
+    description: str = "Production-ready authentication service",
+    version: str = "1.0.0",
+    debug: bool = False,
+) -> FastAPI:
     """Create and configure FastAPI application."""
+    # Create FastAPI app with lifespan
+    app = FastAPI(
+        title=title,
+        description=description,
+        version=version,
+        debug=debug,
+        lifespan=lifespan,
+        docs_url="/docs" if debug else None,
+        redoc_url="/redoc" if debug else None,
+    )
+
+    # Security middleware
+    security_middleware = SecurityHeadersMiddleware()
+
+    @app.middleware("http")
+    async def add_security_headers(
+        request: Request, call_next: Callable[[Request], JSONResponse]
+    ) -> JSONResponse:
+        """Add security headers to all responses."""
+        response = await call_next(request)
+        for header, value in security_middleware.security_headers.items():
+            response.headers[header] = value
+        return response
+
+    # CORS middleware
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_get_cors_origins(),
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE"],
+        allow_headers=["*"],
+    )
+
+    # Trusted host middleware
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=_get_allowed_hosts(),
+    )
+
+    # Include authentication routes
+    app.include_router(router)
+
+    # Global exception handlers
+    @app.exception_handler(422)
+    async def validation_exception_handler(
+        request: Request, exc: Exception
+    ) -> JSONResponse:
+        """Handle validation errors."""
+        return JSONResponse(
+            status_code=422,
+            content=ValidationErrorResponse(
+                details=exc.errors() if hasattr(exc, "errors") else [{"msg": str(exc)}]
+            ).model_dump(),
+        )
+
+    @app.exception_handler(Exception)
+    async def global_exception_handler(
+        request: Request, exc: Exception
+    ) -> JSONResponse:
+        """Handle unexpected errors."""
+        if debug:
+            import traceback
+
+            detail = traceback.format_exc()
+        else:
+            detail = "An unexpected error occurred"
+
+        return JSONResponse(
+            status_code=500,
+            content=ErrorResponse(
+                error="Internal Server Error",
+                detail=detail,
+            ).model_dump(),
+        )
+
     return app
+
+
+def _get_cors_origins() -> list[str]:
+    """Get CORS allowed origins from environment."""
+    origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:8080")
+    return [origin.strip() for origin in origins.split(",") if origin.strip()]
+
+
+def _get_allowed_hosts() -> list[str]:
+    """Get trusted hosts from environment."""
+    hosts = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
+    return [host.strip() for host in hosts.split(",") if host.strip()]
+
+
+# Create default app instance
+app = create_app(debug=os.getenv("DEBUG", "false").lower() == "true")

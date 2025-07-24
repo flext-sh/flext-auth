@@ -1,92 +1,113 @@
-"""API models for FLEXT Auth endpoints."""
+"""Pydantic models for API request/response validation."""
+
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, EmailStr, Field
 
-if TYPE_CHECKING:
-    from datetime import datetime
+
+class RegisterRequest(BaseModel):
+    """User registration request model."""
+
+    username: str = Field(..., min_length=3, max_length=50, description="Username")
+    email: EmailStr = Field(..., description="Email address")
+    password: str = Field(..., min_length=8, max_length=128, description="Password")
 
 
-class CreateUserRequest(BaseModel):
-    """Request model for user creation."""
+class LoginRequest(BaseModel):
+    """User login request model."""
 
-    username: str = Field(..., min_length=3, max_length=50)
-    email: EmailStr
-    password: str = Field(..., min_length=8)
-    roles: list[str] | None = None
-
-
-class AuthenticateRequest(BaseModel):
-    """Request model for user authentication."""
-
-    username: str = Field(..., min_length=1)
-    password: str = Field(..., min_length=1)
+    username: str = Field(..., description="Username")
+    password: str = Field(..., description="Password")
 
 
 class ChangePasswordRequest(BaseModel):
-    """Request model for password change."""
+    """Password change request model."""
 
-    current_password: str = Field(..., min_length=1)
-    new_password: str = Field(..., min_length=8)
+    current_password: str = Field(..., description="Current password")
+    new_password: str = Field(
+        ..., min_length=8, max_length=128, description="New password"
+    )
+
+
+class RefreshTokenRequest(BaseModel):
+    """Token refresh request model."""
+
+    refresh_token: str = Field(..., description="Refresh token")
 
 
 class UserResponse(BaseModel):
-    """Response model for user data."""
+    """User response model."""
 
-    id: str
-    username: str
-    email: str
-    is_active: bool
-    created_at: datetime
+    id: str = Field(..., description="User ID")
+    username: str = Field(..., description="Username")
+    email: str = Field(..., description="Email address")
+    role: str = Field(..., description="User role")
+    status: str = Field(..., description="Account status")
+    last_login: str | None = Field(None, description="Last login timestamp")
+    created_at: str = Field(..., description="Account creation timestamp")
 
 
-class AuthenticateResponse(BaseModel):
-    """Response model for authentication."""
+class SessionResponse(BaseModel):
+    """Session response model."""
 
-    access_token: str
-    refresh_token: str
-    token_type: str = "bearer"
-    expires_in: int
+    id: str = Field(..., description="Session ID")
+    status: str = Field(..., description="Session status")
+    ip_address: str | None = Field(None, description="IP address")
+    user_agent: str | None = Field(None, description="User agent")
+    created_at: str = Field(..., description="Session creation timestamp")
+    last_accessed: str = Field(..., description="Last access timestamp")
+    expires_at: str = Field(..., description="Session expiry timestamp")
+    is_valid: bool = Field(..., description="Whether session is valid")
+
+
+class TokenResponse(BaseModel):
+    """Token response model."""
+
+    access_token: str = Field(..., description="Access token")
+    refresh_token: str = Field(..., description="Refresh token")
+    token_type: str = Field(default="Bearer", description="Token type")
+    expires_in: int = Field(..., description="Token expiry in seconds")
+
+
+class AuthResponse(BaseModel):
+    """Complete authentication response model."""
+
+    user: UserResponse = Field(..., description="User information")
+    session: dict[str, Any] = Field(..., description="Session information")
+    tokens: TokenResponse = Field(..., description="Authentication tokens")
 
 
 class ErrorResponse(BaseModel):
-    """Response model for errors."""
+    """Error response model."""
 
-    message: str
-    error_type: str | None = None
-    details: dict[str, Any] | None = None
-
-
-# Rebuild models to resolve forward references
-def rebuild_api_models() -> None:
-    """Rebuild all API models with proper type resolution."""
-    import sys
-    from datetime import datetime
-    current_module = sys.modules[__name__]
-    # Add types to module globals for Pydantic model resolution
-    # Use setattr to properly expose types for Pydantic model resolution
-    current_module.datetime = datetime
-    # Rebuild models that use forward references
-    UserResponse.model_rebuild()
+    error: str = Field(..., description="Error message")
+    detail: str | None = Field(None, description="Error details")
+    timestamp: str = Field(
+        default_factory=lambda: datetime.now().isoformat(),
+        description="Error timestamp",
+    )
 
 
-# Only rebuild if not in TYPE_CHECKING
-_models_rebuilt = False
+class HealthResponse(BaseModel):
+    """Health check response model."""
+
+    status: str = Field(default="healthy", description="Service status")
+    timestamp: str = Field(
+        default_factory=lambda: datetime.now().isoformat(),
+        description="Check timestamp",
+    )
+    version: str = Field(default="1.0.0", description="API version")
 
 
-def ensure_api_models_rebuilt() -> None:
-    """Ensure API models are rebuilt with proper type resolution."""
-    import typing
-    global _models_rebuilt
-    if _models_rebuilt:
-        return
-    # Only rebuild in runtime, not during static analysis
-    if not typing.TYPE_CHECKING:
-        try:
-            rebuild_api_models()
-            _models_rebuilt = True
-        except ImportError:
-            # If there are still import issues, models will work with limited type safety
-            pass
+class ValidationErrorResponse(BaseModel):
+    """Validation error response model."""
+
+    error: str = Field(default="validation_error", description="Error type")
+    details: list[dict[str, Any]] = Field(..., description="Validation error details")
+    timestamp: str = Field(
+        default_factory=lambda: datetime.now().isoformat(),
+        description="Error timestamp",
+    )

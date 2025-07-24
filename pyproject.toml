@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.13,<3.14"
 keywords = [ "flext", "enterprise", "async", "typed", "authentication", "authorization", "security", "jwt",]
 classifiers = [ "Development Status :: 5 - Production/Stable", "Intended Audience :: Developers", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent", "Programming Language :: Python :: 3.13", "Programming Language :: Python :: 3 :: Only", "Topic :: Software Development :: Libraries :: Python Modules", "Typing :: Typed", "Topic :: System :: Systems Administration :: Authentication/Directory",]
-dependencies = [ "argon2-cffi (>=25.1.0)", "bcrypt (>=4.3.0)", "click (>=8.2.1)", "cryptography (>=45.0.5)", "fastapi (>=0.116.1)", "passlib (>=1.7.4)", "pydantic (>=2.11.7)", "pydantic-settings (>=2.10.1)", "pyjwt (>=2.10.1)", "redis (>=6.2.0)", "sqlalchemy (>=2.0.41)", "structlog (>=25.4.0)", "flext-core @ file:///home/marlonsc/flext/flext-core", "flext-observability @ file:///home/marlonsc/flext/flext-observability", "email-validator (>=2.2.0,<3.0.0)"]
+dependencies = [ "argon2-cffi (>=25.1.0)", "bcrypt (>=4.3.0)", "click (>=8.2.1)", "cryptography (>=45.0.5)", "fastapi (>=0.116.1)", "passlib (>=1.7.4)", "pydantic (>=2.11.7)", "pydantic-settings (>=2.10.1)", "pyjwt (>=2.9.0)", "redis (>5.3.0)", "sqlalchemy (>=2.0.41)", "structlog (>=25.4.0)", "flext-core @ file:///home/marlonsc/flext/flext-core", "flext-observability @ file:///home/marlonsc/flext/flext-observability", "email-validator (>=2.2.0,<3.0.0)"]
 [[project.authors]]
 name = "FLEXT Team"
 email = "team@flext.sh"
@@ -165,6 +165,8 @@ types-setuptools = "^80.9.0"
 types-toml = "^0.10.8.20240310"
 types-pyjwt = "^1.7.1"
 types-passlib = "^1.7.7"
+detect-secrets = "^1.5.0"
+commitizen = "^4.8.3"
 
 [tool.poetry.group.test.dependencies]
 factory-boy = "^3.3.1"

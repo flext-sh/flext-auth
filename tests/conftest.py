@@ -1,20 +1,16 @@
-"""Modern pytest configuration for flext-api.auth.flext-auth using flext-core patterns.
+"""Simple pytest configuration for flext-auth basic functionality.
 
-This configuration provides standardized fixtures and test setup for authentication
-testing using ServiceResult patterns and modern async testing approaches.
+This configuration provides basic fixtures for testing the simple authentication
+functions.
 """
 
 from __future__ import annotations
 
-import asyncio
-from datetime import UTC, datetime
-from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import pytest
-from flext_core.domain.shared_types import ServiceResult
 
-from flext_auth.models import AuthStatus, UserRoleEnum
+# Import working components only
 
 # ============================================================================
 # Pytest Configuration
@@ -77,18 +73,8 @@ def pytest_collection_modifyitems(
 
 
 # ============================================================================
-# Async Configuration
+# Basic Test Fixtures
 # ============================================================================
-
-
-@pytest.fixture(scope="session")
-def event_loop_policy() -> asyncio.AbstractEventLoopPolicy:
-    return asyncio.DefaultEventLoopPolicy()
-
-
-@pytest.fixture
-def anyio_backend() -> str:
-    return "asyncio"
 
 
 # ============================================================================
@@ -121,42 +107,32 @@ def sample_user_data(
     sample_user_id: str,
     sample_username: str,
     sample_email: str,
-) -> dict[str, str | datetime | UserRoleEnum | AuthStatus]:
+) -> dict[str, str]:
     return {
-        "id": sample_user_id,
+        "user_id": sample_user_id,
         "username": sample_username,
         "email": sample_email,
-        "role": UserRoleEnum.USER,
-        "status": AuthStatus.ACTIVE,
-        "created_at": datetime.now(UTC),
-        "updated_at": datetime.now(UTC),
+        "active": True,
     }
 
 
 # ============================================================================
-# Service Mocks
+# Simple Test Utilities
 # ============================================================================
 
 
 @pytest.fixture
-def mock_user_service() -> AsyncMock:
-    service = AsyncMock()
-    service.authenticate.return_value = ServiceResult.ok(True)
-    service.create_user.return_value = ServiceResult.ok({"id": str(uuid4())},
-    )
-    service.get_user.return_value = ServiceResult.ok({"id": str(uuid4())},
-    )
-    return service
+def sample_users_dict(sample_user_data: dict[str, str]) -> dict[str, dict[str, str]]:
+    """Create a simple users dictionary for testing authentication."""
+    import flext_auth
 
+    # Create user with hashed password
+    user_result = flext_auth.create_user(
+        sample_user_data["username"], "SecurePassword123!", sample_user_data["email"]
+    )
 
-@pytest.fixture
-def mock_jwt_service() -> AsyncMock:
-    service = AsyncMock()
-    service.generate_tokens.return_value = ServiceResult.ok({
-            "access_token": "mock_access_token",
-            "refresh_token": "mock_refresh_token",
-        },
-    )
-    service.verify_token.return_value = ServiceResult.ok({"user_id": str(uuid4())},
-    )
-    return service
+    if user_result.is_success:
+        user = user_result.data
+        return {user["username"]: user}
+
+    return {}

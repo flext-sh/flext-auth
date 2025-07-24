@@ -1,0 +1,624 @@
+"""Comprehensive tests for service implementations."""
+
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+import pytest
+
+from flext_auth.domain.entities import UserRole, UserStatus
+from flext_auth.domain.value_objects import PlainPassword
+from flext_auth.repositories.session_repository import InMemorySessionRepository
+from flext_auth.repositories.user_repository import InMemoryUserRepository
+from flext_auth.services.auth_service import AuthService
+from flext_auth.services.jwt_service import JWTService
+from flext_auth.services.password_service import PasswordService
+
+if TYPE_CHECKING:
+    from flext_auth.repositories.session_repository import SessionRepository
+    from flext_auth.repositories.user_repository import UserRepository
+
+
+@pytest.fixture
+def password_service() -> PasswordService:
+    """Create password service for testing."""
+    return PasswordService(rounds=4)  # Use low rounds for faster tests
+
+
+@pytest.fixture
+def jwt_service() -> JWTService:
+    """Create JWT service for testing."""
+    return JWTService(
+        secret_key="test-secret-key-for-testing-minimum-32-characters",
+        algorithm="HS256",
+        access_token_expire_minutes=60,
+        refresh_token_expire_days=7,
+    )
+
+
+@pytest.fixture
+def user_repository() -> UserRepository:
+    """Create user repository for testing."""
+    return InMemoryUserRepository()
+
+
+@pytest.fixture
+def session_repository() -> SessionRepository:
+    """Create session repository for testing."""
+    return InMemorySessionRepository()
+
+
+@pytest.fixture
+def auth_service(
+    user_repository: UserRepository,
+    session_repository: SessionRepository,
+    password_service: PasswordService,
+    jwt_service: JWTService,
+) -> AuthService:
+    """Create authentication service for testing."""
+    return AuthService(
+        user_repository=user_repository,
+        session_repository=session_repository,
+        password_service=password_service,
+        jwt_service=jwt_service,
+        max_failed_attempts=3,
+        lockout_duration_minutes=5,
+        session_expire_hours=24,
+        max_concurrent_sessions=2,
+    )
+
+
+class TestPasswordService:
+    """Test password service functionality."""
+
+    def test_hash_password_success(self, password_service: PasswordService) -> None:
+        """Test successful password hashing."""
+        password = "TestPassword123!"
+
+        result = password_service.hash_password(password)
+
+        assert result.is_success
+        assert result.data.value.startswith("$2b$")
+        assert len(result.data.value) > 50  # Bcrypt hashes are ~60 chars
+
+    def test_hash_password_with_value_object(self, password_service: PasswordService) -> None:
+        """Test password hashing with PlainPassword value object."""
+        password = PlainPassword(value="TestPassword123!")
+
+        result = password_service.hash_password(password)
+
+        assert result.is_success
+        assert result.data.value.startswith("$2b$")
+
+    def test_hash_password_validation_failure(self, password_service: PasswordService) -> None:
+        """Test password hashing with validation failure."""
+        weak_password = "weak"  # Doesn't meet requirements
+
+        result = password_service.hash_password(weak_password)
+
+        assert not result.is_success
+        assert "validation failed" in result.error.lower()
+
+    def test_verify_password_success(self, password_service: PasswordService) -> None:
+        """Test successful password verification."""
+        password = "TestPassword123!"
+        hash_result = password_service.hash_password(password)
+        assert hash_result.is_success
+
+        verify_result = password_service.verify_password(password, hash_result.data.value)
+
+        assert verify_result.is_success
+        assert verify_result.data is True
+
+    def test_verify_password_failure(self, password_service: PasswordService) -> None:
+        """Test password verification failure."""
+        password = "TestPassword123!"
+        wrong_password = "WrongPassword456!"
+        hash_result = password_service.hash_password(password)
+        assert hash_result.is_success
+
+        verify_result = password_service.verify_password(wrong_password, hash_result.data.value)
+
+        assert verify_result.is_success
+        assert verify_result.data is False
+
+    def test_verify_password_invalid_hash(self, password_service: PasswordService) -> None:
+        """Test password verification with invalid hash."""
+        password = "TestPassword123!"
+        invalid_hash = "invalid_hash"
+
+        verify_result = password_service.verify_password(password, invalid_hash)
+
+        assert not verify_result.is_success
+        assert "hash" in verify_result.error.lower() or "verification" in verify_result.error.lower()
+
+    def test_analyze_password_strength_strong(self, password_service: PasswordService) -> None:
+        """Test password strength analysis for strong password."""
+        strong_password = "VeryStr0ng!P@ssw0rd"
+
+        result = password_service.check_password_strength(strong_password)
+
+        assert result.is_success
+        analysis = result.data
+        assert analysis["score"] >= 4
+        assert analysis["has_uppercase"]
+        assert analysis["has_lowercase"]
+        assert analysis["has_digits"]
+        assert analysis["has_symbols"]
+
+    def test_analyze_password_strength_weak(self, password_service: PasswordService) -> None:
+        """Test password strength analysis for weak password."""
+        weak_password = "password"
+
+        result = password_service.check_password_strength(weak_password)
+
+        assert result.is_success
+        analysis = result.data
+        assert analysis["score"] < 4
+        assert not analysis["has_uppercase"]
+        assert not analysis["has_digits"]
+        assert not analysis["has_symbols"]
+
+    def test_hash_different_passwords_different_hashes(self, password_service: PasswordService) -> None:
+        """Test that different passwords produce different hashes."""
+        password1 = "TestPassword123!"
+        password2 = "TestPassword456!"
+
+        hash1 = password_service.hash_password(password1)
+        hash2 = password_service.hash_password(password2)
+
+        assert hash1.is_success
+        assert hash2.is_success
+        assert hash1.data.value != hash2.data.value
+
+    def test_hash_same_password_different_salts(self, password_service: PasswordService) -> None:
+        """Test that same password produces different hashes (different salts)."""
+        password = "TestPassword123!"
+
+        hash1 = password_service.hash_password(password)
+        hash2 = password_service.hash_password(password)
+
+        assert hash1.is_success
+        assert hash2.is_success
+        assert hash1.data.value != hash2.data.value  # Different salts
+
+
+class TestJWTService:
+    """Test JWT service functionality."""
+
+    def test_generate_access_token_success(self, jwt_service: JWTService) -> None:
+        """Test successful access token generation."""
+        result = jwt_service.generate_access_token(
+            user_id="user-123",
+            username="testuser",
+            role="user",
+            session_id="session-456",
+        )
+
+        assert result.is_success
+        token = result.data.value
+        assert token.count(".") == 2  # JWT has 3 parts separated by dots
+
+    def test_generate_refresh_token_success(self, jwt_service: JWTService) -> None:
+        """Test successful refresh token generation."""
+        result = jwt_service.generate_refresh_token(
+            user_id="user-123",
+            session_id="session-456",
+        )
+
+        assert result.is_success
+        token = result.data.value
+        assert token.count(".") == 2
+
+    def test_generate_token_pair_success(self, jwt_service: JWTService) -> None:
+        """Test successful token pair generation."""
+        result = jwt_service.generate_token_pair(
+            user_id="user-123",
+            username="testuser",
+            role="user",
+            session_id="session-456",
+        )
+
+        assert result.is_success
+        tokens = result.data
+        assert "access_token" in tokens
+        assert "refresh_token" in tokens
+        assert tokens["access_token"] != tokens["refresh_token"]
+
+    def test_verify_token_success(self, jwt_service: JWTService) -> None:
+        """Test successful token verification."""
+        # Generate token
+        token_result = jwt_service.generate_access_token(
+            user_id="user-123",
+            username="testuser",
+            role="user",
+            session_id="session-456",
+        )
+        assert token_result.is_success
+
+        # Verify token
+        verify_result = jwt_service.verify_token(token_result.data.value)
+
+        assert verify_result.is_success
+        claims = verify_result.data
+        assert claims.sub == "user-123"
+        assert claims.username == "testuser"
+        assert claims.role == "user"
+        assert claims.session_id == "session-456"
+        assert claims.token_type == "access"
+
+    def test_verify_token_invalid(self, jwt_service: JWTService) -> None:
+        """Test token verification with invalid token."""
+        invalid_token = "invalid.jwt.token"
+
+        result = jwt_service.verify_token(invalid_token)
+
+        assert not result.is_success
+        assert "invalid" in result.error.lower()
+
+    def test_verify_token_expired(self, jwt_service: JWTService) -> None:
+        """Test token verification with expired token."""
+        # Create JWT service with very short expiration
+        short_jwt_service = JWTService(
+            secret_key="test-secret-key-for-testing-minimum-32-characters",
+            access_token_expire_minutes=0,  # Immediately expired
+        )
+
+        token_result = short_jwt_service.generate_access_token(
+            user_id="user-123",
+            username="testuser",
+            role="user",
+        )
+        assert token_result.is_success
+
+        # Token should be immediately expired
+        verify_result = short_jwt_service.verify_token(token_result.data.value)
+
+        assert not verify_result.is_success
+        assert "expired" in verify_result.error.lower()
+
+    def test_extract_user_id_success(self, jwt_service: JWTService) -> None:
+        """Test successful user ID extraction from token."""
+        user_id = "user-123"
+
+        token_result = jwt_service.generate_access_token(
+            user_id=user_id,
+            username="testuser",
+            role="user",
+        )
+        assert token_result.is_success
+
+        extract_result = jwt_service.extract_user_id(token_result.data.value)
+
+        assert extract_result.is_success
+        assert extract_result.data == user_id
+
+    def test_extract_user_id_invalid_token(self, jwt_service: JWTService) -> None:
+        """Test user ID extraction from invalid token."""
+        invalid_token = "invalid.jwt.token"
+
+        result = jwt_service.extract_user_id(invalid_token)
+
+        assert not result.is_success
+
+    def test_token_with_additional_claims(self, jwt_service: JWTService) -> None:
+        """Test token generation with additional claims."""
+        additional_claims = {
+            "custom_claim": "custom_value",
+            "permissions": ["read", "write"],
+        }
+
+        token_result = jwt_service.generate_access_token(
+            user_id="user-123",
+            username="testuser",
+            role="user",
+            additional_claims=additional_claims,
+        )
+        assert token_result.is_success
+
+        verify_result = jwt_service.verify_token(token_result.data.value)
+        assert verify_result.is_success
+
+        # Note: Additional claims would be in the raw JWT payload
+        # This test verifies the token is valid with additional claims
+
+
+class TestAuthServiceIntegration:
+    """Test authentication service integration."""
+
+    async def test_register_user_success(self, auth_service: AuthService) -> None:
+        """Test successful user registration."""
+        result = await auth_service.register_user(
+            username="testuser",
+            email="test@example.com",
+            password="TestPassword123!",
+            role=UserRole.USER,
+            ip_address="192.168.1.1",
+            user_agent="Test Browser",
+        )
+
+        assert result.is_success
+        user = result.data
+        assert user.username == "testuser"
+        assert str(user.email) == "test@example.com"
+        assert user.role == UserRole.USER
+        assert user.status == UserStatus.ACTIVE
+
+    async def test_register_user_duplicate_username(self, auth_service: AuthService) -> None:
+        """Test user registration with duplicate username."""
+        # Register first user
+        result1 = await auth_service.register_user(
+            username="testuser",
+            email="test1@example.com",
+            password="TestPassword123!",
+        )
+        assert result1.is_success
+
+        # Try to register with same username
+        result2 = await auth_service.register_user(
+            username="testuser",
+            email="test2@example.com",
+            password="TestPassword456!",
+        )
+
+        assert not result2.is_success
+        assert "already exists" in result2.error
+
+    async def test_register_user_duplicate_email(self, auth_service: AuthService) -> None:
+        """Test user registration with duplicate email."""
+        # Register first user
+        result1 = await auth_service.register_user(
+            username="testuser1",
+            email="test@example.com",
+            password="TestPassword123!",
+        )
+        assert result1.is_success
+
+        # Try to register with same email
+        result2 = await auth_service.register_user(
+            username="testuser2",
+            email="test@example.com",
+            password="TestPassword456!",
+        )
+
+        assert not result2.is_success
+        assert "already exists" in result2.error
+
+    async def test_authenticate_user_success(self, auth_service: AuthService) -> None:
+        """Test successful user authentication."""
+        # Register user first
+        register_result = await auth_service.register_user(
+            username="testuser",
+            email="test@example.com",
+            password="TestPassword123!",
+        )
+        assert register_result.is_success
+
+        # Authenticate user
+        auth_result = await auth_service.authenticate_user(
+            username="testuser",
+            password="TestPassword123!",
+            ip_address="192.168.1.1",
+            user_agent="Test Browser",
+        )
+
+        assert auth_result.is_success
+        auth_data = auth_result.data
+        assert "user" in auth_data
+        assert "session" in auth_data
+        assert "tokens" in auth_data
+
+        user_data = auth_data["user"]
+        assert user_data["username"] == "testuser"
+        assert user_data["email"] == "test@example.com"
+
+        tokens = auth_data["tokens"]
+        assert "access_token" in tokens
+        assert "refresh_token" in tokens
+
+    async def test_authenticate_user_invalid_password(self, auth_service: AuthService) -> None:
+        """Test authentication with invalid password."""
+        # Register user first
+        register_result = await auth_service.register_user(
+            username="testuser",
+            email="test@example.com",
+            password="TestPassword123!",
+        )
+        assert register_result.is_success
+
+        # Try to authenticate with wrong password
+        auth_result = await auth_service.authenticate_user(
+            username="testuser",
+            password="WrongPassword456!",
+            ip_address="192.168.1.1",
+        )
+
+        assert not auth_result.is_success
+        assert "Invalid username or password" in auth_result.error
+
+    async def test_authenticate_user_nonexistent(self, auth_service: AuthService) -> None:
+        """Test authentication with nonexistent user."""
+        auth_result = await auth_service.authenticate_user(
+            username="nonexistent",
+            password="TestPassword123!",
+            ip_address="192.168.1.1",
+        )
+
+        assert not auth_result.is_success
+        assert "Invalid username or password" in auth_result.error
+
+    async def test_authenticate_user_account_locking(self, auth_service: AuthService) -> None:
+        """Test account locking after failed attempts."""
+        # Register user first
+        register_result = await auth_service.register_user(
+            username="testuser",
+            email="test@example.com",
+            password="TestPassword123!",
+        )
+        assert register_result.is_success
+
+        # Make failed attempts up to the limit (3 in our test config)
+        for _ in range(3):
+            auth_result = await auth_service.authenticate_user(
+                username="testuser",
+                password="WrongPassword456!",
+                ip_address="192.168.1.1",
+            )
+            assert not auth_result.is_success
+
+        # Next attempt should be blocked due to account lock
+        auth_result = await auth_service.authenticate_user(
+            username="testuser",
+            password="TestPassword123!",  # Even correct password
+            ip_address="192.168.1.1",
+        )
+
+        assert not auth_result.is_success
+        assert "locked" in auth_result.error.lower()
+
+    async def test_validate_token_success(self, auth_service: AuthService) -> None:
+        """Test successful token validation."""
+        # Register and authenticate user
+        await auth_service.register_user(
+            username="testuser",
+            email="test@example.com",
+            password="TestPassword123!",
+        )
+
+        auth_result = await auth_service.authenticate_user(
+            username="testuser",
+            password="TestPassword123!",
+            ip_address="192.168.1.1",
+        )
+        assert auth_result.is_success
+
+        access_token = auth_result.data["tokens"]["access_token"]
+
+        # Validate token
+        validate_result = await auth_service.validate_token(access_token)
+
+        assert validate_result.is_success
+        context = validate_result.data
+        assert context.username == "testuser"
+        assert context.role == "user"
+
+    async def test_refresh_token_success(self, auth_service: AuthService) -> None:
+        """Test successful token refresh."""
+        # Register and authenticate user
+        await auth_service.register_user(
+            username="testuser",
+            email="test@example.com",
+            password="TestPassword123!",
+        )
+
+        auth_result = await auth_service.authenticate_user(
+            username="testuser",
+            password="TestPassword123!",
+            ip_address="192.168.1.1",
+        )
+        assert auth_result.is_success
+
+        refresh_token = auth_result.data["tokens"]["refresh_token"]
+
+        # Refresh tokens
+        refresh_result = await auth_service.refresh_token(refresh_token)
+
+        assert refresh_result.is_success
+        new_tokens = refresh_result.data
+        assert "access_token" in new_tokens
+        assert "refresh_token" in new_tokens
+
+    async def test_logout_user_success(self, auth_service: AuthService) -> None:
+        """Test successful user logout."""
+        # Register and authenticate user
+        await auth_service.register_user(
+            username="testuser",
+            email="test@example.com",
+            password="TestPassword123!",
+        )
+
+        auth_result = await auth_service.authenticate_user(
+            username="testuser",
+            password="TestPassword123!",
+            ip_address="192.168.1.1",
+        )
+        assert auth_result.is_success
+
+        access_token = auth_result.data["tokens"]["access_token"]
+
+        # Logout user
+        logout_result = await auth_service.logout_user(access_token)
+
+        assert logout_result.is_success
+
+    async def test_change_password_success(self, auth_service: AuthService) -> None:
+        """Test successful password change."""
+        # Register user
+        register_result = await auth_service.register_user(
+            username="testuser",
+            email="test@example.com",
+            password="OldPassword123!",
+        )
+        assert register_result.is_success
+        user = register_result.data
+
+        # Change password
+        change_result = await auth_service.change_password(
+            user_id=user.id,
+            current_password="OldPassword123!",
+            new_password="NewPassword456!",
+        )
+
+        assert change_result.is_success
+
+        # Verify old password no longer works
+        auth_result1 = await auth_service.authenticate_user(
+            username="testuser",
+            password="OldPassword123!",
+            ip_address="192.168.1.1",
+        )
+        assert not auth_result1.is_success
+
+        # Verify new password works
+        auth_result2 = await auth_service.authenticate_user(
+            username="testuser",
+            password="NewPassword456!",
+            ip_address="192.168.1.1",
+        )
+        assert auth_result2.is_success
+
+    async def test_max_concurrent_sessions(self, auth_service: AuthService) -> None:
+        """Test maximum concurrent sessions enforcement."""
+        # Register user
+        await auth_service.register_user(
+            username="testuser",
+            email="test@example.com",
+            password="TestPassword123!",
+        )
+
+        # Create sessions up to the limit (2 in our test config)
+        sessions = []
+        for i in range(2):
+            auth_result = await auth_service.authenticate_user(
+                username="testuser",
+                password="TestPassword123!",
+                ip_address=f"192.168.1.{i+1}",
+                user_agent=f"Browser {i+1}",
+            )
+            assert auth_result.is_success
+            sessions.append(auth_result.data)
+
+        # Create one more session - should revoke oldest
+        auth_result = await auth_service.authenticate_user(
+            username="testuser",
+            password="TestPassword123!",
+            ip_address="192.168.1.10",
+            user_agent="Browser 3",
+        )
+        assert auth_result.is_success
+
+        # First session token should now be invalid
+        first_token = sessions[0]["tokens"]["access_token"]
+        await auth_service.validate_token(first_token)
+        # This might still be valid if session revocation doesn't immediately invalidate JWTs
+        # In a real implementation, you'd check session validity

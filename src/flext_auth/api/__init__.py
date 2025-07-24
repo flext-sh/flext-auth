@@ -1,7 +1,7 @@
-"""FLEXT AUTH API - REST API endpoints for authentication services."""
+"""FastAPI authentication API module."""
 
 from __future__ import annotations
 
-__all__ = ["app", "create_app"]
+from flext_auth.api.endpoints import app, create_auth_router
 
-from flext_auth.api.app import app, create_app
+__all__ = ["app", "create_auth_router"]

@@ -1,352 +1,129 @@
-"""FLEXT Auth domain value objects.
-
-Built on flext-core foundation for type-safe authentication values.
-Uses modern Python 3.13 patterns and comprehensive validation.
-"""
+"""Value objects for authentication domain."""
 
 from __future__ import annotations
 
 import re
-import secrets
-from datetime import datetime, timedelta
-from enum import StrEnum
-from typing import Any
+from datetime import UTC
 
-from flext_core import DomainValueObject, Field
-from pydantic import field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
-class UserEmail(DomainValueObject):
-    """Email address value object with comprehensive validation."""
+class Username(BaseModel):
+    """Username value object with validation."""
 
-    value: str = Field(..., min_length=1, max_length=255, description="Email address")
+    value: str = Field(..., min_length=3, max_length=50)
 
     @field_validator("value")
     @classmethod
-    def validate_email_format(cls, v: str) -> str:
-        """Validate email format using RFC-compliant pattern."""
-        pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-        if not re.match(pattern, v):
-            msg = f"Invalid email format: {v}"
-            raise ValueError(msg)
-        return v.lower()
-
-    @property
-    def domain(self) -> str:
-        """Get the domain part of the email."""
-        return self.value.split("@")[1]
-
-    @property
-    def local_part(self) -> str:
-        """Get the local part of the email."""
-        return self.value.split("@")[0]
-
-    @property
-    def is_corporate_domain(self) -> bool:
-        """Check if email is from a corporate domain."""
-        corporate_domains = {"gmail.com", "yahoo.com", "hotmail.com", "outlook.com"}
-        return self.domain not in corporate_domains
-
-
-class Username(DomainValueObject):
-    """Username value object with validation rules."""
-
-    value: str = Field(..., min_length=3, max_length=50, description="Username")
-
-    @field_validator("value")
-    @classmethod
-    def validate_username_format(cls, v: str) -> str:
-        """Validate username format and characters."""
+    def validate_username(cls, v: str) -> str:
+        """Validate username format."""
         if not re.match(r"^[a-zA-Z0-9_-]+$", v):
-            msg = "Username can only contain letters, numbers, hyphens, and underscores"
-            raise ValueError(msg)
-
-        if v.startswith(("-", "_")) or v.endswith(("-", "_")):
-            msg = "Username cannot start or end with hyphens or underscores"
-            raise ValueError(msg)
-
+            raise ValueError(
+                "Username can only contain letters, numbers, underscores, and hyphens"
+            )
         return v.lower()
 
-    @property
-    def is_valid_length(self) -> bool:
-        """Check if username has valid length."""
-        return 3 <= len(self.value) <= 50
+    def __str__(self) -> str:
+        return self.value
 
 
-class HashedPassword(DomainValueObject):
+class UserEmail(BaseModel):
+    """Email value object with validation."""
+
+    value: EmailStr
+
+    def __str__(self) -> str:
+        return str(self.value)
+
+
+class PlainPassword(BaseModel):
+    """Plain password value object with validation."""
+
+    value: str = Field(..., min_length=8, max_length=128)
+
+    @field_validator("value")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        """Validate password strength."""
+        if not re.search(r"[A-Z]", v):
+            raise ValueError("Password must contain at least one uppercase letter")
+        if not re.search(r"[a-z]", v):
+            raise ValueError("Password must contain at least one lowercase letter")
+        if not re.search(r"\d", v):
+            raise ValueError("Password must contain at least one number")
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', v):
+            raise ValueError("Password must contain at least one special character")
+        return v
+
+    def __str__(self) -> str:
+        return "[PROTECTED]"
+
+    def __repr__(self) -> str:
+        return "PlainPassword([PROTECTED])"
+
+
+class HashedPassword(BaseModel):
     """Hashed password value object."""
 
-    value: str = Field(..., min_length=1, description="Bcrypt hashed password")
+    value: str = Field(..., min_length=60)  # bcrypt hashes are typically 60 chars
 
     @field_validator("value")
     @classmethod
-    def validate_hash_format(cls, v: str) -> str:
+    def validate_hash(cls, v: str) -> str:
         """Validate bcrypt hash format."""
-        if not v.startswith("$2"):
-            msg = "Invalid bcrypt hash format"
-            raise ValueError(msg)
+        if not v.startswith("$2b$"):
+            raise ValueError("Invalid bcrypt hash format")
         return v
 
-    @property
-    def algorithm(self) -> str:
-        """Get the hashing algorithm identifier."""
-        return self.value.split("$")[1] if "$" in self.value else "unknown"
+    def __str__(self) -> str:
+        return "[HASHED]"
+
+    def __repr__(self) -> str:
+        return "HashedPassword([HASHED])"
 
 
-class PlainPassword(DomainValueObject):
-    """Plain text password for validation before hashing."""
-
-    value: str = Field(
-        ...,
-        min_length=8,
-        max_length=128,
-        description="Plain text password",
-    )
-
-    @field_validator("value")
-    @classmethod
-    def validate_password_strength(cls, v: str) -> str:
-        """Validate password strength requirements."""
-        if len(v) < 8:
-            msg = "Password must be at least 8 characters long"
-            raise ValueError(msg)
-
-        if not re.search(r"[A-Z]", v):
-            msg = "Password must contain at least one uppercase letter"
-            raise ValueError(msg)
-
-        if not re.search(r"[a-z]", v):
-            msg = "Password must contain at least one lowercase letter"
-            raise ValueError(msg)
-
-        if not re.search(r"\d", v):
-            msg = "Password must contain at least one digit"
-            raise ValueError(msg)
-
-        if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", v):
-            msg = "Password must contain at least one special character"
-            raise ValueError(msg)
-
-        return v
-
-    @property
-    def strength_score(self) -> int:
-        """Calculate password strength score (0-100)."""
-        score = 0
-
-        # Length bonus
-        score += min(len(self.value) * 2, 25)
-
-        # Character variety bonus
-        if re.search(r"[A-Z]", self.value):
-            score += 10
-        if re.search(r"[a-z]", self.value):
-            score += 10
-        if re.search(r"\d", self.value):
-            score += 10
-        if re.search(r"[!@#$%^&*(),.?\":{}|<>]", self.value):
-            score += 15
-
-        # Complexity bonus
-        unique_chars = len(set(self.value))
-        score += min(unique_chars * 2, 30)
-
-        return min(score, 100)
-
-
-class SessionToken(DomainValueObject):
-    """Session token value object."""
-
-    value: str = Field(..., min_length=32, description="Session token")
-
-    @field_validator("value")
-    @classmethod
-    def validate_token_format(cls, v: str) -> str:
-        """Validate token format."""
-        if not re.match(r"^[a-zA-Z0-9_-]+$", v):
-            msg = "Invalid session token format"
-            raise ValueError(msg)
-        return v
-
-    @classmethod
-    def generate(cls) -> SessionToken:
-        """Generate a new secure session token."""
-        token = secrets.token_urlsafe(32)
-        return cls(value=token)
-
-
-class AuthToken(DomainValueObject):
+class AuthToken(BaseModel):
     """Authentication token value object."""
 
-    value: str = Field(..., min_length=10, description="Authentication token")
-    token_type: str = Field(..., description="Token type (access, refresh, etc.)")
+    value: str = Field(..., min_length=1)
+    token_type: str = Field(default="Bearer")
 
-    @field_validator("value")
-    @classmethod
-    def validate_token_format(cls, v: str) -> str:
-        """Validate token format."""
-        if not re.match(r"^[a-zA-Z0-9._-]+$", v):
-            msg = "Invalid auth token format"
-            raise ValueError(msg)
-        return v
-
-    @field_validator("token_type")
-    @classmethod
-    def validate_token_type(cls, v: str) -> str:
-        """Validate token type."""
-        allowed_types = {"access", "refresh", "api", "session"}
-        if v not in allowed_types:
-            msg = f"Invalid token type: {v}. Must be one of {allowed_types}"
-            raise ValueError(msg)
-        return v
-
-    @property
-    def is_secure_length(self) -> bool:
-        """Check if token has secure length."""
-        return len(self.value) >= 32
-
-    @property
-    def is_valid(self) -> bool:
-        """Check if token is valid.
-
-        For now, just check if it has secure length.
-        In a real implementation, this would check expiration, revocation, etc.
-        """
-        return self.is_secure_length
-
-    def record_use(self) -> None:
-        """Record token usage.
-
-        This is a placeholder method that would track usage in a real implementation.
-        """
+    def __str__(self) -> str:
+        return f"{self.token_type} {self.value}"
 
 
-class RefreshToken(DomainValueObject):
+class RefreshToken(BaseModel):
     """Refresh token value object."""
 
-    value: str = Field(..., min_length=32, description="Refresh token")
+    value: str = Field(..., min_length=1)
+
+    def __str__(self) -> str:
+        return "[REFRESH_TOKEN]"
+
+    def __repr__(self) -> str:
+        return "RefreshToken([PROTECTED])"
+
+
+class SessionToken(BaseModel):
+    """Session token value object."""
+
+    value: str = Field(..., min_length=1)
+
+    def __str__(self) -> str:
+        return "[SESSION_TOKEN]"
+
+    def __repr__(self) -> str:
+        return "SessionToken([PROTECTED])"
+
+
+class IPAddress(BaseModel):
+    """IP address value object with validation."""
+
+    value: str = Field(..., min_length=7, max_length=45)  # IPv4 or IPv6
 
     @field_validator("value")
     @classmethod
-    def validate_token_format(cls, v: str) -> str:
-        """Validate refresh token format."""
-        if not re.match(r"^[a-zA-Z0-9_-]+$", v):
-            msg = "Invalid refresh token format"
-            raise ValueError(msg)
-        return v
-
-    @classmethod
-    def generate(cls) -> RefreshToken:
-        """Generate a new secure refresh token."""
-        token = secrets.token_urlsafe(48)
-        return cls(value=token)
-
-
-class EmailVerificationToken(DomainValueObject):
-    """Email verification token value object."""
-
-    value: str = Field(..., min_length=32, description="Email verification token")
-    expires_at: datetime = Field(..., description="Token expiration time")
-
-    @field_validator("value")
-    @classmethod
-    def validate_token_format(cls, v: str) -> str:
-        """Validate verification token format."""
-        if not re.match(r"^[a-zA-Z0-9_-]+$", v):
-            msg = "Invalid verification token format"
-            raise ValueError(msg)
-        return v
-
-    @classmethod
-    def generate(cls, expires_in_hours: int = 24) -> EmailVerificationToken:
-        """Generate a new email verification token."""
-        token = secrets.token_urlsafe(32)
-        expires_at = datetime.now() + timedelta(hours=expires_in_hours)
-        return cls(value=token, expires_at=expires_at)
-
-    @property
-    def is_expired(self) -> bool:
-        """Check if token is expired."""
-        return datetime.now() > self.expires_at
-
-    @property
-    def time_until_expiry(self) -> timedelta:
-        """Get time remaining until expiry."""
-        return self.expires_at - datetime.now()
-
-
-class PasswordResetToken(DomainValueObject):
-    """Password reset token value object."""
-
-    value: str = Field(..., min_length=32, description="Password reset token")
-    expires_at: datetime = Field(..., description="Token expiration time")
-
-    @field_validator("value")
-    @classmethod
-    def validate_token_format(cls, v: str) -> str:
-        """Validate reset token format."""
-        if not re.match(r"^[a-zA-Z0-9_-]+$", v):
-            msg = "Invalid password reset token format"
-            raise ValueError(msg)
-        return v
-
-    @classmethod
-    def generate(cls, expires_in_hours: int = 1) -> PasswordResetToken:
-        """Generate a new password reset token."""
-        token = secrets.token_urlsafe(32)
-        expires_at = datetime.now() + timedelta(hours=expires_in_hours)
-        return cls(value=token, expires_at=expires_at)
-
-    @property
-    def is_expired(self) -> bool:
-        """Check if token is expired."""
-        return datetime.now() > self.expires_at
-
-
-class UserRole(StrEnum):
-    """User role enumeration."""
-
-    ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
-    USER = "user"
-    MODERATOR = "moderator"
-    GUEST = "guest"
-
-
-class UserStatus(StrEnum):
-    """User status enumeration."""
-
-    ACTIVE = "active"
-    INACTIVE = "inactive"
-    SUSPENDED = "suspended"
-    PENDING_VERIFICATION = "pending_verification"
-
-
-class SessionStatus(StrEnum):
-    """Session status enumeration."""
-
-    ACTIVE = "active"
-    EXPIRED = "expired"
-    REVOKED = "revoked"
-    INVALID = "invalid"
-
-
-class AuthenticationMethod(StrEnum):
-    """Authentication method enumeration."""
-
-    PASSWORD = "password"
-    TWO_FACTOR = "two_factor"
-    OAUTH = "oauth"
-    API_KEY = "api_key"
-
-
-class IPAddress(DomainValueObject):
-    """IP address value object."""
-
-    value: str = Field(..., description="IP address")
-
-    @field_validator("value")
-    @classmethod
-    def validate_ip_format(cls, v: str) -> str:
+    def validate_ip(cls, v: str) -> str:
         """Validate IP address format."""
         import ipaddress
 
@@ -354,60 +131,101 @@ class IPAddress(DomainValueObject):
             ipaddress.ip_address(v)
             return v
         except ValueError as e:
-            msg = f"Invalid IP address format: {v}"
-            raise ValueError(msg) from e
+            raise ValueError(f"Invalid IP address: {e}") from e
 
-    @property
-    def is_private(self) -> bool:
-        """Check if IP address is private."""
-        import ipaddress
-
-        return ipaddress.ip_address(self.value).is_private
-
-    @property
-    def is_loopback(self) -> bool:
-        """Check if IP address is loopback."""
-        import ipaddress
-
-        return ipaddress.ip_address(self.value).is_loopback
+    def __str__(self) -> str:
+        return self.value
 
 
-class UserAgent(DomainValueObject):
+class UserAgent(BaseModel):
     """User agent value object."""
 
-    value: str = Field(..., max_length=512, description="User agent string")
+    value: str = Field(..., max_length=500)
 
-    @property
-    def browser_info(self) -> dict[str, Any]:
-        """Extract basic browser information."""
-        value = self.value.lower()
+    def __str__(self) -> str:
+        return self.value
 
-        browser = "unknown"
-        if "chrome" in value:
-            browser = "chrome"
-        elif "firefox" in value:
-            browser = "firefox"
-        elif "safari" in value:
-            browser = "safari"
-        elif "edge" in value:
-            browser = "edge"
+    def is_mobile(self) -> bool:
+        """Check if user agent indicates mobile device."""
+        mobile_indicators = ["Mobile", "Android", "iPhone", "iPad", "Windows Phone"]
+        return any(indicator in self.value for indicator in mobile_indicators)
 
-        platform = "unknown"
-        if "windows" in value:
-            platform = "windows"
-        elif "mac" in value:
-            platform = "macos"
-        elif "linux" in value:
-            platform = "linux"
-        elif "android" in value:
-            platform = "android"
-        elif "ios" in value:
-            platform = "ios"
+    def get_browser(self) -> str:
+        """Extract browser name from user agent."""
+        if "Chrome" in self.value:
+            return "Chrome"
+        if "Firefox" in self.value:
+            return "Firefox"
+        if "Safari" in self.value:
+            return "Safari"
+        if "Edge" in self.value:
+            return "Edge"
+        return "Unknown"
 
-        return {
-            "browser": browser,
-            "platform": platform,
-            "is_mobile": any(
-                mobile in value for mobile in ["mobile", "android", "iphone"]
-            ),
-        }
+
+class PasswordResetToken(BaseModel):
+    """Password reset token value object."""
+
+    value: str = Field(..., min_length=32)
+
+    def __str__(self) -> str:
+        return "[RESET_TOKEN]"
+
+    def __repr__(self) -> str:
+        return "PasswordResetToken([PROTECTED])"
+
+
+class EmailVerificationToken(BaseModel):
+    """Email verification token value object."""
+
+    value: str = Field(..., min_length=32)
+
+    def __str__(self) -> str:
+        return "[VERIFICATION_TOKEN]"
+
+    def __repr__(self) -> str:
+        return "EmailVerificationToken([PROTECTED])"
+
+
+class JWTClaims(BaseModel):
+    """JWT claims value object."""
+
+    sub: str = Field(..., description="Subject (user ID)")
+    username: str | None = Field(default=None, description="Username")
+    role: str | None = Field(default=None, description="User role")
+    iat: int = Field(..., description="Issued at timestamp")
+    exp: int = Field(..., description="Expiration timestamp")
+    token_type: str = Field(default="access", description="Token type")
+    session_id: str | None = Field(default=None, description="Session ID")
+
+    def is_expired(self) -> bool:
+        """Check if token is expired."""
+        from datetime import datetime
+
+        return datetime.now(UTC).timestamp() >= self.exp
+
+    def time_until_expiry(self) -> int:
+        """Get seconds until token expires."""
+        from datetime import datetime
+
+        return max(0, int(self.exp - datetime.now(UTC).timestamp()))
+
+
+class SecurityContext(BaseModel):
+    """Security context for current request."""
+
+    user_id: str
+    username: str
+    role: str
+    session_id: str
+    permissions: list[str] = Field(default_factory=list)
+    ip_address: str | None = None
+    user_agent: str | None = None
+
+    def has_permission(self, permission: str) -> bool:
+        """Check if context has specific permission."""
+        return permission in self.permissions
+
+    def is_REDACTED_LDAP_BIND_PASSWORD(self) -> bool:
+        """Check if user is REDACTED_LDAP_BIND_PASSWORD."""
+        return self.role == "REDACTED_LDAP_BIND_PASSWORD"

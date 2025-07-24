@@ -1,316 +1,279 @@
-"""FLEXT Auth Configuration - Using unified composition mixins.
-
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
-
-This module provides authentication configuration using unified composition mixins
-from flext-core for maximum code reduction and standardization.
-"""
+"""Production configuration management for flext-auth."""
 
 from __future__ import annotations
 
-from flext_core.config.unified_config import (
-    AuthConfigMixin,
-    BaseConfigMixin,
-    DatabaseConfigMixin,
-    LoggingConfigMixin,
-    MonitoringConfigMixin,
-    PerformanceConfigMixin,
-    RedisConfigMixin,
-)
-from flext_core.domain.constants import ConfigDefaults
-from pydantic import Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+import secrets
+from pathlib import Path
+from typing import Any
+
+from pydantic_settings import BaseSettings, Field, validator
 
 
-class AuthConfig(
-    BaseConfigMixin,
-    LoggingConfigMixin,
-    DatabaseConfigMixin,
-    RedisConfigMixin,
-    AuthConfigMixin,
-    MonitoringConfigMixin,
-    PerformanceConfigMixin,
-    BaseSettings,
-):
-    """Authentication configuration using unified composition mixins.
+class DatabaseConfig(BaseSettings):
+    """Database configuration."""
 
-    This configuration eliminates ALL duplication by using composition mixins
-    from flext-core unified configuration system. All common auth fields
-    are provided by AuthConfigMixin.
-    """
+    url: str = Field(
+        default="", env="DATABASE_URL", description="PostgreSQL database URL"
+    )
+    min_pool_size: int = Field(default=1, env="DB_MIN_POOL_SIZE", ge=1, le=20)
+    max_pool_size: int = Field(default=10, env="DB_MAX_POOL_SIZE", ge=1, le=100)
+    command_timeout: int = Field(default=60, env="DB_COMMAND_TIMEOUT", ge=5, le=300)
 
-    model_config = SettingsConfigDict(
-        env_prefix="FLEXT_AUTH_",
-        env_file=".env",
-        env_file_encoding="utf-8",
-        extra="ignore",
-    )
+    @validator("url")
+    def validate_db_url(self, v: str) -> str:
+        """Validate database URL format."""
+        if v and not v.startswith(("postgresql://", "postgresql+asyncpg://")):
+            raise ValueError(
+                "Database URL must start with postgresql:// or postgresql+asyncpg://"
+            )
+        return v
 
-    # Project identification (inherits from BaseConfigMixin)
-    project_name: str = Field(
-        default="flext-auth",
-        max_length=ConfigDefaults.MAX_ENTITY_NAME_LENGTH,
-    )
-    title: str = Field(
-        default="FLEXT Auth",
-        max_length=ConfigDefaults.MAX_ENTITY_NAME_LENGTH,
-    )
-    description: str = Field(
-        default="Enterprise Authentication and Authorization Service",
-        max_length=ConfigDefaults.MAX_ERROR_MESSAGE_LENGTH,
-    )
-    # Note: project_version is inherited from BaseConfigMixin
 
-    # Override required fields with defaults for development
-    jwt_secret_key: str = Field(
-        default="dev-secret-key-change-in-production",
-        description="JWT secret key - MUST be changed in production",
+class JWTConfig(BaseSettings):
+    """JWT token configuration."""
+
+    secret_key: str = Field(
+        default="",
+        env="JWT_SECRET_KEY",
+        min_length=32,
+        description="JWT signing secret key",
     )
-    jwt_private_key_path: str | None = Field(
-        default=None,
-        description="Path to RSA private key file (for RSA algorithms)",
+    algorithm: str = Field(default="HS256", env="JWT_ALGORITHM")
+    access_token_expire_minutes: int = Field(
+        default=30, env="JWT_ACCESS_EXPIRE_MINUTES", ge=5, le=1440
     )
-    jwt_public_key_path: str | None = Field(
-        default=None,
-        description="Path to RSA public key file (for RSA algorithms)",
-    )
-    database_url: str = Field(
-        default="postgresql://localhost:5432/flext_auth",
-        description="Database connection URL",
-    )
-    redis_url: str = Field(
-        default="redis://localhost:6379/0",
-        description="Redis connection URL",
+    refresh_token_expire_days: int = Field(
+        default=7, env="JWT_REFRESH_EXPIRE_DAYS", ge=1, le=30
     )
 
-    # All authentication fields are inherited from AuthConfigMixin:
-    # - jwt_secret_key, auth_algorithm, auth_token_expire_minutes
-    # - password_min_length, password_require_uppercase, etc.
-    # - max_failed_login_attempts, account_lockout_duration_minutes
+    @validator("secret_key")
+    def validate_secret_key(self, v: str) -> str:
+        """Validate JWT secret key."""
+        if not v:
+            # Generate secure random key if not provided
+            return secrets.token_urlsafe(64)
 
-    # All database fields are inherited from DatabaseConfigMixin:
-    # - database_url, database_pool_size, database_timeout, etc.
+        if v == "dev-secret-key-change-in-production":
+            raise ValueError("Production JWT secret key is required")
 
-    # All Redis fields are inherited from RedisConfigMixin:
-    # - redis_url, redis_pool_size, redis_timeout
+        return v
 
-    # Additional authentication-specific settings (beyond AuthConfigMixin)
-    require_email_verification: bool = Field(
-        default=True,
-        description="Require email verification for new accounts",
-    )
-    password_require_special: bool = Field(
-        default=False,
-        description="Require special characters in password",
-    )
+    @validator("algorithm")
+    def validate_algorithm(self, v: str) -> str:
+        """Validate JWT algorithm."""
+        allowed_algorithms = ["HS256", "HS384", "HS512"]
+        if v not in allowed_algorithms:
+            raise ValueError(f"Algorithm must be one of {allowed_algorithms}")
+        return v
 
-    # Auth attributes not provided by basic AuthConfigMixin
-    jwt_refresh_token_expire_days: int = Field(
-        default=7,
-        description="JWT refresh token expiration in days",
+
+class SecurityConfig(BaseSettings):
+    """Security configuration."""
+
+    password_rounds: int = Field(
+        default=12, env="PASSWORD_ROUNDS", ge=4, le=20, description="Bcrypt rounds"
     )
-    password_bcrypt_rounds: int = Field(
-        default=12,
-        description="Bcrypt hashing rounds",
-    )
-    password_min_length: int = Field(
-        default=8,
-        description="Minimum password length",
-    )
-    password_require_uppercase: bool = Field(
-        default=True,
-        description="Require uppercase letters in password",
-    )
-    password_require_lowercase: bool = Field(
-        default=True,
-        description="Require lowercase letters in password",
-    )
-    password_require_numbers: bool = Field(
-        default=True,
-        description="Require numbers in password",
-    )
-    password_require_symbols: bool = Field(
-        default=False,
-        description="Require symbols in password",
-    )
-    max_failed_login_attempts: int = Field(
-        default=5,
-        description="Maximum failed login attempts before lockout",
-    )
-    account_lockout_duration_minutes: int = Field(
-        default=30,
-        description="Account lockout duration in minutes",
-    )
-    email_verification_token_expire_hours: int = Field(
-        default=24,
-        description="Email verification token expiration in hours",
-    )
-    password_reset_token_expire_hours: int = Field(
-        default=1,
-        description="Password reset token expiration in hours",
+    max_failed_attempts: int = Field(default=5, env="MAX_FAILED_ATTEMPTS", ge=1, le=20)
+    lockout_duration_minutes: int = Field(
+        default=30, env="LOCKOUT_DURATION_MINUTES", ge=1, le=1440
     )
     session_expire_hours: int = Field(
-        default=24,
-        description="Session expiration in hours",
+        default=24, env="SESSION_EXPIRE_HOURS", ge=1, le=168
     )
-    session_extend_on_activity: bool = Field(
-        default=True,
-        description="Extend session on user activity",
-    )
-    database_pool_size: int = Field(
-        default=10,
-        description="Database connection pool size",
-    )
-    database_max_overflow: int = Field(
-        default=20,
-        description="Database connection pool max overflow",
-    )
-    bcrypt_rounds: int = Field(
-        default=12,
-        description="Bcrypt rounds (alias for password_bcrypt_rounds)",
-    )
-
-    # Note: Most auth fields now inherited from AuthConfigMixin:
-    # - max_failed_login_attempts, account_lockout_duration_minutes
-    # - password_min_length, password_require_uppercase, password_require_lowercase
-    # - password_require_numbers, password_bcrypt_rounds
-
-    # Session settings (additional to AuthConfigMixin)
     max_concurrent_sessions: int = Field(
-        default=5,
-        ge=1,
-        le=20,
-        description="Maximum concurrent sessions per user",
+        default=5, env="MAX_CONCURRENT_SESSIONS", ge=1, le=20
     )
-    session_timeout_minutes: int = Field(
-        default=60,
-        ge=1,
-        le=1440,
-        description="Session timeout in minutes",
+    require_email_verification: bool = Field(
+        default=False, env="REQUIRE_EMAIL_VERIFICATION"
     )
+    enable_2fa: bool = Field(default=False, env="ENABLE_2FA")
 
-    # Email settings
-    from_email: str = Field(
-        default="noreply@flext.com",
-        description="Default sender email address",
+
+class RateLimitConfig(BaseSettings):
+    """Rate limiting configuration."""
+
+    requests_per_minute: int = Field(
+        default=60, env="RATE_LIMIT_PER_MINUTE", ge=1, le=1000
     )
-
-    # Feature flags
-    enable_registration: bool = Field(
-        default=True,
-        description="Enable user registration",
+    requests_per_hour: int = Field(
+        default=1000, env="RATE_LIMIT_PER_HOUR", ge=1, le=10000
     )
-    enable_password_reset: bool = Field(
-        default=True,
-        description="Enable password reset functionality",
+    login_requests_per_minute: int = Field(
+        default=5, env="LOGIN_RATE_LIMIT_PER_MINUTE", ge=1, le=60
     )
-    enable_2fa: bool = Field(
-        default=False,
-        description="Enable two-factor authentication",
-    )
-
-    # Note: Redis configuration inherited from RedisConfigMixin:
-    # - redis_url, redis_pool_size, redis_timeout, redis_decode_responses
-
-    # Email configuration
-    smtp_host: str = Field(default="localhost", description="SMTP server host")
-    smtp_port: int = Field(default=587, ge=1, le=65535, description="SMTP server port")
-    smtp_username: str = Field(default="", description="SMTP username")
-    smtp_password: str = Field(
-        default="",
-        description="SMTP password",
-        json_schema_extra={"secret": True},
-    )
-    smtp_use_tls: bool = Field(default=True, description="Use TLS for SMTP")
-
-    # Email templates
-    email_from: str = Field(
-        default="noreply@flext.com",
-        description="From email address",
-    )
-    email_verification_subject: str = Field(
-        default="Verify your email address",
-        description="Email verification subject",
-    )
-    password_reset_subject: str = Field(
-        default="Password reset request",
-        description="Password reset subject",
-    )
-
-    # Note: is_development() and is_production() inherited from BaseConfigMixin
-
-    def validate_configuration(self) -> list[str]:
-        """Validate authentication configuration settings.
-
-        Returns:
-            List of validation error messages.
-
-        """
-        errors: list[str] = []
-
-        # Most validations are now handled by Pydantic field constraints in mixins
-        # Only validate application-specific business rules here
-
-        if self.max_concurrent_sessions < 1:
-            errors.append("Max concurrent sessions must be at least 1")
-
-        if self.session_timeout_minutes < 1:
-            errors.append("Session timeout must be at least 1 minute")
-
-        if self.auth_token_expire_minutes < 1:
-            errors.append("Access token expiration must be at least 1 minute")
-
-        return errors
-
-
-# Global settings instance
-_settings: AuthConfig | None = None
-
-
-def get_auth_settings() -> AuthConfig:
-    """Get authentication configuration settings.
-
-    Returns:
-        AuthConfig: Consolidated authentication configuration using flext-core patterns.
-
-    """
-    global _settings
-    if _settings is None:
-        _settings = AuthConfig()
-    return _settings
-
-
-# Helper functions for creating configuration instances
-def create_development_auth_config() -> AuthConfig:
-    """Create development-specific auth configuration."""
-    return AuthConfig(
-        environment="development",
-        debug=True,
-        jwt_secret_key="dev-secret-key-change-in-production",
-        database_url="postgresql://localhost:5432/flext_auth_dev",
-        redis_url="redis://localhost:6379/0",
+    register_requests_per_minute: int = Field(
+        default=3, env="REGISTER_RATE_LIMIT_PER_MINUTE", ge=1, le=30
     )
 
 
-def create_production_auth_config() -> AuthConfig:
-    """Create production-specific auth configuration."""
-    return AuthConfig(
-        environment="production",
-        debug=False,
-        # Secret key must be set via environment variable in production
-        database_url="postgresql://localhost:5432/flext_auth",
-        redis_url="redis://localhost:6379/1",
+class CORSConfig(BaseSettings):
+    """CORS configuration."""
+
+    allowed_origins: list[str] = Field(
+        default_factory=lambda: ["http://localhost:3000", "http://localhost:8080"],
+        env="CORS_ORIGINS",
+    )
+    allow_credentials: bool = Field(default=True, env="CORS_ALLOW_CREDENTIALS")
+    allowed_methods: list[str] = Field(
+        default_factory=lambda: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        env="CORS_ALLOWED_METHODS",
+    )
+    allowed_headers: list[str] = Field(
+        default_factory=lambda: ["*"], env="CORS_ALLOWED_HEADERS"
     )
 
+    @validator("allowed_origins")
+    def parse_origins(self, v: str | list[str]) -> list[str]:
+        """Parse comma-separated origins string."""
+        if isinstance(v, str):
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
+        return v
 
-# Export aliases for backward compatibility
-AuthSettings = AuthConfig
 
-__all__ = [
-    "AuthConfig",
-    "AuthSettings",
-    "create_development_auth_config",
-    "create_production_auth_config",
-    "get_auth_settings",
-]
+class ServerConfig(BaseSettings):
+    """Server configuration."""
+
+    host: str = Field(default="0.0.0.0", env="HOST")
+    port: int = Field(default=8000, env="PORT", ge=1, le=65535)
+    workers: int = Field(default=1, env="WORKERS", ge=1, le=32)
+    reload: bool = Field(default=False, env="RELOAD")
+    debug: bool = Field(default=False, env="DEBUG")
+    log_level: str = Field(default="info", env="LOG_LEVEL")
+    trusted_hosts: list[str] = Field(
+        default_factory=lambda: ["localhost", "127.0.0.1"], env="TRUSTED_HOSTS"
+    )
+
+    @validator("log_level")
+    def validate_log_level(self, v: str) -> str:
+        """Validate log level."""
+        allowed_levels = ["debug", "info", "warning", "error", "critical"]
+        if v.lower() not in allowed_levels:
+            raise ValueError(f"Log level must be one of {allowed_levels}")
+        return v.lower()
+
+    @validator("trusted_hosts")
+    def parse_trusted_hosts(self, v: str | list[str]) -> list[str]:
+        """Parse comma-separated hosts string."""
+        if isinstance(v, str):
+            return [host.strip() for host in v.split(",") if host.strip()]
+        return v
+
+
+class AppConfig(BaseSettings):
+    """Main application configuration."""
+
+    name: str = Field(default="FLEXT Authentication API", env="APP_NAME")
+    version: str = Field(default="1.0.0", env="APP_VERSION")
+    description: str = Field(
+        default="Production-ready authentication service for FLEXT",
+        env="APP_DESCRIPTION",
+    )
+    environment: str = Field(default="development", env="ENVIRONMENT")
+
+    # Sub-configurations
+    database: DatabaseConfig = Field(default_factory=DatabaseConfig)
+    jwt: JWTConfig = Field(default_factory=JWTConfig)
+    security: SecurityConfig = Field(default_factory=SecurityConfig)
+    rate_limit: RateLimitConfig = Field(default_factory=RateLimitConfig)
+    cors: CORSConfig = Field(default_factory=CORSConfig)
+    server: ServerConfig = Field(default_factory=ServerConfig)
+
+    class Config:
+        """Pydantic configuration."""
+
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+        case_sensitive = False
+
+    @validator("environment")
+    def validate_environment(self, v: str) -> str:
+        """Validate environment."""
+        allowed_envs = ["development", "testing", "staging", "production"]
+        if v.lower() not in allowed_envs:
+            raise ValueError(f"Environment must be one of {allowed_envs}")
+        return v.lower()
+
+    @property
+    def is_development(self) -> bool:
+        """Check if running in development mode."""
+        return self.environment == "development"
+
+    @property
+    def is_production(self) -> bool:
+        """Check if running in production mode."""
+        return self.environment == "production"
+
+    @property
+    def is_testing(self) -> bool:
+        """Check if running in testing mode."""
+        return self.environment == "testing"
+
+    def model_dump_safe(self) -> dict[str, Any]:
+        """Dump config without sensitive data."""
+        config_dict = self.model_dump()
+
+        # Remove sensitive fields
+        if "jwt" in config_dict and "secret_key" in config_dict["jwt"]:
+            config_dict["jwt"]["secret_key"] = "[REDACTED]"
+
+        if "database" in config_dict and "url" in config_dict["database"]:
+            db_url = config_dict["database"]["url"]
+            if db_url and "://" in db_url:
+                # Hide credentials in database URL
+                parts = db_url.split("://")
+                if len(parts) == 2 and "@" in parts[1]:
+                    host_part = parts[1].split("@", 1)[1]
+                    config_dict["database"][
+                        "url"
+                    ] = f"{parts[0]}://[REDACTED]@{host_part}"
+
+        return config_dict
+
+
+# Global configuration instance
+config = AppConfig()
+
+
+def load_config(config_file: str | Path | None = None) -> AppConfig:
+    """Load configuration from file or environment."""
+    if config_file:
+        config_path = Path(config_file)
+        if config_path.exists():
+            return AppConfig(_env_file=config_path)
+
+    return AppConfig()
+
+
+def validate_production_config(cfg: AppConfig) -> None:
+    """Validate production configuration."""
+    errors = []
+
+    if cfg.is_production:
+        # JWT secret key validation
+        if (
+            not cfg.jwt.secret_key
+            or cfg.jwt.secret_key == "dev-secret-key-change-in-production"
+        ):
+            errors.append("Production JWT secret key is required")
+
+        # Database URL validation
+        if not cfg.database.url:
+            errors.append("Production database URL is required")
+
+        # Security settings
+        if cfg.security.password_rounds < 12:
+            errors.append("Production bcrypt rounds should be >= 12")
+
+        # Debug mode
+        if cfg.server.debug:
+            errors.append("Debug mode should be disabled in production")
+
+        # CORS origins
+        if "*" in cfg.cors.allowed_origins:
+            errors.append("CORS wildcard origins should not be used in production")
+
+    if errors:
+        error_msg = "Production configuration errors:\n" + "\n".join(
+            f"  - {error}" for error in errors
+        )
+        raise ValueError(error_msg)
