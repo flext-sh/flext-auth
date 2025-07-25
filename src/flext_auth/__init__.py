@@ -169,19 +169,46 @@ def flext_auth_role_required(
     auth_instance: FlextAuth | None = None,
     secret_key: str | None = None,
 ) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    """Require specific role for endpoint access.
+    """Require specific role for endpoint access with real validation.
 
-    Reduces 20+ lines to 1 decorator.
+    Args:
+        required_role: Required user role
+        auth_instance: FlextAuth instance for validation
+        secret_key: JWT secret key for token validation
+
+    Returns:
+        Decorator function that validates role authorization
 
     Usage:
-        @flext_auth_role_required(ADMIN_ROLE)
-        def REDACTED_LDAP_BIND_PASSWORD_endpoint(request, auth_context):
+        @flext_auth_role_required("REDACTED_LDAP_BIND_PASSWORD", secret_key="your-secret")
+        def REDACTED_LDAP_BIND_PASSWORD_endpoint(request, **kwargs):
             return "Admin only content"
+
     """
-    def decorator(func: Callable[..., object]) -> Callable[..., object]:
-        def wrapper(*args: object, **kwargs: object) -> object:
-            # Pattern demo - real implementation checks role
-            return func(*args, **kwargs)
+    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            # First authenticate using the auth decorator
+            auth_decorator = flext_auth_required(auth_instance, secret_key)
+            auth_func = auth_decorator(func)
+
+            # This will validate auth and add auth_context to kwargs
+            result = auth_func(*args, **kwargs)
+
+            # If auth failed, return error immediately
+            if isinstance(result, dict) and result.get("status") == 401:
+                return result
+
+            # Check role authorization
+            auth_context = kwargs.get("auth_context", {})
+            user_role = auth_context.get("role", "")
+
+            if user_role != required_role:
+                return {
+                    "error": f"Role '{required_role}' required, got '{user_role}'",
+                    "status": 403,
+                }
+
+            return result
         return wrapper
     return decorator
 
