@@ -10,7 +10,8 @@ def main() -> int:
     """Perform health check."""
     try:
         with urllib.request.urlopen(
-            "http://localhost:8000/auth/health", timeout=10
+            "http://localhost:8000/auth/health",
+            timeout=10,
         ) as response:
             if response.status == 200:
                 return 0

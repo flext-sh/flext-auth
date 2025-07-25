@@ -3,29 +3,31 @@
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
-from fastapi import HTTPException, Request, status
+from fastapi import HTTPException, Request, Response, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Awaitable, Callable
 
-    from flext_auth.domain.value_objects import SecurityContext
-    from flext_auth.services.auth_service import AuthService
+    from flext_auth.domain.value_objects import FlextSecurityContext
+    from flext_auth.services.auth_service import FlextAuthService
 
 
 class AuthMiddleware:
     """Authentication middleware for protecting routes."""
 
-    def __init__(self, auth_service: AuthService) -> None:
+    def __init__(self, auth_service: FlextAuthService) -> None:
         """Initialize middleware with auth service."""
         self.auth_service = auth_service
         self.security = HTTPBearer(auto_error=False)
 
     async def get_current_user(
-        self, request: Request, credentials: HTTPAuthorizationCredentials | None = None
-    ) -> SecurityContext:
+        self,
+        _request: Request,
+        credentials: HTTPAuthorizationCredentials | None = None,
+    ) -> FlextSecurityContext:
         """Get current authenticated user from token."""
         if not credentials:
             raise HTTPException(
@@ -43,7 +45,14 @@ class AuthMiddleware:
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        return token_result.data
+        context = token_result.data
+        if not context:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid security context",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        return context
 
 
 class RateLimitMiddleware:
@@ -130,7 +139,11 @@ class SecurityHeadersMiddleware:
             "Content-Security-Policy": "default-src 'self'",
         }
 
-    async def add_security_headers(self, request: Request, call_next: Callable) -> None:
+    async def add_security_headers(
+        self,
+        request: Request,
+        call_next: Callable[..., Awaitable[Any]],
+    ) -> Response:
         """Add security headers to response."""
         response = await call_next(request)
 

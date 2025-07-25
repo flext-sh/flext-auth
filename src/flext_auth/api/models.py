@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
 from pydantic import BaseModel, EmailStr, Field
@@ -28,7 +28,10 @@ class ChangePasswordRequest(BaseModel):
 
     current_password: str = Field(..., description="Current password")
     new_password: str = Field(
-        ..., min_length=8, max_length=128, description="New password"
+        ...,
+        min_length=8,
+        max_length=128,
+        description="New password",
     )
 
 
@@ -86,7 +89,7 @@ class ErrorResponse(BaseModel):
     error: str = Field(..., description="Error message")
     detail: str | None = Field(None, description="Error details")
     timestamp: str = Field(
-        default_factory=lambda: datetime.now().isoformat(),
+        default_factory=lambda: datetime.now(UTC).isoformat(),
         description="Error timestamp",
     )
 
@@ -96,7 +99,7 @@ class HealthResponse(BaseModel):
 
     status: str = Field(default="healthy", description="Service status")
     timestamp: str = Field(
-        default_factory=lambda: datetime.now().isoformat(),
+        default_factory=lambda: datetime.now(UTC).isoformat(),
         description="Check timestamp",
     )
     version: str = Field(default="1.0.0", description="API version")
@@ -108,6 +111,6 @@ class ValidationErrorResponse(BaseModel):
     error: str = Field(default="validation_error", description="Error type")
     details: list[dict[str, Any]] = Field(..., description="Validation error details")
     timestamp: str = Field(
-        default_factory=lambda: datetime.now().isoformat(),
+        default_factory=lambda: datetime.now(UTC).isoformat(),
         description="Error timestamp",
     )

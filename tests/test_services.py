@@ -6,13 +6,13 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from flext_auth.domain.entities import UserRole, UserStatus
-from flext_auth.domain.value_objects import PlainPassword
+from flext_auth.domain.entities import FlextUserRole, FlextUserStatus
+from flext_auth.domain.value_objects import FlextPlainPassword
 from flext_auth.repositories.session_repository import InMemorySessionRepository
 from flext_auth.repositories.user_repository import InMemoryUserRepository
-from flext_auth.services.auth_service import AuthService
-from flext_auth.services.jwt_service import JWTService
-from flext_auth.services.password_service import PasswordService
+from flext_auth.services.auth_service import FlextAuthService
+from flext_auth.services.jwt_service import FlextJWTService
+from flext_auth.services.password_service import FlextPasswordService
 
 if TYPE_CHECKING:
     from flext_auth.repositories.session_repository import SessionRepository
@@ -20,15 +20,15 @@ if TYPE_CHECKING:
 
 
 @pytest.fixture
-def password_service() -> PasswordService:
+def password_service() -> FlextPasswordService:
     """Create password service for testing."""
-    return PasswordService(rounds=4)  # Use low rounds for faster tests
+    return FlextPasswordService(rounds=4)  # Use low rounds for faster tests
 
 
 @pytest.fixture
-def jwt_service() -> JWTService:
+def jwt_service() -> FlextJWTService:
     """Create JWT service for testing."""
-    return JWTService(
+    return FlextJWTService(
         secret_key="test-secret-key-for-testing-minimum-32-characters",
         algorithm="HS256",
         access_token_expire_minutes=60,
@@ -52,11 +52,11 @@ def session_repository() -> SessionRepository:
 def auth_service(
     user_repository: UserRepository,
     session_repository: SessionRepository,
-    password_service: PasswordService,
-    jwt_service: JWTService,
-) -> AuthService:
+    password_service: FlextPasswordService,
+    jwt_service: FlextJWTService,
+) -> FlextAuthService:
     """Create authentication service for testing."""
-    return AuthService(
+    return FlextAuthService(
         user_repository=user_repository,
         session_repository=session_repository,
         password_service=password_service,
@@ -71,7 +71,7 @@ def auth_service(
 class TestPasswordService:
     """Test password service functionality."""
 
-    def test_hash_password_success(self, password_service: PasswordService) -> None:
+    def test_hash_password_success(self, password_service: FlextPasswordService) -> None:
         """Test successful password hashing."""
         password = "TestPassword123!"
 
@@ -81,16 +81,22 @@ class TestPasswordService:
         assert result.data.value.startswith("$2b$")
         assert len(result.data.value) > 50  # Bcrypt hashes are ~60 chars
 
-    def test_hash_password_with_value_object(self, password_service: PasswordService) -> None:
+    def test_hash_password_with_value_object(
+        self,
+        password_service: FlextPasswordService,
+    ) -> None:
         """Test password hashing with PlainPassword value object."""
-        password = PlainPassword(value="TestPassword123!")
+        password = FlextPlainPassword(value="TestPassword123!")
 
         result = password_service.hash_password(password)
 
         assert result.is_success
         assert result.data.value.startswith("$2b$")
 
-    def test_hash_password_validation_failure(self, password_service: PasswordService) -> None:
+    def test_hash_password_validation_failure(
+        self,
+        password_service: FlextPasswordService,
+    ) -> None:
         """Test password hashing with validation failure."""
         weak_password = "weak"  # Doesn't meet requirements
 
@@ -99,30 +105,39 @@ class TestPasswordService:
         assert not result.is_success
         assert "validation failed" in result.error.lower()
 
-    def test_verify_password_success(self, password_service: PasswordService) -> None:
+    def test_verify_password_success(self, password_service: FlextPasswordService) -> None:
         """Test successful password verification."""
         password = "TestPassword123!"
         hash_result = password_service.hash_password(password)
         assert hash_result.is_success
 
-        verify_result = password_service.verify_password(password, hash_result.data.value)
+        verify_result = password_service.verify_password(
+            password,
+            hash_result.data.value,
+        )
 
         assert verify_result.is_success
         assert verify_result.data is True
 
-    def test_verify_password_failure(self, password_service: PasswordService) -> None:
+    def test_verify_password_failure(self, password_service: FlextPasswordService) -> None:
         """Test password verification failure."""
         password = "TestPassword123!"
         wrong_password = "WrongPassword456!"
         hash_result = password_service.hash_password(password)
         assert hash_result.is_success
 
-        verify_result = password_service.verify_password(wrong_password, hash_result.data.value)
+        verify_result = password_service.verify_password(
+            wrong_password,
+            hash_result.data.value,
+        )
 
         assert verify_result.is_success
         assert verify_result.data is False
 
-    def test_verify_password_invalid_hash(self, password_service: PasswordService) -> None:
+    def test_verify_password_invalid_hash(
+        self,
+        password_service: FlextPasswordService,
+    ) -> None:
         """Test password verification with invalid hash."""
         password = "TestPassword123!"
         invalid_hash = "invalid_hash"
@@ -130,9 +145,15 @@ class TestPasswordService:
         verify_result = password_service.verify_password(password, invalid_hash)
 
         assert not verify_result.is_success
-        assert "hash" in verify_result.error.lower() or "verification" in verify_result.error.lower()
+        assert (
+            "hash" in verify_result.error.lower()
+            or "verification" in verify_result.error.lower()
+        )
 
-    def test_analyze_password_strength_strong(self, password_service: PasswordService) -> None:
+    def test_analyze_password_strength_strong(
+        self,
+        password_service: FlextPasswordService,
+    ) -> None:
         """Test password strength analysis for strong password."""
         strong_password = "VeryStr0ng!P@ssw0rd"
 
@@ -146,7 +167,10 @@ class TestPasswordService:
         assert analysis["has_digits"]
         assert analysis["has_symbols"]
 
-    def test_analyze_password_strength_weak(self, password_service: PasswordService) -> None:
+    def test_analyze_password_strength_weak(
+        self,
+        password_service: FlextPasswordService,
+    ) -> None:
         """Test password strength analysis for weak password."""
         weak_password = "password"
 
@@ -159,7 +183,10 @@ class TestPasswordService:
         assert not analysis["has_digits"]
         assert not analysis["has_symbols"]
 
-    def test_hash_different_passwords_different_hashes(self, password_service: PasswordService) -> None:
+    def test_hash_different_passwords_different_hashes(
+        self,
+        password_service: FlextPasswordService,
+    ) -> None:
         """Test that different passwords produce different hashes."""
         password1 = "TestPassword123!"
         password2 = "TestPassword456!"
@@ -171,7 +198,10 @@ class TestPasswordService:
         assert hash2.is_success
         assert hash1.data.value != hash2.data.value
 
-    def test_hash_same_password_different_salts(self, password_service: PasswordService) -> None:
+    def test_hash_same_password_different_salts(
+        self,
+        password_service: FlextPasswordService,
+    ) -> None:
         """Test that same password produces different hashes (different salts)."""
         password = "TestPassword123!"
 
@@ -186,7 +216,7 @@ class TestPasswordService:
 class TestJWTService:
     """Test JWT service functionality."""
 
-    def test_generate_access_token_success(self, jwt_service: JWTService) -> None:
+    def test_generate_access_token_success(self, jwt_service: FlextJWTService) -> None:
         """Test successful access token generation."""
         result = jwt_service.generate_access_token(
             user_id="user-123",
@@ -199,7 +229,7 @@ class TestJWTService:
         token = result.data.value
         assert token.count(".") == 2  # JWT has 3 parts separated by dots
 
-    def test_generate_refresh_token_success(self, jwt_service: JWTService) -> None:
+    def test_generate_refresh_token_success(self, jwt_service: FlextJWTService) -> None:
         """Test successful refresh token generation."""
         result = jwt_service.generate_refresh_token(
             user_id="user-123",
@@ -210,7 +240,7 @@ class TestJWTService:
         token = result.data.value
         assert token.count(".") == 2
 
-    def test_generate_token_pair_success(self, jwt_service: JWTService) -> None:
+    def test_generate_token_pair_success(self, jwt_service: FlextJWTService) -> None:
         """Test successful token pair generation."""
         result = jwt_service.generate_token_pair(
             user_id="user-123",
@@ -225,7 +255,7 @@ class TestJWTService:
         assert "refresh_token" in tokens
         assert tokens["access_token"] != tokens["refresh_token"]
 
-    def test_verify_token_success(self, jwt_service: JWTService) -> None:
+    def test_verify_token_success(self, jwt_service: FlextJWTService) -> None:
         """Test successful token verification."""
         # Generate token
         token_result = jwt_service.generate_access_token(
@@ -247,7 +277,7 @@ class TestJWTService:
         assert claims.session_id == "session-456"
         assert claims.token_type == "access"
 
-    def test_verify_token_invalid(self, jwt_service: JWTService) -> None:
+    def test_verify_token_invalid(self, jwt_service: FlextJWTService) -> None:
         """Test token verification with invalid token."""
         invalid_token = "invalid.jwt.token"
 
@@ -256,10 +286,10 @@ class TestJWTService:
         assert not result.is_success
         assert "invalid" in result.error.lower()
 
-    def test_verify_token_expired(self, jwt_service: JWTService) -> None:
+    def test_verify_token_expired(self, jwt_service: FlextJWTService) -> None:
         """Test token verification with expired token."""
         # Create JWT service with very short expiration
-        short_jwt_service = JWTService(
+        short_jwt_service = FlextJWTService(
             secret_key="test-secret-key-for-testing-minimum-32-characters",
             access_token_expire_minutes=0,  # Immediately expired
         )
@@ -277,7 +307,7 @@ class TestJWTService:
         assert not verify_result.is_success
         assert "expired" in verify_result.error.lower()
 
-    def test_extract_user_id_success(self, jwt_service: JWTService) -> None:
+    def test_extract_user_id_success(self, jwt_service: FlextJWTService) -> None:
         """Test successful user ID extraction from token."""
         user_id = "user-123"
 
@@ -293,7 +323,7 @@ class TestJWTService:
         assert extract_result.is_success
         assert extract_result.data == user_id
 
-    def test_extract_user_id_invalid_token(self, jwt_service: JWTService) -> None:
+    def test_extract_user_id_invalid_token(self, jwt_service: FlextJWTService) -> None:
         """Test user ID extraction from invalid token."""
         invalid_token = "invalid.jwt.token"
 
@@ -301,7 +331,7 @@ class TestJWTService:
 
         assert not result.is_success
 
-    def test_token_with_additional_claims(self, jwt_service: JWTService) -> None:
+    def test_token_with_additional_claims(self, jwt_service: FlextJWTService) -> None:
         """Test token generation with additional claims."""
         additional_claims = {
             "custom_claim": "custom_value",
@@ -326,13 +356,13 @@ class TestJWTService:
 class TestAuthServiceIntegration:
     """Test authentication service integration."""
 
-    async def test_register_user_success(self, auth_service: AuthService) -> None:
+    async def test_register_user_success(self, auth_service: FlextAuthService) -> None:
         """Test successful user registration."""
         result = await auth_service.register_user(
             username="testuser",
             email="test@example.com",
             password="TestPassword123!",
-            role=UserRole.USER,
+            role=FlextUserRole.USER,
             ip_address="192.168.1.1",
             user_agent="Test Browser",
         )
@@ -341,10 +371,13 @@ class TestAuthServiceIntegration:
         user = result.data
         assert user.username == "testuser"
         assert str(user.email) == "test@example.com"
-        assert user.role == UserRole.USER
-        assert user.status == UserStatus.ACTIVE
+        assert user.role == FlextUserRole.USER
+        assert user.status == FlextUserStatus.ACTIVE
 
-    async def test_register_user_duplicate_username(self, auth_service: AuthService) -> None:
+    async def test_register_user_duplicate_username(
+        self,
+        auth_service: FlextAuthService,
+    ) -> None:
         """Test user registration with duplicate username."""
         # Register first user
         result1 = await auth_service.register_user(
@@ -364,7 +397,10 @@ class TestAuthServiceIntegration:
         assert not result2.is_success
         assert "already exists" in result2.error
 
-    async def test_register_user_duplicate_email(self, auth_service: AuthService) -> None:
+    async def test_register_user_duplicate_email(
+        self,
+        auth_service: FlextAuthService,
+    ) -> None:
         """Test user registration with duplicate email."""
         # Register first user
         result1 = await auth_service.register_user(
@@ -384,7 +420,7 @@ class TestAuthServiceIntegration:
         assert not result2.is_success
         assert "already exists" in result2.error
 
-    async def test_authenticate_user_success(self, auth_service: AuthService) -> None:
+    async def test_authenticate_user_success(self, auth_service: FlextAuthService) -> None:
         """Test successful user authentication."""
         # Register user first
         register_result = await auth_service.register_user(
@@ -416,7 +452,10 @@ class TestAuthServiceIntegration:
         assert "access_token" in tokens
         assert "refresh_token" in tokens
 
-    async def test_authenticate_user_invalid_password(self, auth_service: AuthService) -> None:
+    async def test_authenticate_user_invalid_password(
+        self,
+        auth_service: FlextAuthService,
+    ) -> None:
         """Test authentication with invalid password."""
         # Register user first
         register_result = await auth_service.register_user(
@@ -436,7 +475,10 @@ class TestAuthServiceIntegration:
         assert not auth_result.is_success
         assert "Invalid username or password" in auth_result.error
 
-    async def test_authenticate_user_nonexistent(self, auth_service: AuthService) -> None:
+    async def test_authenticate_user_nonexistent(
+        self,
+        auth_service: FlextAuthService,
+    ) -> None:
         """Test authentication with nonexistent user."""
         auth_result = await auth_service.authenticate_user(
             username="nonexistent",
@@ -447,7 +489,10 @@ class TestAuthServiceIntegration:
         assert not auth_result.is_success
         assert "Invalid username or password" in auth_result.error
 
-    async def test_authenticate_user_account_locking(self, auth_service: AuthService) -> None:
+    async def test_authenticate_user_account_locking(
+        self,
+        auth_service: FlextAuthService,
+    ) -> None:
         """Test account locking after failed attempts."""
         # Register user first
         register_result = await auth_service.register_user(
@@ -476,7 +521,7 @@ class TestAuthServiceIntegration:
         assert not auth_result.is_success
         assert "locked" in auth_result.error.lower()
 
-    async def test_validate_token_success(self, auth_service: AuthService) -> None:
+    async def test_validate_token_success(self, auth_service: FlextAuthService) -> None:
         """Test successful token validation."""
         # Register and authenticate user
         await auth_service.register_user(
@@ -502,7 +547,7 @@ class TestAuthServiceIntegration:
         assert context.username == "testuser"
         assert context.role == "user"
 
-    async def test_refresh_token_success(self, auth_service: AuthService) -> None:
+    async def test_refresh_token_success(self, auth_service: FlextAuthService) -> None:
         """Test successful token refresh."""
         # Register and authenticate user
         await auth_service.register_user(
@@ -528,7 +573,7 @@ class TestAuthServiceIntegration:
         assert "access_token" in new_tokens
         assert "refresh_token" in new_tokens
 
-    async def test_logout_user_success(self, auth_service: AuthService) -> None:
+    async def test_logout_user_success(self, auth_service: FlextAuthService) -> None:
         """Test successful user logout."""
         # Register and authenticate user
         await auth_service.register_user(
@@ -551,7 +596,7 @@ class TestAuthServiceIntegration:
 
         assert logout_result.is_success
 
-    async def test_change_password_success(self, auth_service: AuthService) -> None:
+    async def test_change_password_success(self, auth_service: FlextAuthService) -> None:
         """Test successful password change."""
         # Register user
         register_result = await auth_service.register_user(
@@ -587,7 +632,7 @@ class TestAuthServiceIntegration:
         )
         assert auth_result2.is_success
 
-    async def test_max_concurrent_sessions(self, auth_service: AuthService) -> None:
+    async def test_max_concurrent_sessions(self, auth_service: FlextAuthService) -> None:
         """Test maximum concurrent sessions enforcement."""
         # Register user
         await auth_service.register_user(
@@ -602,8 +647,8 @@ class TestAuthServiceIntegration:
             auth_result = await auth_service.authenticate_user(
                 username="testuser",
                 password="TestPassword123!",
-                ip_address=f"192.168.1.{i+1}",
-                user_agent=f"Browser {i+1}",
+                ip_address=f"192.168.1.{i + 1}",
+                user_agent=f"Browser {i + 1}",
             )
             assert auth_result.is_success
             sessions.append(auth_result.data)

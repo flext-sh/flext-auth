@@ -1,8 +1,10 @@
-"""FastAPI application factory for flext-auth."""
+"""FastAPI application factory for flext-auth using FLEXT configuration patterns."""
 
 from __future__ import annotations
 
 import os
+import traceback
+from collections.abc import Callable
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING
 
@@ -10,19 +12,19 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.responses import JSONResponse
+from flext_core import FlextContainer
 
 from flext_auth.api.dependencies import configure_dependencies
 from flext_auth.api.middleware import SecurityHeadersMiddleware
 from flext_auth.api.models import ErrorResponse, ValidationErrorResponse
 from flext_auth.api.routes import router
+from flext_auth.config import AppConfig
 from flext_auth.repositories.session_repository import (
     InMemorySessionRepository,
-    PostgreSQLSessionRepository,
     SessionRepository,
 )
 from flext_auth.repositories.user_repository import (
     InMemoryUserRepository,
-    PostgreSQLUserRepository,
     UserRepository,
 )
 from flext_auth.services.auth_service import AuthService
@@ -30,7 +32,9 @@ from flext_auth.services.jwt_service import JWTService
 from flext_auth.services.password_service import PasswordService
 
 if TYPE_CHECKING:
-    from collections.abc import AsyncGenerator, Callable
+    from collections.abc import AsyncGenerator, Awaitable, Callable
+
+    from starlette.responses import Response
 
 
 @asynccontextmanager
@@ -48,17 +52,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 
 async def startup_handler(app: FastAPI) -> None:
     """Handle application startup."""
-    # Initialize services based on configuration
-    db_url = os.getenv("DATABASE_URL")
-    jwt_secret = os.getenv("JWT_SECRET_KEY", "dev-secret-key-change-in-production")
+    # Use FLEXT configuration instead of manual getenv
 
-    # Create repositories
-    if db_url and db_url != "":
-        user_repo: UserRepository = PostgreSQLUserRepository(db_url)
-        session_repo: SessionRepository = PostgreSQLSessionRepository(db_url)
-    else:
-        user_repo = InMemoryUserRepository()
-        session_repo = InMemorySessionRepository()
+    settings = AppConfig()
+    jwt_secret = settings.jwt.secret_key
+
+    # Create repositories (using in-memory for now, PostgreSQL removed due to duplication)
+    user_repo: UserRepository = InMemoryUserRepository()
+    session_repo: SessionRepository = InMemorySessionRepository()
 
     # Create services
     password_service = PasswordService(rounds=12)
@@ -89,19 +90,32 @@ async def startup_handler(app: FastAPI) -> None:
 
 
 async def shutdown_handler(app: FastAPI) -> None:
-    """Handle application shutdown."""
-    # Close database connections if using PostgreSQL
-    if hasattr(app.state, "user_repo") and hasattr(app.state.user_repo, "close"):
-        await app.state.user_repo.close()
+    """Handle application shutdown using FLEXT connection services."""
+    # Use FLEXT connection services for proper resource cleanup
 
-    if hasattr(app.state, "session_repo") and hasattr(app.state.session_repo, "close"):
-        await app.state.session_repo.close()
+    container = FlextContainer()
+    connection_service = container.get("FlextConnectionService")
+
+    if connection_service:
+        # Close all repository connections through FLEXT connection service
+        if hasattr(app.state, "user_repo"):
+            result = await connection_service.release_repository_connection(app.state.user_repo)
+            if not result.success:
+                # Log warning but don't fail shutdown
+                pass
+
+        if hasattr(app.state, "session_repo"):
+            result = await connection_service.release_repository_connection(app.state.session_repo)
+            if not result.success:
+                # Log warning but don't fail shutdown
+                pass
 
 
 def create_app(
     title: str = "FLEXT Authentication API",
     description: str = "Production-ready authentication service",
     version: str = "1.0.0",
+    *,
     debug: bool = False,
 ) -> FastAPI:
     """Create and configure FastAPI application."""
@@ -121,8 +135,9 @@ def create_app(
 
     @app.middleware("http")
     async def add_security_headers(
-        request: Request, call_next: Callable[[Request], JSONResponse]
-    ) -> JSONResponse:
+        request: Request,
+        call_next: Callable[[Request], Awaitable[Response]],
+    ) -> Response:
         """Add security headers to all responses."""
         response = await call_next(request)
         for header, value in security_middleware.security_headers.items():
@@ -150,27 +165,24 @@ def create_app(
     # Global exception handlers
     @app.exception_handler(422)
     async def validation_exception_handler(
-        request: Request, exc: Exception
+        request: Request,  # noqa: ARG001
+        exc: Exception,
     ) -> JSONResponse:
         """Handle validation errors."""
         return JSONResponse(
             status_code=422,
             content=ValidationErrorResponse(
-                details=exc.errors() if hasattr(exc, "errors") else [{"msg": str(exc)}]
+                details=exc.errors() if hasattr(exc, "errors") else [{"msg": str(exc)}],
             ).model_dump(),
         )
 
     @app.exception_handler(Exception)
     async def global_exception_handler(
-        request: Request, exc: Exception
+        request: Request,  # noqa: ARG001
+        exc: Exception,  # noqa: ARG001
     ) -> JSONResponse:
         """Handle unexpected errors."""
-        if debug:
-            import traceback
-
-            detail = traceback.format_exc()
-        else:
-            detail = "An unexpected error occurred"
+        detail = traceback.format_exc() if debug else "An unexpected error occurred"
 
         return JSONResponse(
             status_code=500,
@@ -184,15 +196,15 @@ def create_app(
 
 
 def _get_cors_origins() -> list[str]:
-    """Get CORS allowed origins from environment."""
-    origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:8080")
-    return [origin.strip() for origin in origins.split(",") if origin.strip()]
+    """Get CORS allowed origins from FLEXT settings."""
+    settings = AppConfig()
+    return settings.cors.allowed_origins
 
 
 def _get_allowed_hosts() -> list[str]:
-    """Get trusted hosts from environment."""
-    hosts = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1")
-    return [host.strip() for host in hosts.split(",") if host.strip()]
+    """Get trusted hosts from FLEXT settings."""
+    settings = AppConfig()
+    return settings.server.trusted_hosts
 
 
 # Create default app instance

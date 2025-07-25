@@ -19,7 +19,7 @@ _rate_limiter: RateLimitMiddleware | None = None
 
 def configure_dependencies(auth_service: AuthService) -> None:
     """Configure global dependencies."""
-    global _auth_service, _auth_middleware, _rate_limiter
+    global _auth_service, _auth_middleware, _rate_limiter  # noqa: PLW0603
     _auth_service = auth_service
     _auth_middleware = AuthMiddleware(auth_service)
     _rate_limiter = RateLimitMiddleware()
@@ -58,7 +58,8 @@ def get_rate_limiter() -> RateLimitMiddleware:
 async def get_current_user(
     request: Request,
     credentials: Annotated[
-        HTTPAuthorizationCredentials | None, Depends(HTTPBearer(auto_error=False))
+        HTTPAuthorizationCredentials | None,
+        Depends(HTTPBearer(auto_error=False)),
     ],
     auth_middleware: Annotated[AuthMiddleware, Depends(get_auth_middleware)],
 ) -> SecurityContext:
@@ -88,7 +89,8 @@ def require_REDACTED_LDAP_BIND_PASSWORD(
     """Require REDACTED_LDAP_BIND_PASSWORD role dependency."""
     if current_user.role != "REDACTED_LDAP_BIND_PASSWORD":
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
         )
     return current_user
 

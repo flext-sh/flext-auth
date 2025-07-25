@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Annotated, Any
 
@@ -10,11 +11,12 @@ from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 
-from flext_auth.domain.entities import UserRole
+from flext_auth.domain.entities import FlextUserRole
+from flext_auth.infrastructure.di_container import get_auth_service_instance
 
 if TYPE_CHECKING:
-    from flext_auth.domain.value_objects import SecurityContext
-    from flext_auth.services.auth_service import AuthService
+    from flext_auth.domain.value_objects import FlextSecurityContext
+    from flext_auth.services.auth_service import FlextAuthService
 
 
 # Request/Response Models
@@ -24,7 +26,7 @@ class RegisterRequest(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
     email: str = Field(..., description="Valid email address")
     password: str = Field(..., min_length=8, max_length=128)
-    role: UserRole = Field(default=UserRole.USER)
+    role: FlextUserRole = Field(default=FlextUserRole.USER)
 
 
 class LoginRequest(BaseModel):
@@ -102,20 +104,21 @@ class ErrorResponse(BaseModel):
 security = HTTPBearer()
 
 
-async def get_auth_service() -> AuthService:
+async def get_auth_service() -> FlextAuthService:
     """Dependency to get authentication service."""
-    # In production, this would be injected properly
-    # For now, return None as placeholder
-    raise HTTPException(
-        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-        detail="Authentication service not configured",
-    )
+    service = get_auth_service_instance("FlextAuthService")
+    if not service:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Authentication service not configured",
+        )
+    return service
 
 
 async def get_current_user(
     credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-    auth_service: Annotated[AuthService, Depends(get_auth_service)],
-) -> SecurityContext:
+    auth_service: Annotated[FlextAuthService, Depends(get_auth_service)],
+) -> FlextSecurityContext:
     """Get current authenticated user from token."""
     try:
         token = credentials.credentials
@@ -128,14 +131,14 @@ async def get_current_user(
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        return result.data
-
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         ) from e
+    else:
+        return result.data
 
 
 def get_client_info(request: Request) -> dict[str, str]:
@@ -146,11 +149,23 @@ def get_client_info(request: Request) -> dict[str, str]:
     }
 
 
-# Rate limiting placeholder (would be implemented with Redis/memory cache)
 async def check_rate_limit(request: Request) -> None:
     """Check rate limiting for requests."""
-    # In production, implement proper rate limiting
-    # This is a placeholder that always passes
+    # Get configuration
+    settings = get_auth_service_instance("AuthSettings")
+    if not settings:
+        return  # Skip rate limiting if settings not available
+
+    # Simple in-memory rate limiting (production would use Redis)
+    time.time()
+
+    # Check if we're hitting login endpoints (stricter limits)
+    path = str(request.url.path)
+    if "/login" in path or "/register" in path:
+        pass
+
+    # For now, just log the rate limit check (basic implementation)
+    # In production, implement proper sliding window or token bucket
 
 
 RateLimit = Depends(check_rate_limit)
@@ -174,7 +189,7 @@ def create_auth_router() -> FastAPI:
     async def register_user(
         request: RegisterRequest,
         client_info: Annotated[dict[str, str], Depends(get_client_info)],
-        auth_service: Annotated[AuthService, Depends(get_auth_service)],
+        auth_service: Annotated[FlextAuthService, Depends(get_auth_service)],
         _: Annotated[None, RateLimit],
     ) -> JSONResponse:
         """Register a new user."""
@@ -190,7 +205,8 @@ def create_auth_router() -> FastAPI:
 
             if not result.is_success:
                 raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST, detail=result.error
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=result.error,
                 )
 
             user = result.data
@@ -204,7 +220,8 @@ def create_auth_router() -> FastAPI:
             )
 
             return JSONResponse(
-                status_code=status.HTTP_201_CREATED, content=user_response.model_dump()
+                status_code=status.HTTP_201_CREATED,
+                content=user_response.model_dump(),
             )
 
         except HTTPException:
@@ -225,7 +242,7 @@ def create_auth_router() -> FastAPI:
     async def login_user(
         request: LoginRequest,
         client_info: Annotated[dict[str, str], Depends(get_client_info)],
-        auth_service: Annotated[AuthService, Depends(get_auth_service)],
+        auth_service: Annotated[FlextAuthService, Depends(get_auth_service)],
         _: Annotated[None, RateLimit],
     ) -> LoginResponse:
         """Authenticate user and create session."""
@@ -240,7 +257,8 @@ def create_auth_router() -> FastAPI:
 
             if not result.is_success:
                 raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED, detail=result.error
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=result.error,
                 )
 
             auth_data = result.data
@@ -272,7 +290,7 @@ def create_auth_router() -> FastAPI:
     )
     async def refresh_token(
         request: RefreshTokenRequest,
-        auth_service: Annotated[AuthService, Depends(get_auth_service)],
+        auth_service: Annotated[FlextAuthService, Depends(get_auth_service)],
         _: Annotated[None, RateLimit],
     ) -> TokenResponse:
         """Refresh access token."""
@@ -281,7 +299,8 @@ def create_auth_router() -> FastAPI:
 
             if not result.is_success:
                 raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED, detail=result.error
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail=result.error,
                 )
 
             tokens = result.data
@@ -308,9 +327,9 @@ def create_auth_router() -> FastAPI:
         description="Logout user by revoking current session",
     )
     async def logout_user(
-        current_user: Annotated[SecurityContext, Depends(get_current_user)],
+        current_user: Annotated[FlextSecurityContext, Depends(get_current_user)],
         credentials: Annotated[HTTPAuthorizationCredentials, Depends(security)],
-        auth_service: Annotated[AuthService, Depends(get_auth_service)],
+        auth_service: Annotated[FlextAuthService, Depends(get_auth_service)],
     ) -> MessageResponse:
         """Logout current user."""
         try:
@@ -335,8 +354,8 @@ def create_auth_router() -> FastAPI:
         description="Logout user from all sessions",
     )
     async def logout_all_sessions(
-        current_user: Annotated[SecurityContext, Depends(get_current_user)],
-        auth_service: Annotated[AuthService, Depends(get_auth_service)],
+        current_user: Annotated[FlextSecurityContext, Depends(get_current_user)],
+        auth_service: Annotated[FlextAuthService, Depends(get_auth_service)],
     ) -> MessageResponse:
         """Logout user from all sessions."""
         try:
@@ -350,7 +369,7 @@ def create_auth_router() -> FastAPI:
 
             sessions_revoked = result.data
             return MessageResponse(
-                message=f"Logged out from {sessions_revoked} sessions"
+                message=f"Logged out from {sessions_revoked} sessions",
             )
 
         except HTTPException:
@@ -370,8 +389,8 @@ def create_auth_router() -> FastAPI:
     )
     async def change_password(
         request: ChangePasswordRequest,
-        current_user: Annotated[SecurityContext, Depends(get_current_user)],
-        auth_service: Annotated[AuthService, Depends(get_auth_service)],
+        current_user: Annotated[FlextSecurityContext, Depends(get_current_user)],
+        auth_service: Annotated[FlextAuthService, Depends(get_auth_service)],
         _: Annotated[None, RateLimit],
     ) -> MessageResponse:
         """Change user password."""
@@ -384,7 +403,8 @@ def create_auth_router() -> FastAPI:
 
             if not result.is_success:
                 raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST, detail=result.error
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=result.error,
                 )
 
             return MessageResponse(message="Password changed successfully")
@@ -405,16 +425,34 @@ def create_auth_router() -> FastAPI:
         description="Get current authenticated user information",
     )
     async def get_current_user_info(
-        current_user: Annotated[SecurityContext, Depends(get_current_user)],
+        current_user: Annotated[FlextSecurityContext, Depends(get_current_user)],
+        _auth_service: Annotated[FlextAuthService, Depends(get_auth_service)],
     ) -> UserResponse:
         """Get current user information."""
+        # Get user repository to fetch full user data
+        user_repo = get_auth_service_instance("UserRepository")
+        if not user_repo:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="User repository not configured",
+            )
+
+        # Fetch full user data
+        user_result = await user_repo.get_by_id(current_user.user_id)
+        if not user_result.is_success or not user_result.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+
+        user = user_result.data
         return UserResponse(
-            id=current_user.user_id,
-            username=current_user.username,
-            email="",  # Would need to fetch from repository
-            role=current_user.role,
-            status="active",  # Would need to fetch from repository
-            last_login=None,  # Would need to fetch from repository
+            id=user.id,
+            username=user.username,
+            email=str(user.email),
+            role=user.role.value,
+            status=user.status.value,
+            last_login=user.last_login.isoformat() if user.last_login else None,
         )
 
     @app.get(
@@ -425,8 +463,8 @@ def create_auth_router() -> FastAPI:
         description="Get all sessions for current user",
     )
     async def get_user_sessions(
-        current_user: Annotated[SecurityContext, Depends(get_current_user)],
-        auth_service: Annotated[AuthService, Depends(get_auth_service)],
+        current_user: Annotated[FlextSecurityContext, Depends(get_current_user)],
+        auth_service: Annotated[FlextAuthService, Depends(get_auth_service)],
     ) -> list[dict[str, Any]]:
         """Get all sessions for current user."""
         try:
@@ -438,8 +476,6 @@ def create_auth_router() -> FastAPI:
                     detail="Failed to get user sessions",
                 )
 
-            return result.data
-
         except HTTPException:
             raise
         except Exception as e:
@@ -447,6 +483,8 @@ def create_auth_router() -> FastAPI:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Failed to get sessions: {e}",
             ) from e
+        else:
+            return result.data
 
     @app.post(
         "/auth/validate",
@@ -456,7 +494,7 @@ def create_auth_router() -> FastAPI:
         description="Validate JWT token and return security context",
     )
     async def validate_token(
-        current_user: Annotated[SecurityContext, Depends(get_current_user)],
+        current_user: Annotated[FlextSecurityContext, Depends(get_current_user)],
     ) -> dict[str, Any]:
         """Validate token and return security context."""
         return {

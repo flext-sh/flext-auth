@@ -58,10 +58,17 @@ async def register_user(
 
         if not result.is_success:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail=result.error
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.error,
             )
 
         user = result.data
+        if user is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="User registration succeeded but returned no data",
+            )
+
         return UserResponse(
             id=user.id,
             username=user.username,
@@ -103,10 +110,16 @@ async def login_user(
 
         if not result.is_success:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail=result.error
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=result.error,
             )
 
         auth_data = result.data
+        if not auth_data:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Authentication succeeded but returned no data",
+            )
 
         return AuthResponse(
             user=UserResponse(**auth_data["user"]),
@@ -138,10 +151,18 @@ async def refresh_token(
 
         if not result.is_success:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED, detail=result.error
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=result.error,
             )
 
-        return TokenResponse(**result.data)
+        tokens = result.data
+        if not tokens:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Token refresh succeeded but returned no data",
+            )
+
+        return TokenResponse(**tokens)
 
     except HTTPException:
         raise
@@ -159,7 +180,7 @@ async def refresh_token(
 )
 async def logout_user(
     request: Request,
-    current_user: ActiveUser,
+    _current_user: ActiveUser,
     auth_service: AuthServiceDep,
 ) -> JSONResponse:
     """Logout current user session."""
@@ -177,7 +198,8 @@ async def logout_user(
 
         if not result.is_success:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail=result.error
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.error,
             )
 
         return JSONResponse(status_code=status.HTTP_204_NO_CONTENT, content=None)
@@ -206,8 +228,14 @@ async def logout_all_sessions(
 
         if not result.is_success:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail=result.error
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.error,
             )
+
+        return JSONResponse(
+            status_code=status.HTTP_204_NO_CONTENT,
+            content={"message": "Logged out from all sessions successfully"},
+        )
 
     except HTTPException:
         raise
@@ -239,8 +267,14 @@ async def change_password(
 
         if not result.is_success:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail=result.error
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.error,
             )
+
+        return JSONResponse(
+            status_code=status.HTTP_204_NO_CONTENT,
+            content={"message": "Password changed successfully"},
+        )
 
     except HTTPException:
         raise
@@ -266,7 +300,8 @@ async def get_current_user_info(
 
         if not user_result.is_success or not user_result.data:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
             )
 
         user = user_result.data
@@ -303,7 +338,14 @@ async def get_user_sessions(
 
         if not result.is_success:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail=result.error
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.error,
+            )
+
+        if result.data is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Get sessions succeeded but returned no data",
             )
 
         return [SessionResponse(**session) for session in result.data]
@@ -337,6 +379,12 @@ async def revoke_session(
                 detail="Failed to verify session ownership",
             )
 
+        if sessions_result.data is None:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Get sessions succeeded but returned no data",
+            )
+
         session_exists = any(s["id"] == session_id for s in sessions_result.data)
         if not session_exists:
             raise HTTPException(
@@ -348,8 +396,14 @@ async def revoke_session(
         result = await auth_service.session_repo.revoke_session(session_id)
         if not result.is_success:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail=result.error
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.error,
             )
+
+        return JSONResponse(
+            status_code=status.HTTP_204_NO_CONTENT,
+            content={"message": "Session revoked successfully"},
+        )
 
     except HTTPException:
         raise
@@ -365,7 +419,7 @@ async def revoke_session(
     "/REDACTED_LDAP_BIND_PASSWORD/cleanup-sessions",
 )
 async def cleanup_expired_sessions(
-    current_user: ActiveUser,  # Simple REDACTED_LDAP_BIND_PASSWORD check for now
+    _current_user: ActiveUser,  # Simple REDACTED_LDAP_BIND_PASSWORD check for now
     auth_service: AuthServiceDep,
 ) -> dict[str, int]:
     """Clean up expired sessions (REDACTED_LDAP_BIND_PASSWORD only)."""
@@ -374,10 +428,13 @@ async def cleanup_expired_sessions(
 
         if not result.is_success:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail=result.error
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=result.error,
             )
 
-        return {"cleaned_sessions": result.data}
+        cleaned_count = result.data
+        if cleaned_count is None:
+            cleaned_count = 0
 
     except HTTPException:
         raise
@@ -386,6 +443,8 @@ async def cleanup_expired_sessions(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Session cleanup failed: {e}",
         ) from e
+    else:
+        return {"cleaned_sessions": cleaned_count}
 
 
 # Error handlers are defined in app.py

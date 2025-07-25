@@ -447,19 +447,20 @@ class TestSessionRepository:
         assert result.data.id == sample_session.id
         assert result.data.user_id == sample_session.user_id
 
-    async def test_save_session_update_last_accessed(
+    async def test_save_session_preserves_data(
         self,
         session_repository: InMemorySessionRepository,
         sample_session: Session,
     ) -> None:
-        """Test that saving updates last_accessed timestamp."""
-        original_time = sample_session.last_accessed
-
+        """Test that saving preserves session data (entities are immutable)."""
         result = await session_repository.save(sample_session)
         assert result.is_success
 
-        # last_accessed should be updated
-        assert result.data.last_accessed > original_time
+        # Session data should be preserved exactly
+        assert result.data.id == sample_session.id
+        assert result.data.user_id == sample_session.user_id
+        assert result.data.access_token == sample_session.access_token
+        assert result.data.last_accessed == sample_session.last_accessed
 
     async def test_save_session_update_existing(
         self,
@@ -471,9 +472,18 @@ class TestSessionRepository:
         result1 = await session_repository.save(sample_session)
         assert result1.is_success
 
-        # Update session
-        sample_session.status = SessionStatus.REVOKED
-        result2 = await session_repository.save(sample_session)
+        # Create updated session (entities are immutable)
+        updated_session = Session(
+            id=sample_session.id,
+            user_id=sample_session.user_id,
+            access_token=sample_session.access_token,
+            refresh_token=sample_session.refresh_token,
+            expires_at=sample_session.expires_at,
+            ip_address=sample_session.ip_address,
+            user_agent=sample_session.user_agent,
+            status=SessionStatus.REVOKED,
+        )
+        result2 = await session_repository.save(updated_session)
         assert result2.is_success
         assert result2.data.status == SessionStatus.REVOKED
 

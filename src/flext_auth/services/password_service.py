@@ -3,15 +3,37 @@
 from __future__ import annotations
 
 import secrets
+import string
 from typing import Any
 
 import bcrypt
+from flext_core import FlextLoggerFactory, FlextLoggerName, FlextResult
 
-from flext_auth.core import ServiceResult
-from flext_auth.domain.value_objects import HashedPassword, PlainPassword
+from flext_auth.domain.value_objects import (
+    FlextHashedPassword,
+    FlextPlainPassword,
+)
+
+# Constants for password validation
+MIN_BCRYPT_ROUNDS = 4
+MAX_BCRYPT_ROUNDS = 20
+MIN_PASSWORD_LENGTH = 8
+RECOMMENDED_PASSWORD_LENGTH = 12
+STRONG_PASSWORD_LENGTH = 16
+MIN_STRENGTH_SCORE = 4
+STRONG_STRENGTH_SCORE = 6
+SECONDS_PER_MINUTE = 60
+SECONDS_PER_HOUR = 3600
+SECONDS_PER_DAY = 86400
+SECONDS_PER_YEAR = 31536000
+TOKEN_BYTES = 32
+
+# Initialize logger using FLEXT patterns
+logger_factory = FlextLoggerFactory()
+logger = logger_factory.create_logger(FlextLoggerName(__name__))
 
 
-class PasswordService:
+class FlextPasswordService:
     """Professional password service with bcrypt and validation."""
 
     def __init__(self, rounds: int = 12) -> None:
@@ -21,36 +43,38 @@ class PasswordService:
             rounds: Bcrypt cost factor (4-20, higher = more secure but slower)
 
         """
-        if not 4 <= rounds <= 20:
-            raise ValueError("Bcrypt rounds must be between 4 and 20")
+        if not MIN_BCRYPT_ROUNDS <= rounds <= MAX_BCRYPT_ROUNDS:
+            msg = "Bcrypt rounds must be between 4 and 20"
+            raise ValueError(msg)
         self.rounds = rounds
 
     def hash_password(
-        self, plain_password: str | PlainPassword
-    ) -> ServiceResult[HashedPassword]:
+        self,
+        plain_password: str | FlextPlainPassword,
+    ) -> FlextResult[FlextHashedPassword]:
         """Hash password using bcrypt with proper salt.
 
         Args:
             plain_password: Plain text password to hash
 
         Returns:
-            ServiceResult containing hashed password or error
+            FlextResult containing hashed password or error
 
         """
         try:
-            # Handle both string and PlainPassword input
+            # Handle both string and FlextPlainPassword input
             password_str = (
                 plain_password.value
-                if isinstance(plain_password, PlainPassword)
+                if isinstance(plain_password, FlextPlainPassword)
                 else plain_password
             )
 
             # Validate password if it's a string
             if isinstance(plain_password, str):
                 try:
-                    PlainPassword(value=password_str)  # Validate password strength
-                except Exception as e:
-                    return ServiceResult.fail(f"Password validation failed: {e}")
+                    FlextPlainPassword(value=password_str)  # Validate password strength
+                except (ValueError, TypeError) as e:
+                    return FlextResult.fail(f"Password validation failed: {e}")
 
             # Generate salt and hash
             password_bytes = password_str.encode("utf-8")
@@ -58,16 +82,16 @@ class PasswordService:
             hashed_bytes = bcrypt.hashpw(password_bytes, salt)
             hashed_str = hashed_bytes.decode("utf-8")
 
-            return ServiceResult.ok(HashedPassword(value=hashed_str))
+            return FlextResult.ok(FlextHashedPassword(value=hashed_str))
 
-        except Exception as e:
-            return ServiceResult.fail(f"Password hashing failed: {e}")
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Password hashing failed: {e}")
 
     def verify_password(
         self,
-        plain_password: str | PlainPassword,
-        hashed_password: str | HashedPassword,
-    ) -> ServiceResult[bool]:
+        plain_password: str | FlextPlainPassword,
+        hashed_password: str | FlextHashedPassword,
+    ) -> FlextResult[bool]:
         """Verify password against bcrypt hash.
 
         Args:
@@ -75,56 +99,56 @@ class PasswordService:
             hashed_password: Stored bcrypt hash
 
         Returns:
-            ServiceResult containing verification result
+            FlextResult containing verification result
 
         """
         try:
             # Handle both string and value object inputs
             password_str = (
                 plain_password.value
-                if isinstance(plain_password, PlainPassword)
+                if isinstance(plain_password, FlextPlainPassword)
                 else plain_password
             )
             hash_str = (
                 hashed_password.value
-                if isinstance(hashed_password, HashedPassword)
+                if isinstance(hashed_password, FlextHashedPassword)
                 else hashed_password
             )
 
             # Verify hash format
             if not hash_str.startswith("$2b$"):
-                return ServiceResult.fail("Invalid hash format")
+                return FlextResult.fail("Invalid hash format")
 
             # Verify password
             password_bytes = password_str.encode("utf-8")
             hash_bytes = hash_str.encode("utf-8")
 
             is_valid = bcrypt.checkpw(password_bytes, hash_bytes)
-            return ServiceResult.ok(is_valid)
+            return FlextResult.ok(is_valid)
 
-        except Exception as e:
-            return ServiceResult.fail(f"Password verification failed: {e}")
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Password verification failed: {e}")
 
-    def generate_secure_password(self, length: int = 16) -> ServiceResult[str]:
+    def generate_secure_password(self, length: int = 16) -> FlextResult[str]:
         """Generate a cryptographically secure password.
 
         Args:
             length: Password length (minimum 12)
 
         Returns:
-            ServiceResult containing generated password
+            FlextResult containing generated password
 
         """
         try:
-            if length < 12:
-                return ServiceResult.fail(
-                    "Password length must be at least 12 characters"
+            if length < RECOMMENDED_PASSWORD_LENGTH:
+                return FlextResult.fail(
+                    "Password length must be at least 12 characters",
                 )
 
             # Character sets
-            uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-            lowercase = "abcdefghijklmnopqrstuvwxyz"
-            digits = "0123456789"
+            uppercase = string.ascii_uppercase
+            lowercase = string.ascii_lowercase
+            digits = string.digits
             symbols = '!@#$%^&*(),.?":{}|<>'
 
             # Ensure at least one character from each set
@@ -149,23 +173,23 @@ class PasswordService:
 
             # Validate the generated password
             try:
-                PlainPassword(value=password)
-            except Exception as e:
-                return ServiceResult.fail(f"Generated password validation failed: {e}")
+                FlextPlainPassword(value=password)
+            except (ValueError, TypeError) as e:
+                return FlextResult.fail(f"Generated password validation failed: {e}")
 
-            return ServiceResult.ok(password)
+            return FlextResult.ok(password)
 
-        except Exception as e:
-            return ServiceResult.fail(f"Password generation failed: {e}")
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Password generation failed: {e}")
 
-    def check_password_strength(self, password: str) -> ServiceResult[dict[str, Any]]:
+    def check_password_strength(self, password: str) -> FlextResult[dict[str, Any]]:
         """Analyze password strength and return detailed feedback.
 
         Args:
             password: Password to analyze
 
         Returns:
-            ServiceResult containing strength analysis
+            FlextResult containing strength analysis
 
         """
         try:
@@ -182,11 +206,11 @@ class PasswordService:
             }
 
             # Score calculation
-            if analysis["length"] >= 8:
+            if analysis["length"] >= MIN_PASSWORD_LENGTH:
                 analysis["score"] += 1
-            if analysis["length"] >= 12:
+            if analysis["length"] >= RECOMMENDED_PASSWORD_LENGTH:
                 analysis["score"] += 1
-            if analysis["length"] >= 16:
+            if analysis["length"] >= STRONG_PASSWORD_LENGTH:
                 analysis["score"] += 1
 
             if analysis["has_uppercase"]:
@@ -205,9 +229,9 @@ class PasswordService:
                 analysis["score"] -= 2
 
             # Feedback
-            if analysis["length"] < 8:
+            if analysis["length"] < MIN_PASSWORD_LENGTH:
                 analysis["feedback"].append(
-                    "Password should be at least 8 characters long"
+                    "Password should be at least 8 characters long",
                 )
             if not analysis["has_uppercase"]:
                 analysis["feedback"].append("Add uppercase letters")
@@ -219,13 +243,13 @@ class PasswordService:
                 analysis["feedback"].append("Add special characters")
             if analysis["has_common_patterns"]:
                 analysis["feedback"].append(
-                    "Avoid common patterns and dictionary words"
+                    "Avoid common patterns and dictionary words",
                 )
 
             # Strength rating
-            if analysis["score"] >= 6:
+            if analysis["score"] >= STRONG_STRENGTH_SCORE:
                 analysis["strength"] = "strong"
-            elif analysis["score"] >= 4:
+            elif analysis["score"] >= MIN_STRENGTH_SCORE:
                 analysis["strength"] = "medium"
             else:
                 analysis["strength"] = "weak"
@@ -246,38 +270,38 @@ class PasswordService:
                 # Assuming 1 billion attempts per second
                 seconds = combinations / (2 * 1_000_000_000)
 
-                if seconds < 60:
+                if seconds < SECONDS_PER_MINUTE:
                     analysis["estimated_crack_time"] = "less than a minute"
-                elif seconds < 3600:
+                elif seconds < SECONDS_PER_HOUR:
                     analysis["estimated_crack_time"] = f"{int(seconds // 60)} minutes"
-                elif seconds < 86400:
+                elif seconds < SECONDS_PER_DAY:
                     analysis["estimated_crack_time"] = f"{int(seconds // 3600)} hours"
-                elif seconds < 31536000:
+                elif seconds < SECONDS_PER_YEAR:
                     analysis["estimated_crack_time"] = f"{int(seconds // 86400)} days"
                 else:
                     analysis["estimated_crack_time"] = (
                         f"{int(seconds // 31536000)} years"
                     )
 
-            return ServiceResult.ok(analysis)
+            return FlextResult.ok(analysis)
 
-        except Exception as e:
-            return ServiceResult.fail(f"Password strength analysis failed: {e}")
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Password strength analysis failed: {e}")
 
-    def generate_password_reset_token(self) -> ServiceResult[str]:
+    def generate_password_reset_token(self) -> FlextResult[str]:
         """Generate secure password reset token.
 
         Returns:
-            ServiceResult containing URL-safe token
+            FlextResult containing URL-safe token
 
         """
         try:
-            token = secrets.token_urlsafe(32)  # 256 bits of entropy
-            return ServiceResult.ok(token)
-        except Exception as e:
-            return ServiceResult.fail(f"Token generation failed: {e}")
+            token = secrets.token_urlsafe(TOKEN_BYTES)  # 256 bits of entropy
+            return FlextResult.ok(token)
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Token generation failed: {e}")
 
-    def is_password_compromised(self, password: str) -> ServiceResult[bool]:
+    def is_password_compromised(self, password: str) -> FlextResult[bool]:
         """Check if password appears in common breach databases.
 
         This is a placeholder implementation. In production, you might use
@@ -287,7 +311,7 @@ class PasswordService:
             password: Password to check
 
         Returns:
-            ServiceResult indicating if password is compromised
+            FlextResult indicating if password is compromised
 
         """
         try:
@@ -306,7 +330,7 @@ class PasswordService:
             ]
 
             is_compromised = password.lower() in common_passwords
-            return ServiceResult.ok(is_compromised)
+            return FlextResult.ok(is_compromised)
 
-        except Exception as e:
-            return ServiceResult.fail(f"Breach check failed: {e}")
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Breach check failed: {e}")

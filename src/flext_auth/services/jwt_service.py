@@ -6,12 +6,25 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import jwt
+from flext_core import FlextLoggerFactory, FlextLoggerName, FlextResult
 
-from flext_auth.core import ServiceResult
-from flext_auth.domain.value_objects import AuthToken, JWTClaims, RefreshToken
+from flext_auth.domain.value_objects import (
+    FlextAuthToken as AuthToken,
+    FlextJWTClaims as JWTClaims,
+    FlextRefreshToken as RefreshToken,
+)
+
+# Constants for JWT configuration
+DEV_SECRET_KEY = "dev-secret-key-change-in-production"  # noqa: S105
+ACCESS_TOKEN_TYPE = "access"  # noqa: S105
+REFRESH_TOKEN_TYPE = "refresh"  # noqa: S105
+
+# Initialize logger using FLEXT patterns
+logger_factory = FlextLoggerFactory()
+logger = logger_factory.create_logger(FlextLoggerName(__name__))
 
 
-class JWTService:
+class FlextJWTService:
     """Professional JWT service with real token generation and validation."""
 
     def __init__(
@@ -22,8 +35,9 @@ class JWTService:
         refresh_token_expire_days: int = 7,
     ) -> None:
         """Initialize JWT service with configuration."""
-        if not secret_key or secret_key == "dev-secret-key-change-in-production":
-            raise ValueError("Production JWT secret key is required")
+        if not secret_key or secret_key == DEV_SECRET_KEY:
+            msg = "Production JWT secret key is required"
+            raise ValueError(msg)
 
         self.secret_key = secret_key
         self.algorithm = algorithm
@@ -37,7 +51,7 @@ class JWTService:
         role: str,
         session_id: str | None = None,
         additional_claims: dict[str, Any] | None = None,
-    ) -> ServiceResult[AuthToken]:
+    ) -> FlextResult[AuthToken]:
         """Generate JWT access token with proper claims."""
         try:
             now = datetime.now(UTC)
@@ -49,7 +63,7 @@ class JWTService:
                 "role": role,
                 "iat": int(now.timestamp()),
                 "exp": int(expires_at.timestamp()),
-                "token_type": "access",
+                "token_type": ACCESS_TOKEN_TYPE,
             }
 
             if session_id:
@@ -60,16 +74,16 @@ class JWTService:
 
             token = jwt.encode(claims, self.secret_key, algorithm=self.algorithm)
             # PyJWT 2.0+ returns str directly
-            return ServiceResult.ok(AuthToken(value=token))  # type: ignore[arg-type]
+            return FlextResult.ok(AuthToken(value=str(token)))
 
-        except Exception as e:
-            return ServiceResult.fail(f"Failed to generate access token: {e}")
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Failed to generate access token: {e}")
 
     def generate_refresh_token(
         self,
         user_id: str,
         session_id: str,
-    ) -> ServiceResult[RefreshToken]:
+    ) -> FlextResult[RefreshToken]:
         """Generate JWT refresh token."""
         try:
             now = datetime.now(UTC)
@@ -80,15 +94,15 @@ class JWTService:
                 "session_id": session_id,
                 "iat": int(now.timestamp()),
                 "exp": int(expires_at.timestamp()),
-                "token_type": "refresh",
+                "token_type": REFRESH_TOKEN_TYPE,
             }
 
             token = jwt.encode(claims, self.secret_key, algorithm=self.algorithm)
             # PyJWT 2.0+ returns str directly
-            return ServiceResult.ok(RefreshToken(value=token))  # type: ignore[arg-type]
+            return FlextResult.ok(RefreshToken(value=str(token)))
 
-        except Exception as e:
-            return ServiceResult.fail(f"Failed to generate refresh token: {e}")
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Failed to generate refresh token: {e}")
 
     def generate_token_pair(
         self,
@@ -97,40 +111,44 @@ class JWTService:
         role: str,
         session_id: str,
         additional_claims: dict[str, Any] | None = None,
-    ) -> ServiceResult[dict[str, str]]:
+    ) -> FlextResult[dict[str, str]]:
         """Generate both access and refresh tokens."""
         try:
             access_result = self.generate_access_token(
-                user_id, username, role, session_id, additional_claims
+                user_id,
+                username,
+                role,
+                session_id,
+                additional_claims,
             )
             if not access_result.is_success:
-                return ServiceResult.fail(f"Access token failed: {access_result.error}")
+                return FlextResult.fail(f"Access token failed: {access_result.error}")
 
             refresh_result = self.generate_refresh_token(user_id, session_id)
             if not refresh_result.is_success:
-                return ServiceResult.fail(
-                    f"Refresh token failed: {refresh_result.error}"
+                return FlextResult.fail(
+                    f"Refresh token failed: {refresh_result.error}",
                 )
 
             access_token = access_result.data
             refresh_token = refresh_result.data
 
             if not access_token or not refresh_token:
-                return ServiceResult.fail("Failed to generate token data")
+                return FlextResult.fail("Failed to generate token data")
 
-            return ServiceResult.ok(
+            return FlextResult.ok(
                 {
                     "access_token": access_token.value,
                     "refresh_token": refresh_token.value,
                     "token_type": "Bearer",
                     "expires_in": str(self.access_token_expire_minutes * 60),
-                }
+                },
             )
 
-        except Exception as e:
-            return ServiceResult.fail(f"Failed to generate token pair: {e}")
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Failed to generate token pair: {e}")
 
-    def verify_token(self, token: str) -> ServiceResult[JWTClaims]:
+    def verify_token(self, token: str) -> FlextResult[JWTClaims]:
         """Verify and decode JWT token."""
         try:
             # Remove Bearer prefix if present
@@ -144,33 +162,33 @@ class JWTService:
             )
 
             claims = JWTClaims(**payload)
-            return ServiceResult.ok(claims)
+            return FlextResult.ok(claims)
 
         except jwt.ExpiredSignatureError:
-            return ServiceResult.fail("Token has expired")
+            return FlextResult.fail("Token has expired")
         except jwt.InvalidTokenError as e:
-            return ServiceResult.fail(f"Invalid token: {e}")
-        except Exception as e:
-            return ServiceResult.fail(f"Token verification failed: {e}")
+            return FlextResult.fail(f"Invalid token: {e}")
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Token verification failed: {e}")
 
-    def refresh_access_token(self, refresh_token: str) -> ServiceResult[AuthToken]:
+    def refresh_access_token(self, refresh_token: str) -> FlextResult[AuthToken]:
         """Generate new access token from refresh token."""
         try:
             # Verify refresh token
             verify_result = self.verify_token(refresh_token)
             if not verify_result.is_success:
-                return ServiceResult.fail(
-                    f"Invalid refresh token: {verify_result.error}"
+                return FlextResult.fail(
+                    f"Invalid refresh token: {verify_result.error}",
                 )
 
             claims = verify_result.data
 
             if not claims:
-                return ServiceResult.fail("No claims in refresh token")
+                return FlextResult.fail("No claims in refresh token")
 
             # Ensure it's a refresh token
-            if claims.token_type != "refresh":
-                return ServiceResult.fail("Invalid token type for refresh")
+            if claims.token_type != REFRESH_TOKEN_TYPE:
+                return FlextResult.fail("Invalid token type for refresh")
 
             # Generate new access token (we need to get user details)
             # In a real implementation, you'd fetch user from database here
@@ -185,40 +203,42 @@ class JWTService:
                 session_id=getattr(claims, "session_id", None),
             )
 
-        except Exception as e:
-            return ServiceResult.fail(f"Token refresh failed: {e}")
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Token refresh failed: {e}")
 
-    def extract_user_id(self, token: str) -> ServiceResult[str]:
+    def extract_user_id(self, token: str) -> FlextResult[str]:
         """Extract user ID from token without full verification."""
         try:
             # Decode without verification to get user ID for logout etc.
             payload = jwt.decode(
-                token, options={"verify_signature": False, "verify_exp": False}
+                token,
+                options={"verify_signature": False, "verify_exp": False},
             )
             user_id = payload.get("sub")
             if not user_id:
-                return ServiceResult.fail("No user ID in token")
+                return FlextResult.fail("No user ID in token")
 
-            return ServiceResult.ok(user_id)
+            return FlextResult.ok(user_id)
 
-        except Exception as e:
-            return ServiceResult.fail(f"Failed to extract user ID: {e}")
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Failed to extract user ID: {e}")
 
-    def get_token_expiry(self, token: str) -> ServiceResult[datetime]:
+    def get_token_expiry(self, token: str) -> FlextResult[datetime]:
         """Get token expiry time."""
         try:
             payload = jwt.decode(
-                token, options={"verify_signature": False, "verify_exp": False}
+                token,
+                options={"verify_signature": False, "verify_exp": False},
             )
             exp = payload.get("exp")
             if not exp:
-                return ServiceResult.fail("No expiry in token")
+                return FlextResult.fail("No expiry in token")
 
             expiry = datetime.fromtimestamp(exp, tz=UTC)
-            return ServiceResult.ok(expiry)
+            return FlextResult.ok(expiry)
 
-        except Exception as e:
-            return ServiceResult.fail(f"Failed to get token expiry: {e}")
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Failed to get token expiry: {e}")
 
     def is_token_expired(self, token: str) -> bool:
         """Check if token is expired without full verification."""
@@ -230,7 +250,7 @@ class JWTService:
             expiry = expiry_result.data
             if not expiry:
                 return True
-            return datetime.now(UTC) >= expiry
+            return bool(datetime.now(UTC) >= expiry)
 
-        except Exception:
+        except (ValueError, TypeError, OSError):
             return True

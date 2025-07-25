@@ -107,7 +107,7 @@ def sample_user_data(
     sample_user_id: str,
     sample_username: str,
     sample_email: str,
-) -> dict[str, str]:
+) -> dict[str, str | bool]:
     return {
         "user_id": sample_user_id,
         "username": sample_username,
@@ -122,17 +122,28 @@ def sample_user_data(
 
 
 @pytest.fixture
-def sample_users_dict(sample_user_data: dict[str, str]) -> dict[str, dict[str, str]]:
+def sample_users_dict(sample_user_data: dict[str, str | bool]) -> dict[str, dict[str, str | bool]]:
     """Create a simple users dictionary for testing authentication."""
-    import flext_auth
+    from flext_auth.domain.value_objects import PlainPassword
+    from flext_auth.services.password_service import PasswordService
 
-    # Create user with hashed password
-    user_result = flext_auth.create_user(
-        sample_user_data["username"], "SecurePassword123!", sample_user_data["email"]
-    )
+    # Create user with hashed password using proper services
+    password_service = PasswordService()
+    hash_result = password_service.hash_password(PlainPassword(value="SecurePassword123!"))
 
-    if user_result.is_success:
-        user = user_result.data
-        return {user["username"]: user}
+    if not hash_result.is_success:
+        msg = f"Password hashing failed: {hash_result.error}"
+        raise ValueError(msg)
 
-    return {}
+    password_hash = hash_result.data.value if hash_result.data else ""
+
+    # Create user dictionary manually
+    user = {
+        "user_id": "test-user-id",
+        "username": sample_user_data["username"],
+        "email": sample_user_data["email"],
+        "password_hash": password_hash,
+        "active": True,
+    }
+
+    return {user["username"]: user}
