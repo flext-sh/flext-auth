@@ -14,9 +14,6 @@ from flext_auth.domain.entities import (
     FlextRole,
     FlextSession,
     FlextUser,
-    SessionStatus,
-    UserRole,
-    UserStatus,
 )
 
 
@@ -37,8 +34,8 @@ class TestFlextAuthenticationService:
         user = result.data
         assert user.username == "testuser"
         assert str(user.email) == "test@example.com"
-        assert user.role == UserRole.USER
-        assert user.status == UserStatus.ACTIVE
+        assert user.role == FlextUserRole.USER
+        assert user.status == FlextUserStatus.ACTIVE
 
     def test_create_user_invalid_username(self) -> None:
         """Test user creation with invalid username."""
@@ -207,7 +204,7 @@ class TestFlextSessionService:
         assert session.user_id == user.id
         assert session.ip_address == "192.168.1.1"
         assert session.user_agent == "Test Browser"
-        assert session.status == SessionStatus.ACTIVE
+        assert session.status == FlextSessionStatus.ACTIVE
 
     def test_create_session_with_defaults(self) -> None:
         """Test session creation with default values."""
@@ -229,7 +226,7 @@ class TestFlextSessionService:
         assert session.user_id == user.id
         assert session.ip_address is None
         assert session.user_agent is None
-        assert session.status == SessionStatus.ACTIVE
+        assert session.status == FlextSessionStatus.ACTIVE
 
     def test_validate_session_success(self) -> None:
         """Test successful session validation."""
@@ -241,7 +238,7 @@ class TestFlextSessionService:
             user_id="user-123",
             access_token="valid-token",
             expires_at=datetime.now(UTC) + timedelta(hours=1),
-            status=SessionStatus.ACTIVE,
+            status=FlextSessionStatus.ACTIVE,
         )
 
         # Validate session
@@ -259,7 +256,7 @@ class TestFlextSessionService:
             user_id="user-123",
             access_token="valid-token",
             expires_at=datetime.now(UTC) - timedelta(hours=1),
-            status=SessionStatus.ACTIVE,
+            status=FlextSessionStatus.ACTIVE,
         )
 
         # Validate session
@@ -277,7 +274,7 @@ class TestFlextSessionService:
             user_id="user-123",
             access_token="valid-token",
             expires_at=datetime.now(UTC) + timedelta(hours=1),
-            status=SessionStatus.REVOKED,
+            status=FlextSessionStatus.REVOKED,
         )
 
         # Validate session
@@ -408,7 +405,7 @@ class TestFlextAuthorizationService:
             username="REDACTED_LDAP_BIND_PASSWORD",
             email="REDACTED_LDAP_BIND_PASSWORD@example.com",
             password_hash="hashed-password",
-            role=UserRole.ADMIN,
+            role=FlextUserRole.ADMIN,
         )
 
         # Check permission for REDACTED_LDAP_BIND_PASSWORD (should have all permissions)

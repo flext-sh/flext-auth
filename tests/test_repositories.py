@@ -7,11 +7,11 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from flext_auth.domain.entities import (
-    Session,
-    SessionStatus,
-    User,
-    UserRole,
-    UserStatus,
+    FlextSession,
+    FlextSessionStatus,
+    FlextUser,
+    FlextUserRole,
+    FlextUserStatus,
 )
 from flext_auth.repositories.session_repository import InMemorySessionRepository
 from flext_auth.repositories.user_repository import InMemoryUserRepository
@@ -30,27 +30,27 @@ def session_repository() -> InMemorySessionRepository:
 
 
 @pytest.fixture
-def sample_user() -> User:
+def sample_user() -> FlextUser:
     """Create sample user for testing."""
-    return User(
+    return FlextUser(
         id="user-123",
         username="testuser",
         email="test@example.com",
         password_hash="$2b$12$hashedpassword",
-        role=UserRole.USER,
-        status=UserStatus.ACTIVE,
+        role=FlextUserRole.USER,
+        status=FlextUserStatus.ACTIVE,
     )
 
 
 @pytest.fixture
-def sample_session() -> Session:
+def sample_session() -> FlextSession:
     """Create sample session for testing."""
-    return Session(
+    return FlextSession(
         id="session-123",
         user_id="user-123",
         access_token="access-token-value",
         refresh_token="refresh-token-value",
-        status=SessionStatus.ACTIVE,
+        status=FlextSessionStatus.ACTIVE,
         ip_address="192.168.1.1",
         user_agent="Test Browser",
         expires_at=datetime.now(UTC) + timedelta(hours=24),
@@ -63,7 +63,7 @@ class TestUserRepository:
     async def test_save_user_success(
         self,
         user_repository: InMemoryUserRepository,
-        sample_user: User,
+        sample_user: FlextUser,
     ) -> None:
         """Test successful user saving."""
         result = await user_repository.save(sample_user)
@@ -75,7 +75,7 @@ class TestUserRepository:
     async def test_save_user_duplicate_username(
         self,
         user_repository: InMemoryUserRepository,
-        sample_user: User,
+        sample_user: FlextUser,
     ) -> None:
         """Test saving user with duplicate username."""
         # Save first user
@@ -83,13 +83,13 @@ class TestUserRepository:
         assert result1.is_success
 
         # Try to save another user with same username
-        duplicate_user = User(
+        duplicate_user = FlextUser(
             id="different-id",
             username=sample_user.username,  # Same username
             email="different@example.com",
             password_hash="$2b$12$differenthash",
-            role=UserRole.USER,
-            status=UserStatus.ACTIVE,
+            role=FlextUserRole.USER,
+            status=FlextUserStatus.ACTIVE,
         )
 
         result2 = await user_repository.save(duplicate_user)
@@ -99,7 +99,7 @@ class TestUserRepository:
     async def test_save_user_duplicate_email(
         self,
         user_repository: InMemoryUserRepository,
-        sample_user: User,
+        sample_user: FlextUser,
     ) -> None:
         """Test saving user with duplicate email."""
         # Save first user
@@ -107,13 +107,13 @@ class TestUserRepository:
         assert result1.is_success
 
         # Try to save another user with same email
-        duplicate_user = User(
+        duplicate_user = FlextUser(
             id="different-id",
             username="differentuser",
             email=sample_user.email,  # Same email
             password_hash="$2b$12$differenthash",
-            role=UserRole.USER,
-            status=UserStatus.ACTIVE,
+            role=FlextUserRole.USER,
+            status=FlextUserStatus.ACTIVE,
         )
 
         result2 = await user_repository.save(duplicate_user)
@@ -123,23 +123,30 @@ class TestUserRepository:
     async def test_save_user_update_existing(
         self,
         user_repository: InMemoryUserRepository,
-        sample_user: User,
+        sample_user: FlextUser,
     ) -> None:
         """Test updating existing user."""
         # Save user
         result1 = await user_repository.save(sample_user)
         assert result1.is_success
 
-        # Update user
-        sample_user.status = UserStatus.INACTIVE
-        result2 = await user_repository.save(sample_user)
+        # Update user (create new instance since entities are immutable)
+        updated_user = FlextUser(
+            id=sample_user.id,
+            username=sample_user.username,
+            email=sample_user.email,
+            password_hash=sample_user.password_hash,
+            role=sample_user.role,
+            status=FlextUserStatus.INACTIVE,
+        )
+        result2 = await user_repository.save(updated_user)
         assert result2.is_success
-        assert result2.data.status == UserStatus.INACTIVE
+        assert result2.data.status == FlextUserStatus.INACTIVE
 
     async def test_get_user_by_id_success(
         self,
         user_repository: InMemoryUserRepository,
-        sample_user: User,
+        sample_user: FlextUser,
     ) -> None:
         """Test successful user retrieval by ID."""
         # Save user
@@ -164,7 +171,7 @@ class TestUserRepository:
     async def test_get_user_by_username_success(
         self,
         user_repository: InMemoryUserRepository,
-        sample_user: User,
+        sample_user: FlextUser,
     ) -> None:
         """Test successful user retrieval by username."""
         # Save user
@@ -179,7 +186,7 @@ class TestUserRepository:
     async def test_get_user_by_username_case_insensitive(
         self,
         user_repository: InMemoryUserRepository,
-        sample_user: User,
+        sample_user: FlextUser,
     ) -> None:
         """Test case-insensitive username lookup."""
         # Save user
@@ -203,7 +210,7 @@ class TestUserRepository:
     async def test_get_user_by_email_success(
         self,
         user_repository: InMemoryUserRepository,
-        sample_user: User,
+        sample_user: FlextUser,
     ) -> None:
         """Test successful user retrieval by email."""
         # Save user
@@ -218,7 +225,7 @@ class TestUserRepository:
     async def test_get_user_by_email_case_insensitive(
         self,
         user_repository: InMemoryUserRepository,
-        sample_user: User,
+        sample_user: FlextUser,
     ) -> None:
         """Test case-insensitive email lookup."""
         # Save user
@@ -242,7 +249,7 @@ class TestUserRepository:
     async def test_delete_user_success(
         self,
         user_repository: InMemoryUserRepository,
-        sample_user: User,
+        sample_user: FlextUser,
     ) -> None:
         """Test successful user deletion."""
         # Save user
@@ -275,13 +282,13 @@ class TestUserRepository:
         # Create and save multiple users
         users = []
         for i in range(5):
-            user = User(
+            user = FlextUser(
                 id=f"user-{i}",
                 username=f"user{i}",
                 email=f"user{i}@example.com",
                 password_hash="$2b$12$hash",
-                role=UserRole.USER,
-                status=UserStatus.ACTIVE if i % 2 == 0 else UserStatus.INACTIVE,
+                role=FlextUserRole.USER,
+                status=FlextUserStatus.ACTIVE if i % 2 == 0 else FlextUserStatus.INACTIVE,
             )
             users.append(user)
             await user_repository.save(user)
@@ -306,39 +313,39 @@ class TestUserRepository:
         inactive_users = []
 
         for i in range(3):
-            active_user = User(
+            active_user = FlextUser(
                 id=f"active-{i}",
                 username=f"active{i}",
                 email=f"active{i}@example.com",
                 password_hash="$2b$12$hash",
-                role=UserRole.USER,
-                status=UserStatus.ACTIVE,
+                role=FlextUserRole.USER,
+                status=FlextUserStatus.ACTIVE,
             )
             active_users.append(active_user)
             await user_repository.save(active_user)
 
-            inactive_user = User(
+            inactive_user = FlextUser(
                 id=f"inactive-{i}",
                 username=f"inactive{i}",
                 email=f"inactive{i}@example.com",
                 password_hash="$2b$12$hash",
-                role=UserRole.USER,
-                status=UserStatus.INACTIVE,
+                role=FlextUserRole.USER,
+                status=FlextUserStatus.INACTIVE,
             )
             inactive_users.append(inactive_user)
             await user_repository.save(inactive_user)
 
         # List active users
-        active_result = await user_repository.list_users(status=UserStatus.ACTIVE)
+        active_result = await user_repository.list_users(status=FlextUserStatus.ACTIVE)
         assert active_result.is_success
         assert len(active_result.data) == 3
-        assert all(u.status == UserStatus.ACTIVE for u in active_result.data)
+        assert all(u.status == FlextUserStatus.ACTIVE for u in active_result.data)
 
         # List inactive users
-        inactive_result = await user_repository.list_users(status=UserStatus.INACTIVE)
+        inactive_result = await user_repository.list_users(status=FlextUserStatus.INACTIVE)
         assert inactive_result.is_success
         assert len(inactive_result.data) == 3
-        assert all(u.status == UserStatus.INACTIVE for u in inactive_result.data)
+        assert all(u.status == FlextUserStatus.INACTIVE for u in inactive_result.data)
 
     async def test_list_users_pagination(
         self,
@@ -347,13 +354,13 @@ class TestUserRepository:
         """Test user listing with pagination."""
         # Create 10 users
         for i in range(10):
-            user = User(
+            user = FlextUser(
                 id=f"user-{i}",
                 username=f"user{i}",
                 email=f"user{i}@example.com",
                 password_hash="$2b$12$hash",
-                role=UserRole.USER,
-                status=UserStatus.ACTIVE,
+                role=FlextUserRole.USER,
+                status=FlextUserStatus.ACTIVE,
             )
             await user_repository.save(user)
 
@@ -379,13 +386,13 @@ class TestUserRepository:
         """Test counting users without filter."""
         # Create users
         for i in range(5):
-            user = User(
+            user = FlextUser(
                 id=f"user-{i}",
                 username=f"user{i}",
                 email=f"user{i}@example.com",
                 password_hash="$2b$12$hash",
-                role=UserRole.USER,
-                status=UserStatus.ACTIVE,
+                role=FlextUserRole.USER,
+                status=FlextUserStatus.ACTIVE,
             )
             await user_repository.save(user)
 
@@ -400,34 +407,34 @@ class TestUserRepository:
         """Test counting users with status filter."""
         # Create users with different statuses
         for i in range(3):
-            active_user = User(
+            active_user = FlextUser(
                 id=f"active-{i}",
                 username=f"active{i}",
                 email=f"active{i}@example.com",
                 password_hash="$2b$12$hash",
-                role=UserRole.USER,
-                status=UserStatus.ACTIVE,
+                role=FlextUserRole.USER,
+                status=FlextUserStatus.ACTIVE,
             )
             await user_repository.save(active_user)
 
         for i in range(2):
-            inactive_user = User(
+            inactive_user = FlextUser(
                 id=f"inactive-{i}",
                 username=f"inactive{i}",
                 email=f"inactive{i}@example.com",
                 password_hash="$2b$12$hash",
-                role=UserRole.USER,
-                status=UserStatus.INACTIVE,
+                role=FlextUserRole.USER,
+                status=FlextUserStatus.INACTIVE,
             )
             await user_repository.save(inactive_user)
 
         # Count active users
-        active_count = await user_repository.count_users(status=UserStatus.ACTIVE)
+        active_count = await user_repository.count_users(status=FlextUserStatus.ACTIVE)
         assert active_count.is_success
         assert active_count.data == 3
 
         # Count inactive users
-        inactive_count = await user_repository.count_users(status=UserStatus.INACTIVE)
+        inactive_count = await user_repository.count_users(status=FlextUserStatus.INACTIVE)
         assert inactive_count.is_success
         assert inactive_count.data == 2
 
@@ -438,7 +445,7 @@ class TestSessionRepository:
     async def test_save_session_success(
         self,
         session_repository: InMemorySessionRepository,
-        sample_session: Session,
+        sample_session: FlextSession,
     ) -> None:
         """Test successful session saving."""
         result = await session_repository.save(sample_session)
@@ -450,7 +457,7 @@ class TestSessionRepository:
     async def test_save_session_preserves_data(
         self,
         session_repository: InMemorySessionRepository,
-        sample_session: Session,
+        sample_session: FlextSession,
     ) -> None:
         """Test that saving preserves session data (entities are immutable)."""
         result = await session_repository.save(sample_session)
@@ -465,7 +472,7 @@ class TestSessionRepository:
     async def test_save_session_update_existing(
         self,
         session_repository: InMemorySessionRepository,
-        sample_session: Session,
+        sample_session: FlextSession,
     ) -> None:
         """Test updating existing session."""
         # Save session
@@ -473,7 +480,7 @@ class TestSessionRepository:
         assert result1.is_success
 
         # Create updated session (entities are immutable)
-        updated_session = Session(
+        updated_session = FlextSession(
             id=sample_session.id,
             user_id=sample_session.user_id,
             access_token=sample_session.access_token,
@@ -481,16 +488,16 @@ class TestSessionRepository:
             expires_at=sample_session.expires_at,
             ip_address=sample_session.ip_address,
             user_agent=sample_session.user_agent,
-            status=SessionStatus.REVOKED,
+            status=FlextSessionStatus.REVOKED,
         )
         result2 = await session_repository.save(updated_session)
         assert result2.is_success
-        assert result2.data.status == SessionStatus.REVOKED
+        assert result2.data.status == FlextSessionStatus.REVOKED
 
     async def test_get_session_by_id_success(
         self,
         session_repository: InMemorySessionRepository,
-        sample_session: Session,
+        sample_session: FlextSession,
     ) -> None:
         """Test successful session retrieval by ID."""
         # Save session
@@ -514,17 +521,17 @@ class TestSessionRepository:
     async def test_get_sessions_by_user_id(
         self,
         session_repository: InMemorySessionRepository,
-        sample_user: User,
+        sample_user: FlextUser,
     ) -> None:
         """Test getting sessions by user ID."""
         # Create multiple sessions for user
         sessions = []
         for i in range(3):
-            session = Session(
+            session = FlextSession(
                 id=f"session-{i}",
                 user_id=sample_user.id,
                 access_token=f"token-{i}",
-                status=SessionStatus.ACTIVE,
+                status=FlextSessionStatus.ACTIVE,
                 ip_address="192.168.1.1",
                 expires_at=datetime.now(UTC) + timedelta(hours=1),
             )
@@ -548,37 +555,37 @@ class TestSessionRepository:
     async def test_get_active_sessions(
         self,
         session_repository: InMemorySessionRepository,
-        sample_user: User,
+        sample_user: FlextUser,
     ) -> None:
         """Test getting only active sessions."""
         # Create active session
-        active_session = Session(
+        active_session = FlextSession(
             id="active-session",
             user_id=sample_user.id,
             access_token="active-token",
-            status=SessionStatus.ACTIVE,
+            status=FlextSessionStatus.ACTIVE,
             ip_address="192.168.1.1",
             expires_at=datetime.now(UTC) + timedelta(hours=1),
         )
         await session_repository.save(active_session)
 
         # Create revoked session
-        revoked_session = Session(
+        revoked_session = FlextSession(
             id="revoked-session",
             user_id=sample_user.id,
             access_token="revoked-token",
-            status=SessionStatus.REVOKED,
+            status=FlextSessionStatus.REVOKED,
             ip_address="192.168.1.1",
             expires_at=datetime.now(UTC) + timedelta(hours=1),
         )
         await session_repository.save(revoked_session)
 
         # Create expired session
-        expired_session = Session(
+        expired_session = FlextSession(
             id="expired-session",
             user_id=sample_user.id,
             access_token="expired-token",
-            status=SessionStatus.ACTIVE,
+            status=FlextSessionStatus.ACTIVE,
             ip_address="192.168.1.1",
             expires_at=datetime.now(UTC) - timedelta(hours=1),  # Expired
         )
@@ -593,7 +600,7 @@ class TestSessionRepository:
     async def test_revoke_session(
         self,
         session_repository: InMemorySessionRepository,
-        sample_session: Session,
+        sample_session: FlextSession,
     ) -> None:
         """Test session revocation."""
         # Save active session
@@ -607,7 +614,7 @@ class TestSessionRepository:
         # Verify session is revoked
         session_result = await session_repository.get_by_id(sample_session.id)
         assert session_result.is_success
-        assert session_result.data.status == SessionStatus.REVOKED
+        assert session_result.data.status == FlextSessionStatus.REVOKED
 
     async def test_revoke_session_not_found(
         self,
@@ -621,17 +628,17 @@ class TestSessionRepository:
     async def test_revoke_all_user_sessions(
         self,
         session_repository: InMemorySessionRepository,
-        sample_user: User,
+        sample_user: FlextUser,
     ) -> None:
         """Test revoking all sessions for a user."""
         # Create multiple active sessions
         active_sessions = []
         for i in range(3):
-            session = Session(
+            session = FlextSession(
                 id=f"session-{i}",
                 user_id=sample_user.id,
                 access_token=f"token-{i}",
-                status=SessionStatus.ACTIVE,
+                status=FlextSessionStatus.ACTIVE,
                 ip_address="192.168.1.1",
                 expires_at=datetime.now(UTC) + timedelta(hours=1),
             )
@@ -639,11 +646,11 @@ class TestSessionRepository:
             await session_repository.save(session)
 
         # Create already revoked session
-        revoked_session = Session(
+        revoked_session = FlextSession(
             id="revoked-session",
             user_id=sample_user.id,
             access_token="revoked-token",
-            status=SessionStatus.REVOKED,
+            status=FlextSessionStatus.REVOKED,
             ip_address="192.168.1.1",
             expires_at=datetime.now(UTC) + timedelta(hours=1),
         )
@@ -659,32 +666,32 @@ class TestSessionRepository:
         assert all_sessions_result.is_success
 
         for session in all_sessions_result.data:
-            assert session.status == SessionStatus.REVOKED
+            assert session.status == FlextSessionStatus.REVOKED
 
     async def test_cleanup_expired_sessions(
         self,
         session_repository: InMemorySessionRepository,
-        sample_user: User,
+        sample_user: FlextUser,
     ) -> None:
         """Test cleanup of expired sessions."""
         # Create expired sessions
         for i in range(2):
-            expired_session = Session(
+            expired_session = FlextSession(
                 id=f"expired-{i}",
                 user_id=sample_user.id,
                 access_token=f"expired-token-{i}",
-                status=SessionStatus.ACTIVE,
+                status=FlextSessionStatus.ACTIVE,
                 ip_address="192.168.1.1",
                 expires_at=datetime.now(UTC) - timedelta(hours=1),  # Expired
             )
             await session_repository.save(expired_session)
 
         # Create non-expired session
-        active_session = Session(
+        active_session = FlextSession(
             id="active-session",
             user_id=sample_user.id,
             access_token="active-token",
-            status=SessionStatus.ACTIVE,
+            status=FlextSessionStatus.ACTIVE,
             ip_address="192.168.1.1",
             expires_at=datetime.now(UTC) + timedelta(hours=1),
         )
@@ -712,7 +719,7 @@ class TestSessionRepository:
     async def test_delete_session(
         self,
         session_repository: InMemorySessionRepository,
-        sample_session: Session,
+        sample_session: FlextSession,
     ) -> None:
         """Test session deletion."""
         # Save session
@@ -740,17 +747,17 @@ class TestSessionRepository:
     async def test_session_user_index_consistency(
         self,
         session_repository: InMemorySessionRepository,
-        sample_user: User,
+        sample_user: FlextUser,
     ) -> None:
         """Test that user-session index remains consistent."""
         # Create sessions
         sessions = []
         for i in range(3):
-            session = Session(
+            session = FlextSession(
                 id=f"session-{i}",
                 user_id=sample_user.id,
                 access_token=f"token-{i}",
-                status=SessionStatus.ACTIVE,
+                status=FlextSessionStatus.ACTIVE,
                 ip_address="192.168.1.1",
                 expires_at=datetime.now(UTC) + timedelta(hours=1),
             )
@@ -783,7 +790,7 @@ class TestRepositoryIntegration:
         self,
         user_repository: InMemoryUserRepository,
         session_repository: InMemorySessionRepository,
-        sample_user: User,
+        sample_user: FlextUser,
     ) -> None:
         """Test relationship between users and sessions."""
         # Save user
@@ -792,11 +799,11 @@ class TestRepositoryIntegration:
         # Create sessions for user
         sessions = []
         for i in range(3):
-            session = Session(
+            session = FlextSession(
                 id=f"session-{i}",
                 user_id=sample_user.id,
                 access_token=f"token-{i}",
-                status=SessionStatus.ACTIVE,
+                status=FlextSessionStatus.ACTIVE,
                 ip_address="192.168.1.1",
                 expires_at=datetime.now(UTC) + timedelta(hours=1),
             )

@@ -7,7 +7,7 @@
 
 # Project Configuration
 PROJECT_NAME := flext-auth
-PROJECT_TYPE := auth-service
+PROJECT_TYPE := python-library
 PYTHON_VERSION := 3.13
 POETRY := poetry
 SRC_DIR := src

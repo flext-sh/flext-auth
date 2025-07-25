@@ -83,7 +83,7 @@ def configure_auth_dependencies() -> None:
 
         logger.info("AUTH dependencies configured successfully")
 
-    except Exception:
+    except (ImportError, AttributeError, ValueError, TypeError):
         logger.exception("Failed to configure AUTH dependencies")
 
 

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core import FlextContainer, FlextResult, FlextError
+from flext_core import FlextContainer, FlextError, FlextResult
 
 from flext_auth.application.services import (
     FlextAuthenticationService,

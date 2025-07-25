@@ -81,11 +81,11 @@ class TestPasswordService:
         assert not verify_result.is_success
         assert "Failed to verify password" in verify_result.error
 
-    def test_generate_password_valid(self) -> None:
+    def test_generate_secure_password_valid(self) -> None:
         """Test password generation produces valid passwords."""
         service = FlextPasswordService()
 
-        generated = service.generate_password()
+        generated = service.generate_secure_password()
 
         assert generated.is_success
         password = generated.data
@@ -95,36 +95,36 @@ class TestPasswordService:
         # Validate the generated password meets requirements
         password.validate_domain_rules()  # Should not raise
 
-    def test_generate_password_custom_length(self) -> None:
+    def test_generate_secure_password_custom_length(self) -> None:
         """Test password generation with custom length."""
         service = FlextPasswordService()
 
-        generated = service.generate_password(length=16)
+        generated = service.generate_secure_password(length=16)
 
         assert generated.is_success
         password = generated.data
         assert len(password.value) == 16
 
-    def test_generate_password_minimum_length(self) -> None:
+    def test_generate_secure_password_minimum_length(self) -> None:
         """Test password generation with minimum length."""
         service = FlextPasswordService()
 
         # Test minimum valid length
-        generated = service.generate_password(length=8)
+        generated = service.generate_secure_password(length=8)
         assert generated.is_success
         assert len(generated.data.value) == 8
 
-    def test_generate_password_invalid_length(self) -> None:
+    def test_generate_secure_password_invalid_length(self) -> None:
         """Test password generation with invalid length."""
         service = FlextPasswordService()
 
         # Test too short
-        generated = service.generate_password(length=7)
+        generated = service.generate_secure_password(length=7)
         assert not generated.is_success
         assert "Password length must be at least 8" in generated.error
 
         # Test too long
-        generated = service.generate_password(length=129)
+        generated = service.generate_secure_password(length=129)
         assert not generated.is_success
         assert "Password length must be at most 128" in generated.error
 

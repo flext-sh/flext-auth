@@ -24,6 +24,40 @@ from flext_auth.api.models import (
     UserResponse,
 )
 
+
+# Helper functions for common HTTP errors
+def _raise_bad_request_error(detail: str) -> None:
+    """Raise HTTP 400 Bad Request error."""
+    raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail=detail,
+    )
+
+
+def _raise_unauthorized_error(detail: str) -> None:
+    """Raise HTTP 401 Unauthorized error."""
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail=detail,
+    )
+
+
+def _raise_not_found_error(detail: str) -> None:
+    """Raise HTTP 404 Not Found error."""
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=detail,
+    )
+
+
+def _raise_internal_server_error(detail: str) -> None:
+    """Raise HTTP 500 Internal Server error."""
+    raise HTTPException(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        detail=detail,
+    )
+
+
 # Create router
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -57,17 +91,11 @@ async def register_user(
         )
 
         if not result.is_success:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=result.error,
-            )
+            _raise_bad_request_error(result.error)
 
         user = result.data
         if user is None:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="User registration succeeded but returned no data",
-            )
+            _raise_internal_server_error("User registration succeeded but returned no data")
 
         return UserResponse(
             id=user.id,
@@ -109,17 +137,11 @@ async def login_user(
         )
 
         if not result.is_success:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=result.error,
-            )
+            _raise_unauthorized_error(result.error)
 
         auth_data = result.data
         if not auth_data:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Authentication succeeded but returned no data",
-            )
+            _raise_internal_server_error("Authentication succeeded but returned no data")
 
         return AuthResponse(
             user=UserResponse(**auth_data["user"]),
@@ -150,17 +172,11 @@ async def refresh_token(
         result = await auth_service.refresh_token(request.refresh_token)
 
         if not result.is_success:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=result.error,
-            )
+            _raise_unauthorized_error(result.error)
 
         tokens = result.data
         if not tokens:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Token refresh succeeded but returned no data",
-            )
+            _raise_internal_server_error("Token refresh succeeded but returned no data")
 
         return TokenResponse(**tokens)
 
@@ -188,19 +204,13 @@ async def logout_user(
         # Extract token from Authorization header
         auth_header = request.headers.get("Authorization", "")
         if not auth_header.startswith("Bearer "):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid authorization header",
-            )
+            _raise_unauthorized_error("Invalid authorization header")
 
         token = auth_header[7:]  # Remove "Bearer " prefix
         result = await auth_service.logout_user(token)
 
         if not result.is_success:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=result.error,
-            )
+            _raise_bad_request_error(result.error)
 
         return JSONResponse(status_code=status.HTTP_204_NO_CONTENT, content=None)
 
@@ -227,10 +237,7 @@ async def logout_all_sessions(
         result = await auth_service.logout_all_sessions(current_user.user_id)
 
         if not result.is_success:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=result.error,
-            )
+            _raise_bad_request_error(result.error)
 
         return JSONResponse(
             status_code=status.HTTP_204_NO_CONTENT,
@@ -266,10 +273,7 @@ async def change_password(
         )
 
         if not result.is_success:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=result.error,
-            )
+            _raise_bad_request_error(result.error)
 
         return JSONResponse(
             status_code=status.HTTP_204_NO_CONTENT,
@@ -299,10 +303,7 @@ async def get_current_user_info(
         user_result = await auth_service.user_repo.get_by_id(current_user.user_id)
 
         if not user_result.is_success or not user_result.data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found",
-            )
+            _raise_not_found_error("User not found")
 
         user = user_result.data
         return UserResponse(
@@ -337,16 +338,10 @@ async def get_user_sessions(
         result = await auth_service.get_user_sessions(current_user.user_id)
 
         if not result.is_success:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=result.error,
-            )
+            _raise_bad_request_error(result.error)
 
         if result.data is None:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Get sessions succeeded but returned no data",
-            )
+            _raise_internal_server_error("Get sessions succeeded but returned no data")
 
         return [SessionResponse(**session) for session in result.data]
 
@@ -374,31 +369,19 @@ async def revoke_session(
         # Verify session belongs to current user
         sessions_result = await auth_service.get_user_sessions(current_user.user_id)
         if not sessions_result.is_success:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Failed to verify session ownership",
-            )
+            _raise_bad_request_error("Failed to verify session ownership")
 
         if sessions_result.data is None:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Get sessions succeeded but returned no data",
-            )
+            _raise_internal_server_error("Get sessions succeeded but returned no data")
 
         session_exists = any(s["id"] == session_id for s in sessions_result.data)
         if not session_exists:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Session not found or does not belong to user",
-            )
+            _raise_not_found_error("Session not found or does not belong to user")
 
         # Revoke the session
         result = await auth_service.session_repo.revoke_session(session_id)
         if not result.is_success:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=result.error,
-            )
+            _raise_bad_request_error(result.error)
 
         return JSONResponse(
             status_code=status.HTTP_204_NO_CONTENT,
@@ -427,10 +410,7 @@ async def cleanup_expired_sessions(
         result = await auth_service.cleanup_expired_sessions()
 
         if not result.is_success:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=result.error,
-            )
+            _raise_bad_request_error(result.error)
 
         cleaned_count = result.data
         if cleaned_count is None:

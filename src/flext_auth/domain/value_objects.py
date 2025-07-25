@@ -37,8 +37,11 @@ class FlextUsername(FlextValueObject):
             msg = "Username can only contain letters, numbers, underscores, and hyphens"
             raise FlextValidationError(
                 message=msg,
-                error_code="AUTH_INVALID_USERNAME",
-                details={"username": v, "pattern": "^[a-zA-Z0-9_-]+$"},
+                details={
+                    "error_code": "AUTH_INVALID_USERNAME",
+                    "username": v,
+                    "pattern": "^[a-zA-Z0-9_-]+$",
+                },
             )
         return v.lower()
 
@@ -52,8 +55,8 @@ class FlextUsername(FlextValueObject):
             msg = "Username must be at least 3 characters"
             raise FlextValidationError(
                 message=msg,
-                error_code="AUTH_INVALID_USERNAME_LENGTH",
                 details={
+                    "error_code": "AUTH_INVALID_USERNAME_LENGTH",
                     "username": self.value,
                     "min_length": MIN_USERNAME_LENGTH,
                     "actual_length": len(self.value),
@@ -63,8 +66,8 @@ class FlextUsername(FlextValueObject):
             msg = "Username must be at most 50 characters"
             raise FlextValidationError(
                 message=msg,
-                error_code="AUTH_INVALID_USERNAME_LENGTH",
                 details={
+                    "error_code": "AUTH_INVALID_USERNAME_LENGTH",
                     "username": self.value,
                     "max_length": MAX_USERNAME_LENGTH,
                     "actual_length": len(self.value),
@@ -74,8 +77,11 @@ class FlextUsername(FlextValueObject):
             msg = "Username can only contain letters, numbers, underscores, and hyphens"
             raise FlextValidationError(
                 message=msg,
-                error_code="AUTH_INVALID_USERNAME",
-                details={"username": self.value, "pattern": "^[a-zA-Z0-9_-]+$"},
+                details={
+                    "error_code": "AUTH_INVALID_USERNAME",
+                    "username": self.value,
+                    "pattern": "^[a-zA-Z0-9_-]+$",
+                },
             )
 
 
@@ -94,8 +100,10 @@ class FlextUserEmail(FlextValueObject):
             msg = "Email must contain @ symbol"
             raise FlextValidationError(
                 message=msg,
-                error_code="AUTH_INVALID_EMAIL",
-                details={"email": str(self.value)},
+                details={
+                    "error_code": "AUTH_INVALID_EMAIL",
+                    "email": str(self.value),
+                },
             )
         # Additional validation is handled by EmailStr type
 
@@ -113,29 +121,37 @@ class FlextPlainPassword(FlextValueObject):
             msg = "Password must contain at least one uppercase letter"
             raise FlextValidationError(
                 message=msg,
-                error_code="AUTH_INVALID_PASSWORD_STRENGTH",
-                details={"requirement": "uppercase_letter"},
+                details={
+                    "error_code": "AUTH_INVALID_PASSWORD_STRENGTH",
+                    "requirement": "uppercase_letter",
+                },
             )
         if not re.search(r"[a-z]", v):
             msg = "Password must contain at least one lowercase letter"
             raise FlextValidationError(
                 message=msg,
-                error_code="AUTH_INVALID_PASSWORD_STRENGTH",
-                details={"requirement": "lowercase_letter"},
+                details={
+                    "error_code": "AUTH_INVALID_PASSWORD_STRENGTH",
+                    "requirement": "lowercase_letter",
+                },
             )
         if not re.search(r"\d", v):
             msg = "Password must contain at least one number"
             raise FlextValidationError(
                 message=msg,
-                error_code="AUTH_INVALID_PASSWORD_STRENGTH",
-                details={"requirement": "number"},
+                details={
+                    "error_code": "AUTH_INVALID_PASSWORD_STRENGTH",
+                    "requirement": "number",
+                },
             )
         if not re.search(r'[!@#$%^&*(),.?":{}|<>]', v):
             msg = "Password must contain at least one special character"
             raise FlextValidationError(
                 message=msg,
-                error_code="AUTH_INVALID_PASSWORD_STRENGTH",
-                details={"requirement": "special_character"},
+                details={
+                    "error_code": "AUTH_INVALID_PASSWORD_STRENGTH",
+                    "requirement": "special_character",
+                },
             )
         return v
 

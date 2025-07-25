@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import secrets
 from pathlib import Path
 from typing import Any
@@ -9,6 +10,10 @@ from typing import Any
 from flext_core import FlextCoreSettings
 from pydantic import Field, field_validator
 from pydantic_settings import SettingsConfigDict
+
+# Constants
+_URL_PARTS_COUNT = 2  # Expected parts when splitting URL by '://'
+_MIN_BCRYPT_ROUNDS_PRODUCTION = 12  # Minimum bcrypt rounds for production
 
 
 class DatabaseConfig(FlextCoreSettings):
@@ -95,7 +100,12 @@ class SecurityConfig(FlextCoreSettings):
         le=20,
         description="Bcrypt rounds",
     )
-    max_failed_attempts: int = Field(default=5, ge=1, le=20, description="Max failed login attempts")
+    max_failed_attempts: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+        description="Max failed login attempts",
+    )
     lockout_duration_minutes: int = Field(
         default=30,
         ge=1,
@@ -118,7 +128,10 @@ class SecurityConfig(FlextCoreSettings):
         default=False,
         description="Require email verification for new accounts",
     )
-    enable_2fa: bool = Field(default=False, description="Enable two-factor authentication")
+    enable_2fa: bool = Field(
+        default=False,
+        description="Enable two-factor authentication",
+    )
 
 
 class RateLimitConfig(FlextCoreSettings):
@@ -212,7 +225,10 @@ class AppConfig(FlextCoreSettings):
 
     model_config = SettingsConfigDict(env_prefix="APP_")
 
-    name: str = Field(default="FLEXT Authentication API", description="Application name")
+    name: str = Field(
+        default="FLEXT Authentication API",
+        description="Application name",
+    )
     version: str = Field(default="1.0.0", description="Application version")
     description: str = Field(
         default="Production-ready authentication service for FLEXT",
@@ -247,7 +263,7 @@ class AppConfig(FlextCoreSettings):
             if db_url and "://" in db_url:
                 # Hide credentials in database URL
                 parts = db_url.split("://")
-                if len(parts) == 2 and "@" in parts[1]:
+                if len(parts) == _URL_PARTS_COUNT and "@" in parts[1]:
                     host_part = parts[1].split("@", 1)[1]
                     config_dict["database"]["url"] = (
                         f"{parts[0]}://[REDACTED]@{host_part}"
@@ -283,7 +299,6 @@ def load_config(config_file: str | Path | None = None) -> AppConfig:
         config_path = Path(config_file)
         if config_path.exists():
             # Load from specific config file
-            import os
             os.environ.setdefault("SETTINGS_FILE", str(config_path))
             return AppConfig()
 
@@ -307,7 +322,7 @@ def validate_production_config(cfg: AppConfig) -> None:
             errors.append("Production database URL is required")
 
         # Security settings
-        if cfg.security.password_rounds < 12:
+        if cfg.security.password_rounds < _MIN_BCRYPT_ROUNDS_PRODUCTION:
             errors.append("Production bcrypt rounds should be >= 12")
 
         # Debug mode

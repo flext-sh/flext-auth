@@ -57,7 +57,7 @@ async def startup_handler(app: FastAPI) -> None:
     settings = AppConfig()
     jwt_secret = settings.jwt.secret_key
 
-    # Create repositories (using in-memory for now, PostgreSQL removed due to duplication)
+    # Create repositories (using in-memory for now)
     user_repo: UserRepository = InMemoryUserRepository()
     session_repo: SessionRepository = InMemorySessionRepository()
 
@@ -99,13 +99,17 @@ async def shutdown_handler(app: FastAPI) -> None:
     if connection_service:
         # Close all repository connections through FLEXT connection service
         if hasattr(app.state, "user_repo"):
-            result = await connection_service.release_repository_connection(app.state.user_repo)
+            result = await connection_service.release_repository_connection(
+                app.state.user_repo,
+            )
             if not result.success:
                 # Log warning but don't fail shutdown
                 pass
 
         if hasattr(app.state, "session_repo"):
-            result = await connection_service.release_repository_connection(app.state.session_repo)
+            result = await connection_service.release_repository_connection(
+                app.state.session_repo,
+            )
             if not result.success:
                 # Log warning but don't fail shutdown
                 pass

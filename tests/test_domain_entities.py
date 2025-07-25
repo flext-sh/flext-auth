@@ -10,10 +10,10 @@ from flext_auth.domain.entities import (
     FlextPermission,
     FlextRole,
     FlextSession,
+    FlextSessionStatus,
     FlextUser,
-    SessionStatus,
-    UserRole,
-    UserStatus,
+    FlextUserRole,
+    FlextUserStatus,
 )
 
 
@@ -27,15 +27,15 @@ class TestFlextUser:
             username="testuser",
             email="test@example.com",
             password_hash="$2b$12$test.hash",
-            role=UserRole.USER,
-            status=UserStatus.ACTIVE,
+            role=FlextUserRole.USER,
+            status=FlextUserStatus.ACTIVE,
         )
 
         assert user.id == "test-user-id"
         assert user.username == "testuser"
         assert user.email == "test@example.com"
-        assert user.role == UserRole.USER
-        assert user.status == UserStatus.ACTIVE
+        assert user.role == FlextUserRole.USER
+        assert user.status == FlextUserStatus.ACTIVE
 
     def test_user_is_active(self) -> None:
         """Test user is_active method."""
@@ -44,7 +44,7 @@ class TestFlextUser:
             username="test",
             email="test@example.com",
             password_hash="hash",
-            status=UserStatus.ACTIVE,
+            status=FlextUserStatus.ACTIVE,
         )
         assert user.is_active() is True
 
@@ -53,7 +53,7 @@ class TestFlextUser:
             username="test",
             email="test@example.com",
             password_hash="hash",
-            status=UserStatus.INACTIVE,
+            status=FlextUserStatus.INACTIVE,
         )
         assert user_inactive.is_active() is False
 
@@ -64,7 +64,7 @@ class TestFlextUser:
             username="test",
             email="test@example.com",
             password_hash="hash",
-            status=UserStatus.LOCKED,
+            status=FlextUserStatus.LOCKED,
         )
         assert user_locked.is_locked() is True
 
@@ -85,7 +85,7 @@ class TestFlextUser:
             username="REDACTED_LDAP_BIND_PASSWORD",
             email="REDACTED_LDAP_BIND_PASSWORD@example.com",
             password_hash="hash",
-            role=UserRole.ADMIN,
+            role=FlextUserRole.ADMIN,
         )
         assert REDACTED_LDAP_BIND_PASSWORD_user.is_REDACTED_LDAP_BIND_PASSWORD() is True
 
@@ -94,7 +94,7 @@ class TestFlextUser:
             username="user",
             email="user@example.com",
             password_hash="hash",
-            role=UserRole.USER,
+            role=FlextUserRole.USER,
         )
         assert regular_user.is_REDACTED_LDAP_BIND_PASSWORD() is False
 
@@ -187,7 +187,7 @@ class TestFlextSession:
             user_id="user-id",
             access_token="token",
             expires_at=future_time,
-            status=SessionStatus.ACTIVE,
+            status=FlextSessionStatus.ACTIVE,
         )
         assert valid_session.is_valid() is True
 
@@ -196,7 +196,7 @@ class TestFlextSession:
             user_id="user-id",
             access_token="token",
             expires_at=datetime.now(UTC) - timedelta(hours=1),
-            status=SessionStatus.ACTIVE,
+            status=FlextSessionStatus.ACTIVE,
         )
         assert expired_session.is_valid() is False
 
@@ -205,7 +205,7 @@ class TestFlextSession:
             user_id="user-id",
             access_token="token",
             expires_at=future_time,
-            status=SessionStatus.REVOKED,
+            status=FlextSessionStatus.REVOKED,
         )
         assert revoked_session.is_valid() is False
 
