@@ -27,7 +27,8 @@ class TestUsername:
     def test_username_creation(self) -> None:
         """Test username creation."""
         username = FlextUsername(value="testuser")
-        assert username.value == "testuser"
+        if username.value != "testuser":
+            raise AssertionError(f"Expected {'testuser'}, got {username.value}")
         assert str(username) == "testuser"
 
     def test_username_validation(self) -> None:
@@ -57,7 +58,8 @@ class TestUserEmail:
     def test_email_creation(self) -> None:
         """Test email creation."""
         email = FlextUserEmail(value="test@example.com")
-        assert str(email) == "test@example.com"
+        if str(email) != "test@example.com":
+            raise AssertionError(f"Expected {'test@example.com'}, got {email!s}")
 
     def test_email_validation(self) -> None:
         """Test email validation rules."""
@@ -71,7 +73,8 @@ class TestPlainPassword:
     def test_password_creation(self) -> None:
         """Test password creation."""
         password = FlextPlainPassword(value="StrongP@ssw0rd!")
-        assert str(password) == "[PROTECTED]"
+        if str(password) != "[PROTECTED]":
+            raise AssertionError(f"Expected {'[PROTECTED]'}, got {password!s}")
         assert repr(password) == "FlextPlainPassword([PROTECTED])"
 
     def test_password_validation(self) -> None:
@@ -123,7 +126,8 @@ class TestHashedPassword:
         """Test hashed password creation."""
         hash_value = "$2b$12$" + "a" * 50  # Valid bcrypt hash format
         hashed = FlextHashedPassword(value=hash_value)
-        assert str(hashed) == "[HASHED]"
+        if str(hashed) != "[HASHED]":
+            raise AssertionError(f"Expected {'[HASHED]'}, got {hashed!s}")
         assert repr(hashed) == "FlextHashedPassword([HASHED])"
 
     def test_hashed_password_validation(self) -> None:
@@ -147,7 +151,8 @@ class TestAuthToken:
     def test_auth_token_creation(self) -> None:
         """Test auth token creation."""
         token = FlextAuthToken(value="valid_token_123", token_type="Bearer")
-        assert str(token) == "Bearer valid_token_123"
+        if str(token) != "Bearer valid_token_123":
+            raise AssertionError(f"Expected {'Bearer valid_token_123'}, got {token!s}")
 
     def test_auth_token_validation(self) -> None:
         """Test auth token validation rules."""
@@ -172,7 +177,8 @@ class TestRefreshToken:
     def test_refresh_token_creation(self) -> None:
         """Test refresh token creation."""
         token = FlextRefreshToken(value="a" * 32)
-        assert str(token) == "[REFRESH_TOKEN]"
+        if str(token) != "[REFRESH_TOKEN]":
+            raise AssertionError(f"Expected {'[REFRESH_TOKEN]'}, got {token!s}")
         assert repr(token) == "FlextRefreshToken([PROTECTED])"
 
     def test_refresh_token_validation(self) -> None:
@@ -198,7 +204,8 @@ class TestSessionToken:
     def test_session_token_creation(self) -> None:
         """Test session token creation."""
         token = FlextSessionToken(value="session_token_123")
-        assert str(token) == "[SESSION_TOKEN]"
+        if str(token) != "[SESSION_TOKEN]":
+            raise AssertionError(f"Expected {'[SESSION_TOKEN]'}, got {token!s}")
         assert repr(token) == "FlextSessionToken([PROTECTED])"
 
     def test_session_token_validation(self) -> None:
@@ -224,7 +231,8 @@ class TestIPAddress:
     def test_ipaddress_creation(self) -> None:
         """Test IP address creation."""
         ipaddr = FlextIPAddress(value="192.168.1.1")
-        assert str(ipaddr) == "192.168.1.1"
+        if str(ipaddr) != "192.168.1.1":
+            raise AssertionError(f"Expected {'192.168.1.1'}, got {ipaddr!s}")
 
     def test_ipaddress_validation(self) -> None:
         """Test IP address validation rules."""
@@ -247,7 +255,8 @@ class TestUserAgent:
     def test_user_agent_creation(self) -> None:
         """Test user agent creation."""
         ua = FlextUserAgent(value="Mozilla/5.0 (Chrome)")
-        assert str(ua) == "Mozilla/5.0 (Chrome)"
+        if str(ua) != "Mozilla/5.0 (Chrome)":
+            raise AssertionError(f"Expected {'Mozilla/5.0 (Chrome)'}, got {ua!s}")
 
     def test_user_agent_validation(self) -> None:
         """Test user agent validation rules."""
@@ -268,27 +277,38 @@ class TestUserAgent:
     def test_user_agent_browser_detection(self) -> None:
         """Test browser detection methods."""
         chrome_ua = FlextUserAgent(value="Mozilla/5.0 Chrome/91.0")
-        assert chrome_ua.get_browser() == "Chrome"
+        if chrome_ua.get_browser() != "Chrome":
+            raise AssertionError(f"Expected {'Chrome'}, got {chrome_ua.get_browser()}")
 
         firefox_ua = FlextUserAgent(value="Mozilla/5.0 Firefox/89.0")
-        assert firefox_ua.get_browser() == "Firefox"
+        if firefox_ua.get_browser() != "Firefox":
+            raise AssertionError(
+                f"Expected {'Firefox'}, got {firefox_ua.get_browser()}"
+            )
 
         safari_ua = FlextUserAgent(value="Mozilla/5.0 Safari/537.36")
-        assert safari_ua.get_browser() == "Safari"
+        if safari_ua.get_browser() != "Safari":
+            raise AssertionError(f"Expected {'Safari'}, got {safari_ua.get_browser()}")
 
         edge_ua = FlextUserAgent(value="Mozilla/5.0 Edge/91.0")
-        assert edge_ua.get_browser() == "Edge"
+        if edge_ua.get_browser() != "Edge":
+            raise AssertionError(f"Expected {'Edge'}, got {edge_ua.get_browser()}")
 
         unknown_ua = FlextUserAgent(value="CustomBrowser/1.0")
-        assert unknown_ua.get_browser() == "Unknown"
+        if unknown_ua.get_browser() != "Unknown":
+            raise AssertionError(
+                f"Expected {'Unknown'}, got {unknown_ua.get_browser()}"
+            )
 
     def test_user_agent_mobile_detection(self) -> None:
         """Test mobile device detection."""
         mobile_ua = FlextUserAgent(value="Mozilla/5.0 Mobile Safari")
-        assert mobile_ua.is_mobile() is True
+        if not (mobile_ua.is_mobile()):
+            raise AssertionError(f"Expected True, got {mobile_ua.is_mobile()}")
 
         desktop_ua = FlextUserAgent(value="Mozilla/5.0 Chrome/91.0")
-        assert desktop_ua.is_mobile() is False
+        if desktop_ua.is_mobile():
+            raise AssertionError(f"Expected False, got {desktop_ua.is_mobile()}")
 
 
 class TestJWTClaims:
@@ -304,9 +324,11 @@ class TestJWTClaims:
             exp=int(datetime.now(UTC).timestamp()) + 3600,
             token_type="access",
         )
-        assert claims.sub == "user-123"
+        if claims.sub != "user-123":
+            raise AssertionError(f"Expected {'user-123'}, got {claims.sub}")
         assert claims.username == "testuser"
-        assert claims.role == "user"
+        if claims.role != "user":
+            raise AssertionError(f"Expected {'user'}, got {claims.role}")
         assert claims.token_type == "access"
 
     def test_jwt_claims_validation(self) -> None:
@@ -366,11 +388,16 @@ class TestSecurityContext:
             session_id="session-123",
             permissions=["read", "write"],
         )
-        assert context.user_id == "user-123"
+        if context.user_id != "user-123":
+            raise AssertionError(f"Expected {'user-123'}, got {context.user_id}")
         assert context.username == "testuser"
-        assert context.role == "REDACTED_LDAP_BIND_PASSWORD"
+        if context.role != "REDACTED_LDAP_BIND_PASSWORD":
+            raise AssertionError(f"Expected {'REDACTED_LDAP_BIND_PASSWORD'}, got {context.role}")
         assert context.session_id == "session-123"
-        assert context.permissions == ["read", "write"]
+        if context.permissions != ["read", "write"]:
+            raise AssertionError(
+                f"Expected {['read', 'write']}, got {context.permissions}"
+            )
 
     def test_security_context_validation(self) -> None:
         """Test security context validation rules."""
@@ -413,9 +440,14 @@ class TestSecurityContext:
             permissions=["read", "write"],
         )
 
-        assert context.has_permission("read") is True
-        assert context.has_permission("delete") is False
-        assert context.is_REDACTED_LDAP_BIND_PASSWORD() is True
+        if not (context.has_permission("read")):
+            raise AssertionError(f"Expected True, got {context.has_permission('read')}")
+        if context.has_permission("delete"):
+            raise AssertionError(
+                f"Expected False, got {context.has_permission('delete')}"
+            )
+        if not (context.is_REDACTED_LDAP_BIND_PASSWORD()):
+            raise AssertionError(f"Expected True, got {context.is_REDACTED_LDAP_BIND_PASSWORD()}")
 
         user_context = FlextSecurityContext(
             user_id="user-123",
@@ -423,4 +455,5 @@ class TestSecurityContext:
             role="user",
             session_id="session-123",
         )
-        assert user_context.is_REDACTED_LDAP_BIND_PASSWORD() is False
+        if user_context.is_REDACTED_LDAP_BIND_PASSWORD():
+            raise AssertionError(f"Expected False, got {user_context.is_REDACTED_LDAP_BIND_PASSWORD()}")

@@ -13,7 +13,10 @@ from flext_auth.domain.entities import (
     FlextPermission,
     FlextRole,
     FlextSession,
+    FlextSessionStatus,
     FlextUser,
+    FlextUserRole,
+    FlextUserStatus,
 )
 
 
@@ -32,9 +35,11 @@ class TestFlextAuthenticationService:
 
         assert result.is_success
         user = result.data
-        assert user.username == "testuser"
+        if user.username != "testuser":
+            raise AssertionError(f"Expected {'testuser'}, got {user.username}")
         assert str(user.email) == "test@example.com"
-        assert user.role == FlextUserRole.USER
+        if user.role != FlextUserRole.USER:
+            raise AssertionError(f"Expected {FlextUserRole.USER}, got {user.role}")
         assert user.status == FlextUserStatus.ACTIVE
 
     def test_create_user_invalid_username(self) -> None:
@@ -43,7 +48,10 @@ class TestFlextAuthenticationService:
         result = service.create_user("ab", "test@example.com", "TestPass123!")
 
         assert not result.is_success
-        assert "Username must be at least 3 characters" in result.error
+        if "Username must be at least 3 characters" not in result.error:
+            raise AssertionError(
+                f"Expected {'Username must be at least 3 characters'} in {result.error}"
+            )
 
     def test_create_user_invalid_email(self) -> None:
         """Test user creation with invalid email."""
@@ -51,7 +59,10 @@ class TestFlextAuthenticationService:
         result = service.create_user("testuser", "invalid-email", "TestPass123!")
 
         assert not result.is_success
-        assert "Input should be a valid email address" in result.error
+        if "Input should be a valid email address" not in result.error:
+            raise AssertionError(
+                f"Expected {'Input should be a valid email address'} in {result.error}"
+            )
 
     def test_create_user_invalid_password(self) -> None:
         """Test user creation with invalid password."""
@@ -59,7 +70,10 @@ class TestFlextAuthenticationService:
         result = service.create_user("testuser", "test@example.com", "weak")
 
         assert not result.is_success
-        assert "Password must be at least 8 characters" in result.error
+        if "Password must be at least 8 characters" not in result.error:
+            raise AssertionError(
+                f"Expected {'Password must be at least 8 characters'} in {result.error}"
+            )
 
     def test_authenticate_user_success(self) -> None:
         """Test successful user authentication."""
@@ -81,7 +95,10 @@ class TestFlextAuthenticationService:
         auth_result = service.authenticate_user("testuser", "TestPass123!", users)
         assert auth_result.is_success
         authenticated_user = auth_result.data
-        assert authenticated_user.username == "testuser"
+        if authenticated_user.username != "testuser":
+            raise AssertionError(
+                f"Expected {'testuser'}, got {authenticated_user.username}"
+            )
 
     def test_authenticate_user_wrong_password(self) -> None:
         """Test authentication with wrong password."""
@@ -102,7 +119,10 @@ class TestFlextAuthenticationService:
         # Authenticate with wrong password
         auth_result = service.authenticate_user("testuser", "WrongPass123!", users)
         assert not auth_result.is_success
-        assert "Invalid credentials" in auth_result.error
+        if "Invalid credentials" not in auth_result.error:
+            raise AssertionError(
+                f"Expected {'Invalid credentials'} in {auth_result.error}"
+            )
 
     def test_authenticate_user_not_found(self) -> None:
         """Test authentication with non-existent user."""
@@ -114,7 +134,8 @@ class TestFlextAuthenticationService:
         # Authenticate non-existent user
         auth_result = service.authenticate_user("nonexistent", "TestPass123!", users)
         assert not auth_result.is_success
-        assert "User not found" in auth_result.error
+        if "User not found" not in auth_result.error:
+            raise AssertionError(f"Expected {'User not found'} in {auth_result.error}")
 
     def test_change_password_success(self) -> None:
         """Test successful password change."""
@@ -132,7 +153,8 @@ class TestFlextAuthenticationService:
         # Change password
         change_result = service.change_password(user, "OldPass123!", "NewPass123!")
         assert change_result.is_success
-        assert change_result.data is True
+        if not (change_result.data):
+            raise AssertionError(f"Expected True, got {change_result.data}")
 
     def test_change_password_wrong_old_password(self) -> None:
         """Test password change with wrong old password."""
@@ -150,7 +172,10 @@ class TestFlextAuthenticationService:
         # Change password with wrong old password
         change_result = service.change_password(user, "WrongOldPass!", "NewPass123!")
         assert not change_result.is_success
-        assert "Current password is incorrect" in change_result.error
+        if "Current password is incorrect" not in change_result.error:
+            raise AssertionError(
+                f"Expected {'Current password is incorrect'} in {change_result.error}"
+            )
 
     def test_change_password_invalid_new_password(self) -> None:
         """Test password change with invalid new password."""
@@ -168,7 +193,10 @@ class TestFlextAuthenticationService:
         # Change password with invalid new password
         change_result = service.change_password(user, "OldPass123!", "weak")
         assert not change_result.is_success
-        assert "Password must be at least 8 characters" in change_result.error
+        if "Password must be at least 8 characters" not in change_result.error:
+            raise AssertionError(
+                f"Expected {'Password must be at least 8 characters'} in {change_result.error}"
+            )
 
 
 class TestFlextSessionService:
@@ -201,9 +229,11 @@ class TestFlextSessionService:
 
         assert result.is_success
         session = result.data
-        assert session.user_id == user.id
+        if session.user_id != user.id:
+            raise AssertionError(f"Expected {user.id}, got {session.user_id}")
         assert session.ip_address == "192.168.1.1"
-        assert session.user_agent == "Test Browser"
+        if session.user_agent != "Test Browser":
+            raise AssertionError(f"Expected {'Test Browser'}, got {session.user_agent}")
         assert session.status == FlextSessionStatus.ACTIVE
 
     def test_create_session_with_defaults(self) -> None:
@@ -223,10 +253,14 @@ class TestFlextSessionService:
 
         assert result.is_success
         session = result.data
-        assert session.user_id == user.id
+        if session.user_id != user.id:
+            raise AssertionError(f"Expected {user.id}, got {session.user_id}")
         assert session.ip_address is None
         assert session.user_agent is None
-        assert session.status == FlextSessionStatus.ACTIVE
+        if session.status != FlextSessionStatus.ACTIVE:
+            raise AssertionError(
+                f"Expected {FlextSessionStatus.ACTIVE}, got {session.status}"
+            )
 
     def test_validate_session_success(self) -> None:
         """Test successful session validation."""
@@ -244,7 +278,8 @@ class TestFlextSessionService:
         # Validate session
         result = service.validate_session(session)
         assert result.is_success
-        assert result.data is True
+        if not (result.data):
+            raise AssertionError(f"Expected True, got {result.data}")
 
     def test_validate_session_expired(self) -> None:
         """Test validation of expired session."""
@@ -262,7 +297,8 @@ class TestFlextSessionService:
         # Validate session
         result = service.validate_session(session)
         assert result.is_success
-        assert result.data is False
+        if result.data:
+            raise AssertionError(f"Expected False, got {result.data}")
 
     def test_validate_session_revoked(self) -> None:
         """Test validation of revoked session."""
@@ -280,7 +316,8 @@ class TestFlextSessionService:
         # Validate session
         result = service.validate_session(session)
         assert result.is_success
-        assert result.data is False
+        if result.data:
+            raise AssertionError(f"Expected False, got {result.data}")
 
 
 class TestFlextAuthorizationService:
@@ -313,9 +350,11 @@ class TestFlextAuthorizationService:
 
         assert result.is_success
         role = result.data
-        assert role.name == "user_manager"
+        if role.name != "user_manager":
+            raise AssertionError(f"Expected {'user_manager'}, got {role.name}")
         assert role.description == "User management role"
-        assert len(role.permissions) == 1
+        if len(role.permissions) != 1:
+            raise AssertionError(f"Expected {1}, got {len(role.permissions)}")
         assert role.permissions[0] == permission
 
     def test_create_role_with_no_permissions(self) -> None:
@@ -327,9 +366,11 @@ class TestFlextAuthorizationService:
 
         assert result.is_success
         role = result.data
-        assert role.name == "basic_role"
+        if role.name != "basic_role":
+            raise AssertionError(f"Expected {'basic_role'}, got {role.name}")
         assert role.description == "Basic role"
-        assert len(role.permissions) == 0
+        if len(role.permissions) != 0:
+            raise AssertionError(f"Expected {0}, got {len(role.permissions)}")
 
     def test_create_role_invalid_name(self) -> None:
         """Test role creation with invalid name."""
@@ -339,7 +380,10 @@ class TestFlextAuthorizationService:
         result = service.create_role("", "Role description")
 
         assert not result.is_success
-        assert "Role name cannot be empty" in result.error
+        if "Role name cannot be empty" not in result.error:
+            raise AssertionError(
+                f"Expected {'Role name cannot be empty'} in {result.error}"
+            )
 
     def test_check_permission_success(self) -> None:
         """Test successful permission check."""
@@ -376,7 +420,8 @@ class TestFlextAuthorizationService:
         # Check permission
         result = service.check_permission(user, "users", "read", roles)
         assert result.is_success
-        assert result.data is True
+        if not (result.data):
+            raise AssertionError(f"Expected True, got {result.data}")
 
     def test_check_permission_no_roles(self) -> None:
         """Test permission check with no roles."""
@@ -393,7 +438,8 @@ class TestFlextAuthorizationService:
         # Check permission without roles
         result = service.check_permission(user, "users", "read")
         assert result.is_success
-        assert result.data is False
+        if result.data:
+            raise AssertionError(f"Expected False, got {result.data}")
 
     def test_check_permission_REDACTED_LDAP_BIND_PASSWORD_user(self) -> None:
         """Test permission check for REDACTED_LDAP_BIND_PASSWORD user."""
@@ -411,4 +457,5 @@ class TestFlextAuthorizationService:
         # Check permission for REDACTED_LDAP_BIND_PASSWORD (should have all permissions)
         result = service.check_permission(user, "users", "delete")
         assert result.is_success
-        assert result.data is True
+        if not (result.data):
+            raise AssertionError(f"Expected True, got {result.data}")

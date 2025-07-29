@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 
 from flext_core import FlextResult
 
-from flext_auth.entities import FlextUser, FlextUserStatus
+from flext_auth.domain.entities import FlextUser, FlextUserStatus
 
 
 class UserRepository(ABC):
@@ -65,18 +65,12 @@ class InMemoryUserRepository(UserRepository):
             # Check for username conflicts
             existing_username = self._username_index.get(user.username.lower())
             if existing_username and existing_username != user.id:
-                return FlextResult(
-                    success=False,
-                    error=f"Username '{user.username}' already exists",
-                )
+                return FlextResult.fail(f"Username '{user.username}' already exists")
 
             # Check for email conflicts
             existing_email = self._email_index.get(str(user.email).lower())
             if existing_email and existing_email != user.id:
-                return FlextResult(
-                    success=False,
-                    error=f"Email '{user.email}' already exists",
-                )
+                return FlextResult.fail(f"Email '{user.email}' already exists")
 
             # Create user with updated timestamp (entities are immutable)
             updated_user = FlextUser(
@@ -121,10 +115,7 @@ class InMemoryUserRepository(UserRepository):
             user = self._users.get(user_id)
             return FlextResult.ok(user)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult(
-                success=False,
-                error=f"Failed to get user by username: {e}",
-            )
+            return FlextResult.fail(f"Failed to get user by username: {e}")
 
     async def get_by_email(self, email: str) -> FlextResult[FlextUser | None]:
         """Get user by email."""
@@ -143,7 +134,7 @@ class InMemoryUserRepository(UserRepository):
         try:
             user = self._users.get(user_id)
             if not user:
-                return FlextResult.ok(False)
+                return FlextResult.ok(data=False)
 
             # Remove from indexes
             self._username_index.pop(user.username.lower(), None)
@@ -152,7 +143,7 @@ class InMemoryUserRepository(UserRepository):
             # Remove user
             del self._users[user_id]
 
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Failed to delete user: {e}")
 

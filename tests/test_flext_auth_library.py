@@ -1,8 +1,15 @@
 """Testes robustos e abrangentes para a biblioteca flext-auth.
 
+# Constants
+EXPECTED_DATA_COUNT = 3
+
 Testa TODAS as funcionalidades da interface pública única.
 Garante que a redução massiva de código funciona perfeitamente.
 """
+
+import asyncio
+from flext_auth import FlextAuthUser
+
 
 import asyncio
 from datetime import datetime
@@ -15,6 +22,7 @@ from flext_auth import (
     flext_auth_decode_jwt,
     flext_auth_generate_jwt,
     flext_auth_hash_password,
+    flext_auth_middleware_factory,
     flext_auth_quick_start,
     flext_auth_validate_email,
     flext_auth_validate_password_strength,
@@ -26,12 +34,12 @@ class TestFlextAuthClassePrincipal:
     """Testes para a classe principal FlextAuth."""
 
     @pytest.fixture
-    def auth(self):
+    def auth(self) -> FlextAuth:
         """Instância FlextAuth para testes."""
         return FlextAuth()
 
     @pytest.fixture
-    def auth_with_config(self):
+    def auth_with_config(self) -> FlextAuth:
         """Instância FlextAuth com configuração customizada."""
         config = {
             "jwt": {
@@ -52,7 +60,8 @@ class TestFlextAuthClassePrincipal:
 
         assert result.is_success
         assert result.data is not None
-        assert result.data.username == "testuser"
+        if result.data.username != "testuser":
+            raise AssertionError(f"Expected {"testuser"}, got {result.data.username}")
         assert result.data.email == "test@example.com"
         assert result.data.is_active()
 
@@ -66,7 +75,8 @@ class TestFlextAuthClassePrincipal:
         # Segundo registro (deve falhar)
         result2 = await auth.register("duplicate", "dup2@example.com", "Pass456!")
         assert not result2.is_success
-        assert "already exists" in result2.error
+        if "already exists" not in result2.error:
+            raise AssertionError(f"Expected {"already exists"} in {result2.error}")
 
     @pytest.mark.asyncio
     async def test_login_sucesso(self, auth) -> None:
@@ -78,11 +88,15 @@ class TestFlextAuthClassePrincipal:
         result = await auth.login("loginuser", "LoginPass123!")
 
         assert result.is_success
-        assert "user" in result.data
+        if "user" not in result.data:
+            raise AssertionError(f"Expected {"user"} in {result.data}")
         assert "session" in result.data
-        assert "tokens" in result.data
-        assert result.data["user"]["username"] == "loginuser"
-        assert "access_token" in result.data["tokens"]
+        if "tokens" not in result.data:
+            raise AssertionError(f"Expected {"tokens"} in {result.data}")
+        if result.data["user"]["username"] != "loginuser":
+            raise AssertionError(f"Expected {"loginuser"}, got {result.data["user"]["username"]}")
+        if "access_token" not in result.data["tokens"]:
+            raise AssertionError(f"Expected {"access_token"} in {result.data["tokens"]}")
         assert "refresh_token" in result.data["tokens"]
 
     @pytest.mark.asyncio
@@ -91,7 +105,8 @@ class TestFlextAuthClassePrincipal:
         result = await auth.login("inexistente", "senha_errada")
 
         assert not result.is_success
-        assert "Invalid username or password" in result.error
+        if "Invalid username or password" not in result.error:
+            raise AssertionError(f"Expected {"Invalid username or password"} in {result.error}")
 
     @pytest.mark.asyncio
     async def test_validacao_token_sucesso(self, auth) -> None:
@@ -105,10 +120,13 @@ class TestFlextAuthClassePrincipal:
         result = await auth.validate(token)
 
         assert result.is_success
-        assert result.data["username"] == "tokenuser"
-        assert "user_id" in result.data
+        if result.data["username"] != "tokenuser":
+            raise AssertionError(f"Expected {"tokenuser"}, got {result.data["username"]}")
+        if "user_id" not in result.data:
+            raise AssertionError(f"Expected {"user_id"} in {result.data}")
         assert "role" in result.data
-        assert "session_id" in result.data
+        if "session_id" not in result.data:
+            raise AssertionError(f"Expected {"session_id"} in {result.data}")
 
     @pytest.mark.asyncio
     async def test_validacao_token_invalido(self, auth) -> None:
@@ -116,7 +134,8 @@ class TestFlextAuthClassePrincipal:
         result = await auth.validate("token_invalido_123")
 
         assert not result.is_success
-        assert "Token validation failed" in result.error
+        if "Token validation failed" not in result.error:
+            raise AssertionError(f"Expected {"Token validation failed"} in {result.error}")
 
     @pytest.mark.asyncio
     async def test_logout_sucesso(self, auth) -> None:
@@ -143,11 +162,17 @@ class TestFlextAuthClassePrincipal:
         login_result = await auth.login("refreshuser", "RefreshPass123!")
         refresh_token = login_result.data["tokens"]["refresh_token"]
 
+        # Add delay to ensure different timestamps
+
+
+        await asyncio.sleep(1.0)
+
         # Refresh
         result = await auth.refresh(refresh_token)
 
         assert result.is_success
-        assert "access_token" in result.data
+        if "access_token" not in result.data:
+            raise AssertionError(f"Expected {"access_token"} in {result.data}")
         assert "refresh_token" in result.data
         # Tokens devem ser diferentes dos originais
         assert (
@@ -187,7 +212,8 @@ class TestFlextAuthClassePrincipal:
         result = await auth.change_password(user_id, "SenhaErrada!", "NewPass456!")
 
         assert not result.is_success
-        assert "incorrect" in result.error.lower()
+        if "incorrect" not in result.error.lower():
+            raise AssertionError(f"Expected {"incorrect"} in {result.error.lower()}")
 
     @pytest.mark.asyncio
     async def test_listar_sessoes_usuario(self, auth) -> None:
@@ -201,11 +227,14 @@ class TestFlextAuthClassePrincipal:
         result = await auth.get_user_sessions(user_id)
 
         assert result.is_success
-        assert len(result.data) == 1
+        if len(result.data) != 1:
+            raise AssertionError(f"Expected {1}, got {len(result.data)}")
         session = result.data[0]
         assert session["id"] is not None
-        assert session["status"] == "active"
-        assert session["is_valid"] is True
+        if session["status"] != "active":
+            raise AssertionError(f"Expected {"active"}, got {session["status"]}")
+        if not (session["is_valid"]):
+            raise AssertionError(f"Expected True, got {session["is_valid"]}")
 
     @pytest.mark.asyncio
     async def test_limpeza_sessoes_expiradas(self, auth) -> None:
@@ -228,7 +257,7 @@ class TestFlextAuthQuickStart:
 
         # Executa login assíncrono para verificar REDACTED_LDAP_BIND_PASSWORD
         async def verify_REDACTED_LDAP_BIND_PASSWORD():
-            result = await auth.login("REDACTED_LDAP_BIND_PASSWORD", "REDACTED_LDAP_BIND_PASSWORD123")
+            result = await auth.login("REDACTED_LDAP_BIND_PASSWORD", "Admin123!")
             return result.is_success
 
         # Testa se REDACTED_LDAP_BIND_PASSWORD existe
@@ -270,7 +299,8 @@ class TestFlextAuthHelpers:
         hashed_12 = flext_auth_hash_password(password, rounds=12)
 
         assert hashed_4 != hashed_12
-        assert "$2b$04$" in hashed_4
+        if "$2b$04$" not in hashed_4:
+            raise AssertionError(f"Expected {"$2b$04$"} in {hashed_4}")
         assert "$2b$12$" in hashed_12
 
     def test_verify_password_correto(self) -> None:
@@ -278,7 +308,9 @@ class TestFlextAuthHelpers:
         password = "CorrectPassword123!"
         hashed = flext_auth_hash_password(password)
 
-        assert flext_auth_verify_password(password, hashed) is True
+        if not (flext_auth_verify_password(password, hashed)):
+
+            raise AssertionError(f"Expected True, got {flext_auth_verify_password(password, hashed)}")
 
     def test_verify_password_incorreto(self) -> None:
         """Testa verificação de senha incorreta."""
@@ -286,15 +318,17 @@ class TestFlextAuthHelpers:
         wrong_password = "WrongPassword456!"
         hashed = flext_auth_hash_password(password)
 
-        assert flext_auth_verify_password(wrong_password, hashed) is False
+        if flext_auth_verify_password(wrong_password, hashed):
 
+            raise AssertionError(f"Expected False, got {flext_auth_verify_password(wrong_password, hashed)}")\ n
     def test_generate_jwt_basico(self) -> None:
         """Testa geração básica de JWT."""
         payload = {"user_id": "123", "username": "test"}
         token = flext_auth_generate_jwt(payload)
 
         assert token != ""
-        assert len(token.split(".")) == 3  # Header.Payload.Signature
+        if len(token.split(".")) != EXPECTED_DATA_COUNT  # Header.Payload.Signature:
+            raise AssertionError(f"Expected {3  # Header.Payload.Signature}, got {len(token.split("."))}")
 
     def test_generate_jwt_com_expiracao(self) -> None:
         """Testa geração de JWT com expiração customizada."""
@@ -302,7 +336,8 @@ class TestFlextAuthHelpers:
         token = flext_auth_generate_jwt(payload, expires_minutes=60)
 
         assert token != ""
-        assert len(token.split(".")) == 3
+        if len(token.split(".")) != EXPECTED_DATA_COUNT:
+            raise AssertionError(f"Expected {3}, got {len(token.split("."))}")
 
     def test_decode_jwt_valido(self) -> None:
         """Testa decodificação de JWT válido."""
@@ -313,10 +348,13 @@ class TestFlextAuthHelpers:
         decoded = flext_auth_decode_jwt(token, secret)
 
         assert decoded is not None
-        assert decoded["user_id"] == "123"
+        if decoded["user_id"] != "123":
+            raise AssertionError(f"Expected {"123"}, got {decoded["user_id"]}")
         assert decoded["username"] == "testuser"
-        assert decoded["role"] == "REDACTED_LDAP_BIND_PASSWORD"
-        assert "expires" in decoded
+        if decoded["role"] != "REDACTED_LDAP_BIND_PASSWORD":
+            raise AssertionError(f"Expected {"REDACTED_LDAP_BIND_PASSWORD"}, got {decoded["role"]}")
+        if "expires" not in decoded:
+            raise AssertionError(f"Expected {"expires"} in {decoded}")
         assert "issued" in decoded
 
     def test_decode_jwt_invalido(self) -> None:
@@ -361,31 +399,41 @@ class TestFlextAuthHelpers:
         password = "MinhaPasswordMuitoSegura123!@#"
         result = flext_auth_validate_password_strength(password)
 
-        assert result["valid"] is True
-        assert result["score"] >= 4
-        assert result["strength"] in {"strong", "very strong", "excellent"}
-        assert len(result["feedback"]) == 0  # Sem problemas
+        if not (result["valid"]):
+
+            raise AssertionError(f"Expected True, got {result["valid"]}")
+        if result["score"] < 4:
+            raise AssertionError(f"Expected {result["score"]} >= {4}")
+        if result["strength"] not in {"strong", "very strong", "excellent"}:
+            raise AssertionError(f"Expected {result["strength"]} in {{"strong", "very strong", "excellent"}}")
+        if len(result["feedback"]) != 0  # Sem problemas:
+            raise AssertionError(f"Expected {0  # Sem problemas}, got {len(result["feedback"])}")
 
     def test_validate_password_strength_fraca(self) -> None:
         """Testa validação de senha fraca."""
         password = "123"
         result = flext_auth_validate_password_strength(password)
 
-        assert result["valid"] is False
-        assert result["score"] < 4
+        if result["valid"]:
+
+            raise AssertionError(f"Expected False, got {result["valid"]}")\ n        assert result["score"] < 4
         assert len(result["feedback"]) > 0  # Deve ter sugestões
 
     def test_create_secure_session(self) -> None:
         """Testa criação de sessão segura."""
         session = flext_auth_create_secure_session("user123", "joao", "REDACTED_LDAP_BIND_PASSWORD", 48)
 
-        assert session["user_id"] == "user123"
+        if session["user_id"] != "user123":
+
+            raise AssertionError(f"Expected {"user123"}, got {session["user_id"]}")
         assert session["username"] == "joao"
-        assert session["role"] == "REDACTED_LDAP_BIND_PASSWORD"
+        if session["role"] != "REDACTED_LDAP_BIND_PASSWORD":
+            raise AssertionError(f"Expected {"REDACTED_LDAP_BIND_PASSWORD"}, got {session["role"]}")
         assert len(session["session_id"]) > 20  # Token seguro
         assert session["created_at"] is not None
         assert session["expires_at"] is not None
-        assert session["permissions"] == []
+        if session["permissions"] != []:
+            raise AssertionError(f"Expected {[]}, got {session["permissions"]}")
 
         # Verifica se expires_at está no futuro
         created = datetime.fromisoformat(session["created_at"])
@@ -408,7 +456,7 @@ class TestFlextAuthCompatibilidade:
 
     def test_deprecated_classes_emit_warnings(self) -> None:
         """Testa se classes depreciadas emitem warnings."""
-        from flext_auth import FlextAuthUser
+
 
         with pytest.warns(DeprecationWarning):
             user = FlextAuthUser(
@@ -418,7 +466,9 @@ class TestFlextAuthCompatibilidade:
                 password_hash="hash",
             )
 
-        assert user.username == "test"
+        if user.username != "test":
+
+            raise AssertionError(f"Expected {"test"}, got {user.username}")
 
 
 class TestFlextAuthIntegracao:
@@ -445,7 +495,8 @@ class TestFlextAuthIntegracao:
         # 3. Validação
         validate_result = await auth.validate(token)
         assert validate_result.is_success
-        assert validate_result.data["username"] == "integracaouser"
+        if validate_result.data["username"] != "integracaouser":
+            raise AssertionError(f"Expected {"integracaouser"}, got {validate_result.data["username"]}")
 
         # 4. Logout
         logout_result = await auth.logout(token)
@@ -482,7 +533,8 @@ class TestFlextAuthIntegracao:
         for i, token in enumerate(sessions):
             validate_result = await auth.validate(token)
             assert validate_result.is_success
-            assert validate_result.data["username"] == f"user{i}"
+            if validate_result.data["username"] != f"user{i}":
+                raise AssertionError(f"Expected {f"user{i}"}, got {validate_result.data["username"]}")
 
         # Logout de todas as sessões
         for token in sessions:
@@ -493,19 +545,22 @@ class TestFlextAuthIntegracao:
         """Testa workflow com helpers encadeados."""
         # 1. Validação de email
         email = "workflow@example.com"
-        assert flext_auth_validate_email(email) is True
+        if not (flext_auth_validate_email(email)):
+            raise AssertionError(f"Expected True, got {flext_auth_validate_email(email)}")
 
         # 2. Validação de senha
         password = "WorkflowPassword123!"
         strength = flext_auth_validate_password_strength(password)
-        assert strength["valid"] is True
+        if not (strength["valid"]):
+            raise AssertionError(f"Expected True, got {strength["valid"]}")
 
         # 3. Hash da senha
         hashed = flext_auth_hash_password(password)
         assert hashed != ""
 
         # 4. Verificação do hash
-        assert flext_auth_verify_password(password, hashed) is True
+        if not (flext_auth_verify_password(password, hashed)):
+            raise AssertionError(f"Expected True, got {flext_auth_verify_password(password, hashed)}")
 
         # 5. Criação de JWT
         payload = {"user_id": "workflow123", "email": email}
@@ -516,7 +571,8 @@ class TestFlextAuthIntegracao:
         # 6. Decodificação do JWT
         decoded = flext_auth_decode_jwt(token, secret)
         assert decoded is not None
-        assert decoded["user_id"] == "workflow123"
+        if decoded["user_id"] != "workflow123":
+            raise AssertionError(f"Expected {"workflow123"}, got {decoded["user_id"]}")
 
         # 7. Criação de sessão
         session = flext_auth_create_secure_session(
@@ -525,7 +581,8 @@ class TestFlextAuthIntegracao:
             "user",
             24,
         )
-        assert session["user_id"] == "workflow123"
+        if session["user_id"] != "workflow123":
+            raise AssertionError(f"Expected {"workflow123"}, got {session["user_id"]}")
         assert session["username"] == "workflow_user"
 
 
@@ -550,7 +607,8 @@ class TestFlextAuthPerformance:
             return flext_auth_verify_password(password, hashed)
 
         result = benchmark(verify_operation)
-        assert result is True
+        if not (result):
+            raise AssertionError(f"Expected True, got {result}")
 
     def test_jwt_operations_performance(self, benchmark) -> None:
         """Testa performance das operações JWT."""
@@ -563,7 +621,8 @@ class TestFlextAuthPerformance:
             return decoded is not None
 
         result = benchmark(jwt_cycle)
-        assert result is True
+        if not (result):
+            raise AssertionError(f"Expected True, got {result}")
 
 
 if __name__ == "__main__":

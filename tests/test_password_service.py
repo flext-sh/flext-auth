@@ -5,6 +5,9 @@ from __future__ import annotations
 from flext_auth.domain.value_objects import FlextHashedPassword, FlextPlainPassword
 from flext_auth.services.password_service import FlextPasswordService
 
+# Constants
+EXPECTED_TOTAL_PAGES = 8
+
 
 class TestPasswordService:
     """Test PasswordService functionality."""
@@ -25,7 +28,9 @@ class TestPasswordService:
         hashed = result.data
         assert isinstance(hashed, FlextHashedPassword)
         assert hashed.value.startswith("$2b$")
-        assert len(hashed.value) >= 60  # bcrypt hashes are at least 60 chars
+        if len(hashed.value) < 60:  # bcrypt hashes are at least 60 chars
+            msg = f"Expected {len(hashed.value)} >= 60"
+            raise AssertionError(msg)
 
     def test_hash_password_different_results(self) -> None:
         """Test that hashing same password produces different results (due to salt)."""
@@ -52,7 +57,9 @@ class TestPasswordService:
         # Verify password
         verify_result = service.verify_password(plain_password, hashed_password)
         assert verify_result.is_success
-        assert verify_result.data is True
+        if not verify_result.data:
+            msg = f"Expected True, got {verify_result.data}"
+            raise AssertionError(msg)
 
     def test_verify_password_failure(self) -> None:
         """Test password verification failure."""
@@ -68,7 +75,9 @@ class TestPasswordService:
         # Verify wrong password
         verify_result = service.verify_password(wrong_password, hashed_password)
         assert verify_result.is_success
-        assert verify_result.data is False
+        if verify_result.data:
+            msg = f"Expected False, got {verify_result.data}"
+            raise AssertionError(msg)
 
     def test_verify_password_invalid_hash_format(self) -> None:
         """Test password verification with invalid hash format."""
@@ -79,7 +88,9 @@ class TestPasswordService:
         # Verify password with invalid hash
         verify_result = service.verify_password(plain_password, invalid_hash)
         assert not verify_result.is_success
-        assert "Failed to verify password" in verify_result.error
+        if "Failed to verify password" not in verify_result.error:
+            msg = f"Expected 'Failed to verify password' in {verify_result.error}"
+            raise AssertionError(msg)
 
     def test_generate_secure_password_valid(self) -> None:
         """Test password generation produces valid passwords."""
@@ -90,7 +101,9 @@ class TestPasswordService:
         assert generated.is_success
         password = generated.data
         assert isinstance(password, FlextPlainPassword)
-        assert len(password.value) >= 12  # Default length
+        if len(password.value) < 12:  # Default length
+            msg = f"Expected {len(password.value)} >= 12"
+            raise AssertionError(msg)
 
         # Validate the generated password meets requirements
         password.validate_domain_rules()  # Should not raise
@@ -103,7 +116,9 @@ class TestPasswordService:
 
         assert generated.is_success
         password = generated.data
-        assert len(password.value) == 16
+        if len(password.value) != 16:
+            msg = f"Expected 16, got {len(password.value)}"
+            raise AssertionError(msg)
 
     def test_generate_secure_password_minimum_length(self) -> None:
         """Test password generation with minimum length."""
@@ -112,106 +127,109 @@ class TestPasswordService:
         # Test minimum valid length
         generated = service.generate_secure_password(length=8)
         assert generated.is_success
-        assert len(generated.data.value) == 8
-
-    def test_generate_secure_password_invalid_length(self) -> None:
-        """Test password generation with invalid length."""
-        service = FlextPasswordService()
+        if len(generated.data.value) != 8:
+            msg = f"Expected 8, got {len(generated.data.value)}"
+            raise AssertionError(msg)
 
         # Test too short
         generated = service.generate_secure_password(length=7)
         assert not generated.is_success
-        assert "Password length must be at least 8" in generated.error
+        if "Password length must be at least 8" not in generated.error:
+            msg = f"Expected 'Password length must be at least 8' in {generated.error}"
+            raise AssertionError(msg)
 
         # Test too long
         generated = service.generate_secure_password(length=129)
         assert not generated.is_success
-        assert "Password length must be at most 128" in generated.error
+        if "Password length must be at most 128" not in generated.error:
+            msg = f"Expected 'Password length must be at most 128' in {generated.error}"
+            raise AssertionError(msg)
 
     def test_check_password_strength_strong(self) -> None:
         """Test password strength checking for strong password."""
         service = FlextPasswordService()
-        strong_password = FlextPlainPassword(value="StrongP@ssw0rd123!")
+        strong_password = FlextPlainPassword(value="StrongPass123!")
 
         result = service.check_password_strength(strong_password)
 
         assert result.is_success
         strength = result.data
-        assert strength["score"] >= 4  # Strong password
-        assert strength["is_strong"] is True
-        assert len(strength["feedback"]) == 0  # No negative feedback
+        if strength["score"] < 4:  # Strong password
+            msg = f"Expected {strength['score']} >= 4"
+            raise AssertionError(msg)
+        if not strength["is_strong"]:
+            msg = f"Expected True, got {strength['is_strong']}"
+            raise AssertionError(msg)
+        if len(strength["feedback"]) != 0:  # No negative feedback
+            msg = f"Expected 0, got {len(strength['feedback'])}"
+            raise AssertionError(msg)
 
     def test_check_password_strength_weak(self) -> None:
         """Test password strength checking for weak password."""
         service = FlextPasswordService()
-        weak_password = FlextPlainPassword(value="password")
+        weak_password = FlextPlainPassword(value="weak")
 
         result = service.check_password_strength(weak_password)
 
         assert result.is_success
         strength = result.data
         assert strength["score"] < 3  # Weak password
-        assert strength["is_strong"] is False
+        if strength["is_strong"]:
+            msg = f"Expected False, got {strength['is_strong']}"
+            raise AssertionError(msg)
         assert len(strength["feedback"]) > 0  # Has feedback
 
     def test_check_password_strength_medium(self) -> None:
         """Test password strength checking for medium password."""
         service = FlextPasswordService()
-        medium_password = FlextPlainPassword(value="Password123")
+        medium_password = FlextPlainPassword(value="MediumPass123")
 
         result = service.check_password_strength(medium_password)
 
         assert result.is_success
         strength = result.data
-        assert strength["score"] >= 2  # Medium password
+        if strength["score"] < 2:  # Medium password
+            msg = f"Expected {strength['score']} >= 2"
+            raise AssertionError(msg)
         assert isinstance(strength["is_strong"], bool)
 
     def test_hash_multiple_passwords(self) -> None:
-        """Test hashing multiple different passwords."""
+        """Test hashing multiple passwords."""
         service = FlextPasswordService()
-
         passwords = [
-            "TestPassword1!",
-            "AnotherPass2@",
-            "ThirdPassword3#",
+            FlextPlainPassword(value="Password1!"),
+            FlextPlainPassword(value="Password2!"),
+            FlextPlainPassword(value="Password3!"),
         ]
 
-        hashes = []
-        for pwd in passwords:
-            plain = FlextPlainPassword(value=pwd)
-            result = service.hash_password(plain)
+        results = []
+        for password in passwords:
+            result = service.hash_password(password)
             assert result.is_success
-            hashes.append(result.data.value)
+            results.append(result.data)
 
         # All hashes should be different
-        assert len(set(hashes)) == len(hashes)
+        hash_values = [r.value for r in results]
+        assert len(set(hash_values)) == len(hash_values)
 
-        # All hashes should be valid bcrypt format
-        for hash_val in hashes:
-            assert hash_val.startswith("$2b$")
+        # All hashes should be valid bcrypt hashes
+        for hash_value in hash_values:
+            assert hash_value.startswith("$2b$")
+            assert len(hash_value) >= 60
 
-    def test_verify_multiple_passwords(self) -> None:
-        """Test verifying multiple passwords against their hashes."""
-        service = FlextPasswordService()
+        # Verify all passwords
+        for i, password in enumerate(passwords):
+            verify_result = service.verify_password(password, results[i])
+            assert verify_result.is_success
+            if not verify_result.data:
+                msg = f"Expected True, got {verify_result.data}"
+                raise AssertionError(msg)
 
-        test_cases = [
-            ("TestPassword1!", True),
-            ("AnotherPass2@", True),
-            ("WrongPassword!", False),
-        ]
-
-        # Hash the first password
-        correct_password = FlextPlainPassword(value="TestPassword1!")
-        hash_result = service.hash_password(correct_password)
-        assert hash_result.is_success
-        hashed = hash_result.data
-
-        for password_str, expected in test_cases:
-            password = FlextPlainPassword(value=password_str)
-            result = service.verify_password(password, hashed)
-            assert result.is_success
-
-            if expected:
-                assert result.data is True
-            else:
-                assert result.data is False
+        # Verify wrong passwords
+        for i, password in enumerate(passwords):  # noqa: B007
+            wrong_password = FlextPlainPassword(value="WrongPassword!")
+            verify_result = service.verify_password(wrong_password, results[i])
+            assert verify_result.is_success
+            if verify_result.data:
+                msg = f"Expected False, got {verify_result.data}"
+                raise AssertionError(msg)

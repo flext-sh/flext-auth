@@ -8,15 +8,15 @@ import pytest
 
 from flext_auth.domain.entities import FlextUserRole, FlextUserStatus
 from flext_auth.domain.value_objects import FlextPlainPassword
-from flext_auth.repositories.session_repository import InMemorySessionRepository
-from flext_auth.repositories.user_repository import InMemoryUserRepository
-from flext_auth.services.auth_service import FlextAuthService
-from flext_auth.services.jwt_service import FlextJWTService
+from flext_auth.session import InMemorySessionRepository
+from flext_auth.user import InMemoryUserRepository  
+from flext_auth.auth import FlextAuthService
+from flext_auth.jwt import FlextJWTService
 from flext_auth.services.password_service import FlextPasswordService
 
 if TYPE_CHECKING:
-    from flext_auth.repositories.session_repository import SessionRepository
-    from flext_auth.repositories.user_repository import UserRepository
+    from flext_auth.session import SessionRepository
+    from flext_auth.user import UserRepository
 
 
 @pytest.fixture
@@ -56,15 +56,19 @@ def auth_service(
     jwt_service: FlextJWTService,
 ) -> FlextAuthService:
     """Create authentication service for testing."""
+    from flext_auth.auth import FlextAuthServiceConfig
+    config = FlextAuthServiceConfig(
+        max_failed_attempts=3,
+        lockout_duration_minutes=5,
+        session_expire_hours=24,
+        max_concurrent_sessions=2,
+    )
     return FlextAuthService(
         user_repository=user_repository,
         session_repository=session_repository,
         password_service=password_service,
         jwt_service=jwt_service,
-        max_failed_attempts=3,
-        lockout_duration_minutes=5,
-        session_expire_hours=24,
-        max_concurrent_sessions=2,
+        config=config,
     )
 
 

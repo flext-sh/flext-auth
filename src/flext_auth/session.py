@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 
 from flext_core import FlextResult
 
-from flext_auth.entities import FlextSession, FlextSessionStatus
+from flext_auth.domain.entities import FlextSession, FlextSessionStatus
 
 
 class SessionRepository(ABC):
@@ -97,10 +97,7 @@ class InMemorySessionRepository(SessionRepository):
 
             return FlextResult.ok(sessions)
         except (KeyError, ValueError, TypeError) as e:
-            return FlextResult(
-                success=False,
-                error=f"Failed to get sessions by user ID: {e}",
-            )
+            return FlextResult.fail(f"Failed to get sessions by user ID: {e}")
 
     async def get_active_sessions(
         self,
@@ -118,21 +115,18 @@ class InMemorySessionRepository(SessionRepository):
 
             return FlextResult.ok(active_sessions)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult(
-                success=False,
-                error=f"Failed to get active sessions: {e}",
-            )
+            return FlextResult.fail(f"Failed to get active sessions: {e}")
 
     async def revoke_session(self, session_id: str) -> FlextResult[bool]:
         """Revoke a specific session."""
         try:
             session = self._sessions.get(session_id)
             if not session:
-                return FlextResult.ok(False)
+                return FlextResult.ok(data=False)
 
             revoked_session = session.revoke()
             self._sessions[session_id] = revoked_session
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Failed to revoke session: {e}")
 
@@ -141,9 +135,8 @@ class InMemorySessionRepository(SessionRepository):
         try:
             sessions_result = await self.get_by_user_id(user_id)
             if not sessions_result.is_success:
-                return FlextResult(
-                    success=False,
-                    error=f"Failed to get user sessions: {sessions_result.error}",
+                return FlextResult.fail(
+                    f"Failed to get user sessions: {sessions_result.error}",
                 )
 
             revoked_count = 0
@@ -155,10 +148,7 @@ class InMemorySessionRepository(SessionRepository):
 
             return FlextResult.ok(revoked_count)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult(
-                success=False,
-                error=f"Failed to revoke all user sessions: {e}",
-            )
+            return FlextResult.fail(f"Failed to revoke all user sessions: {e}")
 
     async def cleanup_expired_sessions(self) -> FlextResult[int]:
         """Remove expired sessions."""
@@ -182,17 +172,14 @@ class InMemorySessionRepository(SessionRepository):
 
             return FlextResult.ok(len(expired_ids))
         except (KeyError, ValueError, TypeError, AttributeError, OSError) as e:
-            return FlextResult(
-                success=False,
-                error=f"Failed to cleanup expired sessions: {e}",
-            )
+            return FlextResult.fail(f"Failed to cleanup expired sessions: {e}")
 
     async def delete(self, session_id: str) -> FlextResult[bool]:
         """Delete session from memory."""
         try:
             session = self._sessions.pop(session_id, None)
             if not session:
-                return FlextResult.ok(False)
+                return FlextResult.ok(data=False)
 
             # Remove from user sessions index
             if (
@@ -201,7 +188,7 @@ class InMemorySessionRepository(SessionRepository):
             ):
                 self._user_sessions[session.user_id].remove(session_id)
 
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Failed to delete session: {e}")
 

@@ -5,6 +5,9 @@ import sys
 import urllib.error
 import urllib.request
 
+# Constants
+HTTP_OK = 200
+
 
 def main() -> int:
     """Perform health check."""
@@ -13,14 +16,14 @@ def main() -> int:
             "http://localhost:8000/auth/health",
             timeout=10,
         ) as response:
-            if response.status == 200:
+            if response.status == HTTP_OK:
                 return 0
             print(f"Health check failed with status: {response.status}")
             return 1
     except urllib.error.URLError as e:
         print(f"Health check failed: {e}")
         return 1
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError) as e:
         print(f"Health check error: {e}")
         return 1
 

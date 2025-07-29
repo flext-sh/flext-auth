@@ -15,6 +15,10 @@ from flext_auth.config import (
     validate_production_config,
 )
 
+# Constants
+EXPECTED_BULK_SIZE = 2
+EXPECTED_DATA_COUNT = 3
+
 
 class TestDatabaseConfig:
     """Test DatabaseConfig configuration."""
@@ -22,9 +26,11 @@ class TestDatabaseConfig:
     def test_database_config_defaults(self) -> None:
         """Test default database configuration values."""
         config = DatabaseConfig()
-        assert config.url == ""
+        if config.url != "":
+            raise AssertionError(f"Expected {''}, got {config.url}")
         assert config.min_pool_size == 1
-        assert config.max_pool_size == 10
+        if config.max_pool_size != 10:
+            raise AssertionError(f"Expected {10}, got {config.max_pool_size}")
         assert config.command_timeout == 60
 
     def test_database_config_env_vars(self) -> None:
@@ -39,25 +45,36 @@ class TestDatabaseConfig:
             },
         ):
             config = DatabaseConfig()
-            assert config.url == "postgresql://user:pass@localhost/testdb"
-            assert config.min_pool_size == 2
-            assert config.max_pool_size == 20
+            if config.url != "postgresql://user:pass@localhost/testdb":
+                raise AssertionError(
+                    f"Expected {'postgresql://user:pass@localhost/testdb'}, got {config.url}"
+                )
+            assert config.min_pool_size == EXPECTED_BULK_SIZE
+            if config.max_pool_size != 20:
+                raise AssertionError(f"Expected {20}, got {config.max_pool_size}")
             assert config.command_timeout == 120
 
     def test_database_url_validation_valid_postgresql(self) -> None:
         """Test valid PostgreSQL URL validation."""
         config = DatabaseConfig(url="postgresql://user:pass@localhost/db")
-        assert config.url == "postgresql://user:pass@localhost/db"
+        if config.url != "postgresql://user:pass@localhost/db":
+            raise AssertionError(
+                f"Expected {'postgresql://user:pass@localhost/db'}, got {config.url}"
+            )
 
     def test_database_url_validation_valid_asyncpg(self) -> None:
         """Test valid PostgreSQL+asyncpg URL validation."""
         config = DatabaseConfig(url="postgresql+asyncpg://user:pass@localhost/db")
-        assert config.url == "postgresql+asyncpg://user:pass@localhost/db"
+        if config.url != "postgresql+asyncpg://user:pass@localhost/db":
+            raise AssertionError(
+                f"Expected {'postgresql+asyncpg://user:pass@localhost/db'}, got {config.url}"
+            )
 
     def test_database_url_validation_empty_allowed(self) -> None:
         """Test empty database URL is allowed."""
         config = DatabaseConfig(url="")
-        assert config.url == ""
+        if config.url != "":
+            raise AssertionError(f"Expected {''}, got {config.url}")
 
     def test_database_url_validation_invalid(self) -> None:
         """Test invalid database URL validation."""
@@ -68,21 +85,23 @@ class TestDatabaseConfig:
         """Test database pool size validation."""
         # Valid ranges
         config = DatabaseConfig(min_pool_size=1, max_pool_size=1)
-        assert config.min_pool_size == 1
+        if config.min_pool_size != 1:
+            raise AssertionError(f"Expected {1}, got {config.min_pool_size}")
         assert config.max_pool_size == 1
 
         config = DatabaseConfig(min_pool_size=20, max_pool_size=100)
-        assert config.min_pool_size == 20
+        if config.min_pool_size != 20:
+            raise AssertionError(f"Expected {20}, got {config.min_pool_size}")
         assert config.max_pool_size == 100
 
         # Invalid ranges - these should raise validation errors
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Minimum pool size must be at least 1"):
             DatabaseConfig(min_pool_size=0)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Minimum pool size must be at least 1"):
             DatabaseConfig(min_pool_size=21)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Maximum pool size must be at least 1"):
             DatabaseConfig(max_pool_size=101)
 
 
@@ -92,9 +111,13 @@ class TestJWTConfig:
     def test_jwt_config_defaults(self) -> None:
         """Test default JWT configuration values."""
         config = JWTConfig()
-        assert config.secret_key == ""
+        if config.secret_key != "":
+            raise AssertionError(f"Expected {''}, got {config.secret_key}")
         assert config.algorithm == "HS256"
-        assert config.access_token_expire_minutes == 30
+        if config.access_token_expire_minutes != 30:
+            raise AssertionError(
+                f"Expected {30}, got {config.access_token_expire_minutes}"
+            )
         assert config.refresh_token_expire_days == 7
 
     def test_jwt_config_env_vars(self) -> None:
@@ -109,21 +132,30 @@ class TestJWTConfig:
             },
         ):
             config = JWTConfig()
-            assert config.secret_key == "test-secret-key-123"
+            if config.secret_key != "test-secret-key-123":
+                raise AssertionError(
+                    f"Expected {'test-secret-key-123'}, got {config.secret_key}"
+                )
             assert config.algorithm == "HS512"
-            assert config.access_token_expire_minutes == 60
+            if config.access_token_expire_minutes != 60:
+                raise AssertionError(
+                    f"Expected {60}, got {config.access_token_expire_minutes}"
+                )
             assert config.refresh_token_expire_days == 14
 
     def test_jwt_algorithm_validation_valid(self) -> None:
         """Test valid JWT algorithm validation."""
         config = JWTConfig(algorithm="HS256")
-        assert config.algorithm == "HS256"
+        if config.algorithm != "HS256":
+            raise AssertionError(f"Expected {'HS256'}, got {config.algorithm}")
 
         config = JWTConfig(algorithm="HS512")
-        assert config.algorithm == "HS512"
+        if config.algorithm != "HS512":
+            raise AssertionError(f"Expected {'HS512'}, got {config.algorithm}")
 
         config = JWTConfig(algorithm="RS256")
-        assert config.algorithm == "RS256"
+        if config.algorithm != "RS256":
+            raise AssertionError(f"Expected {'RS256'}, got {config.algorithm}")
 
     def test_jwt_algorithm_validation_invalid(self) -> None:
         """Test invalid JWT algorithm validation."""
@@ -153,7 +185,8 @@ class TestJWTConfig:
     def test_jwt_generate_secret_key(self) -> None:
         """Test JWT secret key generation."""
         key = JWTConfig.generate_secret_key()
-        assert len(key) >= 32
+        if len(key) < 32:
+            raise AssertionError(f"Expected {len(key)} >= {32}")
         assert isinstance(key, str)
 
         # Generate multiple keys to ensure randomness
@@ -167,12 +200,19 @@ class TestSecurityConfig:
     def test_security_config_defaults(self) -> None:
         """Test default security configuration values."""
         config = SecurityConfig()
-        assert config.password_rounds == 12
+        if config.password_rounds != 12:
+            raise AssertionError(f"Expected {12}, got {config.password_rounds}")
         assert config.max_failed_attempts == 5
-        assert config.lockout_duration_minutes == 30
+        if config.lockout_duration_minutes != 30:
+            raise AssertionError(
+                f"Expected {30}, got {config.lockout_duration_minutes}"
+            )
         assert config.session_expire_hours == 24
-        assert config.max_concurrent_sessions == 5
-        assert config.require_email_verification is False
+        if config.max_concurrent_sessions != 5:
+            raise AssertionError(f"Expected {5}, got {config.max_concurrent_sessions}")
+        if config.require_email_verification:
+            msg = f"Expected False, got {config.require_email_verification}"
+            raise AssertionError(msg)
         assert config.enable_2fa is False
 
     def test_security_config_env_vars(self) -> None:
@@ -190,12 +230,22 @@ class TestSecurityConfig:
             },
         ):
             config = SecurityConfig()
-            assert config.password_rounds == 15
+            if config.password_rounds != 15:
+                raise AssertionError(f"Expected {15}, got {config.password_rounds}")
             assert config.max_failed_attempts == 10
-            assert config.lockout_duration_minutes == 60
+            if config.lockout_duration_minutes != 60:
+                raise AssertionError(
+                    f"Expected {60}, got {config.lockout_duration_minutes}"
+                )
             assert config.session_expire_hours == 12
-            assert config.max_concurrent_sessions == 3
-            assert config.require_email_verification is True
+            if config.max_concurrent_sessions != EXPECTED_DATA_COUNT:
+                raise AssertionError(
+                    f"Expected {3}, got {config.max_concurrent_sessions}"
+                )
+            if not (config.require_email_verification):
+                raise AssertionError(
+                    f"Expected True, got {config.require_email_verification}"
+                )
             assert config.enable_2fa is True
 
     def test_security_config_validation_ranges(self) -> None:
@@ -209,19 +259,28 @@ class TestSecurityConfig:
             session_expire_hours=1,
             max_concurrent_sessions=1,
         )
-        assert config.max_failed_attempts == 1
+        if config.max_failed_attempts != 1:
+            raise AssertionError(f"Expected {1}, got {config.max_failed_attempts}")
 
         # Invalid ranges should raise validation errors
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError, match="Maximum failed attempts must be at least 1"
+        ):
             SecurityConfig(max_failed_attempts=0)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError, match="Maximum failed attempts must be at most 10"
+        ):
             SecurityConfig(max_failed_attempts=21)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError, match="Lockout duration must be at least 1 minute"
+        ):
             SecurityConfig(lockout_duration_minutes=0)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError, match="Session expiration must be at least 1 hour"
+        ):
             SecurityConfig(session_expire_hours=0)
 
 
@@ -234,9 +293,14 @@ class TestAppConfig:
         assert isinstance(config.database, DatabaseConfig)
         assert isinstance(config.jwt, JWTConfig)
         assert isinstance(config.security, SecurityConfig)
-        assert config.name == "FLEXT Authentication API"
+        if config.name != "FLEXT Authentication API":
+            raise AssertionError(
+                f"Expected {'FLEXT Authentication API'}, got {config.name}"
+            )
         assert config.version == "1.0.0"
-        assert config.server.debug is False
+        if config.server.debug:
+            msg = f"Expected False, got {config.server.debug}"
+            raise AssertionError(msg)
 
     def test_app_config_env_vars(self) -> None:
         """Test application configuration from environment variables."""
@@ -252,12 +316,20 @@ class TestAppConfig:
             },
         ):
             config = AppConfig()
-            assert config.name == "Test Auth API"
+            if config.name != "Test Auth API":
+                raise AssertionError(f"Expected {'Test Auth API'}, got {config.name}")
             assert config.version == "2.0.0"
-            assert config.server.debug is True
-            assert config.database.url == "postgresql://test@localhost/testdb"
+            if not (config.server.debug):
+                raise AssertionError(f"Expected True, got {config.server.debug}")
+            if config.database.url != "postgresql://test@localhost/testdb":
+                raise AssertionError(
+                    f"Expected {'postgresql://test@localhost/testdb'}, got {config.database.url}"
+                )
             assert config.jwt.secret_key == "test-secret-key-for-testing-purposes"
-            assert config.security.max_failed_attempts == 3
+            if config.security.max_failed_attempts != EXPECTED_DATA_COUNT:
+                raise AssertionError(
+                    f"Expected {3}, got {config.security.max_failed_attempts}"
+                )
 
     def test_app_config_model_dump_safe(self) -> None:
         """Test safe model dump that redacts sensitive data."""
@@ -267,7 +339,10 @@ class TestAppConfig:
         )
         safe_dump = config.model_dump_safe()
 
-        assert safe_dump["jwt"]["secret_key"] == "[REDACTED]"
+        if safe_dump["jwt"]["secret_key"] != "[REDACTED]":
+            raise AssertionError(
+                f"Expected {'[REDACTED]'}, got {safe_dump['jwt']['secret_key']}"
+            )
         assert safe_dump["database"]["url"] == "postgresql://[REDACTED]@localhost/db"
 
     def test_app_config_model_dump_safe_no_credentials(self) -> None:
@@ -278,7 +353,10 @@ class TestAppConfig:
         )
         safe_dump = config.model_dump_safe()
 
-        assert safe_dump["jwt"]["secret_key"] == "[REDACTED]"
+        if safe_dump["jwt"]["secret_key"] != "[REDACTED]":
+            raise AssertionError(
+                f"Expected {'[REDACTED]'}, got {safe_dump['jwt']['secret_key']}"
+            )
         assert safe_dump["database"]["url"] == "postgresql://localhost/db"
 
     def test_validate_production_config_valid(self) -> None:

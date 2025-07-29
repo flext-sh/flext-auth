@@ -294,7 +294,7 @@ class FlextRole(FlextEntity):
         """Validate role entity data."""
         return len(self.id) > 0 and len(self.name) > 0 and len(self.description) > 0
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_domain_rules(self) -> FlextResult[None]:  # noqa: PLR0911  # noqa: PLR0911
         """Validate role domain rules and business invariants."""
         if not self.id:
             return FlextResult.fail("Role ID cannot be empty")
@@ -309,7 +309,7 @@ class FlextRole(FlextEntity):
         # Validate permissions if present
         for permission in self.permissions:
             if not isinstance(permission, FlextPermission):
-                return FlextResult.fail("All permissions must be Permission instances")
+                return FlextResult.fail("All permissions must be Permission instances")  # type: ignore[unreachable]
         return FlextResult.ok(None)
 
 
@@ -324,7 +324,7 @@ class FlextLoginAttempt(FlextEntity):
     failure_reason: str | None = Field(default=None, description="Reason for failure")
     attempted_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_domain_rules(self) -> FlextResult[None]:  # noqa: PLR0911
         """Validate login attempt domain rules and business invariants."""
         if not self.id:
             return FlextResult.fail("Login attempt ID cannot be empty")
@@ -361,9 +361,9 @@ class FlextPasswordResetToken(FlextEntity):
 
     def use_token(self) -> None:
         """Mark token as used."""
-        self.used = True
+        object.__setattr__(self, "used", True)
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_domain_rules(self) -> FlextResult[None]:  # noqa: PLR0911
         """Validate password reset token domain rules and business invariants."""
         if not self.id:
             return FlextResult.fail("Password reset token ID cannot be empty")
@@ -396,9 +396,9 @@ class FlextEmailVerificationToken(FlextEntity):
 
     def use_token(self) -> None:
         """Mark token as used."""
-        self.used = True
+        object.__setattr__(self, "used", True)
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_domain_rules(self) -> FlextResult[None]:  # noqa: PLR0911
         """Validate email verification token domain rules and business invariants."""
         if not self.id:
             return FlextResult.fail("Email verification token ID cannot be empty")

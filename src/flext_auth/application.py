@@ -196,10 +196,10 @@ class FlextAuthenticationService(FlextDomainService):
                 )
 
             user.password_hash = hash_result.data.value if hash_result.data else ""
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
 
         except (ValueError, TypeError, AttributeError, KeyError) as e:
-            return FlextResult(success=False, error=f"Password change failed: {e}")
+            return FlextResult.fail(f"Password change failed: {e}")
 
 
 class FlextSessionService(FlextDomainService):
@@ -240,10 +240,7 @@ class FlextSessionService(FlextDomainService):
         """
         try:
             if not user.is_active():
-                return FlextResult(
-                    success=False,
-                    error="Cannot create session for inactive user",
-                )
+                return FlextResult.fail("Cannot create session for inactive user")
 
             session = FlextSession(
                 id=str(uuid.uuid4()),
@@ -257,12 +254,12 @@ class FlextSessionService(FlextDomainService):
             )
 
             if not session.has_valid_data():
-                return FlextResult(success=False, error="Invalid session data")
+                return FlextResult.fail("Invalid session data")
 
-            return FlextResult(success=True, data=session)
+            return FlextResult.ok(session)
 
         except (ValueError, TypeError, AttributeError, KeyError, OSError) as e:
-            return FlextResult(success=False, error=f"Session creation failed: {e}")
+            return FlextResult.fail(f"Session creation failed: {e}")
 
     def validate_session(self, session: FlextSession) -> FlextResult[bool]:
         """Validate a session.
@@ -276,12 +273,12 @@ class FlextSessionService(FlextDomainService):
         """
         try:
             if not session.is_valid():
-                return FlextResult(success=False, error="Session is not valid")
+                return FlextResult.fail("Session is not valid")
 
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
 
         except (ValueError, TypeError, AttributeError) as e:
-            return FlextResult(success=False, error=f"Session validation failed: {e}")
+            return FlextResult.fail(f"Session validation failed: {e}")
 
     def revoke_session(self, session: FlextSession) -> FlextResult[bool]:
         """Revoke a session.
@@ -295,10 +292,10 @@ class FlextSessionService(FlextDomainService):
         """
         try:
             session.revoke()
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
 
         except (ValueError, TypeError, AttributeError) as e:
-            return FlextResult(success=False, error=f"Session revocation failed: {e}")
+            return FlextResult.fail(f"Session revocation failed: {e}")
 
 
 class FlextAuthorizationService(FlextDomainService):
@@ -340,18 +337,18 @@ class FlextAuthorizationService(FlextDomainService):
         try:
             # Admin users have all permissions
             if user.is_REDACTED_LDAP_BIND_PASSWORD():
-                return FlextResult.ok(True)
+                return FlextResult.ok(data=True)
 
             # If roles are provided, check role permissions
             if roles:
                 user_role = roles.get(user.role.value)
                 if user_role and user_role.has_permission(resource, action):
-                    return FlextResult.ok(True)
+                    return FlextResult.ok(data=True)
 
-            return FlextResult(success=True, data=False)
+            return FlextResult.ok(data=False)
 
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult(success=False, error=f"Permission check failed: {e}")
+            return FlextResult.fail(f"Permission check failed: {e}")
 
     def create_role(
         self,
@@ -372,7 +369,7 @@ class FlextAuthorizationService(FlextDomainService):
         """
         try:
             if not name:
-                return FlextResult(success=False, error="Role name is required")
+                return FlextResult.fail("Role name is required")
 
             role = FlextRole(
                 id=str(uuid.uuid4()),
@@ -382,12 +379,12 @@ class FlextAuthorizationService(FlextDomainService):
             )
 
             if not role.is_valid():
-                return FlextResult(success=False, error="Invalid role data")
+                return FlextResult.fail("Invalid role data")
 
-            return FlextResult(success=True, data=role)
+            return FlextResult.ok(role)
 
         except (ValueError, TypeError, AttributeError, KeyError) as e:
-            return FlextResult(success=False, error=f"Role creation failed: {e}")
+            return FlextResult.fail(f"Role creation failed: {e}")
 
 
 # Backwards compatibility aliases

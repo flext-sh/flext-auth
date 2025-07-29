@@ -6,7 +6,7 @@ import ipaddress
 import re
 from datetime import UTC, datetime
 
-from flext_core import FlextValidationError, FlextValueObject
+from flext_core import FlextResult, FlextValidationError, FlextValueObject
 from pydantic import EmailStr, Field, field_validator
 
 # Constants for validation limits
@@ -36,7 +36,7 @@ class FlextUsername(FlextValueObject):
             msg = "Username can only contain letters, numbers, underscores, and hyphens"
             raise FlextValidationError(
                 message=msg,
-                details={
+                validation_details={
                     "error_code": "AUTH_INVALID_USERNAME",
                     "username": v,
                     "pattern": "^[a-zA-Z0-9_-]+$",
@@ -48,40 +48,18 @@ class FlextUsername(FlextValueObject):
         """Return username as string."""
         return self.value
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate username domain rules and business constraints."""
         if len(self.value) < MIN_USERNAME_LENGTH:
             msg = "Username must be at least 3 characters"
-            raise FlextValidationError(
-                message=msg,
-                details={
-                    "error_code": "AUTH_INVALID_USERNAME_LENGTH",
-                    "username": self.value,
-                    "min_length": MIN_USERNAME_LENGTH,
-                    "actual_length": len(self.value),
-                },
-            )
+            return FlextResult.fail(msg)
         if len(self.value) > MAX_USERNAME_LENGTH:
             msg = "Username must be at most 50 characters"
-            raise FlextValidationError(
-                message=msg,
-                details={
-                    "error_code": "AUTH_INVALID_USERNAME_LENGTH",
-                    "username": self.value,
-                    "max_length": MAX_USERNAME_LENGTH,
-                    "actual_length": len(self.value),
-                },
-            )
+            return FlextResult.fail(msg)
         if not re.match(r"^[a-zA-Z0-9_-]+$", self.value):
             msg = "Username can only contain letters, numbers, underscores, and hyphens"
-            raise FlextValidationError(
-                message=msg,
-                details={
-                    "error_code": "AUTH_INVALID_USERNAME",
-                    "username": self.value,
-                    "pattern": "^[a-zA-Z0-9_-]+$",
-                },
-            )
+            return FlextResult.fail(msg)
+        return FlextResult.ok(None)
 
 
 class FlextUserEmail(FlextValueObject):
@@ -93,18 +71,13 @@ class FlextUserEmail(FlextValueObject):
         """Return email as string."""
         return str(self.value)
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate email domain rules and business constraints."""
         if "@" not in str(self.value):
             msg = "Email must contain @ symbol"
-            raise FlextValidationError(
-                message=msg,
-                details={
-                    "error_code": "AUTH_INVALID_EMAIL",
-                    "email": str(self.value),
-                },
-            )
+            return FlextResult.fail(msg)
         # Additional validation is handled by EmailStr type
+        return FlextResult.ok(None)
 
 
 class FlextPlainPassword(FlextValueObject):
@@ -120,7 +93,7 @@ class FlextPlainPassword(FlextValueObject):
             msg = "Password must contain at least one uppercase letter"
             raise FlextValidationError(
                 message=msg,
-                details={
+                validation_details={
                     "error_code": "AUTH_INVALID_PASSWORD_STRENGTH",
                     "requirement": "uppercase_letter",
                 },
@@ -129,7 +102,7 @@ class FlextPlainPassword(FlextValueObject):
             msg = "Password must contain at least one lowercase letter"
             raise FlextValidationError(
                 message=msg,
-                details={
+                validation_details={
                     "error_code": "AUTH_INVALID_PASSWORD_STRENGTH",
                     "requirement": "lowercase_letter",
                 },
@@ -138,7 +111,7 @@ class FlextPlainPassword(FlextValueObject):
             msg = "Password must contain at least one number"
             raise FlextValidationError(
                 message=msg,
-                details={
+                validation_details={
                     "error_code": "AUTH_INVALID_PASSWORD_STRENGTH",
                     "requirement": "number",
                 },
@@ -147,7 +120,7 @@ class FlextPlainPassword(FlextValueObject):
             msg = "Password must contain at least one special character"
             raise FlextValidationError(
                 message=msg,
-                details={
+                validation_details={
                     "error_code": "AUTH_INVALID_PASSWORD_STRENGTH",
                     "requirement": "special_character",
                 },
@@ -162,26 +135,27 @@ class FlextPlainPassword(FlextValueObject):
         """Return protected password representation."""
         return "PlainPassword([PROTECTED])"
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate plain password domain rules and business constraints."""
         if len(self.value) < MIN_PASSWORD_LENGTH:
             msg = "Password must be at least 8 characters"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if len(self.value) > MAX_PASSWORD_LENGTH:
             msg = "Password must be at most 128 characters"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if not re.search(r"[A-Z]", self.value):
             msg = "Password must contain at least one uppercase letter"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if not re.search(r"[a-z]", self.value):
             msg = "Password must contain at least one lowercase letter"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if not re.search(r"\d", self.value):
             msg = "Password must contain at least one number"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if not re.search(r'[!@#$%^&*(),.?":{}|<>]', self.value):
             msg = "Password must contain at least one special character"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
+        return FlextResult.ok(None)
 
 
 class FlextHashedPassword(FlextValueObject):
@@ -206,14 +180,15 @@ class FlextHashedPassword(FlextValueObject):
         """Return hashed password representation."""
         return "HashedPassword([HASHED])"
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate hashed password domain rules and business constraints."""
         if len(self.value) < MIN_BCRYPT_HASH_LENGTH:
             msg = "Invalid bcrypt hash length"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if not self.value.startswith("$2b$"):
             msg = "Invalid bcrypt hash format"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
+        return FlextResult.ok(None)
 
 
 class FlextAuthToken(FlextValueObject):
@@ -226,17 +201,18 @@ class FlextAuthToken(FlextValueObject):
         """Return auth token."""
         return f"{self.token_type} {self.value}"
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate auth token domain rules and business constraints."""
         if not self.value:
             msg = "Auth token value cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if not self.token_type:
             msg = "Token type cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if len(self.value) < MIN_AUTH_TOKEN_LENGTH:
             msg = "Auth token must be at least 10 characters"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
+        return FlextResult.ok(None)
 
 
 class FlextRefreshToken(FlextValueObject):
@@ -252,14 +228,15 @@ class FlextRefreshToken(FlextValueObject):
         """Return refresh token representation."""
         return "RefreshToken([PROTECTED])"
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate refresh token domain rules and business constraints."""
         if not self.value:
             msg = "Refresh token value cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if len(self.value) < MIN_REFRESH_TOKEN_LENGTH:
             msg = "Refresh token must be at least 32 characters"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
+        return FlextResult.ok(None)
 
 
 class FlextSessionToken(FlextValueObject):
@@ -275,14 +252,15 @@ class FlextSessionToken(FlextValueObject):
         """Return session token representation."""
         return "SessionToken([PROTECTED])"
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate session token domain rules and business constraints."""
         if not self.value:
             msg = "Session token value cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if len(self.value) < MIN_SESSION_TOKEN_LENGTH:
             msg = "Session token must be at least 16 characters"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
+        return FlextResult.ok(None)
 
 
 class FlextIPAddress(FlextValueObject):
@@ -306,13 +284,14 @@ class FlextIPAddress(FlextValueObject):
         """Return user agent."""
         return self.value
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate IP address domain rules and business constraints."""
         try:
             ipaddress.ip_address(self.value)
+            return FlextResult.ok(None)
         except ValueError as e:
             msg = f"Invalid IP address: {e}"
-            raise ValueError(msg) from e
+            return FlextResult.fail(msg)
 
 
 class FlextUserAgent(FlextValueObject):
@@ -341,14 +320,15 @@ class FlextUserAgent(FlextValueObject):
             return "Edge"
         return "Unknown"
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate user agent domain rules and business constraints."""
         if not self.value:
             msg = "User agent cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if len(self.value) > MAX_USER_AGENT_LENGTH:
             msg = "User agent must be at most 500 characters"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
+        return FlextResult.ok(None)
 
 
 class FlextPasswordResetToken(FlextValueObject):
@@ -364,14 +344,15 @@ class FlextPasswordResetToken(FlextValueObject):
         """Return password reset token representation."""
         return "PasswordResetToken([PROTECTED])"
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate password reset token domain rules and business constraints."""
         if not self.value:
             msg = "Password reset token cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if len(self.value) < MIN_PASSWORD_RESET_TOKEN_LENGTH:
             msg = "Password reset token must be at least 32 characters"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
+        return FlextResult.ok(None)
 
 
 class FlextEmailVerificationToken(FlextValueObject):
@@ -387,14 +368,15 @@ class FlextEmailVerificationToken(FlextValueObject):
         """Return email verification token representation."""
         return "EmailVerificationToken([PROTECTED])"
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate email verification token domain rules and business constraints."""
         if not self.value:
             msg = "Email verification token cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if len(self.value) < MIN_EMAIL_VERIFICATION_TOKEN_LENGTH:
             msg = "Email verification token must be at least 32 characters"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
+        return FlextResult.ok(None)
 
 
 class FlextJWTClaims(FlextValueObject):
@@ -416,23 +398,24 @@ class FlextJWTClaims(FlextValueObject):
         """Get seconds until token expires."""
         return max(0, int(self.exp - datetime.now(UTC).timestamp()))
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate JWT claims domain rules and business constraints."""
         if not self.sub:
             msg = "JWT subject (sub) cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if self.iat <= 0:
             msg = "JWT issued at (iat) must be positive"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if self.exp <= 0:
             msg = "JWT expiration (exp) must be positive"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if self.exp <= self.iat:
             msg = "JWT expiration must be after issued time"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if self.token_type not in {"access", "refresh"}:
             msg = "JWT token type must be 'access' or 'refresh'"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
+        return FlextResult.ok(None)
 
 
 class FlextSecurityContext(FlextValueObject):
@@ -454,20 +437,21 @@ class FlextSecurityContext(FlextValueObject):
         """Check if user is REDACTED_LDAP_BIND_PASSWORD."""
         return self.role == "REDACTED_LDAP_BIND_PASSWORD"
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate security context domain rules and business constraints."""
         if not self.user_id:
             msg = "User ID cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if not self.username:
             msg = "Username cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if not self.role:
             msg = "Role cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if not self.session_id:
             msg = "Session ID cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
         if self.role not in {"user", "REDACTED_LDAP_BIND_PASSWORD", "moderator"}:
             msg = "Role must be one of: user, REDACTED_LDAP_BIND_PASSWORD, moderator"
-            raise ValueError(msg)
+            return FlextResult.fail(msg)
+        return FlextResult.ok(None)

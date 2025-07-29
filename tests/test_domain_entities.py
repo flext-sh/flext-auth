@@ -31,11 +31,15 @@ class TestFlextUser:
             status=FlextUserStatus.ACTIVE,
         )
 
-        assert user.id == "test-user-id"
+        if user.id != "test-user-id":
+
+            raise AssertionError(f"Expected {"test-user-id"}, got {user.id}")
         assert user.username == "testuser"
-        assert user.email == "test@example.com"
+        if user.email != "test@example.com":
+            raise AssertionError(f"Expected {"test@example.com"}, got {user.email}")
         assert user.role == FlextUserRole.USER
-        assert user.status == FlextUserStatus.ACTIVE
+        if user.status != FlextUserStatus.ACTIVE:
+            raise AssertionError(f"Expected {FlextUserStatus.ACTIVE}, got {user.status}")
 
     def test_user_is_active(self) -> None:
         """Test user is_active method."""
@@ -46,7 +50,8 @@ class TestFlextUser:
             password_hash="hash",
             status=FlextUserStatus.ACTIVE,
         )
-        assert user.is_active() is True
+        if not (user.is_active()):
+            raise AssertionError(f"Expected True, got {user.is_active()}")
 
         user_inactive = FlextUser(
             id="test-id",
@@ -55,8 +60,8 @@ class TestFlextUser:
             password_hash="hash",
             status=FlextUserStatus.INACTIVE,
         )
-        assert user_inactive.is_active() is False
-
+        if user_inactive.is_active():
+            raise AssertionError(f"Expected False, got {user_inactive.is_active()}")\ n
     def test_user_is_locked(self) -> None:
         """Test user is_locked method."""
         user_locked = FlextUser(
@@ -66,7 +71,8 @@ class TestFlextUser:
             password_hash="hash",
             status=FlextUserStatus.LOCKED,
         )
-        assert user_locked.is_locked() is True
+        if not (user_locked.is_locked()):
+            raise AssertionError(f"Expected True, got {user_locked.is_locked()}")
 
         future_time = datetime.now(UTC) + timedelta(hours=1)
         user_temp_locked = FlextUser(
@@ -76,7 +82,8 @@ class TestFlextUser:
             password_hash="hash",
             locked_until=future_time,
         )
-        assert user_temp_locked.is_locked() is True
+        if not (user_temp_locked.is_locked()):
+            raise AssertionError(f"Expected True, got {user_temp_locked.is_locked()}")
 
     def test_user_is_REDACTED_LDAP_BIND_PASSWORD(self) -> None:
         """Test user is_REDACTED_LDAP_BIND_PASSWORD method."""
@@ -87,7 +94,8 @@ class TestFlextUser:
             password_hash="hash",
             role=FlextUserRole.ADMIN,
         )
-        assert REDACTED_LDAP_BIND_PASSWORD_user.is_REDACTED_LDAP_BIND_PASSWORD() is True
+        if not (REDACTED_LDAP_BIND_PASSWORD_user.is_REDACTED_LDAP_BIND_PASSWORD()):
+            raise AssertionError(f"Expected True, got {REDACTED_LDAP_BIND_PASSWORD_user.is_REDACTED_LDAP_BIND_PASSWORD()}")
 
         regular_user = FlextUser(
             id="test-id",
@@ -96,8 +104,8 @@ class TestFlextUser:
             password_hash="hash",
             role=FlextUserRole.USER,
         )
-        assert regular_user.is_REDACTED_LDAP_BIND_PASSWORD() is False
-
+        if regular_user.is_REDACTED_LDAP_BIND_PASSWORD():
+            raise AssertionError(f"Expected False, got {regular_user.is_REDACTED_LDAP_BIND_PASSWORD()}")\ n
     def test_user_validate_domain_rules(self) -> None:
         """Test user domain rules validation."""
         valid_user = FlextUser(
@@ -172,11 +180,15 @@ class TestFlextSession:
             ip_address="192.168.1.1",
         )
 
-        assert session.id == "session-id"
+        if session.id != "session-id":
+
+            raise AssertionError(f"Expected {"session-id"}, got {session.id}")
         assert session.user_id == "user-id"
-        assert session.access_token == "access-token"
+        if session.access_token != "access-token":
+            raise AssertionError(f"Expected {"access-token"}, got {session.access_token}")
         assert session.refresh_token == "refresh-token"
-        assert session.expires_at == expires_at
+        if session.expires_at != expires_at:
+            raise AssertionError(f"Expected {expires_at}, got {session.expires_at}")
         assert session.ip_address == "192.168.1.1"
 
     def test_session_is_valid(self) -> None:
@@ -189,7 +201,8 @@ class TestFlextSession:
             expires_at=future_time,
             status=FlextSessionStatus.ACTIVE,
         )
-        assert valid_session.is_valid() is True
+        if not (valid_session.is_valid()):
+            raise AssertionError(f"Expected True, got {valid_session.is_valid()}")
 
         expired_session = FlextSession(
             id="session-id",
@@ -198,8 +211,8 @@ class TestFlextSession:
             expires_at=datetime.now(UTC) - timedelta(hours=1),
             status=FlextSessionStatus.ACTIVE,
         )
-        assert expired_session.is_valid() is False
-
+        if expired_session.is_valid():
+            raise AssertionError(f"Expected False, got {expired_session.is_valid()}")\ n
         revoked_session = FlextSession(
             id="session-id",
             user_id="user-id",
@@ -207,8 +220,8 @@ class TestFlextSession:
             expires_at=future_time,
             status=FlextSessionStatus.REVOKED,
         )
-        assert revoked_session.is_valid() is False
-
+        if revoked_session.is_valid():
+            raise AssertionError(f"Expected False, got {revoked_session.is_valid()}")\ n
     def test_session_validate_domain_rules(self) -> None:
         """Test session domain rules validation."""
         future_time = datetime.now(UTC) + timedelta(hours=1)
@@ -257,11 +270,15 @@ class TestFlextPermission:
             action="read",
         )
 
-        assert permission.id == "perm-id"
+        if permission.id != "perm-id":
+
+            raise AssertionError(f"Expected {"perm-id"}, got {permission.id}")
         assert permission.name == "read_users"
-        assert permission.description == "Read users permission"
+        if permission.description != "Read users permission":
+            raise AssertionError(f"Expected {"Read users permission"}, got {permission.description}")
         assert permission.resource == "users"
-        assert permission.action == "read"
+        if permission.action != "read":
+            raise AssertionError(f"Expected {"read"}, got {permission.action}")
 
     def test_permission_is_valid(self) -> None:
         """Test permission is_valid method."""
@@ -272,7 +289,8 @@ class TestFlextPermission:
             resource="users",
             action="read",
         )
-        assert valid_permission.is_valid() is True
+        if not (valid_permission.is_valid()):
+            raise AssertionError(f"Expected True, got {valid_permission.is_valid()}")
 
         invalid_permission = FlextPermission(
             id="perm-id",
@@ -281,8 +299,8 @@ class TestFlextPermission:
             resource="users",
             action="read",
         )
-        assert invalid_permission.is_valid() is False
-
+        if invalid_permission.is_valid():
+            raise AssertionError(f"Expected False, got {invalid_permission.is_valid()}")\ n
     def test_permission_validate_domain_rules(self) -> None:
         """Test permission domain rules validation."""
         valid_permission = FlextPermission(
@@ -326,11 +344,15 @@ class TestFlextRole:
             permissions=[permission],
         )
 
-        assert role.id == "role-id"
+        if role.id != "role-id":
+
+            raise AssertionError(f"Expected {"role-id"}, got {role.id}")
         assert role.name == "user_manager"
-        assert role.description == "User management role"
+        if role.description != "User management role":
+            raise AssertionError(f"Expected {"User management role"}, got {role.description}")
         assert len(role.permissions) == 1
-        assert role.permissions[0] == permission
+        if role.permissions[0] != permission:
+            raise AssertionError(f"Expected {permission}, got {role.permissions[0]}")
 
     def test_role_has_permission(self) -> None:
         """Test role has_permission method."""
@@ -349,9 +371,11 @@ class TestFlextRole:
             permissions=[permission],
         )
 
-        assert role.has_permission("users", "read") is True
-        assert role.has_permission("users", "write") is False
-        assert role.has_permission("posts", "read") is False
+        if not (role.has_permission("users", "read")):
+
+            raise AssertionError(f"Expected True, got {role.has_permission("users", "read")}")
+        if role.has_permission("users", "write"):
+            raise AssertionError(f"Expected False, got {role.has_permission("users", "write")}")\ n        assert role.has_permission("posts", "read") is False
 
     def test_role_validate_domain_rules(self) -> None:
         """Test role domain rules validation."""

@@ -18,6 +18,9 @@ from flext_auth import (
     flext_auth_role_required,
 )
 
+# Constants
+EXPECTED_DATA_COUNT = 3
+
 
 class TestFlextAuthDecorators:
     """Test real decorator functionality."""
@@ -30,7 +33,7 @@ class TestFlextAuthDecorators:
         token = flext_auth_generate_jwt(payload, secret=secret)
 
         @flext_auth_required(secret_key=secret)
-        def protected_endpoint(request, **kwargs) -> str:
+        def protected_endpoint(request: dict, **kwargs: dict) -> str:
             auth_context = kwargs.get("auth_context", {})
             return f"Hello {auth_context.get('username', 'Unknown')}"
 
@@ -38,13 +41,14 @@ class TestFlextAuthDecorators:
         request_with_token = {"headers": {"Authorization": f"Bearer {token}"}}
         result = protected_endpoint(request_with_token)
 
-        assert result == "Hello testuser"
+        if result != "Hello testuser":
+            raise AssertionError(f"Expected {'Hello testuser'}, got {result}")
 
     def test_flext_auth_required_with_invalid_token(self) -> None:
         """Test auth required decorator with invalid token."""
 
         @flext_auth_required()
-        def protected_endpoint(request, **kwargs) -> str:
+        def protected_endpoint(request: dict, **kwargs: dict) -> str:
             return "Should not reach here"
 
         # Test with invalid token
@@ -54,14 +58,16 @@ class TestFlextAuthDecorators:
         result = protected_endpoint(request_with_invalid_token)
 
         assert isinstance(result, dict)
-        assert result["status"] == 401
-        assert "Invalid token" in result["error"]
+        if result["status"] != 401:
+            raise AssertionError(f"Expected {401}, got {result['status']}")
+        if "Invalid token" not in result["error"]:
+            raise AssertionError(f"Expected {'Invalid token'} in {result['error']}")
 
     def test_flext_auth_required_without_token(self) -> None:
         """Test auth required decorator without token."""
 
         @flext_auth_required()
-        def protected_endpoint(request, **kwargs) -> str:
+        def protected_endpoint(request: dict, **kwargs: dict) -> str:
             return "Should not reach here"
 
         # Test without token
@@ -69,8 +75,12 @@ class TestFlextAuthDecorators:
         result = protected_endpoint(request_without_token)
 
         assert isinstance(result, dict)
-        assert result["status"] == 401
-        assert "Authentication required" in result["error"]
+        if result["status"] != 401:
+            raise AssertionError(f"Expected {401}, got {result['status']}")
+        if "Authentication required" not in result["error"]:
+            raise AssertionError(
+                f"Expected {'Authentication required'} in {result['error']}"
+            )
 
     def test_flext_auth_role_required_with_correct_role(self) -> None:
         """Test role required decorator with correct role."""
@@ -79,13 +89,14 @@ class TestFlextAuthDecorators:
         token = flext_auth_generate_jwt(payload, secret=secret)
 
         @flext_auth_role_required(ADMIN_ROLE, secret_key=secret)
-        def REDACTED_LDAP_BIND_PASSWORD_endpoint(request, **kwargs) -> str:
+        def REDACTED_LDAP_BIND_PASSWORD_endpoint(request: dict, **kwargs: dict) -> str:
             return "Admin content"
 
         request_with_token = {"headers": {"Authorization": f"Bearer {token}"}}
         result = REDACTED_LDAP_BIND_PASSWORD_endpoint(request_with_token)
 
-        assert result == "Admin content"
+        if result != "Admin content":
+            raise AssertionError(f"Expected {'Admin content'}, got {result}")
 
     def test_flext_auth_role_required_with_wrong_role(self) -> None:
         """Test role required decorator with wrong role."""
@@ -94,15 +105,19 @@ class TestFlextAuthDecorators:
         token = flext_auth_generate_jwt(payload, secret=secret)
 
         @flext_auth_role_required(ADMIN_ROLE, secret_key=secret)
-        def REDACTED_LDAP_BIND_PASSWORD_endpoint(request, **kwargs) -> str:
+        def REDACTED_LDAP_BIND_PASSWORD_endpoint(request: dict, **kwargs: dict) -> str:
             return "Should not reach here"
 
         request_with_token = {"headers": {"Authorization": f"Bearer {token}"}}
         result = REDACTED_LDAP_BIND_PASSWORD_endpoint(request_with_token)
 
         assert isinstance(result, dict)
-        assert result["status"] == 403
-        assert "Role 'REDACTED_LDAP_BIND_PASSWORD' required" in result["error"]
+        if result["status"] != 403:
+            raise AssertionError(f"Expected {403}, got {result['status']}")
+        if "Role 'REDACTED_LDAP_BIND_PASSWORD' required" not in result["error"]:
+            raise AssertionError(
+                f"Expected {"Role 'REDACTED_LDAP_BIND_PASSWORD' required"} in {result['error']}"
+            )
 
     def test_flext_auth_permission_required_with_valid_permission(self) -> None:
         """Test permission required decorator with valid permission."""
@@ -111,13 +126,14 @@ class TestFlextAuthDecorators:
         token = flext_auth_generate_jwt(payload, secret=secret)
 
         @flext_auth_permission_required("delete", secret_key=secret)
-        def delete_endpoint(request, **kwargs) -> str:
+        def delete_endpoint(request: dict, **kwargs: dict) -> str:
             return "Item deleted"
 
         request_with_token = {"headers": {"Authorization": f"Bearer {token}"}}
         result = delete_endpoint(request_with_token)
 
-        assert result == "Item deleted"
+        if result != "Item deleted":
+            raise AssertionError(f"Expected {'Item deleted'}, got {result}")
 
     def test_flext_auth_permission_required_without_permission(self) -> None:
         """Test permission required decorator without permission."""
@@ -126,15 +142,19 @@ class TestFlextAuthDecorators:
         token = flext_auth_generate_jwt(payload, secret=secret)
 
         @flext_auth_permission_required("delete", secret_key=secret)
-        def delete_endpoint(request, **kwargs) -> str:
+        def delete_endpoint(request: dict, **kwargs: dict) -> str:
             return "Should not reach here"
 
         request_with_token = {"headers": {"Authorization": f"Bearer {token}"}}
         result = delete_endpoint(request_with_token)
 
         assert isinstance(result, dict)
-        assert result["status"] == 403
-        assert "Permission 'delete' required" in result["error"]
+        if result["status"] != 403:
+            raise AssertionError(f"Expected {403}, got {result['status']}")
+        if "Permission 'delete' required" not in result["error"]:
+            raise AssertionError(
+                f"Expected {"Permission 'delete' required"} in {result['error']}"
+            )
 
 
 class TestFlextAuthUltraHelpers:
@@ -149,11 +169,16 @@ class TestFlextAuthUltraHelpers:
         )
 
         assert result.is_success
-        assert "user" in result.data
+        if "user" not in result.data:
+            raise AssertionError(f"Expected {'user'} in {result.data}")
         assert "session" in result.data
-        assert "token" in result.data
+        if "token" not in result.data:
+            raise AssertionError(f"Expected {'token'} in {result.data}")
         assert "auth_context" in result.data
-        assert result.data["user"]["username"] == "testuser"
+        if result.data["user"]["username"] != "testuser":
+            raise AssertionError(
+                f"Expected {'testuser'}, got {result.data['user']['username']}"
+            )
         assert result.data["user"]["email"] == "test@example.com"
 
     def test_flext_auth_one_liner_invalid_email(self) -> None:
@@ -161,33 +186,42 @@ class TestFlextAuthUltraHelpers:
         result = flext_auth_one_liner("testuser", "invalid-email", "SecurePassword123!")
 
         assert not result.is_success
-        assert "Invalid email format" in result.error
+        if "Invalid email format" not in result.error:
+            raise AssertionError(f"Expected {'Invalid email format'} in {result.error}")
 
     def test_flext_auth_one_liner_weak_password(self) -> None:
         """Test one-liner with weak password."""
         result = flext_auth_one_liner("testuser", "test@example.com", "weak")
 
         assert not result.is_success
-        assert "Weak password" in result.error
+        if "Weak password" not in result.error:
+            raise AssertionError(f"Expected {'Weak password'} in {result.error}")
 
     def test_flext_auth_one_liner_missing_fields(self) -> None:
         """Test one-liner with missing fields."""
         result = flext_auth_one_liner("", "test@example.com", "SecurePassword123!")
 
         assert not result.is_success
-        assert "Username, email and password are required" in result.error
+        if "Username, email and password are required" not in result.error:
+            raise AssertionError(
+                f"Expected {'Username, email and (password are required'} in {result.error}"
+            )
 
     def test_flext_auth_instant_api_success(self) -> None:
         """Test instant API creation success."""
         result = flext_auth_instant_api("my_service", "api")
 
         assert result.is_success
-        assert "api_key" in result.data
+        if "api_key" not in result.data:
+            raise AssertionError(f"Expected {'api_key'} in {result.data}")
         assert "headers" in result.data
-        assert "user" in result.data
+        if "user" not in result.data:
+            raise AssertionError(f"Expected {'user'} in {result.data}")
         assert "scope" in result.data
-        assert "usage_example" in result.data
-        assert result.data["user"] == "my_service"
+        if "usage_example" not in result.data:
+            raise AssertionError(f"Expected {'usage_example'} in {result.data}")
+        if result.data["user"] != "my_service":
+            raise AssertionError(f"Expected {'my_service'}, got {result.data['user']}")
         assert result.data["scope"] == "api"
 
     def test_flext_auth_instant_api_with_custom_params(self) -> None:
@@ -200,23 +234,33 @@ class TestFlextAuthUltraHelpers:
         )
 
         assert result.is_success
-        assert result.data["user"] == "custom_service"
+        if result.data["user"] != "custom_service":
+            raise AssertionError(
+                f"Expected {'custom_service'}, got {result.data['user']}"
+            )
         assert result.data["scope"] == "custom_scope"
-        assert result.data["expires_days"] == 30
+        if result.data["expires_days"] != 30:
+            raise AssertionError(f"Expected {30}, got {result.data['expires_days']}")
 
     def test_flext_auth_instant_api_invalid_expires(self) -> None:
         """Test instant API creation with invalid expiration."""
         result = flext_auth_instant_api("service", "api", expires_days=0)
 
         assert not result.is_success
-        assert "Expires days must be between 1 and 3650" in result.error
+        if "Expires days must be between 1 and 3650" not in result.error:
+            raise AssertionError(
+                f"Expected {'Expires days must be between 1 and 3650'} in {result.error}"
+            )
 
     def test_flext_auth_instant_api_missing_params(self) -> None:
         """Test instant API creation with missing parameters."""
         result = flext_auth_instant_api("", "api")
 
         assert not result.is_success
-        assert "Username and scope are required" in result.error
+        if "Username and scope are required" not in result.error:
+            raise AssertionError(
+                f"Expected {'Username and scope are required'} in {result.error}"
+            )
 
     def test_flext_auth_check_token_valid(self) -> None:
         """Test token checking with valid token."""
@@ -227,11 +271,15 @@ class TestFlextAuthUltraHelpers:
         result = flext_auth_check_token(token, secret)
 
         assert result.is_success
-        assert result.data["valid"] is True
-        assert result.data["user_id"] == "test123"
+        if not (result.data["valid"]):
+            raise AssertionError(f"Expected True, got {result.data['valid']}")
+        if result.data["user_id"] != "test123":
+            raise AssertionError(f"Expected {'test123'}, got {result.data['user_id']}")
         assert result.data["username"] == "testuser"
-        assert result.data["role"] == "REDACTED_LDAP_BIND_PASSWORD"
-        assert "permissions" in result.data
+        if result.data["role"] != "REDACTED_LDAP_BIND_PASSWORD":
+            raise AssertionError(f"Expected {'REDACTED_LDAP_BIND_PASSWORD'}, got {result.data['role']}")
+        if "permissions" not in result.data:
+            raise AssertionError(f"Expected {'permissions'} in {result.data}")
         assert "security_checks" in result.data
 
     def test_flext_auth_check_token_invalid(self) -> None:
@@ -239,21 +287,26 @@ class TestFlextAuthUltraHelpers:
         result = flext_auth_check_token("invalid.token.123", "secret")
 
         assert not result.is_success
-        assert "Token validation failed" in result.error
+        if "Token validation failed" not in result.error:
+            raise AssertionError(
+                f"Expected {'Token validation failed'} in {result.error}"
+            )
 
     def test_flext_auth_check_token_invalid_format(self) -> None:
         """Test token checking with invalid format."""
         result = flext_auth_check_token("not-a-jwt", "secret")
 
         assert not result.is_success
-        assert "Invalid JWT format" in result.error
+        if "Invalid JWT format" not in result.error:
+            raise AssertionError(f"Expected {'Invalid JWT format'} in {result.error}")
 
     def test_flext_auth_check_token_empty(self) -> None:
         """Test token checking with empty token."""
         result = flext_auth_check_token("", "secret")
 
         assert not result.is_success
-        assert "Token is required" in result.error
+        if "Token is required" not in result.error:
+            raise AssertionError(f"Expected {'Token is required'} in {result.error}")
 
 
 class TestFlextAuthMixin:
@@ -276,14 +329,15 @@ class TestFlextAuthMixin:
             pass
 
         controller = TestController()
-        secret = controller._auth._jwt_service._secret_key
+        secret = controller._auth._jwt_service.secret_key
         payload = {"user_id": "test123", "username": "testuser", "role": "user"}
         token = flext_auth_generate_jwt(payload, secret=secret)
 
         user = controller.get_current_user(token)
 
         assert user is not None
-        assert user.get("user_id") == "test123"
+        if user.get("user_id") != "test123":
+            raise AssertionError(f"Expected {'test123'}, got {user.get('user_id')}")
         assert user.get("username") == "testuser"
 
     def test_mixin_get_current_user_invalid_token(self) -> None:
@@ -315,13 +369,14 @@ class TestFlextAuthMixin:
             pass
 
         controller = TestController()
-        secret = controller._auth._jwt_service._secret_key
+        secret = controller._auth._jwt_service.secret_key
         payload = {"user_id": "REDACTED_LDAP_BIND_PASSWORD123", "username": "REDACTED_LDAP_BIND_PASSWORD", "role": ADMIN_ROLE}
         token = flext_auth_generate_jwt(payload, secret=secret)
 
         has_permission = controller.check_permission(token, "delete")
 
-        assert has_permission is True
+        if not (has_permission):
+            raise AssertionError(f"Expected True, got {has_permission}")
 
     def test_mixin_check_permission_failure(self) -> None:
         """Test mixin check_permission without permission."""
@@ -330,13 +385,14 @@ class TestFlextAuthMixin:
             pass
 
         controller = TestController()
-        secret = controller._auth._jwt_service._secret_key
+        secret = controller._auth._jwt_service.secret_key
         payload = {"user_id": "user123", "username": "user", "role": USER_ROLE}
         token = flext_auth_generate_jwt(payload, secret=secret)
 
         has_permission = controller.check_permission(token, "delete")
 
-        assert has_permission is False
+        if has_permission:
+            raise AssertionError(f"Expected False, got {has_permission}")
 
     def test_mixin_create_session_success(self) -> None:
         """Test mixin create_session with valid credentials."""

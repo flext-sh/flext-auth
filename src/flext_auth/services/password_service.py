@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import secrets
 import string
-from typing import Any
 
 import bcrypt
 from flext_core import (
@@ -13,7 +12,7 @@ from flext_core import (
     get_logger,
 )
 
-from flext_auth.value_objects import (
+from flext_auth.domain.value_objects import (
     FlextHashedPassword,
     FlextPlainPassword,
 )
@@ -85,10 +84,7 @@ class FlextPasswordService:
                 try:
                     FlextPlainPassword(value=password_str)  # Validate password strength
                 except (ValueError, TypeError) as e:
-                    return FlextResult(
-                        success=False,
-                        error=f"Password validation failed: {e}",
-                    )
+                    return FlextResult.fail(f"Password validation failed: {e}")
 
             # Generate salt and hash
             password_bytes = password_str.encode("utf-8")
@@ -141,9 +137,8 @@ class FlextPasswordService:
             return FlextResult.ok(is_valid)
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult(
-                success=False,
-                error=f"Password verification failed: {e}",
+            return FlextResult.fail(
+                f"Password verification failed: {e}",
             )
 
     def generate_secure_password(self, length: int = 16) -> FlextResult[str]:
@@ -158,9 +153,8 @@ class FlextPasswordService:
         """
         try:
             if length < RECOMMENDED_PASSWORD_LENGTH:
-                return FlextResult(
-                    success=False,
-                    error="Password length must be at least 12 characters",
+                return FlextResult.fail(
+                    "Password length must be at least 12 characters",
                 )
 
             # Character sets
@@ -193,17 +187,14 @@ class FlextPasswordService:
             try:
                 FlextPlainPassword(value=password)
             except (ValueError, TypeError) as e:
-                return FlextResult(
-                    success=False,
-                    error=f"Generated password validation failed: {e}",
-                )
+                return FlextResult.fail(f"Generated password validation failed: {e}")
 
             return FlextResult.ok(password)
 
         except (ValueError, TypeError, OSError) as e:
             return FlextResult.fail(f"Password generation failed: {e}")
 
-    def _analyze_password_basic_properties(self, password: str) -> dict[str, Any]:
+    def _analyze_password_basic_properties(self, password: str) -> dict[str, object]:
         """Analyze basic password properties."""
         return {
             "score": 0,
@@ -217,82 +208,103 @@ class FlextPasswordService:
             "feedback": [],
         }
 
-    def _calculate_password_score(self, analysis: dict[str, Any]) -> int:
+    def _calculate_password_score(self, analysis: dict[str, object]) -> int:
         """Calculate password strength score."""
         score = 0
 
+        # Extract values with proper type casting
+        length = int(analysis["length"]) if isinstance(analysis["length"], int) else 0
+        has_uppercase = bool(analysis.get("has_uppercase"))
+        has_lowercase = bool(analysis.get("has_lowercase"))
+        has_digits = bool(analysis.get("has_digits"))
+        has_symbols = bool(analysis.get("has_symbols"))
+
         # Length scoring
-        if analysis["length"] >= MIN_PASSWORD_LENGTH:
+        if length >= MIN_PASSWORD_LENGTH:
             score += 1
-        if analysis["length"] >= RECOMMENDED_PASSWORD_LENGTH:
+        if length >= RECOMMENDED_PASSWORD_LENGTH:
             score += 1
-        if analysis["length"] >= STRONG_PASSWORD_LENGTH:
+        if length >= STRONG_PASSWORD_LENGTH:
             score += 1
 
         # Character variety scoring
-        if analysis["has_uppercase"]:
+        if has_uppercase:
             score += 1
-        if analysis["has_lowercase"]:
+        if has_lowercase:
             score += 1
-        if analysis["has_digits"]:
+        if has_digits:
             score += 1
-        if analysis["has_symbols"]:
+        if has_symbols:
             score += 1
 
         # Bonus for very long passwords
-        if analysis["length"] >= 20:
+        if length >= 20:
             score += 1
-        if analysis["length"] >= 30:
+        if length >= 30:
             score += 1
 
         return score
 
-    def _generate_password_feedback(self, analysis: dict[str, Any]) -> list[str]:
+    def _generate_password_feedback(self, analysis: dict[str, object]) -> list[str]:
         """Generate feedback messages for password improvement."""
         feedback = []
 
-        if analysis["length"] < MIN_PASSWORD_LENGTH:
+        # Extract values with proper type casting
+        length = int(analysis["length"]) if isinstance(analysis["length"], int) else 0
+        has_uppercase = bool(analysis.get("has_uppercase"))
+        has_lowercase = bool(analysis.get("has_lowercase"))
+        has_digits = bool(analysis.get("has_digits"))
+        has_symbols = bool(analysis.get("has_symbols"))
+
+        if length < MIN_PASSWORD_LENGTH:
             feedback.append(
                 f"Password should be at least {MIN_PASSWORD_LENGTH} characters long",
             )
-        elif analysis["length"] < RECOMMENDED_PASSWORD_LENGTH:
+        elif length < RECOMMENDED_PASSWORD_LENGTH:
             feedback.append(
-                f"Consider using at least {RECOMMENDED_PASSWORD_LENGTH} characters for better security",
+                f"Consider using at least {RECOMMENDED_PASSWORD_LENGTH} characters "
+                f"for better security",
             )
 
-        if not analysis["has_uppercase"]:
+        if not has_uppercase:
             feedback.append("Add uppercase letters (A-Z)")
-        if not analysis["has_lowercase"]:
+        if not has_lowercase:
             feedback.append("Add lowercase letters (a-z)")
-        if not analysis["has_digits"]:
+        if not has_digits:
             feedback.append("Add numbers (0-9)")
-        if not analysis["has_symbols"]:
+        if not has_symbols:
             feedback.append("Add special characters (!@#$%^&*)")
 
-        if analysis["score"] >= 8:
+        score_value = analysis.get("score", 0)
+        score = int(score_value) if isinstance(score_value, int) else 0
+
+        if score >= 8:
             feedback.append("Excellent password strength!")
-        elif analysis["score"] >= 6:
+        elif score >= 6:
             feedback.append("Good password strength")
-        elif analysis["score"] >= 4:
+        elif score >= 4:
             feedback.append("Moderate password strength")
         else:
             feedback.append("Weak password - consider strengthening")
 
         return feedback
 
-    def _estimate_crack_time(self, analysis: dict[str, Any]) -> str:
+    def _estimate_crack_time(self, analysis: dict[str, object]) -> str:
         """Estimate password crack time based on complexity."""
-        if analysis["score"] >= 8:
+        score_value = analysis.get("score", 0)
+        score = int(score_value) if isinstance(score_value, int) else 0
+
+        if score >= 8:
             return "centuries"
-        if analysis["score"] >= 6:
+        if score >= 6:
             return "decades"
-        if analysis["score"] >= 4:
+        if score >= 4:
             return "years"
-        if analysis["score"] >= 2:
+        if score >= 2:
             return "months"
         return "days or less"
 
-    def check_password_strength(self, password: str) -> FlextResult[dict[str, Any]]:
+    def check_password_strength(self, password: str) -> FlextResult[dict[str, object]]:
         """Analyze password strength and return detailed feedback.
 
         Args:
@@ -313,21 +325,27 @@ class FlextPasswordService:
             common_patterns = ["123", "abc", "password", "REDACTED_LDAP_BIND_PASSWORD", "qwerty"]
             if any(pattern in password.lower() for pattern in common_patterns):
                 analysis["has_common_patterns"] = True
-                analysis["score"] -= 2
+                score_value = analysis.get("score", 0)
+                current_score = int(score_value) if isinstance(score_value, int) else 0
+                # Ensure score doesn't go negative
+                analysis["score"] = max(0, current_score - 2)
 
             # Generate feedback using helper method
             analysis["feedback"] = self._generate_password_feedback(analysis)
 
             # Add common pattern feedback
-            if analysis["has_common_patterns"]:
-                analysis["feedback"].append(
-                    "Avoid common patterns and dictionary words",
-                )
+            if analysis.get("has_common_patterns", False):
+                feedback_list = analysis.get("feedback", [])
+                if isinstance(feedback_list, list):
+                    feedback_list.append("Avoid common patterns and dictionary words")
+                    analysis["feedback"] = feedback_list
 
             # Determine strength rating
-            if analysis["score"] >= STRONG_STRENGTH_SCORE:
+            score_value = analysis.get("score", 0)
+            final_score = int(score_value) if isinstance(score_value, int) else 0
+            if final_score >= STRONG_STRENGTH_SCORE:
                 analysis["strength"] = "strong"
-            elif analysis["score"] >= MIN_STRENGTH_SCORE:
+            elif final_score >= MIN_STRENGTH_SCORE:
                 analysis["strength"] = "medium"
             else:
                 analysis["strength"] = "weak"
@@ -338,9 +356,8 @@ class FlextPasswordService:
             return FlextResult.ok(analysis)
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult(
-                success=False,
-                error=f"Password strength analysis failed: {e}",
+            return FlextResult.fail(
+                f"Password strength analysis failed: {e}",
             )
 
     def generate_password_reset_token(self) -> FlextResult[str]:

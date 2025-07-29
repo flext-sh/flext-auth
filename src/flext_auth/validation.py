@@ -62,7 +62,8 @@ class FlextAuthValidators:
             FlextAuthConstants.MIN_PASSWORD_LENGTH,
         ):
             return FlextResult.fail(
-                f"Password must be at least {FlextAuthConstants.MIN_PASSWORD_LENGTH} characters",
+                f"Password must be at least "
+                f"{FlextAuthConstants.MIN_PASSWORD_LENGTH} characters",
             )
 
         if not FlextValidators.has_max_length(
@@ -70,15 +71,17 @@ class FlextAuthValidators:
             FlextAuthConstants.MAX_PASSWORD_LENGTH,
         ):
             return FlextResult.fail(
-                f"Password cannot exceed {FlextAuthConstants.MAX_PASSWORD_LENGTH} characters",
+                f"Password cannot exceed "
+                f"{FlextAuthConstants.MAX_PASSWORD_LENGTH} characters",
             )
 
         if not FlextValidators.matches_pattern(
             password,
-            FlextAuthConstants.PASSWORD_PATTERN,
+            FlextAuthConstants.PASSWORD_VALIDATION_REGEX,
         ):
             return FlextResult.fail(
-                "Password must contain uppercase, lowercase, digit and special character",
+                "Password must contain uppercase, lowercase, digit and "
+                "special character",
             )
 
         return FlextResult.ok(None)
