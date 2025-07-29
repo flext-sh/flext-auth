@@ -57,18 +57,17 @@ async def exemplo_sistema_completo() -> None:
         result = await auth.register(username, email, password, role)
         if result.is_success:
             pass
-        else:
-            pass
 
     # 2. SISTEMA DE LOGIN COM CONTROLE DE SESSÕES
 
     # Login do REDACTED_LDAP_BIND_PASSWORD
-    login_result = await auth.login("REDACTED_LDAP_BIND_PASSWORD", "SuperSecure123!", "192.168.1.100", "Mozilla/5.0")
+    login_result = await auth.login(
+        "REDACTED_LDAP_BIND_PASSWORD", "SuperSecure123!", "192.168.1.100", "Mozilla/5.0",
+    )
     if login_result.is_success:
         REDACTED_LDAP_BIND_PASSWORD_data = login_result.data
         REDACTED_LDAP_BIND_PASSWORD_token = REDACTED_LDAP_BIND_PASSWORD_data["tokens"]["access_token"]
         REDACTED_LDAP_BIND_PASSWORD_user = REDACTED_LDAP_BIND_PASSWORD_data["user"]
-
 
         # 3. VALIDAÇÃO E AUTORIZAÇÃO
         validation = await auth.validate(REDACTED_LDAP_BIND_PASSWORD_token)
@@ -104,6 +103,7 @@ async def exemplo_sistema_completo() -> None:
     if cleaned.is_success:
         pass
 
+
 def exemplo_helpers_utilitarios() -> None:
     """Demonstra helpers utilitários para redução massiva de código."""
     # Hash de senha seguro em 1 linha
@@ -129,6 +129,7 @@ def exemplo_helpers_utilitarios() -> None:
     for email in emails_teste:
         flext_auth_validate_email(email)
 
+
 def exemplo_middleware_web() -> None:
     """Demonstra criação de middleware para frameworks web."""
     auth = FlextAuth()
@@ -142,6 +143,7 @@ async def main() -> None:
     await exemplo_sistema_completo()
     exemplo_helpers_utilitarios()
     exemplo_middleware_web()
+
 
 if __name__ == "__main__":
     asyncio.run(main())

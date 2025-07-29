@@ -4,7 +4,6 @@ Valida todas as funcionalidades otimizadas para redução massiva de código.
 Testa a ABI melhorada e os novos helpers avançados.
 """
 
-
 import pytest
 
 from flext_auth import (
@@ -39,7 +38,9 @@ class TestFlextAuthEnhancedABI:
         """FlextAuth instance with fast config for testing."""
         config = {
             "security": {"password_rounds": 4},
-            "jwt": {"secret_key": "test-secret-key-12345678901234567890123456789012345678901234567890"},
+            "jwt": {
+                "secret_key": "test-secret-key-12345678901234567890123456789012345678901234567890",
+            },
         }
         return FlextAuth(config)
 
@@ -103,7 +104,11 @@ class TestFlextAuthEnhancedABI:
     async def test_login_and_validate_success(self, auth) -> None:
         """Test enhanced login_and_validate method."""
         # First register a user
-        register_result = await auth.register("testuser", "test@example.com", "TestPassword123!")
+        register_result = await auth.register(
+            "testuser",
+            "test@example.com",
+            "TestPassword123!",
+        )
         assert register_result.is_success
 
         # Then login and validate in one call
@@ -130,11 +135,19 @@ class TestFlextAuthEnhancedABI:
     async def test_create_user_session_success(self, auth) -> None:
         """Test complete session creation method."""
         # Register user first
-        register_result = await auth.register("sessionuser", "session@example.com", "SessionPass123!")
+        register_result = await auth.register(
+            "sessionuser",
+            "session@example.com",
+            "SessionPass123!",
+        )
         assert register_result.is_success
 
         # Create complete session
-        result = await auth.create_user_session("sessionuser", "SessionPass123!", include_user_data=True)
+        result = await auth.create_user_session(
+            "sessionuser",
+            "SessionPass123!",
+            include_user_data=True,
+        )
 
         # Skip if login has issues
         if not result.is_success:
@@ -148,11 +161,19 @@ class TestFlextAuthEnhancedABI:
     async def test_create_user_session_without_user_data(self, auth) -> None:
         """Test session creation without user data."""
         # Register user first
-        register_result = await auth.register("sessionuser2", "session2@example.com", "SessionPass123!")
+        register_result = await auth.register(
+            "sessionuser2",
+            "session2@example.com",
+            "SessionPass123!",
+        )
         assert register_result.is_success
 
         # Create session without user data
-        result = await auth.create_user_session("sessionuser2", "SessionPass123!", include_user_data=False)
+        result = await auth.create_user_session(
+            "sessionuser2",
+            "SessionPass123!",
+            include_user_data=False,
+        )
 
         # Skip if login has issues
         if not result.is_success:
@@ -184,7 +205,11 @@ class TestEnhancedHelpers:
         """Test session creation with role-based permissions."""
         # Admin session
         REDACTED_LDAP_BIND_PASSWORD_session = flext_auth_create_secure_session(
-            "REDACTED_LDAP_BIND_PASSWORD123", "REDACTED_LDAP_BIND_PASSWORD", "REDACTED_LDAP_BIND_PASSWORD", 24, include_permissions=True,
+            "REDACTED_LDAP_BIND_PASSWORD123",
+            "REDACTED_LDAP_BIND_PASSWORD",
+            "REDACTED_LDAP_BIND_PASSWORD",
+            24,
+            include_permissions=True,
         )
 
         assert REDACTED_LDAP_BIND_PASSWORD_session["role"] == "REDACTED_LDAP_BIND_PASSWORD"
@@ -196,7 +221,11 @@ class TestEnhancedHelpers:
 
         # Moderator session
         mod_session = flext_auth_create_secure_session(
-            "mod123", "moderator", "moderator", 24, include_permissions=True,
+            "mod123",
+            "moderator",
+            "moderator",
+            24,
+            include_permissions=True,
         )
 
         assert mod_session["role"] == "moderator"
@@ -205,7 +234,11 @@ class TestEnhancedHelpers:
 
         # User session
         user_session = flext_auth_create_secure_session(
-            "user123", "user", "user", 24, include_permissions=True,
+            "user123",
+            "user",
+            "user",
+            24,
+            include_permissions=True,
         )
 
         assert user_session["role"] == "user"
@@ -214,7 +247,11 @@ class TestEnhancedHelpers:
     def test_create_secure_session_without_permissions(self) -> None:
         """Test session creation without permissions."""
         session = flext_auth_create_secure_session(
-            "user123", "user", "user", 24, include_permissions=False,
+            "user123",
+            "user",
+            "user",
+            24,
+            include_permissions=False,
         )
 
         assert "permissions" not in session
@@ -293,9 +330,24 @@ class TestFlextAuthBatchOperations:
         batch_ops = flext_auth_batch_operations(auth)
 
         users = [
-            {"username": "user1", "email": "user1@example.com", "password": "Password123!", "role": "user"},
-            {"username": "user2", "email": "user2@example.com", "password": "Password123!", "role": "moderator"},
-            {"username": "REDACTED_LDAP_BIND_PASSWORD1", "email": "REDACTED_LDAP_BIND_PASSWORD1@example.com", "password": "Password123!", "role": "REDACTED_LDAP_BIND_PASSWORD"},
+            {
+                "username": "user1",
+                "email": "user1@example.com",
+                "password": "Password123!",
+                "role": "user",
+            },
+            {
+                "username": "user2",
+                "email": "user2@example.com",
+                "password": "Password123!",
+                "role": "moderator",
+            },
+            {
+                "username": "REDACTED_LDAP_BIND_PASSWORD1",
+                "email": "REDACTED_LDAP_BIND_PASSWORD1@example.com",
+                "password": "Password123!",
+                "role": "REDACTED_LDAP_BIND_PASSWORD",
+            },
         ]
 
         result = await batch_ops.register_multiple(users, validate_all=True)
@@ -308,7 +360,9 @@ class TestFlextAuthBatchOperations:
         else:
             # Batch operations may fail due to underlying service issues
             # Interface is still correct
-            pytest.skip("Batch operations failed due to service issues - interface test passed")
+            pytest.skip(
+                "Batch operations failed due to service issues - interface test passed",
+            )
 
     @pytest.mark.asyncio
     async def test_batch_register_multiple_validation_off(self, auth) -> None:
@@ -316,8 +370,16 @@ class TestFlextAuthBatchOperations:
         batch_ops = flext_auth_batch_operations(auth)
 
         users = [
-            {"username": "simple1", "email": "simple1@example.com", "password": "Password123!"},
-            {"username": "simple2", "email": "simple2@example.com", "password": "Password123!"},
+            {
+                "username": "simple1",
+                "email": "simple1@example.com",
+                "password": "Password123!",
+            },
+            {
+                "username": "simple2",
+                "email": "simple2@example.com",
+                "password": "Password123!",
+            },
         ]
 
         result = await batch_ops.register_multiple(users, validate_all=False)
@@ -325,7 +387,9 @@ class TestFlextAuthBatchOperations:
         if result.is_success:
             assert len(result.data) == 2
         else:
-            pytest.skip("Batch operations failed due to service issues - interface test passed")
+            pytest.skip(
+                "Batch operations failed due to service issues - interface test passed",
+            )
 
     @pytest.mark.asyncio
     async def test_batch_register_multiple_with_errors(self, auth) -> None:
@@ -333,8 +397,16 @@ class TestFlextAuthBatchOperations:
         batch_ops = flext_auth_batch_operations(auth)
 
         users = [
-            {"username": "valid", "email": "valid@example.com", "password": "Password123!"},
-            {"username": "invalid", "email": "invalid-email", "password": "weak"},  # Invalid
+            {
+                "username": "valid",
+                "email": "valid@example.com",
+                "password": "Password123!",
+            },
+            {
+                "username": "invalid",
+                "email": "invalid-email",
+                "password": "weak",
+            },  # Invalid
         ]
 
         result = await batch_ops.register_multiple(users, validate_all=True)
@@ -376,7 +448,9 @@ class TestIntegrationAdvanced:
 
         # Skip if login has issues (service problem)
         if not session_result.is_success:
-            pytest.skip("Session creation failed due to service issues - interface test passed")
+            pytest.skip(
+                "Session creation failed due to service issues - interface test passed",
+            )
 
         assert "token" in session_result.data
         assert "context" in session_result.data
@@ -400,7 +474,9 @@ class TestIntegrationAdvanced:
         assert verified is True
 
         # JWT with custom payload
-        secret = "advanced-secret-key-12345678901234567890123456789012345678901234567890"
+        secret = (
+            "advanced-secret-key-12345678901234567890123456789012345678901234567890"
+        )
         payload = {"user_id": "advanced123", "username": "advanced", "role": "REDACTED_LDAP_BIND_PASSWORD"}
         token = flext_auth_generate_jwt(payload, secret=secret, expires_minutes=120)
         assert token != ""
@@ -422,7 +498,11 @@ class TestIntegrationAdvanced:
         assert "REDACTED_LDAP_BIND_PASSWORD" in session["permissions"]
 
         # API key creation and validation
-        api_key = flext_auth_create_api_key(decoded["user_id"], scope="api", expires_days=365)
+        api_key = flext_auth_create_api_key(
+            decoded["user_id"],
+            scope="api",
+            expires_days=365,
+        )
         assert api_key != ""
 
 
@@ -461,8 +541,22 @@ class TestNewEnhancedHelpers:
             "super_REDACTED_LDAP_BIND_PASSWORD": ["all_access"],
             "regular": ["limited_access"],
         }
-        assert flext_auth_validate_permissions("super_REDACTED_LDAP_BIND_PASSWORD", "all_access", custom_hierarchy) is True
-        assert flext_auth_validate_permissions("regular", "limited_access", custom_hierarchy) is True
+        assert (
+            flext_auth_validate_permissions(
+                "super_REDACTED_LDAP_BIND_PASSWORD",
+                "all_access",
+                custom_hierarchy,
+            )
+            is True
+        )
+        assert (
+            flext_auth_validate_permissions(
+                "regular",
+                "limited_access",
+                custom_hierarchy,
+            )
+            is True
+        )
 
     def test_validate_permissions_failure(self) -> None:
         """Test permission validation with invalid permissions."""
@@ -473,7 +567,11 @@ class TestNewEnhancedHelpers:
     def test_create_service_token(self) -> None:
         """Test service token creation."""
         permissions = ["read", "write", "REDACTED_LDAP_BIND_PASSWORD"]
-        token = flext_auth_create_service_token("test-service", permissions, expires_hours=48)
+        token = flext_auth_create_service_token(
+            "test-service",
+            permissions,
+            expires_hours=48,
+        )
 
         assert token != ""
         assert len(token.split(".")) == 3  # JWT format
@@ -485,7 +583,11 @@ class TestNewEnhancedHelpers:
 
     def test_create_multi_factor_token(self) -> None:
         """Test MFA token creation."""
-        mfa_token = flext_auth_create_multi_factor_token("user123", factor_type="totp", expires_minutes=5)
+        mfa_token = flext_auth_create_multi_factor_token(
+            "user123",
+            factor_type="totp",
+            expires_minutes=5,
+        )
 
         assert mfa_token != ""
         assert len(mfa_token.split(".")) == 3  # JWT format
@@ -541,7 +643,11 @@ class TestNewEnhancedHelpers:
         token = flext_auth_generate_jwt(payload, secret=secret)
 
         # Create context with permissions
-        context = flext_auth_create_auth_context(token, secret, include_permissions=True)
+        context = flext_auth_create_auth_context(
+            token,
+            secret,
+            include_permissions=True,
+        )
 
         assert context is not None
         assert context["user_id"] == "user123"
@@ -557,7 +663,11 @@ class TestNewEnhancedHelpers:
         payload = {"user_id": "user123", "username": "testuser", "role": "REDACTED_LDAP_BIND_PASSWORD"}
         token = flext_auth_generate_jwt(payload, secret=secret)
 
-        context = flext_auth_create_auth_context(token, secret, include_permissions=False)
+        context = flext_auth_create_auth_context(
+            token,
+            secret,
+            include_permissions=False,
+        )
 
         assert context is not None
         assert context["user_id"] == "user123"
@@ -585,8 +695,14 @@ class TestBatchOperationsAdvanced:
         # Create some test tokens
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         tokens = [
-            flext_auth_generate_jwt({"user_id": "user1", "username": "user1"}, secret=secret),
-            flext_auth_generate_jwt({"user_id": "user2", "username": "user2"}, secret=secret),
+            flext_auth_generate_jwt(
+                {"user_id": "user1", "username": "user1"},
+                secret=secret,
+            ),
+            flext_auth_generate_jwt(
+                {"user_id": "user2", "username": "user2"},
+                secret=secret,
+            ),
         ]
 
         result = await batch_ops.validate_multiple_tokens(tokens)
@@ -597,7 +713,9 @@ class TestBatchOperationsAdvanced:
             assert "total" in data
             assert data["total"] == 2
         else:
-            pytest.skip("Token validation failed due to service issues - interface test passed")
+            pytest.skip(
+                "Token validation failed due to service issues - interface test passed",
+            )
 
     @pytest.mark.asyncio
     async def test_validate_multiple_tokens_mixed(self, auth) -> None:
@@ -711,7 +829,11 @@ class TestPublicInterfaceEnhanced:
 
         # 4. Enhanced session with permissions (1 line vs 30+)
         session = flext_auth_create_secure_session(
-            "user123", "testuser", "REDACTED_LDAP_BIND_PASSWORD", 24, include_permissions=True,
+            "user123",
+            "testuser",
+            "REDACTED_LDAP_BIND_PASSWORD",
+            24,
+            include_permissions=True,
         )
 
         # 5. Batch operations setup (1 line vs 40+)
@@ -723,7 +845,9 @@ class TestPublicInterfaceEnhanced:
         assert strength["valid"] is True
         assert verified is True
         assert api_key != ""
-        assert key_data is not None or test_key != ""  # Either validation works or generation works
+        assert (
+            key_data is not None or test_key != ""
+        )  # Either validation works or generation works
         assert session["user_id"] == "user123"
         assert "REDACTED_LDAP_BIND_PASSWORD" in session["permissions"]
         assert isinstance(batch_ops, FlextAuthBatchOperations)

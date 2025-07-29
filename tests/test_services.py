@@ -71,7 +71,10 @@ def auth_service(
 class TestPasswordService:
     """Test password service functionality."""
 
-    def test_hash_password_success(self, password_service: FlextPasswordService) -> None:
+    def test_hash_password_success(
+        self,
+        password_service: FlextPasswordService,
+    ) -> None:
         """Test successful password hashing."""
         password = "TestPassword123!"
 
@@ -105,7 +108,10 @@ class TestPasswordService:
         assert not result.is_success
         assert "validation failed" in result.error.lower()
 
-    def test_verify_password_success(self, password_service: FlextPasswordService) -> None:
+    def test_verify_password_success(
+        self,
+        password_service: FlextPasswordService,
+    ) -> None:
         """Test successful password verification."""
         password = "TestPassword123!"
         hash_result = password_service.hash_password(password)
@@ -119,7 +125,10 @@ class TestPasswordService:
         assert verify_result.is_success
         assert verify_result.data is True
 
-    def test_verify_password_failure(self, password_service: FlextPasswordService) -> None:
+    def test_verify_password_failure(
+        self,
+        password_service: FlextPasswordService,
+    ) -> None:
         """Test password verification failure."""
         password = "TestPassword123!"
         wrong_password = "WrongPassword456!"
@@ -420,7 +429,10 @@ class TestAuthServiceIntegration:
         assert not result2.is_success
         assert "already exists" in result2.error
 
-    async def test_authenticate_user_success(self, auth_service: FlextAuthService) -> None:
+    async def test_authenticate_user_success(
+        self,
+        auth_service: FlextAuthService,
+    ) -> None:
         """Test successful user authentication."""
         # Register user first
         register_result = await auth_service.register_user(
@@ -596,7 +608,10 @@ class TestAuthServiceIntegration:
 
         assert logout_result.is_success
 
-    async def test_change_password_success(self, auth_service: FlextAuthService) -> None:
+    async def test_change_password_success(
+        self,
+        auth_service: FlextAuthService,
+    ) -> None:
         """Test successful password change."""
         # Register user
         register_result = await auth_service.register_user(
@@ -632,7 +647,10 @@ class TestAuthServiceIntegration:
         )
         assert auth_result2.is_success
 
-    async def test_max_concurrent_sessions(self, auth_service: FlextAuthService) -> None:
+    async def test_max_concurrent_sessions(
+        self,
+        auth_service: FlextAuthService,
+    ) -> None:
         """Test maximum concurrent sessions enforcement."""
         # Register user
         await auth_service.register_user(

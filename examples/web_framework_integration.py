@@ -9,6 +9,7 @@ from flext_auth import flext_auth_middleware_creator, flext_auth_quick_start
 # FASTAPI - Redução de 100+ linhas para 10 linhas
 # =============================================================================
 
+
 def exemplo_fastapi():
     """FastAPI com flext-auth - REDUÇÃO MASSIVA de código."""
     try:
@@ -16,7 +17,6 @@ def exemplo_fastapi():
         from fastapi.security import HTTPBearer
     except ImportError:
         return None
-
 
     # Setup instantâneo
     auth = flext_auth_quick_start()
@@ -41,12 +41,12 @@ def exemplo_fastapi():
         raise HTTPException(status_code=401, detail=result.error)
 
     @app.get("/protected")
-    async def protected_route(user = Depends(get_current_user)):
+    async def protected_route(user=Depends(get_current_user)):
         """Rota protegida - zero código de autenticação."""
         return {"message": f"Olá {user['username']}, você está autenticado!"}
 
     @app.get("/REDACTED_LDAP_BIND_PASSWORD")
-    async def REDACTED_LDAP_BIND_PASSWORD_only(user = Depends(get_current_user)):
+    async def REDACTED_LDAP_BIND_PASSWORD_only(user=Depends(get_current_user)):
         """Rota apenas para REDACTED_LDAP_BIND_PASSWORDs."""
         if user["role"] != "REDACTED_LDAP_BIND_PASSWORD":
             raise HTTPException(status_code=403, detail="Acesso negado")
@@ -59,6 +59,7 @@ def exemplo_fastapi():
 # FLASK - Redução de 80+ linhas para 8 linhas
 # =============================================================================
 
+
 def exemplo_flask():
     """Flask com flext-auth - REDUÇÃO MASSIVA de código."""
     try:
@@ -67,7 +68,6 @@ def exemplo_flask():
         from flask import Flask, jsonify, request
     except ImportError:
         return None
-
 
     app = Flask(__name__)
     auth = flext_auth_quick_start()
@@ -82,6 +82,7 @@ def exemplo_flask():
                 return jsonify({"error": "Não autorizado"}), 401
             request.user = result.data
             return await f(*args, **kwargs)
+
         return decorated
 
     @app.route("/auth/login", methods=["POST"])
@@ -103,6 +104,7 @@ def exemplo_flask():
 # =============================================================================
 # DJANGO - Redução de 150+ linhas para 15 linhas
 # =============================================================================
+
 
 def exemplo_django() -> None:
     """Django com flext-auth - REDUÇÃO MASSIVA de código."""
@@ -130,11 +132,14 @@ def exemplo_django() -> None:
     # Decorator para views
     def login_required(view_func):
         """Decorator para exigir autenticação."""
+
         async def wrapper(request, *args, **kwargs):
             if not hasattr(request, "user_context"):
                 from django.http import JsonResponse
+
                 return JsonResponse({"error": "Não autorizado"}, status=401)
             return await view_func(request, *args, **kwargs)
+
         return wrapper
 
     # View de login
@@ -146,20 +151,23 @@ def exemplo_django() -> None:
 
         data = json.loads(request.body)
         result = await auth.login(data["username"], data["password"])
-        return JsonResponse(result.data if result.is_success else {"error": result.error})
+        return JsonResponse(
+            result.data if result.is_success else {"error": result.error},
+        )
 
     # View protegida
     @login_required
     async def protected_view(request):
         """View protegida - zero código de auth."""
         from django.http import JsonResponse
-        return JsonResponse({"message": f"Olá {request.user_context['username']}!"})
 
+        return JsonResponse({"message": f"Olá {request.user_context['username']}!"})
 
 
 # =============================================================================
 # EXEMPLO UNIVERSAL - Funciona com qualquer framework
 # =============================================================================
+
 
 def exemplo_middleware_universal() -> None:
     """Middleware universal que funciona com qualquer framework."""
@@ -186,10 +194,10 @@ def exemplo_middleware_universal() -> None:
     middleware(example_handler)
 
 
-
 # =============================================================================
 # COMPARAÇÃO: ANTES vs DEPOIS
 # =============================================================================
+
 
 def comparacao_reducao_codigo() -> None:
     """Demonstra a redução massiva de código."""
@@ -199,9 +207,11 @@ def comparacao_reducao_codigo() -> None:
 # BENCHMARK DE PERFORMANCE
 # =============================================================================
 
+
 async def benchmark_performance() -> None:
     """Benchmark de performance das operações."""
     import time
+
     auth = flext_auth_quick_start()
 
     # Benchmark de registro
@@ -217,10 +227,10 @@ async def benchmark_performance() -> None:
     time.time() - start
 
 
-
 # =============================================================================
 # EXEMPLO PRINCIPAL
 # =============================================================================
+
 
 async def main() -> None:
     """Executa todos os exemplos de integração."""
@@ -237,7 +247,7 @@ async def main() -> None:
     await benchmark_performance()
 
 
-
 if __name__ == "__main__":
     import asyncio
+
     asyncio.run(main())

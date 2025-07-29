@@ -15,7 +15,6 @@ from flext_auth import (
     flext_auth_decode_jwt,
     flext_auth_generate_jwt,
     flext_auth_hash_password,
-    flext_auth_middleware_creator,
     flext_auth_quick_start,
     flext_auth_validate_email,
     flext_auth_validate_password_strength,
@@ -151,7 +150,9 @@ class TestFlextAuthClassePrincipal:
         assert "access_token" in result.data
         assert "refresh_token" in result.data
         # Tokens devem ser diferentes dos originais
-        assert result.data["access_token"] != login_result.data["tokens"]["access_token"]
+        assert (
+            result.data["access_token"] != login_result.data["tokens"]["access_token"]
+        )
 
     @pytest.mark.asyncio
     async def test_mudanca_senha_sucesso(self, auth) -> None:
@@ -334,7 +335,9 @@ class TestFlextAuthHelpers:
         ]
 
         for email in emails_validos:
-            assert flext_auth_validate_email(email) is True, f"Email deveria ser válido: {email}"
+            assert flext_auth_validate_email(email) is True, (
+                f"Email deveria ser válido: {email}"
+            )
 
     def test_validate_email_invalidos(self) -> None:
         """Testa validação de emails inválidos."""
@@ -349,7 +352,9 @@ class TestFlextAuthHelpers:
         ]
 
         for email in emails_invalidos:
-            assert flext_auth_validate_email(email) is False, f"Email deveria ser inválido: {email}"
+            assert flext_auth_validate_email(email) is False, (
+                f"Email deveria ser inválido: {email}"
+            )
 
     def test_validate_password_strength_forte(self) -> None:
         """Testa validação de senha forte."""
@@ -358,7 +363,7 @@ class TestFlextAuthHelpers:
 
         assert result["valid"] is True
         assert result["score"] >= 4
-        assert result["strength"] in ["strong", "very strong", "excellent"]
+        assert result["strength"] in {"strong", "very strong", "excellent"}
         assert len(result["feedback"]) == 0  # Sem problemas
 
     def test_validate_password_strength_fraca(self) -> None:
@@ -390,7 +395,7 @@ class TestFlextAuthHelpers:
     def test_middleware_creator(self) -> None:
         """Testa criação de middleware."""
         auth = FlextAuth()
-        middleware = flext_auth_middleware_creator(auth)
+        middleware = flext_auth_middleware_factory(auth)
 
         assert callable(middleware)
         # O middleware retorna uma função
@@ -529,6 +534,7 @@ class TestFlextAuthPerformance:
 
     def test_hash_password_performance(self, benchmark) -> None:
         """Testa performance do hash de senha."""
+
         def hash_operation():
             return flext_auth_hash_password("TestPassword123!", rounds=4)
 

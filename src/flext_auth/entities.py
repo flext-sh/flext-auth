@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 
-from flext_core import FlextEntity
+from flext_core import FlextEntity, FlextResult
 from pydantic import EmailStr, Field
 
 # Constants for magic numbers
@@ -138,23 +138,19 @@ class FlextUser(FlextEntity):
         """Check if user is REDACTED_LDAP_BIND_PASSWORD."""
         return self.role == FlextUserRole.ADMIN
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate user domain rules and business invariants."""
         if len(self.username) < MIN_USERNAME_LENGTH:
-            msg = "Username must be at least 3 characters"
-            raise ValueError(msg)
+            return FlextResult.fail("Username must be at least 3 characters")
         if len(self.username) > MAX_USERNAME_LENGTH:
-            msg = "Username must be at most 50 characters"
-            raise ValueError(msg)
+            return FlextResult.fail("Username must be at most 50 characters")
         if "@" not in self.email:
-            msg = "Email must contain @ symbol"
-            raise ValueError(msg)
+            return FlextResult.fail("Email must contain @ symbol")
         if not self.password_hash:
-            msg = "Password hash cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Password hash cannot be empty")
         if self.failed_login_attempts < 0:
-            msg = "Failed login attempts cannot be negative"
-            raise ValueError(msg)
+            return FlextResult.fail("Failed login attempts cannot be negative")
+        return FlextResult.ok(None)
 
 
 class FlextSessionStatus(StrEnum):
@@ -228,20 +224,17 @@ class FlextSession(FlextEntity):
             and self.expires_at > datetime.now(UTC)
         )
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate session domain rules and business invariants."""
         if not self.id:
-            msg = "Session ID cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Session ID cannot be empty")
         if not self.user_id:
-            msg = "User ID cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("User ID cannot be empty")
         if not self.access_token:
-            msg = "Access token cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Access token cannot be empty")
         if self.expires_at <= datetime.now(UTC):
-            msg = "Session expiration must be in the future"
-            raise ValueError(msg)
+            return FlextResult.fail("Session expiration must be in the future")
+        return FlextResult.ok(None)
 
 
 class FlextPermission(FlextEntity):
@@ -262,20 +255,17 @@ class FlextPermission(FlextEntity):
             and len(self.action) > 0
         )
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate permission domain rules and business invariants."""
         if not self.id:
-            msg = "Permission ID cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Permission ID cannot be empty")
         if not self.name:
-            msg = "Permission name cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Permission name cannot be empty")
         if not self.resource:
-            msg = "Permission resource cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Permission resource cannot be empty")
         if not self.action:
-            msg = "Permission action cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Permission action cannot be empty")
+        return FlextResult.ok(None)
 
 
 class FlextRole(FlextEntity):
@@ -304,28 +294,23 @@ class FlextRole(FlextEntity):
         """Validate role entity data."""
         return len(self.id) > 0 and len(self.name) > 0 and len(self.description) > 0
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate role domain rules and business invariants."""
         if not self.id:
-            msg = "Role ID cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Role ID cannot be empty")
         if not self.name:
-            msg = "Role name cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Role name cannot be empty")
         if not self.description:
-            msg = "Role description cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Role description cannot be empty")
         if len(self.name) > MAX_NAME_LENGTH:
-            msg = "Role name must be at most 100 characters"
-            raise ValueError(msg)
+            return FlextResult.fail("Role name must be at most 100 characters")
         if len(self.description) > MAX_DESCRIPTION_LENGTH:
-            msg = "Role description must be at most 500 characters"
-            raise ValueError(msg)
+            return FlextResult.fail("Role description must be at most 500 characters")
         # Validate permissions if present
         for permission in self.permissions:
             if not isinstance(permission, FlextPermission):
-                msg = "All permissions must be Permission instances"
-                raise TypeError(msg)
+                return FlextResult.fail("All permissions must be Permission instances")
+        return FlextResult.ok(None)
 
 
 class FlextLoginAttempt(FlextEntity):
@@ -339,29 +324,25 @@ class FlextLoginAttempt(FlextEntity):
     failure_reason: str | None = Field(default=None, description="Reason for failure")
     attempted_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate login attempt domain rules and business invariants."""
         if not self.id:
-            msg = "Login attempt ID cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Login attempt ID cannot be empty")
         if not self.username:
-            msg = "Username cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Username cannot be empty")
         if not self.ip_address:
-            msg = "IP address cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("IP address cannot be empty")
         if len(self.username) > MAX_USERNAME_LENGTH:
-            msg = "Username must be at most 50 characters"
-            raise ValueError(msg)
+            return FlextResult.fail("Username must be at most 50 characters")
         if not self.success and not self.failure_reason:
-            msg = "Failed login attempts must have a failure reason"
-            raise ValueError(msg)
+            return FlextResult.fail("Failed login attempts must have a failure reason")
         if self.success and self.failure_reason:
-            msg = "Successful login attempts cannot have a failure reason"
-            raise ValueError(msg)
+            return FlextResult.fail(
+                "Successful login attempts cannot have a failure reason",
+            )
         if self.attempted_at > datetime.now(UTC):
-            msg = "Login attempt time cannot be in the future"
-            raise ValueError(msg)
+            return FlextResult.fail("Login attempt time cannot be in the future")
+        return FlextResult.ok(None)
 
 
 class FlextPasswordResetToken(FlextEntity):
@@ -382,26 +363,21 @@ class FlextPasswordResetToken(FlextEntity):
         """Mark token as used."""
         self.used = True
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate password reset token domain rules and business invariants."""
         if not self.id:
-            msg = "Password reset token ID cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Password reset token ID cannot be empty")
         if not self.user_id:
-            msg = "User ID cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("User ID cannot be empty")
         if not self.token:
-            msg = "Reset token cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Reset token cannot be empty")
         if len(self.token) < MIN_TOKEN_LENGTH:
-            msg = "Reset token must be at least 32 characters"
-            raise ValueError(msg)
+            return FlextResult.fail("Reset token must be at least 32 characters")
         if self.expires_at <= datetime.now(UTC):
-            msg = "Reset token expiration must be in the future"
-            raise ValueError(msg)
+            return FlextResult.fail("Reset token expiration must be in the future")
         if self.created_at > datetime.now(UTC):
-            msg = "Token creation time cannot be in the future"
-            raise ValueError(msg)
+            return FlextResult.fail("Token creation time cannot be in the future")
+        return FlextResult.ok(None)
 
 
 class FlextEmailVerificationToken(FlextEntity):
@@ -422,23 +398,20 @@ class FlextEmailVerificationToken(FlextEntity):
         """Mark token as used."""
         self.used = True
 
-    def validate_domain_rules(self) -> None:
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate email verification token domain rules and business invariants."""
         if not self.id:
-            msg = "Email verification token ID cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Email verification token ID cannot be empty")
         if not self.user_id:
-            msg = "User ID cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("User ID cannot be empty")
         if not self.token:
-            msg = "Verification token cannot be empty"
-            raise ValueError(msg)
+            return FlextResult.fail("Verification token cannot be empty")
         if len(self.token) < MIN_TOKEN_LENGTH:
-            msg = "Verification token must be at least 32 characters"
-            raise ValueError(msg)
+            return FlextResult.fail("Verification token must be at least 32 characters")
         if self.expires_at <= datetime.now(UTC):
-            msg = "Verification token expiration must be in the future"
-            raise ValueError(msg)
+            return FlextResult.fail(
+                "Verification token expiration must be in the future",
+            )
         if self.created_at > datetime.now(UTC):
-            msg = "Token creation time cannot be in the future"
-            raise ValueError(msg)
+            return FlextResult.fail("Token creation time cannot be in the future")
+        return FlextResult.ok(None)

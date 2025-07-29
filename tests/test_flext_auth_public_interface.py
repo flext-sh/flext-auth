@@ -76,7 +76,12 @@ class TestFlextAuthMainClass:
     @pytest.mark.asyncio
     async def test_user_registration_REDACTED_LDAP_BIND_PASSWORD_role(self, auth) -> None:
         """Test REDACTED_LDAP_BIND_PASSWORD user registration."""
-        result = await auth.register("REDACTED_LDAP_BIND_PASSWORD", "REDACTED_LDAP_BIND_PASSWORD@example.com", "AdminPass123!", role="REDACTED_LDAP_BIND_PASSWORD")
+        result = await auth.register(
+            "REDACTED_LDAP_BIND_PASSWORD",
+            "REDACTED_LDAP_BIND_PASSWORD@example.com",
+            "AdminPass123!",
+            role="REDACTED_LDAP_BIND_PASSWORD",
+        )
 
         assert result.is_success
         assert result.data.username == "REDACTED_LDAP_BIND_PASSWORD"
@@ -287,7 +292,9 @@ class TestFlextAuthHelpers:
         ]
 
         for email in valid_emails:
-            assert flext_auth_validate_email(email) is True, f"Email should be valid: {email}"
+            assert flext_auth_validate_email(email) is True, (
+                f"Email should be valid: {email}"
+            )
 
     def test_validate_email_invalid_addresses(self) -> None:
         """Test email validation with invalid addresses."""
@@ -302,7 +309,9 @@ class TestFlextAuthHelpers:
         ]
 
         for email in invalid_emails:
-            assert flext_auth_validate_email(email) is False, f"Email should be invalid: {email}"
+            assert flext_auth_validate_email(email) is False, (
+                f"Email should be invalid: {email}"
+            )
 
     def test_validate_password_strength_strong(self) -> None:
         """Test password strength validation with strong password."""
@@ -311,7 +320,7 @@ class TestFlextAuthHelpers:
 
         assert result["valid"] is True
         assert result["score"] >= 4
-        assert result["strength"] in ["strong", "very strong", "excellent", "medium"]
+        assert result["strength"] in {"strong", "very strong", "excellent", "medium"}
         assert isinstance(result["feedback"], list)
 
     def test_validate_password_strength_weak(self) -> None:
@@ -438,7 +447,10 @@ class TestFlextAuthIntegration:
         password_correct = flext_auth_verify_password(password, hashed)
 
         # JWT operations in 2 lines
-        token = flext_auth_generate_jwt({"user_id": "demo"}, secret="demo-secret-12345678901234567890")
+        token = flext_auth_generate_jwt(
+            {"user_id": "demo"},
+            secret="demo-secret-12345678901234567890",
+        )
         decoded = flext_auth_decode_jwt(token, "demo-secret-12345678901234567890")
 
         # Session creation in 1 line

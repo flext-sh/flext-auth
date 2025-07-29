@@ -25,7 +25,6 @@ def traditional_approach_example() -> None:
     # Total: ~70 lines
 
 
-
 def flext_auth_approach_example():
     """FlextAuth approach - 1 line."""
     return flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
@@ -83,7 +82,6 @@ def flext_auth_permission_checking():
     return flext_auth_validate_permissions("REDACTED_LDAP_BIND_PASSWORD", "delete", hierarchy)
 
 
-
 def traditional_auth_context():
     """Traditional auth context creation - 25+ lines."""
     # This would typically require:
@@ -124,16 +122,20 @@ async def complete_workflow_comparison() -> None:
     """Complete authentication workflow comparison."""
     # Traditional: 150+ lines total
 
-
     # FlextAuth: 8 lines total
     auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)  # 1 line
 
     result = await auth.register_validated(  # 1 method call
-        "demo_user", "demo@example.com", "SecurePass123!", role="REDACTED_LDAP_BIND_PASSWORD",
+        "demo_user",
+        "demo@example.com",
+        "SecurePass123!",
+        role="REDACTED_LDAP_BIND_PASSWORD",
     )
 
     if result.is_success:
-        login = await auth.login_and_validate("demo_user", "SecurePass123!")  # 1 method call
+        login = await auth.login_and_validate(
+            "demo_user", "SecurePass123!",
+        )  # 1 method call
 
         if login.is_success:
             token = login.data["token"]
@@ -146,7 +148,6 @@ async def complete_workflow_comparison() -> None:
             flext_auth_validate_permissions("REDACTED_LDAP_BIND_PASSWORD", "delete")  # 1 line
 
 
-
 def practical_web_integration() -> None:
     """Practical web framework integration example."""
     # Setup auth in one line
@@ -154,6 +155,7 @@ def practical_web_integration() -> None:
 
     # Create middleware factory
     from flext_auth import flext_auth_middleware_factory
+
     flext_auth_middleware_factory(auth)
 
     # Example request handler simulation
@@ -167,6 +169,7 @@ def practical_web_integration() -> None:
 # =============================================================================
 # ULTRA ANTI-BOILERPLATE EXAMPLES
 # =============================================================================
+
 
 def ultra_boilerplate_reduction_examples() -> None:
     """Demonstra a redução massiva de boilerplate."""
@@ -205,7 +208,6 @@ def decorator_examples() -> None:
     @flext_auth_permission_required("delete")
     def delete_endpoint(request, auth_context) -> str:
         return "Item deleted successfully"
-
 
 
 def mixin_examples() -> None:
@@ -256,25 +258,24 @@ def massive_reduction_summary() -> None:
         "Web session": 40,
         "Auth decorators": 75,  # 3 decorators × 25 linhas cada
         "Mixin capabilities": 50,
-        "Config setup": 40,     # 4 configs × 10 linhas cada
+        "Config setup": 40,  # 4 configs × 10 linhas cada
         "Headers/responses": 20,
     }
 
     flext_lines = {
-        "Setup completo": 1,     # flext_auth_one_liner()
-        "API creation": 1,       # flext_auth_instant_api()
-        "Token validation": 1,   # flext_auth_check_token()
-        "Web session": 1,        # flext_auth_web_session()
-        "Auth decorators": 3,    # 3 decorators
-        "Mixin capabilities": 1, # class MyController(FlextAuthMixin)
-        "Config setup": 4,       # 4 factory functions
+        "Setup completo": 1,  # flext_auth_one_liner()
+        "API creation": 1,  # flext_auth_instant_api()
+        "Token validation": 1,  # flext_auth_check_token()
+        "Web session": 1,  # flext_auth_web_session()
+        "Auth decorators": 3,  # 3 decorators
+        "Mixin capabilities": 1,  # class MyController(FlextAuthMixin)
+        "Config setup": 4,  # 4 factory functions
         "Headers/responses": 4,  # FlextAuthDefaults usage
     }
 
     total_traditional = sum(traditional_lines.values())
     total_flext = sum(flext_lines.values())
     ((total_traditional - total_flext) / total_traditional) * 100
-
 
     for feature in traditional_lines:
         trad = traditional_lines[feature]
@@ -312,7 +313,6 @@ async def main() -> None:
     mixin_examples()
     defaults_examples()
     massive_reduction_summary()
-
 
 
 if __name__ == "__main__":

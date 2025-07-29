@@ -10,6 +10,7 @@ import contextlib
 # SETUP COMPLETO: Tradicional vs FLEXT
 # =============================================================================
 
+
 def traditional_setup() -> None:
     """Setup tradicional - ~150 linhas de código."""
     # Implementação tradicional seria algo como:
@@ -34,10 +35,10 @@ def flext_auth_setup() -> None:
     # - Operações em lote
 
 
-
 # =============================================================================
 # OPERAÇÕES BÁSICAS: Tradicional vs FLEXT
 # =============================================================================
+
 
 def traditional_operations() -> None:
     """Operações tradicionais - ~50 linhas por operação."""
@@ -165,6 +166,7 @@ def flext_auth_operations() -> None:
 # =============================================================================
 # EXEMPLO PRÁTICO: FastAPI
 # =============================================================================
+
 
 def traditional_fastapi() -> None:
     """FastAPI tradicional - ~100 linhas."""
@@ -330,6 +332,7 @@ def flext_auth_fastapi() -> None:
 # DEMONSTRAÇÃO PRÁTICA
 # =============================================================================
 
+
 async def practical_demo() -> None:
     """Demonstração prática da redução de código."""
     # Importar apenas o que precisamos
@@ -362,34 +365,87 @@ async def practical_demo() -> None:
         await auth.register("demo", "demo@example.com", "DemoPassword123!")
 
 
-
 def comparison_summary() -> None:
     """Resumo detalhado das comparações."""
     comparisons = [
-        ("Setup Completo", "150+ linhas", "1 linha", "99.3%",
-         "Configuração de auth, JWT, bcrypt, validações"),
-        ("Hash de Senha", "20+ linhas", "1 linha", "95%",
-         "Salt generation, bcrypt, error handling"),
-        ("Validação Email", "15+ linhas", "1 linha", "93%",
-         "Regex pattern, validation logic, error handling"),
-        ("Password Strength", "50+ linhas", "1 linha", "98%",
-         "Multiple checks, scoring, feedback generation"),
-        ("JWT Operations", "30+ linhas", "2 linhas", "93%",
-         "Token generation, validation, claims handling"),
-        ("FastAPI Auth", "100+ linhas", "10 linhas", "90%",
-         "Models, routes, middleware, dependencies"),
-        ("Flask Auth", "80+ linhas", "8 linhas", "90%",
-         "Routes, decorators, session handling"),
-        ("Sessão Segura", "30+ linhas", "1 linha", "97%",
-         "Session creation, permissions, expiration"),
-        ("Middleware", "40+ linhas", "3 linhas", "92%",
-         "Request processing, auth validation, context"),
-        ("API Keys", "25+ linhas", "2 linhas", "92%",
-         "Long-lived tokens, scope validation"),
-        ("Batch Operations", "60+ linhas", "5 linhas", "91%",
-         "Multiple user processing, error aggregation"),
+        (
+            "Setup Completo",
+            "150+ linhas",
+            "1 linha",
+            "99.3%",
+            "Configuração de auth, JWT, bcrypt, validações",
+        ),
+        (
+            "Hash de Senha",
+            "20+ linhas",
+            "1 linha",
+            "95%",
+            "Salt generation, bcrypt, error handling",
+        ),
+        (
+            "Validação Email",
+            "15+ linhas",
+            "1 linha",
+            "93%",
+            "Regex pattern, validation logic, error handling",
+        ),
+        (
+            "Password Strength",
+            "50+ linhas",
+            "1 linha",
+            "98%",
+            "Multiple checks, scoring, feedback generation",
+        ),
+        (
+            "JWT Operations",
+            "30+ linhas",
+            "2 linhas",
+            "93%",
+            "Token generation, validation, claims handling",
+        ),
+        (
+            "FastAPI Auth",
+            "100+ linhas",
+            "10 linhas",
+            "90%",
+            "Models, routes, middleware, dependencies",
+        ),
+        (
+            "Flask Auth",
+            "80+ linhas",
+            "8 linhas",
+            "90%",
+            "Routes, decorators, session handling",
+        ),
+        (
+            "Sessão Segura",
+            "30+ linhas",
+            "1 linha",
+            "97%",
+            "Session creation, permissions, expiration",
+        ),
+        (
+            "Middleware",
+            "40+ linhas",
+            "3 linhas",
+            "92%",
+            "Request processing, auth validation, context",
+        ),
+        (
+            "API Keys",
+            "25+ linhas",
+            "2 linhas",
+            "92%",
+            "Long-lived tokens, scope validation",
+        ),
+        (
+            "Batch Operations",
+            "60+ linhas",
+            "5 linhas",
+            "91%",
+            "Multiple user processing, error aggregation",
+        ),
     ]
-
 
     total_tradicional = 0
     total_flext = 0
@@ -401,18 +457,13 @@ def comparison_summary() -> None:
         total_tradicional += trad_num
         total_flext += flext_num
 
-
-    round((1 - total_flext/total_tradicional) * 100, 1)
-
-
-
-
-
+    round((1 - total_flext / total_tradicional) * 100, 1)
 
 
 # =============================================================================
 # EXECUÇÃO PRINCIPAL
 # =============================================================================
+
 
 def main() -> None:
     """Executa todas as demonstrações."""

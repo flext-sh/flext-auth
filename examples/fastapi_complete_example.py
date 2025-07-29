@@ -33,25 +33,32 @@ security = HTTPBearer()
 # MODELOS SIMPLES
 # =============================================================================
 
+
 class UserCreate(BaseModel):
     username: str
     email: str
     password: str
     role: str = "user"
 
+
 class UserLogin(BaseModel):
     username: str
     password: str
+
 
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
 
+
 # =============================================================================
 # DEPENDENCY INJECTION EM 5 LINHAS vs 30+ TRADICIONAL
 # =============================================================================
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+):
     """Validate token and return user context."""
     token = credentials.credentials
     result = await auth.validate(token)
@@ -65,9 +72,11 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
 
     return result.data
 
+
 # =============================================================================
 # ENDPOINTS PRINCIPAIS - 10 LINHAS vs 80+ TRADICIONAL
 # =============================================================================
+
 
 @app.post("/register", response_model=dict)
 async def register_user(user: UserCreate):
@@ -94,6 +103,7 @@ async def register_user(user: UserCreate):
         "password_strength": result.data["password_strength"],
     }
 
+
 @app.post("/login", response_model=Token)
 async def login_user(user: UserLogin):
     """Login and return access token."""
@@ -109,8 +119,11 @@ async def login_user(user: UserLogin):
 
     return Token(access_token=result.data["token"])
 
+
 @app.get("/me")
-async def get_current_user_info(current_user: Annotated[dict, Depends(get_current_user)]):
+async def get_current_user_info(
+    current_user: Annotated[dict, Depends(get_current_user)],
+):
     """Get current user information."""
     return {
         "user_id": current_user["user_id"],
@@ -119,12 +132,14 @@ async def get_current_user_info(current_user: Annotated[dict, Depends(get_curren
         "permissions": current_user["permissions"],
     }
 
+
 @app.post("/logout")
 async def logout_user(current_user: Annotated[dict, Depends(get_current_user)]):
     """Logout current user."""
     # Para este exemplo, apenas retornamos sucesso
     # Em implementação real, o token seria invalidado
     return {"message": "Logged out successfully"}
+
 
 @app.get("/protected")
 async def protected_route(current_user: Annotated[dict, Depends(get_current_user)]):
@@ -134,6 +149,7 @@ async def protected_route(current_user: Annotated[dict, Depends(get_current_user
         "role": current_user["role"],
         "permissions": current_user["permissions"],
     }
+
 
 @app.get("/REDACTED_LDAP_BIND_PASSWORD-only")
 async def REDACTED_LDAP_BIND_PASSWORD_only_route(current_user: Annotated[dict, Depends(get_current_user)]):
@@ -149,14 +165,17 @@ async def REDACTED_LDAP_BIND_PASSWORD_only_route(current_user: Annotated[dict, D
         "REDACTED_LDAP_BIND_PASSWORD_data": "Sensitive REDACTED_LDAP_BIND_PASSWORD information",
     }
 
+
 # =============================================================================
 # HEALTH CHECK
 # =============================================================================
+
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "auth": "ready"}
+
 
 # =============================================================================
 # MIDDLEWARE OPCIONAL (comentado para simplicidade)
@@ -170,13 +189,14 @@ async def health_check():
 # DEMONSTRAÇÃO DE USO
 # =============================================================================
 
+
 async def demo_usage() -> None:
     """Demonstra uso da API."""
+
 
 if __name__ == "__main__":
     # Para desenvolvimento
     import uvicorn
-
 
     asyncio.run(demo_usage())
 

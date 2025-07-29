@@ -81,7 +81,6 @@ async def showcase_enhanced_registration():
         ("carol", "carol@company.com", "AdminPass789!", "REDACTED_LDAP_BIND_PASSWORD"),
     ]
 
-
     for username, email, password, role in users_to_register:
         result = await auth.register_validated(
             username=username,
@@ -94,8 +93,6 @@ async def showcase_enhanced_registration():
         if result.is_success:
             result.data["user"]
             result.data["password_strength"]
-        else:
-            pass
 
     return auth
 
@@ -133,9 +130,6 @@ async def showcase_enhanced_sessions() -> None:
 
     if session_result.is_success:
         pass
-    else:
-        pass
-
 
 
 def showcase_batch_operations() -> None:
@@ -154,10 +148,30 @@ def showcase_batch_operations() -> None:
     # Enhanced approach: 3 lines
 
     enterprise_users = [
-        {"username": "manager1", "email": "manager1@corp.com", "password": "MgrPass123!", "role": "moderator"},
-        {"username": "dev1", "email": "dev1@corp.com", "password": "DevPass123!", "role": "user"},
-        {"username": "REDACTED_LDAP_BIND_PASSWORD1", "email": "REDACTED_LDAP_BIND_PASSWORD1@corp.com", "password": "AdminPass123!", "role": "REDACTED_LDAP_BIND_PASSWORD"},
-        {"username": "intern1", "email": "intern1@corp.com", "password": "InternPass123!", "role": "user"},
+        {
+            "username": "manager1",
+            "email": "manager1@corp.com",
+            "password": "MgrPass123!",
+            "role": "moderator",
+        },
+        {
+            "username": "dev1",
+            "email": "dev1@corp.com",
+            "password": "DevPass123!",
+            "role": "user",
+        },
+        {
+            "username": "REDACTED_LDAP_BIND_PASSWORD1",
+            "email": "REDACTED_LDAP_BIND_PASSWORD1@corp.com",
+            "password": "AdminPass123!",
+            "role": "REDACTED_LDAP_BIND_PASSWORD",
+        },
+        {
+            "username": "intern1",
+            "email": "intern1@corp.com",
+            "password": "InternPass123!",
+            "role": "user",
+        },
     ]
 
     # Single method call handles validation, error collection, and atomic operations
@@ -168,12 +182,9 @@ def showcase_batch_operations() -> None:
             for user_data in result.data:
                 if isinstance(user_data, dict) and "user" in user_data:
                     user_data["user"]
-        else:
-            pass
 
     with contextlib.suppress(Exception):
         asyncio.run(run_batch())
-
 
 
 def showcase_utility_helpers() -> None:
@@ -190,15 +201,17 @@ def showcase_utility_helpers() -> None:
     flext_auth_validate_password_strength(password)
     flext_auth_hash_password(password, rounds=4)
 
-
     # API key creation (25+ lines traditional)
     flext_auth_create_api_key("service-user", expires_days=365)
 
     # Secure session with permissions (40+ lines traditional)
     flext_auth_create_secure_session(
-        "user123", "REDACTED_LDAP_BIND_PASSWORD", "REDACTED_LDAP_BIND_PASSWORD", 24, include_permissions=True,
+        "user123",
+        "REDACTED_LDAP_BIND_PASSWORD",
+        "REDACTED_LDAP_BIND_PASSWORD",
+        24,
+        include_permissions=True,
     )
-
 
 
 def final_summary() -> None:
@@ -214,7 +227,6 @@ def final_summary() -> None:
         ("Permission Management", "40+ lines", "1 line", "97.5%"),
     ]
 
-
     total_traditional = 0
     total_enhanced = 0
 
@@ -225,12 +237,7 @@ def final_summary() -> None:
         total_traditional += trad_num
         total_enhanced += enh_num
 
-
-    round((1 - total_enhanced/total_traditional) * 100, 1)
-
-
-
-
+    round((1 - total_enhanced / total_traditional) * 100, 1)
 
 
 async def main() -> None:
@@ -242,7 +249,6 @@ async def main() -> None:
     showcase_batch_operations()
     showcase_utility_helpers()
     final_summary()
-
 
 
 if __name__ == "__main__":

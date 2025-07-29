@@ -23,6 +23,7 @@ from flext_auth import (
 # CONFIGURAÇÃO ENTERPRISE
 # =============================================================================
 
+
 def setup_enterprise_auth() -> FlextAuth:
     """Setup enterprise com configuração otimizada."""
     config = {
@@ -35,17 +36,21 @@ def setup_enterprise_auth() -> FlextAuth:
         },
         "jwt": {
             "access_token_expire_minutes": 60,  # 1 hora
-            "refresh_token_expire_days": 30,    # 30 dias
+            "refresh_token_expire_days": 30,  # 30 dias
         },
     }
 
     return FlextAuth(config)
 
+
 # =============================================================================
 # OPERAÇÕES BATCH ENTERPRISE
 # =============================================================================
 
-async def bulk_user_import(auth: FlextAuth, users_data: list[dict[str, str]]) -> dict[str, Any]:
+
+async def bulk_user_import(
+    auth: FlextAuth, users_data: list[dict[str, str]],
+) -> dict[str, Any]:
     """Importa usuários em lote com validação completa."""
     # FLEXT: Batch operations em 1 linha!
     batch_ops = flext_auth_batch_operations(auth)
@@ -57,18 +62,21 @@ async def bulk_user_import(auth: FlextAuth, users_data: list[dict[str, str]]) ->
     for i, user_data in enumerate(users_data):
         # Validações rápidas com helpers FLEXT
         email_valid = flext_auth_validate_email(user_data.get("email", ""))
-        password_strength = flext_auth_validate_password_strength(user_data.get("password", ""))
+        password_strength = flext_auth_validate_password_strength(
+            user_data.get("password", ""),
+        )
 
         if not email_valid:
-            validation_errors.append(f"Usuário {i+1}: Email inválido")
+            validation_errors.append(f"Usuário {i + 1}: Email inválido")
             continue
 
         if not password_strength["valid"]:
-            validation_errors.append(f"Usuário {i+1}: Senha fraca - {password_strength['feedback'][0]}")
+            validation_errors.append(
+                f"Usuário {i + 1}: Senha fraca - {password_strength['feedback'][0]}",
+            )
             continue
 
         validated_users.append(user_data)
-
 
     if validation_errors:
         for _error in validation_errors[:5]:  # Mostra apenas os primeiros 5
@@ -89,9 +97,11 @@ async def bulk_user_import(auth: FlextAuth, users_data: list[dict[str, str]]) ->
         }
     return {"success": False, "error": result.error}
 
+
 # =============================================================================
 # SISTEMA DE API KEYS ENTERPRISE
 # =============================================================================
+
 
 def create_service_api_keys(user_ids: list[str]) -> dict[str, str]:
     """Cria API keys para serviços enterprise."""
@@ -109,6 +119,7 @@ def create_service_api_keys(user_ids: list[str]) -> dict[str, str]:
 
     return api_keys
 
+
 def validate_service_requests(api_keys: dict[str, str], secret: str) -> None:
     """Valida requisições de serviços usando API keys."""
     for api_key in api_keys.values():
@@ -117,12 +128,12 @@ def validate_service_requests(api_keys: dict[str, str], secret: str) -> None:
 
         if key_data:
             pass
-        else:
-            pass
+
 
 # =============================================================================
 # SESSÕES ENTERPRISE COM PERMISSÕES
 # =============================================================================
+
 
 def create_role_based_sessions() -> list[dict[str, Any]]:
     """Cria sessões baseadas em roles enterprise."""
@@ -148,9 +159,11 @@ def create_role_based_sessions() -> list[dict[str, Any]]:
 
     return sessions
 
+
 # =============================================================================
 # DASHBOARD ENTERPRISE
 # =============================================================================
+
 
 async def enterprise_dashboard(auth: FlextAuth) -> dict[str, Any]:
     """Dashboard com métricas enterprise."""
@@ -173,10 +186,10 @@ async def enterprise_dashboard(auth: FlextAuth) -> dict[str, Any]:
     }
 
 
-
 # =============================================================================
 # DEMONSTRAÇÃO PRINCIPAL
 # =============================================================================
+
 
 async def main_enterprise_demo():
     """Demonstração completa enterprise."""
@@ -237,9 +250,11 @@ async def main_enterprise_demo():
         "dashboard": dashboard,
     }
 
+
 # =============================================================================
 # COMPARAÇÃO TRADICIONAL VS FLEXT
 # =============================================================================
+
 
 def show_code_comparison() -> None:
     """Mostra comparação de código tradicional vs FLEXT."""
@@ -252,7 +267,6 @@ def show_code_comparison() -> None:
         ("Validation Pipeline", "45+ linhas", "3 linhas", "93%"),
     ]
 
-
     total_tradicional = 0
     total_flext = 0
 
@@ -263,9 +277,7 @@ def show_code_comparison() -> None:
         total_tradicional += trad_num
         total_flext += flext_num
 
-
-    round((1 - total_flext/total_tradicional) * 100, 1)
-
+    round((1 - total_flext / total_tradicional) * 100, 1)
 
 
 if __name__ == "__main__":
@@ -274,4 +286,3 @@ if __name__ == "__main__":
 
     # Mostrar comparação
     show_code_comparison()
-

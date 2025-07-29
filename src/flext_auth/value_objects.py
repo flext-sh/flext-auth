@@ -6,8 +6,7 @@ import ipaddress
 import re
 from datetime import UTC, datetime
 
-from flext_core import FlextValueObject
-from flext_core.exceptions import FlextValidationError
+from flext_core import FlextValidationError, FlextValueObject
 from pydantic import EmailStr, Field, field_validator
 
 # Constants for validation limits

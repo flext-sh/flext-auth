@@ -288,7 +288,9 @@ class TestUserRepository:
                 email=f"user{i}@example.com",
                 password_hash="$2b$12$hash",
                 role=FlextUserRole.USER,
-                status=FlextUserStatus.ACTIVE if i % 2 == 0 else FlextUserStatus.INACTIVE,
+                status=FlextUserStatus.ACTIVE
+                if i % 2 == 0
+                else FlextUserStatus.INACTIVE,
             )
             users.append(user)
             await user_repository.save(user)
@@ -342,7 +344,9 @@ class TestUserRepository:
         assert all(u.status == FlextUserStatus.ACTIVE for u in active_result.data)
 
         # List inactive users
-        inactive_result = await user_repository.list_users(status=FlextUserStatus.INACTIVE)
+        inactive_result = await user_repository.list_users(
+            status=FlextUserStatus.INACTIVE,
+        )
         assert inactive_result.is_success
         assert len(inactive_result.data) == 3
         assert all(u.status == FlextUserStatus.INACTIVE for u in inactive_result.data)
@@ -434,7 +438,9 @@ class TestUserRepository:
         assert active_count.data == 3
 
         # Count inactive users
-        inactive_count = await user_repository.count_users(status=FlextUserStatus.INACTIVE)
+        inactive_count = await user_repository.count_users(
+            status=FlextUserStatus.INACTIVE,
+        )
         assert inactive_count.is_success
         assert inactive_count.data == 2
 

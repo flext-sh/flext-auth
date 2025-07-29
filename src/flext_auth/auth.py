@@ -6,9 +6,15 @@ import secrets
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
-from flext_core import FlextLoggerFactory, FlextLoggerName, FlextResult
+from flext_core import (
+    FlextAlreadyExistsError,
+    FlextOperationError,
+    FlextResult,
+    FlextValidationError,
+    get_logger,
+)
 
-from flext_auth.domain.entities import (
+from flext_auth.entities import (
     FlextLoginAttempt as LoginAttempt,
     FlextSession as Session,
     FlextSessionStatus as SessionStatus,
@@ -16,31 +22,30 @@ from flext_auth.domain.entities import (
     FlextUserRole as UserRole,
     FlextUserStatus as UserStatus,
 )
-from flext_auth.domain.value_objects import (
+from flext_auth.jwt import REFRESH_TOKEN_TYPE
+from flext_auth.value_objects import (
     FlextPlainPassword as PlainPassword,
     FlextSecurityContext as SecurityContext,
     FlextUserEmail as UserEmail,
     FlextUsername as Username,
 )
-from flext_auth.services.jwt_service import REFRESH_TOKEN_TYPE
 
 # Initialize logger using FLEXT patterns
-logger_factory = FlextLoggerFactory()
-logger = logger_factory.create_logger(FlextLoggerName(__name__))
+logger = get_logger(__name__)
 
 if TYPE_CHECKING:
-    from flext_auth.repositories.session_repository import SessionRepository
-    from flext_auth.repositories.user_repository import UserRepository
-    from flext_auth.services.jwt_service import FlextJWTService as JWTService
-    from flext_auth.services.password_service import (
+    from flext_auth.jwt import FlextJWTService as JWTService
+    from flext_auth.password import (
         FlextPasswordService as PasswordService,
     )
+    from flext_auth.session import SessionRepository
+    from flext_auth.user import UserRepository
 
 
 class FlextAuthService:
     """Professional authentication service with complete auth flows."""
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         user_repository: UserRepository,
         session_repository: SessionRepository,
@@ -61,7 +66,7 @@ class FlextAuthService:
         self.session_expire_hours = session_expire_hours
         self.max_concurrent_sessions = max_concurrent_sessions
 
-    async def register_user(  # noqa: PLR0911
+    async def register_user(
         self,
         username: str,
         email: str,
@@ -78,33 +83,62 @@ class FlextAuthService:
                 email_vo = UserEmail(value=email)
                 password_vo = PlainPassword(value=password)
             except (ValueError, TypeError) as e:
-                return FlextResult(success=False, error=f"Input validation failed: {e}")
+                return FlextResult.fail(
+                    FlextValidationError(
+                        f"Input validation failed: {e}",
+                        validation_details={"username": username, "email": email},
+                    ).message,
+                )
 
             # Check if user already exists
             existing_user_result = await self.user_repo.get_by_username(username)
             if not existing_user_result.is_success:
-                return FlextResult(success=False, error=
-                    f"Failed to check existing user: {existing_user_result.error}",
+                return FlextResult.fail(
+                    FlextOperationError(
+                        f"Failed to check existing user: {existing_user_result.error}",
+                        operation="user_lookup",
+                        stage="username_check",
+                    ).message,
                 )
 
             if existing_user_result.data:
-                return FlextResult(success=False, error=f"Username '{username}' already exists")
+                return FlextResult.fail(
+                    FlextAlreadyExistsError(
+                        f"Username '{username}' already exists",
+                        resource_type="user",
+                        resource_id=username,
+                    ).message,
+                )
 
             # Check if email already exists
             existing_email_result = await self.user_repo.get_by_email(email)
             if not existing_email_result.is_success:
-                return FlextResult(success=False, error=
-                    f"Failed to check existing email: {existing_email_result.error}",
+                return FlextResult.fail(
+                    FlextOperationError(
+                        f"Failed to check existing email: {existing_email_result.error}",
+                        operation="user_lookup",
+                        stage="email_check",
+                    ).message,
                 )
 
             if existing_email_result.data:
-                return FlextResult(success=False, error=f"Email '{email}' already exists")
+                return FlextResult.fail(
+                    FlextAlreadyExistsError(
+                        f"Email '{email}' already exists",
+                        resource_type="email",
+                        resource_id=email,
+                    ).message,
+                )
 
             # Hash password
             hash_result = self.password_service.hash_password(password_vo)
             if not hash_result.is_success:
-                return FlextResult(success=False, error=
-                    f"Password hashing failed: {hash_result.error}",
+                return FlextResult.fail(
+                    FlextOperationError(
+                        f"Password hashing failed: {hash_result.error}",
+                        operation="password_hashing",
+                        stage="user_creation",
+                    ).message,
                 )
 
             # Create user entity
@@ -120,7 +154,10 @@ class FlextAuthService:
             # Save user
             save_result = await self.user_repo.save(user)
             if not save_result.is_success:
-                return FlextResult(success=False, error=f"Failed to save user: {save_result.error}")
+                return FlextResult(
+                    success=False,
+                    error=f"Failed to save user: {save_result.error}",
+                )
 
             # Log registration attempt
             await self._log_login_attempt(
@@ -132,13 +169,13 @@ class FlextAuthService:
             )
 
             if save_result.data is None:
-                return FlextResult(success=False, error="User save returned None data")
-            return FlextResult(success=True, data=save_result.data)
+                return FlextResult.fail("User save returned None data")
+            return FlextResult.ok(save_result.data)
 
         except (RuntimeError, ValueError, OSError) as e:
-            return FlextResult(success=False, error=f"User registration failed: {e}")
+            return FlextResult.fail(f"User registration failed: {e}")
 
-    async def authenticate_user(  # noqa: C901, PLR0911
+    async def authenticate_user(
         self,
         username: str,
         password: str,
@@ -157,7 +194,10 @@ class FlextAuthService:
                     extend_session=False,
                     failure_reason="Database error",
                 )
-                return FlextResult(success=False, error=f"Authentication failed: {user_result.error}")
+                return FlextResult(
+                    success=False,
+                    error=f"Authentication failed: {user_result.error}",
+                )
 
             user = user_result.data
             if not user:
@@ -168,7 +208,7 @@ class FlextAuthService:
                     success=False,
                     failure_reason="User not found",
                 )
-                return FlextResult(success=False, error="Invalid username or password")
+                return FlextResult.fail("Invalid username or password")
 
             # Check if user is locked
             if user.is_locked():
@@ -179,8 +219,9 @@ class FlextAuthService:
                     success=False,
                     failure_reason="Account locked",
                 )
-                return FlextResult(success=False, error=
-                    "Account is locked due to too many failed attempts",
+                return FlextResult(
+                    success=False,
+                    error="Account is locked due to too many failed attempts",
                 )
 
             # Check if user is active
@@ -192,7 +233,7 @@ class FlextAuthService:
                     success=False,
                     failure_reason="Account inactive",
                 )
-                return FlextResult(success=False, error="Account is not active")
+                return FlextResult.fail("Account is not active")
 
             # Verify password
             verify_result = self.password_service.verify_password(
@@ -206,7 +247,7 @@ class FlextAuthService:
                     user_agent,
                     "Password verification error",
                 )
-                return FlextResult(success=False, error="Authentication failed")
+                return FlextResult.fail("Authentication failed")
 
             if not verify_result.data:
                 await self._handle_failed_login(
@@ -215,7 +256,7 @@ class FlextAuthService:
                     user_agent,
                     "Invalid password",
                 )
-                return FlextResult(success=False, error="Invalid username or password")
+                return FlextResult.fail("Invalid username or password")
 
             # Successful authentication - reset failed attempts
             user.reset_failed_login()
@@ -244,8 +285,9 @@ class FlextAuthService:
                 user_agent=user_agent,
             )
             if not session_result.is_success:
-                return FlextResult(success=False, error=
-                    f"Session creation failed: {session_result.error}",
+                return FlextResult(
+                    success=False,
+                    error=f"Session creation failed: {session_result.error}",
                 )
 
             session = session_result.data
@@ -258,8 +300,9 @@ class FlextAuthService:
                 session_id=session.id if session else "",
             )
             if not tokens_result.is_success:
-                return FlextResult(success=False, error=
-                    f"Token generation failed: {tokens_result.error}",
+                return FlextResult(
+                    success=False,
+                    error=f"Token generation failed: {tokens_result.error}",
                 )
 
             tokens = tokens_result.data
@@ -279,8 +322,9 @@ class FlextAuthService:
                 failure_reason=None,
             )
 
-            return FlextResult(success=True, data=
-                {
+            return FlextResult(
+                success=True,
+                data={
                     "user": {
                         "id": user.id,
                         "username": user.username,
@@ -307,33 +351,34 @@ class FlextAuthService:
                 success=False,
                 failure_reason=f"System error: {e}",
             )
-            return FlextResult(success=False, error=f"Authentication failed: {e}")
+            return FlextResult.fail(f"Authentication failed: {e}")
 
-    async def validate_token(self, token: str) -> FlextResult[SecurityContext]:  # noqa: PLR0911
+    async def validate_token(self, token: str) -> FlextResult[SecurityContext]:
         """Validate JWT token and return security context."""
         try:
             # Verify JWT token
             verify_result = self.jwt_service.verify_token(token)
             if not verify_result.is_success:
-                return FlextResult(success=False, error=
-                    f"Token validation failed: {verify_result.error}",
+                return FlextResult(
+                    success=False,
+                    error=f"Token validation failed: {verify_result.error}",
                 )
 
             claims = verify_result.data
             if not claims:
-                return FlextResult(success=False, error="Invalid token claims")
+                return FlextResult.fail("Invalid token claims")
 
             # Get user to ensure they still exist and are active
             user_result = await self.user_repo.get_by_id(claims.sub)
             if not user_result.is_success:
-                return FlextResult(success=False, error="User lookup failed")
+                return FlextResult.fail("User lookup failed")
 
             user = user_result.data
             if not user:
-                return FlextResult(success=False, error="User not found")
+                return FlextResult.fail("User not found")
 
             if not user.is_active():
-                return FlextResult(success=False, error="User account is not active")
+                return FlextResult.fail("User account is not active")
 
             # Check session if present
             if claims.session_id:
@@ -341,7 +386,10 @@ class FlextAuthService:
                 if session_result.is_success and session_result.data:
                     session = session_result.data
                     if not session.is_valid():
-                        return FlextResult(success=False, error="Session is no longer valid")
+                        return FlextResult(
+                            success=False,
+                            error="Session is no longer valid",
+                        )
 
             # Create security context
             context = SecurityContext(
@@ -352,46 +400,50 @@ class FlextAuthService:
                 permissions=[],  # Would be loaded from user roles/permissions
             )
 
-            return FlextResult(success=True, data=context)
+            return FlextResult.ok(context)
 
         except (RuntimeError, ValueError, OSError) as e:
-            return FlextResult(success=False, error=f"Token validation failed: {e}")
+            return FlextResult.fail(f"Token validation failed: {e}")
 
-    async def refresh_token(self, refresh_token: str) -> FlextResult[dict[str, str]]:  # noqa: C901, PLR0911
+    async def refresh_token(self, refresh_token: str) -> FlextResult[dict[str, str]]:
         """Refresh access token using refresh token."""
         try:
             # Verify refresh token
             verify_result = self.jwt_service.verify_token(refresh_token)
             if not verify_result.is_success:
-                return FlextResult(success=False, error=
-                    f"Invalid refresh token: {verify_result.error}",
+                return FlextResult(
+                    success=False,
+                    error=f"Invalid refresh token: {verify_result.error}",
                 )
 
             claims = verify_result.data
             if not claims:
-                return FlextResult(success=False, error="Invalid token claims")
+                return FlextResult.fail("Invalid token claims")
 
             if claims.token_type != REFRESH_TOKEN_TYPE:
-                return FlextResult(success=False, error="Invalid token type")
+                return FlextResult.fail("Invalid token type")
 
             # Get user
             user_result = await self.user_repo.get_by_id(claims.sub)
             if not user_result.is_success or not user_result.data:
-                return FlextResult(success=False, error="User not found")
+                return FlextResult.fail("User not found")
 
             user = user_result.data
             if not user.is_active():
-                return FlextResult(success=False, error="User account is not active")
+                return FlextResult.fail("User account is not active")
 
             # Check session
             if claims.session_id:
                 session_result = await self.session_repo.get_by_id(claims.session_id)
                 if not session_result.is_success or not session_result.data:
-                    return FlextResult(success=False, error="Session not found")
+                    return FlextResult.fail("Session not found")
 
                 session = session_result.data
                 if not session.is_valid():
-                    return FlextResult(success=False, error="Session is no longer valid")
+                    return FlextResult(
+                        success=False,
+                        error="Session is no longer valid",
+                    )
 
             # Generate new token pair
             tokens_result = self.jwt_service.generate_token_pair(
@@ -401,16 +453,20 @@ class FlextAuthService:
                 session_id=claims.session_id or "",
             )
             if not tokens_result.is_success:
-                return FlextResult(success=False, error=
-                    f"Token generation failed: {tokens_result.error}",
+                return FlextResult(
+                    success=False,
+                    error=f"Token generation failed: {tokens_result.error}",
                 )
 
             if tokens_result.data is None:
-                return FlextResult(success=False, error="Token generation returned None data")
-            return FlextResult(success=True, data=tokens_result.data)
+                return FlextResult(
+                    success=False,
+                    error="Token generation returned None data",
+                )
+            return FlextResult.ok(tokens_result.data)
 
         except (RuntimeError, ValueError, OSError) as e:
-            return FlextResult(success=False, error=f"Token refresh failed: {e}")
+            return FlextResult.fail(f"Token refresh failed: {e}")
 
     async def logout_user(self, token: str) -> FlextResult[bool]:
         """Logout user by revoking session."""
@@ -430,24 +486,25 @@ class FlextAuthService:
                     user_id_result.data,
                 )
                 revoked_count = revoke_result.data or 0
-                return FlextResult(success=True, data=
-                    revoke_result.is_success and revoked_count > 0,
+                return FlextResult(
+                    success=True,
+                    data=revoke_result.is_success and revoked_count > 0,
                 )
 
             logout_success = False
-            return FlextResult(success=True, data=logout_success)
+            return FlextResult.ok(logout_success)
 
         except (RuntimeError, ValueError, OSError) as e:
-            return FlextResult(success=False, error=f"Logout failed: {e}")
+            return FlextResult.fail(f"Logout failed: {e}")
 
     async def logout_all_sessions(self, user_id: str) -> FlextResult[int]:
         """Logout user from all sessions."""
         try:
             return await self.session_repo.revoke_all_user_sessions(user_id)
         except (RuntimeError, ValueError, OSError) as e:
-            return FlextResult(success=False, error=f"Logout all sessions failed: {e}")
+            return FlextResult.fail(f"Logout all sessions failed: {e}")
 
-    async def change_password(  # noqa: PLR0911
+    async def change_password(
         self,
         user_id: str,
         current_password: str,
@@ -458,7 +515,7 @@ class FlextAuthService:
             # Get user
             user_result = await self.user_repo.get_by_id(user_id)
             if not user_result.is_success or not user_result.data:
-                return FlextResult(success=False, error="User not found")
+                return FlextResult.fail("User not found")
 
             user = user_result.data
 
@@ -468,49 +525,57 @@ class FlextAuthService:
                 user.password_hash,
             )
             if not verify_result.is_success or not verify_result.data:
-                return FlextResult(success=False, error="Current password is incorrect")
+                return FlextResult.fail("Current password is incorrect")
 
             # Validate new password
             try:
                 PlainPassword(value=new_password)
             except (RuntimeError, ValueError, OSError) as e:
-                return FlextResult(success=False, error=f"New password validation failed: {e}")
+                return FlextResult(
+                    success=False,
+                    error=f"New password validation failed: {e}",
+                )
 
             # Hash new password
             hash_result = self.password_service.hash_password(new_password)
             if not hash_result.is_success:
-                return FlextResult(success=False, error=
-                    f"Password hashing failed: {hash_result.error}",
+                return FlextResult(
+                    success=False,
+                    error=f"Password hashing failed: {hash_result.error}",
                 )
 
             # Update user
             hashed_password = hash_result.data
             if not hashed_password:
-                return FlextResult(success=False, error="Password hashing returned no data")
+                return FlextResult(
+                    success=False,
+                    error="Password hashing returned no data",
+                )
             user.password_hash = hashed_password.value
             user.updated_at = datetime.now(UTC)
 
             save_result = await self.user_repo.save(user)
             if not save_result.is_success:
-                return FlextResult(success=False, error=
-                    f"Failed to save password: {save_result.error}",
+                return FlextResult(
+                    success=False,
+                    error=f"Failed to save password: {save_result.error}",
                 )
 
             # Revoke all existing sessions to force re-login
             await self.session_repo.revoke_all_user_sessions(user_id)
 
             password_changed = True
-            return FlextResult(success=True, data=password_changed)
+            return FlextResult.ok(password_changed)
 
         except (RuntimeError, ValueError, OSError) as e:
-            return FlextResult(success=False, error=f"Password change failed: {e}")
+            return FlextResult.fail(f"Password change failed: {e}")
 
     async def cleanup_expired_sessions(self) -> FlextResult[int]:
         """Clean up expired sessions."""
         try:
             return await self.session_repo.cleanup_expired_sessions()
         except (RuntimeError, ValueError, OSError) as e:
-            return FlextResult(success=False, error=f"Session cleanup failed: {e}")
+            return FlextResult.fail(f"Session cleanup failed: {e}")
 
     async def get_user_sessions(
         self,
@@ -520,13 +585,14 @@ class FlextAuthService:
         try:
             sessions_result = await self.session_repo.get_by_user_id(user_id)
             if not sessions_result.is_success:
-                return FlextResult(success=False, error=
-                    f"Failed to get sessions: {sessions_result.error}",
+                return FlextResult(
+                    success=False,
+                    error=f"Failed to get sessions: {sessions_result.error}",
                 )
 
             sessions_list = sessions_result.data
             if not sessions_list:
-                return FlextResult(success=True, data=[])
+                return FlextResult.ok([])
 
             sessions_data = [
                 {
@@ -542,10 +608,10 @@ class FlextAuthService:
                 for session in sessions_list
             ]
 
-            return FlextResult(success=True, data=sessions_data)
+            return FlextResult.ok(sessions_data)
 
         except (RuntimeError, ValueError, OSError) as e:
-            return FlextResult(success=False, error=f"Failed to get user sessions: {e}")
+            return FlextResult.fail(f"Failed to get user sessions: {e}")
 
     # Private helper methods
 
@@ -572,7 +638,7 @@ class FlextAuthService:
             return await self.session_repo.save(session)
 
         except (RuntimeError, ValueError, OSError) as e:
-            return FlextResult(success=False, error=f"Session creation failed: {e}")
+            return FlextResult.fail(f"Session creation failed: {e}")
 
     async def _handle_failed_login(
         self,

@@ -42,12 +42,15 @@ class TestFlextAuthDecorators:
 
     def test_flext_auth_required_with_invalid_token(self) -> None:
         """Test auth required decorator with invalid token."""
+
         @flext_auth_required()
         def protected_endpoint(request, **kwargs) -> str:
             return "Should not reach here"
 
         # Test with invalid token
-        request_with_invalid_token = {"headers": {"Authorization": "Bearer invalid.token.123"}}
+        request_with_invalid_token = {
+            "headers": {"Authorization": "Bearer invalid.token.123"},
+        }
         result = protected_endpoint(request_with_invalid_token)
 
         assert isinstance(result, dict)
@@ -56,6 +59,7 @@ class TestFlextAuthDecorators:
 
     def test_flext_auth_required_without_token(self) -> None:
         """Test auth required decorator without token."""
+
         @flext_auth_required()
         def protected_endpoint(request, **kwargs) -> str:
             return "Should not reach here"
@@ -138,7 +142,11 @@ class TestFlextAuthUltraHelpers:
 
     def test_flext_auth_one_liner_success(self) -> None:
         """Test one-liner complete workflow success."""
-        result = flext_auth_one_liner("testuser", "test@example.com", "SecurePassword123!")
+        result = flext_auth_one_liner(
+            "testuser",
+            "test@example.com",
+            "SecurePassword123!",
+        )
 
         assert result.is_success
         assert "user" in result.data
@@ -253,6 +261,7 @@ class TestFlextAuthMixin:
 
     def test_mixin_initialization(self) -> None:
         """Test mixin initialization."""
+
         class TestController(FlextAuthMixin):
             pass
 
@@ -262,6 +271,7 @@ class TestFlextAuthMixin:
 
     def test_mixin_get_current_user_valid_token(self) -> None:
         """Test mixin get_current_user with valid token."""
+
         class TestController(FlextAuthMixin):
             pass
 
@@ -278,6 +288,7 @@ class TestFlextAuthMixin:
 
     def test_mixin_get_current_user_invalid_token(self) -> None:
         """Test mixin get_current_user with invalid token."""
+
         class TestController(FlextAuthMixin):
             pass
 
@@ -288,6 +299,7 @@ class TestFlextAuthMixin:
 
     def test_mixin_get_current_user_no_token(self) -> None:
         """Test mixin get_current_user without token."""
+
         class TestController(FlextAuthMixin):
             pass
 
@@ -298,6 +310,7 @@ class TestFlextAuthMixin:
 
     def test_mixin_check_permission_success(self) -> None:
         """Test mixin check_permission with valid permission."""
+
         class TestController(FlextAuthMixin):
             pass
 
@@ -312,6 +325,7 @@ class TestFlextAuthMixin:
 
     def test_mixin_check_permission_failure(self) -> None:
         """Test mixin check_permission without permission."""
+
         class TestController(FlextAuthMixin):
             pass
 
@@ -326,6 +340,7 @@ class TestFlextAuthMixin:
 
     def test_mixin_create_session_success(self) -> None:
         """Test mixin create_session with valid credentials."""
+
         class TestController(FlextAuthMixin):
             pass
 
@@ -333,6 +348,7 @@ class TestFlextAuthMixin:
 
         # First register a user
         import asyncio
+
         try:
             loop = asyncio.get_event_loop()
         except RuntimeError:
@@ -340,7 +356,11 @@ class TestFlextAuthMixin:
             asyncio.set_event_loop(loop)
 
         register_result = loop.run_until_complete(
-            controller._auth.register("sessionuser", "session@example.com", "SessionPass123!"),
+            controller._auth.register(
+                "sessionuser",
+                "session@example.com",
+                "SessionPass123!",
+            ),
         )
 
         if register_result.is_success:
@@ -354,6 +374,7 @@ class TestFlextAuthMixin:
 
     def test_mixin_create_session_invalid_credentials(self) -> None:
         """Test mixin create_session with invalid credentials."""
+
         class TestController(FlextAuthMixin):
             pass
 

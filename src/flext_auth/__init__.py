@@ -19,22 +19,22 @@ from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any, TypeVar
 
 # Base: flext-core patterns
-from flext_core import FlextLoggerFactory, FlextLoggerName, FlextResult
+from flext_core import FlextLoggerFactory, FlextResult
 
+from flext_auth.auth import FlextAuthService as _AuthService
 from flext_auth.config import FlextAuthConfig as _Config
-from flext_auth.domain.entities import (
+from flext_auth.entities import (
     FlextUser as _User,
     FlextUserRole as _UserRole,
 )
-from flext_auth.repositories.session_repository import (
-    InMemorySessionRepository as _SessionRepo,
-)
-from flext_auth.repositories.user_repository import InMemoryUserRepository as _UserRepo
-from flext_auth.services.auth_service import FlextAuthService as _AuthService
-from flext_auth.services.jwt_service import FlextJWTService as _JWTService
-from flext_auth.services.password_service import (
+from flext_auth.jwt import FlextJWTService as _JWTService
+from flext_auth.password import (
     FlextPasswordService as _PasswordService,
 )
+from flext_auth.session import (
+    InMemorySessionRepository as _SessionRepo,
+)
+from flext_auth.user import InMemoryUserRepository as _UserRepo
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -47,8 +47,7 @@ except importlib.metadata.PackageNotFoundError:
 __version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
 
 # Logger único
-_logger_factory = FlextLoggerFactory()
-_logger = _logger_factory.create_logger(FlextLoggerName(__name__))
+_logger = FlextLoggerFactory.get_logger(__name__)
 
 # =============================================================================
 # ANTI-BOILERPLATE PATTERNS - Redução máxima de código
@@ -260,7 +259,7 @@ class FlextAuthMixin:
         if not token:
             return None
         # Access JWT secret through public interface
-        secret = self._auth._jwt_service._secret_key  # noqa: SLF001
+        secret = self._auth._jwt_service._secret_key
         return flext_auth_extract_user_context(token, secret)
 
     def check_permission(self, token: str, permission: str) -> bool:
@@ -390,23 +389,23 @@ class FlextAuth:
 
         # Initialize services
         self._password_service = _PasswordService(
-            rounds=self._config.security.password_rounds,
+            rounds=self._config.bcrypt_rounds,
         )
         self._jwt_service = _JWTService(
-            secret_key=self._config.jwt.secret_key,
-            algorithm=self._config.jwt.algorithm,
-            access_token_expire_minutes=self._config.jwt.access_token_expire_minutes,
-            refresh_token_expire_days=self._config.jwt.refresh_token_expire_days,
+            secret_key=self._config.jwt_secret_key,
+            algorithm=self._config.jwt_algorithm,
+            access_token_expire_minutes=self._config.access_token_expire_minutes,
+            refresh_token_expire_days=self._config.refresh_token_expire_days,
         )
         self._auth_service = _AuthService(
             user_repository=self._user_repo,
             session_repository=self._session_repo,
             password_service=self._password_service,
             jwt_service=self._jwt_service,
-            max_failed_attempts=self._config.security.max_failed_attempts,
-            lockout_duration_minutes=self._config.security.lockout_duration_minutes,
-            session_expire_hours=self._config.security.session_expire_hours,
-            max_concurrent_sessions=self._config.security.max_concurrent_sessions,
+            max_failed_attempts=self._config.max_login_attempts,
+            lockout_duration_minutes=self._config.lockout_duration_minutes,
+            session_expire_hours=self._config.session_timeout_hours,
+            max_concurrent_sessions=self._config.max_concurrent_sessions,
         )
 
     # Core operations
@@ -454,21 +453,16 @@ class FlextAuth:
         """Validate token and return context."""
         context_result = await self._auth_service.validate_token(token)
         if not context_result.is_success or not context_result.data:
-            return FlextResult(
-                success=False, error=context_result.error or "Token validation failed",
-            )
+            return FlextResult.fail(context_result.error or "Token validation failed")
 
         context = context_result.data
-        return FlextResult(
-            success=True,
-            data={
+        return FlextResult.ok({
                 "user_id": context.user_id,
                 "username": context.username,
                 "role": context.role,
                 "session_id": context.session_id,
                 "permissions": context.permissions,
-            },
-        )
+            })
 
     async def refresh(self, refresh_token: str) -> FlextResult[dict[str, str]]:
         """Refresh access tokens."""
@@ -487,25 +481,20 @@ class FlextAuth:
         """Register with integrated email and password validation."""
         # Email validation
         if not flext_auth_validate_email(email):
-            return FlextResult(success=False, error="Invalid email format")
+            return FlextResult.fail("Invalid email format")
 
         # Password strength validation
         if require_strong_password:
             strength = flext_auth_validate_password_strength(password)
             if not strength["valid"]:
-                return FlextResult(
-                    success=False,
-                    error=f"Weak password: {', '.join(strength['feedback'])}",
-                )
+                return FlextResult.fail(f"Weak password: {', '.join(strength['feedback'])}")
 
         # Register user
         result = await self.register(username, email, password, role=role)
         if not result.is_success:
-            return FlextResult(success=False, error=result.error)
+            return FlextResult.fail(result.error)
 
-        return FlextResult(
-            success=True,
-            data={
+        return FlextResult.ok({
                 "user": {
                     "id": result.data.id,
                     "username": result.data.username,
@@ -513,8 +502,7 @@ class FlextAuth:
                     "role": result.data.role.value,
                 },
                 "password_strength": strength if require_strong_password else None,
-            },
-        )
+            })
 
     async def login_and_validate(
         self,
@@ -525,7 +513,7 @@ class FlextAuth:
         # Login
         login_result = await self.login(username, password)
         if not login_result.is_success:
-            return FlextResult(success=False, error=login_result.error)
+            return FlextResult.fail(login_result.error)
 
         # Extract token and validate
         try:
@@ -533,18 +521,15 @@ class FlextAuth:
             validation = await self.validate(token)
 
             if not validation.is_success:
-                return FlextResult(success=False, error=validation.error)
+                return FlextResult.fail(validation.error)
 
-            return FlextResult(
-                success=True,
-                data={
+            return FlextResult.ok({
                     "login": login_result.data,
                     "context": validation.data,
                     "token": token,
-                },
-            )
+                })
         except (KeyError, TypeError) as e:
-            return FlextResult(success=False, error=f"Login data structure error: {e}")
+            return FlextResult.fail(f"Login data structure error: {e}")
 
     async def create_user_session(
         self,
@@ -568,7 +553,7 @@ class FlextAuth:
         if include_user_data:
             session_data["user"] = data["login"]["user"]
 
-        return FlextResult(success=True, data=session_data)
+        return FlextResult.ok(session_data)
 
 
 # =============================================================================
@@ -1242,11 +1227,9 @@ class FlextAuthBatchOperations:
                 errors.append(f"User {user_data.get('username', 'unknown')}: {e!s}")
 
         if errors:
-            return FlextResult(
-                success=False, error=f"Batch registration errors: {'; '.join(errors)}",
-            )
+            return FlextResult.fail(f"Batch registration errors: {'; '.join(errors)}")
 
-        return FlextResult(success=True, data=results)
+        return FlextResult.ok(results)
 
     async def validate_multiple_tokens(
         self,
@@ -1277,20 +1260,14 @@ class FlextAuthBatchOperations:
                 errors.append(f"Token {i}: {e!s}")
 
         if errors and not results:
-            return FlextResult(
-                success=False,
-                error=f"All token validations failed: {'; '.join(errors)}",
-            )
+            return FlextResult.fail(f"All token validations failed: {'; '.join(errors)}")
 
-        return FlextResult(
-            success=True,
-            data={
+        return FlextResult.ok({
                 "valid_tokens": results,
                 "errors": errors,
                 "total": len(tokens),
                 "valid_count": len(results),
-            },
-        )
+            })
 
     async def create_multiple_sessions(
         self,
@@ -1328,20 +1305,14 @@ class FlextAuthBatchOperations:
                 errors.append(f"User {username}: {e!s}")
 
         if errors and not sessions:
-            return FlextResult(
-                success=False,
-                error=f"All session creations failed: {'; '.join(errors)}",
-            )
+            return FlextResult.fail(f"All session creations failed: {'; '.join(errors)}")
 
-        return FlextResult(
-            success=True,
-            data={
+        return FlextResult.ok({
                 "sessions": sessions,
                 "errors": errors,
                 "total": len(user_credentials),
                 "successful": len(sessions),
-            },
-        )
+            })
 
 
 # =============================================================================

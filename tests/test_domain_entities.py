@@ -390,5 +390,5 @@ class TestFlextRole:
                 id="role-id",
                 name="user_manager",
                 description="User management role",
-                permissions=["invalid"],  # type: ignore[list-item]
+                permissions=["invalid"],
             ).validate_domain_rules()

@@ -122,14 +122,18 @@ def sample_user_data(
 
 
 @pytest.fixture
-def sample_users_dict(sample_user_data: dict[str, str | bool]) -> dict[str, dict[str, str | bool]]:
+def sample_users_dict(
+    sample_user_data: dict[str, str | bool],
+) -> dict[str, dict[str, str | bool]]:
     """Create a simple users dictionary for testing authentication."""
     from flext_auth.domain.value_objects import PlainPassword
     from flext_auth.services.password_service import PasswordService
 
     # Create user with hashed password using proper services
     password_service = PasswordService()
-    hash_result = password_service.hash_password(PlainPassword(value="SecurePassword123!"))
+    hash_result = password_service.hash_password(
+        PlainPassword(value="SecurePassword123!"),
+    )
 
     if not hash_result.is_success:
         msg = f"Password hashing failed: {hash_result.error}"
