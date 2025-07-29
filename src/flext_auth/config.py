@@ -40,10 +40,12 @@ class JWTConfig(FlextBaseSettings):
     secret_key: str = Field(default="dev-secret-key", description="JWT secret key")
     algorithm: str = Field(default="HS256", description="JWT algorithm")
     access_token_expire_minutes: int = Field(
-        default=30, description="Access token expiration",
+        default=30,
+        description="Access token expiration",
     )
     refresh_token_expire_days: int = Field(
-        default=7, description="Refresh token expiration",
+        default=7,
+        description="Refresh token expiration",
     )
 
 
@@ -53,7 +55,8 @@ class SecurityConfig(FlextBaseSettings):
     bcrypt_rounds: int = Field(default=12, description="BCrypt rounds")
     max_login_attempts: int = Field(default=5, description="Max failed login attempts")
     lockout_duration_minutes: int = Field(
-        default=15, description="Account lockout duration",
+        default=15,
+        description="Account lockout duration",
     )
 
 
@@ -105,7 +108,10 @@ class FlextAuthConfig(FlextBaseSettings):
         # Handle nested config structure like {"security": {"password_rounds": 6}}
         if "security" in data:
             security_config = data.pop("security")
-            if isinstance(security_config, dict) and "password_rounds" in security_config:
+            if (
+                isinstance(security_config, dict)
+                and "password_rounds" in security_config
+            ):
                 data["bcrypt_rounds"] = security_config["password_rounds"]
 
         if "jwt" in data:

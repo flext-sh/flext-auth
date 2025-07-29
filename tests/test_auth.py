@@ -49,7 +49,7 @@ class TestFlextAuthService:
         assert result.is_success
         assert result.data is not None
         if result.data.username != "testuser":
-            msg = f"Expected {"testuser"}, got {result.data.username}"
+            msg = f"Expected {'testuser'}, got {result.data.username}"
             raise AssertionError(msg)
         assert result.data.email == "test@example.com"
         if result.data.role != FlextUserRole.USER:
@@ -78,7 +78,7 @@ class TestFlextAuthService:
 
         assert not result.is_success
         if "already exists" not in result.error:
-            msg = f"Expected {"already exists"} in {result.error}"
+            msg = f"Expected {'already exists'} in {result.error}"
             raise AssertionError(msg)
 
     @pytest.mark.unit
@@ -102,7 +102,7 @@ class TestFlextAuthService:
 
         assert not result.is_success
         if "already exists" not in result.error:
-            msg = f"Expected {"already exists"} in {result.error}"
+            msg = f"Expected {'already exists'} in {result.error}"
             raise AssertionError(msg)
 
     @pytest.mark.unit
@@ -125,14 +125,14 @@ class TestFlextAuthService:
 
         assert result.is_success
         if "user" not in result.data:
-            msg = f"Expected {"user"} in {result.data}"
+            msg = f"Expected {'user'} in {result.data}"
             raise AssertionError(msg)
         assert "session" in result.data
         if "tokens" not in result.data:
-            msg = f"Expected {"tokens"} in {result.data}"
+            msg = f"Expected {'tokens'} in {result.data}"
             raise AssertionError(msg)
         if result.data["user"]["username"] != "testuser":
-            msg = f"Expected {"testuser"}, got {result.data["user"]["username"]}"
+            msg = f"Expected {'testuser'}, got {result.data['user']['username']}"
             raise AssertionError(msg)
 
     @pytest.mark.unit
@@ -155,7 +155,7 @@ class TestFlextAuthService:
 
         assert not result.is_success
         if "Invalid username or password" not in result.error:
-            msg = f"Expected {"Invalid username or password"} in {result.error}"
+            msg = f"Expected {'Invalid username or password'} in {result.error}"
             raise AssertionError(msg)
 
     @pytest.mark.unit
@@ -169,7 +169,7 @@ class TestFlextAuthService:
 
         assert not result.is_success
         if "Invalid username or password" not in result.error:
-            msg = f"Expected {"Invalid username or password"} in {result.error}"
+            msg = f"Expected {'Invalid username or password'} in {result.error}"
             raise AssertionError(msg)
 
     @pytest.mark.unit
@@ -196,7 +196,7 @@ class TestFlextAuthService:
 
         assert result.is_success
         if result.data.username != "testuser":
-            msg = f"Expected {"testuser"}, got {result.data.username}"
+            msg = f"Expected {'testuser'}, got {result.data.username}"
             raise AssertionError(msg)
         assert result.data.user_id is not None
 
@@ -207,7 +207,7 @@ class TestFlextAuthService:
 
         assert not result.is_success
         if "Token verification failed" not in result.error:
-            msg = f"Expected {"Token verification failed"} in {result.error}"
+            msg = f"Expected {'Token verification failed'} in {result.error}"
             raise AssertionError(msg)
 
     @pytest.mark.integration
@@ -284,5 +284,5 @@ class TestFlextAuthService:
 
         assert not result.is_success
         if "locked" not in result.error.lower():
-            msg = f"Expected {"locked"} in {result.error.lower()}"
+            msg = f"Expected {'locked'} in {result.error.lower()}"
             raise AssertionError(msg)

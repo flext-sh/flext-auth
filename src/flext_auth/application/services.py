@@ -25,6 +25,10 @@ from flext_auth.services.password_service import FlextPasswordService
 from flext_auth.session import InMemorySessionRepository
 from flext_auth.user import InMemoryUserRepository
 
+# Constants for validation
+MIN_USERNAME_LENGTH = 3
+MIN_PASSWORD_LENGTH = 8
+
 
 class FlextAuthenticationService:
     """Compatibility authentication service using the new architecture."""
@@ -56,7 +60,7 @@ class FlextAuthenticationService:
         """Create a new user - compatibility method."""
         try:
             # Validate username manually for better error messages
-            if len(username) < 3:
+            if len(username) < MIN_USERNAME_LENGTH:
                 return FlextResult.fail("Username must be at least 3 characters")
 
             # Validate email manually for better error messages
@@ -64,7 +68,7 @@ class FlextAuthenticationService:
                 return FlextResult.fail("Input should be a valid email address")
 
             # Validate password manually for better error messages
-            if len(password) < 8:
+            if len(password) < MIN_PASSWORD_LENGTH:
                 return FlextResult.fail("Password must be at least 8 characters")
 
             # Create user entity
@@ -118,7 +122,7 @@ class FlextAuthenticationService:
                 return FlextResult.fail("Current password is incorrect")
 
             # Validate new password - simple check for compatibility
-            if len(new_password) < 8:
+            if len(new_password) < MIN_PASSWORD_LENGTH:
                 return FlextResult.fail("Password must be at least 8 characters")
 
             return FlextResult.ok(True)

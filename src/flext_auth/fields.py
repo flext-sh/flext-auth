@@ -8,19 +8,19 @@ from __future__ import annotations
 
 import re
 
-# Password strength scoring constants
-_MIN_LENGTH_BASIC = 8
-_MIN_LENGTH_STRONG = 12
-_MIN_COMPLEXITY_CATEGORIES = 6
-_MIN_COMPLEXITY_GOOD = 4
-_MAX_COMMON_LENGTH = 12
-
 from flext_core import (
     FlextConstants,
     FlextFieldCore,
     FlextFields,
     FlextResult,
 )
+
+# Password strength scoring constants
+_MIN_LENGTH_BASIC = 8
+_MIN_LENGTH_STRONG = 12
+_MIN_COMPLEXITY_CATEGORIES = 6
+_MIN_COMPLEXITY_GOOD = 4
+_MAX_COMMON_LENGTH = 12
 
 # =============================================================================
 # AUTHENTICATION FIELD REGISTRY - Using FlextCore field patterns
@@ -341,7 +341,7 @@ def validate_email_uniqueness(
     return FlextResult.ok(email)
 
 
-def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:
+def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:  # noqa: C901, PLR0912
     """Validate password strength with detailed analysis.
 
     Args:
@@ -351,6 +351,10 @@ def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:
         FlextResult containing strength analysis or validation error
 
     """
+    # Constants for password strength analysis
+    STRONG_SCORE_THRESHOLD = 6
+    MEDIUM_SCORE_THRESHOLD = 4
+    RECOMMENDED_MIN_LENGTH = 12
     # First validate basic password format
     basic_validation = FlextAuthFieldSchema.PASSWORD.validate_value(password)
     if basic_validation.is_failure:
@@ -396,9 +400,9 @@ def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:
     analysis["score"] = score
 
     # Determine strength level
-    if score >= 6:
+    if score >= STRONG_SCORE_THRESHOLD:
         analysis["strength"] = "strong"
-    elif score >= 4:
+    elif score >= MEDIUM_SCORE_THRESHOLD:
         analysis["strength"] = "medium"
     else:
         analysis["strength"] = "weak"
@@ -414,7 +418,7 @@ def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:
         feedback.append("Add numbers (0-9)")
     if not analysis["has_symbols"]:
         feedback.append("Add special characters (!@#$%^&*)")
-    if length < 12:
+    if length < RECOMMENDED_MIN_LENGTH:
         feedback.append("Consider using at least 12 characters")
     if analysis["has_common_patterns"]:
         feedback.append("Avoid common patterns and dictionary words")
@@ -729,10 +733,15 @@ def validate_user_profile_update(
     return FlextResult.ok(dict(validated_changes))  # Convert to dict[str, object]
 
 
-def validate_security_context(
+def validate_security_context(  # noqa: C901
     security_data: dict[str, object],
 ) -> FlextResult[dict[str, object]]:
     """Validate security context data for authentication operations.
+    
+    Constants for validation limits.
+    """
+    # Constants for security validation
+    MAX_USER_AGENT_LENGTH = 1000
 
     Args:
         security_data: Security context data (IP, user agent, permissions, etc.)
@@ -758,7 +767,7 @@ def validate_security_context(
     # Validate user agent if present
     if "user_agent" in security_data:
         user_agent = str(security_data["user_agent"])
-        if len(user_agent) > 1000:  # Reasonable limit
+        if len(user_agent) > MAX_USER_AGENT_LENGTH:  # Reasonable limit
             return FlextResult.fail("User agent string too long")
         validated_context["user_agent"] = user_agent
 

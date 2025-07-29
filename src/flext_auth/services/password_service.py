@@ -25,6 +25,10 @@ RECOMMENDED_PASSWORD_LENGTH = 12
 STRONG_PASSWORD_LENGTH = 16
 MIN_STRENGTH_SCORE = 4
 STRONG_STRENGTH_SCORE = 6
+EXCELLENT_STRENGTH_SCORE = 8
+VERY_LONG_PASSWORD_LENGTH = 20
+EXTREME_PASSWORD_LENGTH = 30
+MINIMUM_CRACK_TIME_SCORE = 2
 SECONDS_PER_MINUTE = 60
 SECONDS_PER_HOUR = 3600
 SECONDS_PER_DAY = 86400
@@ -238,9 +242,9 @@ class FlextPasswordService:
             score += 1
 
         # Bonus for very long passwords
-        if length >= 20:
+        if length >= VERY_LONG_PASSWORD_LENGTH:
             score += 1
-        if length >= 30:
+        if length >= EXTREME_PASSWORD_LENGTH:
             score += 1
 
         return score
@@ -278,11 +282,11 @@ class FlextPasswordService:
         score_value = analysis.get("score", 0)
         score = int(score_value) if isinstance(score_value, int) else 0
 
-        if score >= 8:
+        if score >= EXCELLENT_STRENGTH_SCORE:
             feedback.append("Excellent password strength!")
-        elif score >= 6:
+        elif score >= STRONG_STRENGTH_SCORE:
             feedback.append("Good password strength")
-        elif score >= 4:
+        elif score >= MIN_STRENGTH_SCORE:
             feedback.append("Moderate password strength")
         else:
             feedback.append("Weak password - consider strengthening")
@@ -294,13 +298,13 @@ class FlextPasswordService:
         score_value = analysis.get("score", 0)
         score = int(score_value) if isinstance(score_value, int) else 0
 
-        if score >= 8:
+        if score >= EXCELLENT_STRENGTH_SCORE:
             return "centuries"
-        if score >= 6:
+        if score >= STRONG_STRENGTH_SCORE:
             return "decades"
-        if score >= 4:
+        if score >= MIN_STRENGTH_SCORE:
             return "years"
-        if score >= 2:
+        if score >= MINIMUM_CRACK_TIME_SCORE:
             return "months"
         return "days or less"
 
