@@ -210,8 +210,9 @@ class TestFlextAuthEnhancedABI:
         if "token" not in result.data:
             raise AssertionError(f"Expected {'token'} in {result.data}")
         assert "context" in result.data
-        if "user" not in result.data:
-            raise AssertionError(f"Expected {'user'} in {result.data}")
+        # When include_user_data=False, user field should NOT be present
+        if "user" in result.data:
+            raise AssertionError(f"Expected 'user' not in {result.data} when include_user_data=False")
 
 
 class TestEnhancedHelpers:

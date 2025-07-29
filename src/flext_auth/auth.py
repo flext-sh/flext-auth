@@ -91,7 +91,7 @@ class FlextAuthService:
         self.session_expire_hours = self.config.session_expire_hours
         self.max_concurrent_sessions = self.config.max_concurrent_sessions
 
-    async def register_user(
+    async def register_user(  # noqa: PLR0911
         self,
         registration_data: FlextUserRegistrationData,
     ) -> FlextResult[User]:
@@ -174,7 +174,7 @@ class FlextAuthService:
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult.fail(f"User registration failed: {e}")
 
-    async def authenticate_user(
+    async def authenticate_user(  # noqa: C901, PLR0911
         self,
         username: str,
         password: str,
@@ -354,7 +354,7 @@ class FlextAuthService:
             )
             return FlextResult.fail(f"Authentication failed: {e}")
 
-    async def validate_token(self, token: str) -> FlextResult[SecurityContext]:
+    async def validate_token(self, token: str) -> FlextResult[SecurityContext]:  # noqa: PLR0911
         """Validate JWT token and return security context."""
         try:
             # Verify JWT token
@@ -402,7 +402,7 @@ class FlextAuthService:
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult.fail(f"Token validation failed: {e}")
 
-    async def refresh_token(self, refresh_token: str) -> FlextResult[dict[str, str]]:
+    async def refresh_token(self, refresh_token: str) -> FlextResult[dict[str, str]]:  # noqa: C901, PLR0911
         """Refresh access token using refresh token."""
         try:
             # Verify refresh token
@@ -490,7 +490,7 @@ class FlextAuthService:
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult.fail(f"Logout all sessions failed: {e}")
 
-    async def change_password(
+    async def change_password(  # noqa: PLR0911
         self,
         user_id: str,
         current_password: str,

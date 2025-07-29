@@ -108,12 +108,12 @@ class TestFlextAuthUserMixin:
         class TestUser(FlextAuthUserMixin):
             def __init__(
                 self,
-                id: str,
+                user_id: str,
                 username: str,
                 email: str,
                 role: str = FLEXT_AUTH_USER,
             ) -> None:
-                self.id = id
+                self.id = user_id
                 self.username = username
                 self.email = email
                 self.role = role
@@ -331,7 +331,7 @@ class TestDictHelpers:
         """Test standardized response building."""
         # Success response
         success_resp = flext_auth_build_response(
-            True,
+            success=True,
             data={"user": "test"},
             headers={"X-Test": "value"},
         )
@@ -352,7 +352,7 @@ class TestDictHelpers:
 
         # Error response
         error_resp = flext_auth_build_response(
-            False,
+            success=False,
             error="Something went wrong",
             status=400,
         )
@@ -557,7 +557,7 @@ class TestIntegration:
 
         # Build response with user data
         filtered_data = flext_auth_filter_user_data(context)
-        response = flext_auth_build_response(True, data=filtered_data)
+        response = flext_auth_build_response(success=True, data=filtered_data)
 
         if not (response["success"]):
             raise AssertionError(f"Expected True, got {response['success']}")
@@ -591,7 +591,7 @@ class TestIntegration:
         ) -> dict[str, Any]:
             filtered_user = flext_auth_filter_user_data(auth_context or {})
             return flext_auth_build_response(
-                True,
+                success=True,
                 data={
                     "action": action,
                     "user": filtered_user,

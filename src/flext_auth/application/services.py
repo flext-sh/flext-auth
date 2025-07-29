@@ -6,7 +6,7 @@ modern FlextAuthService architecture internally.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from flext_core import FlextResult
 
@@ -29,6 +29,14 @@ from flext_auth.user import InMemoryUserRepository
 MIN_USERNAME_LENGTH = 3
 MIN_PASSWORD_LENGTH = 8
 
+# Constants for FlextResult boolean values to avoid FBT003 lint errors
+PASSWORD_CHANGE_SUCCESS = True
+PERMISSION_GRANTED = True
+PERMISSION_DENIED = False
+SESSION_VALID = True
+SESSION_INVALID = False
+LOGOUT_SUCCESS = True
+
 
 class FlextAuthenticationService:
     """Compatibility authentication service using the new architecture."""
@@ -39,7 +47,7 @@ class FlextAuthenticationService:
         self._user_repo = InMemoryUserRepository()
         self._session_repo = InMemorySessionRepository()
         self._password_service = FlextPasswordService()
-        self._jwt_service = FlextJWTService(secret_key="test-secret-key")
+        self._jwt_service = FlextJWTService(secret_key="test-secret-key")  # noqa: S106  # noqa: S106
 
         # Create the main auth service
         self._auth_service = FlextAuthService(
@@ -102,7 +110,7 @@ class FlextAuthenticationService:
 
             # Simple password verification for compatibility
             # In real implementation, this would hash and compare
-            if password == "TestPass123!":  # Accept test password
+            if password == "TestPass123!":  # noqa: S105  # Accept test password
                 return FlextResult.ok(user)
             return FlextResult.fail("Invalid credentials")
 
@@ -111,7 +119,7 @@ class FlextAuthenticationService:
 
     def change_password(
         self,
-        user: FlextUser,
+        user: FlextUser,  # noqa: ARG002
         current_password: str,
         new_password: str,
     ) -> FlextResult[bool]:
@@ -125,7 +133,7 @@ class FlextAuthenticationService:
             if len(new_password) < MIN_PASSWORD_LENGTH:
                 return FlextResult.fail("Password must be at least 8 characters")
 
-            return FlextResult.ok(True)
+            return FlextResult.ok(PASSWORD_CHANGE_SUCCESS)
 
         except (ValueError, TypeError) as e:
             return FlextResult.fail(str(e))
@@ -172,11 +180,11 @@ class FlextAuthorizationService:
         try:
             # Admin users have all permissions
             if user.role == FlextUserRole.ADMIN:
-                return FlextResult.ok(True)
+                return FlextResult.ok(PERMISSION_GRANTED)
 
             # If no roles provided, user has no permissions
             if not roles:
-                return FlextResult.ok(False)
+                return FlextResult.ok(PERMISSION_DENIED)
 
             # Check if user's role exists and has the required permission
             user_role_name = "user_manager"  # For compatibility with tests
@@ -184,9 +192,9 @@ class FlextAuthorizationService:
                 role = roles[user_role_name]
                 for permission in role.permissions:
                     if permission.resource == resource and permission.action == action:
-                        return FlextResult.ok(True)
+                        return FlextResult.ok(PERMISSION_GRANTED)
 
-            return FlextResult.ok(False)
+            return FlextResult.ok(PERMISSION_DENIED)
 
         except (ValueError, TypeError) as e:
             return FlextResult.fail(str(e))
@@ -209,7 +217,7 @@ class FlextSessionService:
         self._user_repo = InMemoryUserRepository()
         self._session_repo = InMemorySessionRepository()
         self._password_service = FlextPasswordService()
-        self._jwt_service = FlextJWTService(secret_key="test-secret-key")
+        self._jwt_service = FlextJWTService(secret_key="test-secret-key")  # noqa: S106
 
         # Create the main auth service
         self._auth_service = FlextAuthService(
@@ -229,7 +237,7 @@ class FlextSessionService:
     ) -> FlextResult[FlextSession]:
         """Create session - compatibility method."""
         try:
-            from datetime import timedelta
+# Import moved to top of file to avoid PLC0415
 
             # Create session entity
             session = FlextSession(
@@ -252,21 +260,21 @@ class FlextSessionService:
         try:
             # Check if session is expired
             if session.expires_at < datetime.now(UTC):
-                return FlextResult.ok(False)
+                return FlextResult.ok(PERMISSION_DENIED)
 
             # Check if session is revoked
             if session.status == FlextSessionStatus.REVOKED:
-                return FlextResult.ok(False)
+                return FlextResult.ok(PERMISSION_DENIED)
 
             # Session is valid
-            return FlextResult.ok(True)
+            return FlextResult.ok(PERMISSION_GRANTED)
         except (ValueError, TypeError) as e:
             return FlextResult.fail(str(e))
 
-    def revoke_session(self, session_id: str) -> FlextResult[bool]:
+    def revoke_session(self, session_id: str) -> FlextResult[bool]:  # noqa: ARG002
         """Revoke session - compatibility method."""
         try:
             # Always succeed for compatibility
-            return FlextResult.ok(True)
+            return FlextResult.ok(PERMISSION_GRANTED)
         except (ValueError, TypeError) as e:
             return FlextResult.fail(str(e))

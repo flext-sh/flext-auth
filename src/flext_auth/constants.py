@@ -23,8 +23,9 @@ class FlextAuthConstants(FlextConstants):
     USERNAME_PATTERN = r"^[a-zA-Z0-9_]{3,50}$"
 
     # Password validation regex - requires mixed case, digits, special chars
+    # This is a validation regex, not a hardcoded password
     PASSWORD_VALIDATION_REGEX = (
-        r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?])"
+        r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?])"  # noqa: S105
         r".{8,128}$"
     )
 

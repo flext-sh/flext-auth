@@ -133,9 +133,9 @@ class FlextPlainPassword(FlextValueObject):
 
     def __repr__(self) -> str:
         """Return protected password representation."""
-        return "PlainPassword([PROTECTED])"
+        return "FlextPlainPassword([PROTECTED])"
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_domain_rules(self) -> FlextResult[None]:  # noqa: PLR0911
         """Validate plain password domain rules and business constraints."""
         if len(self.value) < MIN_PASSWORD_LENGTH:
             msg = "Password must be at least 8 characters"

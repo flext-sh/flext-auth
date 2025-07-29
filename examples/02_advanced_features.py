@@ -160,7 +160,9 @@ def example_role_permission_system() -> None:
 
     print("\nPermission Validation Tests:")
     for role, permission in test_cases:
-        has_permission = flext_auth_validate_permissions(role, permission, role_hierarchy)
+        has_permission = flext_auth_validate_permissions(
+            role, permission, role_hierarchy
+        )
         status = "✅ Allowed" if has_permission else "❌ Denied"
         print(f"  {role} -> {permission}: {status}")
 
@@ -236,7 +238,7 @@ def example_decorators() -> None:
 
     # Função que requer autenticação
     @flext_auth_required(secret_key="test-secret-key-256-bits-minimum-length")
-    def protected_endpoint(request: dict[str, object], **kwargs: object) -> dict[str, object]:
+    def protected_endpoint(_request: dict[str, object], **kwargs: object) -> dict[str, object]:
         """Endpoint protegido que requer autenticação."""
         auth_context = kwargs.get("auth_context", {})
         return {
@@ -250,13 +252,13 @@ def example_decorators() -> None:
         ADMIN_ROLE,
         secret_key="test-secret-key-256-bits-minimum-length",
     )
-    def REDACTED_LDAP_BIND_PASSWORD_endpoint(request: dict[str, object], **kwargs: object) -> dict[str, object]:
+    def REDACTED_LDAP_BIND_PASSWORD_endpoint(_request: dict[str, object], **_kwargs: object) -> dict[str, object]:
         """Endpoint que requer role de REDACTED_LDAP_BIND_PASSWORD."""
         return {"message": "Admin access granted", "REDACTED_LDAP_BIND_PASSWORD_only": True}
 
     # Função que requer permissão específica
     @flext_auth_permission_required("delete")
-    def delete_endpoint(request: dict[str, object], **kwargs: object) -> dict[str, object]:
+    def delete_endpoint(_request: dict[str, object], **_kwargs: object) -> dict[str, object]:
         """Endpoint que requer permissão de delete."""
         return {"message": "Delete permission granted"}
 

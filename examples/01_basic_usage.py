@@ -208,7 +208,8 @@ def example_ultra_helpers() -> None:
         print(f"User created: {result['user']['username']}")
 
     # Web session completa
-    request_data = {"username": "REDACTED_LDAP_BIND_PASSWORD", "password": "REDACTED_LDAP_BIND_PASSWORD123"}  # Exemplo com REDACTED_LDAP_BIND_PASSWORD padrão
+    # Exemplo com REDACTED_LDAP_BIND_PASSWORD padrão
+    request_data = {"username": "REDACTED_LDAP_BIND_PASSWORD", "password": "REDACTED_LDAP_BIND_PASSWORD123"}
     session_result = flext_auth_web_session(request_data)
     print(f"Web session success: {session_result['success']}")
     if session_result["success"]:
@@ -244,7 +245,10 @@ async def example_advanced_registration() -> None:
             print(f"  Password score: {strength['score']}")
 
         # Login e validação em uma operação
-        login_validate_result = await auth.login_and_validate("advanceduser", "AdvancedPass123!")
+        # Login e validação em uma operação
+        login_validate_result = await auth.login_and_validate(
+            "advanceduser", "AdvancedPass123!"
+        )
         if login_validate_result.is_success:
             session_data = login_validate_result.data
             print("Login and validation successful")
@@ -272,7 +276,9 @@ def example_complete_workflow() -> None:
         print(f"User: {workflow_result['user']['username']}")
         print(f"Token: {workflow_result['token'][:30]}...")
         print(f"Permissions: {workflow_result['permissions']}")
-        print(f"Auth context: {workflow_result['auth_context']['role'] if workflow_result['auth_context'] else 'none'}")
+        auth_context = workflow_result["auth_context"]
+        role = auth_context["role"] if auth_context else "none"
+        print(f"Auth context: {role}")
     else:
         print(f"Workflow failed: {workflow_result['error']}")
 

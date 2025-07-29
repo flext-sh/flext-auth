@@ -12,9 +12,9 @@ from flext_auth.domain.value_objects import (
 )
 
 # Constants for JWT configuration
-DEV_SECRET_KEY = "dev-secret-key-change-in-production"
-ACCESS_TOKEN_TYPE = "access"
-REFRESH_TOKEN_TYPE = "refresh"
+DEV_SECRET_KEY = "dev-secret-key-change-in-production"  # noqa: S105
+ACCESS_TOKEN_TYPE = "access"  # noqa: S105
+REFRESH_TOKEN_TYPE = "refresh"  # noqa: S105
 
 # Initialize logger using FLEXT patterns
 # logger_factory removed
@@ -41,7 +41,7 @@ class FlextJWTService:
         self.access_token_expire_minutes = access_token_expire_minutes
         self.refresh_token_expire_days = refresh_token_expire_days
 
-    def generate_access_token(
+    def generate_access_token(  # noqa: PLR0913
         self,
         user_id: str,
         username: str,

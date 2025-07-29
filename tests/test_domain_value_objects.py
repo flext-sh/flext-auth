@@ -5,6 +5,8 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 import pytest
+from flext_core import FlextValidationError
+from pydantic_core import ValidationError
 
 from flext_auth.domain.value_objects import (
     FlextAuthToken,
@@ -34,22 +36,20 @@ class TestUsername:
     def test_username_validation(self) -> None:
         """Test username validation rules."""
         valid_username = FlextUsername(value="ValidUser123")
-        valid_username.validate_domain_rules()  # Should not raise
+        result = valid_username.validate_domain_rules()
+        assert result.is_success
 
-        # Test minimum length
-        with pytest.raises(ValueError, match="Username must be at least 3 characters"):
-            FlextUsername(value="ab").validate_domain_rules()
+        # Test minimum length - Pydantic validation prevents object creation
+        with pytest.raises(ValidationError, match="String should have at least 3 characters"):
+            FlextUsername(value="ab")
 
-        # Test maximum length
-        with pytest.raises(ValueError, match="Username must be at most 50 characters"):
-            FlextUsername(value="a" * 51).validate_domain_rules()
+        # Test maximum length - Pydantic validation prevents object creation
+        with pytest.raises(ValidationError, match="String should have at most 50 characters"):
+            FlextUsername(value="a" * 51)
 
-        # Test invalid characters
-        with pytest.raises(
-            ValueError,
-            match="Username can only contain letters, numbers, underscores, and hyphens",
-        ):
-            FlextUsername(value="user@domain").validate_domain_rules()
+        # Test invalid characters - field validator prevents object creation
+        with pytest.raises(FlextValidationError, match="Username can only contain letters, numbers, underscores, and hyphens"):
+            FlextUsername(value="user@domain")
 
 
 class TestUserEmail:
@@ -80,43 +80,32 @@ class TestPlainPassword:
     def test_password_validation(self) -> None:
         """Test password validation rules."""
         valid_password = FlextPlainPassword(value="ValidP@ssw0rd123")
-        valid_password.validate_domain_rules()  # Should not raise
+        result = valid_password.validate_domain_rules()
+        assert result.is_success
 
-        # Test minimum length
-        with pytest.raises(ValueError, match="Password must be at least 8 characters"):
-            FlextPlainPassword(value="Short1!").validate_domain_rules()
+        # Test minimum length - Pydantic validation prevents object creation
+        with pytest.raises(ValidationError, match="String should have at least 8 characters"):
+            FlextPlainPassword(value="Short1!")
 
-        # Test maximum length
-        with pytest.raises(ValueError, match="Password must be at most 128 characters"):
-            FlextPlainPassword(value="a" * 129).validate_domain_rules()
+        # Test maximum length - Pydantic validation prevents object creation
+        with pytest.raises(ValidationError, match="String should have at most 128 characters"):
+            FlextPlainPassword(value="a" * 129)
 
-        # Test missing uppercase
-        with pytest.raises(
-            ValueError,
-            match="Password must contain at least one uppercase letter",
-        ):
-            FlextPlainPassword(value="lowercase123!").validate_domain_rules()
+        # Test missing uppercase - field validator prevents object creation
+        with pytest.raises(FlextValidationError, match="Password must contain at least one uppercase letter"):
+            FlextPlainPassword(value="lowercase123!")
 
-        # Test missing lowercase
-        with pytest.raises(
-            ValueError,
-            match="Password must contain at least one lowercase letter",
-        ):
-            FlextPlainPassword(value="UPPERCASE123!").validate_domain_rules()
+        # Test missing lowercase - field validator prevents object creation
+        with pytest.raises(FlextValidationError, match="Password must contain at least one lowercase letter"):
+            FlextPlainPassword(value="UPPERCASE123!")
 
-        # Test missing number
-        with pytest.raises(
-            ValueError,
-            match="Password must contain at least one number",
-        ):
-            FlextPlainPassword(value="NoNumbers!").validate_domain_rules()
+        # Test missing number - field validator prevents object creation
+        with pytest.raises(FlextValidationError, match="Password must contain at least one number"):
+            FlextPlainPassword(value="NoNumbers!")
 
-        # Test missing special character
-        with pytest.raises(
-            ValueError,
-            match="Password must contain at least one special character",
-        ):
-            FlextPlainPassword(value="NoSpecial123").validate_domain_rules()
+        # Test missing special character - field validator prevents object creation
+        with pytest.raises(FlextValidationError, match="Password must contain at least one special character"):
+            FlextPlainPassword(value="NoSpecial123")
 
 
 class TestHashedPassword:

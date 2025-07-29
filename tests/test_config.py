@@ -164,17 +164,17 @@ class TestJWTConfig:
 
     def test_jwt_secret_key_validation_empty_error(self) -> None:
         """Test JWT secret key validation - empty key should fail in production."""
+        config = JWTConfig(secret_key="")
         with pytest.raises(ValueError, match="JWT secret key cannot be empty"):
-            config = JWTConfig(secret_key="")
             config.validate_secret_key()
 
     def test_jwt_secret_key_validation_short_error(self) -> None:
         """Test JWT secret key validation - short key should fail."""
+        config = JWTConfig(secret_key="short")
         with pytest.raises(
             ValueError,
             match="JWT secret key must be at least 32 characters",
         ):
-            config = JWTConfig(secret_key="short")
             config.validate_secret_key()
 
     def test_jwt_secret_key_validation_valid(self) -> None:

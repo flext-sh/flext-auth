@@ -352,9 +352,9 @@ def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:
 
     """
     # Constants for password strength analysis
-    STRONG_SCORE_THRESHOLD = 6
-    MEDIUM_SCORE_THRESHOLD = 4
-    RECOMMENDED_MIN_LENGTH = 12
+    strong_score_threshold = 6
+    medium_score_threshold = 4
+    recommended_min_length = 12
     # First validate basic password format
     basic_validation = FlextAuthFieldSchema.PASSWORD.validate_value(password)
     if basic_validation.is_failure:
@@ -400,9 +400,9 @@ def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:
     analysis["score"] = score
 
     # Determine strength level
-    if score >= STRONG_SCORE_THRESHOLD:
+    if score >= strong_score_threshold:
         analysis["strength"] = "strong"
-    elif score >= MEDIUM_SCORE_THRESHOLD:
+    elif score >= medium_score_threshold:
         analysis["strength"] = "medium"
     else:
         analysis["strength"] = "weak"
@@ -418,7 +418,7 @@ def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:
         feedback.append("Add numbers (0-9)")
     if not analysis["has_symbols"]:
         feedback.append("Add special characters (!@#$%^&*)")
-    if length < RECOMMENDED_MIN_LENGTH:
+    if length < recommended_min_length:
         feedback.append("Consider using at least 12 characters")
     if analysis["has_common_patterns"]:
         feedback.append("Avoid common patterns and dictionary words")
@@ -737,11 +737,6 @@ def validate_security_context(  # noqa: C901
     security_data: dict[str, object],
 ) -> FlextResult[dict[str, object]]:
     """Validate security context data for authentication operations.
-    
-    Constants for validation limits.
-    """
-    # Constants for security validation
-    MAX_USER_AGENT_LENGTH = 1000
 
     Args:
         security_data: Security context data (IP, user agent, permissions, etc.)
@@ -750,6 +745,9 @@ def validate_security_context(  # noqa: C901
         FlextResult containing validated security context or validation errors
 
     """
+    # Constants for security validation
+    max_user_agent_length = 1000
+
     validated_context = {}
 
     # Validate IP address if present
@@ -767,7 +765,7 @@ def validate_security_context(  # noqa: C901
     # Validate user agent if present
     if "user_agent" in security_data:
         user_agent = str(security_data["user_agent"])
-        if len(user_agent) > MAX_USER_AGENT_LENGTH:  # Reasonable limit
+        if len(user_agent) > max_user_agent_length:  # Reasonable limit
             return FlextResult.fail("User agent string too long")
         validated_context["user_agent"] = user_agent
 
