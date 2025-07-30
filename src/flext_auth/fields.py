@@ -708,6 +708,7 @@ def validate_user_profile_update(
             continue
 
         # Validate specific fields
+        validation_result: FlextResult[str] | FlextResult[object]
         if field_name == "username":
             validation_result = validate_username(str(new_value))
         elif field_name == "email":
@@ -715,7 +716,9 @@ def validate_user_profile_update(
         elif field_name == "role":
             validation_result = validate_role(str(new_value))
         elif field_name == "status":
-            validation_result = FlextAuthFieldSchema.STATUS.validate_value(new_value)  # type: ignore[assignment]
+            validation_result = (
+                FlextAuthFieldSchema.STATUS.validate_value(new_value)
+            )
         else:
             # Skip unknown fields
             continue

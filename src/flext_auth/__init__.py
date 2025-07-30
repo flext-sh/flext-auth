@@ -976,7 +976,8 @@ def flext_auth_middleware_factory(auth: FlextAuth) -> Callable[[object], object]
                     "status": 401,
                 }
 
-            # Add enhanced context to request
+            # Add enhanced context to request using type ignore
+            # Dynamic attribute assignment for middleware context
             if hasattr(request, "__dict__"):
                 request.auth_context = validation.data  # type: ignore[attr-defined]
                 request.auth_token = token  # type: ignore[attr-defined]

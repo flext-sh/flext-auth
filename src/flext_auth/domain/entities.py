@@ -294,7 +294,7 @@ class FlextRole(FlextEntity):
         """Validate role entity data."""
         return len(self.id) > 0 and len(self.name) > 0 and len(self.description) > 0
 
-    def validate_domain_rules(self) -> FlextResult[None]:  # noqa: PLR0911  # noqa: PLR0911
+    def validate_domain_rules(self) -> FlextResult[None]:
         """Validate role domain rules and business invariants."""
         if not self.id:
             return FlextResult.fail("Role ID cannot be empty")
@@ -306,10 +306,8 @@ class FlextRole(FlextEntity):
             return FlextResult.fail("Role name must be at most 100 characters")
         if len(self.description) > MAX_DESCRIPTION_LENGTH:
             return FlextResult.fail("Role description must be at most 500 characters")
-        # Validate permissions if present
-        for permission in self.permissions:
-            if not isinstance(permission, FlextPermission):
-                return FlextResult.fail("All permissions must be Permission instances")  # type: ignore[unreachable]
+        # Permissions are already type-validated by Pydantic
+        # No additional validation needed for permission instances
         return FlextResult.ok(None)
 
 

@@ -54,25 +54,18 @@ class DatabaseConfig(FlextBaseSettings):
     model_config = SettingsConfigDict(env_prefix="DATABASE_")
 
     url: str = Field(default="", description="Database URL")
-    min_pool_size: int = Field(
-        default=1,
-        description="Minimum pool size"
-    )
-    max_pool_size: int = Field(
-        default=10,
-        description="Maximum pool size"
-    )
-    command_timeout: int = Field(
-        default=60,
-        description="Command timeout in seconds"
-    )
+    min_pool_size: int = Field(default=1, description="Minimum pool size")
+    max_pool_size: int = Field(default=10, description="Maximum pool size")
+    command_timeout: int = Field(default=60, description="Command timeout in seconds")
 
     @field_validator("url")
     @classmethod
     def validate_database_url(cls, v: str) -> str:
         """DRY validation for database URL format."""
         if v and not v.startswith(("postgresql://", "postgresql+asyncpg://")):
-            db_url_error = "Database URL must start with postgresql:// or postgresql+asyncpg://"
+            db_url_error = (
+                "Database URL must start with postgresql:// or postgresql+asyncpg://"
+            )
             raise ValueError(db_url_error)
         return v
 
@@ -113,9 +106,7 @@ class JWTConfig(FlextBaseSettings):
 
     def validate_secret_key(self) -> bool:
         """DRY helper to validate secret key strength."""
-        return bool(
-            self.secret_key and len(self.secret_key) >= MIN_SECRET_KEY_LENGTH
-        )
+        return bool(self.secret_key and len(self.secret_key) >= MIN_SECRET_KEY_LENGTH)
 
     def generate_secret_key(self) -> str:
         """DRY helper to generate secure secret key."""
@@ -125,21 +116,18 @@ class JWTConfig(FlextBaseSettings):
 class SecurityConfig(FlextBaseSettings):
     """Security configuration for backward compatibility - DRY unified interface."""
 
-    password_rounds: int = Field(
-        default=12, description="BCrypt rounds", ge=4, le=20
-    )
+    password_rounds: int = Field(default=12, description="BCrypt rounds", ge=4, le=20)
     max_login_attempts: int = Field(
-        default=5, description="Max failed login attempts", ge=1, le=10
+        default=5, description="Max failed login attempts", ge=1, le=10,
     )
     lockout_duration_minutes: int = Field(
-        default=15,
-        description="Account lockout duration", ge=1, le=1440
+        default=15, description="Account lockout duration", ge=1, le=1440,
     )
     session_timeout_minutes: int = Field(
-        default=1440, description="Session timeout minutes", ge=5, le=10080
+        default=1440, description="Session timeout minutes", ge=5, le=10080,
     )
     max_concurrent_sessions: int = Field(
-        default=5, description="Max concurrent sessions", ge=1, le=20
+        default=5, description="Max concurrent sessions", ge=1, le=20,
     )
 
 
