@@ -1274,16 +1274,16 @@ def flext_auth_filter_user_data(
     if fields is not None:
         # Use specified fields
         return {field: user_data.get(field) for field in fields if field in user_data}
-    elif exclude_sensitive:
+    if exclude_sensitive:
         # Default safe fields (excludes sensitive data)
         sensitive_fields = {"password_hash", "password", "secret", "token", "api_key"}
         return {
-            key: value for key, value in user_data.items() 
+            key: value
+            for key, value in user_data.items()
             if key not in sensitive_fields
         }
-    else:
-        # Return all fields by default
-        return user_data.copy()
+    # Return all fields by default
+    return user_data.copy()
 
 
 def flext_auth_merge_configs(
@@ -1292,22 +1292,18 @@ def flext_auth_merge_configs(
 ) -> dict[str, object]:
     """Deep merge configuration dictionaries."""
     merged = base_config.copy()
-    
+
     for key, value in override_config.items():
-        if (
-            key in merged 
-            and isinstance(merged[key], dict) 
-            and isinstance(value, dict)
-        ):
+        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
             # Recursively merge nested dictionaries
             merged[key] = flext_auth_merge_configs(
-                cast("dict[str, object]", merged[key]), 
-                cast("dict[str, object]", value)
+                cast("dict[str, object]", merged[key]),
+                cast("dict[str, object]", value),
             )
         else:
             # Direct assignment for non-dict values or new keys
             merged[key] = value
-    
+
     return merged
 
 

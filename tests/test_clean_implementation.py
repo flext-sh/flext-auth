@@ -1,7 +1,5 @@
 """Tests for clean flext-auth implementation - focused on helpers only."""
 
-
-
 from flext_auth import (
     flext_auth_create_secure_session,
     flext_auth_decode_jwt,

@@ -4,71 +4,75 @@
 
 Built on flext-core foundation with Clean Architecture, Domain-Driven Design, and CQRS patterns. Provides comprehensive authentication flows with massive code reduction - from 150+ lines to 3 lines of code.
 
-## Visão Geral
+## VisÃ£o Geral
 
-**FLEXT Auth** é uma biblioteca Python pura projetada para reduzir massivamente o código necessário para implementar autenticação empresarial. Com **interface pública única** e helpers extremamente úteis, elimina 98% do código boilerplate.
+**FLEXT Auth** Ã© uma biblioteca Python pura projetada para reduzir massivamente o cÃ³digo necessÃ¡rio para implementar autenticaÃ§Ã£o empresarial. Com **interface pÃºblica Ãºnica** e helpers extremamente Ãºteis, elimina 98% do cÃ³digo boilerplate.
 
-### 🎯 Características Principais
+### ð¯ CaracterÃ­sticas Principais
 
-- ✅ **Interface Única**: Todas as funcionalidades através de `FlextAuth()`
-- ✅ **Zero Configuração**: Funciona out-of-the-box com defaults seguros
-- ✅ **Redução Massiva**: De 150+ linhas para 3 linhas 
-- ✅ **Base Sólida**: Construída sobre flext-core (sem duplicação)
-- ✅ **Biblioteca Pura**: Sem CLI, sem serviços, apenas utilitários
-- ✅ **Acesso Raiz**: APENAS através do namespace principal
-- ✅ **Compatibilidade**: Warnings para APIs antigas
+- â **Interface Ãnica**: Todas as funcionalidades atravÃ©s de `FlextAuth()`
+- â **Zero ConfiguraÃ§Ã£o**: Funciona out-of-the-box com defaults seguros
+- â **ReduÃ§Ã£o Massiva**: De 150+ linhas para 3 linhas
+- â **Base SÃ³lida**: ConstruÃ­da sobre flext-core (sem duplicaÃ§Ã£o)
+- â **Biblioteca Pura**: Sem CLI, sem serviÃ§os, apenas utilitÃ¡rios
+- â **Acesso Raiz**: APENAS atravÃ©s do namespace principal
+- â **Compatibilidade**: Warnings para APIs antigas
 
-## 🚀 Instalação
+## ð InstalaÃ§Ã£o
 
 ```bash
 pip install flext-auth
 ```
 
-## ⚡ Quick Start
+## â¡ Quick Start
 
-### Antes (Método Tradicional - 150+ linhas)
+### Antes (MÃ©todo Tradicional - 150+ linhas)
+
 ```python
-# Configuração manual de bcrypt, JWT, repositórios, sessões...
-# 150+ linhas de código boilerplate
-# Múltiplos pontos de falha
-# Manutenção complexa
+# ConfiguraÃ§Ã£o manual de bcrypt, JWT, repositÃ³rios, sessÃµes...
+# 150+ linhas de cÃ³digo boilerplate
+# MÃºltiplos pontos de falha
+# ManutenÃ§Ã£o complexa
 ```
 
 ### Depois (FLEXT Auth - 3 linhas)
+
 ```python
 from flext_auth import flext_auth_quick_start
 
-# Setup completo com REDACTED_LDAP_BIND_PASSWORD automático
+# Setup completo com REDACTED_LDAP_BIND_PASSWORD automÃ¡tico
 auth = flext_auth_quick_start()
 
 # Sistema completo funcionando!
 ```
 
-## 📖 Uso Básico
+## ð" Uso BÃ¡sico
 
 ### Registro e Login
+
 ```python
 import asyncio
 from flext_auth import FlextAuth
 
 async def exemplo_basico():
     auth = FlextAuth()
-    
-    # Registro com validação automática
+
+    # Registro com validaÃ§Ã£o automÃ¡tica
     user = await auth.register("john", "john@exemplo.com", "SenhaSegura123!")
-    
-    # Login com sessão automática
+
+    # Login com sessÃ£o automÃ¡tica
     session = await auth.login("john", "SenhaSegura123!")
-    
-    # Validação instantânea
+
+    # ValidaÃ§Ã£o instantÃ¢nea
     context = await auth.validate(session.data["tokens"]["access_token"])
-    
-    print(f"Usuário logado: {context.data['username']}")
+
+    print(f"UsuÃ¡rio logado: {context.data['username']}")
 
 asyncio.run(exemplo_basico())
 ```
 
 ### Sistema Completo
+
 ```python
 from flext_auth import (
     FlextAuth,
@@ -79,27 +83,27 @@ from flext_auth import (
 )
 
 async def sistema_completo():
-    # Configuração customizada
+    # ConfiguraÃ§Ã£o customizada
     config = {
         "jwt": {"secret_key": "minha-chave-secreta"},
         "security": {"password_rounds": 12}
     }
     auth = FlextAuth(config)
-    
-    # Validações com helpers
+
+    # ValidaÃ§Ãµes com helpers
     email = "REDACTED_LDAP_BIND_PASSWORD@empresa.com"
     password = "MinhaPasswordSegura123!"
-    
+
     if flext_auth_validate_email(email):
         strength = flext_auth_validate_password_strength(password)
         if strength["valid"]:
             # Registro
             result = await auth.register("REDACTED_LDAP_BIND_PASSWORD", email, password, "REDACTED_LDAP_BIND_PASSWORD")
-            
+
             # Login
             login = await auth.login("REDACTED_LDAP_BIND_PASSWORD", password)
-            
-            # Operações avançadas
+
+            # OperaÃ§Ãµes avanÃ§adas
             await auth.change_password(user_id, password, "NovaSenha456!")
             await auth.get_user_sessions(user_id)
             await auth.cleanup_sessions()
@@ -107,9 +111,10 @@ async def sistema_completo():
 asyncio.run(sistema_completo())
 ```
 
-## 🌐 Integração com Frameworks Web
+## ð IntegraÃ§Ã£o com Frameworks Web
 
 ### FastAPI (10 linhas vs 100+ tradicionais)
+
 ```python
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.security import HTTPBearer
@@ -122,15 +127,16 @@ security = HTTPBearer()
 async def get_current_user(token = Depends(security)):
     result = await auth.validate(token.credentials)
     if not result.is_success:
-        raise HTTPException(401, "Token inválido")
+        raise HTTPException(401, "Token invÃ¡lido")
     return result.data
 
 @app.get("/protected")
 async def protected(user = Depends(get_current_user)):
-    return {"message": f"Olá {user['username']}!"}
+    return {"message": f"OlÃ¡ {user['username']}!"}
 ```
 
 ### Flask (8 linhas vs 80+ tradicionais)
+
 ```python
 from flask import Flask, request, jsonify
 from functools import wraps
@@ -145,7 +151,7 @@ def require_auth(f):
         token = request.headers.get('Authorization', '').replace('Bearer ', '')
         result = await auth.validate(token)
         if not result.is_success:
-            return jsonify({"error": "Não autorizado"}), 401
+            return jsonify({"error": "NÃ£o autorizado"}), 401
         request.user = result.data
         return await f(*args, **kwargs)
     return decorated
@@ -153,10 +159,11 @@ def require_auth(f):
 @app.route('/protected')
 @require_auth
 async def protected():
-    return jsonify({"message": f"Olá {request.user['username']}!"})
+    return jsonify({"message": f"OlÃ¡ {request.user['username']}!"})
 ```
 
 ### Middleware Universal
+
 ```python
 from flext_auth import flext_auth_middleware_creator, flext_auth_quick_start
 
@@ -166,9 +173,10 @@ middleware = flext_auth_middleware_creator(auth)
 # Funciona com qualquer framework!
 ```
 
-## 🛠️ Helpers para Redução Massiva
+## ð ï¸ Helpers para ReduÃ§Ã£o Massiva
 
-### Autenticação
+### AutenticaÃ§Ã£o
+
 ```python
 from flext_auth import (
     flext_auth_hash_password,
@@ -180,17 +188,18 @@ from flext_auth import (
 # Hash seguro em 1 linha
 hashed = flext_auth_hash_password("senha123", rounds=12)
 
-# Verificação em 1 linha
+# VerificaÃ§Ã£o em 1 linha
 valid = flext_auth_verify_password("senha123", hashed)
 
 # JWT customizado em 1 linha
 token = flext_auth_generate_jwt({"user_id": "123"}, expires_minutes=60)
 
-# Decodificação em 1 linha
+# DecodificaÃ§Ã£o em 1 linha
 decoded = flext_auth_decode_jwt(token, "secret")
 ```
 
-### Validações
+### ValidaÃ§Ãµes
+
 ```python
 from flext_auth import (
     flext_auth_validate_email,
@@ -198,44 +207,47 @@ from flext_auth import (
     flext_auth_create_secure_session,
 )
 
-# Validação robusta de email
+# ValidaÃ§Ã£o robusta de email
 valid_email = flext_auth_validate_email("user@exemplo.com")
 
-# Análise completa de senha
+# AnÃ¡lise completa de senha
 strength = flext_auth_validate_password_strength("MinhaPassword123!")
-print(f"Score: {strength['score']}, Válida: {strength['valid']}")
+print(f"Score: {strength['score']}, VÃ¡lida: {strength['valid']}")
 
-# Sessão segura completa
+# SessÃ£o segura completa
 session = flext_auth_create_secure_session("user123", "joao", "REDACTED_LDAP_BIND_PASSWORD", 24)
 ```
 
-## 🏗️ Interface Pública
+## ðï¸ Interface PÃºblica
 
 ### Classe Principal
-- `FlextAuth()` - Interface única para todas as operações
 
-### Helpers (Redução Massiva)
-- `flext_auth_quick_start()` - Setup instantâneo com REDACTED_LDAP_BIND_PASSWORD
-- `flext_auth_hash_password()` - Hash seguro sem configuração
-- `flext_auth_verify_password()` - Verificação instantânea
+- `FlextAuth()` - Interface Ãºnica para todas as operaÃ§Ãµes
+
+### Helpers (ReduÃ§Ã£o Massiva)
+
+- `flext_auth_quick_start()` - Setup instantÃ¢neo com REDACTED_LDAP_BIND_PASSWORD
+- `flext_auth_hash_password()` - Hash seguro sem configuraÃ§Ã£o
+- `flext_auth_verify_password()` - VerificaÃ§Ã£o instantÃ¢nea
 - `flext_auth_generate_jwt()` - JWT em 1 linha
-- `flext_auth_decode_jwt()` - Decodificação instantânea
-- `flext_auth_validate_email()` - Validação robusta
-- `flext_auth_validate_password_strength()` - Análise completa
-- `flext_auth_create_secure_session()` - Sessão completa
+- `flext_auth_decode_jwt()` - DecodificaÃ§Ã£o instantÃ¢nea
+- `flext_auth_validate_email()` - ValidaÃ§Ã£o robusta
+- `flext_auth_validate_password_strength()` - AnÃ¡lise completa
+- `flext_auth_create_secure_session()` - SessÃ£o completa
 - `flext_auth_middleware_creator()` - Middleware universal
 
 ### Compatibilidade
-- Classes `FlextAuth*` (com warnings de depreciação)
+
+- Classes `FlextAuth*` (com warnings de depreciaÃ§Ã£o)
 - `FlextResult` (re-exportado de flext-core)
 
-## 🧪 Testes
+## ð§ª Testes
 
 ```bash
 # Executar todos os testes
 pytest tests/
 
-# Testes específicos
+# Testes especÃ­ficos
 pytest tests/test_flext_auth_library.py -v
 
 # Performance
@@ -245,40 +257,40 @@ pytest tests/test_flext_auth_library.py::TestFlextAuthPerformance -v
 pytest tests/ --cov=flext_auth --cov-report=html
 ```
 
-## 📊 Benchmark de Redução
+## ð" Benchmark de ReduÃ§Ã£o
 
-| Operação | Tradicional | FLEXT Auth | Redução |
-|----------|-------------|------------|---------|
-| Setup Básico | 150+ linhas | 3 linhas | 98% |
-| FastAPI Auth | 100+ linhas | 10 linhas | 90% |
-| Flask Auth | 80+ linhas | 8 linhas | 90% |
-| Hash Password | 20+ linhas | 1 linha | 95% |
-| JWT Operations | 50+ linhas | 2 linhas | 96% |
+| OperaÃ§Ã£o     | Tradicional | FLEXT Auth | ReduÃ§Ã£o |
+| -------------- | ----------- | ---------- | --------- |
+| Setup BÃ¡sico  | 150+ linhas | 3 linhas   | 98%       |
+| FastAPI Auth   | 100+ linhas | 10 linhas  | 90%       |
+| Flask Auth     | 80+ linhas  | 8 linhas   | 90%       |
+| Hash Password  | 20+ linhas  | 1 linha    | 95%       |
+| JWT Operations | 50+ linhas  | 2 linhas   | 96%       |
 
-## 🏛️ Arquitetura
+## ðï¸ Arquitetura
 
 ```
 flext-auth/
-├── src/flext_auth/
-│   ├── __init__.py          # ← ÚNICA interface pública
-│   ├── services/            # Serviços existentes (reutilização)
-│   ├── repositories/        # Repositórios (sem duplicação)
-│   ├── domain/             # Entidades (compatibilidade)
-│   └── config.py           # Configuração (flext-core base)
-├── examples/               # Exemplos práticos
-├── tests/                  # Testes robustos
-└── README.md              # Esta documentação
+â"â"â" src/flext_auth/
+â"   â"â"â" __init__.py          # â ÃNICA interface pÃºblica
+â"   â"â"â" services/            # ServiÃ§os existentes (reutilizaÃ§Ã£o)
+â"   â"â"â" repositories/        # RepositÃ³rios (sem duplicaÃ§Ã£o)
+â"   â"â"â" domain/             # Entidades (compatibilidade)
+â"   â""â"â" config.py           # ConfiguraÃ§Ã£o (flext-core base)
+â"â"â" examples/               # Exemplos prÃ¡ticos
+â"â"â" tests/                  # Testes robustos
+â""â"â" README.md              # Esta documentaÃ§Ã£o
 ```
 
-### Princípios
+### PrincÃ­pios
 
-1. **Interface Única**: Acesso APENAS pela raiz (`from flext_auth import ...`)
-2. **Sem Duplicação**: Reutiliza flext-core e bibliotecas existentes
-3. **Redução Massiva**: Elimina 95%+ do código boilerplate
-4. **Biblioteca Pura**: Sem CLI, sem serviços, apenas utilitários
+1. **Interface Ãnica**: Acesso APENAS pela raiz (`from flext_auth import ...`)
+2. **Sem DuplicaÃ§Ã£o**: Reutiliza flext-core e bibliotecas existentes
+3. **ReduÃ§Ã£o Massiva**: Elimina 95%+ do cÃ³digo boilerplate
+4. **Biblioteca Pura**: Sem CLI, sem serviÃ§os, apenas utilitÃ¡rios
 5. **Compatibilidade**: Warnings para migration suave
 
-## 🔧 Configuração Avançada
+## ð"§ ConfiguraÃ§Ã£o AvanÃ§ada
 
 ```python
 from flext_auth import FlextAuth
@@ -291,7 +303,7 @@ config = {
         "algorithm": "HS256"
     },
     "security": {
-        "password_rounds": 14,  # Produção
+        "password_rounds": 14,  # ProduÃ§Ã£o
         "max_failed_attempts": 3,
         "lockout_duration_minutes": 60,
         "session_expire_hours": 24,
@@ -302,62 +314,65 @@ config = {
 auth = FlextAuth(config)
 ```
 
-## 🎯 Casos de Uso
+## ð¯ Casos de Uso
 
 ### 1. APIs REST
+
 ```python
-# Autenticação completa em 3 linhas
+# AutenticaÃ§Ã£o completa em 3 linhas
 auth = flext_auth_quick_start()
 result = await auth.login(username, password)
 context = await auth.validate(token)
 ```
 
-### 2. Microserviços
+### 2. MicroserviÃ§os
+
 ```python
-# Validação distribuída
+# ValidaÃ§Ã£o distribuÃ­da
 middleware = flext_auth_middleware_creator(auth)
-# Aplicar em todos os serviços
+# Aplicar em todos os serviÃ§os
 ```
 
-### 3. Aplicações Web
+### 3. AplicaÃ§Ãµes Web
+
 ```python
-# Integração instantânea
+# IntegraÃ§Ã£o instantÃ¢nea
 @require_auth
 def protected_route():
     return render_template('dashboard.html')
 ```
 
-## 📚 Exemplos Completos
+## ð" Exemplos Completos
 
 Veja os exemplos completos em `/examples/`:
 
-- `basic_usage.py` - Uso básico e comparações
+- `basic_usage.py` - Uso bÃ¡sico e comparaÃ§Ãµes
 - `advanced_usage.py` - Sistema completo com RBAC
-- `web_framework_integration.py` - Integração com frameworks
+- `web_framework_integration.py` - IntegraÃ§Ã£o com frameworks
 
-## 🤝 Contribuindo
+## ð¤ Contribuindo
 
-1. Fork o repositório
+1. Fork o repositÃ³rio
 2. Crie uma branch para sua feature
 3. Execute os testes: `make validate`
 4. Submeta um Pull Request
 
-## 📄 Licença
+## ð" LicenÃ§a
 
 MIT License - veja LICENSE para detalhes.
 
-## 🏆 Resumo
+## ð Resumo
 
-**FLEXT Auth** revoluciona a implementação de autenticação Python com:
+**FLEXT Auth** revoluciona a implementaÃ§Ã£o de autenticaÃ§Ã£o Python com:
 
-- ⚡ **98% menos código** que métodos tradicionais
-- 🔒 **Segurança empresarial** com defaults seguros
-- 🚀 **Performance otimizada** com flext-core
-- 🌐 **Compatibilidade universal** com frameworks
-- 📚 **Interface única** para máxima simplicidade
+- â¡ **98% menos cÃ³digo** que mÃ©todos tradicionais
+- ð"' **SeguranÃ§a empresarial** com defaults seguros
+- ð **Performance otimizada** com flext-core
+- ð **Compatibilidade universal** com frameworks
+- ð" **Interface Ãºnica** para mÃ¡xima simplicidade
 
 **De 150+ linhas para 3 linhas. De 4 horas para 2 minutos.**
 
 ---
 
-*Construída com ❤️ usando flext-core patterns para máxima reutilização e zero duplicação.*
+_ConstruÃ­da com â¤ï¸ usando flext-core patterns para mÃ¡xima reutilizaÃ§Ã£o e zero duplicaÃ§Ã£o._

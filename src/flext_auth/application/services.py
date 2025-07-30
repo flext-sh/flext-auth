@@ -72,7 +72,7 @@ class FlextAuthenticationService:
                 return FlextResult.fail("Username must be at least 3 characters")
 
             # Validate email manually for better error messages
-            if "@" not in email or "." not in email.split("@")[-1]:
+            if "@" not in email or "." not in email.rsplit("@", maxsplit=1)[-1]:
                 return FlextResult.fail("Input should be a valid email address")
 
             # Validate password manually for better error messages
@@ -237,7 +237,7 @@ class FlextSessionService:
     ) -> FlextResult[FlextSession]:
         """Create session - compatibility method."""
         try:
-# Import moved to top of file to avoid PLC0415
+            # Import moved to top of file to avoid PLC0415
 
             # Create session entity
             session = FlextSession(

@@ -118,16 +118,28 @@ class SecurityConfig(FlextBaseSettings):
 
     password_rounds: int = Field(default=12, description="BCrypt rounds", ge=4, le=20)
     max_login_attempts: int = Field(
-        default=5, description="Max failed login attempts", ge=1, le=10,
+        default=5,
+        description="Max failed login attempts",
+        ge=1,
+        le=10,
     )
     lockout_duration_minutes: int = Field(
-        default=15, description="Account lockout duration", ge=1, le=1440,
+        default=15,
+        description="Account lockout duration",
+        ge=1,
+        le=1440,
     )
     session_timeout_minutes: int = Field(
-        default=1440, description="Session timeout minutes", ge=5, le=10080,
+        default=1440,
+        description="Session timeout minutes",
+        ge=5,
+        le=10080,
     )
     max_concurrent_sessions: int = Field(
-        default=5, description="Max concurrent sessions", ge=1, le=20,
+        default=5,
+        description="Max concurrent sessions",
+        ge=1,
+        le=20,
     )
 
 

@@ -716,9 +716,7 @@ def validate_user_profile_update(
         elif field_name == "role":
             validation_result = validate_role(str(new_value))
         elif field_name == "status":
-            validation_result = (
-                FlextAuthFieldSchema.STATUS.validate_value(new_value)
-            )
+            validation_result = FlextAuthFieldSchema.STATUS.validate_value(new_value)
         else:
             # Skip unknown fields
             continue

@@ -212,7 +212,9 @@ class TestFlextAuthEnhancedABI:
         assert "context" in result.data
         # When include_user_data=False, user field should NOT be present
         if "user" in result.data:
-            raise AssertionError(f"Expected 'user' not in {result.data} when include_user_data=False")
+            raise AssertionError(
+                f"Expected 'user' not in {result.data} when include_user_data=False"
+            )
 
 
 class TestEnhancedHelpers:
