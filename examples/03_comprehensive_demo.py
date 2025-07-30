@@ -12,6 +12,18 @@ from __future__ import annotations
 
 import asyncio
 
+# Example constants - not for production use
+EXAMPLE_DEMO_PASSWORD = "DemoPassword123!@#"
+EXAMPLE_JWT_SECRET = "demo-jwt-secret-key-256-bits-minimum-length-for-security"
+EXAMPLE_API_SECRET = "api-secret-key-256-bits-minimum-length"
+EXAMPLE_SERVICE_SECRET = "service-secret-key-256-bits-minimum-length"
+EXAMPLE_MFA_SECRET = "mfa-secret-key-256-bits-minimum-length"
+EXAMPLE_CHECK_SECRET = "check-token-secret-256-bits-minimum-length"
+EXAMPLE_DECORATOR_SECRET = "decorator-secret-256-bits-minimum-length"
+EXAMPLE_LIFECYCLE_PASSWORD = "LifecyclePass123!"
+EXAMPLE_BATCH_PASSWORD_1 = "Batch123!"
+EXAMPLE_BATCH_PASSWORD_2 = "Batch456!"
+
 from flext_auth import (
     ADMIN_ROLE,
     API_CONFIG,
@@ -117,7 +129,7 @@ def demo_all_password_operations() -> None:
     """Demonstra todas as operações com senhas."""
     print("\n=== All Password Operations ===")
 
-    password = "DemoPassword123!@#"
+    password = EXAMPLE_DEMO_PASSWORD
 
     # Hash password
     hashed = flext_auth_hash_password(password, rounds=4)
@@ -147,7 +159,7 @@ def demo_all_jwt_operations() -> None:
         "session_id": "demo_session_456",
     }
 
-    secret = "demo-jwt-secret-key-256-bits-minimum-length-for-security"
+    secret = EXAMPLE_JWT_SECRET
 
     # Generate JWT
     token = flext_auth_generate_jwt(payload, secret=secret, expires_minutes=30)
@@ -161,10 +173,14 @@ def demo_all_jwt_operations() -> None:
     # Extract user context
     context = flext_auth_extract_user_context(token, secret)
     if context:
-        print(f"User context - Type: {context['token_type']}, User: {context['username']}")
+        token_type = context["token_type"]
+        username = context["username"]
+        print(f"User context - Type: {token_type}, User: {username}")
 
     # Create auth context
-    auth_context = flext_auth_create_auth_context(token, secret, include_permissions=True)
+    auth_context = flext_auth_create_auth_context(
+        token, secret, include_permissions=True
+    )
     if auth_context:
         print(f"Auth context - Permissions: {auth_context.get('permissions', [])}")
 
@@ -178,7 +194,7 @@ def demo_all_token_types() -> None:
         user_id="api_user_789",
         scope="api",
         expires_days=365,
-        secret="api-secret-key-256-bits-minimum-length",
+        secret=EXAMPLE_API_SECRET,
     )
     print(f"API Key: {api_key[:50]}...")
 
@@ -187,7 +203,7 @@ def demo_all_token_types() -> None:
         service_name="demo-service",
         permissions=["read", "write", "execute"],
         expires_hours=72,
-        secret="service-secret-key-256-bits-minimum-length",
+        secret=EXAMPLE_SERVICE_SECRET,
     )
     print(f"Service Token: {service_token[:50]}...")
 
@@ -196,7 +212,7 @@ def demo_all_token_types() -> None:
         user_id="mfa_user_101",
         factor_type="totp",
         expires_minutes=5,
-        secret="mfa-secret-key-256-bits-minimum-length",
+        secret=EXAMPLE_MFA_SECRET,
     )
     print(f"MFA Token: {mfa_token[:50]}...")
 
@@ -220,7 +236,9 @@ def demo_all_session_operations() -> None:
         role=MODERATOR_ROLE,
         expires_hours=24,
     )
-    print(f"Basic session: {basic_session['username']} expires {basic_session['expires_at']}")
+    username = basic_session["username"]
+    expires_at = basic_session["expires_at"]
+    print(f"Basic session: {username} expires {expires_at}")
 
     # Secure session with permissions
     enhanced_session = flext_auth_create_secure_session(
@@ -280,7 +298,7 @@ def demo_all_validation_operations() -> None:
         print(f"  {email}: {'✅' if valid else '❌'}")
 
     # Token checking
-    secret = "check-token-secret-256-bits-minimum-length"
+    secret = EXAMPLE_CHECK_SECRET
     test_token = flext_auth_generate_jwt(
         {"user_id": "check_user", "username": "checker", "role": USER_ROLE},
         secret=secret,
@@ -323,18 +341,24 @@ def demo_decorators() -> None:
     """Demonstra todos os decoradores."""
     print("\n=== All Decorators ===")
 
-    secret = "decorator-secret-256-bits-minimum-length"
+    secret = EXAMPLE_DECORATOR_SECRET
 
     @flext_auth_required(secret_key=secret)
-    def protected_function(request: dict[str, object], **kwargs: object) -> dict[str, object]:
+    def protected_function(
+        _request: dict[str, object], **_kwargs: object
+    ) -> dict[str, object]:
         return {"message": "Protected access granted"}
 
     @flext_auth_role_required(ADMIN_ROLE, secret_key=secret)
-    def REDACTED_LDAP_BIND_PASSWORD_function(request: dict[str, object], **kwargs: object) -> dict[str, object]:
+    def REDACTED_LDAP_BIND_PASSWORD_function(
+        _request: dict[str, object], **_kwargs: object
+    ) -> dict[str, object]:
         return {"message": "Admin access granted"}
 
     @flext_auth_permission_required("delete")
-    def permission_function(request: dict[str, object], **kwargs: object) -> dict[str, object]:
+    def permission_function(
+        _request: dict[str, object], **_kwargs: object
+    ) -> dict[str, object]:
         return {"message": "Permission granted"}
 
     # Mock request (will fail auth but shows decorator usage)
@@ -380,7 +404,7 @@ async def demo_full_auth_lifecycle() -> None:
     register_result = await auth.register_validated(
         username="lifecycle_user",
         email="lifecycle@example.com",
-        password="LifecyclePass123!",
+        password=EXAMPLE_LIFECYCLE_PASSWORD,
         role="user",
         require_strong_password=True,
     )
@@ -415,8 +439,18 @@ async def demo_batch_operations() -> None:
 
     # Batch user registration
     users = [
-        {"username": "batch1", "email": "batch1@example.com", "password": "Batch123!", "role": "user"},
-        {"username": "batch2", "email": "batch2@example.com", "password": "Batch456!", "role": "moderator"},
+        {
+            "username": "batch1",
+            "email": "batch1@example.com",
+            "password": EXAMPLE_BATCH_PASSWORD_1,
+            "role": "user",
+        },
+        {
+            "username": "batch2",
+            "email": "batch2@example.com",
+            "password": EXAMPLE_BATCH_PASSWORD_2,
+            "role": "moderator",
+        },
     ]
 
     batch_result = await batch_ops.register_multiple(users, validate_all=True)

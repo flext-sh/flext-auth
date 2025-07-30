@@ -49,7 +49,7 @@ _DecoratorCallable = Callable[[object], object]
 try:
     __version__ = importlib.metadata.version("flext-auth")
 except importlib.metadata.PackageNotFoundError:
-    __version__ = "0.8.0"
+    __version__ = "0.9.0"
 
 __version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
 
@@ -864,8 +864,8 @@ def flext_auth_decode_jwt(token: str, secret: str) -> dict[str, object] | None:
             "username": claims.username,
             "role": claims.role,
             "session_id": claims.session_id,
-            "expires": claims.exp,
-            "issued": claims.iat,
+            "exp": claims.exp,  # Standard JWT claim name
+            "iat": claims.iat,  # Standard JWT claim name
         }
     return None
 
@@ -944,7 +944,9 @@ def flext_auth_create_secure_session(
             session["permissions"] = ["read", "write", "moderate"]
         else:
             session["permissions"] = ["read"]
-    # If include_permissions is False, don't include permissions field at all
+    elif include_permissions is False:
+        # Include empty permissions list when explicitly False
+        session["permissions"] = []
 
     return session
 
@@ -1197,6 +1199,9 @@ def flext_auth_create_auth_context(
         role = context["role"]
         if isinstance(role, str):
             context["permissions"] = hierarchy.get(role, [])
+    elif not include_permissions:
+        # Always include permissions field, but empty when False
+        context["permissions"] = []
 
     return context
 
@@ -1207,47 +1212,102 @@ def flext_auth_create_auth_context(
 
 
 def flext_auth_build_response(
-    data: object,
+    data: object | None = None,
     *,
     success: bool = True,
+    headers: dict[str, str] | None = None,
+    status: int | None = None,
+    error: str | None = None,
 ) -> dict[str, object]:
-    """Build standard response format."""
-    return {"success": success, "data": data}
-
-
-def flext_auth_create_user_payload(user_data: dict[str, object]) -> dict[str, object]:
-    """Create user payload from user data."""
-    return {
-        "user_id": user_data.get("id"),
-        "username": user_data.get("username"),
-        "email": user_data.get("email"),
-        "role": user_data.get("role"),
+    """Build standard response format with optional headers, status, and error."""
+    response: dict[str, object] = {
+        "success": success,
+        "status": status or (200 if success else 400),
+        "timestamp": datetime.now(UTC).isoformat(),
     }
+    if data is not None:
+        response["data"] = data
+    if headers:
+        response["headers"] = headers
+    if error:
+        response["error"] = error
+    return response
+
+
+def flext_auth_create_user_payload(
+    user_id: str,
+    username: str,
+    *,
+    role: str = "user",
+    email: str | None = None,
+) -> dict[str, object]:
+    """Create JWT-compatible user payload from individual parameters."""
+    now = int(datetime.now(UTC).timestamp())
+    payload: dict[str, object] = {
+        "user_id": user_id,
+        "username": username,
+        "role": role,
+        "iat": now,  # Issued at time
+        "exp": now + 3600,  # Expires in 1 hour
+    }
+    if email:
+        payload["email"] = email
+    return payload
 
 
 def flext_auth_extract_token_claims(
     token: str,
     secret: str,
-) -> dict[str, object] | None:
-    """Extract claims from token."""
-    return flext_auth_decode_jwt(token, secret)
+) -> dict[str, object]:
+    """Extract claims from token, returns empty dict if invalid."""
+    claims = flext_auth_decode_jwt(token, secret)
+    return claims if claims is not None else {}
 
 
 def flext_auth_filter_user_data(
     user_data: dict[str, object],
-    fields: list[str],
+    fields: list[str] | None = None,
+    *,
+    exclude_sensitive: bool = False,
 ) -> dict[str, object]:
-    """Filter user data to include only specified fields."""
-    return {field: user_data.get(field) for field in fields if field in user_data}
+    """Filter user data to include specified fields or all fields."""
+    if fields is not None:
+        # Use specified fields
+        return {field: user_data.get(field) for field in fields if field in user_data}
+    elif exclude_sensitive:
+        # Default safe fields (excludes sensitive data)
+        sensitive_fields = {"password_hash", "password", "secret", "token", "api_key"}
+        return {
+            key: value for key, value in user_data.items() 
+            if key not in sensitive_fields
+        }
+    else:
+        # Return all fields by default
+        return user_data.copy()
 
 
 def flext_auth_merge_configs(
     base_config: dict[str, object],
     override_config: dict[str, object],
 ) -> dict[str, object]:
-    """Merge configuration dictionaries."""
+    """Deep merge configuration dictionaries."""
     merged = base_config.copy()
-    merged.update(override_config)
+    
+    for key, value in override_config.items():
+        if (
+            key in merged 
+            and isinstance(merged[key], dict) 
+            and isinstance(value, dict)
+        ):
+            # Recursively merge nested dictionaries
+            merged[key] = flext_auth_merge_configs(
+                cast("dict[str, object]", merged[key]), 
+                cast("dict[str, object]", value)
+            )
+        else:
+            # Direct assignment for non-dict values or new keys
+            merged[key] = value
+    
     return merged
 
 
@@ -1647,7 +1707,7 @@ class FlextAuthBatchOperations:
         user_credentials: list[tuple[str, str]],  # [(username, password), ...]
         *,
         session_hours: int = 24,
-    ) -> FlextResult[list[dict[str, object]]]:
+    ) -> FlextResult[dict[str, object]]:
         """Create multiple user sessions efficiently.
 
         Replaces 80+ lines of session creation + management code.
@@ -1683,14 +1743,12 @@ class FlextAuthBatchOperations:
             )
 
         return FlextResult.ok(
-            [
-                {
-                    "sessions": sessions,
-                    "errors": errors,
-                    "total": len(user_credentials),
-                    "successful": len(sessions),
-                },
-            ],
+            {
+                "sessions": sessions,
+                "errors": errors,
+                "total": len(user_credentials),
+                "successful": len(sessions),
+            },
         )
 
 

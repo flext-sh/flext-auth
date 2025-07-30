@@ -1,8 +1,8 @@
 # FLEXT Auth - Enterprise Authentication Library
 
-🚀 **Biblioteca para REDUÇÃO MASSIVA de código de autenticação**  
-🔒 **Interface única • Zero configuração • Baseada em flext-core**  
-⚡ **De 150+ linhas para 3 linhas de código**
+**Enterprise Authentication & Authorization Library**
+
+Built on flext-core foundation with Clean Architecture, Domain-Driven Design, and CQRS patterns. Provides comprehensive authentication flows with massive code reduction - from 150+ lines to 3 lines of code.
 
 ## Visão Geral
 

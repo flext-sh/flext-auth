@@ -17,9 +17,9 @@ from flext_core import FlextConstants
 
 
 class FlextAuthConstants(FlextConstants):
-    """Authentication constants extending flext-core patterns."""
+    """Authentication constants extending flext-core platform constants."""
 
-    # Authentication patterns
+    # Authentication patterns (extend core patterns)
     USERNAME_PATTERN = r"^[a-zA-Z0-9_]{3,50}$"
 
     # Password validation regex - requires mixed case, digits, special chars
@@ -29,12 +29,12 @@ class FlextAuthConstants(FlextConstants):
         r".{8,128}$"
     )
 
-    # Password constraints
+    # Password constraints (hardcoded as auth-specific)
     MIN_PASSWORD_LENGTH = 8
     MAX_PASSWORD_LENGTH = 128
     MIN_PASSWORD_SECURITY_SCORE = 4
 
-    # Account security
+    # Account security (hardcoded as auth-specific)
     DEFAULT_MAX_LOGIN_ATTEMPTS = 5
     DEFAULT_LOCKOUT_DURATION_MINUTES = 30
     MAX_ACCOUNT_LOCK_HOURS = 24
@@ -43,7 +43,7 @@ class FlextAuthConstants(FlextConstants):
     DEFAULT_SESSION_TIMEOUT_HOURS = 24
     MAX_CONCURRENT_SESSIONS = 5
 
-    # Token defaults
+    # Token defaults (hardcoded as auth-specific)
     DEFAULT_ACCESS_TOKEN_MINUTES = 30
     DEFAULT_REFRESH_TOKEN_DAYS = 7
 

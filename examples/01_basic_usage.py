@@ -29,6 +29,14 @@ from flext_auth import (
     flext_auth_web_session,
 )
 
+# Example constants - not for production use
+EXAMPLE_PASSWORD = "MySecurePassword123!"
+EXAMPLE_WRONG_PASSWORD = "WrongPassword"
+EXAMPLE_TOKEN = "sample_token_12345"
+EXAMPLE_USER_PASSWORD = "SecurePass123!"
+EXAMPLE_ADVANCED_PASSWORD = "AdvancedPass123!"
+EXAMPLE_WORKFLOW_PASSWORD = "WorkflowPass123!"
+
 
 def example_basic_authentication() -> None:
     """Exemplo: Autenticação básica com FlextAuth."""
@@ -52,7 +60,7 @@ def example_password_operations() -> None:
     print("\n=== Password Operations Example ===")
 
     # Hash de senha
-    password = "MySecurePassword123!"
+    password = EXAMPLE_PASSWORD
     hashed_password = flext_auth_hash_password(password, rounds=4)  # Fast for demo
     print(f"Password hashed: {hashed_password[:50]}...")
 
@@ -61,7 +69,7 @@ def example_password_operations() -> None:
     print(f"Password verification: {is_valid}")
 
     # Verificação com senha incorreta
-    wrong_password = "WrongPassword"
+    wrong_password = EXAMPLE_WRONG_PASSWORD
     is_wrong = flext_auth_verify_password(wrong_password, hashed_password)
     print(f"Wrong password verification: {is_wrong}")
 
@@ -101,7 +109,7 @@ async def example_user_lifecycle() -> None:
     register_result = await auth.register(
         username="testuser",
         email="testuser@example.com",
-        password="SecurePass123!",
+        password=EXAMPLE_USER_PASSWORD,
         role="user",
     )
 
@@ -146,7 +154,7 @@ def example_quick_helpers() -> None:
     print("Quick start completed (without REDACTED_LDAP_BIND_PASSWORD creation)")
 
     # Headers padrão
-    token = "sample_token_12345"
+    token = EXAMPLE_TOKEN
     auth_headers = FlextAuthDefaults.auth_headers(token)
     print(f"Auth headers: {auth_headers}")
 
@@ -227,7 +235,7 @@ async def example_advanced_registration() -> None:
     register_result = await auth.register_validated(
         username="advanceduser",
         email="advanced@example.com",
-        password="AdvancedPass123!",
+        password=EXAMPLE_ADVANCED_PASSWORD,
         role="user",
         require_strong_password=True,
     )
@@ -266,7 +274,7 @@ def example_complete_workflow() -> None:
     workflow_result = flext_auth_complete_workflow(
         username="workflowuser",
         email="workflow@example.com",
-        password="WorkflowPass123!",
+        password=EXAMPLE_WORKFLOW_PASSWORD,
         role="user",
     )
 

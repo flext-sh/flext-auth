@@ -12,6 +12,16 @@ from __future__ import annotations
 
 import asyncio
 
+# Example constants - not for production use
+EXAMPLE_PRODUCTION_SECRET = "production-secret-key-super-secure-256-bits-minimum"
+EXAMPLE_JWT_SECRET = "my-super-secure-jwt-secret-key-256-bits-minimum-length-required"
+EXAMPLE_API_SECRET = "api-secret-key-for-validation-256-bits-minimum-length"
+EXAMPLE_SERVICE_SECRET = "service-to-service-secret-key-256-bits"
+EXAMPLE_MFA_TOTP_SECRET = "mfa-totp-secret-key-256-bits-minimum-length"
+EXAMPLE_MFA_SMS_SECRET = "mfa-sms-secret-key-256-bits-minimum-length"
+EXAMPLE_TEST_SECRET = "test-secret-key-256-bits-minimum-length"
+EXAMPLE_PRODUCTION_ADMIN_PASSWORD = "ProductionAdminPass123!@#"
+
 from flext_auth import (
     ADMIN_ROLE,
     MODERATOR_ROLE,
@@ -43,7 +53,7 @@ def example_advanced_configuration() -> None:
 
     # Configuração personalizada para produção
     custom_config = FlextAuthConfig(
-        jwt_secret_key="production-secret-key-super-secure-256-bits-minimum",
+        jwt_secret_key=EXAMPLE_PRODUCTION_SECRET,
         jwt_algorithm="HS256",
         access_token_expire_minutes=15,  # Tokens mais seguros, expiration curta
         refresh_token_expire_days=30,
@@ -81,7 +91,7 @@ def example_jwt_operations() -> None:
     }
 
     # Gerar JWT
-    secret = "my-super-secure-jwt-secret-key-256-bits-minimum-length-required"
+    secret = EXAMPLE_JWT_SECRET
     token = flext_auth_generate_jwt(user_payload, secret=secret, expires_minutes=60)
     print(f"JWT Generated: {token[:50]}...")
 
@@ -114,7 +124,7 @@ def example_api_key_management() -> None:
         user_id=user_id,
         scope="api",
         expires_days=90,  # 3 meses
-        secret="api-secret-key-for-validation-256-bits-minimum-length",
+        secret=EXAMPLE_API_SECRET,
     )
     print(f"API Key Created: {api_key[:50]}...")
 
@@ -134,7 +144,7 @@ def example_api_key_management() -> None:
         service_name="data-processor",
         permissions=["read_data", "write_logs", "access_cache"],
         expires_hours=48,
-        secret="service-to-service-secret-key-256-bits",
+        secret=EXAMPLE_SERVICE_SECRET,
     )
     print(f"Service Token Created: {service_token[:50]}...")
 
@@ -207,7 +217,7 @@ def example_multi_factor_authentication() -> None:
         user_id="mfa_user_789",
         factor_type="totp",
         expires_minutes=5,  # Tokens MFA expiram rapidamente
-        secret="mfa-totp-secret-key-256-bits-minimum-length",
+        secret=EXAMPLE_MFA_TOTP_SECRET,
     )
     print(f"TOTP MFA Token: {totp_token[:50]}...")
 
@@ -216,7 +226,7 @@ def example_multi_factor_authentication() -> None:
         user_id="mfa_user_789",
         factor_type="sms",
         expires_minutes=10,
-        secret="mfa-sms-secret-key-256-bits-minimum-length",
+        secret=EXAMPLE_MFA_SMS_SECRET,
     )
     print(f"SMS MFA Token: {sms_token[:50]}...")
 
@@ -237,8 +247,10 @@ def example_decorators() -> None:
     print("\n=== Authentication Decorators Example ===")
 
     # Função que requer autenticação
-    @flext_auth_required(secret_key="test-secret-key-256-bits-minimum-length")
-    def protected_endpoint(_request: dict[str, object], **kwargs: object) -> dict[str, object]:
+    @flext_auth_required(secret_key=EXAMPLE_TEST_SECRET)
+    def protected_endpoint(
+        _request: dict[str, object], **kwargs: object
+    ) -> dict[str, object]:
         """Endpoint protegido que requer autenticação."""
         auth_context = kwargs.get("auth_context", {})
         return {
@@ -250,15 +262,19 @@ def example_decorators() -> None:
     # Função que requer role específico
     @flext_auth_role_required(
         ADMIN_ROLE,
-        secret_key="test-secret-key-256-bits-minimum-length",
+        secret_key=EXAMPLE_TEST_SECRET,
     )
-    def REDACTED_LDAP_BIND_PASSWORD_endpoint(_request: dict[str, object], **_kwargs: object) -> dict[str, object]:
+    def REDACTED_LDAP_BIND_PASSWORD_endpoint(
+        _request: dict[str, object], **_kwargs: object
+    ) -> dict[str, object]:
         """Endpoint que requer role de REDACTED_LDAP_BIND_PASSWORD."""
         return {"message": "Admin access granted", "REDACTED_LDAP_BIND_PASSWORD_only": True}
 
     # Função que requer permissão específica
     @flext_auth_permission_required("delete")
-    def delete_endpoint(_request: dict[str, object], **_kwargs: object) -> dict[str, object]:
+    def delete_endpoint(
+        _request: dict[str, object], **_kwargs: object
+    ) -> dict[str, object]:
         """Endpoint que requer permissão de delete."""
         return {"message": "Delete permission granted"}
 
@@ -340,7 +356,9 @@ async def example_batch_operations() -> None:
 
     if batch_sessions_result.is_success:
         session_data = batch_sessions_result.data
-        print(f"Batch Sessions Created: {session_data['successful']}/{session_data['total']}")
+        successful = session_data["successful"]
+        total = session_data["total"]
+        print(f"Batch Sessions Created: {successful}/{total}")
 
         # Extrair tokens para validação em lote
         tokens = []
@@ -354,7 +372,9 @@ async def example_batch_operations() -> None:
             batch_validation_result = await batch_ops.validate_multiple_tokens(tokens)
             if batch_validation_result.is_success:
                 validation_data = batch_validation_result.data
-                print(f"Batch Token Validation: {validation_data['valid_count']}/{validation_data['total']} valid")
+                valid_count = validation_data["valid_count"]
+                total_count = validation_data["total"]
+                print(f"Batch Token Validation: {valid_count}/{total_count} valid")
             else:
                 print(f"Batch validation failed: {batch_validation_result.error}")
     else:
@@ -373,7 +393,7 @@ async def example_advanced_user_management() -> None:
     REDACTED_LDAP_BIND_PASSWORD_result = await auth.register_validated(
         username="production_REDACTED_LDAP_BIND_PASSWORD",
         email="REDACTED_LDAP_BIND_PASSWORD@production.com",
-        password="ProductionAdminPass123!@#",
+        password=EXAMPLE_PRODUCTION_ADMIN_PASSWORD,
         role=ADMIN_ROLE,
         require_strong_password=True,
     )
@@ -387,7 +407,9 @@ async def example_advanced_user_management() -> None:
 
         if REDACTED_LDAP_BIND_PASSWORD_data.get("password_strength"):
             strength = REDACTED_LDAP_BIND_PASSWORD_data["password_strength"]
-            print(f"  Password Strength: {strength['strength']} (score: {strength['score']})")
+            strength_level = strength["strength"]
+            strength_score = strength["score"]
+            print(f"  Password Strength: {strength_level} (score: {strength_score})")
 
         # Sessão completa com dados do usuário
         session_result = await auth.create_user_session(
