@@ -6,6 +6,7 @@ import os
 from unittest.mock import patch
 
 import pytest
+from pydantic import ValidationError
 
 from flext_auth.config import (
     AppConfig,
@@ -95,13 +96,13 @@ class TestDatabaseConfig:
         assert config.max_pool_size == 100
 
         # Invalid ranges - these should raise validation errors
-        with pytest.raises(ValueError, match="Minimum pool size must be at least 1"):
+        with pytest.raises(ValidationError, match="Minimum pool size must be at least 1"):
             DatabaseConfig(min_pool_size=0)
 
-        with pytest.raises(ValueError, match="Minimum pool size must be at least 1"):
+        with pytest.raises(ValidationError, match="Minimum pool size cannot exceed 20"):
             DatabaseConfig(min_pool_size=21)
 
-        with pytest.raises(ValueError, match="Maximum pool size must be at least 1"):
+        with pytest.raises(ValidationError, match="Maximum pool size cannot exceed 100"):
             DatabaseConfig(max_pool_size=101)
 
 

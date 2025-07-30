@@ -11,7 +11,29 @@ import secrets
 
 # Use flext-core configuration patterns directly
 from flext_core import FlextBaseSettings
-from pydantic import Field
+from pydantic import Field, field_validator
+from pydantic_settings import SettingsConfigDict
+
+# =============================================================================
+# CONSTANTS - Single source of truth for validation rules (SOLID principle)
+# =============================================================================
+
+# Pool size constraints
+MIN_POOL_SIZE = 1
+MAX_MIN_POOL_SIZE = 20
+MAX_POOL_SIZE = 100
+
+# Secret key constraints
+MIN_SECRET_KEY_LENGTH = 32
+
+# Field length constraints
+DEFAULT_DESCRIPTION_LENGTH = 79  # For line length compliance
+
+# Error messages - Centralized for consistency (DRY principle)
+MIN_POOL_SIZE_ERROR = "Minimum pool size must be at least 1"
+MIN_POOL_SIZE_EXCEED_ERROR = "Minimum pool size cannot exceed 20"
+MAX_POOL_SIZE_ERROR = "Maximum pool size must be at least 1"
+MAX_POOL_SIZE_EXCEED_ERROR = "Maximum pool size cannot exceed 100"
 
 # =============================================================================
 # COMPATIBILITY CONFIGURATION CLASSES - For backward compatibility
@@ -27,15 +49,56 @@ class AppConfig(FlextBaseSettings):
 
 
 class DatabaseConfig(FlextBaseSettings):
-    """Database configuration for backward compatibility."""
+    """Database configuration for backward compatibility - DRY unified interface."""
 
-    database_url: str = Field(default="sqlite:///auth.db", description="Database URL")
-    pool_size: int = Field(default=10, description="Connection pool size")
-    max_overflow: int = Field(default=20, description="Max overflow connections")
+    model_config = SettingsConfigDict(env_prefix="DATABASE_")
+
+    url: str = Field(default="", description="Database URL")
+    min_pool_size: int = Field(
+        default=1,
+        description="Minimum pool size"
+    )
+    max_pool_size: int = Field(
+        default=10,
+        description="Maximum pool size"
+    )
+    command_timeout: int = Field(
+        default=60,
+        description="Command timeout in seconds"
+    )
+
+    @field_validator("url")
+    @classmethod
+    def validate_database_url(cls, v: str) -> str:
+        """DRY validation for database URL format."""
+        if v and not v.startswith(("postgresql://", "postgresql+asyncpg://")):
+            db_url_error = "Database URL must start with postgresql:// or postgresql+asyncpg://"
+            raise ValueError(db_url_error)
+        return v
+
+    @field_validator("min_pool_size")
+    @classmethod
+    def validate_min_pool_size(cls, v: int) -> int:
+        """DRY validation with specific error message."""
+        if v < MIN_POOL_SIZE:
+            raise ValueError(MIN_POOL_SIZE_ERROR)
+        if v > MAX_MIN_POOL_SIZE:
+            raise ValueError(MIN_POOL_SIZE_EXCEED_ERROR)
+        return v
+
+    @field_validator("max_pool_size")
+    @classmethod
+    def validate_max_pool_size(cls, v: int) -> int:
+        """DRY validation for maximum pool size."""
+        if v < MIN_POOL_SIZE:
+            raise ValueError(MAX_POOL_SIZE_ERROR)
+        if v > MAX_POOL_SIZE:
+            raise ValueError(MAX_POOL_SIZE_EXCEED_ERROR)
+        return v
 
 
 class JWTConfig(FlextBaseSettings):
-    """JWT configuration for backward compatibility."""
+    """JWT configuration for backward compatibility - DRY unified interface."""
 
     secret_key: str = Field(default="dev-secret-key", description="JWT secret key")
     algorithm: str = Field(default="HS256", description="JWT algorithm")
@@ -48,22 +111,44 @@ class JWTConfig(FlextBaseSettings):
         description="Refresh token expiration",
     )
 
+    def validate_secret_key(self) -> bool:
+        """DRY helper to validate secret key strength."""
+        return bool(
+            self.secret_key and len(self.secret_key) >= MIN_SECRET_KEY_LENGTH
+        )
+
+    def generate_secret_key(self) -> str:
+        """DRY helper to generate secure secret key."""
+        return secrets.token_urlsafe(32)
+
 
 class SecurityConfig(FlextBaseSettings):
-    """Security configuration for backward compatibility."""
+    """Security configuration for backward compatibility - DRY unified interface."""
 
-    bcrypt_rounds: int = Field(default=12, description="BCrypt rounds")
-    max_login_attempts: int = Field(default=5, description="Max failed login attempts")
+    password_rounds: int = Field(
+        default=12, description="BCrypt rounds", ge=4, le=20
+    )
+    max_login_attempts: int = Field(
+        default=5, description="Max failed login attempts", ge=1, le=10
+    )
     lockout_duration_minutes: int = Field(
         default=15,
-        description="Account lockout duration",
+        description="Account lockout duration", ge=1, le=1440
+    )
+    session_timeout_minutes: int = Field(
+        default=1440, description="Session timeout minutes", ge=5, le=10080
+    )
+    max_concurrent_sessions: int = Field(
+        default=5, description="Max concurrent sessions", ge=1, le=20
     )
 
 
-def validate_production_config(config: dict[str, object]) -> bool:
-    """Validate production configuration."""
-    required_fields = ["jwt_secret_key", "database_url"]
-    return all(field in config for field in required_fields)
+def validate_production_config(config: AppConfig) -> bool:
+    """DRY production configuration validation."""
+    # Use standard Pydantic model_dump for serialization
+    config_dict = config.model_dump()
+    required_fields = ["app_name", "environment"]
+    return all(field in config_dict and config_dict[field] for field in required_fields)
 
 
 # =============================================================================
