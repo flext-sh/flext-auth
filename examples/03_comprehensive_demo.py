@@ -12,18 +12,6 @@ from __future__ import annotations
 
 import asyncio
 
-# Example constants - not for production use
-EXAMPLE_DEMO_PASSWORD = "DemoPassword123!@#"
-EXAMPLE_JWT_SECRET = "demo-jwt-secret-key-256-bits-minimum-length-for-security"
-EXAMPLE_API_SECRET = "api-secret-key-256-bits-minimum-length"
-EXAMPLE_SERVICE_SECRET = "service-secret-key-256-bits-minimum-length"
-EXAMPLE_MFA_SECRET = "mfa-secret-key-256-bits-minimum-length"
-EXAMPLE_CHECK_SECRET = "check-token-secret-256-bits-minimum-length"
-EXAMPLE_DECORATOR_SECRET = "decorator-secret-256-bits-minimum-length"
-EXAMPLE_LIFECYCLE_PASSWORD = "LifecyclePass123!"
-EXAMPLE_BATCH_PASSWORD_1 = "Batch123!"
-EXAMPLE_BATCH_PASSWORD_2 = "Batch456!"
-
 from flext_auth import (
     ADMIN_ROLE,
     API_CONFIG,
@@ -72,6 +60,19 @@ from flext_auth import (
     flext_auth_web,
     flext_auth_web_session,
 )
+
+# Example constants - not for production use
+
+EXAMPLE_DEMO_PASSWORD = "DemoPassword123!@#"  # noqa: S105
+EXAMPLE_JWT_SECRET = "demo-jwt-secret-key-256-bits-minimum-length-for-security"  # noqa: S105
+EXAMPLE_API_SECRET = "api-secret-key-256-bits-minimum-length"  # noqa: S105
+EXAMPLE_SERVICE_SECRET = "service-secret-key-256-bits-minimum-length"  # noqa: S105
+EXAMPLE_MFA_SECRET = "mfa-secret-key-256-bits-minimum-length"  # noqa: S105
+EXAMPLE_CHECK_SECRET = "check-token-secret-256-bits-minimum-length"  # noqa: S105
+EXAMPLE_DECORATOR_SECRET = "decorator-secret-256-bits-minimum-length"  # noqa: S105
+EXAMPLE_LIFECYCLE_PASSWORD = "LifecyclePass123!"  # noqa: S105
+EXAMPLE_BATCH_PASSWORD_1 = "Batch123!"  # noqa: S105
+EXAMPLE_BATCH_PASSWORD_2 = "Batch456!"  # noqa: S105
 
 
 def demo_all_constants_and_configs() -> None:
