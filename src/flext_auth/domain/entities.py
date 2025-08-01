@@ -145,7 +145,7 @@ class FlextUser(FlextEntity):
         Railway-Oriented Programming + Strategy Pattern.
         """
         try:
-            # SOLID REFACTORING: Strategy Pattern - validation rules as strategies
+            # REFACTORING: Strategy Pattern - validation rules as strategies
             validation_errors = self._execute_user_validation_strategies()
             if validation_errors:
                 return FlextResult.fail(validation_errors[0])  # Return first error
@@ -331,7 +331,7 @@ class FlextRole(FlextEntity):
         Railway-Oriented Programming with validation strategies.
         """
         try:
-            # SOLID REFACTORING: Railway-Oriented Programming - reduces 6 returns to 2
+            # REFACTORING: Railway-Oriented Programming - reduces 6 returns to 2
             return self._execute_role_validation_strategies()
         except (ValueError, TypeError) as e:
             return FlextResult.fail(f"Role validation failed: {e}")
@@ -343,10 +343,14 @@ class FlextRole(FlextEntity):
             (not self.id, "Role ID cannot be empty"),
             (not self.name, "Role name cannot be empty"),
             (not self.description, "Role description cannot be empty"),
-            (len(self.name) > MAX_NAME_LENGTH,
-             "Role name must be at most 100 characters"),
-            (len(self.description) > MAX_DESCRIPTION_LENGTH,
-             "Role description must be at most 500 characters"),
+            (
+                len(self.name) > MAX_NAME_LENGTH,
+                "Role name must be at most 100 characters",
+            ),
+            (
+                len(self.description) > MAX_DESCRIPTION_LENGTH,
+                "Role description must be at most 500 characters",
+            ),
         ]
 
         # Railway-Oriented Programming: First failure stops execution
@@ -376,7 +380,7 @@ class FlextLoginAttempt(FlextEntity):
         Railway-Oriented Programming + Strategy Pattern.
         """
         try:
-            # SOLID REFACTORING: Strategy Pattern - validation rules as strategies
+            # REFACTORING: Strategy Pattern - validation rules as strategies
             validation_errors = self._execute_validation_strategies()
             if validation_errors:
                 return FlextResult.fail(validation_errors[0])  # Return first error
@@ -419,7 +423,7 @@ class FlextLoginAttempt(FlextEntity):
 
 
 # =============================================================================
-# SOLID REFACTORING: Template Method Pattern - eliminates 33 lines duplication
+# REFACTORING: Template Method Pattern - eliminates 33 lines duplication
 # =============================================================================
 
 
@@ -462,7 +466,7 @@ class FlextBaseToken(FlextEntity):
         Railway-Oriented Programming + Strategy Pattern.
         """
         try:
-            # SOLID REFACTORING: Strategy Pattern - validation rules as strategies
+            # REFACTORING: Strategy Pattern - validation rules as strategies
             validation_errors = self._execute_common_validation_strategies()
             if validation_errors:
                 return FlextResult.fail(validation_errors[0])  # Return first error

@@ -37,7 +37,7 @@ from flext_auth.session import InMemorySessionRepository
 from flext_auth.user import InMemoryUserRepository
 
 # =============================================================================
-# SOLID REFACTORING: Command Pattern - Encapsulates operations as objects
+# REFACTORING: Command Pattern - Encapsulates operations as objects
 # =============================================================================
 
 
@@ -171,15 +171,17 @@ class RoleBasedPermissionStrategy(PermissionStrategy):
         if user_role_name in check_data.roles:
             role = check_data.roles[user_role_name]
             for permission in role.permissions:
-                if (permission.resource == check_data.resource and
-                    permission.action == check_data.action):
+                if (
+                    permission.resource == check_data.resource
+                    and permission.action == check_data.action
+                ):
                     return FlextResult.ok(PERMISSION_GRANTED)
 
         return FlextResult.ok(PERMISSION_DENIED)
 
 
 # =============================================================================
-# SOLID REFACTORING: Factory Pattern - Dependency creation with Strategy injection
+# REFACTORING: Factory Pattern - Dependency creation with Strategy injection
 # =============================================================================
 
 
@@ -238,7 +240,7 @@ def _create_auth_service_dependencies() -> ServiceDependencies:
 
 
 # =============================================================================
-# SOLID REFACTORING: Parameter Object Pattern - reduces parameter count
+# REFACTORING: Parameter Object Pattern - reduces parameter count
 # =============================================================================
 
 
@@ -266,12 +268,12 @@ LOGOUT_SUCCESS = True
 
 
 # =============================================================================
-# SOLID REFACTORING: Simplified services using Strategy Pattern
+# REFACTORING: Simplified services using Strategy Pattern
 # =============================================================================
 
 
 class FlextAuthenticationService:
-    """SOLID REFACTORED: Authentication service using Strategy Pattern.
+    """REFACTORED: Authentication service using Strategy Pattern.
 
     Complexity reduced from ~25 to ~8 using Strategy Pattern to extract
     validation logic into reusable strategies.
@@ -290,7 +292,7 @@ class FlextAuthenticationService:
     ) -> FlextResult[FlextUser]:
         """Create user using Strategy Pattern validation."""
         try:
-            # SOLID REFACTORING: Use Strategy Pattern for validation
+            # REFACTORING: Use Strategy Pattern for validation
             user_validation = self._deps.user_validation_strategy.validate(
                 username=username, email=email
             )
@@ -353,7 +355,7 @@ class FlextAuthenticationService:
     ) -> FlextResult[bool]:
         """Change user password using Strategy Pattern validation."""
         try:
-            # SOLID REFACTORING: Use Strategy Pattern for password validation
+            # REFACTORING: Use Strategy Pattern for password validation
             validation_result = self._deps.password_validation_strategy.validate(
                 password=new_password
             )
@@ -399,7 +401,7 @@ class FlextAuthenticationService:
 
 
 class FlextAuthorizationService:
-    """SOLID REFACTORED: Authorization service using Strategy Pattern.
+    """REFACTORED: Authorization service using Strategy Pattern.
 
     Complexity reduced from ~15 to ~5 using Strategy Pattern for permissions.
     """
@@ -442,7 +444,7 @@ class FlextAuthorizationService:
         using Parameter Object Pattern.
         """
         try:
-            # SOLID REFACTORING: Use Strategy Pattern for permission checking
+            # REFACTORING: Use Strategy Pattern for permission checking
             # Try REDACTED_LDAP_BIND_PASSWORD strategy first
             REDACTED_LDAP_BIND_PASSWORD_result = self._deps.REDACTED_LDAP_BIND_PASSWORD_permission_strategy.check_permission(
                 check_data
@@ -451,9 +453,7 @@ class FlextAuthorizationService:
                 return REDACTED_LDAP_BIND_PASSWORD_result
 
             # Fall back to role-based strategy
-            return self._deps.role_permission_strategy.check_permission(
-                check_data
-            )
+            return self._deps.role_permission_strategy.check_permission(check_data)
 
         except (ValueError, TypeError) as e:
             return FlextResult.fail(str(e))
@@ -470,10 +470,7 @@ class FlextAuthorizationService:
         SOLID REFACTORING: Wrapper that converts old parameters to Parameter Object.
         """
         check_data = PermissionCheckData(
-            user=user,
-            resource=resource,
-            action=action,
-            roles=roles
+            user=user, resource=resource, action=action, roles=roles
         )
         return self.check_permission(check_data)
 
@@ -487,7 +484,7 @@ class FlextAuthorizationService:
 
 
 class FlextSessionService:
-    """SOLID REFACTORED: Session service with simplified operations.
+    """REFACTORED: Session service with simplified operations.
 
     Complexity reduced from ~12 to ~4 by eliminating over-engineering.
     """

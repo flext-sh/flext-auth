@@ -48,7 +48,7 @@ if TYPE_CHECKING:
     from flext_auth.user import UserRepository
 
 
-# SOLID REFACTORING: Parameter Object pattern to reduce parameter count
+# REFACTORING: Parameter Object pattern to reduce parameter count
 @dataclass(frozen=True)
 class LoginAttemptData:
     """Parameter Object for login attempt logging - reduces parameter count."""
@@ -98,7 +98,7 @@ class FlextUserRegistrationData:
 
 
 # =============================================================================
-# SOLID REFACTORING: Strategy Pattern - Decompose FlextAuthService responsibilities
+# REFACTORING: Strategy Pattern - Decompose FlextAuthService responsibilities
 # =============================================================================
 
 
@@ -152,7 +152,7 @@ class UserManagementStrategy(ABC):
 
 
 # =============================================================================
-# SOLID REFACTORING: Template Method Pattern - eliminates 103 repetitive patterns
+# REFACTORING: Template Method Pattern - eliminates 103 repetitive patterns
 # =============================================================================
 
 
@@ -195,7 +195,7 @@ class ResultValidator:
 
 
 # =============================================================================
-# SOLID REFACTORING: Strategy Pattern Implementations - Single Responsibility
+# REFACTORING: Strategy Pattern Implementations - Single Responsibility
 # =============================================================================
 
 
@@ -226,11 +226,13 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
         """Authenticate user with username/password - Railway-Oriented Programming."""
         try:
             # Simplified authentication - delegates to existing pipeline logic
-            return FlextResult.ok({
-                "authenticated": True,
-                "username": username,
-                "access_token": "strategy_token_placeholder",
-            })
+            return FlextResult.ok(
+                {
+                    "authenticated": True,
+                    "username": username,
+                    "access_token": "strategy_token_placeholder",
+                }
+            )
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult.fail(f"Authentication failed: {e}")
 
@@ -243,7 +245,8 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
         self.user_repo = user_repo
 
     async def validate_token(
-        self, token: str  # noqa: ARG002  # Strategy interface compatibility
+        self,
+        token: str,  # noqa: ARG002  # Strategy interface compatibility
     ) -> FlextResult[SecurityContext]:
         """Validate JWT token and return security context."""
         return FlextResult.ok(
@@ -256,13 +259,13 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
         )
 
     async def refresh_token(
-        self, refresh_token: str  # noqa: ARG002  # Strategy interface compatibility
+        self,
+        refresh_token: str,  # noqa: ARG002  # Strategy interface compatibility
     ) -> FlextResult[dict[str, str]]:
         """Refresh access token using refresh token."""
-        return FlextResult.ok({
-            "access_token": "new_token",
-            "refresh_token": "new_refresh"
-        })
+        return FlextResult.ok(
+            {"access_token": "new_token", "refresh_token": "new_refresh"}
+        )
 
 
 class DefaultSessionManagementStrategy(SessionManagementStrategy):
@@ -289,9 +292,8 @@ class DefaultSessionManagementStrategy(SessionManagementStrategy):
             status=SessionStatus.ACTIVE,
             ip_address=ip_address,
             user_agent=user_agent,
-            expires_at=datetime.now(UTC) + timedelta(
-                hours=self.config.session_expire_hours
-            ),
+            expires_at=datetime.now(UTC)
+            + timedelta(hours=self.config.session_expire_hours),
         )
         return await self.session_repo.save(session)
 
@@ -337,7 +339,7 @@ class ValidationPipelineStrategies:
 
 
 class FlextAuthService:
-    """SOLID REFACTORED: Authentication service using Strategy Pattern.
+    """REFACTORED: Authentication service using Strategy Pattern.
 
     Complexity reduced from 119 to ~40 by delegating responsibilities to strategies.
     Uses Strategy Pattern for authentication, token management, session management,
@@ -360,7 +362,7 @@ class FlextAuthService:
         self.session_expire_hours = self.config.session_expire_hours
         self.max_concurrent_sessions = self.config.max_concurrent_sessions
 
-        # SOLID REFACTORING: Initialize strategies (dependency injection)
+        # REFACTORING: Initialize strategies (dependency injection)
         self.auth_strategy = (
             dependencies.auth_strategy
             or DefaultAuthenticationStrategy(
@@ -415,7 +417,7 @@ class FlextAuthService:
     ) -> FlextResult[User]:
         """Register user using Strategy Pattern - SOLID refactored."""
         try:
-            # SOLID REFACTORING: Delegate to user management strategy
+            # REFACTORING: Delegate to user management strategy
             return await self.user_strategy.register_user(registration_data)
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult.fail(f"User registration failed: {e}")
@@ -433,7 +435,7 @@ class FlextAuthService:
         logic to specialized strategy, reducing complexity.
         """
         try:
-            # SOLID REFACTORING: Delegate to authentication strategy
+            # REFACTORING: Delegate to authentication strategy
             return await self.auth_strategy.authenticate(
                 username, password, ip_address, user_agent
             )
@@ -452,7 +454,7 @@ class FlextAuthService:
     async def validate_token(self, token: str) -> FlextResult[SecurityContext]:
         """Validate JWT token using Strategy Pattern - SOLID refactored."""
         try:
-            # SOLID REFACTORING: Delegate to token management strategy
+            # REFACTORING: Delegate to token management strategy
             return await self.token_strategy.validate_token(token)
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult.fail(f"Token validation failed: {e}")
@@ -460,7 +462,7 @@ class FlextAuthService:
     async def refresh_token(self, refresh_token: str) -> FlextResult[dict[str, str]]:
         """Refresh token using Strategy Pattern - SOLID refactored."""
         try:
-            # SOLID REFACTORING: Delegate to token management strategy
+            # REFACTORING: Delegate to token management strategy
             return await self.token_strategy.refresh_token(refresh_token)
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult.fail(f"Token refresh failed: {e}")
@@ -473,7 +475,7 @@ class FlextAuthService:
     ) -> FlextResult[Session]:
         """Create session using Strategy Pattern - SOLID refactored."""
         try:
-            # SOLID REFACTORING: Delegate to session management strategy
+            # REFACTORING: Delegate to session management strategy
             return await self.session_strategy.create_session(
                 user, ip_address, user_agent
             )
@@ -481,7 +483,7 @@ class FlextAuthService:
             return FlextResult.fail(f"Session creation failed: {e}")
 
     # Compatibility methods - delegate to original implementations
-    # SOLID REFACTORING: Single Responsibility Principle methods for validate_token
+    # REFACTORING: Single Responsibility Principle methods for validate_token
 
     async def _validate_token_claims(self, token: str) -> FlextResult[JWTClaims]:
         """Validate JWT token and extract claims - SRP applied."""
@@ -562,7 +564,7 @@ class FlextAuthService:
 
         """
         try:
-            # SOLID REFACTORING: Railway-Oriented Programming - reduces 6 returns to 2
+            # REFACTORING: Railway-Oriented Programming - reduces 6 returns to 2
             token_result = await self._validate_token_stage(token, strategies)
             if not token_result.is_success:
                 return token_result
@@ -660,7 +662,6 @@ class FlextAuthService:
         # Type safety: Cast result to expected SecurityContext type
         return cast("FlextResult[SecurityContext]", result)
 
-
     async def logout_user(self, token: str) -> FlextResult[bool]:
         """Logout user by revoking session using Railway-Oriented Programming.
 
@@ -727,7 +728,7 @@ class FlextAuthService:
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult.fail(f"Password change failed: {e}")
 
-    # SOLID REFACTORING: Single Responsibility Principle methods for change_password
+    # REFACTORING: Single Responsibility Principle methods for change_password
 
     async def _validate_password_change_user(self, user_id: str) -> FlextResult[User]:
         """Validate user exists for password change - SRP applied."""
@@ -749,10 +750,10 @@ class FlextAuthService:
             user.password_hash,
         )
 
-        # SOLID REFACTORING: Use ResultValidator to eliminate repetitive pattern
+        # REFACTORING: Use ResultValidator to eliminate repetitive pattern
         validation = ResultValidator.validate_or_fail(
             condition=bool(verify_result.is_success and verify_result.data),
-            error_message="Current password is incorrect"
+            error_message="Current password is incorrect",
         )
 
         if not validation.is_success:
@@ -776,17 +777,17 @@ class FlextAuthService:
         """Hash new password using ResultValidator - SOLID REFACTORED."""
         hash_result = self.password_service.hash_password(new_password)
 
-        # SOLID REFACTORING: Use ResultValidator to eliminate repetitive patterns
+        # REFACTORING: Use ResultValidator to eliminate repetitive patterns
         hash_validation = ResultValidator.validate_or_fail(
             condition=hash_result.is_success,
-            error_message=f"Password hashing failed: {hash_result.error}"
+            error_message=f"Password hashing failed: {hash_result.error}",
         )
         if not hash_validation.is_success:
             return FlextResult.fail(hash_validation.error or "Password hashing failed")
 
         data_validation = ResultValidator.validate_or_fail(
             condition=hash_result.data is not None,
-            error_message="Password hashing returned no data"
+            error_message="Password hashing returned no data",
         )
         if not data_validation.is_success:
             return FlextResult.fail(data_validation.error or "No password hash data")
@@ -818,10 +819,10 @@ class FlextAuthService:
 
         save_result = await self.user_repo.save(updated_user)
 
-        # SOLID REFACTORING: Use ResultValidator to eliminate repetitive pattern
+        # REFACTORING: Use ResultValidator to eliminate repetitive pattern
         save_validation = ResultValidator.validate_or_fail(
             condition=save_result.is_success,
-            error_message=f"Failed to save user: {save_result.error}"
+            error_message=f"Failed to save user: {save_result.error}",
         )
         if not save_validation.is_success:
             return FlextResult.fail(save_validation.error or "User save failed")
@@ -975,7 +976,7 @@ class FlextAuthService:
 
         return user_creation
 
-    # SOLID REFACTORING: Single Responsibility Principle methods for register_user
+    # REFACTORING: Single Responsibility Principle methods for register_user
 
     async def _check_registration_uniqueness(
         self,
@@ -1119,7 +1120,6 @@ class FlextAuthService:
                 ).message,
             )
 
-
     async def _handle_failed_login(
         self,
         user: User,
@@ -1235,8 +1235,7 @@ class FlextAuthService:
         """
         # Cast lookup_method to Callable for type safety
         lookup_callable = cast(
-            "Callable[[str], Awaitable[FlextResult[object]]]",
-            lookup_method
+            "Callable[[str], Awaitable[FlextResult[object]]]", lookup_method
         )
         existing_result = await lookup_callable(value)
 
@@ -1261,7 +1260,7 @@ class FlextAuthService:
 
         return FlextResult.ok(data=False)
 
-    # SOLID REFACTORING: Single Responsibility Principle methods for authenticate_user
+    # REFACTORING: Single Responsibility Principle methods for authenticate_user
 
     async def _validate_user_for_authentication(
         self,
@@ -1453,7 +1452,7 @@ class FlextAuthService:
             )
             await self.session_repo.revoke_session(oldest_session.id)
 
-    # SOLID REFACTORING: Single Responsibility Principle methods for refresh_token
+    # REFACTORING: Single Responsibility Principle methods for refresh_token
 
     async def _validate_refresh_token(
         self,

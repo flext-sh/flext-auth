@@ -142,7 +142,7 @@ class FlextPlainPassword(FlextValueObject):
         Railway-Oriented Programming + Strategy Pattern.
         """
         try:
-            # SOLID REFACTORING: Strategy Pattern - validation rules as strategies
+            # REFACTORING: Strategy Pattern - validation rules as strategies
             validation_errors = self._execute_password_validation_strategies()
             if validation_errors:
                 return FlextResult.fail(validation_errors[0])  # Return first error
@@ -236,7 +236,7 @@ class FlextAuthToken(FlextValueObject):
 
 
 # =============================================================================
-# SOLID REFACTORING: Template Method Pattern - eliminates 22 lines duplication
+# REFACTORING: Template Method Pattern - eliminates 22 lines duplication
 # =============================================================================
 
 
@@ -481,18 +481,20 @@ class FlextJWTClaims(FlextValueObject):
 
     def validate_domain_rules(self) -> FlextResult[None]:
         """Validate JWT claims domain rules using Railway-Oriented Programming.
-        
+
         SOLID REFACTORING: Reduced from 6 returns to 2 returns using
         Railway-Oriented Programming + Strategy Pattern.
         """
         # Railway-Oriented Programming: Chain validations with early exit
         validation_errors = self._collect_validation_errors()
-        
+
         if validation_errors:
-            return FlextResult.fail(validation_errors[0])  # Return first error for clarity
-        
+            return FlextResult.fail(
+                validation_errors[0]
+            )  # Return first error for clarity
+
         return FlextResult.ok(None)
-    
+
     def _collect_validation_errors(self) -> list[str]:
         """DRY helper: Collect all validation errors using Strategy Pattern."""
         validators = [
@@ -500,10 +502,12 @@ class FlextJWTClaims(FlextValueObject):
             (lambda: self.iat <= 0, "JWT issued at (iat) must be positive"),
             (lambda: self.exp <= 0, "JWT expiration (exp) must be positive"),
             (lambda: self.exp <= self.iat, "JWT expiration must be after issued time"),
-            (lambda: self.token_type not in {"access", "refresh"}, 
-             "JWT token type must be 'access' or 'refresh'"),
+            (
+                lambda: self.token_type not in {"access", "refresh"},
+                "JWT token type must be 'access' or 'refresh'",
+            ),
         ]
-        
+
         return [error_msg for condition, error_msg in validators if condition()]
 
 

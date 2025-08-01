@@ -18,7 +18,7 @@ from pydantic import Field, field_validator
 from pydantic_settings import SettingsConfigDict
 
 # =============================================================================
-# SOLID REFACTORING: Strategy Pattern for configuration processing
+# REFACTORING: Strategy Pattern for configuration processing
 # =============================================================================
 
 
@@ -345,7 +345,7 @@ class FlextAuthConfig(FlextBaseSettings):
 
     def __init__(self, **data: object) -> None:
         """Initialize config with nested structure support - SOLID refactored."""
-        # SOLID REFACTORING: Use Strategy Pattern to reduce complexity from 22 to ~5
+        # REFACTORING: Use Strategy Pattern to reduce complexity from 22 to ~5
         processor = ConfigProcessor()
         processed_data = processor.process_config_data(dict(data))
 

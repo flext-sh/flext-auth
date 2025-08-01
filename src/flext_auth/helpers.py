@@ -29,7 +29,7 @@ from flext_auth.session import InMemorySessionRepository
 from flext_auth.user import InMemoryUserRepository
 from flext_auth.utils import convert_user_to_dict
 
-# SOLID REFACTORING: DRY principle - user conversion centralized in utils.py
+# REFACTORING: DRY principle - user conversion centralized in utils.py
 
 
 _logger = FlextLoggerFactory.get_logger(__name__)
@@ -654,7 +654,7 @@ class FlextAuthBatchOperations:
             )
 
             user_result = await self._auth_service.register_user(registration_data)
-            # SOLID REFACTORING: Use DRY principle - centralized user conversion
+            # REFACTORING: Use DRY principle - centralized user conversion
             if user_result.is_success and user_result.data:
                 user_dict = convert_user_to_dict(user_result.data)
                 results.append(FlextResult.ok(user_dict))

@@ -71,7 +71,7 @@ class FlextAuthenticationService(FlextDomainService):
 
         """
         try:
-            # SOLID REFACTORING: Railway-Oriented Programming - reduces 6 returns to 2
+            # REFACTORING: Railway-Oriented Programming - reduces 6 returns to 2
             return (
                 self._get_user_from_dict(username, users)
                 .and_then(self._validate_user_status)

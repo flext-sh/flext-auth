@@ -31,7 +31,7 @@ AuthenticatedFunction = Callable[..., object]  # type: ignore[explicit-any]
 DecoratorCallable = Callable[[F], F]  # type: ignore[explicit-any]
 
 
-# SOLID REFACTORING: Parameter Object Pattern for decorator parameters
+# REFACTORING: Parameter Object Pattern for decorator parameters
 class FlextAuthDecoratorConfig:
     """Parameter Object for flext_auth_required decorator - reduces parameter count."""
 
@@ -50,7 +50,7 @@ class FlextAuthDecoratorConfig:
         self.error_response = error_response
 
 
-# SOLID REFACTORING: Strategy Pattern for token extraction - reduces complexity
+# REFACTORING: Strategy Pattern for token extraction - reduces complexity
 def _extract_bearer_token_from_header(auth_header: str) -> str | None:
     """Extract Bearer token from Authorization header - Single Responsibility."""
     if auth_header.startswith("Bearer "):
@@ -292,7 +292,7 @@ def flext_auth_required(  # type: ignore[explicit-any]
     def decorator(func: F) -> F:  # type: ignore[explicit-any]
         @functools.wraps(func)
         def wrapper(*args: object, **kwargs: object) -> object:  # type: ignore[misc]
-            # SOLID REFACTORING: Parameter Object Pattern + Railway-Oriented Programming
+            # REFACTORING: Parameter Object Pattern + Railway-Oriented Programming
             config = FlextAuthDecoratorConfig(
                 auth_service=auth_service,
                 secret=secret,

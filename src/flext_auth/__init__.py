@@ -138,7 +138,7 @@ class FlextAuthSetupError(FlextAuthError):  # type: ignore[valid-type,misc]
 
 
 # =============================================================================
-# SOLID REFACTORING: DRY Principle - centralized in utils.py module
+# REFACTORING: DRY Principle - centralized in utils.py module
 # =============================================================================
 
 
@@ -274,7 +274,7 @@ class FlextAuth:
 
         result = asyncio.run(_register())
         if result.is_success and result.data:
-            # SOLID REFACTORING: Use DRY principle - centralized user conversion
+            # REFACTORING: Use DRY principle - centralized user conversion
             return convert_user_to_dict(result.data)
         return {"error": result.error or "Registration failed"}
 

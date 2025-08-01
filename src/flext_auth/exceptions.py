@@ -46,9 +46,9 @@ FlextAuthProcessingError = cast(
 FlextAuthTimeoutError = cast("type[Exception]", _exceptions["FlextAuthTimeoutError"])
 
 
-# SOLID SRP: Specialized auth errors using composition over duplication
+# Specialized auth errors using composition over duplication
 # =============================================================================
-# SOLID REFACTORING: Template Method Pattern - eliminates 16-line duplication
+# REFACTORING: Template Method Pattern - eliminates 16-line duplication
 # =============================================================================
 
 
@@ -69,11 +69,13 @@ class FlextAuthSpecificError(FlextAuthError):  # type: ignore[valid-type,misc]
         """Template method for specific auth error initialization."""
         # Template Method Pattern: Add context fields to kwargs if not None
         if context_fields:
-            kwargs.update({
-                field_name: field_value
-                for field_name, field_value in context_fields.items()
-                if field_value is not None
-            })
+            kwargs.update(
+                {
+                    field_name: field_value
+                    for field_name, field_value in context_fields.items()
+                    if field_value is not None
+                }
+            )
 
         # Template Method Pattern: Format message with error prefix
         super().__init__(f"Auth {error_prefix}: {message}", **kwargs)
