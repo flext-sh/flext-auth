@@ -1,7 +1,6 @@
 """Comprehensive tests for advanced flext-auth ABI - mixins, typedefs, decorators."""
 
 from datetime import UTC, datetime, timedelta
-from typing import Any
 
 import pytest
 
@@ -410,8 +409,8 @@ class TestSpecializedDecorators:
         @flext_auth_role_required(FLEXT_AUTH_ADMIN, "test-secret")
         def REDACTED_LDAP_BIND_PASSWORD_function(
             data: str,
-            auth_context: dict[str, Any] | None = None,
-        ) -> dict[str, Any]:
+            auth_context: dict[str, object] | None = None,
+        ) -> dict[str, object]:
             return {"message": f"Admin accessed: {data}", "user": auth_context}
 
         # Test with REDACTED_LDAP_BIND_PASSWORD token
@@ -443,8 +442,8 @@ class TestSpecializedDecorators:
         @flext_auth_permission_required(["write", "REDACTED_LDAP_BIND_PASSWORD"], "test-secret")
         def protected_function(
             data: str,
-            auth_context: dict[str, Any] | None = None,
-        ) -> dict[str, Any]:
+            auth_context: dict[str, object] | None = None,
+        ) -> dict[str, object]:
             return {"message": f"Accessed: {data}", "user": auth_context}
 
         # Test REDACTED_LDAP_BIND_PASSWORD (bypasses permission checks)
@@ -477,8 +476,8 @@ class TestSpecializedDecorators:
         @flext_auth_rate_limit(max_calls=2, window_minutes=60, secret_key="test-secret")
         def limited_function(
             data: str,
-            auth_context: dict[str, Any] | None = None,
-        ) -> dict[str, Any]:
+            auth_context: dict[str, object] | None = None,
+        ) -> dict[str, object]:
             return {"message": f"Called with: {data}"}
 
         # Create user token
@@ -512,7 +511,7 @@ class TestSpecializedDecorators:
         """Test decorator behavior without authentication tokens."""
 
         @flext_auth_role_required(FLEXT_AUTH_USER)
-        def protected_function() -> dict[str, Any]:
+        def protected_function() -> dict[str, object]:
             return {"message": "success"}
 
         result = protected_function()
@@ -587,8 +586,8 @@ class TestIntegration:
         @flext_auth_role_required(FLEXT_AUTH_USER, "workflow-secret")
         def workflow_endpoint(
             action: str,
-            auth_context: dict[str, Any] | None = None,
-        ) -> dict[str, Any]:
+            auth_context: dict[str, object] | None = None,
+        ) -> dict[str, object]:
             filtered_user = flext_auth_filter_user_data(auth_context or {})
             return flext_auth_build_response(
                 success=True,
