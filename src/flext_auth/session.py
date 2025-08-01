@@ -57,6 +57,7 @@ class InMemorySessionRepository(SessionRepository):
         self._sessions: dict[str, FlextSession] = {}
         self._user_sessions: dict[str, list[str]] = {}  # user_id -> [session_ids]
 
+    # Async methods implementing the interface
     async def save(self, session: FlextSession) -> FlextResult[FlextSession]:
         """Save session to memory."""
         try:
@@ -72,6 +73,57 @@ class InMemorySessionRepository(SessionRepository):
 
             return FlextResult.ok(session)
 
+        except (KeyError, ValueError, TypeError, AttributeError) as e:
+            return FlextResult.fail(f"Failed to save session: {e}")
+
+    def find_by_id(self, session_id: str) -> FlextResult[FlextSession | None]:
+        """Get session by ID (sync version)."""
+        try:
+            session = self._sessions.get(session_id)
+            return FlextResult.ok(session)
+        except (KeyError, ValueError, TypeError) as e:
+            return FlextResult.fail(f"Failed to get session by ID: {e}")
+
+    def revoke_all_sessions_for_user(self, user_id: str) -> FlextResult[int]:
+        """Revoke all sessions for a user (sync version)."""
+        try:
+            session_ids = self._user_sessions.get(user_id, [])
+            revoked_count = 0
+
+            for session_id in session_ids:
+                if session_id in self._sessions:
+                    session = self._sessions[session_id]
+                    if session.status == FlextSessionStatus.ACTIVE:
+                        # Create revoked session
+                        revoked_session = FlextSession(
+                            id=session.id,
+                            user_id=session.user_id,
+                            access_token=session.access_token,
+                            refresh_token=session.refresh_token,
+                            expires_at=session.expires_at,
+                            ip_address=session.ip_address,
+                            user_agent=session.user_agent,
+                            status=FlextSessionStatus.REVOKED,
+                            created_at=session.created_at,
+                            last_accessed=datetime.now(UTC),
+                        )
+                        self._sessions[session_id] = revoked_session
+                        revoked_count += 1
+
+            return FlextResult.ok(revoked_count)
+        except (KeyError, ValueError, TypeError, AttributeError) as e:
+            return FlextResult.fail(f"Failed to revoke all user sessions: {e}")
+
+    # Sync method for compatibility with existing code
+    def save_sync(self, session: FlextSession) -> FlextResult[FlextSession]:
+        """Save session synchronously for compatibility."""
+        try:
+            self._sessions[session.id] = session
+            if session.user_id not in self._user_sessions:
+                self._user_sessions[session.user_id] = []
+            if session.id not in self._user_sessions[session.user_id]:
+                self._user_sessions[session.user_id].append(session.id)
+            return FlextResult.ok(session)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Failed to save session: {e}")
 

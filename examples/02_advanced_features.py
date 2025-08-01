@@ -10,8 +10,6 @@ Todos os métodos usados existem e funcionam.
 
 from __future__ import annotations
 
-import asyncio
-
 from flext_auth import (
     ADMIN_ROLE,
     MODERATOR_ROLE,
@@ -440,33 +438,30 @@ async def example_advanced_user_management() -> None:
         print(f"Admin registration failed: {REDACTED_LDAP_BIND_PASSWORD_result.error}")
 
 
-async def main() -> None:
-    """Execute all advanced examples."""
-    print("FLEXT Auth - Advanced Features Examples")
-    print("=" * 60)
+def main() -> None:
+    """Execute all advanced examples using shared runner."""
+    from example_utils import advanced_example_runner
 
-    try:
-        # Sync examples
-        example_advanced_configuration()
-        example_jwt_operations()
-        example_api_key_management()
-        example_role_permission_system()
-        example_secure_sessions()
-        example_multi_factor_authentication()
-        example_decorators()
+    # Define sync examples
+    sync_examples = [
+        example_advanced_configuration,
+        example_jwt_operations,
+        example_api_key_management,
+        example_role_permission_system,
+        example_secure_sessions,
+        example_multi_factor_authentication,
+        example_decorators,
+    ]
 
-        # Async examples
-        await example_batch_operations()
-        await example_advanced_user_management()
+    # Define async examples
+    async_examples = [
+        example_batch_operations,
+        example_advanced_user_management,
+    ]
 
-        print("\n" + "=" * 60)
-        print("✅ ALL ADVANCED EXAMPLES COMPLETED SUCCESSFULLY!")
-        print("All methods demonstrate real flext-auth advanced functionality.")
-
-    except (RuntimeError, ValueError, TypeError) as e:
-        print(f"\n❌ ERROR in advanced examples: {e}")
-        raise
+    # Run all examples using shared runner (DRY principle)
+    advanced_example_runner(sync_examples, async_examples)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()

@@ -59,7 +59,7 @@ class FlextAuthenticationService(FlextDomainService):
         password: str,
         users: dict[str, FlextUser],
     ) -> FlextResult[FlextUser]:
-        """Authenticate a user.
+        """Authenticate a user using Railway-Oriented Programming pattern.
 
         Args:
             username: Username to authenticate
@@ -71,30 +71,50 @@ class FlextAuthenticationService(FlextDomainService):
 
         """
         try:
-            user = users.get(username)
-            if not user:
-                return FlextResult.fail("User not found")
-
-            if not user.is_active():
-                return FlextResult.fail("User account is inactive")
-
-            if user.is_locked():
-                return FlextResult.fail("User account is locked")
-
-            password_service = FlextPasswordService()
-            verify_result = password_service.verify_password(
-                password,
-                user.password_hash,
+            # SOLID REFACTORING: Railway-Oriented Programming - reduces 6 returns to 2
+            return (
+                self._get_user_from_dict(username, users)
+                .and_then(self._validate_user_status)
+                .and_then(lambda user: self._verify_user_password(user, password))
+                .map(self._handle_successful_authentication)
             )
-            if not verify_result.is_success or not verify_result.data:
-                user.increment_failed_login()
-                return FlextResult.fail("Invalid password")
-
-            user.reset_failed_login()
-            return FlextResult.ok(user)
-
         except (KeyError, ValueError, AttributeError, TypeError) as e:
             return FlextResult.fail(f"Authentication failed: {e}")
+
+    def _get_user_from_dict(
+        self, username: str, users: dict[str, FlextUser],
+    ) -> FlextResult[FlextUser]:
+        """Get user from dictionary - Single Responsibility Principle."""
+        user = users.get(username)
+        if not user:
+            return FlextResult.fail("User not found")
+        return FlextResult.ok(user)
+
+    def _validate_user_status(self, user: FlextUser) -> FlextResult[FlextUser]:
+        """Validate user account status - Single Responsibility Principle."""
+        if not user.is_active():
+            return FlextResult.fail("User account is inactive")
+        if user.is_locked():
+            return FlextResult.fail("User account is locked")
+        return FlextResult.ok(user)
+
+    def _verify_user_password(
+        self, user: FlextUser, password: str,
+    ) -> FlextResult[FlextUser]:
+        """Verify user password - Single Responsibility Principle."""
+        password_service = FlextPasswordService()
+        verify_result = password_service.verify_password(password, user.password_hash)
+
+        if not verify_result.is_success or not verify_result.data:
+            user.increment_failed_login()
+            return FlextResult.fail("Invalid password")
+
+        return FlextResult.ok(user)
+
+    def _handle_successful_authentication(self, user: FlextUser) -> FlextUser:
+        """Handle successful authentication - Single Responsibility Principle."""
+        user.reset_failed_login()
+        return user
 
     def create_user(
         self,

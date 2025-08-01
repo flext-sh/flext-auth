@@ -8,11 +8,166 @@ from __future__ import annotations
 
 import os
 import secrets
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import ClassVar
 
 # Use flext-core configuration patterns directly
 from flext_core import FlextBaseSettings
 from pydantic import Field, field_validator
 from pydantic_settings import SettingsConfigDict
+
+# =============================================================================
+# SOLID REFACTORING: Strategy Pattern for configuration processing
+# =============================================================================
+
+
+@dataclass
+class ConfigProcessingContext:
+    """Context object for configuration processing strategies."""
+
+    data: dict[str, object]
+    processed_data: dict[str, object]
+
+    def set_value(self, key: str, value: object) -> None:
+        """Set a processed value in the configuration data."""
+        self.processed_data[key] = value
+
+    def pop_nested_value(self, key: str) -> object:
+        """Pop a nested configuration value."""
+        return self.data.pop(key, None)
+
+
+class ConfigProcessingStrategy(ABC):
+    """Strategy interface for configuration processing - Open/Closed Principle."""
+
+    @abstractmethod
+    def process(self, context: ConfigProcessingContext) -> None:
+        """Process configuration data according to strategy."""
+
+
+class SecurityConfigProcessor(ConfigProcessingStrategy):
+    """Strategy for processing security configuration - Single Responsibility."""
+
+    def process(self, context: ConfigProcessingContext) -> None:
+        """Process security nested configuration."""
+        security_config = context.pop_nested_value("security")
+        if isinstance(security_config, dict) and "password_rounds" in security_config:
+            context.set_value("bcrypt_rounds", security_config["password_rounds"])
+
+
+class JWTConfigProcessor(ConfigProcessingStrategy):
+    """Strategy for processing JWT configuration - Single Responsibility."""
+
+    def process(self, context: ConfigProcessingContext) -> None:
+        """Process JWT nested configuration."""
+        jwt_config = context.pop_nested_value("jwt")
+        if isinstance(jwt_config, dict):
+            for key, value in jwt_config.items():
+                if key == "secret_key":
+                    context.set_value("jwt_secret_key", value)
+                elif key in {
+                    "algorithm",
+                    "access_token_expire_minutes",
+                    "refresh_token_expire_days",
+                }:
+                    context.set_value(f"jwt_{key}", value)
+
+
+class TypeConversionProcessor(ConfigProcessingStrategy):
+    """Strategy for type conversion processing - Single Responsibility."""
+
+    INTEGER_FIELDS: ClassVar[set[str]] = {
+        "access_token_expire_minutes",
+        "refresh_token_expire_days",
+        "password_min_length",
+        "password_max_length",
+        "bcrypt_rounds",
+        "max_login_attempts",
+        "lockout_duration_minutes",
+        "session_timeout_hours",
+        "max_concurrent_sessions",
+    }
+
+    def process(self, context: ConfigProcessingContext) -> None:
+        """Process type conversions for configuration values."""
+        for key, value in context.data.items():
+            key_str = str(key)
+            if key_str in self.INTEGER_FIELDS:
+                converted_value = (
+                    int(value) if isinstance(value, str) and value.isdigit() else value
+                )
+                context.set_value(key_str, converted_value)
+            else:
+                context.set_value(key_str, value)
+
+
+class NestedObjectsProcessor(ConfigProcessingStrategy):
+    """Strategy for creating nested configuration objects - Single Responsibility."""
+
+    def process(self, context: ConfigProcessingContext) -> None:
+        """Create nested configuration objects for backward compatibility."""
+        # This strategy creates nested objects after main processing
+        # It will be used by the post-processing phase
+        # Handled by the config class itself after parent initialization
+
+
+class ConfigProcessor:
+    """Configuration processor using Strategy Pattern - Dependency Inversion."""
+
+    def __init__(self) -> None:
+        """Initialize with default processing strategies."""
+        self._strategies: list[ConfigProcessingStrategy] = [
+            SecurityConfigProcessor(),
+            JWTConfigProcessor(),
+            TypeConversionProcessor(),
+        ]
+
+    def process_config_data(self, data: dict[str, object]) -> dict[str, object]:
+        """Process configuration data using registered strategies."""
+        context = ConfigProcessingContext(
+            data=data.copy(),
+            processed_data={},
+        )
+
+        # Apply all strategies in sequence
+        for strategy in self._strategies:
+            strategy.process(context)
+
+        return context.processed_data
+
+
+class NestedConfigFactory:
+    """Factory for creating nested configuration objects - Single Responsibility."""
+
+    @staticmethod
+    def create_security_config(bcrypt_rounds: int) -> object:
+        """Create security configuration object."""
+        return type(
+            "SecurityConfig",
+            (),
+            {"password_rounds": bcrypt_rounds},
+        )()
+
+    @staticmethod
+    def create_jwt_config(
+        secret_key: str,
+        algorithm: str,
+        access_token_expire_minutes: int,
+        refresh_token_expire_days: int,
+    ) -> object:
+        """Create JWT configuration object."""
+        return type(
+            "JWTConfig",
+            (),
+            {
+                "secret_key": secret_key,
+                "algorithm": algorithm,
+                "access_token_expire_minutes": access_token_expire_minutes,
+                "refresh_token_expire_days": refresh_token_expire_days,
+            },
+        )()
+
 
 # =============================================================================
 # CONSTANTS - Single source of truth for validation rules (SOLID principle)
@@ -189,55 +344,22 @@ class FlextAuthConfig(FlextBaseSettings):
     )
 
     def __init__(self, **data: object) -> None:
-        """Initialize config with nested structure support."""
-        # Handle nested config structure like {"security": {"password_rounds": 6}}
-        if "security" in data:
-            security_config = data.pop("security")
-            if (
-                isinstance(security_config, dict)
-                and "password_rounds" in security_config
-            ):
-                data["bcrypt_rounds"] = security_config["password_rounds"]
+        """Initialize config with nested structure support - SOLID refactored."""
+        # SOLID REFACTORING: Use Strategy Pattern to reduce complexity from 22 to ~5
+        processor = ConfigProcessor()
+        processed_data = processor.process_config_data(dict(data))
 
-        if "jwt" in data:
-            jwt_config = data.pop("jwt")
-            if isinstance(jwt_config, dict):
-                for key, value in jwt_config.items():
-                    if key == "secret_key":
-                        data["jwt_secret_key"] = value
-                    elif key in {
-                        "algorithm",
-                        "access_token_expire_minutes",
-                        "refresh_token_expire_days",
-                    }:
-                        data[f"jwt_{key}"] = value
-
-        # Convert data keys to proper types for pydantic
-        processed_data: dict[str, object] = {}
-        for key, value in data.items():
-            processed_data[str(key)] = value
-
+        # Call parent with properly typed data - cast needed for pydantic compatibility
         super().__init__(**processed_data)  # type: ignore[arg-type]
 
-        # Store nested objects for backward compatibility
-        self._security = type(
-            "SecurityConfig",
-            (),
-            {
-                "password_rounds": self.bcrypt_rounds,
-            },
-        )()
-
-        self._jwt = type(
-            "JWTConfig",
-            (),
-            {
-                "secret_key": self.jwt_secret_key,
-                "algorithm": self.jwt_algorithm,
-                "access_token_expire_minutes": self.access_token_expire_minutes,
-                "refresh_token_expire_days": self.refresh_token_expire_days,
-            },
-        )()
+        # Create nested objects using Factory Pattern for backward compatibility
+        self._security = NestedConfigFactory.create_security_config(self.bcrypt_rounds)
+        self._jwt = NestedConfigFactory.create_jwt_config(
+            self.jwt_secret_key,
+            self.jwt_algorithm,
+            self.access_token_expire_minutes,
+            self.refresh_token_expire_days,
+        )
 
     def __getattr__(self, name: str) -> object:
         """Provide backward compatibility for nested config access."""

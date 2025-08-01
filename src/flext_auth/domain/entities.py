@@ -343,73 +343,85 @@ class FlextLoginAttempt(FlextEntity):
         return FlextResult.ok(None)
 
 
-class FlextPasswordResetToken(FlextEntity):
-    """Password reset token entity."""
+# =============================================================================
+# SOLID REFACTORING: Template Method Pattern - eliminates 33 lines duplication
+# =============================================================================
+
+
+class FlextBaseToken(FlextEntity):
+    """Base token entity - Template Method Pattern for DRY principle.
+
+    Eliminates massive code duplication between password reset and email
+    verification token entities using SOLID principles.
+    """
 
     id: str = Field(..., description="Token identifier")
     user_id: str = Field(..., description="User ID")
-    token: str = Field(..., description="Reset token")
+    token: str = Field(..., description="Token value")
     expires_at: datetime = Field(..., description="Token expiration")
     used: bool = Field(default=False, description="Whether token has been used")
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     def is_valid(self) -> bool:
-        """Check if token is valid."""
+        """Check if token is valid - Common behavior for all tokens."""
         return not self.used and datetime.now(UTC) < self.expires_at
 
     def use_token(self) -> None:
-        """Mark token as used."""
+        """Mark token as used - Common behavior for all tokens."""
         object.__setattr__(self, "used", True)
 
-    def validate_domain_rules(self) -> FlextResult[None]:  # noqa: PLR0911
-        """Validate password reset token domain rules and business invariants."""
+    def validate_domain_rules(self) -> FlextResult[None]:
+        """Template Method: validates common rules + specific rules."""
+        # Validate common rules (DRY principle)
+        common_validation = self._validate_common_rules()
+        if not common_validation.is_success:
+            return common_validation
+
+        # Template Method: delegate specific validation to subclasses
+        return self._validate_specific_rules()
+
+    def _validate_common_rules(self) -> FlextResult[None]:  # noqa: PLR0911
+        """Common validation rules - Single Responsibility Principle."""
         if not self.id:
-            return FlextResult.fail("Password reset token ID cannot be empty")
+            return FlextResult.fail(f"{self._get_token_type()} ID cannot be empty")
         if not self.user_id:
             return FlextResult.fail("User ID cannot be empty")
         if not self.token:
-            return FlextResult.fail("Reset token cannot be empty")
+            return FlextResult.fail(f"{self._get_token_type()} cannot be empty")
         if len(self.token) < MIN_TOKEN_LENGTH:
-            return FlextResult.fail("Reset token must be at least 32 characters")
-        if self.expires_at <= datetime.now(UTC):
-            return FlextResult.fail("Reset token expiration must be in the future")
-        if self.created_at > datetime.now(UTC):
-            return FlextResult.fail("Token creation time cannot be in the future")
-        return FlextResult.ok(None)
-
-
-class FlextEmailVerificationToken(FlextEntity):
-    """Email verification token entity."""
-
-    id: str = Field(..., description="Token identifier")
-    user_id: str = Field(..., description="User ID")
-    token: str = Field(..., description="Verification token")
-    expires_at: datetime = Field(..., description="Token expiration")
-    used: bool = Field(default=False, description="Whether token has been used")
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
-
-    def is_valid(self) -> bool:
-        """Check if token is valid."""
-        return not self.used and datetime.now(UTC) < self.expires_at
-
-    def use_token(self) -> None:
-        """Mark token as used."""
-        object.__setattr__(self, "used", True)
-
-    def validate_domain_rules(self) -> FlextResult[None]:  # noqa: PLR0911
-        """Validate email verification token domain rules and business invariants."""
-        if not self.id:
-            return FlextResult.fail("Email verification token ID cannot be empty")
-        if not self.user_id:
-            return FlextResult.fail("User ID cannot be empty")
-        if not self.token:
-            return FlextResult.fail("Verification token cannot be empty")
-        if len(self.token) < MIN_TOKEN_LENGTH:
-            return FlextResult.fail("Verification token must be at least 32 characters")
+            return FlextResult.fail(
+                f"{self._get_token_type()} must be at least 32 characters",
+            )
         if self.expires_at <= datetime.now(UTC):
             return FlextResult.fail(
-                "Verification token expiration must be in the future",
+                f"{self._get_token_type()} expiration must be in the future",
             )
         if self.created_at > datetime.now(UTC):
             return FlextResult.fail("Token creation time cannot be in the future")
         return FlextResult.ok(None)
+
+    def _get_token_type(self) -> str:
+        """Abstract method: get token type for error messages."""
+        msg = "Subclasses must implement _get_token_type"
+        raise NotImplementedError(msg)
+
+    def _validate_specific_rules(self) -> FlextResult[None]:
+        """Abstract method: validate token-specific rules."""
+        # Base implementation has no specific rules
+        return FlextResult.ok(None)
+
+
+class FlextPasswordResetToken(FlextBaseToken):
+    """Password reset token entity - inherits common behavior from base."""
+
+    def _get_token_type(self) -> str:
+        """Return token type for error messages."""
+        return "Password reset token"
+
+
+class FlextEmailVerificationToken(FlextBaseToken):
+    """Email verification token entity - inherits common behavior from base."""
+
+    def _get_token_type(self) -> str:
+        """Return token type for error messages."""
+        return "Email verification token"

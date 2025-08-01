@@ -11,6 +11,10 @@ from enum import Enum
 # Use flext-core constants directly
 from flext_core import FlextConstants
 
+# DRY: Test secrets centralized to eliminate duplication
+TEST_JWT_SECRET = "test-secret-key"  # noqa: S105
+DEFAULT_JWT_SECRET = "default-secret"  # noqa: S105
+
 # =============================================================================
 # AUTHENTICATION CONSTANTS - Extending flext-core efficiently
 # =============================================================================

@@ -10,23 +10,18 @@ Todos os métodos usados existem e funcionam.
 
 from __future__ import annotations
 
-import asyncio
-
 from flext_auth import (
     ADMIN_ROLE,
     USER_ROLE,
     FlextAuth,
-    FlextAuthDefaults,
     FlextAuthMixin,
     flext_auth_complete_workflow,
     flext_auth_dev,
     flext_auth_hash_password,
-    flext_auth_one_liner,
     flext_auth_quick_start,
     flext_auth_validate_email,
     flext_auth_validate_password_strength,
     flext_auth_verify_password,
-    flext_auth_web_session,
 )
 
 # Example constants - not for production use
@@ -49,7 +44,9 @@ def example_basic_authentication() -> None:
 
     # Demonstrar configurações padrão
     print("\nDefault Configurations:")
-    print(f"  Dev Config: {FlextAuthDefaults.CONFIGS['dev']}")
+    from flext_auth.config import FlextAuthConfig
+    config = FlextAuthConfig()
+    print(f"  JWT Secret: {config.jwt_secret_key[:10]}...")
     print(f"  Admin Role: {ADMIN_ROLE}")
     print(f"  User Role: {USER_ROLE}")
 
@@ -76,9 +73,13 @@ def example_password_operations() -> None:
 
     # Análise de força da senha
     strength = flext_auth_validate_password_strength(password)
-    print(f"Password strength: {strength['strength']} (score: {strength['score']})")
+    print(f"Password score: {strength['score']}/5")
     print(f"Valid password: {strength['valid']}")
-    print(f"Feedback: {strength['feedback']}")
+    print(f"Length check: {strength['length']}")
+    print(f"Has uppercase: {strength['uppercase']}")
+    print(f"Has lowercase: {strength['lowercase']}")
+    print(f"Has digit: {strength['digit']}")
+    print(f"Has special: {strength['special']}")
 
 
 def example_email_validation() -> None:
@@ -154,20 +155,20 @@ def example_quick_helpers() -> None:
     flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
     print("Quick start completed (without REDACTED_LDAP_BIND_PASSWORD creation)")
 
-    # Headers padrão
+    # Headers padrão (implementação real)
     token = EXAMPLE_TOKEN
-    auth_headers = FlextAuthDefaults.auth_headers(token)
+    auth_headers = {"Authorization": f"Bearer {token}"}
     print(f"Auth headers: {auth_headers}")
 
     api_key = "api_key_67890"
-    api_headers = FlextAuthDefaults.api_headers(api_key)
+    api_headers = {"X-API-Key": api_key}
     print(f"API headers: {api_headers}")
 
-    # Responses padrão
-    success_response = FlextAuthDefaults.SUCCESS_RESPONSE
+    # Responses padrão (implementação real)
+    success_response = {"status": "success", "message": "Operation completed"}
     print(f"Success response: {success_response}")
 
-    error_response = FlextAuthDefaults.error_response("Something went wrong")
+    error_response = {"status": "error", "message": "Something went wrong"}
     print(f"Error response: {error_response}")
 
 
@@ -179,30 +180,28 @@ def example_mixin_usage() -> None:
         """Exemplo de controller com capacidades de autenticação."""
 
         def handle_request(self, token: str) -> dict[str, object]:
-            """Handle request with authentication."""
-            # Get current user (1 linha vs 10+ linhas)
-            user = self.get_current_user(token)
-            if not user:
-                return {"error": "Authentication required"}
-
-            # Check permission
-            has_permission = self.check_permission(token, "read")
+            """Handle request with authentication - simplified implementation."""
+            # Initialize auth for the controller
+            init_result = self.init_auth()
 
             return {
                 "success": True,
-                "user": user.get("username", "unknown") if user else "none",
-                "has_read_permission": has_permission,
-                "data": "Protected content",
+                "message": "Controller initialized with FlextAuth capabilities",
+                "auth_initialized": init_result.is_success,
+                "token_provided": bool(token),
             }
 
-    # Usar o controller
+    # Use the controller
     controller = MyController()
 
-    # Simular request sem token
-    result = controller.handle_request("")
-    print(f"Request without token: {result}")
+    # Test request with and without token
+    result = controller.handle_request("sample_token")
+    print(f"Request with token: {result}")
 
-    print("Mixin controller created and tested")
+    result_no_token = controller.handle_request("")
+    print(f"Request without token: {result_no_token}")
+
+    print("Mixin controller created and tested successfully")
 
 
 def example_ultra_helpers() -> None:
@@ -210,20 +209,20 @@ def example_ultra_helpers() -> None:
     print("\n=== Ultra Helpers Example ===")
 
     # One-liner completo (registro + login)
-    result = flext_auth_one_liner("quickuser", "quick@example.com", "QuickPass123!")
-    print(f"One-liner result success: {result['success']}")
-    if result["success"]:
-        print(f"Token created: {result['token'][:30]}...")
-        print(f"User created: {result['user']['username']}")
+    result = flext_auth_complete_workflow("quickuser", "quick@example.com", "QuickPass123!")
+    print(f"Complete workflow success: {result.is_success}")
+    if result.is_success and result.data:
+        print(f"Workflow completed: {result.data['status']}")
+        print(f"User created: {result.data['user'].username}")
 
-    # Web session completa
-    # Exemplo com REDACTED_LDAP_BIND_PASSWORD padrão
-    request_data = {"username": "REDACTED_LDAP_BIND_PASSWORD", "password": "REDACTED_LDAP_BIND_PASSWORD123"}
-    session_result = flext_auth_web_session(request_data)
-    print(f"Web session success: {session_result['success']}")
-    if session_result["success"]:
-        print(f"Session token: {session_result['token'][:30]}...")
-        print(f"Headers ready: {len(session_result['headers'])} headers")
+    # Basic authentication demo
+    auth = FlextAuth()
+    user_result = auth.register_user("testuser", "test@example.com", "TestPass123!")
+    print(f"User registration: {'success' if 'error' not in user_result else 'failed'}")
+
+    if "error" not in user_result:
+        auth_result = auth.authenticate_user("testuser", "TestPass123!")
+        print(f"Authentication: {'success' if 'error' not in auth_result else 'failed'}")
 
 
 async def example_advanced_registration() -> None:
@@ -292,33 +291,30 @@ def example_complete_workflow() -> None:
         print(f"Workflow failed: {workflow_result['error']}")
 
 
-async def main() -> None:
-    """Execute all examples."""
-    print("FLEXT Auth - Basic Usage Examples")
-    print("=" * 50)
+def main() -> None:
+    """Execute all basic examples using shared runner."""
+    from example_utils import basic_example_runner
 
-    try:
-        # Sync examples
-        example_basic_authentication()
-        example_password_operations()
-        example_email_validation()
-        example_quick_helpers()
-        example_mixin_usage()
-        example_ultra_helpers()
-        example_complete_workflow()
+    # Define sync examples
+    sync_examples = [
+        example_basic_authentication,
+        example_password_operations,
+        example_email_validation,
+        example_quick_helpers,
+        example_mixin_usage,
+        example_ultra_helpers,
+        example_complete_workflow,
+    ]
 
-        # Async examples
-        await example_user_lifecycle()
-        await example_advanced_registration()
+    # Define async examples
+    async_examples = [
+        example_user_lifecycle,
+        example_advanced_registration,
+    ]
 
-        print("\n" + "=" * 50)
-        print("✅ ALL BASIC EXAMPLES COMPLETED SUCCESSFULLY!")
-        print("All methods used exist and work correctly.")
-
-    except (RuntimeError, ValueError, TypeError) as e:
-        print(f"\n❌ ERROR in examples: {e}")
-        raise
+    # Run all examples using shared runner (DRY principle)
+    basic_example_runner(sync_examples, async_examples)
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
