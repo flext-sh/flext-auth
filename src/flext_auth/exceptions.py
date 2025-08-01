@@ -79,7 +79,7 @@ class FlextAuthSpecificError(FlextAuthError):  # type: ignore[valid-type,misc]
         super().__init__(f"Auth {error_prefix}: {message}", **kwargs)
 
 
-class FlextAuthJWTError(FlextAuthSpecificError):  # type: ignore[valid-type,misc]
+class FlextAuthJWTError(FlextAuthSpecificError):
     """Authentication service JWT errors using Template Method Pattern."""
 
     def __init__(
@@ -97,7 +97,7 @@ class FlextAuthJWTError(FlextAuthSpecificError):  # type: ignore[valid-type,misc
         super().__init__(message, "JWT", context_fields, **kwargs)
 
 
-class FlextAuthPasswordError(FlextAuthSpecificError):  # type: ignore[valid-type,misc]
+class FlextAuthPasswordError(FlextAuthSpecificError):
     """Authentication service password errors using Template Method Pattern."""
 
     def __init__(
@@ -115,7 +115,7 @@ class FlextAuthPasswordError(FlextAuthSpecificError):  # type: ignore[valid-type
         super().__init__(message, "password", context_fields, **kwargs)
 
 
-class FlextAuthSessionError(FlextAuthSpecificError):  # type: ignore[valid-type,misc]
+class FlextAuthSessionError(FlextAuthSpecificError):
     """Authentication service session errors using Template Method Pattern."""
 
     def __init__(
@@ -133,7 +133,7 @@ class FlextAuthSessionError(FlextAuthSpecificError):  # type: ignore[valid-type,
         super().__init__(message, "session", context_fields, **kwargs)
 
 
-class FlextAuthUserError(FlextAuthSpecificError):  # type: ignore[valid-type,misc]
+class FlextAuthUserError(FlextAuthSpecificError):
     """Authentication service user errors using Template Method Pattern."""
 
     def __init__(

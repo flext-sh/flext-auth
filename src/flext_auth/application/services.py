@@ -16,7 +16,11 @@ from datetime import UTC, datetime, timedelta
 
 from flext_core import FlextResult
 
-from flext_auth.auth import FlextAuthService, FlextAuthServiceConfig
+from flext_auth.auth import (
+    FlextAuthService,
+    FlextAuthServiceConfig,
+    FlextAuthServiceDependencies,
+)
 from flext_auth.constants import TEST_JWT_SECRET
 from flext_auth.domain.entities import (
     FlextPermission,
@@ -210,13 +214,15 @@ def _create_auth_service_dependencies() -> ServiceDependencies:
     password_service = FlextPasswordService()
     jwt_service = FlextJWTService(secret_key=TEST_JWT_SECRET)
 
-    auth_service = FlextAuthService(
+    # Create dependencies object using Parameter Object Pattern
+    dependencies = FlextAuthServiceDependencies(
         user_repository=user_repo,
         session_repository=session_repo,
         password_service=password_service,
         jwt_service=jwt_service,
         config=FlextAuthServiceConfig(),
     )
+    auth_service = FlextAuthService(dependencies)
 
     return ServiceDependencies(
         user_repo=user_repo,

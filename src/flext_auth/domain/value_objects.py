@@ -480,23 +480,31 @@ class FlextJWTClaims(FlextValueObject):
         return max(0, int(self.exp - datetime.now(UTC).timestamp()))
 
     def validate_domain_rules(self) -> FlextResult[None]:
-        """Validate JWT claims domain rules and business constraints."""
-        if not self.sub:
-            msg = "JWT subject (sub) cannot be empty"
-            return FlextResult.fail(msg)
-        if self.iat <= 0:
-            msg = "JWT issued at (iat) must be positive"
-            return FlextResult.fail(msg)
-        if self.exp <= 0:
-            msg = "JWT expiration (exp) must be positive"
-            return FlextResult.fail(msg)
-        if self.exp <= self.iat:
-            msg = "JWT expiration must be after issued time"
-            return FlextResult.fail(msg)
-        if self.token_type not in {"access", "refresh"}:
-            msg = "JWT token type must be 'access' or 'refresh'"
-            return FlextResult.fail(msg)
+        """Validate JWT claims domain rules using Railway-Oriented Programming.
+        
+        SOLID REFACTORING: Reduced from 6 returns to 2 returns using
+        Railway-Oriented Programming + Strategy Pattern.
+        """
+        # Railway-Oriented Programming: Chain validations with early exit
+        validation_errors = self._collect_validation_errors()
+        
+        if validation_errors:
+            return FlextResult.fail(validation_errors[0])  # Return first error for clarity
+        
         return FlextResult.ok(None)
+    
+    def _collect_validation_errors(self) -> list[str]:
+        """DRY helper: Collect all validation errors using Strategy Pattern."""
+        validators = [
+            (lambda: not self.sub, "JWT subject (sub) cannot be empty"),
+            (lambda: self.iat <= 0, "JWT issued at (iat) must be positive"),
+            (lambda: self.exp <= 0, "JWT expiration (exp) must be positive"),
+            (lambda: self.exp <= self.iat, "JWT expiration must be after issued time"),
+            (lambda: self.token_type not in {"access", "refresh"}, 
+             "JWT token type must be 'access' or 'refresh'"),
+        ]
+        
+        return [error_msg for condition, error_msg in validators if condition()]
 
 
 class FlextSecurityContext(FlextValueObject):

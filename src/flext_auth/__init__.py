@@ -17,11 +17,13 @@ import importlib.metadata
 # Import FlextResult for public interface
 from flext_core import FlextResult
 
+# Import dependencies object for parameter object pattern
 # Core classes and services
 # Import auth service config for FlextAuth constructor
 from flext_auth.auth import (
     FlextAuthService,
     FlextAuthServiceConfig,
+    FlextAuthServiceDependencies,
     FlextUserRegistrationData,
 )
 from flext_auth.config import (
@@ -179,13 +181,15 @@ class FlextAuth:
             max_concurrent_sessions=5,
         )
 
-        self._auth_service = FlextAuthService(
+        # Create dependencies object using Parameter Object Pattern
+        dependencies = FlextAuthServiceDependencies(
             user_repository=self._user_repository,
             session_repository=self._session_repository,
             password_service=self._password_service,
             jwt_service=self._jwt_service,
             config=auth_config,
         )
+        self._auth_service = FlextAuthService(dependencies)
 
     @property
     def config(self) -> FlextAuthConfig:

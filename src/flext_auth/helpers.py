@@ -18,6 +18,7 @@ from flext_core import FlextLoggerFactory, FlextResult
 from flext_auth.auth import (
     FlextAuthService,
     FlextAuthServiceConfig,
+    FlextAuthServiceDependencies,
     FlextUserRegistrationData,
 )
 from flext_auth.config import DEFAULT_JWT_SECRET, FlextAuthConfig
@@ -94,13 +95,15 @@ def _create_flext_auth_service(config_overrides: dict[str, object]) -> FlextAuth
         max_concurrent_sessions=5,
     )
 
-    return FlextAuthService(
+    # Create dependencies object using Parameter Object Pattern
+    dependencies = FlextAuthServiceDependencies(
         user_repository=user_repo,
         session_repository=session_repo,
         password_service=password_service,
         jwt_service=jwt_service,
         config=service_config,
     )
+    return FlextAuthService(dependencies)
 
 
 def flext_auth_dev() -> FlextAuthService:
@@ -160,14 +163,15 @@ def flext_auth_quick_start(
             max_concurrent_sessions=5,
         )
 
-        # Create auth service with all dependencies
-        auth_service = FlextAuthService(
+        # Create auth service with all dependencies using Parameter Object Pattern
+        dependencies = FlextAuthServiceDependencies(
             user_repository=user_repository,
             session_repository=session_repository,
             password_service=password_service,
             jwt_service=jwt_service,
             config=auth_config,
         )
+        auth_service = FlextAuthService(dependencies)
 
         # Create REDACTED_LDAP_BIND_PASSWORD user if requested
         if create_REDACTED_LDAP_BIND_PASSWORD:

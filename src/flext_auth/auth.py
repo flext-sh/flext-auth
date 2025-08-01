@@ -252,7 +252,6 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
                 username="strategy_test",
                 role="USER",
                 session_id="strategy_session",
-                expires_at=datetime.now(UTC),
             )
         )
 
@@ -482,14 +481,6 @@ class FlextAuthService:
             return FlextResult.fail(f"Session creation failed: {e}")
 
     # Compatibility methods - delegate to original implementations
-    async def _validate_token_claims(self, token: str) -> FlextResult[JWTClaims]:
-        """Validate token claims - compatibility method."""
-        try:
-            # Railway-Oriented Programming: Execute complete validation pipeline
-            return await self._execute_token_validation_pipeline(token)
-        except (RuntimeError, ValueError, OSError) as e:
-            return FlextResult.fail(f"Token validation failed: {e}")
-
     # SOLID REFACTORING: Single Responsibility Principle methods for validate_token
 
     async def _validate_token_claims(self, token: str) -> FlextResult[JWTClaims]:
@@ -1128,30 +1119,6 @@ class FlextAuthService:
                 ).message,
             )
 
-    async def _create_user_session(
-        self,
-        user: User,
-        ip_address: str,
-        user_agent: str | None,
-    ) -> FlextResult[Session]:
-        """Create a new session for user."""
-        try:
-            session = Session(
-                id=secrets.token_urlsafe(32),
-                user_id=user.id,
-                access_token="",  # Will be set later
-                refresh_token=None,
-                status=SessionStatus.ACTIVE,
-                ip_address=ip_address,
-                user_agent=user_agent,
-                expires_at=datetime.now(UTC)
-                + timedelta(hours=self.session_expire_hours),
-            )
-
-            return await self.session_repo.save(session)
-
-        except (RuntimeError, ValueError, OSError) as e:
-            return FlextResult.fail(f"Session creation failed: {e}")
 
     async def _handle_failed_login(
         self,
