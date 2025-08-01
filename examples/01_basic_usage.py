@@ -10,6 +10,8 @@ Todos os métodos usados existem e funcionam.
 
 from __future__ import annotations
 
+from example_utils import basic_example_runner
+
 from flext_auth import (
     ADMIN_ROLE,
     USER_ROLE,
@@ -23,6 +25,7 @@ from flext_auth import (
     flext_auth_validate_password_strength,
     flext_auth_verify_password,
 )
+from flext_auth.config import FlextAuthConfig
 
 # Example constants - not for production use
 
@@ -44,7 +47,7 @@ def example_basic_authentication() -> None:
 
     # Demonstrar configurações padrão
     print("\nDefault Configurations:")
-    from flext_auth.config import FlextAuthConfig
+
     config = FlextAuthConfig()
     print(f"  JWT Secret: {config.jwt_secret_key[:10]}...")
     print(f"  Admin Role: {ADMIN_ROLE}")
@@ -209,7 +212,9 @@ def example_ultra_helpers() -> None:
     print("\n=== Ultra Helpers Example ===")
 
     # One-liner completo (registro + login)
-    result = flext_auth_complete_workflow("quickuser", "quick@example.com", "QuickPass123!")
+    result = flext_auth_complete_workflow(
+        "quickuser", "quick@example.com", "QuickPass123!"
+    )
     print(f"Complete workflow success: {result.is_success}")
     if result.is_success and result.data:
         print(f"Workflow completed: {result.data['status']}")
@@ -222,7 +227,9 @@ def example_ultra_helpers() -> None:
 
     if "error" not in user_result:
         auth_result = auth.authenticate_user("testuser", "TestPass123!")
-        print(f"Authentication: {'success' if 'error' not in auth_result else 'failed'}")
+        print(
+            f"Authentication: {'success' if 'error' not in auth_result else 'failed'}"
+        )
 
 
 async def example_advanced_registration() -> None:
@@ -293,8 +300,6 @@ def example_complete_workflow() -> None:
 
 def main() -> None:
     """Execute all basic examples using shared runner."""
-    from example_utils import basic_example_runner
-
     # Define sync examples
     sync_examples = [
         example_basic_authentication,

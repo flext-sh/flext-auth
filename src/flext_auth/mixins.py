@@ -102,7 +102,9 @@ class FlextAuthMixin:
                 if self._auth_service is None:
                     return FlextResult.fail("Auth service not initialized")
                 auth_result = await self._auth_service.authenticate_user(
-                    username, password, ip_address="127.0.0.1",
+                    username,
+                    password,
+                    ip_address="127.0.0.1",
                 )
                 if auth_result.is_success and auth_result.data:
                     # Convert auth result to dict format
@@ -178,7 +180,9 @@ class FlextAuthMixin:
             role = str(user_data.get("role", "user"))
 
             return jwt_service.generate_access_token(
-                user_id=user_id, username=username, role=role,
+                user_id=user_id,
+                username=username,
+                role=role,
             )
         except Exception as e:
             _logger.exception("Token generation failed")

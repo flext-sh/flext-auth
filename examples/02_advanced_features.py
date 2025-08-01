@@ -10,6 +10,8 @@ Todos os métodos usados existem e funcionam.
 
 from __future__ import annotations
 
+from example_utils import advanced_example_runner
+
 from flext_auth import (
     ADMIN_ROLE,
     MODERATOR_ROLE,
@@ -440,8 +442,6 @@ async def example_advanced_user_management() -> None:
 
 def main() -> None:
     """Execute all advanced examples using shared runner."""
-    from example_utils import advanced_example_runner
-
     # Define sync examples
     sync_examples = [
         example_advanced_configuration,

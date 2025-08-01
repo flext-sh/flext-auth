@@ -218,7 +218,9 @@ def demonstrate_type_safety() -> None:
     print("✅ Type safety verified:")
     print(f"   FlextAuthService: {isinstance(auth_service, FlextAuthService)}")
     print(f"   FlextJWTService: {isinstance(jwt_service, FlextJWTService)}")
-    print(f"   FlextPasswordService: {isinstance(password_service, FlextPasswordService)}")
+    print(
+        f"   FlextPasswordService: {isinstance(password_service, FlextPasswordService)}"
+    )
 
 
 def show_refactoring_metrics() -> None:
@@ -294,6 +296,7 @@ def main() -> None:
     except Exception as e:
         print(f"\n❌ Error during demonstration: {e}")
         import traceback
+
         traceback.print_exc()
 
 

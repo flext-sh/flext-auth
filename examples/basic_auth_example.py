@@ -32,11 +32,7 @@ def main() -> None:
 
     # 2. JWT Token Example
     print("\n2. JWT Token Generation:")
-    payload = {
-        "user_id": "user123",
-        "username": "testuser",
-        "role": "REDACTED_LDAP_BIND_PASSWORD"
-    }
+    payload = {"user_id": "user123", "username": "testuser", "role": "REDACTED_LDAP_BIND_PASSWORD"}
 
     token_result = flext_auth_generate_jwt(payload)
     if token_result.is_success and token_result.data:
@@ -63,9 +59,7 @@ def main() -> None:
 
     # Register user
     user_result = auth.register_user(
-        username="demouser",
-        email="demo@example.com",
-        password="DemoPassword123!"
+        username="demouser", email="demo@example.com", password="DemoPassword123!"
     )
 
     if isinstance(user_result, dict) and "error" not in user_result:
@@ -78,7 +72,9 @@ def main() -> None:
         if isinstance(auth_result, dict) and "error" not in auth_result:
             print("✅ Authentication successful!")
         else:
-            print(f"❌ Authentication failed: {auth_result.get('error', 'Unknown error')}")
+            print(
+                f"❌ Authentication failed: {auth_result.get('error', 'Unknown error')}"
+            )
     else:
         print(f"❌ Registration failed: {user_result.get('error', 'Unknown error')}")
 

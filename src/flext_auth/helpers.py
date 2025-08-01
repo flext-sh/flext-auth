@@ -10,6 +10,7 @@ import asyncio
 import re
 import secrets
 from datetime import UTC, datetime, timedelta
+from typing import cast
 
 from flext_core import FlextLoggerFactory, FlextResult
 
@@ -25,6 +26,10 @@ from flext_auth.jwt import FlextJWTService
 from flext_auth.services.password_service import FlextPasswordService
 from flext_auth.session import InMemorySessionRepository
 from flext_auth.user import InMemoryUserRepository
+from flext_auth.utils import convert_user_to_dict
+
+# SOLID REFACTORING: DRY principle - user conversion centralized in utils.py
+
 
 _logger = FlextLoggerFactory.get_logger(__name__)
 
@@ -255,7 +260,9 @@ def flext_auth_generate_jwt(
         role = str(payload.get("role", "user"))
 
         return jwt_service.generate_access_token(
-            user_id=user_id, username=username, role=role,
+            user_id=user_id,
+            username=username,
+            role=role,
         )
 
     except Exception as e:
@@ -643,24 +650,9 @@ class FlextAuthBatchOperations:
             )
 
             user_result = await self._auth_service.register_user(registration_data)
-            # Convert FlextUser result to dict result for type compatibility
+            # SOLID REFACTORING: Use DRY principle - centralized user conversion
             if user_result.is_success and user_result.data:
-                user = user_result.data
-                user_dict: dict[str, object] = {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "role": (
-                        user.role.value
-                        if hasattr(user.role, "value")
-                        else str(user.role)
-                    ),
-                    "status": (
-                        user.status.value
-                        if hasattr(user.status, "value")
-                        else str(user.status)
-                    ),
-                }
+                user_dict = convert_user_to_dict(user_result.data)
                 results.append(FlextResult.ok(user_dict))
             else:
                 error_result: FlextResult[dict[str, object]] = FlextResult.fail(
@@ -989,6 +981,197 @@ def flext_auth_create_service_token(
     return service_token
 
 
+def flext_auth_extract_token_claims(
+    token: str, secret: str | None = None
+) -> dict[str, object] | None:
+    """Extract claims from JWT token without validation.
+
+    Args:
+        token: JWT token to extract claims from
+        secret: Secret key for verification (optional for extraction)
+
+    Returns:
+        Token claims dictionary or None if extraction fails
+
+    """
+    result = flext_auth_validate_jwt(token, secret)
+    if result.is_success and result.data:
+        return result.data
+    return None
+
+
+def flext_auth_extract_user_context(
+    token: str,
+    secret: str | None = None,
+    **context_data: object,
+) -> dict[str, object] | None:
+    """Extract user context from JWT token.
+
+    Args:
+        token: JWT token to extract context from
+        secret: Secret key for verification
+        **context_data: Additional context data
+
+    Returns:
+        User context dictionary or None if extraction fails
+
+    """
+    claims = flext_auth_extract_token_claims(token, secret)
+    if not claims:
+        return None
+
+    user_context: dict[str, object] = {
+        "user_id": claims.get("user_id", ""),
+        "username": claims.get("username", ""),
+        "role": claims.get("role", "user"),
+        "permissions": claims.get("permissions", []),
+        "token_type": "user_context",
+        "extracted_at": datetime.now(UTC),
+    }
+    user_context.update(context_data)
+    return user_context
+
+
+def flext_auth_filter_user_data(
+    user_data: dict[str, object],
+    fields: list[str] | None = None,
+    exclude_fields: list[str] | None = None,
+) -> dict[str, object]:
+    """Filter user data by including/excluding specific fields.
+
+    Args:
+        user_data: User data dictionary to filter
+        fields: List of fields to include (if None, include all)
+        exclude_fields: List of fields to exclude
+
+    Returns:
+        Filtered user data dictionary
+
+    """
+    if not isinstance(user_data, dict):
+        return {}  # type: ignore[unreachable]
+
+    result = user_data.copy()
+
+    # Apply exclusions first
+    if exclude_fields:
+        for field in exclude_fields:
+            result.pop(field, None)
+
+    # Apply inclusions (if specified)
+    if fields:
+        filtered_result: dict[str, object] = {}
+        for field in fields:
+            if field in result:
+                filtered_result[field] = result[field]
+        result = filtered_result
+
+    return result
+
+
+def flext_auth_validate_permissions(
+    user_permissions: list[str],
+    required_permissions: list[str],
+    *,
+    require_all: bool = True,
+) -> bool:
+    """Validate user permissions against required permissions.
+
+    Args:
+        user_permissions: List of user's current permissions
+        required_permissions: List of permissions required
+        require_all: Whether all permissions are required (AND) or any (OR)
+
+    Returns:
+        True if permission check passes, False otherwise
+
+    """
+    if not required_permissions:
+        return True
+
+    if not user_permissions:
+        return False
+
+    if require_all:
+        # All required permissions must be present (AND logic)
+        return all(perm in user_permissions for perm in required_permissions)
+    # Any required permission can be present (OR logic)
+    return any(perm in user_permissions for perm in required_permissions)
+
+
+def flext_auth_merge_configs(
+    base_config: dict[str, object],
+    override_config: dict[str, object],
+    *,
+    deep_merge: bool = True,
+) -> dict[str, object]:
+    """Merge two configuration dictionaries.
+
+    Args:
+        base_config: Base configuration dictionary
+        override_config: Configuration to override base with
+        deep_merge: Whether to perform deep merge for nested dictionaries
+
+    Returns:
+        Merged configuration dictionary
+
+    """
+    if not isinstance(base_config, dict):
+        base_config = {}  # type: ignore[unreachable]
+    if not isinstance(override_config, dict):
+        return base_config.copy()  # type: ignore[unreachable]
+
+    result = base_config.copy()
+
+    for key, value in override_config.items():
+        if (
+            deep_merge
+            and key in result
+            and isinstance(result[key], dict)
+            and isinstance(value, dict)
+        ):
+            # Recursively merge nested dictionaries
+            result[key] = flext_auth_merge_configs(
+                cast("dict[str, object]", result[key]),
+                cast("dict[str, object]", value),
+                deep_merge=True,
+            )
+        else:
+            # Direct override for non-dict values or shallow merge
+            result[key] = value
+
+    return result
+
+
+def flext_auth_rate_limit(
+    max_requests: int = 60,
+    window_seconds: int = 60,
+    *,
+    key_func: object = None,  # noqa: ARG001
+    error_message: str = "Rate limit exceeded",
+) -> object:
+    """Rate limiting decorator/function for authentication endpoints.
+
+    Args:
+        max_requests: Maximum requests allowed in the window
+        window_seconds: Time window in seconds
+        key_func: Function to generate rate limit key (not implemented)
+        error_message: Error message when rate limit is exceeded
+
+    Returns:
+        Rate limit configuration or decorator function
+
+    """
+    # This is a placeholder for rate limiting functionality
+    # In a real implementation, this would track requests and enforce limits
+    return {
+        "max_requests": max_requests,
+        "window_seconds": window_seconds,
+        "error_message": error_message,
+        "rate_limit_type": "auth_endpoint",
+    }
+
+
 # Additional type definitions for test compatibility
 FlextAuthHeaders = dict[str, str]
 FlextAuthPermissions = list[str]
@@ -1057,19 +1240,25 @@ __all__ = [
     "flext_auth_create_user_payload",
     "flext_auth_decode_jwt",
     "flext_auth_dev",
+    "flext_auth_extract_token_claims",
+    "flext_auth_extract_user_context",
+    "flext_auth_filter_user_data",
     "flext_auth_generate_jwt",
     # Password helpers
     "flext_auth_hash_password",
     "flext_auth_instant_api",
+    "flext_auth_merge_configs",
     "flext_auth_middleware_factory",
     "flext_auth_one_liner",
     "flext_auth_prod",
     "flext_auth_quick_start",
+    "flext_auth_rate_limit",
     "flext_auth_validate_api_key",
     # Validation helpers
     "flext_auth_validate_email",
     "flext_auth_validate_jwt",
     "flext_auth_validate_password_strength",
+    "flext_auth_validate_permissions",
     "flext_auth_validate_username",
     "flext_auth_verify_password",
     "flext_auth_web",

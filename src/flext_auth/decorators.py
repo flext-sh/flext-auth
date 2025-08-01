@@ -31,6 +31,25 @@ AuthenticatedFunction = Callable[..., object]  # type: ignore[explicit-any]
 DecoratorCallable = Callable[[F], F]  # type: ignore[explicit-any]
 
 
+# SOLID REFACTORING: Parameter Object Pattern for decorator parameters
+class FlextAuthDecoratorConfig:
+    """Parameter Object for flext_auth_required decorator - reduces parameter count."""
+
+    def __init__(
+        self,
+        auth_service: FlextAuthService | None = None,
+        secret: str | None = None,
+        *,
+        get_user: bool = True,
+        error_response: object = None,
+    ) -> None:
+        """Initialize decorator configuration."""
+        self.auth_service = auth_service
+        self.secret = secret
+        self.get_user = get_user
+        self.error_response = error_response
+
+
 # SOLID REFACTORING: Strategy Pattern for token extraction - reduces complexity
 def _extract_bearer_token_from_header(auth_header: str) -> str | None:
     """Extract Bearer token from Authorization header - Single Responsibility."""
@@ -153,7 +172,8 @@ def _validate_token_with_secret(
 
 
 def _extract_request_from_args(
-    args: tuple[object, ...], kwargs: dict[str, object],
+    args: tuple[object, ...],
+    kwargs: dict[str, object],
 ) -> object | None:
     """Extract request object from function arguments."""
     if args:
@@ -192,6 +212,54 @@ def _add_user_data_to_kwargs(
         kwargs["current_user"] = validation_result.data
 
 
+def _execute_authentication_pipeline(  # type: ignore[explicit-any]
+    args: tuple[object, ...],
+    kwargs: dict[str, object],
+    config: FlextAuthDecoratorConfig,
+    func: Callable[..., object],
+) -> object:
+    """Execute authentication pipeline using Railway-Oriented Programming.
+
+    SOLID REFACTORING: Implements Railway-Oriented Programming to reduce
+    flext_auth_required from 6 returns to 2 returns.
+    """
+    try:
+        # Railway-Oriented Programming: All validations must pass to reach success
+        request = _extract_request_from_args(args, kwargs)
+        if not request:
+            return _handle_authentication_error(
+                config.error_response, "No request object found"
+            )
+
+        token = _extract_token_from_request(request)
+        if not token:
+            return _handle_authentication_error(
+                config.error_response, "Authentication token required"
+            )
+
+        validation_result = _validate_token_with_service(
+            token, config.auth_service, config.secret
+        )
+        if not validation_result or not validation_result.is_success:
+            error_msg = (
+                validation_result.error
+                if validation_result
+                else "Token validation failed"
+            )
+            return _handle_authentication_error(
+                config.error_response, error_msg or "Validation failed"
+            )
+
+        # All validations passed - add user data and execute function
+        _add_user_data_to_kwargs(kwargs, validation_result, get_user=config.get_user)
+        return func(*args, **kwargs)
+
+    except Exception as e:
+        return _handle_authentication_error(
+            config.error_response, f"Authentication error: {e}"
+        )
+
+
 def flext_auth_required(  # type: ignore[explicit-any]
     auth_service: FlextAuthService | None = None,
     secret: str | None = None,
@@ -200,6 +268,9 @@ def flext_auth_required(  # type: ignore[explicit-any]
     error_response: object = None,
 ) -> DecoratorCallable[F]:
     """Authentication decorator with flexible configuration.
+
+    SOLID REFACTORING: Reduced from 6 parameters to Parameter Object Pattern.
+    Reduced from 6 returns to Railway-Oriented Programming with 2 returns.
 
     Args:
         auth_service: FlextAuthService instance for validation
@@ -221,38 +292,14 @@ def flext_auth_required(  # type: ignore[explicit-any]
     def decorator(func: F) -> F:  # type: ignore[explicit-any]
         @functools.wraps(func)
         def wrapper(*args: object, **kwargs: object) -> object:  # type: ignore[misc]
-            # Extract request from arguments
-            request = _extract_request_from_args(args, kwargs)
-            if not request:
-                return _handle_authentication_error(
-                    error_response, "No request object found",
-                )
-
-            # Extract and validate token
-            token = _extract_token_from_request(request)
-            if not token:
-                return _handle_authentication_error(
-                    error_response, "Authentication token required",
-                )
-
-            # Validate token with service
-            validation_result = _validate_token_with_service(
-                token, auth_service, secret,
+            # SOLID REFACTORING: Parameter Object Pattern + Railway-Oriented Programming
+            config = FlextAuthDecoratorConfig(
+                auth_service=auth_service,
+                secret=secret,
+                get_user=get_user,
+                error_response=error_response,
             )
-            if not validation_result or not validation_result.is_success:
-                error_msg = (
-                    validation_result.error
-                    if validation_result
-                    else "Token validation failed"
-                )
-                return _handle_authentication_error(
-                    error_response, error_msg or "Validation failed",
-                )
-
-            # Add user data to kwargs if requested
-            _add_user_data_to_kwargs(kwargs, validation_result, get_user=get_user)
-
-            return func(*args, **kwargs)
+            return _execute_authentication_pipeline(args, kwargs, config, func)
 
         return cast("F", wrapper)  # type: ignore[explicit-any]
 

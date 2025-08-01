@@ -30,6 +30,7 @@ def run_example_suite(
         success_message: Custom success message (optional)
 
     """
+
     async def _run_suite() -> None:
         # Print header with dynamic width based on title
         header_width = max(50, len(title) + 10)
@@ -75,6 +76,7 @@ def create_example_runner(title: str, success_message: str | None = None):
         Function that runs example suite with given parameters
 
     """
+
     def runner(
         sync_examples: list[Callable[[], None]],
         async_examples: list[Callable[[], Awaitable[None]]] | None = None,
@@ -88,10 +90,10 @@ def create_example_runner(title: str, success_message: str | None = None):
 # Pre-configured runners for common use cases
 basic_example_runner = create_example_runner(
     "FLEXT Auth - Basic Usage Examples",
-    "ALL BASIC EXAMPLES COMPLETED SUCCESSFULLY!\nAll methods used exist and work correctly."
+    "ALL BASIC EXAMPLES COMPLETED SUCCESSFULLY!\nAll methods used exist and work correctly.",
 )
 
 advanced_example_runner = create_example_runner(
     "FLEXT Auth - Advanced Features Examples",
-    "ALL ADVANCED EXAMPLES COMPLETED SUCCESSFULLY!\nAll methods demonstrate real flext-auth advanced functionality."
+    "ALL ADVANCED EXAMPLES COMPLETED SUCCESSFULLY!\nAll methods demonstrate real flext-auth advanced functionality.",
 )

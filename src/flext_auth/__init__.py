@@ -89,17 +89,23 @@ from flext_auth.helpers import (
     flext_auth_create_user_payload,
     flext_auth_decode_jwt,
     flext_auth_dev,
+    flext_auth_extract_token_claims,
+    flext_auth_extract_user_context,
+    flext_auth_filter_user_data,
     flext_auth_generate_jwt,
     flext_auth_hash_password,
     flext_auth_instant_api,
+    flext_auth_merge_configs,
     flext_auth_middleware_factory,
     flext_auth_one_liner,
     flext_auth_prod,
     flext_auth_quick_start,
+    flext_auth_rate_limit,
     flext_auth_validate_api_key,
     flext_auth_validate_email,
     flext_auth_validate_jwt,
     flext_auth_validate_password_strength,
+    flext_auth_validate_permissions,
     flext_auth_validate_username,
     flext_auth_verify_password,
     flext_auth_web,
@@ -109,6 +115,7 @@ from flext_auth.mixins import FlextAuthMixin, FlextAuthUserMixin
 from flext_auth.services.password_service import FlextPasswordService
 from flext_auth.session import InMemorySessionRepository
 from flext_auth.user import InMemoryUserRepository
+from flext_auth.utils import convert_user_to_dict
 
 # Version information
 try:
@@ -126,6 +133,11 @@ FLEXT_AUTH_GUEST = GUEST_ROLE
 
 class FlextAuthSetupError(FlextAuthError):  # type: ignore[valid-type,misc]
     """Exception raised during FlextAuth setup operations."""
+
+
+# =============================================================================
+# SOLID REFACTORING: DRY Principle - centralized in utils.py module
+# =============================================================================
 
 
 # Main FlextAuth class - simplified interface
@@ -216,7 +228,10 @@ class FlextAuth:
 
         async def _auth() -> FlextResult[dict[str, object]]:
             return await self._auth_service.authenticate_user(
-                username, password, ip_address, user_agent,
+                username,
+                password,
+                ip_address,
+                user_agent,
             )
 
         result = asyncio.run(_auth())
@@ -255,21 +270,8 @@ class FlextAuth:
 
         result = asyncio.run(_register())
         if result.is_success and result.data:
-            # Convert User entity to dict format for compatibility
-            user = result.data
-            return {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "role": (
-                    user.role.value if hasattr(user.role, "value") else str(user.role)
-                ),
-                "status": (
-                    user.status.value
-                    if hasattr(user.status, "value")
-                    else str(user.status)
-                ),
-            }
+            # SOLID REFACTORING: Use DRY principle - centralized user conversion
+            return convert_user_to_dict(result.data)
         return {"error": result.error or "Registration failed"}
 
     def validate_token(self, token: str) -> AuthResult:
@@ -290,7 +292,9 @@ class FlextAuth:
             return None
 
         result = self._jwt_service.generate_access_token(
-            user_id=user_id, username=username, role=role,
+            user_id=user_id,
+            username=username,
+            role=role,
         )
         return result.data if result.is_success else None
 
@@ -402,20 +406,26 @@ __all__ = [
     "flext_auth_create_user_payload",
     "flext_auth_decode_jwt",
     "flext_auth_dev",
+    "flext_auth_extract_token_claims",
+    "flext_auth_extract_user_context",
+    "flext_auth_filter_user_data",
     "flext_auth_generate_jwt",
     "flext_auth_hash_password",
     "flext_auth_instant_api",
+    "flext_auth_merge_configs",
     "flext_auth_middleware_factory",
     "flext_auth_one_liner",
     "flext_auth_permission_required",
     "flext_auth_prod",
     "flext_auth_quick_start",
+    "flext_auth_rate_limit",
     "flext_auth_required",
     "flext_auth_role_required",
     "flext_auth_validate_api_key",
     "flext_auth_validate_email",
     "flext_auth_validate_jwt",
     "flext_auth_validate_password_strength",
+    "flext_auth_validate_permissions",
     "flext_auth_validate_username",
     "flext_auth_verify_password",
     "flext_auth_web",

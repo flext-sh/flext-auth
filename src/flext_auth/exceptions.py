@@ -24,26 +24,63 @@ _exceptions = create_module_exception_classes("flext_auth")
 # Extract exception classes with proper names for backward compatibility
 FlextAuthError = cast("type[Exception]", _exceptions["FlextAuthError"])
 FlextAuthValidationError = cast(
-    "type[Exception]", _exceptions["FlextAuthValidationError"],
+    "type[Exception]",
+    _exceptions["FlextAuthValidationError"],
 )
 FlextAuthAuthenticationError = cast(
-    "type[Exception]", _exceptions["FlextAuthAuthenticationError"],
+    "type[Exception]",
+    _exceptions["FlextAuthAuthenticationError"],
 )
 FlextAuthConfigurationError = cast(
-    "type[Exception]", _exceptions["FlextAuthConfigurationError"],
+    "type[Exception]",
+    _exceptions["FlextAuthConfigurationError"],
 )
 FlextAuthConnectionError = cast(
-    "type[Exception]", _exceptions["FlextAuthConnectionError"],
+    "type[Exception]",
+    _exceptions["FlextAuthConnectionError"],
 )
 FlextAuthProcessingError = cast(
-    "type[Exception]", _exceptions["FlextAuthProcessingError"],
+    "type[Exception]",
+    _exceptions["FlextAuthProcessingError"],
 )
 FlextAuthTimeoutError = cast("type[Exception]", _exceptions["FlextAuthTimeoutError"])
 
 
 # SOLID SRP: Specialized auth errors using composition over duplication
-class FlextAuthJWTError(FlextAuthError):  # type: ignore[valid-type,misc]
-    """Authentication service JWT errors using DRY foundation."""
+# =============================================================================
+# SOLID REFACTORING: Template Method Pattern - eliminates 16-line duplication
+# =============================================================================
+
+
+class FlextAuthSpecificError(FlextAuthError):  # type: ignore[valid-type,misc]
+    """Template Method Pattern base for specific auth errors - DRY principle.
+
+    SOLID REFACTORING: Eliminates 16 lines of similar code in 4 locations (mass = 94)
+    using Template Method Pattern for exception initialization.
+    """
+
+    def __init__(
+        self,
+        message: str,
+        error_prefix: str,
+        context_fields: dict[str, str | None] | None = None,
+        **kwargs: object,
+    ) -> None:
+        """Template method for specific auth error initialization."""
+        # Template Method Pattern: Add context fields to kwargs if not None
+        if context_fields:
+            kwargs.update({
+                field_name: field_value
+                for field_name, field_value in context_fields.items()
+                if field_value is not None
+            })
+
+        # Template Method Pattern: Format message with error prefix
+        super().__init__(f"Auth {error_prefix}: {message}", **kwargs)
+
+
+class FlextAuthJWTError(FlextAuthSpecificError):  # type: ignore[valid-type,misc]
+    """Authentication service JWT errors using Template Method Pattern."""
 
     def __init__(
         self,
@@ -52,16 +89,16 @@ class FlextAuthJWTError(FlextAuthError):  # type: ignore[valid-type,misc]
         expiry_status: str | None = None,
         **kwargs: object,
     ) -> None:
-        """Initialize JWT error with DRY pattern."""
-        if token_type is not None:
-            kwargs["token_type"] = token_type
-        if expiry_status is not None:
-            kwargs["expiry_status"] = expiry_status
-        super().__init__(f"Auth JWT: {message}", **kwargs)
+        """Initialize JWT error using Template Method Pattern."""
+        context_fields = {
+            "token_type": token_type,
+            "expiry_status": expiry_status,
+        }
+        super().__init__(message, "JWT", context_fields, **kwargs)
 
 
-class FlextAuthPasswordError(FlextAuthError):  # type: ignore[valid-type,misc]
-    """Authentication service password errors using DRY foundation."""
+class FlextAuthPasswordError(FlextAuthSpecificError):  # type: ignore[valid-type,misc]
+    """Authentication service password errors using Template Method Pattern."""
 
     def __init__(
         self,
@@ -70,16 +107,16 @@ class FlextAuthPasswordError(FlextAuthError):  # type: ignore[valid-type,misc]
         strength_level: str | None = None,
         **kwargs: object,
     ) -> None:
-        """Initialize password error with DRY pattern."""
-        if password_operation is not None:
-            kwargs["password_operation"] = password_operation
-        if strength_level is not None:
-            kwargs["strength_level"] = strength_level
-        super().__init__(f"Auth password: {message}", **kwargs)
+        """Initialize password error using Template Method Pattern."""
+        context_fields = {
+            "password_operation": password_operation,
+            "strength_level": strength_level,
+        }
+        super().__init__(message, "password", context_fields, **kwargs)
 
 
-class FlextAuthSessionError(FlextAuthError):  # type: ignore[valid-type,misc]
-    """Authentication service session errors using DRY foundation."""
+class FlextAuthSessionError(FlextAuthSpecificError):  # type: ignore[valid-type,misc]
+    """Authentication service session errors using Template Method Pattern."""
 
     def __init__(
         self,
@@ -88,16 +125,16 @@ class FlextAuthSessionError(FlextAuthError):  # type: ignore[valid-type,misc]
         session_state: str | None = None,
         **kwargs: object,
     ) -> None:
-        """Initialize session error with DRY pattern."""
-        if session_id is not None:
-            kwargs["session_id"] = session_id
-        if session_state is not None:
-            kwargs["session_state"] = session_state
-        super().__init__(f"Auth session: {message}", **kwargs)
+        """Initialize session error using Template Method Pattern."""
+        context_fields = {
+            "session_id": session_id,
+            "session_state": session_state,
+        }
+        super().__init__(message, "session", context_fields, **kwargs)
 
 
-class FlextAuthUserError(FlextAuthError):  # type: ignore[valid-type,misc]
-    """Authentication service user errors using DRY foundation."""
+class FlextAuthUserError(FlextAuthSpecificError):  # type: ignore[valid-type,misc]
+    """Authentication service user errors using Template Method Pattern."""
 
     def __init__(
         self,
@@ -106,12 +143,12 @@ class FlextAuthUserError(FlextAuthError):  # type: ignore[valid-type,misc]
         user_state: str | None = None,
         **kwargs: object,
     ) -> None:
-        """Initialize user error with DRY pattern."""
-        if user_id is not None:
-            kwargs["user_id"] = user_id
-        if user_state is not None:
-            kwargs["user_state"] = user_state
-        super().__init__(f"Auth user: {message}", **kwargs)
+        """Initialize user error using Template Method Pattern."""
+        context_fields = {
+            "user_id": user_id,
+            "user_state": user_state,
+        }
+        super().__init__(message, "user", context_fields, **kwargs)
 
 
 class FlextAuthPermissionError(FlextAuthAuthenticationError):  # type: ignore[valid-type,misc]

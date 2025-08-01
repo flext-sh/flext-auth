@@ -139,18 +139,48 @@ class FlextUser(FlextEntity):
         return self.role == FlextUserRole.ADMIN
 
     def validate_domain_rules(self) -> FlextResult[None]:
-        """Validate user domain rules and business invariants."""
+        """Validate user domain rules using Railway-Oriented Programming.
+
+        SOLID REFACTORING: Reduced from 6 returns to 2 returns using
+        Railway-Oriented Programming + Strategy Pattern.
+        """
+        try:
+            # SOLID REFACTORING: Strategy Pattern - validation rules as strategies
+            validation_errors = self._execute_user_validation_strategies()
+            if validation_errors:
+                return FlextResult.fail(validation_errors[0])  # Return first error
+
+            return FlextResult.ok(None)
+
+        except Exception as e:
+            return FlextResult.fail(f"User validation error: {e}")
+
+    def _execute_user_validation_strategies(self) -> list[str]:
+        """Execute all user validation strategies - Railway-Oriented Programming.
+
+        SOLID REFACTORING: Strategy Pattern implementation for user validation.
+        """
+        errors = []
+
+        # Username validation strategies
         if len(self.username) < MIN_USERNAME_LENGTH:
-            return FlextResult.fail("Username must be at least 3 characters")
+            errors.append("Username must be at least 3 characters")
         if len(self.username) > MAX_USERNAME_LENGTH:
-            return FlextResult.fail("Username must be at most 50 characters")
+            errors.append("Username must be at most 50 characters")
+
+        # Email validation strategies
         if "@" not in self.email:
-            return FlextResult.fail("Email must contain @ symbol")
+            errors.append("Email must contain @ symbol")
+
+        # Password hash validation strategies
         if not self.password_hash:
-            return FlextResult.fail("Password hash cannot be empty")
+            errors.append("Password hash cannot be empty")
+
+        # Failed login attempts validation strategies
         if self.failed_login_attempts < 0:
-            return FlextResult.fail("Failed login attempts cannot be negative")
-        return FlextResult.ok(None)
+            errors.append("Failed login attempts cannot be negative")
+
+        return errors
 
 
 class FlextSessionStatus(StrEnum):
@@ -295,19 +325,36 @@ class FlextRole(FlextEntity):
         return len(self.id) > 0 and len(self.name) > 0 and len(self.description) > 0
 
     def validate_domain_rules(self) -> FlextResult[None]:
-        """Validate role domain rules and business invariants."""
-        if not self.id:
-            return FlextResult.fail("Role ID cannot be empty")
-        if not self.name:
-            return FlextResult.fail("Role name cannot be empty")
-        if not self.description:
-            return FlextResult.fail("Role description cannot be empty")
-        if len(self.name) > MAX_NAME_LENGTH:
-            return FlextResult.fail("Role name must be at most 100 characters")
-        if len(self.description) > MAX_DESCRIPTION_LENGTH:
-            return FlextResult.fail("Role description must be at most 500 characters")
-        # Permissions are already type-validated by Pydantic
-        # No additional validation needed for permission instances
+        """Validate role domain rules using Railway-Oriented Programming.
+
+        SOLID REFACTORING: Reduced from 6 returns to 2 returns using
+        Railway-Oriented Programming with validation strategies.
+        """
+        try:
+            # SOLID REFACTORING: Railway-Oriented Programming - reduces 6 returns to 2
+            return self._execute_role_validation_strategies()
+        except (ValueError, TypeError) as e:
+            return FlextResult.fail(f"Role validation failed: {e}")
+
+    def _execute_role_validation_strategies(self) -> FlextResult[None]:
+        """Execute role validation strategies - Railway-Oriented Programming."""
+        # Validation strategy pipeline - each validation can fail early
+        validation_rules = [
+            (not self.id, "Role ID cannot be empty"),
+            (not self.name, "Role name cannot be empty"),
+            (not self.description, "Role description cannot be empty"),
+            (len(self.name) > MAX_NAME_LENGTH,
+             "Role name must be at most 100 characters"),
+            (len(self.description) > MAX_DESCRIPTION_LENGTH,
+             "Role description must be at most 500 characters"),
+        ]
+
+        # Railway-Oriented Programming: First failure stops execution
+        for condition, error_message in validation_rules:
+            if condition:
+                return FlextResult.fail(error_message)
+
+        # All validations passed
         return FlextResult.ok(None)
 
 
@@ -322,25 +369,53 @@ class FlextLoginAttempt(FlextEntity):
     failure_reason: str | None = Field(default=None, description="Reason for failure")
     attempted_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
-    def validate_domain_rules(self) -> FlextResult[None]:  # noqa: PLR0911
-        """Validate login attempt domain rules and business invariants."""
+    def validate_domain_rules(self) -> FlextResult[None]:
+        """Validate login attempt domain rules using Railway-Oriented Programming.
+
+        SOLID REFACTORING: Reduced from 8 returns to 2 returns using
+        Railway-Oriented Programming + Strategy Pattern.
+        """
+        try:
+            # SOLID REFACTORING: Strategy Pattern - validation rules as strategies
+            validation_errors = self._execute_validation_strategies()
+            if validation_errors:
+                return FlextResult.fail(validation_errors[0])  # Return first error
+
+            return FlextResult.ok(None)
+
+        except Exception as e:
+            return FlextResult.fail(f"Validation error: {e}")
+
+    def _execute_validation_strategies(self) -> list[str]:
+        """Execute all validation strategies - Railway-Oriented Programming.
+
+        SOLID REFACTORING: Strategy Pattern implementation for validation rules.
+        """
+        errors = []
+
+        # Basic field validation strategies
         if not self.id:
-            return FlextResult.fail("Login attempt ID cannot be empty")
+            errors.append("Login attempt ID cannot be empty")
         if not self.username:
-            return FlextResult.fail("Username cannot be empty")
+            errors.append("Username cannot be empty")
         if not self.ip_address:
-            return FlextResult.fail("IP address cannot be empty")
+            errors.append("IP address cannot be empty")
+
+        # Length validation strategies
         if len(self.username) > MAX_USERNAME_LENGTH:
-            return FlextResult.fail("Username must be at most 50 characters")
+            errors.append("Username must be at most 50 characters")
+
+        # Business logic validation strategies
         if not self.success and not self.failure_reason:
-            return FlextResult.fail("Failed login attempts must have a failure reason")
+            errors.append("Failed login attempts must have a failure reason")
         if self.success and self.failure_reason:
-            return FlextResult.fail(
-                "Successful login attempts cannot have a failure reason",
-            )
+            errors.append("Successful login attempts cannot have a failure reason")
+
+        # Temporal validation strategies
         if self.attempted_at > datetime.now(UTC):
-            return FlextResult.fail("Login attempt time cannot be in the future")
-        return FlextResult.ok(None)
+            errors.append("Login attempt time cannot be in the future")
+
+        return errors
 
 
 # =============================================================================
@@ -380,25 +455,49 @@ class FlextBaseToken(FlextEntity):
         # Template Method: delegate specific validation to subclasses
         return self._validate_specific_rules()
 
-    def _validate_common_rules(self) -> FlextResult[None]:  # noqa: PLR0911
-        """Common validation rules - Single Responsibility Principle."""
+    def _validate_common_rules(self) -> FlextResult[None]:
+        """Common validation rules using Railway-Oriented Programming.
+
+        SOLID REFACTORING: Reduced from 7 returns to 2 returns using
+        Railway-Oriented Programming + Strategy Pattern.
+        """
+        try:
+            # SOLID REFACTORING: Strategy Pattern - validation rules as strategies
+            validation_errors = self._execute_common_validation_strategies()
+            if validation_errors:
+                return FlextResult.fail(validation_errors[0])  # Return first error
+
+            return FlextResult.ok(None)
+
+        except Exception as e:
+            return FlextResult.fail(f"Token validation error: {e}")
+
+    def _execute_common_validation_strategies(self) -> list[str]:
+        """Execute all common validation strategies - Railway-Oriented Programming.
+
+        SOLID REFACTORING: Strategy Pattern implementation for token validation.
+        """
+        errors = []
+
+        # Basic field validation strategies
         if not self.id:
-            return FlextResult.fail(f"{self._get_token_type()} ID cannot be empty")
+            errors.append(f"{self._get_token_type()} ID cannot be empty")
         if not self.user_id:
-            return FlextResult.fail("User ID cannot be empty")
+            errors.append("User ID cannot be empty")
         if not self.token:
-            return FlextResult.fail(f"{self._get_token_type()} cannot be empty")
+            errors.append(f"{self._get_token_type()} cannot be empty")
+
+        # Length validation strategies
         if len(self.token) < MIN_TOKEN_LENGTH:
-            return FlextResult.fail(
-                f"{self._get_token_type()} must be at least 32 characters",
-            )
+            errors.append(f"{self._get_token_type()} must be at least 32 characters")
+
+        # Temporal validation strategies
         if self.expires_at <= datetime.now(UTC):
-            return FlextResult.fail(
-                f"{self._get_token_type()} expiration must be in the future",
-            )
+            errors.append(f"{self._get_token_type()} expiration must be in the future")
         if self.created_at > datetime.now(UTC):
-            return FlextResult.fail("Token creation time cannot be in the future")
-        return FlextResult.ok(None)
+            errors.append("Token creation time cannot be in the future")
+
+        return errors
 
     def _get_token_type(self) -> str:
         """Abstract method: get token type for error messages."""

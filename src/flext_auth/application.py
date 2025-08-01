@@ -82,7 +82,9 @@ class FlextAuthenticationService(FlextDomainService):
             return FlextResult.fail(f"Authentication failed: {e}")
 
     def _get_user_from_dict(
-        self, username: str, users: dict[str, FlextUser],
+        self,
+        username: str,
+        users: dict[str, FlextUser],
     ) -> FlextResult[FlextUser]:
         """Get user from dictionary - Single Responsibility Principle."""
         user = users.get(username)
@@ -99,7 +101,9 @@ class FlextAuthenticationService(FlextDomainService):
         return FlextResult.ok(user)
 
     def _verify_user_password(
-        self, user: FlextUser, password: str,
+        self,
+        user: FlextUser,
+        password: str,
     ) -> FlextResult[FlextUser]:
         """Verify user password - Single Responsibility Principle."""
         password_service = FlextPasswordService()

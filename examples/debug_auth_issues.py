@@ -59,11 +59,7 @@ def debug_jwt_service() -> None:
     print("\n🔍 DEBUG: JWT Service")
     print("-" * 30)
 
-    payload = {
-        "user_id": "test123",
-        "username": "testuser",
-        "role": "REDACTED_LDAP_BIND_PASSWORD"
-    }
+    payload = {"user_id": "test123", "username": "testuser", "role": "REDACTED_LDAP_BIND_PASSWORD"}
 
     # Test direct service
     print("1. Direct FlextJWTService:")
@@ -71,9 +67,7 @@ def debug_jwt_service() -> None:
 
     # Test access token generation
     access_result = service.generate_access_token(
-        user_id=payload["user_id"],
-        username=payload["username"],
-        role=payload["role"]
+        user_id=payload["user_id"], username=payload["username"], role=payload["role"]
     )
 
     print(f"   Access token success: {access_result.is_success}")
