@@ -1,4 +1,9 @@
-"""Test domain value objects following flext-core patterns."""
+"""Test domain value objects following flext-core patterns.
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
@@ -190,7 +195,7 @@ class TestRefreshToken:
         token = FlextRefreshToken(value="a" * 32)
         if str(token) != "[REFRESH_TOKEN]":
             raise AssertionError(f"Expected {'[REFRESH_TOKEN]'}, got {token!s}")
-        assert repr(token) == "FlextRefreshToken([PROTECTED])"
+        assert repr(token) == "RefreshToken([PROTECTED])"
 
     def test_refresh_token_validation(self) -> None:
         """Test refresh token validation rules."""

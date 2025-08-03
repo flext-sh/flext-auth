@@ -18,6 +18,7 @@ A Python authentication library implementing Clean Architecture and Domain-Drive
 ### Implementation Status
 
 **Current Implementation:**
+
 - Authentication and session management functionality
 - JWT token handling with configurable settings
 - Password hashing with bcrypt
@@ -26,15 +27,17 @@ A Python authentication library implementing Clean Architecture and Domain-Drive
 - FlextResult pattern for error handling
 
 **Integration Gaps:**
+
 - FlextContainer dependency injection not implemented
-- Domain events and event sourcing not implemented  
+- Domain events and event sourcing not implemented
 - CQRS command/query patterns not implemented
 - Repository interface abstractions incomplete
 - Configuration management needs enhancement
 
 **Development Priorities:**
+
 1. Complete flext-core integration patterns
-2. Implement missing architectural patterns  
+2. Implement missing architectural patterns
 3. Enhance configuration management
 4. Improve test coverage and stability
 
@@ -64,12 +67,14 @@ See [docs/TODO.md](docs/TODO.md) for detailed development plan and current issue
 ### Integration Points
 
 **FLEXT Ecosystem Integration:**
+
 - Uses flext-core FlextResult pattern for error handling
 - Follows Clean Architecture patterns consistent with FLEXT standards
 - Designed for integration with flext-observability for monitoring
 - Compatible with FLEXT configuration management patterns
 
 **Framework Integration:**
+
 - FastAPI middleware and dependency injection support
 - Compatible with other ASGI frameworks through standard patterns
 - CLI integration support for REDACTED_LDAP_BIND_PASSWORDistrative operations
@@ -81,17 +86,20 @@ See [docs/TODO.md](docs/TODO.md) for detailed development plan and current issue
 ### Near-term Improvements
 
 **Architecture Enhancement:**
+
 - Implement FlextContainer dependency injection integration
-- Add domain events for authentication operations  
+- Add domain events for authentication operations
 - Create CQRS command/query separation patterns
 - Complete repository interface abstractions
 
 **Configuration & Security:**
+
 - Enhance configuration management with better environment variable handling
 - Remove hardcoded security values and implement proper secrets management
 - Improve security validation and policy enforcement
 
 **Testing & Quality:**
+
 - Stabilize test suite and resolve import issues
 - Improve test coverage to meet quality standards
 - Add integration testing for FLEXT ecosystem compatibility
@@ -99,6 +107,7 @@ See [docs/TODO.md](docs/TODO.md) for detailed development plan and current issue
 ### Long-term Goals
 
 **Ecosystem Integration:**
+
 - Full integration with flext-observability for monitoring and metrics
 - Plugin architecture for extensible authentication providers
 - Performance optimization for high-throughput scenarios
@@ -113,22 +122,26 @@ See [docs/TODO.md](docs/TODO.md) for detailed development plan and current issue
 The project follows Clean Architecture principles with clear layer separation:
 
 **Domain Layer:**
+
 - User and Session entities with business logic
 - Value objects for type safety (Username, Email, SecurityContext)
 - Domain services for password policies and validation
 
-**Application Layer:**  
+**Application Layer:**
+
 - Authentication service orchestrating workflows
 - Session management and lifecycle operations
 - User registration and management operations
 
 **Infrastructure Layer:**
+
 - Repository implementations (in-memory and database)
 - Password hashing service using bcrypt
 - JWT token service with configurable algorithms
 - Configuration management with environment variables
 
 **API Layer:**
+
 - FastAPI integration with dependency injection
 - Middleware support for request/response handling
 - Health checks and basic monitoring endpoints
@@ -137,7 +150,7 @@ The project follows Clean Architecture principles with clear layer separation:
 
 - **Python 3.13+**: Latest Python with comprehensive type hints
 - **FastAPI**: Modern async web framework with automatic documentation
-- **PostgreSQL**: Primary database for production deployments  
+- **PostgreSQL**: Primary database for production deployments
 - **Redis**: Caching and session storage
 - **bcrypt**: Secure password hashing
 - **PyJWT**: JWT token handling with multiple algorithm support
@@ -166,7 +179,7 @@ auth = FlextAuth()
 # Register a new user
 result = auth.register_user(
     username="john_doe",
-    email="john@example.com", 
+    email="john@example.com",
     password="secure_password"
 )
 
@@ -231,7 +244,7 @@ make install-dev
 # Run tests
 make test
 
-# Run linting and type checking  
+# Run linting and type checking
 make lint
 make type-check
 
@@ -246,7 +259,7 @@ FLEXT_AUTH_DATABASE_URL=postgresql://user:pass@localhost/db python examples/basi
 
 ```bash
 make validate          # Run all quality checks
-make test              # Run test suite  
+make test              # Run test suite
 make lint              # Run linting
 make type-check        # Run MyPy type checking
 make security          # Run security scanning
@@ -259,7 +272,7 @@ make clean             # Clean build artifacts
 ```
 src/flext_auth/
 ├── domain/           # Domain entities and value objects
-├── application/      # Application services  
+├── application/      # Application services
 ├── services/         # Infrastructure services
 ├── auth.py          # Main authentication service
 ├── jwt.py           # JWT token handling

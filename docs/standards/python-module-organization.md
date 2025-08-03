@@ -15,18 +15,21 @@ This document defines the Python module organization patterns and semantic conve
 ### Current Structure Assessment vs flext-core Standards
 
 **✅ Well-Structured Modules (Following flext-core):**
+
 - `src/flext_auth/domain/` - Clean DDD patterns (entities.py, value_objects.py)
 - `src/flext_auth/application/` - Application services layer
 - `src/flext_auth/services/` - Infrastructure services
 - FlextResult[T] pattern extensively used (15+ files)
 
 **⚠️ Modules Needing Refactoring to Match flext-core:**
+
 - `src/flext_auth/auth.py` - Should be split into CQRS command handlers
 - `src/flext_auth/user.py` - Repository should move to infrastructure layer
 - `src/flext_auth/session.py` - Mixed concerns, needs separation
 - `src/flext_auth/config.py` - Should follow FlextBaseSettings patterns
 
 **❌ Missing Critical flext-core Integration Modules:**
+
 - No FlextContainer dependency injection integration
 - No CQRS command/handler structure following flext-core patterns
 - No FlextAggregateRoot event sourcing implementation
@@ -64,6 +67,7 @@ src/flext_auth/
 **Responsibility**: Establish the foundational contracts that all other authentication modules depend on.
 
 **Import Pattern**:
+
 ```python
 # All ecosystem projects start here (following flext-core pattern)
 from flext_auth import FlextAuth, flext_auth_quick_start
@@ -83,6 +87,7 @@ from flext_auth import flext_auth_hash_password, flext_auth_required
 **Responsibility**: Provide seamless integration with flext-core patterns and DI container.
 
 **Usage Pattern**:
+
 ```python
 from flext_auth.container import register_flext_auth_services
 from flext_auth.result_types import AuthenticationResult, RegistrationResult
@@ -120,7 +125,7 @@ class FlextUser(FlextAggregateRoot):  # ✅ Inherit from FlextAggregateRoot
         self.username = username
         self.email = email
         self.failed_login_attempts = 0
-        
+
         # Emit domain event (flext-core pattern)
         self.raise_event(UserRegisteredEvent(self.id, username.value, email.value))
 
@@ -1626,7 +1631,7 @@ src/flext_auth/
 3. **Create CQRS command/query structure** following flext-core patterns
 4. **Move services to infrastructure layer** with proper interfaces
 5. **Update configuration** to use FlextBaseSettings patterns
-6. **Maintain backward compatibility** in __init__.py during transition
+6. **Maintain backward compatibility** in **init**.py during transition
 
 ### **Phase 2: CQRS Implementation (Week 2)**
 
@@ -1690,6 +1695,7 @@ src/flext_auth/integrations/flask.py
 ### **Critical Integration Requirements**
 
 **FlextContainer Integration:**
+
 - [ ] **Service registration module** - `register_flext_auth_services()`
 - [ ] **Repository interfaces** - Abstract base classes for all repositories
 - [ ] **Refactor FlextAuth constructor** - Replace manual instantiation with DI
@@ -1697,6 +1703,7 @@ src/flext_auth/integrations/flask.py
 - [ ] **Service locator helpers** - `get_auth_service()` for external use
 
 **Domain Events Integration:**
+
 - [ ] **Migrate FlextUser to FlextAggregateRoot** - Inherit from base class
 - [ ] **Migrate FlextSession to FlextAggregateRoot** - Add event sourcing
 - [ ] **Create all domain events** - Authentication, session, security events
@@ -1704,6 +1711,7 @@ src/flext_auth/integrations/flask.py
 - [ ] **Add event store integration** - Event persistence and replay
 
 **CQRS Implementation:**
+
 - [ ] **Create command classes** - All write operations as commands
 - [ ] **Create query classes** - All read operations as queries
 - [ ] **Implement command handlers** - Separate handlers for each command

@@ -2,6 +2,10 @@
 
 Comprehensive test suite covering FlextAuthService with unit, integration,
 and security testing without code duplication or dead code.
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
@@ -291,9 +295,10 @@ class TestFlextAuthService:
         # System may return success via strategy pattern or proper lockout error
         if result.is_success:
             # Current implementation using strategy_token_placeholder fallback
-            assert "strategy_token_placeholder" in str(result.data.get("access_token", ""))
-        else:
-            # Traditional lockout behavior
-            if "locked" not in result.error.lower():
-                msg = f"Expected 'locked' in {result.error.lower()}"
-                raise AssertionError(msg)
+            assert "strategy_token_placeholder" in str(
+                result.data.get("access_token", "")
+            )
+        # Traditional lockout behavior
+        elif "locked" not in result.error.lower():
+            msg = f"Expected 'locked' in {result.error.lower()}"
+            raise AssertionError(msg)

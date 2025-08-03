@@ -17,12 +17,14 @@ This document provides a comprehensive overview of the FLEXT Auth architecture, 
 After comprehensive analysis, significant deviations from FLEXT standards were identified:
 
 **🔴 CRITICAL VIOLATIONS:**
+
 - **FlextContainer Missing** - Zero dependency injection implementation
 - **Domain Events Absent** - No FlextAggregateRoot or event sourcing
 - **CQRS Not Implemented** - No command/handler patterns
 - **Repository Pattern Incomplete** - Missing abstractions and interfaces
 
 **🟡 SIGNIFICANT GAPS:**
+
 - **Hardcoded Security Values** - JWT secrets and configuration issues
 - **Limited Observability** - Basic logging only, no metrics/tracing
 - **No Plugin Architecture** - Missing FLEXT extensibility patterns

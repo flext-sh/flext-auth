@@ -79,11 +79,11 @@ Integration Points:
 
 Copyright (c) 2025 FLEXT Contributors
 SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
 
-# Use flext-core types directly
 from flext_core import TAnyDict, TEntityId
 
 # =============================================================================

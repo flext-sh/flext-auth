@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-"""Health check script for Docker container."""
+"""Health check script for Docker container.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
+
+from __future__ import annotations
 
 import sys
 import urllib.error

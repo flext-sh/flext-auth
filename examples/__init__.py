@@ -62,6 +62,9 @@ Integration Points:
     - Cloud Platforms: Docker, Kubernetes deployment examples
     - Monitoring: Observability and metrics collection examples
 
-Copyright (c) 2025 FLEXT Contributors
+Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
+
 """
+
+from __future__ import annotations

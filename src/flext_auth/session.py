@@ -57,7 +57,7 @@ Example:
     ...     id="sess_123",
     ...     user_id="user_456",
     ...     access_token="jwt_token",
-    ...     expires_at=datetime.now() + timedelta(hours=24)
+    ...     expires_at=datetime.now() + timedelta(hours=24),
     ... )
     >>> result = await session_repo.save(session)
     >>> if result.is_success:

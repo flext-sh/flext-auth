@@ -53,7 +53,7 @@ Example Usage:
     ...     if not data.get("username"):
     ...         raise FlextAuthValidationError(
     ...             "Username is required",
-    ...             validation_details={"field": "username", "code": "REQUIRED"}
+    ...             validation_details={"field": "username", "code": "REQUIRED"},
     ...         )
 
 Error Context:
@@ -71,13 +71,13 @@ Integration Points:
 
 Copyright (c) 2025 FLEXT Contributors
 SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
 
 from typing import cast
 
-# 🚨 DRY PATTERN: Use create_module_exception_classes to eliminate exception duplication
 from flext_core import create_module_exception_classes
 
 # Create all module-specific exception classes using DRY pattern

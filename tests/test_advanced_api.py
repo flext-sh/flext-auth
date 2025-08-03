@@ -1,24 +1,28 @@
-"""Comprehensive tests for advanced flext-auth ABI - mixins, typedefs, decorators."""
+"""Comprehensive tests for advanced flext-auth ABI - mixins, typedefs, decorators.
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
+"""
+
+from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from flext_auth import (
-    # Constants
     FLEXT_AUTH_ADMIN,
     FLEXT_AUTH_GUEST,
     FLEXT_AUTH_USER,
     FlextAuthClaims,
     FlextAuthHeaders,
-    # Mixins
     FlextAuthMixin,
     FlextAuthPermissions,
     FlextAuthRole,
     FlextAuthSessionData,
     FlextAuthSessionMixin,
     FlextAuthTokenData,
-    # Types
     FlextAuthUserData,
     FlextAuthUserMixin,
     flext_auth_build_response,
@@ -26,11 +30,9 @@ from flext_auth import (
     flext_auth_extract_token_claims,
     flext_auth_filter_user_data,
     flext_auth_generate_jwt,
-    # Helpers
     flext_auth_merge_configs,
     flext_auth_permission_required,
     flext_auth_rate_limit,
-    # Decorators
     flext_auth_role_required,
 )
 

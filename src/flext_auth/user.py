@@ -58,7 +58,7 @@ Example:
     ...     id="usr_123",
     ...     username="john_doe",
     ...     email="john@example.com",
-    ...     password_hash="$2b$12$secure_hash"
+    ...     password_hash="$2b$12$secure_hash",
     ... )
     >>> result = await user_repo.save(user)
     >>> if result.is_success:

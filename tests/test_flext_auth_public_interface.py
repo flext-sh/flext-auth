@@ -2,7 +2,13 @@
 
 Testa TODAS as funcionalidades da interface única e helpers.
 Valida redução massiva de código e padrões profissionais.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
+
+from __future__ import annotations
 
 from datetime import datetime
 

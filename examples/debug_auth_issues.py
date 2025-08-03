@@ -4,7 +4,13 @@
 Diagnose and fix specific problems found:
 1. Password hashing/verification failure
 2. JWT user_id empty issue
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
+
+from __future__ import annotations
 
 from flext_auth.helpers import (
     flext_auth_generate_jwt,

@@ -1,4 +1,11 @@
-"""Tests for clean flext-auth implementation - focused on helpers only."""
+"""Tests for clean flext-auth implementation - focused on helpers only.
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
+"""
+
+from __future__ import annotations
 
 from flext_auth import (
     flext_auth_create_secure_session,
@@ -9,9 +16,6 @@ from flext_auth import (
     flext_auth_validate_password_strength,
     flext_auth_verify_password,
 )
-
-# Test the core helpers without complex dependencies
-
 
 # Constants
 EXPECTED_DATA_COUNT = 3

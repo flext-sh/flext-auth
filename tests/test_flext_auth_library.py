@@ -1,15 +1,18 @@
 """Testes robustos e abrangentes para a biblioteca flext-auth.
 
-# Constants
-EXPECTED_DATA_COUNT = 3
-
 Testa TODAS as funcionalidades da interface pública única.
 Garante que a redução massiva de código funciona perfeitamente.
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
 """
 
+from __future__ import annotations
+
 import asyncio
-from collections.abc import Callable
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -27,6 +30,10 @@ from flext_auth import (
     flext_auth_verify_password,
 )
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+# Constants
 EXPECTED_DATA_COUNT = 3
 
 

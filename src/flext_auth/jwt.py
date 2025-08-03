@@ -50,13 +50,10 @@ Token Structure:
 
 Example:
     >>> jwt_service = FlextJWTService(
-    ...     secret_key="your-256-bit-secret",
-    ...     access_token_expire_minutes=30
+    ...     secret_key="your-256-bit-secret", access_token_expire_minutes=30
     ... )
     >>> token_result = jwt_service.generate_access_token(
-    ...     user_id="usr_123",
-    ...     username="john_doe",
-    ...     role="USER"
+    ...     user_id="usr_123", username="john_doe", role="USER"
     ... )
     >>> if token_result.is_success:
     ...     token = token_result.data
@@ -137,12 +134,10 @@ class FlextJWTService:
         >>> service = FlextJWTService(
         ...     secret_key="your-secure-256-bit-key",
         ...     access_token_expire_minutes=15,
-        ...     refresh_token_expire_days=30
+        ...     refresh_token_expire_days=30,
         ... )
         >>> token_result = service.generate_access_token(
-        ...     user_id="usr_123",
-        ...     username="john_doe",
-        ...     role="USER"
+        ...     user_id="usr_123", username="john_doe", role="USER"
         ... )
         >>> if token_result.is_success:
         ...     validation = service.verify_token(token_result.data)

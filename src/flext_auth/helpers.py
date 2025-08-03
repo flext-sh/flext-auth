@@ -99,7 +99,6 @@ from typing import cast
 
 from flext_core import FlextLoggerFactory, FlextResult
 
-# Import auth components
 from flext_auth.auth import (
     FlextAuthService,
     FlextAuthServiceConfig,
@@ -113,9 +112,6 @@ from flext_auth.services.password_service import FlextPasswordService
 from flext_auth.session import InMemorySessionRepository
 from flext_auth.user import InMemoryUserRepository
 from flext_auth.utils import convert_user_to_dict
-
-# REFACTORING: DRY principle - user conversion centralized in utils.py
-
 
 _logger = FlextLoggerFactory.get_logger(__name__)
 
@@ -382,6 +378,13 @@ def flext_auth_validate_jwt(
 
     """
     try:
+        # DEFENSIVE: Handle incorrect token types from broken callers
+        if not isinstance(token, str):
+            return FlextResult.fail(f"Token must be string, got {type(token).__name__}")
+
+        if not token or token.strip() == "":
+            return FlextResult.fail("Token cannot be empty")
+
         if not secret:
             secret = DEFAULT_JWT_SECRET
 

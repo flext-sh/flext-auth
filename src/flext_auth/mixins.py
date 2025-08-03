@@ -76,6 +76,7 @@ Integration Points:
 
 Copyright (c) 2025 FLEXT Contributors
 SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
@@ -85,12 +86,12 @@ from typing import TYPE_CHECKING
 
 from flext_core import FlextLoggerFactory, FlextResult
 
-if TYPE_CHECKING:
-    from flext_auth.auth import FlextAuthService
-
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import DEFAULT_JWT_SECRET
 from flext_auth.jwt import FlextJWTService
+
+if TYPE_CHECKING:
+    from flext_auth.auth import FlextAuthService
 
 _logger = FlextLoggerFactory.get_logger(__name__)
 

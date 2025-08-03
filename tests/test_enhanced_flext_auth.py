@@ -2,7 +2,13 @@
 
 Valida todas as funcionalidades otimizadas para redução massiva de código.
 Testa a ABI melhorada e os novos helpers avançados.
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
 """
+
+from __future__ import annotations
 
 import pytest
 

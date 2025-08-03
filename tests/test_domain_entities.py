@@ -1,4 +1,9 @@
-"""Test domain entities following flext-core patterns."""
+"""Test domain entities following flext-core patterns.
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 

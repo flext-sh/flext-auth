@@ -58,7 +58,7 @@ Performance Characteristics:
     - Minimal memory footprint
     - Efficient equality comparisons
 
-Copyright (c) 2025 FLEXT Contributors
+Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
 """

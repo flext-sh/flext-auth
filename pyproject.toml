@@ -30,7 +30,7 @@ dependencies = [
     "bcrypt (>=4.3.0)",
     "click (>=8.2.1)",
     "cryptography (>=45.0.5)",
-    "email-validator (>=2.2.0,<3.0.0)",
+    "email-validator (>=2.2.0)",
     "fastapi (>=0.116.1)",
     "passlib (>=1.7.4)",
     "pydantic (>=2.11.7)",
@@ -112,8 +112,8 @@ flext-auth-legacy = "flext_auth.cli:main"
 packages = [{ include = "flext_auth", from = "src" }]
 
 [tool.poetry.group.dev.dependencies]
-commitizen = "^4.8.3"
-detect-secrets = "^1.5.0"
+commitizen = ">=4.8.3"
+detect-secrets = ">=1.5.0"
 
 [tool.bandit]
 extend = "../.bandit-shared.toml"

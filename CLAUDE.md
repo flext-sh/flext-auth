@@ -9,6 +9,7 @@ FLEXT Auth is an authentication library implementing Clean Architecture and Doma
 **Current Status**: 🟡 **Active Development with Complete Documentation Foundation**
 
 **Key Architecture Characteristics:**
+
 - **Clean Architecture**: Domain/application/infrastructure layer separation
 - **DDD Entities**: Domain models with business logic (`FlextUser`, `FlextSession`)
 - **Type-Safe Error Handling**: `FlextResult[T]` pattern throughout
@@ -86,7 +87,7 @@ make clean-all       # Deep clean including .venv/
 
 ## Architecture & Code Structure
 
-### High-Level Architecture 
+### High-Level Architecture
 
 FLEXT Auth implements a strict Clean Architecture with Domain-Driven Design:
 
@@ -133,25 +134,30 @@ FLEXT Auth implements a strict Clean Architecture with Domain-Driven Design:
 ### Source Code Organization (23 Files)
 
 #### Core Library Interface
+
 - `src/flext_auth/__init__.py` - **Main entry point** with complete public API (560+ lines)
 - `src/flext_auth/helpers.py` - 60+ utility functions for code reduction
 - `src/flext_auth/mixins.py` - Class mixins for auth capabilities
 
 #### Domain Layer (Clean Architecture)
+
 - `src/flext_auth/domain/entities.py` - Rich domain models with business logic
 - `src/flext_auth/domain/value_objects.py` - Immutable value objects with validation
 
-#### Application Layer  
+#### Application Layer
+
 - `src/flext_auth/application/services.py` - Use case orchestration and workflows
 
 #### Infrastructure Services
+
 - `src/flext_auth/services/password_service.py` - Bcrypt password operations
 - `src/flext_auth/auth.py` - `FlextAuthService` main authentication orchestrator
 - `src/flext_auth/jwt.py` - `FlextJWTService` JWT token generation/validation
-- `src/flext_auth/user.py` - `InMemoryUserRepository` user data management  
+- `src/flext_auth/user.py` - `InMemoryUserRepository` user data management
 - `src/flext_auth/session.py` - `InMemorySessionRepository` session management
 
 #### Configuration & Support
+
 - `src/flext_auth/config.py` - Type-safe configuration with Pydantic models
 - `src/flext_auth/exceptions.py` - Custom exception hierarchy
 - `src/flext_auth/decorators.py` - Authentication decorators
@@ -165,7 +171,7 @@ FLEXT Auth implements a strict Clean Architecture with Domain-Driven Design:
 - **entities.py**: Rich domain models with business logic and validation
   - `FlextUser`: User management with status, roles, failed login tracking, immutable patterns
   - `FlextSession`: Session lifecycle with validation and expiration
-  - `FlextRole`/`FlextPermission`: RBAC implementation  
+  - `FlextRole`/`FlextPermission`: RBAC implementation
   - `FlextPasswordResetToken`/`FlextEmailVerificationToken`: Token management
 - **value_objects.py**: Immutable value objects with validation
   - `FlextUsername`, `FlextUserEmail`, `FlextPlainPassword`
@@ -336,7 +342,7 @@ The project has comprehensive test coverage across multiple categories:
 
 ```bash
 # Run specific test categories (defined in conftest.py)
-pytest -m unit              # Unit tests for individual components  
+pytest -m unit              # Unit tests for individual components
 pytest -m integration       # Integration tests requiring external services
 pytest -m security          # Security-focused tests
 pytest -m auth              # Authentication-specific tests
@@ -370,7 +376,7 @@ pytest tests/test_basic_functionality.py::TestBasicAuth::test_authentication -v 
 # Tests matching pattern
 pytest -k "test_auth" -v
 
-# Fast tests (exclude slow integration tests)  
+# Fast tests (exclude slow integration tests)
 pytest -m "not slow" -v
 ```
 
@@ -392,7 +398,7 @@ curl http://localhost:8000/auth/health
 docker-compose logs -f auth-api
 docker-compose logs -f postgres
 
-# Access database directly  
+# Access database directly
 docker-compose exec postgres psql -U flext -d flext_auth
 
 # Access Redis directly
@@ -400,8 +406,9 @@ docker-compose exec redis redis-cli
 ```
 
 **Services:**
+
 - **postgres**: PostgreSQL 15 on port 5432 with health checks
-- **redis**: Redis 7 Alpine on port 6379 for caching/sessions  
+- **redis**: Redis 7 Alpine on port 6379 for caching/sessions
 - **auth-api**: FastAPI application on port 8000 with health endpoint
 
 ## Common Development Tasks
@@ -464,6 +471,7 @@ poetry run pip-audit      # Check for security vulnerabilities
 ### Current Integration Status
 
 **✅ Successfully Integrated:**
+
 - **FlextResult Pattern**: Type-safe error handling throughout (15+ files)
 - **Clean Architecture**: Domain/Application/Infrastructure separation
 - **DDD Entities**: Rich domain models following flext-core patterns
@@ -471,12 +479,14 @@ poetry run pip-audit      # Check for security vulnerabilities
 - **Configuration**: Uses `FlextCoreSettings` base patterns
 
 **🔄 In Progress:**
+
 - **Test Suite**: Import issue resolution (see `docs/TODO.md`)
 - **Documentation**: Complete cross-referencing with ecosystem
 
 **❌ Critical Missing Integration:**
+
 - **FlextContainer**: No dependency injection container usage (CRITICAL GAP)
-- **Event Sourcing**: No domain events despite `FlextAggregateRoot` availability  
+- **Event Sourcing**: No domain events despite `FlextAggregateRoot` availability
 - **CQRS Commands**: No command/handler pattern implementation
 - **Plugin Architecture**: No plugin system integration
 
@@ -487,7 +497,7 @@ poetry run pip-audit      # Check for security vulnerabilities
 flext-core = "file:///home/marlonsc/flext/flext-core"
 flext-observability = "file:///home/marlonsc/flext/flext-observability"
 
-# Core authentication dependencies  
+# Core authentication dependencies
 pyjwt = ">=2.9.0"           # JWT token operations
 bcrypt = ">=4.3.0"          # Password hashing
 passlib = ">=1.7.4"         # Password utilities
@@ -861,7 +871,7 @@ from .services.password_service import FlextPasswordService
 When working on this codebase, prioritize these missing flext-core integrations:
 
 1. **FlextContainer DI**: Replace manual dependency creation with container registration
-2. **Domain Events**: Migrate entities to `FlextAggregateRoot` and add event publishing  
+2. **Domain Events**: Migrate entities to `FlextAggregateRoot` and add event publishing
 3. **CQRS Commands**: Implement command/handler patterns for authentication operations
 4. **Error Handling**: Ensure all FlextResult usage follows ecosystem patterns
 
@@ -875,7 +885,7 @@ When working on this codebase, prioritize these missing flext-core integrations:
 ### Performance Considerations
 
 - JWT validation must be <1ms average
-- Authentication flows must be <100ms average  
+- Authentication flows must be <100ms average
 - Use async/await patterns throughout for I/O operations
 - Implement proper connection pooling for database operations
 

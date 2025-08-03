@@ -1,7 +1,13 @@
 """Robust tests for anti-boilerplate functionality.
 
 Tests all decorators, ultra-helpers, and mixins with real functionality.
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
 """
+
+from __future__ import annotations
 
 import pytest
 
@@ -369,7 +375,10 @@ class TestFlextAuthMixin:
             pass
 
         controller = TestController()
-        secret = controller._auth._jwt_service.secret_key
+        # Use DEFAULT_JWT_SECRET for testing instead of accessing non-existent _auth
+        from flext_auth import DEFAULT_JWT_SECRET
+
+        secret = DEFAULT_JWT_SECRET
         payload = {"user_id": "REDACTED_LDAP_BIND_PASSWORD123", "username": "REDACTED_LDAP_BIND_PASSWORD", "role": ADMIN_ROLE}
         token = flext_auth_generate_jwt(payload, secret=secret)
 
@@ -385,7 +394,10 @@ class TestFlextAuthMixin:
             pass
 
         controller = TestController()
-        secret = controller._auth._jwt_service.secret_key
+        # Use DEFAULT_JWT_SECRET for testing instead of accessing non-existent _auth
+        from flext_auth import DEFAULT_JWT_SECRET
+
+        secret = DEFAULT_JWT_SECRET
         payload = {"user_id": "user123", "username": "user", "role": USER_ROLE}
         token = flext_auth_generate_jwt(payload, secret=secret)
 

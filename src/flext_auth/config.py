@@ -49,9 +49,7 @@ Environment Variables:
 
 Example:
     >>> config = FlextAuthConfig(
-    ...     jwt_secret_key="your-secure-key",
-    ...     bcrypt_rounds=12,
-    ...     debug=False
+    ...     jwt_secret_key="your-secure-key", bcrypt_rounds=12, debug=False
     ... )
     >>> validation_result = config.validate_production_settings()
     >>> if validation_result.is_success:
@@ -79,7 +77,6 @@ from __future__ import annotations
 import os
 import secrets
 
-# Use flext-core centralized configuration models
 from flext_core import (
     FlextApplicationConfig,
     FlextBaseConfigModel,

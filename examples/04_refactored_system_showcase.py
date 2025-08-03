@@ -10,22 +10,26 @@ Key improvements demonstrated:
 3. Anti-boilerplate patterns - 3-line setup vs 50+ lines
 4. Type safety - full MyPy compliance
 5. Clean Architecture - domain/application/infrastructure layers
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
 
-# Import system components (asyncio, datetime, etc.)
-# Import all flext_auth components at top-level to fix PLC0415
+import traceback
+from pathlib import Path
+
+from flext_core import FlextContainer
+
 from flext_auth import (
     FlextAuth,
     FlextAuthService,
     flext_auth_quick_start,
 )
-
-# Import application services
+from flext_auth.auth import FlextAuthService
 from flext_auth.decorators import flext_auth_required
-
-# Import domain layer components
 from flext_auth.domain.entities import FlextUser, FlextUserRole
 from flext_auth.domain.value_objects import FlextUserEmail, FlextUsername
 from flext_auth.helpers import (
@@ -33,7 +37,9 @@ from flext_auth.helpers import (
     flext_auth_validate_email,
     flext_auth_validate_username,
 )
+from flext_auth.jwt import FlextJWTService
 from flext_auth.mixins import FlextAuthMixin
+from flext_auth.services.password_service import FlextPasswordService
 
 
 def demonstrate_refactoring_benefits() -> None:
@@ -186,10 +192,6 @@ def demonstrate_flext_core_integration() -> None:
     print("\n6. FLEXT Core Integration - FlextResult Pattern")
     print("-" * 50)
 
-    from flext_core import FlextContainer
-
-    # Using top-level import
-
     # FlextResult pattern usage
     result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
     print(f"✅ FlextResult pattern: {type(result).__name__}")
@@ -211,11 +213,6 @@ def demonstrate_type_safety() -> None:
     print("\n7. Type Safety - MyPy Compliance")
     print("-" * 34)
 
-    from flext_auth import FlextAuth
-    from flext_auth.auth import FlextAuthService
-    from flext_auth.jwt import FlextJWTService
-    from flext_auth.services.password_service import FlextPasswordService
-
     auth = FlextAuth()
 
     # These type annotations should pass MyPy strict mode
@@ -235,8 +232,6 @@ def show_refactoring_metrics() -> None:
     """Show quantitative metrics of the refactoring success."""
     print("\n8. Refactoring Metrics - Quantitative Success")
     print("-" * 44)
-
-    from pathlib import Path
 
     # Calculate line counts
     project_root = Path(__file__).parent.parent
@@ -303,7 +298,6 @@ def main() -> None:
 
     except Exception as e:
         print(f"\n❌ Error during demonstration: {e}")
-        import traceback
 
         traceback.print_exc()
 

@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """FLEXT Auth - Basic Usage Examples.
 
+Este exemplo demonstra o uso básico da FLEXT Auth com funcionalidade REAL.
+Todos os métodos usados existem e funcionam.
+
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
-Este exemplo demonstra o uso básico da FLEXT Auth com funcionalidade REAL.
-Todos os métodos usados existem e funcionam.
 """
 
 from __future__ import annotations

@@ -51,9 +51,7 @@ Example Usage:
     >>> # Application service orchestrating authentication workflow
     >>> auth_service = FlextAuthenticationService(dependencies)
     >>> result = await auth_service.authenticate_user(
-    ...     username="john",
-    ...     password="secure123",
-    ...     user_repository=user_repo
+    ...     username="john", password="secure123", user_repository=user_repo
     ... )
 
 Integration Points:
@@ -62,6 +60,9 @@ Integration Points:
     - FlextContainer: Dependency injection patterns (TODO)
     - Event Bus: Domain event publishing (TODO)
 
-Copyright (c) 2025 FLEXT Contributors
+Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
+
 """
+
+from __future__ import annotations

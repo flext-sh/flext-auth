@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """FLEXT Auth - Comprehensive Demonstration.
 
+Este exemplo demonstra TODA a funcionalidade disponível da FLEXT Auth.
+Serve como documentação executável e teste de integração.
+
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
-Este exemplo demonstra TODA a funcionalidade disponível da FLEXT Auth.
-Serve como documentação executável e teste de integração.
 """
 
 from __future__ import annotations

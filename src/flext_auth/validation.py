@@ -84,13 +84,13 @@ Integration Points:
 
 Copyright (c) 2025 FLEXT Contributors
 SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-# Use flext-core validation directly
 from flext_core import FlextResult, FlextValidators
 
 from flext_auth.constants import FlextAuthConstants

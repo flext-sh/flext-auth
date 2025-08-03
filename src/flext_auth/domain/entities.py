@@ -37,7 +37,7 @@ Example:
     ...     id="user123",
     ...     username="john_doe",
     ...     email="john@example.com",
-    ...     password_hash="$2b$12$hash"
+    ...     password_hash="$2b$12$hash",
     ... )
     >>> validation_result = user.validate_domain_rules()
     >>> if validation_result.is_success:
@@ -125,7 +125,7 @@ class FlextUser(FlextEntity):
         ...     id="usr_123",
         ...     username="john_doe",
         ...     email="john@example.com",
-        ...     password_hash="$2b$12$secure_hash"
+        ...     password_hash="$2b$12$secure_hash",
         ... )
         >>> if user.is_active() and not user.is_locked():
         ...     # Proceed with authentication

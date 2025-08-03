@@ -64,7 +64,7 @@ Example Usage:
     ...     id="user123",
     ...     username=username.value,
     ...     email=email.address,
-    ...     role=FlextUserRole.USER
+    ...     role=FlextUserRole.USER,
     ... )
 
 Integration Points:

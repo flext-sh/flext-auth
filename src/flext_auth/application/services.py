@@ -48,9 +48,7 @@ Service Composition:
 Example:
     >>> auth_service = AuthenticationApplicationService(dependencies)
     >>> result = await auth_service.authenticate_user_workflow(
-    ...     username="john_doe",
-    ...     password="SecurePass123!",
-    ...     ip_address="192.168.1.1"
+    ...     username="john_doe", password="SecurePass123!", ip_address="192.168.1.1"
     ... )
     >>> if result.is_success:
     ...     user_session = result.data
@@ -68,7 +66,7 @@ Integration Points:
     - Domain Events: Business event publishing (TODO)
     - CQRS Commands: Command-based operations (TODO)
 
-Copyright (c) 2025 FLEXT Contributors
+Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
 """

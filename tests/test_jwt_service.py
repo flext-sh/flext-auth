@@ -1,4 +1,9 @@
-"""Test JWT service functionality."""
+"""Test JWT service functionality.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
@@ -145,10 +150,8 @@ class TestJWTService:
         # Verify expired token
         verify_result = service.verify_token(token)
         assert not verify_result.is_success
-        if "Failed to verify token" not in verify_result.error:
-            raise AssertionError(
-                f"Expected {'Failed to verify token'} in {verify_result.error}"
-            )
+        if "expired" not in verify_result.error.lower():
+            raise AssertionError(f"Expected 'expired' in {verify_result.error}")
 
     def test_verify_token_wrong_secret(self) -> None:
         """Test verification with wrong secret key."""
