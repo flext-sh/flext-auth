@@ -148,10 +148,10 @@ pep621_dev_dependency_groups = ["dev", "security", "test", "typings"]
 strict = true
 
 # Additional strict checks beyond default strict mode
+disallow_any_expr = false
 check_untyped_defs = true
 disallow_any_decorated = true
 disallow_any_explicit = true
-disallow_any_expr = false          # Too restrictive for real-world usage
 disallow_any_generics = true
 disallow_any_unimported = true
 disallow_incomplete_defs = true
@@ -233,7 +233,6 @@ exclude = [
 ]
 
 [tool.pydantic-mypy]
-# Pydantic plugin strict configuration
 init_forbid_extra = true
 init_typed = true
 warn_required_dynamic_aliases = true

@@ -14,10 +14,26 @@ Key improvements demonstrated:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+# Import system components (asyncio, datetime, etc.)
+# Import all flext_auth components at top-level to fix PLC0415
+from flext_auth import (
+    FlextAuth,
+    FlextAuthService,
+    flext_auth_quick_start,
+)
 
-if TYPE_CHECKING:
-    from flext_auth import FlextAuthService
+# Import application services
+from flext_auth.decorators import flext_auth_required
+
+# Import domain layer components
+from flext_auth.domain.entities import FlextUser, FlextUserRole
+from flext_auth.domain.value_objects import FlextUserEmail, FlextUsername
+from flext_auth.helpers import (
+    flext_auth_hash_password,
+    flext_auth_validate_email,
+    flext_auth_validate_username,
+)
+from flext_auth.mixins import FlextAuthMixin
 
 
 def demonstrate_refactoring_benefits() -> None:
@@ -30,7 +46,7 @@ def demonstrate_refactoring_benefits() -> None:
     print("\n1. Anti-Boilerplate Pattern - Ultra-Fast Setup")
     print("-" * 45)
 
-    from flext_auth import flext_auth_quick_start
+    # Using top-level import
 
     # One-line complete authentication system
     result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
@@ -44,7 +60,7 @@ def demonstrate_refactoring_benefits() -> None:
     print("\n2. Dependency Injection - Proper Service Composition")
     print("-" * 52)
 
-    from flext_auth import FlextAuth
+    # Using top-level import
 
     # Constructor now properly injects all dependencies
     auth = FlextAuth()
@@ -62,13 +78,7 @@ def demonstrate_modular_architecture() -> None:
     print("-" * 42)
 
     # Import from specialized modules (Single Responsibility Principle)
-    from flext_auth.decorators import flext_auth_required
-    from flext_auth.helpers import (
-        flext_auth_hash_password,
-        flext_auth_validate_email,
-        flext_auth_validate_username,
-    )
-    from flext_auth.mixins import FlextAuthMixin
+    # Using top-level imports
 
     print("✅ Specialized modules follow Single Responsibility:")
     print("   📁 decorators.py - Authentication decorators only")
@@ -102,9 +112,7 @@ def demonstrate_clean_architecture() -> None:
     print("\n4. Clean Architecture - Domain-Driven Design")
     print("-" * 45)
 
-    # Domain layer - Pure business logic
-    from flext_auth.domain.entities import FlextUser, FlextUserRole
-    from flext_auth.domain.value_objects import FlextUserEmail, FlextUsername
+    # Domain layer - Pure business logic (using top-level imports)
 
     print("✅ Domain Layer - Pure business entities:")
 
@@ -138,7 +146,7 @@ def demonstrate_complete_workflow() -> None:
     print("\n5. Complete Authentication Workflow")
     print("-" * 37)
 
-    from flext_auth import FlextAuth
+    # Using top-level import
 
     # Create auth system
     auth = FlextAuth()
@@ -180,7 +188,7 @@ def demonstrate_flext_core_integration() -> None:
 
     from flext_core import FlextContainer
 
-    from flext_auth import flext_auth_quick_start
+    # Using top-level import
 
     # FlextResult pattern usage
     result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)

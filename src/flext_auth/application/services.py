@@ -1,10 +1,76 @@
-"""Compatibility services for backward compatibility with old test architecture.
+"""FLEXT Auth Application Services - Use case orchestration and workflow management.
 
-This module provides backward compatibility with old tests while using the new
-modern FlextAuthService architecture internally.
+This module contains application services that orchestrate authentication workflows
+and coordinate between domain entities and infrastructure services. It implements
+the Application Layer in Clean Architecture, handling complex business workflows.
 
-SOLID REFACTORING: Reduced complexity from 52 to ~30 using Strategy Pattern +
-Command Pattern to extract and organize responsibilities.
+Architecture:
+    - Application Layer: Orchestrates domain operations and workflows
+    - Use Case Pattern: Each service method represents a use case
+    - Command Pattern: Encapsulates operations as command objects
+    - Strategy Pattern: Pluggable authentication strategies
+    - Railway-Oriented: FlextResult[T] for workflow error handling
+
+Core Responsibilities:
+    - Authentication workflow orchestration
+    - User registration and management workflows
+    - Session lifecycle management
+    - Role and permission management
+    - Security policy enforcement
+    - Cross-cutting concern coordination
+
+TODO (Based on docs/TODO.md):
+    - [ ] HIGH: Implement CQRS command handlers (Issue #5)
+    - [ ] HIGH: Add domain event publishing (Issue #4)
+    - [ ] CRITICAL: Integrate with FlextContainer for DI (Issue #3)
+    - [ ] MEDIUM: Add workflow audit logging (Issue #11)
+
+Current Project Status:
+    ✅ Application services layer comprehensively documented with orchestration patterns
+    ✅ Use case patterns and workflow management documented
+    ✅ Service composition and coordination patterns documented
+    🔄 Implementation focus: CQRS command handlers and domain event publishing
+
+Design Patterns:
+    - Application Service Pattern: Coordinates domain operations
+    - Use Case Pattern: Clear business operation boundaries
+    - Workflow Pattern: Multi-step authentication processes
+    - Command Pattern: Encapsulated operations with undo capability
+    - Observer Pattern: Event publishing for cross-cutting concerns
+
+Service Composition:
+    Application services compose lower-level services:
+    - Domain Services: Business logic operations
+    - Infrastructure Services: External system integration
+    - Repository Services: Data persistence operations
+    - Event Services: Domain event publishing
+
+Example:
+    >>> auth_service = AuthenticationApplicationService(dependencies)
+    >>> result = await auth_service.authenticate_user_workflow(
+    ...     username="john_doe",
+    ...     password="SecurePass123!",
+    ...     ip_address="192.168.1.1"
+    ... )
+    >>> if result.is_success:
+    ...     user_session = result.data
+    ...     print(f"User {user_session.user.username} authenticated")
+
+Performance Considerations:
+    - Async operations for I/O bound workflows
+    - Efficient workflow composition
+    - Minimal service overhead
+    - Optimized for high-throughput scenarios
+
+Integration Points:
+    - FlextContainer: Service dependency injection (TODO)
+    - FlextResult: Type-safe workflow error handling
+    - Domain Events: Business event publishing (TODO)
+    - CQRS Commands: Command-based operations (TODO)
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
@@ -294,19 +360,20 @@ class FlextAuthenticationService:
         try:
             # REFACTORING: Use Strategy Pattern for validation
             user_validation = self._deps.user_validation_strategy.validate(
-                username=username, email=email
+                username=username,
+                email=email,
             )
             if not user_validation.is_success:
                 return FlextResult.fail(
-                    user_validation.error or "User validation failed"
+                    user_validation.error or "User validation failed",
                 )
 
             password_validation = self._deps.password_validation_strategy.validate(
-                password=password
+                password=password,
             )
             if not password_validation.is_success:
                 return FlextResult.fail(
-                    password_validation.error or "Password validation failed"
+                    password_validation.error or "Password validation failed",
                 )
 
             # Create user entity
@@ -357,7 +424,7 @@ class FlextAuthenticationService:
         try:
             # REFACTORING: Use Strategy Pattern for password validation
             validation_result = self._deps.password_validation_strategy.validate(
-                password=new_password
+                password=new_password,
             )
             if not validation_result.is_success:
                 return FlextResult.fail(validation_result.error or "Validation failed")
@@ -447,7 +514,7 @@ class FlextAuthorizationService:
             # REFACTORING: Use Strategy Pattern for permission checking
             # Try REDACTED_LDAP_BIND_PASSWORD strategy first
             REDACTED_LDAP_BIND_PASSWORD_result = self._deps.REDACTED_LDAP_BIND_PASSWORD_permission_strategy.check_permission(
-                check_data
+                check_data,
             )
             if REDACTED_LDAP_BIND_PASSWORD_result.is_success and REDACTED_LDAP_BIND_PASSWORD_result.data:
                 return REDACTED_LDAP_BIND_PASSWORD_result
@@ -470,7 +537,10 @@ class FlextAuthorizationService:
         SOLID REFACTORING: Wrapper that converts old parameters to Parameter Object.
         """
         check_data = PermissionCheckData(
-            user=user, resource=resource, action=action, roles=roles
+            user=user,
+            resource=resource,
+            action=action,
+            roles=roles,
         )
         return self.check_permission(check_data)
 

@@ -1,4 +1,67 @@
-"""Value objects for authentication domain."""
+"""FLEXT Auth Value Objects - Immutable domain values with validation.
+
+This module contains value objects for the authentication domain following
+Domain-Driven Design patterns. Value objects are immutable data structures
+that encapsulate validation rules and business logic for authentication values.
+
+Architecture:
+    - Domain Layer: Immutable value objects with business rules
+    - Validation: Comprehensive input validation with type safety
+    - Railway-Oriented: FlextResult[T] for validation operations
+    - Immutable: Value objects cannot be modified after creation
+
+Core Value Objects:
+    - FlextUsername: Username with format validation
+    - FlextUserEmail: Email with format and domain validation
+    - FlextPlainPassword: Plain text password with strength validation
+    - FlextHashedPassword: Bcrypt hashed password representation
+    - FlextJWTClaims: JWT token claims with validation
+    - FlextSecurityContext: Authentication context information
+    - FlextIPAddress: IP address with validation
+
+Validation Rules:
+    - Username: 3-50 chars, alphanumeric plus underscore/hyphen
+    - Email: Valid RFC 5322 format with domain validation
+    - Password: 8-128 chars with strength requirements
+    - Tokens: Minimum length and format requirements
+    - IP Address: Valid IPv4/IPv6 format
+
+TODO (Based on docs/TODO.md):
+    - [ ] HIGH: Add domain events for value object validation (Issue #4)
+    - [ ] MEDIUM: Add custom validation rules per organization (Issue #8)
+    - [ ] LOW: Add internationalization support for validation messages (Issue #12)
+
+Design Patterns:
+    - Value Object Pattern: Immutable objects with equality based on value
+    - Validation Pattern: Comprehensive input validation
+    - Factory Pattern: Static methods for creating valid instances
+    - Builder Pattern: Fluent API for complex value object creation
+
+Example:
+    >>> username = FlextUsername(value="john_doe")
+    >>> email = FlextUserEmail(address="john@example.com")
+    >>> password = FlextPlainPassword(value="SecurePassword123!")
+    >>>
+    >>> # Value objects are immutable and validated
+    >>> if username.value == "john_doe":
+    ...     print(f"Valid username: {username}")
+
+Security Considerations:
+    - Password value objects clear sensitive data from memory
+    - Validation prevents injection attacks
+    - Format validation ensures data integrity
+    - Type safety prevents value confusion
+
+Performance Characteristics:
+    - O(1) validation for most value objects
+    - Immutable design enables safe caching
+    - Minimal memory footprint
+    - Efficient equality comparisons
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
@@ -490,22 +553,36 @@ class FlextJWTClaims(FlextValueObject):
 
         if validation_errors:
             return FlextResult.fail(
-                validation_errors[0]
+                validation_errors[0],
             )  # Return first error for clarity
 
         return FlextResult.ok(None)
 
     def _collect_validation_errors(self) -> list[str]:
         """DRY helper: Collect all validation errors using Strategy Pattern."""
+
+        # Define validation functions with explicit types
+        def check_empty_sub() -> bool:
+            return not self.sub
+
+        def check_invalid_iat() -> bool:
+            return self.iat <= 0
+
+        def check_invalid_exp() -> bool:
+            return self.exp <= 0
+
+        def check_exp_before_iat() -> bool:
+            return self.exp <= self.iat
+
+        def check_invalid_token_type() -> bool:
+            return self.token_type not in {"access", "refresh"}
+
         validators = [
-            (lambda: not self.sub, "JWT subject (sub) cannot be empty"),
-            (lambda: self.iat <= 0, "JWT issued at (iat) must be positive"),
-            (lambda: self.exp <= 0, "JWT expiration (exp) must be positive"),
-            (lambda: self.exp <= self.iat, "JWT expiration must be after issued time"),
-            (
-                lambda: self.token_type not in {"access", "refresh"},
-                "JWT token type must be 'access' or 'refresh'",
-            ),
+            (check_empty_sub, "JWT subject (sub) cannot be empty"),
+            (check_invalid_iat, "JWT issued at (iat) must be positive"),
+            (check_invalid_exp, "JWT expiration (exp) must be positive"),
+            (check_exp_before_iat, "JWT expiration must be after issued time"),
+            (check_invalid_token_type, "JWT token type must be 'access' or 'refresh'"),
         ]
 
         return [error_msg for condition, error_msg in validators if condition()]

@@ -1,7 +1,81 @@
-"""FLEXT Auth Mixins Module.
+"""FLEXT Auth Mixins - Reusable authentication behaviors for class composition.
 
-Mixins for adding authentication capabilities to classes.
-Implements composition over inheritance following SOLID principles.
+This module provides mixins that add authentication capabilities to existing classes
+through composition rather than inheritance. Following the Mixin pattern and SOLID
+principles to enable flexible authentication integration.
+
+Architecture:
+    - Mixin Pattern: Reusable behavior composition
+    - Composition over Inheritance: Flexible class enhancement
+    - Railway-Oriented: FlextResult[T] for type-safe operations
+    - Framework Agnostic: Works with any Python class
+
+Core Mixins:
+    - FlextAuthMixin: Basic authentication capabilities
+    - FlextAuthUserMixin: User-specific authentication methods
+    - FlextAuthSessionMixin: Session management capabilities
+    - FlextAuthRoleMixin: Role-based access control (TODO)
+    - FlextAuthAuditMixin: Audit logging capabilities (TODO)
+
+TODO (Based on docs/TODO.md):
+    - [ ] CRITICAL: Integrate with FlextContainer for DI (Issue #3)
+    - [ ] HIGH: Add domain events for mixin operations (Issue #4)
+    - [ ] MEDIUM: Add role-based access control mixin (Issue #8)
+    - [ ] MEDIUM: Add audit logging mixin (Issue #11)
+    - [ ] LOW: Add caching mixin for performance (Issue #10)
+
+Current Project Status:
+    ✅ Authentication mixins comprehensively documented with composition patterns
+    ✅ Reusable behavior patterns documented for flexible integration
+    ✅ Framework-agnostic class enhancement patterns documented
+    🔄 Implementation focus: Role-based access control mixin and audit logging
+
+Design Patterns:
+    - Mixin Pattern: Reusable behavior composition
+    - Strategy Pattern: Pluggable authentication strategies
+    - Template Method: Common authentication workflows
+    - Observer Pattern: Authentication event notifications (TODO)
+
+Use Cases:
+    - Add authentication to existing business classes
+    - Enhance domain entities with auth capabilities
+    - Create authenticated service classes
+    - Build custom authentication workflows
+
+Example Usage:
+    >>> class UserService(FlextAuthMixin):
+    ...     def __init__(self):
+    ...         super().__init__()
+    ...         self.init_auth()
+    ...
+    ...     def get_protected_data(self, token: str):
+    ...         auth_result = self.validate_auth_token(token)
+    ...         if auth_result.is_success:
+    ...             return {"data": "protected information"}
+    ...         return {"error": "Authentication required"}
+
+Security Features:
+    - JWT token validation and generation
+    - Session management and validation
+    - User authentication workflows
+    - Security context management
+    - Error handling with security considerations
+
+Performance Considerations:
+    - Minimal mixin overhead
+    - Lazy initialization of auth services
+    - Efficient token validation
+    - Cached authentication results
+    - Async-compatible methods
+
+Integration Points:
+    - FlextContainer: Service dependency injection (TODO)
+    - FlextResult: Type-safe error handling
+    - JWT Service: Token operations
+    - Auth Service: Authentication workflows
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations

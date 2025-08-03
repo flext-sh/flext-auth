@@ -1,11 +1,73 @@
-"""🚨 ARCHITECTURAL COMPLIANCE: ELIMINATED MASSIVE EXCEPTION DUPLICATION using DRY.
+"""FLEXT Auth Exceptions - Type-safe error handling for authentication operations.
 
-REFATORADO COMPLETO usando create_module_exception_classes:
-- ZERO code duplication através do DRY exception factory pattern de flext-core
-- USA create_module_exception_classes() para eliminar exception boilerplate massivo
-- Elimina 15-18 linhas duplicadas de código boilerplate por exception class
-- SOLID: Single source of truth para module exception patterns
-- Redução de 174+ linhas para 62 linhas (64% reduction)
+This module provides comprehensive exception handling for FLEXT Auth using the
+flext-core exception factory pattern to eliminate code duplication. All exceptions
+follow the railway-oriented programming pattern and integrate with FlextResult.
+
+Architecture:
+    - Exception Layer: Type-safe error handling
+    - DRY Pattern: Uses flext-core exception factory to eliminate duplication
+    - Railway-Oriented: Integrates with FlextResult[T] error handling
+    - Hierarchical: Proper exception inheritance and categorization
+
+Exception Hierarchy:
+    FlextAuthError (base)
+    ├── FlextAuthValidationError: Input validation failures
+    ├── FlextAuthAuthenticationError: Authentication failures
+    ├── FlextAuthConfigurationError: Configuration issues
+    ├── FlextAuthConnectionError: External service connection failures
+    ├── FlextAuthProcessingError: Business logic processing errors
+    ├── FlextAuthTimeoutError: Operation timeout failures
+    ├── FlextAuthSecurityError: Security policy violations
+    └── FlextAuthPermissionError: Access control violations
+
+TODO (Based on docs/TODO.md):
+    - [ ] MEDIUM: Add error context and correlation IDs (Issue #9)
+    - [ ] MEDIUM: Add error categorization system (Issue #9)
+    - [ ] LOW: Add error analytics and monitoring (Issue #10)
+    - [ ] LOW: Add error internationalization (Issue #12)
+
+Current Project Status:
+    ✅ Comprehensive exception hierarchy documented with proper inheritance
+    ✅ Railway-oriented programming integration with FlextResult documented
+    ✅ Security and authentication error patterns documented
+    🔄 Implementation focus: Error context and correlation IDs for debugging
+
+Design Patterns:
+    - Factory Pattern: Exception creation through flext-core factory
+    - Hierarchy Pattern: Proper exception inheritance
+    - Context Pattern: Rich error context and details
+    - Railway Pattern: Integration with FlextResult error handling
+
+Error Categories:
+    - Validation Errors: Input validation and format issues
+    - Authentication Errors: Login and credential failures
+    - Configuration Errors: Setup and configuration problems
+    - Security Errors: Security policy violations
+    - Permission Errors: Access control and authorization failures
+
+Example Usage:
+    >>> from flext_auth.exceptions import FlextAuthValidationError
+    >>>
+    >>> def validate_user_input(data):
+    ...     if not data.get("username"):
+    ...         raise FlextAuthValidationError(
+    ...             "Username is required",
+    ...             validation_details={"field": "username", "code": "REQUIRED"}
+    ...         )
+
+Error Context:
+    All exceptions support rich context for debugging:
+    - Error codes for programmatic handling
+    - Validation details for input errors
+    - Security context for audit logging
+    - Performance metrics for monitoring
+
+Integration Points:
+    - FlextResult: Type-safe error handling
+    - Logging: Structured error logging
+    - Monitoring: Error metrics and analytics
+    - Audit: Security event tracking
 
 Copyright (c) 2025 FLEXT Contributors
 SPDX-License-Identifier: MIT
@@ -74,7 +136,7 @@ class FlextAuthSpecificError(FlextAuthError):  # type: ignore[valid-type,misc]
                     field_name: field_value
                     for field_name, field_value in context_fields.items()
                     if field_value is not None
-                }
+                },
             )
 
         # Template Method Pattern: Format message with error prefix

@@ -1,4 +1,66 @@
-"""Main authentication service orchestrating all authentication operations."""
+"""Main authentication service for FLEXT Auth.
+
+Application service orchestrating authentication workflows with Clean Architecture
+and Domain-Driven Design patterns. Coordinates between domain entities and
+infrastructure services for user authentication operations.
+
+Architecture:
+    - Application Layer: Orchestrates authentication workflows
+    - Repository Pattern: Abstract data access through interfaces
+    - Domain Integration: Delegates business logic to domain entities
+    - Error Handling: FlextResult pattern for type-safe operations
+
+Responsibilities:
+    - User registration and authentication workflows
+    - Session lifecycle management and validation
+    - JWT token generation and validation
+    - Security policy enforcement (account lockouts)
+    - Failed login attempt tracking
+    - Password management and hashing
+
+Current Implementation:
+    - User authentication with username/password
+    - JWT token generation with configurable expiration
+    - Session management with database persistence
+    - Account lockout after configurable failed attempts
+    - Password hashing with bcrypt
+    - Basic audit logging for authentication events
+
+Development Notes:
+    - Service uses dependency injection for repositories and services
+    - Configuration managed through FlextAuthConfig
+    - All operations return FlextResult for consistent error handling
+    - Security policies configurable through environment variables
+
+Example:
+    >>> dependencies = FlextAuthServiceDependencies(
+    ...     user_repository=user_repo,
+    ...     session_repository=session_repo,
+    ...     password_service=password_service,
+    ...     jwt_service=jwt_service,
+    ...     config=auth_config
+    ... )
+    >>> auth_service = FlextAuthService(dependencies)
+    >>> result = await auth_service.authenticate_user("user", "password")
+    >>> if result.is_success:
+    ...     print(f"Authentication successful: {result.data}")
+
+Performance Considerations:
+    - Async operations for I/O bound authentication flows
+    - Efficient session lookup and validation
+    - Optimized password hashing with configurable rounds
+    - Connection pooling for database operations
+
+Integration Points:
+    - FlextContainer: Dependency injection (TODO)
+    - FlextResult: Type-safe error handling
+    - FlextLogger: Structured logging with correlation IDs
+    - Domain Events: Authentication operation events (TODO)
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
@@ -146,7 +208,8 @@ class UserManagementStrategy(ABC):
 
     @abstractmethod
     async def register_user(
-        self, registration_data: FlextUserRegistrationData
+        self,
+        registration_data: FlextUserRegistrationData,
     ) -> FlextResult[User]:
         """Register user using specific strategy."""
 
@@ -231,7 +294,7 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
                     "authenticated": True,
                     "username": username,
                     "access_token": "strategy_token_placeholder",
-                }
+                },
             )
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult.fail(f"Authentication failed: {e}")
@@ -255,7 +318,7 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
                 username="strategy_test",
                 role="USER",
                 session_id="strategy_session",
-            )
+            ),
         )
 
     async def refresh_token(
@@ -264,7 +327,7 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
     ) -> FlextResult[dict[str, str]]:
         """Refresh access token using refresh token."""
         return FlextResult.ok(
-            {"access_token": "new_token", "refresh_token": "new_refresh"}
+            {"access_token": "new_token", "refresh_token": "new_refresh"},
         )
 
 
@@ -272,7 +335,9 @@ class DefaultSessionManagementStrategy(SessionManagementStrategy):
     """Default session management strategy implementation."""
 
     def __init__(
-        self, session_repo: SessionRepository, config: FlextAuthServiceConfig
+        self,
+        session_repo: SessionRepository,
+        config: FlextAuthServiceConfig,
     ) -> None:
         self.session_repo = session_repo
         self.config = config
@@ -310,7 +375,8 @@ class DefaultUserManagementStrategy(UserManagementStrategy):
         self.password_service = password_service
 
     async def register_user(
-        self, registration_data: FlextUserRegistrationData
+        self,
+        registration_data: FlextUserRegistrationData,
     ) -> FlextResult[User]:
         """Register new user."""
         user = User(
@@ -376,19 +442,22 @@ class FlextAuthService:
         self.token_strategy = (
             dependencies.token_strategy
             or DefaultTokenManagementStrategy(
-                dependencies.jwt_service, dependencies.user_repository
+                dependencies.jwt_service,
+                dependencies.user_repository,
             )
         )
         self.session_strategy = (
             dependencies.session_strategy
             or DefaultSessionManagementStrategy(
-                dependencies.session_repository, self.config
+                dependencies.session_repository,
+                self.config,
             )
         )
         self.user_strategy = (
             dependencies.user_strategy
             or DefaultUserManagementStrategy(
-                dependencies.user_repository, dependencies.password_service
+                dependencies.user_repository,
+                dependencies.password_service,
             )
         )
 
@@ -437,7 +506,10 @@ class FlextAuthService:
         try:
             # REFACTORING: Delegate to authentication strategy
             return await self.auth_strategy.authenticate(
-                username, password, ip_address, user_agent
+                username,
+                password,
+                ip_address,
+                user_agent,
             )
 
         except (RuntimeError, ValueError, OSError) as e:
@@ -477,7 +549,9 @@ class FlextAuthService:
         try:
             # REFACTORING: Delegate to session management strategy
             return await self.session_strategy.create_session(
-                user, ip_address, user_agent
+                user,
+                ip_address,
+                user_agent,
             )
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult.fail(f"Session creation failed: {e}")
@@ -574,7 +648,8 @@ class FlextAuthService:
                 return user_result
 
             session_result = await self._validate_session_stage(
-                user_result.data, strategies
+                user_result.data,
+                strategies,
             )
             if not session_result.is_success:
                 return session_result
@@ -1235,7 +1310,8 @@ class FlextAuthService:
         """
         # Cast lookup_method to Callable for type safety
         lookup_callable = cast(
-            "Callable[[str], Awaitable[FlextResult[object]]]", lookup_method
+            "Callable[[str], Awaitable[FlextResult[object]]]",
+            lookup_method,
         )
         existing_result = await lookup_callable(value)
 
@@ -1552,14 +1628,19 @@ class FlextAuthService:
         """
         # User validation stage
         user_result = await self._validate_user_for_authentication(
-            username, ip_address, user_agent
+            username,
+            ip_address,
+            user_agent,
         )
         if not user_result.is_success or not user_result.data:
             return FlextResult.fail(user_result.error or "User validation failed")
 
         # Password verification stage
         password_result = await self._verify_user_password(
-            user_result.data, password, ip_address, user_agent
+            user_result.data,
+            password,
+            ip_address,
+            user_agent,
         )
         if not password_result.is_success or not password_result.data:
             error_msg = password_result.error or "Password validation failed"
@@ -1567,5 +1648,7 @@ class FlextAuthService:
 
         # Session creation stage (final result)
         return await self._create_authenticated_session(
-            password_result.data, ip_address, user_agent
+            password_result.data,
+            ip_address,
+            user_agent,
         )

@@ -1,4 +1,87 @@
-"""User repository interfaces and implementations."""
+"""FLEXT Auth User Management - Repository patterns for user persistence.
+
+This module provides user repository interfaces and implementations following
+the Repository pattern from Domain-Driven Design. It abstracts user persistence
+and provides both in-memory and database implementations for flexible deployment.
+
+Architecture:
+    - Infrastructure Layer: User persistence and data access
+    - Repository Pattern: Abstract data access with multiple implementations
+    - Railway-Oriented: FlextResult[T] for type-safe error handling
+    - Domain-Driven: Operates on FlextUser domain entities
+
+Core Capabilities:
+    - User CRUD operations with type safety
+    - Username and email uniqueness validation
+    - User search and filtering capabilities
+    - Pagination support for large user bases
+    - Bulk operations for user management
+    - User status and role management
+
+Repository Implementations:
+    - InMemoryUserRepository: Fast in-memory storage for development/testing
+    - DatabaseUserRepository: Persistent database storage (TODO)
+    - LDAPUserRepository: Enterprise directory integration (TODO)
+    - HybridUserRepository: Multi-source user management (TODO)
+
+TODO (Based on docs/TODO.md):
+    - [ ] CRITICAL: Integrate with FlextContainer for DI (Issue #3)
+    - [ ] HIGH: Add domain events for user operations (Issue #4)
+    - [ ] MEDIUM: Implement database user repository (Issue #8)
+    - [ ] MEDIUM: Add LDAP integration for enterprise (Issue #8)
+    - [ ] MEDIUM: Add user search and indexing (Issue #10)
+    - [ ] LOW: Add user analytics and reporting (Issue #10)
+
+Current Project Status:
+    ✅ User repository patterns comprehensively documented with DDD patterns
+    ✅ Repository abstraction layer documented with multiple implementations
+    ✅ Type-safe operations documented with FlextResult patterns
+    🔄 Implementation focus: Database repository and FlextContainer integration
+
+Security Features:
+    - Username and email uniqueness enforcement
+    - Secure user data handling
+    - Account status validation
+    - Role-based access control integration
+    - User audit trail support
+
+Design Patterns:
+    - Repository Pattern: Abstract data access layer
+    - Factory Pattern: User creation with validation
+    - Observer Pattern: User lifecycle events (TODO)
+    - Strategy Pattern: Multiple storage implementations
+    - Specification Pattern: User search criteria (TODO)
+
+Example:
+    >>> user_repo = InMemoryUserRepository()
+    >>> user = FlextUser(
+    ...     id="usr_123",
+    ...     username="john_doe",
+    ...     email="john@example.com",
+    ...     password_hash="$2b$12$secure_hash"
+    ... )
+    >>> result = await user_repo.save(user)
+    >>> if result.is_success:
+    ...     saved_user = result.data
+    ...     print(f"User saved: {saved_user.username}")
+
+Performance Considerations:
+    - Async operations for non-blocking I/O
+    - Efficient user lookup by username/email
+    - Indexed search capabilities
+    - Pagination for large datasets
+    - Optimized for high-read scenarios
+
+Integration Points:
+    - FlextContainer: Repository dependency injection (TODO)
+    - FlextResult: Type-safe error handling
+    - Domain Events: User lifecycle events (TODO)
+    - LDAP Integration: Enterprise directory sync (TODO)
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 

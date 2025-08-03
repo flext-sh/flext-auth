@@ -1,7 +1,49 @@
-"""Simple pytest configuration for flext-auth basic functionality.
+"""FLEXT Auth Test Configuration - Comprehensive pytest setup and fixtures.
 
-This configuration provides basic fixtures for testing the simple authentication
-functions.
+This module provides enterprise-grade test configuration for FLEXT Auth following
+pytest best practices and flext-core testing patterns. It includes shared fixtures,
+test markers, and configuration for consistent testing across all test categories.
+
+Architecture:
+    - Test Configuration: Centralized pytest setup and marker definitions
+    - Fixture Pattern: Reusable test fixtures with proper scope management
+    - Test Categorization: Comprehensive test markers for organized test execution
+    - Clean Setup/Teardown: Proper resource management for test isolation
+
+Test Markers:
+    - unit: Fast, isolated unit tests for individual components
+    - integration: Service interaction tests with external dependencies
+    - auth: Authentication workflow and security tests
+    - security: Security-focused tests for vulnerabilities and policies
+    - token: JWT token generation, validation, and lifecycle tests
+    - password: Password hashing, validation, and security tests
+    - session: Session management and lifecycle tests
+
+Current Status:
+    ✅ Basic test configuration established with pytest markers
+    🔄 Enhanced fixtures being added as test coverage is restored
+    🔄 Integration with flext-core testing patterns in progress
+
+Design Patterns:
+    - Fixture Pattern: Shared test dependencies with proper scoping
+    - Factory Pattern: Test data creation utilities
+    - Builder Pattern: Complex test scenario construction
+    - Template Method: Common test setup and teardown workflows
+
+Example Usage:
+    >>> pytest -m unit           # Run only unit tests
+    >>> pytest -m "auth and not integration"  # Run auth unit tests only
+    >>> pytest -m security      # Run security-focused tests
+
+Configuration Features:
+    - Test marker registration for organized test execution
+    - Shared fixture definitions for common test dependencies
+    - Test environment setup and teardown
+    - Integration with coverage reporting and quality gates
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations

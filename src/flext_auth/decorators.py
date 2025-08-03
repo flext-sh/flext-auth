@@ -1,7 +1,82 @@
-"""FLEXT Auth Decorators Module.
+"""FLEXT Auth Decorators - Enterprise authentication and authorization decorators.
 
-Authentication and authorization decorators for enterprise applications.
-Implements SOLID principles with dependency injection and proper error handling.
+This module provides decorators for protecting endpoints and functions with
+authentication and authorization requirements. Following the decorator pattern
+and implementing enterprise security practices for the FLEXT ecosystem.
+
+Architecture:
+    - Cross-Cutting Layer: Authentication and authorization aspects
+    - Decorator Pattern: Non-intrusive security enforcement
+    - Railway-Oriented: FlextResult[T] for type-safe error handling
+    - Framework Agnostic: Works with FastAPI, Flask, Django, etc.
+
+Core Decorators:
+    - @flext_auth_required: Basic authentication requirement
+    - @flext_auth_role_required: Role-based access control
+    - @flext_auth_permission_required: Permission-based access control
+    - @flext_auth_rate_limit: Request rate limiting (TODO)
+    - @flext_auth_audit_log: Security audit logging (TODO)
+
+TODO (Based on docs/TODO.md):
+    - [ ] CRITICAL: Integrate with FlextContainer for DI (Issue #3)
+    - [ ] HIGH: Add domain events for authentication attempts (Issue #4)
+    - [ ] MEDIUM: Add rate limiting decorator (Issue #11)
+    - [ ] MEDIUM: Add audit logging decorator (Issue #11)
+    - [ ] LOW: Add performance monitoring decorator (Issue #10)
+
+Current Project Status:
+    ✅ Authentication decorators comprehensively documented with enterprise patterns
+    ✅ Framework-agnostic implementation patterns documented
+    ✅ Security enforcement and authorization patterns documented
+    🔄 Implementation focus: FlextContainer integration and rate limiting decorators
+
+Security Features:
+    - JWT token validation and extraction
+    - Role-based access control enforcement
+    - Permission-based access control
+    - Security context propagation
+    - Authentication failure handling
+    - Framework-agnostic implementation
+
+Design Patterns:
+    - Decorator Pattern: Non-intrusive security aspects
+    - Strategy Pattern: Multiple authentication strategies
+    - Parameter Object: Configuration consolidation
+    - Chain of Responsibility: Multiple security checks
+
+Framework Integration:
+    Works seamlessly with popular Python web frameworks:
+    - FastAPI: Automatic dependency injection
+    - Flask: Request context integration
+    - Django: Middleware and view decoration
+    - Starlette: ASGI middleware support
+
+Example Usage:
+    >>> from flext_auth import flext_auth_required, flext_auth_role_required
+    >>>
+    >>> @flext_auth_required
+    >>> def protected_function(user):
+    ...     return f"Hello {user.username}"
+    >>>
+    >>> @flext_auth_role_required("REDACTED_LDAP_BIND_PASSWORD")
+    >>> def REDACTED_LDAP_BIND_PASSWORD_only_function(user):
+    ...     return f"Admin access for {user.username}"
+
+Performance Considerations:
+    - Minimal decorator overhead
+    - Efficient token validation
+    - Cached security context
+    - Async-compatible decorators
+    - Framework-optimized implementations
+
+Integration Points:
+    - FlextContainer: Service dependency injection (TODO)
+    - FlextResult: Type-safe error handling
+    - JWT Service: Token validation
+    - User Repository: User lookup and validation
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
@@ -228,17 +303,21 @@ def _execute_authentication_pipeline(  # type: ignore[explicit-any]
         request = _extract_request_from_args(args, kwargs)
         if not request:
             return _handle_authentication_error(
-                config.error_response, "No request object found"
+                config.error_response,
+                "No request object found",
             )
 
         token = _extract_token_from_request(request)
         if not token:
             return _handle_authentication_error(
-                config.error_response, "Authentication token required"
+                config.error_response,
+                "Authentication token required",
             )
 
         validation_result = _validate_token_with_service(
-            token, config.auth_service, config.secret
+            token,
+            config.auth_service,
+            config.secret,
         )
         if not validation_result or not validation_result.is_success:
             error_msg = (
@@ -247,7 +326,8 @@ def _execute_authentication_pipeline(  # type: ignore[explicit-any]
                 else "Token validation failed"
             )
             return _handle_authentication_error(
-                config.error_response, error_msg or "Validation failed"
+                config.error_response,
+                error_msg or "Validation failed",
             )
 
         # All validations passed - add user data and execute function
@@ -256,7 +336,8 @@ def _execute_authentication_pipeline(  # type: ignore[explicit-any]
 
     except Exception as e:
         return _handle_authentication_error(
-            config.error_response, f"Authentication error: {e}"
+            config.error_response,
+            f"Authentication error: {e}",
         )
 
 

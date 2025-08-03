@@ -1,9 +1,94 @@
-"""FLEXT Auth Application Services - Authentication and authorization services.
+"""FLEXT Auth Application Services - Application layer orchestration.
+
+This module provides application services that orchestrate authentication
+operations following Clean Architecture and Domain-Driven Design patterns. Services
+coordinate between domain entities and infrastructure while maintaining business rules.
+
+Architecture:
+    - Application Layer: Orchestrates business workflows
+    - Clean Architecture: Dependencies flow inward toward domain
+    - Domain-Driven Design: Services coordinate domain operations
+    - Railway-Oriented: FlextResult[T] for error handling workflows
+
+Core Services:
+    - FlextAuthenticationService: User authentication and password management
+    - FlextSessionService: Session lifecycle and validation
+    - FlextAuthorizationService: Role-based access control (RBAC)
+    - Service Integration: Coordinated multi-service operations
+
+TODO (Based on docs/TODO.md):
+    - [ ] CRITICAL: Integrate with FlextContainer for DI (Issue #3)
+    - [ ] HIGH: Add domain events for service operations (Issue #4)
+    - [ ] HIGH: Add CQRS command/query separation (Issue #5)
+    - [ ] MEDIUM: Add service transaction management (Issue #6)
+    - [ ] MEDIUM: Add service performance monitoring (Issue #10)
+    - [ ] LOW: Add service audit logging (Issue #11)
+
+Current Project Status:
+    ✅ Application layer services comprehensively documented
+    ✅ Clean Architecture and DDD patterns fully aligned
+    ✅ Service orchestration patterns documented
+    🔄 Implementation focus: CQRS command/query separation and service improvements
+
+Design Patterns:
+    - Service Pattern: Application service orchestration
+    - Railway-Oriented Programming: Monadic error handling chains
+    - Template Method Pattern: Common service operation workflows
+    - Strategy Pattern: Pluggable authentication strategies
+    - Factory Pattern: Service creation and dependency injection
+
+Service Responsibilities:
+    Authentication Service:
+    - User credential validation
+    - Password hashing and verification
+    - Account lockout and security policies
+    - User creation and management
+
+    Session Service:
+    - Session creation and lifecycle management
+    - Token generation and validation
+    - Session expiration and cleanup
+    - Concurrent session management
+
+    Authorization Service:
+    - Role-based access control (RBAC)
+    - Permission checking and validation
+    - Role and permission management
+    - Resource access authorization
+
+Example Usage:
+    >>> from flext_auth.application import FlextAuthenticationService
+    >>>
+    >>> # Authenticate user with railway-oriented programming
+    >>> auth_service = FlextAuthenticationService()
+    >>> result = auth_service.authenticate_user("john", "password", users_dict)
+    >>> if result.is_success:
+    ...     user = result.data
+    ...     print(f"Authenticated user: {user.username}")
+
+Security Features:
+    - Secure password hashing with bcrypt
+    - Account lockout after failed attempts
+    - Session token generation and validation
+    - Role-based access control enforcement
+    - Input validation and sanitization
+
+Performance Characteristics:
+    - Railway-oriented programming reduces conditional complexity
+    - Efficient password verification with constant-time comparison
+    - Minimal database queries through entity caching
+    - Fast permission checking with role-based lookups
+    - Session validation with O(1) token lookup
+
+Integration Points:
+    - Domain Layer: Coordinates domain entities and value objects
+    - Infrastructure: Uses password service and repositories
+    - FlextResult: Type-safe error handling across all operations
+    - Logging: Structured logging for security events
+    - Monitoring: Service metrics and performance tracking
 
 Copyright (c) 2025 FLEXT Contributors
 SPDX-License-Identifier: MIT
-
-Application services for authentication and authorization operations.
 """
 
 from __future__ import annotations

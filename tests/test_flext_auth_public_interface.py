@@ -547,8 +547,9 @@ class TestFlextAuthConfiguration:
         """Test FlextAuthConfig can be imported and used."""
         config = FlextAuthConfig()
         assert config is not None
-        assert hasattr(config, "jwt_secret_key")
+        # FlextAuthConfig has basic auth fields, not JWT fields
         assert hasattr(config, "bcrypt_rounds")
+        assert hasattr(config, "app_name")
 
     def test_flext_result_import(self) -> None:
         """Test FlextResult can be imported from root."""

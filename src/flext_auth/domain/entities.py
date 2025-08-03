@@ -1,4 +1,52 @@
-"""Domain entities for authentication system."""
+"""Domain entities for authentication business logic.
+
+Contains domain entities implementing authentication business rules following
+Domain-Driven Design patterns. Entities encapsulate business logic and validation
+for user authentication, session management, and access control.
+
+Entities:
+    - FlextUser: User account with authentication logic
+    - FlextSession: User session with lifecycle management
+    - FlextRole: Role definition for access control
+    - FlextPermission: Permission for fine-grained access
+    - FlextPasswordResetToken: Password reset token
+    - FlextEmailVerificationToken: Email verification token
+
+Business Rules:
+    - User accounts lock after configurable failed login attempts
+    - Sessions expire after configurable timeout periods
+    - Roles group permissions for simplified access management
+    - Password reset tokens are single-use with expiration
+    - Email verification required for account activation
+
+Implementation:
+    - Rich domain models with encapsulated business logic
+    - FlextResult pattern for error handling in business operations
+    - Immutable value objects for type safety
+    - Validation rules enforced at entity level
+    - Unique identifiers for entity identity
+
+Development Status:
+    - Core authentication entities implemented
+    - Business rule validation in place
+    - Domain events integration planned for future enhancement
+    - Event sourcing integration planned for audit requirements
+
+Example:
+    >>> user = FlextUser(
+    ...     id="user123",
+    ...     username="john_doe",
+    ...     email="john@example.com",
+    ...     password_hash="$2b$12$hash"
+    ... )
+    >>> validation_result = user.validate_domain_rules()
+    >>> if validation_result.is_success:
+    ...     print(f"User {user.username} is valid")
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
@@ -39,7 +87,64 @@ class FlextUserRole(StrEnum):
 
 
 class FlextUser(FlextEntity):
-    """User entity representing a system user."""
+    """Rich user entity with authentication business logic and domain rules.
+
+    This entity represents a user account in the FLEXT authentication system,
+    following Domain-Driven Design patterns. It encapsulates both user data
+    and authentication-related business logic including account lockout,
+    failed login tracking, and role-based access control.
+
+    Business Rules:
+        - Username must be 3-50 characters long
+        - Email must be valid format with @ symbol
+        - Account locks after failed login attempts (configurable)
+        - Password hash is stored, never plain text password
+        - Status controls account accessibility
+        - Roles determine system permissions
+
+    Immutable Pattern:
+        State changes return new FlextUser instances rather than
+        modifying the existing instance, ensuring data consistency
+        and supporting event sourcing patterns.
+
+    TODO (Based on docs/TODO.md):
+        - [ ] HIGH: Add domain events for user operations (Issue #4)
+        - [ ] HIGH: Migrate to FlextAggregateRoot (Issue #4)
+        - [ ] MEDIUM: Add audit trail fields (Issue #11)
+        - [ ] LOW: Add user preferences and metadata (Issue #12)
+
+    Security Features:
+        - Account lockout after failed attempts
+        - Status-based access control
+        - Role-based permissions
+        - Timestamps for audit trails
+        - Secure password hash storage
+
+    Example:
+        >>> user = FlextUser(
+        ...     id="usr_123",
+        ...     username="john_doe",
+        ...     email="john@example.com",
+        ...     password_hash="$2b$12$secure_hash"
+        ... )
+        >>> if user.is_active() and not user.is_locked():
+        ...     # Proceed with authentication
+        ...     pass
+
+    Attributes:
+        id: Unique user identifier
+        username: User's login name (3-50 chars)
+        email: User's email address (validated format)
+        password_hash: Bcrypt hash of user's password
+        role: User's role in the system (USER, ADMIN, MODERATOR)
+        status: Account status (ACTIVE, INACTIVE, LOCKED, PENDING)
+        failed_login_attempts: Count of consecutive failed logins
+        locked_until: Timestamp when account lock expires
+        last_login: Timestamp of last successful login
+        created_at: Account creation timestamp
+        updated_at: Last modification timestamp
+
+    """
 
     id: str = Field(..., description="Unique user identifier")
     username: str = Field(..., min_length=3, max_length=50, description="Username")

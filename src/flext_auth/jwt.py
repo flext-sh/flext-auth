@@ -1,4 +1,83 @@
-"""Real JWT service implementation using PyJWT."""
+"""FLEXT JWT Service - Enterprise JWT token operations for authentication.
+
+This module provides secure JWT token generation, validation, and management
+following enterprise security standards. It implements the infrastructure
+layer for token-based authentication in the FLEXT ecosystem.
+
+Architecture:
+    - Infrastructure Layer: External JWT token operations
+    - Security-First: Enterprise-grade token security
+    - Railway-Oriented: FlextResult[T] for type-safe error handling
+    - Configurable: Flexible token expiration and algorithms
+
+Core Capabilities:
+    - Access token generation with user claims
+    - Refresh token generation for token renewal
+    - Token validation with expiration checks
+    - Token decoding with claim extraction
+    - Configurable token lifetimes and algorithms
+    - Secure token signing with HMAC SHA-256
+
+Security Features:
+    - Strong secret key validation (production safety)
+    - Configurable token expiration times
+    - Token type differentiation (access vs refresh)
+    - Timestamp-based expiration validation
+    - Algorithm flexibility with secure defaults
+    - Claim validation and sanitization
+
+TODO (Based on docs/TODO.md):
+    - [ ] MEDIUM: Add token blacklisting support (Issue #11)
+    - [ ] MEDIUM: Implement token rotation strategies (Issue #11)
+    - [ ] LOW: Add asymmetric key support (RS256) (Issue #12)
+    - [ ] LOW: Add token analytics and monitoring (Issue #10)
+
+Current Project Status:
+    ✅ JWT service fully documented with comprehensive design patterns
+    ✅ Enterprise security standards documented and implemented
+    ✅ Integration patterns with FLEXT ecosystem documented
+    🔄 Implementation focus: Token blacklisting and advanced security features
+
+Token Structure:
+    Access tokens contain:
+        - user_id: Unique user identifier
+        - username: User's login name
+        - role: User's role in the system
+        - session_id: Associated session identifier
+        - exp: Token expiration timestamp
+        - iat: Token issued at timestamp
+        - type: Token type (access/refresh)
+
+Example:
+    >>> jwt_service = FlextJWTService(
+    ...     secret_key="your-256-bit-secret",
+    ...     access_token_expire_minutes=30
+    ... )
+    >>> token_result = jwt_service.generate_access_token(
+    ...     user_id="usr_123",
+    ...     username="john_doe",
+    ...     role="USER"
+    ... )
+    >>> if token_result.is_success:
+    ...     token = token_result.data
+    ...     validation = jwt_service.verify_token(token)
+
+Performance Considerations:
+    - Stateless token validation (no database lookup)
+    - Efficient HMAC signing and verification
+    - Minimal token payload for reduced overhead
+    - Configurable expiration for security vs usability
+
+Security Warnings:
+    - Secret keys must be at least 256 bits (32 characters)
+    - Never use default/development keys in production
+    - Implement token rotation for long-running applications
+    - Consider asymmetric algorithms for distributed systems
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
@@ -22,7 +101,59 @@ logger: object | None = None
 
 
 class FlextJWTService:
-    """Professional JWT service with real token generation and validation."""
+    """Enterprise JWT service providing secure token operations for FLEXT Auth.
+
+    This service handles all JWT token operations including generation, validation,
+    and claim extraction. It follows enterprise security practices and integrates
+    with the FLEXT authentication ecosystem using railway-oriented programming.
+
+    Security Features:
+        - HMAC SHA-256 signing (configurable algorithm)
+        - Configurable token expiration times
+        - Production secret key validation
+        - Token type differentiation (access/refresh)
+        - Comprehensive claim validation
+        - Timestamp-based expiration checking
+
+    Design Patterns:
+        - Railway-Oriented Programming: FlextResult for error handling
+        - Configuration Pattern: Flexible token policies
+        - Factory Pattern: Token generation with different types
+        - Strategy Pattern: Pluggable signing algorithms
+
+    TODO (Based on docs/TODO.md):
+        - [ ] MEDIUM: Add token blacklisting/revocation (Issue #11)
+        - [ ] MEDIUM: Implement token rotation strategies (Issue #11)
+        - [ ] LOW: Add asymmetric key support (RS256/ES256) (Issue #12)
+        - [ ] LOW: Add token usage analytics (Issue #10)
+
+    Performance Characteristics:
+        - O(1) token generation and validation
+        - Stateless operation (no database dependencies)
+        - Minimal memory footprint
+        - Efficient HMAC operations
+
+    Example:
+        >>> service = FlextJWTService(
+        ...     secret_key="your-secure-256-bit-key",
+        ...     access_token_expire_minutes=15,
+        ...     refresh_token_expire_days=30
+        ... )
+        >>> token_result = service.generate_access_token(
+        ...     user_id="usr_123",
+        ...     username="john_doe",
+        ...     role="USER"
+        ... )
+        >>> if token_result.is_success:
+        ...     validation = service.verify_token(token_result.data)
+
+    Security Warnings:
+        - Secret keys must be cryptographically secure (32+ characters)
+        - Never log or expose tokens in plain text
+        - Implement proper token storage on client side
+        - Consider token rotation for high-security applications
+
+    """
 
     def __init__(
         self,

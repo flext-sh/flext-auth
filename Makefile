@@ -5,8 +5,8 @@ POETRY := poetry
 SRC_DIR := src
 TESTS_DIR := tests
 
-# Quality standards
-MIN_COVERAGE := 90
+# Quality standards (aligned with flext-core)
+MIN_COVERAGE := 95
 
 # Help
 help: ## Show available commands

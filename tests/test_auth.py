@@ -8,7 +8,11 @@ from __future__ import annotations
 
 import pytest
 
-from flext_auth.auth import FlextAuthService, FlextUserRegistrationData
+from flext_auth.auth import (
+    FlextAuthService,
+    FlextAuthServiceDependencies,
+    FlextUserRegistrationData,
+)
 from flext_auth.domain.entities import FlextUserRole, FlextUserStatus
 from flext_auth.jwt import FlextJWTService
 from flext_auth.services.password_service import FlextPasswordService
@@ -28,12 +32,14 @@ class TestFlextAuthService:
             secret_key="test-secret-key",
             access_token_expire_minutes=30,
         )
-        self.auth_service = FlextAuthService(
+        # Create dependencies object for new API
+        dependencies = FlextAuthServiceDependencies(
             user_repository=self.user_repo,
             session_repository=self.session_repo,
             password_service=self.password_service,
             jwt_service=self.jwt_service,
         )
+        self.auth_service = FlextAuthService(dependencies)
 
     @pytest.mark.unit
     async def test_register_user_success(self) -> None:

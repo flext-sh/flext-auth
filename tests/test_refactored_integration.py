@@ -112,8 +112,8 @@ class TestRefactoredAuthSystem:
                 for x in ["validation", "exists", "invalid", "required"]
             )
         else:
-            # If successful, should be a user object
-            assert hasattr(reg_result, "id") or hasattr(reg_result, "username")
+            # If successful, should be a user dict with id or username
+            assert ("id" in reg_result) or ("username" in reg_result)
 
         # Test authentication
         auth_result = auth.authenticate_user(username, password)

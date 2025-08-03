@@ -409,19 +409,21 @@ class TestFlextRole:
         # Should not raise
         valid_role.validate_domain_rules()
 
-        # Test empty name
-        with pytest.raises(ValueError, match="Role name cannot be empty"):
-            FlextRole(
-                id="role-id",
-                name="",
-                description="User management role",
-                permissions=[permission],
-            ).validate_domain_rules()
+        # Test empty name - returns FlextResult failure instead of raising
+        invalid_role = FlextRole(
+            id="role-id",
+            name="",
+            description="User management role",
+            permissions=[permission],
+        )
+        result = invalid_role.validate_domain_rules()
+        assert not result.is_success
+        assert "Role name cannot be empty" in result.error
 
-        # Test invalid permission type
+        # Test invalid permission type - Pydantic raises ValidationError
         with pytest.raises(
-            TypeError,
-            match="All permissions must be Permission instances",
+            ValueError,  # Pydantic ValidationError inherits from ValueError
+            match="Input should be a valid dictionary or instance of FlextPermission",
         ):
             FlextRole(
                 id="role-id",

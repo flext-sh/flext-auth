@@ -1,7 +1,68 @@
-"""Authentication constants using flext-core patterns.
+"""FLEXT Auth Constants - Authentication-specific constants and configuration values.
 
-Simplified constants eliminating duplication and leveraging flext-core
-constants patterns directly.
+This module provides authentication-related constants following flext-core patterns
+for consistency across the ecosystem. It extends base constants with authentication-
+specific values while eliminating duplication through inheritance.
+
+Architecture:
+    - Constants Layer: Centralized configuration values
+    - Inheritance: Extends flext-core constants for consistency
+    - Type Safety: Enum-based constants for type safety
+    - Security-First: Secure defaults for production environments
+
+Constant Categories:
+    - Authentication: Login and password validation patterns
+    - Security: Account lockout and security policies
+    - Session: Session management and timeouts
+    - Token: JWT and token configuration
+    - Validation: Input validation patterns and limits
+
+TODO (Based on docs/TODO.md):
+    - [ ] MEDIUM: Add environment-specific constants (Issue #8)
+    - [ ] LOW: Add constants for rate limiting (Issue #11)
+    - [ ] LOW: Add constants for audit logging (Issue #11)
+
+Current Project Status:
+    ✅ Authentication constants fully documented with security-first approach
+    ✅ Type-safe enum patterns documented and implemented
+    ✅ Configuration inheritance from flext-core documented
+    🔄 Implementation focus: Environment-specific constants and rate limiting
+
+Design Patterns:
+    - Inheritance: Extends flext-core constants
+    - Enumeration: Type-safe constant definitions
+    - Namespace: Organized constant grouping
+    - Configuration: Environment-specific values
+
+Security Constants:
+    All security-related constants follow enterprise best practices:
+    - Password complexity requirements
+    - Account lockout policies
+    - Session timeout policies
+    - Token expiration settings
+
+Example Usage:
+    >>> from flext_auth.constants import FlextAuthConstants
+    >>>
+    >>> # Use authentication-specific constants
+    >>> min_length = FlextAuthConstants.MIN_PASSWORD_LENGTH
+    >>> max_attempts = FlextAuthConstants.DEFAULT_MAX_LOGIN_ATTEMPTS
+    >>> pattern = FlextAuthConstants.USERNAME_PATTERN
+
+Environment Considerations:
+    Constants are designed for different environments:
+    - Development: Relaxed for easier testing
+    - Staging: Production-like for realistic testing
+    - Production: Strict security for enterprise deployment
+
+Integration Points:
+    - FlextConfig: Configuration validation
+    - Security Policies: Enforcement of security rules
+    - Validation: Input validation patterns
+    - Monitoring: Default thresholds for alerts
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations

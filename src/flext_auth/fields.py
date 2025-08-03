@@ -1,7 +1,89 @@
-"""Authentication domain field definitions using FlextCore field system.
+"""FLEXT Auth Fields - Domain field definitions using FlextCore field system.
 
-This module demonstrates proper usage of flext-core's field system for
-domain-specific validation and field management in the authentication context.
+This module provides comprehensive field definitions and validation for FLEXT Auth
+using the FlextCore field system. It demonstrates proper usage of flext-core's field
+registry, validation patterns, and domain-specific authentication field management.
+
+Architecture:
+    - Field Layer: Domain-specific field definitions and validation
+    - Registry Pattern: Uses FlextCore field registry for centralized management
+    - Validation Strategy: Multi-level validation with business rules
+    - Type Safety: Strict typing for all field operations
+
+Core Field Categories:
+    - Authentication Fields: Username, email, password validation
+    - Authorization Fields: Role and permission management
+    - Security Fields: Session, lockout, and security policies
+    - Audit Fields: Tracking and monitoring field definitions
+    - Validation Fields: Complex validation rules and constraints
+
+TODO (Based on docs/TODO.md):
+    - [ ] CRITICAL: Integrate with FlextContainer for DI (Issue #3)
+    - [ ] HIGH: Add domain event fields for CQRS (Issue #4)
+    - [ ] MEDIUM: Add internationalization field support (Issue #12)
+    - [ ] MEDIUM: Add custom validation rule fields (Issue #8)
+    - [ ] LOW: Add performance metric fields (Issue #10)
+
+Current Project Status:
+    ✅ Field definitions comprehensively documented with FlextCore patterns
+    ✅ Complete validation system with field registry integration documented
+    ✅ Advanced field validators and composite validation patterns documented
+    🔄 Implementation focus: FlextContainer integration and domain event fields
+
+Design Patterns:
+    - Registry Pattern: Centralized field registration and lookup
+    - Strategy Pattern: Pluggable validation strategies
+    - Factory Pattern: Field creation and configuration
+    - Composite Pattern: Complex validation rule composition
+    - Template Method: Standard validation workflows
+
+Field Architecture:
+    Basic Field Types:
+    - StringField: Text-based authentication data
+    - IntegerField: Numeric security configurations
+    - BooleanField: Security feature toggles
+
+    Validation Layers:
+    - Format Validation: Basic format and pattern checking
+    - Business Rules: Domain-specific validation logic
+    - Security Constraints: Security policy enforcement
+    - Cross-Field Validation: Complex validation scenarios
+
+Example Usage:
+    >>> from flext_auth.fields import FlextAuthFieldSchema, validate_username
+    >>>
+    >>> # Validate individual field
+    >>> result = validate_username("john_doe")
+    >>> if result.is_success:
+    ...     print("Username is valid")
+    >>>
+    >>> # Validate complete user data
+    >>> user_data = {"username": "john", "email": "john@example.com"}
+    >>> result = FlextAuthFieldSchema.validate_user_data(user_data)
+
+Security Features:
+    - Password strength analysis with detailed feedback
+    - Input sanitization and injection prevention
+    - Field-level security marking (sensitive data)
+    - Validation timing attack resistance
+    - Secure error messages without information leakage
+
+Performance Characteristics:
+    - Efficient field registry lookups O(1)
+    - Compiled regex patterns for fast validation
+    - Minimal memory allocation for validation
+    - Early validation failure for performance
+    - Cached field metadata for repeated access
+
+Integration Points:
+    - FlextCore: Base field system and registry
+    - Domain Entities: Field validation during entity creation
+    - Repository Layer: Database field mapping and constraints
+    - API Layer: Request validation and response formatting
+    - Security Layer: Access control and audit logging
+
+Copyright (c) 2025 FLEXT Contributors
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
