@@ -105,6 +105,13 @@ if TYPE_CHECKING:
     from flext_auth.session import SessionRepository
     from flext_auth.user import UserRepository
 
+    # Type aliases for validation pipeline strategies - using actual precise types
+    TokenValidator = Callable[[str], Awaitable[FlextResult[JWTClaims]]]
+    UserValidator = Callable[[JWTClaims], Awaitable[FlextResult[User]]]
+    SessionValidator = Callable[[JWTClaims], Awaitable[FlextResult[None]]]
+    # Generic result creator supports both SecurityContext and dict results
+    ResultCreator = Callable[[User, JWTClaims], Awaitable[FlextResult[SecurityContext | dict[str, str]]]]
+
 
 # Initialize logger using FLEXT patterns
 logger = get_logger(__name__)
@@ -549,10 +556,10 @@ class ValidationPipelineStrategies:
     Reduces parameter count from 6 to 2, following SOLID principles.
     """
 
-    token_validator: object
-    user_validator: object
-    session_validator: object
-    result_creator: object
+    token_validator: TokenValidator
+    user_validator: UserValidator
+    session_validator: SessionValidator
+    result_creator: ResultCreator
     validation_context: str
 
 
@@ -775,7 +782,7 @@ class FlextAuthService:
         self,
         token: str,
         strategies: ValidationPipelineStrategies,
-    ) -> FlextResult[object]:
+    ) -> FlextResult[SecurityContext | dict[str, str]]:
         """Generic validation pipeline following Railway-Oriented Programming.
 
         SOLID REFACTORING: Reduced from 6 returns to 2 returns using Railway pattern.
@@ -793,19 +800,19 @@ class FlextAuthService:
         try:
             # REFACTORING: Railway-Oriented Programming - reduces 6 returns to 2
             token_result = await self._validate_token_stage(token, strategies)
-            if not token_result.success:
-                return token_result
+            if not token_result.success or not token_result.data:
+                return FlextResult.fail(token_result.error or "Token validation failed")
 
             user_result = await self._validate_user_stage(token_result.data, strategies)
-            if not user_result.success:
-                return user_result
+            if not user_result.success or not user_result.data:
+                return FlextResult.fail(user_result.error or "User validation failed")
 
             session_result = await self._validate_session_stage(
                 user_result.data,
                 strategies,
             )
-            if not session_result.success:
-                return session_result
+            if not session_result.success or not session_result.data:
+                return FlextResult.fail(session_result.error or "Session validation failed")
 
             return await self._create_final_result(session_result.data, strategies)
         except Exception as e:
@@ -815,9 +822,9 @@ class FlextAuthService:
         self,
         token: str,
         strategies: ValidationPipelineStrategies,
-    ) -> FlextResult[object]:
+    ) -> FlextResult[JWTClaims]:
         """Validate token stage - Single Responsibility Principle."""
-        token_validation = await strategies.token_validator(token)  # type: ignore[operator]
+        token_validation = await strategies.token_validator(token)
         if not token_validation.success:
             return FlextResult.fail(
                 token_validation.error or f"{strategies.validation_context} failed",
@@ -831,11 +838,11 @@ class FlextAuthService:
 
     async def _validate_user_stage(
         self,
-        claims: object,
+        claims: JWTClaims,
         strategies: ValidationPipelineStrategies,
-    ) -> FlextResult[object]:
+    ) -> FlextResult[dict[str, User | JWTClaims]]:
         """Validate user stage - Single Responsibility Principle."""
-        user_validation = await strategies.user_validator(claims)  # type: ignore[operator]
+        user_validation = await strategies.user_validator(claims)
         if not user_validation.success:
             return FlextResult.fail(user_validation.error or "User validation failed")
 
@@ -847,31 +854,28 @@ class FlextAuthService:
 
     async def _validate_session_stage(
         self,
-        data: object,
+        data: dict[str, User | JWTClaims],
         strategies: ValidationPipelineStrategies,
-    ) -> FlextResult[object]:
+    ) -> FlextResult[dict[str, User | JWTClaims]]:
         """Validate session stage - Single Responsibility Principle."""
-        data_dict = cast("dict[str, object]", data)
-        claims = data_dict["claims"]
-        session_validation = await strategies.session_validator(claims)  # type: ignore[operator]
+        claims = cast("JWTClaims", data["claims"])
+        session_validation = await strategies.session_validator(claims)
         if not session_validation.success:
             return FlextResult.fail(
                 session_validation.error or "Session validation failed",
             )
 
-        return FlextResult.ok(data_dict)
+        return FlextResult.ok(data)
 
     async def _create_final_result(
         self,
-        data: object,
+        data: dict[str, User | JWTClaims],
         strategies: ValidationPipelineStrategies,
-    ) -> FlextResult[object]:
+    ) -> FlextResult[SecurityContext | dict[str, str]]:
         """Create final result - Single Responsibility Principle."""
-        data_dict = cast("dict[str, object]", data)
-        user = data_dict["user"]
-        claims = data_dict["claims"]
-        result = await strategies.result_creator(user, claims)  # type: ignore[operator]
-        return cast("FlextResult[object]", result)
+        user = cast("User", data["user"])
+        claims = cast("JWTClaims", data["claims"])
+        return await strategies.result_creator(user, claims)
 
     async def _execute_token_validation_pipeline(
         self,

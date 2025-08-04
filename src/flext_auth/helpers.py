@@ -99,8 +99,8 @@ from typing import cast
 
 from flext_core import FlextLoggerFactory, FlextResult
 
+from flext_auth.application import FlextAuthService
 from flext_auth.auth import (
-    FlextAuthService,
     FlextAuthServiceConfig,
     FlextAuthServiceDependencies,
     FlextUserRegistrationData,
@@ -814,7 +814,27 @@ def flext_auth_instant_api(
 
     """
     # Create service with API-optimized settings
-    # Don't pass config_overrides to flext_auth_quick_start as it expects specific args
+    # Apply config overrides if provided
+    if config_overrides:
+        # If overrides provided, create service with custom config
+        try:
+            # Extract known config parameters
+            config_params = {
+                k: v for k, v in config_overrides.items()
+                if k in FlextAuthConfig.model_fields
+            }
+            if config_params:
+                config = FlextAuthConfig(**config_params)
+                return FlextAuthService(config=config)
+        except Exception as e:
+            # If config creation fails, log and continue with default
+            logger = FlextLoggerFactory.get_logger(__name__)
+            logger.warning(
+                "Failed to create auth service with config overrides", error=str(e),
+            )
+            # Continue with default setup
+
+    # Default setup without config overrides
     setup_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
     if setup_result.success and setup_result.data:
         return setup_result.data

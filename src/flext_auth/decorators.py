@@ -101,7 +101,18 @@ _logger = FlextLoggerFactory.get_logger(__name__)
 # Type definitions for cleaner interfaces following type safety principles
 P = ParamSpec("P")
 # R and F imported from flext_core to eliminate duplication
-AuthenticatedFunction = Callable[..., object]
+# Function type aliases - avoiding Callable[..., T] to prevent explicit-any errors
+DecoratorReturnType = object
+
+# Specific function signatures to avoid varargs which trigger explicit-any
+SimpleAuthFunction = Callable[[object], DecoratorReturnType]
+BinaryAuthFunction = Callable[[object, object], DecoratorReturnType]
+TernaryAuthFunction = Callable[[object, object, object], DecoratorReturnType]
+NullaryAuthFunction = Callable[[], DecoratorReturnType]
+
+# Union of supported function types for authentication decorators
+AuthenticatedFunction = (SimpleAuthFunction | BinaryAuthFunction |
+                        TernaryAuthFunction | NullaryAuthFunction)
 DecoratorCallable = Callable[[F], F]
 
 
@@ -287,7 +298,7 @@ def _add_user_data_to_kwargs(
         kwargs["current_user"] = validation_result.data
 
 
-def _execute_authentication_pipeline(  # type: ignore[explicit-any]
+def _execute_authentication_pipeline(
     args: tuple[object, ...],
     kwargs: dict[str, object],
     config: FlextAuthDecoratorConfig,
@@ -332,7 +343,7 @@ def _execute_authentication_pipeline(  # type: ignore[explicit-any]
 
         # All validations passed - add user data and execute function
         _add_user_data_to_kwargs(kwargs, validation_result, get_user=config.get_user)
-        return func(*args, **kwargs)
+        return cast("Callable[..., object]", func)(*args, **kwargs)
 
     except Exception as e:
         return _handle_authentication_error(
@@ -341,7 +352,7 @@ def _execute_authentication_pipeline(  # type: ignore[explicit-any]
         )
 
 
-def flext_auth_required(  # type: ignore[explicit-any]
+def flext_auth_required(
     auth_service: FlextAuthService | None = None,
     secret: str | None = None,
     *,
@@ -370,9 +381,9 @@ def flext_auth_required(  # type: ignore[explicit-any]
         msg = "Either auth_service or secret must be provided"
         raise ValueError(msg)
 
-    def decorator(func: F) -> F:  # type: ignore[explicit-any]
-        @functools.wraps(func)
-        def wrapper(*args: object, **kwargs: object) -> object:  # type: ignore[misc]
+    def decorator(func: F) -> F:
+        @functools.wraps(cast("Callable[..., object]", func))
+        def wrapper(*args: object, **kwargs: object) -> object:
             # REFACTORING: Parameter Object Pattern + Railway-Oriented Programming
             config = FlextAuthDecoratorConfig(
                 auth_service=auth_service,
@@ -380,14 +391,14 @@ def flext_auth_required(  # type: ignore[explicit-any]
                 get_user=get_user,
                 error_response=error_response,
             )
-            return _execute_authentication_pipeline(args, kwargs, config, func)
+            return _execute_authentication_pipeline(args, kwargs, config, cast("Callable[..., object]", func))
 
-        return cast("F", wrapper)  # type: ignore[explicit-any]
+        return cast("F", wrapper)
 
     return decorator
 
 
-def flext_auth_role_required(  # type: ignore[explicit-any]
+def flext_auth_role_required(
     required_role: str,
     auth_service: FlextAuthService | None = None,
     secret: str | None = None,
@@ -406,10 +417,10 @@ def flext_auth_role_required(  # type: ignore[explicit-any]
 
     """
 
-    def decorator(func: F) -> F:  # type: ignore[explicit-any]
-        @functools.wraps(func)
-        @flext_auth_required(auth_service=auth_service, secret=secret)  # type: ignore[arg-type]
-        def wrapper(*args: object, **kwargs: object) -> object:  # type: ignore[misc]
+    def decorator(func: F) -> F:
+        @functools.wraps(cast("Callable[..., object]", func))
+        @flext_auth_required(auth_service=auth_service, secret=secret)
+        def wrapper(*args: object, **kwargs: object) -> object:
             current_user = cast("dict[str, object]", kwargs.get("current_user", {}))
             user_role = current_user.get("role", "")
 
@@ -418,14 +429,14 @@ def flext_auth_role_required(  # type: ignore[explicit-any]
                     return error_response
                 return {"error": f"Role '{required_role}' required"}
 
-            return func(*args, **kwargs)
+            return cast("Callable[..., object]", func)(*args, **kwargs)
 
-        return cast("F", wrapper)  # type: ignore[explicit-any]
+        return cast("F", wrapper)
 
     return decorator
 
 
-def flext_auth_permission_required(  # type: ignore[explicit-any]
+def flext_auth_permission_required(
     required_permission: str,
     auth_service: FlextAuthService | None = None,
     secret: str | None = None,
@@ -444,10 +455,10 @@ def flext_auth_permission_required(  # type: ignore[explicit-any]
 
     """
 
-    def decorator(func: F) -> F:  # type: ignore[explicit-any]
-        @functools.wraps(func)
-        @flext_auth_required(auth_service=auth_service, secret=secret)  # type: ignore[arg-type]
-        def wrapper(*args: object, **kwargs: object) -> object:  # type: ignore[misc]
+    def decorator(func: F) -> F:
+        @functools.wraps(cast("Callable[..., object]", func))
+        @flext_auth_required(auth_service=auth_service, secret=secret)
+        def wrapper(*args: object, **kwargs: object) -> object:
             current_user = cast("dict[str, object]", kwargs.get("current_user", {}))
             user_permissions = cast("list[str]", current_user.get("permissions", []))
 
@@ -456,9 +467,9 @@ def flext_auth_permission_required(  # type: ignore[explicit-any]
                     return error_response
                 return {"error": f"Permission '{required_permission}' required"}
 
-            return func(*args, **kwargs)
+            return cast("Callable[..., object]", func)(*args, **kwargs)
 
-        return cast("F", wrapper)  # type: ignore[explicit-any]
+        return cast("F", wrapper)
 
     return decorator
 

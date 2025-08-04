@@ -76,36 +76,59 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from flext_core import create_module_exception_classes
 
-# Create all module-specific exception classes using DRY pattern
-_exceptions = create_module_exception_classes("flext_auth")
+if TYPE_CHECKING:
+    # Type stubs for dynamically created exception classes to fix mypy inheritance issues
+    class FlextAuthError(Exception):
+        """Type stub for dynamically created FlextAuthError."""
 
-# Extract exception classes with proper names for backward compatibility
-FlextAuthError = cast("type[Exception]", _exceptions["FlextAuthError"])
-FlextAuthValidationError = cast(
-    "type[Exception]",
-    _exceptions["FlextAuthValidationError"],
-)
-FlextAuthAuthenticationError = cast(
-    "type[Exception]",
-    _exceptions["FlextAuthAuthenticationError"],
-)
-FlextAuthConfigurationError = cast(
-    "type[Exception]",
-    _exceptions["FlextAuthConfigurationError"],
-)
-FlextAuthConnectionError = cast(
-    "type[Exception]",
-    _exceptions["FlextAuthConnectionError"],
-)
-FlextAuthProcessingError = cast(
-    "type[Exception]",
-    _exceptions["FlextAuthProcessingError"],
-)
-FlextAuthTimeoutError = cast("type[Exception]", _exceptions["FlextAuthTimeoutError"])
+        def __init__(self, message: str = ..., **kwargs: object) -> None: ...
+
+    class FlextAuthValidationError(FlextAuthError):
+        """Type stub for dynamically created FlextAuthValidationError."""
+
+        def __init__(self, message: str = ..., **kwargs: object) -> None: ...
+
+    class FlextAuthAuthenticationError(FlextAuthError):
+        """Type stub for dynamically created FlextAuthAuthenticationError."""
+
+        def __init__(self, message: str = ..., **kwargs: object) -> None: ...
+
+    class FlextAuthConfigurationError(FlextAuthError):
+        """Type stub for dynamically created FlextAuthConfigurationError."""
+
+        def __init__(self, message: str = ..., **kwargs: object) -> None: ...
+else:
+    # Runtime: Use dynamically created exception classes
+    # Create all module-specific exception classes using DRY pattern
+    _exceptions = create_module_exception_classes("flext_auth")
+
+    # Extract exception classes with proper names for backward compatibility
+    FlextAuthError = cast("type[Exception]", _exceptions["FlextAuthError"])
+    FlextAuthValidationError = cast(
+        "type[Exception]",
+        _exceptions["FlextAuthValidationError"],
+    )
+    FlextAuthAuthenticationError = cast(
+        "type[Exception]",
+        _exceptions["FlextAuthAuthenticationError"],
+    )
+    FlextAuthConfigurationError = cast(
+        "type[Exception]",
+        _exceptions["FlextAuthConfigurationError"],
+    )
+    FlextAuthConnectionError = cast(
+        "type[Exception]",
+        _exceptions["FlextAuthConnectionError"],
+    )
+    FlextAuthProcessingError = cast(
+        "type[Exception]",
+        _exceptions["FlextAuthProcessingError"],
+    )
+    FlextAuthTimeoutError = cast("type[Exception]", _exceptions["FlextAuthTimeoutError"])
 
 
 # Specialized auth errors using composition over duplication
@@ -114,7 +137,7 @@ FlextAuthTimeoutError = cast("type[Exception]", _exceptions["FlextAuthTimeoutErr
 # =============================================================================
 
 
-class FlextAuthSpecificError(FlextAuthError):  # type: ignore[valid-type,misc]
+class FlextAuthSpecificError(FlextAuthError):
     """Template Method Pattern base for specific auth errors - DRY principle.
 
     SOLID REFACTORING: Eliminates 16 lines of similar code in 4 locations (mass = 94)
@@ -215,7 +238,7 @@ class FlextAuthUserError(FlextAuthSpecificError):
         super().__init__(message, "user", context_fields, **kwargs)
 
 
-class FlextAuthPermissionError(FlextAuthAuthenticationError):  # type: ignore[valid-type,misc]
+class FlextAuthPermissionError(FlextAuthAuthenticationError):
     """Authentication permission errors using DRY foundation."""
 
     def __init__(
@@ -233,7 +256,7 @@ class FlextAuthPermissionError(FlextAuthAuthenticationError):  # type: ignore[va
         super().__init__(message, **kwargs)
 
 
-class FlextAuthSecurityError(FlextAuthAuthenticationError):  # type: ignore[valid-type,misc]
+class FlextAuthSecurityError(FlextAuthAuthenticationError):
     """Authentication security errors using DRY foundation."""
 
     def __init__(
