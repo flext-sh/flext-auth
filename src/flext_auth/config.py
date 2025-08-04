@@ -52,7 +52,7 @@ Example:
     ...     jwt_secret_key="your-secure-key", bcrypt_rounds=12, debug=False
     ... )
     >>> validation_result = config.validate_production_settings()
-    >>> if validation_result.is_success:
+    >>> if validation_result.success:
     ...     print("Configuration is production-ready")
 
 Development vs Production:
@@ -315,7 +315,7 @@ class JWTConfig(FlextBaseSettings):
         algorithm = kwargs.get("algorithm", "HS256")
         valid_algorithms = ["HS256", "HS384", "HS512", "RS256", "RS384", "RS512"]
         if algorithm not in valid_algorithms:
-            msg = f"JWT algorithm must be one of {valid_algorithms}"
+            msg: str = f"JWT algorithm must be one of {valid_algorithms}"
             raise ValueError(msg)
 
         super().__init__(**kwargs)
@@ -537,7 +537,7 @@ DEFAULT_DEV_SECRET = os.getenv("FLEXT_AUTH_DEV_SECRET", "dev-secret-key")
 # EXPORTS - Clean config API
 # =============================================================================
 
-__all__ = [
+__all__: list[str] = [
     # Default secrets
     "DEFAULT_DEV_SECRET",
     "DEFAULT_JWT_SECRET",

@@ -308,7 +308,7 @@ def _validate_token_with_auth_instance(
         # No running loop
         validation = asyncio.run(auth_instance.validate(token))
 
-    return validation.data if validation.is_success else None
+    return validation.data if validation.success else None
 
 
 def _validate_token_with_secret(
@@ -597,7 +597,7 @@ class FlextAuth:
                 # Run async login and convert result to dict
                 result = loop.run_until_complete(self.login(username, password))
 
-                if result.is_success and result.data:
+                if result.success and result.data:
                     return result.data
                 return {"error": result.error or "Authentication failed"}
 
@@ -643,7 +643,7 @@ class FlextAuth:
                     self.register(username, email, password, role=role),
                 )
 
-                if result.is_success and result.data:
+                if result.success and result.data:
                     user = result.data
                     return {
                         "id": user.id,
@@ -663,7 +663,7 @@ class FlextAuth:
     async def validate(self, token: str) -> FlextResult[dict[str, object]]:
         """Validate token and return context."""
         context_result = await self._auth_service.validate_token(token)
-        if not context_result.is_success or not context_result.data:
+        if not context_result.success or not context_result.data:
             error_msg = context_result.error or "Token validation failed"
             # Normalize error message for consistency
             if "Token verification failed" in error_msg:
@@ -752,7 +752,7 @@ class FlextAuth:
 
         # Register user
         result = await self.register(username, email, password, role=role)
-        if not result.is_success:
+        if not result.success:
             return FlextResult.fail(result.error or "Registration failed")
 
         if result.data:
@@ -778,7 +778,7 @@ class FlextAuth:
         """Login and immediately return validated context."""
         # Login
         login_result = await self.login(username, password)
-        if not login_result.is_success:
+        if not login_result.success:
             return FlextResult.fail(login_result.error or "Login failed")
 
         # Extract token and validate
@@ -791,7 +791,7 @@ class FlextAuth:
                         token = str(tokens_obj["access_token"])
                         validation = await self.validate(token)
 
-                        if not validation.is_success:
+                        if not validation.success:
                             return FlextResult.fail(
                                 validation.error or "Token validation failed",
                             )
@@ -818,7 +818,7 @@ class FlextAuth:
     ) -> FlextResult[dict[str, object]]:
         """Complete user session creation with optional user data."""
         login_validate = await self.login_and_validate(username, password)
-        if not login_validate.is_success:
+        if not login_validate.success:
             return login_validate
 
         data = login_validate.data
@@ -969,7 +969,7 @@ def flext_auth_web_session(request_data: dict[str, object]) -> dict[str, object]
             auth.create_user_session(username, password, include_user_data=True),
         )
 
-        if session.is_success and session.data:
+        if session.success and session.data:
             session_data = session.data
             token = str(session_data["token"])
             return {
@@ -1028,7 +1028,7 @@ FlextAuthConfig = _Config
 # PUBLIC INTERFACE - __all__
 # =============================================================================
 
-__all__ = [
+__all__: list[str] = [
     "ADMIN_ROLE",
     "API_CONFIG",
     "FAST_CONFIG",

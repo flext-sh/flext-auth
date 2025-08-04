@@ -123,7 +123,7 @@ async def example_user_lifecycle() -> None:
         role="user",
     )
 
-    if register_result.is_success:
+    if register_result.success:
         user = register_result.data
         print(f"User registered: {user.username} ({user.email})")
         print(f"User ID: {user.id}")
@@ -131,7 +131,7 @@ async def example_user_lifecycle() -> None:
 
         # Login do usuário
         login_result = await auth.login("testuser", "SecurePass123!")
-        if login_result.is_success:
+        if login_result.success:
             login_data = login_result.data
             access_token = login_data["tokens"]["access_token"]
             print("User logged in successfully")
@@ -139,7 +139,7 @@ async def example_user_lifecycle() -> None:
 
             # Validação do token
             validation_result = await auth.validate(access_token)
-            if validation_result.is_success:
+            if validation_result.success:
                 context = validation_result.data
                 print(f"Token validated - User: {context['username']}")
                 print(f"Role: {context['role']}")
@@ -147,7 +147,7 @@ async def example_user_lifecycle() -> None:
 
             # Logout
             logout_result = await auth.logout(access_token)
-            print(f"Logout successful: {logout_result.is_success}")
+            print(f"Logout successful: {logout_result.success}")
 
         else:
             print(f"Login failed: {login_result.error}")
@@ -268,7 +268,7 @@ async def example_advanced_registration() -> None:
         require_strong_password=True,
     )
 
-    if register_result.is_success:
+    if register_result.success:
         user_data = register_result.data
         print("Advanced registration successful:")
         print(f"  User: {user_data['user']['username']}")
@@ -285,7 +285,7 @@ async def example_advanced_registration() -> None:
         login_validate_result = await auth.login_and_validate(
             "advanceduser", "AdvancedPass123!"
         )
-        if login_validate_result.is_success:
+        if login_validate_result.success:
             session_data = login_validate_result.data
             print("Login and validation successful")
             print(f"Token: {session_data['token'][:30]}...")

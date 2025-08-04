@@ -183,14 +183,14 @@ result = auth.register_user(
     password="secure_password"
 )
 
-if result.is_success:
+if result.success:
     user = result.data
     print(f"User {user.username} registered successfully")
 
 # Authenticate user
 auth_result = auth.authenticate_user("john_doe", "secure_password")
 
-if auth_result.is_success:
+if auth_result.success:
     print("Authentication successful")
     token = auth_result.data.get("access_token")
 else:
@@ -199,7 +199,7 @@ else:
 # Validate JWT token
 if token:
     validation_result = auth.validate_jwt_token(token)
-    if validation_result.is_success:
+    if validation_result.success:
         user_info = validation_result.data
         print(f"Token valid for user: {user_info['username']}")
 ```

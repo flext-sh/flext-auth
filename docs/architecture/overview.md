@@ -288,9 +288,9 @@ class FlextAuthBridge:
     def validate_token(self, token: str) -> dict:
         result = auth_service.validate_jwt(token)
         return {
-            "valid": result.is_success,
-            "user_id": result.data.user_id if result.is_success else None,
-            "error": result.error if not result.is_success else None
+            "valid": result.success,
+            "user_id": result.data.user_id if result.success else None,
+            "error": result.error if not result.success else None
         }
 ```
 

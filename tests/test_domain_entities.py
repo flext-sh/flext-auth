@@ -422,7 +422,7 @@ class TestFlextRole:
             permissions=[permission],
         )
         result = invalid_role.validate_domain_rules()
-        assert not result.is_success
+        assert not result.success
         assert "Role name cannot be empty" in result.error
 
         # Test invalid permission type - Pydantic raises ValidationError

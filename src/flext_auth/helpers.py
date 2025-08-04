@@ -271,7 +271,7 @@ def flext_auth_quick_start(
                 role=FlextUserRole.ADMIN,
             )
             REDACTED_LDAP_BIND_PASSWORD_result = asyncio.run(auth_service.register_user(registration_data))
-            if not REDACTED_LDAP_BIND_PASSWORD_result.is_success:
+            if not REDACTED_LDAP_BIND_PASSWORD_result.success:
                 _logger.warning("Failed to create REDACTED_LDAP_BIND_PASSWORD user", error=REDACTED_LDAP_BIND_PASSWORD_result.error)
 
         _logger.info("FlextAuth quick start completed successfully")
@@ -296,12 +296,12 @@ def flext_auth_hash_password(password: str, rounds: int = 12) -> str:
     password_service = FlextPasswordService(rounds=rounds)
     hash_result = password_service.hash_password(password)
 
-    if hash_result.is_success and hash_result.data:
+    if hash_result.success and hash_result.data:
         return hash_result.data.value  # Use .value not str() to avoid __str__ override
 
     # No fallback - raise proper error if bcrypt fails
     error_msg = hash_result.error or "Password hashing service failed"
-    full_error_msg = f"Password hashing failed: {error_msg}"
+    full_error_msg: str = f"Password hashing failed: {error_msg}"
     raise RuntimeError(full_error_msg)
 
 
@@ -319,7 +319,7 @@ def flext_auth_verify_password(password: str, hashed: str) -> bool:
     password_service = FlextPasswordService()
     verify_result = password_service.verify_password(password, hashed)
 
-    if verify_result.is_success and verify_result.data is not None:
+    if verify_result.success and verify_result.data is not None:
         return bool(verify_result.data)
 
     # No fallback - return False if verification service fails
@@ -397,7 +397,7 @@ def flext_auth_validate_jwt(
 
         jwt_service = FlextJWTService(secret_key=secret)
         result = jwt_service.verify_token(token)
-        if result.is_success and result.data:
+        if result.success and result.data:
             # Convert claims object to dict - access attributes safely
             claims = result.data
             exp_time = getattr(claims, "exp", 0)
@@ -502,7 +502,7 @@ def flext_auth_decode_jwt(
 
     """
     result = flext_auth_validate_jwt(token, secret)
-    if result.is_success and result.data:
+    if result.success and result.data:
         return result.data
     return None
 
@@ -519,7 +519,7 @@ def flext_auth_check_token(token: str, secret: str | None = None) -> bool:
 
     """
     result = flext_auth_validate_jwt(token, secret)
-    return result.is_success
+    return result.success
 
 
 def flext_auth_create_secure_session(
@@ -599,7 +599,7 @@ def flext_auth_create_api_key(
     }
 
     result = flext_auth_generate_jwt(payload, secret=secret)
-    return result.data if result.is_success and result.data else ""
+    return result.data if result.success and result.data else ""
 
 
 def flext_auth_validate_api_key(
@@ -617,7 +617,7 @@ def flext_auth_validate_api_key(
 
     """
     result = flext_auth_validate_jwt(api_key, secret)
-    if result.is_success and result.data:
+    if result.success and result.data:
         data = result.data
         # Check if this is an API key token
         if data.get("type") == "api_key":
@@ -653,7 +653,7 @@ def flext_auth_complete_workflow(
         setup_result = flext_auth_quick_start(
             create_REDACTED_LDAP_BIND_PASSWORD=False,
         )
-        if not setup_result.is_success:
+        if not setup_result.success:
             return FlextResult.fail(f"Setup failed: {setup_result.error}")
 
         auth_service = setup_result.data
@@ -669,14 +669,14 @@ def flext_auth_complete_workflow(
         )
 
         register_result = asyncio.run(auth_service.register_user(registration_data))
-        if not register_result.is_success:
+        if not register_result.success:
             return FlextResult.fail(f"Registration failed: {register_result.error}")
 
         # Authenticate user with required ip_address parameter
         auth_result = asyncio.run(
             auth_service.authenticate_user(username, password, ip_address="127.0.0.1"),
         )
-        if not auth_result.is_success:
+        if not auth_result.success:
             return FlextResult.fail(f"Authentication failed: {auth_result.error}")
 
         return FlextResult.ok(
@@ -763,7 +763,7 @@ class FlextAuthBatchOperations:
 
             user_result = await self._auth_service.register_user(registration_data)
             # REFACTORING: Use DRY principle - centralized user conversion
-            if user_result.is_success and user_result.data:
+            if user_result.success and user_result.data:
                 user_dict = convert_user_to_dict(user_result.data)
                 results.append(FlextResult.ok(user_dict))
             else:
@@ -801,7 +801,9 @@ class FlextAuthUser:
         }
 
 
-def flext_auth_instant_api(**config_overrides: object) -> FlextAuthService:  # noqa: ARG001
+def flext_auth_instant_api(
+    **config_overrides: object,
+) -> FlextAuthService:
     """Create instant API-ready authentication service - Factory Pattern.
 
     Args:
@@ -814,7 +816,7 @@ def flext_auth_instant_api(**config_overrides: object) -> FlextAuthService:  # n
     # Create service with API-optimized settings
     # Don't pass config_overrides to flext_auth_quick_start as it expects specific args
     setup_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-    if setup_result.is_success and setup_result.data:
+    if setup_result.success and setup_result.data:
         return setup_result.data
 
     # Fallback to default service
@@ -1108,7 +1110,7 @@ def flext_auth_extract_token_claims(
 
     """
     result = flext_auth_validate_jwt(token, secret)
-    if result.is_success and result.data:
+    if result.success and result.data:
         return result.data
     return None
 
@@ -1306,7 +1308,7 @@ class FlextAuthSessionMixin:
         self._session_data = session_data
 
 
-__all__ = [
+__all__: list[str] = [
     # Constants
     "ADMIN_ROLE",
     "API_CONFIG",

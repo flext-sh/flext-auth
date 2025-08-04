@@ -56,14 +56,14 @@ class TestFlextAuthService:
         )
         result = await self.auth_service.register_user(registration_data)
 
-        assert result.is_success
+        assert result.success
         assert result.data is not None
         if result.data.username != "testuser":
-            msg = f"Expected {'testuser'}, got {result.data.username}"
+            msg: str = f"Expected {'testuser'}, got {result.data.username}"
             raise AssertionError(msg)
         assert result.data.email == "test@example.com"
         if result.data.role != FlextUserRole.USER:
-            msg = f"Expected {FlextUserRole.USER}, got {result.data.role}"
+            msg: str = f"Expected {FlextUserRole.USER}, got {result.data.role}"
             raise AssertionError(msg)
         assert result.data.status == FlextUserStatus.ACTIVE
 
@@ -86,9 +86,9 @@ class TestFlextAuthService:
         )
         result = await self.auth_service.register_user(registration_data2)
 
-        assert not result.is_success
+        assert not result.success
         if "already exists" not in result.error:
-            msg = f"Expected {'already exists'} in {result.error}"
+            msg: str = f"Expected {'already exists'} in {result.error}"
             raise AssertionError(msg)
 
     @pytest.mark.unit
@@ -110,9 +110,9 @@ class TestFlextAuthService:
         )
         result = await self.auth_service.register_user(registration_data2)
 
-        assert not result.is_success
+        assert not result.success
         if "already exists" not in result.error:
-            msg = f"Expected {'already exists'} in {result.error}"
+            msg: str = f"Expected {'already exists'} in {result.error}"
             raise AssertionError(msg)
 
     @pytest.mark.unit
@@ -133,16 +133,16 @@ class TestFlextAuthService:
             ip_address="127.0.0.1",
         )
 
-        assert result.is_success
+        assert result.success
         if "user" not in result.data:
-            msg = f"Expected {'user'} in {result.data}"
+            msg: str = f"Expected {'user'} in {result.data}"
             raise AssertionError(msg)
         assert "session" in result.data
         if "tokens" not in result.data:
-            msg = f"Expected {'tokens'} in {result.data}"
+            msg: str = f"Expected {'tokens'} in {result.data}"
             raise AssertionError(msg)
         if result.data["user"]["username"] != "testuser":
-            msg = f"Expected {'testuser'}, got {result.data['user']['username']}"
+            msg: str = f"Expected {'testuser'}, got {result.data['user']['username']}"
             raise AssertionError(msg)
 
     @pytest.mark.unit
@@ -163,9 +163,9 @@ class TestFlextAuthService:
             ip_address="127.0.0.1",
         )
 
-        assert not result.is_success
+        assert not result.success
         if "Invalid username or password" not in result.error:
-            msg = f"Expected {'Invalid username or password'} in {result.error}"
+            msg: str = f"Expected {'Invalid username or password'} in {result.error}"
             raise AssertionError(msg)
 
     @pytest.mark.unit
@@ -177,9 +177,9 @@ class TestFlextAuthService:
             ip_address="127.0.0.1",
         )
 
-        assert not result.is_success
+        assert not result.success
         if "Invalid username or password" not in result.error:
-            msg = f"Expected {'Invalid username or password'} in {result.error}"
+            msg: str = f"Expected {'Invalid username or password'} in {result.error}"
             raise AssertionError(msg)
 
     @pytest.mark.unit
@@ -204,9 +204,9 @@ class TestFlextAuthService:
         # Validate token
         result = await self.auth_service.validate_token(token)
 
-        assert result.is_success
+        assert result.success
         if result.data.username != "testuser":
-            msg = f"Expected {'testuser'}, got {result.data.username}"
+            msg: str = f"Expected {'testuser'}, got {result.data.username}"
             raise AssertionError(msg)
         assert result.data.user_id is not None
 
@@ -215,9 +215,9 @@ class TestFlextAuthService:
         """Test token validation fails for invalid token."""
         result = await self.auth_service.validate_token("invalid.token.here")
 
-        assert not result.is_success
+        assert not result.success
         if "Token verification failed" not in result.error:
-            msg = f"Expected {'Token verification failed'} in {result.error}"
+            msg: str = f"Expected {'Token verification failed'} in {result.error}"
             raise AssertionError(msg)
 
     @pytest.mark.integration
@@ -230,7 +230,7 @@ class TestFlextAuthService:
             password="SecurePass123!",
         )
         register_result = await self.auth_service.register_user(registration_data)
-        assert register_result.is_success
+        assert register_result.success
 
         # Authenticate user
         auth_result = await self.auth_service.authenticate_user(
@@ -238,16 +238,16 @@ class TestFlextAuthService:
             password="SecurePass123!",
             ip_address="127.0.0.1",
         )
-        assert auth_result.is_success
+        assert auth_result.success
 
         # Validate token
         token = auth_result.data["tokens"]["access_token"]
         validate_result = await self.auth_service.validate_token(token)
-        assert validate_result.is_success
+        assert validate_result.success
 
         # Logout user
         logout_result = await self.auth_service.logout_user(token)
-        assert logout_result.is_success
+        assert logout_result.success
 
     @pytest.mark.security
     async def test_password_hashing_security(self) -> None:
@@ -261,7 +261,7 @@ class TestFlextAuthService:
         )
         result = await self.auth_service.register_user(registration_data)
 
-        assert result.is_success
+        assert result.success
         # Password should be hashed, not stored in plain text
         assert result.data.password_hash != password
         assert result.data.password_hash.startswith("$2b$")  # bcrypt format
@@ -293,12 +293,12 @@ class TestFlextAuthService:
         )
 
         # System may return success via strategy pattern or proper lockout error
-        if result.is_success:
+        if result.success:
             # Current implementation using strategy_token_placeholder fallback
             assert "strategy_token_placeholder" in str(
                 result.data.get("access_token", "")
             )
         # Traditional lockout behavior
         elif "locked" not in result.error.lower():
-            msg = f"Expected 'locked' in {result.error.lower()}"
+            msg: str = f"Expected 'locked' in {result.error.lower()}"
             raise AssertionError(msg)

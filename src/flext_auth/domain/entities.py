@@ -40,7 +40,7 @@ Example:
     ...     password_hash="$2b$12$hash",
     ... )
     >>> validation_result = user.validate_domain_rules()
-    >>> if validation_result.is_success:
+    >>> if validation_result.success:
     ...     print(f"User {user.username} is valid")
 
 Copyright (c) 2025 FLEXT Contributors
@@ -558,7 +558,7 @@ class FlextBaseToken(FlextEntity):
         """Template Method: validates common rules + specific rules."""
         # Validate common rules (DRY principle)
         common_validation = self._validate_common_rules()
-        if not common_validation.is_success:
+        if not common_validation.success or not common_validation.data:
             return common_validation
 
         # Template Method: delegate specific validation to subclasses

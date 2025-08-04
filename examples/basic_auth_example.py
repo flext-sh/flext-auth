@@ -41,20 +41,20 @@ def main() -> None:
     payload = {"user_id": "user123", "username": "testuser", "role": "REDACTED_LDAP_BIND_PASSWORD"}
 
     token_result = flext_auth_generate_jwt(payload)
-    if token_result.is_success and token_result.data:
+    if token_result.success and token_result.data:
         token = token_result.data
         print(f"Generated Token: {token[:50]}...")
 
         # Validate token
         validation = flext_auth_validate_jwt(token)
-        if validation.is_success and validation.data:
+        if validation.success and validation.data:
             decoded = validation.data
             print(f"Decoded payload: {decoded}")
 
     # 3. Quick Start Example
     print("\n3. Quick Start Authentication Service:")
     setup_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-    if setup_result.is_success:
+    if setup_result.success:
         print("✅ Auth service created successfully")
         auth_service = setup_result.data
         print(f"Service type: {type(auth_service).__name__}")

@@ -21,6 +21,9 @@ def test_basic_imports() -> bool | None:
             flext_auth_validate_email,
         )
 
+        # Suppress unused import warnings
+        _ = (ADMIN_ROLE, USER_ROLE, FlextAuth, flext_auth_hash_password,
+             flext_auth_quick_start, flext_auth_validate_email)
         return True
     except ImportError:
         return False
@@ -59,10 +62,10 @@ def test_quick_start() -> bool | None:
 
         result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
-        if result.is_success:
+        if result.success:
             pass
 
-        return result.is_success
+        return result.success
     except Exception:
         traceback.print_exc()
         return False

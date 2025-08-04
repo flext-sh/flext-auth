@@ -52,7 +52,7 @@ def demonstrate_refactoring_benefits() -> None:
 
     # One-line complete authentication system
     result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-    if result.is_success:
+    if result.success:
         print("✅ Complete auth system ready in 1 line!")
         auth_service = result.data
         print(f"   Service type: {type(auth_service).__name__}")
@@ -191,17 +191,17 @@ def demonstrate_flext_core_integration() -> None:
     # FlextResult pattern usage
     result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
     print(f"✅ FlextResult pattern: {type(result).__name__}")
-    print(f"   Success: {result.is_success}")
+    print(f"   Success: {result.success}")
     print(f"   Data type: {type(result.data).__name__}")
 
     # FlextContainer integration
     container = FlextContainer()
-    if result.is_success and result.data:
+    if result.success and result.data:
         reg_result = container.register("auth_service", result.data)
-        print(f"   Container registration: {reg_result.is_success}")
+        print(f"   Container registration: {reg_result.success}")
 
         get_result = container.get("auth_service")
-        print(f"   Container retrieval: {get_result.is_success}")
+        print(f"   Container retrieval: {get_result.success}")
 
 
 def demonstrate_type_safety() -> None:

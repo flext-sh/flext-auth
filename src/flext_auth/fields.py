@@ -54,7 +54,7 @@ Example Usage:
     >>>
     >>> # Validate individual field
     >>> result = validate_username("john_doe")
-    >>> if result.is_success:
+    >>> if result.success:
     ...     print("Username is valid")
     >>>
     >>> # Validate complete user data
@@ -880,7 +880,7 @@ def validate_security_context(  # noqa: C901
 
 
 # Export the schema for use in other modules
-__all__ = [
+__all__: list[str] = [
     "EMAIL_FIELD",
     "FAILED_ATTEMPTS_FIELD",
     "LOCKOUT_ENABLED_FIELD",

@@ -60,7 +60,7 @@ Example:
     ...     expires_at=datetime.now() + timedelta(hours=24),
     ... )
     >>> result = await session_repo.save(session)
-    >>> if result.is_success:
+    >>> if result.success:
     ...     saved_session = result.data
     ...     print(f"Session saved: {saved_session.id}")
 
@@ -240,7 +240,7 @@ class InMemorySessionRepository(SessionRepository):
         """Get active sessions for a user."""
         try:
             all_sessions_result = await self.get_by_user_id(user_id)
-            if not all_sessions_result.is_success:
+            if not all_sessions_result.success:
                 return all_sessions_result
 
             active_sessions = [
@@ -268,7 +268,7 @@ class InMemorySessionRepository(SessionRepository):
         """Revoke all sessions for a user."""
         try:
             sessions_result = await self.get_by_user_id(user_id)
-            if not sessions_result.is_success:
+            if not sessions_result.success:
                 return FlextResult.fail(
                     f"Failed to get user sessions: {sessions_result.error}",
                 )

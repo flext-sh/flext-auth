@@ -73,7 +73,7 @@ class TestFlextAuthBasics:
     def test_quick_start_functionality(self) -> None:
         """Test flext_auth_quick_start creates working auth service."""
         result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-        assert result.is_success
+        assert result.success
         assert result.data is not None
 
     def test_password_hashing(self) -> None:
@@ -93,7 +93,7 @@ class TestFlextAuthBasics:
 
         # Generate token
         token_result = flext_auth_generate_jwt(payload)
-        assert token_result.is_success
+        assert token_result.success
         assert token_result.data is not None
 
         token = token_result.data
@@ -102,7 +102,7 @@ class TestFlextAuthBasics:
 
         # Validate token
         validation_result = flext_auth_validate_jwt(token)
-        assert validation_result.is_success
+        assert validation_result.success
         assert validation_result.data is not None
 
         decoded = validation_result.data
@@ -113,12 +113,12 @@ class TestFlextAuthBasics:
     def test_flext_result_pattern(self) -> None:
         """Test FlextResult is properly accessible."""
         success_result = FlextResult.ok("test data")
-        assert success_result.is_success
+        assert success_result.success
         assert success_result.data == "test data"
         assert success_result.error is None
 
         fail_result = FlextResult.fail("test error")
-        assert not fail_result.is_success
+        assert not fail_result.success
         assert fail_result.data is None
         assert fail_result.error == "test error"
 
@@ -130,7 +130,7 @@ class TestFlextAuthIntegration:
         """Test complete authentication workflow."""
         # Setup auth service
         setup_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-        assert setup_result.is_success
+        assert setup_result.success
 
         auth_service = setup_result.data
         assert auth_service is not None

@@ -88,12 +88,12 @@ password_service = FlextPasswordService(rounds=12)
 
 # Hash password securely
 hash_result = password_service.hash_password("SecurePassword123!")
-if hash_result.is_success:
+if hash_result.success:
     stored_hash = hash_result.data.value
 
 # Verify password with timing attack protection
 verify_result = password_service.verify_password("SecurePassword123!", stored_hash)
-if verify_result.is_success and verify_result.data:
+if verify_result.success and verify_result.data:
     # Authentication successful
     pass
 ```
@@ -338,7 +338,7 @@ class TestPasswordService:
 
         # Test hashing
         hash_result = service.hash_password(password)
-        assert hash_result.is_success
+        assert hash_result.success
 
         hashed = hash_result.data
         assert len(hashed.value) > 50  # Substantial hash length
@@ -387,7 +387,7 @@ class TestInfrastructureIntegration:
 
         # Test service functionality
         hash_result = password_service.hash_password("test")
-        assert hash_result.is_success
+        assert hash_result.success
 ```
 
 ---

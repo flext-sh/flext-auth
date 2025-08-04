@@ -55,7 +55,7 @@ Example:
     >>> token_result = jwt_service.generate_access_token(
     ...     user_id="usr_123", username="john_doe", role="USER"
     ... )
-    >>> if token_result.is_success:
+    >>> if token_result.success:
     ...     token = token_result.data
     ...     validation = jwt_service.verify_token(token)
 
@@ -139,7 +139,7 @@ class FlextJWTService:
         >>> token_result = service.generate_access_token(
         ...     user_id="usr_123", username="john_doe", role="USER"
         ... )
-        >>> if token_result.is_success:
+        >>> if token_result.success:
         ...     validation = service.verify_token(token_result.data)
 
     Security Warnings:
@@ -249,11 +249,11 @@ class FlextJWTService:
                 session_id,
                 additional_claims,
             )
-            if not access_result.is_success:
+            if not access_result.success:
                 return FlextResult.fail(f"Access token failed: {access_result.error}")
 
             refresh_result = self.generate_refresh_token(user_id, session_id)
-            if not refresh_result.is_success:
+            if not refresh_result.success:
                 return FlextResult.fail(f"Refresh token failed: {refresh_result.error}")
 
             access_token = access_result.data
@@ -302,7 +302,7 @@ class FlextJWTService:
         try:
             # Verify refresh token
             verify_result = self.verify_token(refresh_token)
-            if not verify_result.is_success:
+            if not verify_result.success:
                 return FlextResult.fail(f"Invalid refresh token: {verify_result.error}")
 
             claims = verify_result.data
@@ -352,7 +352,7 @@ class FlextJWTService:
         try:
             # Verify and get claims
             verify_result = self.verify_token(token)
-            if not verify_result.is_success:
+            if not verify_result.success:
                 return FlextResult.fail(f"Invalid token: {verify_result.error}")
 
             claims = verify_result.data
@@ -385,7 +385,7 @@ class FlextJWTService:
         """Check if token is expired without full verification."""
         try:
             expiry_result = self.get_token_expiry(token)
-            if not expiry_result.is_success:
+            if not expiry_result.success:
                 return True
 
             expiry = expiry_result.data

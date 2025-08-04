@@ -145,7 +145,7 @@ def test_user_authentication_with_valid_credentials():
     result = auth_service.authenticate_user("john", "SecurePass123!")
 
     # Then: Authentication succeeds
-    assert result.is_success
+    assert result.success
     assert result.data.username == "john"
 ```
 

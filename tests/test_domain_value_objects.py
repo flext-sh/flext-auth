@@ -42,7 +42,7 @@ class TestUsername:
         """Test username validation rules."""
         valid_username = FlextUsername(value="ValidUser123")
         result = valid_username.validate_domain_rules()
-        assert result.is_success
+        assert result.success
 
         # Test minimum length - Pydantic validation prevents object creation
         with pytest.raises(
@@ -93,7 +93,7 @@ class TestPlainPassword:
         """Test password validation rules."""
         valid_password = FlextPlainPassword(value="ValidP@ssw0rd123")
         result = valid_password.validate_domain_rules()
-        assert result.is_success
+        assert result.success
 
         # Test minimum length - Pydantic validation prevents object creation
         with pytest.raises(

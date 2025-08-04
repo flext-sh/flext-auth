@@ -217,7 +217,7 @@ class TestSecurityConfig:
         if config.max_concurrent_sessions != 5:
             raise AssertionError(f"Expected {5}, got {config.max_concurrent_sessions}")
         if config.require_email_verification:
-            msg = f"Expected False, got {config.require_email_verification}"
+            msg: str = f"Expected False, got {config.require_email_verification}"
             raise AssertionError(msg)
         assert config.enable_2fa is False
 
@@ -305,7 +305,7 @@ class TestAppConfig:
             )
         assert config.version == "1.0.0"
         if config.server.debug:
-            msg = f"Expected False, got {config.server.debug}"
+            msg: str = f"Expected False, got {config.server.debug}"
             raise AssertionError(msg)
 
     def test_app_config_env_vars(self) -> None:

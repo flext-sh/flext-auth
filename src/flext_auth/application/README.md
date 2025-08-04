@@ -361,7 +361,7 @@ class TestAuthenticationApplicationService:
 
         result = await auth_service.authenticate_user(credentials)
 
-        assert result.is_success
+        assert result.success
         assert "access_token" in result.data
         assert "user" in result.data
 
@@ -389,11 +389,11 @@ class TestWorkflowIntegration:
 
         result = await service.register_user(registration_data)
 
-        assert result.is_success
+        assert result.success
 
         # Verify user was actually created in database
         user = await real_dependencies.user_repo.find_by_username("newuser")
-        assert user.is_success
+        assert user.success
         assert user.data.email == "newuser@example.com"
 ```
 

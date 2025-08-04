@@ -67,7 +67,7 @@ Example Usage:
     >>> # Secure password operations
     >>> password_service = FlextPasswordService(rounds=12)
     >>> hash_result = password_service.hash_password("SecurePassword123!")
-    >>> if hash_result.is_success:
+    >>> if hash_result.success:
     ...     hashed = hash_result.data
     ...     verify_result = password_service.verify_password(
     ...         "SecurePassword123!", hashed

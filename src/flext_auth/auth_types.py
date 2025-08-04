@@ -51,7 +51,7 @@ Type Categories:
     - TAuthResult: Authentication operation results
     - TSecurityContext: Security context information
     - TLoginAttempt: Login attempt data structure
-    - TAnyDict: Generic dictionary type (from flext-core)
+    - dict[str, object]: Specific dictionary types (SOLID refactored)
 
 Example Usage:
     >>> from flext_auth.auth_types import TUserId, TUsername, TAuthResult
@@ -84,7 +84,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import TAnyDict, TEntityId
+from flext_core import TEntityId
 
 # =============================================================================
 # AUTHENTICATION TYPES - Using flext-core efficiently
@@ -100,10 +100,10 @@ type TEmail = str
 type TPassword = str
 type TUserRole = str
 
-# Authentication data types
-type TAuthResult = TAnyDict
-type TSecurityContext = TAnyDict
-type TLoginAttempt = TAnyDict
+# Authentication data types - SOLID refactoring: specific types instead of Any
+type TAuthResult = dict[str, object]  # Authentication result with user data
+type TSecurityContext = dict[str, object]  # Security context with permissions
+type TLoginAttempt = dict[str, object]  # Login attempt data with metadata
 
 # Audit types
 type TAuditEventType = str
@@ -112,7 +112,7 @@ type TAuditEventType = str
 # EXPORTS - Clean types API
 # =============================================================================
 
-__all__ = [
+__all__: list[str] = [
     # Audit types
     "TAuditEventType",
     # Authentication data types

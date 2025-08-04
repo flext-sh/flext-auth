@@ -197,7 +197,7 @@ def _validate_token_with_auth_instance(
         # Auth service validate_token is async, need to run it
         async def _validate() -> FlextResult[dict[str, object]]:
             validation_result = await auth_service.validate_token(token)
-            if validation_result.is_success and validation_result.data:
+            if validation_result.success and validation_result.data:
                 # Convert SecurityContext to dict
                 context = validation_result.data
                 return FlextResult.ok(
@@ -227,7 +227,7 @@ def _validate_token_with_secret(
         jwt_service = FlextJWTService(secret_key=secret)
         validation_result = jwt_service.verify_token(token)
 
-        if validation_result.is_success and validation_result.data:
+        if validation_result.success and validation_result.data:
             # Convert claims to dict format
             claims = validation_result.data
             return FlextResult.ok(
@@ -319,7 +319,7 @@ def _execute_authentication_pipeline(  # type: ignore[explicit-any]
             config.auth_service,
             config.secret,
         )
-        if not validation_result or not validation_result.is_success:
+        if not validation_result or not validation_result.success:
             error_msg = (
                 validation_result.error
                 if validation_result
@@ -463,7 +463,7 @@ def flext_auth_permission_required(  # type: ignore[explicit-any]
     return decorator
 
 
-__all__ = [
+__all__: list[str] = [
     "flext_auth_permission_required",
     "flext_auth_required",
     "flext_auth_role_required",

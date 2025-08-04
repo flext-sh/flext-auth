@@ -163,7 +163,7 @@ def demo_all_jwt_operations() -> None:
 
     # Generate JWT
     token_result = flext_auth_generate_jwt(payload, secret=secret, expires_minutes=30)
-    if token_result.is_success:
+    if token_result.success:
         token = token_result.data
         print(f"JWT generated: {token[:50]}...")
 
@@ -313,10 +313,10 @@ def demo_all_validation_operations() -> None:
         secret=secret,
     )
 
-    if test_token_result.is_success:
+    if test_token_result.success:
         test_token = test_token_result.data
         check_result_result = flext_auth_check_token(test_token, secret)
-        if check_result_result.is_success:
+        if check_result_result.success:
             check_result = check_result_result.data
             print(f"Token check valid: {check_result['valid']}")
             if check_result["valid"]:
@@ -338,7 +338,7 @@ def demo_ultra_helpers() -> None:
 
     # Instant API
     instant_api_result = flext_auth_instant_api("instant_service", "api")
-    if instant_api_result.is_success:
+    if instant_api_result.success:
         api_data = instant_api_result.data
         print(f"Instant API success: {True}")
         print(f"  API Data: {type(api_data).__name__}")
@@ -427,7 +427,7 @@ async def demo_full_auth_lifecycle() -> None:
         require_strong_password=True,
     )
 
-    if register_result.is_success:
+    if register_result.success:
         user_data = register_result.data
         print(f"User registered: {user_data['user']['username']}")
 
@@ -438,7 +438,7 @@ async def demo_full_auth_lifecycle() -> None:
             include_user_data=True,
         )
 
-        if session_result.is_success:
+        if session_result.success:
             session_data = session_result.data
             print(f"Session created with token: {session_data['token'][:30]}...")
             print("Full lifecycle completed successfully")
@@ -472,7 +472,7 @@ async def demo_batch_operations() -> None:
     ]
 
     batch_result = await batch_ops.register_multiple(users, validate_all=True)
-    if batch_result.is_success:
+    if batch_result.success:
         print(f"Batch registration: {len(batch_result.data)} users created")
     else:
         print(f"Batch registration failed: {batch_result.error}")

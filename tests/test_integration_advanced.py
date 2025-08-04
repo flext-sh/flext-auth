@@ -36,7 +36,7 @@ class TestAdvancedIntegration:
             password="WorkflowPass123!",
         )
 
-        assert result.is_success
+        assert result.success
         assert result.data is not None
 
         workflow_data = result.data
@@ -55,13 +55,13 @@ class TestAdvancedIntegration:
 
         # Generate token
         token_result = flext_auth_generate_jwt(payload)
-        assert token_result.is_success
+        assert token_result.success
         token = token_result.data
 
         # Validate token multiple times
         for _ in range(3):
             validation = flext_auth_validate_jwt(token)
-            assert validation.is_success
+            assert validation.success
             decoded = validation.data
             assert decoded["user_id"] == "lifecycle_user"
             assert decoded["username"] == "lifecycletest"
@@ -141,22 +141,22 @@ class TestAdvancedIntegration:
         # Generate valid token
         payload = {"user_id": "security_test", "username": "sectest", "role": "user"}
         token_result = flext_auth_generate_jwt(payload)
-        assert token_result.is_success
+        assert token_result.success
         valid_token = token_result.data
 
         # Test valid token
         validation = flext_auth_validate_jwt(valid_token)
-        assert validation.is_success
+        assert validation.success
 
         # Test invalid token
         invalid_token = "invalid.jwt.token"
         validation = flext_auth_validate_jwt(invalid_token)
-        assert not validation.is_success
+        assert not validation.success
 
         # Test malformed token
         malformed_token = valid_token[:-10] + "malformed"
         validation = flext_auth_validate_jwt(malformed_token)
-        assert not validation.is_success
+        assert not validation.success
 
 
 class TestDecorators:
@@ -198,12 +198,12 @@ class TestFlextResultPattern:
         for func in functions_to_test:
             result = func()
             assert isinstance(result, FlextResult)
-            assert hasattr(result, "is_success")
+            assert hasattr(result, "success")
             assert hasattr(result, "data")
             assert hasattr(result, "error")
 
             # Test result properties
-            if result.is_success:
+            if result.success:
                 assert result.data is not None
                 assert result.error is None
             else:
@@ -214,9 +214,9 @@ class TestFlextResultPattern:
         """Test FlextResult chaining and composition."""
         # Test successful chain
         setup_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-        assert setup_result.is_success
+        assert setup_result.success
 
-        if setup_result.is_success and setup_result.data:
+        if setup_result.success and setup_result.data:
             auth_service = setup_result.data
             assert auth_service is not None
 
@@ -224,9 +224,9 @@ class TestFlextResultPattern:
             jwt_result = flext_auth_generate_jwt(
                 {"user_id": "chain_test", "username": "chainuser", "role": "user"}
             )
-            assert jwt_result.is_success
+            assert jwt_result.success
 
-            if jwt_result.is_success and jwt_result.data:
+            if jwt_result.success and jwt_result.data:
                 token = jwt_result.data
                 validation_result = flext_auth_validate_jwt(token)
-                assert validation_result.is_success
+                assert validation_result.success

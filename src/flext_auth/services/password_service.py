@@ -49,12 +49,12 @@ Password Strength Scoring:
 Example:
     >>> password_service = FlextPasswordService(rounds=12)
     >>> hash_result = password_service.hash_password("SecurePassword123!")
-    >>> if hash_result.is_success:
+    >>> if hash_result.success:
     ...     password_hash = hash_result.data
     ...     verify_result = password_service.verify_password(
     ...         "SecurePassword123!", password_hash.value
     ...     )
-    ...     if verify_result.is_success and verify_result.data:
+    ...     if verify_result.success and verify_result.data:
     ...         print("Password verified successfully")
 
 Performance Considerations:
@@ -160,13 +160,13 @@ class FlextPasswordService:
         >>> service = FlextPasswordService(rounds=12)
         >>> # Hash a password securely
         >>> hash_result = service.hash_password("MySecurePassword123!")
-        >>> if hash_result.is_success:
+        >>> if hash_result.success:
         ...     password_hash = hash_result.data.value
         ...     # Verify password later
         ...     verify_result = service.verify_password(
         ...         "MySecurePassword123!", password_hash
         ...     )
-        ...     if verify_result.is_success and verify_result.data:
+        ...     if verify_result.success and verify_result.data:
         ...         print("Password verified")
 
     Security Guidelines:
@@ -268,7 +268,7 @@ class FlextPasswordService:
             # Verify hash format
             if not hash_str.startswith("$2b$"):
                 return FlextResult.fail(
-                    "Failed to verify password: Invalid hash format"
+                    "Failed to verify password: Invalid hash format",
                 )
 
             # Verify password
@@ -284,7 +284,7 @@ class FlextPasswordService:
             )
 
     def generate_secure_password(
-        self, length: int = 16
+        self, length: int = 16,
     ) -> FlextResult[FlextPlainPassword]:
         """Generate a cryptographically secure password.
 
@@ -452,7 +452,7 @@ class FlextPasswordService:
         return "days or less"
 
     def check_password_strength(
-        self, password: str | FlextPlainPassword
+        self, password: str | FlextPlainPassword,
     ) -> FlextResult[dict[str, object]]:
         """Analyze password strength and return detailed feedback.
 

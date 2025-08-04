@@ -248,7 +248,7 @@ class FlextAuthSecurityError(FlextAuthAuthenticationError):  # type: ignore[vali
         super().__init__(message, **kwargs)
 
 
-__all__ = [
+__all__: list[str] = [
     "FlextAuthAuthenticationError",
     "FlextAuthConfigurationError",
     "FlextAuthConnectionError",

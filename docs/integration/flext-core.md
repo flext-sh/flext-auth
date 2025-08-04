@@ -427,12 +427,12 @@ class AuthenticateUserCommandHandler(FlextCommandHandler[AuthenticateUserCommand
     async def handle(self, command: AuthenticateUserCommand) -> FlextResult[AuthenticationResult]:
         # Pure command handling - only state changes
         user_result = await self.user_repository.find_by_username(command.username)
-        if not user_result.is_success or not user_result.data:
+        if not user_result.success or not user_result.data:
             return FlextResult.fail("User not found")
 
         user = user_result.data
         login_result = user.login(command.password, command.ip_address, command.user_agent)
-        if not login_result.is_success:
+        if not login_result.success:
             await self.user_repository.save(user)  # Save failed attempt count
             return FlextResult.fail(login_result.error)
 
@@ -453,11 +453,11 @@ class RegisterUserCommandHandler(FlextCommandHandler[RegisterUserCommand, FlextU
     async def handle(self, command: RegisterUserCommand) -> FlextResult[FlextUser]:
         # Check uniqueness
         existing_result = await self.user_repository.find_by_username(command.username)
-        if existing_result.is_success and existing_result.data:
+        if existing_result.success and existing_result.data:
             return FlextResult.fail("Username already exists")
 
         existing_email_result = await self.user_repository.find_by_email(command.email)
-        if existing_email_result.is_success and existing_email_result.data:
+        if existing_email_result.success and existing_email_result.data:
             return FlextResult.fail("Email already exists")
 
         # Create user (triggers UserRegisteredEvent)
@@ -519,14 +519,14 @@ class FlextAuthService:
         command = AuthenticateUserCommand(username, password, ip_address, user_agent)
         auth_result = await self.command_bus.execute(command)
 
-        if not auth_result.is_success:
+        if not auth_result.success:
             return FlextResult.fail(auth_result.error)
 
         # Execute queries for response data
         user_query = GetUserQuery(auth_result.data.user_id)
         user_result = await self.query_bus.execute(user_query)
 
-        if not user_result.is_success:
+        if not user_result.success:
             return FlextResult.fail("Failed to retrieve user data")
 
         # Generate JWT token
@@ -643,7 +643,7 @@ class TestFlextCoreIntegration:
 
         # Create user (should emit UserRegisteredEvent)
         result = await auth_service.register_user(test_data)
-        assert result.is_success
+        assert result.success
 
         # Verify event was emitted
         events = result.data.uncommitted_events
@@ -658,12 +658,12 @@ class TestFlextCoreIntegration:
         # Execute command
         command = AuthenticateUserCommand("test_user", "password", "127.0.0.1")
         result = await command_bus.execute(command)
-        assert result.is_success
+        assert result.success
 
         # Execute query
         query = GetUserQuery(result.data.user_id)
         user_result = await query_bus.execute(query)
-        assert user_result.is_success
+        assert user_result.success
 ```
 
 ---

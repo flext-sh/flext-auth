@@ -49,7 +49,7 @@ class TestJWTService:
             role="user",
         )
 
-        assert result.is_success
+        assert result.success
         token = result.data
         assert isinstance(token, str)
         assert len(token) > 0
@@ -70,7 +70,7 @@ class TestJWTService:
             extra_claims=extra_claims,
         )
 
-        assert result.is_success
+        assert result.success
         token = result.data
         assert isinstance(token, str)
 
@@ -83,7 +83,7 @@ class TestJWTService:
 
         result = service.generate_refresh_token(user_id="user-123")
 
-        assert result.is_success
+        assert result.success
         token = result.data
         assert isinstance(token, str)
         assert len(token) > 0
@@ -100,12 +100,12 @@ class TestJWTService:
             username="testuser",
             role="user",
         )
-        assert create_result.is_success
+        assert create_result.success
         token = create_result.data
 
         # Verify token
         verify_result = service.verify_token(token)
-        assert verify_result.is_success
+        assert verify_result.success
         claims = verify_result.data
         assert isinstance(claims, FlextJWTClaims)
         if claims.sub != "user-123":
@@ -120,7 +120,7 @@ class TestJWTService:
         service = FlextJWTService(secret_key="test-secret-key-at-least-32-chars")
 
         result = service.verify_token("invalid.token.here")
-        assert not result.is_success
+        assert not result.success
         if "Failed to verify token" not in result.error:
             raise AssertionError(
                 f"Expected {'Failed to verify token'} in {result.error}"
@@ -139,7 +139,7 @@ class TestJWTService:
             username="testuser",
             role="user",
         )
-        assert create_result.is_success
+        assert create_result.success
         token = create_result.data
 
         # Wait a moment to ensure expiration (not practical in real tests)
@@ -149,7 +149,7 @@ class TestJWTService:
 
         # Verify expired token
         verify_result = service.verify_token(token)
-        assert not verify_result.is_success
+        assert not verify_result.success
         if "expired" not in verify_result.error.lower():
             raise AssertionError(f"Expected 'expired' in {verify_result.error}")
 
@@ -164,12 +164,12 @@ class TestJWTService:
             username="testuser",
             role="user",
         )
-        assert create_result.is_success
+        assert create_result.success
         token = create_result.data
 
         # Try to verify with service2 (different secret)
         verify_result = service2.verify_token(token)
-        assert not verify_result.is_success
+        assert not verify_result.success
         if "Failed to verify token" not in verify_result.error:
             raise AssertionError(
                 f"Expected {'Failed to verify token'} in {verify_result.error}"
@@ -181,12 +181,12 @@ class TestJWTService:
 
         # Create refresh token
         refresh_result = service.generate_refresh_token(user_id="user-123")
-        assert refresh_result.is_success
+        assert refresh_result.success
         refresh_token = refresh_result.data
 
         # Verify refresh token
         verify_result = service.verify_token(refresh_token)
-        assert verify_result.is_success
+        assert verify_result.success
         claims = verify_result.data
         if claims.sub != "user-123":
             raise AssertionError(f"Expected {'user-123'}, got {claims.sub}")
@@ -202,12 +202,12 @@ class TestJWTService:
             username="testuser",
             role="REDACTED_LDAP_BIND_PASSWORD",
         )
-        assert create_result.is_success
+        assert create_result.success
         token = create_result.data
 
         # Get claims
         claims_result = service.get_token_claims(token)
-        assert claims_result.is_success
+        assert claims_result.success
         claims = claims_result.data
         if claims.sub != "user-123":
             raise AssertionError(f"Expected {'user-123'}, got {claims.sub}")
@@ -220,7 +220,7 @@ class TestJWTService:
         service = FlextJWTService(secret_key="test-secret-key-at-least-32-chars")
 
         result = service.get_token_claims("invalid.token")
-        assert not result.is_success
+        assert not result.success
         if "Failed to decode token" not in result.error:
             raise AssertionError(
                 f"Expected {'Failed to decode token'} in {result.error}"
@@ -239,12 +239,12 @@ class TestJWTService:
             username="testuser",
             role="user",
         )
-        assert create_result.is_success
+        assert create_result.success
         token = create_result.data
 
         # Verify token and check expiration is in the future
         verify_result = service.verify_token(token)
-        assert verify_result.is_success
+        assert verify_result.success
         claims = verify_result.data
 
         # Expiration should be approximately 60 minutes from now
@@ -270,10 +270,10 @@ class TestJWTService:
                 username="testuser",
                 role="user",
             )
-            assert create_result.is_success
+            assert create_result.success
 
             verify_result = service.verify_token(create_result.data)
-            assert verify_result.is_success
+            assert verify_result.success
 
     def test_jwt_claims_validation(self) -> None:
         """Test JWT claims validation."""
@@ -285,11 +285,11 @@ class TestJWTService:
             username="testuser",
             role="user",
         )
-        assert create_result.is_success
+        assert create_result.success
 
         # Verify and validate claims
         verify_result = service.verify_token(create_result.data)
-        assert verify_result.is_success
+        assert verify_result.success
         claims = verify_result.data
 
         # Claims should be valid

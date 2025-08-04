@@ -96,7 +96,7 @@ user = FlextUser(
 
 # Business logic execution
 auth_result = user.authenticate(password="user_password", password_service=password_service)
-if auth_result.is_success:
+if auth_result.success:
     session_result = user.create_session(ip_address="192.168.1.1")
 ```
 

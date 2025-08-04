@@ -104,7 +104,7 @@ def test_user_authentication_with_valid_credentials():
     result = auth_service.authenticate_user("john", "SecurePass123!")
 
     # Then: Authentication succeeds
-    assert result.is_success
+    assert result.success
     assert result.data.username == "john"
     assert result.data.is_authenticated is True
 ```
@@ -248,7 +248,7 @@ def test_user_cannot_exceed_max_failed_attempts():
     result = user.record_failed_login_attempt()
 
     # Then: User becomes locked
-    assert result.is_success
+    assert result.success
     assert user.is_locked
     assert user.locked_until is not None
 ```

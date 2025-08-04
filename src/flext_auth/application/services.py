@@ -50,7 +50,7 @@ Example:
     >>> result = await auth_service.authenticate_user_workflow(
     ...     username="john_doe", password="SecurePass123!", ip_address="192.168.1.1"
     ... )
-    >>> if result.is_success:
+    >>> if result.success:
     ...     user_session = result.data
     ...     print(f"User {user_session.user.username} authenticated")
 
@@ -162,7 +162,7 @@ class PasswordStrengthValidationStrategy(ValidationStrategy):
         # Execute commands in sequence - first failure stops execution
         for command in commands:
             result = command.execute()
-            if not result.is_success:
+            if not result.success:
                 return result
 
         return FlextResult.ok(None)
@@ -191,7 +191,7 @@ class UserValidationStrategy(ValidationStrategy):
 
         for command in commands:
             result = command.execute()
-            if not result.is_success:
+            if not result.success:
                 return result
 
         return FlextResult.ok(None)
@@ -361,7 +361,7 @@ class FlextAuthenticationService:
                 username=username,
                 email=email,
             )
-            if not user_validation.is_success:
+            if not user_validation.success:
                 return FlextResult.fail(
                     user_validation.error or "User validation failed",
                 )
@@ -369,7 +369,7 @@ class FlextAuthenticationService:
             password_validation = self._deps.password_validation_strategy.validate(
                 password=password,
             )
-            if not password_validation.is_success:
+            if not password_validation.success:
                 return FlextResult.fail(
                     password_validation.error or "Password validation failed",
                 )
@@ -424,12 +424,12 @@ class FlextAuthenticationService:
             validation_result = self._deps.password_validation_strategy.validate(
                 password=new_password,
             )
-            if not validation_result.is_success:
+            if not validation_result.success:
                 return FlextResult.fail(validation_result.error or "Validation failed")
 
             # Hash the new password and update user
             hash_result = self._deps.password_service.hash_password(new_password)
-            if not hash_result.is_success or not hash_result.data:
+            if not hash_result.success or not hash_result.data:
                 return FlextResult.fail("Failed to hash password")
 
             new_password_hash = str(hash_result.data)
@@ -451,7 +451,7 @@ class FlextAuthenticationService:
 
             # Save updated user to repository
             save_result = asyncio.run(self._deps.user_repo.save(updated_user))
-            if not save_result.is_success:
+            if not save_result.success:
                 return FlextResult.fail(
                     f"Failed to save password change: {save_result.error}",
                 )
@@ -514,7 +514,7 @@ class FlextAuthorizationService:
             REDACTED_LDAP_BIND_PASSWORD_result = self._deps.REDACTED_LDAP_BIND_PASSWORD_permission_strategy.check_permission(
                 check_data,
             )
-            if REDACTED_LDAP_BIND_PASSWORD_result.is_success and REDACTED_LDAP_BIND_PASSWORD_result.data:
+            if REDACTED_LDAP_BIND_PASSWORD_result.success and REDACTED_LDAP_BIND_PASSWORD_result.data:
                 return REDACTED_LDAP_BIND_PASSWORD_result
 
             # Fall back to role-based strategy
@@ -607,7 +607,7 @@ class FlextSessionService:
                 return FlextResult.fail("Session ID is required")
 
             session_result = self._deps.session_repo.find_by_id(session_id)
-            if not session_result.is_success or not session_result.data:
+            if not session_result.success or not session_result.data:
                 return FlextResult.fail("Session not found")
 
             session = session_result.data
@@ -619,7 +619,7 @@ class FlextSessionService:
             revoked_session = session.revoke()
             save_result = self._deps.session_repo.save_sync(revoked_session)
 
-            return FlextResult.ok(save_result.is_success)
+            return FlextResult.ok(save_result.success)
 
         except (ValueError, TypeError) as e:
             return FlextResult.fail(f"Session revocation failed: {e}")

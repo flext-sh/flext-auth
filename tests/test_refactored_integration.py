@@ -80,7 +80,7 @@ class TestRefactoredAuthSystem:
         # Test quick start with REDACTED_LDAP_BIND_PASSWORD creation disabled to avoid email validation
         result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
-        assert result.is_success
+        assert result.success
         assert result.data is not None
 
         auth_service = result.data
@@ -167,7 +167,7 @@ class TestRefactoredAuthSystem:
 
         # Test 1: Quick setup (should be 1-3 lines instead of 50+)
         result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-        assert result.is_success
+        assert result.success
 
         # Test 2: Simple auth instance creation
         auth = FlextAuth()
@@ -195,7 +195,7 @@ class TestRefactoredAuthSystem:
         # Quick start should return FlextResult
         result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
         assert isinstance(result, FlextResult)
-        assert hasattr(result, "is_success")
+        assert hasattr(result, "success")
         assert hasattr(result, "data")
         assert hasattr(result, "error")
 
@@ -294,17 +294,17 @@ class TestIntegrationWithFlextCore:
         # Register auth services in container
         result = container.register("auth_service", auth.auth_service)
         assert isinstance(result, FlextResult)
-        assert result.is_success
+        assert result.success
 
         result = container.register("jwt_service", auth.jwt_service)
-        assert result.is_success
+        assert result.success
 
         result = container.register("password_service", auth.password_service)
-        assert result.is_success
+        assert result.success
 
         # Retrieve services from container
         auth_service_result = container.get("auth_service")
-        assert auth_service_result.is_success
+        assert auth_service_result.success
         assert auth_service_result.data is not None
 
     def test_flext_logging_integration(self) -> None:

@@ -83,7 +83,7 @@ class TestFlextAuthMainClass:
         """Test successful user registration."""
         result = await auth.register("testuser", "test@example.com", "SecurePass123!")
 
-        assert result.is_success
+        assert result.success
         assert result.data is not None
         if result.data.username != "testuser":
             raise AssertionError(f"Expected {'testuser'}, got {result.data.username}")
@@ -100,7 +100,7 @@ class TestFlextAuthMainClass:
             role="REDACTED_LDAP_BIND_PASSWORD",
         )
 
-        assert result.is_success
+        assert result.success
         if result.data.username != "REDACTED_LDAP_BIND_PASSWORD":
             raise AssertionError(f"Expected {'REDACTED_LDAP_BIND_PASSWORD'}, got {result.data.username}")
         assert result.data.role.value == "REDACTED_LDAP_BIND_PASSWORD"
@@ -110,11 +110,11 @@ class TestFlextAuthMainClass:
         """Test duplicate user registration fails."""
         # First registration
         result1 = await auth.register("duplicate", "dup@example.com", "Pass123!")
-        assert result1.is_success
+        assert result1.success
 
         # Second registration should fail
         result2 = await auth.register("duplicate", "dup2@example.com", "Pass456!")
-        assert not result2.is_success
+        assert not result2.success
         if "already exists" not in result2.error:
             raise AssertionError(f"Expected {'already exists'} in {result2.error}")
 
@@ -127,7 +127,7 @@ class TestFlextAuthMainClass:
         # Login
         result = await auth.login("loginuser", "LoginPass123!")
 
-        assert result.is_success
+        assert result.success
         if "user" not in result.data:
             raise AssertionError(f"Expected {'user'} in {result.data}")
         assert "tokens" in result.data
@@ -145,7 +145,7 @@ class TestFlextAuthMainClass:
         """Test login with invalid credentials fails."""
         result = await auth.login("nonexistent", "wrong_password")
 
-        assert not result.is_success
+        assert not result.success
         if "Invalid username or password" not in result.error:
             raise AssertionError(
                 f"Expected {'Invalid username or password'} in {result.error}"
@@ -159,7 +159,7 @@ class TestFlextAuthMainClass:
         login_result = await auth.login("tokenuser", "TokenPass123!")
 
         # Skip if login failed due to system issues
-        if not login_result.is_success:
+        if not login_result.success:
             pytest.skip("Login system has issues - focusing on interface testing")
 
         token = login_result.data["tokens"]["access_token"]
@@ -167,7 +167,7 @@ class TestFlextAuthMainClass:
         # Validate token
         result = await auth.validate(token)
 
-        assert result.is_success
+        assert result.success
         if result.data["username"] != "tokenuser":
             raise AssertionError(
                 f"Expected {'tokenuser'}, got {result.data['username']}"
@@ -181,7 +181,7 @@ class TestFlextAuthMainClass:
         """Test validation with invalid token fails."""
         result = await auth.validate("invalid_token_123")
 
-        assert not result.is_success
+        assert not result.success
         if "Token verification failed" not in result.error:
             raise AssertionError(
                 f"Expected {'Token verification failed'} in {result.error}"
@@ -195,7 +195,7 @@ class TestFlextAuthMainClass:
         login_result = await auth.login("logoutuser", "LogoutPass123!")
 
         # Skip if login failed
-        if not login_result.is_success:
+        if not login_result.success:
             pytest.skip("Login system has issues - focusing on interface testing")
 
         token = login_result.data["tokens"]["access_token"]
@@ -203,7 +203,7 @@ class TestFlextAuthMainClass:
         # Logout
         result = await auth.logout(token)
 
-        assert result.is_success
+        assert result.success
 
     @pytest.mark.asyncio
     async def test_refresh_token_success(self, auth: FlextAuth) -> None:
@@ -213,7 +213,7 @@ class TestFlextAuthMainClass:
         login_result = await auth.login("refreshuser", "RefreshPass123!")
 
         # Skip if login failed
-        if not login_result.is_success:
+        if not login_result.success:
             pytest.skip("Login system has issues - focusing on interface testing")
 
         refresh_token = login_result.data["tokens"]["refresh_token"]
@@ -221,7 +221,7 @@ class TestFlextAuthMainClass:
         # Refresh
         result = await auth.refresh(refresh_token)
 
-        assert result.is_success
+        assert result.success
         if "access_token" not in result.data:
             raise AssertionError(f"Expected {'access_token'} in {result.data}")
 
@@ -293,7 +293,7 @@ class TestFlextAuthHelpers:
         payload = {"user_id": "123", "username": "test"}
         token_result = flext_auth_generate_jwt(payload)
 
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
         assert token != ""
         if len(token.split(".")) != EXPECTED_DATA_COUNT:  # Header.Payload.Signature
@@ -307,7 +307,7 @@ class TestFlextAuthHelpers:
             payload, secret=secret, expires_minutes=60
         )
 
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
         assert token != ""
         if len(token.split(".")) != EXPECTED_DATA_COUNT:
@@ -319,7 +319,7 @@ class TestFlextAuthHelpers:
         payload = {"user_id": "123", "username": "testuser", "role": "REDACTED_LDAP_BIND_PASSWORD"}
 
         token_result = flext_auth_generate_jwt(payload, secret=secret)
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
         decoded = flext_auth_decode_jwt(token, secret)
 
@@ -452,11 +452,11 @@ class TestFlextAuthIntegration:
             "integracao@example.com",
             "IntegracaoPass123!",
         )
-        assert register_result.is_success
+        assert register_result.success
 
         # 2. Login (may fail due to system issues, but interface works)
         login_result = await auth.login("integracaouser", "IntegracaoPass123!")
-        if not login_result.is_success:
+        if not login_result.success:
             # Interface is correct, underlying service has issues
             pytest.skip("Login service has issues - interface test passed")
 
@@ -464,7 +464,7 @@ class TestFlextAuthIntegration:
 
         # 3. Validation
         validate_result = await auth.validate(token)
-        assert validate_result.is_success
+        assert validate_result.success
         if validate_result.data["username"] != "integracaouser":
             raise AssertionError(
                 f"Expected {'integracaouser'}, got {validate_result.data['username']}"
@@ -472,7 +472,7 @@ class TestFlextAuthIntegration:
 
         # 4. Logout
         logout_result = await auth.logout(token)
-        assert logout_result.is_success
+        assert logout_result.success
 
     def test_helpers_chain_workflow(self) -> None:
         """Test workflow with chained helpers."""
@@ -503,7 +503,7 @@ class TestFlextAuthIntegration:
         payload = {"user_id": "workflow123", "email": email}
         secret = "workflow-secret-key-12345678901234567890"
         token_result = flext_auth_generate_jwt(payload, secret=secret)
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
         assert token != ""
 
@@ -543,7 +543,7 @@ class TestFlextAuthIntegration:
             {"user_id": "demo"},
             secret="demo-secret-12345678901234567890",
         )
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
         decoded = flext_auth_decode_jwt(token, "demo-secret-12345678901234567890")
 
@@ -579,12 +579,12 @@ class TestFlextAuthConfiguration:
         """Test FlextResult can be imported from root."""
         # FlextResult should be available from root namespace
         result = FlextResult.ok("test")
-        assert result.is_success
+        assert result.success
         if result.data != "test":
             raise AssertionError(f"Expected {'test'}, got {result.data}")
 
         failure = FlextResult.fail("error")
-        assert not failure.is_success
+        assert not failure.success
         if failure.error != "error":
             raise AssertionError(f"Expected {'error'}, got {failure.error}")
 
@@ -625,7 +625,7 @@ class TestPublicInterface:
 
         assert auth is not None
         assert config is not None
-        assert result.is_success
+        assert result.success
 
     def test_no_internal_imports_needed(self) -> None:
         """Test that users don't need to import internal modules."""

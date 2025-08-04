@@ -56,12 +56,12 @@ Example Usage:
     >>>
     >>> # Validate username
     >>> result = FlextAuthValidators.validate_username("john_doe")
-    >>> if result.is_success:
+    >>> if result.success:
     ...     print("Username is valid")
     >>>
     >>> # Validate password strength
     >>> result = FlextAuthValidators.validate_password_strength("SecurePass123!")
-    >>> if result.is_success:
+    >>> if result.success:
     ...     print("Password meets security requirements")
 
 Security Considerations:
@@ -180,6 +180,6 @@ class FlextAuthValidators:
 # EXPORTS - Clean validation API
 # =============================================================================
 
-__all__ = [
+__all__: list[str] = [
     "FlextAuthValidators",
 ]

@@ -175,8 +175,8 @@ def sample_users_dict(
         PlainPassword(value="SecurePassword123!"),
     )
 
-    if not hash_result.is_success:
-        msg = f"Password hashing failed: {hash_result.error}"
+    if not hash_result.success:
+        msg: str = f"Password hashing failed: {hash_result.error}"
         raise ValueError(msg)
 
     password_hash = hash_result.data.value if hash_result.data else ""

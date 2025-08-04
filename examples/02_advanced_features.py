@@ -95,7 +95,7 @@ def example_jwt_operations() -> None:
     token_result = flext_auth_generate_jwt(
         user_payload, secret=secret, expires_minutes=60
     )
-    if token_result.is_success:
+    if token_result.success:
         token = token_result.data
         print(f"JWT Generated: {token[:50]}...")
 
@@ -347,7 +347,7 @@ async def example_batch_operations() -> None:
         validate_all=True,
     )
 
-    if batch_register_result.is_success:
+    if batch_register_result.success:
         registered_users = batch_register_result.data
         print(f"Batch Registration Successful: {len(registered_users)} users")
         for user in registered_users:
@@ -368,7 +368,7 @@ async def example_batch_operations() -> None:
         session_hours=12,
     )
 
-    if batch_sessions_result.is_success:
+    if batch_sessions_result.success:
         session_data = batch_sessions_result.data
         successful = session_data["successful"]
         total = session_data["total"]
@@ -384,7 +384,7 @@ async def example_batch_operations() -> None:
         if tokens:
             # Validar múltiplos tokens
             batch_validation_result = await batch_ops.validate_multiple_tokens(tokens)
-            if batch_validation_result.is_success:
+            if batch_validation_result.success:
                 validation_data = batch_validation_result.data
                 if isinstance(validation_data, dict):
                     valid_count = validation_data.get("valid_count", 0)
@@ -419,7 +419,7 @@ async def example_advanced_user_management() -> None:
         require_strong_password=True,
     )
 
-    if REDACTED_LDAP_BIND_PASSWORD_result.is_success:
+    if REDACTED_LDAP_BIND_PASSWORD_result.success:
         REDACTED_LDAP_BIND_PASSWORD_data = REDACTED_LDAP_BIND_PASSWORD_result.data
         print("Production Admin Created:")
         print(f"  Username: {REDACTED_LDAP_BIND_PASSWORD_data['user']['username']}")
@@ -439,7 +439,7 @@ async def example_advanced_user_management() -> None:
             include_user_data=True,
         )
 
-        if session_result.is_success:
+        if session_result.success:
             session_data = session_result.data
             print("Complete Session Created:")
             print(f"  Token: {session_data['token'][:30]}...")
@@ -450,7 +450,7 @@ async def example_advanced_user_management() -> None:
             # Refresh token test
             if "refresh_token" in session_data:
                 refresh_result = await auth.refresh(session_data["refresh_token"])
-                if refresh_result.is_success:
+                if refresh_result.success:
                     print("Token refresh successful")
                 else:
                     print(f"Token refresh failed: {refresh_result.error}")

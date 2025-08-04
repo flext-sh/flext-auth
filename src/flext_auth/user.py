@@ -61,7 +61,7 @@ Example:
     ...     password_hash="$2b$12$secure_hash",
     ... )
     >>> result = await user_repo.save(user)
-    >>> if result.is_success:
+    >>> if result.success:
     ...     saved_user = result.data
     ...     print(f"User saved: {saved_user.username}")
 

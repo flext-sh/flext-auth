@@ -134,7 +134,7 @@ class TestFlextAuthUserMixin:
         }
 
         if context != expected:
-            msg = f"Expected {expected}, got {context}"
+            msg: str = f"Expected {expected}, got {context}"
             raise AssertionError(msg)
 
     def test_permission_checking(self) -> None:
@@ -148,17 +148,19 @@ class TestFlextAuthUserMixin:
         # Admin user - has all permissions
         REDACTED_LDAP_BIND_PASSWORD = TestUser(FLEXT_AUTH_ADMIN, [])
         if not (REDACTED_LDAP_BIND_PASSWORD.flext_auth_has_permission("anything")):
-            msg = f"Expected True, got {REDACTED_LDAP_BIND_PASSWORD.flext_auth_has_permission('anything')}"
+            msg: str = (
+                f"Expected True, got {REDACTED_LDAP_BIND_PASSWORD.flext_auth_has_permission('anything')}"
+            )
             raise AssertionError(msg)
 
         # Regular user with specific permissions
         user = TestUser(FLEXT_AUTH_USER, ["read", "write"])
         if not (user.flext_auth_has_permission("read")):
-            msg = f"Expected True, got {user.flext_auth_has_permission('read')}"
+            msg: str = f"Expected True, got {user.flext_auth_has_permission('read')}"
             raise AssertionError(msg)
         assert user.flext_auth_has_permission("write") is True
         if user.flext_auth_has_permission("REDACTED_LDAP_BIND_PASSWORD"):
-            msg = f"Expected False, got {user.flext_auth_has_permission('REDACTED_LDAP_BIND_PASSWORD')}"
+            msg: str = f"Expected False, got {user.flext_auth_has_permission('REDACTED_LDAP_BIND_PASSWORD')}"
             raise AssertionError(msg)
 
     def test_resource_access_control(self) -> None:
@@ -171,26 +173,32 @@ class TestFlextAuthUserMixin:
         # Admin can access everything
         REDACTED_LDAP_BIND_PASSWORD = TestUser(FLEXT_AUTH_ADMIN)
         if not (REDACTED_LDAP_BIND_PASSWORD.flext_auth_can_access("REDACTED_LDAP_BIND_PASSWORD/users")):
-            msg = f"Expected True, got {REDACTED_LDAP_BIND_PASSWORD.flext_auth_can_access('REDACTED_LDAP_BIND_PASSWORD/users')}"
+            msg: str = (
+                f"Expected True, got {REDACTED_LDAP_BIND_PASSWORD.flext_auth_can_access('REDACTED_LDAP_BIND_PASSWORD/users')}"
+            )
             raise AssertionError(msg)
         assert REDACTED_LDAP_BIND_PASSWORD.flext_auth_can_access("public") is True
 
         # User cannot access REDACTED_LDAP_BIND_PASSWORD resources
         user = TestUser(FLEXT_AUTH_USER)
         if user.flext_auth_can_access("REDACTED_LDAP_BIND_PASSWORD/users"):
-            msg = f"Expected False, got {user.flext_auth_can_access('REDACTED_LDAP_BIND_PASSWORD/users')}"
+            msg: str = (
+                f"Expected False, got {user.flext_auth_can_access('REDACTED_LDAP_BIND_PASSWORD/users')}"
+            )
             raise AssertionError(msg)
         if not (user.flext_auth_can_access("public")):
-            msg = f"Expected True, got {user.flext_auth_can_access('public')}"
+            msg: str = f"Expected True, got {user.flext_auth_can_access('public')}"
             raise AssertionError(msg)
 
         # Guest has limited access
         guest = TestUser(FLEXT_AUTH_GUEST)
         if guest.flext_auth_can_access("REDACTED_LDAP_BIND_PASSWORD/users"):
-            msg = f"Expected False, got {guest.flext_auth_can_access('REDACTED_LDAP_BIND_PASSWORD/users')}"
+            msg: str = (
+                f"Expected False, got {guest.flext_auth_can_access('REDACTED_LDAP_BIND_PASSWORD/users')}"
+            )
             raise AssertionError(msg)
         if not (guest.flext_auth_can_access("public")):
-            msg = f"Expected True, got {guest.flext_auth_can_access('public')}"
+            msg: str = f"Expected True, got {guest.flext_auth_can_access('public')}"
             raise AssertionError(msg)
         assert guest.flext_auth_can_access("home") is True
 
@@ -209,18 +217,20 @@ class TestFlextAuthSessionMixin:
         # First refresh creates session
         session1 = obj.flext_auth_refresh_session()
         if "session_id" not in session1:
-            msg = f"Expected {'session_id'} in {session1}"
+            msg: str = f"Expected {'session_id'} in {session1}"
             raise AssertionError(msg)
         assert "last_activity" in session1
         if "updated_at" not in session1:
-            msg = f"Expected {'updated_at'} in {session1}"
+            msg: str = f"Expected {'updated_at'} in {session1}"
             raise AssertionError(msg)
         assert len(session1["session_id"]) > 20
 
         # Second refresh updates existing session
         session2 = obj.flext_auth_refresh_session()
         if session2["session_id"] != session1["session_id"]:
-            msg = f"Expected {session1['session_id']}, got {session2['session_id']}"
+            msg: str = (
+                f"Expected {session1['session_id']}, got {session2['session_id']}"
+            )
             raise AssertionError(msg)
         assert session2["updated_at"] != session1["updated_at"]
 
@@ -235,20 +245,20 @@ class TestFlextAuthSessionMixin:
         # No session
         obj1 = TestSession()
         if obj1.flext_auth_is_session_valid():
-            msg = f"Expected False, got {obj1.flext_auth_is_session_valid()}"
+            msg: str = f"Expected False, got {obj1.flext_auth_is_session_valid()}"
             raise AssertionError(msg)
 
         # Expired session
         past_time = (datetime.now(UTC) - timedelta(hours=1)).isoformat()
         obj2 = TestSession(past_time)
         if obj2.flext_auth_is_session_valid():
-            msg = f"Expected False, got {obj2.flext_auth_is_session_valid()}"
+            msg: str = f"Expected False, got {obj2.flext_auth_is_session_valid()}"
             raise AssertionError(msg)
         # Valid session
         future_time = (datetime.now(UTC) + timedelta(hours=1)).isoformat()
         obj3 = TestSession(future_time)
         if not (obj3.flext_auth_is_session_valid()):
-            msg = f"Expected True, got {obj3.flext_auth_is_session_valid()}"
+            msg: str = f"Expected True, got {obj3.flext_auth_is_session_valid()}"
             raise AssertionError(msg)
 
 
@@ -276,7 +286,7 @@ class TestDictHelpers:
         }
 
         if merged != expected:
-            msg = f"Expected {expected}, got {merged}"
+            msg: str = f"Expected {expected}, got {merged}"
             raise AssertionError(msg)
 
     def test_create_user_payload(self) -> None:
@@ -289,15 +299,15 @@ class TestDictHelpers:
         )
 
         if payload["user_id"] != "user123":
-            msg = f"Expected {'user123'}, got {payload['user_id']}"
+            msg: str = f"Expected {'user123'}, got {payload['user_id']}"
             raise AssertionError(msg)
         assert payload["username"] == "testuser"
         if payload["role"] != FLEXT_AUTH_ADMIN:
-            msg = f"Expected {FLEXT_AUTH_ADMIN}, got {payload['role']}"
+            msg: str = f"Expected {FLEXT_AUTH_ADMIN}, got {payload['role']}"
             raise AssertionError(msg)
         assert payload["email"] == "test@example.com"
         if "iat" not in payload:
-            msg = f"Expected {'iat'} in {payload}"
+            msg: str = f"Expected {'iat'} in {payload}"
             raise AssertionError(msg)
         assert isinstance(payload["iat"], int)
 
@@ -306,28 +316,28 @@ class TestDictHelpers:
         # Create a valid token first
         payload = {"user_id": "123", "username": "test", "role": FLEXT_AUTH_USER}
         token_result = flext_auth_generate_jwt(payload, secret="test-secret")
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
 
         # Extract claims
         claims = flext_auth_extract_token_claims(token, "test-secret")
 
         if claims["user_id"] != "123":
-            msg = f"Expected {'123'}, got {claims['user_id']}"
+            msg: str = f"Expected {'123'}, got {claims['user_id']}"
             raise AssertionError(msg)
         assert claims["username"] == "test"
         if claims["role"] != FLEXT_AUTH_USER:
-            msg = f"Expected {FLEXT_AUTH_USER}, got {claims['role']}"
+            msg: str = f"Expected {FLEXT_AUTH_USER}, got {claims['role']}"
             raise AssertionError(msg)
         if "iat" not in claims:
-            msg = f"Expected {'iat'} in {claims}"
+            msg: str = f"Expected {'iat'} in {claims}"
             raise AssertionError(msg)
         assert "exp" in claims
 
         # Test invalid token
         empty_claims = flext_auth_extract_token_claims("invalid-token", "test-secret")
         if empty_claims != {}:
-            msg = f"Expected {{}}, got {empty_claims}"
+            msg: str = f"Expected {{}}, got {empty_claims}"
             raise AssertionError(msg)
 
     def test_build_response(self) -> None:
@@ -340,17 +350,17 @@ class TestDictHelpers:
         )
 
         if not (success_resp["success"]):
-            msg = f"Expected True, got {success_resp['success']}"
+            msg: str = f"Expected True, got {success_resp['success']}"
             raise AssertionError(msg)
         if success_resp["data"] != {"user": "test"}:
-            msg = f"Expected {{'user': 'test'}}, got {success_resp['data']}"
+            msg: str = f"Expected {{'user': 'test'}}, got {success_resp['data']}"
             raise AssertionError(msg)
         assert success_resp["headers"] == {"X-Test": "value"}
         if success_resp["status"] != HTTP_OK:
-            msg = f"Expected {200}, got {success_resp['status']}"
+            msg: str = f"Expected {200}, got {success_resp['status']}"
             raise AssertionError(msg)
         if "timestamp" not in success_resp:
-            msg = f"Expected {'timestamp'} in {success_resp}"
+            msg: str = f"Expected {'timestamp'} in {success_resp}"
             raise AssertionError(msg)
 
         # Error response
@@ -361,11 +371,11 @@ class TestDictHelpers:
         )
 
         if error_resp["success"]:
-            msg = f"Expected False, got {error_resp['success']}"
+            msg: str = f"Expected False, got {error_resp['success']}"
             raise AssertionError(msg)
         assert error_resp["error"] == "Something went wrong"
         if error_resp["status"] != 400:
-            msg = f"Expected {400}, got {error_resp['status']}"
+            msg: str = f"Expected {400}, got {error_resp['status']}"
             raise AssertionError(msg)
 
     def test_filter_user_data(self) -> None:
@@ -382,11 +392,11 @@ class TestDictHelpers:
         # Filter sensitive data
         safe_data = flext_auth_filter_user_data(user_data)
         if "password_hash" not in safe_data:
-            msg = f"Expected {'password_hash'} not in {safe_data}"
+            msg: str = f"Expected {'password_hash'} not in {safe_data}"
             raise AssertionError(msg)
         assert "username" in safe_data
         if safe_data["id"] != "123":
-            msg = f"Expected {'123'}, got {safe_data['id']}"
+            msg: str = f"Expected {'123'}, got {safe_data['id']}"
             raise AssertionError(msg)
 
         # Filter specific fields
@@ -396,11 +406,11 @@ class TestDictHelpers:
             exclude_sensitive=False,
         )
         if set(limited_data.keys()) != {"id", "username"}:
-            msg = f"Expected {{'id', 'username'}}, got {set(limited_data.keys())}"
+            msg: str = f"Expected {{'id', 'username'}}, got {set(limited_data.keys())}"
             raise AssertionError(msg)
         assert limited_data["id"] == "123"
         if limited_data["username"] != "test":
-            msg = f"Expected {'test'}, got {limited_data['username']}"
+            msg: str = f"Expected {'test'}, got {limited_data['username']}"
             raise AssertionError(msg)
 
 
@@ -426,9 +436,7 @@ class TestSpecializedDecorators:
         REDACTED_LDAP_BIND_PASSWORD_token_result = flext_auth_generate_jwt(
             REDACTED_LDAP_BIND_PASSWORD_payload, secret="test-secret"
         )
-        assert REDACTED_LDAP_BIND_PASSWORD_token_result.is_success, (
-            f"JWT generation failed: {REDACTED_LDAP_BIND_PASSWORD_token_result.error}"
-        )
+        assert REDACTED_LDAP_BIND_PASSWORD_token_result.success, f"JWT generation failed: {REDACTED_LDAP_BIND_PASSWORD_token_result.error}"
         REDACTED_LDAP_BIND_PASSWORD_token = REDACTED_LDAP_BIND_PASSWORD_token_result.data
 
         # Test with REDACTED_LDAP_BIND_PASSWORD token - due to implementation bug, this may still fail
@@ -455,9 +463,7 @@ class TestSpecializedDecorators:
         # Test with user token (should fail)
         user_payload = {"user_id": "456", "role": FLEXT_AUTH_USER}
         user_token_result = flext_auth_generate_jwt(user_payload, secret="test-secret")
-        assert user_token_result.is_success, (
-            f"JWT generation failed: {user_token_result.error}"
-        )
+        assert user_token_result.success, f"JWT generation failed: {user_token_result.error}"
         user_token = user_token_result.data
 
         user_request = {
@@ -603,7 +609,7 @@ class TestIntegration:
 
         # 2. Generate token
         token_result = flext_auth_generate_jwt(user_data, secret="workflow-secret")
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
 
         # 3. Create decorator function with correct interface

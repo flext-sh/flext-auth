@@ -37,7 +37,7 @@ class TestFlextAuthDecorators:
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         payload = {"user_id": "test123", "username": "testuser", "role": "user"}
         token_result = flext_auth_generate_jwt(payload, secret=secret)
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
 
         @flext_auth_required(secret_key=secret)
@@ -95,7 +95,7 @@ class TestFlextAuthDecorators:
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         payload = {"user_id": "REDACTED_LDAP_BIND_PASSWORD123", "username": "REDACTED_LDAP_BIND_PASSWORD", "role": ADMIN_ROLE}
         token_result = flext_auth_generate_jwt(payload, secret=secret)
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
 
         @flext_auth_role_required(ADMIN_ROLE, secret_key=secret)
@@ -122,7 +122,7 @@ class TestFlextAuthDecorators:
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         payload = {"user_id": "user123", "username": "user", "role": USER_ROLE}
         token_result = flext_auth_generate_jwt(payload, secret=secret)
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
 
         @flext_auth_role_required(ADMIN_ROLE, secret_key=secret)
@@ -150,7 +150,7 @@ class TestFlextAuthDecorators:
             "permissions": ["delete", "create", "update"],
         }
         token_result = flext_auth_generate_jwt(payload, secret=secret)
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
 
         @flext_auth_permission_required("delete", secret=secret)
@@ -168,7 +168,7 @@ class TestFlextAuthDecorators:
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         payload = {"user_id": "user123", "username": "user", "role": USER_ROLE}
         token_result = flext_auth_generate_jwt(payload, secret=secret)
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
 
         @flext_auth_permission_required("delete", secret=secret)
@@ -204,7 +204,7 @@ class TestFlextAuthUltraHelpers:
             "SecurePassword123!",
         )
 
-        assert result.is_success
+        assert result.success
         if "user" not in result.data:
             raise AssertionError(f"Expected {'user'} in {result.data}")
         assert "session" in result.data
@@ -221,7 +221,7 @@ class TestFlextAuthUltraHelpers:
         """Test one-liner with invalid email."""
         result = flext_auth_one_liner("testuser", "invalid-email", "SecurePassword123!")
 
-        assert not result.is_success
+        assert not result.success
         if "Invalid email format" not in result.error:
             raise AssertionError(f"Expected {'Invalid email format'} in {result.error}")
 
@@ -229,7 +229,7 @@ class TestFlextAuthUltraHelpers:
         """Test one-liner with weak password."""
         result = flext_auth_one_liner("testuser", "test@example.com", "weak")
 
-        assert not result.is_success
+        assert not result.success
         if "Weak password" not in result.error:
             raise AssertionError(f"Expected {'Weak password'} in {result.error}")
 
@@ -237,7 +237,7 @@ class TestFlextAuthUltraHelpers:
         """Test one-liner with missing fields."""
         result = flext_auth_one_liner("", "test@example.com", "SecurePassword123!")
 
-        assert not result.is_success
+        assert not result.success
         if "Username, email and password are required" not in result.error:
             raise AssertionError(
                 f"Expected {'Username, email and (password are required'} in {result.error}"
@@ -247,7 +247,7 @@ class TestFlextAuthUltraHelpers:
         """Test instant API creation success."""
         result = flext_auth_instant_api("my_service", "api")
 
-        assert result.is_success
+        assert result.success
         if "api_key" not in result.data:
             raise AssertionError(f"Expected {'api_key'} in {result.data}")
         assert "headers" in result.data
@@ -269,7 +269,7 @@ class TestFlextAuthUltraHelpers:
             secret_key="custom-secret-12345678901234567890123456789012345678901234567890",
         )
 
-        assert result.is_success
+        assert result.success
         if result.data["user"] != "custom_service":
             raise AssertionError(
                 f"Expected {'custom_service'}, got {result.data['user']}"
@@ -282,7 +282,7 @@ class TestFlextAuthUltraHelpers:
         """Test instant API creation with invalid expiration."""
         result = flext_auth_instant_api("service", "api", expires_days=0)
 
-        assert not result.is_success
+        assert not result.success
         if "Expires days must be between 1 and 3650" not in result.error:
             raise AssertionError(
                 f"Expected {'Expires days must be between 1 and 3650'} in {result.error}"
@@ -292,7 +292,7 @@ class TestFlextAuthUltraHelpers:
         """Test instant API creation with missing parameters."""
         result = flext_auth_instant_api("", "api")
 
-        assert not result.is_success
+        assert not result.success
         if "Username and scope are required" not in result.error:
             raise AssertionError(
                 f"Expected {'Username and scope are required'} in {result.error}"
@@ -303,12 +303,12 @@ class TestFlextAuthUltraHelpers:
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         payload = {"user_id": "test123", "username": "testuser", "role": "REDACTED_LDAP_BIND_PASSWORD"}
         token_result = flext_auth_generate_jwt(payload, secret=secret)
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
 
         result = flext_auth_check_token(token, secret)
 
-        assert result.is_success
+        assert result.success
         if not (result.data["valid"]):
             raise AssertionError(f"Expected True, got {result.data['valid']}")
         if result.data["user_id"] != "test123":
@@ -324,7 +324,7 @@ class TestFlextAuthUltraHelpers:
         """Test token checking with invalid token."""
         result = flext_auth_check_token("invalid.token.123", "secret")
 
-        assert not result.is_success
+        assert not result.success
         if "Token validation failed" not in result.error:
             raise AssertionError(
                 f"Expected {'Token validation failed'} in {result.error}"
@@ -334,7 +334,7 @@ class TestFlextAuthUltraHelpers:
         """Test token checking with invalid format."""
         result = flext_auth_check_token("not-a-jwt", "secret")
 
-        assert not result.is_success
+        assert not result.success
         if "Invalid JWT format" not in result.error:
             raise AssertionError(f"Expected {'Invalid JWT format'} in {result.error}")
 
@@ -342,7 +342,7 @@ class TestFlextAuthUltraHelpers:
         """Test token checking with empty token."""
         result = flext_auth_check_token("", "secret")
 
-        assert not result.is_success
+        assert not result.success
         if "Token is required" not in result.error:
             raise AssertionError(f"Expected {'Token is required'} in {result.error}")
 
@@ -370,7 +370,7 @@ class TestFlextAuthMixin:
         secret = controller._auth._jwt_service.secret_key
         payload = {"user_id": "test123", "username": "testuser", "role": "user"}
         token_result = flext_auth_generate_jwt(payload, secret=secret)
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
 
         user = controller.get_current_user(token)
@@ -413,7 +413,7 @@ class TestFlextAuthMixin:
         secret = controller._auth._jwt_service.secret_key
         payload = {"user_id": "REDACTED_LDAP_BIND_PASSWORD123", "username": "REDACTED_LDAP_BIND_PASSWORD", "role": ADMIN_ROLE}
         token_result = flext_auth_generate_jwt(payload, secret=secret)
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
 
         has_permission = controller.check_permission(token, "delete")
@@ -434,7 +434,7 @@ class TestFlextAuthMixin:
         secret = DEFAULT_JWT_SECRET
         payload = {"user_id": "user123", "username": "user", "role": USER_ROLE}
         token_result = flext_auth_generate_jwt(payload, secret=secret)
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
 
         has_permission = controller.check_permission(token, "delete")
@@ -467,7 +467,7 @@ class TestFlextAuthMixin:
             ),
         )
 
-        if register_result.is_success:
+        if register_result.success:
             session_data = controller.create_session("sessionuser", "SessionPass123!")
             assert isinstance(session_data, dict)
             # Session creation might fail due to login issues, but interface works

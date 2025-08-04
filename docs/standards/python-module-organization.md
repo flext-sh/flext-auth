@@ -1110,7 +1110,7 @@ class TestFlextUser:
 
         result = user.authenticate("correct_password", mock_password_service)
 
-        assert result.is_success
+        assert result.success
         assert user.failed_login_attempts == 0
         assert user.last_login is not None
         assert len(user.domain_events) == 1
@@ -1209,12 +1209,12 @@ class TestAuthenticationFlows:
             "test@example.com",
             "SecurePassword123!"
         )
-        assert register_result.is_success
+        assert register_result.success
 
         # Test: Login with correct credentials
         login_result = await auth_service.login("testuser", "SecurePassword123!")
 
-        assert login_result.is_success
+        assert login_result.success
         assert "access_token" in login_result.data
         assert "refresh_token" in login_result.data
         assert "user" in login_result.data
@@ -1243,7 +1243,7 @@ class TestAuthenticationFlows:
         # Test: Validate token
         validation_result = await auth_service.validate_jwt(token)
 
-        assert validation_result.is_success
+        assert validation_result.success
         assert validation_result.data["username"] == "testuser"
         assert "user_id" in validation_result.data
 
@@ -1257,13 +1257,13 @@ class TestAuthenticationFlows:
         # Test: Get user sessions
         sessions_result = await auth_service.get_user_sessions(login_result.data["user"]["id"])
 
-        assert sessions_result.is_success
+        assert sessions_result.success
         assert len(sessions_result.data) >= 1  # At least the current session
 
         # Test: Logout (revoke session)
         logout_result = await auth_service.logout(login_result.data["session"]["id"])
 
-        assert logout_result.is_success
+        assert logout_result.success
 ```
 
 ### **Security Testing Patterns**
@@ -1321,7 +1321,7 @@ class TestSecurityFeatures:
 
         # Test: Token should be valid initially
         validation_result = await auth_service.validate_jwt(token)
-        assert validation_result.is_success
+        assert validation_result.success
 
         # Test: Simulate token expiration
         with patch('time.time', return_value=time.time() + 3600):  # 1 hour later
@@ -1545,10 +1545,10 @@ class FlextAuthBridge:
         result = asyncio.run(self.auth_service.validate_jwt(token))
 
         return {
-            "valid": result.is_success,
-            "user_id": result.data.get("user_id") if result.is_success else None,
-            "username": result.data.get("username") if result.is_success else None,
-            "roles": result.data.get("roles", []) if result.is_success else [],
+            "valid": result.success,
+            "user_id": result.data.get("user_id") if result.success else None,
+            "username": result.data.get("username") if result.success else None,
+            "roles": result.data.get("roles", []) if result.success else [],
             "error": result.error if result.is_failure else None
         }
 
@@ -1557,10 +1557,10 @@ class FlextAuthBridge:
         result = asyncio.run(self.auth_service.login(username, password))
 
         return {
-            "success": result.is_success,
-            "access_token": result.data.get("access_token") if result.is_success else None,
-            "refresh_token": result.data.get("refresh_token") if result.is_success else None,
-            "user": result.data.get("user") if result.is_success else None,
+            "success": result.success,
+            "access_token": result.data.get("access_token") if result.success else None,
+            "refresh_token": result.data.get("refresh_token") if result.success else None,
+            "user": result.data.get("user") if result.success else None,
             "error": result.error if result.is_failure else None
         }
 ```

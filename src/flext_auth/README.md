@@ -229,7 +229,7 @@ class AuthenticatedTap(TapBaseClass):
 
     async def get_records(self, stream):
         auth_result = await self.auth.authenticate_service("tap_name")
-        if auth_result.is_success:
+        if auth_result.success:
             return self._extract_with_context(stream, auth_result.data)
 ```
 
@@ -364,13 +364,13 @@ tests/
 def test_user_authentication_business_rules():
     user = FlextUser(username="test", email="test@example.com")
     result = user.authenticate("password", password_service)
-    assert result.is_success or result.is_failure  # Business rule validation
+    assert result.success or result.is_failure  # Business rule validation
 
 # Integration testing
 async def test_complete_authentication_workflow():
     auth = flext_auth_quick_start()
     result = await auth.authenticate("user", "password")
-    assert result.is_success
+    assert result.success
     assert "access_token" in result.data
 
 # Security testing

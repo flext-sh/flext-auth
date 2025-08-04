@@ -62,7 +62,7 @@ Example Usage:
     >>> # Authenticate user with railway-oriented programming
     >>> auth_service = FlextAuthenticationService()
     >>> result = auth_service.authenticate_user("john", "password", users_dict)
-    >>> if result.is_success:
+    >>> if result.success:
     ...     user = result.data
     ...     print(f"Authenticated user: {user.username}")
 
@@ -194,7 +194,7 @@ class FlextAuthenticationService(FlextDomainService):
         password_service = FlextPasswordService()
         verify_result = password_service.verify_password(password, user.password_hash)
 
-        if not verify_result.is_success or not verify_result.data:
+        if not verify_result.success or not verify_result.data:
             user.increment_failed_login()
             return FlextResult.fail("Invalid password")
 
@@ -235,7 +235,7 @@ class FlextAuthenticationService(FlextDomainService):
             hash_result = password_service.hash_password(
                 FlextPlainPassword(value=password),
             )
-            if not hash_result.is_success:
+            if not hash_result.success:
                 return FlextResult.fail(
                     f"Password hashing failed: {hash_result.error}",
                 )
@@ -284,7 +284,7 @@ class FlextAuthenticationService(FlextDomainService):
                 old_password,
                 user.password_hash,
             )
-            if not verify_result.is_success or not verify_result.data:
+            if not verify_result.success or not verify_result.data:
                 return FlextResult.fail("Current password is incorrect")
 
             # Validate new password using value object
@@ -299,7 +299,7 @@ class FlextAuthenticationService(FlextDomainService):
             hash_result = password_service.hash_password(
                 FlextPlainPassword(value=new_password),
             )
-            if not hash_result.is_success:
+            if not hash_result.success:
                 return FlextResult.fail(
                     f"Password hashing failed: {hash_result.error}",
                 )

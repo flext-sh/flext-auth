@@ -46,7 +46,7 @@ try:
     print(f"✅ Basic instantiation works: {type(auth).__name__}")
 
     result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-    print(f"✅ Quick start works: {result.is_success}")
+    print(f"✅ Quick start works: {result.success}")
 
     print("🎉 Container simulation successful!")
 

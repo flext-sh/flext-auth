@@ -34,15 +34,15 @@ def debug_password_service() -> None:
     service = FlextPasswordService(rounds=4)  # Fast for debugging
     hash_result = service.hash_password(password)
 
-    print(f"   Hash result success: {hash_result.is_success}")
-    if hash_result.is_success and hash_result.data:
+    print(f"   Hash result success: {hash_result.success}")
+    if hash_result.success and hash_result.data:
         hashed = str(hash_result.data)
         print(f"   Hash length: {len(hashed)}")
         print(f"   Hash preview: {hashed[:50]}...")
 
         # Test verification
         verify_result = service.verify_password(password, hashed)
-        print(f"   Verify result success: {verify_result.is_success}")
+        print(f"   Verify result success: {verify_result.success}")
         print(f"   Verify result data: {verify_result.data}")
     else:
         print(f"   Hash error: {hash_result.error}")
@@ -76,15 +76,15 @@ def debug_jwt_service() -> None:
         user_id=payload["user_id"], username=payload["username"], role=payload["role"]
     )
 
-    print(f"   Access token success: {access_result.is_success}")
-    if access_result.is_success and access_result.data:
+    print(f"   Access token success: {access_result.success}")
+    if access_result.success and access_result.data:
         token = access_result.data
         print(f"   Token preview: {token[:50]}...")
 
         # Test verification
         verify_result = service.verify_token(token)
-        print(f"   Verify success: {verify_result.is_success}")
-        if verify_result.is_success and verify_result.data:
+        print(f"   Verify success: {verify_result.success}")
+        if verify_result.success and verify_result.data:
             claims = verify_result.data
             print(f"   Claims type: {type(claims)}")
             print(f"   Claims user_id: {getattr(claims, 'user_id', 'NOT_FOUND')}")
@@ -98,14 +98,14 @@ def debug_jwt_service() -> None:
     # Test helper functions
     print("\n2. Helper functions:")
     helper_token_result = flext_auth_generate_jwt(payload)
-    print(f"   Helper token success: {helper_token_result.is_success}")
-    if helper_token_result.is_success and helper_token_result.data:
+    print(f"   Helper token success: {helper_token_result.success}")
+    if helper_token_result.success and helper_token_result.data:
         helper_token = helper_token_result.data
         print(f"   Helper token preview: {helper_token[:50]}...")
 
         helper_validate = flext_auth_validate_jwt(helper_token)
-        print(f"   Helper validate success: {helper_validate.is_success}")
-        if helper_validate.is_success and helper_validate.data:
+        print(f"   Helper validate success: {helper_validate.success}")
+        if helper_validate.success and helper_validate.data:
             decoded = helper_validate.data
             print(f"   Helper decoded: {decoded}")
 

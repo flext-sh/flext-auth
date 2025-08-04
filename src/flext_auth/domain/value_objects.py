@@ -313,7 +313,7 @@ class FlextBaseTokenValueObject(FlextValueObject):
     """
 
     value: str = Field(
-        ...
+        ...,
     )  # No min_length to allow custom validation in validate_domain_rules
 
     def __str__(self) -> str:
@@ -339,7 +339,7 @@ class FlextBaseTokenValueObject(FlextValueObject):
     def _validate_common_rules(self) -> None:
         """Common validation rules - raises ValueError for test compatibility."""
         if not self.value:
-            msg = f"{self._get_token_type_name()} cannot be empty"
+            msg: str = f"{self._get_token_type_name()} cannot be empty"
             raise ValueError(msg)
 
     def _get_token_display_name(self) -> str:
@@ -421,7 +421,7 @@ class FlextIPAddress(FlextValueObject):
         try:
             ipaddress.ip_address(v)
         except ValueError as e:
-            msg = f"Invalid IP address: {e}"
+            msg: str = f"Invalid IP address: {e}"
             raise ValueError(msg) from e
         else:
             return v
@@ -436,7 +436,7 @@ class FlextIPAddress(FlextValueObject):
             ipaddress.ip_address(self.value)
             return FlextResult.ok(None)
         except ValueError as e:
-            msg = f"Invalid IP address: {e}"
+            msg: str = f"Invalid IP address: {e}"
             return FlextResult.fail(msg)
 
 
@@ -444,7 +444,7 @@ class FlextUserAgent(FlextValueObject):
     """User agent value object."""
 
     value: str = Field(
-        ...
+        ...,
     )  # No max_length to allow custom validation in validate_domain_rules
 
     def __str__(self) -> str:

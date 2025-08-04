@@ -143,7 +143,7 @@ class FlextTokenTypeEnum(Enum):
 # EXPORTS - Clean constants API
 # =============================================================================
 
-__all__ = [
+__all__: list[str] = [
     "FlextAuthConstants",
     "FlextTokenTypeEnum",
     "FlextUserRoleEnum",

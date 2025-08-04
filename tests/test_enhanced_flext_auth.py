@@ -66,7 +66,7 @@ class TestFlextAuthEnhancedABI:
             require_strong_password=True,
         )
 
-        assert result.is_success
+        assert result.success
         if "user" not in result.data:
             raise AssertionError(f"Expected {'user'} in {result.data}")
         assert "password_strength" in result.data
@@ -90,7 +90,7 @@ class TestFlextAuthEnhancedABI:
             require_strong_password=True,
         )
 
-        assert not result.is_success
+        assert not result.success
         if "Weak password" not in result.error:
             raise AssertionError(f"Expected {'Weak password'} in {result.error}")
 
@@ -103,7 +103,7 @@ class TestFlextAuthEnhancedABI:
             "SecurePassword123!",
         )
 
-        assert not result.is_success
+        assert not result.success
         if "Invalid email format" not in result.error:
             raise AssertionError(f"Expected {'Invalid email format'} in {result.error}")
 
@@ -119,7 +119,7 @@ class TestFlextAuthEnhancedABI:
             require_strong_password=False,
         )
 
-        assert result.is_success
+        assert result.success
         assert result.data["password_strength"] is None
 
     @pytest.mark.asyncio
@@ -131,13 +131,13 @@ class TestFlextAuthEnhancedABI:
             "test@example.com",
             "TestPassword123!",
         )
-        assert register_result.is_success
+        assert register_result.success
 
         # Then login and validate in one call
         result = await auth.login_and_validate("testuser", "TestPassword123!")
 
         # Skip if login has issues (service problem, not interface)
-        if not result.is_success:
+        if not result.success:
             pytest.skip("Login service has issues - interface test conceptually passed")
 
         if "login" not in result.data:
@@ -157,7 +157,7 @@ class TestFlextAuthEnhancedABI:
         """Test login_and_validate with invalid credentials."""
         result = await auth.login_and_validate("nonexistent", "wrongpassword")
 
-        assert not result.is_success
+        assert not result.success
         if "Invalid username or password" not in result.error:
             raise AssertionError(
                 f"Expected {'Invalid username or password'} in {result.error}"
@@ -172,7 +172,7 @@ class TestFlextAuthEnhancedABI:
             "session@example.com",
             "SessionPass123!",
         )
-        assert register_result.is_success
+        assert register_result.success
 
         # Create complete session
         result = await auth.create_user_session(
@@ -182,7 +182,7 @@ class TestFlextAuthEnhancedABI:
         )
 
         # Skip if login has issues
-        if not result.is_success:
+        if not result.success:
             pytest.skip("Login service has issues - interface test conceptually passed")
 
         if "token" not in result.data:
@@ -200,7 +200,7 @@ class TestFlextAuthEnhancedABI:
             "session2@example.com",
             "SessionPass123!",
         )
-        assert register_result.is_success
+        assert register_result.success
 
         # Create session without user data
         result = await auth.create_user_session(
@@ -210,7 +210,7 @@ class TestFlextAuthEnhancedABI:
         )
 
         # Skip if login has issues
-        if not result.is_success:
+        if not result.success:
             pytest.skip("Login service has issues - interface test conceptually passed")
 
         if "token" not in result.data:
@@ -360,9 +360,7 @@ class TestEnhancedHelpers:
         # Create regular JWT (not API key)
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         regular_jwt_result = flext_auth_generate_jwt({"user_id": "123"}, secret=secret)
-        assert regular_jwt_result.is_success, (
-            f"JWT generation failed: {regular_jwt_result.error}"
-        )
+        assert regular_jwt_result.success, f"JWT generation failed: {regular_jwt_result.error}"
         regular_jwt = regular_jwt_result.data
 
         result = flext_auth_validate_api_key(regular_jwt, secret)
@@ -412,7 +410,7 @@ class TestFlextAuthBatchOperations:
 
         result = await batch_ops.register_multiple(users, validate_all=True)
 
-        if result.is_success:
+        if result.success:
             if len(result.data) != EXPECTED_DATA_COUNT:
                 raise AssertionError(f"Expected {3}, got {len(result.data)}")
             # Verify all users were created
@@ -448,7 +446,7 @@ class TestFlextAuthBatchOperations:
 
         result = await batch_ops.register_multiple(users, validate_all=False)
 
-        if result.is_success:
+        if result.success:
             if len(result.data) != EXPECTED_BULK_SIZE:
                 raise AssertionError(f"Expected {2}, got {len(result.data)}")
         else:
@@ -477,7 +475,7 @@ class TestFlextAuthBatchOperations:
         result = await batch_ops.register_multiple(users, validate_all=True)
 
         # Should fail due to invalid user
-        assert not result.is_success
+        assert not result.success
         if "Batch registration errors" not in result.error:
             raise AssertionError(
                 f"Expected {'Batch registration errors'} in {result.error}"
@@ -503,7 +501,7 @@ class TestIntegrationAdvanced:
             require_strong_password=True,
         )
 
-        assert register_result.is_success
+        assert register_result.success
         if register_result.data["user"]["role"] != "moderator":
             raise AssertionError(
                 f"Expected {'moderator'}, got {register_result.data['user']['role']}"
@@ -521,7 +519,7 @@ class TestIntegrationAdvanced:
         )
 
         # Skip if login has issues (service problem)
-        if not session_result.is_success:
+        if not session_result.success:
             pytest.skip(
                 "Session creation failed due to service issues - interface test passed",
             )
@@ -562,7 +560,7 @@ class TestIntegrationAdvanced:
         token_result = flext_auth_generate_jwt(
             payload, secret=secret, expires_minutes=120
         )
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
         assert token != ""
 
@@ -715,7 +713,7 @@ class TestNewEnhancedHelpers:
         }
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         token_result = flext_auth_generate_jwt(payload, secret=secret)
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
 
         context = flext_auth_extract_user_context(token, secret)
@@ -758,7 +756,7 @@ class TestNewEnhancedHelpers:
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         payload = {"user_id": "user123", "username": "testuser", "role": "REDACTED_LDAP_BIND_PASSWORD"}
         token_result = flext_auth_generate_jwt(payload, secret=secret)
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
 
         # Create context with permissions
@@ -785,7 +783,7 @@ class TestNewEnhancedHelpers:
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         payload = {"user_id": "user123", "username": "testuser", "role": "REDACTED_LDAP_BIND_PASSWORD"}
         token_result = flext_auth_generate_jwt(payload, secret=secret)
-        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
 
         context = flext_auth_create_auth_context(
@@ -825,17 +823,17 @@ class TestBatchOperationsAdvanced:
             {"user_id": "user1", "username": "user1"},
             secret=secret,
         )
-        assert token1_result.is_success, f"JWT generation failed: {token1_result.error}"
+        assert token1_result.success, f"JWT generation failed: {token1_result.error}"
         token2_result = flext_auth_generate_jwt(
             {"user_id": "user2", "username": "user2"},
             secret=secret,
         )
-        assert token2_result.is_success, f"JWT generation failed: {token2_result.error}"
+        assert token2_result.success, f"JWT generation failed: {token2_result.error}"
         tokens = [token1_result.data, token2_result.data]
 
         result = await batch_ops.validate_multiple_tokens(tokens)
 
-        if result.is_success:
+        if result.success:
             data = result.data
             if "valid_tokens" not in data:
                 raise AssertionError(f"Expected {'valid_tokens'} in {data}")
@@ -855,9 +853,9 @@ class TestBatchOperationsAdvanced:
         # Mix of valid and invalid tokens
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         token1_result = flext_auth_generate_jwt({"user_id": "user1"}, secret=secret)
-        assert token1_result.is_success, f"JWT generation failed: {token1_result.error}"
+        assert token1_result.success, f"JWT generation failed: {token1_result.error}"
         token2_result = flext_auth_generate_jwt({"user_id": "user2"}, secret=secret)
-        assert token2_result.is_success, f"JWT generation failed: {token2_result.error}"
+        assert token2_result.success, f"JWT generation failed: {token2_result.error}"
         tokens = [
             token1_result.data,
             "invalid.token.123",
@@ -867,7 +865,7 @@ class TestBatchOperationsAdvanced:
         result = await batch_ops.validate_multiple_tokens(tokens)
 
         # Should succeed with partial results
-        if result.is_success:
+        if result.success:
             data = result.data
             if "errors" not in data:
                 raise AssertionError(f"Expected {'errors'} in {data}")
@@ -891,7 +889,7 @@ class TestBatchOperationsAdvanced:
 
         result = await batch_ops.create_multiple_sessions(users, session_hours=48)
 
-        if result.is_success:
+        if result.success:
             data = result.data
             if "sessions" not in data:
                 raise AssertionError(f"Expected {'sessions'} in {data}")
@@ -964,9 +962,7 @@ class TestPublicInterfaceEnhanced:
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         payload = {"user_id": "user123", "scope": "api", "type": "api_key"}
         test_key_result = flext_auth_generate_jwt(payload, secret=secret)
-        assert test_key_result.is_success, (
-            f"JWT generation failed: {test_key_result.error}"
-        )
+        assert test_key_result.success, f"JWT generation failed: {test_key_result.error}"
         test_key = test_key_result.data
         key_data = flext_auth_validate_api_key(test_key, secret)
 

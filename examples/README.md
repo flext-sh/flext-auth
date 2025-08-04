@@ -32,7 +32,7 @@ from flext_auth import flext_auth_quick_start
 
 # Ready-to-use authentication service
 auth_result = flext_auth_quick_start()
-if auth_result.is_success:
+if auth_result.success:
     auth = auth_result.data
     result = auth.authenticate_user("username", "password")
 ```
@@ -52,7 +52,7 @@ from flext_auth import flext_auth_quick_start
 
 # Zero-config authentication setup
 auth_result = flext_auth_quick_start()
-if auth_result.is_success:
+if auth_result.success:
     auth = auth_result.data
 
     # Register a user
@@ -61,7 +61,7 @@ if auth_result.is_success:
     # Authenticate user
     login_result = auth.authenticate_user("john", "SecurePass123!")
 
-    print(f"Authentication successful: {login_result.is_success}")
+    print(f"Authentication successful: {login_result.success}")
 ```
 
 **Key Features Demonstrated**:
@@ -141,7 +141,7 @@ if auth_result.is_success:
 from flext_auth import flext_auth_complete_workflow
 
 result = flext_auth_complete_workflow("user", "user@example.com", "password")
-if result.is_success:
+if result.success:
     print("Authentication system ready!")
 ```
 
@@ -190,7 +190,7 @@ auth = auth_result.data
 @app.post("/login")
 async def login(username: str, password: str):
     result = await auth.authenticate_user(username, password)
-    return {"success": result.is_success}
+    return {"success": result.success}
 
 @app.get("/protected")
 @flext_auth_required(auth_service=auth)
@@ -212,7 +212,7 @@ auth = auth_result.data
 def login():
     data = request.get_json()
     result = auth.authenticate_user(data['username'], data['password'])
-    return jsonify({"success": result.is_success})
+    return jsonify({"success": result.success})
 
 @app.route('/protected')
 @flext_auth_required(auth_service=auth)
@@ -236,7 +236,7 @@ def login(request):
         username = request.POST['username']
         password = request.POST['password']
         result = auth.authenticate_user(username, password)
-        return JsonResponse({"success": result.is_success})
+        return JsonResponse({"success": result.success})
 
 @flext_auth_required(auth_service=auth)
 def protected_view(request):
@@ -348,7 +348,7 @@ def main():
         # Example implementation
         result = demonstrate_feature()
 
-        if result.is_success:
+        if result.success:
             print("✅ Example completed successfully")
         else:
             print(f"❌ Example failed: {result.error}")

@@ -23,12 +23,12 @@ async def exemplo_tradicional_vs_flext() -> None:
     # Login em 1 linha (retorna FlextResult)
     login_result = await auth.login("REDACTED_LDAP_BIND_PASSWORD", "REDACTED_LDAP_BIND_PASSWORD123")
 
-    if login_result.is_success:
+    if login_result.success:
         access_token = login_result.data["access_token"]
 
         # Validação em 1 linha
         validation = await auth.validate(access_token)
-        if validation.is_success:
+        if validation.success:
             print("Token válido!")
 
         # Logout em 1 linha

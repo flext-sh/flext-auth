@@ -50,7 +50,7 @@ Example Usage:
     ...
     ...     def get_protected_data(self, token: str):
     ...         auth_result = self.validate_auth_token(token)
-    ...         if auth_result.is_success:
+    ...         if auth_result.success:
     ...             return {"data": "protected information"}
     ...         return {"error": "Authentication required"}
 
@@ -181,7 +181,7 @@ class FlextAuthMixin:
                     password,
                     ip_address="127.0.0.1",
                 )
-                if auth_result.is_success and auth_result.data:
+                if auth_result.success and auth_result.data:
                     # Convert auth result to dict format
                     return FlextResult.ok(
                         {"authenticated": True, "user": auth_result.data},
@@ -212,7 +212,7 @@ class FlextAuthMixin:
                 if self._auth_service is None:
                     return FlextResult.fail("Auth service not initialized")
                 validation_result = await self._auth_service.validate_token(token)
-                if validation_result.is_success and validation_result.data:
+                if validation_result.success and validation_result.data:
                     # Convert SecurityContext to dict format
                     context = validation_result.data
                     return FlextResult.ok(
@@ -419,7 +419,7 @@ class FlextAuthUserMixin:
         return None
 
 
-__all__ = [
+__all__: list[str] = [
     "FlextAuthMixin",
     "FlextAuthUserMixin",
 ]
