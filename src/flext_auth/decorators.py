@@ -85,9 +85,9 @@ from __future__ import annotations
 import asyncio
 import functools
 from collections.abc import Callable
-from typing import TYPE_CHECKING, ParamSpec, TypeVar, cast
+from typing import TYPE_CHECKING, ParamSpec, cast
 
-from flext_core import FlextLoggerFactory, FlextResult
+from flext_core import F, FlextLoggerFactory, FlextResult
 
 from flext_auth.jwt import FlextJWTService
 
@@ -100,11 +100,9 @@ _logger = FlextLoggerFactory.get_logger(__name__)
 
 # Type definitions for cleaner interfaces following type safety principles
 P = ParamSpec("P")
-R = TypeVar("R")
-# Use object instead of Any for strict mypy compatibility
-F = TypeVar("F", bound=Callable[..., object])  # type: ignore[explicit-any]
-AuthenticatedFunction = Callable[..., object]  # type: ignore[explicit-any]
-DecoratorCallable = Callable[[F], F]  # type: ignore[explicit-any]
+# R and F imported from flext_core to eliminate duplication
+AuthenticatedFunction = Callable[..., object]
+DecoratorCallable = Callable[[F], F]
 
 
 # REFACTORING: Parameter Object Pattern for decorator parameters
@@ -237,6 +235,7 @@ def _validate_token_with_secret(
                     "user_id": getattr(claims, "user_id", ""),
                     "username": getattr(claims, "username", ""),
                     "role": getattr(claims, "role", "user"),
+                    "permissions": getattr(claims, "permissions", []),
                     "exp": getattr(claims, "exp", 0),
                     "iat": getattr(claims, "iat", 0),
                 },

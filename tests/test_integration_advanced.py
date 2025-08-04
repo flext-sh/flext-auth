@@ -16,6 +16,7 @@ from flext_auth import (
     FlextResult,
     flext_auth_complete_workflow,
     flext_auth_generate_jwt,
+    flext_auth_hash_password,
     flext_auth_quick_start,
     flext_auth_required,
     flext_auth_validate_jwt,

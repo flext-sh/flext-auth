@@ -47,7 +47,6 @@ from flext_auth import (
     flext_auth_generate_jwt,
     flext_auth_hash_password,
     flext_auth_instant_api,
-    flext_auth_one_liner,
     flext_auth_permission_required,
     flext_auth_prod,
     flext_auth_quick_start,
@@ -59,7 +58,6 @@ from flext_auth import (
     flext_auth_validate_permissions,
     flext_auth_verify_password,
     flext_auth_web,
-    flext_auth_web_session,
 )
 
 # Example constants - not for production use
@@ -164,27 +162,37 @@ def demo_all_jwt_operations() -> None:
     secret = EXAMPLE_JWT_SECRET
 
     # Generate JWT
-    token = flext_auth_generate_jwt(payload, secret=secret, expires_minutes=30)
-    print(f"JWT generated: {token[:50]}...")
+    token_result = flext_auth_generate_jwt(payload, secret=secret, expires_minutes=30)
+    if token_result.is_success:
+        token = token_result.data
+        print(f"JWT generated: {token[:50]}...")
 
-    # Decode JWT
-    decoded = flext_auth_decode_jwt(token, secret)
-    if decoded:
-        print(f"JWT decoded - User: {decoded['username']}, Role: {decoded['role']}")
+        # Decode JWT
+        decoded = flext_auth_decode_jwt(token, secret)
+        if decoded:
+            print(f"JWT decoded - User: {decoded['username']}, Role: {decoded['role']}")
 
-    # Extract user context
-    context = flext_auth_extract_user_context(token, secret)
-    if context:
-        token_type = context["token_type"]
-        username = context["username"]
-        print(f"User context - Type: {token_type}, User: {username}")
+        # Extract user context
+        context = flext_auth_extract_user_context(token, secret)
+        if context:
+            token_type = context["token_type"]
+            username = context["username"]
+            print(f"User context - Type: {token_type}, User: {username}")
+        else:
+            print("Could not extract user context")
+    else:
+        token = None
+        print(f"JWT generation failed: {token_result.error}")
 
-    # Create auth context
-    auth_context = flext_auth_create_auth_context(
-        token, secret, include_permissions=True
-    )
-    if auth_context:
-        print(f"Auth context - Permissions: {auth_context.get('permissions', [])}")
+    # Create auth context (only if token was generated)
+    if token:
+        auth_context = flext_auth_create_auth_context(
+            token, secret, include_permissions=True
+        )
+        if auth_context:
+            print(f"Auth context - Permissions: {auth_context.get('permissions', [])}")
+    else:
+        print("Cannot create auth context without valid token")
 
 
 def demo_all_token_types() -> None:
@@ -252,10 +260,9 @@ def demo_all_session_operations() -> None:
     )
     print(f"Enhanced session: {enhanced_session['permissions']}")
 
-    # Web session from request data
-    request_data = {"username": "web_user", "password": "WebPass123!"}
-    web_session = flext_auth_web_session(request_data)
-    print(f"Web session success: {web_session['success']}")
+    # Web session from request data (skipping due to async context issue)
+    # web_session = flext_auth_web_session(request_data)  # Cannot use in async context
+    print("Web session: Skipped (async context conflict)")
 
 
 def demo_all_role_permission_operations() -> None:
@@ -301,33 +308,42 @@ def demo_all_validation_operations() -> None:
 
     # Token checking
     secret = EXAMPLE_CHECK_SECRET
-    test_token = flext_auth_generate_jwt(
+    test_token_result = flext_auth_generate_jwt(
         {"user_id": "check_user", "username": "checker", "role": USER_ROLE},
         secret=secret,
     )
 
-    check_result = flext_auth_check_token(test_token, secret)
-    print(f"Token check valid: {check_result['valid']}")
-    if check_result["valid"]:
-        print(f"  User: {check_result['user_id']}")
-        print(f"  Role: {check_result['role']}")
+    if test_token_result.is_success:
+        test_token = test_token_result.data
+        check_result_result = flext_auth_check_token(test_token, secret)
+        if check_result_result.is_success:
+            check_result = check_result_result.data
+            print(f"Token check valid: {check_result['valid']}")
+            if check_result["valid"]:
+                print(f"  User: {check_result['user_id']}")
+                print(f"  Role: {check_result['role']}")
+        else:
+            print(f"Token check failed: {check_result_result.error}")
+    else:
+        print(f"Failed to generate test token: {test_token_result.error}")
 
 
 def demo_ultra_helpers() -> None:
     """Demonstra todos os ultra-helpers."""
     print("\n=== All Ultra Helpers ===")
 
-    # One-liner workflow
-    one_liner_result = flext_auth_one_liner(
-        "oneliner_user",
-        "oneliner@example.com",
-        "OneLinerPass123!",
-    )
-    print(f"One-liner success: {one_liner_result['success']}")
+    # One-liner workflow (skipping due to async context issue)
+    # one_liner_result = flext_auth_one_liner("oneliner_user", "oneliner@example.com", "OneLinerPass123!")
+    print("One-liner workflow: Skipped (async context conflict)")
 
     # Instant API
     instant_api_result = flext_auth_instant_api("instant_service", "api")
-    print(f"Instant API success: {instant_api_result['success']}")
+    if instant_api_result.is_success:
+        api_data = instant_api_result.data
+        print(f"Instant API success: {True}")
+        print(f"  API Data: {type(api_data).__name__}")
+    else:
+        print(f"Instant API failed: {instant_api_result.error}")
 
     # Complete workflow (will fail in async context but demonstrates availability)
     workflow_result = flext_auth_complete_workflow(

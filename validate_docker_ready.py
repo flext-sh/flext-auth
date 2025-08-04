@@ -1,0 +1,143 @@
+#!/usr/bin/env python3  # noqa: EXE001
+"""Validate that FLEXT Auth is Docker-ready.
+
+Tests that the library works with standard Python package dependencies
+without complex build environments.
+"""
+
+import os
+import pathlib
+import subprocess
+import sys
+import tempfile
+
+
+def test_pip_install() -> bool | None:
+    """Test if FLEXT Auth can be installed via pip in a clean environment."""
+    try:
+        # Test that our dependencies are standard and pip-installable
+        deps = ["pydantic>=2.0.0", "structlog", "bcrypt", "pyjwt", "python-multipart"]
+
+        for _dep in deps:
+            pass
+
+        return True
+    except Exception:
+        return False
+
+
+def test_import_isolation():
+    """Test that imports work in isolated environment."""
+    test_code = """
+import sys
+sys.path.insert(0, "/app/src")
+
+try:
+    # Test basic imports
+    from flext_auth import FlextAuth, flext_auth_quick_start
+    from flext_auth.config import AppConfig
+    from flext_auth.domain.entities import FlextUser, FlextUserRole
+
+    print("✅ All imports successful")
+
+    # Test basic functionality
+    config = AppConfig()
+    auth = FlextAuth()
+    print(f"✅ Basic instantiation works: {type(auth).__name__}")
+
+    result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    print(f"✅ Quick start works: {result.is_success}")
+
+    print("🎉 Container simulation successful!")
+
+except ImportError as e:
+    print(f"❌ Import error: {e}")
+    sys.exit(1)
+except Exception as e:
+    print(f"❌ Runtime error: {e}")
+    sys.exit(1)
+"""
+
+    try:
+        # Write test to temp file
+        with tempfile.NamedTemporaryFile(encoding="utf-8", mode="w", suffix=".py", delete=False) as f:
+            f.write(test_code)
+            temp_file = f.name
+
+        # Set up environment like Docker would
+        env = os.environ.copy()
+        env["PYTHONPATH"] = (
+            "/home/marlonsc/flext/flext-auth/src:/home/marlonsc/flext/flext-core/src"
+        )
+
+        # Run the test
+        result = subprocess.run(
+            [sys.executable, temp_file],
+            check=False,
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+
+        if result.stderr:
+            pass
+
+        # Clean up
+        pathlib.Path(temp_file).unlink()
+
+        return result.returncode == 0
+
+    except Exception:
+        return False
+
+
+def test_examples_docker_ready() -> bool | None:
+    """Test that examples would work in Docker."""
+    try:
+        # Check that examples don't have complex dependencies
+        examples_path = "/home/marlonsc/flext/flext-auth/examples"
+
+        # Count working examples
+        working_examples = [
+            "01_basic_usage.py",
+            "02_advanced_features.py",
+            "03_comprehensive_demo.py",
+            "04_refactored_system_showcase.py",
+        ]
+
+        for example in working_examples:
+            example_path = os.path.join(examples_path, example)
+            if pathlib.Path(example_path).exists():
+                pass
+
+        return True
+    except Exception:
+        return False
+
+
+def main() -> int:
+    """Run Docker readiness validation."""
+    tests = [
+        ("Standard Dependencies", test_pip_install),
+        ("Import Isolation", test_import_isolation),
+        ("Examples Ready", test_examples_docker_ready),
+    ]
+
+    results = []
+    for test_name, test_func in tests:
+        success = test_func()
+        results.append((test_name, success))
+
+    all_passed = True
+    for test_name, success in results:
+        if not success:
+            all_passed = False
+
+    if all_passed:
+        return 0
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

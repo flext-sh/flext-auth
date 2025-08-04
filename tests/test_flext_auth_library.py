@@ -343,8 +343,10 @@ class TestFlextAuthHelpers:
     def test_generate_jwt_basico(self: FlextAuth) -> None:
         """Testa geração básica de JWT."""
         payload = {"user_id": "123", "username": "test"}
-        token = flext_auth_generate_jwt(payload)
+        token_result = flext_auth_generate_jwt(payload)
 
+        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        token = token_result.data
         assert token != ""
         if len(token.split(".")) != EXPECTED_DATA_COUNT:  # Header.Payload.Signature
             raise AssertionError(f"Expected {3}, got {len(token.split('.'))}")
@@ -352,8 +354,10 @@ class TestFlextAuthHelpers:
     def test_generate_jwt_com_expiracao(self: FlextAuth) -> None:
         """Testa geração de JWT com expiração customizada."""
         payload = {"user_id": "123", "username": "test"}
-        token = flext_auth_generate_jwt(payload, expires_minutes=60)
+        token_result = flext_auth_generate_jwt(payload, expires_minutes=60)
 
+        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        token = token_result.data
         assert token != ""
         if len(token.split(".")) != EXPECTED_DATA_COUNT:
             raise AssertionError(f"Expected {3}, got {len(token.split('.'))}")
@@ -363,8 +367,13 @@ class TestFlextAuthHelpers:
         secret = "test-secret-key-123456789"
         payload = {"user_id": "123", "username": "testuser", "role": "REDACTED_LDAP_BIND_PASSWORD"}
 
-        token = flext_auth_generate_jwt(payload, secret=secret)
-        decoded = flext_auth_decode_jwt(token, secret)
+        token_result = flext_auth_generate_jwt(payload, secret=secret)
+        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        token = token_result.data
+
+        decoded_result = flext_auth_decode_jwt(token, secret)
+        assert decoded_result.is_success, f"JWT decode failed: {decoded_result.error}"
+        decoded = decoded_result.data
 
         assert decoded is not None
         if decoded["user_id"] != "123":

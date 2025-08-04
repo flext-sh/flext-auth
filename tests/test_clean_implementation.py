@@ -46,12 +46,16 @@ def test_flext_auth_jwt_helpers() -> None:
     payload = {"user_id": "123", "username": "test"}
     secret = "test-secret-key"
 
-    token = flext_auth_generate_jwt(payload, secret=secret)
+    token_result = flext_auth_generate_jwt(payload, secret=secret)
+    assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+    token = token_result.data
     assert token != ""
     if len(token.split(".")) != EXPECTED_DATA_COUNT:
         raise AssertionError(f"Expected {3}, got {len(token.split('.'))}")
 
-    decoded = flext_auth_decode_jwt(token, secret)
+    decoded_result = flext_auth_decode_jwt(token, secret)
+    assert decoded_result.is_success, f"JWT decode failed: {decoded_result.error}"
+    decoded = decoded_result.data
     assert decoded is not None
     if decoded["user_id"] != "123":
         raise AssertionError(f"Expected {'123'}, got {decoded['user_id']}")

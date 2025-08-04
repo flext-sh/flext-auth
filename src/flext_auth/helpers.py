@@ -351,11 +351,18 @@ def flext_auth_generate_jwt(
         user_id = str(payload.get("user_id", ""))
         username = str(payload.get("username", ""))
         role = str(payload.get("role", "user"))
+        permissions = payload.get("permissions", [])
+
+        # Pass permissions as additional claims
+        additional_claims = {}
+        if permissions:
+            additional_claims["permissions"] = permissions
 
         return jwt_service.generate_access_token(
             user_id=user_id,
             username=username,
             role=role,
+            additional_claims=additional_claims,
         )
 
     except Exception as e:
@@ -393,13 +400,18 @@ def flext_auth_validate_jwt(
         if result.is_success and result.data:
             # Convert claims object to dict - access attributes safely
             claims = result.data
+            exp_time = getattr(claims, "exp", 0)
+            iat_time = getattr(claims, "iat", 0)
             return FlextResult.ok(
                 {
                     "user_id": getattr(claims, "sub", ""),  # JWT standard 'sub'
                     "username": getattr(claims, "username", ""),
                     "role": getattr(claims, "role", "user"),
-                    "exp": getattr(claims, "exp", 0),
-                    "iat": getattr(claims, "iat", 0),
+                    "exp": exp_time,
+                    "iat": iat_time,
+                    # Backward compatibility aliases
+                    "expires": exp_time,
+                    "issued": iat_time,
                 },
             )
         return FlextResult.fail(result.error or "Token validation failed")

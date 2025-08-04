@@ -26,7 +26,6 @@ from flext_auth import (
     flext_auth_validate_password_strength,
     flext_auth_verify_password,
 )
-from flext_auth.config import FlextAuthConfig
 
 # Example constants - not for production use
 
@@ -49,8 +48,12 @@ def example_basic_authentication() -> None:
     # Demonstrar configurações padrão
     print("\nDefault Configurations:")
 
-    config = FlextAuthConfig()
-    print(f"  JWT Secret: {config.jwt_secret_key[:10]}...")
+    from flext_auth.config import AppConfig
+
+    config = AppConfig()
+    print(
+        f"  JWT Secret: {config.jwt.secret_key[:10] if config.jwt.secret_key else 'Not set'}..."
+    )
     print(f"  Admin Role: {ADMIN_ROLE}")
     print(f"  User Role: {USER_ROLE}")
 
@@ -79,11 +82,12 @@ def example_password_operations() -> None:
     strength = flext_auth_validate_password_strength(password)
     print(f"Password score: {strength['score']}/5")
     print(f"Valid password: {strength['valid']}")
-    print(f"Length check: {strength['length']}")
-    print(f"Has uppercase: {strength['uppercase']}")
-    print(f"Has lowercase: {strength['lowercase']}")
-    print(f"Has digit: {strength['digit']}")
-    print(f"Has special: {strength['special']}")
+    print(f"Strength level: {strength['strength']}")
+    print(f"Time to crack: {strength['time_to_crack']}")
+    if strength["feedback"]:
+        print(f"Feedback: {', '.join(strength['feedback'])}")
+    else:
+        print("Feedback: Password meets security requirements")
 
 
 def example_email_validation() -> None:
@@ -185,14 +189,22 @@ def example_mixin_usage() -> None:
 
         def handle_request(self, token: str) -> dict[str, object]:
             """Handle request with authentication - simplified implementation."""
-            # Initialize auth for the controller
-            init_result = self.init_auth()
+            # Initialize auth for the controller - mixin requires auth_service
+            # For demonstration, we'll show the initialization pattern
+
+            # In real usage, you would pass an auth_service instance:
+            # auth_service = get_auth_service_from_di_container()
+            # init_result = self.init_auth(auth_service=auth_service)
+
+            # For this example, we'll simulate the mixin behavior without actual auth
+            init_result_success = False  # Mixin requires dependencies as documented
 
             return {
                 "success": True,
-                "message": "Controller initialized with FlextAuth capabilities",
-                "auth_initialized": init_result.is_success,
+                "message": "Controller demonstrates FlextAuth mixin pattern",
+                "auth_initialized": init_result_success,
                 "token_provided": bool(token),
+                "note": "Mixin requires auth_service parameter for full initialization",
             }
 
     # Use the controller
@@ -205,7 +217,8 @@ def example_mixin_usage() -> None:
     result_no_token = controller.handle_request("")
     print(f"Request without token: {result_no_token}")
 
-    print("Mixin controller created and tested successfully")
+    print("Mixin controller demonstrates pattern successfully")
+    print("Note: Full mixin functionality requires auth_service dependency injection")
 
 
 def example_ultra_helpers() -> None:
@@ -216,10 +229,17 @@ def example_ultra_helpers() -> None:
     result = flext_auth_complete_workflow(
         "quickuser", "quick@example.com", "QuickPass123!"
     )
-    print(f"Complete workflow success: {result.is_success}")
-    if result.is_success and result.data:
-        print(f"Workflow completed: {result.data['status']}")
-        print(f"User created: {result.data['user'].username}")
+    print(f"Complete workflow success: {result.get('success', False)}")
+    if result.get("success", False):
+        print(f"Workflow completed: {result.get('workflow_completed', 'N/A')}")
+        if "user" in result:
+            user_data = result["user"]
+            username = (
+                user_data.get("username")
+                if isinstance(user_data, dict)
+                else getattr(user_data, "username", "N/A")
+            )
+            print(f"User created: {username}")
 
     # Basic authentication demo
     auth = FlextAuth()
@@ -286,17 +306,28 @@ def example_complete_workflow() -> None:
         role="user",
     )
 
-    print(f"Complete workflow success: {workflow_result['success']}")
-    if workflow_result["success"]:
-        print(f"Workflow completed: {workflow_result['workflow_completed']}")
-        print(f"User: {workflow_result['user']['username']}")
-        print(f"Token: {workflow_result['token'][:30]}...")
-        print(f"Permissions: {workflow_result['permissions']}")
-        auth_context = workflow_result["auth_context"]
-        role = auth_context["role"] if auth_context else "none"
+    print(f"Complete workflow success: {workflow_result.get('success', False)}")
+    if workflow_result.get("success", False):
+        print(f"Workflow completed: {workflow_result.get('workflow_completed', 'N/A')}")
+        if "user" in workflow_result:
+            user_data = workflow_result["user"]
+            username = (
+                user_data.get("username")
+                if isinstance(user_data, dict)
+                else getattr(user_data, "username", "N/A")
+            )
+            print(f"User: {username}")
+        if "token" in workflow_result:
+            token = workflow_result["token"]
+            print(
+                f"Token: {token[:30] if isinstance(token, str) else str(token)[:30]}..."
+            )
+        print(f"Permissions: {workflow_result.get('permissions', 'N/A')}")
+        auth_context = workflow_result.get("auth_context")
+        role = auth_context.get("role") if isinstance(auth_context, dict) else "none"
         print(f"Auth context: {role}")
     else:
-        print(f"Workflow failed: {workflow_result['error']}")
+        print(f"Workflow failed: {workflow_result.get('error', 'Unknown error')}")
 
 
 def main() -> None:

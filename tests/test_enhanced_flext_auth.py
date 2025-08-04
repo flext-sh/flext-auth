@@ -359,7 +359,11 @@ class TestEnhancedHelpers:
         """Test API key validation with wrong token type."""
         # Create regular JWT (not API key)
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
-        regular_jwt = flext_auth_generate_jwt({"user_id": "123"}, secret=secret)
+        regular_jwt_result = flext_auth_generate_jwt({"user_id": "123"}, secret=secret)
+        assert regular_jwt_result.is_success, (
+            f"JWT generation failed: {regular_jwt_result.error}"
+        )
+        regular_jwt = regular_jwt_result.data
 
         result = flext_auth_validate_api_key(regular_jwt, secret)
 
@@ -555,7 +559,11 @@ class TestIntegrationAdvanced:
             "advanced-secret-key-12345678901234567890123456789012345678901234567890"
         )
         payload = {"user_id": "advanced123", "username": "advanced", "role": "REDACTED_LDAP_BIND_PASSWORD"}
-        token = flext_auth_generate_jwt(payload, secret=secret, expires_minutes=120)
+        token_result = flext_auth_generate_jwt(
+            payload, secret=secret, expires_minutes=120
+        )
+        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        token = token_result.data
         assert token != ""
 
         decoded = flext_auth_decode_jwt(token, secret)
@@ -706,7 +714,9 @@ class TestNewEnhancedHelpers:
             "type": "access_token",
         }
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
-        token = flext_auth_generate_jwt(payload, secret=secret)
+        token_result = flext_auth_generate_jwt(payload, secret=secret)
+        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        token = token_result.data
 
         context = flext_auth_extract_user_context(token, secret)
 
@@ -747,7 +757,9 @@ class TestNewEnhancedHelpers:
         # Create a token
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         payload = {"user_id": "user123", "username": "testuser", "role": "REDACTED_LDAP_BIND_PASSWORD"}
-        token = flext_auth_generate_jwt(payload, secret=secret)
+        token_result = flext_auth_generate_jwt(payload, secret=secret)
+        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        token = token_result.data
 
         # Create context with permissions
         context = flext_auth_create_auth_context(
@@ -772,7 +784,9 @@ class TestNewEnhancedHelpers:
         """Test auth context creation without permissions."""
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         payload = {"user_id": "user123", "username": "testuser", "role": "REDACTED_LDAP_BIND_PASSWORD"}
-        token = flext_auth_generate_jwt(payload, secret=secret)
+        token_result = flext_auth_generate_jwt(payload, secret=secret)
+        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        token = token_result.data
 
         context = flext_auth_create_auth_context(
             token,
@@ -807,16 +821,17 @@ class TestBatchOperationsAdvanced:
 
         # Create some test tokens
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
-        tokens = [
-            flext_auth_generate_jwt(
-                {"user_id": "user1", "username": "user1"},
-                secret=secret,
-            ),
-            flext_auth_generate_jwt(
-                {"user_id": "user2", "username": "user2"},
-                secret=secret,
-            ),
-        ]
+        token1_result = flext_auth_generate_jwt(
+            {"user_id": "user1", "username": "user1"},
+            secret=secret,
+        )
+        assert token1_result.is_success, f"JWT generation failed: {token1_result.error}"
+        token2_result = flext_auth_generate_jwt(
+            {"user_id": "user2", "username": "user2"},
+            secret=secret,
+        )
+        assert token2_result.is_success, f"JWT generation failed: {token2_result.error}"
+        tokens = [token1_result.data, token2_result.data]
 
         result = await batch_ops.validate_multiple_tokens(tokens)
 
@@ -839,10 +854,14 @@ class TestBatchOperationsAdvanced:
 
         # Mix of valid and invalid tokens
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
+        token1_result = flext_auth_generate_jwt({"user_id": "user1"}, secret=secret)
+        assert token1_result.is_success, f"JWT generation failed: {token1_result.error}"
+        token2_result = flext_auth_generate_jwt({"user_id": "user2"}, secret=secret)
+        assert token2_result.is_success, f"JWT generation failed: {token2_result.error}"
         tokens = [
-            flext_auth_generate_jwt({"user_id": "user1"}, secret=secret),
+            token1_result.data,
             "invalid.token.123",
-            flext_auth_generate_jwt({"user_id": "user2"}, secret=secret),
+            token2_result.data,
         ]
 
         result = await batch_ops.validate_multiple_tokens(tokens)
@@ -944,7 +963,11 @@ class TestPublicInterfaceEnhanced:
         api_key = flext_auth_create_api_key("user123", expires_days=30)
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         payload = {"user_id": "user123", "scope": "api", "type": "api_key"}
-        test_key = flext_auth_generate_jwt(payload, secret=secret)
+        test_key_result = flext_auth_generate_jwt(payload, secret=secret)
+        assert test_key_result.is_success, (
+            f"JWT generation failed: {test_key_result.error}"
+        )
+        test_key = test_key_result.data
         key_data = flext_auth_validate_api_key(test_key, secret)
 
         # 4. Enhanced session with permissions (1 line vs 30+)

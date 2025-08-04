@@ -88,6 +88,7 @@ from flext_core import (
 )
 
 from flext_auth.domain.value_objects import (
+    MAX_PASSWORD_LENGTH,
     FlextHashedPassword,
     FlextPlainPassword,
 )
@@ -266,7 +267,9 @@ class FlextPasswordService:
 
             # Verify hash format
             if not hash_str.startswith("$2b$"):
-                return FlextResult.fail("Invalid hash format")
+                return FlextResult.fail(
+                    "Failed to verify password: Invalid hash format"
+                )
 
             # Verify password
             password_bytes = password_str.encode("utf-8")
@@ -280,7 +283,9 @@ class FlextPasswordService:
                 f"Password verification failed: {e}",
             )
 
-    def generate_secure_password(self, length: int = 16) -> FlextResult[str]:
+    def generate_secure_password(
+        self, length: int = 16
+    ) -> FlextResult[FlextPlainPassword]:
         """Generate a cryptographically secure password.
 
         Args:
@@ -291,9 +296,13 @@ class FlextPasswordService:
 
         """
         try:
-            if length < RECOMMENDED_PASSWORD_LENGTH:
+            if length < MIN_PASSWORD_LENGTH:
                 return FlextResult.fail(
-                    "Password length must be at least 12 characters",
+                    "Password length must be at least 8 characters",
+                )
+            if length > MAX_PASSWORD_LENGTH:
+                return FlextResult.fail(
+                    "Password length must be at most 128 characters",
                 )
 
             # Character sets
@@ -322,13 +331,12 @@ class FlextPasswordService:
 
             password = "".join(password_list)
 
-            # Validate the generated password
+            # Validate the generated password and return as FlextPlainPassword
             try:
-                FlextPlainPassword(value=password)
+                password_obj = FlextPlainPassword(value=password)
+                return FlextResult.ok(password_obj)
             except (ValueError, TypeError) as e:
                 return FlextResult.fail(f"Generated password validation failed: {e}")
-
-            return FlextResult.ok(password)
 
         except (ValueError, TypeError, OSError) as e:
             return FlextResult.fail(f"Password generation failed: {e}")
@@ -443,7 +451,9 @@ class FlextPasswordService:
             return "months"
         return "days or less"
 
-    def check_password_strength(self, password: str) -> FlextResult[dict[str, object]]:
+    def check_password_strength(
+        self, password: str | FlextPlainPassword
+    ) -> FlextResult[dict[str, object]]:
         """Analyze password strength and return detailed feedback.
 
         Args:
@@ -454,15 +464,20 @@ class FlextPasswordService:
 
         """
         try:
+            # Convert FlextPlainPassword to string if needed
+            password_str = (
+                password.value if isinstance(password, FlextPlainPassword) else password
+            )
+
             # Use helper methods to analyze password
-            analysis = self._analyze_password_basic_properties(password)
+            analysis = self._analyze_password_basic_properties(password_str)
 
             # Calculate score using helper method
             analysis["score"] = self._calculate_password_score(analysis)
 
             # Check for common patterns
             common_patterns = ["123", "abc", "password", "REDACTED_LDAP_BIND_PASSWORD", "qwerty"]
-            if any(pattern in password.lower() for pattern in common_patterns):
+            if any(pattern in password_str.lower() for pattern in common_patterns):
                 analysis["has_common_patterns"] = True
                 score_value = analysis.get("score", 0)
                 current_score = int(score_value) if isinstance(score_value, int) else 0
@@ -484,10 +499,13 @@ class FlextPasswordService:
             final_score = int(score_value) if isinstance(score_value, int) else 0
             if final_score >= STRONG_STRENGTH_SCORE:
                 analysis["strength"] = "strong"
+                analysis["is_strong"] = True
             elif final_score >= MIN_STRENGTH_SCORE:
                 analysis["strength"] = "medium"
+                analysis["is_strong"] = False
             else:
                 analysis["strength"] = "weak"
+                analysis["is_strong"] = False
 
             # Estimate crack time using helper method
             analysis["estimated_crack_time"] = self._estimate_crack_time(analysis)

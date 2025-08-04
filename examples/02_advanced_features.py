@@ -52,25 +52,24 @@ def example_advanced_configuration() -> None:
     """Exemplo: Configuração avançada personalizada."""
     print("=== Advanced Configuration Example ===")
 
-    # Configuração personalizada para produção
+    # Configuração personalizada para produção (campos válidos)
     custom_config = FlextAuthConfig(
-        jwt_secret_key=EXAMPLE_PRODUCTION_SECRET,
-        jwt_algorithm="HS256",
-        access_token_expire_minutes=15,  # Tokens mais seguros, expiration curta
-        refresh_token_expire_days=30,
         bcrypt_rounds=14,  # Produção: mais seguro
         max_login_attempts=3,  # Mais restritivo
         lockout_duration_minutes=60,  # Lockout mais longo
         session_timeout_hours=8,  # Sessões mais curtas
         max_concurrent_sessions=2,  # Limite baixo
+        debug=False,  # Produção
+        environment="production",
     )
 
     print("Advanced Configuration Created:")
-    print(f"  JWT Algorithm: {custom_config.jwt_algorithm}")
-    print(f"  Access Token Expiry: {custom_config.access_token_expire_minutes} minutes")
+    print(f"  Environment: {custom_config.environment}")
+    print(f"  Debug Mode: {custom_config.debug}")
     print(f"  Bcrypt Rounds: {custom_config.bcrypt_rounds}")
     print(f"  Max Login Attempts: {custom_config.max_login_attempts}")
     print(f"  Session Timeout: {custom_config.session_timeout_hours} hours")
+    print(f"  Max Concurrent Sessions: {custom_config.max_concurrent_sessions}")
 
     # Criar instância com configuração personalizada
     FlextAuth(config=custom_config.model_dump())
@@ -93,11 +92,25 @@ def example_jwt_operations() -> None:
 
     # Gerar JWT
     secret = EXAMPLE_JWT_SECRET
-    token = flext_auth_generate_jwt(user_payload, secret=secret, expires_minutes=60)
-    print(f"JWT Generated: {token[:50]}...")
+    token_result = flext_auth_generate_jwt(
+        user_payload, secret=secret, expires_minutes=60
+    )
+    if token_result.is_success:
+        token = token_result.data
+        print(f"JWT Generated: {token[:50]}...")
 
-    # Decodificar JWT
-    decoded = flext_auth_decode_jwt(token, secret)
+        # Decodificar JWT
+        decoded = flext_auth_decode_jwt(token, secret)
+        if isinstance(decoded, dict) and decoded:
+            # Successfully decoded
+            pass
+        else:
+            decoded = None
+            print("JWT decode failed")
+    else:
+        token = None
+        decoded = None
+        print(f"JWT generation failed: {token_result.error}")
     if decoded:
         print("JWT Decoded successfully:")
         print(f"  User ID: {decoded['user_id']}")
@@ -373,9 +386,16 @@ async def example_batch_operations() -> None:
             batch_validation_result = await batch_ops.validate_multiple_tokens(tokens)
             if batch_validation_result.is_success:
                 validation_data = batch_validation_result.data
-                valid_count = validation_data["valid_count"]
-                total_count = validation_data["total"]
-                print(f"Batch Token Validation: {valid_count}/{total_count} valid")
+                if isinstance(validation_data, dict):
+                    valid_count = validation_data.get("valid_count", 0)
+                    total_count = validation_data.get("total", len(tokens))
+                    print(f"Batch Token Validation: {valid_count}/{total_count} valid")
+                elif isinstance(validation_data, list):
+                    valid_count = len([v for v in validation_data if v])
+                    total_count = len(validation_data)
+                    print(f"Batch Token Validation: {valid_count}/{total_count} valid")
+                else:
+                    print(f"Batch validation succeeded with data: {validation_data}")
             else:
                 print(f"Batch validation failed: {batch_validation_result.error}")
     else:

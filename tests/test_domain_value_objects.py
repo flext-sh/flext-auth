@@ -202,14 +202,13 @@ class TestRefreshToken:
         valid_token = FlextRefreshToken(value="a" * 32)
         valid_token.validate_domain_rules()  # Should not raise
 
-        # Test empty value - fails at Pydantic validation level
-        with pytest.raises(ValueError, match="String should have at least 1 character"):
-            FlextRefreshToken(value="")
+        # Test empty value - fails at validate_domain_rules level
+        with pytest.raises(ValueError, match="Refresh token value cannot be empty"):
+            FlextRefreshToken(value="").validate_domain_rules()
 
         # Test short token
         with pytest.raises(
-            ValueError,
-            match="Refresh token must be at least 32 characters",
+            ValueError, match="Refresh token must be at least 32 characters"
         ):
             FlextRefreshToken(value="short").validate_domain_rules()
 

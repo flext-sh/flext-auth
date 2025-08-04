@@ -101,17 +101,13 @@ class TestDatabaseConfig:
         assert config.max_pool_size == 100
 
         # Invalid ranges - these should raise validation errors
-        with pytest.raises(
-            ValidationError, match="Minimum pool size must be at least 1"
-        ):
+        with pytest.raises(ValueError, match="Minimum pool size must be at least 1"):
             DatabaseConfig(min_pool_size=0)
 
-        with pytest.raises(ValidationError, match="Minimum pool size cannot exceed 20"):
+        with pytest.raises(ValueError, match="Minimum pool size cannot exceed 20"):
             DatabaseConfig(min_pool_size=21)
 
-        with pytest.raises(
-            ValidationError, match="Maximum pool size cannot exceed 100"
-        ):
+        with pytest.raises(ValueError, match="Maximum pool size cannot exceed 100"):
             DatabaseConfig(max_pool_size=101)
 
 
@@ -274,22 +270,22 @@ class TestSecurityConfig:
 
         # Invalid ranges should raise validation errors
         with pytest.raises(
-            ValueError, match="Maximum failed attempts must be at least 1"
+            ValidationError, match="Input should be greater than or equal to 1"
         ):
             SecurityConfig(max_failed_attempts=0)
 
         with pytest.raises(
-            ValueError, match="Maximum failed attempts must be at most 10"
+            ValidationError, match="Input should be less than or equal to 10"
         ):
             SecurityConfig(max_failed_attempts=21)
 
         with pytest.raises(
-            ValueError, match="Lockout duration must be at least 1 minute"
+            ValidationError, match="Input should be greater than or equal to 1"
         ):
             SecurityConfig(lockout_duration_minutes=0)
 
         with pytest.raises(
-            ValueError, match="Session expiration must be at least 1 hour"
+            ValidationError, match="Input should be greater than or equal to 1"
         ):
             SecurityConfig(session_expire_hours=0)
 

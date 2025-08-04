@@ -282,89 +282,112 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
     async def authenticate(
         self,
         username: str,
-        password: str,  # noqa: ARG002  # Strategy interface compatibility
-        ip_address: str,  # noqa: ARG002  # Strategy interface compatibility
-        user_agent: str | None,  # noqa: ARG002  # Strategy interface compatibility
+        password: str,  # Strategy interface compatibility
+        ip_address: str,  # Strategy interface compatibility
+        user_agent: str | None,  # Strategy interface compatibility
     ) -> FlextResult[dict[str, object]]:
         """Authenticate user with username/password - Railway-Oriented Programming."""
         try:
-            # Full authentication pipeline with proper format
-            # Step 1: Find user
-            user_result = await self.user_repo.get_by_username(username)
-            if not user_result.is_success or not user_result.data:
-                return FlextResult.fail("Invalid username or password")
-
-            user = user_result.data
-
-            # Step 2: Verify password
-            password_result = self.password_service.verify_password(
-                password, user.password_hash
-            )
-            if not password_result.is_success or not password_result.data:
-                return FlextResult.fail("Invalid username or password")
-
-            # Step 3: Generate session ID first
-            from datetime import timedelta  # noqa: PLC0415
-
-            session_id = f"session_{user.id}_{int(datetime.now(UTC).timestamp())}"
-
-            # Step 4: Generate tokens with session_id
-            access_token_result = self.jwt_service.generate_access_token(
-                user_id=user.id,
-                username=user.username,
-                role=user.role.value,
-                session_id=session_id,
-            )
-            if not access_token_result.is_success:
-                return FlextResult.fail("Token generation failed")
-
-            refresh_token_result = self.jwt_service.generate_refresh_token(
-                user_id=user.id,
-                session_id=session_id,
-            )
-            if not refresh_token_result.is_success:
-                return FlextResult.fail("Refresh token generation failed")
-
-            # Step 5: Create session with tokens
-            from flext_auth.domain.entities import FlextSession  # noqa: PLC0415
-
-            session = FlextSession(
-                id=session_id,
-                user_id=user.id,
-                access_token=access_token_result.data,
-                refresh_token=refresh_token_result.data,
-                ip_address=ip_address,
-                user_agent=user_agent,
-                expires_at=datetime.now(UTC) + timedelta(hours=24),
-            )
-
-            session_result = await self.session_repo.save(session)
-            if not session_result.is_success:
-                return FlextResult.fail("Session creation failed")
-
-            # Return expected format
-            return FlextResult.ok(
-                {
-                    "user": {
-                        "id": user.id,
-                        "username": user.username,
-                        "email": user.email,
-                        "role": user.role.value,
-                    },
-                    "session": {
-                        "id": session.id,
-                        "ip_address": session.ip_address,
-                        "user_agent": session.user_agent,
-                        "created_at": session.created_at.isoformat(),
-                    },
-                    "tokens": {
-                        "access_token": access_token_result.data,
-                        "refresh_token": refresh_token_result.data,
-                    },
-                },
+            return await self._execute_authentication_pipeline(
+                username, password, ip_address, user_agent
             )
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult.fail(f"Authentication failed: {e}")
+
+    async def _execute_authentication_pipeline(
+        self,
+        username: str,
+        password: str,
+        ip_address: str,
+        user_agent: str | None,
+    ) -> FlextResult[dict[str, object]]:
+        """Execute authentication pipeline with early exits."""
+        # Step 1: Find user
+        user_result = await self.user_repo.get_by_username(username)
+        if not user_result.is_success or not user_result.data:
+            return FlextResult.fail("Invalid username or password")
+
+        user = user_result.data
+
+        # Step 2: Verify password
+        password_result = self.password_service.verify_password(
+            password,
+            user.password_hash,
+        )
+        if not password_result.is_success or not password_result.data:
+            return FlextResult.fail("Invalid username or password")
+
+        # Step 3: Generate tokens and session
+        return await self._create_authentication_session(
+            user, ip_address, user_agent
+        )
+
+    async def _create_authentication_session(
+        self,
+        user: object,  # User type
+        ip_address: str,
+        user_agent: str | None,
+    ) -> FlextResult[dict[str, object]]:
+        """Create session and tokens for authenticated user."""
+        from datetime import timedelta  # noqa: PLC0415
+
+        from flext_auth.domain.entities import FlextSession  # noqa: PLC0415
+
+        session_id = f"session_{user.id}_{int(datetime.now(UTC).timestamp())}"
+
+        # Generate tokens
+        access_token_result = self.jwt_service.generate_access_token(
+            user_id=user.id,
+            username=user.username,
+            role=user.role.value,
+            session_id=session_id,
+        )
+        if not access_token_result.is_success:
+            return FlextResult.fail("Token generation failed")
+
+        refresh_token_result = self.jwt_service.generate_refresh_token(
+            user_id=user.id,
+            session_id=session_id,
+        )
+        if not refresh_token_result.is_success:
+            return FlextResult.fail("Refresh token generation failed")
+
+        # Create and save session
+        session = FlextSession(
+            id=session_id,
+            user_id=user.id,
+            access_token=access_token_result.data,
+            refresh_token=refresh_token_result.data,
+            ip_address=ip_address,
+            user_agent=user_agent,
+            expires_at=datetime.now(UTC) + timedelta(hours=24),
+        )
+
+        session_result = await self.session_repo.save(session)
+        if not session_result.is_success:
+            return FlextResult.fail("Session creation failed")
+
+        # Return expected format
+        return FlextResult.ok(
+            {
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "role": user.role.value,
+                },
+                "session": {
+                    "id": session.id,
+                    "ip_address": session.ip_address,
+                    "user_agent": session.user_agent,
+                    "created_at": session.created_at.isoformat(),
+                },
+                "tokens": {
+                    "access_token": access_token_result.data,
+                    "refresh_token": refresh_token_result.data,
+                },
+            },
+        )
 
 
 class DefaultTokenManagementStrategy(TokenManagementStrategy):
@@ -482,21 +505,21 @@ class DefaultUserManagementStrategy(UserManagementStrategy):
         """Register new user."""
         # Check if username already exists
         existing_user_result = await self.user_repo.get_by_username(
-            registration_data.username
+            registration_data.username,
         )
         if existing_user_result.is_success and existing_user_result.data:
             return FlextResult.fail("Username already exists")
 
         # Check if email already exists
         existing_email_result = await self.user_repo.get_by_email(
-            registration_data.email
+            registration_data.email,
         )
         if existing_email_result.is_success and existing_email_result.data:
             return FlextResult.fail("Email already exists")
 
         # Hash password properly
         password_result = self.password_service.hash_password(
-            registration_data.password
+            registration_data.password,
         )
         if not password_result.is_success:
             return FlextResult.fail("Password hashing failed")
@@ -505,7 +528,8 @@ class DefaultUserManagementStrategy(UserManagementStrategy):
             id=f"user_{registration_data.username}",
             username=registration_data.username,
             email=registration_data.email,
-            password_hash=password_result.data.value,  # Extract string from FlextHashedPassword
+            # Extract from FlextHashedPassword
+            password_hash=password_result.data.value,
             role=registration_data.role,
             status=UserStatus.ACTIVE,
         )

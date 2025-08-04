@@ -291,8 +291,10 @@ class TestFlextAuthHelpers:
     def test_generate_jwt_basic(self) -> None:
         """Test basic JWT generation."""
         payload = {"user_id": "123", "username": "test"}
-        token = flext_auth_generate_jwt(payload)
+        token_result = flext_auth_generate_jwt(payload)
 
+        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        token = token_result.data
         assert token != ""
         if len(token.split(".")) != EXPECTED_DATA_COUNT:  # Header.Payload.Signature
             raise AssertionError(f"Expected {3}, got {len(token.split('.'))}")
@@ -301,8 +303,12 @@ class TestFlextAuthHelpers:
         """Test JWT generation with custom secret and expiration."""
         payload = {"user_id": "123", "username": "test"}
         secret = "custom-secret-key-12345678901234567890"
-        token = flext_auth_generate_jwt(payload, secret=secret, expires_minutes=60)
+        token_result = flext_auth_generate_jwt(
+            payload, secret=secret, expires_minutes=60
+        )
 
+        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        token = token_result.data
         assert token != ""
         if len(token.split(".")) != EXPECTED_DATA_COUNT:
             raise AssertionError(f"Expected {3}, got {len(token.split('.'))}")
@@ -312,7 +318,9 @@ class TestFlextAuthHelpers:
         secret = "test-secret-key-12345678901234567890"
         payload = {"user_id": "123", "username": "testuser", "role": "REDACTED_LDAP_BIND_PASSWORD"}
 
-        token = flext_auth_generate_jwt(payload, secret=secret)
+        token_result = flext_auth_generate_jwt(payload, secret=secret)
+        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        token = token_result.data
         decoded = flext_auth_decode_jwt(token, secret)
 
         assert decoded is not None
@@ -405,8 +413,14 @@ class TestFlextAuthHelpers:
         assert len(session["session_id"]) > 20  # Secure token
         assert session["created_at"] is not None
         assert session["expires_at"] is not None
-        if session["permissions"] != []:
-            raise AssertionError(f"Expected {[]}, got {session['permissions']}")
+
+        # When include_permissions=True with REDACTED_LDAP_BIND_PASSWORD role, should include REDACTED_LDAP_BIND_PASSWORD permissions
+        # Based on actual implementation in __init__.py (not helpers.py)
+        expected_permissions = ["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"]
+        if session["permissions"] != expected_permissions:
+            raise AssertionError(
+                f"Expected {expected_permissions}, got {session['permissions']}"
+            )
 
         # Verify expires_at is in the future
         created = datetime.fromisoformat(session["created_at"])
@@ -488,7 +502,9 @@ class TestFlextAuthIntegration:
         # 5. JWT creation
         payload = {"user_id": "workflow123", "email": email}
         secret = "workflow-secret-key-12345678901234567890"
-        token = flext_auth_generate_jwt(payload, secret=secret)
+        token_result = flext_auth_generate_jwt(payload, secret=secret)
+        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        token = token_result.data
         assert token != ""
 
         # 6. JWT decoding
@@ -523,10 +539,12 @@ class TestFlextAuthIntegration:
         password_correct = flext_auth_verify_password(password, hashed)
 
         # JWT operations in 2 lines
-        token = flext_auth_generate_jwt(
+        token_result = flext_auth_generate_jwt(
             {"user_id": "demo"},
             secret="demo-secret-12345678901234567890",
         )
+        assert token_result.is_success, f"JWT generation failed: {token_result.error}"
+        token = token_result.data
         decoded = flext_auth_decode_jwt(token, "demo-secret-12345678901234567890")
 
         # Session creation in 1 line
