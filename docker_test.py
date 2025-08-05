@@ -8,11 +8,23 @@ Tests the core functionality without requiring the full API setup.
 import sys
 import traceback
 
+from flext_auth import (
+    ADMIN_ROLE,
+    USER_ROLE,
+    FlextAuth,
+    flext_auth_hash_password,
+    flext_auth_quick_start,
+    flext_auth_validate_email,
+)
+from flext_auth.config import AppConfig
+from flext_auth.domain.value_objects import FlextUserEmail, FlextUsername
+
 
 def test_basic_imports() -> bool | None:
     """Test that all basic imports work."""
     try:
-        from flext_auth import (
+        # All imports are now at top-level
+        _ = (
             ADMIN_ROLE,
             USER_ROLE,
             FlextAuth,
@@ -22,8 +34,14 @@ def test_basic_imports() -> bool | None:
         )
 
         # Suppress unused import warnings
-        _ = (ADMIN_ROLE, USER_ROLE, FlextAuth, flext_auth_hash_password,
-             flext_auth_quick_start, flext_auth_validate_email)
+        _ = (
+            ADMIN_ROLE,
+            USER_ROLE,
+            FlextAuth,
+            flext_auth_hash_password,
+            flext_auth_quick_start,
+            flext_auth_validate_email,
+        )
         return True
     except ImportError:
         return False
@@ -32,22 +50,22 @@ def test_basic_imports() -> bool | None:
 def test_basic_functionality() -> bool | None:
     """Test basic authentication functionality."""
     try:
-        from flext_auth import (
-            FlextAuth,
-            flext_auth_hash_password,
-            flext_auth_validate_email,
-        )
+        # All imports are now at top-level
+        if flext_auth_hash_password is None:
+            return False
 
         # Test password hashing
-        password = "TestPassword123!"
+        password = "TestPassword123!"  # noqa: S105
         flext_auth_hash_password(password, rounds=4)  # Fast for testing
 
         # Test email validation
-        flext_auth_validate_email("test@example.com")
-        flext_auth_validate_email("invalid-email")
+        if flext_auth_validate_email is not None:
+            flext_auth_validate_email("test@example.com")
+            flext_auth_validate_email("invalid-email")
 
         # Test FlextAuth instantiation
-        FlextAuth()
+        if FlextAuth is not None:
+            FlextAuth()
 
         return True
     except Exception:
@@ -58,7 +76,9 @@ def test_basic_functionality() -> bool | None:
 def test_quick_start() -> bool | None:
     """Test quick start functionality."""
     try:
-        from flext_auth import flext_auth_quick_start
+        # All imports are now at top-level
+        if flext_auth_quick_start is None:
+            return False
 
         result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
@@ -74,14 +94,14 @@ def test_quick_start() -> bool | None:
 def test_examples_core_functionality() -> bool | None:
     """Test that core functionality from examples works."""
     try:
-        # Test configuration
-        from flext_auth.config import AppConfig
+        # All imports are now at top-level
+        if AppConfig is None or FlextUserEmail is None or FlextUsername is None:
+            return False
 
+        # Test configuration
         AppConfig()
 
         # Test domain entities
-        from flext_auth.domain.value_objects import FlextUserEmail, FlextUsername
-
         FlextUsername(value="testuser")
         FlextUserEmail(value="test@example.com")
 
@@ -106,7 +126,7 @@ def main() -> int:
         results.append((test_name, success))
 
     all_passed = True
-    for test_name, success in results:
+    for _, success in results:
         if not success:
             all_passed = False
 

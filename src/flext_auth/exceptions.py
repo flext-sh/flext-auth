@@ -128,7 +128,9 @@ else:
         "type[Exception]",
         _exceptions["FlextAuthProcessingError"],
     )
-    FlextAuthTimeoutError = cast("type[Exception]", _exceptions["FlextAuthTimeoutError"])
+    FlextAuthTimeoutError = cast(
+        "type[Exception]", _exceptions["FlextAuthTimeoutError"],
+    )
 
 
 # Specialized auth errors using composition over duplication

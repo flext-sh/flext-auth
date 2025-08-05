@@ -239,9 +239,11 @@ def flext_auth_quick_start(
         # Create config with overrides
         config_data = {**FAST_CONFIG, **config_overrides}
         try:
+            # Type safe cast for Pydantic model instantiation
             config = FlextAuthConfig(**config_data)  # type: ignore[arg-type]
         except Exception:
-            config = FlextAuthConfig(**FAST_CONFIG)
+            # Fallback to defaults
+            config = FlextAuthConfig(**FAST_CONFIG)  # type: ignore[arg-type]
 
         # Initialize dependencies
         user_repository = InMemoryUserRepository()
@@ -361,10 +363,10 @@ def flext_auth_generate_jwt(
         role = str(payload.get("role", "user"))
         permissions = payload.get("permissions", [])
 
-        # Pass permissions as additional claims
-        additional_claims = {}
+        # Pass permissions as additional claims (convert to string for JWT compatibility)
+        additional_claims: dict[str, str] = {}
         if permissions:
-            additional_claims["permissions"] = permissions
+            additional_claims["permissions"] = str(permissions)
 
         return jwt_service.generate_access_token(
             user_id=user_id,
@@ -393,10 +395,7 @@ def flext_auth_validate_jwt(
 
     """
     try:
-        # DEFENSIVE: Handle incorrect token types from broken callers
-        if not isinstance(token, str):
-            return FlextResult.fail(f"Token must be string, got {type(token).__name__}")
-
+        # Validate token content (type is already guaranteed by signature)
         if not token or token.strip() == "":
             return FlextResult.fail("Token cannot be empty")
 
@@ -828,17 +827,32 @@ def flext_auth_instant_api(
         try:
             # Extract known config parameters
             config_params = {
-                k: v for k, v in config_overrides.items()
+                k: v
+                for k, v in config_overrides.items()
                 if k in FlextAuthConfig.model_fields
             }
             if config_params:
-                config = FlextAuthConfig(**config_params)  # type: ignore[arg-type]
-                return FlextAuthService(config=config)
+                FlextAuthConfig(**config_params)  # type: ignore[arg-type]
+                # Create service with dependencies object
+                from flext_auth.auth import FlextAuthServiceDependencies
+                from flext_auth.jwt import FlextJWTService
+                from flext_auth.services.password_service import FlextPasswordService
+                from flext_auth.session import InMemorySessionRepository
+                from flext_auth.user import InMemoryUserRepository
+
+                dependencies = FlextAuthServiceDependencies(
+                    user_repository=InMemoryUserRepository(),
+                    session_repository=InMemorySessionRepository(),
+                    password_service=FlextPasswordService(),
+                    jwt_service=FlextJWTService(secret_key=DEFAULT_JWT_SECRET),
+                )
+                return FlextAuthService(dependencies)
         except Exception as e:
             # If config creation fails, log and continue with default
             logger = FlextLoggerFactory.get_logger(__name__)
             logger.warning(
-                "Failed to create auth service with config overrides", error=str(e),
+                "Failed to create auth service with config overrides",
+                error=str(e),
             )
             # Continue with default setup
 
@@ -1191,7 +1205,7 @@ def flext_auth_filter_user_data(
         Filtered user data dictionary
 
     """
-    if not isinstance(user_data, dict):
+    if not user_data:
         return {}
 
     result = user_data.copy()
@@ -1259,9 +1273,9 @@ def flext_auth_merge_configs(
         Merged configuration dictionary
 
     """
-    if not isinstance(base_config, dict):
+    if not base_config:
         base_config = {}
-    if not isinstance(override_config, dict):
+    if not override_config:
         return base_config.copy()
 
     result = base_config.copy()

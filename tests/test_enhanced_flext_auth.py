@@ -360,7 +360,9 @@ class TestEnhancedHelpers:
         # Create regular JWT (not API key)
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         regular_jwt_result = flext_auth_generate_jwt({"user_id": "123"}, secret=secret)
-        assert regular_jwt_result.success, f"JWT generation failed: {regular_jwt_result.error}"
+        assert regular_jwt_result.success, (
+            f"JWT generation failed: {regular_jwt_result.error}"
+        )
         regular_jwt = regular_jwt_result.data
 
         result = flext_auth_validate_api_key(regular_jwt, secret)
@@ -962,7 +964,9 @@ class TestPublicInterfaceEnhanced:
         secret = "test-secret-12345678901234567890123456789012345678901234567890"
         payload = {"user_id": "user123", "scope": "api", "type": "api_key"}
         test_key_result = flext_auth_generate_jwt(payload, secret=secret)
-        assert test_key_result.success, f"JWT generation failed: {test_key_result.error}"
+        assert test_key_result.success, (
+            f"JWT generation failed: {test_key_result.error}"
+        )
         test_key = test_key_result.data
         key_data = flext_auth_validate_api_key(test_key, secret)
 

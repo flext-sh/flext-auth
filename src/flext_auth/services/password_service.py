@@ -284,7 +284,8 @@ class FlextPasswordService:
             )
 
     def generate_secure_password(
-        self, length: int = 16,
+        self,
+        length: int = 16,
     ) -> FlextResult[FlextPlainPassword]:
         """Generate a cryptographically secure password.
 
@@ -452,7 +453,8 @@ class FlextPasswordService:
         return "days or less"
 
     def check_password_strength(
-        self, password: str | FlextPlainPassword,
+        self,
+        password: str | FlextPlainPassword,
     ) -> FlextResult[dict[str, object]]:
         """Analyze password strength and return detailed feedback.
 

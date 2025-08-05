@@ -26,6 +26,7 @@ from flext_auth import (
     flext_auth_validate_password_strength,
     flext_auth_verify_password,
 )
+from flext_auth.config import AppConfig
 
 # Example constants - not for production use
 
@@ -47,8 +48,6 @@ def example_basic_authentication() -> None:
 
     # Demonstrar configurações padrão
     print("\nDefault Configurations:")
-
-    from flext_auth.config import AppConfig
 
     config = AppConfig()
     print(

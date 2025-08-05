@@ -111,7 +111,7 @@ class FlextUsername(FlextValueObject):
         """Return username as string."""
         return self.value
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_business_rules(self) -> FlextResult[None]:
         """Validate username domain rules and business constraints."""
         if len(self.value) < MIN_USERNAME_LENGTH:
             msg = "Username must be at least 3 characters"
@@ -134,7 +134,7 @@ class FlextUserEmail(FlextValueObject):
         """Return email as string."""
         return str(self.value)
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_business_rules(self) -> FlextResult[None]:
         """Validate email domain rules and business constraints."""
         if "@" not in str(self.value):
             msg = "Email must contain @ symbol"
@@ -198,7 +198,7 @@ class FlextPlainPassword(FlextValueObject):
         """Return protected password representation."""
         return "FlextPlainPassword([PROTECTED])"
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_business_rules(self) -> FlextResult[None]:
         """Validate plain password domain rules using Railway-Oriented Programming.
 
         SOLID REFACTORING: Reduced from 7 returns to 2 returns using
@@ -244,12 +244,12 @@ class FlextPlainPassword(FlextValueObject):
 class FlextHashedPassword(FlextValueObject):
     """Hashed password value object."""
 
-    value: str = Field(..., min_length=1)  # Allow validation in validate_domain_rules
+    value: str = Field(..., min_length=1)  # Allow validation in validate_business_rules
 
     @field_validator("value")
     @classmethod
     def validate_hash(cls, v: str) -> str:
-        """Basic validation - detailed validation in validate_domain_rules."""
+        """Basic validation - detailed validation in validate_business_rules."""
         return v
 
     def __str__(self) -> str:
@@ -260,7 +260,7 @@ class FlextHashedPassword(FlextValueObject):
         """Return hashed password representation."""
         return "FlextHashedPassword([HASHED])"
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_business_rules(self) -> FlextResult[None]:
         """Validate hashed password domain rules and business constraints.
 
         NOTE: For backward compatibility with tests, this method can raise
@@ -285,7 +285,7 @@ class FlextAuthToken(FlextValueObject):
         """Return auth token."""
         return f"{self.token_type} {self.value}"
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_business_rules(self) -> FlextResult[None]:
         """Validate auth token domain rules - raises ValueError for compatibility."""
         if not self.value:
             msg = "Auth token value cannot be empty"
@@ -314,7 +314,7 @@ class FlextBaseTokenValueObject(FlextValueObject):
 
     value: str = Field(
         ...,
-    )  # No min_length to allow custom validation in validate_domain_rules
+    )  # No min_length to allow custom validation in validate_business_rules
 
     def __str__(self) -> str:
         """Return protected token representation - Template Method."""
@@ -324,7 +324,7 @@ class FlextBaseTokenValueObject(FlextValueObject):
         """Return protected token class representation - Template Method."""
         return f"{self._get_token_class_name()}([PROTECTED])"
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_business_rules(self) -> FlextResult[None]:
         """Template Method: validates common rules + specific rules.
 
         NOTE: For test compatibility, validation errors raise ValueError
@@ -430,7 +430,7 @@ class FlextIPAddress(FlextValueObject):
         """Return user agent."""
         return self.value
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_business_rules(self) -> FlextResult[None]:
         """Validate IP address domain rules and business constraints."""
         try:
             ipaddress.ip_address(self.value)
@@ -445,7 +445,7 @@ class FlextUserAgent(FlextValueObject):
 
     value: str = Field(
         ...,
-    )  # No max_length to allow custom validation in validate_domain_rules
+    )  # No max_length to allow custom validation in validate_business_rules
 
     def __str__(self) -> str:
         """Return user agent."""
@@ -468,7 +468,7 @@ class FlextUserAgent(FlextValueObject):
             return "Edge"
         return "Unknown"
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_business_rules(self) -> FlextResult[None]:
         """Validate user agent domain rules - raises ValueError for compatibility."""
         if not self.value:
             msg = "User agent cannot be empty"
@@ -549,7 +549,7 @@ class FlextJWTClaims(FlextValueObject):
         """Get seconds until token expires."""
         return max(0, int(self.exp - datetime.now(UTC).timestamp()))
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_business_rules(self) -> FlextResult[None]:
         """Validate JWT claims domain rules - raises ValueError for test compatibility.
 
         SOLID REFACTORING: Reduced from 6 returns to 2 returns using
@@ -613,7 +613,7 @@ class FlextSecurityContext(FlextValueObject):
         """Check if user is REDACTED_LDAP_BIND_PASSWORD."""
         return self.role == "REDACTED_LDAP_BIND_PASSWORD"
 
-    def validate_domain_rules(self) -> FlextResult[None]:
+    def validate_business_rules(self) -> FlextResult[None]:
         """Validate security context domain rules - raises ValueError."""
         if not self.user_id:
             msg = "User ID cannot be empty"

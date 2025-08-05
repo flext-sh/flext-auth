@@ -39,7 +39,7 @@ Example:
     ...     email="john@example.com",
     ...     password_hash="$2b$12$hash",
     ... )
-    >>> validation_result = user.validate_domain_rules()
+    >>> validation_result = user.validate_business_rules()
     >>> if validation_result.success:
     ...     print(f"User {user.username} is valid")
 
@@ -287,6 +287,10 @@ class FlextUser(FlextEntity):
 
         return errors
 
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate business rules required by FlextEntity abstract method."""
+        return self.validate_domain_rules()
+
 
 class FlextSessionStatus(StrEnum):
     """Session status."""
@@ -371,6 +375,10 @@ class FlextSession(FlextEntity):
             return FlextResult.fail("Session expiration must be in the future")
         return FlextResult.ok(None)
 
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate business rules required by FlextEntity abstract method."""
+        return self.validate_domain_rules()
+
 
 class FlextPermission(FlextEntity):
     """Permission entity."""
@@ -401,6 +409,10 @@ class FlextPermission(FlextEntity):
         if not self.action:
             return FlextResult.fail("Permission action cannot be empty")
         return FlextResult.ok(None)
+
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate business rules required by FlextEntity abstract method."""
+        return self.validate_domain_rules()
 
 
 class FlextRole(FlextEntity):
@@ -466,6 +478,10 @@ class FlextRole(FlextEntity):
         # All validations passed
         return FlextResult.ok(None)
 
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate business rules required by FlextEntity abstract method."""
+        return self.validate_domain_rules()
+
 
 class FlextLoginAttempt(FlextEntity):
     """Login attempt tracking."""
@@ -526,6 +542,10 @@ class FlextLoginAttempt(FlextEntity):
 
         return errors
 
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate business rules required by FlextEntity abstract method."""
+        return self.validate_domain_rules()
+
 
 # =============================================================================
 # REFACTORING: Template Method Pattern - eliminates 33 lines duplication
@@ -558,7 +578,7 @@ class FlextBaseToken(FlextEntity):
         """Template Method: validates common rules + specific rules."""
         # Validate common rules (DRY principle)
         common_validation = self._validate_common_rules()
-        if not common_validation.success or not common_validation.data:
+        if not common_validation.success:
             return common_validation
 
         # Template Method: delegate specific validation to subclasses
@@ -617,6 +637,10 @@ class FlextBaseToken(FlextEntity):
         """Abstract method: validate token-specific rules."""
         # Base implementation has no specific rules
         return FlextResult.ok(None)
+
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate business rules required by FlextEntity abstract method."""
+        return self.validate_domain_rules()
 
 
 class FlextPasswordResetToken(FlextBaseToken):

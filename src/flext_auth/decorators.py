@@ -111,8 +111,9 @@ TernaryAuthFunction = Callable[[object, object, object], DecoratorReturnType]
 NullaryAuthFunction = Callable[[], DecoratorReturnType]
 
 # Union of supported function types for authentication decorators
-AuthenticatedFunction = (SimpleAuthFunction | BinaryAuthFunction |
-                        TernaryAuthFunction | NullaryAuthFunction)
+AuthenticatedFunction = (
+    SimpleAuthFunction | BinaryAuthFunction | TernaryAuthFunction | NullaryAuthFunction
+)
 DecoratorCallable = Callable[[F], F]
 
 
@@ -422,7 +423,9 @@ def flext_auth_role_required(
         @flext_auth_required(auth_service=auth_service, secret=secret)
         def wrapper(*args: object, **kwargs: object) -> object:
             current_user_raw = kwargs.get("current_user", {})
-            current_user = current_user_raw if isinstance(current_user_raw, dict) else {}
+            current_user = (
+                current_user_raw if isinstance(current_user_raw, dict) else {}
+            )
             user_role = current_user.get("role", "")
 
             if user_role != required_role:
@@ -461,9 +464,13 @@ def flext_auth_permission_required(
         @flext_auth_required(auth_service=auth_service, secret=secret)
         def wrapper(*args: object, **kwargs: object) -> object:
             current_user_raw = kwargs.get("current_user", {})
-            current_user = current_user_raw if isinstance(current_user_raw, dict) else {}
+            current_user = (
+                current_user_raw if isinstance(current_user_raw, dict) else {}
+            )
             permissions_raw = current_user.get("permissions", [])
-            user_permissions = permissions_raw if isinstance(permissions_raw, list) else []
+            user_permissions = (
+                permissions_raw if isinstance(permissions_raw, list) else []
+            )
 
             if required_permission not in user_permissions:
                 if error_response is not None:

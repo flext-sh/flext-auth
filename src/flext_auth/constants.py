@@ -165,21 +165,37 @@ class FlextAuthConstants(FlextAuthSemanticConstants):
 
     # Legacy compatibility - flat access patterns (DEPRECATED - use semantic access)
     USERNAME_PATTERN = FlextAuthSemanticConstants.Authentication.USERNAME_PATTERN
-    PASSWORD_VALIDATION_REGEX = FlextAuthSemanticConstants.Authentication.PASSWORD_VALIDATION_REGEX
+    PASSWORD_VALIDATION_REGEX = (
+        FlextAuthSemanticConstants.Authentication.PASSWORD_VALIDATION_REGEX
+    )
     MIN_PASSWORD_LENGTH = FlextAuthSemanticConstants.Authentication.MIN_PASSWORD_LENGTH
     MAX_PASSWORD_LENGTH = FlextAuthSemanticConstants.Authentication.MAX_PASSWORD_LENGTH
-    MIN_PASSWORD_SECURITY_SCORE = FlextAuthSemanticConstants.Authentication.MIN_PASSWORD_SECURITY_SCORE
+    MIN_PASSWORD_SECURITY_SCORE = (
+        FlextAuthSemanticConstants.Authentication.MIN_PASSWORD_SECURITY_SCORE
+    )
 
-    DEFAULT_MAX_LOGIN_ATTEMPTS = FlextAuthSemanticConstants.Security.DEFAULT_MAX_LOGIN_ATTEMPTS
-    DEFAULT_LOCKOUT_DURATION_MINUTES = FlextAuthSemanticConstants.Security.DEFAULT_LOCKOUT_DURATION_MINUTES
+    DEFAULT_MAX_LOGIN_ATTEMPTS = (
+        FlextAuthSemanticConstants.Security.DEFAULT_MAX_LOGIN_ATTEMPTS
+    )
+    DEFAULT_LOCKOUT_DURATION_MINUTES = (
+        FlextAuthSemanticConstants.Security.DEFAULT_LOCKOUT_DURATION_MINUTES
+    )
     MAX_ACCOUNT_LOCK_HOURS = FlextAuthSemanticConstants.Security.MAX_ACCOUNT_LOCK_HOURS
     DEFAULT_BCRYPT_ROUNDS = FlextAuthSemanticConstants.Security.DEFAULT_BCRYPT_ROUNDS
 
-    DEFAULT_SESSION_TIMEOUT_HOURS = FlextAuthSemanticConstants.Sessions.DEFAULT_SESSION_TIMEOUT_HOURS
-    MAX_CONCURRENT_SESSIONS = FlextAuthSemanticConstants.Sessions.MAX_CONCURRENT_SESSIONS
+    DEFAULT_SESSION_TIMEOUT_HOURS = (
+        FlextAuthSemanticConstants.Sessions.DEFAULT_SESSION_TIMEOUT_HOURS
+    )
+    MAX_CONCURRENT_SESSIONS = (
+        FlextAuthSemanticConstants.Sessions.MAX_CONCURRENT_SESSIONS
+    )
 
-    DEFAULT_ACCESS_TOKEN_MINUTES = FlextAuthSemanticConstants.Tokens.DEFAULT_ACCESS_TOKEN_MINUTES
-    DEFAULT_REFRESH_TOKEN_DAYS = FlextAuthSemanticConstants.Tokens.DEFAULT_REFRESH_TOKEN_DAYS
+    DEFAULT_ACCESS_TOKEN_MINUTES = (
+        FlextAuthSemanticConstants.Tokens.DEFAULT_ACCESS_TOKEN_MINUTES
+    )
+    DEFAULT_REFRESH_TOKEN_DAYS = (
+        FlextAuthSemanticConstants.Tokens.DEFAULT_REFRESH_TOKEN_DAYS
+    )
     JWT_ALGORITHM = FlextAuthSemanticConstants.Tokens.JWT_ALGORITHM
     TEST_JWT_SECRET = FlextAuthSemanticConstants.Tokens.TEST_JWT_SECRET
     DEFAULT_JWT_SECRET = FlextAuthSemanticConstants.Tokens.DEFAULT_JWT_SECRET
@@ -216,9 +232,16 @@ class FlextTokenTypeEnum(Enum):
 # =============================================================================
 
 __all__: list[str] = [
+    "DEFAULT_JWT_SECRET",
+    # Export individual constants for direct import compatibility
+    "TEST_JWT_SECRET",
     "FlextAuthConstants",
     "FlextAuthSemanticConstants",
     "FlextTokenTypeEnum",
     "FlextUserRoleEnum",
     "FlextUserStatusEnum",
 ]
+
+# Export constants for direct import compatibility
+TEST_JWT_SECRET = FlextAuthSemanticConstants.Tokens.TEST_JWT_SECRET
+DEFAULT_JWT_SECRET = FlextAuthSemanticConstants.Tokens.DEFAULT_JWT_SECRET

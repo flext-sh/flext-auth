@@ -92,7 +92,7 @@ from __future__ import annotations
 import re
 
 from flext_core import (
-    FlextConstants,
+    EMAIL_PATTERN,
     FlextFieldCore,
     FlextFields,
     FlextResult,
@@ -128,7 +128,7 @@ FlextFields.register_field(USERNAME_FIELD)
 EMAIL_FIELD = FlextFields.create_string_field(
     field_id="auth_email",
     field_name="email",
-    pattern=FlextConstants.EMAIL_PATTERN,
+    pattern=EMAIL_PATTERN,
     max_length=254,  # RFC 5321 limit
     required=True,
     description="User email address for authentication and communication",
@@ -318,9 +318,11 @@ class FlextAuthFieldSchema:
 
         metadata: dict[str, dict[str, object]] = {}
         for field in all_fields:
-            # Type cast to ensure compatibility with return type
-            field_metadata: dict[str, object] = field.get_field_metadata()
-            metadata[field.field_name] = field_metadata
+            # Cast field metadata to dict[str, object] for type safety
+            field_metadata = field.get_field_metadata()
+            # Convert to expected type preserving all values
+            typed_metadata: dict[str, object] = dict(field_metadata.items())
+            metadata[field.field_name] = typed_metadata
 
         return metadata
 

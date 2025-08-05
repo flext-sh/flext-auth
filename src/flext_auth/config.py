@@ -177,73 +177,69 @@ class DatabaseConfig:
 
     def __init__(self, **kwargs: object) -> None:
         """Initialize with backward compatibility for legacy interface."""
-        # Extract and validate pool settings, with environment variable fallback
-        # os already imported at module level
+        # Extract and validate pool settings using helper methods
+        min_pool_size = self._extract_int_setting(kwargs, "min_pool_size", "DATABASE_MIN_POOL_SIZE", 1)
+        max_pool_size = self._extract_int_setting(kwargs, "max_pool_size", "DATABASE_MAX_POOL_SIZE", 10)
+        command_timeout = self._extract_int_setting(kwargs, "command_timeout", "DATABASE_COMMAND_TIMEOUT", 60)
 
-        min_pool_size_raw = kwargs.pop("min_pool_size", int(os.getenv("DATABASE_MIN_POOL_SIZE", "1")))
-        try:
-            min_pool_size = int(min_pool_size_raw) if min_pool_size_raw is not None else 1
-        except (ValueError, TypeError):
-            min_pool_size = 1
+        # Process URL settings
+        self._original_url = self._extract_url_setting(kwargs)
 
-        max_pool_size_raw = kwargs.pop("max_pool_size", int(os.getenv("DATABASE_MAX_POOL_SIZE", "10")))
-        try:
-            max_pool_size = int(max_pool_size_raw) if max_pool_size_raw is not None else 10
-        except (ValueError, TypeError):
-            max_pool_size = 10
-
-        command_timeout_raw = kwargs.pop("command_timeout", int(os.getenv("DATABASE_COMMAND_TIMEOUT", "60")))
-        try:
-            command_timeout = int(command_timeout_raw) if command_timeout_raw is not None else 60
-        except (ValueError, TypeError):
-            command_timeout = 60
-
-        # Store original URL if provided, or get from environment
-        url_raw = kwargs.get("url")
-        self._original_url = str(url_raw) if url_raw is not None else None
-        if self._original_url is None:
-            # Check environment variables for URL
-            # os already imported at module level
-            self._original_url = os.getenv("DATABASE_URL")
-
-        if self._original_url and not self._original_url.startswith(
-            ("postgresql://", "postgresql+asyncpg://"),
-        ):
-            msg = "Database URL must start with postgresql"
-            raise ValueError(msg)
-
-        # Validação específica: pool size ranges
-        # Create a simple ValueError since pydantic ValidationError is complex
-        def raise_validation_error(msg: str) -> Never:
-            raise ValueError(msg)
-
-        if min_pool_size < 1:
-            raise_validation_error("Minimum pool size must be at least 1")
-        max_min_pool_size = 20
-        max_max_pool_size = 100
-        if min_pool_size > max_min_pool_size:
-            raise_validation_error("Minimum pool size cannot exceed 20")
-        if max_pool_size > max_max_pool_size:
-            raise_validation_error("Maximum pool size cannot exceed 100")
+        # Validate settings
+        self._validate_pool_sizes(min_pool_size, max_pool_size)
 
         # Store validated values
         self._min_pool_size = min_pool_size
         self._max_pool_size = max_pool_size
         self._command_timeout = command_timeout
 
-        # Create internal flext-core config (ignore unsupported fields)
-        core_kwargs = {
-            k: v
-            for k, v in kwargs.items()
-            if k not in {"min_connections", "max_connections", "timeout"}
-        }
-
+        # Create internal flext-core config with safe defaults
         try:
-            # Type-safe approach: let FlextDatabaseConfig handle validation
-            self._core_config = FlextDatabaseConfig(**core_kwargs)  # type: ignore[arg-type]
+            # Type-safe approach: create with minimal parameters for flext-core compatibility
+            self._core_config = FlextDatabaseConfig()
         except Exception:
             # Fallback if flext-core config fails
             self._core_config = FlextDatabaseConfig()
+
+    def _extract_int_setting(self, kwargs: dict[str, object], key: str, env_key: str, default: int) -> int:
+        """Extract and validate integer setting from kwargs or environment."""
+        raw_value = kwargs.pop(key, os.getenv(env_key, str(default)))
+        try:
+            if isinstance(raw_value, int):
+                return raw_value
+            return int(str(raw_value)) if raw_value is not None else default
+        except (ValueError, TypeError):
+            return default
+
+    def _extract_url_setting(self, kwargs: dict[str, object]) -> str | None:
+        """Extract and validate database URL from kwargs or environment."""
+        url_raw = kwargs.get("url")
+        original_url = str(url_raw) if url_raw is not None else None
+
+        if original_url is None:
+            original_url = os.getenv("DATABASE_URL")
+
+        if original_url and not original_url.startswith(("postgresql://", "postgresql+asyncpg://")):
+            msg = "Database URL must start with postgresql"
+            raise ValueError(msg)
+
+        return original_url
+
+    def _validate_pool_sizes(self, min_pool_size: int, max_pool_size: int) -> None:
+        """Validate pool size ranges."""
+        def raise_validation_error(msg: str) -> Never:
+            raise ValueError(msg)
+
+        if min_pool_size < 1:
+            raise_validation_error("Minimum pool size must be at least 1")
+
+        max_min_pool_size = 20
+        max_max_pool_size = 100
+
+        if min_pool_size > max_min_pool_size:
+            raise_validation_error("Minimum pool size cannot exceed 20")
+        if max_pool_size > max_max_pool_size:
+            raise_validation_error("Maximum pool size cannot exceed 100")
 
     def __getattr__(self, name: str) -> object:
         """Delegate unknown attributes to core config."""

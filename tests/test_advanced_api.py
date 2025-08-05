@@ -436,7 +436,9 @@ class TestSpecializedDecorators:
         REDACTED_LDAP_BIND_PASSWORD_token_result = flext_auth_generate_jwt(
             REDACTED_LDAP_BIND_PASSWORD_payload, secret="test-secret"
         )
-        assert REDACTED_LDAP_BIND_PASSWORD_token_result.success, f"JWT generation failed: {REDACTED_LDAP_BIND_PASSWORD_token_result.error}"
+        assert REDACTED_LDAP_BIND_PASSWORD_token_result.success, (
+            f"JWT generation failed: {REDACTED_LDAP_BIND_PASSWORD_token_result.error}"
+        )
         REDACTED_LDAP_BIND_PASSWORD_token = REDACTED_LDAP_BIND_PASSWORD_token_result.data
 
         # Test with REDACTED_LDAP_BIND_PASSWORD token - due to implementation bug, this may still fail
@@ -463,7 +465,9 @@ class TestSpecializedDecorators:
         # Test with user token (should fail)
         user_payload = {"user_id": "456", "role": FLEXT_AUTH_USER}
         user_token_result = flext_auth_generate_jwt(user_payload, secret="test-secret")
-        assert user_token_result.success, f"JWT generation failed: {user_token_result.error}"
+        assert user_token_result.success, (
+            f"JWT generation failed: {user_token_result.error}"
+        )
         user_token = user_token_result.data
 
         user_request = {
