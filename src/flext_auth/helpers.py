@@ -160,7 +160,7 @@ def _create_flext_auth_service(config_overrides: dict[str, object]) -> FlextAuth
         Configured FlextAuthService instance
 
     """
-    config = FlextAuthConfig(**config_overrides)  # type: ignore[arg-type]
+    config = FlextAuthConfig(**config_overrides)
 
     # Create required dependencies - same pattern for all environments
     user_repo = InMemoryUserRepository()
@@ -233,7 +233,7 @@ def flext_auth_quick_start(
     try:
         # Create config with overrides
         config_data = {**FAST_CONFIG, **config_overrides}
-        config = FlextAuthConfig(**config_data)  # type: ignore[arg-type]
+        config = FlextAuthConfig(**config_data)
 
         # Initialize dependencies
         user_repository = InMemoryUserRepository()
@@ -1184,7 +1184,7 @@ def flext_auth_filter_user_data(
 
     """
     if not isinstance(user_data, dict):
-        return {}  # type: ignore[unreachable]
+        return {}
 
     result = user_data.copy()
 
@@ -1252,9 +1252,9 @@ def flext_auth_merge_configs(
 
     """
     if not isinstance(base_config, dict):
-        base_config = {}  # type: ignore[unreachable]
+        base_config = {}
     if not isinstance(override_config, dict):
-        return base_config.copy()  # type: ignore[unreachable]
+        return base_config.copy()
 
     result = base_config.copy()
 

@@ -26,7 +26,7 @@ def test_pip_install() -> bool | None:
         return False
 
 
-def test_import_isolation():
+def test_import_isolation() -> None:
     """Test that imports work in isolated environment."""
     test_code = """
 import sys

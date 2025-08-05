@@ -471,13 +471,13 @@ def validate_production_config(config: AppConfig) -> bool:
 def create_auth_config(**overrides: object) -> FlextAuthConfig:
     """Factory function to create authentication configuration."""
     # Type ignore for dynamic Pydantic model instantiation
-    return FlextAuthConfig(**overrides)  # type: ignore[arg-type]
+    return FlextAuthConfig(**overrides)
 
 
 def create_complete_auth_config(**overrides: object) -> FlextAuthApplicationConfig:
     """Factory function to create complete authentication application configuration."""
     # Type ignore for dynamic Pydantic model instantiation
-    return FlextAuthApplicationConfig(**overrides)  # type: ignore[arg-type]
+    return FlextAuthApplicationConfig(**overrides)
 
 
 def get_default_secret(key_name: str) -> str:
