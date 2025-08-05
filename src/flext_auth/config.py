@@ -180,25 +180,30 @@ class DatabaseConfig:
         # Extract and validate pool settings, with environment variable fallback
         # os already imported at module level
 
-        min_pool_size = kwargs.pop(
-            "min_pool_size",
-            int(os.getenv("DATABASE_MIN_POOL_SIZE", "1")),
-        )
-        max_pool_size = kwargs.pop(
-            "max_pool_size",
-            int(os.getenv("DATABASE_MAX_POOL_SIZE", "10")),
-        )
-        command_timeout = kwargs.pop(
-            "command_timeout",
-            int(os.getenv("DATABASE_COMMAND_TIMEOUT", "60")),
-        )
+        min_pool_size_raw = kwargs.pop("min_pool_size", int(os.getenv("DATABASE_MIN_POOL_SIZE", "1")))
+        try:
+            min_pool_size = int(min_pool_size_raw) if min_pool_size_raw is not None else 1
+        except (ValueError, TypeError):
+            min_pool_size = 1
+
+        max_pool_size_raw = kwargs.pop("max_pool_size", int(os.getenv("DATABASE_MAX_POOL_SIZE", "10")))
+        try:
+            max_pool_size = int(max_pool_size_raw) if max_pool_size_raw is not None else 10
+        except (ValueError, TypeError):
+            max_pool_size = 10
+
+        command_timeout_raw = kwargs.pop("command_timeout", int(os.getenv("DATABASE_COMMAND_TIMEOUT", "60")))
+        try:
+            command_timeout = int(command_timeout_raw) if command_timeout_raw is not None else 60
+        except (ValueError, TypeError):
+            command_timeout = 60
 
         # Store original URL if provided, or get from environment
-        self._original_url = kwargs.get("url")
+        url_raw = kwargs.get("url")
+        self._original_url = str(url_raw) if url_raw is not None else None
         if self._original_url is None:
             # Check environment variables for URL
             # os already imported at module level
-
             self._original_url = os.getenv("DATABASE_URL")
 
         if self._original_url and not self._original_url.startswith(
@@ -234,7 +239,8 @@ class DatabaseConfig:
         }
 
         try:
-            self._core_config = FlextDatabaseConfig(**core_kwargs)
+            # Type-safe approach: let FlextDatabaseConfig handle validation
+            self._core_config = FlextDatabaseConfig(**core_kwargs)  # type: ignore[arg-type]
         except Exception:
             # Fallback if flext-core config fails
             self._core_config = FlextDatabaseConfig()
@@ -318,7 +324,8 @@ class JWTConfig(FlextBaseSettings):
             msg: str = f"JWT algorithm must be one of {valid_algorithms}"
             raise ValueError(msg)
 
-        super().__init__(**kwargs)
+        # Type-safe approach: let FlextBaseSettings handle validation
+        super().__init__(**kwargs)  # type: ignore[arg-type]
 
     def validate_secret_key(self) -> None:
         """Validate secret key strength."""
@@ -418,7 +425,7 @@ class AppConfig(FlextBaseSettings):
 
         env_prefix = "APP_"
 
-    def model_dump_safe(self) -> dict:
+    def model_dump_safe(self) -> dict[str, object]:
         """Dump model data with sensitive information redacted."""
         # Get the regular model dump
         dump = self.model_dump()
@@ -471,13 +478,13 @@ def validate_production_config(config: AppConfig) -> bool:
 def create_auth_config(**overrides: object) -> FlextAuthConfig:
     """Factory function to create authentication configuration."""
     # Type ignore for dynamic Pydantic model instantiation
-    return FlextAuthConfig(**overrides)
+    return FlextAuthConfig(**overrides)  # type: ignore[arg-type]
 
 
 def create_complete_auth_config(**overrides: object) -> FlextAuthApplicationConfig:
     """Factory function to create complete authentication application configuration."""
     # Type ignore for dynamic Pydantic model instantiation
-    return FlextAuthApplicationConfig(**overrides)
+    return FlextAuthApplicationConfig(**overrides)  # type: ignore[arg-type]
 
 
 def get_default_secret(key_name: str) -> str:

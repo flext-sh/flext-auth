@@ -331,7 +331,7 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
 
     async def _create_authentication_session(
         self,
-        user: object,  # User type
+        user: User,
         ip_address: str,
         user_agent: str | None,
     ) -> FlextResult[dict[str, object]]:
@@ -359,12 +359,19 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
         if not refresh_token_result.success:
             return FlextResult.fail("Refresh token generation failed")
 
+        # Type-safe token extraction
+        access_token = access_token_result.data
+        refresh_token = refresh_token_result.data
+
+        if access_token is None or refresh_token is None:
+            return FlextResult.fail("Token data is None after successful generation")
+
         # Create and save session
         session = FlextSession(
             id=session_id,
             user_id=user.id,
-            access_token=access_token_result.data,
-            refresh_token=refresh_token_result.data,
+            access_token=access_token,
+            refresh_token=refresh_token,
             ip_address=ip_address,
             user_agent=user_agent,
             expires_at=datetime.now(UTC) + timedelta(hours=24),

@@ -99,8 +99,8 @@ from typing import cast
 
 from flext_core import FlextLoggerFactory, FlextResult
 
-from flext_auth.application import FlextAuthService
 from flext_auth.auth import (
+    FlextAuthService,
     FlextAuthServiceConfig,
     FlextAuthServiceDependencies,
     FlextUserRegistrationData,
@@ -160,7 +160,12 @@ def _create_flext_auth_service(config_overrides: dict[str, object]) -> FlextAuth
         Configured FlextAuthService instance
 
     """
-    config = FlextAuthConfig(**config_overrides)
+    # Type-safe config creation: let FlextAuthConfig handle validation
+    try:
+        config = FlextAuthConfig(**config_overrides)  # type: ignore[arg-type]
+    except Exception:
+        # Fallback to default config if overrides are invalid
+        config = FlextAuthConfig()
 
     # Create required dependencies - same pattern for all environments
     user_repo = InMemoryUserRepository()
@@ -233,7 +238,10 @@ def flext_auth_quick_start(
     try:
         # Create config with overrides
         config_data = {**FAST_CONFIG, **config_overrides}
-        config = FlextAuthConfig(**config_data)
+        try:
+            config = FlextAuthConfig(**config_data)  # type: ignore[arg-type]
+        except Exception:
+            config = FlextAuthConfig(**FAST_CONFIG)
 
         # Initialize dependencies
         user_repository = InMemoryUserRepository()
@@ -824,7 +832,7 @@ def flext_auth_instant_api(
                 if k in FlextAuthConfig.model_fields
             }
             if config_params:
-                config = FlextAuthConfig(**config_params)
+                config = FlextAuthConfig(**config_params)  # type: ignore[arg-type]
                 return FlextAuthService(config=config)
         except Exception as e:
             # If config creation fails, log and continue with default

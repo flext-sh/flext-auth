@@ -316,9 +316,11 @@ class FlextAuthFieldSchema:
             cls.LOCKOUT_ENABLED,
         ]
 
-        metadata = {}
+        metadata: dict[str, dict[str, object]] = {}
         for field in all_fields:
-            metadata[field.field_name] = field.get_field_metadata()
+            # Type cast to ensure compatibility with return type
+            field_metadata: dict[str, object] = field.get_field_metadata()
+            metadata[field.field_name] = field_metadata
 
         return metadata
 
