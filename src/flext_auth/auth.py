@@ -346,10 +346,6 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
         user_agent: str | None,
     ) -> FlextResult[dict[str, object]]:
         """Create session and tokens for authenticated user."""
-        from datetime import timedelta  # noqa: PLC0415
-
-        from flext_auth.domain.entities import FlextSession  # noqa: PLC0415
-
         session_id = f"session_{user.id}_{int(datetime.now(UTC).timestamp())}"
 
         # Generate tokens
@@ -377,7 +373,7 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
             return FlextResult.fail("Token data is None after successful generation")
 
         # Create and save session
-        session = FlextSession(
+        session = Session(
             id=session_id,
             user_id=user.id,
             access_token=access_token,
@@ -433,32 +429,19 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
     ) -> FlextResult[SecurityContext]:
         """Validate JWT token and return security context."""
         try:
-            # Validate JWT token
-            validation_result = self.jwt_service.verify_token(token)
+            # Validate JWT token and claims
+            validation_result = await self._validate_token_and_claims(token)
             if not validation_result.success:
-                return FlextResult.fail("Token verification failed")
+                return FlextResult.fail(validation_result.error or "Token validation failed")
 
-            claims = validation_result.data
-            if not claims:
-                return FlextResult.fail("Invalid token claims")
-
-            # Get user from repository to ensure they still exist
-            if not claims.username:
-                return FlextResult.fail("Invalid token: no username in claims")
-
-            user_result = await self.user_repo.get_by_username(claims.username)
-            if not user_result.success or not user_result.data:
-                return FlextResult.fail("User not found")
-
-            user = user_result.data
+            if not validation_result.data:
+                return FlextResult.fail("Invalid token data")
+            claims, user = validation_result.data
 
             # Check if session is still active (critical for logout validation)
-            if claims.session_id and claims.session_id != "no_session":
-                session_result = await self.session_repo.get_by_id(claims.session_id)
-                if session_result.success and session_result.data:
-                    session = session_result.data
-                    if not session.is_valid():
-                        return FlextResult.fail("Session has been invalidated")
+            session_validation_result = await self._validate_session(claims)
+            if not session_validation_result.success:
+                return FlextResult.fail(session_validation_result.error or "Session validation failed")
 
             return FlextResult.ok(
                 SecurityContext(
@@ -472,9 +455,45 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
         except Exception as e:
             return FlextResult.fail(f"Token validation failed: {e}")
 
+    async def _validate_token_and_claims(
+        self, token: str,
+    ) -> FlextResult[tuple[JWTClaims, User]]:
+        """Validate JWT token and extract claims and user."""
+        # Validate JWT token
+        validation_result = self.jwt_service.verify_token(token)
+        if not validation_result.success:
+            return FlextResult.fail("Token verification failed")
+
+        claims = validation_result.data
+        if not claims:
+            return FlextResult.fail("Invalid token claims")
+
+        # Get user from repository to ensure they still exist
+        if not claims.username:
+            return FlextResult.fail("Invalid token: no username in claims")
+
+        user_result = await self.user_repo.get_by_username(claims.username)
+        if not user_result.success or not user_result.data:
+            return FlextResult.fail("User not found")
+
+        return FlextResult.ok((claims, user_result.data))
+
+    async def _validate_session(self, claims: JWTClaims) -> FlextResult[bool]:
+        """Validate session if present in claims."""
+        if not claims.session_id or claims.session_id == "no_session":
+            return FlextResult.ok(data=True)
+
+        session_result = await self.session_repo.get_by_id(claims.session_id)
+        if session_result.success and session_result.data:
+            session = session_result.data
+            if not session.is_valid():
+                return FlextResult.fail("Session has been invalidated")
+
+        return FlextResult.ok(data=True)
+
     async def refresh_token(
         self,
-        refresh_token: str,  # noqa: ARG002  # Strategy interface compatibility
+        _refresh_token: str,
     ) -> FlextResult[dict[str, str]]:
         """Refresh access token using refresh token."""
         return FlextResult.ok(

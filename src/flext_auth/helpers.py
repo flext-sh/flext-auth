@@ -162,7 +162,7 @@ def _create_flext_auth_service(config_overrides: dict[str, object]) -> FlextAuth
     """
     # Type-safe config creation: let FlextAuthConfig handle validation
     try:
-        config = FlextAuthConfig(**config_overrides)  # type: ignore[arg-type]
+        config = FlextAuthConfig(**config_overrides)
     except Exception:
         # Fallback to default config if overrides are invalid
         config = FlextAuthConfig()
@@ -172,7 +172,7 @@ def _create_flext_auth_service(config_overrides: dict[str, object]) -> FlextAuth
     session_repo = InMemorySessionRepository()
     password_service = FlextPasswordService(rounds=config.bcrypt_rounds)
     # Use default JWT secret for development
-    jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"  # noqa: S105
+    jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"
     jwt_service = FlextJWTService(
         secret_key=jwt_secret,
     )
@@ -220,7 +220,7 @@ def flext_auth_quick_start(
     *,
     create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
     REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-    REDACTED_LDAP_BIND_PASSWORD_password: str = "REDACTED_LDAP_BIND_PASSWORD123",  # noqa: S107
+    REDACTED_LDAP_BIND_PASSWORD_password: str = "REDACTED_LDAP_BIND_PASSWORD123",
     **config_overrides: object,
 ) -> FlextResult[FlextAuthService]:
     """Ultra-fast authentication setup with sensible defaults.
@@ -240,17 +240,17 @@ def flext_auth_quick_start(
         config_data = {**FAST_CONFIG, **config_overrides}
         try:
             # Type safe cast for Pydantic model instantiation
-            config = FlextAuthConfig(**config_data)  # type: ignore[arg-type]
+            config = FlextAuthConfig(**config_data)
         except Exception:
             # Fallback to defaults
-            config = FlextAuthConfig(**FAST_CONFIG)  # type: ignore[arg-type]
+            config = FlextAuthConfig(**FAST_CONFIG)
 
         # Initialize dependencies
         user_repository = InMemoryUserRepository()
         session_repository = InMemorySessionRepository()
         password_service = FlextPasswordService(rounds=config.bcrypt_rounds)
         # Use default JWT secret for quick start
-        jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"  # noqa: S105
+        jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"
         jwt_service = FlextJWTService(
             secret_key=jwt_secret,
         )
@@ -339,7 +339,7 @@ def flext_auth_verify_password(password: str, hashed: str) -> bool:
 def flext_auth_generate_jwt(
     payload: dict[str, object],
     secret: str | None = None,
-    expire_minutes: int = 30,  # noqa: ARG001  # Reserved for future use
+    expire_minutes: int = 30,
 ) -> FlextResult[str]:
     """Generate JWT token with payload.
 
@@ -641,7 +641,7 @@ def flext_auth_complete_workflow(
     username: str,
     email: str,
     password: str,
-    **config_overrides: object,  # noqa: ARG001  # Reserved for future use
+    **config_overrides: object,
 ) -> FlextResult[dict[str, object]]:
     """Complete authentication workflow from setup to token generation.
 
@@ -832,14 +832,8 @@ def flext_auth_instant_api(
                 if k in FlextAuthConfig.model_fields
             }
             if config_params:
-                FlextAuthConfig(**config_params)  # type: ignore[arg-type]
+                FlextAuthConfig(**config_params)
                 # Create service with dependencies object
-                from flext_auth.auth import FlextAuthServiceDependencies
-                from flext_auth.jwt import FlextJWTService
-                from flext_auth.services.password_service import FlextPasswordService
-                from flext_auth.session import InMemorySessionRepository
-                from flext_auth.user import InMemoryUserRepository
-
                 dependencies = FlextAuthServiceDependencies(
                     user_repository=InMemoryUserRepository(),
                     session_repository=InMemorySessionRepository(),
@@ -994,7 +988,7 @@ def flext_auth_create_multi_factor_token(
 
 
 def flext_auth_build_response(
-    success: bool,  # noqa: FBT001
+    success: bool,
     data: object = None,
     error: str | None = None,
     **response_data: object,
@@ -1304,7 +1298,7 @@ def flext_auth_rate_limit(
     max_requests: int = 60,
     window_seconds: int = 60,
     *,
-    key_func: object = None,  # noqa: ARG001
+    key_func: object = None,
     error_message: str = "Rate limit exceeded",
 ) -> object:
     """Rate limiting decorator/function for authentication endpoints.

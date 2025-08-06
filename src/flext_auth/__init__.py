@@ -29,7 +29,9 @@ from flext_core import FlextLoggerFactory, FlextResult
 
 from flext_auth.auth import (
     FlextAuthService as _AuthService,
+    FlextAuthServiceConfig,
     FlextAuthServiceDependencies,
+    FlextUserRegistrationData,
 )
 from flext_auth.config import (
     DEFAULT_JWT_SECRET,
@@ -477,8 +479,6 @@ class FlextAuth:
         )
 
         # Initialize auth service with all dependencies
-        from flext_auth.auth import FlextAuthServiceConfig  # noqa: PLC0415
-
         auth_config = FlextAuthServiceConfig(
             max_failed_attempts=5,
             lockout_duration_minutes=30,
@@ -539,8 +539,6 @@ class FlextAuth:
             if role == "moderator"
             else _UserRole.USER
         )
-
-        from flext_auth.auth import FlextUserRegistrationData  # noqa: PLC0415
 
         registration_data = FlextUserRegistrationData(
             username=username,

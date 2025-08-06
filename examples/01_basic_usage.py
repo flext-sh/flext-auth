@@ -30,12 +30,12 @@ from flext_auth.config import AppConfig
 
 # Example constants - not for production use
 
-EXAMPLE_PASSWORD = "MySecurePassword123!"  # noqa: S105
-EXAMPLE_WRONG_PASSWORD = "WrongPassword"  # noqa: S105
-EXAMPLE_TOKEN = "sample_token_12345"  # noqa: S105
-EXAMPLE_USER_PASSWORD = "SecurePass123!"  # noqa: S105
-EXAMPLE_ADVANCED_PASSWORD = "AdvancedPass123!"  # noqa: S105
-EXAMPLE_WORKFLOW_PASSWORD = "WorkflowPass123!"  # noqa: S105
+EXAMPLE_PASSWORD = "MySecurePassword123!"
+EXAMPLE_WRONG_PASSWORD = "WrongPassword"
+EXAMPLE_TOKEN = "sample_token_12345"
+EXAMPLE_USER_PASSWORD = "SecurePass123!"
+EXAMPLE_ADVANCED_PASSWORD = "AdvancedPass123!"
+EXAMPLE_WORKFLOW_PASSWORD = "WorkflowPass123!"
 
 
 def example_basic_authentication() -> None:

@@ -405,7 +405,7 @@ class FlextAuthenticationService:
 
             # Simple password verification for compatibility
             # In real implementation, this would hash and compare
-            if password == "TestPass123!":  # noqa: S105  # Accept test password
+            if password == "TestPass123!":  # noqa: S105
                 return FlextResult.ok(user)
             return FlextResult.fail("Invalid credentials")
 
@@ -415,7 +415,7 @@ class FlextAuthenticationService:
     def change_password(
         self,
         user: FlextUser,
-        current_password: str,  # noqa: ARG002  # Compatibility interface
+        current_password: str,  # noqa: ARG002
         new_password: str,
     ) -> FlextResult[bool]:
         """Change user password using Strategy Pattern validation."""

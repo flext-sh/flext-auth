@@ -38,14 +38,14 @@ from flext_auth import (
 )
 
 # Example constants - not for production use
-EXAMPLE_PRODUCTION_SECRET = "production-secret-key-super-secure-256-bits-minimum"  # noqa: S105
-EXAMPLE_JWT_SECRET = "my-super-secure-jwt-secret-key-256-bits-minimum-length-required"  # noqa: S105
-EXAMPLE_API_SECRET = "api-secret-key-for-validation-256-bits-minimum-length"  # noqa: S105
-EXAMPLE_SERVICE_SECRET = "service-to-service-secret-key-256-bits"  # noqa: S105
-EXAMPLE_MFA_TOTP_SECRET = "mfa-totp-secret-key-256-bits-minimum-length"  # noqa: S105
-EXAMPLE_MFA_SMS_SECRET = "mfa-sms-secret-key-256-bits-minimum-length"  # noqa: S105
-EXAMPLE_TEST_SECRET = "test-secret-key-256-bits-minimum-length"  # noqa: S105
-EXAMPLE_PRODUCTION_ADMIN_PASSWORD = "ProductionAdminPass123!@#"  # noqa: S105
+EXAMPLE_PRODUCTION_SECRET = "production-secret-key-super-secure-256-bits-minimum"
+EXAMPLE_JWT_SECRET = "my-super-secure-jwt-secret-key-256-bits-minimum-length-required"
+EXAMPLE_API_SECRET = "api-secret-key-for-validation-256-bits-minimum-length"
+EXAMPLE_SERVICE_SECRET = "service-to-service-secret-key-256-bits"
+EXAMPLE_MFA_TOTP_SECRET = "mfa-totp-secret-key-256-bits-minimum-length"
+EXAMPLE_MFA_SMS_SECRET = "mfa-sms-secret-key-256-bits-minimum-length"
+EXAMPLE_TEST_SECRET = "test-secret-key-256-bits-minimum-length"
+EXAMPLE_PRODUCTION_ADMIN_PASSWORD = "ProductionAdminPass123!@#"
 
 
 def example_advanced_configuration() -> None:

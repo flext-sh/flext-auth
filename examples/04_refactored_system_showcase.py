@@ -232,7 +232,7 @@ def show_refactoring_metrics() -> None:
     init_file = project_root / "src" / "flext_auth" / "__init__.py"
 
     if init_file.exists():
-        with open(init_file, encoding="utf-8") as f:
+        with init_file.open(encoding="utf-8") as f:
             current_lines = len(f.readlines())
 
         original_lines = 1929
@@ -251,7 +251,7 @@ def show_refactoring_metrics() -> None:
         for module in modules:
             module_path = project_root / "src" / "flext_auth" / module
             if module_path.exists():
-                with open(module_path, encoding="utf-8") as f:
+                with module_path.open(encoding="utf-8") as f:
                     lines = len(f.readlines())
                 total_specialized += lines
                 print(f"   {module}: {lines:,} lines")

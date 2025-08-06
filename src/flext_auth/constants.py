@@ -90,7 +90,7 @@ class FlextAuthSemanticConstants(FlextSemanticConstants):
 
         USERNAME_PATTERN = r"^[a-zA-Z0-9_]{3,50}$"
         PASSWORD_VALIDATION_REGEX = (
-            r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?])"  # noqa: S105
+            r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?])"
             r".{8,128}$"
         )
         # CONSUME from single source - NO DUPLICATION
@@ -120,8 +120,8 @@ class FlextAuthSemanticConstants(FlextSemanticConstants):
         JWT_ALGORITHM = "HS256"
 
         # Test secrets for development/testing only
-        TEST_JWT_SECRET = "test-secret-key"  # noqa: S105
-        DEFAULT_JWT_SECRET = "default-secret"  # noqa: S105
+        TEST_JWT_SECRET = "test-secret-key"
+        DEFAULT_JWT_SECRET = "default-secret"
 
     class UserStatus:
         """User status constants."""

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3  # noqa: EXE001
+#!/usr/bin/env python3
 """Validate that FLEXT Auth is Docker-ready.
 
 Tests that the library works with standard Python package dependencies
@@ -132,7 +132,7 @@ def main() -> int:
         results.append((test_name, success))
 
     all_passed = True
-    for test_name, success in results:
+    for _test_name, success in results:
         if not success:
             all_passed = False
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python3  # noqa: EXE001
+#!/usr/bin/env python3
 """Docker validation test for FLEXT Auth.
 
 This script validates that all examples work correctly in a Docker environment.
@@ -55,7 +55,7 @@ def test_basic_functionality() -> bool | None:
             return False
 
         # Test password hashing
-        password = "TestPassword123!"  # noqa: S105
+        password = "TestPassword123!"
         flext_auth_hash_password(password, rounds=4)  # Fast for testing
 
         # Test email validation

@@ -428,7 +428,7 @@ def validate_email_uniqueness(
     return FlextResult.ok(email)
 
 
-def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:  # noqa: C901, PLR0912
+def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:
     """Validate password strength with detailed analysis.
 
     Args:
@@ -821,7 +821,7 @@ def validate_user_profile_update(
     return FlextResult.ok(dict(validated_changes))  # Convert to dict[str, object]
 
 
-def validate_security_context(  # noqa: C901
+def validate_security_context(
     security_data: dict[str, object],
 ) -> FlextResult[dict[str, object]]:
     """Validate security context data for authentication operations.
