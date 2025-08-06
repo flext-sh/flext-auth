@@ -178,9 +178,15 @@ class DatabaseConfig:
     def __init__(self, **kwargs: object) -> None:
         """Initialize with backward compatibility for legacy interface."""
         # Extract and validate pool settings using helper methods
-        min_pool_size = self._extract_int_setting(kwargs, "min_pool_size", "DATABASE_MIN_POOL_SIZE", 1)
-        max_pool_size = self._extract_int_setting(kwargs, "max_pool_size", "DATABASE_MAX_POOL_SIZE", 10)
-        command_timeout = self._extract_int_setting(kwargs, "command_timeout", "DATABASE_COMMAND_TIMEOUT", 60)
+        min_pool_size = self._extract_int_setting(
+            kwargs, "min_pool_size", "DATABASE_MIN_POOL_SIZE", 1,
+        )
+        max_pool_size = self._extract_int_setting(
+            kwargs, "max_pool_size", "DATABASE_MAX_POOL_SIZE", 10,
+        )
+        command_timeout = self._extract_int_setting(
+            kwargs, "command_timeout", "DATABASE_COMMAND_TIMEOUT", 60,
+        )
 
         # Process URL settings
         self._original_url = self._extract_url_setting(kwargs)
@@ -195,13 +201,16 @@ class DatabaseConfig:
 
         # Create internal flext-core config with safe defaults
         try:
-            # Type-safe approach: create with minimal parameters for flext-core compatibility
+            # Type-safe approach: create with minimal parameters for
+            # flext-core compatibility
             self._core_config = FlextDatabaseConfig()
-        except Exception:
+        except (RuntimeError, ValueError, TypeError, KeyError):
             # Fallback if flext-core config fails
             self._core_config = FlextDatabaseConfig()
 
-    def _extract_int_setting(self, kwargs: dict[str, object], key: str, env_key: str, default: int) -> int:
+    def _extract_int_setting(
+        self, kwargs: dict[str, object], key: str, env_key: str, default: int,
+    ) -> int:
         """Extract and validate integer setting from kwargs or environment."""
         raw_value = kwargs.pop(key, os.getenv(env_key, str(default)))
         try:
@@ -219,7 +228,9 @@ class DatabaseConfig:
         if original_url is None:
             original_url = os.getenv("DATABASE_URL")
 
-        if original_url and not original_url.startswith(("postgresql://", "postgresql+asyncpg://")):
+        if original_url and not original_url.startswith(
+            ("postgresql://", "postgresql+asyncpg://"),
+        ):
             msg = "Database URL must start with postgresql"
             raise ValueError(msg)
 
@@ -227,6 +238,7 @@ class DatabaseConfig:
 
     def _validate_pool_sizes(self, min_pool_size: int, max_pool_size: int) -> None:
         """Validate pool size ranges."""
+
         def raise_validation_error(msg: str) -> Never:
             raise ValueError(msg)
 
@@ -312,7 +324,17 @@ class JWTConfig(FlextBaseSettings):
         env_prefix = "JWT_"
 
     def __init__(self, **kwargs: object) -> None:
-        """Initialize with algorithm validation."""
+        """Initialize with algorithm validation.
+
+        Args:
+            **kwargs: Configuration parameters for JWT settings
+
+        Raises:
+            ValueError: If algorithm is not supported
+
+        """
+        # Process kwargs - they can be empty but not None in **kwargs context
+
         # Validate algorithm before calling super().__init__
         algorithm = kwargs.get("algorithm", "HS256")
         valid_algorithms = ["HS256", "HS384", "HS512", "RS256", "RS384", "RS512"]
@@ -321,7 +343,8 @@ class JWTConfig(FlextBaseSettings):
             raise ValueError(msg)
 
         # Type-safe approach: let FlextBaseSettings handle validation
-        super().__init__(**kwargs)
+        # FlextBaseSettings properly validates kwargs during initialization
+        super().__init__(**kwargs)  # type: ignore[arg-type]
 
     def validate_secret_key(self) -> None:
         """Validate secret key strength."""
@@ -473,14 +496,22 @@ def validate_production_config(config: AppConfig) -> bool:
 
 def create_auth_config(**overrides: object) -> FlextAuthConfig:
     """Factory function to create authentication configuration."""
-    # Type ignore for dynamic Pydantic model instantiation
-    return FlextAuthConfig(**overrides)
+    # Type-safe creation using Pydantic v2 model_validate
+    if overrides:
+        # Filter None values and use model_validate for type safety
+        filtered_overrides = {k: v for k, v in overrides.items() if v is not None}
+        return FlextAuthConfig.model_validate(filtered_overrides)
+    return FlextAuthConfig()
 
 
 def create_complete_auth_config(**overrides: object) -> FlextAuthApplicationConfig:
     """Factory function to create complete authentication application configuration."""
-    # Type ignore for dynamic Pydantic model instantiation
-    return FlextAuthApplicationConfig(**overrides)
+    # Type-safe creation using Pydantic v2 model_validate
+    if overrides:
+        # Filter None values and use model_validate for type safety
+        filtered_overrides = {k: v for k, v in overrides.items() if v is not None}
+        return FlextAuthApplicationConfig.model_validate(filtered_overrides)
+    return FlextAuthApplicationConfig()
 
 
 def get_default_secret(key_name: str) -> str:

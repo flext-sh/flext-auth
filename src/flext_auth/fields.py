@@ -428,28 +428,9 @@ def validate_email_uniqueness(
     return FlextResult.ok(email)
 
 
-def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:
-    """Validate password strength with detailed analysis.
-
-    Args:
-        password: Password to analyze for strength
-
-    Returns:
-        FlextResult containing strength analysis or validation error
-
-    """
-    # Constants for password strength analysis
-    strong_score_threshold = 6
-    medium_score_threshold = 4
-    recommended_min_length = 12
-    # First validate basic password format
-    basic_validation = FlextAuthFieldSchema.PASSWORD.validate_value(password)
-    if basic_validation.is_failure:
-        error_msg = basic_validation.error or "Password validation failed"
-        return FlextResult.fail(error_msg)
-
-    # Perform detailed strength analysis
-    analysis = {
+def _analyze_password_characteristics(password: str) -> dict[str, object]:
+    """Analyze password characteristics - Single Responsibility Pattern."""
+    return {
         "length": len(password),
         "has_uppercase": any(c.isupper() for c in password),
         "has_lowercase": any(c.islower() for c in password),
@@ -459,59 +440,98 @@ def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:
             pattern in password.lower()
             for pattern in ["123", "abc", "password", "REDACTED_LDAP_BIND_PASSWORD"]
         ),
-        "score": 0,
-        "strength": "weak",
-        "feedback": [],
     }
 
-    # Calculate strength score (safely extract values)
-    length = len(password)  # Use direct length instead of dict access
+
+def _calculate_password_score(analysis: dict[str, object]) -> int:
+    """Calculate password strength score - Single Responsibility Pattern."""
     score = 0
+    # Cast to int since we know from _analyze_password_characteristics this is always int
+    length = analysis["length"]
+    if not isinstance(length, int):
+        msg = "Password length must be an integer"
+        raise TypeError(msg)
 
-    if length >= _MIN_LENGTH_BASIC:
-        score += 1
-    if length >= _MIN_LENGTH_STRONG:
-        score += 1
-    if analysis["has_uppercase"]:
-        score += 1
-    if analysis["has_lowercase"]:
-        score += 1
-    if analysis["has_digits"]:
-        score += 1
-    if analysis["has_symbols"]:
-        score += 1
-    if not analysis["has_common_patterns"]:
-        score += 1
+    # Length scoring
+    score += 1 if length >= _MIN_LENGTH_BASIC else 0
+    score += 1 if length >= _MIN_LENGTH_STRONG else 0
 
-    # Update score in analysis
-    analysis["score"] = score
+    # Character type scoring
+    score += 1 if analysis["has_uppercase"] else 0
+    score += 1 if analysis["has_lowercase"] else 0
+    score += 1 if analysis["has_digits"] else 0
+    score += 1 if analysis["has_symbols"] else 0
+    score += 1 if not analysis["has_common_patterns"] else 0
 
-    # Determine strength level
-    if score >= strong_score_threshold:
-        analysis["strength"] = "strong"
-    elif score >= medium_score_threshold:
-        analysis["strength"] = "medium"
-    else:
-        analysis["strength"] = "weak"
+    return score
 
-    # Generate feedback (safely extract and build list)
+
+def _generate_password_feedback(analysis: dict[str, object]) -> list[str]:
+    """Generate password improvement feedback - Single Responsibility Pattern."""
     feedback: list[str] = []
+    # Cast to int since we know from _analyze_password_characteristics this is always int
+    length = analysis["length"]
+    if not isinstance(length, int):
+        msg = "Password length must be an integer"
+        raise TypeError(msg)
+    recommended_min_length = 12
 
-    if not analysis["has_uppercase"]:
-        feedback.append("Add uppercase letters (A-Z)")
-    if not analysis["has_lowercase"]:
-        feedback.append("Add lowercase letters (a-z)")
-    if not analysis["has_digits"]:
-        feedback.append("Add numbers (0-9)")
-    if not analysis["has_symbols"]:
-        feedback.append("Add special characters (!@#$%^&*)")
-    if length < recommended_min_length:
-        feedback.append("Consider using at least 12 characters")
-    if analysis["has_common_patterns"]:
-        feedback.append("Avoid common patterns and dictionary words")
+    # Character feedback using mapping strategy
+    feedback_rules = [
+        (not analysis["has_uppercase"], "Add uppercase letters (A-Z)"),
+        (not analysis["has_lowercase"], "Add lowercase letters (a-z)"),
+        (not analysis["has_digits"], "Add numbers (0-9)"),
+        (not analysis["has_symbols"], "Add special characters (!@#$%^&*)"),
+        (length < recommended_min_length, "Consider using at least 12 characters"),
+        (analysis["has_common_patterns"], "Avoid common patterns and dictionary words"),
+    ]
 
-    # Update feedback in analysis
-    analysis["feedback"] = feedback
+    feedback.extend(message for condition, message in feedback_rules if condition)
+    return feedback
+
+
+def _determine_strength_level(score: int) -> str:
+    """Determine password strength level - Single Responsibility Pattern."""
+    strong_threshold, medium_threshold = 6, 4
+
+    if score >= strong_threshold:
+        return "strong"
+    if score >= medium_threshold:
+        return "medium"
+    return "weak"
+
+
+def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:
+    """Validate password strength with detailed analysis using Strategy Pattern.
+
+    SOLID REFACTORING: Broke down complex function into focused strategies
+    to reduce from 17 branches to 4 focused functions.
+
+    Args:
+        password: Password to analyze for strength
+
+    Returns:
+        FlextResult containing strength analysis or validation error
+
+    """
+    # First validate basic password format
+    basic_validation = FlextAuthFieldSchema.PASSWORD.validate_value(password)
+    if basic_validation.is_failure:
+        error_msg = basic_validation.error or "Password validation failed"
+        return FlextResult.fail(error_msg)
+
+    # Strategy Pattern: delegate analysis to specialized functions
+    analysis = _analyze_password_characteristics(password)
+    score = _calculate_password_score(analysis)
+    strength = _determine_strength_level(score)
+    feedback = _generate_password_feedback(analysis)
+
+    # Combine results
+    analysis.update({
+        "score": score,
+        "strength": strength,
+        "feedback": feedback,
+    })
 
     return FlextResult.ok(analysis)
 

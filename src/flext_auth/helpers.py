@@ -160,9 +160,11 @@ def _create_flext_auth_service(config_overrides: dict[str, object]) -> FlextAuth
         Configured FlextAuthService instance
 
     """
-    # Type-safe config creation: let FlextAuthConfig handle validation
+    # Type-safe config creation: use Pydantic v2 model_validate method
     try:
-        config = FlextAuthConfig(**config_overrides)
+        # Use model_validate for type-safe dynamic model creation
+        filtered_config = {k: v for k, v in config_overrides.items() if v is not None}
+        config = FlextAuthConfig.model_validate(filtered_config)
     except Exception:
         # Fallback to default config if overrides are invalid
         config = FlextAuthConfig()
@@ -172,7 +174,7 @@ def _create_flext_auth_service(config_overrides: dict[str, object]) -> FlextAuth
     session_repo = InMemorySessionRepository()
     password_service = FlextPasswordService(rounds=config.bcrypt_rounds)
     # Use default JWT secret for development
-    jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"
+    jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"  # nosec B105 - Development only
     jwt_service = FlextJWTService(
         secret_key=jwt_secret,
     )
@@ -220,7 +222,7 @@ def flext_auth_quick_start(
     *,
     create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
     REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-    REDACTED_LDAP_BIND_PASSWORD_password: str = "REDACTED_LDAP_BIND_PASSWORD123",
+    REDACTED_LDAP_BIND_PASSWORD_password: str = "REDACTED_LDAP_BIND_PASSWORD123",  # nosec B107 - Development default only
     **config_overrides: object,
 ) -> FlextResult[FlextAuthService]:
     """Ultra-fast authentication setup with sensible defaults.
@@ -239,18 +241,20 @@ def flext_auth_quick_start(
         # Create config with overrides
         config_data = {**FAST_CONFIG, **config_overrides}
         try:
-            # Type safe cast for Pydantic model instantiation
-            config = FlextAuthConfig(**config_data)
+            # Use Pydantic v2 model_validate for type-safe dynamic model creation
+            filtered_config = {k: v for k, v in config_data.items() if v is not None}
+            config = FlextAuthConfig.model_validate(filtered_config)
         except Exception:
-            # Fallback to defaults
-            config = FlextAuthConfig(**FAST_CONFIG)
+            # Fallback to defaults with type-safe method
+            filtered_fast_config = {k: v for k, v in FAST_CONFIG.items() if v is not None}
+            config = FlextAuthConfig.model_validate(filtered_fast_config)
 
         # Initialize dependencies
         user_repository = InMemoryUserRepository()
         session_repository = InMemorySessionRepository()
         password_service = FlextPasswordService(rounds=config.bcrypt_rounds)
         # Use default JWT secret for quick start
-        jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"
+        jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"  # nosec B105 - Development only
         jwt_service = FlextJWTService(
             secret_key=jwt_secret,
         )
@@ -287,7 +291,7 @@ def flext_auth_quick_start(
         _logger.info("FlextAuth quick start completed successfully")
         return FlextResult.ok(auth_service)
 
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
         _logger.exception("FlextAuth quick start failed")
         return FlextResult.fail(f"Quick start error: {e}")
 
@@ -356,14 +360,18 @@ def flext_auth_generate_jwt(
         if not secret:
             secret = DEFAULT_JWT_SECRET
 
-        jwt_service = FlextJWTService(secret_key=secret)
+        jwt_service = FlextJWTService(
+            secret_key=secret,
+            access_token_expire_minutes=expire_minutes,
+        )
         # Use generate_access_token with required parameters
         user_id = str(payload.get("user_id", ""))
         username = str(payload.get("username", ""))
         role = str(payload.get("role", "user"))
         permissions = payload.get("permissions", [])
 
-        # Pass permissions as additional claims (convert to string for JWT compatibility)
+        # Pass permissions as additional claims
+        # (convert to string for JWT compatibility)
         additional_claims: dict[str, str] = {}
         if permissions:
             additional_claims["permissions"] = str(permissions)
@@ -375,7 +383,7 @@ def flext_auth_generate_jwt(
             additional_claims=additional_claims,
         )
 
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
         _logger.exception("JWT generation failed")
         return FlextResult.fail(f"JWT generation error: {e}")
 
@@ -423,7 +431,7 @@ def flext_auth_validate_jwt(
             )
         return FlextResult.fail(result.error or "Token validation failed")
 
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
         _logger.exception("JWT validation failed")
         return FlextResult.fail(f"JWT validation error: {e}")
 
@@ -657,8 +665,11 @@ def flext_auth_complete_workflow(
     """
     try:
         # Setup auth service - safely pass through config overrides
+        # Use type assertion for dynamic kwargs unpacking (SOLID principle)
+        typed_overrides = dict(config_overrides)  # Convert to Dict[str, object]
         setup_result = flext_auth_quick_start(
             create_REDACTED_LDAP_BIND_PASSWORD=False,
+            **typed_overrides,  # type: ignore[arg-type]
         )
         if not setup_result.success:
             return FlextResult.fail(f"Setup failed: {setup_result.error}")
@@ -695,7 +706,7 @@ def flext_auth_complete_workflow(
             },
         )
 
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
         _logger.exception("Complete workflow failed")
         return FlextResult.fail(f"Workflow error: {e}")
 
@@ -832,7 +843,9 @@ def flext_auth_instant_api(
                 if k in FlextAuthConfig.model_fields
             }
             if config_params:
-                FlextAuthConfig(**config_params)
+                # Use Pydantic v2 model_validate for type-safe config creation
+                filtered_config = {k: v for k, v in config_params.items() if v is not None}
+                FlextAuthConfig.model_validate(filtered_config)
                 # Create service with dependencies object
                 dependencies = FlextAuthServiceDependencies(
                     user_repository=InMemoryUserRepository(),
@@ -841,7 +854,7 @@ def flext_auth_instant_api(
                     jwt_service=FlextJWTService(secret_key=DEFAULT_JWT_SECRET),
                 )
                 return FlextAuthService(dependencies)
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
             # If config creation fails, log and continue with default
             logger = FlextLoggerFactory.get_logger(__name__)
             logger.warning(
@@ -988,6 +1001,7 @@ def flext_auth_create_multi_factor_token(
 
 
 def flext_auth_build_response(
+    *,
     success: bool,
     data: object = None,
     error: str | None = None,
@@ -1315,12 +1329,18 @@ def flext_auth_rate_limit(
     """
     # This is a placeholder for rate limiting functionality
     # In a real implementation, this would track requests and enforce limits
-    return {
+    config = {
         "max_requests": max_requests,
         "window_seconds": window_seconds,
         "error_message": error_message,
         "rate_limit_type": "auth_endpoint",
     }
+
+    # Use key_func if provided for custom key generation
+    if key_func is not None:
+        config["key_func"] = key_func
+
+    return config
 
 
 # Additional type definitions for test compatibility

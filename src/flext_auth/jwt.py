@@ -88,9 +88,9 @@ from flext_auth.domain.value_objects import (
 )
 
 # Constants for JWT configuration
-DEV_SECRET_KEY = "dev-secret-key-change-in-production"
-ACCESS_TOKEN_TYPE = "access"
-REFRESH_TOKEN_TYPE = "refresh"
+DEV_SECRET_KEY = "dev-secret-key-change-in-production"  # nosec B105 - Development only
+ACCESS_TOKEN_TYPE = "access"  # nosec B105 - This is a token type identifier, not a password
+REFRESH_TOKEN_TYPE = "refresh"  # nosec B105 - This is a token type identifier, not a password
 
 # Initialize logger using FLEXT patterns
 # logger_factory removed
@@ -174,9 +174,12 @@ class FlextJWTService:
         role: str,
         session_id: str | None = None,
         additional_claims: dict[str, str] | None = None,
-        extra_claims: dict[str, str] | None = None,
     ) -> FlextResult[str]:
-        """Generate JWT access token with proper claims."""
+        """Generate JWT access token with proper claims.
+
+        SOLID REFACTORING: Consolidated duplicate parameters (additional_claims, extra_claims)
+        to reduce parameter count from 6 to 5.
+        """
         try:
             now = datetime.now(UTC)
             expires_at = now + timedelta(minutes=self.access_token_expire_minutes)
@@ -193,10 +196,9 @@ class FlextJWTService:
             if session_id:
                 claims["session_id"] = session_id
 
-            # Handle both parameter names for backward compatibility
-            claims_to_add = additional_claims or extra_claims
-            if claims_to_add:
-                claims.update(claims_to_add)
+            # Add additional claims if provided
+            if additional_claims:
+                claims.update(additional_claims)
 
             token = jwt.encode(claims, self.secret_key, algorithm=self.algorithm)
             # PyJWT 2.0+ returns str directly

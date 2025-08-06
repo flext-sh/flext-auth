@@ -111,10 +111,13 @@ if TYPE_CHECKING:
     SessionValidator = Callable[[JWTClaims], Awaitable[FlextResult[None]]]
     # Generic result creator supports both SecurityContext and dict results
     ResultCreator = Callable[
-        [User, JWTClaims], Awaitable[FlextResult[SecurityContext | dict[str, str]]],
+        [User, JWTClaims],
+        Awaitable[FlextResult[SecurityContext | dict[str, str]]],
     ]
     # Specific result creators for type safety
-    SecurityContextCreator = Callable[[User, JWTClaims], Awaitable[FlextResult[SecurityContext]]]
+    SecurityContextCreator = Callable[
+        [User, JWTClaims], Awaitable[FlextResult[SecurityContext]],
+    ]
     TokenCreator = Callable[[User, JWTClaims], Awaitable[FlextResult[dict[str, str]]]]
 
 
@@ -432,7 +435,9 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
             # Validate JWT token and claims
             validation_result = await self._validate_token_and_claims(token)
             if not validation_result.success:
-                return FlextResult.fail(validation_result.error or "Token validation failed")
+                return FlextResult.fail(
+                    validation_result.error or "Token validation failed",
+                )
 
             if not validation_result.data:
                 return FlextResult.fail("Invalid token data")
@@ -441,7 +446,9 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
             # Check if session is still active (critical for logout validation)
             session_validation_result = await self._validate_session(claims)
             if not session_validation_result.success:
-                return FlextResult.fail(session_validation_result.error or "Session validation failed")
+                return FlextResult.fail(
+                    session_validation_result.error or "Session validation failed",
+                )
 
             return FlextResult.ok(
                 SecurityContext(
@@ -452,11 +459,12 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
                     permissions=[],  # Could be enhanced with role-based permissions
                 ),
             )
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
             return FlextResult.fail(f"Token validation failed: {e}")
 
     async def _validate_token_and_claims(
-        self, token: str,
+        self,
+        token: str,
     ) -> FlextResult[tuple[JWTClaims, User]]:
         """Validate JWT token and extract claims and user."""
         # Validate JWT token
@@ -881,13 +889,15 @@ class FlextAuthService:
                 )
 
             return await self._create_final_result(session_result.data, strategies)
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
             return FlextResult.fail(f"Validation pipeline failed: {e}")
 
     async def _validate_token_stage(
         self,
         token: str,
-        strategies: ValidationPipelineStrategies | SecurityContextPipelineStrategies | TokenRefreshPipelineStrategies,
+        strategies: ValidationPipelineStrategies
+        | SecurityContextPipelineStrategies
+        | TokenRefreshPipelineStrategies,
     ) -> FlextResult[JWTClaims]:
         """Validate token stage - Single Responsibility Principle."""
         token_validation = await strategies.token_validator(token)
@@ -905,7 +915,9 @@ class FlextAuthService:
     async def _validate_user_stage(
         self,
         claims: JWTClaims,
-        strategies: ValidationPipelineStrategies | SecurityContextPipelineStrategies | TokenRefreshPipelineStrategies,
+        strategies: ValidationPipelineStrategies
+        | SecurityContextPipelineStrategies
+        | TokenRefreshPipelineStrategies,
     ) -> FlextResult[dict[str, User | JWTClaims]]:
         """Validate user stage - Single Responsibility Principle."""
         user_validation = await strategies.user_validator(claims)
@@ -921,7 +933,9 @@ class FlextAuthService:
     async def _validate_session_stage(
         self,
         data: dict[str, User | JWTClaims],
-        strategies: ValidationPipelineStrategies | SecurityContextPipelineStrategies | TokenRefreshPipelineStrategies,
+        strategies: ValidationPipelineStrategies
+        | SecurityContextPipelineStrategies
+        | TokenRefreshPipelineStrategies,
     ) -> FlextResult[dict[str, User | JWTClaims]]:
         """Validate session stage - Single Responsibility Principle."""
         claims = cast("JWTClaims", data["claims"])
@@ -959,17 +973,23 @@ class FlextAuthService:
             if not user_result.success or not user_result.data:
                 return FlextResult.fail(user_result.error or "User validation failed")
 
-            session_result = await self._validate_session_stage(user_result.data, strategies)
+            session_result = await self._validate_session_stage(
+                user_result.data, strategies,
+            )
             if not session_result.success or not session_result.data:
-                return FlextResult.fail(session_result.error or "Session validation failed")
+                return FlextResult.fail(
+                    session_result.error or "Session validation failed",
+                )
 
-            final_result = await self._create_security_context_result(session_result.data, strategies)
+            final_result = await self._create_security_context_result(
+                session_result.data, strategies,
+            )
             if not final_result.success:
                 return FlextResult.fail(final_result.error or "Result creation failed")
 
             return final_result
 
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
             return FlextResult.fail(f"Pipeline execution failed: {e!s}")
 
     async def _execute_token_refresh_pipeline_impl(
@@ -988,17 +1008,23 @@ class FlextAuthService:
             if not user_result.success or not user_result.data:
                 return FlextResult.fail(user_result.error or "User validation failed")
 
-            session_result = await self._validate_session_stage(user_result.data, strategies)
+            session_result = await self._validate_session_stage(
+                user_result.data, strategies,
+            )
             if not session_result.success or not session_result.data:
-                return FlextResult.fail(session_result.error or "Session validation failed")
+                return FlextResult.fail(
+                    session_result.error or "Session validation failed",
+                )
 
-            final_result = await self._create_token_refresh_result(session_result.data, strategies)
+            final_result = await self._create_token_refresh_result(
+                session_result.data, strategies,
+            )
             if not final_result.success:
                 return FlextResult.fail(final_result.error or "Result creation failed")
 
             return final_result
 
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
             return FlextResult.fail(f"Pipeline execution failed: {e!s}")
 
     async def _create_security_context_result(
@@ -1909,7 +1935,9 @@ class FlextAuthService:
             result_creator=self._generate_refreshed_tokens,
             validation_context="Refresh token",
         )
-        return await self._execute_token_refresh_pipeline_impl(refresh_token, strategies)
+        return await self._execute_token_refresh_pipeline_impl(
+            refresh_token, strategies,
+        )
 
     async def _execute_authentication_pipeline(
         self,

@@ -257,7 +257,7 @@ class FlextUser(FlextEntity):
 
             return FlextResult.ok(None)
 
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
             return FlextResult.fail(f"User validation error: {e}")
 
     def _execute_user_validation_strategies(self) -> list[str]:
@@ -508,7 +508,7 @@ class FlextLoginAttempt(FlextEntity):
 
             return FlextResult.ok(None)
 
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
             return FlextResult.fail(f"Validation error: {e}")
 
     def _execute_validation_strategies(self) -> list[str]:
@@ -598,7 +598,7 @@ class FlextBaseToken(FlextEntity):
 
             return FlextResult.ok(None)
 
-        except Exception as e:
+        except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
             return FlextResult.fail(f"Token validation error: {e}")
 
     def _execute_common_validation_strategies(self) -> list[str]:

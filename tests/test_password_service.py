@@ -239,7 +239,7 @@ class TestPasswordService:
                 raise AssertionError(msg)
 
         # Verify wrong passwords
-        for i, _password in enumerate(passwords):
+        for i in range(len(passwords)):
             wrong_password = FlextPlainPassword(value="WrongPassword123!")
             verify_result = service.verify_password(wrong_password, results[i])
             assert verify_result.success

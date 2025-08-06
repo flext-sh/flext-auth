@@ -305,7 +305,7 @@ def _validate_token_with_auth_instance(
             future = executor.submit(
                 lambda: asyncio.run(auth_instance.validate(token)),
             )
-            validation = future.result(timeout=10)
+            validation = future.result(timeout=FlextSemanticConstants.Defaults.TIMEOUT_SHORT)
     except RuntimeError:
         # No running loop
         validation = asyncio.run(auth_instance.validate(token))
@@ -441,7 +441,7 @@ class FlextAuth:
             # Create config from FAST_CONFIG defaults
             try:
                 config = _Config.model_validate({**FAST_CONFIG, **config_overrides})
-            except Exception:
+            except (RuntimeError, ValueError, TypeError, KeyError):
                 # Fallback to default config if validation fails
                 config = _Config()
         elif isinstance(config, dict):
@@ -462,7 +462,7 @@ class FlextAuth:
 
             try:
                 config = _Config.model_validate(config_dict)
-            except Exception:
+            except (RuntimeError, ValueError, TypeError, KeyError):
                 # Fallback to default config if validation fails
                 config = _Config()
 
@@ -963,21 +963,23 @@ def flext_auth_web_session(request_data: dict[str, object]) -> dict[str, object]
         if not isinstance(username, str) or not isinstance(password, str):
             return {"success": False, "error": "Username and password must be strings"}
 
-        session = loop.run_until_complete(
-            auth.create_user_session(username, password, include_user_data=True),
+        # Use authenticate_user method which returns FlextResult[dict[str, object]]
+        auth_result = loop.run_until_complete(
+            auth.authenticate_user(username, password, "127.0.0.1", "Web-Session"),
         )
 
-        if session.success and session.data:
-            session_data = session.data
-            token = str(session_data["token"])
-            return {
-                "success": True,
-                "token": token,
-                "headers": FlextAuthDefaults.auth_headers(token),
-                "user": session_data.get("user", {}),
-                "expires_at": session_data.get("expires_at"),
-            }
-        return {"success": False, "error": session.error}
+        if auth_result.success and auth_result.data:
+            session_data = auth_result.data
+            if isinstance(session_data, dict):
+                token = str(session_data.get("access_token", ""))
+                return {
+                    "success": True,
+                    "token": token,
+                    "headers": FlextAuthDefaults.auth_headers(token),
+                    "user": session_data.get("user", {}),
+                    "expires_at": session_data.get("expires_at"),
+                }
+        return {"success": False, "error": auth_result.error}
     except (FlextAuthSetupError, FlextAuthValidationError, ValueError, TypeError) as e:
         return {"success": False, "error": str(e)}
 

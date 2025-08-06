@@ -81,7 +81,8 @@ from typing import TYPE_CHECKING, cast
 from flext_core import create_module_exception_classes
 
 if TYPE_CHECKING:
-    # Type stubs for dynamically created exception classes to fix mypy inheritance issues
+    # Type stubs for dynamically created exception classes to fix mypy
+    # inheritance issues
     class FlextAuthError(Exception):
         """Type stub for dynamically created FlextAuthError."""
 
@@ -129,7 +130,8 @@ else:
         _exceptions["FlextAuthProcessingError"],
     )
     FlextAuthTimeoutError = cast(
-        "type[Exception]", _exceptions["FlextAuthTimeoutError"],
+        "type[Exception]",
+        _exceptions["FlextAuthTimeoutError"],
     )
 
 

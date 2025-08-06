@@ -85,9 +85,9 @@ from __future__ import annotations
 import asyncio
 import functools
 from collections.abc import Callable
-from typing import TYPE_CHECKING, ParamSpec, cast
+from typing import TYPE_CHECKING, ParamSpec, Protocol
 
-from flext_core import F, FlextLoggerFactory, FlextResult
+from flext_core import FlextLoggerFactory, FlextResult
 
 from flext_auth.jwt import FlextJWTService
 
@@ -114,7 +114,15 @@ NullaryAuthFunction = Callable[[], DecoratorReturnType]
 AuthenticatedFunction = (
     SimpleAuthFunction | BinaryAuthFunction | TernaryAuthFunction | NullaryAuthFunction
 )
-DecoratorCallable = Callable[[F], F]
+
+
+# Protocol for decorator function typing without explicit Any
+class AuthDecoratorProtocol(Protocol):
+    def __call__(self, *args: object, **kwargs: object) -> object:
+        """Protocol for functions that can be decorated with auth."""
+
+
+DecoratorCallable = Callable[[AuthDecoratorProtocol], AuthDecoratorProtocol]
 
 
 # REFACTORING: Parameter Object Pattern for decorator parameters
@@ -225,7 +233,7 @@ def _validate_token_with_auth_instance(
             )
 
         return asyncio.run(_validate())
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
         _logger.exception("Token validation error")
         return FlextResult.fail(f"Authentication error: {e}")
 
@@ -253,7 +261,7 @@ def _validate_token_with_secret(
                 },
             )
         return FlextResult.fail(validation_result.error or "Token validation failed")
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
         _logger.exception("Token validation error")
         return FlextResult.fail(f"Authentication error: {e}")
 
@@ -303,7 +311,7 @@ def _execute_authentication_pipeline(
     args: tuple[object, ...],
     kwargs: dict[str, object],
     config: FlextAuthDecoratorConfig,
-    func: Callable[..., object],
+    func: AuthDecoratorProtocol,
 ) -> object:
     """Execute authentication pipeline using Railway-Oriented Programming.
 
@@ -346,7 +354,7 @@ def _execute_authentication_pipeline(
         _add_user_data_to_kwargs(kwargs, validation_result, get_user=config.get_user)
         return func(*args, **kwargs)
 
-    except Exception as e:
+    except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
         return _handle_authentication_error(
             config.error_response,
             f"Authentication error: {e}",
@@ -359,7 +367,7 @@ def flext_auth_required(
     *,
     get_user: bool = True,
     error_response: object = None,
-) -> DecoratorCallable[F]:
+) -> DecoratorCallable:
     """Authentication decorator with flexible configuration.
 
     SOLID REFACTORING: Reduced from 6 parameters to Parameter Object Pattern.
@@ -382,7 +390,7 @@ def flext_auth_required(
         msg = "Either auth_service or secret must be provided"
         raise ValueError(msg)
 
-    def decorator(func: F) -> F:
+    def decorator(func: AuthDecoratorProtocol) -> AuthDecoratorProtocol:
         @functools.wraps(func)
         def wrapper(*args: object, **kwargs: object) -> object:
             # REFACTORING: Parameter Object Pattern + Railway-Oriented Programming
@@ -394,7 +402,7 @@ def flext_auth_required(
             )
             return _execute_authentication_pipeline(args, kwargs, config, func)
 
-        return cast("F", wrapper)
+        return wrapper
 
     return decorator
 
@@ -404,7 +412,7 @@ def flext_auth_role_required(
     auth_service: FlextAuthService | None = None,
     secret: str | None = None,
     error_response: object = None,
-) -> DecoratorCallable[F]:
+) -> DecoratorCallable:
     """Role-based authorization decorator.
 
     Args:
@@ -418,7 +426,7 @@ def flext_auth_role_required(
 
     """
 
-    def decorator(func: F) -> F:
+    def decorator(func: AuthDecoratorProtocol) -> AuthDecoratorProtocol:
         @functools.wraps(func)
         @flext_auth_required(auth_service=auth_service, secret=secret)
         def wrapper(*args: object, **kwargs: object) -> object:
@@ -435,7 +443,7 @@ def flext_auth_role_required(
 
             return func(*args, **kwargs)
 
-        return cast("F", wrapper)
+        return wrapper
 
     return decorator
 
@@ -445,7 +453,7 @@ def flext_auth_permission_required(
     auth_service: FlextAuthService | None = None,
     secret: str | None = None,
     error_response: object = None,
-) -> DecoratorCallable[F]:
+) -> DecoratorCallable:
     """Permission-based authorization decorator.
 
     Args:
@@ -459,7 +467,7 @@ def flext_auth_permission_required(
 
     """
 
-    def decorator(func: F) -> F:
+    def decorator(func: AuthDecoratorProtocol) -> AuthDecoratorProtocol:
         @functools.wraps(func)
         @flext_auth_required(auth_service=auth_service, secret=secret)
         def wrapper(*args: object, **kwargs: object) -> object:
@@ -479,7 +487,7 @@ def flext_auth_permission_required(
 
             return func(*args, **kwargs)
 
-        return cast("F", wrapper)
+        return wrapper
 
     return decorator
 

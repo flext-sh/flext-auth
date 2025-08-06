@@ -333,7 +333,9 @@ def demo_ultra_helpers() -> None:
     print("\n=== All Ultra Helpers ===")
 
     # One-liner workflow (skipping due to async context issue)
-    # one_liner_result = flext_auth_one_liner("oneliner_user", "oneliner@example.com", "OneLinerPass123!")
+    # one_liner_result = flext_auth_one_liner(
+    #     "oneliner_user", "oneliner@example.com", "OneLinerPass123!"
+    # )
     print("One-liner workflow: Skipped (async context conflict)")
 
     # Instant API

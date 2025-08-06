@@ -51,7 +51,11 @@ def example_basic_authentication() -> None:
 
     config = AppConfig()
     print(
-        f"  JWT Secret: {config.jwt.secret_key[:10] if config.jwt.secret_key else 'Not set'}..."
+
+            f"  JWT Secret: "
+            f"{config.jwt.secret_key[:10] if config.jwt.secret_key else 'Not set'}"
+            "..."
+
     )
     print(f"  Admin Role: {ADMIN_ROLE}")
     print(f"  User Role: {USER_ROLE}")

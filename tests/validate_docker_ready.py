@@ -61,7 +61,10 @@ except Exception as e:
     try:
         # Write test to temp file
         with tempfile.NamedTemporaryFile(
-            encoding="utf-8", mode="w", suffix=".py", delete=False,
+            encoding="utf-8",
+            mode="w",
+            suffix=".py",
+            delete=False,
         ) as f:
             f.write(test_code)
             temp_file = f.name
@@ -109,8 +112,8 @@ def test_examples_docker_ready() -> bool | None:
         ]
 
         for example in working_examples:
-            example_path = os.path.join(examples_path, example)
-            if pathlib.Path(example_path).exists():
+            example_path = pathlib.Path(examples_path) / example
+            if example_path.exists():
                 pass
 
         return True
