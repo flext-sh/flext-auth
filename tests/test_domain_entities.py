@@ -114,7 +114,7 @@ class TestFlextUser:
         if regular_user.is_REDACTED_LDAP_BIND_PASSWORD():
             raise AssertionError(f"Expected False, got {regular_user.is_REDACTED_LDAP_BIND_PASSWORD()}")
 
-    def test_user_validate_domain_rules(self) -> None:
+    def test_user_validate_business_rules(self) -> None:
         """Test user domain rules validation."""
         valid_user = FlextUser(
             id="test-id",
@@ -123,7 +123,7 @@ class TestFlextUser:
             password_hash="valid-hash",
         )
         # Should not raise
-        valid_user.validate_domain_rules()
+        valid_user.validate_business_rules()
 
         # Test short username
         with pytest.raises(ValueError, match="Username must be at least 3 characters"):
@@ -132,7 +132,7 @@ class TestFlextUser:
                 username="ab",
                 email="test@example.com",
                 password_hash="hash",
-            ).validate_domain_rules()
+            ).validate_business_rules()
 
         # Test long username
         with pytest.raises(ValueError, match="Username must be at most 50 characters"):
@@ -141,7 +141,7 @@ class TestFlextUser:
                 username="a" * 51,
                 email="test@example.com",
                 password_hash="hash",
-            ).validate_domain_rules()
+            ).validate_business_rules()
 
         # Test invalid email
         with pytest.raises(ValueError, match="Email must contain @ symbol"):
@@ -150,7 +150,7 @@ class TestFlextUser:
                 username="user",
                 email="invalid-email",
                 password_hash="hash",
-            ).validate_domain_rules()
+            ).validate_business_rules()
 
         # Test empty password hash
         with pytest.raises(ValueError, match="Password hash cannot be empty"):
@@ -159,10 +159,10 @@ class TestFlextUser:
                 username="user",
                 email="user@example.com",
                 password_hash="",
-            ).validate_domain_rules()
+            ).validate_business_rules()
 
     def test_user_domain_validation(self) -> None:
-        """Test user domain validation via validate_domain_rules."""
+        """Test user domain validation via validate_business_rules."""
         valid_user = FlextUser(
             id="test-id",
             username="validuser",
@@ -170,7 +170,7 @@ class TestFlextUser:
             password_hash="valid-hash",
         )
         # Should not raise exception
-        valid_user.validate_domain_rules()
+        valid_user.validate_business_rules()
 
 
 class TestFlextSession:
@@ -233,7 +233,7 @@ class TestFlextSession:
         if revoked_session.is_valid():
             raise AssertionError(f"Expected False, got {revoked_session.is_valid()}")
 
-    def test_session_validate_domain_rules(self) -> None:
+    def test_session_validate_business_rules(self) -> None:
         """Test session domain rules validation."""
         future_time = datetime.now(UTC) + timedelta(hours=1)
         valid_session = FlextSession(
@@ -243,16 +243,16 @@ class TestFlextSession:
             expires_at=future_time,
         )
         # Should not raise
-        valid_session.validate_domain_rules()
+        valid_session.validate_business_rules()
 
-        # Test empty session ID
-        with pytest.raises(ValueError, match="Session ID cannot be empty"):
+        # Test empty user ID (base class handles empty session ID)
+        with pytest.raises(ValueError, match="User ID cannot be empty"):
             FlextSession(
-                id="",
-                user_id="user-id",
+                id="session-id",
+                user_id="",
                 access_token="token",
                 expires_at=future_time,
-            ).validate_domain_rules()
+            ).validate_business_rules()
 
         # Test expired session
         past_time = datetime.now(UTC) - timedelta(hours=1)
@@ -265,7 +265,7 @@ class TestFlextSession:
                 user_id="user-id",
                 access_token="token",
                 expires_at=past_time,
-            ).validate_domain_rules()
+            ).validate_business_rules()
 
 
 class TestFlextPermission:
@@ -314,7 +314,7 @@ class TestFlextPermission:
         if invalid_permission.is_valid():
             raise AssertionError(f"Expected False, got {invalid_permission.is_valid()}")
 
-    def test_permission_validate_domain_rules(self) -> None:
+    def test_permission_validate_business_rules(self) -> None:
         """Test permission domain rules validation."""
         valid_permission = FlextPermission(
             id="perm-id",
@@ -324,7 +324,7 @@ class TestFlextPermission:
             action="read",
         )
         # Should not raise
-        valid_permission.validate_domain_rules()
+        valid_permission.validate_business_rules()
 
         # Test empty name
         with pytest.raises(ValueError, match="Permission name cannot be empty"):
@@ -334,7 +334,7 @@ class TestFlextPermission:
                 description="Read users",
                 resource="users",
                 action="read",
-            ).validate_domain_rules()
+            ).validate_business_rules()
 
 
 class TestFlextRole:
@@ -395,7 +395,7 @@ class TestFlextRole:
             )
         assert role.has_permission("posts", "read") is False
 
-    def test_role_validate_domain_rules(self) -> None:
+    def test_role_validate_business_rules(self) -> None:
         """Test role domain rules validation."""
         permission = FlextPermission(
             id="perm-id",
@@ -412,7 +412,7 @@ class TestFlextRole:
             permissions=[permission],
         )
         # Should not raise
-        valid_role.validate_domain_rules()
+        valid_role.validate_business_rules()
 
         # Test empty name - returns FlextResult failure instead of raising
         invalid_role = FlextRole(
@@ -421,7 +421,7 @@ class TestFlextRole:
             description="User management role",
             permissions=[permission],
         )
-        result = invalid_role.validate_domain_rules()
+        result = invalid_role.validate_business_rules()
         assert not result.success
         assert "Role name cannot be empty" in result.error
 
@@ -435,4 +435,4 @@ class TestFlextRole:
                 name="user_manager",
                 description="User management role",
                 permissions=["invalid"],
-            ).validate_domain_rules()
+            ).validate_business_rules()

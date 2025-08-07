@@ -293,4 +293,4 @@ class TestJWTService:
         claims = verify_result.data
 
         # Claims should be valid
-        claims.validate_domain_rules()  # Should not raise
+        claims.validate_business_rules()  # Should not raise

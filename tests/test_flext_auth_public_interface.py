@@ -103,7 +103,7 @@ class TestFlextAuthMainClass:
         assert result.success
         if result.data.username != "REDACTED_LDAP_BIND_PASSWORD":
             raise AssertionError(f"Expected {'REDACTED_LDAP_BIND_PASSWORD'}, got {result.data.username}")
-        assert result.data.role.value == "REDACTED_LDAP_BIND_PASSWORD"
+        assert result.data.role == "REDACTED_LDAP_BIND_PASSWORD"
 
     @pytest.mark.asyncio
     async def test_user_registration_duplicate_fails(self, auth: FlextAuth) -> None:
@@ -182,9 +182,9 @@ class TestFlextAuthMainClass:
         result = await auth.validate("invalid_token_123")
 
         assert not result.success
-        if "Token verification failed" not in result.error:
+        if "Token validation failed" not in result.error:
             raise AssertionError(
-                f"Expected {'Token verification failed'} in {result.error}"
+                f"Expected {'Token validation failed'} in {result.error}"
             )
 
     @pytest.mark.asyncio
@@ -231,18 +231,22 @@ class TestFlextAuthHelpers:
 
     def test_quick_start_default(self) -> None:
         """Test quick start with default settings."""
-        auth = flext_auth_quick_start()
+        auth_result = flext_auth_quick_start()
+        assert auth_result.success
+        auth = auth_result.data
 
         assert isinstance(auth, FlextAuth)
         assert auth is not None
 
     def test_quick_start_custom_REDACTED_LDAP_BIND_PASSWORD(self) -> None:
         """Test quick start with custom REDACTED_LDAP_BIND_PASSWORD."""
-        auth = flext_auth_quick_start(
+        auth_result = flext_auth_quick_start(
             REDACTED_LDAP_BIND_PASSWORD_username="superREDACTED_LDAP_BIND_PASSWORD",
             REDACTED_LDAP_BIND_PASSWORD_email="super@REDACTED_LDAP_BIND_PASSWORD.com",
             REDACTED_LDAP_BIND_PASSWORD_password="SuperSecret123!",
         )
+        assert auth_result.success
+        auth = auth_result.data
 
         assert isinstance(auth, FlextAuth)
 

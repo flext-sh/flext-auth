@@ -27,11 +27,8 @@ class TestRefactoredAuthSystem:
         from flext_auth import (
             FlextAuth,
             FlextAuthMixin,
-            FlextAuthService,
-            FlextJWTService,
-            FlextPasswordService,
-            InMemorySessionRepository,
-            InMemoryUserRepository,
+            # Note: Internal implementation classes are private and not exposed in public API
+            # Users should use FlextAuth class or helper functions instead
             flext_auth_quick_start,
         )
         from flext_auth.decorators import flext_auth_required
@@ -40,18 +37,20 @@ class TestRefactoredAuthSystem:
             flext_auth_validate_email,
         )
 
-        # Verify all components can be imported without circular dependencies
+        # Verify all PUBLIC API components can be imported without circular dependencies
         assert FlextAuth is not None
-        assert FlextAuthService is not None
-        assert FlextJWTService is not None
-        assert FlextPasswordService is not None
-        assert InMemoryUserRepository is not None
-        assert InMemorySessionRepository is not None
         assert FlextAuthMixin is not None
         assert flext_auth_required is not None
         assert flext_auth_quick_start is not None
         assert flext_auth_hash_password is not None
         assert flext_auth_validate_email is not None
+
+        # Test that public API works correctly (instead of testing private classes)
+        auth_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+        assert auth_result.success, f"Quick start failed: {auth_result.error}"
+        auth = auth_result.data
+        assert auth is not None
+        assert isinstance(auth, FlextAuth)
 
     def test_dependency_injection_resolution(self) -> None:
         """Test that dependency injection works correctly after refactoring."""

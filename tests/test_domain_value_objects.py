@@ -41,7 +41,7 @@ class TestUsername:
     def test_username_validation(self) -> None:
         """Test username validation rules."""
         valid_username = FlextUsername(value="ValidUser123")
-        result = valid_username.validate_domain_rules()
+        result = valid_username.validate_business_rules()
         assert result.success
 
         # Test minimum length - Pydantic validation prevents object creation
@@ -76,7 +76,7 @@ class TestUserEmail:
     def test_email_validation(self) -> None:
         """Test email validation rules."""
         valid_email = FlextUserEmail(value="valid@example.com")
-        valid_email.validate_domain_rules()  # Should not raise
+        valid_email.validate_business_rules()  # Should not raise
 
 
 class TestPlainPassword:
@@ -92,7 +92,7 @@ class TestPlainPassword:
     def test_password_validation(self) -> None:
         """Test password validation rules."""
         valid_password = FlextPlainPassword(value="ValidP@ssw0rd123")
-        result = valid_password.validate_domain_rules()
+        result = valid_password.validate_business_rules()
         assert result.success
 
         # Test minimum length - Pydantic validation prevents object creation
@@ -150,15 +150,15 @@ class TestHashedPassword:
         """Test hashed password validation rules."""
         valid_hash = "$2b$12$" + "a" * 50
         hashed = FlextHashedPassword(value=valid_hash)
-        hashed.validate_domain_rules()  # Should not raise
+        hashed.validate_business_rules()  # Should not raise
 
         # Test invalid length
         with pytest.raises(ValueError, match="Invalid bcrypt hash length"):
-            FlextHashedPassword(value="$2b$12$short").validate_domain_rules()
+            FlextHashedPassword(value="$2b$12$short").validate_business_rules()
 
         # Test invalid format
         with pytest.raises(ValueError, match="Invalid bcrypt hash format"):
-            FlextHashedPassword(value="invalid" + "a" * 54).validate_domain_rules()
+            FlextHashedPassword(value="invalid" + "a" * 54).validate_business_rules()
 
 
 class TestAuthToken:
@@ -173,18 +173,18 @@ class TestAuthToken:
     def test_auth_token_validation(self) -> None:
         """Test auth token validation rules."""
         valid_token = FlextAuthToken(value="valid_token_123")
-        valid_token.validate_domain_rules()  # Should not raise
+        valid_token.validate_business_rules()  # Should not raise
 
         # Test empty value
         with pytest.raises(ValueError, match="Auth token value cannot be empty"):
-            FlextAuthToken(value="").validate_domain_rules()
+            FlextAuthToken(value="").validate_business_rules()
 
         # Test short token
         with pytest.raises(
             ValueError,
             match="Auth token must be at least 10 characters",
         ):
-            FlextAuthToken(value="short").validate_domain_rules()
+            FlextAuthToken(value="short").validate_business_rules()
 
 
 class TestRefreshToken:
@@ -200,17 +200,17 @@ class TestRefreshToken:
     def test_refresh_token_validation(self) -> None:
         """Test refresh token validation rules."""
         valid_token = FlextRefreshToken(value="a" * 32)
-        valid_token.validate_domain_rules()  # Should not raise
+        valid_token.validate_business_rules()  # Should not raise
 
-        # Test empty value - fails at validate_domain_rules level
+        # Test empty value - fails at validate_business_rules level
         with pytest.raises(ValueError, match="Refresh token value cannot be empty"):
-            FlextRefreshToken(value="").validate_domain_rules()
+            FlextRefreshToken(value="").validate_business_rules()
 
         # Test short token
         with pytest.raises(
             ValueError, match="Refresh token must be at least 32 characters"
         ):
-            FlextRefreshToken(value="short").validate_domain_rules()
+            FlextRefreshToken(value="short").validate_business_rules()
 
 
 class TestSessionToken:
@@ -226,18 +226,18 @@ class TestSessionToken:
     def test_session_token_validation(self) -> None:
         """Test session token validation rules."""
         valid_token = FlextSessionToken(value="session_token_123")
-        valid_token.validate_domain_rules()  # Should not raise
+        valid_token.validate_business_rules()  # Should not raise
 
         # Test empty value
         with pytest.raises(ValueError, match="Session token value cannot be empty"):
-            FlextSessionToken(value="").validate_domain_rules()
+            FlextSessionToken(value="").validate_business_rules()
 
         # Test short token
         with pytest.raises(
             ValueError,
             match="Session token must be at least 16 characters",
         ):
-            FlextSessionToken(value="short").validate_domain_rules()
+            FlextSessionToken(value="short").validate_business_rules()
 
 
 class TestIPAddress:
@@ -253,15 +253,15 @@ class TestIPAddress:
         """Test IP address validation rules."""
         # Valid IPv4
         valid_ipv4 = FlextIPAddress(value="192.168.1.1")
-        valid_ipv4.validate_domain_rules()  # Should not raise
+        valid_ipv4.validate_business_rules()  # Should not raise
 
         # Valid IPv6
         valid_ipv6 = FlextIPAddress(value="2001:db8::1")
-        valid_ipv6.validate_domain_rules()  # Should not raise
+        valid_ipv6.validate_business_rules()  # Should not raise
 
         # Invalid IP
         with pytest.raises(ValueError, match="Invalid IP address"):
-            FlextIPAddress(value="invalid.ip").validate_domain_rules()
+            FlextIPAddress(value="invalid.ip").validate_business_rules()
 
 
 class TestUserAgent:
@@ -276,18 +276,18 @@ class TestUserAgent:
     def test_user_agent_validation(self) -> None:
         """Test user agent validation rules."""
         valid_ua = FlextUserAgent(value="Mozilla/5.0 (Chrome)")
-        valid_ua.validate_domain_rules()  # Should not raise
+        valid_ua.validate_business_rules()  # Should not raise
 
         # Test empty value
         with pytest.raises(ValueError, match="User agent cannot be empty"):
-            FlextUserAgent(value="").validate_domain_rules()
+            FlextUserAgent(value="").validate_business_rules()
 
         # Test too long
         with pytest.raises(
             ValueError,
             match="User agent must be at most 500 characters",
         ):
-            FlextUserAgent(value="a" * 501).validate_domain_rules()
+            FlextUserAgent(value="a" * 501).validate_business_rules()
 
     def test_user_agent_browser_detection(self) -> None:
         """Test browser detection methods."""
@@ -355,7 +355,7 @@ class TestJWTClaims:
             exp=now + 3600,
             token_type="access",
         )
-        valid_claims.validate_domain_rules()  # Should not raise
+        valid_claims.validate_business_rules()  # Should not raise
 
         # Test empty subject
         with pytest.raises(ValueError, match="JWT subject \\(sub\\) cannot be empty"):
@@ -364,7 +364,7 @@ class TestJWTClaims:
                 iat=now,
                 exp=now + 3600,
                 token_type="access",
-            ).validate_domain_rules()
+            ).validate_business_rules()
 
         # Test invalid expiration
         with pytest.raises(
@@ -376,7 +376,7 @@ class TestJWTClaims:
                 iat=now,
                 exp=now - 3600,  # Expired
                 token_type="access",
-            ).validate_domain_rules()
+            ).validate_business_rules()
 
         # Test invalid token type
         with pytest.raises(
@@ -388,7 +388,7 @@ class TestJWTClaims:
                 iat=now,
                 exp=now + 3600,
                 token_type="invalid",
-            ).validate_domain_rules()
+            ).validate_business_rules()
 
 
 class TestSecurityContext:
@@ -422,7 +422,7 @@ class TestSecurityContext:
             role="user",
             session_id="session-123",
         )
-        valid_context.validate_domain_rules()  # Should not raise
+        valid_context.validate_business_rules()  # Should not raise
 
         # Test empty user_id
         with pytest.raises(ValueError, match="User ID cannot be empty"):
@@ -431,7 +431,7 @@ class TestSecurityContext:
                 username="testuser",
                 role="user",
                 session_id="session-123",
-            ).validate_domain_rules()
+            ).validate_business_rules()
 
         # Test invalid role
         with pytest.raises(
@@ -443,7 +443,7 @@ class TestSecurityContext:
                 username="testuser",
                 role="invalid",
                 session_id="session-123",
-            ).validate_domain_rules()
+            ).validate_business_rules()
 
     def test_security_context_permissions(self) -> None:
         """Test security context permission methods."""

@@ -9,10 +9,10 @@ from __future__ import annotations
 
 from flext_auth import (
     flext_auth_create_secure_session,
-    flext_auth_decode_jwt,
     flext_auth_generate_jwt,
     flext_auth_hash_password,
     flext_auth_validate_email,
+    flext_auth_validate_jwt,
     flext_auth_validate_password_strength,
     flext_auth_verify_password,
 )
@@ -53,7 +53,7 @@ def test_flext_auth_jwt_helpers() -> None:
     if len(token.split(".")) != EXPECTED_DATA_COUNT:
         raise AssertionError(f"Expected {3}, got {len(token.split('.'))}")
 
-    decoded_result = flext_auth_decode_jwt(token, secret)
+    decoded_result = flext_auth_validate_jwt(token, secret)
     assert decoded_result.success, f"JWT decode failed: {decoded_result.error}"
     decoded = decoded_result.data
     assert decoded is not None

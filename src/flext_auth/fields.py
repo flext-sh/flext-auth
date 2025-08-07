@@ -841,6 +841,66 @@ def validate_user_profile_update(
     return FlextResult.ok(dict(validated_changes))  # Convert to dict[str, object]
 
 
+def _validate_ip_address(security_data: dict[str, object], validated_context: dict[str, str]) -> FlextResult[None]:
+    """Validate IP address in security data."""
+    if "source_ip" not in security_data:
+        return FlextResult.ok(None)
+
+    ip_address = str(security_data["source_ip"])
+    ip_pattern = (
+        r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}"
+        r"(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+    )
+    if not re.match(ip_pattern, ip_address):
+        return FlextResult.fail(f"Invalid IP address format: {ip_address}")
+    validated_context["source_ip"] = ip_address
+    return FlextResult.ok(None)
+
+
+def _validate_user_agent(security_data: dict[str, object], validated_context: dict[str, str]) -> FlextResult[None]:
+    """Validate user agent in security data."""
+    if "user_agent" not in security_data:
+        return FlextResult.ok(None)
+
+    max_user_agent_length = 1000
+    user_agent = str(security_data["user_agent"])
+    if len(user_agent) > max_user_agent_length:
+        return FlextResult.fail("User agent string too long")
+    validated_context["user_agent"] = user_agent
+    return FlextResult.ok(None)
+
+
+def _validate_permissions(security_data: dict[str, object], validated_context: dict[str, str]) -> FlextResult[None]:
+    """Validate permissions in security data."""
+    if "required_permissions" not in security_data:
+        return FlextResult.ok(None)
+
+    permissions = security_data["required_permissions"]
+    if not isinstance(permissions, list):
+        return FlextResult.fail("Required permissions must be a list")
+
+    valid_permissions = ["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD", "moderate", "execute"]
+    for permission in permissions:
+        if permission not in valid_permissions:
+            return FlextResult.fail(f"Invalid permission: {permission}")
+
+    validated_context["required_permissions"] = ",".join(permissions)
+    return FlextResult.ok(None)
+
+
+def _validate_security_level(security_data: dict[str, object], validated_context: dict[str, str]) -> FlextResult[None]:
+    """Validate security level in security data."""
+    if "security_level" not in security_data:
+        return FlextResult.ok(None)
+
+    security_level = str(security_data["security_level"])
+    valid_levels = ["low", "medium", "high", "critical"]
+    if security_level not in valid_levels:
+        return FlextResult.fail(f"Invalid security level: {security_level}")
+    validated_context["security_level"] = security_level
+    return FlextResult.ok(None)
+
+
 def validate_security_context(
     security_data: dict[str, object],
 ) -> FlextResult[dict[str, object]]:
@@ -853,54 +913,22 @@ def validate_security_context(
         FlextResult containing validated security context or validation errors
 
     """
-    # Constants for security validation
-    max_user_agent_length = 1000
+    validated_context: dict[str, str] = {}
 
-    validated_context = {}
+    # Validate each component using extracted functions
+    validators = [
+        _validate_ip_address,
+        _validate_user_agent,
+        _validate_permissions,
+        _validate_security_level,
+    ]
 
-    # Validate IP address if present
-    if "source_ip" in security_data:
-        ip_address = str(security_data["source_ip"])
-        # Basic IP validation pattern
-        ip_pattern = (
-            r"^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}"
-            r"(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
-        )
-        if not re.match(ip_pattern, ip_address):
-            return FlextResult.fail(f"Invalid IP address format: {ip_address}")
-        validated_context["source_ip"] = ip_address
+    for validator in validators:
+        result = validator(security_data, validated_context)
+        if result.is_failure:
+            return FlextResult.fail(result.error or "Validation failed")
 
-    # Validate user agent if present
-    if "user_agent" in security_data:
-        user_agent = str(security_data["user_agent"])
-        if len(user_agent) > max_user_agent_length:  # Reasonable limit
-            return FlextResult.fail("User agent string too long")
-        validated_context["user_agent"] = user_agent
-
-    # Validate permissions if present
-    if "required_permissions" in security_data:
-        permissions = security_data["required_permissions"]
-        if not isinstance(permissions, list):
-            return FlextResult.fail("Required permissions must be a list")
-
-        valid_permissions = ["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD", "moderate", "execute"]
-        for permission in permissions:
-            if permission not in valid_permissions:
-                return FlextResult.fail(f"Invalid permission: {permission}")
-
-        validated_context["required_permissions"] = ",".join(
-            permissions,
-        )  # Convert to string for type consistency
-
-    # Validate security level if present
-    if "security_level" in security_data:
-        security_level = str(security_data["security_level"])
-        valid_levels = ["low", "medium", "high", "critical"]
-        if security_level not in valid_levels:
-            return FlextResult.fail(f"Invalid security level: {security_level}")
-        validated_context["security_level"] = security_level
-
-    return FlextResult.ok(dict(validated_context))  # Convert to dict[str, object]
+    return FlextResult.ok(dict(validated_context))
 
 
 # Export the schema for use in other modules

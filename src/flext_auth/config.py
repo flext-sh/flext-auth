@@ -153,6 +153,24 @@ class FlextAuthConfig(FlextBaseConfigModel):
         ge=1,
     )
 
+    # JWT settings - added for backward compatibility with tests
+    access_token_expire_minutes: int = Field(
+        30,
+        description="JWT access token expiration minutes",
+        ge=1,
+        le=10080,  # 1 week max
+    )
+    refresh_token_expire_days: int = Field(
+        7,
+        description="JWT refresh token expiration days",
+        ge=1,
+        le=90,  # 3 months max
+    )
+    jwt_secret_key: str | None = Field(
+        None,
+        description="JWT secret key for token signing",
+    )
+
 
 class FlextAuthApplicationConfig(FlextApplicationConfig):
     """Complete application configuration extending FlextApplicationConfig."""

@@ -596,9 +596,9 @@ class TestIntegration:
             raise AssertionError(
                 f"Expected {'testuser'}, got {response['data']['username']}"
             )
-        if "password" not in response["data"]:  # Sensitive data filtered:
+        if "password" in response["data"]:  # Sensitive data should be filtered out
             raise AssertionError(
-                f"Expected {'password'} not in {response['data']}"  # Sensitive data filtered
+                f"Expected 'password' not in {response['data']} - sensitive data should be filtered"
             )
 
     def test_end_to_end_workflow(self) -> None:

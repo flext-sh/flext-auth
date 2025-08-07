@@ -355,7 +355,7 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
         access_token_result = self.jwt_service.generate_access_token(
             user_id=user.id,
             username=user.username,
-            role=user.role.value,
+            role=user.role,
             session_id=session_id,
         )
         if not access_token_result.success:
@@ -397,7 +397,7 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
                     "id": user.id,
                     "username": user.username,
                     "email": user.email,
-                    "role": user.role.value,
+                    "role": user.role,
                 },
                 "session": {
                     "id": session.id,
@@ -454,7 +454,7 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
                 SecurityContext(
                     user_id=user.id,
                     username=user.username,
-                    role=user.role.value,
+                    role=user.role,
                     session_id=claims.session_id or "no_session",
                     permissions=[],  # Could be enhanced with role-based permissions
                 ),
@@ -842,7 +842,7 @@ class FlextAuthService:
         context = SecurityContext(
             user_id=user.id,
             username=user.username,
-            role=user.role.value,
+            role=user.role,
             session_id=claims.session_id or "",
             permissions=[],  # Would be loaded from user roles/permissions
         )
@@ -1481,7 +1481,7 @@ class FlextAuthService:
             sessions_data: list[dict[str, object]] = [
                 {
                     "id": session.id,
-                    "status": session.status.value,
+                    "status": session.status,
                     "ip_address": session.ip_address,
                     "user_agent": session.user_agent,
                     "created_at": session.created_at.isoformat(),
@@ -1783,7 +1783,7 @@ class FlextAuthService:
         tokens_result = self.jwt_service.generate_token_pair(
             user_id=user.id,
             username=user.username,
-            role=user.role.value,
+            role=user.role,
             session_id=session.id if session else "",
         )
         if not tokens_result.success:
@@ -1824,8 +1824,8 @@ class FlextAuthService:
                     "id": user.id,
                     "username": user.username,
                     "email": user.email,
-                    "role": user.role.value,
-                    "status": user.status.value,
+                    "role": user.role,
+                    "status": user.status,
                     "last_login": user.last_login.isoformat()
                     if user.last_login
                     else None,
@@ -1911,7 +1911,7 @@ class FlextAuthService:
         tokens_result = self.jwt_service.generate_token_pair(
             user_id=user.id,
             username=user.username,
-            role=user.role.value,
+            role=user.role,
             session_id=claims.session_id or "",
         )
         if not tokens_result.success:

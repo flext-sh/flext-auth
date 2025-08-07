@@ -16,6 +16,7 @@ from __future__ import annotations
 import asyncio
 import concurrent.futures
 import importlib.metadata
+import os
 
 # import re  # Removed - not used after cleaning up function redefinitions
 # secrets removed - no longer used after removing function redefinitions
@@ -73,7 +74,6 @@ from flext_auth.helpers import (
     FlextAuthPermissions,
     FlextAuthRole,
     FlextAuthSessionData,
-    FlextAuthSessionMixin,
     FlextAuthTokenData,
     FlextAuthUser,
     FlextAuthUserData,
@@ -106,7 +106,7 @@ from flext_auth.helpers import (
     flext_auth_middleware_factory,
     flext_auth_one_liner,
     flext_auth_prod,
-    flext_auth_quick_start,
+    flext_auth_quick_start as _flext_auth_quick_start_helper,
     flext_auth_rate_limit,
     flext_auth_validate_api_key,
     flext_auth_validate_email,
@@ -118,7 +118,7 @@ from flext_auth.helpers import (
     flext_auth_web,
 )
 from flext_auth.jwt import FlextJWTService as _JWTService
-from flext_auth.mixins import FlextAuthMixin, FlextAuthUserMixin
+from flext_auth.mixins import FlextAuthMixin, FlextAuthSessionMixin, FlextAuthUserMixin
 from flext_auth.services.password_service import (
     FlextPasswordService as _PasswordService,
 )
@@ -305,7 +305,7 @@ def _validate_token_with_auth_instance(
             future = executor.submit(
                 lambda: asyncio.run(auth_instance.validate(token)),
             )
-            validation = future.result(timeout=FlextSemanticConstants.Defaults.TIMEOUT_SHORT)
+            validation = future.result(timeout=30.0)  # 30 second timeout for auth validation
     except RuntimeError:
         # No running loop
         validation = asyncio.run(auth_instance.validate(token))
@@ -455,9 +455,18 @@ class FlextAuth:
                 if "password_rounds" in security_config:
                     config_dict["bcrypt_rounds"] = security_config["password_rounds"]
 
-            # Merge other config fields safely
+            # Handle nested JWT config - flatten JWT settings to top level
+            if "jwt" in config and isinstance(config["jwt"], dict):
+                jwt_config = config["jwt"]
+                # Map JWT settings to top-level config for test compatibility
+                if "access_token_expire_minutes" in jwt_config:
+                    config_dict["access_token_expire_minutes"] = jwt_config["access_token_expire_minutes"]
+                if "secret_key" in jwt_config:
+                    config_dict["jwt_secret_key"] = jwt_config["secret_key"]
+
+            # Merge other config fields safely (exclude nested configs already processed)
             config_dict.update(
-                {key: value for key, value in config.items() if key != "security"},
+                {key: value for key, value in config.items() if key not in {"security", "jwt"}},
             )
 
             try:
@@ -761,7 +770,7 @@ class FlextAuth:
                         "id": user.id,
                         "username": user.username,
                         "email": user.email,
-                        "role": user.role.value,
+                        "role": user.role,
                     },
                     "password_strength": strength if require_strong_password else None,
                 },
@@ -848,7 +857,74 @@ class FlextAuth:
 # =============================================================================
 
 
-# flext_auth_quick_start is imported from helpers module above (line 108)
+def _generate_default_REDACTED_LDAP_BIND_PASSWORD_password() -> str:
+    """Generate a default REDACTED_LDAP_BIND_PASSWORD password. This should be changed in production."""
+    return os.environ.get("FLEXT_AUTH_DEFAULT_ADMIN_PASSWORD", "Admin123!")
+
+
+def flext_auth_quick_start(
+    *,
+    create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
+    REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
+    REDACTED_LDAP_BIND_PASSWORD_email: str | None = None,
+    REDACTED_LDAP_BIND_PASSWORD_password: str | None = None,
+    config: dict[str, object] | None = None,
+    **config_overrides: object,
+) -> FlextResult[FlextAuth]:
+    """Ultra-fast FlextAuth setup with sensible defaults - returns FlextAuth instance.
+
+    This wrapper function creates a complete FlextAuth instance using the helper function
+    from helpers.py and properly wraps the result in a FlextAuth object.
+
+    Args:
+        create_REDACTED_LDAP_BIND_PASSWORD: Whether to create default REDACTED_LDAP_BIND_PASSWORD user
+        REDACTED_LDAP_BIND_PASSWORD_username: Admin username (default: "REDACTED_LDAP_BIND_PASSWORD")
+        REDACTED_LDAP_BIND_PASSWORD_email: Admin email (defaults to {REDACTED_LDAP_BIND_PASSWORD_username}@example.com)
+        REDACTED_LDAP_BIND_PASSWORD_password: Admin password (default from environment or "Admin123!")
+        config: Configuration dictionary to use
+        **config_overrides: Additional configuration options
+
+    Returns:
+        FlextResult containing configured FlextAuth instance (not FlextAuthService)
+
+    """
+    try:
+        # Generate REDACTED_LDAP_BIND_PASSWORD password if not provided
+        if REDACTED_LDAP_BIND_PASSWORD_password is None:
+            REDACTED_LDAP_BIND_PASSWORD_password = _generate_default_REDACTED_LDAP_BIND_PASSWORD_password()
+
+        # Use helper function to get configured service
+        helper_result = _flext_auth_quick_start_helper(
+            create_REDACTED_LDAP_BIND_PASSWORD=create_REDACTED_LDAP_BIND_PASSWORD,
+            REDACTED_LDAP_BIND_PASSWORD_username=REDACTED_LDAP_BIND_PASSWORD_username,
+            REDACTED_LDAP_BIND_PASSWORD_email=REDACTED_LDAP_BIND_PASSWORD_email,
+            REDACTED_LDAP_BIND_PASSWORD_password=REDACTED_LDAP_BIND_PASSWORD_password,
+            **config_overrides,
+        )
+
+        if not helper_result.success or not helper_result.data:
+            return FlextResult.fail(helper_result.error or "Quick start helper failed")
+
+        auth_service = helper_result.data
+
+        # Create FlextAuth instance with config
+        config_dict = config or {}
+        config_dict.update(config_overrides)
+
+        flext_auth = FlextAuth(config_dict)
+
+        # Replace the internally created service with our configured one
+        # This ensures REDACTED_LDAP_BIND_PASSWORD user creation and all configuration is preserved
+        flext_auth._auth_service = auth_service
+        flext_auth._password_service = auth_service.password_service
+        flext_auth._jwt_service = auth_service.jwt_service
+        flext_auth._user_repository = auth_service.user_repo
+        flext_auth._session_repository = auth_service.session_repo
+
+        return FlextResult.ok(flext_auth)
+
+    except (RuntimeError, ValueError, TypeError, KeyError) as e:
+        return FlextResult.fail(f"FlextAuth quick start failed: {e}")
 
 
 # flext_auth_hash_password is imported from helpers module above (line 102)
@@ -1057,6 +1133,7 @@ __all__: list[str] = [
     "FlextAuthRole",
     "FlextAuthSecurityError",
     "FlextAuthSessionData",
+    "FlextAuthSessionMixin",
     "FlextAuthSessionMixin",
     "FlextAuthSetupError",
     "FlextAuthTokenData",

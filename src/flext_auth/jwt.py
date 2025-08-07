@@ -81,15 +81,18 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 import jwt
-from flext_core import FlextResult
+from flext_core import FlextResult, get_logger
 
 from flext_auth.domain.value_objects import (
     FlextJWTClaims as JWTClaims,
 )
 
 # Constants for JWT configuration
+# ruff: noqa: S105 - Development default secret, not production
 DEV_SECRET_KEY = "dev-secret-key-change-in-production"  # nosec B105 - Development only
+# ruff: noqa: S105 - Token type identifier, not a password
 ACCESS_TOKEN_TYPE = "access"  # nosec B105 - This is a token type identifier, not a password
+# ruff: noqa: S105 - Token type identifier, not a password
 REFRESH_TOKEN_TYPE = "refresh"  # nosec B105 - This is a token type identifier, not a password
 
 # Initialize logger using FLEXT patterns
@@ -173,11 +176,11 @@ class FlextJWTService:
         username: str,
         role: str,
         session_id: str | None = None,
-        additional_claims: dict[str, str] | None = None,
+        extra_claims: dict[str, str] | None = None,
     ) -> FlextResult[str]:
         """Generate JWT access token with proper claims.
 
-        SOLID REFACTORING: Consolidated duplicate parameters (additional_claims, extra_claims)
+        SOLID REFACTORING: Consolidated duplicate parameters to extra_claims
         to reduce parameter count from 6 to 5.
         """
         try:
@@ -197,8 +200,8 @@ class FlextJWTService:
                 claims["session_id"] = session_id
 
             # Add additional claims if provided
-            if additional_claims:
-                claims.update(additional_claims)
+            if extra_claims:
+                claims.update(extra_claims)
 
             token = jwt.encode(claims, self.secret_key, algorithm=self.algorithm)
             # PyJWT 2.0+ returns str directly
@@ -240,7 +243,7 @@ class FlextJWTService:
         username: str,
         role: str,
         session_id: str,
-        additional_claims: dict[str, str] | None = None,
+        extra_claims: dict[str, str] | None = None,
     ) -> FlextResult[dict[str, str]]:
         """Generate both access and refresh tokens."""
         try:
@@ -249,7 +252,7 @@ class FlextJWTService:
                 username,
                 role,
                 session_id,
-                additional_claims,
+                extra_claims,
             )
             if not access_result.success:
                 return FlextResult.fail(f"Access token failed: {access_result.error}")
@@ -295,9 +298,9 @@ class FlextJWTService:
         except jwt.ExpiredSignatureError:
             return FlextResult.fail("Token has expired")
         except jwt.InvalidTokenError as e:
-            return FlextResult.fail(f"Invalid token: {e}")
+            return FlextResult.fail(f"Failed to verify token: {e}")
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult.fail(f"Token verification failed: {e}")
+            return FlextResult.fail(f"Failed to verify token: {e}")
 
     def refresh_access_token(self, refresh_token: str) -> FlextResult[str]:
         """Generate new access token from refresh token."""
@@ -355,7 +358,7 @@ class FlextJWTService:
             # Verify and get claims
             verify_result = self.verify_token(token)
             if not verify_result.success:
-                return FlextResult.fail(f"Invalid token: {verify_result.error}")
+                return FlextResult.fail(f"Failed to decode token: {verify_result.error}")
 
             claims = verify_result.data
             if not claims:
@@ -383,17 +386,22 @@ class FlextJWTService:
         except (ValueError, TypeError, OSError) as e:
             return FlextResult.fail(f"Failed to get token expiry: {e}")
 
-    def is_token_expired(self, token: str) -> bool:
+    def is_token_expired(self, token: str) -> FlextResult[bool]:
         """Check if token is expired without full verification."""
         try:
             expiry_result = self.get_token_expiry(token)
             if not expiry_result.success:
-                return True
+                token_is_expired = True
+                return FlextResult.ok(token_is_expired)
 
             expiry = expiry_result.data
             if not expiry:
-                return True
-            return bool(datetime.now(UTC) >= expiry)
+                token_is_expired = True
+                return FlextResult.ok(token_is_expired)
+            is_expired = datetime.now(UTC) >= expiry
+            return FlextResult.ok(bool(is_expired))
 
-        except (ValueError, TypeError, OSError):
-            return True
+        except (ValueError, TypeError, OSError) as e:
+            logger = get_logger(__name__)
+            logger.warning(f"Token expiry check failed: {e}")
+            return FlextResult.fail(f"Token expiry check failed: {e}")

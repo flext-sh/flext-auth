@@ -20,12 +20,13 @@ from flext_auth import (
     FlextAuth,
     FlextAuthUser,
     flext_auth_create_secure_session,
-    flext_auth_decode_jwt,
+    flext_auth_decode_jwt,  # Backward compatible: returns dict | None
     flext_auth_generate_jwt,
     flext_auth_hash_password,
     flext_auth_middleware_factory,
     flext_auth_quick_start,
     flext_auth_validate_email,
+    flext_auth_validate_jwt,
     flext_auth_validate_password_strength,
     flext_auth_verify_password,
 )
@@ -266,7 +267,9 @@ class TestFlextAuthQuickStart:
 
     def test_quick_start_default(self: FlextAuth) -> None:
         """Testa quick start com configuração padrão."""
-        auth = flext_auth_quick_start()
+        auth_result = flext_auth_quick_start()
+        assert auth_result.success, f"Quick start failed: {auth_result.error}"
+        auth = auth_result.data
 
         assert isinstance(auth, FlextAuth)
         # Admin deve estar criado automaticamente (testamos com login)
@@ -286,11 +289,13 @@ class TestFlextAuthQuickStart:
 
     def test_quick_start_custom_REDACTED_LDAP_BIND_PASSWORD(self: FlextAuth) -> None:
         """Testa quick start com REDACTED_LDAP_BIND_PASSWORD customizado."""
-        auth = flext_auth_quick_start(
+        auth_result = flext_auth_quick_start(
             REDACTED_LDAP_BIND_PASSWORD_username="superREDACTED_LDAP_BIND_PASSWORD",
             REDACTED_LDAP_BIND_PASSWORD_email="super@REDACTED_LDAP_BIND_PASSWORD.com",
             REDACTED_LDAP_BIND_PASSWORD_password="SuperSecret123!",
         )
+        assert auth_result.success, f"Quick start failed: {auth_result.error}"
+        auth = auth_result.data
 
         assert isinstance(auth, FlextAuth)
 
@@ -371,7 +376,7 @@ class TestFlextAuthHelpers:
         assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
 
-        decoded_result = flext_auth_decode_jwt(token, secret)
+        decoded_result = flext_auth_validate_jwt(token, secret)
         assert decoded_result.success, f"JWT decode failed: {decoded_result.error}"
         decoded = decoded_result.data
 
@@ -599,7 +604,9 @@ class TestFlextAuthIntegracao:
         # 5. Criação de JWT
         payload = {"user_id": "workflow123", "email": email}
         secret = "workflow-secret-key-123456789"
-        token = flext_auth_generate_jwt(payload, secret=secret)
+        token_result = flext_auth_generate_jwt(payload, secret=secret)
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
+        token = token_result.data
         assert token != ""
 
         # 6. Decodificação do JWT
@@ -650,7 +657,10 @@ class TestFlextAuthPerformance:
         secret = "performance-secret-key-123456789"
 
         def jwt_cycle() -> bool:
-            token = flext_auth_generate_jwt(payload, secret=secret)
+            token_result = flext_auth_generate_jwt(payload, secret=secret)
+            if not token_result.success:
+                return False
+            token = token_result.data
             decoded = flext_auth_decode_jwt(token, secret)
             return decoded is not None
 

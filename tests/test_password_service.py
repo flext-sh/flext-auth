@@ -111,7 +111,7 @@ class TestPasswordService:
             raise AssertionError(msg)
 
         # Validate the generated password meets requirements
-        password.validate_domain_rules()  # Should not raise
+        password.validate_business_rules()  # Should not raise
 
     def test_generate_secure_password_custom_length(self) -> None:
         """Test password generation with custom length."""

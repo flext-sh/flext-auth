@@ -54,7 +54,7 @@ from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 
 from flext_core import FlextEntity, FlextResult
-from pydantic import EmailStr, Field
+from pydantic import Field
 
 # Constants for magic numbers
 MIN_USERNAME_LENGTH = 3
@@ -147,8 +147,8 @@ class FlextUser(FlextEntity):
     """
 
     id: str = Field(..., description="Unique user identifier")
-    username: str = Field(..., min_length=3, max_length=50, description="Username")
-    email: EmailStr = Field(..., description="User email address")
+    username: str = Field(..., description="Username")
+    email: str = Field(..., description="User email address")
     password_hash: str = Field(..., description="Bcrypt password hash")
     role: FlextUserRole = Field(default=FlextUserRole.USER, description="User role")
     status: FlextUserStatus = Field(
@@ -289,7 +289,11 @@ class FlextUser(FlextEntity):
 
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
-        return self.validate_domain_rules()
+        # Execute validation strategies and raise ValueError if validation fails
+        validation_errors = self._execute_user_validation_strategies()
+        if validation_errors:
+            raise ValueError(validation_errors[0])  # Raise first error as ValueError
+        return FlextResult.ok(None)
 
 
 class FlextSessionStatus(StrEnum):
@@ -377,7 +381,20 @@ class FlextSession(FlextEntity):
 
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
-        return self.validate_domain_rules()
+        # Execute validation and raise ValueError if validation fails
+        if not self.id:
+            msg = "Session ID cannot be empty"
+            raise ValueError(msg)
+        if not self.user_id:
+            msg = "User ID cannot be empty"
+            raise ValueError(msg)
+        if not self.access_token:
+            msg = "Access token cannot be empty"
+            raise ValueError(msg)
+        if self.expires_at <= datetime.now(UTC):
+            msg = "Session expiration must be in the future"
+            raise ValueError(msg)
+        return FlextResult.ok(None)
 
 
 class FlextPermission(FlextEntity):
@@ -398,21 +415,21 @@ class FlextPermission(FlextEntity):
             and len(self.action) > 0
         )
 
-    def validate_domain_rules(self) -> FlextResult[None]:
-        """Validate permission domain rules and business invariants."""
-        if not self.id:
-            return FlextResult.fail("Permission ID cannot be empty")
-        if not self.name:
-            return FlextResult.fail("Permission name cannot be empty")
-        if not self.resource:
-            return FlextResult.fail("Permission resource cannot be empty")
-        if not self.action:
-            return FlextResult.fail("Permission action cannot be empty")
-        return FlextResult.ok(None)
-
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate business rules required by FlextEntity abstract method."""
-        return self.validate_domain_rules()
+        """Validate permission business rules and business invariants."""
+        if not self.id:
+            msg = "Permission ID cannot be empty"
+            raise ValueError(msg)
+        if not self.name:
+            msg = "Permission name cannot be empty"
+            raise ValueError(msg)
+        if not self.resource:
+            msg = "Permission resource cannot be empty"
+            raise ValueError(msg)
+        if not self.action:
+            msg = "Permission action cannot be empty"
+            raise ValueError(msg)
+        return FlextResult.ok(None)
 
 
 class FlextRole(FlextEntity):
@@ -480,7 +497,19 @@ class FlextRole(FlextEntity):
 
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
-        return self.validate_domain_rules()
+        # Execute role validation strategies and return FlextResult (FlextRole uses Result pattern)
+        # Validation strategy pipeline - each validation can fail early
+        if not self.id:
+            return FlextResult.fail("Role ID cannot be empty")
+        if not self.name:
+            return FlextResult.fail("Role name cannot be empty")
+        if not self.description:
+            return FlextResult.fail("Role description cannot be empty")
+        if len(self.name) > MAX_NAME_LENGTH:
+            return FlextResult.fail("Role name must be at most 100 characters")
+        if len(self.description) > MAX_DESCRIPTION_LENGTH:
+            return FlextResult.fail("Role description must be at most 500 characters")
+        return FlextResult.ok(None)
 
 
 class FlextLoginAttempt(FlextEntity):
@@ -544,7 +573,11 @@ class FlextLoginAttempt(FlextEntity):
 
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
-        return self.validate_domain_rules()
+        # Execute login attempt validation strategies and raise ValueError if validation fails
+        validation_errors = self._execute_validation_strategies()
+        if validation_errors:
+            raise ValueError(validation_errors[0])  # Raise first error as ValueError
+        return FlextResult.ok(None)
 
 
 # =============================================================================
@@ -640,7 +673,12 @@ class FlextBaseToken(FlextEntity):
 
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
-        return self.validate_domain_rules()
+        # Execute common validation strategies and raise ValueError if validation fails
+        validation_errors = self._execute_common_validation_strategies()
+        if validation_errors:
+            raise ValueError(validation_errors[0])  # Raise first error as ValueError
+        # If common validation passes, call specific validation (no-op for base class)
+        return self._validate_specific_rules()
 
 
 class FlextPasswordResetToken(FlextBaseToken):

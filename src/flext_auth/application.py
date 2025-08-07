@@ -450,7 +450,7 @@ class FlextAuthorizationService(FlextDomainService):
 
             # If roles are provided, check role permissions
             if roles:
-                user_role = roles.get(user.role.value)
+                user_role = roles.get(user.role)
                 if user_role and user_role.has_permission(resource, action):
                     return FlextResult.ok(data=True)
 

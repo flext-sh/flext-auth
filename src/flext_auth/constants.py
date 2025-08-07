@@ -89,7 +89,8 @@ class FlextAuthSemanticConstants(FlextSemanticConstants):
         """Authentication pattern constants."""
 
         USERNAME_PATTERN = r"^[a-zA-Z0-9_]{3,50}$"
-        PASSWORD_VALIDATION_REGEX = (  # nosec B105 - This is a regex pattern, not a password
+        # ruff: noqa: S105 - This is a regex pattern, not a password
+        PASSWORD_VALIDATION_REGEX = (
             r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?])"
             r".{8,128}$"
         )

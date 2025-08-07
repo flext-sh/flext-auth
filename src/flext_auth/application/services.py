@@ -501,14 +501,36 @@ class FlextAuthorizationService:
 
     def check_permission(
         self,
-        check_data: PermissionCheckData,
+        check_data: PermissionCheckData | FlextUser,
+        resource: str | None = None,
+        action: str | None = None,
+        roles: dict[str, FlextRole] | None = None,
     ) -> FlextResult[bool]:
         """Check permission using Strategy Pattern + Parameter Object Pattern.
 
-        SOLID REFACTORING: Reduced from 4 parameters to 1 Parameter Object
-        using Parameter Object Pattern.
+        SOLID REFACTORING: Supports both new Parameter Object and legacy signatures.
+
+        Args:
+            check_data: Either PermissionCheckData object OR FlextUser for legacy
+            resource: Resource name (for legacy signature only)
+            action: Action name (for legacy signature only)
+            roles: Roles dict (for legacy signature only)
+
         """
         try:
+            # Handle legacy signature: check_permission(user, resource, action, roles)
+            if isinstance(check_data, FlextUser):
+                if resource is None or action is None:
+                    return FlextResult.fail("Resource and action required for legacy signature")
+
+                # Convert to parameter object
+                check_data = PermissionCheckData(
+                    user=check_data,
+                    resource=resource,
+                    action=action,
+                    roles=roles,
+                )
+
             # REFACTORING: Use Strategy Pattern for permission checking
             # Try REDACTED_LDAP_BIND_PASSWORD strategy first
             REDACTED_LDAP_BIND_PASSWORD_result = self._deps.REDACTED_LDAP_BIND_PASSWORD_permission_strategy.check_permission(

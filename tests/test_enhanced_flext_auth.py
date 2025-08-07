@@ -228,14 +228,18 @@ class TestEnhancedHelpers:
 
     def test_quick_start_with_create_REDACTED_LDAP_BIND_PASSWORD_false(self) -> None:
         """Test quick start without REDACTED_LDAP_BIND_PASSWORD creation."""
-        auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+        auth_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+        assert auth_result.success
+        auth = auth_result.data
 
         assert isinstance(auth, FlextAuth)
 
     def test_quick_start_with_custom_config(self) -> None:
         """Test quick start with custom configuration."""
         config = {"security": {"password_rounds": 6}}
-        auth = flext_auth_quick_start(config=config, create_REDACTED_LDAP_BIND_PASSWORD=False)
+        auth_result = flext_auth_quick_start(config=config, create_REDACTED_LDAP_BIND_PASSWORD=False)
+        assert auth_result.success
+        auth = auth_result.data
 
         assert isinstance(auth, FlextAuth)
         if auth._config.security.password_rounds != 6:
@@ -492,7 +496,9 @@ class TestIntegrationAdvanced:
         """Test complete workflow with enhanced methods."""
         # Quick start with configuration
         config = {"security": {"password_rounds": 4}}
-        auth = flext_auth_quick_start(config=config, create_REDACTED_LDAP_BIND_PASSWORD=False)
+        auth_result = flext_auth_quick_start(config=config, create_REDACTED_LDAP_BIND_PASSWORD=False)
+        assert auth_result.success
+        auth = auth_result.data
 
         # Register with validation
         register_result = await auth.register_validated(
@@ -922,9 +928,9 @@ class TestPublicInterfaceEnhanced:
         ]
 
         for item in expected_new_items:
-            if item in __all__:
+            if item not in __all__:
                 raise AssertionError(
-                    f"Expected {item in __all__}, got {item not in __all__}"
+                    f"Expected {item} to be in __all__, but it was not found"
                 )
 
     def test_enhanced_namespace_access(self) -> None:
@@ -948,7 +954,9 @@ class TestPublicInterfaceEnhanced:
         # Enhanced FLEXT approach: ~10 lines
 
         # 1. Quick setup (1 line vs 50+)
-        auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+        auth_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+        assert auth_result.success
+        auth = auth_result.data
 
         # 2. Enhanced operations (1 line each vs 20+ each)
         password = "TestPassword123!"
