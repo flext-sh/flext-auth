@@ -82,9 +82,9 @@ from typing import Never
 from flext_core import (
     FlextApplicationConfig,
     FlextBaseConfigModel,
-    FlextBaseSettings,
     FlextDatabaseConfig,
     FlextJWTConfig,
+    FlextSettings,
 )
 from pydantic import Field, SecretStr
 
@@ -197,13 +197,22 @@ class DatabaseConfig:
         """Initialize with backward compatibility for legacy interface."""
         # Extract and validate pool settings using helper methods
         min_pool_size = self._extract_int_setting(
-            kwargs, "min_pool_size", "DATABASE_MIN_POOL_SIZE", 1,
+            kwargs,
+            "min_pool_size",
+            "DATABASE_MIN_POOL_SIZE",
+            1,
         )
         max_pool_size = self._extract_int_setting(
-            kwargs, "max_pool_size", "DATABASE_MAX_POOL_SIZE", 10,
+            kwargs,
+            "max_pool_size",
+            "DATABASE_MAX_POOL_SIZE",
+            10,
         )
         command_timeout = self._extract_int_setting(
-            kwargs, "command_timeout", "DATABASE_COMMAND_TIMEOUT", 60,
+            kwargs,
+            "command_timeout",
+            "DATABASE_COMMAND_TIMEOUT",
+            60,
         )
 
         # Process URL settings
@@ -227,7 +236,11 @@ class DatabaseConfig:
             self._core_config = FlextDatabaseConfig()
 
     def _extract_int_setting(
-        self, kwargs: dict[str, object], key: str, env_key: str, default: int,
+        self,
+        kwargs: dict[str, object],
+        key: str,
+        env_key: str,
+        default: int,
     ) -> int:
         """Extract and validate integer setting from kwargs or environment."""
         raw_value = kwargs.pop(key, os.getenv(env_key, str(default)))
@@ -322,7 +335,7 @@ class DatabaseConfig:
         return getattr(self, "_command_timeout", 60)
 
 
-class JWTConfig(FlextBaseSettings):
+class JWTConfig(FlextSettings):
     """JWT configuration for backward compatibility with environment variables."""
 
     secret_key: str = Field(default="", description="JWT secret key")
@@ -360,9 +373,9 @@ class JWTConfig(FlextBaseSettings):
             msg: str = f"JWT algorithm must be one of {valid_algorithms}"
             raise ValueError(msg)
 
-        # Type-safe approach: let FlextBaseSettings handle validation
-        # FlextBaseSettings properly validates kwargs during initialization
-        super().__init__(**kwargs)  # type: ignore[arg-type]
+        # Type-safe approach: let FlextSettings handle validation
+        # FlextSettings properly validates kwargs during initialization
+        super().__init__(**kwargs)
 
     def validate_secret_key(self) -> None:
         """Validate secret key strength."""
@@ -379,7 +392,7 @@ class JWTConfig(FlextBaseSettings):
         return secrets.token_urlsafe(32)
 
 
-class SecurityConfig(FlextBaseSettings):
+class SecurityConfig(FlextSettings):
     """Security configuration for backward compatibility with environment variables."""
 
     password_rounds: int = Field(12, description="BCrypt rounds", ge=4, le=20)
@@ -422,7 +435,7 @@ class SecurityConfig(FlextBaseSettings):
         env_prefix = "SECURITY_"
 
 
-class ServerConfig(FlextBaseSettings):
+class ServerConfig(FlextSettings):
     """Server configuration for backward compatibility."""
 
     debug: bool = Field(default=False, description="Debug mode")
@@ -433,7 +446,7 @@ class ServerConfig(FlextBaseSettings):
         env_prefix = "SERVER_"
 
 
-class AppConfig(FlextBaseSettings):
+class AppConfig(FlextSettings):
     """Application configuration for backward compatibility."""
 
     name: str = Field("FLEXT Authentication API", description="Application name")

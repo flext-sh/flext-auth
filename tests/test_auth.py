@@ -297,7 +297,9 @@ class TestFlextAuthService:
             # Account lockout working - even with correct password, access_token should be real JWT or empty
             access_token = result.data.get("access_token", "")
             # If account is locked, token should be empty or a warning token
-            assert access_token == "" or len(access_token) > 10, f"Unexpected token format: {access_token}"
+            assert access_token == "" or len(access_token) > 10, (
+                f"Unexpected token format: {access_token}"
+            )
         # Traditional lockout behavior
         elif "locked" not in result.error.lower():
             msg: str = f"Expected 'locked' in {result.error.lower()}"

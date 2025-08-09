@@ -116,7 +116,8 @@ if TYPE_CHECKING:
     ]
     # Specific result creators for type safety
     SecurityContextCreator = Callable[
-        [User, JWTClaims], Awaitable[FlextResult[SecurityContext]],
+        [User, JWTClaims],
+        Awaitable[FlextResult[SecurityContext]],
     ]
     TokenCreator = Callable[[User, JWTClaims], Awaitable[FlextResult[dict[str, str]]]]
 
@@ -974,7 +975,8 @@ class FlextAuthService:
                 return FlextResult.fail(user_result.error or "User validation failed")
 
             session_result = await self._validate_session_stage(
-                user_result.data, strategies,
+                user_result.data,
+                strategies,
             )
             if not session_result.success or not session_result.data:
                 return FlextResult.fail(
@@ -982,7 +984,8 @@ class FlextAuthService:
                 )
 
             final_result = await self._create_security_context_result(
-                session_result.data, strategies,
+                session_result.data,
+                strategies,
             )
             if not final_result.success:
                 return FlextResult.fail(final_result.error or "Result creation failed")
@@ -1009,7 +1012,8 @@ class FlextAuthService:
                 return FlextResult.fail(user_result.error or "User validation failed")
 
             session_result = await self._validate_session_stage(
-                user_result.data, strategies,
+                user_result.data,
+                strategies,
             )
             if not session_result.success or not session_result.data:
                 return FlextResult.fail(
@@ -1017,7 +1021,8 @@ class FlextAuthService:
                 )
 
             final_result = await self._create_token_refresh_result(
-                session_result.data, strategies,
+                session_result.data,
+                strategies,
             )
             if not final_result.success:
                 return FlextResult.fail(final_result.error or "Result creation failed")
@@ -1936,7 +1941,8 @@ class FlextAuthService:
             validation_context="Refresh token",
         )
         return await self._execute_token_refresh_pipeline_impl(
-            refresh_token, strategies,
+            refresh_token,
+            strategies,
         )
 
     async def _execute_authentication_pipeline(

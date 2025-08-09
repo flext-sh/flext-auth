@@ -358,7 +358,9 @@ class FlextJWTService:
             # Verify and get claims
             verify_result = self.verify_token(token)
             if not verify_result.success:
-                return FlextResult.fail(f"Failed to decode token: {verify_result.error}")
+                return FlextResult.fail(
+                    f"Failed to decode token: {verify_result.error}"
+                )
 
             claims = verify_result.data
             if not claims:

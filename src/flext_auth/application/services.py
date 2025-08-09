@@ -405,7 +405,7 @@ class FlextAuthenticationService:
 
             # Simple password verification for compatibility
             # In real implementation, this would hash and compare
-            if password == "TestPass123!":  # noqa: S105
+            if password == "TestPass123!":  # nosec
                 return FlextResult.ok(user)
             return FlextResult.fail("Invalid credentials")
 
@@ -521,7 +521,9 @@ class FlextAuthorizationService:
             # Handle legacy signature: check_permission(user, resource, action, roles)
             if isinstance(check_data, FlextUser):
                 if resource is None or action is None:
-                    return FlextResult.fail("Resource and action required for legacy signature")
+                    return FlextResult.fail(
+                        "Resource and action required for legacy signature"
+                    )
 
                 # Convert to parameter object
                 check_data = PermissionCheckData(

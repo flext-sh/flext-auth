@@ -527,11 +527,13 @@ def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:
     feedback = _generate_password_feedback(analysis)
 
     # Combine results
-    analysis.update({
-        "score": score,
-        "strength": strength,
-        "feedback": feedback,
-    })
+    analysis.update(
+        {
+            "score": score,
+            "strength": strength,
+            "feedback": feedback,
+        }
+    )
 
     return FlextResult.ok(analysis)
 
@@ -841,7 +843,9 @@ def validate_user_profile_update(
     return FlextResult.ok(dict(validated_changes))  # Convert to dict[str, object]
 
 
-def _validate_ip_address(security_data: dict[str, object], validated_context: dict[str, str]) -> FlextResult[None]:
+def _validate_ip_address(
+    security_data: dict[str, object], validated_context: dict[str, str]
+) -> FlextResult[None]:
     """Validate IP address in security data."""
     if "source_ip" not in security_data:
         return FlextResult.ok(None)
@@ -857,7 +861,9 @@ def _validate_ip_address(security_data: dict[str, object], validated_context: di
     return FlextResult.ok(None)
 
 
-def _validate_user_agent(security_data: dict[str, object], validated_context: dict[str, str]) -> FlextResult[None]:
+def _validate_user_agent(
+    security_data: dict[str, object], validated_context: dict[str, str]
+) -> FlextResult[None]:
     """Validate user agent in security data."""
     if "user_agent" not in security_data:
         return FlextResult.ok(None)
@@ -870,7 +876,9 @@ def _validate_user_agent(security_data: dict[str, object], validated_context: di
     return FlextResult.ok(None)
 
 
-def _validate_permissions(security_data: dict[str, object], validated_context: dict[str, str]) -> FlextResult[None]:
+def _validate_permissions(
+    security_data: dict[str, object], validated_context: dict[str, str]
+) -> FlextResult[None]:
     """Validate permissions in security data."""
     if "required_permissions" not in security_data:
         return FlextResult.ok(None)
@@ -888,7 +896,9 @@ def _validate_permissions(security_data: dict[str, object], validated_context: d
     return FlextResult.ok(None)
 
 
-def _validate_security_level(security_data: dict[str, object], validated_context: dict[str, str]) -> FlextResult[None]:
+def _validate_security_level(
+    security_data: dict[str, object], validated_context: dict[str, str]
+) -> FlextResult[None]:
     """Validate security level in security data."""
     if "security_level" not in security_data:
         return FlextResult.ok(None)

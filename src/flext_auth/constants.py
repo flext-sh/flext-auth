@@ -70,15 +70,15 @@ from __future__ import annotations
 
 from enum import Enum
 
-from flext_core.constants import FlextSemanticConstants
+from flext_core.constants import FlextConstants
 
 # =============================================================================
 # AUTH-SPECIFIC SEMANTIC CONSTANTS - Modern Python 3.13 Structure
 # =============================================================================
 
 
-class FlextAuthSemanticConstants(FlextSemanticConstants):
-    """Authentication-specific semantic constants extending FlextSemanticConstants.
+class FlextAuthSemanticConstants(FlextConstants):
+    """Authentication-specific semantic constants extending FlextConstants.
 
     Modern Python 3.13 constants following semantic grouping patterns.
     Extends the FLEXT ecosystem constants with authentication and security
@@ -95,8 +95,8 @@ class FlextAuthSemanticConstants(FlextSemanticConstants):
             r".{8,128}$"
         )
         # CONSUME from single source - NO DUPLICATION
-        MIN_PASSWORD_LENGTH = FlextSemanticConstants.Limits.MIN_PASSWORD_LENGTH
-        MAX_PASSWORD_LENGTH = FlextSemanticConstants.Limits.MAX_PASSWORD_LENGTH
+        MIN_PASSWORD_LENGTH = FlextConstants.Limits.MIN_PASSWORD_LENGTH
+        MAX_PASSWORD_LENGTH = FlextConstants.Limits.MAX_PASSWORD_LENGTH
         MIN_PASSWORD_SECURITY_SCORE = 4
 
     class Security:

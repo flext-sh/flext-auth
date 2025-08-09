@@ -551,7 +551,11 @@ class FlextAuthSessionMixin:
         try:
             if isinstance(expires_at, str):
                 # Parse ISO format timestamp - handle Z suffix
-                normalized_time = expires_at.rstrip("Z") + "+00:00" if expires_at.endswith("Z") else expires_at
+                normalized_time = (
+                    expires_at.rstrip("Z") + "+00:00"
+                    if expires_at.endswith("Z")
+                    else expires_at
+                )
                 expires_time = datetime.fromisoformat(normalized_time)
             else:
                 return False

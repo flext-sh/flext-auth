@@ -256,7 +256,9 @@ def flext_auth_quick_start(
             config = FlextAuthConfig.model_validate(filtered_config)
         except Exception:
             # Fallback to defaults with type-safe method
-            filtered_fast_config = {k: v for k, v in FAST_CONFIG.items() if v is not None}
+            filtered_fast_config = {
+                k: v for k, v in FAST_CONFIG.items() if v is not None
+            }
             config = FlextAuthConfig.model_validate(filtered_fast_config)
 
         # Initialize dependencies
@@ -517,7 +519,9 @@ def flext_auth_validate_password_strength(password: str) -> dict[str, object]:
     # Generate feedback messages for failed criteria
     feedback = []
     if not bool(results["length"]):
-        feedback.append(f"Password must be at least {MIN_PASSWORD_LENGTH} characters long")
+        feedback.append(
+            f"Password must be at least {MIN_PASSWORD_LENGTH} characters long"
+        )
     if not bool(results["uppercase"]):
         feedback.append("Password must contain at least one uppercase letter")
     if not bool(results["lowercase"]):
@@ -568,7 +572,9 @@ def flext_auth_decode_jwt(
     return result.data if result.success else None
 
 
-def flext_auth_check_token(token: str, secret: str | None = None) -> FlextResult[dict[str, object]]:
+def flext_auth_check_token(
+    token: str, secret: str | None = None
+) -> FlextResult[dict[str, object]]:
     """Check if JWT token is valid - returns full token data if valid.
 
     Args:
@@ -742,7 +748,7 @@ def flext_auth_complete_workflow(
         typed_overrides = dict(config_overrides)  # Convert to Dict[str, object]
         setup_result = flext_auth_quick_start(
             create_REDACTED_LDAP_BIND_PASSWORD=False,
-            **typed_overrides,  # type: ignore[arg-type]
+            **typed_overrides,
         )
         if not setup_result.success:
             return FlextResult.fail(f"Setup failed: {setup_result.error}")
@@ -932,19 +938,23 @@ def flext_auth_instant_api(
         }
 
         # Create API key token
-        token_result = flext_auth_generate_jwt(payload, expires_minutes=expires_days * 24 * 60)
+        token_result = flext_auth_generate_jwt(
+            payload, expires_minutes=expires_days * 24 * 60
+        )
         if not token_result.success:
             return FlextResult.fail(f"Failed to create API key: {token_result.error}")
 
         # Return API information
-        return FlextResult.ok({
-            "api_key": token_result.data,
-            "service_name": service_name.strip(),
-            "scope": scope,
-            "expires_days": expires_days,
-            "created_at": datetime.now(UTC).isoformat(),
-            "type": "instant_api",
-        })
+        return FlextResult.ok(
+            {
+                "api_key": token_result.data,
+                "service_name": service_name.strip(),
+                "scope": scope,
+                "expires_days": expires_days,
+                "created_at": datetime.now(UTC).isoformat(),
+                "type": "instant_api",
+            }
+        )
 
     except Exception as e:
         return FlextResult.fail(f"Instant API creation failed: {e!s}")
@@ -1076,11 +1086,13 @@ def flext_auth_one_liner(
                 return FlextResult.fail(f"Login failed: {login_result.error}")
 
             # Return complete auth data
-            return FlextResult.ok({
-                "user": login_result.data["user"],
-                "tokens": login_result.data["tokens"],
-                "session": login_result.data["session"],
-            })
+            return FlextResult.ok(
+                {
+                    "user": login_result.data["user"],
+                    "tokens": login_result.data["tokens"],
+                    "session": login_result.data["session"],
+                }
+            )
         finally:
             loop.close()
 
@@ -1407,9 +1419,16 @@ def flext_auth_filter_user_data(
 
     # Define sensitive fields that should be excluded by default
     sensitive_fields = {
-        "password", "password_hash", "password_salt",
-        "secret", "secret_key", "private_key", "token",
-        "api_key", "access_token", "refresh_token",
+        "password",
+        "password_hash",
+        "password_salt",
+        "secret",
+        "secret_key",
+        "private_key",
+        "token",
+        "api_key",
+        "access_token",
+        "refresh_token",
     }
 
     # Apply sensitive field exclusion first (if enabled)
@@ -1532,14 +1551,19 @@ def flext_auth_rate_limit(
 
     """
     # Handle alias parameters for backward compatibility
-    effective_max_requests = _max_requests if _max_requests is not None else max_requests
-    effective_window_seconds = _window_seconds if _window_seconds is not None else window_seconds
+    effective_max_requests = (
+        _max_requests if _max_requests is not None else max_requests
+    )
+    effective_window_seconds = (
+        _window_seconds if _window_seconds is not None else window_seconds
+    )
 
     # Return a decorator function for rate limiting
     def rate_limit_decorator(func: Callable[..., Any]) -> Callable[..., Any]:
         """Rate limit decorator - placeholder implementation."""
+
         @functools.wraps(func)
-        def wrapper(*args, **kwargs):  # noqa: ANN202, ANN003, ANN002
+        def wrapper(*args: object, **kwargs: object) -> object:
             # Placeholder implementation - in production this would:
             # 1. Extract client identifier (IP, user ID, etc.)
             # 2. Check current request count for the time window

@@ -134,7 +134,7 @@ _DecoratorCallable = Callable[[object], object]
 try:
     __version__ = importlib.metadata.version("flext-auth")
 except importlib.metadata.PackageNotFoundError:
-    __version__ = "0.9.0"
+    __version__ = "0.9.0"  # Fallback version when not installed
 
 __version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
 
@@ -305,7 +305,9 @@ def _validate_token_with_auth_instance(
             future = executor.submit(
                 lambda: asyncio.run(auth_instance.validate(token)),
             )
-            validation = future.result(timeout=30.0)  # 30 second timeout for auth validation
+            validation = future.result(
+                timeout=30.0
+            )  # 30 second timeout for auth validation
     except RuntimeError:
         # No running loop
         validation = asyncio.run(auth_instance.validate(token))
@@ -460,13 +462,19 @@ class FlextAuth:
                 jwt_config = config["jwt"]
                 # Map JWT settings to top-level config for test compatibility
                 if "access_token_expire_minutes" in jwt_config:
-                    config_dict["access_token_expire_minutes"] = jwt_config["access_token_expire_minutes"]
+                    config_dict["access_token_expire_minutes"] = jwt_config[
+                        "access_token_expire_minutes"
+                    ]
                 if "secret_key" in jwt_config:
                     config_dict["jwt_secret_key"] = jwt_config["secret_key"]
 
             # Merge other config fields safely (exclude nested configs already processed)
             config_dict.update(
-                {key: value for key, value in config.items() if key not in {"security", "jwt"}},
+                {
+                    key: value
+                    for key, value in config.items()
+                    if key not in {"security", "jwt"}
+                },
             )
 
             try:
@@ -482,7 +490,7 @@ class FlextAuth:
         self._session_repository = _SessionRepo()
         self._password_service = _PasswordService(rounds=config.bcrypt_rounds)
         # Use default JWT secret for development
-        jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"  # noqa: S105
+        jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"  # nosec
         self._jwt_service = _JWTService(
             secret_key=jwt_secret,
         )

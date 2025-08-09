@@ -485,11 +485,13 @@ def flext_auth_permission_required(
     def decorator(func: AuthDecoratorProtocol) -> AuthDecoratorProtocol:
         # If no auth configuration provided, skip auth and just check permissions
         if auth_service is None and effective_secret is None:
+
             @functools.wraps(func)
             def wrapper(*args: object, **kwargs: object) -> object:
                 # No auth validation, assume auth_context is provided by caller
                 # This matches the test expectation that decorator works without auth config
                 return func(*args, **kwargs)
+
             return wrapper
 
         # Normal auth flow with validation
