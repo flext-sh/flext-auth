@@ -256,11 +256,11 @@ class InMemorySessionRepository(SessionRepository):
         try:
             session = self._sessions.get(session_id)
             if not session:
-                return FlextResult.ok(data=False)
+                return FlextResult.ok(False)
 
             revoked_session = session.revoke()
             self._sessions[session_id] = revoked_session
-            return FlextResult.ok(data=True)
+            return FlextResult.ok(True)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Failed to revoke session: {e}")
 
@@ -313,7 +313,7 @@ class InMemorySessionRepository(SessionRepository):
         try:
             session = self._sessions.pop(session_id, None)
             if not session:
-                return FlextResult.ok(data=False)
+                return FlextResult.ok(False)
 
             # Remove from user sessions index
             if (
@@ -322,7 +322,7 @@ class InMemorySessionRepository(SessionRepository):
             ):
                 self._user_sessions[session.user_id].remove(session_id)
 
-            return FlextResult.ok(data=True)
+            return FlextResult.ok(True)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Failed to delete session: {e}")
 

@@ -217,7 +217,7 @@ class InMemoryUserRepository(UserRepository):
         try:
             user = self._users.get(user_id)
             if not user:
-                return FlextResult.ok(data=False)
+                return FlextResult.ok(False)
 
             # Remove from indexes
             self._username_index.pop(user.username.lower(), None)
@@ -226,7 +226,7 @@ class InMemoryUserRepository(UserRepository):
             # Remove user
             del self._users[user_id]
 
-            return FlextResult.ok(data=True)
+            return FlextResult.ok(True)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Failed to delete user: {e}")
 

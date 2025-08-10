@@ -305,7 +305,7 @@ class FlextAuthenticationService(FlextDomainService):
                 )
 
             user.password_hash = hash_result.data.value if hash_result.data else ""
-            return FlextResult.ok(data=True)
+            return FlextResult.ok(True)
 
         except (ValueError, TypeError, AttributeError, KeyError) as e:
             return FlextResult.fail(f"Password change failed: {e}")
@@ -384,7 +384,7 @@ class FlextSessionService(FlextDomainService):
             if not session.is_valid():
                 return FlextResult.fail("Session is not valid")
 
-            return FlextResult.ok(data=True)
+            return FlextResult.ok(True)
 
         except (ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Session validation failed: {e}")
@@ -401,7 +401,7 @@ class FlextSessionService(FlextDomainService):
         """
         try:
             session.revoke()
-            return FlextResult.ok(data=True)
+            return FlextResult.ok(True)
 
         except (ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Session revocation failed: {e}")
@@ -446,15 +446,15 @@ class FlextAuthorizationService(FlextDomainService):
         try:
             # Admin users have all permissions
             if user.is_REDACTED_LDAP_BIND_PASSWORD():
-                return FlextResult.ok(data=True)
+                return FlextResult.ok(True)
 
             # If roles are provided, check role permissions
             if roles:
                 user_role = roles.get(user.role)
                 if user_role and user_role.has_permission(resource, action):
-                    return FlextResult.ok(data=True)
+                    return FlextResult.ok(True)
 
-            return FlextResult.ok(data=False)
+            return FlextResult.ok(False)
 
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Permission check failed: {e}")
