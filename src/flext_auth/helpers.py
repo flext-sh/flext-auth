@@ -111,9 +111,9 @@ from flext_auth.auth import (
     FlextUserRegistrationData,
 )
 from flext_auth.config import DEFAULT_JWT_SECRET, FlextAuthConfig
-from flext_auth.domain.entities import FlextUserRole
+from flext_auth.domain_entities import FlextUserRole
 from flext_auth.jwt import FlextJWTService
-from flext_auth.services.password_service import FlextPasswordService
+from flext_auth.services_password_service import FlextPasswordService
 from flext_auth.session import InMemorySessionRepository
 from flext_auth.user import InMemoryUserRepository
 from flext_auth.utils import convert_user_to_dict
@@ -1594,18 +1594,8 @@ FlextAuthSessionData = dict[str, object]
 FlextAuthTokenData = dict[str, object]
 FlextAuthUserData = dict[str, object]
 
-
-class FlextAuthSessionMixin:
-    """Mixin for adding session capabilities to classes."""
-
-    def get_current_session(self) -> dict[str, object] | None:
-        """Get current session data."""
-        return getattr(self, "_session_data", None)
-
-    def set_session_data(self, session_data: dict[str, object]) -> None:
-        """Set session data."""
-        self._session_data = session_data
-
+# Import FlextAuthSessionMixin from mixins to eliminate duplication
+from .mixins import FlextAuthSessionMixin
 
 __all__: list[str] = [
     # Constants

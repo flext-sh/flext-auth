@@ -83,7 +83,7 @@ from datetime import UTC, datetime, timedelta
 import jwt
 from flext_core import FlextResult, get_logger
 
-from flext_auth.domain.value_objects import (
+from flext_auth.domain_value_objects import (
     FlextJWTClaims as JWTClaims,
 )
 

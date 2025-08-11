@@ -78,7 +78,7 @@ from flext_core import (
     get_logger,
 )
 
-from flext_auth.domain.entities import (
+from flext_auth.domain_entities import (
     FlextLoginAttempt as LoginAttempt,
     FlextSession as Session,
     FlextSessionStatus as SessionStatus,
@@ -86,7 +86,7 @@ from flext_auth.domain.entities import (
     FlextUserRole as UserRole,
     FlextUserStatus as UserStatus,
 )
-from flext_auth.domain.value_objects import (
+from flext_auth.domain_value_objects import (
     FlextJWTClaims as JWTClaims,
     FlextPlainPassword as PlainPassword,
     FlextSecurityContext as SecurityContext,

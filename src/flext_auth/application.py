@@ -100,7 +100,7 @@ from typing import TYPE_CHECKING
 
 from flext_core import FlextDomainService, FlextResult
 
-from flext_auth.domain.entities import (
+from flext_auth.domain_entities import (
     FlextRole,
     FlextSession,
     FlextSessionStatus,
@@ -108,7 +108,7 @@ from flext_auth.domain.entities import (
     FlextUserRole,
     FlextUserStatus,
 )
-from flext_auth.domain.value_objects import (
+from flext_auth.domain_value_objects import (
     FlextPlainPassword,
     FlextUserEmail,
     FlextUsername,
@@ -116,7 +116,7 @@ from flext_auth.domain.value_objects import (
 from flext_auth.services.password_service import FlextPasswordService
 
 if TYPE_CHECKING:
-    from flext_auth.domain.entities import (
+    from flext_auth.domain_entities import (
         FlextPermission,
     )
 
