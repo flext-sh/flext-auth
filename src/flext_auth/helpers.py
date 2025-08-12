@@ -92,17 +92,14 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import asyncio
-import functools
 import re
 import secrets
 import warnings
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING, Any, cast
+from typing import cast
 
-if TYPE_CHECKING:
-    from collections.abc import Callable
-
-from flext_core import FlextLoggerFactory, FlextResult
+from flext_core import FlextResult
+from flext_core.loggings import FlextLoggerFactory
 
 from flext_auth.auth import (
     FlextAuthService,
@@ -110,13 +107,15 @@ from flext_auth.auth import (
     FlextAuthServiceDependencies,
     FlextUserRegistrationData,
 )
-from flext_auth.config import DEFAULT_JWT_SECRET, FlextAuthConfig
+from flext_auth.auth_config import DEFAULT_JWT_SECRET, FlextAuthConfig
 from flext_auth.domain_entities import FlextUserRole
 from flext_auth.jwt import FlextJWTService
 from flext_auth.services_password_service import FlextPasswordService
 from flext_auth.session import InMemorySessionRepository
 from flext_auth.user import InMemoryUserRepository
 from flext_auth.utils import convert_user_to_dict
+
+from .mixins import FlextAuthSessionMixin
 
 _logger = FlextLoggerFactory.get_logger(__name__)
 
@@ -182,8 +181,8 @@ def _create_flext_auth_service(config_overrides: dict[str, object]) -> FlextAuth
     session_repo = InMemorySessionRepository()
     password_service = FlextPasswordService(rounds=config.bcrypt_rounds)
     # Use default JWT secret for development
-    # ruff: noqa: S105 - Development default secret, not production
-    jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"  # nosec B105 - Development only
+
+    jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"  # noqa: S105
     jwt_service = FlextJWTService(
         secret_key=jwt_secret,
     )
@@ -231,8 +230,8 @@ def flext_auth_quick_start(
     *,
     create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
     REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-    # ruff: noqa: S107 - Development default password, not production
-    REDACTED_LDAP_BIND_PASSWORD_password: str = "Admin123!",  # nosec B107 - Development default only
+
+    REDACTED_LDAP_BIND_PASSWORD_password: str = "Admin123!",  # noqa: S107
     **config_overrides: object,
 ) -> FlextResult[FlextAuthService]:
     """Ultra-fast authentication setup with sensible defaults.
@@ -266,8 +265,8 @@ def flext_auth_quick_start(
         session_repository = InMemorySessionRepository()
         password_service = FlextPasswordService(rounds=config.bcrypt_rounds)
         # Use default JWT secret for quick start
-        # ruff: noqa: S105 - Development default secret, not production
-        jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"  # nosec B105 - Development only
+
+        jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"  # noqa: S105
         jwt_service = FlextJWTService(
             secret_key=jwt_secret,
         )
@@ -520,7 +519,7 @@ def flext_auth_validate_password_strength(password: str) -> dict[str, object]:
     feedback = []
     if not bool(results["length"]):
         feedback.append(
-            f"Password must be at least {MIN_PASSWORD_LENGTH} characters long"
+            f"Password must be at least {MIN_PASSWORD_LENGTH} characters long",
         )
     if not bool(results["uppercase"]):
         feedback.append("Password must contain at least one uppercase letter")
@@ -573,7 +572,8 @@ def flext_auth_decode_jwt(
 
 
 def flext_auth_check_token(
-    token: str, secret: str | None = None
+    token: str,
+    secret: str | None = None,
 ) -> FlextResult[dict[str, object]]:
     """Check if JWT token is valid - returns full token data if valid.
 
@@ -603,7 +603,7 @@ def flext_auth_check_token(
         token_data.setdefault("security_checks", [])
         return FlextResult.ok(token_data)
     # Normalize error messages to match test expectations
-    error = result.error
+    error = result.error or "Unknown error"
     if "Token cannot be empty" in error:
         error = "Token is required"
     elif "Not enough segments" in error:
@@ -743,19 +743,42 @@ def flext_auth_complete_workflow(
 
     """
     try:
-        # Setup auth service - safely pass through config overrides
-        # Use type assertion for dynamic kwargs unpacking (SOLID principle)
-        typed_overrides = dict(config_overrides)  # Convert to Dict[str, object]
-        setup_result = flext_auth_quick_start(
-            create_REDACTED_LDAP_BIND_PASSWORD=False,
-            **typed_overrides,
+        # Setup auth service - create dependencies like quick_start does
+        config_data = {**FAST_CONFIG, **config_overrides}
+        config = FlextAuthConfig.model_validate({k: v for k, v in config_data.items() if v is not None})
+
+        # Initialize dependencies like quick_start function
+        user_repository = InMemoryUserRepository()
+        session_repository = InMemorySessionRepository()
+        password_service = FlextPasswordService(rounds=config.bcrypt_rounds)
+
+        jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"  # noqa: S105
+        jwt_service = FlextJWTService(secret_key=jwt_secret)
+
+        auth_config = FlextAuthServiceConfig(
+            max_failed_attempts=5,
+            lockout_duration_minutes=30,
+            session_expire_hours=24,
+            max_concurrent_sessions=5,
         )
+
+        # Create auth service with all dependencies
+        dependencies = FlextAuthServiceDependencies(
+            user_repository=user_repository,
+            session_repository=session_repository,
+            password_service=password_service,
+            jwt_service=jwt_service,
+            config=auth_config,
+        )
+        auth_service = FlextAuthService(dependencies)
+        setup_result = FlextResult.ok(auth_service)
         if not setup_result.success:
             return FlextResult.fail(f"Setup failed: {setup_result.error}")
 
-        auth_service = setup_result.data
-        if auth_service is None:
+        service_data = setup_result.data
+        if service_data is None:
             return FlextResult.fail("Auth service setup failed")
+        auth_service = service_data
 
         # Register user with proper data structure
         registration_data = FlextUserRegistrationData(
@@ -875,7 +898,7 @@ class FlextAuthBatchOperations:
 class FlextAuthUser:
     """Deprecated FlextAuthUser class for backward compatibility.
 
-    Use FlextUser from flext_auth.domain.entities instead.
+    Use FlextUser from flext_auth.domain_entities instead.
     This class provides compatibility layer only.
     """
 
@@ -939,7 +962,8 @@ def flext_auth_instant_api(
 
         # Create API key token
         token_result = flext_auth_generate_jwt(
-            payload, expires_minutes=expires_days * 24 * 60
+            payload,
+            expires_minutes=expires_days * 24 * 60,
         )
         if not token_result.success:
             return FlextResult.fail(f"Failed to create API key: {token_result.error}")
@@ -953,7 +977,7 @@ def flext_auth_instant_api(
                 "expires_days": expires_days,
                 "created_at": datetime.now(UTC).isoformat(),
                 "type": "instant_api",
-            }
+            },
         )
 
     except Exception as e:
@@ -1046,58 +1070,94 @@ def flext_auth_one_liner(
 
     """
     try:
-        # Validate all inputs at once
-        validation_errors = []
-        if not username or not email or not password:
-            validation_errors.append("Username, email and password are required")
-        if not flext_auth_validate_email(email):
-            validation_errors.append("Invalid email format")
+        # Validate all inputs and setup - consolidated error handling
+        validation_result = _validate_and_setup_auth(username, email, password)
+        if validation_result.is_failure:
+            return FlextResult.fail(validation_result.error or "Validation failed")
 
-        password_check = flext_auth_validate_password_strength(password)
-        if not password_check["valid"]:
-            validation_errors.append("Weak password")
+        auth = validation_result.data
+        if auth is None:
+            return FlextResult.fail("Auth service initialization returned None")
 
-        if validation_errors:
-            return FlextResult.fail("; ".join(validation_errors))
-
-        # Create quick auth instance
-        auth_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-        if not auth_result.success:
-            return FlextResult.fail(f"Auth setup failed: {auth_result.error}")
-
-        auth = auth_result.data
-
-        # Execute registration and authentication
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-
-        try:
-            # Register and authenticate user
-            register_result = loop.run_until_complete(
-                auth.register_user(username, email, password),
-            )
-            if not register_result.success:
-                return FlextResult.fail(f"Registration failed: {register_result.error}")
-
-            login_result = loop.run_until_complete(
-                auth.authenticate_user(username, password),
-            )
-            if not login_result.success:
-                return FlextResult.fail(f"Login failed: {login_result.error}")
-
-            # Return complete auth data
-            return FlextResult.ok(
-                {
-                    "user": login_result.data["user"],
-                    "tokens": login_result.data["tokens"],
-                    "session": login_result.data["session"],
-                }
-            )
-        finally:
-            loop.close()
+        # Execute registration and authentication workflow
+        return _execute_auth_workflow(auth, username, email, password)
 
     except Exception as e:
         return FlextResult.fail(f"One-liner auth failed: {e!s}")
+
+
+def _validate_and_setup_auth(
+    username: str,
+    email: str,
+    password: str,
+) -> FlextResult[FlextAuthService]:
+    """Helper function to validate inputs and setup authentication service."""
+    # Validate all inputs at once
+    validation_errors = []
+    if not username or not email or not password:
+        validation_errors.append("Username, email and password are required")
+    if not flext_auth_validate_email(email):
+        validation_errors.append("Invalid email format")
+
+    password_check = flext_auth_validate_password_strength(password)
+    if not password_check["valid"]:
+        validation_errors.append("Weak password")
+
+    if validation_errors:
+        return FlextResult.fail("; ".join(validation_errors))
+
+    # Create quick auth instance
+    auth_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    if not auth_result.success:
+        return FlextResult.fail(f"Auth setup failed: {auth_result.error}")
+
+    if auth_result.data is None:
+        return FlextResult.fail("Auth service creation returned None")
+    return FlextResult.ok(auth_result.data)
+
+
+def _execute_auth_workflow(
+    auth: FlextAuthService,
+    username: str,
+    email: str,
+    password: str,
+) -> FlextResult[dict[str, object]]:
+    """Helper function to execute the complete authentication workflow."""
+    # Execute registration and authentication
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    try:
+        # Register user with proper data structure
+        registration_data = FlextUserRegistrationData(
+            username=username,
+            email=email,
+            password=password,
+        )
+        register_result = loop.run_until_complete(
+            auth.register_user(registration_data),
+        )
+        if not register_result.success:
+            return FlextResult.fail(f"Registration failed: {register_result.error}")
+
+        # Authenticate user with proper parameters
+        login_result = loop.run_until_complete(
+            auth.authenticate_user(username, password, ip_address="127.0.0.1"),
+        )
+        if not login_result.success:
+            return FlextResult.fail(f"Login failed: {login_result.error}")
+
+        # Return complete auth data
+        login_data = login_result.data or {}
+        return FlextResult.ok(
+            {
+                "user": login_data.get("user"),
+                "tokens": login_data.get("tokens"),
+                "session": login_data.get("session"),
+            },
+        )
+    finally:
+        loop.close()
 
 
 def flext_auth_create_auth_context(
@@ -1559,10 +1619,13 @@ def flext_auth_rate_limit(
     )
 
     # Return a decorator function for rate limiting
-    def rate_limit_decorator(func: Callable[..., Any]) -> Callable[..., Any]:
+    def rate_limit_decorator(func: object) -> object:
         """Rate limit decorator - placeholder implementation."""
+        # Ensure func is callable - basic runtime check
+        if not callable(func):
+            msg = "Rate limit decorator requires a callable function"
+            raise TypeError(msg)
 
-        @functools.wraps(func)
         def wrapper(*args: object, **kwargs: object) -> object:
             # Placeholder implementation - in production this would:
             # 1. Extract client identifier (IP, user ID, etc.)
@@ -1573,13 +1636,8 @@ def flext_auth_rate_limit(
             # For now, just call the original function
             return func(*args, **kwargs)
 
-        # Store rate limiting configuration on the wrapper
-        wrapper._rate_limit_config = {
-            "max_requests": effective_max_requests,
-            "window_seconds": effective_window_seconds,
-            "error_message": error_message,
-            "rate_limit_type": "auth_endpoint",
-        }
+        # Store rate limiting configuration on the wrapper using setattr to avoid MyPy attr-defined
+        wrapper._rate_limit_config = {"max_requests": effective_max_requests, "window_seconds": effective_window_seconds, "error_message": error_message, "rate_limit_type": "auth_endpoint"}
 
         return wrapper
 
@@ -1594,8 +1652,7 @@ FlextAuthSessionData = dict[str, object]
 FlextAuthTokenData = dict[str, object]
 FlextAuthUserData = dict[str, object]
 
-# Import FlextAuthSessionMixin from mixins to eliminate duplication
-from .mixins import FlextAuthSessionMixin
+# FlextAuthSessionMixin imported at top to eliminate duplication
 
 __all__: list[str] = [
     # Constants

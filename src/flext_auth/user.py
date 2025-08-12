@@ -90,7 +90,7 @@ from datetime import UTC, datetime
 
 from flext_core import FlextResult
 
-from flext_auth.domain.entities import FlextUser, FlextUserStatus
+from flext_auth.domain_entities import FlextUser, FlextUserStatus
 
 
 class UserRepository(ABC):
@@ -217,7 +217,7 @@ class InMemoryUserRepository(UserRepository):
         try:
             user = self._users.get(user_id)
             if not user:
-                return FlextResult.ok(False)
+                return FlextResult.ok(data=False)
 
             # Remove from indexes
             self._username_index.pop(user.username.lower(), None)
@@ -226,7 +226,7 @@ class InMemoryUserRepository(UserRepository):
             # Remove user
             del self._users[user_id]
 
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Failed to delete user: {e}")
 

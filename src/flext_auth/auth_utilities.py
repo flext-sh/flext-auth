@@ -5,7 +5,7 @@ PEP8 strict naming patterns. It provides common utility functions for the
 FLEXT authentication ecosystem.
 
 Consolidated from:
-    - helpers.py: Helper functions for authentication operations  
+    - helpers.py: Helper functions for authentication operations
     - utils.py: General utility functions
 
 Architecture:
@@ -26,7 +26,6 @@ from datetime import UTC, datetime, timedelta
 
 from flext_core import FlextResult
 
-
 # =============================================================================
 # STRING UTILITIES
 # =============================================================================
@@ -39,33 +38,32 @@ def generate_secure_token(length: int = 32) -> str:
 
 def generate_secure_password(length: int = 16) -> str:
     """Generate a secure random password with mixed characters."""
-    if length < 8:
-        length = 8
-        
+    length = max(length, 8)
+
     # Character sets
     uppercase = string.ascii_uppercase
-    lowercase = string.ascii_lowercase  
+    lowercase = string.ascii_lowercase
     digits = string.digits
     symbols = "!@#$%^&*()_+-="
-    
+
     # Ensure at least one character from each set
     password_chars = [
         secrets.choice(uppercase),
         secrets.choice(lowercase),
-        secrets.choice(digits), 
+        secrets.choice(digits),
         secrets.choice(symbols),
     ]
-    
+
     # Fill remaining length with random characters
     all_chars = uppercase + lowercase + digits + symbols
     password_chars.extend(secrets.choice(all_chars) for _ in range(length - 4))
-    
+
     # Shuffle the password
     password_list = list(password_chars)
     for i in range(len(password_list)):
         j = secrets.randbelow(len(password_list))
         password_list[i], password_list[j] = password_list[j], password_list[i]
-        
+
     return "".join(password_list)
 
 
@@ -77,7 +75,7 @@ def mask_sensitive_data(data: str, visible_chars: int = 4) -> str:
 
 
 # =============================================================================
-# TIME UTILITIES  
+# TIME UTILITIES
 # =============================================================================
 
 
@@ -97,7 +95,7 @@ def add_minutes_to_now(minutes: int) -> datetime:
 
 
 def add_hours_to_now(hours: int) -> datetime:
-    """Add hours to current UTC time.""" 
+    """Add hours to current UTC time."""
     return get_utc_now() + timedelta(hours=hours)
 
 
@@ -108,19 +106,19 @@ def add_hours_to_now(hours: int) -> datetime:
 
 def is_valid_email_format(email: str) -> bool:
     """Basic email format validation."""
-    return "@" in email and "." in email.split("@")[-1]
+    return "@" in email and "." in email.rsplit("@", maxsplit=1)[-1]
 
 
 def is_strong_password(password: str) -> bool:
     """Check if password meets basic strength requirements."""
     if len(password) < 8:
         return False
-    
+
     has_upper = any(c.isupper() for c in password)
-    has_lower = any(c.islower() for c in password)  
+    has_lower = any(c.islower() for c in password)
     has_digit = any(c.isdigit() for c in password)
     has_symbol = any(c in "!@#$%^&*()_+-=" for c in password)
-    
+
     return has_upper and has_lower and has_digit and has_symbol
 
 
@@ -129,7 +127,7 @@ def sanitize_input(input_str: str) -> str:
     return input_str.strip()
 
 
-# =============================================================================  
+# =============================================================================
 # CONVERSION UTILITIES
 # =============================================================================
 
@@ -144,7 +142,7 @@ def safe_str(value: object) -> str:
 def safe_int(value: object, default: int = 0) -> int:
     """Safely convert value to integer."""
     try:
-        return int(value) if value is not None else default
+        return int(str(value)) if value is not None else default
     except (ValueError, TypeError):
         return default
 
@@ -154,7 +152,7 @@ def safe_bool(value: object, default: bool = False) -> bool:
     if isinstance(value, bool):
         return value
     if isinstance(value, str):
-        return value.lower() in ("true", "1", "yes", "on")
+        return value.lower() in {"true", "1", "yes", "on"}
     return bool(value) if value is not None else default
 
 
@@ -171,19 +169,19 @@ def extract_dict_value(data: dict[str, object], key: str, default: object = None
 def filter_sensitive_data(data: dict[str, object]) -> dict[str, object]:
     """Filter out sensitive data from dictionary."""
     sensitive_keys = {"password", "secret", "token", "key", "hash"}
-    
-    filtered = {}
+
+    filtered: dict[str, object] = {}
     for key, value in data.items():
         if key.lower() in sensitive_keys:
             filtered[key] = "[REDACTED]"
         else:
             filtered[key] = value
-            
+
     return filtered
 
 
 # =============================================================================
-# ERROR HANDLING UTILITIES  
+# ERROR HANDLING UTILITIES
 # =============================================================================
 
 
@@ -202,27 +200,27 @@ def handle_exception(e: Exception, operation: str = "operation") -> FlextResult[
 # =============================================================================
 
 __all__: list[str] = [
-    # String utilities
-    "generate_secure_token", 
-    "generate_secure_password",
-    "mask_sensitive_data",
-    # Time utilities
-    "get_utc_now",
-    "is_expired",
-    "add_minutes_to_now", 
     "add_hours_to_now",
-    # Validation utilities
-    "is_valid_email_format",
-    "is_strong_password", 
-    "sanitize_input",
-    # Conversion utilities
-    "safe_str",
-    "safe_int",
-    "safe_bool",
+    "add_minutes_to_now",
+    # Error handling utilities
+    "create_error_result",
     # Dictionary utilities
     "extract_dict_value",
     "filter_sensitive_data",
-    # Error handling utilities
-    "create_error_result",
+    "generate_secure_password",
+    # String utilities
+    "generate_secure_token",
+    # Time utilities
+    "get_utc_now",
     "handle_exception",
+    "is_expired",
+    "is_strong_password",
+    # Validation utilities
+    "is_valid_email_format",
+    "mask_sensitive_data",
+    "safe_bool",
+    "safe_int",
+    # Conversion utilities
+    "safe_str",
+    "sanitize_input",
 ]

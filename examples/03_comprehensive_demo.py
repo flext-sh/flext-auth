@@ -62,6 +62,8 @@ from flext_auth import (
 
 # Example constants - not for production use
 
+# Example constants - not for production use
+# These are intentionally hardcoded for demonstration purposes only
 EXAMPLE_DEMO_PASSWORD = "DemoPassword123!@#"
 EXAMPLE_JWT_SECRET = "demo-jwt-secret-key-256-bits-minimum-length-for-security"
 EXAMPLE_API_SECRET = "api-secret-key-256-bits-minimum-length"

@@ -88,12 +88,12 @@ from flext_auth.domain_value_objects import (
 )
 
 # Constants for JWT configuration
-# ruff: noqa: S105 - Development default secret, not production
-DEV_SECRET_KEY = "dev-secret-key-change-in-production"  # nosec B105 - Development only
-# ruff: noqa: S105 - Token type identifier, not a password
-ACCESS_TOKEN_TYPE = "access"  # nosec B105 - This is a token type identifier, not a password
-# ruff: noqa: S105 - Token type identifier, not a password
-REFRESH_TOKEN_TYPE = "refresh"  # nosec B105 - This is a token type identifier, not a password
+
+DEV_SECRET_KEY = "dev-secret-key-change-in-production"  # nosec: S105
+
+ACCESS_TOKEN_TYPE = "access"  # nosec: S105
+
+REFRESH_TOKEN_TYPE = "refresh"  # nosec: S105
 
 # Initialize logger using FLEXT patterns
 # logger_factory removed
@@ -359,7 +359,7 @@ class FlextJWTService:
             verify_result = self.verify_token(token)
             if not verify_result.success:
                 return FlextResult.fail(
-                    f"Failed to decode token: {verify_result.error}"
+                    f"Failed to decode token: {verify_result.error}",
                 )
 
             claims = verify_result.data

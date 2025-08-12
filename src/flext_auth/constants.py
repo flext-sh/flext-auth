@@ -70,7 +70,7 @@ from __future__ import annotations
 
 from enum import Enum
 
-from flext_core.constants import FlextConstants
+from flext_core import FlextConstants
 
 # =============================================================================
 # AUTH-SPECIFIC SEMANTIC CONSTANTS - Modern Python 3.13 Structure
@@ -89,7 +89,7 @@ class FlextAuthSemanticConstants(FlextConstants):
         """Authentication pattern constants."""
 
         USERNAME_PATTERN = r"^[a-zA-Z0-9_]{3,50}$"
-        # ruff: noqa: S105 - This is a regex pattern, not a password
+
         PASSWORD_VALIDATION_REGEX = (
             r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?])"
             r".{8,128}$"

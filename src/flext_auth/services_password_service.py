@@ -87,7 +87,7 @@ from flext_core import (
     get_logger,
 )
 
-from flext_auth.domain.value_objects import (
+from flext_auth.domain_value_objects import (
     MAX_PASSWORD_LENGTH,
     FlextHashedPassword,
     FlextPlainPassword,

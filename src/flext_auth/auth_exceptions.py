@@ -16,7 +16,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-
 # =============================================================================
 # BASE AUTHENTICATION EXCEPTIONS
 # =============================================================================
@@ -27,10 +26,11 @@ class FlextAuthError(Exception):
 
     def __init__(self, message: str, error_code: str = "AUTH_ERROR") -> None:
         """Initialize authentication error.
-        
+
         Args:
             message: Human-readable error message
             error_code: Machine-readable error code
+
         """
         super().__init__(message)
         self.message = message
@@ -210,27 +210,27 @@ class FlextPasswordValidationError(FlextValidationError):
 # =============================================================================
 
 __all__: list[str] = [
+    "FlextAccountInactiveError",
+    "FlextAccountLockedError",
     # Base exceptions
     "FlextAuthError",
-    "FlextAuthenticationError", 
+    "FlextAuthenticationError",
     "FlextAuthorizationError",
+    "FlextExpiredSessionError",
+    "FlextExpiredTokenError",
+    "FlextInsufficientPermissionError",
     # Authentication exceptions
     "FlextInvalidCredentialsError",
-    "FlextAccountLockedError",
-    "FlextAccountInactiveError",
-    # Token exceptions
-    "FlextTokenError",
-    "FlextInvalidTokenError",
-    "FlextExpiredTokenError",
-    # Session exceptions
-    "FlextSessionError",
     "FlextInvalidSessionError",
-    "FlextExpiredSessionError",
+    "FlextInvalidTokenError",
+    "FlextPasswordValidationError",
     # Permission exceptions
     "FlextPermissionError",
-    "FlextInsufficientPermissionError",
     "FlextRoleRequiredError",
+    # Session exceptions
+    "FlextSessionError",
+    # Token exceptions
+    "FlextTokenError",
     # Validation exceptions
     "FlextValidationError",
-    "FlextPasswordValidationError",
 ]

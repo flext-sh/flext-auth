@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""FLEXT Auth - Basic Usage Examples.
+"""FLEXT Auth - Basic usage examples.
 
-Este exemplo demonstra o uso básico da FLEXT Auth com funcionalidade REAL.
-Todos os métodos usados existem e funcionam.
+This example demonstrates basic FLEXT Auth usage with real functionality.
+All methods used exist and work as expected.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -29,6 +29,7 @@ from flext_auth import (
 from flext_auth.config import AppConfig
 
 # Example constants - not for production use
+# These are intentionally hardcoded for demonstration purposes only
 
 EXAMPLE_PASSWORD = "MySecurePassword123!"
 EXAMPLE_WRONG_PASSWORD = "WrongPassword"
@@ -39,7 +40,7 @@ EXAMPLE_WORKFLOW_PASSWORD = "WorkflowPass123!"
 
 
 def example_basic_authentication() -> None:
-    """Exemplo: Autenticação básica com FlextAuth."""
+    """Demonstrate basic authentication with FlextAuth."""
     print("=== Basic Authentication Example ===")
 
     # Criar instância de autenticação para desenvolvimento
@@ -64,7 +65,7 @@ def example_basic_authentication() -> None:
 
 
 def example_password_operations() -> None:
-    """Exemplo: Operações com senhas."""
+    """Demonstrate password operations."""
     print("\n=== Password Operations Example ===")
 
     # Hash de senha
@@ -94,7 +95,7 @@ def example_password_operations() -> None:
 
 
 def example_email_validation() -> None:
-    """Exemplo: Validação de email."""
+    """Demonstrate email validation."""
     print("\n=== Email Validation Example ===")
 
     # Emails válidos
@@ -111,7 +112,7 @@ def example_email_validation() -> None:
 
 
 async def example_user_lifecycle() -> None:
-    """Exemplo: Ciclo completo de vida do usuário."""
+    """Demonstrate a complete user lifecycle."""
     print("\n=== User Lifecycle Example ===")
 
     # Criar serviço de autenticação
@@ -159,7 +160,7 @@ async def example_user_lifecycle() -> None:
 
 
 def example_quick_helpers() -> None:
-    """Exemplo: Helpers rápidos e utilitários."""
+    """Demonstrate quick helpers and utilities."""
     print("\n=== Quick Helpers Example ===")
 
     # Setup instantâneo
@@ -184,11 +185,11 @@ def example_quick_helpers() -> None:
 
 
 def example_mixin_usage() -> None:
-    """Exemplo: Como usar FlextAuthMixin."""
+    """Demonstrate how to use ``FlextAuthMixin``."""
     print("\n=== FlextAuthMixin Example ===")
 
     class MyController(FlextAuthMixin):
-        """Exemplo de controller com capacidades de autenticação."""
+        """Example controller with authentication capabilities."""
 
         def handle_request(self, token: str) -> dict[str, object]:
             """Handle request with authentication - simplified implementation."""
@@ -225,7 +226,7 @@ def example_mixin_usage() -> None:
 
 
 def example_ultra_helpers() -> None:
-    """Exemplo: Ultra-helpers para redução massiva de código."""
+    """Demonstrate ultra-helpers for massive code reduction."""
     print("\n=== Ultra Helpers Example ===")
 
     # One-liner completo (registro + login)
@@ -257,7 +258,7 @@ def example_ultra_helpers() -> None:
 
 
 async def example_advanced_registration() -> None:
-    """Exemplo: Registro avançado com validação."""
+    """Demonstrate advanced registration with validation."""
     print("\n=== Advanced Registration Example ===")
 
     auth = FlextAuth()
@@ -298,7 +299,7 @@ async def example_advanced_registration() -> None:
 
 
 def example_complete_workflow() -> None:
-    """Exemplo: Workflow completo em uma função."""
+    """Demonstrate a complete workflow in a single function."""
     print("\n=== Complete Workflow Example ===")
 
     # Workflow completo em uma chamada
@@ -334,7 +335,7 @@ def example_complete_workflow() -> None:
 
 
 def main() -> None:
-    """Execute all basic examples using shared runner."""
+    """Execute all basic examples using the shared runner."""
     # Define sync examples
     sync_examples = [
         example_basic_authentication,

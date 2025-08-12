@@ -113,7 +113,7 @@ from flext_auth.domain_value_objects import (
     FlextUserEmail,
     FlextUsername,
 )
-from flext_auth.services.password_service import FlextPasswordService
+from flext_auth.services_password_service import FlextPasswordService
 
 if TYPE_CHECKING:
     from flext_auth.domain_entities import (
@@ -121,7 +121,7 @@ if TYPE_CHECKING:
     )
 
 
-class FlextAuthenticationService(FlextDomainService):
+class FlextAuthenticationService(FlextDomainService[str]):
     """Service for authentication operations."""
 
     def execute(self) -> FlextResult[str]:
@@ -159,8 +159,8 @@ class FlextAuthenticationService(FlextDomainService):
             # REFACTORING: Railway-Oriented Programming - reduces 6 returns to 2
             return (
                 self._get_user_from_dict(username, users)
-                .and_then(self._validate_user_status)
-                .and_then(lambda user: self._verify_user_password(user, password))
+                .flat_map(self._validate_user_status)
+                .flat_map(lambda user: self._verify_user_password(user, password))
                 .map(self._handle_successful_authentication)
             )
         except (KeyError, ValueError, AttributeError, TypeError) as e:
@@ -305,13 +305,13 @@ class FlextAuthenticationService(FlextDomainService):
                 )
 
             user.password_hash = hash_result.data.value if hash_result.data else ""
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
 
         except (ValueError, TypeError, AttributeError, KeyError) as e:
             return FlextResult.fail(f"Password change failed: {e}")
 
 
-class FlextSessionService(FlextDomainService):
+class FlextSessionService(FlextDomainService[str]):
     """Service for session management operations."""
 
     def execute(self) -> FlextResult[str]:
@@ -384,7 +384,7 @@ class FlextSessionService(FlextDomainService):
             if not session.is_valid():
                 return FlextResult.fail("Session is not valid")
 
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
 
         except (ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Session validation failed: {e}")
@@ -401,13 +401,13 @@ class FlextSessionService(FlextDomainService):
         """
         try:
             session.revoke()
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
 
         except (ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Session revocation failed: {e}")
 
 
-class FlextAuthorizationService(FlextDomainService):
+class FlextAuthorizationService(FlextDomainService[str]):
     """Service for authorization operations."""
 
     def execute(self) -> FlextResult[str]:
@@ -446,15 +446,15 @@ class FlextAuthorizationService(FlextDomainService):
         try:
             # Admin users have all permissions
             if user.is_REDACTED_LDAP_BIND_PASSWORD():
-                return FlextResult.ok(True)
+                return FlextResult.ok(data=True)
 
             # If roles are provided, check role permissions
             if roles:
                 user_role = roles.get(user.role)
                 if user_role and user_role.has_permission(resource, action):
-                    return FlextResult.ok(True)
+                    return FlextResult.ok(data=True)
 
-            return FlextResult.ok(False)
+            return FlextResult.ok(data=False)
 
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Permission check failed: {e}")

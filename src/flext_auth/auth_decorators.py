@@ -40,7 +40,8 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, ParamSpec, Protocol
 
-from flext_core import FlextLoggerFactory, FlextResult
+from flext_core import FlextResult
+from flext_core.loggings import FlextLoggerFactory
 
 from flext_auth.auth_config import DEFAULT_JWT_SECRET
 from flext_auth.auth_services import FlextJWTService
@@ -359,6 +360,7 @@ def flext_auth_required(
 
     Raises:
         ValueError: If neither auth_service nor secret is provided
+
     """
     # Handle secret_key alias for backward compatibility
     effective_secret = secret_key if secret_key is not None else secret
@@ -402,6 +404,7 @@ def flext_auth_role_required(
 
     Returns:
         Decorated function with role requirement
+
     """
     # Handle secret_key alias for backward compatibility
     effective_secret = secret_key if secret_key is not None else secret
@@ -446,6 +449,7 @@ def flext_auth_permission_required(
 
     Returns:
         Decorated function with permission requirement
+
     """
     # Handle secret_key alias for backward compatibility
     effective_secret = secret_key if secret_key is not None else secret
@@ -465,7 +469,7 @@ def flext_auth_permission_required(
         # Normal auth flow with validation
         @functools.wraps(func)
         @flext_auth_required(auth_service=auth_service, secret=effective_secret)
-        def wrapper(*args: object, **kwargs: object) -> object:
+        def auth_wrapper(*args: object, **kwargs: object) -> object:
             current_user_raw = kwargs.get("current_user", {})
             current_user = (
                 current_user_raw if isinstance(current_user_raw, dict) else {}
@@ -482,7 +486,7 @@ def flext_auth_permission_required(
 
             return func(*args, **kwargs)
 
-        return wrapper
+        return auth_wrapper
 
     return decorator
 
@@ -518,6 +522,7 @@ class FlextAuthMixin:
 
         Returns:
             FlextResult indicating success or failure
+
         """
         try:
             if auth_service:
@@ -563,6 +568,7 @@ class FlextAuthMixin:
 
         Returns:
             FlextResult with authentication data or error
+
         """
         if not self._auth_service:
             return FlextResult.fail("Authentication not initialized")
@@ -597,6 +603,7 @@ class FlextAuthMixin:
 
         Returns:
             FlextResult with token data or error
+
         """
         if not self._auth_service:
             return FlextResult.fail("Authentication not initialized")
@@ -635,6 +642,7 @@ class FlextAuthMixin:
 
         Returns:
             FlextResult with generated token or error
+
         """
         if not self._auth_service:
             return FlextResult.fail("Authentication not initialized")
@@ -670,6 +678,7 @@ class FlextAuthMixin:
 
         Returns:
             FlextResult with boolean permission check result
+
         """
         try:
             user_permissions = user_data.get("permissions", [])
@@ -696,6 +705,7 @@ class FlextAuthMixin:
 
         Returns:
             FlextResult with boolean role check result
+
         """
         try:
             user_role = user_data.get("role", "")
@@ -743,6 +753,7 @@ class FlextAuthUserMixin:
 
         Returns:
             FlextResult indicating success or failure
+
         """
         try:
             self._current_user = user_data.copy()
@@ -757,6 +768,7 @@ class FlextAuthUserMixin:
 
         Returns:
             FlextResult with current user data or error
+
         """
         if self._current_user is None:
             return FlextResult.fail("No current user set")
@@ -768,6 +780,7 @@ class FlextAuthUserMixin:
 
         Returns:
             FlextResult indicating success
+
         """
         self._current_user = None
         _logger.debug("Current user cleared")
@@ -781,6 +794,7 @@ class FlextAuthUserMixin:
 
         Returns:
             FlextResult with boolean result
+
         """
         if self._current_user is None:
             return FlextResult.fail("No current user set")
@@ -796,6 +810,7 @@ class FlextAuthUserMixin:
 
         Returns:
             FlextResult with boolean result
+
         """
         if self._current_user is None:
             return FlextResult.fail("No current user set")
@@ -883,6 +898,7 @@ class FlextAuthSessionMixin:
         """Initialize session mixin."""
         super().__init__(*args, **kwargs)
         self._session_data: dict[str, object] | None = None
+        self._session: dict[str, object] | None = None
 
     def flext_auth_refresh_session(self) -> dict[str, object]:
         """Refresh or create session - required by tests."""
@@ -955,14 +971,14 @@ class FlextAuthSessionMixin:
 # =============================================================================
 
 __all__: list[str] = [
+    # Configuration
+    "FlextAuthDecoratorConfig",
+    # Mixins
+    "FlextAuthMixin",
+    "FlextAuthSessionMixin",
+    "FlextAuthUserMixin",
+    "flext_auth_permission_required",
     # Decorators
     "flext_auth_required",
     "flext_auth_role_required",
-    "flext_auth_permission_required",
-    # Mixins
-    "FlextAuthMixin",
-    "FlextAuthUserMixin",
-    "FlextAuthSessionMixin",
-    # Configuration
-    "FlextAuthDecoratorConfig",
 ]

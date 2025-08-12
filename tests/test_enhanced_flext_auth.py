@@ -913,7 +913,6 @@ class TestPublicInterfaceEnhanced:
 
     def test_all_enhanced_items_importable(self) -> None:
         """Test all enhanced items in __all__ are importable."""
-
         expected_new_items = [
             "FlextAuthBatchOperations",
             "flext_auth_create_api_key",

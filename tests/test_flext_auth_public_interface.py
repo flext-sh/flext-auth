@@ -598,7 +598,6 @@ class TestPublicInterface:
 
     def test_all_public_items_importable(self) -> None:
         """Test all items in __all__ are importable."""
-
         expected_items = [
             "FlextAuth",
             "FlextAuthConfig",

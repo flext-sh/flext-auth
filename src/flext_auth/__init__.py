@@ -1,18 +1,41 @@
-"""FLEXT Auth - Enterprise Authentication Library.
+"""FLEXT Auth - Enterprise Authentication Library for FLEXT ecosystem.
 
-Reorganized authentication library following PEP8 strict naming patterns.
-Consolidated modules provide clean, organized access to authentication functionality.
+This module provides comprehensive authentication and authorization services for the
+FLEXT ecosystem, implementing enterprise-grade security patterns with Clean Architecture
+and Domain-Driven Design principles.
+
+The library is reorganized following PEP8 strict naming patterns with consolidated
+modules providing clean, organized access to authentication functionality including
+JWT token management, password hashing, session management, and role-based access control.
 
 Architecture:
-    - auth_config: Configuration and type definitions
-    - auth_models: Domain entities, value objects, and repositories
+    - auth_config: Configuration management and type definitions
+    - auth_models: Domain entities, value objects, and repository patterns
     - auth_services: Service layer with password, JWT, and application services
     - auth_decorators: Decorators and mixins for authentication aspects
     - auth_validation: Input validation and field management
     - auth_session: Session management and repository patterns
-    - auth_utilities: Helper functions and utilities
-    - auth_exceptions: Authentication-specific exceptions
+    - auth_utilities: Helper functions and utility classes
+    - auth_exceptions: Authentication-specific exception hierarchy
     - auth_app: Main authentication service and application layer
+
+Features:
+    - JWT token generation and validation
+    - Secure password hashing with bcrypt
+    - Session management with configurable storage
+    - Role-based access control (RBAC)
+    - Multi-factor authentication support
+    - Enterprise security compliance
+
+Example:
+    Basic authentication setup and usage:
+
+    >>> from flext_auth import FlextAuth, create_auth_config
+    >>> config = create_auth_config(jwt_secret="your-secret-key")
+    >>> auth = FlextAuth(config)
+    >>> result = auth.authenticate("username", "password")
+    >>> if result.is_success:
+    ...     print(f"Token: {result.data}")
 
 Copyright (c) 2025 FLEXT Contributors
 SPDX-License-Identifier: MIT
@@ -24,7 +47,8 @@ from __future__ import annotations
 import importlib.metadata
 from typing import ClassVar
 
-from flext_core import FlextLoggerFactory, FlextResult
+from flext_core import FlextResult
+from flext_core.loggings import FlextLoggerFactory
 
 # =============================================================================
 # REORGANIZED IMPORTS - From consolidated PEP8 modules
@@ -151,16 +175,17 @@ _logger = FlextLoggerFactory.get_logger(__name__)
 # GLOBAL CONFIGURATION
 # =============================================================================
 
+
 class FlextAuthGlobalConfig:
     """Global configuration for FLEXT Auth library."""
-    
+
     DEFAULT_CONFIG: ClassVar[FlextAuthConfig] = FlextAuthConfig()
-    
+
     @classmethod
     def get_default_config(cls) -> FlextAuthConfig:
         """Get the default global configuration."""
         return cls.DEFAULT_CONFIG
-    
+
     @classmethod
     def set_default_config(cls, config: FlextAuthConfig) -> None:
         """Set the default global configuration."""
@@ -173,12 +198,13 @@ class FlextAuthGlobalConfig:
 
 def flext_auth_quick_start(jwt_secret: str = DEFAULT_JWT_SECRET) -> FlextAuthService:
     """Quick start function to create a configured authentication service.
-    
+
     Args:
         jwt_secret: JWT secret key for token signing
-        
+
     Returns:
         Configured FlextAuthService ready for use
+
     """
     return create_auth_service(jwt_secret)
 
@@ -192,102 +218,26 @@ def flext_auth_create_development_service() -> FlextAuthService:
 # EXPORTS - Complete API surface
 # =============================================================================
 
-__all__ = [
-    # Configuration
-    "FlextAuthConfig",
-    "FlextAuthApplicationConfig", 
-    "FlextAuthGlobalConfig",
-    "create_auth_config",
-    "create_development_config",
-    "create_production_config",
-    
-    # Domain Models
-    "FlextUser",
-    "FlextUserRole", 
-    "FlextUserStatus",
-    "FlextSession",
-    "FlextSessionStatus",
-    "FlextRole",
-    "FlextPermission",
-    "FlextLoginAttempt",
-    
-    # Value Objects
-    "FlextUsername",
-    "FlextUserEmail", 
-    "FlextPlainPassword",
-    "FlextHashedPassword",
-    "FlextJWTClaims",
-    "FlextSecurityContext",
-    
-    # Services
-    "FlextAuthService",
-    "FlextAuthServiceConfig",
-    "FlextAuthServiceDependencies",
-    "FlextAuthenticationService",
-    "FlextAuthorizationService",
-    "FlextSessionService",
-    "FlextPasswordService",
-    "FlextJWTService",
-    
-    # Repositories
-    "UserRepository",
-    "InMemoryUserRepository",
-    "SessionRepository", 
-    "InMemorySessionRepository",
-    
-    # Decorators
-    "flext_auth_required",
-    "flext_auth_role_required",
-    "flext_auth_permission_required",
-    
-    # Mixins
-    "FlextAuthMixin",
-    "FlextAuthUserMixin",
-    "FlextAuthSessionMixin",
-    
-    # Validation
-    "FlextAuthValidators",
-    "FlextAuthFieldSchema",
-    "validate_username",
-    "validate_email",
-    "validate_password",
-    "validate_password_strength",
-    "validate_complete_user_registration",
-    
-    # Utilities
-    "generate_secure_token",
-    "generate_secure_password", 
-    "get_utc_now",
-    "is_strong_password",
-    "mask_sensitive_data",
-    
-    # Exceptions
-    "FlextAuthError",
-    "FlextAuthenticationError",
-    "FlextAuthorizationError",
-    "FlextTokenError",
-    "FlextSessionError",
-    "FlextPermissionError",
-    "FlextValidationError",
-    "FlextInvalidCredentialsError",
-    "FlextAccountLockedError",
-    "FlextAccountInactiveError",
-    "FlextInvalidTokenError",
-    "FlextExpiredTokenError",
-    "FlextInvalidSessionError", 
-    "FlextExpiredSessionError",
-    "FlextInsufficientPermissionError",
-    "FlextRoleRequiredError",
-    "FlextPasswordValidationError",
-    
-    # Quick start
-    "flext_auth_quick_start",
-    "flext_auth_create_development_service",
-    
-    # Constants
-    "DEFAULT_JWT_SECRET",
-    "DEFAULT_DEV_SECRET",
-    
-    # Core
-    "FlextResult",
+__all__: list[str] = [
+    "FlextAuthConfig", "FlextAuthApplicationConfig", "FlextAuthGlobalConfig", "create_auth_config",
+    "create_development_config", "create_production_config", "FlextUser", "FlextUserRole",
+    "FlextUserStatus", "FlextSession", "FlextSessionStatus", "FlextRole", "FlextPermission",
+    "FlextLoginAttempt", "FlextUsername", "FlextUserEmail", "FlextPlainPassword", "FlextHashedPassword",
+    "FlextJWTClaims", "FlextSecurityContext", "FlextAuthService", "FlextAuthServiceConfig",
+    "FlextAuthServiceDependencies", "FlextAuthenticationService", "FlextAuthorizationService",
+    "FlextSessionService", "FlextPasswordService", "FlextJWTService", "UserRepository",
+    "InMemoryUserRepository", "SessionRepository", "InMemorySessionRepository", "flext_auth_required",
+    "flext_auth_role_required", "flext_auth_permission_required", "FlextAuthMixin", "FlextAuthUserMixin",
+    "FlextAuthSessionMixin", "FlextAuthValidators", "FlextAuthFieldSchema", "validate_username",
+    "validate_email", "validate_password", "validate_password_strength",
+    "validate_complete_user_registration", "generate_secure_token", "generate_secure_password",
+    "get_utc_now", "is_strong_password", "mask_sensitive_data", "FlextAuthError",
+    "FlextAuthenticationError", "FlextAuthorizationError", "FlextTokenError", "FlextSessionError",
+    "FlextPermissionError", "FlextValidationError", "FlextInvalidCredentialsError",
+    "FlextAccountLockedError", "FlextAccountInactiveError", "FlextInvalidTokenError",
+    "FlextExpiredTokenError", "FlextInvalidSessionError", "FlextExpiredSessionError",
+    "FlextInsufficientPermissionError", "FlextRoleRequiredError", "FlextPasswordValidationError",
+    "flext_auth_quick_start", "flext_auth_create_development_service", "DEFAULT_JWT_SECRET",
+    "DEFAULT_DEV_SECRET", "FlextResult", "annotations", "ClassVar", "FlextLoggerFactory",
+    "create_auth_service",
 ]

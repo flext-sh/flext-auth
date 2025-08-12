@@ -33,12 +33,12 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import asyncio
+import os
 import secrets
 import string
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING
 
 import bcrypt
 import jwt
@@ -47,7 +47,6 @@ from flext_core import FlextResult, FlextValidationError, get_logger
 from flext_auth.auth_models import (
     FlextHashedPassword,
     FlextJWTClaims,
-    FlextLoginAttempt,
     FlextPermission,
     FlextPlainPassword,
     FlextRole,
@@ -58,9 +57,7 @@ from flext_auth.auth_models import (
     FlextUserStatus,
     InMemoryUserRepository,
 )
-
-if TYPE_CHECKING:
-    from flext_auth.auth_session import InMemorySessionRepository
+from flext_auth.auth_session import InMemorySessionRepository
 
 # =============================================================================
 # CONSTANTS
@@ -80,13 +77,15 @@ EXTREME_PASSWORD_LENGTH = 30
 MINIMUM_CRACK_TIME_SCORE = 2
 TOKEN_BYTES = 32
 
-# JWT service constants
-DEV_SECRET_KEY = "dev-secret-key-change-in-production"  # nosec B105 - Development only
-ACCESS_TOKEN_TYPE = "access"  # nosec B105 - Token type identifier
-REFRESH_TOKEN_TYPE = "refresh"  # nosec B105 - Token type identifier
+# JWT service constants - Use environment or generate
+DEV_SECRET_KEY = os.getenv("DEV_SECRET_KEY", f"dev-{secrets.token_urlsafe(32)}")
+# Token type constants (not passwords, just identifiers) - suppress S105
+ACCESS_TOKEN_TYPE = "access"  # noqa: S105
+REFRESH_TOKEN_TYPE = "refresh"  # noqa: S105
 
 # Application service constants
-TEST_JWT_SECRET = "test-jwt-secret-key-32-chars-minimum-length"  # nosec
+TEST_JWT_SECRET = os.getenv("TEST_JWT_SECRET", f"test-{secrets.token_urlsafe(32)}")
+MAX_PASSWORD_LENGTH = 128  # Add constant for magic value
 PASSWORD_CHANGE_SUCCESS = True
 PERMISSION_GRANTED = True
 PERMISSION_DENIED = False
@@ -116,6 +115,7 @@ class FlextPasswordService:
 
         Args:
             rounds: Bcrypt cost factor (4-20, higher = more secure but slower)
+
         """
         if not MIN_BCRYPT_ROUNDS <= rounds <= MAX_BCRYPT_ROUNDS:
             msg = "Bcrypt rounds must be between 4 and 20"
@@ -141,6 +141,7 @@ class FlextPasswordService:
 
         Returns:
             FlextResult containing hashed password or error
+
         """
         try:
             # Handle both string and FlextPlainPassword input
@@ -181,6 +182,7 @@ class FlextPasswordService:
 
         Returns:
             FlextResult containing verification result
+
         """
         try:
             # Handle both string and value object inputs
@@ -224,15 +226,16 @@ class FlextPasswordService:
 
         Returns:
             FlextResult containing generated password
+
         """
         try:
             if length < MIN_PASSWORD_LENGTH:
                 return FlextResult.fail(
                     "Password length must be at least 8 characters",
                 )
-            if length > 128:  # MAX_PASSWORD_LENGTH
+            if length > MAX_PASSWORD_LENGTH:
                 return FlextResult.fail(
-                    "Password length must be at most 128 characters",
+                    f"Password length must be at most {MAX_PASSWORD_LENGTH} characters",
                 )
 
             # Character sets
@@ -282,6 +285,7 @@ class FlextPasswordService:
 
         Returns:
             FlextResult containing strength analysis
+
         """
         try:
             # Convert FlextPlainPassword to string if needed
@@ -452,6 +456,7 @@ class FlextPasswordService:
 
         Returns:
             FlextResult containing URL-safe token
+
         """
         try:
             token = secrets.token_urlsafe(TOKEN_BYTES)  # 256 bits of entropy
@@ -470,6 +475,7 @@ class FlextPasswordService:
 
         Returns:
             FlextResult indicating if password is compromised
+
         """
         try:
             # Placeholder implementation - in production, integrate with breach APIs
@@ -706,7 +712,7 @@ class FlextJWTService:
             verify_result = self.verify_token(token)
             if not verify_result.success:
                 return FlextResult.fail(
-                    f"Failed to decode token: {verify_result.error}"
+                    f"Failed to decode token: {verify_result.error}",
                 )
 
             claims = verify_result.data
@@ -914,7 +920,7 @@ class ServiceDependencies:
     """Data class to hold service dependencies - Parameter Object Pattern."""
 
     user_repo: InMemoryUserRepository
-    session_repo: InMemorySessionRepository  # type: ignore[name-defined]
+    session_repo: InMemorySessionRepository
     password_service: FlextPasswordService
     jwt_service: FlextJWTService
     # Strategy Pattern dependencies
@@ -933,8 +939,6 @@ class FlextAuthenticationService:
 
     def _create_auth_service_dependencies(self) -> ServiceDependencies:
         """Factory for creating service dependencies with strategies."""
-        from flext_auth.auth_session import InMemorySessionRepository
-
         user_repo = InMemoryUserRepository()
         session_repo = InMemorySessionRepository()
         password_service = FlextPasswordService()
@@ -1008,7 +1012,8 @@ class FlextAuthenticationService:
             user = users[username]
 
             # Simple password verification for compatibility
-            if password == "TestPass123!":  # nosec
+            test_password = os.getenv("FLEXT_TEST_PASSWORD", "TestPass123!")
+            if password == test_password:  # nosec B105 - Test authentication only
                 return FlextResult.ok(user)
             return FlextResult.fail("Invalid credentials")
 
@@ -1018,7 +1023,7 @@ class FlextAuthenticationService:
     def change_password(
         self,
         user: FlextUser,
-        current_password: str,  # noqa: ARG002
+        _current_password: str,  # Unused in mock implementation
         new_password: str,
     ) -> FlextResult[bool]:
         """Change user password using Strategy Pattern validation."""
@@ -1077,8 +1082,6 @@ class FlextAuthorizationService:
 
     def _create_auth_service_dependencies(self) -> ServiceDependencies:
         """Factory for creating service dependencies with strategies."""
-        from flext_auth.auth_session import InMemorySessionRepository
-
         user_repo = InMemoryUserRepository()
         session_repo = InMemorySessionRepository()
         password_service = FlextPasswordService()
@@ -1132,7 +1135,7 @@ class FlextAuthorizationService:
             if isinstance(check_data, FlextUser):
                 if resource is None or action is None:
                     return FlextResult.fail(
-                        "Resource and action required for legacy signature"
+                        "Resource and action required for legacy signature",
                     )
 
                 # Convert to parameter object
@@ -1191,8 +1194,6 @@ class FlextSessionService:
 
     def _create_auth_service_dependencies(self) -> ServiceDependencies:
         """Factory for creating service dependencies with strategies."""
-        from flext_auth.auth_session import InMemorySessionRepository
-
         user_repo = InMemoryUserRepository()
         session_repo = InMemorySessionRepository()
         password_service = FlextPasswordService()
@@ -1278,21 +1279,21 @@ class FlextSessionService:
 # =============================================================================
 
 __all__: list[str] = [
-    # Infrastructure Services
-    "FlextPasswordService",
-    "FlextJWTService",
+    "AdminPermissionStrategy",
     # Application Services
     "FlextAuthenticationService",
     "FlextAuthorizationService",
+    "FlextJWTService",
+    # Infrastructure Services
+    "FlextPasswordService",
     "FlextSessionService",
+    "PasswordStrengthValidationStrategy",
+    "PermissionCheckData",
+    "PermissionStrategy",
+    "RoleBasedPermissionStrategy",
+    "ServiceDependencies",
+    "UserValidationStrategy",
+    "ValidationCommand",
     # Strategy Pattern Components
     "ValidationStrategy",
-    "PasswordStrengthValidationStrategy",
-    "UserValidationStrategy",
-    "PermissionStrategy",
-    "AdminPermissionStrategy",
-    "RoleBasedPermissionStrategy",
-    "PermissionCheckData",
-    "ServiceDependencies",
-    "ValidationCommand",
 ]

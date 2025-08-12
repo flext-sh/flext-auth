@@ -86,7 +86,7 @@ from flext_auth.auth import (
     FlextAuthServiceDependencies,
 )
 from flext_auth.constants import TEST_JWT_SECRET
-from flext_auth.domain.entities import (
+from flext_auth.domain_entities import (
     FlextPermission,
     FlextRole,
     FlextSession,
@@ -96,7 +96,7 @@ from flext_auth.domain.entities import (
     FlextUserStatus,
 )
 from flext_auth.jwt import FlextJWTService
-from flext_auth.services.password_service import FlextPasswordService
+from flext_auth.services_password_service import FlextPasswordService
 from flext_auth.session import InMemorySessionRepository
 from flext_auth.user import InMemoryUserRepository
 
@@ -405,7 +405,8 @@ class FlextAuthenticationService:
 
             # Simple password verification for compatibility
             # In real implementation, this would hash and compare
-            if password == "TestPass123!":  # nosec
+            test_password = "TestPass123!"  # nosec: S105
+            if password == test_password:
                 return FlextResult.ok(user)
             return FlextResult.fail("Invalid credentials")
 
@@ -415,7 +416,7 @@ class FlextAuthenticationService:
     def change_password(
         self,
         user: FlextUser,
-        current_password: str,  # noqa: ARG002
+        _current_password: str,
         new_password: str,
     ) -> FlextResult[bool]:
         """Change user password using Strategy Pattern validation."""
@@ -522,7 +523,7 @@ class FlextAuthorizationService:
             if isinstance(check_data, FlextUser):
                 if resource is None or action is None:
                     return FlextResult.fail(
-                        "Resource and action required for legacy signature"
+                        "Resource and action required for legacy signature",
                     )
 
                 # Convert to parameter object

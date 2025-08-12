@@ -99,7 +99,7 @@ if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
     from flext_auth.jwt import FlextJWTService as JWTService
-    from flext_auth.services.password_service import (
+    from flext_auth.services_password_service import (
         FlextPasswordService as PasswordService,
     )
     from flext_auth.session import SessionRepository
@@ -252,7 +252,7 @@ class ResultValidator:
             if hasattr(result, "success") and not result.success:
                 return cast("FlextResult[bool]", result)
 
-        return FlextResult.ok(True)
+        return FlextResult.ok(data=True)
 
     @staticmethod
     def chain_sync_results(*operations: object) -> FlextResult[bool]:
@@ -263,7 +263,7 @@ class ResultValidator:
             if hasattr(result, "success") and not result.success:
                 return cast("FlextResult[bool]", result)
 
-        return FlextResult.ok(True)
+        return FlextResult.ok(data=True)
 
     @staticmethod
     def validate_or_fail(*, condition: bool, error_message: str) -> FlextResult[None]:
@@ -490,7 +490,7 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
     async def _validate_session(self, claims: JWTClaims) -> FlextResult[bool]:
         """Validate session if present in claims."""
         if not claims.session_id or claims.session_id == "no_session":
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
 
         session_result = await self.session_repo.get_by_id(claims.session_id)
         if session_result.success and session_result.data:
@@ -498,7 +498,7 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
             if not session.is_valid():
                 return FlextResult.fail("Session has been invalidated")
 
-        return FlextResult.ok(True)
+        return FlextResult.ok(data=True)
 
     async def refresh_token(
         self,
@@ -1101,7 +1101,7 @@ class FlextAuthService:
         """Attempt logout by revoking all user sessions - SRP applied."""
         user_id_result = self.jwt_service.extract_user_id(token)
         if not user_id_result.success or not user_id_result.data:
-            return FlextResult.ok(False)  # No valid user ID, logout unsuccessful
+            return FlextResult.ok(data=False)  # No valid user ID, logout unsuccessful
 
         revoke_result = await self.session_repo.revoke_all_user_sessions(
             user_id_result.data,
@@ -1164,7 +1164,7 @@ class FlextAuthService:
         if not validation.success:
             return FlextResult.fail(validation.error or "Current password is incorrect")
 
-        return FlextResult.ok(True)
+        return FlextResult.ok(data=True)
 
     async def _validate_new_password(
         self,
@@ -1232,7 +1232,7 @@ class FlextAuthService:
         if not save_validation.success:
             return FlextResult.fail(save_validation.error or "User save failed")
 
-        return FlextResult.ok(True)
+        return FlextResult.ok(data=True)
 
     async def _revoke_user_sessions_after_password_change(
         self,
@@ -1664,7 +1664,7 @@ class FlextAuthService:
                 ).message,
             )
 
-        return FlextResult.ok(False)
+        return FlextResult.ok(data=False)
 
     # REFACTORING: Single Responsibility Principle methods for authenticate_user
 

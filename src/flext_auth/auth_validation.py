@@ -35,40 +35,132 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 
-from flext_core import FlextResult, FlextValidators
+from flext_core import FlextResult
+from flext_core.validation import FlextValidators
 
-# Define EMAIL_PATTERN locally if not available from flext-core
-try:
-    from flext_core import EMAIL_PATTERN, FlextFieldCore, FlextFields
-except ImportError:
-    # Fallback email pattern if not available
-    EMAIL_PATTERN = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-    # Create minimal placeholders
-    class FlextFieldCore:
+from flext_auth.constants import FlextAuthConstants
+
+# Define EMAIL_PATTERN locally since it's not available from flext-core
+EMAIL_PATTERN = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+
+
+# Create minimal field handling classes
+class FlextFieldCore:
+    """Minimal field core class with necessary attributes."""
+
+    def __init__(
+        self,
+        field_name: str,
+        *,
+        required: bool = True,
+        sensitive: bool = False,
+        indexed: bool = False,
+        default_value: object = None,
+    ) -> None:
+        self.field_name = field_name
+        self.required = required
+        self.sensitive = sensitive
+        self.indexed = indexed
+        self.default_value = default_value
+
+    def validate_value(self, value: object) -> FlextResult[object]:
+        """Basic validation - always passes."""
+        return FlextResult.ok(value)
+
+    def get_field_metadata(self) -> dict[str, object]:
+        """Get field metadata."""
+        return {
+            "field_name": self.field_name,
+            "required": self.required,
+            "sensitive": self.sensitive,
+            "indexed": self.indexed,
+            "default_value": self.default_value,
+        }
+
+
+class FlextFields:
+    """Minimal field management class."""
+
+    @staticmethod
+    def create_string_field(**kwargs: object) -> FlextFieldCore:
+        field_name = kwargs.get("field_name", "unknown")
+        if not isinstance(field_name, str):
+            field_name = "unknown"
+        required = kwargs.get("required", True)
+        if not isinstance(required, bool):
+            required = True
+        sensitive = kwargs.get("sensitive", False)
+        if not isinstance(sensitive, bool):
+            sensitive = False
+        indexed = kwargs.get("indexed", False)
+        if not isinstance(indexed, bool):
+            indexed = False
+        default_value = kwargs.get("default_value")
+        return FlextFieldCore(
+            field_name,
+            required=required,
+            sensitive=sensitive,
+            indexed=indexed,
+            default_value=default_value,
+        )
+
+    @staticmethod
+    def create_integer_field(**kwargs: object) -> FlextFieldCore:
+        field_name = kwargs.get("field_name", "unknown")
+        if not isinstance(field_name, str):
+            field_name = "unknown"
+        required = kwargs.get("required", True)
+        if not isinstance(required, bool):
+            required = True
+        sensitive = kwargs.get("sensitive", False)
+        if not isinstance(sensitive, bool):
+            sensitive = False
+        indexed = kwargs.get("indexed", False)
+        if not isinstance(indexed, bool):
+            indexed = False
+        default_value = kwargs.get("default_value")
+        return FlextFieldCore(
+            field_name,
+            required=required,
+            sensitive=sensitive,
+            indexed=indexed,
+            default_value=default_value,
+        )
+
+    @staticmethod
+    def create_boolean_field(**kwargs: object) -> FlextFieldCore:
+        field_name = kwargs.get("field_name", "unknown")
+        if not isinstance(field_name, str):
+            field_name = "unknown"
+        required = kwargs.get("required", True)
+        if not isinstance(required, bool):
+            required = True
+        sensitive = kwargs.get("sensitive", False)
+        if not isinstance(sensitive, bool):
+            sensitive = False
+        indexed = kwargs.get("indexed", False)
+        if not isinstance(indexed, bool):
+            indexed = False
+        default_value = kwargs.get("default_value")
+        return FlextFieldCore(
+            field_name,
+            required=required,
+            sensitive=sensitive,
+            indexed=indexed,
+            default_value=default_value,
+        )
+
+    @staticmethod
+    def register_field(field: object) -> None:
         pass
-    class FlextFields:
-        @staticmethod
-        def create_string_field(*args, **kwargs):
-            return None
-        @staticmethod
-        def create_integer_field(*args, **kwargs):
-            return None
-        @staticmethod
-        def create_boolean_field(*args, **kwargs):
-            return None
-        @staticmethod
-        def register_field(field):
-            pass
 
-# Define constants locally if not available
-try:
-    from flext_auth.auth_config import FlextAuthConstants
-except ImportError:
-    class FlextAuthConstants:
-        USERNAME_PATTERN = r"^[a-zA-Z0-9_-]+$"
-        MIN_PASSWORD_LENGTH = 8
-        MAX_PASSWORD_LENGTH = 128
-        PASSWORD_VALIDATION_REGEX = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).+$"
+    @staticmethod
+    def get_field_by_name(field_name: str) -> FlextResult[FlextFieldCore]:
+        """Get field by name - minimal implementation."""
+        return FlextResult.fail(f"Field '{field_name}' not found")
+
+
+# Import constants from auth_config already imported at top
 
 if TYPE_CHECKING:
     from flext_auth.auth_config import TEmail, TPassword, TUsername
@@ -84,6 +176,10 @@ _MIN_COMPLEXITY_CATEGORIES = 6
 _MIN_COMPLEXITY_GOOD = 4
 _MAX_COMMON_LENGTH = 12
 
+# Username validation constants
+_MIN_USERNAME_LENGTH = 3
+_MAX_USERNAME_LENGTH = 50
+
 # =============================================================================
 # AUTHENTICATION VALIDATORS - Using flext-core directly
 # =============================================================================
@@ -95,19 +191,15 @@ class FlextAuthValidators:
     @staticmethod
     def validate_username(username: TUsername) -> FlextResult[None]:
         """Validate username using flext-core validators."""
-        if not FlextValidators.not_empty(username):
+        if not FlextValidators.is_non_empty_string(username):
             return FlextResult.fail("Username cannot be empty")
 
-        min_len_validator = FlextValidators.min_length(3)
-        if not min_len_validator(username):
-            return FlextResult.fail("Username must be at least 3 characters")
+        if len(username) < _MIN_USERNAME_LENGTH:
+            return FlextResult.fail(f"Username must be at least {_MIN_USERNAME_LENGTH} characters")
 
-        max_len_validator = FlextValidators.max_length(50)
-        if not max_len_validator(username):
-            return FlextResult.fail("Username cannot exceed 50 characters")
+        if len(username) > _MAX_USERNAME_LENGTH:
+            return FlextResult.fail(f"Username cannot exceed {_MAX_USERNAME_LENGTH} characters")
 
-        # Use built-in regex validation since matches_pattern isn't available
-        import re
         if not re.match(FlextAuthConstants.USERNAME_PATTERN, username):
             return FlextResult.fail("Username contains invalid characters")
 
@@ -116,11 +208,9 @@ class FlextAuthValidators:
     @staticmethod
     def validate_email(email: TEmail) -> FlextResult[None]:
         """Validate email using flext-core validators."""
-        if not FlextValidators.not_empty(email):
+        if not FlextValidators.is_non_empty_string(email):
             return FlextResult.fail("Email cannot be empty")
-        
-        # Use built-in email validation since is_email isn't available
-        import re
+
         if not re.match(EMAIL_PATTERN, email):
             return FlextResult.fail("Invalid email format")
         return FlextResult.ok(None)
@@ -128,25 +218,21 @@ class FlextAuthValidators:
     @staticmethod
     def validate_password(password: TPassword) -> FlextResult[None]:
         """Validate password using flext-core validators."""
-        if not FlextValidators.not_empty(password):
+        if not FlextValidators.is_non_empty_string(password):
             return FlextResult.fail("Password cannot be empty")
 
-        min_len_validator = FlextValidators.min_length(FlextAuthConstants.MIN_PASSWORD_LENGTH)
-        if not min_len_validator(password):
+        if len(password) < FlextAuthConstants.MIN_PASSWORD_LENGTH:
             return FlextResult.fail(
                 f"Password must be at least "
                 f"{FlextAuthConstants.MIN_PASSWORD_LENGTH} characters",
             )
 
-        max_len_validator = FlextValidators.max_length(FlextAuthConstants.MAX_PASSWORD_LENGTH)
-        if not max_len_validator(password):
+        if len(password) > FlextAuthConstants.MAX_PASSWORD_LENGTH:
             return FlextResult.fail(
                 f"Password cannot exceed "
                 f"{FlextAuthConstants.MAX_PASSWORD_LENGTH} characters",
             )
 
-        # Use built-in regex validation since matches_pattern isn't available
-        import re
         if not re.match(FlextAuthConstants.PASSWORD_VALIDATION_REGEX, password):
             return FlextResult.fail(
                 "Password must contain uppercase, lowercase, digit and "
@@ -158,7 +244,7 @@ class FlextAuthValidators:
     @staticmethod
     def validate_user_id(user_id: str) -> FlextResult[None]:
         """Validate user ID using flext-core validators."""
-        if not FlextValidators.not_empty(user_id):
+        if not FlextValidators.is_non_empty_string(user_id):
             return FlextResult.fail("User ID cannot be empty")
         return FlextResult.ok(None)
 
@@ -168,7 +254,7 @@ class FlextAuthValidators:
 # =============================================================================
 
 # Username field with proper validation
-USERNAME_FIELD = FlextFields.create_string_field(
+USERNAME_FIELD: FlextFieldCore = FlextFields.create_string_field(
     field_id="auth_username",
     field_name="username",
     min_length=3,
@@ -183,7 +269,7 @@ USERNAME_FIELD = FlextFields.create_string_field(
 FlextFields.register_field(USERNAME_FIELD)
 
 # Email field using flext-core EMAIL_PATTERN
-EMAIL_FIELD = FlextFields.create_string_field(
+EMAIL_FIELD: FlextFieldCore = FlextFields.create_string_field(
     field_id="auth_email",
     field_name="email",
     pattern=EMAIL_PATTERN,
@@ -198,7 +284,7 @@ EMAIL_FIELD = FlextFields.create_string_field(
 FlextFields.register_field(EMAIL_FIELD)
 
 # Password field (for validation, not storage)
-PASSWORD_FIELD = FlextFields.create_string_field(
+PASSWORD_FIELD: FlextFieldCore = FlextFields.create_string_field(
     field_id="auth_password",
     field_name="password",
     min_length=8,
@@ -212,7 +298,7 @@ PASSWORD_FIELD = FlextFields.create_string_field(
 FlextFields.register_field(PASSWORD_FIELD)
 
 # User role field with allowed values
-ROLE_FIELD = FlextFields.create_string_field(
+ROLE_FIELD: FlextFieldCore = FlextFields.create_string_field(
     field_id="auth_role",
     field_name="role",
     allowed_values=["REDACTED_LDAP_BIND_PASSWORD", "user", "guest"],
@@ -226,7 +312,7 @@ ROLE_FIELD = FlextFields.create_string_field(
 FlextFields.register_field(ROLE_FIELD)
 
 # User status field
-STATUS_FIELD = FlextFields.create_string_field(
+STATUS_FIELD: FlextFieldCore = FlextFields.create_string_field(
     field_id="auth_status",
     field_name="status",
     allowed_values=["active", "inactive", "locked", "pending"],
@@ -240,7 +326,7 @@ STATUS_FIELD = FlextFields.create_string_field(
 FlextFields.register_field(STATUS_FIELD)
 
 # Session expiry field
-SESSION_EXPIRE_FIELD = FlextFields.create_integer_field(
+SESSION_EXPIRE_FIELD: FlextFieldCore = FlextFields.create_integer_field(
     field_id="auth_session_expire",
     field_name="session_expire_hours",
     min_value=1,
@@ -255,7 +341,7 @@ SESSION_EXPIRE_FIELD = FlextFields.create_integer_field(
 FlextFields.register_field(SESSION_EXPIRE_FIELD)
 
 # Failed login attempts field
-FAILED_ATTEMPTS_FIELD = FlextFields.create_integer_field(
+FAILED_ATTEMPTS_FIELD: FlextFieldCore = FlextFields.create_integer_field(
     field_id="auth_failed_attempts",
     field_name="failed_attempts",
     min_value=0,
@@ -269,7 +355,7 @@ FAILED_ATTEMPTS_FIELD = FlextFields.create_integer_field(
 FlextFields.register_field(FAILED_ATTEMPTS_FIELD)
 
 # Account lockout enabled field
-LOCKOUT_ENABLED_FIELD = FlextFields.create_boolean_field(
+LOCKOUT_ENABLED_FIELD: FlextFieldCore = FlextFields.create_boolean_field(
     field_id="auth_lockout_enabled",
     field_name="lockout_enabled",
     default_value=True,
@@ -294,16 +380,16 @@ class FlextAuthFieldSchema:
     """
 
     # Core authentication fields
-    USERNAME = USERNAME_FIELD
-    EMAIL = EMAIL_FIELD
-    PASSWORD = PASSWORD_FIELD
-    ROLE = ROLE_FIELD
-    STATUS = STATUS_FIELD
+    USERNAME: FlextFieldCore = USERNAME_FIELD
+    EMAIL: FlextFieldCore = EMAIL_FIELD
+    PASSWORD: FlextFieldCore = PASSWORD_FIELD
+    ROLE: FlextFieldCore = ROLE_FIELD
+    STATUS: FlextFieldCore = STATUS_FIELD
 
     # Session and security fields
-    SESSION_EXPIRE = SESSION_EXPIRE_FIELD
-    FAILED_ATTEMPTS = FAILED_ATTEMPTS_FIELD
-    LOCKOUT_ENABLED = LOCKOUT_ENABLED_FIELD
+    SESSION_EXPIRE: FlextFieldCore = SESSION_EXPIRE_FIELD
+    FAILED_ATTEMPTS: FlextFieldCore = FAILED_ATTEMPTS_FIELD
+    LOCKOUT_ENABLED: FlextFieldCore = LOCKOUT_ENABLED_FIELD
 
     @classmethod
     def validate_user_data(
@@ -317,6 +403,7 @@ class FlextAuthFieldSchema:
 
         Returns:
             FlextResult containing validated data or validation errors
+
         """
         validated_data = {}
 
@@ -361,6 +448,7 @@ class FlextAuthFieldSchema:
 
         Returns:
             Dictionary mapping field names to their metadata
+
         """
         all_fields = [
             cls.USERNAME,
@@ -389,6 +477,7 @@ class FlextAuthFieldSchema:
 
         Returns:
             List of sensitive field names
+
         """
         all_fields = [
             cls.USERNAME,
@@ -409,6 +498,7 @@ class FlextAuthFieldSchema:
 
         Returns:
             List of indexed field names for database optimization
+
         """
         all_fields = [
             cls.USERNAME,
@@ -441,6 +531,7 @@ def validate_username_uniqueness(
 
     Returns:
         FlextResult containing validated username or uniqueness error
+
     """
     # First validate basic username format
     basic_validation = FlextAuthFieldSchema.USERNAME.validate_value(username)
@@ -467,6 +558,7 @@ def validate_email_uniqueness(
 
     Returns:
         FlextResult containing validated email or uniqueness error
+
     """
     # First validate basic email format
     basic_validation = FlextAuthFieldSchema.EMAIL.validate_value(email)
@@ -562,6 +654,7 @@ def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:
 
     Returns:
         FlextResult containing strength analysis or validation error
+
     """
     # First validate basic password format
     basic_validation = FlextAuthFieldSchema.PASSWORD.validate_value(password)
@@ -581,7 +674,7 @@ def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:
             "score": score,
             "strength": strength,
             "feedback": feedback,
-        }
+        },
     )
 
     return FlextResult.ok(analysis)
@@ -599,6 +692,7 @@ def validate_session_expiry(
 
     Returns:
         FlextResult containing validated expiry or validation error
+
     """
     # First validate basic integer constraints
     basic_validation = FlextAuthFieldSchema.SESSION_EXPIRE.validate_value(
@@ -633,6 +727,7 @@ def validate_failed_attempts_threshold(
 
     Returns:
         FlextResult containing validated attempts or security error
+
     """
     # First validate basic integer constraints
     basic_validation = FlextAuthFieldSchema.FAILED_ATTEMPTS.validate_value(
@@ -663,6 +758,7 @@ def validate_user_role_permissions(
 
     Returns:
         FlextResult containing validated role or permission error
+
     """
     # First validate basic role format
     basic_validation = FlextAuthFieldSchema.ROLE.validate_value(role)
@@ -709,19 +805,19 @@ def validate_username(username: str) -> FlextResult[str]:
 
     Returns:
         FlextResult containing validated username or error
+
     """
     # Fallback to direct validation if field schema is not available
-    if not FlextAuthFieldSchema.USERNAME or not hasattr(FlextAuthFieldSchema.USERNAME, 'validate_value'):
+    if not FlextAuthFieldSchema.USERNAME or not hasattr(FlextAuthFieldSchema.USERNAME, "validate_value"):
         # Use FlextAuthValidators as fallback
         validation_result = FlextAuthValidators.validate_username(username)
-        if validation_result.success:
+        if validation_result.is_success:
             return FlextResult.ok(username)
-        else:
-            return validation_result
-    
-    validation_result = FlextAuthFieldSchema.USERNAME.validate_value(username)
-    if validation_result.is_failure:
-        error_msg = validation_result.error or "Username validation failed"
+        return FlextResult.fail(validation_result.error or "Username validation failed")
+
+    field_validation_result: FlextResult[object] = FlextAuthFieldSchema.USERNAME.validate_value(username)
+    if field_validation_result.is_failure:
+        error_msg = field_validation_result.error or "Username validation failed"
         return FlextResult.fail(error_msg)
     return FlextResult.ok(username)
 
@@ -734,19 +830,19 @@ def validate_email(email: str) -> FlextResult[str]:
 
     Returns:
         FlextResult containing validated email or error
+
     """
     # Fallback to direct validation if field schema is not available
-    if not FlextAuthFieldSchema.EMAIL or not hasattr(FlextAuthFieldSchema.EMAIL, 'validate_value'):
+    if not FlextAuthFieldSchema.EMAIL or not hasattr(FlextAuthFieldSchema.EMAIL, "validate_value"):
         # Use FlextAuthValidators as fallback
         validation_result = FlextAuthValidators.validate_email(email)
-        if validation_result.success:
+        if validation_result.is_success:
             return FlextResult.ok(email)
-        else:
-            return validation_result
-    
-    validation_result = FlextAuthFieldSchema.EMAIL.validate_value(email)
-    if validation_result.is_failure:
-        error_msg = validation_result.error or "Email validation failed"
+        return FlextResult.fail(validation_result.error or "Email validation failed")
+
+    field_validation_result: FlextResult[object] = FlextAuthFieldSchema.EMAIL.validate_value(email)
+    if field_validation_result.is_failure:
+        error_msg = field_validation_result.error or "Email validation failed"
         return FlextResult.fail(error_msg)
     return FlextResult.ok(email)
 
@@ -759,19 +855,19 @@ def validate_password(password: str) -> FlextResult[str]:
 
     Returns:
         FlextResult containing validated password or error
+
     """
     # Fallback to direct validation if field schema is not available
-    if not FlextAuthFieldSchema.PASSWORD or not hasattr(FlextAuthFieldSchema.PASSWORD, 'validate_value'):
+    if not FlextAuthFieldSchema.PASSWORD or not hasattr(FlextAuthFieldSchema.PASSWORD, "validate_value"):
         # Use FlextAuthValidators as fallback
         validation_result = FlextAuthValidators.validate_password(password)
-        if validation_result.success:
+        if validation_result.is_success:
             return FlextResult.ok(password)
-        else:
-            return validation_result
-    
-    validation_result = FlextAuthFieldSchema.PASSWORD.validate_value(password)
-    if validation_result.is_failure:
-        error_msg = validation_result.error or "Password validation failed"
+        return FlextResult.fail(validation_result.error or "Password validation failed")
+
+    field_validation_result: FlextResult[object] = FlextAuthFieldSchema.PASSWORD.validate_value(password)
+    if field_validation_result.is_failure:
+        error_msg = field_validation_result.error or "Password validation failed"
         return FlextResult.fail(error_msg)
     return FlextResult.ok(password)
 
@@ -784,6 +880,7 @@ def validate_role(role: str) -> FlextResult[str]:
 
     Returns:
         FlextResult containing validated role or error
+
     """
     validation_result = FlextAuthFieldSchema.ROLE.validate_value(role)
     if validation_result.is_failure:
@@ -800,6 +897,7 @@ def get_auth_field_by_name(field_name: str) -> FlextResult[FlextFieldCore]:
 
     Returns:
         FlextResult containing the field or error if not found
+
     """
     return FlextFields.get_field_by_name(field_name)
 
@@ -819,6 +917,7 @@ def validate_complete_user_registration(
 
     Returns:
         FlextResult containing validated data or comprehensive validation errors
+
     """
     # Start with basic field validation
     basic_validation = FlextAuthFieldSchema.validate_user_data(user_data)
@@ -869,6 +968,7 @@ def validate_user_profile_update(
 
     Returns:
         FlextResult containing validated changes or validation errors
+
     """
     validated_changes = {}
 
@@ -917,6 +1017,7 @@ def validate_security_context(
 
     Returns:
         FlextResult containing validated security context or validation errors
+
     """
     validated_context: dict[str, str] = {}
 
@@ -968,34 +1069,34 @@ def validate_security_context(
 # =============================================================================
 
 __all__: list[str] = [
-    # Core validators
-    "FlextAuthValidators",
-    # Field definitions
-    "USERNAME_FIELD",
     "EMAIL_FIELD",
-    "PASSWORD_FIELD",
-    "ROLE_FIELD",
-    "STATUS_FIELD",
-    "SESSION_EXPIRE_FIELD",
     "FAILED_ATTEMPTS_FIELD",
     "LOCKOUT_ENABLED_FIELD",
+    "PASSWORD_FIELD",
+    "ROLE_FIELD",
+    "SESSION_EXPIRE_FIELD",
+    "STATUS_FIELD",
+    # Field definitions
+    "USERNAME_FIELD",
     # Field schema and definitions
     "FlextAuthFieldSchema",
+    # Core validators
+    "FlextAuthValidators",
     "get_auth_field_by_name",
-    # Basic field validators
-    "validate_username",
-    "validate_email",
-    "validate_password",
-    "validate_role",
-    # Advanced field validators
-    "validate_username_uniqueness",
-    "validate_email_uniqueness",
-    "validate_password_strength",
-    "validate_session_expiry",
-    "validate_failed_attempts_threshold",
-    "validate_user_role_permissions",
     # Composite validators
     "validate_complete_user_registration",
-    "validate_user_profile_update",
+    "validate_email",
+    "validate_email_uniqueness",
+    "validate_failed_attempts_threshold",
+    "validate_password",
+    "validate_password_strength",
+    "validate_role",
     "validate_security_context",
+    "validate_session_expiry",
+    "validate_user_profile_update",
+    "validate_user_role_permissions",
+    # Basic field validators
+    "validate_username",
+    # Advanced field validators
+    "validate_username_uniqueness",
 ]

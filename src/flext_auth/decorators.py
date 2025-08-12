@@ -87,7 +87,8 @@ import functools
 from collections.abc import Callable
 from typing import TYPE_CHECKING, ParamSpec, Protocol
 
-from flext_core import FlextLoggerFactory, FlextResult
+from flext_core import FlextResult
+from flext_core.loggings import FlextLoggerFactory
 
 from flext_auth.jwt import FlextJWTService
 
@@ -497,7 +498,7 @@ def flext_auth_permission_required(
         # Normal auth flow with validation
         @functools.wraps(func)
         @flext_auth_required(auth_service=auth_service, secret=effective_secret)
-        def wrapper(*args: object, **kwargs: object) -> object:
+        def auth_wrapper(*args: object, **kwargs: object) -> object:
             current_user_raw = kwargs.get("current_user", {})
             current_user = (
                 current_user_raw if isinstance(current_user_raw, dict) else {}
@@ -514,7 +515,7 @@ def flext_auth_permission_required(
 
             return func(*args, **kwargs)
 
-        return wrapper
+        return auth_wrapper
 
     return decorator
 

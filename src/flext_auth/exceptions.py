@@ -1,13 +1,13 @@
 """🚨 ARCHITECTURAL COMPLIANCE: ZERO EXCEPTION DUPLICATION using flext-core Factory.
 
-✅ REFATORAÇÃO COMPLETA: 240+ linhas de código duplicado ELIMINADAS.
+✅ COMPLETE REFACTORING: 240+ lines of duplicated code ELIMINATED.
 
-- ANTES: 292 linhas com 11 classes manuais de exceptions
-- DEPOIS: <60 linhas usando factory pattern limpo e DRY
-- REDUÇÃO: 240+ linhas eliminadas = ~82% redução
-- PADRÃO: Usa create_module_exception_classes() de flext-core
-- ARQUITETURA: Funcionalidades genéricas permanecem nas bibliotecas abstratas
-- EXPOSIÇÃO: API pública correta através do factory pattern
+- BEFORE: 292 lines with 11 manual exception classes
+- AFTER: <60 lines using clean and DRY factory pattern
+- REDUCTION: 240+ lines eliminated = ~82% reduction
+- PATTERN: Uses create_module_exception_classes() from flext-core
+- ARCHITECTURE: Generic functionality remains in abstract libraries
+- EXPOSURE: Correct public API through factory pattern
 
 FLEXT Auth Exception Hierarchy - ZERO DUPLICATION.
 
@@ -20,7 +20,7 @@ Type-safe error handling for authentication operations using factory pattern to 
 from __future__ import annotations
 
 # 🚨 ZERO DUPLICATION: Use flext-core exception factory - eliminates 240+ lines
-from flext_core import create_module_exception_classes
+from flext_core.exceptions import create_module_exception_classes
 
 # Generate all standard exceptions using factory pattern
 _auth_exceptions = create_module_exception_classes("flext_auth")

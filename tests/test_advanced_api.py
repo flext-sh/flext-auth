@@ -513,7 +513,6 @@ class TestSpecializedDecorators:
 
     def test_rate_limit_decorator(self) -> None:
         """Test rate limiting functionality."""
-
         # Rate limiting is implemented as a decorator in __init__.py
         rate_limit_decorator = flext_auth_rate_limit(
             _max_requests=2, _window_seconds=3600

@@ -86,13 +86,16 @@ import secrets
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
-from flext_core import FlextLoggerFactory, FlextResult
+from flext_core import FlextResult
+from flext_core.loggings import FlextLoggerFactory
 
-from flext_auth.config import FlextAuthConfig
+from flext_auth.auth_config import FlextAuthConfig
 from flext_auth.constants import DEFAULT_JWT_SECRET
 from flext_auth.jwt import FlextJWTService
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from flext_auth.auth import FlextAuthService
 
 _logger = FlextLoggerFactory.get_logger(__name__)
@@ -320,7 +323,7 @@ class FlextAuthMixin:
         """Check if authentication is initialized."""
         return self._auth_service is not None
 
-    def flext_auth_add_validation(self, validator: callable) -> None:
+    def flext_auth_add_validation(self, validator: Callable[[str], bool]) -> None:
         """Add custom validator function - required by tests."""
         if not hasattr(self, "_validators"):
             self._validators = []
@@ -499,6 +502,7 @@ class FlextAuthSessionMixin:
         """Initialize session mixin."""
         super().__init__(*args, **kwargs)
         self._session_data: dict[str, object] | None = None
+        self._session: dict[str, object] | None = None
 
     def flext_auth_refresh_session(self) -> dict[str, object]:
         """Refresh or create session - required by tests."""

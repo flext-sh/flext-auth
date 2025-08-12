@@ -38,6 +38,7 @@ from flext_auth import (
 )
 
 # Example constants - not for production use
+# These are intentionally hardcoded for demonstration purposes only
 EXAMPLE_PRODUCTION_SECRET = "production-secret-key-super-secure-256-bits-minimum"
 EXAMPLE_JWT_SECRET = "my-super-secure-jwt-secret-key-256-bits-minimum-length-required"
 EXAMPLE_API_SECRET = "api-secret-key-for-validation-256-bits-minimum-length"
@@ -311,6 +312,71 @@ def example_decorators() -> None:
     print(f"Permission endpoint result: {perm_result}")
 
 
+async def _handle_batch_registration(batch_ops, users_data) -> bool:
+    """Handle batch user registration."""
+    batch_register_result = await batch_ops.register_multiple(
+        users_data,
+        validate_all=True,
+    )
+
+    if batch_register_result.success:
+        registered_users = batch_register_result.data
+        print(f"Batch Registration Successful: {len(registered_users)} users")
+        for user in registered_users:
+            print(f"  - {user['user']['username']} ({user['user']['role']})")
+        return True
+    print(f"Batch registration failed: {batch_register_result.error}")
+    return False
+
+
+async def _handle_batch_sessions(batch_ops, credentials) -> None:
+    """Handle batch session creation and token validation."""
+    batch_sessions_result = await batch_ops.create_multiple_sessions(
+        credentials,
+        session_hours=12,
+    )
+
+    if not batch_sessions_result.success:
+        print(f"Batch sessions failed: {batch_sessions_result.error}")
+        return
+
+    session_data = batch_sessions_result.data
+    successful = session_data["successful"]
+    total = session_data["total"]
+    print(f"Batch Sessions Created: {successful}/{total}")
+
+    # Extract tokens for batch validation
+    tokens = []
+    for session in session_data["sessions"]:
+        session_token = session["session_data"].get("token")
+        if session_token:
+            tokens.append(session_token)
+
+    if tokens:
+        await _validate_batch_tokens(batch_ops, tokens)
+
+
+async def _validate_batch_tokens(batch_ops, tokens) -> None:
+    """Validate multiple tokens in batch."""
+    batch_validation_result = await batch_ops.validate_multiple_tokens(tokens)
+
+    if not batch_validation_result.success:
+        print(f"Batch validation failed: {batch_validation_result.error}")
+        return
+
+    validation_data = batch_validation_result.data
+    if isinstance(validation_data, dict):
+        valid_count = validation_data.get("valid_count", 0)
+        total_count = validation_data.get("total", len(tokens))
+        print(f"Batch Token Validation: {valid_count}/{total_count} valid")
+    elif isinstance(validation_data, list):
+        valid_count = len([v for v in validation_data if v])
+        total_count = len(validation_data)
+        print(f"Batch Token Validation: {valid_count}/{total_count} valid")
+    else:
+        print(f"Batch validation succeeded with data: {validation_data}")
+
+
 async def example_batch_operations() -> None:
     """Exemplo: Operações em lote."""
     print("\n=== Batch Operations Example ===")
@@ -341,19 +407,8 @@ async def example_batch_operations() -> None:
         },
     ]
 
-    # Registro em lote
-    batch_register_result = await batch_ops.register_multiple(
-        users_data,
-        validate_all=True,
-    )
-
-    if batch_register_result.success:
-        registered_users = batch_register_result.data
-        print(f"Batch Registration Successful: {len(registered_users)} users")
-        for user in registered_users:
-            print(f"  - {user['user']['username']} ({user['user']['role']})")
-    else:
-        print(f"Batch registration failed: {batch_register_result.error}")
+    # Process batch registration
+    await _handle_batch_registration(batch_ops, users_data)
 
     # Credenciais para sessões em lote
     credentials = [
@@ -362,44 +417,8 @@ async def example_batch_operations() -> None:
         ("batch_REDACTED_LDAP_BIND_PASSWORD", "BatchAdminPass789!"),
     ]
 
-    # Criar múltiplas sessões
-    batch_sessions_result = await batch_ops.create_multiple_sessions(
-        credentials,
-        session_hours=12,
-    )
-
-    if batch_sessions_result.success:
-        session_data = batch_sessions_result.data
-        successful = session_data["successful"]
-        total = session_data["total"]
-        print(f"Batch Sessions Created: {successful}/{total}")
-
-        # Extrair tokens para validação em lote
-        tokens = []
-        for session in session_data["sessions"]:
-            session_token = session["session_data"].get("token")
-            if session_token:
-                tokens.append(session_token)
-
-        if tokens:
-            # Validar múltiplos tokens
-            batch_validation_result = await batch_ops.validate_multiple_tokens(tokens)
-            if batch_validation_result.success:
-                validation_data = batch_validation_result.data
-                if isinstance(validation_data, dict):
-                    valid_count = validation_data.get("valid_count", 0)
-                    total_count = validation_data.get("total", len(tokens))
-                    print(f"Batch Token Validation: {valid_count}/{total_count} valid")
-                elif isinstance(validation_data, list):
-                    valid_count = len([v for v in validation_data if v])
-                    total_count = len(validation_data)
-                    print(f"Batch Token Validation: {valid_count}/{total_count} valid")
-                else:
-                    print(f"Batch validation succeeded with data: {validation_data}")
-            else:
-                print(f"Batch validation failed: {batch_validation_result.error}")
-    else:
-        print(f"Batch sessions failed: {batch_sessions_result.error}")
+    # Process batch sessions
+    await _handle_batch_sessions(batch_ops, credentials)
 
 
 async def example_advanced_user_management() -> None:

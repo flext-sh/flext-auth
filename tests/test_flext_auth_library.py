@@ -1,6 +1,6 @@
 """Testes robustos e abrangentes para a biblioteca flext-auth.
 
-Testa TODAS as funcionalidades da interface pública única.
+Test ALL functionalities of the unified public interface.
 Garante que a redução massiva de código funciona perfeitamente.
 
 Copyright (c) 2025 FLEXT Contributors
@@ -48,7 +48,7 @@ class TestFlextAuthClassePrincipal:
 
     @pytest.fixture
     def auth_with_config(self) -> FlextAuth:
-        """Instância FlextAuth com configuração customizada."""
+        """FlextAuth instance with custom configuration."""
         config = {
             "jwt": {
                 "secret_key": "test-secret-key-super-secure-123456789",
@@ -63,7 +63,7 @@ class TestFlextAuthClassePrincipal:
 
     @pytest.mark.asyncio
     async def test_registro_usuario_sucesso(self, auth: FlextAuth) -> None:
-        """Testa registro de usuário com sucesso."""
+        """Test successful user registration."""
         result = await auth.register("testuser", "test@example.com", "SecurePass123!")
 
         assert result.success
@@ -75,7 +75,7 @@ class TestFlextAuthClassePrincipal:
 
     @pytest.mark.asyncio
     async def test_registro_usuario_duplicado(self, auth: FlextAuth) -> None:
-        """Testa registro de usuário duplicado."""
+        """Test duplicate user registration."""
         # Primeiro registro
         result1 = await auth.register("duplicate", "dup@example.com", "Pass123!")
         assert result1.success
@@ -88,7 +88,7 @@ class TestFlextAuthClassePrincipal:
 
     @pytest.mark.asyncio
     async def test_login_sucesso(self, auth: FlextAuth) -> None:
-        """Testa login com sucesso."""
+        """Test successful login."""
         # Registra usuário
         await auth.register("loginuser", "login@example.com", "LoginPass123!")
 
@@ -113,7 +113,7 @@ class TestFlextAuthClassePrincipal:
 
     @pytest.mark.asyncio
     async def test_login_credenciais_invalidas(self, auth: FlextAuth) -> None:
-        """Testa login com credenciais inválidas."""
+        """Test login with invalid credentials."""
         result = await auth.login("inexistente", "senha_errada")
 
         assert not result.success
@@ -124,7 +124,7 @@ class TestFlextAuthClassePrincipal:
 
     @pytest.mark.asyncio
     async def test_validacao_token_sucesso(self, auth: FlextAuth) -> None:
-        """Testa validação de token válido."""
+        """Test validation of valid token."""
         # Setup: registra e faz login
         await auth.register("tokenuser", "token@example.com", "TokenPass123!")
         login_result = await auth.login("tokenuser", "TokenPass123!")
@@ -146,7 +146,7 @@ class TestFlextAuthClassePrincipal:
 
     @pytest.mark.asyncio
     async def test_validacao_token_invalido(self, auth: FlextAuth) -> None:
-        """Testa validação de token inválido."""
+        """Test validation of invalid token."""
         result = await auth.validate("token_invalido_123")
 
         assert not result.success
@@ -157,7 +157,7 @@ class TestFlextAuthClassePrincipal:
 
     @pytest.mark.asyncio
     async def test_logout_sucesso(self, auth: FlextAuth) -> None:
-        """Testa logout com sucesso."""
+        """Test successful logout."""
         # Setup
         await auth.register("logoutuser", "logout@example.com", "LogoutPass123!")
         login_result = await auth.login("logoutuser", "LogoutPass123!")
@@ -174,7 +174,7 @@ class TestFlextAuthClassePrincipal:
 
     @pytest.mark.asyncio
     async def test_refresh_token_sucesso(self, auth: FlextAuth) -> None:
-        """Testa refresh de token com sucesso."""
+        """Test successful token refresh."""
         # Setup
         await auth.register("refreshuser", "refresh@example.com", "RefreshPass123!")
         login_result = await auth.login("refreshuser", "RefreshPass123!")
@@ -198,7 +198,7 @@ class TestFlextAuthClassePrincipal:
 
     @pytest.mark.asyncio
     async def test_mudanca_senha_sucesso(self, auth: FlextAuth) -> None:
-        """Testa mudança de senha com sucesso."""
+        """Test successful password change."""
         # Setup
         await auth.register("passuser", "pass@example.com", "OldPass123!")
         login_result = await auth.login("passuser", "OldPass123!")
@@ -209,17 +209,17 @@ class TestFlextAuthClassePrincipal:
 
         assert result.success
 
-        # Testa login com nova senha
+        # Test login with new password
         new_login = await auth.login("passuser", "NewPass456!")
         assert new_login.success
 
-        # Testa que senha antiga não funciona mais
+        # Test that old password no longer works
         old_login = await auth.login("passuser", "OldPass123!")
         assert not old_login.success
 
     @pytest.mark.asyncio
     async def test_mudanca_senha_senha_atual_incorreta(self, auth: FlextAuth) -> None:
-        """Testa mudança de senha com senha atual incorreta."""
+        """Test password change with incorrect current password."""
         # Setup
         await auth.register("passuser2", "pass2@example.com", "CurrentPass123!")
         login_result = await auth.login("passuser2", "CurrentPass123!")
@@ -234,7 +234,7 @@ class TestFlextAuthClassePrincipal:
 
     @pytest.mark.asyncio
     async def test_listar_sessoes_usuario(self, auth: FlextAuth) -> None:
-        """Testa listagem de sessões do usuário."""
+        """Test listing user sessions."""
         # Setup
         await auth.register("sessionuser", "session@example.com", "SessionPass123!")
         login_result = await auth.login("sessionuser", "SessionPass123!")
@@ -255,7 +255,7 @@ class TestFlextAuthClassePrincipal:
 
     @pytest.mark.asyncio
     async def test_limpeza_sessoes_expiradas(self, auth: FlextAuth) -> None:
-        """Testa limpeza de sessões expiradas."""
+        """Test cleanup of expired sessions."""
         result = await auth.cleanup_sessions()
 
         assert result.success
@@ -266,20 +266,20 @@ class TestFlextAuthQuickStart:
     """Testes para o helper flext_auth_quick_start."""
 
     def test_quick_start_default(self: FlextAuth) -> None:
-        """Testa quick start com configuração padrão."""
+        """Test quick start with default configuration."""
         auth_result = flext_auth_quick_start()
         assert auth_result.success, f"Quick start failed: {auth_result.error}"
         auth = auth_result.data
 
         assert isinstance(auth, FlextAuth)
-        # Admin deve estar criado automaticamente (testamos com login)
+        # Admin should be created automatically (we test with login)
 
         # Executa login assíncrono para verificar REDACTED_LDAP_BIND_PASSWORD
         async def verify_REDACTED_LDAP_BIND_PASSWORD() -> bool:
             result = await auth.login("REDACTED_LDAP_BIND_PASSWORD", "Admin123!")
             return result.success
 
-        # Testa se REDACTED_LDAP_BIND_PASSWORD existe
+        # Test if REDACTED_LDAP_BIND_PASSWORD exists
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
         REDACTED_LDAP_BIND_PASSWORD_exists = loop.run_until_complete(verify_REDACTED_LDAP_BIND_PASSWORD())
@@ -288,7 +288,7 @@ class TestFlextAuthQuickStart:
         assert REDACTED_LDAP_BIND_PASSWORD_exists
 
     def test_quick_start_custom_REDACTED_LDAP_BIND_PASSWORD(self: FlextAuth) -> None:
-        """Testa quick start com REDACTED_LDAP_BIND_PASSWORD customizado."""
+        """Test quick start with custom REDACTED_LDAP_BIND_PASSWORD."""
         auth_result = flext_auth_quick_start(
             REDACTED_LDAP_BIND_PASSWORD_username="superREDACTED_LDAP_BIND_PASSWORD",
             REDACTED_LDAP_BIND_PASSWORD_email="super@REDACTED_LDAP_BIND_PASSWORD.com",
@@ -304,7 +304,7 @@ class TestFlextAuthHelpers:
     """Testes para helpers utilitários."""
 
     def test_hash_password(self: FlextAuth) -> None:
-        """Testa hash de senha."""
+        """Test password hashing."""
         password = "TestPassword123!"
         hashed = flext_auth_hash_password(password)
 
@@ -314,7 +314,7 @@ class TestFlextAuthHelpers:
         assert hashed.startswith("$2b$")  # Formato bcrypt
 
     def test_hash_password_rounds_customizado(self: FlextAuth) -> None:
-        """Testa hash com rounds customizado."""
+        """Test hash with custom rounds."""
         password = "TestPassword123!"
         hashed_4 = flext_auth_hash_password(password, rounds=4)
         hashed_12 = flext_auth_hash_password(password, rounds=12)
@@ -325,7 +325,7 @@ class TestFlextAuthHelpers:
         assert "$2b$12$" in hashed_12
 
     def test_verify_password_correto(self: FlextAuth) -> None:
-        """Testa verificação de senha correta."""
+        """Test correct password verification."""
         password = "CorrectPassword123!"
         hashed = flext_auth_hash_password(password)
 
@@ -335,7 +335,7 @@ class TestFlextAuthHelpers:
             )
 
     def test_verify_password_incorreto(self: FlextAuth) -> None:
-        """Testa verificação de senha incorreta."""
+        """Test incorrect password verification."""
         password = "CorrectPassword123!"
         wrong_password = "WrongPassword456!"
         hashed = flext_auth_hash_password(password)
@@ -346,7 +346,7 @@ class TestFlextAuthHelpers:
             )
 
     def test_generate_jwt_basico(self: FlextAuth) -> None:
-        """Testa geração básica de JWT."""
+        """Test basic JWT generation."""
         payload = {"user_id": "123", "username": "test"}
         token_result = flext_auth_generate_jwt(payload)
 
@@ -357,7 +357,7 @@ class TestFlextAuthHelpers:
             raise AssertionError(f"Expected {3}, got {len(token.split('.'))}")
 
     def test_generate_jwt_com_expiracao(self: FlextAuth) -> None:
-        """Testa geração de JWT com expiração customizada."""
+        """Test JWT generation with custom expiration."""
         payload = {"user_id": "123", "username": "test"}
         token_result = flext_auth_generate_jwt(payload, expires_minutes=60)
 
@@ -368,7 +368,7 @@ class TestFlextAuthHelpers:
             raise AssertionError(f"Expected {3}, got {len(token.split('.'))}")
 
     def test_decode_jwt_valido(self: FlextAuth) -> None:
-        """Testa decodificação de JWT válido."""
+        """Test decoding of valid JWT."""
         secret = "test-secret-key-123456789"
         payload = {"user_id": "123", "username": "testuser", "role": "REDACTED_LDAP_BIND_PASSWORD"}
 
@@ -391,13 +391,13 @@ class TestFlextAuthHelpers:
         assert "issued" in decoded
 
     def test_decode_jwt_invalido(self: FlextAuth) -> None:
-        """Testa decodificação de JWT inválido."""
+        """Test decoding of invalid JWT."""
         decoded = flext_auth_decode_jwt("token.invalido.123", "secret")
 
         assert decoded is None
 
     def test_validate_email_validos(self: FlextAuth) -> None:
-        """Testa validação de emails válidos."""
+        """Test validation of valid emails."""
         emails_validos = [
             "user@example.com",
             "test.user@domain.co.uk",
@@ -411,7 +411,7 @@ class TestFlextAuthHelpers:
             )
 
     def test_validate_email_invalidos(self: FlextAuth) -> None:
-        """Testa validação de emails inválidos."""
+        """Test validation of invalid emails."""
         emails_invalidos = [
             "",
             "invalid",
@@ -428,7 +428,7 @@ class TestFlextAuthHelpers:
             )
 
     def test_validate_password_strength_forte(self) -> None:
-        """Testa validação de senha forte."""
+        """Test validation of strong password."""
         password = "MinhaPasswordMuitoSegura123!@#"
         result = flext_auth_validate_password_strength(password)
 
@@ -444,7 +444,7 @@ class TestFlextAuthHelpers:
             raise AssertionError(f"Expected {0}, got {len(result['feedback'])}")
 
     def test_validate_password_strength_fraca(self) -> None:
-        """Testa validação de senha fraca."""
+        """Test validation of weak password."""
         password = "123"
         result = flext_auth_validate_password_strength(password)
 
@@ -454,7 +454,7 @@ class TestFlextAuthHelpers:
         assert len(result["feedback"]) > 0  # Deve ter sugestões
 
     def test_create_secure_session(self) -> None:
-        """Testa criação de sessão segura."""
+        """Test creation of secure session."""
         session = flext_auth_create_secure_session("user123", "joao", "REDACTED_LDAP_BIND_PASSWORD", 48)
 
         if session["user_id"] != "user123":
@@ -474,7 +474,7 @@ class TestFlextAuthHelpers:
         assert expires > created
 
     def test_middleware_creator(self) -> None:
-        """Testa criação de middleware."""
+        """Test creation of middleware."""
         auth = FlextAuth()
         middleware = flext_auth_middleware_factory(auth)
 
@@ -488,8 +488,7 @@ class TestFlextAuthCompatibilidade:
     """Testes para compatibilidade e warnings."""
 
     def test_deprecated_classes_emit_warnings(self) -> None:
-        """Testa se classes depreciadas emitem warnings."""
-
+        """Test if deprecated classes emit warnings."""
         with pytest.warns(DeprecationWarning, match="FlextAuthUser is deprecated"):
             user = FlextAuthUser(
                 id="test",
@@ -507,7 +506,7 @@ class TestFlextAuthIntegracao:
 
     @pytest.mark.asyncio
     async def test_fluxo_completo_autenticacao(self) -> None:
-        """Testa fluxo completo: registro -> login -> validação -> logout."""
+        """Test complete flow: registration -> login -> validation -> logout."""
         auth = FlextAuth()
 
         # 1. Registro
@@ -541,7 +540,7 @@ class TestFlextAuthIntegracao:
 
     @pytest.mark.asyncio
     async def test_multiplos_usuarios_simultaneos(self) -> None:
-        """Testa múltiplos usuários simultâneos."""
+        """Test multiple simultaneous users."""
         auth = FlextAuth()
 
         # Registra múltiplos usuários
@@ -577,7 +576,7 @@ class TestFlextAuthIntegracao:
             assert logout_result.success
 
     def test_helpers_chain_workflow(self) -> None:
-        """Testa workflow com helpers encadeados."""
+        """Test workflow with chained helpers."""
         # 1. Validação de email
         email = "workflow@example.com"
         if not (flext_auth_validate_email(email)):
@@ -631,7 +630,7 @@ class TestFlextAuthPerformance:
     """Testes de performance para operações críticas."""
 
     def test_hash_password_performance(self, benchmark: Callable) -> None:
-        """Testa performance do hash de senha."""
+        """Test password hash performance."""
 
         def hash_operation() -> str:
             return flext_auth_hash_password("TestPassword123!", rounds=4)
@@ -640,7 +639,7 @@ class TestFlextAuthPerformance:
         assert result != ""
 
     def test_verify_password_performance(self, benchmark: Callable) -> None:
-        """Testa performance da verificação de senha."""
+        """Test password verification performance."""
         password = "TestPassword123!"
         hashed = flext_auth_hash_password(password, rounds=4)
 
@@ -652,7 +651,7 @@ class TestFlextAuthPerformance:
             raise AssertionError(f"Expected True, got {result}")
 
     def test_jwt_operations_performance(self, benchmark: Callable) -> None:
-        """Testa performance das operações JWT."""
+        """Test JWT operations performance."""
         payload = {"user_id": "perf123", "username": "perfuser"}
         secret = "performance-secret-key-123456789"
 

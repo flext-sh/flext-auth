@@ -35,7 +35,6 @@ from flext_core import FlextResult
 
 from flext_auth.auth_models import FlextSession, FlextSessionStatus
 
-
 # =============================================================================
 # SESSION REPOSITORY PATTERNS - Abstract data access
 # =============================================================================
@@ -150,7 +149,7 @@ class InMemorySessionRepository(SessionRepository):
 # =============================================================================
 
 __all__: list[str] = [
+    "InMemorySessionRepository",
     # Repository Patterns
     "SessionRepository",
-    "InMemorySessionRepository",
 ]

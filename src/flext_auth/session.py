@@ -89,7 +89,7 @@ from datetime import UTC, datetime
 
 from flext_core import FlextResult
 
-from flext_auth.domain.entities import FlextSession, FlextSessionStatus
+from flext_auth.domain_entities import FlextSession, FlextSessionStatus
 
 
 class SessionRepository(ABC):
@@ -256,11 +256,11 @@ class InMemorySessionRepository(SessionRepository):
         try:
             session = self._sessions.get(session_id)
             if not session:
-                return FlextResult.ok(False)
+                return FlextResult.ok(data=False)
 
             revoked_session = session.revoke()
             self._sessions[session_id] = revoked_session
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Failed to revoke session: {e}")
 
@@ -313,7 +313,7 @@ class InMemorySessionRepository(SessionRepository):
         try:
             session = self._sessions.pop(session_id, None)
             if not session:
-                return FlextResult.ok(False)
+                return FlextResult.ok(data=False)
 
             # Remove from user sessions index
             if (
@@ -322,7 +322,7 @@ class InMemorySessionRepository(SessionRepository):
             ):
                 self._user_sessions[session.user_id].remove(session_id)
 
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Failed to delete session: {e}")
 
