@@ -109,7 +109,8 @@ class TestFlextAuthEnhancedABI:
 
     @pytest.mark.asyncio
     async def test_register_validated_without_password_check(
-        self, auth: FlextAuth,
+        self,
+        auth: FlextAuth,
     ) -> None:
         """Test register_validated without password strength check."""
         result = await auth.register_validated(
@@ -152,7 +153,8 @@ class TestFlextAuthEnhancedABI:
 
     @pytest.mark.asyncio
     async def test_login_and_validate_invalid_credentials(
-        self, auth: FlextAuth,
+        self,
+        auth: FlextAuth,
     ) -> None:
         """Test login_and_validate with invalid credentials."""
         result = await auth.login_and_validate("nonexistent", "wrongpassword")
@@ -432,7 +434,8 @@ class TestFlextAuthBatchOperations:
 
     @pytest.mark.asyncio
     async def test_batch_register_multiple_validation_off(
-        self, auth: FlextAuth,
+        self,
+        auth: FlextAuth,
     ) -> None:
         """Test batch registration without validation."""
         batch_ops = flext_auth_batch_operations(auth)
@@ -566,7 +569,9 @@ class TestIntegrationAdvanced:
         )
         payload = {"user_id": "advanced123", "username": "advanced", "role": "REDACTED_LDAP_BIND_PASSWORD"}
         token_result = flext_auth_generate_jwt(
-            payload, secret=secret, expires_minutes=120,
+            payload,
+            secret=secret,
+            expires_minutes=120,
         )
         assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data

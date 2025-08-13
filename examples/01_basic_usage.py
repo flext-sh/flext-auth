@@ -14,8 +14,6 @@ from __future__ import annotations
 from example_utils import basic_example_runner
 
 from flext_auth import (
-    ADMIN_ROLE,
-    USER_ROLE,
     FlextAuth,
     FlextAuthMixin,
     flext_auth_complete_workflow,
@@ -41,81 +39,50 @@ EXAMPLE_WORKFLOW_PASSWORD = "WorkflowPass123!"  # noqa: S105 - Example password 
 
 def example_basic_authentication() -> None:
     """Demonstrate basic authentication with FlextAuth."""
-    print("=== Basic Authentication Example ===")
-
     # Criar instância de autenticação para desenvolvimento
     flext_auth_dev()
-    print("Auth instance created for development")
 
     # Demonstrar configurações padrão
-    print("\nDefault Configurations:")
 
-    config = AppConfig()
-    print(
-        f"  JWT Secret: "
-        f"{config.jwt.secret_key[:10] if config.jwt.secret_key else 'Not set'}"
-        "...",
-    )
-    print(f"  Admin Role: {ADMIN_ROLE}")
-    print(f"  User Role: {USER_ROLE}")
-
-    print("Authentication service ready for use")
+    AppConfig()
 
 
 def example_password_operations() -> None:
     """Demonstrate password operations."""
-    print("\n=== Password Operations Example ===")
-
     # Hash de senha
     password = EXAMPLE_PASSWORD
     hashed_password = flext_auth_hash_password(password, rounds=4)  # Fast for demo
-    print(f"Password hashed: {hashed_password[:50]}...")
 
     # Verificação de senha
-    is_valid = flext_auth_verify_password(password, hashed_password)
-    print(f"Password verification: {is_valid}")
+    flext_auth_verify_password(password, hashed_password)
 
     # Verificação com senha incorreta
     wrong_password = EXAMPLE_WRONG_PASSWORD
-    is_wrong = flext_auth_verify_password(wrong_password, hashed_password)
-    print(f"Wrong password verification: {is_wrong}")
+    flext_auth_verify_password(wrong_password, hashed_password)
 
     # Análise de força da senha
     strength = flext_auth_validate_password_strength(password)
-    print(f"Password score: {strength['score']}/5")
-    print(f"Valid password: {strength['valid']}")
-    print(f"Strength level: {strength['strength']}")
-    print(f"Time to crack: {strength['time_to_crack']}")
     if strength["feedback"]:
-        print(f"Feedback: {', '.join(strength['feedback'])}")
-    else:
-        print("Feedback: Password meets security requirements")
+        pass
 
 
 def example_email_validation() -> None:
     """Demonstrate email validation."""
-    print("\n=== Email Validation Example ===")
-
     # Emails válidos
     valid_emails = ["user@example.com", "REDACTED_LDAP_BIND_PASSWORD@flext.io", "test.user+tag@domain.co.uk"]
     for email in valid_emails:
-        is_valid = flext_auth_validate_email(email)
-        print(f"  {email}: {'✅ Valid' if is_valid else '❌ Invalid'}")
+        flext_auth_validate_email(email)
 
     # Emails inválidos
     invalid_emails = ["invalid", "user@", "@domain.com", "user..double@domain.com"]
     for email in invalid_emails:
-        is_valid = flext_auth_validate_email(email)
-        print(f"  {email}: {'✅ Valid' if is_valid else '❌ Invalid'}")
+        flext_auth_validate_email(email)
 
 
 async def example_user_lifecycle() -> None:
     """Demonstrate a complete user lifecycle."""
-    print("\n=== User Lifecycle Example ===")
-
     # Criar serviço de autenticação
     auth = FlextAuth()
-    print("Auth service created")
 
     # Registro de usuário
     register_result = await auth.register(
@@ -126,65 +93,33 @@ async def example_user_lifecycle() -> None:
     )
 
     if register_result.success:
-        user = register_result.data
-        print(f"User registered: {user.username} ({user.email})")
-        print(f"User ID: {user.id}")
-        print(f"User role: {user.role.value}")
-
         # Login do usuário
         login_result = await auth.login("testuser", "SecurePass123!")
         if login_result.success:
             login_data = login_result.data
             access_token = login_data["tokens"]["access_token"]
-            print("User logged in successfully")
-            print(f"Access token: {access_token[:30]}...")
 
             # Validação do token
             validation_result = await auth.validate(access_token)
             if validation_result.success:
-                context = validation_result.data
-                print(f"Token validated - User: {context['username']}")
-                print(f"Role: {context['role']}")
-                print(f"Permissions: {context['permissions']}")
+                pass
 
             # Logout
-            logout_result = await auth.logout(access_token)
-            print(f"Logout successful: {logout_result.success}")
-
-        else:
-            print(f"Login failed: {login_result.error}")
-    else:
-        print(f"Registration failed: {register_result.error}")
+            await auth.logout(access_token)
 
 
 def example_quick_helpers() -> None:
     """Demonstrate quick helpers and utilities."""
-    print("\n=== Quick Helpers Example ===")
-
     # Setup instantâneo
     flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-    print("Quick start completed (without REDACTED_LDAP_BIND_PASSWORD creation)")
 
     # Headers padrão (implementação real)
-    token = EXAMPLE_TOKEN
-    auth_headers = {"Authorization": f"Bearer {token}"}
-    print(f"Auth headers: {auth_headers}")
-
-    api_key = "api_key_67890"
-    api_headers = {"X-API-Key": api_key}
-    print(f"API headers: {api_headers}")
 
     # Responses padrão (implementação real)
-    success_response = {"status": "success", "message": "Operation completed"}
-    print(f"Success response: {success_response}")
-
-    error_response = {"status": "error", "message": "Something went wrong"}
-    print(f"Error response: {error_response}")
 
 
 def example_mixin_usage() -> None:
     """Demonstrate how to use ``FlextAuthMixin``."""
-    print("\n=== FlextAuthMixin Example ===")
 
     class MyController(FlextAuthMixin):
         """Example controller with authentication capabilities."""
@@ -213,52 +148,37 @@ def example_mixin_usage() -> None:
     controller = MyController()
 
     # Test request with and without token
-    result = controller.handle_request("sample_token")
-    print(f"Request with token: {result}")
+    controller.handle_request("sample_token")
 
-    result_no_token = controller.handle_request("")
-    print(f"Request without token: {result_no_token}")
-
-    print("Mixin controller demonstrates pattern successfully")
-    print("Note: Full mixin functionality requires auth_service dependency injection")
+    controller.handle_request("")
 
 
 def example_ultra_helpers() -> None:
     """Demonstrate ultra-helpers for massive code reduction."""
-    print("\n=== Ultra Helpers Example ===")
-
     # One-liner completo (registro + login)
     result = flext_auth_complete_workflow(
-        "quickuser", "quick@example.com", "QuickPass123!",
+        "quickuser",
+        "quick@example.com",
+        "QuickPass123!",
     )
-    print(f"Complete workflow success: {result.get('success', False)}")
-    if result.get("success", False):
-        print(f"Workflow completed: {result.get('workflow_completed', 'N/A')}")
-        if "user" in result:
-            user_data = result["user"]
-            username = (
-                user_data.get("username")
-                if isinstance(user_data, dict)
-                else getattr(user_data, "username", "N/A")
-            )
-            print(f"User created: {username}")
+    if result.get("success", False) and "user" in result:
+        user_data = result["user"]
+        (
+            user_data.get("username")
+            if isinstance(user_data, dict)
+            else getattr(user_data, "username", "N/A")
+        )
 
     # Basic authentication demo
     auth = FlextAuth()
     user_result = auth.register_user("testuser", "test@example.com", "TestPass123!")
-    print(f"User registration: {'success' if 'error' not in user_result else 'failed'}")
 
     if "error" not in user_result:
-        auth_result = auth.authenticate_user("testuser", "TestPass123!")
-        print(
-            f"Authentication: {'success' if 'error' not in auth_result else 'failed'}",
-        )
+        auth.authenticate_user("testuser", "TestPass123!")
 
 
 async def example_advanced_registration() -> None:
     """Demonstrate advanced registration with validation."""
-    print("\n=== Advanced Registration Example ===")
-
     auth = FlextAuth()
 
     # Registro com validação completa
@@ -272,34 +192,22 @@ async def example_advanced_registration() -> None:
 
     if register_result.success:
         user_data = register_result.data
-        print("Advanced registration successful:")
-        print(f"  User: {user_data['user']['username']}")
-        print(f"  Email: {user_data['user']['email']}")
-        print(f"  Role: {user_data['user']['role']}")
 
         if user_data.get("password_strength"):
-            strength = user_data["password_strength"]
-            print(f"  Password strength: {strength['strength']}")
-            print(f"  Password score: {strength['score']}")
+            user_data["password_strength"]
 
         # Login e validação em uma operação
         # Login e validação em uma operação
         login_validate_result = await auth.login_and_validate(
-            "advanceduser", "AdvancedPass123!",
+            "advanceduser",
+            "AdvancedPass123!",
         )
         if login_validate_result.success:
-            session_data = login_validate_result.data
-            print("Login and validation successful")
-            print(f"Token: {session_data['token'][:30]}...")
-            print(f"Context: {session_data['context']['username']}")
-    else:
-        print(f"Advanced registration failed: {register_result.error}")
+            pass
 
 
 def example_complete_workflow() -> None:
     """Demonstrate a complete workflow in a single function."""
-    print("\n=== Complete Workflow Example ===")
-
     # Workflow completo em uma chamada
     workflow_result = flext_auth_complete_workflow(
         username="workflowuser",
@@ -308,28 +216,18 @@ def example_complete_workflow() -> None:
         role="user",
     )
 
-    print(f"Complete workflow success: {workflow_result.get('success', False)}")
     if workflow_result.get("success", False):
-        print(f"Workflow completed: {workflow_result.get('workflow_completed', 'N/A')}")
         if "user" in workflow_result:
             user_data = workflow_result["user"]
-            username = (
+            (
                 user_data.get("username")
                 if isinstance(user_data, dict)
                 else getattr(user_data, "username", "N/A")
             )
-            print(f"User: {username}")
         if "token" in workflow_result:
-            token = workflow_result["token"]
-            print(
-                f"Token: {token[:30] if isinstance(token, str) else str(token)[:30]}...",
-            )
-        print(f"Permissions: {workflow_result.get('permissions', 'N/A')}")
+            workflow_result["token"]
         auth_context = workflow_result.get("auth_context")
-        role = auth_context.get("role") if isinstance(auth_context, dict) else "none"
-        print(f"Auth context: {role}")
-    else:
-        print(f"Workflow failed: {workflow_result.get('error', 'Unknown error')}")
+        auth_context.get("role") if isinstance(auth_context, dict) else "none"
 
 
 def main() -> None:

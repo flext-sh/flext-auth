@@ -611,7 +611,7 @@ class FlextBaseToken(FlextEntity):
         """Template Method: validates common rules + specific rules."""
         # Validate common rules (DRY principle)
         common_validation = self._validate_common_rules()
-        if not common_validation.success:
+        if not common_validation.is_success:
             return common_validation
 
         # Template Method: delegate specific validation to subclasses

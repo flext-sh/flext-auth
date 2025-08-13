@@ -191,7 +191,9 @@ class TestFlextResultPattern:
             ),
             lambda: flext_auth_validate_jwt("invalid_token"),  # This should fail
             lambda: flext_auth_complete_workflow(
-                "testuser", "test@example.com", "TestPass123!",
+                "testuser",
+                "test@example.com",
+                "TestPass123!",
             ),
         ]
 

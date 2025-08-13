@@ -51,8 +51,6 @@ EXAMPLE_PRODUCTION_ADMIN_PASSWORD = "ProductionAdminPass123!@#"  # noqa: S105 - 
 
 def example_advanced_configuration() -> None:
     """Exemplo: Configuração avançada personalizada."""
-    print("=== Advanced Configuration Example ===")
-
     # Configuração personalizada para produção (campos válidos)
     custom_config = FlextAuthConfig(
         bcrypt_rounds=14,  # Produção: mais seguro
@@ -64,23 +62,12 @@ def example_advanced_configuration() -> None:
         environment="production",
     )
 
-    print("Advanced Configuration Created:")
-    print(f"  Environment: {custom_config.environment}")
-    print(f"  Debug Mode: {custom_config.debug}")
-    print(f"  Bcrypt Rounds: {custom_config.bcrypt_rounds}")
-    print(f"  Max Login Attempts: {custom_config.max_login_attempts}")
-    print(f"  Session Timeout: {custom_config.session_timeout_hours} hours")
-    print(f"  Max Concurrent Sessions: {custom_config.max_concurrent_sessions}")
-
     # Criar instância com configuração personalizada
     FlextAuth(config=custom_config.model_dump())
-    print("Production auth instance created with advanced configuration")
 
 
 def example_jwt_operations() -> None:
     """Exemplo: Operações avançadas com JWT."""
-    print("\n=== JWT Operations Example ===")
-
     # Payload personalizado
     user_payload = {
         "user_id": "user_12345",
@@ -94,11 +81,12 @@ def example_jwt_operations() -> None:
     # Gerar JWT
     secret = EXAMPLE_JWT_SECRET
     token_result = flext_auth_generate_jwt(
-        user_payload, secret=secret, expires_minutes=60,
+        user_payload,
+        secret=secret,
+        expires_minutes=60,
     )
     if token_result.success:
         token = token_result.data
-        print(f"JWT Generated: {token[:50]}...")
 
         # Decodificar JWT
         decoded = flext_auth_decode_jwt(token, secret)
@@ -107,32 +95,20 @@ def example_jwt_operations() -> None:
             pass
         else:
             decoded = None
-            print("JWT decode failed")
     else:
         token = None
         decoded = None
-        print(f"JWT generation failed: {token_result.error}")
     if decoded:
-        print("JWT Decoded successfully:")
-        print(f"  User ID: {decoded['user_id']}")
-        print(f"  Username: {decoded['username']}")
-        print(f"  Role: {decoded['role']}")
-        print(f"  Session ID: {decoded['session_id']}")
-        print(f"  Expires: {decoded['expires']}")
+        pass
 
     # Extrair contexto completo
     context = flext_auth_extract_user_context(token, secret)
     if context:
-        print("Complete Context Extracted:")
-        print(f"  Token Type: {context['token_type']}")
-        print(f"  User: {context['username']}")
-        print(f"  Role: {context['role']}")
+        pass
 
 
 def example_api_key_management() -> None:
     """Exemplo: Gerenciamento de API keys."""
-    print("\n=== API Key Management Example ===")
-
     # Criar API key para usuário
     user_id = "api_user_12345"
     api_key = flext_auth_create_api_key(
@@ -141,7 +117,6 @@ def example_api_key_management() -> None:
         expires_days=90,  # 3 meses
         secret=EXAMPLE_API_SECRET,
     )
-    print(f"API Key Created: {api_key[:50]}...")
 
     # Validar API key
     validation_result = flext_auth_validate_api_key(
@@ -149,30 +124,23 @@ def example_api_key_management() -> None:
         "api-secret-key-for-validation-256-bits-minimum-length",
     )
     if validation_result:
-        print("API Key Validation:")
-        print(f"  User ID: {validation_result['user_id']}")
-        print(f"  Scope: {validation_result['scope']}")
-        print(f"  Created: {validation_result['created_at']}")
+        pass
 
     # Service token para comunicação serviço-a-serviço
-    service_token = flext_auth_create_service_token(
+    flext_auth_create_service_token(
         service_name="data-processor",
         permissions=["read_data", "write_logs", "access_cache"],
         expires_hours=48,
         secret=EXAMPLE_SERVICE_SECRET,
     )
-    print(f"Service Token Created: {service_token[:50]}...")
 
 
 def example_role_permission_system() -> None:
     """Exemplo: Sistema de roles e permissões."""
-    print("\n=== Role & Permission System Example ===")
-
     # Criar hierarquia de roles
     role_hierarchy = flext_auth_create_role_hierarchy()
-    print("Role Hierarchy Created:")
-    for role, permissions in role_hierarchy.items():
-        print(f"  {role}: {permissions}")
+    for role in role_hierarchy:
+        pass
 
     # Validar permissões para diferentes roles
     test_cases = [
@@ -183,50 +151,36 @@ def example_role_permission_system() -> None:
         ("guest", "read_public"),
     ]
 
-    print("\nPermission Validation Tests:")
     for role, permission in test_cases:
-        has_permission = flext_auth_validate_permissions(
-            role, permission, role_hierarchy,
+        flext_auth_validate_permissions(
+            role,
+            permission,
+            role_hierarchy,
         )
-        status = "✅ Allowed" if has_permission else "❌ Denied"
-        print(f"  {role} -> {permission}: {status}")
 
 
 def example_secure_sessions() -> None:
     """Exemplo: Sessões seguras avançadas."""
-    print("\n=== Secure Sessions Example ===")
-
     # Criar sessão segura básica
-    basic_session = flext_auth_create_secure_session(
+    flext_auth_create_secure_session(
         user_id="secure_user_123",
         username="secure_user",
         role=MODERATOR_ROLE,
         expires_hours=12,
     )
-    print("Basic Secure Session:")
-    print(f"  Session ID: {basic_session['session_id'][:16]}...")
-    print(f"  User: {basic_session['username']}")
-    print(f"  Role: {basic_session['role']}")
-    print(f"  Expires: {basic_session['expires_at']}")
 
     # Criar sessão com permissões incluídas
-    enhanced_session = flext_auth_create_secure_session(
+    flext_auth_create_secure_session(
         user_id="enhanced_user_456",
         username="enhanced_user",
         role=ADMIN_ROLE,
         expires_hours=6,
         include_permissions=True,
     )
-    print("\nEnhanced Session with Permissions:")
-    print(f"  User: {enhanced_session['username']}")
-    print(f"  Role: {enhanced_session['role']}")
-    print(f"  Permissions: {enhanced_session['permissions']}")
 
 
 def example_multi_factor_authentication() -> None:
     """Exemplo: Multi-factor authentication tokens."""
-    print("\n=== Multi-Factor Authentication Example ===")
-
     # Token MFA para TOTP
     totp_token = flext_auth_create_multi_factor_token(
         user_id="mfa_user_789",
@@ -234,16 +188,14 @@ def example_multi_factor_authentication() -> None:
         expires_minutes=5,  # Tokens MFA expiram rapidamente
         secret=EXAMPLE_MFA_TOTP_SECRET,
     )
-    print(f"TOTP MFA Token: {totp_token[:50]}...")
 
     # Token MFA para SMS
-    sms_token = flext_auth_create_multi_factor_token(
+    flext_auth_create_multi_factor_token(
         user_id="mfa_user_789",
         factor_type="sms",
         expires_minutes=10,
         secret=EXAMPLE_MFA_SMS_SECRET,
     )
-    print(f"SMS MFA Token: {sms_token[:50]}...")
 
     # Validar contexto de token MFA
     mfa_context = flext_auth_create_auth_context(
@@ -252,19 +204,17 @@ def example_multi_factor_authentication() -> None:
         include_permissions=False,
     )
     if mfa_context:
-        print("MFA Token Context:")
-        print(f"  Token Type: {mfa_context['token_type']}")
-        print(f"  User ID: {mfa_context.get('user_id', 'N/A')}")
+        pass
 
 
 def example_decorators() -> None:
     """Exemplo: Decoradores de autenticação."""
-    print("\n=== Authentication Decorators Example ===")
 
     # Função que requer autenticação
     @flext_auth_required(secret_key=EXAMPLE_TEST_SECRET)
     def protected_endpoint(
-        _request: dict[str, object], **kwargs: object,
+        _request: dict[str, object],
+        **kwargs: object,
     ) -> dict[str, object]:
         """Endpoint protegido que requer autenticação."""
         auth_context = kwargs.get("auth_context", {})
@@ -280,7 +230,8 @@ def example_decorators() -> None:
         secret_key=EXAMPLE_TEST_SECRET,
     )
     def REDACTED_LDAP_BIND_PASSWORD_endpoint(
-        _request: dict[str, object], **_kwargs: object,
+        _request: dict[str, object],
+        **_kwargs: object,
     ) -> dict[str, object]:
         """Endpoint que requer role de REDACTED_LDAP_BIND_PASSWORD."""
         return {"message": "Admin access granted", "REDACTED_LDAP_BIND_PASSWORD_only": True}
@@ -288,7 +239,8 @@ def example_decorators() -> None:
     # Função que requer permissão específica
     @flext_auth_permission_required("delete")
     def delete_endpoint(
-        _request: dict[str, object], **_kwargs: object,
+        _request: dict[str, object],
+        **_kwargs: object,
     ) -> dict[str, object]:
         """Endpoint que requer permissão de delete."""
         return {"message": "Delete permission granted"}
@@ -300,20 +252,18 @@ def example_decorators() -> None:
     }
 
     # Test protected endpoint (will fail due to invalid token)
-    result = protected_endpoint(mock_request)
-    print(f"Protected endpoint result: {result}")
+    protected_endpoint(mock_request)
 
     # Test REDACTED_LDAP_BIND_PASSWORD endpoint (will fail due to invalid token)
-    REDACTED_LDAP_BIND_PASSWORD_result = REDACTED_LDAP_BIND_PASSWORD_endpoint(mock_request)
-    print(f"Admin endpoint result: {REDACTED_LDAP_BIND_PASSWORD_result}")
+    REDACTED_LDAP_BIND_PASSWORD_endpoint(mock_request)
 
     # Test permission endpoint (will pass as it's just a demo)
-    perm_result = delete_endpoint(mock_request)
-    print(f"Permission endpoint result: {perm_result}")
+    delete_endpoint(mock_request)
 
 
 async def _handle_batch_registration(
-    batch_ops: object, users_data: list[dict[str, str]],
+    batch_ops: object,
+    users_data: list[dict[str, str]],
 ) -> bool:
     """Handle batch user registration."""
     batch_register_result = await batch_ops.register_multiple(
@@ -323,16 +273,15 @@ async def _handle_batch_registration(
 
     if batch_register_result.success:
         registered_users = batch_register_result.data
-        print(f"Batch Registration Successful: {len(registered_users)} users")
-        for user in registered_users:
-            print(f"  - {user['user']['username']} ({user['user']['role']})")
+        for _user in registered_users:
+            pass
         return True
-    print(f"Batch registration failed: {batch_register_result.error}")
     return False
 
 
 async def _handle_batch_sessions(
-    batch_ops: object, credentials: list[tuple[str, str]],
+    batch_ops: object,
+    credentials: list[tuple[str, str]],
 ) -> None:
     """Handle batch session creation and token validation."""
     batch_sessions_result = await batch_ops.create_multiple_sessions(
@@ -341,13 +290,11 @@ async def _handle_batch_sessions(
     )
 
     if not batch_sessions_result.success:
-        print(f"Batch sessions failed: {batch_sessions_result.error}")
         return
 
     session_data = batch_sessions_result.data
-    successful = session_data["successful"]
-    total = session_data["total"]
-    print(f"Batch Sessions Created: {successful}/{total}")
+    session_data["successful"]
+    session_data["total"]
 
     # Extract tokens for batch validation
     tokens = []
@@ -365,26 +312,19 @@ async def _validate_batch_tokens(batch_ops: object, tokens: list[str]) -> None:
     batch_validation_result = await batch_ops.validate_multiple_tokens(tokens)
 
     if not batch_validation_result.success:
-        print(f"Batch validation failed: {batch_validation_result.error}")
         return
 
     validation_data = batch_validation_result.data
     if isinstance(validation_data, dict):
-        valid_count = validation_data.get("valid_count", 0)
-        total_count = validation_data.get("total", len(tokens))
-        print(f"Batch Token Validation: {valid_count}/{total_count} valid")
+        validation_data.get("valid_count", 0)
+        validation_data.get("total", len(tokens))
     elif isinstance(validation_data, list):
-        valid_count = len([v for v in validation_data if v])
-        total_count = len(validation_data)
-        print(f"Batch Token Validation: {valid_count}/{total_count} valid")
-    else:
-        print(f"Batch validation succeeded with data: {validation_data}")
+        len([v for v in validation_data if v])
+        len(validation_data)
 
 
 async def example_batch_operations() -> None:
     """Exemplo: Operações em lote."""
-    print("\n=== Batch Operations Example ===")
-
     # Criar instância de auth
     auth = FlextAuth()
     batch_ops = flext_auth_batch_operations(auth)
@@ -427,11 +367,8 @@ async def example_batch_operations() -> None:
 
 async def example_advanced_user_management() -> None:
     """Exemplo: Gerenciamento avançado de usuários."""
-    print("\n=== Advanced User Management Example ===")
-
     # Configuração de produção
     auth = flext_auth_prod()
-    print("Production auth instance created")
 
     # Registro de usuário REDACTED_LDAP_BIND_PASSWORDistrador
     REDACTED_LDAP_BIND_PASSWORD_result = await auth.register_validated(
@@ -444,16 +381,11 @@ async def example_advanced_user_management() -> None:
 
     if REDACTED_LDAP_BIND_PASSWORD_result.success:
         REDACTED_LDAP_BIND_PASSWORD_data = REDACTED_LDAP_BIND_PASSWORD_result.data
-        print("Production Admin Created:")
-        print(f"  Username: {REDACTED_LDAP_BIND_PASSWORD_data['user']['username']}")
-        print(f"  Email: {REDACTED_LDAP_BIND_PASSWORD_data['user']['email']}")
-        print(f"  Role: {REDACTED_LDAP_BIND_PASSWORD_data['user']['role']}")
 
         if REDACTED_LDAP_BIND_PASSWORD_data.get("password_strength"):
             strength = REDACTED_LDAP_BIND_PASSWORD_data["password_strength"]
-            strength_level = strength["strength"]
-            strength_score = strength["score"]
-            print(f"  Password Strength: {strength_level} (score: {strength_score})")
+            strength["strength"]
+            strength["score"]
 
         # Sessão completa com dados do usuário
         session_result = await auth.create_user_session(
@@ -464,24 +396,12 @@ async def example_advanced_user_management() -> None:
 
         if session_result.success:
             session_data = session_result.data
-            print("Complete Session Created:")
-            print(f"  Token: {session_data['token'][:30]}...")
-            print(f"  Context: {session_data['context']['username']}")
-            print(f"  User Data Included: {'user' in session_data}")
-            print(f"  Expires: {session_data.get('expires_at', 'Unknown')}")
 
             # Refresh token test
             if "refresh_token" in session_data:
                 refresh_result = await auth.refresh(session_data["refresh_token"])
                 if refresh_result.success:
-                    print("Token refresh successful")
-                else:
-                    print(f"Token refresh failed: {refresh_result.error}")
-
-        else:
-            print(f"Session creation failed: {session_result.error}")
-    else:
-        print(f"Admin registration failed: {REDACTED_LDAP_BIND_PASSWORD_result.error}")
+                    pass
 
 
 def main() -> None:

@@ -45,7 +45,6 @@ import bcrypt
 import jwt
 from flext_core import FlextResult, FlextValidationError, get_logger
 
-from flext_auth.models import InMemoryUserRepository
 from flext_auth.auth_session import InMemorySessionRepository
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.domain_entities import (
@@ -62,6 +61,7 @@ from flext_auth.domain_value_objects import (
     FlextJWTClaims,
     FlextPlainPassword,
 )
+from flext_auth.models import InMemoryUserRepository
 
 # =============================================================================
 # CONSTANTS
@@ -305,7 +305,9 @@ class FlextPasswordService:
         try:
             # Convert FlextPlainPassword to string if needed
             password_str = (
-                password.value if isinstance(password, FlextPlainPassword) else str(password)
+                password.value
+                if isinstance(password, FlextPlainPassword)
+                else str(password)
             )
 
             # Use helper methods to analyze password

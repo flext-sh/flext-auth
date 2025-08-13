@@ -308,7 +308,9 @@ class TestFlextAuthHelpers:
         payload = {"user_id": "123", "username": "test"}
         secret = "custom-secret-key-12345678901234567890"
         token_result = flext_auth_generate_jwt(
-            payload, secret=secret, expires_minutes=60,
+            payload,
+            secret=secret,
+            expires_minutes=60,
         )
 
         assert token_result.success, f"JWT generation failed: {token_result.error}"

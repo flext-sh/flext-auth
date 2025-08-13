@@ -46,13 +46,15 @@ class TestUsername:
 
         # Test minimum length - Pydantic validation prevents object creation
         with pytest.raises(
-            ValidationError, match="String should have at least 3 characters",
+            ValidationError,
+            match="String should have at least 3 characters",
         ):
             FlextUsername(value="ab")
 
         # Test maximum length - Pydantic validation prevents object creation
         with pytest.raises(
-            ValidationError, match="String should have at most 50 characters",
+            ValidationError,
+            match="String should have at most 50 characters",
         ):
             FlextUsername(value="a" * 51)
 
@@ -97,13 +99,15 @@ class TestPlainPassword:
 
         # Test minimum length - Pydantic validation prevents object creation
         with pytest.raises(
-            ValidationError, match="String should have at least 8 characters",
+            ValidationError,
+            match="String should have at least 8 characters",
         ):
             FlextPlainPassword(value="Short1!")
 
         # Test maximum length - Pydantic validation prevents object creation
         with pytest.raises(
-            ValidationError, match="String should have at most 128 characters",
+            ValidationError,
+            match="String should have at most 128 characters",
         ):
             FlextPlainPassword(value="a" * 129)
 
@@ -123,7 +127,8 @@ class TestPlainPassword:
 
         # Test missing number - field validator prevents object creation
         with pytest.raises(
-            FlextValidationError, match="Password must contain at least one number",
+            FlextValidationError,
+            match="Password must contain at least one number",
         ):
             FlextPlainPassword(value="NoNumbers!")
 
@@ -208,7 +213,8 @@ class TestRefreshToken:
 
         # Test short token
         with pytest.raises(
-            ValueError, match="Refresh token must be at least 32 characters",
+            ValueError,
+            match="Refresh token must be at least 32 characters",
         ):
             FlextRefreshToken(value="short").validate_business_rules()
 

@@ -270,22 +270,26 @@ class TestSecurityConfig:
 
         # Invalid ranges should raise validation errors
         with pytest.raises(
-            ValidationError, match="Input should be greater than or equal to 1",
+            ValidationError,
+            match="Input should be greater than or equal to 1",
         ):
             SecurityConfig(max_failed_attempts=0)
 
         with pytest.raises(
-            ValidationError, match="Input should be less than or equal to 10",
+            ValidationError,
+            match="Input should be less than or equal to 10",
         ):
             SecurityConfig(max_failed_attempts=21)
 
         with pytest.raises(
-            ValidationError, match="Input should be greater than or equal to 1",
+            ValidationError,
+            match="Input should be greater than or equal to 1",
         ):
             SecurityConfig(lockout_duration_minutes=0)
 
         with pytest.raises(
-            ValidationError, match="Input should be greater than or equal to 1",
+            ValidationError,
+            match="Input should be greater than or equal to 1",
         ):
             SecurityConfig(session_expire_hours=0)
 

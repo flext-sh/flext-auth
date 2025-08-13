@@ -288,23 +288,29 @@ class FlextAuthMixin:
     def create_session(self, username: str, password: str) -> dict[str, object]:
         # Simplified stub: returns empty dict on failure, else minimal structure
         try:
+
             async def _auth() -> FlextResult[dict[str, object]]:
                 if self._auth_service is None:
                     return FlextResult.fail("Authentication not initialized")
                 return await self._auth_service.authenticate_user(
-                    username, password, ip_address="127.0.0.1"
+                    username,
+                    password,
+                    ip_address="127.0.0.1",
                 )
 
             result = asyncio.run(_auth())
-            if not result.success or not result.data:
+            if not result.is_success or not result.data:
                 return {}
             # Auth service returns dict[str, object] in happy path
             data_obj = result.data
             data: dict[str, object] = data_obj if isinstance(data_obj, dict) else {}
+            # Defensive casts for nested structures
+            tokens = data.get("tokens", {})
+            tokens_dict: dict[str, object] = tokens if isinstance(tokens, dict) else {}
             return {
                 "user": data.get("user", {}),
                 "session": data.get("session", {}),
-                "token": data.get("tokens", {}).get("access_token", ""),
+                "token": tokens_dict.get("access_token", ""),
             }
         except Exception:
             return {}
@@ -325,7 +331,7 @@ class FlextAuthMixin:
 
 
 class _DefaultAuthWrapper:
-    """Minimal wrapper to satisfy tests that access controller._auth.*"""
+    """Minimal wrapper to satisfy tests that access controller._auth.*."""
 
     def __init__(self) -> None:
         # Provide a JWT service with default secret for generating tokens in tests
@@ -333,9 +339,14 @@ class _DefaultAuthWrapper:
         # Expose secret_key attribute for direct access in tests
         self.secret_key = DEFAULT_JWT_SECRET
 
-    async def register(self, username: str, email: str, password: str) -> FlextResult[bool]:
+    async def register(
+        self,
+        _username: str,
+        _email: str,
+        _password: str,
+    ) -> FlextResult[bool]:
         # Dummy success to allow tests that only check interface
-        return FlextResult.ok(True)
+        return FlextResult.ok(data=True)
 
     def check_permission(
         self,

@@ -140,7 +140,9 @@ class TestFlextAuthIntegration:
 
         # Test registration
         user_result = auth.register_user(
-            username="testuser", email="test@example.com", password="SecurePass123!",
+            username="testuser",
+            email="test@example.com",
+            password="SecurePass123!",
         )
 
         # Should return dict format for compatibility

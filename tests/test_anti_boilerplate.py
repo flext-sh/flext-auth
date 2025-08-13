@@ -451,7 +451,7 @@ class TestFlextAuthMixin:
         controller = TestController()
 
         # First register a user
-        import asyncio  # noqa: PLC0415
+        import asyncio
 
         try:
             loop = asyncio.get_event_loop()

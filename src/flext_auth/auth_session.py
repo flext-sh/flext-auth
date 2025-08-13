@@ -62,14 +62,24 @@ class SessionRepository(ABC):
     @abstractmethod
     def cleanup_expired_sessions(self) -> FlextResult[int]:
         """Clean up expired sessions."""
+
     # Compatibility async methods expected by service layer
-    async def get_by_id(self, session_id: str) -> FlextResult[FlextSession | None]:  # pragma: no cover - thin adapter
+    async def get_by_id(
+        self,
+        session_id: str,
+    ) -> FlextResult[FlextSession | None]:  # pragma: no cover - thin adapter
         return self.find_by_id(session_id)
 
-    async def get_by_user_id(self, user_id: str) -> FlextResult[list[FlextSession]]:  # pragma: no cover - thin adapter
+    async def get_by_user_id(
+        self,
+        user_id: str,
+    ) -> FlextResult[list[FlextSession]]:  # pragma: no cover - thin adapter
         return self.find_by_user_id(user_id)
 
-    async def revoke_all_user_sessions(self, user_id: str) -> FlextResult[int]:  # pragma: no cover - thin adapter
+    async def revoke_all_user_sessions(
+        self,
+        user_id: str,
+    ) -> FlextResult[int]:  # pragma: no cover - thin adapter
         return self.revoke_all_sessions_for_user(user_id)
 
 
@@ -131,7 +141,10 @@ class InMemorySessionRepository(SessionRepository):
             now = datetime.now(UTC)
             expired_sessions: list[str] = []
             for session_id, session in self._sessions.items():
-                if session.expires_at <= now or session.status == FlextSessionStatus.EXPIRED:
+                if (
+                    session.expires_at <= now
+                    or session.status == FlextSessionStatus.EXPIRED
+                ):
                     expired_sessions.append(session_id)
             for session_id in expired_sessions:
                 del self._sessions[session_id]

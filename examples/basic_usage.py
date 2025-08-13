@@ -29,7 +29,7 @@ async def exemplo_tradicional_vs_flext() -> None:
         # Validação em 1 linha
         validation = await auth.validate(access_token)
         if validation.success:
-            print("Token válido!")
+            pass
 
         # Logout em 1 linha
         await auth.logout(access_token)

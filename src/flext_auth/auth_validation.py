@@ -813,7 +813,8 @@ def validate_username(username: str) -> FlextResult[str]:
     """
     # Fallback to direct validation if field schema is not available
     if not FlextAuthFieldSchema.USERNAME or not hasattr(
-        FlextAuthFieldSchema.USERNAME, "validate_value",
+        FlextAuthFieldSchema.USERNAME,
+        "validate_value",
     ):
         # Use FlextAuthValidators as fallback
         validation_result = FlextAuthValidators.validate_username(username)
@@ -842,7 +843,8 @@ def validate_email(email: str) -> FlextResult[str]:
     """
     # Fallback to direct validation if field schema is not available
     if not FlextAuthFieldSchema.EMAIL or not hasattr(
-        FlextAuthFieldSchema.EMAIL, "validate_value",
+        FlextAuthFieldSchema.EMAIL,
+        "validate_value",
     ):
         # Use FlextAuthValidators as fallback
         validation_result = FlextAuthValidators.validate_email(email)
@@ -871,7 +873,8 @@ def validate_password(password: str) -> FlextResult[str]:
     """
     # Fallback to direct validation if field schema is not available
     if not FlextAuthFieldSchema.PASSWORD or not hasattr(
-        FlextAuthFieldSchema.PASSWORD, "validate_value",
+        FlextAuthFieldSchema.PASSWORD,
+        "validate_value",
     ):
         # Use FlextAuthValidators as fallback
         validation_result = FlextAuthValidators.validate_password(password)

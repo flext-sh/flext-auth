@@ -475,7 +475,7 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
         # Validate JWT token
         validation_result = self.jwt_service.verify_token(token)
         if not validation_result.success:
-            return FlextResult.fail("Token verification failed")
+            return FlextResult.fail("Token validation failed")
 
         claims = validation_result.data
         if not claims:
@@ -803,7 +803,7 @@ class FlextAuthService:
         # Verify JWT token
         verify_result = self.jwt_service.verify_token(token)
         if not verify_result.success:
-            return FlextResult.fail(f"Token verification failed: {verify_result.error}")
+            return FlextResult.fail("Token validation failed")
 
         claims = verify_result.data
         if not claims:
@@ -1095,7 +1095,7 @@ class FlextAuthService:
         """Attempt logout using session ID from valid token - SRP applied."""
         verify_result = self.jwt_service.verify_token(token)
         if not verify_result.success:
-            return FlextResult.fail("Token verification failed")
+            return FlextResult.fail("Token validation failed")
 
         claims = verify_result.data
         if not claims or not claims.session_id:
@@ -1874,7 +1874,7 @@ class FlextAuthService:
         # Verify refresh token
         verify_result = self.jwt_service.verify_token(refresh_token)
         if not verify_result.success:
-            return FlextResult.fail(f"Token verification failed: {verify_result.error}")
+            return FlextResult.fail("Token validation failed")
 
         claims = verify_result.data
         if not claims:

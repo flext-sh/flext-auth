@@ -76,7 +76,12 @@ except Exception as e:
         )
 
         # Run the test
-        async def _run(cmd_list: list[str], env: dict[str, str], timeout: int = 30) -> tuple[int, str, str]:
+        async def _run(
+            cmd_list: list[str],
+            env: dict[str, str],
+            *,
+            timeout_seconds: int = 30,
+        ) -> tuple[int, str, str]:
             process = await asyncio.create_subprocess_exec(
                 *cmd_list,
                 env=env,
@@ -84,14 +89,17 @@ except Exception as e:
                 stderr=asyncio.subprocess.PIPE,
             )
             try:
-                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
+                async with asyncio.timeout(timeout_seconds):
+                    stdout, stderr = await process.communicate()
             except TimeoutError:
                 process.kill()
                 await process.communicate()
                 return 124, "", "Timeout"
             return process.returncode, stdout.decode(), stderr.decode()
 
-        rc, out, err = asyncio.run(_run([sys.executable, temp_file], env, timeout=30))
+        rc, _out, err = asyncio.run(
+            _run([sys.executable, temp_file], env, timeout_seconds=30),
+        )
 
         if err:
             pass

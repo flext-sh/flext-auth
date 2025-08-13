@@ -37,9 +37,7 @@ def run_example_suite(
 
     async def _run_suite() -> None:
         # Print header with dynamic width based on title
-        header_width = max(50, len(title) + 10)
-        print(title)
-        print("=" * header_width)
+        max(50, len(title) + 10)
 
         try:
             # Run synchronous examples
@@ -52,14 +50,10 @@ def run_example_suite(
                     await async_example_func()
 
             # Print success message
-            print("\n" + "=" * header_width)
             if success_message:
-                print(f"✅ {success_message}")
-            else:
-                print("✅ ALL EXAMPLES COMPLETED SUCCESSFULLY!")
+                pass
 
-        except (RuntimeError, ValueError, TypeError) as e:
-            print(f"\n❌ ERROR in examples: {e}")
+        except (RuntimeError, ValueError, TypeError):
             raise
 
     # Run the async suite
@@ -67,9 +61,11 @@ def run_example_suite(
 
 
 def create_example_runner(
-    title: str, success_message: str | None = None,
+    title: str,
+    success_message: str | None = None,
 ) -> Callable[
-    [list[Callable[[], None]], list[Callable[[], Awaitable[None]]] | None], None,
+    [list[Callable[[], None]], list[Callable[[], Awaitable[None]]] | None],
+    None,
 ]:
     """Create a reusable example runner function.
 

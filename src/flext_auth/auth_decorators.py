@@ -250,7 +250,12 @@ def _extract_request_from_args(
     return kwargs.get("request")
 
 
-def _handle_authentication_error(error_response: object, message: str, *, status: int | None = None) -> object:
+def _handle_authentication_error(
+    error_response: object,
+    message: str,
+    *,
+    status: int | None = None,
+) -> object:
     """Handle authentication error with custom or default response."""
     if error_response is not None:
         return error_response
@@ -319,7 +324,11 @@ def _execute_authentication_pipeline(
         )
         if not validation_result or not validation_result.success:
             error_msg = (
-                ("Invalid token" if (validation_result and validation_result.error) else None)
+                (
+                    "Invalid token"
+                    if (validation_result and validation_result.error)
+                    else None
+                )
                 if validation_result
                 else "Token validation failed"
             )
@@ -333,7 +342,7 @@ def _execute_authentication_pipeline(
         _add_user_data_to_kwargs(kwargs, validation_result, get_user=config.get_user)
         return func(*args, **kwargs)
 
-    except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
+    except (RuntimeError, ValueError, TypeError, KeyError, AttributeError):
         return _handle_authentication_error(
             config.error_response,
             "Invalid token",
@@ -660,26 +669,33 @@ class FlextAuthMixin:
 
     def create_session(self, username: str, password: str) -> dict[str, object]:
         try:
+
             async def _run() -> FlextResult[dict[str, object]]:
                 if self._auth_service is None:
                     return FlextResult.fail("Authentication not initialized")
-                auth_res = await self._auth_service.authenticate_user(
-                    username, password, ip_address="127.0.0.1"
+                svc_res = await self._auth_service.authenticate_user(
+                    username,
+                    password,
+                    ip_address="127.0.0.1",
                 )
-                # Ensure return type is FlextResult[dict[str, object]]
-                if auth_res.success and isinstance(auth_res.data, dict):
-                    return FlextResult.ok(auth_res.data)
-                return FlextResult.fail(auth_res.error or "Authentication failed")
+                if not svc_res.is_success:
+                    return FlextResult.fail(svc_res.error or "Authentication failed")
+                # Normalize successful response to a dict for downstream usage
+                return FlextResult.ok(
+                    {} if not isinstance(svc_res.data, dict) else {**svc_res.data},
+                )
 
             result = asyncio.run(_run())
-            if not result.success or not result.data:
+            if not result.is_success or not result.data:
                 return {}
             data_obj = result.data
             data: dict[str, object] = data_obj if isinstance(data_obj, dict) else {}
+            tokens = data.get("tokens", {})
+            tokens_dict: dict[str, object] = tokens if isinstance(tokens, dict) else {}
             return {
                 "user": data.get("user", {}),
                 "session": data.get("session", {}),
-                "token": data.get("tokens", {}).get("access_token", ""),
+                "token": tokens_dict.get("access_token", ""),
             }
         except Exception:
             return {}
@@ -794,9 +810,14 @@ class _AuthCompat:
         self._jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
         self.secret_key = DEFAULT_JWT_SECRET
 
-    async def register(self, username: str, email: str, password: str) -> FlextResult[bool]:
+    async def register(
+        self,
+        _username: str,
+        _email: str,
+        _password: str,
+    ) -> FlextResult[bool]:
         # Interface stub to satisfy tests that call controller._auth.register
-        return FlextResult.ok(True)
+        return FlextResult.ok(data=True)
 
 
 class FlextAuthUserMixin:
@@ -978,7 +999,9 @@ class FlextAuthSessionMixin:
         session = {
             "session_id": session_id,
             "user_id": getattr(self, "id", getattr(self, "user_id", "unknown")),
-            "created_at": getattr(self, "_session", {}).get("created_at", current_time) if getattr(self, "_session", None) else current_time,
+            "created_at": getattr(self, "_session", {}).get("created_at", current_time)
+            if getattr(self, "_session", None)
+            else current_time,
             "expires_at": "2025-01-09T00:00:00Z",
             "last_activity": current_time,
             "updated_at": current_time,

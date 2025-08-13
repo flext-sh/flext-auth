@@ -139,9 +139,6 @@ class FlextAuthValidators:
     @staticmethod
     def validate_email(email: TEmail) -> FlextResult[None]:
         """Validate email using flext-core validators."""
-        # Use inline email validation since FlextValidators.is_email is not available
-        import re
-
         email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         if not re.match(email_pattern, email):
             return FlextResult.fail("Invalid email format")

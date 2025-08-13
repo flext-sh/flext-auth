@@ -193,7 +193,10 @@ def create_auth_service_dependencies(
     jwt_secret: str | None = None,
 ) -> FlextAuthServiceDependencies:
     """Create authentication service dependencies."""
-    effective_secret = jwt_secret or os.getenv("FLEXT_JWT_SECRET", secrets.token_urlsafe(32))
+    effective_secret = jwt_secret or os.getenv(
+        "FLEXT_JWT_SECRET",
+        secrets.token_urlsafe(32),
+    )
     # Ensure non-None secret for strict typing
     nonnull_secret: str = effective_secret or secrets.token_urlsafe(32)
     config = FlextAuthServiceConfig(jwt_secret_key=nonnull_secret)

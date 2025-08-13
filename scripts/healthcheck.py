@@ -25,13 +25,10 @@ def main() -> int:
         ) as response:
             if response.status == HTTP_OK:
                 return 0
-            print(f"Health check failed with status: {response.status}")
             return 1
-    except urllib.error.URLError as e:
-        print(f"Health check failed: {e}")
+    except urllib.error.URLError:
         return 1
-    except (RuntimeError, ValueError, TypeError) as e:
-        print(f"Health check error: {e}")
+    except (RuntimeError, ValueError, TypeError):
         return 1
 
 

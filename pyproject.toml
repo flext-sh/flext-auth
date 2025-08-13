@@ -260,5 +260,53 @@ markers = [
 extend = "../.ruff-shared.toml"
 lint.isort.known-first-party = ["flext_auth"]
 
+[tool.ruff.lint.per-file-ignores]
+"**/__init__.py" = [
+    "E402",
+    "F401",
+    "I001",
+    "RUF022",
+]
+"**/tests/**" = [
+    "ANN",
+    "ARG",
+    "EM102",
+    "FBT003",
+    "PLR0912",
+    "PLR0915",
+    "PLR2004",
+    "PT011",
+    "S101",
+    "S103",
+    "S104",
+    "S105",
+    "S106",
+    "S107",
+    "S112",
+    "S603",
+    "TRY003",
+    "PLC0415",
+]
+"**/test_*.py" = [
+    "ANN",
+    "ARG",
+    "EM102",
+    "FBT003",
+    "PLR0912",
+    "PLR0915",
+    "PLR2004",
+    "PT011",
+    "S101",
+    "S103",
+    "S104",
+    "S105",
+    "S106",
+    "S107",
+    "S112",
+    "S603",
+    "TRY003",
+    "PLC0415",
+]
+
 [tool.vulture]
 extend = "../.vulture-shared.toml"

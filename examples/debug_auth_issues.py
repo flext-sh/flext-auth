@@ -24,97 +24,61 @@ from flext_auth.services.password_service import FlextPasswordService
 
 def debug_password_service() -> None:
     """Debug password hashing issue."""
-    print("🔍 DEBUG: Password Service")
-    print("-" * 30)
-
     password = "TestPassword123!"  # noqa: S105 - Example password for documentation
 
     # Test direct service
-    print("1. Direct FlextPasswordService:")
     service = FlextPasswordService(rounds=4)  # Fast for debugging
     hash_result = service.hash_password(password)
 
-    print(f"   Hash result success: {hash_result.success}")
     if hash_result.success and hash_result.data:
         hashed = str(hash_result.data)
-        print(f"   Hash length: {len(hashed)}")
-        print(f"   Hash preview: {hashed[:50]}...")
 
         # Test verification
-        verify_result = service.verify_password(password, hashed)
-        print(f"   Verify result success: {verify_result.success}")
-        print(f"   Verify result data: {verify_result.data}")
-    else:
-        print(f"   Hash error: {hash_result.error}")
+        service.verify_password(password, hashed)
 
     # Test helper functions
-    print("\n2. Helper functions:")
     try:
         helper_hash = flext_auth_hash_password(password, rounds=4)
-        print(f"   Helper hash length: {len(helper_hash)}")
-        print(f"   Helper hash preview: {helper_hash[:50]}...")
 
-        helper_verify = flext_auth_verify_password(password, helper_hash)
-        print(f"   Helper verification: {helper_verify}")
-    except Exception as e:
-        print(f"   Helper error: {e}")
+        flext_auth_verify_password(password, helper_hash)
+    except Exception:
+        pass
 
 
 def debug_jwt_service() -> None:
     """Debug JWT user_id issue."""
-    print("\n🔍 DEBUG: JWT Service")
-    print("-" * 30)
-
     payload = {"user_id": "test123", "username": "testuser", "role": "REDACTED_LDAP_BIND_PASSWORD"}
 
     # Test direct service
-    print("1. Direct FlextJWTService:")
     service = FlextJWTService(secret_key="test-secret")  # noqa: S106 - Example secret for debugging
 
     # Test access token generation
     access_result = service.generate_access_token(
-        user_id=payload["user_id"], username=payload["username"], role=payload["role"],
+        user_id=payload["user_id"],
+        username=payload["username"],
+        role=payload["role"],
     )
 
-    print(f"   Access token success: {access_result.success}")
     if access_result.success and access_result.data:
         token = access_result.data
-        print(f"   Token preview: {token[:50]}...")
 
         # Test verification
         verify_result = service.verify_token(token)
-        print(f"   Verify success: {verify_result.success}")
         if verify_result.success and verify_result.data:
-            claims = verify_result.data
-            print(f"   Claims type: {type(claims)}")
-            print(f"   Claims user_id: {getattr(claims, 'user_id', 'NOT_FOUND')}")
-            print(f"   Claims sub: {getattr(claims, 'sub', 'NOT_FOUND')}")
-            print(f"   Claims username: {getattr(claims, 'username', 'NOT_FOUND')}")
-        else:
-            print(f"   Verify error: {verify_result.error}")
-    else:
-        print(f"   Access token error: {access_result.error}")
+            pass
 
     # Test helper functions
-    print("\n2. Helper functions:")
     helper_token_result = flext_auth_generate_jwt(payload)
-    print(f"   Helper token success: {helper_token_result.success}")
     if helper_token_result.success and helper_token_result.data:
         helper_token = helper_token_result.data
-        print(f"   Helper token preview: {helper_token[:50]}...")
 
         helper_validate = flext_auth_validate_jwt(helper_token)
-        print(f"   Helper validate success: {helper_validate.success}")
         if helper_validate.success and helper_validate.data:
-            decoded = helper_validate.data
-            print(f"   Helper decoded: {decoded}")
+            pass
 
 
 def main() -> None:
     """Run debug diagnostics."""
-    print("🛠️  FLEXT-AUTH DEBUG DIAGNOSTICS")
-    print("=" * 50)
-
     debug_password_service()
     debug_jwt_service()
 
