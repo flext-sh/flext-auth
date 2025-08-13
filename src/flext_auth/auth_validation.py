@@ -64,7 +64,7 @@ class FlextFieldCore:
         self.default_value = default_value
 
     def validate_value(self, value: object) -> FlextResult[object]:
-        """Basic validation - always passes."""
+        """Perform basic validation that always passes."""
         return FlextResult.ok(value)
 
     def get_field_metadata(self) -> dict[str, object]:

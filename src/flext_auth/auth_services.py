@@ -938,7 +938,7 @@ class FlextAuthenticationService:
         self._deps = self._create_auth_service_dependencies()
 
     def _create_auth_service_dependencies(self) -> ServiceDependencies:
-        """Factory for creating service dependencies with strategies."""
+        """Create service dependencies with strategies."""
         user_repo = InMemoryUserRepository()
         session_repo = InMemorySessionRepository()
         password_service = FlextPasswordService()
@@ -1081,7 +1081,7 @@ class FlextAuthorizationService:
         self._deps = self._create_auth_service_dependencies()
 
     def _create_auth_service_dependencies(self) -> ServiceDependencies:
-        """Factory for creating service dependencies with strategies."""
+        """Create service dependencies with strategies."""
         user_repo = InMemoryUserRepository()
         session_repo = InMemorySessionRepository()
         password_service = FlextPasswordService()
@@ -1193,7 +1193,7 @@ class FlextSessionService:
         self._deps = self._create_auth_service_dependencies()
 
     def _create_auth_service_dependencies(self) -> ServiceDependencies:
-        """Factory for creating service dependencies with strategies."""
+        """Create service dependencies with strategies."""
         user_repo = InMemoryUserRepository()
         session_repo = InMemorySessionRepository()
         password_service = FlextPasswordService()

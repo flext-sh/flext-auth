@@ -123,7 +123,7 @@ def demonstrate_clean_architecture() -> None:
         id="user-123",
         username="domainuser",
         email="domain@example.com",
-        password_hash="hashed_password",
+        password_hash="hashed_password",  # noqa: S106 - Example hashed password for documentation
         role=FlextUserRole.USER,
     )
 
@@ -157,7 +157,7 @@ def demonstrate_complete_workflow() -> None:
     # Test user registration
     username = "testuser"
     email = "testuser@example.com"
-    password = "TestPassword123!"
+    password = "TestPassword123!"  # noqa: S105 - Example password for documentation
 
     print(f"\n📝 Registering user: {username}")
     reg_result = auth.register_user(username, email, password)
@@ -264,7 +264,8 @@ def show_refactoring_metrics() -> None:
             print(f"   ✅ Net reduction: {net_reduction:,} lines")
         else:
             net_addition = (current_lines + total_specialized) - original_lines
-            print(f"   ℹ️ Net addition: {net_addition:,} lines (improved structure)")
+            # Replace ambiguous unicode info symbol for lint compliance
+            print(f"   Info - Net addition: {net_addition:,} lines (improved structure)")
 
 
 def main() -> None:

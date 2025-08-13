@@ -346,7 +346,7 @@ def flext_auth_required(
     get_user: bool = True,
     error_response: object = None,
 ) -> DecoratorCallable:
-    """Authentication decorator with flexible configuration.
+    """Authenticate requests with flexible configuration.
 
     Args:
         auth_service: FlextAuthService instance for validation

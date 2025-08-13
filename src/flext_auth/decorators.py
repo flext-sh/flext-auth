@@ -372,7 +372,7 @@ def flext_auth_required(
     get_user: bool = True,
     error_response: object = None,
 ) -> DecoratorCallable:
-    """Authentication decorator with flexible configuration.
+    """Authenticate requests with flexible configuration.
 
     SOLID REFACTORING: Reduced from 6 parameters to Parameter Object Pattern.
     Reduced from 6 returns to Railway-Oriented Programming with 2 returns.

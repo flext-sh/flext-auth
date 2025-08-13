@@ -69,6 +69,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, cast
+from flext_auth.typings import FlextTypes
 
 from flext_core import (
     FlextAlreadyExistsError,
@@ -267,7 +268,7 @@ class ResultValidator:
 
     @staticmethod
     def validate_or_fail(*, condition: bool, error_message: str) -> FlextResult[None]:
-        """Simple boolean validation with FlextResult."""
+        """Validate a boolean condition returning FlextResult."""
         if not condition:
             return FlextResult.fail(error_message)
         return FlextResult.ok(None)
@@ -289,6 +290,7 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
         session_repo: SessionRepository,
         config: FlextAuthServiceConfig,
     ) -> None:
+        """Initialize dependencies for authentication strategy."""
         self.user_repo = user_repo
         self.password_service = password_service
         self.jwt_service = jwt_service
@@ -423,6 +425,7 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
         user_repo: UserRepository,
         session_repo: SessionRepository,
     ) -> None:
+        """Initialize dependencies for token management strategy."""
         self.jwt_service = jwt_service
         self.user_repo = user_repo
         self.session_repo = session_repo
@@ -518,6 +521,7 @@ class DefaultSessionManagementStrategy(SessionManagementStrategy):
         session_repo: SessionRepository,
         config: FlextAuthServiceConfig,
     ) -> None:
+        """Initialize dependencies for session management strategy."""
         self.session_repo = session_repo
         self.config = config
 
@@ -550,6 +554,7 @@ class DefaultUserManagementStrategy(UserManagementStrategy):
         user_repo: UserRepository,
         password_service: PasswordService,
     ) -> None:
+        """Initialize dependencies for user management strategy."""
         self.user_repo = user_repo
         self.password_service = password_service
 
@@ -703,7 +708,7 @@ class FlextAuthService:
         jwt_service: JWTService,
         config: FlextAuthServiceConfig | None = None,
     ) -> FlextAuthService:
-        """Factory method for backward compatibility."""
+        """Create service for backward compatibility."""
         dependencies = FlextAuthServiceDependencies(
             user_repository=user_repository,
             session_repository=session_repository,
@@ -856,7 +861,7 @@ class FlextAuthService:
         token: str,
         strategies: ValidationPipelineStrategies,
     ) -> FlextResult[SecurityContext | dict[str, str]]:
-        """Generic validation pipeline following Railway-Oriented Programming.
+        """Run validation pipeline following Railway-Oriented Programming.
 
         SOLID REFACTORING: Reduced from 6 returns to 2 returns using Railway pattern.
         Template Method Pattern: Defines the skeleton of validation pipeline.
@@ -963,7 +968,7 @@ class FlextAuthService:
         token: str,
         strategies: SecurityContextPipelineStrategies,
     ) -> FlextResult[SecurityContext]:
-        """Generic pipeline for SecurityContext creation."""
+        """Run pipeline for SecurityContext creation."""
         try:
             # Railway-Oriented Programming - reduces 6 returns to 2
             token_result = await self._validate_token_stage(token, strategies)
@@ -1000,7 +1005,7 @@ class FlextAuthService:
         token: str,
         strategies: TokenRefreshPipelineStrategies,
     ) -> FlextResult[dict[str, str]]:
-        """Generic pipeline for token refresh."""
+        """Run pipeline for token refresh."""
         try:
             # Railway-Oriented Programming - reduces 6 returns to 2
             token_result = await self._validate_token_stage(token, strategies)

@@ -39,14 +39,14 @@ from flext_auth import (
 
 # Example constants - not for production use
 # These are intentionally hardcoded for demonstration purposes only
-EXAMPLE_PRODUCTION_SECRET = "production-secret-key-super-secure-256-bits-minimum"
-EXAMPLE_JWT_SECRET = "my-super-secure-jwt-secret-key-256-bits-minimum-length-required"
-EXAMPLE_API_SECRET = "api-secret-key-for-validation-256-bits-minimum-length"
-EXAMPLE_SERVICE_SECRET = "service-to-service-secret-key-256-bits"
-EXAMPLE_MFA_TOTP_SECRET = "mfa-totp-secret-key-256-bits-minimum-length"
-EXAMPLE_MFA_SMS_SECRET = "mfa-sms-secret-key-256-bits-minimum-length"
-EXAMPLE_TEST_SECRET = "test-secret-key-256-bits-minimum-length"
-EXAMPLE_PRODUCTION_ADMIN_PASSWORD = "ProductionAdminPass123!@#"
+EXAMPLE_PRODUCTION_SECRET = "production-secret-key-super-secure-256-bits-minimum"  # noqa: S105 - Example secret for documentation
+EXAMPLE_JWT_SECRET = "my-super-secure-jwt-secret-key-256-bits-minimum-length-required"  # noqa: S105 - Example JWT secret for documentation
+EXAMPLE_API_SECRET = "api-secret-key-for-validation-256-bits-minimum-length"  # noqa: S105 - Example API secret for documentation
+EXAMPLE_SERVICE_SECRET = "service-to-service-secret-key-256-bits"  # noqa: S105 - Example service secret for documentation
+EXAMPLE_MFA_TOTP_SECRET = "mfa-totp-secret-key-256-bits-minimum-length"  # noqa: S105 - Example MFA TOTP secret for documentation
+EXAMPLE_MFA_SMS_SECRET = "mfa-sms-secret-key-256-bits-minimum-length"  # noqa: S105 - Example MFA SMS secret for documentation
+EXAMPLE_TEST_SECRET = "test-secret-key-256-bits-minimum-length"  # noqa: S105 - Example test secret for documentation
+EXAMPLE_PRODUCTION_ADMIN_PASSWORD = "ProductionAdminPass123!@#"  # noqa: S105 - Example REDACTED_LDAP_BIND_PASSWORD password for documentation
 
 
 def example_advanced_configuration() -> None:
@@ -312,7 +312,9 @@ def example_decorators() -> None:
     print(f"Permission endpoint result: {perm_result}")
 
 
-async def _handle_batch_registration(batch_ops, users_data) -> bool:
+async def _handle_batch_registration(
+    batch_ops: object, users_data: list[dict[str, str]]
+) -> bool:
     """Handle batch user registration."""
     batch_register_result = await batch_ops.register_multiple(
         users_data,
@@ -329,7 +331,9 @@ async def _handle_batch_registration(batch_ops, users_data) -> bool:
     return False
 
 
-async def _handle_batch_sessions(batch_ops, credentials) -> None:
+async def _handle_batch_sessions(
+    batch_ops: object, credentials: list[tuple[str, str]]
+) -> None:
     """Handle batch session creation and token validation."""
     batch_sessions_result = await batch_ops.create_multiple_sessions(
         credentials,
@@ -356,7 +360,7 @@ async def _handle_batch_sessions(batch_ops, credentials) -> None:
         await _validate_batch_tokens(batch_ops, tokens)
 
 
-async def _validate_batch_tokens(batch_ops, tokens) -> None:
+async def _validate_batch_tokens(batch_ops: object, tokens: list[str]) -> None:
     """Validate multiple tokens in batch."""
     batch_validation_result = await batch_ops.validate_multiple_tokens(tokens)
 

@@ -265,7 +265,7 @@ class FlextHashedPassword(FlextValueObject):
     @field_validator("value")
     @classmethod
     def validate_hash(cls, v: str) -> str:
-        """Basic validation - detailed validation in validate_business_rules."""
+        """Perform basic validation; full checks in validate_business_rules."""
         return v
 
     def __str__(self) -> str:
@@ -832,7 +832,7 @@ class FlextBaseToken(FlextEntity):
         return self._validate_specific_rules()
 
     def _validate_common_rules(self) -> FlextResult[None]:
-        """Common validation rules using Railway-Oriented Programming."""
+        """Apply common validation rules using Railway-Oriented Programming."""
         try:
             validation_errors = self._execute_common_validation_strategies()
             if validation_errors:
@@ -1031,7 +1031,7 @@ class InMemoryUserRepository(UserRepository):
         try:
             user = self._users.get(user_id)
             if not user:
-                return FlextResult.ok(False)
+                return FlextResult.ok(data=False)
 
             # Remove from indexes
             self._username_index.pop(user.username.lower(), None)
@@ -1040,7 +1040,7 @@ class InMemoryUserRepository(UserRepository):
             # Remove user
             del self._users[user_id]
 
-            return FlextResult.ok(True)
+            return FlextResult.ok(data=True)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Failed to delete user: {e}")
 

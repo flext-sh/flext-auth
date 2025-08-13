@@ -618,7 +618,7 @@ class FlextBaseToken(FlextEntity):
         return self._validate_specific_rules()
 
     def _validate_common_rules(self) -> FlextResult[None]:
-        """Common validation rules using Railway-Oriented Programming.
+        """Apply common validation rules using Railway-Oriented Programming.
 
         SOLID REFACTORING: Reduced from 7 returns to 2 returns using
         Railway-Oriented Programming + Strategy Pattern.

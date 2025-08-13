@@ -64,16 +64,16 @@ from flext_auth import (
 
 # Example constants - not for production use
 # These are intentionally hardcoded for demonstration purposes only
-EXAMPLE_DEMO_PASSWORD = "DemoPassword123!@#"
-EXAMPLE_JWT_SECRET = "demo-jwt-secret-key-256-bits-minimum-length-for-security"
-EXAMPLE_API_SECRET = "api-secret-key-256-bits-minimum-length"
-EXAMPLE_SERVICE_SECRET = "service-secret-key-256-bits-minimum-length"
-EXAMPLE_MFA_SECRET = "mfa-secret-key-256-bits-minimum-length"
-EXAMPLE_CHECK_SECRET = "check-token-secret-256-bits-minimum-length"
-EXAMPLE_DECORATOR_SECRET = "decorator-secret-256-bits-minimum-length"
-EXAMPLE_LIFECYCLE_PASSWORD = "LifecyclePass123!"
-EXAMPLE_BATCH_PASSWORD_1 = "Batch123!"
-EXAMPLE_BATCH_PASSWORD_2 = "Batch456!"
+EXAMPLE_DEMO_PASSWORD = "DemoPassword123!@#"  # noqa: S105 - Example password for documentation
+EXAMPLE_JWT_SECRET = "demo-jwt-secret-key-256-bits-minimum-length-for-security"  # noqa: S105 - Example JWT secret for documentation
+EXAMPLE_API_SECRET = "api-secret-key-256-bits-minimum-length"  # noqa: S105 - Example API secret for documentation
+EXAMPLE_SERVICE_SECRET = "service-secret-key-256-bits-minimum-length"  # noqa: S105 - Example service secret for documentation
+EXAMPLE_MFA_SECRET = "mfa-secret-key-256-bits-minimum-length"  # noqa: S105 - Example MFA secret for documentation
+EXAMPLE_CHECK_SECRET = "check-token-secret-256-bits-minimum-length"  # noqa: S105 - Example check secret for documentation
+EXAMPLE_DECORATOR_SECRET = "decorator-secret-256-bits-minimum-length"  # noqa: S105 - Example decorator secret for documentation
+EXAMPLE_LIFECYCLE_PASSWORD = "LifecyclePass123!"  # noqa: S105 - Example password for documentation
+EXAMPLE_BATCH_PASSWORD_1 = "Batch123!"  # noqa: S105 - Example password for documentation
+EXAMPLE_BATCH_PASSWORD_2 = "Batch456!"  # noqa: S105 - Example password for documentation
 
 
 def demo_all_constants_and_configs() -> None:

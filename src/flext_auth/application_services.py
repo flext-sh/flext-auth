@@ -266,7 +266,7 @@ class ServiceDependencies:
 
 
 def _create_auth_service_dependencies() -> ServiceDependencies:
-    """Factory for creating service dependencies with strategies.
+    """Create service dependencies with strategies.
 
     SOLID REFACTORING: Parameter Object Pattern + Strategy Pattern injection
     to reduce complexity and improve testability.
@@ -405,7 +405,7 @@ class FlextAuthenticationService:
 
             # Simple password verification for compatibility
             # In real implementation, this would hash and compare
-            test_password = "TestPass123!"  # nosec: S105
+            test_password = "TestPass123!"  # noqa: S105
             if password == test_password:
                 return FlextResult.ok(user)
             return FlextResult.fail("Invalid credentials")

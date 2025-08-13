@@ -89,11 +89,11 @@ from flext_auth.domain_value_objects import (
 
 # Constants for JWT configuration
 
-DEV_SECRET_KEY = "dev-secret-key-change-in-production"  # nosec: S105
+DEV_SECRET_KEY = "dev-secret-key-change-in-production"  # noqa: S105 - Development default, must be changed in production
 
-ACCESS_TOKEN_TYPE = "access"  # nosec: S105
+ACCESS_TOKEN_TYPE = "access"  # noqa: S105 - Token type constant, not a password
 
-REFRESH_TOKEN_TYPE = "refresh"  # nosec: S105
+REFRESH_TOKEN_TYPE = "refresh"  # noqa: S105 - Token type constant, not a password
 
 # Initialize logger using FLEXT patterns
 # logger_factory removed

@@ -65,8 +65,9 @@ def run_example_suite(
     # Run the async suite
     asyncio.run(_run_suite())
 
-
-def create_example_runner(title: str, success_message: str | None = None):
+def create_example_runner(
+    title: str, success_message: str | None = None
+) -> Callable[[list[Callable[[], None]], list[Callable[[], Awaitable[None]]] | None], None]:
     """Create a reusable example runner function.
 
     This factory function implements the Factory pattern to create

@@ -21,16 +21,7 @@ repos:
   # Poetry-managed tools via local repo
   - repo: local
     hooks:
-      # Black formatting (primary formatter)
-      - id: black
-        name: "⚫ Black Format"
-        entry: poetry run black
-        language: system
-        types: [python]
-        require_serial: true
-        args: [--check, --diff]
-
-      # Ruff linting and formatting
+      # Ruff linting and formatting (primary formatter)
       - id: ruff-format
         name: "⚡ Ruff Format"
         entry: poetry run ruff format
@@ -47,14 +38,14 @@ repos:
         require_serial: true
         args: [--fix, --exit-non-zero-on-fix]
 
-      # isort import sorting
+      # isort import sorting (profile=ruff for compatibility)
       - id: isort
         name: "📦 Import Sort"
         entry: poetry run isort
         language: system
         types: [python]
         require_serial: true
-        args: [--check-only, --diff]
+        args: [--check-only, --diff, --profile=ruff]
 
       # MyPy type checking
       - id: mypy
@@ -162,7 +153,6 @@ ci:
   autoupdate_schedule: weekly
   skip: [
       # Local Poetry hooks do not work in CI
-      black,
       ruff-format,
       ruff-lint,
       isort,

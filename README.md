@@ -1,10 +1,10 @@
 # flext-auth - Authentication Library
 
-**Type**: Library | **Status**: Development | **Dependencies**: flext-core
+**Type**: Library | **Status**: Active Development | **Dependencies**: flext-core
 
 Authentication and session management library for the FLEXT ecosystem.
 
-> **⚠️ Development Status**: Basic auth functionality works, flext-core integration incomplete
+> ⚠️ Development Status: Basic auth functionality works; flext-core integration incomplete.
 
 ## Quick Start
 

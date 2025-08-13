@@ -40,6 +40,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import contextlib
 import os
 import re
 import secrets
@@ -51,7 +52,7 @@ from flext_core import (
     FlextSettings,
     TEntityId,
 )
-from pydantic import Field
+from pydantic import Field, SecretStr
 
 # =============================================================================
 # TYPE DEFINITIONS - Authentication-specific types
@@ -93,7 +94,7 @@ class FlextAuthConstants:
     USERNAME_PATTERN = r"^[a-zA-Z0-9_-]+$"
     MIN_PASSWORD_LENGTH = 8
     MAX_PASSWORD_LENGTH = 128
-    PASSWORD_VALIDATION_REGEX = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).+$"
+    PASSWORD_VALIDATION_REGEX = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).+$"  # noqa: S105 - Password validation regex pattern, not a password
 
 # =============================================================================
 # CENTRALIZED CONFIGURATION MODELS - Using flext-core patterns
@@ -238,7 +239,7 @@ class DatabaseConfig:
                 host="localhost",
                 database="flext",
                 username="postgres",
-                password="password",
+                password=SecretStr("password"),
             )
         except (RuntimeError, ValueError, TypeError, KeyError):
             # Fallback if flext-core config fails
@@ -246,7 +247,7 @@ class DatabaseConfig:
                 host="localhost",
                 database="flext",
                 username="postgres",
-                password="password",
+                password=SecretStr("password"),
             )
 
     def _extract_int_setting(
@@ -388,11 +389,8 @@ class JWTConfig(FlextSettings):
             raise ValueError(msg)
 
         # Call parent without any kwargs to avoid type issues
-        try:
+        with contextlib.suppress(TypeError):
             super().__init__()
-        except TypeError:
-            # Fallback if there are issues with initialization
-            pass
 
         # Set values after initialization
         for key, value in kwargs.items():
@@ -465,6 +463,8 @@ class ServerConfig(FlextSettings):
     port: int = Field(default=8000, description="Server port")
 
     class Config:
+        """Pydantic configuration for server settings."""
+
         env_prefix = "SERVER_"
 
 
@@ -526,7 +526,7 @@ class AppConfig(FlextSettings):
 
 
 def create_auth_config(**overrides: object) -> FlextAuthConfig:
-    """Factory function to create authentication configuration."""
+    """Create authentication configuration."""
     # Type-safe creation using Pydantic v2 model_validate
     if overrides:
         # Filter None values and use model_validate for type safety
@@ -536,7 +536,7 @@ def create_auth_config(**overrides: object) -> FlextAuthConfig:
 
 
 def create_complete_auth_config(**overrides: object) -> FlextAuthApplicationConfig:
-    """Factory function to create complete authentication application configuration."""
+    """Create complete authentication application configuration."""
     # Type-safe creation using Pydantic v2 model_validate
     if overrides:
         # Filter None values and use model_validate for type safety

@@ -105,13 +105,14 @@ def add_hours_to_now(hours: int) -> datetime:
 
 
 def is_valid_email_format(email: str) -> bool:
-    """Basic email format validation."""
+    """Validate basic email format."""
     return "@" in email and "." in email.rsplit("@", maxsplit=1)[-1]
 
 
 def is_strong_password(password: str) -> bool:
     """Check if password meets basic strength requirements."""
-    if len(password) < 8:
+    min_password_length = 8
+    if len(password) < min_password_length:
         return False
 
     has_upper = any(c.isupper() for c in password)
@@ -123,7 +124,7 @@ def is_strong_password(password: str) -> bool:
 
 
 def sanitize_input(input_str: str) -> str:
-    """Basic input sanitization."""
+    """Sanitize input string by trimming whitespace."""
     return input_str.strip()
 
 
@@ -147,7 +148,7 @@ def safe_int(value: object, default: int = 0) -> int:
         return default
 
 
-def safe_bool(value: object, default: bool = False) -> bool:
+def safe_bool(value: object, *, default: bool = False) -> bool:
     """Safely convert value to boolean."""
     if isinstance(value, bool):
         return value

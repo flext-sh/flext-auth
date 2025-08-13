@@ -74,6 +74,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import contextlib
 import os
 import re
 import secrets
@@ -84,7 +85,7 @@ from flext_core import (
     FlextDatabaseConfig,
     FlextSettings,
 )
-from pydantic import Field
+from pydantic import Field, SecretStr
 
 # Configuration constants
 MIN_JWT_SECRET_LENGTH = 32
@@ -232,7 +233,7 @@ class DatabaseConfig:
                 host="localhost",
                 database="flext",
                 username="postgres",
-                password="password",
+                password=SecretStr("password"),
             )
         except (RuntimeError, ValueError, TypeError, KeyError):
             # Fallback if flext-core config fails
@@ -240,7 +241,7 @@ class DatabaseConfig:
                 host="localhost",
                 database="flext",
                 username="postgres",
-                password="password",
+                password=SecretStr("password"),
             )
 
     def _extract_int_setting(
@@ -380,11 +381,8 @@ class JWTConfig(FlextSettings):
             raise ValueError(msg)
 
         # Call parent without any kwargs to avoid type issues
-        try:
+        with contextlib.suppress(TypeError):
             super().__init__()
-        except TypeError:
-            # Fallback if there are issues with initialization
-            pass
 
         # Set values after initialization
         for key, value in kwargs.items():
@@ -540,7 +538,7 @@ def validate_production_config(config: AppConfig) -> bool:
 
 
 def create_auth_config(**overrides: object) -> FlextAuthConfig:
-    """Factory function to create authentication configuration."""
+    """Create authentication configuration."""
     # Type-safe creation using Pydantic v2 model_validate
     if overrides:
         # Filter None values and use model_validate for type safety
@@ -550,7 +548,7 @@ def create_auth_config(**overrides: object) -> FlextAuthConfig:
 
 
 def create_complete_auth_config(**overrides: object) -> FlextAuthApplicationConfig:
-    """Factory function to create complete authentication application configuration."""
+    """Create complete authentication application configuration."""
     # Type-safe creation using Pydantic v2 model_validate
     if overrides:
         # Filter None values and use model_validate for type safety

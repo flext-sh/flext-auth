@@ -249,7 +249,7 @@ class FlextHashedPassword(FlextValueObject):
     @field_validator("value")
     @classmethod
     def validate_hash(cls, v: str) -> str:
-        """Basic validation - detailed validation in validate_business_rules."""
+        """Perform basic validation; detailed checks in validate_business_rules."""
         return v
 
     def __str__(self) -> str:
@@ -337,7 +337,7 @@ class FlextBaseTokenValueObject(FlextValueObject):
         return self._validate_specific_rules()
 
     def _validate_common_rules(self) -> None:
-        """Common validation rules - raises ValueError for test compatibility."""
+        """Apply common validation rules; raise ValueError for test compatibility."""
         if not self.value:
             msg: str = f"{self._get_token_type_name()} cannot be empty"
             raise ValueError(msg)

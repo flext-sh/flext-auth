@@ -1,125 +1,216 @@
-# FLEXT-AUTH Makefile
+# =============================================================================
+# FLEXT-AUTH - Authentication & Authorization Library Makefile
+# =============================================================================
+# Python 3.13+ Auth Framework - Clean Architecture + DDD + Zero Tolerance
+# =============================================================================
+
+# Project Configuration
 PROJECT_NAME := flext-auth
 PYTHON_VERSION := 3.13
 POETRY := poetry
 SRC_DIR := src
 TESTS_DIR := tests
+COV_DIR := flext_auth
 
-# Quality standards (aligned with flext-core)
+# Quality Standards (Aligned with flext-core)
 MIN_COVERAGE := 95
 
-# Help
-help: ## Show available commands
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+# Export Configuration
+export PROJECT_NAME PYTHON_VERSION MIN_COVERAGE
 
-# Installation
+# =============================================================================
+# HELP & INFORMATION
+# =============================================================================
+
+.PHONY: help
+help: ## Show available commands
+	@echo "FLEXT-AUTH - Authentication & Authorization Library"
+	@echo "=================================================="
+	@echo ""
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: info
+info: ## Show project information
+	@echo "Project: $(PROJECT_NAME)"
+	@echo "Python: $(PYTHON_VERSION)+"
+	@echo "Poetry: $(POETRY)"
+	@echo "Coverage: $(MIN_COVERAGE)% minimum"
+	@echo "Architecture: Clean Architecture + DDD + Auth"
+
+# =============================================================================
+# SETUP & INSTALLATION
+# =============================================================================
+
+.PHONY: install
 install: ## Install dependencies
 	$(POETRY) install
 
+.PHONY: install-dev
 install-dev: ## Install dev dependencies
-	$(POETRY) install --with dev,test,docs
+	$(POETRY) install --extras "dev test typings security"
 
+.PHONY: setup
 setup: install-dev ## Complete project setup
 	$(POETRY) run pre-commit install
 
-# Quality gates
+# =============================================================================
+# QUALITY GATES (MANDATORY)
+# =============================================================================
+
+.PHONY: validate
 validate: lint type-check security test ## Run all quality gates
 
+.PHONY: check
 check: lint type-check ## Quick health check
 
+.PHONY: lint
 lint: ## Run linting
 	$(POETRY) run ruff check $(SRC_DIR) $(TESTS_DIR)
 
+.PHONY: format
 format: ## Format code
 	$(POETRY) run ruff format $(SRC_DIR) $(TESTS_DIR)
 
+.PHONY: type-check
 type-check: ## Run type checking
 	$(POETRY) run mypy $(SRC_DIR) --strict
 
+.PHONY: security
 security: ## Run security scanning
 	$(POETRY) run bandit -r $(SRC_DIR)
 	$(POETRY) run pip-audit
 
+.PHONY: fix
 fix: ## Auto-fix issues
 	$(POETRY) run ruff check $(SRC_DIR) $(TESTS_DIR) --fix
 	$(POETRY) run ruff format $(SRC_DIR) $(TESTS_DIR)
 
-# Testing
-test: ## Run tests with coverage
-	$(POETRY) run pytest $(TESTS_DIR) --cov=$(SRC_DIR) --cov-report=term-missing --cov-fail-under=$(MIN_COVERAGE)
+# =============================================================================
+# TESTING
+# =============================================================================
 
+.PHONY: test
+test: ## Run tests with coverage
+	$(POETRY) run pytest $(TESTS_DIR) --cov=$(COV_DIR) --cov-report=term-missing --cov-fail-under=$(MIN_COVERAGE)
+
+.PHONY: test-unit
 test-unit: ## Run unit tests
 	$(POETRY) run pytest $(TESTS_DIR) -m "not integration" -v
 
+.PHONY: test-integration
 test-integration: ## Run integration tests
 	$(POETRY) run pytest $(TESTS_DIR) -m integration -v
 
+.PHONY: test-security
 test-security: ## Run security tests
 	$(POETRY) run pytest $(TESTS_DIR) -m security -v
 
+.PHONY: test-fast
 test-fast: ## Run tests without coverage
 	$(POETRY) run pytest $(TESTS_DIR) -v
 
+.PHONY: coverage-html
 coverage-html: ## Generate HTML coverage report
-	$(POETRY) run pytest $(TESTS_DIR) --cov=$(SRC_DIR) --cov-report=html
+	$(POETRY) run pytest $(TESTS_DIR) --cov=$(COV_DIR) --cov-report=html
 
-# Authentication specific
-auth-validate: ## Validate auth configuration
-	$(POETRY) run python -c "from flext_auth.config import FlextAuthConfig; print('Auth config valid')"
+# =============================================================================
+# BUILD & DISTRIBUTION
+# =============================================================================
 
-jwt-test: ## Test JWT operations
-	$(POETRY) run python -c "from flext_auth import flext_auth_generate_jwt; print('JWT test passed')"
-
-# Build
+.PHONY: build
 build: ## Build package
 	$(POETRY) build
 
+.PHONY: build-clean
 build-clean: clean build ## Clean and build
 
-# Documentation
+# =============================================================================
+# AUTHENTICATION OPERATIONS
+# =============================================================================
+
+.PHONY: auth-validate
+auth-validate: ## Validate auth configuration
+	$(POETRY) run python -c "from flext_auth.config import FlextAuthConfig; print('Auth config valid')"
+
+.PHONY: jwt-test
+jwt-test: ## Test JWT operations
+	$(POETRY) run python -c "from flext_auth import flext_auth_generate_jwt; print('JWT test passed')"
+
+# =============================================================================
+# DOCUMENTATION
+# =============================================================================
+
+.PHONY: docs
 docs: ## Build documentation
 	$(POETRY) run mkdocs build
 
+.PHONY: docs-serve
 docs-serve: ## Serve documentation
 	$(POETRY) run mkdocs serve
 
-# Dependencies
+# =============================================================================
+# DEPENDENCIES
+# =============================================================================
+
+.PHONY: deps-update
 deps-update: ## Update dependencies
 	$(POETRY) update
 
+.PHONY: deps-show
 deps-show: ## Show dependency tree
 	$(POETRY) show --tree
 
+.PHONY: deps-audit
 deps-audit: ## Audit dependencies
 	$(POETRY) run pip-audit
 
-# Development
+# =============================================================================
+# DEVELOPMENT
+# =============================================================================
+
+.PHONY: shell
 shell: ## Open Python shell
 	$(POETRY) run python
 
+.PHONY: pre-commit
 pre-commit: ## Run pre-commit hooks
 	$(POETRY) run pre-commit run --all-files
 
-# Maintenance
+# =============================================================================
+# MAINTENANCE
+# =============================================================================
+
+.PHONY: clean
 clean: ## Clean build artifacts
 	rm -rf build/ dist/ *.egg-info/ .pytest_cache/ htmlcov/ .coverage .mypy_cache/ .ruff_cache/
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
 
+.PHONY: clean-all
 clean-all: clean ## Deep clean including venv
 	rm -rf .venv/
 
+.PHONY: reset
 reset: clean-all setup ## Reset project
 
-# Diagnostics
+# =============================================================================
+# DIAGNOSTICS
+# =============================================================================
+
+.PHONY: diagnose
 diagnose: ## Project diagnostics
 	@echo "Python: $$(python --version)"
 	@echo "Poetry: $$($(POETRY) --version)"
 	@$(POETRY) env info
 
+.PHONY: doctor
 doctor: diagnose check ## Health check
 
-# Aliases
+# =============================================================================
+# ALIASES (SINGLE LETTER SHORTCUTS)
+# =============================================================================
+
+.PHONY: t l f tc c i v
 t: test
 l: lint
 f: format
@@ -128,5 +219,8 @@ c: clean
 i: install
 v: validate
 
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
 .DEFAULT_GOAL := help
-.PHONY: help install install-dev setup validate check lint format type-check security fix test test-unit test-integration test-security test-fast coverage-html auth-validate jwt-test build build-clean docs docs-serve deps-update deps-show deps-audit shell pre-commit clean clean-all reset diagnose doctor t l f tc c i v

@@ -27,7 +27,7 @@ def debug_password_service() -> None:
     print("🔍 DEBUG: Password Service")
     print("-" * 30)
 
-    password = "TestPassword123!"
+    password = "TestPassword123!"  # noqa: S105 - Example password for documentation
 
     # Test direct service
     print("1. Direct FlextPasswordService:")
@@ -69,7 +69,7 @@ def debug_jwt_service() -> None:
 
     # Test direct service
     print("1. Direct FlextJWTService:")
-    service = FlextJWTService(secret_key="test-secret")
+    service = FlextJWTService(secret_key="test-secret")  # noqa: S106 - Example secret for debugging
 
     # Test access token generation
     access_result = service.generate_access_token(

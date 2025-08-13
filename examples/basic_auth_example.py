@@ -30,7 +30,7 @@ def main() -> None:
 
     # 1. Password Hashing Example
     print("\n1. Password Hashing:")
-    password = "SecurePassword123!"
+    password = "SecurePassword123!"  # noqa: S105 - Example password for documentation
     hashed = flext_auth_hash_password(password)
     print(f"Original: {password}")
     print(f"Hashed: {hashed[:20]}...")
@@ -65,7 +65,7 @@ def main() -> None:
 
     # Register user
     user_result = auth.register_user(
-        username="demouser", email="demo@example.com", password="DemoPassword123!"
+        username="demouser", email="demo@example.com", password="DemoPassword123!"  # noqa: S106 - Example password for documentation
     )
 
     if isinstance(user_result, dict) and "error" not in user_result:

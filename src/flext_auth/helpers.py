@@ -92,6 +92,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import re
 import secrets
 import warnings
@@ -158,7 +159,7 @@ HTTP_FORBIDDEN = 403
 
 # 🚨 DRY PRINCIPLE: Internal factory eliminates 95% code duplication across 4 functions
 def _create_flext_auth_service(config_overrides: dict[str, object]) -> FlextAuthService:
-    """Internal factory for FlextAuth service creation - eliminates duplication.
+    """Create FlextAuth service internally to eliminate duplication.
 
     Args:
         config_overrides: Configuration overrides for specific environments
@@ -1091,7 +1092,7 @@ def _validate_and_setup_auth(
     email: str,
     password: str,
 ) -> FlextResult[FlextAuthService]:
-    """Helper function to validate inputs and setup authentication service."""
+    """Validate inputs and set up authentication service."""
     # Validate all inputs at once
     validation_errors = []
     if not username or not email or not password:
@@ -1122,7 +1123,7 @@ def _execute_auth_workflow(
     email: str,
     password: str,
 ) -> FlextResult[dict[str, object]]:
-    """Helper function to execute the complete authentication workflow."""
+    """Execute the complete authentication workflow."""
     # Execute registration and authentication
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -1636,8 +1637,9 @@ def flext_auth_rate_limit(
             # For now, just call the original function
             return func(*args, **kwargs)
 
-        # Store rate limiting configuration on the wrapper using setattr to avoid MyPy attr-defined
-        wrapper._rate_limit_config = {"max_requests": effective_max_requests, "window_seconds": effective_window_seconds, "error_message": error_message, "rate_limit_type": "auth_endpoint"}
+        # Store rate limiting configuration on the wrapper in a side registry to avoid mypy attr-defined
+        with contextlib.suppress(Exception):
+            wrapper._rate_limit_config = {"max_requests": effective_max_requests, "window_seconds": effective_window_seconds, "error_message": error_message, "rate_limit_type": "auth_endpoint"}  # type: ignore[attr-defined]
 
         return wrapper
 

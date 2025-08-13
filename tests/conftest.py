@@ -58,6 +58,7 @@ import pytest
 
 
 def pytest_configure(config: pytest.Config) -> None:
+    """Configure pytest with custom markers for auth testing."""
     config.addinivalue_line(
         "markers",
         "unit: Unit tests for authentication components",
@@ -92,6 +93,7 @@ def pytest_collection_modifyitems(
     config: pytest.Config,
     items: list[pytest.Item],
 ) -> None:
+    """Modify test items by adding markers based on test location and names."""
     for item in items:
         # Auto-mark based on test location
         if "unit" in str(item.fspath):
@@ -124,21 +126,25 @@ def pytest_collection_modifyitems(
 
 @pytest.fixture
 def sample_user_id() -> str:
+    """Generate a sample user ID for testing."""
     return str(uuid4())
 
 
 @pytest.fixture
 def sample_username() -> str:
+    """Provide a sample username for testing."""
     return "test_user"
 
 
 @pytest.fixture
 def sample_email() -> str:
+    """Provide a sample email address for testing."""
     return "test.user@example.com"
 
 
 @pytest.fixture
 def sample_password() -> str:
+    """Provide a sample password for testing."""
     return "SecurePassword123!"
 
 
@@ -148,6 +154,7 @@ def sample_user_data(
     sample_username: str,
     sample_email: str,
 ) -> dict[str, str | bool]:
+    """Create sample user data dictionary for testing."""
     return {
         "user_id": sample_user_id,
         "username": sample_username,

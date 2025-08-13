@@ -100,23 +100,33 @@ class FlextAuthService:
 
         """
         try:
+            # Log authentication attempt with provided parameters
+            logger = self.deps.logger if hasattr(self.deps, "logger") else None
+            if logger:
+                logger.info(
+                    f"Authentication attempt for user: {username} from IP: {ip_address}",
+                )
+
             # This is a simplified implementation for the reorganization
             # Full implementation would involve repository lookups, password verification, etc.
 
             # Placeholder implementation - would normally:
-            # 1. Look up user from repository
-            # 2. Verify password hash
+            # 1. Look up user from repository by username
+            # 2. Verify password hash matches the provided password
             # 3. Check account locks/status
-            # 4. Log authentication attempt
+            # 4. Log authentication attempt with IP address
             # 5. Return user or failure
 
             await asyncio.sleep(0.001)  # Simulate async operation
 
-            # For reorganization purposes, return a basic success
-            return FlextResult.fail("Authentication service requires full implementation")
+            # For reorganization purposes, return a failure with context
+            return FlextResult.fail(
+                f"Authentication service requires full implementation for user: {username} "
+                f"from IP: {ip_address} (password provided: {'yes' if password else 'no'})",
+            )
 
         except Exception as e:
-            return FlextResult.fail(f"Authentication failed: {e}")
+            return FlextResult.fail(f"Authentication failed for {username}: {e}")
 
     async def validate_token(self, token: str) -> FlextResult[FlextSecurityContext]:
         """Validate JWT token and return security context.
@@ -180,7 +190,7 @@ class FlextAuthService:
 def create_auth_service_dependencies(
     jwt_secret: str = "dev-secret-key-change-in-production",  # noqa: S107
 ) -> FlextAuthServiceDependencies:
-    """Factory function to create authentication service dependencies."""
+    """Create authentication service dependencies."""
     config = FlextAuthServiceConfig(jwt_secret_key=jwt_secret)
 
     return FlextAuthServiceDependencies(
@@ -195,7 +205,7 @@ def create_auth_service_dependencies(
 def create_auth_service(
     jwt_secret: str = "dev-secret-key-change-in-production",  # noqa: S107
 ) -> FlextAuthService:
-    """Factory function to create configured authentication service."""
+    """Create configured authentication service."""
     dependencies = create_auth_service_dependencies(jwt_secret)
     return FlextAuthService(dependencies)
 
