@@ -40,8 +40,6 @@ dependencies = [
     "redis>=5.3.0",
     "sqlalchemy>=2.0.41",
     "structlog>=25.4.0",
-    "flext-core @ file:///home/marlonsc/flext/flext-core",
-    "flext-observability @ file:///home/marlonsc/flext/flext-observability",
 ]
 keywords = [
     "async",
@@ -114,6 +112,15 @@ version = "0.9.0"
 description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
 authors = ["FLEXT Team <team@flext.sh>"]
 packages = [{ include = "flext_auth", from = "src" }]
+
+# Local workspace dependencies (path-based)
+[tool.poetry.dependencies.flext-core]
+path = "../flext-core"
+develop = true
+
+[tool.poetry.dependencies.flext-observability]
+path = "../flext-observability"
+develop = true
 
 [tool.poetry.group.dev.dependencies]
 commitizen = ">=4.8.3"

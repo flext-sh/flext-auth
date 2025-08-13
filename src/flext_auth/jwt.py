@@ -95,11 +95,13 @@ from flext_auth.domain_value_objects import (
 
 DEV_SECRET_KEY = os.getenv("FLEXT_JWT_SECRET", secrets.token_urlsafe(32))
 
+
 class TokenType(StrEnum):
     """Enumeration of supported JWT token types."""
 
     ACCESS = FlextAuthConstants.TokenTypes.ACCESS
     REFRESH = FlextAuthConstants.TokenTypes.REFRESH
+
 
 # Initialize logger using FLEXT patterns
 # logger_factory removed

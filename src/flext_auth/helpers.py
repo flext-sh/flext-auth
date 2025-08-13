@@ -1653,6 +1653,7 @@ def flext_auth_rate_limit(
 
     return rate_limit_decorator
 
+
 # Internal registry for rate limit metadata to avoid dynamic attributes on callables
 _RATE_LIMIT_REGISTRY: dict[int, dict[str, object]] = {}
 

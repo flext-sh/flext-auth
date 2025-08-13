@@ -87,6 +87,7 @@ class TokenType(StrEnum):
     ACCESS = FlextAuthConstants.TokenTypes.ACCESS
     REFRESH = FlextAuthConstants.TokenTypes.REFRESH
 
+
 # Application service constants
 TEST_JWT_SECRET = os.getenv("TEST_JWT_SECRET", secrets.token_urlsafe(32))
 MAX_PASSWORD_LENGTH = 128  # Add constant for magic value
