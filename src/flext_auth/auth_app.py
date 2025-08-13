@@ -34,13 +34,13 @@ from dataclasses import dataclass
 
 from flext_core import FlextResult
 
-from flext_auth.auth_models import (
+from flext_auth.auth_services import FlextJWTService, FlextPasswordService
+from flext_auth.auth_session import InMemorySessionRepository
+from flext_auth.models import (
     FlextSecurityContext,
     FlextUser,
     InMemoryUserRepository,
 )
-from flext_auth.auth_services import FlextJWTService, FlextPasswordService
-from flext_auth.auth_session import InMemorySessionRepository
 
 # =============================================================================
 # SERVICE DEPENDENCIES AND CONFIGURATION

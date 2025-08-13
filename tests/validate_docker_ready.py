@@ -5,9 +5,9 @@ Tests that the library works with standard Python package dependencies
 without complex build environments.
 """
 
+import asyncio
 import os
 import pathlib
-import subprocess
 import sys
 import tempfile
 
@@ -76,22 +76,30 @@ except Exception as e:
         )
 
         # Run the test
-        result = subprocess.run(
-            [sys.executable, temp_file],
-            check=False,
-            env=env,
-            capture_output=True,
-            text=True,
-            timeout=30,
-        )
+        async def _run(cmd_list: list[str], env: dict[str, str], timeout: int = 30) -> tuple[int, str, str]:
+            process = await asyncio.create_subprocess_exec(
+                *cmd_list,
+                env=env,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            try:
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
+            except TimeoutError:
+                process.kill()
+                await process.communicate()
+                return 124, "", "Timeout"
+            return process.returncode, stdout.decode(), stderr.decode()
 
-        if result.stderr:
+        rc, out, err = asyncio.run(_run([sys.executable, temp_file], env, timeout=30))
+
+        if err:
             pass
 
         # Clean up
         pathlib.Path(temp_file).unlink()
 
-        return result.returncode == 0
+        return rc == 0
 
     except Exception:
         return False

@@ -33,7 +33,7 @@ from datetime import UTC, datetime
 
 from flext_core import FlextResult
 
-from flext_auth.auth_models import FlextSession, FlextSessionStatus
+from flext_auth.models import FlextSession, FlextSessionStatus
 
 # =============================================================================
 # SESSION REPOSITORY PATTERNS - Abstract data access
@@ -44,8 +44,8 @@ class SessionRepository(ABC):
     """Abstract repository for session operations."""
 
     @abstractmethod
-    def save_sync(self, session: FlextSession) -> FlextResult[FlextSession]:
-        """Save session to repository (synchronous)."""
+    async def save(self, session: FlextSession) -> FlextResult[FlextSession]:
+        """Save session to repository (async)."""
 
     @abstractmethod
     def find_by_id(self, session_id: str) -> FlextResult[FlextSession | None]:
@@ -62,6 +62,15 @@ class SessionRepository(ABC):
     @abstractmethod
     def cleanup_expired_sessions(self) -> FlextResult[int]:
         """Clean up expired sessions."""
+    # Compatibility async methods expected by service layer
+    async def get_by_id(self, session_id: str) -> FlextResult[FlextSession | None]:  # pragma: no cover - thin adapter
+        return self.find_by_id(session_id)
+
+    async def get_by_user_id(self, user_id: str) -> FlextResult[list[FlextSession]]:  # pragma: no cover - thin adapter
+        return self.find_by_user_id(user_id)
+
+    async def revoke_all_user_sessions(self, user_id: str) -> FlextResult[int]:  # pragma: no cover - thin adapter
+        return self.revoke_all_sessions_for_user(user_id)
 
 
 class InMemorySessionRepository(SessionRepository):
@@ -71,8 +80,8 @@ class InMemorySessionRepository(SessionRepository):
         """Initialize empty session storage."""
         self._sessions: dict[str, FlextSession] = {}
 
-    def save_sync(self, session: FlextSession) -> FlextResult[FlextSession]:
-        """Save session to memory (synchronous)."""
+    async def save(self, session: FlextSession) -> FlextResult[FlextSession]:
+        """Save session to memory (async)."""
         try:
             self._sessions[session.id] = session
             return FlextResult.ok(session)
@@ -120,22 +129,35 @@ class InMemorySessionRepository(SessionRepository):
         """Clean up expired sessions."""
         try:
             now = datetime.now(UTC)
-            expired_sessions = []
-
+            expired_sessions: list[str] = []
             for session_id, session in self._sessions.items():
-                if (
-                    session.expires_at <= now
-                    or session.status == FlextSessionStatus.EXPIRED
-                ):
+                if session.expires_at <= now or session.status == FlextSessionStatus.EXPIRED:
                     expired_sessions.append(session_id)
-
-            # Remove expired sessions
             for session_id in expired_sessions:
                 del self._sessions[session_id]
-
             return FlextResult.ok(len(expired_sessions))
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Failed to cleanup expired sessions: {e}")
+
+    # Additional async compatibility methods used by refactored service
+    async def get_by_id(self, session_id: str) -> FlextResult[FlextSession | None]:
+        return self.find_by_id(session_id)
+
+    async def get_by_user_id(self, user_id: str) -> FlextResult[list[FlextSession]]:
+        return self.find_by_user_id(user_id)
+
+    async def revoke_session(self, session_id: str) -> FlextResult[bool]:
+        try:
+            if session_id in self._sessions:
+                session = self._sessions[session_id]
+                self._sessions[session_id] = session.revoke()
+                return FlextResult.ok(data=True)
+            return FlextResult.ok(data=False)
+        except (KeyError, ValueError, TypeError, AttributeError) as e:
+            return FlextResult.fail(f"Failed to revoke session: {e}")
+
+    async def revoke_all_user_sessions(self, user_id: str) -> FlextResult[int]:
+        return self.revoke_all_sessions_for_user(user_id)
 
     def get_active_session_count(self, user_id: str) -> FlextResult[int]:
         """Get count of active sessions for a user."""

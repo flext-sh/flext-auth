@@ -45,21 +45,23 @@ import bcrypt
 import jwt
 from flext_core import FlextResult, FlextValidationError, get_logger
 
-from flext_auth.auth_models import (
-    FlextHashedPassword,
-    FlextJWTClaims,
+from flext_auth.models import InMemoryUserRepository
+from flext_auth.auth_session import InMemorySessionRepository
+from flext_auth.constants import FlextAuthConstants
+from flext_auth.domain_entities import (
     FlextPermission,
-    FlextPlainPassword,
     FlextRole,
     FlextSession,
     FlextSessionStatus,
     FlextUser,
     FlextUserRole,
     FlextUserStatus,
-    InMemoryUserRepository,
 )
-from flext_auth.auth_session import InMemorySessionRepository
-from flext_auth.constants import FlextAuthConstants
+from flext_auth.domain_value_objects import (
+    FlextHashedPassword,
+    FlextJWTClaims,
+    FlextPlainPassword,
+)
 
 # =============================================================================
 # CONSTANTS
@@ -150,11 +152,10 @@ class FlextPasswordService:
         """
         try:
             # Handle both string and FlextPlainPassword input
-            password_str = (
-                plain_password.value
-                if isinstance(plain_password, FlextPlainPassword)
-                else plain_password
-            )
+            if isinstance(plain_password, FlextPlainPassword):
+                password_str = plain_password.value
+            else:
+                password_str = str(plain_password)
 
             # Validate password if it's a string
             if isinstance(plain_password, str):
@@ -169,7 +170,16 @@ class FlextPasswordService:
             hashed_bytes = bcrypt.hashpw(password_bytes, salt)
             hashed_str = hashed_bytes.decode("utf-8")
 
-            return FlextResult.ok(FlextHashedPassword(value=hashed_str))
+            try:
+                hashed_vo = FlextHashedPassword(value=hashed_str)
+            except (ValueError, TypeError) as e:
+                return FlextResult.fail(f"Password hashing failed: {e}")
+            # Domain VO may raise inside validate_business_rules; call to ensure validity
+            try:
+                _ = hashed_vo.validate_business_rules()
+            except Exception as e:
+                return FlextResult.fail(f"Password hashing failed: {e}")
+            return FlextResult.ok(hashed_vo)
 
         except (ValueError, TypeError, OSError) as e:
             return FlextResult.fail(f"Password hashing failed: {e}")
@@ -194,12 +204,12 @@ class FlextPasswordService:
             password_str = (
                 plain_password.value
                 if isinstance(plain_password, FlextPlainPassword)
-                else plain_password
+                else str(plain_password)
             )
             hash_str = (
                 hashed_password.value
                 if isinstance(hashed_password, FlextHashedPassword)
-                else hashed_password
+                else str(hashed_password)
             )
 
             # Verify hash format
@@ -295,7 +305,7 @@ class FlextPasswordService:
         try:
             # Convert FlextPlainPassword to string if needed
             password_str = (
-                password.value if isinstance(password, FlextPlainPassword) else password
+                password.value if isinstance(password, FlextPlainPassword) else str(password)
             )
 
             # Use helper methods to analyze password
@@ -1063,7 +1073,7 @@ class FlextAuthenticationService:
             )
 
             # Save updated user to repository
-            save_result = asyncio.run(self._deps.user_repo.save(updated_user))
+            save_result = asyncio.run(self._deps.user_repo.save(updated_user))  # type: ignore[arg-type]
             if not save_result.success:
                 return FlextResult.fail(
                     f"Failed to save password change: {save_result.error}",
@@ -1266,12 +1276,12 @@ class FlextSessionService:
 
             session = session_result.data
             # Already revoked sessions are considered successful
-            if session.status == FlextSessionStatus.REVOKED:
+            if session.status.name == "REVOKED":
                 return FlextResult.ok(LOGOUT_SUCCESS)
 
             # Revoke and save
             revoked_session = session.revoke()
-            save_result = self._deps.session_repo.save_sync(revoked_session)
+            save_result = asyncio.run(self._deps.session_repo.save(revoked_session))
 
             return FlextResult.ok(save_result.success)
 
