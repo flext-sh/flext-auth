@@ -165,7 +165,7 @@ from flext_auth.auth_app import (
 
 try:
     __version__ = importlib.metadata.version("flext-auth")
-except ImportError:
+except Exception:
     __version__ = "unknown"
 
 # Logger
