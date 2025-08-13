@@ -388,6 +388,18 @@ class JWTConfig(FlextSettings):
         for key, value in kwargs.items():
             if hasattr(self, key):
                 setattr(self, key, value)
+        # Respect environment variables if not explicitly provided in kwargs
+        if "secret_key" not in kwargs:
+            env_secret = (
+                os.getenv("APP_JWT_SECRET_KEY")
+                or os.getenv("JWT_SECRET_KEY")
+                or os.getenv("FLEXT_AUTH_JWT_SECRET_KEY")
+                or ""
+            )
+            self.secret_key = env_secret
+        # Ensure algorithm defaults to HS256 if not passed
+        if "algorithm" not in kwargs:
+            self.algorithm = "HS256"
 
     def validate_secret_key(self) -> None:
         """Validate secret key strength."""

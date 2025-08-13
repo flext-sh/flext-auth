@@ -233,7 +233,8 @@ from flext_auth.auth import (
     FlextAuthServiceDependencies as _CoreDeps,
     FlextAuthServiceConfig as _CoreConfig,
 )
-from flext_auth.auth_services import FlextJWTService as _JWT, FlextPasswordService as _Pwd
+from flext_auth.jwt import FlextJWTService as _JWT
+from flext_auth.auth_services import FlextPasswordService as _Pwd
 from flext_auth.session import InMemorySessionRepository as _MemSession
 from flext_auth.models import InMemoryUserRepository as _MemUser
 
@@ -269,11 +270,19 @@ class FlextAuth:
         else:
             # Build default in-memory dependencies
             jwt_secret = _os.getenv("FLEXT_AUTH_JWT_SECRET_KEY", _secrets.token_urlsafe(32))
+            # Adapter types for dependency protocol expectations
+            from flext_auth.user import InMemoryUserRepository as _UserRepo, UserRepository as _UserRepository
+            from flext_auth.session import InMemorySessionRepository as _SessionRepo, SessionRepository as _SessionRepository
+            user_repo: _UserRepository = _UserRepo()
+            session_repo: _SessionRepository = _SessionRepo()
+            from flext_auth.services_password_service import FlextPasswordService as _PwdSvc
+            from flext_auth.jwt import FlextJWTService as _JwtSvc
+
             deps = _CoreDeps(
-                user_repository=_MemUser(),  # type: ignore[arg-type]
-                session_repository=_MemSession(),  # type: ignore[arg-type]
-                password_service=_Pwd(rounds=self._config.auth.bcrypt_rounds),  # type: ignore[arg-type]
-                jwt_service=_JWT(secret_key=jwt_secret, access_token_expire_minutes=self._config.auth.access_token_expire_minutes),  # type: ignore[arg-type]
+                user_repository=user_repo,
+                session_repository=session_repo,
+                password_service=_PwdSvc(rounds=self._config.auth.bcrypt_rounds),
+                jwt_service=_JwtSvc(secret_key=jwt_secret, access_token_expire_minutes=self._config.auth.access_token_expire_minutes),
                 config=_CoreConfig(),
             )
             self._service = _CoreAuthService(deps)
@@ -281,7 +290,8 @@ class FlextAuth:
     async def register(self, username: str, email: str, password: str, *, role: str = FlextAuthConstants.UserRoles.USER) -> FlextResult[object]:
         data = _RegistrationData(username=username, email=email, password=password, role=role)  # type: ignore[arg-type]
         result = await self._service.register_user(data)
-        return result  # type: ignore[return-value]
+        # Upcast to FlextResult[object] for facade typing
+        return FlextResult.ok(result.data) if result.success else FlextResult.fail(result.error or "Registration failed")
 
     async def login(self, username: str, password: str) -> FlextResult[dict[str, object]]:
         return await self._service.authenticate_user(username=username, password=password, ip_address="127.0.0.1")
@@ -309,7 +319,8 @@ class FlextAuth:
     async def register_user(self, data_or_username: object, email: str | None = None, password: str | None = None, *, role: str | None = None) -> FlextResult[object]:
         # Accept FlextUserRegistrationData or discrete fields
         if hasattr(data_or_username, "username") and hasattr(data_or_username, "email") and hasattr(data_or_username, "password"):
-            return await self._service.register_user(data_or_username)  # type: ignore[arg-type]
+            reg = await self._service.register_user(data_or_username)  # type: ignore[arg-type]
+            return FlextResult.ok(reg.data) if reg.success else FlextResult.fail(reg.error or "Registration failed")
         if isinstance(data_or_username, str) and isinstance(email, str) and isinstance(password, str):
             return await self.register(data_or_username, email, password, role=role or FlextAuthConstants.UserRoles.USER)
         return FlextResult.fail("Invalid registration parameters")
@@ -318,8 +329,9 @@ class FlextAuth:
         return await self._service.authenticate_user(username=username, password=password, ip_address=ip_address)
 
     async def validate_token(self, token: str) -> FlextResult[object]:
-        # Forward raw security context for helpers that expect object with attributes
-        return await self._service.validate_token(token)
+        # Forward raw security context for helpers that expect object with attributes, but conform facade type
+        res = await self._service.validate_token(token)
+        return FlextResult.ok(res.data) if res.success else FlextResult.fail(res.error or "Token validation failed")
 
     async def login_and_validate(self, username: str, password: str) -> FlextResult[dict[str, object]]:
         login_result = await self.login(username, password)

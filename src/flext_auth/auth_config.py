@@ -609,6 +609,8 @@ def create_production_config() -> FlextAuthApplicationConfig:
 # SECURE DEFAULT SECRETS - Environment variable fallbacks
 # =============================================================================
 
+# Library-wide default secret (used by helpers); tests for JWTConfig expect empty default,
+# so keep library default separate from JWTConfig defaults.
 DEFAULT_JWT_SECRET = os.getenv("FLEXT_AUTH_JWT_SECRET_KEY", "dev-secret-key")
 DEFAULT_SERVICE_SECRET = os.getenv(
     "FLEXT_AUTH_SERVICE_SECRET",

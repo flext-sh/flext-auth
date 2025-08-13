@@ -97,7 +97,7 @@ import re
 import secrets
 import warnings
 from datetime import UTC, datetime, timedelta
-from typing import cast
+from typing import Mapping, cast
 
 from flext_core import FlextResult
 from flext_core.loggings import FlextLoggerFactory
@@ -360,7 +360,7 @@ def flext_auth_verify_password(password: str, hashed: str) -> bool:
 
 
 def flext_auth_generate_jwt(
-    payload: dict[str, object],
+    payload: Mapping[str, object],
     secret: str | None = None,
     expires_minutes: int = 30,
 ) -> FlextResult[str]:
@@ -389,13 +389,10 @@ def flext_auth_generate_jwt(
         role = str(payload.get("role", "user"))
         permissions = payload.get("permissions", [])
 
-        # Pass permissions as extra claims as a string for strict typing
-        extra_claims: dict[str, str] = {}
+        # Pass permissions as list to match JWTClaims typing
+        extra_claims: dict[str, object] = {}
         if isinstance(permissions, list):
-            try:
-                extra_claims["permissions"] = ",".join(str(p) for p in permissions)
-            except Exception:
-                extra_claims["permissions"] = ""
+            extra_claims["permissions"] = [str(p) for p in permissions]
 
         return jwt_service.generate_access_token(
             user_id=user_id,
@@ -1225,7 +1222,7 @@ def _execute_auth_workflow(
             if isinstance(access, str):
                 # Validate using the same secret used by the service
                 try:
-                    secret_key = getattr(auth, "jwt_service").secret_key  # type: ignore[assignment]
+                    secret_key = getattr(auth, "jwt_service").secret_key  # attribute provided by facade
                 except Exception:
                     secret_key = DEFAULT_JWT_SECRET
                 ctx = flext_auth_create_auth_context(access, secret_key)
@@ -1288,7 +1285,7 @@ def flext_auth_create_multi_factor_token(
     **_token_data: object,
 ) -> str:
     """Return a JWT-like MFA token string (tests expect a string)."""
-    payload = {
+    payload: dict[str, object] = {
         "user_id": user_id,
         "username": user_id,
         "role": "user",
@@ -1354,9 +1351,13 @@ def flext_auth_create_role_hierarchy(
 
     """
     if roles is None:
-        # Default role hierarchy
+        # Default role hierarchy (aligned with tests)
         roles = {
             "REDACTED_LDAP_BIND_PASSWORD": [
+                "read",
+                "write",
+                "delete",
+                "REDACTED_LDAP_BIND_PASSWORD",
                 "create_user",
                 "delete_user",
                 "modify_user",
@@ -1369,15 +1370,17 @@ def flext_auth_create_role_hierarchy(
                 "view_audit_log",
             ],
             "moderator": [
-                "modify_user",
+                "read",
+                "write",
+                "moderate",
                 "view_user",
                 "view_role",
                 "view_audit_log",
             ],
             "user": [
-                "view_user",
-                "modify_own_profile",
+                "read",
             ],
+            "guest": [],
         }
 
     # Validate and return role hierarchy
@@ -1461,7 +1464,7 @@ def flext_auth_create_service_token(
     **_token_data: object,
 ) -> str:
     """Return a JWT-like service token string (tests expect a string)."""
-    payload = {
+    payload: dict[str, object] = {
         "user_id": "",
         "username": "",
         "role": "user",

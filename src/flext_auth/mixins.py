@@ -298,7 +298,9 @@ class FlextAuthMixin:
             result = asyncio.run(_auth())
             if not result.success or not result.data:
                 return {}
-            data: dict[str, object] = result.data if isinstance(result.data, dict) else {}
+            # Auth service returns dict[str, object] in happy path
+            data_obj = result.data
+            data: dict[str, object] = data_obj if isinstance(data_obj, dict) else {}
             return {
                 "user": data.get("user", {}),
                 "session": data.get("session", {}),
