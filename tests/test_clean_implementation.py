@@ -33,11 +33,11 @@ def test_flext_auth_hash_password() -> None:
     # Test verification
     if not (flext_auth_verify_password(password, hashed)):
         raise AssertionError(
-            f"Expected True, got {flext_auth_verify_password(password, hashed)}"
+            f"Expected True, got {flext_auth_verify_password(password, hashed)}",
         )
     if flext_auth_verify_password("wrong", hashed):
         raise AssertionError(
-            f"Expected False, got {flext_auth_verify_password('wrong', hashed)}"
+            f"Expected False, got {flext_auth_verify_password('wrong', hashed)}",
         )
 
 
@@ -67,11 +67,11 @@ def test_flext_auth_validation_helpers() -> None:
     # Email validation
     if not (flext_auth_validate_email("test@example.com")):
         raise AssertionError(
-            f"Expected True, got {flext_auth_validate_email('test@example.com')}"
+            f"Expected True, got {flext_auth_validate_email('test@example.com')}",
         )
     if flext_auth_validate_email("invalid-email"):
         raise AssertionError(
-            f"Expected False, got {flext_auth_validate_email('invalid-email')}"
+            f"Expected False, got {flext_auth_validate_email('invalid-email')}",
         )
 
     # Password strength

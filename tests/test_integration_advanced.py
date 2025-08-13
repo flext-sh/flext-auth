@@ -187,11 +187,11 @@ class TestFlextResultPattern:
         functions_to_test = [
             lambda: flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False),
             lambda: flext_auth_generate_jwt(
-                {"user_id": "test", "username": "test", "role": "user"}
+                {"user_id": "test", "username": "test", "role": "user"},
             ),
             lambda: flext_auth_validate_jwt("invalid_token"),  # This should fail
             lambda: flext_auth_complete_workflow(
-                "testuser", "test@example.com", "TestPass123!"
+                "testuser", "test@example.com", "TestPass123!",
             ),
         ]
 
@@ -222,7 +222,7 @@ class TestFlextResultPattern:
 
             # Chain another operation
             jwt_result = flext_auth_generate_jwt(
-                {"user_id": "chain_test", "username": "chainuser", "role": "user"}
+                {"user_id": "chain_test", "username": "chainuser", "role": "user"},
             )
             assert jwt_result.success
 

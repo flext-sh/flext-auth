@@ -94,7 +94,7 @@ def example_jwt_operations() -> None:
     # Gerar JWT
     secret = EXAMPLE_JWT_SECRET
     token_result = flext_auth_generate_jwt(
-        user_payload, secret=secret, expires_minutes=60
+        user_payload, secret=secret, expires_minutes=60,
     )
     if token_result.success:
         token = token_result.data
@@ -186,7 +186,7 @@ def example_role_permission_system() -> None:
     print("\nPermission Validation Tests:")
     for role, permission in test_cases:
         has_permission = flext_auth_validate_permissions(
-            role, permission, role_hierarchy
+            role, permission, role_hierarchy,
         )
         status = "✅ Allowed" if has_permission else "❌ Denied"
         print(f"  {role} -> {permission}: {status}")
@@ -264,7 +264,7 @@ def example_decorators() -> None:
     # Função que requer autenticação
     @flext_auth_required(secret_key=EXAMPLE_TEST_SECRET)
     def protected_endpoint(
-        _request: dict[str, object], **kwargs: object
+        _request: dict[str, object], **kwargs: object,
     ) -> dict[str, object]:
         """Endpoint protegido que requer autenticação."""
         auth_context = kwargs.get("auth_context", {})
@@ -280,7 +280,7 @@ def example_decorators() -> None:
         secret_key=EXAMPLE_TEST_SECRET,
     )
     def REDACTED_LDAP_BIND_PASSWORD_endpoint(
-        _request: dict[str, object], **_kwargs: object
+        _request: dict[str, object], **_kwargs: object,
     ) -> dict[str, object]:
         """Endpoint que requer role de REDACTED_LDAP_BIND_PASSWORD."""
         return {"message": "Admin access granted", "REDACTED_LDAP_BIND_PASSWORD_only": True}
@@ -288,7 +288,7 @@ def example_decorators() -> None:
     # Função que requer permissão específica
     @flext_auth_permission_required("delete")
     def delete_endpoint(
-        _request: dict[str, object], **_kwargs: object
+        _request: dict[str, object], **_kwargs: object,
     ) -> dict[str, object]:
         """Endpoint que requer permissão de delete."""
         return {"message": "Delete permission granted"}
@@ -313,7 +313,7 @@ def example_decorators() -> None:
 
 
 async def _handle_batch_registration(
-    batch_ops: object, users_data: list[dict[str, str]]
+    batch_ops: object, users_data: list[dict[str, str]],
 ) -> bool:
     """Handle batch user registration."""
     batch_register_result = await batch_ops.register_multiple(
@@ -332,7 +332,7 @@ async def _handle_batch_registration(
 
 
 async def _handle_batch_sessions(
-    batch_ops: object, credentials: list[tuple[str, str]]
+    batch_ops: object, credentials: list[tuple[str, str]],
 ) -> None:
     """Handle batch session creation and token validation."""
     batch_sessions_result = await batch_ops.create_multiple_sessions(

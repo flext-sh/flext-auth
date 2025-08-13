@@ -840,7 +840,8 @@ def validate_user_profile_update(
 
 
 def _validate_ip_address(
-    security_data: dict[str, object], validated_context: dict[str, str],
+    security_data: dict[str, object],
+    validated_context: dict[str, str],
 ) -> FlextResult[None]:
     """Validate IP address in security data."""
     if "source_ip" not in security_data:
@@ -858,7 +859,8 @@ def _validate_ip_address(
 
 
 def _validate_user_agent(
-    security_data: dict[str, object], validated_context: dict[str, str],
+    security_data: dict[str, object],
+    validated_context: dict[str, str],
 ) -> FlextResult[None]:
     """Validate user agent in security data."""
     if "user_agent" not in security_data:
@@ -873,7 +875,8 @@ def _validate_user_agent(
 
 
 def _validate_permissions(
-    security_data: dict[str, object], validated_context: dict[str, str],
+    security_data: dict[str, object],
+    validated_context: dict[str, str],
 ) -> FlextResult[None]:
     """Validate permissions in security data."""
     if "required_permissions" not in security_data:
@@ -893,7 +896,8 @@ def _validate_permissions(
 
 
 def _validate_security_level(
-    security_data: dict[str, object], validated_context: dict[str, str],
+    security_data: dict[str, object],
+    validated_context: dict[str, str],
 ) -> FlextResult[None]:
     """Validate security level in security data."""
     if "security_level" not in security_data:

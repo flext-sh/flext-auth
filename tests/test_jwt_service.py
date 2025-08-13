@@ -123,7 +123,7 @@ class TestJWTService:
         assert not result.success
         if "Failed to verify token" not in result.error:
             raise AssertionError(
-                f"Expected {'Failed to verify token'} in {result.error}"
+                f"Expected {'Failed to verify token'} in {result.error}",
             )
 
     def test_verify_token_expired(self) -> None:
@@ -172,7 +172,7 @@ class TestJWTService:
         assert not verify_result.success
         if "Failed to verify token" not in verify_result.error:
             raise AssertionError(
-                f"Expected {'Failed to verify token'} in {verify_result.error}"
+                f"Expected {'Failed to verify token'} in {verify_result.error}",
             )
 
     def test_refresh_token_flow(self) -> None:
@@ -223,7 +223,7 @@ class TestJWTService:
         assert not result.success
         if "Failed to decode token" not in result.error:
             raise AssertionError(
-                f"Expected {'Failed to decode token'} in {result.error}"
+                f"Expected {'Failed to decode token'} in {result.error}",
             )
 
     def test_token_expiration_validation(self) -> None:

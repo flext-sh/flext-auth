@@ -74,7 +74,7 @@ class TestFlextAuthMainClass:
         assert auth_with_config is not None
         if auth_with_config._config.access_token_expire_minutes != 15:
             raise AssertionError(
-                f"Expected {15}, got {auth_with_config._config.access_token_expire_minutes}"
+                f"Expected {15}, got {auth_with_config._config.access_token_expire_minutes}",
             )
         assert auth_with_config._config.bcrypt_rounds == 4
 
@@ -133,11 +133,11 @@ class TestFlextAuthMainClass:
         assert "tokens" in result.data
         if result.data["user"]["username"] != "loginuser":
             raise AssertionError(
-                f"Expected {'loginuser'}, got {result.data['user']['username']}"
+                f"Expected {'loginuser'}, got {result.data['user']['username']}",
             )
         if "access_token" not in result.data["tokens"]:
             raise AssertionError(
-                f"Expected {'access_token'} in {result.data['tokens']}"
+                f"Expected {'access_token'} in {result.data['tokens']}",
             )
 
     @pytest.mark.asyncio
@@ -148,7 +148,7 @@ class TestFlextAuthMainClass:
         assert not result.success
         if "Invalid username or password" not in result.error:
             raise AssertionError(
-                f"Expected {'Invalid username or password'} in {result.error}"
+                f"Expected {'Invalid username or password'} in {result.error}",
             )
 
     @pytest.mark.asyncio
@@ -170,7 +170,7 @@ class TestFlextAuthMainClass:
         assert result.success
         if result.data["username"] != "tokenuser":
             raise AssertionError(
-                f"Expected {'tokenuser'}, got {result.data['username']}"
+                f"Expected {'tokenuser'}, got {result.data['username']}",
             )
         if "user_id" not in result.data:
             raise AssertionError(f"Expected {'user_id'} in {result.data}")
@@ -184,7 +184,7 @@ class TestFlextAuthMainClass:
         assert not result.success
         if "Token validation failed" not in result.error:
             raise AssertionError(
-                f"Expected {'Token validation failed'} in {result.error}"
+                f"Expected {'Token validation failed'} in {result.error}",
             )
 
     @pytest.mark.asyncio
@@ -278,7 +278,7 @@ class TestFlextAuthHelpers:
 
         if not (flext_auth_verify_password(password, hashed)):
             raise AssertionError(
-                f"Expected True, got {flext_auth_verify_password(password, hashed)}"
+                f"Expected True, got {flext_auth_verify_password(password, hashed)}",
             )
 
     def test_verify_password_incorrect(self) -> None:
@@ -289,7 +289,7 @@ class TestFlextAuthHelpers:
 
         if flext_auth_verify_password(wrong_password, hashed):
             raise AssertionError(
-                f"Expected False, got {flext_auth_verify_password(wrong_password, hashed)}"
+                f"Expected False, got {flext_auth_verify_password(wrong_password, hashed)}",
             )
 
     def test_generate_jwt_basic(self) -> None:
@@ -308,7 +308,7 @@ class TestFlextAuthHelpers:
         payload = {"user_id": "123", "username": "test"}
         secret = "custom-secret-key-12345678901234567890"
         token_result = flext_auth_generate_jwt(
-            payload, secret=secret, expires_minutes=60
+            payload, secret=secret, expires_minutes=60,
         )
 
         assert token_result.success, f"JWT generation failed: {token_result.error}"
@@ -385,7 +385,7 @@ class TestFlextAuthHelpers:
             raise AssertionError(f"Expected {result['score']} >= {4}")
         if result["strength"] not in {"strong", "very strong", "excellent", "medium"}:
             raise AssertionError(
-                f"Expected {result['strength']} in {{'strong', 'very strong', 'excellent', 'medium'}}"
+                f"Expected {result['strength']} in {{'strong', 'very strong', 'excellent', 'medium'}}",
             )
         assert isinstance(result["feedback"], list)
 
@@ -423,7 +423,7 @@ class TestFlextAuthHelpers:
         expected_permissions = ["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"]
         if session["permissions"] != expected_permissions:
             raise AssertionError(
-                f"Expected {expected_permissions}, got {session['permissions']}"
+                f"Expected {expected_permissions}, got {session['permissions']}",
             )
 
         # Verify expires_at is in the future
@@ -471,7 +471,7 @@ class TestFlextAuthIntegration:
         assert validate_result.success
         if validate_result.data["username"] != "integracaouser":
             raise AssertionError(
-                f"Expected {'integracaouser'}, got {validate_result.data['username']}"
+                f"Expected {'integracaouser'}, got {validate_result.data['username']}",
             )
 
         # 4. Logout
@@ -484,7 +484,7 @@ class TestFlextAuthIntegration:
         email = "workflow@example.com"
         if not (flext_auth_validate_email(email)):
             raise AssertionError(
-                f"Expected True, got {flext_auth_validate_email(email)}"
+                f"Expected True, got {flext_auth_validate_email(email)}",
             )
 
         # 2. Password validation
@@ -500,7 +500,7 @@ class TestFlextAuthIntegration:
         # 4. Password verification
         if not (flext_auth_verify_password(password, hashed)):
             raise AssertionError(
-                f"Expected True, got {flext_auth_verify_password(password, hashed)}"
+                f"Expected True, got {flext_auth_verify_password(password, hashed)}",
             )
 
         # 5. JWT creation

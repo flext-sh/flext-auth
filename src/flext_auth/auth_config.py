@@ -88,13 +88,17 @@ MIN_JWT_SECRET_LENGTH = 32
 # AUTHENTICATION CONSTANTS
 # =============================================================================
 
+
 class FlextAuthConstants:
     """Authentication constants for validation patterns."""
 
     USERNAME_PATTERN = r"^[a-zA-Z0-9_-]+$"
     MIN_PASSWORD_LENGTH = 8
     MAX_PASSWORD_LENGTH = 128
-    PASSWORD_VALIDATION_REGEX = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).+$"  # noqa: S105 - Password validation regex pattern, not a password
+    PASSWORD_VALIDATION_REGEX = (
+        r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).+$"  # noqa: S105 - Password validation regex pattern, not a password
+    )
+
 
 # =============================================================================
 # CENTRALIZED CONFIGURATION MODELS - Using flext-core patterns

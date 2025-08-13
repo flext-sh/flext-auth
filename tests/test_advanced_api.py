@@ -81,7 +81,7 @@ class TestFlextAuthMixin:
         # Test validation
         if not (obj.flext_auth_validate_all("test123")):
             raise AssertionError(
-                f"Expected True, got {obj.flext_auth_validate_all('test123')}"
+                f"Expected True, got {obj.flext_auth_validate_all('test123')}",
             )
         assert obj.flext_auth_validate_all("test") is False  # Too short
         assert obj.flext_auth_validate_all("test@123") is False  # Not alphanumeric
@@ -434,7 +434,7 @@ class TestSpecializedDecorators:
         # Test with REDACTED_LDAP_BIND_PASSWORD token
         REDACTED_LDAP_BIND_PASSWORD_payload = {"user_id": "123", "role": FLEXT_AUTH_ADMIN}
         REDACTED_LDAP_BIND_PASSWORD_token_result = flext_auth_generate_jwt(
-            REDACTED_LDAP_BIND_PASSWORD_payload, secret="test-secret"
+            REDACTED_LDAP_BIND_PASSWORD_payload, secret="test-secret",
         )
         assert REDACTED_LDAP_BIND_PASSWORD_token_result.success, (
             f"JWT generation failed: {REDACTED_LDAP_BIND_PASSWORD_token_result.error}"
@@ -485,7 +485,7 @@ class TestSpecializedDecorators:
 
         @flext_auth_permission_required("write")
         def protected_function(
-            _request: dict[str, object], **kwargs: object
+            _request: dict[str, object], **kwargs: object,
         ) -> dict[str, object]:
             auth_context = kwargs.get("auth_context", {})
             return {
@@ -515,7 +515,7 @@ class TestSpecializedDecorators:
         """Test rate limiting functionality."""
         # Rate limiting is implemented as a decorator in __init__.py
         rate_limit_decorator = flext_auth_rate_limit(
-            _max_requests=2, _window_seconds=3600
+            _max_requests=2, _window_seconds=3600,
         )
 
         # Verify rate limit decorator
@@ -534,7 +534,7 @@ class TestSpecializedDecorators:
         result1 = limited_function(mock_request1)
         if result1["message"] != "Called with: call1":
             raise AssertionError(
-                f"Expected {'Called with: call1'}, got {result1['message']}"
+                f"Expected {'Called with: call1'}, got {result1['message']}",
             )
 
     def test_decorators_without_token(self) -> None:
@@ -593,11 +593,11 @@ class TestIntegration:
             raise AssertionError(f"Expected True, got {response['success']}")
         if response["data"]["username"] != "testuser":
             raise AssertionError(
-                f"Expected {'testuser'}, got {response['data']['username']}"
+                f"Expected {'testuser'}, got {response['data']['username']}",
             )
         if "password" in response["data"]:  # Sensitive data should be filtered out
             raise AssertionError(
-                f"Expected 'password' not in {response['data']} - sensitive data should be filtered"
+                f"Expected 'password' not in {response['data']} - sensitive data should be filtered",
             )
 
     def test_end_to_end_workflow(self) -> None:
@@ -623,7 +623,7 @@ class TestIntegration:
         ) -> dict[str, object]:
             auth_context = kwargs.get("auth_context", {})
             filtered_user = flext_auth_filter_user_data(
-                auth_context, exclude_fields=["password"]
+                auth_context, exclude_fields=["password"],
             )
             return flext_auth_build_response(
                 success=True,

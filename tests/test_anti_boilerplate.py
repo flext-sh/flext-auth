@@ -87,7 +87,7 @@ class TestFlextAuthDecorators:
             raise AssertionError(f"Expected {401}, got {result['status']}")
         if "Authentication required" not in result["error"]:
             raise AssertionError(
-                f"Expected {'Authentication required'} in {result['error']}"
+                f"Expected {'Authentication required'} in {result['error']}",
             )
 
     def test_flext_auth_role_required_with_correct_role(self) -> None:
@@ -137,7 +137,7 @@ class TestFlextAuthDecorators:
             raise AssertionError(f"Expected {403}, got {result['status']}")
         if "Role 'REDACTED_LDAP_BIND_PASSWORD' required" not in result["error"]:
             raise AssertionError(
-                f"Expected {"Role 'REDACTED_LDAP_BIND_PASSWORD' required"} in {result['error']}"
+                f"Expected {"Role 'REDACTED_LDAP_BIND_PASSWORD' required"} in {result['error']}",
             )
 
     def test_flext_auth_permission_required_with_valid_permission(self) -> None:
@@ -185,7 +185,7 @@ class TestFlextAuthDecorators:
         if "error" in result:
             if "Permission 'delete' required" not in result["error"]:
                 raise AssertionError(
-                    f"Expected {"Permission 'delete' required"} in {result['error']}"
+                    f"Expected {"Permission 'delete' required"} in {result['error']}",
                 )
         else:
             # If no error field, the decorator allowed the function to execute
@@ -213,7 +213,7 @@ class TestFlextAuthUltraHelpers:
         assert "auth_context" in result.data
         if result.data["user"]["username"] != "testuser":
             raise AssertionError(
-                f"Expected {'testuser'}, got {result.data['user']['username']}"
+                f"Expected {'testuser'}, got {result.data['user']['username']}",
             )
         assert result.data["user"]["email"] == "test@example.com"
 
@@ -240,7 +240,7 @@ class TestFlextAuthUltraHelpers:
         assert not result.success
         if "Username, email and password are required" not in result.error:
             raise AssertionError(
-                f"Expected {'Username, email and (password are required'} in {result.error}"
+                f"Expected {'Username, email and (password are required'} in {result.error}",
             )
 
     def test_flext_auth_instant_api_success(self) -> None:
@@ -272,7 +272,7 @@ class TestFlextAuthUltraHelpers:
         assert result.success
         if result.data["user"] != "custom_service":
             raise AssertionError(
-                f"Expected {'custom_service'}, got {result.data['user']}"
+                f"Expected {'custom_service'}, got {result.data['user']}",
             )
         assert result.data["scope"] == "custom_scope"
         if result.data["expires_days"] != 30:
@@ -285,7 +285,7 @@ class TestFlextAuthUltraHelpers:
         assert not result.success
         if "Expires days must be between 1 and 3650" not in result.error:
             raise AssertionError(
-                f"Expected {'Expires days must be between 1 and 3650'} in {result.error}"
+                f"Expected {'Expires days must be between 1 and 3650'} in {result.error}",
             )
 
     def test_flext_auth_instant_api_missing_params(self) -> None:
@@ -295,7 +295,7 @@ class TestFlextAuthUltraHelpers:
         assert not result.success
         if "Username and scope are required" not in result.error:
             raise AssertionError(
-                f"Expected {'Username and scope are required'} in {result.error}"
+                f"Expected {'Username and scope are required'} in {result.error}",
             )
 
     def test_flext_auth_check_token_valid(self) -> None:
@@ -327,7 +327,7 @@ class TestFlextAuthUltraHelpers:
         assert not result.success
         if "Token validation failed" not in result.error:
             raise AssertionError(
-                f"Expected {'Token validation failed'} in {result.error}"
+                f"Expected {'Token validation failed'} in {result.error}",
             )
 
     def test_flext_auth_check_token_invalid_format(self) -> None:

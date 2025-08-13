@@ -78,22 +78,28 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import os
+import secrets
 from datetime import UTC, datetime, timedelta
+from enum import StrEnum
 
 import jwt
 from flext_core import FlextResult, get_logger
 
+from flext_auth.constants import FlextAuthConstants
 from flext_auth.domain_value_objects import (
     FlextJWTClaims as JWTClaims,
 )
 
 # Constants for JWT configuration
 
-DEV_SECRET_KEY = "dev-secret-key-change-in-production"  # noqa: S105 - Development default, must be changed in production
+DEV_SECRET_KEY = os.getenv("FLEXT_JWT_SECRET", secrets.token_urlsafe(32))
 
-ACCESS_TOKEN_TYPE = "access"  # noqa: S105 - Token type constant, not a password
+class TokenType(StrEnum):
+    """Enumeration of supported JWT token types."""
 
-REFRESH_TOKEN_TYPE = "refresh"  # noqa: S105 - Token type constant, not a password
+    ACCESS = FlextAuthConstants.TokenTypes.ACCESS
+    REFRESH = FlextAuthConstants.TokenTypes.REFRESH
 
 # Initialize logger using FLEXT patterns
 # logger_factory removed
@@ -193,7 +199,7 @@ class FlextJWTService:
                 "role": role,
                 "iat": int(now.timestamp()),
                 "exp": int(expires_at.timestamp()),
-                "token_type": ACCESS_TOKEN_TYPE,
+                "token_type": TokenType.ACCESS,
             }
 
             if session_id:
@@ -224,7 +230,7 @@ class FlextJWTService:
                 "sub": user_id,
                 "iat": int(now.timestamp()),
                 "exp": int(expires_at.timestamp()),
-                "token_type": REFRESH_TOKEN_TYPE,
+                "token_type": TokenType.REFRESH,
             }
 
             if session_id:
@@ -316,7 +322,7 @@ class FlextJWTService:
                 return FlextResult.fail("No claims in refresh token")
 
             # Ensure it's a refresh token
-            if claims.token_type != REFRESH_TOKEN_TYPE:
+            if claims.token_type != TokenType.REFRESH:
                 return FlextResult.fail("Invalid token type for refresh")
 
             # Generate new access token (we need to get user details)

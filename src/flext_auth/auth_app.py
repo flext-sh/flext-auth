@@ -28,6 +28,8 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import asyncio
+import os
+import secrets
 from dataclasses import dataclass
 
 from flext_core import FlextResult
@@ -63,7 +65,7 @@ class FlextAuthServiceConfig:
     max_login_attempts: int = 5
     lockout_duration_minutes: int = 30
     session_timeout_minutes: int = 60
-    jwt_secret_key: str = "dev-secret-key-change-in-production"  # noqa: S105
+    jwt_secret_key: str = os.getenv("FLEXT_JWT_SECRET", secrets.token_urlsafe(32))
 
 
 # =============================================================================
@@ -188,22 +190,25 @@ class FlextAuthService:
 
 
 def create_auth_service_dependencies(
-    jwt_secret: str = "dev-secret-key-change-in-production",  # noqa: S107
+    jwt_secret: str | None = None,
 ) -> FlextAuthServiceDependencies:
     """Create authentication service dependencies."""
-    config = FlextAuthServiceConfig(jwt_secret_key=jwt_secret)
+    effective_secret = jwt_secret or os.getenv("FLEXT_JWT_SECRET", secrets.token_urlsafe(32))
+    # Ensure non-None secret for strict typing
+    nonnull_secret: str = effective_secret or secrets.token_urlsafe(32)
+    config = FlextAuthServiceConfig(jwt_secret_key=nonnull_secret)
 
     return FlextAuthServiceDependencies(
         user_repository=InMemoryUserRepository(),
         session_repository=InMemorySessionRepository(),
         password_service=FlextPasswordService(),
-        jwt_service=FlextJWTService(secret_key=jwt_secret),
+        jwt_service=FlextJWTService(secret_key=nonnull_secret),
         config=config,
     )
 
 
 def create_auth_service(
-    jwt_secret: str = "dev-secret-key-change-in-production",  # noqa: S107
+    jwt_secret: str | None = None,
 ) -> FlextAuthService:
     """Create configured authentication service."""
     dependencies = create_auth_service_dependencies(jwt_secret)

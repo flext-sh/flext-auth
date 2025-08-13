@@ -39,6 +39,7 @@ import string
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from enum import StrEnum
 
 import bcrypt
 import jwt
@@ -58,6 +59,7 @@ from flext_auth.auth_models import (
     InMemoryUserRepository,
 )
 from flext_auth.auth_session import InMemorySessionRepository
+from flext_auth.constants import FlextAuthConstants
 
 # =============================================================================
 # CONSTANTS
@@ -79,12 +81,14 @@ TOKEN_BYTES = 32
 
 # JWT service constants - Use environment or generate
 DEV_SECRET_KEY = os.getenv("DEV_SECRET_KEY", f"dev-{secrets.token_urlsafe(32)}")
-# Token type constants (not passwords, just identifiers) - suppress S105
-ACCESS_TOKEN_TYPE = "access"  # noqa: S105
-REFRESH_TOKEN_TYPE = "refresh"  # noqa: S105
+
+
+class TokenType(StrEnum):
+    ACCESS = FlextAuthConstants.TokenTypes.ACCESS
+    REFRESH = FlextAuthConstants.TokenTypes.REFRESH
 
 # Application service constants
-TEST_JWT_SECRET = os.getenv("TEST_JWT_SECRET", f"test-{secrets.token_urlsafe(32)}")
+TEST_JWT_SECRET = os.getenv("TEST_JWT_SECRET", secrets.token_urlsafe(32))
 MAX_PASSWORD_LENGTH = 128  # Add constant for magic value
 PASSWORD_CHANGE_SUCCESS = True
 PERMISSION_GRANTED = True
@@ -548,7 +552,7 @@ class FlextJWTService:
                 "role": role,
                 "iat": int(now.timestamp()),
                 "exp": int(expires_at.timestamp()),
-                "token_type": ACCESS_TOKEN_TYPE,
+                "token_type": FlextAuthConstants.TokenTypes.ACCESS,
             }
 
             if session_id:
@@ -579,7 +583,7 @@ class FlextJWTService:
                 "sub": user_id,
                 "iat": int(now.timestamp()),
                 "exp": int(expires_at.timestamp()),
-                "token_type": REFRESH_TOKEN_TYPE,
+                "token_type": FlextAuthConstants.TokenTypes.REFRESH,
             }
 
             if session_id:
@@ -671,7 +675,7 @@ class FlextJWTService:
                 return FlextResult.fail("No claims in refresh token")
 
             # Ensure it's a refresh token
-            if claims.token_type != REFRESH_TOKEN_TYPE:
+            if claims.token_type != FlextAuthConstants.TokenTypes.REFRESH:
                 return FlextResult.fail("Invalid token type for refresh")
 
             # Generate new access token (we need to get user details)

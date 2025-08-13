@@ -69,7 +69,6 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, cast
-from flext_auth.typings import FlextTypes
 
 from flext_core import (
     FlextAlreadyExistsError,
@@ -79,6 +78,7 @@ from flext_core import (
     get_logger,
 )
 
+from flext_auth.constants import FlextAuthConstants
 from flext_auth.domain_entities import (
     FlextLoginAttempt as LoginAttempt,
     FlextSession as Session,
@@ -94,7 +94,8 @@ from flext_auth.domain_value_objects import (
     FlextUserEmail as UserEmail,
     FlextUsername as Username,
 )
-from flext_auth.jwt import REFRESH_TOKEN_TYPE
+
+REFRESH_TOKEN_TYPE = FlextAuthConstants.TokenTypes.REFRESH
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable

@@ -122,10 +122,14 @@ class FlextAuthValidators:
             return FlextResult.fail("Username cannot be empty")
 
         if len(username) < MIN_USERNAME_LENGTH:
-            return FlextResult.fail(f"Username must be at least {MIN_USERNAME_LENGTH} characters")
+            return FlextResult.fail(
+                f"Username must be at least {MIN_USERNAME_LENGTH} characters",
+            )
 
         if len(username) > MAX_USERNAME_LENGTH:
-            return FlextResult.fail(f"Username cannot exceed {MAX_USERNAME_LENGTH} characters")
+            return FlextResult.fail(
+                f"Username cannot exceed {MAX_USERNAME_LENGTH} characters",
+            )
 
         if not re.match(FlextAuthConstants.USERNAME_PATTERN, username):
             return FlextResult.fail("Username contains invalid characters")
@@ -137,6 +141,7 @@ class FlextAuthValidators:
         """Validate email using flext-core validators."""
         # Use inline email validation since FlextValidators.is_email is not available
         import re
+
         email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         if not re.match(email_pattern, email):
             return FlextResult.fail("Invalid email format")

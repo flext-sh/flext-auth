@@ -46,13 +46,13 @@ class TestUsername:
 
         # Test minimum length - Pydantic validation prevents object creation
         with pytest.raises(
-            ValidationError, match="String should have at least 3 characters"
+            ValidationError, match="String should have at least 3 characters",
         ):
             FlextUsername(value="ab")
 
         # Test maximum length - Pydantic validation prevents object creation
         with pytest.raises(
-            ValidationError, match="String should have at most 50 characters"
+            ValidationError, match="String should have at most 50 characters",
         ):
             FlextUsername(value="a" * 51)
 
@@ -97,13 +97,13 @@ class TestPlainPassword:
 
         # Test minimum length - Pydantic validation prevents object creation
         with pytest.raises(
-            ValidationError, match="String should have at least 8 characters"
+            ValidationError, match="String should have at least 8 characters",
         ):
             FlextPlainPassword(value="Short1!")
 
         # Test maximum length - Pydantic validation prevents object creation
         with pytest.raises(
-            ValidationError, match="String should have at most 128 characters"
+            ValidationError, match="String should have at most 128 characters",
         ):
             FlextPlainPassword(value="a" * 129)
 
@@ -123,7 +123,7 @@ class TestPlainPassword:
 
         # Test missing number - field validator prevents object creation
         with pytest.raises(
-            FlextValidationError, match="Password must contain at least one number"
+            FlextValidationError, match="Password must contain at least one number",
         ):
             FlextPlainPassword(value="NoNumbers!")
 
@@ -208,7 +208,7 @@ class TestRefreshToken:
 
         # Test short token
         with pytest.raises(
-            ValueError, match="Refresh token must be at least 32 characters"
+            ValueError, match="Refresh token must be at least 32 characters",
         ):
             FlextRefreshToken(value="short").validate_business_rules()
 
@@ -298,7 +298,7 @@ class TestUserAgent:
         firefox_ua = FlextUserAgent(value="Mozilla/5.0 Firefox/89.0")
         if firefox_ua.get_browser() != "Firefox":
             raise AssertionError(
-                f"Expected {'Firefox'}, got {firefox_ua.get_browser()}"
+                f"Expected {'Firefox'}, got {firefox_ua.get_browser()}",
             )
 
         safari_ua = FlextUserAgent(value="Mozilla/5.0 Safari/537.36")
@@ -312,7 +312,7 @@ class TestUserAgent:
         unknown_ua = FlextUserAgent(value="CustomBrowser/1.0")
         if unknown_ua.get_browser() != "Unknown":
             raise AssertionError(
-                f"Expected {'Unknown'}, got {unknown_ua.get_browser()}"
+                f"Expected {'Unknown'}, got {unknown_ua.get_browser()}",
             )
 
     def test_user_agent_mobile_detection(self) -> None:
@@ -411,7 +411,7 @@ class TestSecurityContext:
         assert context.session_id == "session-123"
         if context.permissions != ["read", "write"]:
             raise AssertionError(
-                f"Expected {['read', 'write']}, got {context.permissions}"
+                f"Expected {['read', 'write']}, got {context.permissions}",
             )
 
     def test_security_context_validation(self) -> None:
@@ -459,7 +459,7 @@ class TestSecurityContext:
             raise AssertionError(f"Expected True, got {context.has_permission('read')}")
         if context.has_permission("delete"):
             raise AssertionError(
-                f"Expected False, got {context.has_permission('delete')}"
+                f"Expected False, got {context.has_permission('delete')}",
             )
         if not (context.is_REDACTED_LDAP_BIND_PASSWORD()):
             raise AssertionError(f"Expected True, got {context.is_REDACTED_LDAP_BIND_PASSWORD()}")

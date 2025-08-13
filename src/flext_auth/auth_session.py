@@ -91,7 +91,8 @@ class InMemorySessionRepository(SessionRepository):
         """Find all sessions for a user."""
         try:
             user_sessions = [
-                session for session in self._sessions.values()
+                session
+                for session in self._sessions.values()
                 if session.user_id == user_id
             ]
             return FlextResult.ok(user_sessions)
@@ -103,7 +104,10 @@ class InMemorySessionRepository(SessionRepository):
         try:
             revoked_count = 0
             for session_id, session in list(self._sessions.items()):
-                if session.user_id == user_id and session.status == FlextSessionStatus.ACTIVE:
+                if (
+                    session.user_id == user_id
+                    and session.status == FlextSessionStatus.ACTIVE
+                ):
                     revoked_session = session.revoke()
                     self._sessions[session_id] = revoked_session
                     revoked_count += 1
@@ -119,7 +123,10 @@ class InMemorySessionRepository(SessionRepository):
             expired_sessions = []
 
             for session_id, session in self._sessions.items():
-                if session.expires_at <= now or session.status == FlextSessionStatus.EXPIRED:
+                if (
+                    session.expires_at <= now
+                    or session.status == FlextSessionStatus.EXPIRED
+                ):
                     expired_sessions.append(session_id)
 
             # Remove expired sessions
@@ -134,7 +141,8 @@ class InMemorySessionRepository(SessionRepository):
         """Get count of active sessions for a user."""
         try:
             active_count = sum(
-                1 for session in self._sessions.values()
+                1
+                for session in self._sessions.values()
                 if session.user_id == user_id
                 and session.status == FlextSessionStatus.ACTIVE
                 and session.expires_at > datetime.now(UTC)

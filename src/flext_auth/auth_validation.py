@@ -195,10 +195,14 @@ class FlextAuthValidators:
             return FlextResult.fail("Username cannot be empty")
 
         if len(username) < _MIN_USERNAME_LENGTH:
-            return FlextResult.fail(f"Username must be at least {_MIN_USERNAME_LENGTH} characters")
+            return FlextResult.fail(
+                f"Username must be at least {_MIN_USERNAME_LENGTH} characters",
+            )
 
         if len(username) > _MAX_USERNAME_LENGTH:
-            return FlextResult.fail(f"Username cannot exceed {_MAX_USERNAME_LENGTH} characters")
+            return FlextResult.fail(
+                f"Username cannot exceed {_MAX_USERNAME_LENGTH} characters",
+            )
 
         if not re.match(FlextAuthConstants.USERNAME_PATTERN, username):
             return FlextResult.fail("Username contains invalid characters")
@@ -808,14 +812,18 @@ def validate_username(username: str) -> FlextResult[str]:
 
     """
     # Fallback to direct validation if field schema is not available
-    if not FlextAuthFieldSchema.USERNAME or not hasattr(FlextAuthFieldSchema.USERNAME, "validate_value"):
+    if not FlextAuthFieldSchema.USERNAME or not hasattr(
+        FlextAuthFieldSchema.USERNAME, "validate_value",
+    ):
         # Use FlextAuthValidators as fallback
         validation_result = FlextAuthValidators.validate_username(username)
         if validation_result.is_success:
             return FlextResult.ok(username)
         return FlextResult.fail(validation_result.error or "Username validation failed")
 
-    field_validation_result: FlextResult[object] = FlextAuthFieldSchema.USERNAME.validate_value(username)
+    field_validation_result: FlextResult[object] = (
+        FlextAuthFieldSchema.USERNAME.validate_value(username)
+    )
     if field_validation_result.is_failure:
         error_msg = field_validation_result.error or "Username validation failed"
         return FlextResult.fail(error_msg)
@@ -833,14 +841,18 @@ def validate_email(email: str) -> FlextResult[str]:
 
     """
     # Fallback to direct validation if field schema is not available
-    if not FlextAuthFieldSchema.EMAIL or not hasattr(FlextAuthFieldSchema.EMAIL, "validate_value"):
+    if not FlextAuthFieldSchema.EMAIL or not hasattr(
+        FlextAuthFieldSchema.EMAIL, "validate_value",
+    ):
         # Use FlextAuthValidators as fallback
         validation_result = FlextAuthValidators.validate_email(email)
         if validation_result.is_success:
             return FlextResult.ok(email)
         return FlextResult.fail(validation_result.error or "Email validation failed")
 
-    field_validation_result: FlextResult[object] = FlextAuthFieldSchema.EMAIL.validate_value(email)
+    field_validation_result: FlextResult[object] = (
+        FlextAuthFieldSchema.EMAIL.validate_value(email)
+    )
     if field_validation_result.is_failure:
         error_msg = field_validation_result.error or "Email validation failed"
         return FlextResult.fail(error_msg)
@@ -858,14 +870,18 @@ def validate_password(password: str) -> FlextResult[str]:
 
     """
     # Fallback to direct validation if field schema is not available
-    if not FlextAuthFieldSchema.PASSWORD or not hasattr(FlextAuthFieldSchema.PASSWORD, "validate_value"):
+    if not FlextAuthFieldSchema.PASSWORD or not hasattr(
+        FlextAuthFieldSchema.PASSWORD, "validate_value",
+    ):
         # Use FlextAuthValidators as fallback
         validation_result = FlextAuthValidators.validate_password(password)
         if validation_result.is_success:
             return FlextResult.ok(password)
         return FlextResult.fail(validation_result.error or "Password validation failed")
 
-    field_validation_result: FlextResult[object] = FlextAuthFieldSchema.PASSWORD.validate_value(password)
+    field_validation_result: FlextResult[object] = (
+        FlextAuthFieldSchema.PASSWORD.validate_value(password)
+    )
     if field_validation_result.is_failure:
         error_msg = field_validation_result.error or "Password validation failed"
         return FlextResult.fail(error_msg)

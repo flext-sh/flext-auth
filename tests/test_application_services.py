@@ -55,7 +55,7 @@ class TestFlextAuthenticationService:
         assert not result.success
         if "Username must be at least 3 characters" not in result.error:
             raise AssertionError(
-                f"Expected {'Username must be at least 3 characters'} in {result.error}"
+                f"Expected {'Username must be at least 3 characters'} in {result.error}",
             )
 
     def test_create_user_invalid_email(self) -> None:
@@ -66,7 +66,7 @@ class TestFlextAuthenticationService:
         assert not result.success
         if "Input should be a valid email address" not in result.error:
             raise AssertionError(
-                f"Expected {'Input should be a valid email address'} in {result.error}"
+                f"Expected {'Input should be a valid email address'} in {result.error}",
             )
 
     def test_create_user_invalid_password(self) -> None:
@@ -77,7 +77,7 @@ class TestFlextAuthenticationService:
         assert not result.success
         if "Password must be at least 8 characters" not in result.error:
             raise AssertionError(
-                f"Expected {'Password must be at least 8 characters'} in {result.error}"
+                f"Expected {'Password must be at least 8 characters'} in {result.error}",
             )
 
     def test_authenticate_user_success(self) -> None:
@@ -102,7 +102,7 @@ class TestFlextAuthenticationService:
         authenticated_user = auth_result.data
         if authenticated_user.username != "testuser":
             raise AssertionError(
-                f"Expected {'testuser'}, got {authenticated_user.username}"
+                f"Expected {'testuser'}, got {authenticated_user.username}",
             )
 
     def test_authenticate_user_wrong_password(self) -> None:
@@ -126,7 +126,7 @@ class TestFlextAuthenticationService:
         assert not auth_result.success
         if "Invalid credentials" not in auth_result.error:
             raise AssertionError(
-                f"Expected {'Invalid credentials'} in {auth_result.error}"
+                f"Expected {'Invalid credentials'} in {auth_result.error}",
             )
 
     def test_authenticate_user_not_found(self) -> None:
@@ -179,7 +179,7 @@ class TestFlextAuthenticationService:
         assert not change_result.success
         if "Current password is incorrect" not in change_result.error:
             raise AssertionError(
-                f"Expected {'Current password is incorrect'} in {change_result.error}"
+                f"Expected {'Current password is incorrect'} in {change_result.error}",
             )
 
     def test_change_password_invalid_new_password(self) -> None:
@@ -200,7 +200,7 @@ class TestFlextAuthenticationService:
         assert not change_result.success
         if "Password must be at least 8 characters" not in change_result.error:
             raise AssertionError(
-                f"Expected {'Password must be at least 8 characters'} in {change_result.error}"
+                f"Expected {'Password must be at least 8 characters'} in {change_result.error}",
             )
 
 
@@ -264,7 +264,7 @@ class TestFlextSessionService:
         assert session.user_agent is None
         if session.status != FlextSessionStatus.ACTIVE:
             raise AssertionError(
-                f"Expected {FlextSessionStatus.ACTIVE}, got {session.status}"
+                f"Expected {FlextSessionStatus.ACTIVE}, got {session.status}",
             )
 
     def test_validate_session_success(self) -> None:
@@ -387,7 +387,7 @@ class TestFlextAuthorizationService:
         assert not result.success
         if "Role name cannot be empty" not in result.error:
             raise AssertionError(
-                f"Expected {'Role name cannot be empty'} in {result.error}"
+                f"Expected {'Role name cannot be empty'} in {result.error}",
             )
 
     def test_check_permission_success(self) -> None:

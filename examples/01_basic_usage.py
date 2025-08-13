@@ -52,11 +52,9 @@ def example_basic_authentication() -> None:
 
     config = AppConfig()
     print(
-
-            f"  JWT Secret: "
-            f"{config.jwt.secret_key[:10] if config.jwt.secret_key else 'Not set'}"
-            "..."
-
+        f"  JWT Secret: "
+        f"{config.jwt.secret_key[:10] if config.jwt.secret_key else 'Not set'}"
+        "...",
     )
     print(f"  Admin Role: {ADMIN_ROLE}")
     print(f"  User Role: {USER_ROLE}")
@@ -231,7 +229,7 @@ def example_ultra_helpers() -> None:
 
     # One-liner completo (registro + login)
     result = flext_auth_complete_workflow(
-        "quickuser", "quick@example.com", "QuickPass123!"
+        "quickuser", "quick@example.com", "QuickPass123!",
     )
     print(f"Complete workflow success: {result.get('success', False)}")
     if result.get("success", False):
@@ -253,7 +251,7 @@ def example_ultra_helpers() -> None:
     if "error" not in user_result:
         auth_result = auth.authenticate_user("testuser", "TestPass123!")
         print(
-            f"Authentication: {'success' if 'error' not in auth_result else 'failed'}"
+            f"Authentication: {'success' if 'error' not in auth_result else 'failed'}",
         )
 
 
@@ -287,7 +285,7 @@ async def example_advanced_registration() -> None:
         # Login e validação em uma operação
         # Login e validação em uma operação
         login_validate_result = await auth.login_and_validate(
-            "advanceduser", "AdvancedPass123!"
+            "advanceduser", "AdvancedPass123!",
         )
         if login_validate_result.success:
             session_data = login_validate_result.data
@@ -324,7 +322,7 @@ def example_complete_workflow() -> None:
         if "token" in workflow_result:
             token = workflow_result["token"]
             print(
-                f"Token: {token[:30] if isinstance(token, str) else str(token)[:30]}..."
+                f"Token: {token[:30] if isinstance(token, str) else str(token)[:30]}...",
             )
         print(f"Permissions: {workflow_result.get('permissions', 'N/A')}")
         auth_context = workflow_result.get("auth_context")

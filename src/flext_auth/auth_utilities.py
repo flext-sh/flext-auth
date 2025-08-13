@@ -162,7 +162,9 @@ def safe_bool(value: object, *, default: bool = False) -> bool:
 # =============================================================================
 
 
-def extract_dict_value(data: dict[str, object], key: str, default: object = None) -> object:
+def extract_dict_value(
+    data: dict[str, object], key: str, default: object = None,
+) -> object:
     """Safely extract value from dictionary."""
     return data.get(key, default)
 
@@ -186,7 +188,9 @@ def filter_sensitive_data(data: dict[str, object]) -> dict[str, object]:
 # =============================================================================
 
 
-def create_error_result(message: str, error_code: str = "AUTH_ERROR") -> FlextResult[None]:
+def create_error_result(
+    message: str, error_code: str = "AUTH_ERROR",
+) -> FlextResult[None]:
     """Create a standardized error result."""
     return FlextResult.fail(f"[{error_code}] {message}")
 

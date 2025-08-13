@@ -72,12 +72,12 @@ class TestFlextAuthEnhancedABI:
         assert "password_strength" in result.data
         if result.data["user"]["username"] != "testuser":
             raise AssertionError(
-                f"Expected {'testuser'}, got {result.data['user']['username']}"
+                f"Expected {'testuser'}, got {result.data['user']['username']}",
             )
         assert result.data["user"]["email"] == "test@example.com"
         if not (result.data["password_strength"]["valid"]):
             raise AssertionError(
-                f"Expected True, got {result.data['password_strength']['valid']}"
+                f"Expected True, got {result.data['password_strength']['valid']}",
             )
 
     @pytest.mark.asyncio
@@ -109,7 +109,7 @@ class TestFlextAuthEnhancedABI:
 
     @pytest.mark.asyncio
     async def test_register_validated_without_password_check(
-        self, auth: FlextAuth
+        self, auth: FlextAuth,
     ) -> None:
         """Test register_validated without password strength check."""
         result = await auth.register_validated(
@@ -147,12 +147,12 @@ class TestFlextAuthEnhancedABI:
             raise AssertionError(f"Expected {'token'} in {result.data}")
         if result.data["context"]["username"] != "testuser":
             raise AssertionError(
-                f"Expected {'testuser'}, got {result.data['context']['username']}"
+                f"Expected {'testuser'}, got {result.data['context']['username']}",
             )
 
     @pytest.mark.asyncio
     async def test_login_and_validate_invalid_credentials(
-        self, auth: FlextAuth
+        self, auth: FlextAuth,
     ) -> None:
         """Test login_and_validate with invalid credentials."""
         result = await auth.login_and_validate("nonexistent", "wrongpassword")
@@ -160,7 +160,7 @@ class TestFlextAuthEnhancedABI:
         assert not result.success
         if "Invalid username or password" not in result.error:
             raise AssertionError(
-                f"Expected {'Invalid username or password'} in {result.error}"
+                f"Expected {'Invalid username or password'} in {result.error}",
             )
 
     @pytest.mark.asyncio
@@ -219,7 +219,7 @@ class TestFlextAuthEnhancedABI:
         # When include_user_data=False, user field should NOT be present
         if "user" in result.data:
             raise AssertionError(
-                f"Expected 'user' not in {result.data} when include_user_data=False"
+                f"Expected 'user' not in {result.data} when include_user_data=False",
             )
 
 
@@ -244,7 +244,7 @@ class TestEnhancedHelpers:
         assert isinstance(auth, FlextAuth)
         if auth._config.security.password_rounds != 6:
             raise AssertionError(
-                f"Expected {6}, got {auth._config.security.password_rounds}"
+                f"Expected {6}, got {auth._config.security.password_rounds}",
             )
 
     def test_create_secure_session_with_permissions(self) -> None:
@@ -268,7 +268,7 @@ class TestEnhancedHelpers:
         assert "write" in REDACTED_LDAP_BIND_PASSWORD_session["permissions"]
         if "delete" not in REDACTED_LDAP_BIND_PASSWORD_session["permissions"]:
             raise AssertionError(
-                f"Expected {'delete'} in {REDACTED_LDAP_BIND_PASSWORD_session['permissions']}"
+                f"Expected {'delete'} in {REDACTED_LDAP_BIND_PASSWORD_session['permissions']}",
             )
 
         # Moderator session
@@ -284,7 +284,7 @@ class TestEnhancedHelpers:
             raise AssertionError(f"Expected {'moderator'}, got {mod_session['role']}")
         if "moderate" not in mod_session["permissions"]:
             raise AssertionError(
-                f"Expected {'moderate'} in {mod_session['permissions']}"
+                f"Expected {'moderate'} in {mod_session['permissions']}",
             )
         assert "REDACTED_LDAP_BIND_PASSWORD" not in mod_session["permissions"]
 
@@ -432,7 +432,7 @@ class TestFlextAuthBatchOperations:
 
     @pytest.mark.asyncio
     async def test_batch_register_multiple_validation_off(
-        self, auth: FlextAuth
+        self, auth: FlextAuth,
     ) -> None:
         """Test batch registration without validation."""
         batch_ops = flext_auth_batch_operations(auth)
@@ -484,7 +484,7 @@ class TestFlextAuthBatchOperations:
         assert not result.success
         if "Batch registration errors" not in result.error:
             raise AssertionError(
-                f"Expected {'Batch registration errors'} in {result.error}"
+                f"Expected {'Batch registration errors'} in {result.error}",
             )
 
 
@@ -512,11 +512,11 @@ class TestIntegrationAdvanced:
         assert register_result.success
         if register_result.data["user"]["role"] != "moderator":
             raise AssertionError(
-                f"Expected {'moderator'}, got {register_result.data['user']['role']}"
+                f"Expected {'moderator'}, got {register_result.data['user']['role']}",
             )
         if not (register_result.data["password_strength"]["valid"]):
             raise AssertionError(
-                f"Expected True, got {register_result.data['password_strength']['valid']}"
+                f"Expected True, got {register_result.data['password_strength']['valid']}",
             )
 
         # Create session with enhanced method
@@ -544,7 +544,7 @@ class TestIntegrationAdvanced:
         email = "advanced@example.com"
         if not (flext_auth_validate_email(email)):
             raise AssertionError(
-                f"Expected True, got {flext_auth_validate_email(email)}"
+                f"Expected True, got {flext_auth_validate_email(email)}",
             )
 
         # Password operations
@@ -566,7 +566,7 @@ class TestIntegrationAdvanced:
         )
         payload = {"user_id": "advanced123", "username": "advanced", "role": "REDACTED_LDAP_BIND_PASSWORD"}
         token_result = flext_auth_generate_jwt(
-            payload, secret=secret, expires_minutes=120
+            payload, secret=secret, expires_minutes=120,
         )
         assert token_result.success, f"JWT generation failed: {token_result.error}"
         token = token_result.data
@@ -633,12 +633,12 @@ class TestNewEnhancedHelpers:
         # Test with default hierarchy
         if not (flext_auth_validate_permissions("REDACTED_LDAP_BIND_PASSWORD", "delete")):
             raise AssertionError(
-                f"Expected True, got {flext_auth_validate_permissions('REDACTED_LDAP_BIND_PASSWORD', 'delete')}"
+                f"Expected True, got {flext_auth_validate_permissions('REDACTED_LDAP_BIND_PASSWORD', 'delete')}",
             )
         assert flext_auth_validate_permissions("moderator", "moderate") is True
         if not (flext_auth_validate_permissions("user", "read")):
             raise AssertionError(
-                f"Expected True, got {flext_auth_validate_permissions('user', 'read')}"
+                f"Expected True, got {flext_auth_validate_permissions('user', 'read')}",
             )
 
         # Test with custom hierarchy
@@ -667,12 +667,12 @@ class TestNewEnhancedHelpers:
         """Test permission validation with invalid permissions."""
         if flext_auth_validate_permissions("user", "delete"):
             raise AssertionError(
-                f"Expected False, got {flext_auth_validate_permissions('user', 'delete')}"
+                f"Expected False, got {flext_auth_validate_permissions('user', 'delete')}",
             )
         assert flext_auth_validate_permissions("guest", "write") is False
         if flext_auth_validate_permissions("nonexistent_role", "read"):
             raise AssertionError(
-                f"Expected False, got {flext_auth_validate_permissions('nonexistent_role', 'read')}"
+                f"Expected False, got {flext_auth_validate_permissions('nonexistent_role', 'read')}",
             )
 
     def test_create_service_token(self) -> None:
@@ -729,7 +729,7 @@ class TestNewEnhancedHelpers:
         assert context is not None
         if context["token_type"] != "access_token":
             raise AssertionError(
-                f"Expected {'access_token'}, got {context['token_type']}"
+                f"Expected {'access_token'}, got {context['token_type']}",
             )
         assert context["user_id"] == "user123"
         if context["username"] != "testuser":
@@ -748,7 +748,7 @@ class TestNewEnhancedHelpers:
         # Service tokens get processed as access tokens by JWT service first
         if context["token_type"] != "access_token":
             raise AssertionError(
-                f"Expected {'access_token'}, got {context['token_type']}"
+                f"Expected {'access_token'}, got {context['token_type']}",
             )
         if "expires_at" not in context:
             raise AssertionError(f"Expected {'expires_at'} in {context}")
@@ -929,7 +929,7 @@ class TestPublicInterfaceEnhanced:
         for item in expected_new_items:
             if item not in __all__:
                 raise AssertionError(
-                    f"Expected {item} to be in __all__, but it was not found"
+                    f"Expected {item} to be in __all__, but it was not found",
                 )
 
     def test_enhanced_namespace_access(self) -> None:

@@ -265,7 +265,9 @@ def show_refactoring_metrics() -> None:
         else:
             net_addition = (current_lines + total_specialized) - original_lines
             # Replace ambiguous unicode info symbol for lint compliance
-            print(f"   Info - Net addition: {net_addition:,} lines (improved structure)")
+            print(
+                f"   Info - Net addition: {net_addition:,} lines (improved structure)",
+            )
 
 
 def main() -> None:

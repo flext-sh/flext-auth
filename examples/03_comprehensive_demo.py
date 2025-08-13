@@ -189,7 +189,7 @@ def demo_all_jwt_operations() -> None:
     # Create auth context (only if token was generated)
     if token:
         auth_context = flext_auth_create_auth_context(
-            token, secret, include_permissions=True
+            token, secret, include_permissions=True,
         )
         if auth_context:
             print(f"Auth context - Permissions: {auth_context.get('permissions', [])}")
@@ -367,19 +367,19 @@ def demo_decorators() -> None:
 
     @flext_auth_required(secret_key=secret)
     def protected_function(
-        _request: dict[str, object], **_kwargs: object
+        _request: dict[str, object], **_kwargs: object,
     ) -> dict[str, object]:
         return {"message": "Protected access granted"}
 
     @flext_auth_role_required(ADMIN_ROLE, secret_key=secret)
     def REDACTED_LDAP_BIND_PASSWORD_function(
-        _request: dict[str, object], **_kwargs: object
+        _request: dict[str, object], **_kwargs: object,
     ) -> dict[str, object]:
         return {"message": "Admin access granted"}
 
     @flext_auth_permission_required("delete")
     def permission_function(
-        _request: dict[str, object], **_kwargs: object
+        _request: dict[str, object], **_kwargs: object,
     ) -> dict[str, object]:
         return {"message": "Permission granted"}
 

@@ -44,7 +44,7 @@ class TestFlextUser:
         assert user.role == FlextUserRole.USER
         if user.status != FlextUserStatus.ACTIVE:
             raise AssertionError(
-                f"Expected {FlextUserStatus.ACTIVE}, got {user.status}"
+                f"Expected {FlextUserStatus.ACTIVE}, got {user.status}",
             )
 
     def test_user_is_active(self) -> None:
@@ -193,7 +193,7 @@ class TestFlextSession:
         assert session.user_id == "user-id"
         if session.access_token != "access-token":
             raise AssertionError(
-                f"Expected {'access-token'}, got {session.access_token}"
+                f"Expected {'access-token'}, got {session.access_token}",
             )
         assert session.refresh_token == "refresh-token"
         if session.expires_at != expires_at:
@@ -286,7 +286,7 @@ class TestFlextPermission:
         assert permission.name == "read_users"
         if permission.description != "Read users permission":
             raise AssertionError(
-                f"Expected {'Read users permission'}, got {permission.description}"
+                f"Expected {'Read users permission'}, got {permission.description}",
             )
         assert permission.resource == "users"
         if permission.action != "read":
@@ -362,7 +362,7 @@ class TestFlextRole:
         assert role.name == "user_manager"
         if role.description != "User management role":
             raise AssertionError(
-                f"Expected {'User management role'}, got {role.description}"
+                f"Expected {'User management role'}, got {role.description}",
             )
         assert len(role.permissions) == 1
         if role.permissions[0] != permission:
@@ -387,11 +387,11 @@ class TestFlextRole:
 
         if not (role.has_permission("users", "read")):
             raise AssertionError(
-                f"Expected True, got {role.has_permission('users', 'read')}"
+                f"Expected True, got {role.has_permission('users', 'read')}",
             )
         if role.has_permission("users", "write"):
             raise AssertionError(
-                f"Expected False, got {role.has_permission('users', 'write')}"
+                f"Expected False, got {role.has_permission('users', 'write')}",
             )
         assert role.has_permission("posts", "read") is False
 

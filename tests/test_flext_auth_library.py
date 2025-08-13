@@ -103,11 +103,11 @@ class TestFlextAuthClassePrincipal:
             raise AssertionError(f"Expected {'tokens'} in {result.data}")
         if result.data["user"]["username"] != "loginuser":
             raise AssertionError(
-                f"Expected {'loginuser'}, got {result.data['user']['username']}"
+                f"Expected {'loginuser'}, got {result.data['user']['username']}",
             )
         if "access_token" not in result.data["tokens"]:
             raise AssertionError(
-                f"Expected {'access_token'} in {result.data['tokens']}"
+                f"Expected {'access_token'} in {result.data['tokens']}",
             )
         assert "refresh_token" in result.data["tokens"]
 
@@ -119,7 +119,7 @@ class TestFlextAuthClassePrincipal:
         assert not result.success
         if "Invalid username or password" not in result.error:
             raise AssertionError(
-                f"Expected {'Invalid username or password'} in {result.error}"
+                f"Expected {'Invalid username or password'} in {result.error}",
             )
 
     @pytest.mark.asyncio
@@ -136,7 +136,7 @@ class TestFlextAuthClassePrincipal:
         assert result.success
         if result.data["username"] != "tokenuser":
             raise AssertionError(
-                f"Expected {'tokenuser'}, got {result.data['username']}"
+                f"Expected {'tokenuser'}, got {result.data['username']}",
             )
         if "user_id" not in result.data:
             raise AssertionError(f"Expected {'user_id'} in {result.data}")
@@ -152,7 +152,7 @@ class TestFlextAuthClassePrincipal:
         assert not result.success
         if "Token validation failed" not in result.error:
             raise AssertionError(
-                f"Expected {'Token validation failed'} in {result.error}"
+                f"Expected {'Token validation failed'} in {result.error}",
             )
 
     @pytest.mark.asyncio
@@ -331,7 +331,7 @@ class TestFlextAuthHelpers:
 
         if not (flext_auth_verify_password(password, hashed)):
             raise AssertionError(
-                f"Expected True, got {flext_auth_verify_password(password, hashed)}"
+                f"Expected True, got {flext_auth_verify_password(password, hashed)}",
             )
 
     def test_verify_password_incorreto(self: FlextAuth) -> None:
@@ -342,7 +342,7 @@ class TestFlextAuthHelpers:
 
         if flext_auth_verify_password(wrong_password, hashed):
             raise AssertionError(
-                f"Expected False, got {flext_auth_verify_password(wrong_password, hashed)}"
+                f"Expected False, got {flext_auth_verify_password(wrong_password, hashed)}",
             )
 
     def test_generate_jwt_basico(self: FlextAuth) -> None:
@@ -438,7 +438,7 @@ class TestFlextAuthHelpers:
             raise AssertionError(f"Expected {result['score']} >= {4}")
         if result["strength"] not in {"strong", "very strong", "excellent"}:
             raise AssertionError(
-                f"Expected {result['strength']} in {{'strong', 'very strong', 'excellent'}}"
+                f"Expected {result['strength']} in {{'strong', 'very strong', 'excellent'}}",
             )
         if len(result["feedback"]) != 0:
             raise AssertionError(f"Expected {0}, got {len(result['feedback'])}")
@@ -527,7 +527,7 @@ class TestFlextAuthIntegracao:
         assert validate_result.success
         if validate_result.data["username"] != "integracaouser":
             raise AssertionError(
-                f"Expected {'integracaouser'}, got {validate_result.data['username']}"
+                f"Expected {'integracaouser'}, got {validate_result.data['username']}",
             )
 
         # 4. Logout
@@ -567,7 +567,7 @@ class TestFlextAuthIntegracao:
             assert validate_result.success
             if validate_result.data["username"] != f"user{i}":
                 raise AssertionError(
-                    f"Expected {f'user{i}'}, got {validate_result.data['username']}"
+                    f"Expected {f'user{i}'}, got {validate_result.data['username']}",
                 )
 
         # Logout de todas as sessões
@@ -581,7 +581,7 @@ class TestFlextAuthIntegracao:
         email = "workflow@example.com"
         if not (flext_auth_validate_email(email)):
             raise AssertionError(
-                f"Expected True, got {flext_auth_validate_email(email)}"
+                f"Expected True, got {flext_auth_validate_email(email)}",
             )
 
         # 2. Validação de senha
@@ -597,7 +597,7 @@ class TestFlextAuthIntegracao:
         # 4. Verificação do hash
         if not (flext_auth_verify_password(password, hashed)):
             raise AssertionError(
-                f"Expected True, got {flext_auth_verify_password(password, hashed)}"
+                f"Expected True, got {flext_auth_verify_password(password, hashed)}",
             )
 
         # 5. Criação de JWT

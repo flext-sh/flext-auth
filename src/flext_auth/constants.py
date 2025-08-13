@@ -68,6 +68,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import os
+import re
+import secrets
 from enum import Enum
 
 from flext_core import FlextConstants
@@ -90,9 +93,9 @@ class FlextAuthSemanticConstants(FlextConstants):
 
         USERNAME_PATTERN = r"^[a-zA-Z0-9_]{3,50}$"
 
-        PASSWORD_VALIDATION_REGEX = (
-            r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?])"  # noqa: S105 - Password validation regex pattern, not a password
-            r".{8,128}$"
+        PASSWORD_VALIDATION_REGEX = re.compile(
+            r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?])"
+            r".{8,128}$",
         )
         # CONSUME from single source - NO DUPLICATION
         MIN_PASSWORD_LENGTH = FlextConstants.Limits.MIN_PASSWORD_LENGTH
@@ -120,9 +123,12 @@ class FlextAuthSemanticConstants(FlextConstants):
         DEFAULT_REFRESH_TOKEN_DAYS = 7
         JWT_ALGORITHM = "HS256"
 
-        # Test secrets for development/testing only
-        TEST_JWT_SECRET = "test-secret-key"  # noqa: S105 - Development/testing only
-        DEFAULT_JWT_SECRET = "default-secret"  # noqa: S105 - Development default only
+        # Test secrets for development/testing only (secure defaults)
+        TEST_JWT_SECRET = os.getenv("TEST_JWT_SECRET", secrets.token_urlsafe(32))
+        DEFAULT_JWT_SECRET = os.getenv(
+            "FLEXT_AUTH_JWT_SECRET_KEY",
+            secrets.token_urlsafe(32),
+        )
 
     class UserStatus:
         """User status constants."""

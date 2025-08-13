@@ -65,7 +65,9 @@ def main() -> None:
 
     # Register user
     user_result = auth.register_user(
-        username="demouser", email="demo@example.com", password="DemoPassword123!"  # noqa: S106 - Example password for documentation
+        username="demouser",
+        email="demo@example.com",
+        password="DemoPassword123!",  # noqa: S106 - Example password for documentation
     )
 
     if isinstance(user_result, dict) and "error" not in user_result:
@@ -79,7 +81,7 @@ def main() -> None:
             print("✅ Authentication successful!")
         else:
             print(
-                f"❌ Authentication failed: {auth_result.get('error', 'Unknown error')}"
+                f"❌ Authentication failed: {auth_result.get('error', 'Unknown error')}",
             )
     else:
         print(f"❌ Registration failed: {user_result.get('error', 'Unknown error')}")

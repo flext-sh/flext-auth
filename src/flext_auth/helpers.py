@@ -92,7 +92,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import asyncio
-import contextlib
+import os
 import re
 import secrets
 import warnings
@@ -181,9 +181,8 @@ def _create_flext_auth_service(config_overrides: dict[str, object]) -> FlextAuth
     user_repo = InMemoryUserRepository()
     session_repo = InMemorySessionRepository()
     password_service = FlextPasswordService(rounds=config.bcrypt_rounds)
-    # Use default JWT secret for development
-
-    jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"  # noqa: S105
+    # Use environment-provided or generated JWT secret for development
+    jwt_secret = os.getenv("FLEXT_JWT_SECRET", secrets.token_urlsafe(32))
     jwt_service = FlextJWTService(
         secret_key=jwt_secret,
     )
@@ -231,8 +230,7 @@ def flext_auth_quick_start(
     *,
     create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
     REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-
-    REDACTED_LDAP_BIND_PASSWORD_password: str = "Admin123!",  # noqa: S107
+    REDACTED_LDAP_BIND_PASSWORD_password: str | None = None,
     **config_overrides: object,
 ) -> FlextResult[FlextAuthService]:
     """Ultra-fast authentication setup with sensible defaults.
@@ -265,9 +263,8 @@ def flext_auth_quick_start(
         user_repository = InMemoryUserRepository()
         session_repository = InMemorySessionRepository()
         password_service = FlextPasswordService(rounds=config.bcrypt_rounds)
-        # Use default JWT secret for quick start
-
-        jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"  # noqa: S105
+        # Use environment-provided or generated JWT secret for quick start
+        jwt_secret = os.getenv("FLEXT_JWT_SECRET", secrets.token_urlsafe(32))
         jwt_service = FlextJWTService(
             secret_key=jwt_secret,
         )
@@ -291,10 +288,15 @@ def flext_auth_quick_start(
 
         # Create REDACTED_LDAP_BIND_PASSWORD user if requested
         if create_REDACTED_LDAP_BIND_PASSWORD:
+            effective_REDACTED_LDAP_BIND_PASSWORD_password = (
+                REDACTED_LDAP_BIND_PASSWORD_password
+                if REDACTED_LDAP_BIND_PASSWORD_password is not None
+                else os.getenv("FLEXT_ADMIN_PASSWORD", secrets.token_urlsafe(16))
+            )
             registration_data = FlextUserRegistrationData(
                 username=REDACTED_LDAP_BIND_PASSWORD_username,
                 email=f"{REDACTED_LDAP_BIND_PASSWORD_username}@example.com",
-                password=REDACTED_LDAP_BIND_PASSWORD_password,
+                password=effective_REDACTED_LDAP_BIND_PASSWORD_password,
                 role=FlextUserRole.ADMIN,
             )
             REDACTED_LDAP_BIND_PASSWORD_result = asyncio.run(auth_service.register_user(registration_data))
@@ -746,14 +748,16 @@ def flext_auth_complete_workflow(
     try:
         # Setup auth service - create dependencies like quick_start does
         config_data = {**FAST_CONFIG, **config_overrides}
-        config = FlextAuthConfig.model_validate({k: v for k, v in config_data.items() if v is not None})
+        config = FlextAuthConfig.model_validate(
+            {k: v for k, v in config_data.items() if v is not None},
+        )
 
         # Initialize dependencies like quick_start function
         user_repository = InMemoryUserRepository()
         session_repository = InMemorySessionRepository()
         password_service = FlextPasswordService(rounds=config.bcrypt_rounds)
 
-        jwt_secret = "dev-jwt-secret-key-32-chars-minimum-length"  # noqa: S105
+        jwt_secret = os.getenv("FLEXT_JWT_SECRET", secrets.token_urlsafe(32))
         jwt_service = FlextJWTService(secret_key=jwt_secret)
 
         auth_config = FlextAuthServiceConfig(
@@ -1637,13 +1641,20 @@ def flext_auth_rate_limit(
             # For now, just call the original function
             return func(*args, **kwargs)
 
-        # Store rate limiting configuration on the wrapper in a side registry to avoid mypy attr-defined
-        with contextlib.suppress(Exception):
-            wrapper._rate_limit_config = {"max_requests": effective_max_requests, "window_seconds": effective_window_seconds, "error_message": error_message, "rate_limit_type": "auth_endpoint"}  # type: ignore[attr-defined]
+        # Expose configuration via module-level registry to avoid dynamic attrs
+        _RATE_LIMIT_REGISTRY[id(wrapper)] = {
+            "max_requests": effective_max_requests,
+            "window_seconds": effective_window_seconds,
+            "error_message": error_message,
+            "rate_limit_type": "auth_endpoint",
+        }
 
         return wrapper
 
     return rate_limit_decorator
+
+# Internal registry for rate limit metadata to avoid dynamic attributes on callables
+_RATE_LIMIT_REGISTRY: dict[int, dict[str, object]] = {}
 
 
 # Additional type definitions for test compatibility
