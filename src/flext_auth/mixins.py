@@ -326,8 +326,18 @@ class FlextAuthMixin:
             user = None
         if not user:
             return False
+
+        # Check explicit permissions first
         permissions = user.get("permissions", [])
-        return isinstance(permissions, list) and required_permission in permissions
+        if isinstance(permissions, list) and required_permission in permissions:
+            return True
+
+        # If no explicit permissions, check role-based permissions
+        role = user.get("role", "")
+        if role == "REDACTED_LDAP_BIND_PASSWORD":
+            # Admin has all permissions
+            return True
+        return bool((role == "moderator" and required_permission in {"read", "write"}) or (role == "user" and required_permission == "read"))
 
 
 class _DefaultAuthWrapper:

@@ -300,6 +300,15 @@ class FlextJWTService:
                 options={"verify_exp": True, "verify_iat": True},
             )
 
+            # Handle permissions conversion from comma-separated string to list
+            if "permissions" in payload and isinstance(payload["permissions"], str):
+                permissions_str = payload["permissions"]
+                # Convert comma-separated string back to list
+                if permissions_str.strip():
+                    payload["permissions"] = [perm.strip() for perm in permissions_str.split(",") if perm.strip()]
+                else:
+                    payload["permissions"] = []
+
             claims = JWTClaims(**payload)
             return FlextResult.ok(claims)
 

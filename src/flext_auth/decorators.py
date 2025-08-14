@@ -251,12 +251,16 @@ def _validate_token_with_secret(
         if validation_result.success and validation_result.data:
             # Convert claims to dict format
             claims = validation_result.data
+            permissions = getattr(claims, "permissions", [])
+            # Ensure permissions is a list (JWT service now handles string->list conversion)
+            if not isinstance(permissions, list):
+                permissions = []
             return FlextResult.ok(
                 {
                     "user_id": getattr(claims, "user_id", ""),
                     "username": getattr(claims, "username", ""),
                     "role": getattr(claims, "role", "user"),
-                    "permissions": getattr(claims, "permissions", []),
+                    "permissions": permissions,
                     "exp": getattr(claims, "exp", 0),
                     "iat": getattr(claims, "iat", 0),
                 },
@@ -486,7 +490,6 @@ def flext_auth_permission_required(
     def decorator(func: AuthDecoratorProtocol) -> AuthDecoratorProtocol:
         # If no auth configuration provided, skip auth and just check permissions
         if auth_service is None and effective_secret is None:
-
             @functools.wraps(func)
             def wrapper(*args: object, **kwargs: object) -> object:
                 # No auth validation, assume auth_context is provided by caller

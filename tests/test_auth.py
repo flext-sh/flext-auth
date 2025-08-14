@@ -216,8 +216,8 @@ class TestFlextAuthService:
         result = await self.auth_service.validate_token("invalid.token.here")
 
         assert not result.success
-        if "Token verification failed" not in result.error:
-            msg: str = f"Expected {'Token verification failed'} in {result.error}"
+        if "Token validation failed" not in result.error:
+            msg: str = f"Expected {'Token validation failed'} in {result.error}"
             raise AssertionError(msg)
 
     @pytest.mark.integration

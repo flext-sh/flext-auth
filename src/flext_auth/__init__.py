@@ -196,9 +196,10 @@ from flext_auth.models import (
     FlextUser,
     FlextUserEmail,
     FlextUsername,
-    FlextUserRole,
     FlextUserStatus,
 )
+# Import FlextUserRole from domain_entities to match FlextUserRegistrationData expectations
+from flext_auth.domain_entities import FlextUserRole
 from flext_auth.user import InMemoryUserRepository, UserRepository
 
 # Role constants expected by tests
@@ -303,14 +304,14 @@ class FlextAuth:
         email: str,
         password: str,
         *,
-        role: str = FlextAuthConstants.UserRoles.USER,
+        role: FlextUserRole = FlextUserRole.USER,
     ) -> FlextResult[object]:
         data = _RegistrationData(
             username=username,
             email=email,
             password=password,
             role=role,
-        )  # type: ignore[arg-type]
+        )
         result = await self._service.register_user(data)
         # Upcast to FlextResult[object] for facade typing
         return (
@@ -381,7 +382,7 @@ class FlextAuth:
                 data_or_username,
                 email,
                 password,
-                role=role or FlextAuthConstants.UserRoles.USER,
+                role=FlextUserRole(role) if role else FlextUserRole.USER,
             )
         return FlextResult.fail("Invalid registration parameters")
 
@@ -396,7 +397,7 @@ class FlextAuth:
             res = _asyncio.run(
                 self._service.register_user(
                     _RegistrationData(
-                        username=username, email=email, password=password
+                        username=username, email=email, password=password,
                     ),
                 ),
             )
@@ -411,13 +412,14 @@ class FlextAuth:
         self,
         username: str,
         password: str,
+        ip_address: str = "127.0.0.1",
     ) -> dict[str, object]:  # sync facade for tests
         try:
             res = _asyncio.run(
                 self._service.authenticate_user(
                     username=username,
                     password=password,
-                    ip_address="127.0.0.1",
+                    ip_address=ip_address,
                 ),
             )
             return (
@@ -450,7 +452,18 @@ class FlextAuth:
         access = login_result.data.get("tokens", {}).get("access_token")  # type: ignore[attr-defined]
         if not isinstance(access, str):
             return FlextResult.fail("Access token missing")
-        return await self.validate(access)
+
+        # Validate the token
+        validate_result = await self.validate(access)
+        if not validate_result.is_success:
+            return FlextResult.fail(validate_result.error or "Token validation failed")
+
+        # Return structure expected by tests
+        return FlextResult.ok({
+            "login": True,
+            "token": access,
+            "context": validate_result.data,
+        })
 
     async def change_password(
         self,
@@ -527,21 +540,28 @@ class FlextAuth:
         email: str,
         password: str,
         *,
-        role: str | None = None,
+        role: FlextUserRole | None = None,
         require_strong_password: bool = False,
     ) -> FlextResult[dict[str, object]]:
+        # Validate email format first
+        if not flext_auth_validate_email(email):
+            return FlextResult.fail("Invalid email format")
+
+        # Validate password strength if required
+        strength = None
         if require_strong_password:
             strength = flext_auth_validate_password_strength(password)
             if not strength["valid"]:
                 return FlextResult.fail("Weak password")
+
         reg = await self._service.register_user(
             _RegistrationData(
                 username=username,
                 email=email,
                 password=password,
-                role=role or FlextAuthConstants.UserRoles.USER,
+                role=role or FlextUserRole.USER,
             ),
-        )  # type: ignore[arg-type]
+        )
         if not reg.is_success or not reg.data:
             return FlextResult.fail(reg.error or "Registration failed")
         return FlextResult.ok(
@@ -570,13 +590,15 @@ class FlextAuth:
         )
         if not auth.is_success:
             return FlextResult.fail(auth.error or "Authentication failed")
-        data = auth.data or {}
+        if not auth.data or not isinstance(auth.data, dict):
+            return FlextResult.fail("Invalid authentication data format")
+        auth_data: dict[str, object] = auth.data
         result: dict[str, object] = {
-            "token": data.get("tokens", {}).get("access_token", ""),
+            "token": auth_data.get("tokens", {}).get("access_token", ""),  # type: ignore[attr-defined]
             "context": {"username": username},
-        }  # type: ignore[attr-defined]
+        }
         if include_user_data:
-            result["user"] = data.get("user", {})
+            result["user"] = auth_data.get("user", {})
         return FlextResult.ok(result)
 
 
@@ -599,7 +621,8 @@ def flext_auth_quick_start(
     )
     if not service_result.success or not service_result.data:
         return FlextResult.fail(service_result.error or "Quick start failed")
-    return FlextResult.ok(FlextAuth(_service=service_result.data))
+    # Pass the config to FlextAuth constructor so it can be accessed by tests
+    return FlextResult.ok(FlextAuth(config=config, _service=service_result.data))
 
 
 # Re-exports via direct imports above are sufficient for public API

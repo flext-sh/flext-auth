@@ -33,7 +33,7 @@ from datetime import UTC, datetime
 
 from flext_core import FlextResult
 
-from flext_auth.models import FlextSession, FlextSessionStatus
+from flext_auth.auth_models import FlextSession, FlextSessionStatus
 
 # =============================================================================
 # SESSION REPOSITORY PATTERNS - Abstract data access
