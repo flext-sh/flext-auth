@@ -1,42 +1,4 @@
-"""FLEXT Auth Models - Consolidated domain entities, value objects, and repositories.
-
-This module consolidates all domain models for authentication following PEP8 strict
-naming patterns. It provides comprehensive domain modeling with entities, value objects,
-and repository patterns for the FLEXT authentication ecosystem.
-
-Consolidated from:
-    - domain_entities.py: Domain entities and business rules
-    - domain_value_objects.py: Immutable value objects
-    - user.py: User repository patterns
-
-Architecture:
-    - Domain Layer: Rich entities with encapsulated business logic
-    - Value Objects: Immutable data with validation
-    - Repository Pattern: Abstract data access with multiple implementations
-    - Railway-Oriented: FlextResult[T] for type-safe error handling
-
-Core Components:
-    Domain Entities:
-    - FlextUser: User account with authentication logic
-    - FlextSession: User session with lifecycle management
-    - FlextRole: Role definition for access control
-    - FlextPermission: Permission for fine-grained access
-    - FlextLoginAttempt: Login attempt tracking
-    - FlextPasswordResetToken: Password reset token
-    - FlextEmailVerificationToken: Email verification token
-
-    Value Objects:
-    - FlextUsername: Username with format validation
-    - FlextUserEmail: Email with format and domain validation
-    - FlextPlainPassword: Plain text password with strength validation
-    - FlextHashedPassword: Bcrypt hashed password representation
-    - FlextJWTClaims: JWT token claims with validation
-    - FlextSecurityContext: Authentication context information
-    - FlextAuthToken: Authentication token value object
-
-    Repository Patterns:
-    - UserRepository: Abstract user repository interface
-    - InMemoryUserRepository: Fast in-memory storage for development/testing
+"""Authentication domain models, entities, and value objects."""
 
 Copyright (c) 2025 FLEXT Contributors
 SPDX-License-Identifier: MIT

@@ -1,7 +1,4 @@
-"""Compatibility facade: re-export auth_models via models.py.
-
-Standardizes imports to use flext_auth.models across the codebase.
-"""
+"""Authentication models compatibility facade."""
 
 from __future__ import annotations
 

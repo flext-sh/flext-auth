@@ -1,44 +1,4 @@
-"""FLEXT Auth - Enterprise Authentication Library for FLEXT ecosystem.
-
-This module provides comprehensive authentication and authorization services for the
-FLEXT ecosystem, implementing enterprise-grade security patterns with Clean Architecture
-and Domain-Driven Design principles.
-
-The library is reorganized following PEP8 strict naming patterns with consolidated
-modules providing clean, organized access to authentication functionality including
-JWT token management, password hashing, session management, and role-based access control.
-
-Architecture:
-    - auth_config: Configuration management and type definitions
-    - auth_models: Domain entities, value objects, and repository patterns
-    - auth_services: Service layer with password, JWT, and application services
-    - auth_decorators: Decorators and mixins for authentication aspects
-    - auth_validation: Input validation and field management
-    - auth_session: Session management and repository patterns
-    - auth_utilities: Helper functions and utility classes
-    - auth_exceptions: Authentication-specific exception hierarchy
-    - auth_app: Main authentication service and application layer
-
-Features:
-    - JWT token generation and validation
-    - Secure password hashing with bcrypt
-    - Session management with configurable storage
-    - Role-based access control (RBAC)
-    - Multi-factor authentication support
-    - Enterprise security compliance
-
-Example:
-    Basic authentication setup and usage:
-
-    >>> from flext_auth import FlextAuth, create_auth_config
-    >>> config = create_auth_config(jwt_secret="your-secret-key")
-    >>> auth = FlextAuth(config)
-    >>> result = auth.authenticate("username", "password")
-    >>> if result.is_success:
-    ...     print(f"Token: {result.data}")
-
-Copyright (c) 2025 FLEXT Contributors
-SPDX-License-Identifier: MIT
+"""Enterprise authentication library for FLEXT ecosystem."""
 
 """
 

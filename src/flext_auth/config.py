@@ -1,33 +1,4 @@
-"""FLEXT Auth Configuration - Type-safe authentication settings.
-
-This module provides comprehensive configuration management for FLEXT Auth following
-flext-core patterns for consistency across the ecosystem. It includes validation,
-type safety, and environment-specific settings for authentication operations.
-
-Architecture:
-    - Configuration Layer: Type-safe settings management
-    - Validation: Comprehensive input validation with Pydantic
-    - Environment Aware: Support for dev/staging/production environments
-    - Security-First: Secure defaults and validation for sensitive settings
-
-Core Configuration Areas:
-    - Application Settings: Basic app configuration
-    - Authentication: Password policies and security settings
-    - JWT Configuration: Token settings and signing keys
-    - Database: Connection and pooling settings
-    - Rate Limiting: Request throttling and protection
-    - Session Management: Session lifecycle and security
-
-TODO (Based on docs/TODO.md):
-    - [ ] MEDIUM: Consolidate multiple config classes (Issue #8)
-    - [ ] MEDIUM: Implement secret management patterns (Issue #8)
-    - [ ] MEDIUM: Add configuration validation tests (Issue #8)
-    - [ ] LOW: Add configuration hot reloading (Issue #12)
-
-Design Patterns:
-    - Configuration Object Pattern: Centralized settings management
-    - Builder Pattern: Pydantic model construction with validation
-    - Strategy Pattern: Environment-specific configuration strategies
+"""Type-safe authentication settings."""
     - Factory Pattern: Configuration creation based on environment
     - Validation Pattern: Type-safe configuration with comprehensive validation
     - Singleton Pattern: Single configuration instance per application
@@ -83,7 +54,7 @@ from typing import Never
 from flext_core import (
     FlextBaseConfigModel,
     FlextDatabaseConfig,
-    FlextSettings,
+    FlextResult,
 )
 from pydantic import Field, SecretStr
 
@@ -344,8 +315,8 @@ class DatabaseConfig:
         return getattr(self, "_command_timeout", 60)
 
 
-class JWTConfig(FlextSettings):
-    """JWT configuration for backward compatibility with environment variables."""
+class JWTConfig(FlextBaseConfigModel):
+    """JWT configuration using modern FlextBaseConfigModel patterns."""
 
     secret_key: str = Field(default="", description="JWT secret key")
     algorithm: str = Field(default="HS256", description="JWT algorithm")
@@ -415,9 +386,36 @@ class JWTConfig(FlextSettings):
         """Generate secure secret key."""
         return secrets.token_urlsafe(32)
 
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate JWT-specific business rules."""
+        # Algorithm validation
+        valid_algorithms = ["HS256", "HS384", "HS512", "RS256", "RS384", "RS512"]
+        if self.algorithm not in valid_algorithms:
+            return FlextResult.fail(f"JWT algorithm must be one of {valid_algorithms}")
+        
+        # Secret key validation
+        if not self.secret_key or self.secret_key.strip() == "":
+            return FlextResult.fail("JWT secret key cannot be empty")
+        
+        if len(self.secret_key) < MIN_JWT_SECRET_LENGTH:
+            return FlextResult.fail(f"JWT secret key must be at least {MIN_JWT_SECRET_LENGTH} characters long")
+        
+        # Token expiration validation
+        if self.access_token_expire_minutes <= 0:
+            return FlextResult.fail("Access token expiration must be positive")
+        
+        if self.refresh_token_expire_days <= 0:
+            return FlextResult.fail("Refresh token expiration must be positive")
+        
+        # Security validation for production
+        if self.access_token_expire_minutes > 1440:  # 24 hours
+            return FlextResult.fail("Access token expiration should not exceed 24 hours for security")
+        
+        return FlextResult.ok(None)
 
-class SecurityConfig(FlextSettings):
-    """Security configuration for backward compatibility with environment variables."""
+
+class SecurityConfig(FlextBaseConfigModel):
+    """Security configuration using modern FlextBaseConfigModel patterns."""
 
     password_rounds: int = Field(12, description="BCrypt rounds", ge=4, le=20)
     max_failed_attempts: int = Field(
@@ -458,9 +456,36 @@ class SecurityConfig(FlextSettings):
 
         env_prefix = "SECURITY_"
 
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate security-specific business rules."""
+        # Password rounds validation
+        if self.password_rounds < 4:
+            return FlextResult.fail("BCrypt rounds must be at least 4 for basic security")
+        
+        if self.password_rounds > 20:
+            return FlextResult.fail("BCrypt rounds should not exceed 20 to avoid performance issues")
+        
+        # Failed attempts validation
+        if self.max_failed_attempts > 10:
+            return FlextResult.fail("Max failed attempts should not exceed 10")
+        
+        # Lockout duration validation
+        if self.lockout_duration_minutes > 1440:  # 24 hours
+            return FlextResult.fail("Lockout duration should not exceed 24 hours")
+        
+        # Session timeout validation
+        if self.session_expire_hours > 168:  # 1 week
+            return FlextResult.fail("Session timeout should not exceed 1 week for security")
+        
+        # Concurrent sessions validation
+        if self.max_concurrent_sessions > 20:
+            return FlextResult.fail("Max concurrent sessions should not exceed 20")
+        
+        return FlextResult.ok(None)
 
-class ServerConfig(FlextSettings):
-    """Server configuration for backward compatibility."""
+
+class ServerConfig(FlextBaseConfigModel):
+    """Server configuration using modern FlextBaseConfigModel patterns."""
 
     debug: bool = Field(default=False, description="Debug mode")
     host: str = Field(default="localhost", description="Server host")
@@ -469,9 +494,25 @@ class ServerConfig(FlextSettings):
     class Config:
         env_prefix = "SERVER_"
 
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate server-specific business rules."""
+        # Port validation
+        if self.port < 1 or self.port > 65535:
+            return FlextResult.fail("Server port must be between 1 and 65535")
+        
+        # Privileged port warning for production
+        if self.port < 1024 and not self.debug:
+            return FlextResult.fail("Production servers should not use privileged ports (< 1024)")
+        
+        # Host validation
+        if not self.host or self.host.strip() == "":
+            return FlextResult.fail("Server host cannot be empty")
+        
+        return FlextResult.ok(None)
 
-class AppConfig(FlextSettings):
-    """Application configuration for backward compatibility."""
+
+class AppConfig(FlextBaseConfigModel):
+    """Application configuration using modern FlextBaseConfigModel patterns."""
 
     name: str = Field("FLEXT Authentication API", description="Application name")
     version: str = Field("1.0.0", description="Application version")
@@ -498,6 +539,37 @@ class AppConfig(FlextSettings):
         """Pydantic configuration for application settings."""
 
         env_prefix = "APP_"
+
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate application-wide business rules."""
+        # Environment validation
+        allowed_environments = {"development", "staging", "production", "test"}
+        if self.environment not in allowed_environments:
+            return FlextResult.fail(f"Environment must be one of: {allowed_environments}")
+        
+        # Production validation
+        if self.environment == "production":
+            if self.debug:
+                return FlextResult.fail("Debug mode must be disabled in production")
+            
+            # Validate nested configurations for production
+            jwt_validation = self.jwt.validate_business_rules()
+            if not jwt_validation.is_success:
+                return FlextResult.fail(f"JWT configuration invalid: {jwt_validation.error}")
+            
+            security_validation = self.security.validate_business_rules()
+            if not security_validation.is_success:
+                return FlextResult.fail(f"Security configuration invalid: {security_validation.error}")
+            
+            server_validation = self.server.validate_business_rules()
+            if not server_validation.is_success:
+                return FlextResult.fail(f"Server configuration invalid: {server_validation.error}")
+        
+        # Application name validation
+        if not self.app_name or self.app_name.strip() == "":
+            return FlextResult.fail("Application name cannot be empty")
+        
+        return FlextResult.ok(None)
 
     def model_dump_safe(self) -> dict[str, object]:
         """Dump model data with sensitive information redacted."""
