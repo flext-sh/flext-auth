@@ -1,4 +1,9 @@
-"""Enterprise authentication library for FLEXT ecosystem."""
+"""Enterprise authentication library for FLEXT ecosystem.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
@@ -72,9 +77,11 @@ from flext_auth.auth_exceptions import (
 from flext_auth.auth_services import (
     FlextAuthenticationService,
     FlextAuthorizationService,
-    FlextJWTService,
-    FlextPasswordService,
     FlextSessionService,
+)
+from flext_auth.jwt import FlextJWTService
+from flext_auth.services_password_service import (
+    FlextPasswordService,
 )
 
 # Session management
@@ -155,6 +162,13 @@ from flext_auth.auth_models import (
     FlextUserEmail,
     FlextUsername,
     FlextUserStatus,
+)
+from flext_auth.domain_value_objects import (
+    FlextAuthToken,
+    FlextIPAddress,
+    FlextRefreshToken,
+    FlextSessionToken,
+    FlextUserAgent,
 )
 
 # Import FlextUserRole from domain_entities to match FlextUserRegistrationData expectations
@@ -621,12 +635,12 @@ def _alias_module(alias: str, target_module_name: str) -> None:
 
 
 # Map flext_auth.domain.entities -> flext_auth.domain_entities
-_alias_module("flext_auth.domain.entities", "flext_auth.domain_entities")
-_alias_module("flext_auth.domain.value_objects", "flext_auth.domain_value_objects")
+_alias_module("flext_auth.domain.entities", "flext_auth")
+_alias_module("flext_auth.domain.value_objects", "flext_auth")
 
 # Map flext_auth.application.services -> flext_auth.auth_services
-_alias_module("flext_auth.application.services", "flext_auth.auth_services")
-_alias_module("flext_auth.services.password_service", "flext_auth.auth_services")
+_alias_module("flext_auth.application.services", "flext_auth")
+_alias_module("flext_auth.services.password_service", "flext_auth")
 
 # =============================================================================
 # VERSION AND METADATA

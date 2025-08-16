@@ -1,4 +1,9 @@
-"""FLEXT Auth Application Services - Application layer orchestration."""
+"""FLEXT Auth Application Services - Application layer orchestration.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 

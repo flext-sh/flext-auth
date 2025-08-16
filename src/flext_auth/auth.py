@@ -1,4 +1,9 @@
-"""Main authentication service for FLEXT Auth."""
+"""Main authentication service for FLEXT Auth.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
@@ -7,7 +12,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
 from flext_core import (
     FlextAlreadyExistsError,
@@ -33,14 +38,12 @@ from flext_auth.domain_value_objects import (
     FlextUserEmail as UserEmail,
     FlextUsername as Username,
 )
-
-if TYPE_CHECKING:
-    from flext_auth.jwt import FlextJWTService as JWTService
-    from flext_auth.services_password_service import (
-        FlextPasswordService as PasswordService,
-    )
-    from flext_auth.session import SessionRepository
-    from flext_auth.user import UserRepository
+from flext_auth.jwt import FlextJWTService as JWTService
+from flext_auth.services_password_service import (
+    FlextPasswordService as PasswordService,
+)
+from flext_auth.session import SessionRepository
+from flext_auth.user import UserRepository
 
 # Type aliases for validation pipeline strategies - using actual precise types
 TokenValidator = Callable[[str], Awaitable[FlextResult[JWTClaims]]]
@@ -1448,7 +1451,9 @@ class FlextAuthService:
         try:
             username_vo = Username.model_validate({"value": registration_data.username})
             email_vo = UserEmail.model_validate({"value": registration_data.email})
-            password_vo = PlainPassword.model_validate({"value": registration_data.password})
+            password_vo = PlainPassword.model_validate(
+                {"value": registration_data.password}
+            )
             return FlextResult.ok((username_vo, email_vo, password_vo))
         except (ValueError, TypeError) as e:
             return FlextResult.fail(

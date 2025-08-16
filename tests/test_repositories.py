@@ -1,4 +1,9 @@
-"""Comprehensive tests for repository implementations."""
+"""Comprehensive tests for repository implementations.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
@@ -6,15 +11,15 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from flext_auth.domain.entities import (
+from flext_auth import (
     FlextSession,
     FlextSessionStatus,
     FlextUser,
     FlextUserRole,
     FlextUserStatus,
+    InMemorySessionRepository,
+    InMemoryUserRepository,
 )
-from flext_auth.session import InMemorySessionRepository
-from flext_auth.user import InMemoryUserRepository
 
 # Constants
 EXPECTED_BULK_SIZE = 2

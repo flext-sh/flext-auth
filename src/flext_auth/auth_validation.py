@@ -1,17 +1,36 @@
-"""FLEXT Auth Validation - Consolidated input validation and field management."""
+"""FLEXT Auth Validation - Consolidated input validation and field management.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
 import re
-from typing import TYPE_CHECKING
 
 from flext_core import FlextResult
 from flext_core.validation import FlextValidators
 
+from flext_auth.auth_config import TEmail, TPassword, TUsername
 from flext_auth.constants import FlextAuthConstants
 
+# =============================================================================
+# CONSTANTS AND PATTERNS
+# =============================================================================
 # Define EMAIL_PATTERN locally since it's not available from flext-core
 EMAIL_PATTERN = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+
+# Password strength scoring constants
+_MIN_LENGTH_BASIC = 8
+_MIN_LENGTH_STRONG = 12
+_MIN_COMPLEXITY_CATEGORIES = 6
+_MIN_COMPLEXITY_GOOD = 4
+_MAX_COMMON_LENGTH = 12
+
+# Username validation constants
+_MIN_USERNAME_LENGTH = 3
+_MAX_USERNAME_LENGTH = 50
 
 
 # Create minimal field handling classes
@@ -129,26 +148,6 @@ class FlextFields:
         """Get field by name - minimal implementation."""
         return FlextResult.fail(f"Field '{field_name}' not found")
 
-
-# Import constants from auth_config already imported at top
-
-if TYPE_CHECKING:
-    from flext_auth.auth_config import TEmail, TPassword, TUsername
-
-# =============================================================================
-# CONSTANTS AND PATTERNS
-# =============================================================================
-
-# Password strength scoring constants
-_MIN_LENGTH_BASIC = 8
-_MIN_LENGTH_STRONG = 12
-_MIN_COMPLEXITY_CATEGORIES = 6
-_MIN_COMPLEXITY_GOOD = 4
-_MAX_COMMON_LENGTH = 12
-
-# Username validation constants
-_MIN_USERNAME_LENGTH = 3
-_MAX_USERNAME_LENGTH = 50
 
 # =============================================================================
 # AUTHENTICATION VALIDATORS - Using flext-core directly

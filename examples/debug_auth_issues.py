@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 """Debug Authentication Issues.
 
-Diagnose and fix specific problems found:
-1. Password hashing/verification failure
-2. JWT user_id empty issue
-
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
@@ -12,14 +8,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.helpers import (
+from flext_auth import (
+    FlextJWTService,
+    FlextPasswordService,
     flext_auth_generate_jwt,
     flext_auth_hash_password,
     flext_auth_validate_jwt,
     flext_auth_verify_password,
 )
-from flext_auth.jwt import FlextJWTService
-from flext_auth.services.password_service import FlextPasswordService
 
 
 def debug_password_service() -> None:

@@ -1,16 +1,6 @@
 #!/usr/bin/env python3
 """Advanced example showcasing the refactored FlextAuth system.
 
-This example demonstrates the successful refactoring from a monolithic 1929-line
-__init__.py file to a modular, SOLID-principle-following architecture.
-
-Key improvements demonstrated:
-1. Single Responsibility Principle - specialized modules
-2. Dependency Injection - proper service composition
-3. Anti-boilerplate patterns - 3-line setup vs 50+ lines
-4. Type safety - full MyPy compliance
-5. Clean Architecture - domain/application/infrastructure layers
-
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
@@ -25,12 +15,12 @@ from flext_core import FlextContainer
 
 from flext_auth import (
     FlextAuth,
-    flext_auth_quick_start,
-)
-from flext_auth.domain.entities import FlextUser, FlextUserRole
-from flext_auth.domain.value_objects import FlextUserEmail, FlextUsername
-from flext_auth.helpers import (
+    FlextUser,
+    FlextUserEmail,
+    FlextUsername,
+    FlextUserRole,
     flext_auth_hash_password,
+    flext_auth_quick_start,
     flext_auth_validate_email,
     flext_auth_validate_username,
 )

@@ -1,88 +1,4 @@
-"""FLEXT Auth Helpers - Anti-boilerplate functions for rapid authentication setup.
-
-This module provides helper functions following the flext_auth_* naming convention
-to enable rapid authentication setup with minimal code. It implements anti-boilerplate
-patterns, factory functions, and utility operations for common authentication tasks.
-
-Architecture:
-    - Helper Layer: Utility functions with semantic naming
-    - Anti-Boilerplate: Reduce authentication code from 150+ lines to 3 lines
-    - Factory Pattern: Pre-configured authentication setups
-    - Railway-Oriented: FlextResult[T] for type-safe operations
-
-Core Capabilities:
-    - Quick start functions for zero-config authentication
-    - Password hashing and verification utilities
-    - JWT token generation and validation helpers
-    - Email and username validation functions
-    - Pre-configured setups for different environments
-    - Batch operations and middleware factories
-
-Naming Convention:
-    All public functions follow the flext_auth_* pattern for discoverability:
-    - flext_auth_quick_start(): Complete authentication setup
-    - flext_auth_hash_password(): Secure password hashing
-    - flext_auth_generate_jwt(): JWT token generation
-    - flext_auth_validate_email(): Email format validation
-    - flext_auth_complete_workflow(): End-to-end authentication
-
-TODO (Based on docs/TODO.md):
-    - [ ] MEDIUM: Add batch operation optimizations (Issue #10)
-    - [ ] MEDIUM: Implement rate limiting helpers (Issue #11)
-    - [ ] LOW: Add middleware factory for different frameworks (Issue #12)
-    - [ ] LOW: Add authentication metrics collection (Issue #10)
-
-Current Project Status:
-    ✅ Anti-boilerplate helper functions documented with factory patterns
-    ✅ Complete authentication workflow helpers with code reduction documented
-    ✅ flext_auth_* naming convention and utility patterns documented
-    🔄 Implementation focus: Rate limiting helpers and batch operation optimizations
-
-Design Patterns:
-    - Factory Pattern: Service creation with environment-specific configurations
-    - Builder Pattern: Fluent API for authentication workflow construction
-    - Facade Pattern: Simplified interface hiding complex authentication logic
-    - Template Method: Common authentication workflows with customizable steps
-    - Strategy Pattern: Pluggable configuration strategies for different environments
-    - Command Pattern: Authentication operations as first-class objects
-    - Dependency Injection: Service composition through constructor injection
-    - Anti-Boilerplate Pattern: Code reduction through semantic naming and defaults
-
-Pre-configured Setups:
-    - FAST_CONFIG: Development setup with relaxed security
-    - PRODUCTION_CONFIG: Production setup with strict security
-    - API_CONFIG: REST API optimized configuration
-    - WEB_CONFIG: Web application optimized configuration
-
-Code Reduction Examples:
-    Traditional approach (150+ lines):
-        # Manual bcrypt setup, JWT configuration, repository setup...
-
-    FLEXT Auth approach (3 lines):
-        >>> auth = flext_auth_quick_start()
-        >>> result = auth.authenticate_user("user", "password")
-        >>> # Ready to use!
-
-Security Features:
-    - Secure defaults for all operations
-    - Input validation and sanitization
-    - Type-safe error handling with FlextResult
-    - Configurable security policies
-    - Enterprise-grade security options
-
-Example:
-    >>> # Zero-config authentication setup
-    >>> auth = flext_auth_quick_start()
-    >>> result = auth.register_user("john", "john@example.com", "SecurePass123!")
-    >>> if "error" not in result:
-    ...     login_result = auth.authenticate_user("john", "SecurePass123!")
-    ...     print(f"Authenticated: {login_result}")
-
-Performance Considerations:
-    - Lazy initialization for better startup time
-    - Efficient factory patterns for service creation
-    - Minimal memory footprint for helper functions
-    - Optimized configurations for different use cases
+"""FLEXT Auth Helpers - Focused public helper functions.
 
 Copyright (c) 2025 FLEXT Contributors
 SPDX-License-Identifier: MIT
@@ -120,7 +36,6 @@ if TYPE_CHECKING:
     from collections.abc import Mapping
 
 _logger = FlextLoggerFactory.get_logger(__name__)
-
 # Constants
 JWT_PARTS_COUNT = 3
 
@@ -1315,7 +1230,9 @@ def flext_auth_create_multi_factor_token(
     # Test/demo secret - not for production use
     secret = "flext-auth-mfa-secret-256bit-key-123456789012345678901234567890123"  # noqa: S105
     result = flext_auth_generate_jwt(
-        payload, secret=secret, expires_minutes=expires_minutes
+        payload,
+        secret=secret,
+        expires_minutes=expires_minutes,
     )
     return result.data if result.success and result.data else ""
 
@@ -1500,7 +1417,9 @@ def flext_auth_create_service_token(
     # Test/demo secret - not for production use
     secret = "flext-auth-service-secret-256bit-key-123456789012345678901234567890"  # noqa: S105
     result = flext_auth_generate_jwt(
-        payload, secret=secret, expires_minutes=expires_hours * 60
+        payload,
+        secret=secret,
+        expires_minutes=expires_hours * 60,
     )
     return result.data if result.success and result.data else ""
 

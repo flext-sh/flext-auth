@@ -1,4 +1,9 @@
-"""FLEXT Auth Configuration & Types - Centralized authentication configuration and types."""
+"""FLEXT Auth Configuration & Types - Centralized authentication configuration and types.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 

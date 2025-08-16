@@ -13,7 +13,7 @@ import pytest
 from flext_core import FlextValidationError
 from pydantic_core import ValidationError
 
-from flext_auth.domain.value_objects import (
+from flext_auth import (
     FlextAuthToken,
     FlextHashedPassword,
     FlextIPAddress,

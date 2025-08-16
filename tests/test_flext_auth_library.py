@@ -31,6 +31,7 @@ from flext_auth import (
     flext_auth_verify_password,
 )
 
+# Apenas stdlib sob TYPE_CHECKING
 if TYPE_CHECKING:
     from collections.abc import Callable
 

@@ -1,4 +1,9 @@
-"""FLEXT Auth Types - Type definitions extending flext-core patterns."""
+"""FLEXT Auth Types - Type definitions extending flext-core patterns.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 

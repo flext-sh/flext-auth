@@ -2,6 +2,10 @@
 
 Tests demonstrate the successful refactoring from 1929-line monolithic file
 to modular, SOLID-principle-following architecture with proper dependency injection.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations

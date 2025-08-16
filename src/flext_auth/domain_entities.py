@@ -1,4 +1,9 @@
-"""Domain entities for authentication business logic."""
+"""Domain entities for authentication business logic.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
@@ -260,7 +265,10 @@ class FlextSession(FlextEntity):
     """User session entity."""
 
     id: FlextEntityId = Field(..., description="Unique session identifier")
-    user_id: str = Field(..., description="User ID owning this session")
+    user_id: str = Field(
+        ...,
+        description="User ID owning this session",
+    )
     access_token: str = Field(..., description="JWT access token")
     refresh_token: str | None = Field(default=None, description="JWT refresh token")
     status: FlextSessionStatus = Field(
@@ -314,7 +322,7 @@ class FlextSession(FlextEntity):
         """Validate session entity data structure."""
         return (
             len(str(self.id)) > 0
-            and len(self.user_id) > 0
+            and len(str(self.user_id)) > 0
             and len(self.access_token) > 0
             and self.expires_at > datetime.now(UTC)
         )
@@ -408,7 +416,9 @@ class FlextRole(FlextEntity):
 
     def is_valid(self) -> bool:
         """Validate role entity data."""
-        return len(str(self.id)) > 0 and len(self.name) > 0 and len(self.description) > 0
+        return (
+            len(str(self.id)) > 0 and len(self.name) > 0 and len(self.description) > 0
+        )
 
     def validate_domain_rules(self) -> FlextResult[None]:
         """Validate role domain rules using Railway-Oriented Programming.

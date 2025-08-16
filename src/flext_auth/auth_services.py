@@ -1,4 +1,9 @@
-"""FLEXT Auth Services - Consolidated authentication services and utilities."""
+"""FLEXT Auth Services - Consolidated authentication services and utilities.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
@@ -874,6 +879,11 @@ class AdminPermissionStrategy(PermissionStrategy):
         check_data: PermissionCheckData,
     ) -> FlextResult[bool]:
         """Admin users have all permissions - Parameter Object Pattern."""
+        # Pydantic v2 models are immutable-like; access attribute directly
+        # When legacy signature is used, check_data can be a FlextUser
+        if isinstance(check_data, FlextUser):
+            return FlextResult.ok(check_data.role == FlextUserRole.ADMIN)
+        # PermissionCheckData is a dataclass; direct attribute access is safe
         return FlextResult.ok(check_data.user.role == FlextUserRole.ADMIN)
 
 
@@ -969,12 +979,18 @@ class FlextAuthenticationService:
                     password_validation.error or "Password validation failed",
                 )
 
+            # Hash the password for the new user
+            hash_result = self._deps.password_service.hash_password(password)
+            if not hash_result.success or not hash_result.data:
+                return FlextResult.fail("Failed to hash password")
+            password_hash = hash_result.data.value
+
             # Create user entity
             user = FlextUser(
                 id=f"user_{username}",
                 username=username,
                 email=email,
-                password_hash="",  # Will be set by password service
+                password_hash=password_hash,
                 role=role,
                 status=FlextUserStatus.ACTIVE,
             )
@@ -1010,11 +1026,20 @@ class FlextAuthenticationService:
     def change_password(
         self,
         user: FlextUser,
-        _current_password: str,  # Unused in mock implementation
+        current_password: str,
         new_password: str,
     ) -> FlextResult[bool]:
         """Change user password using Strategy Pattern validation."""
         try:
+            # Verify current password against stored hash only if hash present
+            existing_hash = str(user.password_hash)
+            if existing_hash and existing_hash.strip():
+                verify_current = self._deps.password_service.verify_password(
+                    current_password,
+                    existing_hash,
+                )
+                if not verify_current.success or not verify_current.data:
+                    return FlextResult.fail("Current password is incorrect")
             # Use Strategy Pattern for password validation
             validation_result = self._deps.password_validation_strategy.validate(
                 password=new_password,
@@ -1027,7 +1052,7 @@ class FlextAuthenticationService:
             if not hash_result.success or not hash_result.data:
                 return FlextResult.fail("Failed to hash password")
 
-            new_password_hash = str(hash_result.data)
+            new_password_hash = hash_result.data.value
 
             # Create updated user with new password hash
             updated_user = FlextUser(
@@ -1135,14 +1160,35 @@ class FlextAuthorizationService:
 
             # Use Strategy Pattern for permission checking
             # Try REDACTED_LDAP_BIND_PASSWORD strategy first
+            # Ensure correct object type for REDACTED_LDAP_BIND_PASSWORD strategy
+            REDACTED_LDAP_BIND_PASSWORD_input = (
+                check_data
+                if isinstance(check_data, PermissionCheckData)
+                else PermissionCheckData(
+                    user=check_data,
+                    resource=resource or "",
+                    action=action or "",
+                    roles=roles,
+                )
+            )
             REDACTED_LDAP_BIND_PASSWORD_result = self._deps.REDACTED_LDAP_BIND_PASSWORD_permission_strategy.check_permission(
-                check_data,
+                REDACTED_LDAP_BIND_PASSWORD_input,
             )
             if REDACTED_LDAP_BIND_PASSWORD_result.success and REDACTED_LDAP_BIND_PASSWORD_result.data:
                 return REDACTED_LDAP_BIND_PASSWORD_result
 
             # Fall back to role-based strategy
-            return self._deps.role_permission_strategy.check_permission(check_data)
+            role_input = (
+                check_data
+                if isinstance(check_data, PermissionCheckData)
+                else PermissionCheckData(
+                    user=check_data,
+                    resource=resource or "",
+                    action=action or "",
+                    roles=roles,
+                )
+            )
+            return self._deps.role_permission_strategy.check_permission(role_input)
 
         except (ValueError, TypeError) as e:
             return FlextResult.fail(str(e))

@@ -1,75 +1,5 @@
 """FLEXT Password Service - Secure password operations for authentication.
 
-This module provides enterprise-grade password hashing, verification, and strength
-validation using industry-standard bcrypt algorithm. It implements the infrastructure
-layer for password security in the FLEXT authentication ecosystem.
-
-Architecture:
-    - Infrastructure Layer: Secure password operations
-    - Security-First: Enterprise-grade password protection
-    - Railway-Oriented: FlextResult[T] for type-safe error handling
-    - Configurable: Adjustable security parameters
-
-Core Capabilities:
-    - Secure password hashing with bcrypt
-    - Password verification against stored hashes
-    - Password strength analysis and scoring
-    - Secure random password generation
-    - Configurable bcrypt rounds for performance/security balance
-    - Password policy validation and enforcement
-
-Security Features:
-    - Bcrypt with configurable cost factor (4-20 rounds)
-    - Salt generation handled automatically by bcrypt
-    - Constant-time password verification
-    - Password strength scoring algorithm
-    - Secure random generation for temporary passwords
-    - Protection against timing attacks
-
-TODO (Based on docs/TODO.md):
-    - [ ] MEDIUM: Add password history tracking (Issue #11)
-    - [ ] MEDIUM: Implement password rotation policies (Issue #11)
-    - [ ] LOW: Add entropy analysis for password strength (Issue #12)
-    - [ ] LOW: Add password breach checking integration (Issue #12)
-
-Current Project Status:
-    ✅ Enterprise-grade password service comprehensively documented
-    ✅ Bcrypt security implementation fully documented with best practices
-    ✅ Password strength analysis patterns documented
-    🔄 Implementation focus: Password history tracking and rotation policies
-
-Password Strength Scoring:
-    The strength analysis considers:
-        - Length (minimum 8, recommended 12+)
-        - Character diversity (lowercase, uppercase, digits, symbols)
-        - Common pattern avoidance
-        - Dictionary word detection
-        - Entropy calculation
-
-Example:
-    >>> password_service = FlextPasswordService(rounds=12)
-    >>> hash_result = password_service.hash_password("SecurePassword123!")
-    >>> if hash_result.success:
-    ...     password_hash = hash_result.data
-    ...     verify_result = password_service.verify_password(
-    ...         "SecurePassword123!", password_hash.value
-    ...     )
-    ...     if verify_result.success and verify_result.data:
-    ...         print("Password verified successfully")
-
-Performance Considerations:
-    - Bcrypt rounds affect hashing time exponentially
-    - Recommended: 12 rounds for production (2019 standards)
-    - Consider hardware capabilities when setting rounds
-    - Password verification is inherently slow (security feature)
-
-Security Best Practices:
-    - Never store plain text passwords
-    - Use minimum 12 bcrypt rounds in production
-    - Implement password strength requirements
-    - Consider password rotation policies
-    - Monitor for common/breached passwords
-
 Copyright (c) 2025 FLEXT Contributors
 SPDX-License-Identifier: MIT
 
@@ -87,7 +17,7 @@ from flext_core import (
     get_logger,
 )
 
-from flext_auth.domain_value_objects import (
+from flext_auth.auth_models import (
     MAX_PASSWORD_LENGTH,
     FlextHashedPassword,
     FlextPlainPassword,
@@ -212,12 +142,14 @@ class FlextPasswordService:
 
         """
         try:
-            # Handle both string and FlextPlainPassword input
-            password_str = (
-                plain_password.value
-                if isinstance(plain_password, FlextPlainPassword)
-                else plain_password
-            )
+            # Handle both string and value-object-like input (duck-typing)
+            if isinstance(plain_password, str):
+                password_str = plain_password
+            else:
+                candidate = getattr(plain_password, "value", None)
+                password_str = (
+                    candidate if isinstance(candidate, str) else str(plain_password)
+                )
 
             # Validate password if it's a string
             if isinstance(plain_password, str):
@@ -256,17 +188,18 @@ class FlextPasswordService:
 
         """
         try:
-            # Handle both string and value object inputs
-            password_str = (
-                plain_password.value
-                if isinstance(plain_password, FlextPlainPassword)
-                else plain_password
-            )
-            hash_str = (
-                hashed_password.value
-                if isinstance(hashed_password, FlextHashedPassword)
-                else hashed_password
-            )
+            # Handle both string and value object inputs (duck-typing)
+            if isinstance(plain_password, str):
+                password_str = plain_password
+            else:
+                pval = getattr(plain_password, "value", None)
+                password_str = pval if isinstance(pval, str) else str(plain_password)
+
+            if isinstance(hashed_password, str):
+                hash_str = hashed_password
+            else:
+                hval = getattr(hashed_password, "value", None)
+                hash_str = hval if isinstance(hval, str) else str(hashed_password)
 
             # Verify hash format
             if not hash_str.startswith("$2b$"):
@@ -338,7 +271,11 @@ class FlextPasswordService:
             # Validate the generated password and return as FlextPlainPassword
             try:
                 password_obj = FlextPlainPassword.model_validate({"value": password})
-                return FlextResult.ok(password_obj)
+                # Ensure VO validates its business rules (raises or returns failure)
+                vo_validation = password_obj.validate_business_rules()
+                if vo_validation.success:
+                    return FlextResult.ok(password_obj)
+                return FlextResult.fail(vo_validation.error or "Invalid password")
             except (ValueError, TypeError) as e:
                 return FlextResult.fail(f"Generated password validation failed: {e}")
 
@@ -469,10 +406,12 @@ class FlextPasswordService:
 
         """
         try:
-            # Convert FlextPlainPassword to string if needed
-            password_str = (
-                password.value if isinstance(password, FlextPlainPassword) else password
-            )
+            # Convert to string if needed (duck-typing)
+            if isinstance(password, str):
+                password_str = password
+            else:
+                pval = getattr(password, "value", None)
+                password_str = pval if isinstance(pval, str) else str(password)
 
             # Use helper methods to analyze password
             analysis = self._analyze_password_basic_properties(password_str)

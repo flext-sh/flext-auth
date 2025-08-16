@@ -1,4 +1,9 @@
-"""FLEXT Auth Models - Authentication-specific domain models."""
+"""FLEXT Auth Models - Authentication-specific domain models.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
@@ -650,7 +655,9 @@ class FlextRole(FlextEntity):
 
     def is_valid(self) -> bool:
         """Validate role entity data."""
-        return len(str(self.id)) > 0 and len(self.name) > 0 and len(self.description) > 0
+        return (
+            len(str(self.id)) > 0 and len(self.name) > 0 and len(self.description) > 0
+        )
 
     def validate_domain_rules(self) -> FlextResult[None]:
         """Validate role domain rules using Railway-Oriented Programming."""

@@ -1,45 +1,5 @@
 """Type-safe authentication settings.
 
-Design Patterns:
-    - Factory Pattern: Configuration creation based on environment
-    - Validation Pattern: Type-safe configuration with comprehensive validation
-    - Singleton Pattern: Single configuration instance per application
-    - Template Method Pattern: Common configuration workflows
-
-Security Features:
-    - SecretStr for sensitive configuration values
-    - Production-safe defaults and validation
-    - Environment variable support with prefixes
-    - Type-safe configuration with Pydantic validation
-    - Comprehensive validation rules for security settings
-
-Environment Variables:
-    All settings can be configured via environment variables:
-    - FLEXT_AUTH_DEBUG=false
-    - FLEXT_AUTH_JWT_SECRET_KEY=your-secret-key
-    - FLEXT_AUTH_BCRYPT_ROUNDS=12
-    - FLEXT_AUTH_MAX_LOGIN_ATTEMPTS=5
-
-Example:
-    >>> config = FlextAuthConfig(
-    ...     jwt_secret_key="your-secure-key", bcrypt_rounds=12, debug=False
-    ... )
-    >>> validation_result = config.validate_production_settings()
-    >>> if validation_result.success:
-    ...     print("Configuration is production-ready")
-
-Development vs Production:
-    - Development: Relaxed security for easier testing
-    - Production: Strict security with comprehensive validation
-    - Environment detection: Automatic security policy selection
-    - Secret validation: Ensures production secrets are secure
-
-Performance Considerations:
-    - Configuration loaded once at startup
-    - Validation performed during initialization
-    - Environment variable resolution cached
-    - Type conversion handled by Pydantic
-
 Copyright (c) 2025 FLEXT Contributors
 SPDX-License-Identifier: MIT
 

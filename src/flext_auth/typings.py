@@ -1,8 +1,4 @@
-"""Centralized typings facade for flext-auth.
-
-- Extends flext-core types
-- Add Auth-specific type aliases and Protocols here
-"""
+"""Centralized typings facade for flext-auth."""
 
 from __future__ import annotations
 

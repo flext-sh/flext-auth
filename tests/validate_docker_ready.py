@@ -3,7 +3,13 @@
 
 Tests that the library works with standard Python package dependencies
 without complex build environments.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
+
+from __future__ import annotations
 
 import asyncio
 import os
@@ -29,14 +35,15 @@ def test_pip_install() -> bool | None:
 def test_import_isolation() -> None:
     """Test that imports work in isolated environment."""
     test_code = """
-import sys
-sys.path.insert(0, "/app/src")
-
 try:
-    # Test basic imports
-    from flext_auth import FlextAuth, flext_auth_quick_start
-    from flext_auth.config import AppConfig
-    from flext_auth.domain.entities import FlextUser, FlextUserRole
+    # Test basic imports from package root
+    from flext_auth import (
+        FlextAuth,
+        flext_auth_quick_start,
+        AppConfig,
+        FlextUser,
+        FlextUserRole,
+    )
 
     print("✅ All imports successful")
 
@@ -52,9 +59,11 @@ try:
 
 except ImportError as e:
     print(f"❌ Import error: {e}")
+    import sys
     sys.exit(1)
 except Exception as e:
     print(f"❌ Runtime error: {e}")
+    import sys
     sys.exit(1)
 """
 
@@ -69,11 +78,8 @@ except Exception as e:
             f.write(test_code)
             temp_file = f.name
 
-        # Set up environment like Docker would
+        # Set up environment (no manual PYTHONPATH hacks; rely on installed packages)
         env = os.environ.copy()
-        env["PYTHONPATH"] = (
-            "/home/marlonsc/flext/flext-auth/src:/home/marlonsc/flext/flext-core/src"
-        )
 
         # Run the test
         async def _run(
@@ -101,8 +107,7 @@ except Exception as e:
             _run([sys.executable, temp_file], env, timeout_seconds=30),
         )
 
-        if err:
-            pass
+        # capture stderr for debugging in test output if needed
 
         # Clean up
         pathlib.Path(temp_file).unlink()

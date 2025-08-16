@@ -1,4 +1,9 @@
-"""FLEXT Auth Decorators - Consolidated decorators and mixins for authentication."""
+"""FLEXT Auth Decorators - Consolidated decorators and mixins for authentication.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
@@ -7,16 +12,14 @@ import functools
 import secrets
 from collections.abc import Callable
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, ParamSpec, Protocol
+from typing import ParamSpec, Protocol
 
 from flext_core import FlextResult
 from flext_core.loggings import FlextLoggerFactory
 
+from flext_auth.auth_app import FlextAuthService
 from flext_auth.auth_config import DEFAULT_JWT_SECRET, FlextAuthConfig
 from flext_auth.auth_services import FlextJWTService
-
-if TYPE_CHECKING:
-    from flext_auth.auth_app import FlextAuthService
 
 logger = FlextLoggerFactory.get_logger(__name__)
 _logger = logger

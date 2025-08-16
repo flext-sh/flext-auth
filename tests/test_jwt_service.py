@@ -10,8 +10,7 @@ from __future__ import annotations
 import time
 from datetime import UTC, datetime, timedelta
 
-from flext_auth.domain.value_objects import FlextJWTClaims
-from flext_auth.jwt import FlextJWTService
+from flext_auth import FlextJWTClaims, FlextJWTService
 
 # Constants
 EXPECTED_BULK_SIZE = 2

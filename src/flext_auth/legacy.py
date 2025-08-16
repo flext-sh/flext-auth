@@ -1,12 +1,5 @@
 """Legacy compatibility facade for flext-auth.
 
-This module provides backward compatibility for APIs that may have been refactored
-or renamed during the Pydantic modernization process. It follows the same pattern
-as flext-core's legacy.py to ensure consistent facade patterns across the ecosystem.
-
-All imports here should be considered deprecated and may issue warnings.
-Modern code should import directly from the appropriate modules.
-
 Copyright (c) 2025 FLEXT Contributors
 SPDX-License-Identifier: MIT
 """
@@ -82,7 +75,8 @@ def validation_error(*args: object, **kwargs: object) -> FlextAuthValidationErro
 
 
 def authentication_error(
-    *args: object, **kwargs: object
+    *args: object,
+    **kwargs: object,
 ) -> FlextAuthAuthenticationError:
     """Legacy alias for FlextAuthAuthenticationError."""
     _deprecation_warning("AuthenticationError", "FlextAuthAuthenticationError")

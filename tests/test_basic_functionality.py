@@ -1,4 +1,11 @@
-"""Auth Basic Functionality Tests - Core authentication flow validation."""
+"""Auth Basic Functionality Tests - Core authentication flow validation.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
+
+from __future__ import annotations
 
 from flext_auth import (
     FlextAuth,

@@ -14,6 +14,7 @@ from __future__ import annotations
 from example_utils import basic_example_runner
 
 from flext_auth import (
+    AppConfig,
     FlextAuth,
     FlextAuthMixin,
     flext_auth_complete_workflow,
@@ -24,7 +25,6 @@ from flext_auth import (
     flext_auth_validate_password_strength,
     flext_auth_verify_password,
 )
-from flext_auth.config import AppConfig
 
 # Example constants - not for production use
 # These are intentionally hardcoded for demonstration purposes only

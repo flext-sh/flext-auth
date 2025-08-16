@@ -1,4 +1,9 @@
-"""FLEXT Auth Application Services - Use case orchestration and workflow management."""
+"""FLEXT Auth Application Services - Use case orchestration and workflow management.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 

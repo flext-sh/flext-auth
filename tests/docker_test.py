@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Docker validation test for FLEXT Auth.
 
-This script validates that all examples work correctly in a Docker environment.
-Tests the core functionality without requiring the full API setup.
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
+
+from __future__ import annotations
 
 import sys
 import traceback
@@ -11,13 +14,14 @@ import traceback
 from flext_auth import (
     ADMIN_ROLE,
     USER_ROLE,
+    AppConfig,
     FlextAuth,
+    FlextUserEmail,
+    FlextUsername,
     flext_auth_hash_password,
     flext_auth_quick_start,
     flext_auth_validate_email,
 )
-from flext_auth.config import AppConfig
-from flext_auth.domain.value_objects import FlextUserEmail, FlextUsername
 
 
 def test_basic_imports() -> bool | None:

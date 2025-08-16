@@ -1,7 +1,8 @@
 """FLEXT Auth Decorators - thin public module.
 
-This module re-exports the public decorator APIs from `flext_auth.auth_decorators`
-so the file stays small and maintainable while tests enforce size limits.
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations

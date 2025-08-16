@@ -1,4 +1,9 @@
-"""FLEXT Auth App - Main authentication service and application layer."""
+"""FLEXT Auth App - Main authentication service and application layer.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+
+"""
 
 from __future__ import annotations
 
