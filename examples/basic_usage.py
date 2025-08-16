@@ -16,8 +16,7 @@ from flext_auth import flext_auth_quick_start
 
 
 async def exemplo_tradicional_vs_flext() -> None:
-    """Comparação: método tradicional vs flext-auth."""
-    # REDUÇÃO MASSIVA: Setup completo em 1 linha
+    """Comparação: método tradicional vs flext-auth."""  # REDUÇÃO MASSIVA: Setup completo em 1 linha
     auth = flext_auth_quick_start()
 
     # Login em 1 linha (retorna FlextResult)

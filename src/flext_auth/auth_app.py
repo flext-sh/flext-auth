@@ -1,29 +1,4 @@
-"""FLEXT Auth App - Main authentication service and application layer.
-
-This module consolidates the main authentication service and application patterns
-following PEP8 strict naming patterns. It provides the primary interface for
-authentication operations in the FLEXT ecosystem.
-
-Consolidated from:
-    - application.py: Application layer coordination
-    - auth.py: Main authentication service
-
-Architecture:
-    - Application Layer: Orchestrates domain operations and workflows
-    - Service Pattern: Encapsulated business operations
-    - Railway-Oriented: FlextResult[T] for type-safe error handling
-    - Clean Architecture: Clear separation of concerns
-
-Core Components:
-    Main Service:
-    - FlextAuthService: Primary authentication service interface
-    - Service dependencies and configuration management
-    - Authentication workflow orchestration
-
-Copyright (c) 2025 FLEXT Contributors
-SPDX-License-Identifier: MIT
-
-"""
+"""FLEXT Auth App - Main authentication service and application layer."""
 
 from __future__ import annotations
 
@@ -149,12 +124,14 @@ class FlextAuthService:
             claims = claims_result.data
 
             # Create security context from claims
-            context = FlextSecurityContext(
-                user_id=claims.sub,
-                username=claims.username or "unknown",
-                role=claims.role or "user",
-                session_id=claims.session_id or "unknown",
-                permissions=claims.permissions or [],
+            context = FlextSecurityContext.model_validate(
+                {
+                    "user_id": claims.sub,
+                    "username": claims.username or "unknown",
+                    "role": claims.role or "user",
+                    "session_id": claims.session_id or "unknown",
+                    "permissions": claims.permissions or [],
+                },
             )
 
             return FlextResult.ok(context)

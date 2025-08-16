@@ -144,14 +144,14 @@ class InMemorySessionRepository(SessionRepository):
         """Save session to memory."""
         try:
             # Save session (entities are immutable, cannot modify last_accessed)
-            self._sessions[session.id] = session
+            self._sessions[str(session.id)] = session
 
             # Update user sessions index
             if session.user_id not in self._user_sessions:
                 self._user_sessions[session.user_id] = []
 
-            if session.id not in self._user_sessions[session.user_id]:
-                self._user_sessions[session.user_id].append(session.id)
+            if str(session.id) not in self._user_sessions[session.user_id]:
+                self._user_sessions[session.user_id].append(str(session.id))
 
             return FlextResult.ok(session)
 
@@ -200,11 +200,11 @@ class InMemorySessionRepository(SessionRepository):
     def save_sync(self, session: FlextSession) -> FlextResult[FlextSession]:
         """Save session synchronously for compatibility."""
         try:
-            self._sessions[session.id] = session
+            self._sessions[str(session.id)] = session
             if session.user_id not in self._user_sessions:
                 self._user_sessions[session.user_id] = []
-            if session.id not in self._user_sessions[session.user_id]:
-                self._user_sessions[session.user_id].append(session.id)
+            if str(session.id) not in self._user_sessions[session.user_id]:
+                self._user_sessions[session.user_id].append(str(session.id))
             return FlextResult.ok(session)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Failed to save session: {e}")
@@ -226,7 +226,7 @@ class InMemorySessionRepository(SessionRepository):
             ]
 
             # Clean up broken references
-            valid_ids = [s.id for s in sessions]
+            valid_ids = [str(s.id) for s in sessions]
             self._user_sessions[user_id] = valid_ids
 
             return FlextResult.ok(sessions)
@@ -277,7 +277,7 @@ class InMemorySessionRepository(SessionRepository):
             for session in sessions_result.data or []:
                 if session.status == FlextSessionStatus.ACTIVE:
                     revoked_session = session.revoke()
-                    self._sessions[session.id] = revoked_session
+                    self._sessions[str(session.id)] = revoked_session
                     revoked_count += 1
 
             return FlextResult.ok(revoked_count)

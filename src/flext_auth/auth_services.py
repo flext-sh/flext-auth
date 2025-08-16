@@ -1,34 +1,4 @@
-"""FLEXT Auth Services - Consolidated authentication services and utilities.
-
-This module consolidates authentication services, password operations, and JWT
-token management following PEP8 strict naming patterns. It provides comprehensive
-service layer functionality for the FLEXT authentication ecosystem.
-
-Consolidated from:
-    - application_services.py: Application service layer
-    - services_password_service.py: Password hashing and validation
-    - jwt.py: JWT token operations
-
-Architecture:
-    - Application Layer: Orchestrates domain operations and workflows
-    - Infrastructure Layer: Secure password operations and JWT management
-    - Service Pattern: Encapsulated business operations
-    - Railway-Oriented: FlextResult[T] for type-safe error handling
-
-Core Services:
-    Application Services:
-    - FlextAuthenticationService: User authentication workflows
-    - FlextAuthorizationService: Permission and role management
-    - FlextSessionService: Session lifecycle management
-
-    Infrastructure Services:
-    - FlextPasswordService: Secure password operations
-    - FlextJWTService: JWT token generation and validation
-
-Copyright (c) 2025 FLEXT Contributors
-SPDX-License-Identifier: MIT
-
-"""
+"""FLEXT Auth Services - Consolidated authentication services and utilities."""
 
 from __future__ import annotations
 
@@ -128,9 +98,9 @@ class FlextPasswordService:
             msg = "Bcrypt rounds must be between 4 and 20"
             raise FlextValidationError(
                 msg,
-                validation_details={
-                    "field": "rounds",
-                    "value": rounds,
+                field="rounds",
+                value=rounds,
+                context={
                     "min_value": MIN_BCRYPT_ROUNDS,
                     "max_value": MAX_BCRYPT_ROUNDS,
                 },
@@ -160,7 +130,7 @@ class FlextPasswordService:
             # Validate password if it's a string
             if isinstance(plain_password, str):
                 try:
-                    FlextPlainPassword(value=password_str)  # Validate password strength
+                    FlextPlainPassword.model_validate({"value": password_str})
                 except (ValueError, TypeError) as e:
                     return FlextResult.fail(f"Password validation failed: {e}")
 
@@ -171,7 +141,7 @@ class FlextPasswordService:
             hashed_str = hashed_bytes.decode("utf-8")
 
             try:
-                hashed_vo = FlextHashedPassword(value=hashed_str)
+                hashed_vo = FlextHashedPassword.model_validate({"value": hashed_str})
             except (ValueError, TypeError) as e:
                 return FlextResult.fail(f"Password hashing failed: {e}")
             # Domain VO may raise inside validate_business_rules; call to ensure validity
@@ -281,7 +251,7 @@ class FlextPasswordService:
 
             # Validate the generated password and return as FlextPlainPassword
             try:
-                password_obj = FlextPlainPassword(value=password)
+                password_obj = FlextPlainPassword.model_validate({"value": password})
                 return FlextResult.ok(password_obj)
             except (ValueError, TypeError) as e:
                 return FlextResult.fail(f"Generated password validation failed: {e}")
@@ -1082,7 +1052,7 @@ class FlextAuthenticationService:
                 )
 
             # Revoke all existing sessions for security
-            self._deps.session_repo.revoke_all_sessions_for_user(user.id)
+            self._deps.session_repo.revoke_all_sessions_for_user(str(user.id))
 
             return FlextResult.ok(PASSWORD_CHANGE_SUCCESS)
 
@@ -1239,7 +1209,7 @@ class FlextSessionService:
             # Create session entity
             session = FlextSession(
                 id=f"session_{user.id}",
-                user_id=user.id,
+                user_id=str(user.id),
                 access_token=f"token_{user.id}",
                 refresh_token=f"refresh_{user.id}",
                 expires_at=datetime.now(UTC) + timedelta(minutes=expires_minutes),

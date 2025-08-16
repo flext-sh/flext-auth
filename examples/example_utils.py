@@ -39,22 +39,18 @@ def run_example_suite(
         # Print header with dynamic width based on title
         max(50, len(title) + 10)
 
-        try:
-            # Run synchronous examples
-            for example_func in sync_examples:
-                example_func()
+        # Run synchronous examples
+        for example_func in sync_examples:
+            example_func()
 
-            # Run asynchronous examples if provided
-            if async_examples:
-                for async_example_func in async_examples:
-                    await async_example_func()
+        # Run asynchronous examples if provided
+        if async_examples:
+            for async_example_func in async_examples:
+                await async_example_func()
 
-            # Print success message
-            if success_message:
-                pass
-
-        except (RuntimeError, ValueError, TypeError):
-            raise
+        # Print success message
+        if success_message:
+            pass
 
     # Run the async suite
     asyncio.run(_run_suite())

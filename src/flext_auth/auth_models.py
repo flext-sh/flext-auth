@@ -1,9 +1,4 @@
-"""Authentication domain models, entities, and value objects."""
-
-Copyright (c) 2025 FLEXT Contributors
-SPDX-License-Identifier: MIT
-
-"""
+"""FLEXT Auth Models - Authentication-specific domain models."""
 
 from __future__ import annotations
 
@@ -14,7 +9,9 @@ from enum import StrEnum
 
 from flext_core import (
     FlextEntity,
+    FlextEntityId,
     FlextResult,
+    FlextTimestamp,
     FlextValidationError,
     FlextValueObject,
 )
@@ -85,7 +82,7 @@ class FlextUsername(FlextValueObject):
             msg = "Username can only contain letters, numbers, underscores, and hyphens"
             raise FlextValidationError(
                 message=msg,
-                validation_details={
+                context={
                     "error_code": "AUTH_INVALID_USERNAME",
                     "username": v,
                     "pattern": "^[a-zA-Z0-9_-]+$",
@@ -142,7 +139,7 @@ class FlextPlainPassword(FlextValueObject):
             msg = "Password must contain at least one uppercase letter"
             raise FlextValidationError(
                 message=msg,
-                validation_details={
+                context={
                     "error_code": "AUTH_INVALID_PASSWORD_STRENGTH",
                     "requirement": "uppercase_letter",
                 },
@@ -151,7 +148,7 @@ class FlextPlainPassword(FlextValueObject):
             msg = "Password must contain at least one lowercase letter"
             raise FlextValidationError(
                 message=msg,
-                validation_details={
+                context={
                     "error_code": "AUTH_INVALID_PASSWORD_STRENGTH",
                     "requirement": "lowercase_letter",
                 },
@@ -160,7 +157,7 @@ class FlextPlainPassword(FlextValueObject):
             msg = "Password must contain at least one number"
             raise FlextValidationError(
                 message=msg,
-                validation_details={
+                context={
                     "error_code": "AUTH_INVALID_PASSWORD_STRENGTH",
                     "requirement": "number",
                 },
@@ -169,7 +166,7 @@ class FlextPlainPassword(FlextValueObject):
             msg = "Password must contain at least one special character"
             raise FlextValidationError(
                 message=msg,
-                validation_details={
+                context={
                     "error_code": "AUTH_INVALID_PASSWORD_STRENGTH",
                     "requirement": "special_character",
                 },
@@ -361,7 +358,7 @@ class FlextUser(FlextEntity):
     failed login tracking, and role-based access control.
     """
 
-    id: str = Field(..., description="Unique user identifier")
+    id: FlextEntityId = Field(..., description="Unique user identifier")
     username: str = Field(..., description="Username")
     email: str = Field(..., description="User email address")
     password_hash: str = Field(..., description="Bcrypt password hash")
@@ -383,8 +380,8 @@ class FlextUser(FlextEntity):
         default=None,
         description="Last successful login",
     )
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
+    updated_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
 
     def is_active(self) -> bool:
         """Check if user account is active."""
@@ -505,7 +502,7 @@ class FlextUser(FlextEntity):
 class FlextSession(FlextEntity):
     """User session entity."""
 
-    id: str = Field(..., description="Unique session identifier")
+    id: FlextEntityId = Field(..., description="Unique session identifier")
     user_id: str = Field(..., description="User ID owning this session")
     access_token: str = Field(..., description="JWT access token")
     refresh_token: str | None = Field(default=None, description="JWT refresh token")
@@ -516,7 +513,7 @@ class FlextSession(FlextEntity):
     ip_address: str | None = Field(default=None, description="Client IP address")
     user_agent: str | None = Field(default=None, description="Client user agent")
     expires_at: datetime = Field(..., description="Session expiration time")
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
     last_accessed: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     def is_valid(self) -> bool:
@@ -559,7 +556,7 @@ class FlextSession(FlextEntity):
     def has_valid_data(self) -> bool:
         """Validate session entity data structure."""
         return (
-            len(self.id) > 0
+            len(str(self.id)) > 0
             and len(self.user_id) > 0
             and len(self.access_token) > 0
             and self.expires_at > datetime.now(UTC)
@@ -597,7 +594,7 @@ class FlextSession(FlextEntity):
 class FlextPermission(FlextEntity):
     """Permission entity."""
 
-    id: str = Field(..., description="Permission identifier")
+    id: FlextEntityId = Field(..., description="Permission identifier")
     name: str = Field(..., description="Permission name")
     description: str = Field(..., description="Permission description")
     resource: str = Field(..., description="Resource this permission applies to")
@@ -606,7 +603,7 @@ class FlextPermission(FlextEntity):
     def is_valid(self) -> bool:
         """Validate permission entity data."""
         return (
-            len(self.id) > 0
+            len(str(self.id)) > 0
             and len(self.name) > 0
             and len(self.resource) > 0
             and len(self.action) > 0
@@ -632,7 +629,7 @@ class FlextPermission(FlextEntity):
 class FlextRole(FlextEntity):
     """Role entity with permissions."""
 
-    id: str = Field(..., description="Role identifier")
+    id: FlextEntityId = Field(..., description="Role identifier")
     name: str = Field(..., description="Role name")
     description: str = Field(..., description="Role description")
     permissions: list[FlextPermission] = Field(
@@ -643,7 +640,7 @@ class FlextRole(FlextEntity):
         default=False,
         description="Whether this is a system role",
     )
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
 
     def has_permission(self, resource: str, action: str) -> bool:
         """Check if role has specific permission."""
@@ -653,7 +650,7 @@ class FlextRole(FlextEntity):
 
     def is_valid(self) -> bool:
         """Validate role entity data."""
-        return len(self.id) > 0 and len(self.name) > 0 and len(self.description) > 0
+        return len(str(self.id)) > 0 and len(self.name) > 0 and len(self.description) > 0
 
     def validate_domain_rules(self) -> FlextResult[None]:
         """Validate role domain rules using Railway-Oriented Programming."""
@@ -704,7 +701,7 @@ class FlextRole(FlextEntity):
 class FlextLoginAttempt(FlextEntity):
     """Login attempt tracking."""
 
-    id: str = Field(..., description="Attempt identifier")
+    id: FlextEntityId = Field(..., description="Attempt identifier")
     username: str = Field(..., description="Username attempted")
     ip_address: str = Field(..., description="Client IP address")
     user_agent: str | None = Field(default=None, description="Client user agent")
@@ -768,12 +765,12 @@ class FlextLoginAttempt(FlextEntity):
 class FlextBaseToken(FlextEntity):
     """Base token entity - Template Method Pattern for DRY principle."""
 
-    id: str = Field(..., description="Token identifier")
+    id: FlextEntityId = Field(..., description="Token identifier")
     user_id: str = Field(..., description="User ID")
     token: str = Field(..., description="Token value")
     expires_at: datetime = Field(..., description="Token expiration")
     used: bool = Field(default=False, description="Whether token has been used")
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
 
     def is_valid(self) -> bool:
         """Check if token is valid - Common behavior for all tokens."""
@@ -824,7 +821,7 @@ class FlextBaseToken(FlextEntity):
         # Temporal validation strategies
         if self.expires_at <= datetime.now(UTC):
             errors.append(f"{self._get_token_type()} expiration must be in the future")
-        if self.created_at > datetime.now(UTC):
+        if self.created_at.root > datetime.now(UTC):
             errors.append("Token creation time cannot be in the future")
 
         return errors
@@ -947,9 +944,9 @@ class InMemoryUserRepository(UserRepository):
             )
 
             # Save user
-            self._users[updated_user.id] = updated_user
-            self._username_index[updated_user.username.lower()] = updated_user.id
-            self._email_index[str(updated_user.email).lower()] = updated_user.id
+            self._users[str(updated_user.id)] = updated_user
+            self._username_index[updated_user.username.lower()] = str(updated_user.id)
+            self._email_index[str(updated_user.email).lower()] = str(updated_user.id)
 
             return FlextResult.ok(updated_user)
 
@@ -1021,7 +1018,7 @@ class InMemoryUserRepository(UserRepository):
                 users = [u for u in users if u.status == status]
 
             # Sort by created_at (newest first)
-            users.sort(key=lambda u: u.created_at, reverse=True)
+            users.sort(key=lambda u: u.created_at.root, reverse=True)
 
             # Apply pagination
             end = offset + limit
@@ -1060,8 +1057,8 @@ def convert_user_to_dict(user: FlextUser) -> dict[str, object]:
         "email": user.email,
         "role": user.role,
         "status": user.status,
-        "created_at": user.created_at.isoformat(),
-        "updated_at": user.updated_at.isoformat(),
+        "created_at": str(user.created_at),
+        "updated_at": str(user.updated_at),
         "last_login": user.last_login.isoformat() if user.last_login else None,
     }
 

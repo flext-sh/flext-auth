@@ -171,9 +171,9 @@ class InMemoryUserRepository(UserRepository):
             )
 
             # Save user
-            self._users[updated_user.id] = updated_user
-            self._username_index[updated_user.username.lower()] = updated_user.id
-            self._email_index[str(updated_user.email).lower()] = updated_user.id
+            self._users[str(updated_user.id)] = updated_user
+            self._username_index[updated_user.username.lower()] = str(updated_user.id)
+            self._email_index[str(updated_user.email).lower()] = str(updated_user.id)
 
             return FlextResult.ok(updated_user)
 

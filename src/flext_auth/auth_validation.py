@@ -1,34 +1,4 @@
-"""FLEXT Auth Validation - Consolidated input validation and field management.
-
-This module consolidates input validation, field definitions, and business rule
-enforcement following PEP8 strict naming patterns. It provides comprehensive
-validation capabilities for the FLEXT authentication ecosystem.
-
-Consolidated from:
-    - validation.py: Input validation and business rule enforcement
-    - fields.py: Domain field definitions and validation
-
-Architecture:
-    - Validation Layer: Input validation and business rule enforcement
-    - Field Layer: Domain-specific field definitions and validation
-    - Railway-Oriented: FlextResult[T] for type-safe validation
-    - Registry Pattern: Uses FlextCore field registry for centralized management
-
-Core Components:
-    Validators:
-    - FlextAuthValidators: Authentication validators using flext-core patterns
-    - Password strength validation with detailed analysis
-    - Cross-field validation for complex scenarios
-
-    Field Management:
-    - FlextAuthFieldSchema: Complete authentication field schema
-    - Field registry integration for centralized management
-    - Advanced field validators for auth-specific logic
-
-Copyright (c) 2025 FLEXT Contributors
-SPDX-License-Identifier: MIT
-
-"""
+"""FLEXT Auth Validation - Consolidated input validation and field management."""
 
 from __future__ import annotations
 
@@ -944,8 +914,7 @@ def validate_complete_user_registration(
         return basic_validation
 
     validated_data = basic_validation.data
-    if validated_data is None:
-        return FlextResult.fail("Validation data is None")
+    # Type-safe: data guaranteed to exist after success check
 
     # Perform advanced validations
     password = str(validated_data.get("password", ""))
@@ -958,8 +927,7 @@ def validate_complete_user_registration(
         )
 
     strength_analysis = strength_result.data
-    if strength_analysis is None:
-        return FlextResult.fail("Password strength analysis failed")
+    # Type-safe: data guaranteed to exist after success check
 
     if strength_analysis.get("strength") == "weak":
         feedback = strength_analysis.get("feedback", [])

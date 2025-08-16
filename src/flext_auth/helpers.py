@@ -407,7 +407,7 @@ def flext_auth_generate_jwt(
             user_id=user_id,
             username=username,
             role=role,
-            extra_claims=extra_claims if extra_claims else None,
+            extra_claims=extra_claims or None,
         )
 
     except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
@@ -798,8 +798,7 @@ def flext_auth_complete_workflow(
             return FlextResult.fail(f"Setup failed: {setup_result.error}")
 
         service_data = setup_result.data
-        if service_data is None:
-            return FlextResult.fail("Auth service setup failed")
+        # Type-safe: data guaranteed to exist after success check
         auth_service = service_data
 
         # Register user with proper data structure
@@ -1147,8 +1146,7 @@ def flext_auth_one_liner(
             return FlextResult.fail(validation_result.error or "Validation failed")
 
         auth = validation_result.data
-        if auth is None:
-            return FlextResult.fail("Auth service initialization returned None")
+        # Type-safe: data guaranteed to exist after success check
 
         # Execute registration and authentication workflow
         result = _execute_auth_workflow(auth, username, email, password)
@@ -1193,8 +1191,7 @@ def _validate_and_setup_auth(
     if not auth_result.success:
         return FlextResult.fail(f"Auth setup failed: {auth_result.error}")
 
-    if auth_result.data is None:
-        return FlextResult.fail("Auth service creation returned None")
+    # Type-safe: data guaranteed to exist after success check
     return FlextResult.ok(auth_result.data)
 
 

@@ -636,12 +636,6 @@ class TestPublicInterface:
         """Test that users don't need to import internal modules."""
         # This should be all users need to import
 
-        from flext_auth import (
-            flext_auth_hash_password,
-            flext_auth_quick_start,
-            flext_auth_verify_password,
-        )
-
         # Create instance and use helpers
         auth = flext_auth_quick_start()
         password = "TestPassword123!"

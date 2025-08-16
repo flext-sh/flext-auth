@@ -1,22 +1,10 @@
 """Main authentication service for FLEXT Auth."""
-    - Optimized password hashing with configurable rounds
-    - Connection pooling for database operations
-
-Integration Points:
-    - FlextContainer: Dependency injection (TODO)
-    - FlextResult: Type-safe error handling
-    - FlextLogger: Structured logging with correlation IDs
-    - Domain Events: Authentication operation events (TODO)
-
-Copyright (c) 2025 FLEXT Contributors
-SPDX-License-Identifier: MIT
-
-"""
 
 from __future__ import annotations
 
 import secrets
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, cast
@@ -46,11 +34,7 @@ from flext_auth.domain_value_objects import (
     FlextUsername as Username,
 )
 
-REFRESH_TOKEN_TYPE = FlextAuthConstants.TokenTypes.REFRESH
-
 if TYPE_CHECKING:
-    from collections.abc import Awaitable, Callable
-
     from flext_auth.jwt import FlextJWTService as JWTService
     from flext_auth.services_password_service import (
         FlextPasswordService as PasswordService,
@@ -58,22 +42,24 @@ if TYPE_CHECKING:
     from flext_auth.session import SessionRepository
     from flext_auth.user import UserRepository
 
-    # Type aliases for validation pipeline strategies - using actual precise types
-    TokenValidator = Callable[[str], Awaitable[FlextResult[JWTClaims]]]
-    UserValidator = Callable[[JWTClaims], Awaitable[FlextResult[User]]]
-    SessionValidator = Callable[[JWTClaims], Awaitable[FlextResult[None]]]
-    # Generic result creator supports both SecurityContext and dict results
-    ResultCreator = Callable[
-        [User, JWTClaims],
-        Awaitable[FlextResult[SecurityContext | dict[str, str]]],
-    ]
-    # Specific result creators for type safety
-    SecurityContextCreator = Callable[
-        [User, JWTClaims],
-        Awaitable[FlextResult[SecurityContext]],
-    ]
-    TokenCreator = Callable[[User, JWTClaims], Awaitable[FlextResult[dict[str, str]]]]
+# Type aliases for validation pipeline strategies - using actual precise types
+TokenValidator = Callable[[str], Awaitable[FlextResult[JWTClaims]]]
+UserValidator = Callable[[JWTClaims], Awaitable[FlextResult[User]]]
+SessionValidator = Callable[[JWTClaims], Awaitable[FlextResult[None]]]
+# Generic result creator supports both SecurityContext and dict results
+ResultCreator = Callable[
+    [User, JWTClaims],
+    Awaitable[FlextResult[SecurityContext | dict[str, str]]],
+]
+# Specific result creators for type safety
+SecurityContextCreator = Callable[
+    [User, JWTClaims],
+    Awaitable[FlextResult[SecurityContext]],
+]
+TokenCreator = Callable[[User, JWTClaims], Awaitable[FlextResult[dict[str, str]]]]
 
+
+REFRESH_TOKEN_TYPE = FlextAuthConstants.TokenTypes.REFRESH
 
 # Initialize logger using FLEXT patterns
 logger = get_logger(__name__)
@@ -308,7 +294,7 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
 
         # Generate tokens
         access_token_result = self.jwt_service.generate_access_token(
-            user_id=user.id,
+            user_id=str(user.id),
             username=user.username,
             role=user.role,
             session_id=session_id,
@@ -317,23 +303,20 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
             return FlextResult.fail("Token generation failed")
 
         refresh_token_result = self.jwt_service.generate_refresh_token(
-            user_id=user.id,
+            user_id=str(user.id),
             session_id=session_id,
         )
         if not refresh_token_result.success:
             return FlextResult.fail("Refresh token generation failed")
 
-        # Type-safe token extraction
+        # Type-safe token extraction (data guaranteed to exist after success check)
         access_token = access_token_result.data
         refresh_token = refresh_token_result.data
-
-        if access_token is None or refresh_token is None:
-            return FlextResult.fail("Token data is None after successful generation")
 
         # Create and save session
         session = Session(
             id=session_id,
-            user_id=user.id,
+            user_id=str(user.id),
             access_token=access_token,
             refresh_token=refresh_token,
             ip_address=ip_address,
@@ -358,7 +341,7 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
                     "id": session.id,
                     "ip_address": session.ip_address,
                     "user_agent": session.user_agent,
-                    "created_at": session.created_at.isoformat(),
+                    "created_at": str(session.created_at),
                 },
                 "tokens": {
                     "access_token": access_token_result.data,
@@ -395,8 +378,7 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
                     validation_result.error or "Token validation failed",
                 )
 
-            if not validation_result.data:
-                return FlextResult.fail("Invalid token data")
+            # Type-safe: data guaranteed to exist after success check
             claims, user = validation_result.data
 
             # Check if session is still active (critical for logout validation)
@@ -407,12 +389,14 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
                 )
 
             return FlextResult.ok(
-                SecurityContext(
-                    user_id=user.id,
-                    username=user.username,
-                    role=user.role,
-                    session_id=claims.session_id or "no_session",
-                    permissions=[],  # Could be enhanced with role-based permissions
+                SecurityContext.model_validate(
+                    {
+                        "user_id": str(user.id),
+                        "username": user.username,
+                        "role": user.role,
+                        "session_id": claims.session_id or "no_session",
+                        "permissions": [],  # Could be enhanced with role-based permissions
+                    },
                 ),
             )
         except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
@@ -486,7 +470,7 @@ class DefaultSessionManagementStrategy(SessionManagementStrategy):
         """Create new session for user."""
         session = Session(
             id=secrets.token_urlsafe(32),
-            user_id=user.id,
+            user_id=str(user.id),
             access_token="",
             refresh_token=None,
             status=SessionStatus.ACTIVE,
@@ -797,12 +781,14 @@ class FlextAuthService:
     ) -> FlextResult[SecurityContext]:
         """Create security context from validated user and claims - SRP applied."""
         # Create security context
-        context = SecurityContext(
-            user_id=user.id,
-            username=user.username,
-            role=user.role,
-            session_id=claims.session_id or "",
-            permissions=[],  # Would be loaded from user roles/permissions
+        context = SecurityContext.model_validate(
+            {
+                "user_id": str(user.id),
+                "username": user.username,
+                "role": user.role,
+                "session_id": claims.session_id or "",
+                "permissions": [],  # Would be loaded from user roles/permissions
+            },
         )
 
         return FlextResult.ok(context)
@@ -1130,7 +1116,7 @@ class FlextAuthService:
         """Validate new password format and strength - SRP applied."""
         # Validate new password
         try:
-            password_vo = PlainPassword(value=new_password)
+            password_vo = PlainPassword.model_validate({"value": new_password})
             return FlextResult.ok(password_vo)
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult.fail(f"Password validation failed: {e}")
@@ -1154,9 +1140,7 @@ class FlextAuthService:
         if not data_validation.success:
             return FlextResult.fail(data_validation.error or "No password hash data")
 
-        if hash_result.data is None:
-            return FlextResult.fail("Password hash data is None")
-
+        # Type-safe: hash_result.data guaranteed to exist after validation
         return FlextResult.ok(hash_result.data.value)
 
     async def _update_user_password(
@@ -1272,9 +1256,8 @@ class FlextAuthService:
                 inputs_validation.error or "Password change inputs validation failed",
             )
 
-        user, new_password_hash = inputs_validation.data or (None, None)
-        if not user or not new_password_hash:
-            return FlextResult.fail("Inputs validation returned incomplete data")
+        # Type-safe: data guaranteed to exist after success check
+        user, new_password_hash = inputs_validation.data
 
         # User update pipeline
         user_update = await self._update_user_password(user, new_password_hash)
@@ -1311,9 +1294,7 @@ class FlextAuthService:
                 validation_result.error or "Registration data validation failed",
             )
 
-        # Safely extract validated data
-        if validation_result.data is None:
-            return FlextResult.fail("Validation returned no data")
+        # Type-safe: data guaranteed to exist after success check
         _username_vo, email_vo, password_vo = validation_result.data
 
         # Step 2: Check uniqueness constraints
@@ -1396,9 +1377,7 @@ class FlextAuthService:
         if not save_result.success:
             return FlextResult.fail(f"Failed to save user: {save_result.error}")
 
-        if save_result.data is None:
-            return FlextResult.fail("User save returned None data")
-
+        # Type-safe: data guaranteed to exist after success check
         return FlextResult.ok(save_result.data)
 
     async def _log_registration_attempt(
@@ -1446,7 +1425,7 @@ class FlextAuthService:
                     "status": session.status,
                     "ip_address": session.ip_address,
                     "user_agent": session.user_agent,
-                    "created_at": session.created_at.isoformat(),
+                    "created_at": str(session.created_at),
                     "last_accessed": session.last_accessed.isoformat(),
                     "expires_at": session.expires_at.isoformat(),
                     "is_valid": session.is_valid(),
@@ -1467,15 +1446,15 @@ class FlextAuthService:
     ) -> FlextResult[tuple[Username, UserEmail, PlainPassword]]:
         """Validate registration data and return value objects."""
         try:
-            username_vo = Username(value=registration_data.username)
-            email_vo = UserEmail(value=registration_data.email)
-            password_vo = PlainPassword(value=registration_data.password)
+            username_vo = Username.model_validate({"value": registration_data.username})
+            email_vo = UserEmail.model_validate({"value": registration_data.email})
+            password_vo = PlainPassword.model_validate({"value": registration_data.password})
             return FlextResult.ok((username_vo, email_vo, password_vo))
         except (ValueError, TypeError) as e:
             return FlextResult.fail(
                 FlextValidationError(
                     f"Input validation failed: {e}",
-                    validation_details={
+                    context={
                         "username": registration_data.username,
                         "email": registration_data.email,
                     },
@@ -1728,7 +1707,7 @@ class FlextAuthService:
     ) -> FlextResult[dict[str, object]]:
         """Create session and tokens for authenticated user - SRP applied."""
         # Manage concurrent sessions
-        await self._manage_concurrent_sessions(user.id)
+        await self._manage_concurrent_sessions(str(user.id))
 
         # Create session
         session_result = await self._create_user_session(
@@ -1743,10 +1722,10 @@ class FlextAuthService:
 
         # Generate JWT tokens
         tokens_result = self.jwt_service.generate_token_pair(
-            user_id=user.id,
+            user_id=str(user.id),
             username=user.username,
             role=user.role,
-            session_id=session.id if session else "",
+            session_id=str(session.id) if session else "",
         )
         if not tokens_result.success:
             return FlextResult.fail(f"Token generation failed: {tokens_result.error}")
@@ -1813,7 +1792,7 @@ class FlextAuthService:
                 active_sessions_result.data or [],
                 key=lambda s: s.created_at,
             )
-            await self.session_repo.revoke_session(oldest_session.id)
+            await self.session_repo.revoke_session(str(oldest_session.id))
 
     # REFACTORING: Single Responsibility Principle methods for refresh_token
 
@@ -1871,7 +1850,7 @@ class FlextAuthService:
         """Generate new token pair for refresh - SRP applied."""
         # Generate new token pair
         tokens_result = self.jwt_service.generate_token_pair(
-            user_id=user.id,
+            user_id=str(user.id),
             username=user.username,
             role=user.role,
             session_id=claims.session_id or "",
@@ -1879,9 +1858,7 @@ class FlextAuthService:
         if not tokens_result.success:
             return FlextResult.fail(f"Token generation failed: {tokens_result.error}")
 
-        if tokens_result.data is None:
-            return FlextResult.fail("Token generation returned no data")
-
+        # Type-safe: data guaranteed to exist after success check
         return FlextResult.ok(tokens_result.data)
 
     async def _execute_token_refresh_pipeline(

@@ -755,8 +755,6 @@ def validate_complete_user_registration(
         return basic_validation
 
     validated_data = basic_validation.data
-    if validated_data is None:
-        return FlextResult.fail("Validation data is None")
 
     # Perform advanced validations
     validated_data.get("username", "")
@@ -771,8 +769,6 @@ def validate_complete_user_registration(
         )
 
     strength_analysis = strength_result.data
-    if strength_analysis is None:
-        return FlextResult.fail("Password strength analysis failed")
 
     if strength_analysis.get("strength") == "weak":
         feedback = strength_analysis.get("feedback", [])

@@ -99,7 +99,7 @@ class FlextUsername(FlextValueObject):
             msg = "Username can only contain letters, numbers, underscores, and hyphens"
             raise FlextValidationError(
                 message=msg,
-                validation_details={
+                context={
                     "error_code": "AUTH_INVALID_USERNAME",
                     "username": v,
                     "pattern": "^[a-zA-Z0-9_-]+$",
@@ -156,7 +156,7 @@ class FlextPlainPassword(FlextValueObject):
             msg = "Password must contain at least one uppercase letter"
             raise FlextValidationError(
                 message=msg,
-                validation_details={
+                context={
                     "error_code": "AUTH_INVALID_PASSWORD_STRENGTH",
                     "requirement": "uppercase_letter",
                 },
@@ -165,7 +165,7 @@ class FlextPlainPassword(FlextValueObject):
             msg = "Password must contain at least one lowercase letter"
             raise FlextValidationError(
                 message=msg,
-                validation_details={
+                context={
                     "error_code": "AUTH_INVALID_PASSWORD_STRENGTH",
                     "requirement": "lowercase_letter",
                 },
@@ -174,7 +174,7 @@ class FlextPlainPassword(FlextValueObject):
             msg = "Password must contain at least one number"
             raise FlextValidationError(
                 message=msg,
-                validation_details={
+                context={
                     "error_code": "AUTH_INVALID_PASSWORD_STRENGTH",
                     "requirement": "number",
                 },
@@ -183,7 +183,7 @@ class FlextPlainPassword(FlextValueObject):
             msg = "Password must contain at least one special character"
             raise FlextValidationError(
                 message=msg,
-                validation_details={
+                context={
                     "error_code": "AUTH_INVALID_PASSWORD_STRENGTH",
                     "requirement": "special_character",
                 },

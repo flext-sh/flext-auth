@@ -403,8 +403,10 @@ async def main() -> None:
         await demo_full_auth_lifecycle()
         await demo_batch_operations()
 
-    except (RuntimeError, ValueError, TypeError):
-        raise
+    except (RuntimeError, ValueError, TypeError) as e:
+        # Re-raise with additional context for debugging
+        msg = f"Demonstration failed: {type(e).__name__}: {e}"
+        raise RuntimeError(msg) from e
 
 
 if __name__ == "__main__":

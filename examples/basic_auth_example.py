@@ -23,8 +23,7 @@ from flext_auth import (
 
 
 def main() -> None:
-    """Run basic authentication example."""
-    # 1. Password Hashing Example
+    """Run basic authentication example."""  # 1. Password Hashing Example
     password = "SecurePassword123!"  # noqa: S105 - Example password for documentation
     flext_auth_hash_password(password)
 
@@ -63,7 +62,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    try:
-        main()
-    except Exception:
-        raise
+    main()

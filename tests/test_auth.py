@@ -12,16 +12,17 @@ from __future__ import annotations
 
 import pytest
 
-from flext_auth.auth import (
+from flext_auth import (
     FlextAuthService,
     FlextAuthServiceDependencies,
+    FlextJWTService,
+    FlextPasswordService,
     FlextUserRegistrationData,
+    FlextUserRole,
+    FlextUserStatus,
+    InMemorySessionRepository,
+    InMemoryUserRepository,
 )
-from flext_auth.domain.entities import FlextUserRole, FlextUserStatus
-from flext_auth.jwt import FlextJWTService
-from flext_auth.services.password_service import FlextPasswordService
-from flext_auth.session import InMemorySessionRepository
-from flext_auth.user import InMemoryUserRepository
 
 
 class TestFlextAuthService:
@@ -59,12 +60,12 @@ class TestFlextAuthService:
         assert result.success
         assert result.data is not None
         if result.data.username != "testuser":
-            msg: str = f"Expected {'testuser'}, got {result.data.username}"
-            raise AssertionError(msg)
+            msg1: str = f"Expected {'testuser'}, got {result.data.username}"
+            raise AssertionError(msg1)
         assert result.data.email == "test@example.com"
         if result.data.role != FlextUserRole.USER:
-            msg: str = f"Expected {FlextUserRole.USER}, got {result.data.role}"
-            raise AssertionError(msg)
+            msg2: str = f"Expected {FlextUserRole.USER}, got {result.data.role}"
+            raise AssertionError(msg2)
         assert result.data.status == FlextUserStatus.ACTIVE
 
     @pytest.mark.unit

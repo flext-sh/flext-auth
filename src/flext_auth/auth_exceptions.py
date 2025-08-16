@@ -1,18 +1,4 @@
-"""FLEXT Auth Exceptions - Authentication-specific exception classes.
-
-This module provides authentication-specific exception classes following PEP8
-strict naming patterns. It defines a hierarchy of exceptions for different
-authentication and authorization scenarios in the FLEXT ecosystem.
-
-Architecture:
-    - Exception Layer: Structured error handling
-    - Hierarchy: Clear exception inheritance for specific error types
-    - Context: Rich error context for debugging and logging
-
-Copyright (c) 2025 FLEXT Contributors
-SPDX-License-Identifier: MIT
-
-"""
+"""FLEXT Auth Exceptions - Authentication-specific exception classes."""
 
 from __future__ import annotations
 

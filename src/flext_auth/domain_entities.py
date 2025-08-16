@@ -1,59 +1,11 @@
-"""Domain entities for authentication business logic.
-
-Contains domain entities implementing authentication business rules following
-Domain-Driven Design patterns. Entities encapsulate business logic and validation
-for user authentication, session management, and access control.
-
-Entities:
-    - FlextUser: User account with authentication logic
-    - FlextSession: User session with lifecycle management
-    - FlextRole: Role definition for access control
-    - FlextPermission: Permission for fine-grained access
-    - FlextPasswordResetToken: Password reset token
-    - FlextEmailVerificationToken: Email verification token
-
-Business Rules:
-    - User accounts lock after configurable failed login attempts
-    - Sessions expire after configurable timeout periods
-    - Roles group permissions for simplified access management
-    - Password reset tokens are single-use with expiration
-    - Email verification required for account activation
-
-Implementation:
-    - Rich domain models with encapsulated business logic
-    - FlextResult pattern for error handling in business operations
-    - Immutable value objects for type safety
-    - Validation rules enforced at entity level
-    - Unique identifiers for entity identity
-
-Development Status:
-    - Core authentication entities implemented
-    - Business rule validation in place
-    - Domain events integration planned for future enhancement
-    - Event sourcing integration planned for audit requirements
-
-Example:
-    >>> user = FlextUser(
-    ...     id="user123",
-    ...     username="john_doe",
-    ...     email="john@example.com",
-    ...     password_hash="$2b$12$hash",
-    ... )
-    >>> validation_result = user.validate_business_rules()
-    >>> if validation_result.success:
-    ...     print(f"User {user.username} is valid")
-
-Copyright (c) 2025 FLEXT Contributors
-SPDX-License-Identifier: MIT
-
-"""
+"""Domain entities for authentication business logic."""
 
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 
-from flext_core import FlextEntity, FlextResult
+from flext_core import FlextEntity, FlextEntityId, FlextResult, FlextTimestamp
 from pydantic import Field
 
 # Constants for magic numbers
@@ -146,7 +98,7 @@ class FlextUser(FlextEntity):
 
     """
 
-    id: str = Field(..., description="Unique user identifier")
+    id: FlextEntityId = Field(..., description="Unique user identifier")
     username: str = Field(..., description="Username")
     email: str = Field(..., description="User email address")
     password_hash: str = Field(..., description="Bcrypt password hash")
@@ -168,8 +120,8 @@ class FlextUser(FlextEntity):
         default=None,
         description="Last successful login",
     )
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
+    updated_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
 
     def is_active(self) -> bool:
         """Check if user account is active."""
@@ -307,7 +259,7 @@ class FlextSessionStatus(StrEnum):
 class FlextSession(FlextEntity):
     """User session entity."""
 
-    id: str = Field(..., description="Unique session identifier")
+    id: FlextEntityId = Field(..., description="Unique session identifier")
     user_id: str = Field(..., description="User ID owning this session")
     access_token: str = Field(..., description="JWT access token")
     refresh_token: str | None = Field(default=None, description="JWT refresh token")
@@ -318,7 +270,7 @@ class FlextSession(FlextEntity):
     ip_address: str | None = Field(default=None, description="Client IP address")
     user_agent: str | None = Field(default=None, description="Client user agent")
     expires_at: datetime = Field(..., description="Session expiration time")
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
     last_accessed: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     def is_valid(self) -> bool:
@@ -361,7 +313,7 @@ class FlextSession(FlextEntity):
     def has_valid_data(self) -> bool:
         """Validate session entity data structure."""
         return (
-            len(self.id) > 0
+            len(str(self.id)) > 0
             and len(self.user_id) > 0
             and len(self.access_token) > 0
             and self.expires_at > datetime.now(UTC)
@@ -400,7 +352,7 @@ class FlextSession(FlextEntity):
 class FlextPermission(FlextEntity):
     """Permission entity."""
 
-    id: str = Field(..., description="Permission identifier")
+    id: FlextEntityId = Field(..., description="Permission identifier")
     name: str = Field(..., description="Permission name")
     description: str = Field(..., description="Permission description")
     resource: str = Field(..., description="Resource this permission applies to")
@@ -409,7 +361,7 @@ class FlextPermission(FlextEntity):
     def is_valid(self) -> bool:
         """Validate permission entity data."""
         return (
-            len(self.id) > 0
+            len(str(self.id)) > 0
             and len(self.name) > 0
             and len(self.resource) > 0
             and len(self.action) > 0
@@ -435,7 +387,7 @@ class FlextPermission(FlextEntity):
 class FlextRole(FlextEntity):
     """Role entity with permissions."""
 
-    id: str = Field(..., description="Role identifier")
+    id: FlextEntityId = Field(..., description="Role identifier")
     name: str = Field(..., description="Role name")
     description: str = Field(..., description="Role description")
     permissions: list[FlextPermission] = Field(
@@ -446,7 +398,7 @@ class FlextRole(FlextEntity):
         default=False,
         description="Whether this is a system role",
     )
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
 
     def has_permission(self, resource: str, action: str) -> bool:
         """Check if role has specific permission."""
@@ -456,7 +408,7 @@ class FlextRole(FlextEntity):
 
     def is_valid(self) -> bool:
         """Validate role entity data."""
-        return len(self.id) > 0 and len(self.name) > 0 and len(self.description) > 0
+        return len(str(self.id)) > 0 and len(self.name) > 0 and len(self.description) > 0
 
     def validate_domain_rules(self) -> FlextResult[None]:
         """Validate role domain rules using Railway-Oriented Programming.
@@ -515,7 +467,7 @@ class FlextRole(FlextEntity):
 class FlextLoginAttempt(FlextEntity):
     """Login attempt tracking."""
 
-    id: str = Field(..., description="Attempt identifier")
+    id: FlextEntityId = Field(..., description="Attempt identifier")
     username: str = Field(..., description="Username attempted")
     ip_address: str = Field(..., description="Client IP address")
     user_agent: str | None = Field(default=None, description="Client user agent")
@@ -592,12 +544,12 @@ class FlextBaseToken(FlextEntity):
     verification token entities using SOLID principles.
     """
 
-    id: str = Field(..., description="Token identifier")
+    id: FlextEntityId = Field(..., description="Token identifier")
     user_id: str = Field(..., description="User ID")
     token: str = Field(..., description="Token value")
     expires_at: datetime = Field(..., description="Token expiration")
     used: bool = Field(default=False, description="Whether token has been used")
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
 
     def is_valid(self) -> bool:
         """Check if token is valid - Common behavior for all tokens."""
@@ -656,7 +608,7 @@ class FlextBaseToken(FlextEntity):
         # Temporal validation strategies
         if self.expires_at <= datetime.now(UTC):
             errors.append(f"{self._get_token_type()} expiration must be in the future")
-        if self.created_at > datetime.now(UTC):
+        if self.created_at.root > datetime.now(UTC):
             errors.append("Token creation time cannot be in the future")
 
         return errors

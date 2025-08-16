@@ -6,12 +6,26 @@ to modular, SOLID-principle-following architecture with proper dependency inject
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from pathlib import Path
 
 import pytest
+from flext_core import FlextContainer, FlextResult, get_logger
 
-if TYPE_CHECKING:
-    from flext_auth.auth import FlextAuthService
+from flext_auth import (
+    FlextAuth,
+    FlextAuthMixin,
+    FlextAuthService,
+    FlextJWTService,
+    FlextPasswordService,
+    FlextUser,
+    FlextUserEmail,
+    FlextUsername,
+    FlextUserRole,
+    flext_auth_hash_password,
+    flext_auth_quick_start,
+    flext_auth_required,
+    flext_auth_validate_email,
+)
 
 
 class TestRefactoredAuthSystem:
@@ -24,19 +38,6 @@ class TestRefactoredAuthSystem:
 
     def test_modular_architecture_integrity(self) -> None:
         """Test that all specialized modules work together correctly."""
-        from flext_auth import (
-            FlextAuth,
-            FlextAuthMixin,
-            # Note: Internal implementation classes are private and not exposed in public API
-            # Users should use FlextAuth class or helper functions instead
-            flext_auth_quick_start,
-        )
-        from flext_auth.decorators import flext_auth_required
-        from flext_auth.helpers import (
-            flext_auth_hash_password,
-            flext_auth_validate_email,
-        )
-
         # Verify all PUBLIC API components can be imported without circular dependencies
         assert FlextAuth is not None
         assert FlextAuthMixin is not None
@@ -54,8 +55,6 @@ class TestRefactoredAuthSystem:
 
     def test_dependency_injection_resolution(self) -> None:
         """Test that dependency injection works correctly after refactoring."""
-        from flext_auth import FlextAuth
-
         # Create FlextAuth instance - this should now work without constructor errors
         auth = FlextAuth()
 
@@ -74,8 +73,6 @@ class TestRefactoredAuthSystem:
 
     def test_quick_start_functionality(self) -> None:
         """Test that quick start helper works with refactored architecture."""
-        from flext_auth import flext_auth_quick_start
-
         # Test quick start with REDACTED_LDAP_BIND_PASSWORD creation disabled to avoid email validation
         result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
@@ -88,8 +85,6 @@ class TestRefactoredAuthSystem:
 
     def test_complete_authentication_workflow(self) -> None:
         """Test complete authentication workflow with refactored system."""
-        from flext_auth import FlextAuth
-
         auth = FlextAuth()
 
         # Test user registration
@@ -128,14 +123,6 @@ class TestRefactoredAuthSystem:
 
     def test_specialized_modules_single_responsibility(self) -> None:
         """Test that specialized modules follow Single Responsibility Principle."""
-        from flext_auth.decorators import flext_auth_required
-        from flext_auth.helpers import (
-            flext_auth_hash_password,
-            flext_auth_quick_start,
-            flext_auth_validate_email,
-        )
-        from flext_auth.mixins import FlextAuthMixin
-
         # Test decorators module - should only contain decorators
         assert callable(flext_auth_required)
 
@@ -158,12 +145,6 @@ class TestRefactoredAuthSystem:
 
     def test_anti_boilerplate_patterns(self) -> None:
         """Test that anti-boilerplate patterns work after refactoring."""
-        from flext_auth import FlextAuth, flext_auth_quick_start
-        from flext_auth.helpers import (
-            flext_auth_hash_password,
-            flext_auth_validate_email,
-        )
-
         # Test 1: Quick setup (should be 1-3 lines instead of 50+)
         result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
         assert result.success
@@ -187,10 +168,6 @@ class TestRefactoredAuthSystem:
 
     def test_flext_result_pattern_consistency(self) -> None:
         """Test that FlextResult pattern is used consistently."""
-        from flext_core import FlextResult
-
-        from flext_auth import flext_auth_quick_start
-
         # Quick start should return FlextResult
         result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
         assert isinstance(result, FlextResult)
@@ -200,11 +177,6 @@ class TestRefactoredAuthSystem:
 
     def test_type_safety_after_refactoring(self) -> None:
         """Test that type safety is maintained after refactoring."""
-        from flext_auth import FlextAuth
-        from flext_auth.auth import FlextAuthService
-        from flext_auth.jwt import FlextJWTService
-        from flext_auth.services_password_service import FlextPasswordService
-
         auth = FlextAuth()
 
         # Type checking - these should all pass mypy
@@ -219,9 +191,6 @@ class TestRefactoredAuthSystem:
 
     def test_clean_architecture_boundaries(self) -> None:
         """Test that Clean Architecture boundaries are respected."""
-        from flext_auth.domain.entities import FlextUser, FlextUserRole
-        from flext_auth.domain.value_objects import FlextUserEmail, FlextUsername
-
         # Domain entities should be independent
         user = FlextUser(
             id="test-id",
@@ -243,8 +212,6 @@ class TestRefactoredAuthSystem:
 
     def test_refactoring_metrics(self) -> None:
         """Test metrics showing successful refactoring impact."""
-        from pathlib import Path
-
         # Verify main __init__.py is significantly reduced
         init_file = Path(__file__).parent.parent / "src" / "flext_auth" / "__init__.py"
         with init_file.open() as f:
@@ -280,10 +247,6 @@ class TestIntegrationWithFlextCore:
 
     def test_flext_container_integration(self) -> None:
         """Test that auth services can integrate with FlextContainer."""
-        from flext_core import FlextContainer, FlextResult
-
-        from flext_auth import FlextAuth
-
         # Create container
         container = FlextContainer()
 
@@ -308,10 +271,6 @@ class TestIntegrationWithFlextCore:
 
     def test_flext_logging_integration(self) -> None:
         """Test that logging works correctly with flext-core patterns."""
-        from flext_core import get_logger
-
-        from flext_auth import FlextAuth
-
         # Should be able to get logger
         logger = get_logger("test_auth")
         assert logger is not None

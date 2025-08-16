@@ -1,42 +1,4 @@
-"""FLEXT Auth Configuration & Types - Centralized authentication configuration and types.
-
-This module consolidates authentication configuration and type definitions following
-PEP8 strict naming patterns. It provides type-safe configuration management and
-authentication-specific type definitions for the FLEXT ecosystem.
-
-Consolidated from:
-    - config.py: Configuration management
-    - auth_types.py: Type definitions
-
-Architecture:
-    - Configuration Layer: Type-safe settings management
-    - Type Layer: Centralized type definitions
-    - Validation: Comprehensive input validation with Pydantic
-    - Environment Aware: Support for dev/staging/production environments
-
-Core Components:
-    Configuration Classes:
-    - FlextAuthConfig: Main authentication configuration
-    - FlextAuthApplicationConfig: Complete application configuration
-    - DatabaseConfig: Database configuration (legacy compatibility)
-    - JWTConfig: JWT-specific configuration
-    - SecurityConfig: Security policy configuration
-
-    Type Definitions:
-    - TUserId: User entity identifier
-    - TSessionId: Session entity identifier
-    - TUsername: Username string type
-    - TEmail: Email address string type
-    - TPassword: Password string type
-    - TUserRole: Role identifier type
-    - TAuthResult: Authentication operation results
-    - TSecurityContext: Security context information
-    - TLoginAttempt: Login attempt data structure
-
-Copyright (c) 2025 FLEXT Contributors
-SPDX-License-Identifier: MIT
-
-"""
+"""FLEXT Auth Configuration & Types - Centralized authentication configuration and types."""
 
 from __future__ import annotations
 
@@ -53,6 +15,7 @@ from flext_core import (
     TEntityId,
 )
 from pydantic import Field, SecretStr
+from pydantic_settings import SettingsConfigDict
 
 # =============================================================================
 # TYPE DEFINITIONS - Authentication-specific types
@@ -368,10 +331,7 @@ class JWTConfig(FlextSettings):
         description="Refresh token expiration days",
     )
 
-    class Config:
-        """Pydantic configuration for JWT settings."""
-
-        env_prefix = "JWT_"
+    model_config = SettingsConfigDict(env_prefix="JWT_")
 
     def __init__(self, **kwargs: object) -> None:
         """Initialize with algorithm validation.
@@ -453,10 +413,7 @@ class SecurityConfig(FlextSettings):
         description="Enable two-factor authentication",
     )
 
-    class Config:
-        """Pydantic configuration for security settings."""
-
-        env_prefix = "SECURITY_"
+    model_config = SettingsConfigDict(env_prefix="SECURITY_")
 
 
 class ServerConfig(FlextSettings):
@@ -466,10 +423,7 @@ class ServerConfig(FlextSettings):
     host: str = Field(default="localhost", description="Server host")
     port: int = Field(default=8000, description="Server port")
 
-    class Config:
-        """Pydantic configuration for server settings."""
-
-        env_prefix = "SERVER_"
+    model_config = SettingsConfigDict(env_prefix="SERVER_")
 
 
 class AppConfig(FlextSettings):
@@ -496,10 +450,7 @@ class AppConfig(FlextSettings):
         description="Server configuration",
     )
 
-    class Config:
-        """Pydantic configuration for application settings."""
-
-        env_prefix = "APP_"
+    model_config = SettingsConfigDict(env_prefix="APP_")
 
     def model_dump_safe(self) -> dict[str, object]:
         """Dump model data with sensitive information redacted."""
@@ -587,8 +538,10 @@ def validate_production_config(config: AppConfig) -> bool:
 def create_development_config() -> FlextAuthApplicationConfig:
     """Create development configuration with reasonable defaults."""
     return FlextAuthApplicationConfig(
-        debug=True,
-        environment="development",
+        auth=FlextAuthConfig(
+            debug=True,
+            environment="development",
+        ),
     )
 
 
@@ -600,8 +553,10 @@ def create_production_config() -> FlextAuthApplicationConfig:
         raise ValueError(msg)
 
     return FlextAuthApplicationConfig(
-        debug=False,
-        environment="production",
+        auth=FlextAuthConfig(
+            debug=False,
+            environment="production",
+        ),
     )
 
 

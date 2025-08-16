@@ -37,12 +37,9 @@ def debug_password_service() -> None:
         service.verify_password(password, hashed)
 
     # Test helper functions
-    try:
-        helper_hash = flext_auth_hash_password(password, rounds=4)
+    helper_hash = flext_auth_hash_password(password, rounds=4)
 
-        flext_auth_verify_password(password, helper_hash)
-    except Exception:
-        pass
+    flext_auth_verify_password(password, helper_hash)
 
 
 def debug_jwt_service() -> None:

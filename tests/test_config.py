@@ -13,7 +13,7 @@ from unittest.mock import patch
 import pytest
 from pydantic import ValidationError
 
-from flext_auth.config import (
+from flext_auth import (
     AppConfig,
     DatabaseConfig,
     JWTConfig,

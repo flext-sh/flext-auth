@@ -9,20 +9,23 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import asyncio
+
 import pytest
 
 from flext_auth import (
     ADMIN_ROLE,
+    DEFAULT_JWT_SECRET,
     USER_ROLE,
     FlextAuthMixin,
     flext_auth_check_token,
     flext_auth_generate_jwt,
     flext_auth_instant_api,
     flext_auth_one_liner,
+    flext_auth_permission_required,
     flext_auth_required,
     flext_auth_role_required,
 )
-from flext_auth.decorators import flext_auth_permission_required
 
 # Constants
 EXPECTED_DATA_COUNT = 3
@@ -41,7 +44,7 @@ class TestFlextAuthDecorators:
         token = token_result.data
 
         @flext_auth_required(secret_key=secret)
-        def protected_endpoint(request: dict, **kwargs: dict) -> str:
+        def protected_endpoint(request: dict, **kwargs: dict) -> str:  # noqa: ARG001
             auth_context = kwargs.get("auth_context", {})
             return f"Hello {auth_context.get('username', 'Unknown')}"
 
@@ -56,7 +59,7 @@ class TestFlextAuthDecorators:
         """Test auth required decorator with invalid token."""
 
         @flext_auth_required()
-        def protected_endpoint(request: dict, **kwargs: dict) -> str:
+        def protected_endpoint(request: dict, **kwargs: dict) -> str:  # noqa: ARG001
             return "Should not reach here"
 
         # Test with invalid token
@@ -75,7 +78,7 @@ class TestFlextAuthDecorators:
         """Test auth required decorator without token."""
 
         @flext_auth_required()
-        def protected_endpoint(request: dict, **kwargs: dict) -> str:
+        def protected_endpoint(request: dict, **kwargs: dict) -> str:  # noqa: ARG001
             return "Should not reach here"
 
         # Test without token
@@ -99,7 +102,7 @@ class TestFlextAuthDecorators:
         token = token_result.data
 
         @flext_auth_role_required(ADMIN_ROLE, secret_key=secret)
-        def REDACTED_LDAP_BIND_PASSWORD_endpoint(request: dict, **kwargs: dict) -> str:
+        def REDACTED_LDAP_BIND_PASSWORD_endpoint(request: dict, **kwargs: dict) -> str:  # noqa: ARG001
             return "Admin content"
 
         request_with_token = {"headers": {"Authorization": f"Bearer {token}"}}
@@ -126,7 +129,7 @@ class TestFlextAuthDecorators:
         token = token_result.data
 
         @flext_auth_role_required(ADMIN_ROLE, secret_key=secret)
-        def REDACTED_LDAP_BIND_PASSWORD_endpoint(request: dict, **kwargs: dict) -> str:
+        def REDACTED_LDAP_BIND_PASSWORD_endpoint(request: dict, **kwargs: dict) -> str:  # noqa: ARG001
             return "Should not reach here"
 
         request_with_token = {"headers": {"Authorization": f"Bearer {token}"}}
@@ -154,7 +157,7 @@ class TestFlextAuthDecorators:
         token = token_result.data
 
         @flext_auth_permission_required("delete", secret=secret)
-        def delete_endpoint(request: dict, **kwargs: dict) -> str:
+        def delete_endpoint(request: dict, **kwargs: dict) -> str:  # noqa: ARG001
             return "Item deleted"
 
         request_with_token = {"headers": {"Authorization": f"Bearer {token}"}}
@@ -172,7 +175,7 @@ class TestFlextAuthDecorators:
         token = token_result.data
 
         @flext_auth_permission_required("delete", secret=secret)
-        def delete_endpoint(request: dict, **kwargs: dict) -> str:
+        def delete_endpoint(request: dict, **kwargs: dict) -> str:  # noqa: ARG001
             return "Should not reach here"
 
         request_with_token = {"headers": {"Authorization": f"Bearer {token}"}}
@@ -429,7 +432,6 @@ class TestFlextAuthMixin:
 
         controller = TestController()
         # Use DEFAULT_JWT_SECRET for testing instead of accessing non-existent _auth
-        from flext_auth import DEFAULT_JWT_SECRET
 
         secret = DEFAULT_JWT_SECRET
         payload = {"user_id": "user123", "username": "user", "role": USER_ROLE}
@@ -451,7 +453,6 @@ class TestFlextAuthMixin:
         controller = TestController()
 
         # First register a user
-        import asyncio
 
         try:
             loop = asyncio.get_event_loop()

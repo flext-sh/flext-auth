@@ -189,9 +189,9 @@ class FlextPasswordService:
             msg = "Bcrypt rounds must be between 4 and 20"
             raise FlextValidationError(
                 msg,
-                validation_details={
-                    "field": "rounds",
-                    "value": rounds,
+                field="rounds",
+                value=rounds,
+                context={
                     "min_value": MIN_BCRYPT_ROUNDS,
                     "max_value": MAX_BCRYPT_ROUNDS,
                 },
@@ -222,7 +222,8 @@ class FlextPasswordService:
             # Validate password if it's a string
             if isinstance(plain_password, str):
                 try:
-                    FlextPlainPassword(value=password_str)  # Validate password strength
+                    # Validate via Pydantic factory for precise typing
+                    FlextPlainPassword.model_validate({"value": password_str})
                 except (ValueError, TypeError) as e:
                     return FlextResult.fail(f"Password validation failed: {e}")
 
@@ -232,7 +233,9 @@ class FlextPasswordService:
             hashed_bytes = bcrypt.hashpw(password_bytes, salt)
             hashed_str = hashed_bytes.decode("utf-8")
 
-            return FlextResult.ok(FlextHashedPassword(value=hashed_str))
+            return FlextResult.ok(
+                FlextHashedPassword.model_validate({"value": hashed_str}),
+            )
 
         except (ValueError, TypeError, OSError) as e:
             return FlextResult.fail(f"Password hashing failed: {e}")
@@ -334,7 +337,7 @@ class FlextPasswordService:
 
             # Validate the generated password and return as FlextPlainPassword
             try:
-                password_obj = FlextPlainPassword(value=password)
+                password_obj = FlextPlainPassword.model_validate({"value": password})
                 return FlextResult.ok(password_obj)
             except (ValueError, TypeError) as e:
                 return FlextResult.fail(f"Generated password validation failed: {e}")

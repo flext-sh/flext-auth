@@ -1,22 +1,4 @@
-"""FLEXT Auth Utilities - Consolidated helper functions and utilities.
-
-This module consolidates authentication utilities and helper functions following
-PEP8 strict naming patterns. It provides common utility functions for the
-FLEXT authentication ecosystem.
-
-Consolidated from:
-    - helpers.py: Helper functions for authentication operations
-    - utils.py: General utility functions
-
-Architecture:
-    - Utility Layer: Common functions and helpers
-    - Pure Functions: Side-effect free utilities where possible
-    - Railway-Oriented: FlextResult[T] for type-safe operations
-
-Copyright (c) 2025 FLEXT Contributors
-SPDX-License-Identifier: MIT
-
-"""
+"""FLEXT Auth Utilities - Consolidated helper functions and utilities."""
 
 from __future__ import annotations
 

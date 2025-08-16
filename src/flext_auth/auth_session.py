@@ -1,30 +1,4 @@
-"""FLEXT Auth Session - Session management and repository patterns.
-
-This module provides session management functionality following PEP8 strict naming patterns.
-It consolidates session repository interfaces and implementations with comprehensive
-session lifecycle management for the FLEXT authentication ecosystem.
-
-Architecture:
-    - Infrastructure Layer: Session persistence and management
-    - Repository Pattern: Abstract data access with multiple implementations
-    - Railway-Oriented: FlextResult[T] for type-safe error handling
-    - Domain-Driven: Operates on FlextSession domain entities
-
-Core Components:
-    Session Management:
-    - Session lifecycle management
-    - Active session tracking
-    - Session expiration and cleanup
-    - Concurrent session limits enforcement
-
-    Repository Patterns:
-    - SessionRepository: Abstract session repository interface
-    - InMemorySessionRepository: Fast in-memory storage for development/testing
-
-Copyright (c) 2025 FLEXT Contributors
-SPDX-License-Identifier: MIT
-
-"""
+"""FLEXT Auth Session - Session management and repository patterns."""
 
 from __future__ import annotations
 
@@ -93,7 +67,7 @@ class InMemorySessionRepository(SessionRepository):
     async def save(self, session: FlextSession) -> FlextResult[FlextSession]:
         """Save session to memory (async)."""
         try:
-            self._sessions[session.id] = session
+            self._sessions[str(session.id)] = session
             return FlextResult.ok(session)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Failed to save session: {e}")

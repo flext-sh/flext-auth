@@ -9,15 +9,13 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from flext_auth.application.services import (
+from flext_auth import (
     FlextAuthenticationService,
     FlextAuthorizationService,
-    FlextSessionService,
-)
-from flext_auth.domain.entities import (
     FlextPermission,
     FlextRole,
     FlextSession,
+    FlextSessionService,
     FlextSessionStatus,
     FlextUser,
     FlextUserRole,

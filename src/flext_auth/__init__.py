@@ -1,7 +1,5 @@
 """Enterprise authentication library for FLEXT ecosystem."""
 
-"""
-
 from __future__ import annotations
 
 import asyncio as _asyncio
@@ -142,8 +140,8 @@ from flext_auth.helpers import (
     flext_auth_verify_password,
 )
 
-# Domain models
-from flext_auth.models import (
+# Domain models (re-export from consolidated modules used by tests)
+from flext_auth.auth_models import (
     FlextHashedPassword,
     FlextJWTClaims,
     FlextLoginAttempt,
@@ -158,9 +156,20 @@ from flext_auth.models import (
     FlextUsername,
     FlextUserStatus,
 )
+
 # Import FlextUserRole from domain_entities to match FlextUserRegistrationData expectations
 from flext_auth.domain_entities import FlextUserRole
 from flext_auth.user import InMemoryUserRepository, UserRepository
+
+# Additional public classes used by tests
+from flext_auth.auth import FlextUserRegistrationData
+from flext_auth.config import (
+    AppConfig,
+    DatabaseConfig,
+    JWTConfig,
+    SecurityConfig,
+    validate_production_config,
+)
 
 # Role constants expected by tests
 ADMIN_ROLE = FlextAuthConstants.UserRoles.ADMIN
@@ -357,7 +366,9 @@ class FlextAuth:
             res = _asyncio.run(
                 self._service.register_user(
                     _RegistrationData(
-                        username=username, email=email, password=password,
+                        username=username,
+                        email=email,
+                        password=password,
                     ),
                 ),
             )
@@ -419,11 +430,13 @@ class FlextAuth:
             return FlextResult.fail(validate_result.error or "Token validation failed")
 
         # Return structure expected by tests
-        return FlextResult.ok({
-            "login": True,
-            "token": access,
-            "context": validate_result.data,
-        })
+        return FlextResult.ok(
+            {
+                "login": True,
+                "token": access,
+                "context": validate_result.data,
+            },
+        )
 
     async def change_password(
         self,

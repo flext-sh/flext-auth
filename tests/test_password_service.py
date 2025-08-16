@@ -7,8 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.domain.value_objects import FlextHashedPassword, FlextPlainPassword
-from flext_auth.services.password_service import FlextPasswordService
+from flext_auth import FlextHashedPassword, FlextPasswordService, FlextPlainPassword
 
 # Constants
 EXPECTED_TOTAL_PAGES = 8

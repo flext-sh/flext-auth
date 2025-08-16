@@ -11,7 +11,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from flext_auth.domain.entities import (
+from flext_auth import (
     FlextPermission,
     FlextRole,
     FlextSession,

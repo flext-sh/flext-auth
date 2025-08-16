@@ -139,7 +139,7 @@ def example_role_permission_system() -> None:
     """Exemplo: Sistema de roles e permissões."""
     # Criar hierarquia de roles
     role_hierarchy = flext_auth_create_role_hierarchy()
-    for role in role_hierarchy:
+    for _role in role_hierarchy:
         pass
 
     # Validar permissões para diferentes roles

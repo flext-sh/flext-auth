@@ -1,35 +1,4 @@
-"""FLEXT Auth Decorators - Consolidated decorators and mixins for authentication.
-
-This module consolidates authentication decorators and mixin patterns following
-PEP8 strict naming patterns. It provides comprehensive authentication aspects
-and reusable behavior composition for the FLEXT authentication ecosystem.
-
-Consolidated from:
-    - decorators.py: Authentication and authorization decorators
-    - mixins.py: Reusable authentication behaviors for class composition
-
-Architecture:
-    - Cross-Cutting Layer: Authentication and authorization aspects
-    - Decorator Pattern: Non-intrusive security enforcement
-    - Mixin Pattern: Reusable behavior composition
-    - Railway-Oriented: FlextResult[T] for type-safe error handling
-    - Framework Agnostic: Works with FastAPI, Flask, Django, etc.
-
-Core Components:
-    Decorators:
-    - @flext_auth_required: Basic authentication requirement
-    - @flext_auth_role_required: Role-based access control
-    - @flext_auth_permission_required: Permission-based access control
-
-    Mixins:
-    - FlextAuthMixin: Basic authentication capabilities
-    - FlextAuthUserMixin: User-specific authentication methods
-    - FlextAuthSessionMixin: Session management capabilities
-
-Copyright (c) 2025 FLEXT Contributors
-SPDX-License-Identifier: MIT
-
-"""
+"""FLEXT Auth Decorators - Consolidated decorators and mixins for authentication."""
 
 from __future__ import annotations
 
@@ -43,12 +12,11 @@ from typing import TYPE_CHECKING, ParamSpec, Protocol
 from flext_core import FlextResult
 from flext_core.loggings import FlextLoggerFactory
 
-from flext_auth.auth_config import DEFAULT_JWT_SECRET
+from flext_auth.auth_config import DEFAULT_JWT_SECRET, FlextAuthConfig
 from flext_auth.auth_services import FlextJWTService
 
 if TYPE_CHECKING:
     from flext_auth.auth_app import FlextAuthService
-    from flext_auth.auth_config import FlextAuthConfig
 
 logger = FlextLoggerFactory.get_logger(__name__)
 _logger = logger
@@ -323,9 +291,15 @@ def _execute_authentication_pipeline(
             config.auth_service,
             config.secret,
         )
-        logger.debug("Token validation result", success=validation_result.success if validation_result else False)
+        logger.debug(
+            "Token validation result",
+            success=validation_result.success if validation_result else False,
+        )
         if validation_result and validation_result.success:
-            logger.debug("Token validation data available", has_data=validation_result.data is not None)
+            logger.debug(
+                "Token validation data available",
+                has_data=validation_result.data is not None,
+            )
         if not validation_result or not validation_result.success:
             # Always return "Invalid token" for consistency with tests
             return _handle_authentication_error(
@@ -465,10 +439,12 @@ def flext_auth_permission_required(
     """
     # Handle secret_key alias for backward compatibility
     effective_secret = secret_key if secret_key is not None else secret
-    _logger.debug("Permission decorator configuration",
-                  auth_service_provided=auth_service is not None,
-                  secret_provided=secret is not None,
-                  secret_key_provided=secret_key is not None)
+    _logger.debug(
+        "Permission decorator configuration",
+        auth_service_provided=auth_service is not None,
+        secret_provided=secret is not None,
+        secret_key_provided=secret_key is not None,
+    )
 
     def decorator(func: AuthDecoratorProtocol) -> AuthDecoratorProtocol:
         # If no auth configuration provided, skip auth and just check permissions
@@ -478,13 +454,16 @@ def flext_auth_permission_required(
             def wrapper(*args: object, **kwargs: object) -> object:
                 # No auth validation, assume auth_context is provided by caller
                 # This matches the test expectation that decorator works without auth config
-                _logger.debug("Permission check: no auth configuration provided, bypassing authentication")
+                _logger.debug(
+                    "Permission check: no auth configuration provided, bypassing authentication",
+                )
                 return func(*args, **kwargs)
 
             return wrapper
 
         # Normal auth flow with validation
         _logger.debug("Permission check: using auth validation path")
+
         @functools.wraps(func)
         @flext_auth_required(auth_service=auth_service, secret=effective_secret)
         def auth_wrapper(*args: object, **kwargs: object) -> object:
@@ -498,10 +477,12 @@ def flext_auth_permission_required(
             )
 
             # Debug: log permission check details
-            _logger.debug("Permission check details",
-                         user_permissions=user_permissions,
-                         required_permission=required_permission,
-                         has_permission=required_permission in user_permissions)
+            _logger.debug(
+                "Permission check details",
+                user_permissions=user_permissions,
+                required_permission=required_permission,
+                has_permission=required_permission in user_permissions,
+            )
 
             if required_permission not in user_permissions:
                 if error_response is not None:
@@ -688,9 +669,21 @@ class FlextAuthMixin:
                 )
                 if not svc_res.is_success:
                     return FlextResult.fail(svc_res.error or "Authentication failed")
-                # Normalize successful response to a dict for downstream usage
+                # Convert FlextUser to dict format for downstream usage
+                # Type-safe: successful authentication returns FlextUser object
+                user = svc_res.data
                 return FlextResult.ok(
-                    {} if not isinstance(svc_res.data, dict) else {**svc_res.data},
+                    {
+                        "authenticated": True,
+                        "user": {
+                            "id": str(user.id),
+                            "username": user.username,
+                            "email": user.email,
+                            "role": user.role.value
+                            if hasattr(user.role, "value")
+                            else str(user.role),
+                        },
+                    }
                 )
 
             result = asyncio.run(_run())
@@ -759,6 +752,7 @@ class FlextAuthMixin:
             if isinstance(token_or_user_data, str):
                 # Decode JWT token to get user data
                 from flext_auth.jwt import FlextJWTService  # noqa: PLC0415
+
                 jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
                 result = jwt_service.verify_token(token_or_user_data)
                 if not result.success or not result.data:
@@ -776,7 +770,10 @@ class FlextAuthMixin:
 
             # Check explicit permissions first
             user_permissions = user_data.get("permissions", [])
-            if isinstance(user_permissions, list) and required_permission in user_permissions:
+            if (
+                isinstance(user_permissions, list)
+                and required_permission in user_permissions
+            ):
                 return FlextResult.ok(data=True)
 
             # If no explicit permissions, check role-based permissions
@@ -784,7 +781,9 @@ class FlextAuthMixin:
             if role == "REDACTED_LDAP_BIND_PASSWORD":
                 # Admin has all permissions
                 return FlextResult.ok(data=True)
-            if (role == "moderator" and required_permission in {"read", "write"}) or (role == "user" and required_permission == "read"):
+            if (role == "moderator" and required_permission in {"read", "write"}) or (
+                role == "user" and required_permission == "read"
+            ):
                 return FlextResult.ok(data=True)
 
             return FlextResult.ok(data=False)

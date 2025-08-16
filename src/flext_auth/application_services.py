@@ -1,75 +1,4 @@
-"""FLEXT Auth Application Services - Use case orchestration and workflow management.
-
-This module contains application services that orchestrate authentication workflows
-and coordinate between domain entities and infrastructure services. It implements
-the Application Layer in Clean Architecture, handling complex business workflows.
-
-Architecture:
-    - Application Layer: Orchestrates domain operations and workflows
-    - Use Case Pattern: Each service method represents a use case
-    - Command Pattern: Encapsulates operations as command objects
-    - Strategy Pattern: Pluggable authentication strategies
-    - Railway-Oriented: FlextResult[T] for workflow error handling
-
-Core Responsibilities:
-    - Authentication workflow orchestration
-    - User registration and management workflows
-    - Session lifecycle management
-    - Role and permission management
-    - Security policy enforcement
-    - Cross-cutting concern coordination
-
-TODO (Based on docs/TODO.md):
-    - [ ] HIGH: Implement CQRS command handlers (Issue #5)
-    - [ ] HIGH: Add domain event publishing (Issue #4)
-    - [ ] CRITICAL: Integrate with FlextContainer for DI (Issue #3)
-    - [ ] MEDIUM: Add workflow audit logging (Issue #11)
-
-Current Project Status:
-    ✅ Application services layer comprehensively documented with orchestration patterns
-    ✅ Use case patterns and workflow management documented
-    ✅ Service composition and coordination patterns documented
-    🔄 Implementation focus: CQRS command handlers and domain event publishing
-
-Design Patterns:
-    - Application Service Pattern: Coordinates domain operations
-    - Use Case Pattern: Clear business operation boundaries
-    - Workflow Pattern: Multi-step authentication processes
-    - Command Pattern: Encapsulated operations with undo capability
-    - Observer Pattern: Event publishing for cross-cutting concerns
-
-Service Composition:
-    Application services compose lower-level services:
-    - Domain Services: Business logic operations
-    - Infrastructure Services: External system integration
-    - Repository Services: Data persistence operations
-    - Event Services: Domain event publishing
-
-Example:
-    >>> auth_service = AuthenticationApplicationService(dependencies)
-    >>> result = await auth_service.authenticate_user_workflow(
-    ...     username="john_doe", password="SecurePass123!", ip_address="192.168.1.1"
-    ... )
-    >>> if result.success:
-    ...     user_session = result.data
-    ...     print(f"User {user_session.user.username} authenticated")
-
-Performance Considerations:
-    - Async operations for I/O bound workflows
-    - Efficient workflow composition
-    - Minimal service overhead
-    - Optimized for high-throughput scenarios
-
-Integration Points:
-    - FlextContainer: Service dependency injection (TODO)
-    - FlextResult: Type-safe workflow error handling
-    - Domain Events: Business event publishing (TODO)
-    - CQRS Commands: Command-based operations (TODO)
-
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
-
-"""
+"""FLEXT Auth Application Services - Use case orchestration and workflow management."""
 
 from __future__ import annotations
 
@@ -458,7 +387,7 @@ class FlextAuthenticationService:
                 )
 
             # Revoke all existing sessions for security
-            self._deps.session_repo.revoke_all_sessions_for_user(user.id)
+            self._deps.session_repo.revoke_all_sessions_for_user(str(user.id))
 
             return FlextResult.ok(PASSWORD_CHANGE_SUCCESS)
 
@@ -598,7 +527,7 @@ class FlextSessionService:
             # Create session entity
             session = FlextSession(
                 id=f"session_{user.id}",
-                user_id=user.id,
+                user_id=str(user.id),
                 access_token=f"token_{user.id}",
                 refresh_token=f"refresh_{user.id}",
                 expires_at=datetime.now(UTC) + timedelta(minutes=expires_minutes),
