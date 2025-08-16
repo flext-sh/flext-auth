@@ -96,19 +96,10 @@ import os
 import re
 import secrets
 import warnings
-from collections.abc import Mapping as _Mapping
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, cast
 
-if TYPE_CHECKING:
-    from collections.abc import Mapping
-
-    from flext_auth import FlextAuth  # Import for type checking only
-else:
-    Mapping = _Mapping  # type: ignore[assignment]
-
-from flext_core import FlextResult
-from flext_core.loggings import FlextLoggerFactory
+from flext_core import FlextLoggerFactory, FlextResult
 
 from flext_auth.auth import (
     FlextAuthService,
@@ -119,12 +110,14 @@ from flext_auth.auth import (
 from flext_auth.auth_config import DEFAULT_JWT_SECRET, FlextAuthConfig
 from flext_auth.domain_entities import FlextUserRole
 from flext_auth.jwt import FlextJWTService
+from flext_auth.mixins import FlextAuthSessionMixin
 from flext_auth.services_password_service import FlextPasswordService
 from flext_auth.session import InMemorySessionRepository
 from flext_auth.user import InMemoryUserRepository
 from flext_auth.utils import convert_user_to_dict
 
-from .mixins import FlextAuthSessionMixin
+if TYPE_CHECKING:
+    from collections.abc import Mapping
 
 _logger = FlextLoggerFactory.get_logger(__name__)
 
@@ -1100,7 +1093,7 @@ def flext_auth_middleware_factory(
 
 
 def flext_auth_batch_operations(
-    auth_service: FlextAuthService | FlextAuth | None = None,
+    auth_service: FlextAuthService | None = None,
 ) -> FlextAuthBatchOperations:
     """Create batch operations handler - Factory Pattern.
 
@@ -1321,7 +1314,9 @@ def flext_auth_create_multi_factor_token(
     }
     # Test/demo secret - not for production use
     secret = "flext-auth-mfa-secret-256bit-key-123456789012345678901234567890123"  # noqa: S105
-    result = flext_auth_generate_jwt(payload, secret=secret, expires_minutes=expires_minutes)
+    result = flext_auth_generate_jwt(
+        payload, secret=secret, expires_minutes=expires_minutes
+    )
     return result.data if result.success and result.data else ""
 
 
@@ -1504,7 +1499,9 @@ def flext_auth_create_service_token(
     }
     # Test/demo secret - not for production use
     secret = "flext-auth-service-secret-256bit-key-123456789012345678901234567890"  # noqa: S105
-    result = flext_auth_generate_jwt(payload, secret=secret, expires_minutes=expires_hours * 60)
+    result = flext_auth_generate_jwt(
+        payload, secret=secret, expires_minutes=expires_hours * 60
+    )
     return result.data if result.success and result.data else ""
 
 

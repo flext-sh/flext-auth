@@ -84,10 +84,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from flext_auth.domain_entities import FlextUser
+from flext_auth.domain_entities import FlextUser
 
 
 def convert_user_to_dict(user: FlextUser) -> dict[str, object]:

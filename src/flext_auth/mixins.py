@@ -89,6 +89,7 @@ from typing import TYPE_CHECKING
 from flext_core import FlextResult
 from flext_core.loggings import FlextLoggerFactory
 
+from flext_auth.auth import FlextAuthService
 from flext_auth.auth_config import FlextAuthConfig
 from flext_auth.constants import DEFAULT_JWT_SECRET
 from flext_auth.jwt import FlextJWTService
@@ -96,7 +97,6 @@ from flext_auth.jwt import FlextJWTService
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-    from flext_auth.auth import FlextAuthService
 
 _logger = FlextLoggerFactory.get_logger(__name__)
 
@@ -337,7 +337,10 @@ class FlextAuthMixin:
         if role == "REDACTED_LDAP_BIND_PASSWORD":
             # Admin has all permissions
             return True
-        return bool((role == "moderator" and required_permission in {"read", "write"}) or (role == "user" and required_permission == "read"))
+        return bool(
+            (role == "moderator" and required_permission in {"read", "write"})
+            or (role == "user" and required_permission == "read")
+        )
 
 
 class _DefaultAuthWrapper:
@@ -659,10 +662,3 @@ class FlextAuthSessionMixin:
             return current_time < expires_time
         except (ValueError, TypeError):
             return False
-
-
-__all__: list[str] = [
-    "FlextAuthMixin",
-    "FlextAuthSessionMixin",
-    "FlextAuthUserMixin",
-]

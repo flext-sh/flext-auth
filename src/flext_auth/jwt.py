@@ -305,7 +305,11 @@ class FlextJWTService:
                 permissions_str = payload["permissions"]
                 # Convert comma-separated string back to list
                 if permissions_str.strip():
-                    payload["permissions"] = [perm.strip() for perm in permissions_str.split(",") if perm.strip()]
+                    payload["permissions"] = [
+                        perm.strip()
+                        for perm in permissions_str.split(",")
+                        if perm.strip()
+                    ]
                 else:
                     payload["permissions"] = []
 

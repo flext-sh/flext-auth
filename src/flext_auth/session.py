@@ -325,7 +325,3 @@ class InMemorySessionRepository(SessionRepository):
             return FlextResult.ok(data=True)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult.fail(f"Failed to delete session: {e}")
-
-
-# PostgreSQL implementation removed to eliminate code duplication
-# Use InMemorySessionRepository for development or implement when actually needed

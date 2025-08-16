@@ -47,7 +47,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import contextlib
 import os
 import re
 import secrets
@@ -58,7 +57,7 @@ from flext_core import (
     FlextDatabaseConfig,
     FlextResult,
 )
-from pydantic import BaseModel, Field, SecretStr
+from pydantic import BaseModel, Field, SecretStr, field_validator
 from pydantic_settings import SettingsConfigDict
 
 # Configuration constants
@@ -341,45 +340,19 @@ class JWTConfig(FlextBaseConfigModel):
         description="Refresh token expiration days",
     )
 
-    model_config = SettingsConfigDict(env_prefix="JWT_")
+    # Disable loading from .env to avoid leaking repo defaults into tests.
+    # Still allow reading real environment variables with the JWT_ prefix.
+    model_config = SettingsConfigDict(env_prefix="JWT_", env_file=None)
 
-    def __init__(self, **kwargs: object) -> None:
-        """Initialize with algorithm validation.
-
-        Args:
-            **kwargs: Configuration parameters for JWT settings
-
-        Raises:
-            ValueError: If algorithm is not supported
-
-        """
-        # Validate algorithm before calling super().__init__
-        algorithm = kwargs.get("algorithm", "HS256")
+    @field_validator("algorithm")
+    @classmethod
+    def validate_algorithm(cls, value: str) -> str:
+        """Validate supported JWT algorithms and return the value."""
         valid_algorithms = ["HS256", "HS384", "HS512", "RS256", "RS384", "RS512"]
-        if algorithm not in valid_algorithms:
-            msg: str = f"JWT algorithm must be one of {valid_algorithms}"
+        if value not in valid_algorithms:
+            msg = f"JWT algorithm must be one of {valid_algorithms}"
             raise ValueError(msg)
-
-        # Call parent without any kwargs to avoid type issues
-        with contextlib.suppress(TypeError):
-            super().__init__()
-
-        # Set values after initialization
-        for key, value in kwargs.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
-        # Respect environment variables if not explicitly provided in kwargs
-        if "secret_key" not in kwargs:
-            env_secret = (
-                os.getenv("APP_JWT_SECRET_KEY")
-                or os.getenv("JWT_SECRET_KEY")
-                or os.getenv("FLEXT_AUTH_JWT_SECRET_KEY")
-                or ""
-            )
-            self.secret_key = env_secret
-        # Ensure algorithm defaults to HS256 if not passed
-        if "algorithm" not in kwargs:
-            self.algorithm = "HS256"
+        return value
 
     def validate_secret_key(self) -> None:
         """Validate secret key strength."""
@@ -408,13 +381,17 @@ class JWTConfig(FlextBaseConfigModel):
         if not self.secret_key or self.secret_key.strip() == "":
             errors.append("JWT secret key cannot be empty")
         elif len(self.secret_key) < MIN_JWT_SECRET_LENGTH:
-            errors.append(f"JWT secret key must be at least {MIN_JWT_SECRET_LENGTH} characters long")
+            errors.append(
+                f"JWT secret key must be at least {MIN_JWT_SECRET_LENGTH} characters long",
+            )
 
         # Token expiration validation
         if self.access_token_expire_minutes <= 0:
             errors.append("Access token expiration must be positive")
         elif self.access_token_expire_minutes > MAX_ACCESS_TOKEN_MINUTES:
-            errors.append("Access token expiration should not exceed 24 hours for security")
+            errors.append(
+                "Access token expiration should not exceed 24 hours for security",
+            )
 
         if self.refresh_token_expire_days <= 0:
             errors.append("Refresh token expiration must be positive")
@@ -469,7 +446,9 @@ class SecurityConfig(FlextBaseConfigModel):
         if self.password_rounds < MIN_BCRYPT_ROUNDS:
             errors.append("BCrypt rounds must be at least 4 for basic security")
         elif self.password_rounds > MAX_BCRYPT_ROUNDS:
-            errors.append("BCrypt rounds should not exceed 20 to avoid performance issues")
+            errors.append(
+                "BCrypt rounds should not exceed 20 to avoid performance issues",
+            )
 
         # Failed attempts validation
         if self.max_failed_attempts > MAX_FAILED_ATTEMPTS:
@@ -567,11 +546,15 @@ class AppConfig(FlextBaseConfigModel):
 
             security_validation = self.security.validate_business_rules()
             if not security_validation.is_success:
-                errors.append(f"Security configuration invalid: {security_validation.error}")
+                errors.append(
+                    f"Security configuration invalid: {security_validation.error}",
+                )
 
             server_validation = self.server.validate_business_rules()
             if not server_validation.is_success:
-                errors.append(f"Server configuration invalid: {server_validation.error}")
+                errors.append(
+                    f"Server configuration invalid: {server_validation.error}",
+                )
 
         return FlextResult.fail("; ".join(errors)) if errors else FlextResult.ok(None)
 

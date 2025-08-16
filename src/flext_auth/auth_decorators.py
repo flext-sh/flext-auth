@@ -683,7 +683,7 @@ class FlextAuthMixin:
                             if hasattr(user.role, "value")
                             else str(user.role),
                         },
-                    }
+                    },
                 )
 
             result = asyncio.run(_run())
