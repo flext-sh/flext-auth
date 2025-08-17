@@ -35,10 +35,10 @@ def generate_secure_password(length: int = 16) -> str:
 
     # Ensure at least one character from each set
     password_chars = [
-        secrets.choice(uppercase),
-        secrets.choice(lowercase),
-        secrets.choice(digits),
-        secrets.choice(symbols),
+      secrets.choice(uppercase),
+      secrets.choice(lowercase),
+      secrets.choice(digits),
+      secrets.choice(symbols),
     ]
 
     # Fill remaining length with random characters
@@ -48,8 +48,8 @@ def generate_secure_password(length: int = 16) -> str:
     # Shuffle the password
     password_list = list(password_chars)
     for i in range(len(password_list)):
-        j = secrets.randbelow(len(password_list))
-        password_list[i], password_list[j] = password_list[j], password_list[i]
+      j = secrets.randbelow(len(password_list))
+      password_list[i], password_list[j] = password_list[j], password_list[i]
 
     return "".join(password_list)
 
@@ -57,7 +57,7 @@ def generate_secure_password(length: int = 16) -> str:
 def mask_sensitive_data(data: str, visible_chars: int = 4) -> str:
     """Mask sensitive data showing only first few characters."""
     if len(data) <= visible_chars:
-        return "*" * len(data)
+      return "*" * len(data)
     return data[:visible_chars] + "*" * (len(data) - visible_chars)
 
 
@@ -100,7 +100,7 @@ def is_strong_password(password: str) -> bool:
     """Check if password meets basic strength requirements."""
     min_password_length = 8
     if len(password) < min_password_length:
-        return False
+      return False
 
     has_upper = any(c.isupper() for c in password)
     has_lower = any(c.islower() for c in password)
@@ -123,24 +123,24 @@ def sanitize_input(input_str: str) -> str:
 def safe_str(value: object) -> str:
     """Safely convert value to string."""
     if value is None:
-        return ""
+      return ""
     return str(value)
 
 
 def safe_int(value: object, default: int = 0) -> int:
     """Safely convert value to integer."""
     try:
-        return int(str(value)) if value is not None else default
+      return int(str(value)) if value is not None else default
     except (ValueError, TypeError):
-        return default
+      return default
 
 
 def safe_bool(value: object, *, default: bool = False) -> bool:
     """Safely convert value to boolean."""
     if isinstance(value, bool):
-        return value
+      return value
     if isinstance(value, str):
-        return value.lower() in {"true", "1", "yes", "on"}
+      return value.lower() in {"true", "1", "yes", "on"}
     return bool(value) if value is not None else default
 
 
@@ -164,10 +164,10 @@ def filter_sensitive_data(data: dict[str, object]) -> dict[str, object]:
 
     filtered: dict[str, object] = {}
     for key, value in data.items():
-        if key.lower() in sensitive_keys:
-            filtered[key] = "[REDACTED]"
-        else:
-            filtered[key] = value
+      if key.lower() in sensitive_keys:
+          filtered[key] = "[REDACTED]"
+      else:
+          filtered[key] = value
 
     return filtered
 

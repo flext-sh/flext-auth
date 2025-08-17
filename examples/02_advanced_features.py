@@ -53,13 +53,13 @@ def example_advanced_configuration() -> None:
     """Exemplo: Configuração avançada personalizada."""
     # Configuração personalizada para produção (campos válidos)
     custom_config = FlextAuthConfig(
-        bcrypt_rounds=14,  # Produção: mais seguro
-        max_login_attempts=3,  # Mais restritivo
-        lockout_duration_minutes=60,  # Lockout mais longo
-        session_timeout_hours=8,  # Sessões mais curtas
-        max_concurrent_sessions=2,  # Limite baixo
-        debug=False,  # Produção
-        environment="production",
+      bcrypt_rounds=14,  # Produção: mais seguro
+      max_login_attempts=3,  # Mais restritivo
+      lockout_duration_minutes=60,  # Lockout mais longo
+      session_timeout_hours=8,  # Sessões mais curtas
+      max_concurrent_sessions=2,  # Limite baixo
+      debug=False,  # Produção
+      environment="production",
     )
 
     # Criar instância com configuração personalizada
@@ -70,41 +70,41 @@ def example_jwt_operations() -> None:
     """Exemplo: Operações avançadas com JWT."""
     # Payload personalizado
     user_payload = {
-        "user_id": "user_12345",
-        "username": "advanced_user",
-        "role": ADMIN_ROLE,
-        "session_id": "session_67890",
-        "department": "engineering",
-        "clearance_level": 5,
+      "user_id": "user_12345",
+      "username": "advanced_user",
+      "role": ADMIN_ROLE,
+      "session_id": "session_67890",
+      "department": "engineering",
+      "clearance_level": 5,
     }
 
     # Gerar JWT
     secret = EXAMPLE_JWT_SECRET
     token_result = flext_auth_generate_jwt(
-        user_payload,
-        secret=secret,
-        expires_minutes=60,
+      user_payload,
+      secret=secret,
+      expires_minutes=60,
     )
     if token_result.success:
-        token = token_result.data
+      token = token_result.data
 
-        # Decodificar JWT
-        decoded = flext_auth_decode_jwt(token, secret)
-        if isinstance(decoded, dict) and decoded:
-            # Successfully decoded
-            pass
-        else:
-            decoded = None
+      # Decodificar JWT
+      decoded = flext_auth_decode_jwt(token, secret)
+      if isinstance(decoded, dict) and decoded:
+          # Successfully decoded
+          pass
+      else:
+          decoded = None
     else:
-        token = None
-        decoded = None
+      token = None
+      decoded = None
     if decoded:
-        pass
+      pass
 
     # Extrair contexto completo
     context = flext_auth_extract_user_context(token, secret)
     if context:
-        pass
+      pass
 
 
 def example_api_key_management() -> None:
@@ -112,26 +112,26 @@ def example_api_key_management() -> None:
     # Criar API key para usuário
     user_id = "api_user_12345"
     api_key = flext_auth_create_api_key(
-        user_id=user_id,
-        scope="api",
-        expires_days=90,  # 3 meses
-        secret=EXAMPLE_API_SECRET,
+      user_id=user_id,
+      scope="api",
+      expires_days=90,  # 3 meses
+      secret=EXAMPLE_API_SECRET,
     )
 
     # Validar API key
     validation_result = flext_auth_validate_api_key(
-        api_key,
-        "api-secret-key-for-validation-256-bits-minimum-length",
+      api_key,
+      "api-secret-key-for-validation-256-bits-minimum-length",
     )
     if validation_result:
-        pass
+      pass
 
     # Service token para comunicação serviço-a-serviço
     flext_auth_create_service_token(
-        service_name="data-processor",
-        permissions=["read_data", "write_logs", "access_cache"],
-        expires_hours=48,
-        secret=EXAMPLE_SERVICE_SECRET,
+      service_name="data-processor",
+      permissions=["read_data", "write_logs", "access_cache"],
+      expires_hours=48,
+      secret=EXAMPLE_SERVICE_SECRET,
     )
 
 
@@ -140,42 +140,42 @@ def example_role_permission_system() -> None:
     # Criar hierarquia de roles
     role_hierarchy = flext_auth_create_role_hierarchy()
     for _role in role_hierarchy:
-        pass
+      pass
 
     # Validar permissões para diferentes roles
     test_cases = [
-        (ADMIN_ROLE, "delete"),
-        (MODERATOR_ROLE, "moderate"),
-        (USER_ROLE, "read"),
-        (USER_ROLE, "REDACTED_LDAP_BIND_PASSWORD"),  # Should fail
-        ("guest", "read_public"),
+      (ADMIN_ROLE, "delete"),
+      (MODERATOR_ROLE, "moderate"),
+      (USER_ROLE, "read"),
+      (USER_ROLE, "REDACTED_LDAP_BIND_PASSWORD"),  # Should fail
+      ("guest", "read_public"),
     ]
 
     for role, permission in test_cases:
-        flext_auth_validate_permissions(
-            role,
-            permission,
-            role_hierarchy,
-        )
+      flext_auth_validate_permissions(
+          role,
+          permission,
+          role_hierarchy,
+      )
 
 
 def example_secure_sessions() -> None:
     """Exemplo: Sessões seguras avançadas."""
     # Criar sessão segura básica
     flext_auth_create_secure_session(
-        user_id="secure_user_123",
-        username="secure_user",
-        role=MODERATOR_ROLE,
-        expires_hours=12,
+      user_id="secure_user_123",
+      username="secure_user",
+      role=MODERATOR_ROLE,
+      expires_hours=12,
     )
 
     # Criar sessão com permissões incluídas
     flext_auth_create_secure_session(
-        user_id="enhanced_user_456",
-        username="enhanced_user",
-        role=ADMIN_ROLE,
-        expires_hours=6,
-        include_permissions=True,
+      user_id="enhanced_user_456",
+      username="enhanced_user",
+      role=ADMIN_ROLE,
+      expires_hours=6,
+      include_permissions=True,
     )
 
 
@@ -183,28 +183,28 @@ def example_multi_factor_authentication() -> None:
     """Exemplo: Multi-factor authentication tokens."""
     # Token MFA para TOTP
     totp_token = flext_auth_create_multi_factor_token(
-        user_id="mfa_user_789",
-        factor_type="totp",
-        expires_minutes=5,  # Tokens MFA expiram rapidamente
-        secret=EXAMPLE_MFA_TOTP_SECRET,
+      user_id="mfa_user_789",
+      factor_type="totp",
+      expires_minutes=5,  # Tokens MFA expiram rapidamente
+      secret=EXAMPLE_MFA_TOTP_SECRET,
     )
 
     # Token MFA para SMS
     flext_auth_create_multi_factor_token(
-        user_id="mfa_user_789",
-        factor_type="sms",
-        expires_minutes=10,
-        secret=EXAMPLE_MFA_SMS_SECRET,
+      user_id="mfa_user_789",
+      factor_type="sms",
+      expires_minutes=10,
+      secret=EXAMPLE_MFA_SMS_SECRET,
     )
 
     # Validar contexto de token MFA
     mfa_context = flext_auth_create_auth_context(
-        totp_token,
-        "mfa-totp-secret-key-256-bits-minimum-length",
-        include_permissions=False,
+      totp_token,
+      "mfa-totp-secret-key-256-bits-minimum-length",
+      include_permissions=False,
     )
     if mfa_context:
-        pass
+      pass
 
 
 def example_decorators() -> None:
@@ -213,42 +213,42 @@ def example_decorators() -> None:
     # Função que requer autenticação
     @flext_auth_required(secret_key=EXAMPLE_TEST_SECRET)
     def protected_endpoint(
-        _request: dict[str, object],
-        **kwargs: object,
+      _request: dict[str, object],
+      **kwargs: object,
     ) -> dict[str, object]:
-        """Endpoint protegido que requer autenticação."""
-        auth_context = kwargs.get("auth_context", {})
-        return {
-            "message": "Access granted",
-            "user": auth_context.get("username", "unknown"),
-            "role": auth_context.get("role", "none"),
-        }
+      """Endpoint protegido que requer autenticação."""
+      auth_context = kwargs.get("auth_context", {})
+      return {
+          "message": "Access granted",
+          "user": auth_context.get("username", "unknown"),
+          "role": auth_context.get("role", "none"),
+      }
 
     # Função que requer role específico
     @flext_auth_role_required(
-        ADMIN_ROLE,
-        secret_key=EXAMPLE_TEST_SECRET,
+      ADMIN_ROLE,
+      secret_key=EXAMPLE_TEST_SECRET,
     )
     def REDACTED_LDAP_BIND_PASSWORD_endpoint(
-        _request: dict[str, object],
-        **_kwargs: object,
+      _request: dict[str, object],
+      **_kwargs: object,
     ) -> dict[str, object]:
-        """Endpoint que requer role de REDACTED_LDAP_BIND_PASSWORD."""
-        return {"message": "Admin access granted", "REDACTED_LDAP_BIND_PASSWORD_only": True}
+      """Endpoint que requer role de REDACTED_LDAP_BIND_PASSWORD."""
+      return {"message": "Admin access granted", "REDACTED_LDAP_BIND_PASSWORD_only": True}
 
     # Função que requer permissão específica
     @flext_auth_permission_required("delete")
     def delete_endpoint(
-        _request: dict[str, object],
-        **_kwargs: object,
+      _request: dict[str, object],
+      **_kwargs: object,
     ) -> dict[str, object]:
-        """Endpoint que requer permissão de delete."""
-        return {"message": "Delete permission granted"}
+      """Endpoint que requer permissão de delete."""
+      return {"message": "Delete permission granted"}
 
     # Testar decoradores com mock request
     mock_request = {
-        "headers": {"Authorization": "Bearer invalid_token"},
-        "user": "test_user",
+      "headers": {"Authorization": "Bearer invalid_token"},
+      "user": "test_user",
     }
 
     # Test protected endpoint (will fail due to invalid token)
@@ -267,15 +267,15 @@ async def _handle_batch_registration(
 ) -> bool:
     """Handle batch user registration."""
     batch_register_result = await batch_ops.register_multiple(
-        users_data,
-        validate_all=True,
+      users_data,
+      validate_all=True,
     )
 
     if batch_register_result.success:
-        registered_users = batch_register_result.data
-        for _user in registered_users:
-            pass
-        return True
+      registered_users = batch_register_result.data
+      for _user in registered_users:
+          pass
+      return True
     return False
 
 
@@ -285,12 +285,12 @@ async def _handle_batch_sessions(
 ) -> None:
     """Handle batch session creation and token validation."""
     batch_sessions_result = await batch_ops.create_multiple_sessions(
-        credentials,
-        session_hours=12,
+      credentials,
+      session_hours=12,
     )
 
     if not batch_sessions_result.success:
-        return
+      return
 
     session_data = batch_sessions_result.data
     session_data["successful"]
@@ -299,12 +299,12 @@ async def _handle_batch_sessions(
     # Extract tokens for batch validation
     tokens = []
     for session in session_data["sessions"]:
-        session_token = session["session_data"].get("token")
-        if session_token:
-            tokens.append(session_token)
+      session_token = session["session_data"].get("token")
+      if session_token:
+          tokens.append(session_token)
 
     if tokens:
-        await _validate_batch_tokens(batch_ops, tokens)
+      await _validate_batch_tokens(batch_ops, tokens)
 
 
 async def _validate_batch_tokens(batch_ops: object, tokens: list[str]) -> None:
@@ -312,15 +312,15 @@ async def _validate_batch_tokens(batch_ops: object, tokens: list[str]) -> None:
     batch_validation_result = await batch_ops.validate_multiple_tokens(tokens)
 
     if not batch_validation_result.success:
-        return
+      return
 
     validation_data = batch_validation_result.data
     if isinstance(validation_data, dict):
-        validation_data.get("valid_count", 0)
-        validation_data.get("total", len(tokens))
+      validation_data.get("valid_count", 0)
+      validation_data.get("total", len(tokens))
     elif isinstance(validation_data, list):
-        len([v for v in validation_data if v])
-        len(validation_data)
+      len([v for v in validation_data if v])
+      len(validation_data)
 
 
 async def example_batch_operations() -> None:
@@ -331,24 +331,24 @@ async def example_batch_operations() -> None:
 
     # Dados para múltiplos usuários
     users_data = [
-        {
-            "username": "batch_user_1",
-            "email": "batch1@example.com",
-            "password": "BatchPass123!",
-            "role": "user",
-        },
-        {
-            "username": "batch_user_2",
-            "email": "batch2@example.com",
-            "password": "BatchPass456!",
-            "role": "moderator",
-        },
-        {
-            "username": "batch_REDACTED_LDAP_BIND_PASSWORD",
-            "email": "batchREDACTED_LDAP_BIND_PASSWORD@example.com",
-            "password": "BatchAdminPass789!",
-            "role": "REDACTED_LDAP_BIND_PASSWORD",
-        },
+      {
+          "username": "batch_user_1",
+          "email": "batch1@example.com",
+          "password": "BatchPass123!",
+          "role": "user",
+      },
+      {
+          "username": "batch_user_2",
+          "email": "batch2@example.com",
+          "password": "BatchPass456!",
+          "role": "moderator",
+      },
+      {
+          "username": "batch_REDACTED_LDAP_BIND_PASSWORD",
+          "email": "batchREDACTED_LDAP_BIND_PASSWORD@example.com",
+          "password": "BatchAdminPass789!",
+          "role": "REDACTED_LDAP_BIND_PASSWORD",
+      },
     ]
 
     # Process batch registration
@@ -356,9 +356,9 @@ async def example_batch_operations() -> None:
 
     # Credenciais para sessões em lote
     credentials = [
-        ("batch_user_1", "BatchPass123!"),
-        ("batch_user_2", "BatchPass456!"),
-        ("batch_REDACTED_LDAP_BIND_PASSWORD", "BatchAdminPass789!"),
+      ("batch_user_1", "BatchPass123!"),
+      ("batch_user_2", "BatchPass456!"),
+      ("batch_REDACTED_LDAP_BIND_PASSWORD", "BatchAdminPass789!"),
     ]
 
     # Process batch sessions
@@ -372,55 +372,55 @@ async def example_advanced_user_management() -> None:
 
     # Registro de usuário REDACTED_LDAP_BIND_PASSWORDistrador
     REDACTED_LDAP_BIND_PASSWORD_result = await auth.register_validated(
-        username="production_REDACTED_LDAP_BIND_PASSWORD",
-        email="REDACTED_LDAP_BIND_PASSWORD@production.com",
-        password=EXAMPLE_PRODUCTION_ADMIN_PASSWORD,
-        role=ADMIN_ROLE,
-        require_strong_password=True,
+      username="production_REDACTED_LDAP_BIND_PASSWORD",
+      email="REDACTED_LDAP_BIND_PASSWORD@production.com",
+      password=EXAMPLE_PRODUCTION_ADMIN_PASSWORD,
+      role=ADMIN_ROLE,
+      require_strong_password=True,
     )
 
     if REDACTED_LDAP_BIND_PASSWORD_result.success:
-        REDACTED_LDAP_BIND_PASSWORD_data = REDACTED_LDAP_BIND_PASSWORD_result.data
+      REDACTED_LDAP_BIND_PASSWORD_data = REDACTED_LDAP_BIND_PASSWORD_result.data
 
-        if REDACTED_LDAP_BIND_PASSWORD_data.get("password_strength"):
-            strength = REDACTED_LDAP_BIND_PASSWORD_data["password_strength"]
-            strength["strength"]
-            strength["score"]
+      if REDACTED_LDAP_BIND_PASSWORD_data.get("password_strength"):
+          strength = REDACTED_LDAP_BIND_PASSWORD_data["password_strength"]
+          strength["strength"]
+          strength["score"]
 
-        # Sessão completa com dados do usuário
-        session_result = await auth.create_user_session(
-            "production_REDACTED_LDAP_BIND_PASSWORD",
-            "ProductionAdminPass123!@#",
-            include_user_data=True,
-        )
+      # Sessão completa com dados do usuário
+      session_result = await auth.create_user_session(
+          "production_REDACTED_LDAP_BIND_PASSWORD",
+          "ProductionAdminPass123!@#",
+          include_user_data=True,
+      )
 
-        if session_result.success:
-            session_data = session_result.data
+      if session_result.success:
+          session_data = session_result.data
 
-            # Refresh token test
-            if "refresh_token" in session_data:
-                refresh_result = await auth.refresh(session_data["refresh_token"])
-                if refresh_result.success:
-                    pass
+          # Refresh token test
+          if "refresh_token" in session_data:
+              refresh_result = await auth.refresh(session_data["refresh_token"])
+              if refresh_result.success:
+                  pass
 
 
 def main() -> None:
     """Execute all advanced examples using shared runner."""
     # Define sync examples
     sync_examples = [
-        example_advanced_configuration,
-        example_jwt_operations,
-        example_api_key_management,
-        example_role_permission_system,
-        example_secure_sessions,
-        example_multi_factor_authentication,
-        example_decorators,
+      example_advanced_configuration,
+      example_jwt_operations,
+      example_api_key_management,
+      example_role_permission_system,
+      example_secure_sessions,
+      example_multi_factor_authentication,
+      example_decorators,
     ]
 
     # Define async examples
     async_examples = [
-        example_batch_operations,
-        example_advanced_user_management,
+      example_batch_operations,
+      example_advanced_user_management,
     ]
 
     # Run all examples using shared runner (DRY principle)

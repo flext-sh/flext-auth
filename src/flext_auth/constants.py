@@ -28,69 +28,69 @@ class FlextAuthSemanticConstants(FlextConstants):
     """
 
     class Authentication:
-        """Authentication pattern constants."""
+      """Authentication pattern constants."""
 
-        USERNAME_PATTERN = r"^[a-zA-Z0-9_]{3,50}$"
+      USERNAME_PATTERN = r"^[a-zA-Z0-9_]{3,50}$"
 
-        PASSWORD_VALIDATION_REGEX = re.compile(
-            r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?])"
-            r".{8,128}$",
-        )
-        # CONSUME from single source - NO DUPLICATION
-        MIN_PASSWORD_LENGTH = FlextConstants.Limits.MIN_PASSWORD_LENGTH
-        MAX_PASSWORD_LENGTH = FlextConstants.Limits.MAX_PASSWORD_LENGTH
-        MIN_PASSWORD_SECURITY_SCORE = 4
+      PASSWORD_VALIDATION_REGEX = re.compile(
+          r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?])"
+          r".{8,128}$",
+      )
+      # CONSUME from single source - NO DUPLICATION
+      MIN_PASSWORD_LENGTH = FlextConstants.Limits.MIN_PASSWORD_LENGTH
+      MAX_PASSWORD_LENGTH = FlextConstants.Limits.MAX_PASSWORD_LENGTH
+      MIN_PASSWORD_SECURITY_SCORE = 4
 
     class Security:
-        """Security policy constants."""
+      """Security policy constants."""
 
-        DEFAULT_MAX_LOGIN_ATTEMPTS = 5
-        DEFAULT_LOCKOUT_DURATION_MINUTES = 30
-        MAX_ACCOUNT_LOCK_HOURS = 24
-        DEFAULT_BCRYPT_ROUNDS = 12
+      DEFAULT_MAX_LOGIN_ATTEMPTS = 5
+      DEFAULT_LOCKOUT_DURATION_MINUTES = 30
+      MAX_ACCOUNT_LOCK_HOURS = 24
+      DEFAULT_BCRYPT_ROUNDS = 12
 
     class Sessions:
-        """Session management constants."""
+      """Session management constants."""
 
-        DEFAULT_SESSION_TIMEOUT_HOURS = 24
-        MAX_CONCURRENT_SESSIONS = 5
+      DEFAULT_SESSION_TIMEOUT_HOURS = 24
+      MAX_CONCURRENT_SESSIONS = 5
 
     class Tokens:
-        """Token configuration constants."""
+      """Token configuration constants."""
 
-        DEFAULT_ACCESS_TOKEN_MINUTES = 30
-        DEFAULT_REFRESH_TOKEN_DAYS = 7
-        JWT_ALGORITHM = "HS256"
+      DEFAULT_ACCESS_TOKEN_MINUTES = 30
+      DEFAULT_REFRESH_TOKEN_DAYS = 7
+      JWT_ALGORITHM = "HS256"
 
-        # Test secrets for development/testing only (secure defaults)
-        TEST_JWT_SECRET = os.getenv("TEST_JWT_SECRET", secrets.token_urlsafe(32))
-        DEFAULT_JWT_SECRET = os.getenv(
-            "FLEXT_AUTH_JWT_SECRET_KEY",
-            secrets.token_urlsafe(32),
-        )
+      # Test secrets for development/testing only (secure defaults)
+      TEST_JWT_SECRET = os.getenv("TEST_JWT_SECRET", secrets.token_urlsafe(32))
+      DEFAULT_JWT_SECRET = os.getenv(
+          "FLEXT_AUTH_JWT_SECRET_KEY",
+          secrets.token_urlsafe(32),
+      )
 
     class UserStatus:
-        """User status constants."""
+      """User status constants."""
 
-        ACTIVE = "active"
-        INACTIVE = "inactive"
-        SUSPENDED = "suspended"
-        LOCKED = "locked"
+      ACTIVE = "active"
+      INACTIVE = "inactive"
+      SUSPENDED = "suspended"
+      LOCKED = "locked"
 
     class UserRoles:
-        """User role constants."""
+      """User role constants."""
 
-        ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
-        USER = "user"
-        GUEST = "guest"
+      ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
+      USER = "user"
+      GUEST = "guest"
 
     class TokenTypes:
-        """Token type constants."""
+      """Token type constants."""
 
-        ACCESS = "access"
-        REFRESH = "refresh"
-        RESET = "reset"
-        VERIFICATION = "verification"
+      ACCESS = "access"
+      REFRESH = "refresh"
+      RESET = "reset"
+      VERIFICATION = "verification"
 
 
 class FlextAuthConstants(FlextAuthSemanticConstants):
@@ -112,35 +112,35 @@ class FlextAuthConstants(FlextAuthSemanticConstants):
     # Legacy compatibility - flat access patterns (DEPRECATED - use semantic access)
     USERNAME_PATTERN = FlextAuthSemanticConstants.Authentication.USERNAME_PATTERN
     PASSWORD_VALIDATION_REGEX = (
-        FlextAuthSemanticConstants.Authentication.PASSWORD_VALIDATION_REGEX
+      FlextAuthSemanticConstants.Authentication.PASSWORD_VALIDATION_REGEX
     )
     MIN_PASSWORD_LENGTH = FlextAuthSemanticConstants.Authentication.MIN_PASSWORD_LENGTH
     MAX_PASSWORD_LENGTH = FlextAuthSemanticConstants.Authentication.MAX_PASSWORD_LENGTH
     MIN_PASSWORD_SECURITY_SCORE = (
-        FlextAuthSemanticConstants.Authentication.MIN_PASSWORD_SECURITY_SCORE
+      FlextAuthSemanticConstants.Authentication.MIN_PASSWORD_SECURITY_SCORE
     )
 
     DEFAULT_MAX_LOGIN_ATTEMPTS = (
-        FlextAuthSemanticConstants.Security.DEFAULT_MAX_LOGIN_ATTEMPTS
+      FlextAuthSemanticConstants.Security.DEFAULT_MAX_LOGIN_ATTEMPTS
     )
     DEFAULT_LOCKOUT_DURATION_MINUTES = (
-        FlextAuthSemanticConstants.Security.DEFAULT_LOCKOUT_DURATION_MINUTES
+      FlextAuthSemanticConstants.Security.DEFAULT_LOCKOUT_DURATION_MINUTES
     )
     MAX_ACCOUNT_LOCK_HOURS = FlextAuthSemanticConstants.Security.MAX_ACCOUNT_LOCK_HOURS
     DEFAULT_BCRYPT_ROUNDS = FlextAuthSemanticConstants.Security.DEFAULT_BCRYPT_ROUNDS
 
     DEFAULT_SESSION_TIMEOUT_HOURS = (
-        FlextAuthSemanticConstants.Sessions.DEFAULT_SESSION_TIMEOUT_HOURS
+      FlextAuthSemanticConstants.Sessions.DEFAULT_SESSION_TIMEOUT_HOURS
     )
     MAX_CONCURRENT_SESSIONS = (
-        FlextAuthSemanticConstants.Sessions.MAX_CONCURRENT_SESSIONS
+      FlextAuthSemanticConstants.Sessions.MAX_CONCURRENT_SESSIONS
     )
 
     DEFAULT_ACCESS_TOKEN_MINUTES = (
-        FlextAuthSemanticConstants.Tokens.DEFAULT_ACCESS_TOKEN_MINUTES
+      FlextAuthSemanticConstants.Tokens.DEFAULT_ACCESS_TOKEN_MINUTES
     )
     DEFAULT_REFRESH_TOKEN_DAYS = (
-        FlextAuthSemanticConstants.Tokens.DEFAULT_REFRESH_TOKEN_DAYS
+      FlextAuthSemanticConstants.Tokens.DEFAULT_REFRESH_TOKEN_DAYS
     )
     JWT_ALGORITHM = FlextAuthSemanticConstants.Tokens.JWT_ALGORITHM
     TEST_JWT_SECRET = FlextAuthSemanticConstants.Tokens.TEST_JWT_SECRET

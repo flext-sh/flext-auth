@@ -19,17 +19,17 @@ HTTP_OK = 200
 def main() -> int:
     """Perform health check."""
     try:
-        with urllib.request.urlopen(
-            "http://localhost:8000/auth/health",
-            timeout=10,
-        ) as response:
-            if response.status == HTTP_OK:
-                return 0
-            return 1
+      with urllib.request.urlopen(
+          "http://localhost:8000/auth/health",
+          timeout=10,
+      ) as response:
+          if response.status == HTTP_OK:
+              return 0
+          return 1
     except urllib.error.URLError:
-        return 1
+      return 1
     except (RuntimeError, ValueError, TypeError):
-        return 1
+      return 1
 
 
 if __name__ == "__main__":

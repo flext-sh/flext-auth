@@ -18,17 +18,17 @@ def convert_user_to_dict(user: FlextUser) -> dict[str, object]:
     conversion logic in one place.
 
     Args:
-        user: FlextUser entity to convert
+      user: FlextUser entity to convert
     Returns:
-        Dictionary representation of user data
+      Dictionary representation of user data
 
     """
     return {
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "role": (user.role.value if hasattr(user.role, "value") else str(user.role)),
-        "status": (
-            user.status.value if hasattr(user.status, "value") else str(user.status)
-        ),
+      "id": user.id,
+      "username": user.username,
+      "email": user.email,
+      "role": (user.role.value if hasattr(user.role, "value") else str(user.role)),
+      "status": (
+          user.status.value if hasattr(user.status, "value") else str(user.status)
+      ),
     }
