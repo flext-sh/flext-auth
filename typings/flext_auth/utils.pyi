@@ -1,0 +1,3 @@
+from flext_auth.domain_entities import FlextUser as FlextUser
+
+def convert_user_to_dict(user: FlextUser) -> dict[str, object]: ...

@@ -16,32 +16,32 @@ class FlextAuthError(Exception):
     """Base exception for all authentication-related errors."""
 
     def __init__(self, message: str, error_code: str = "AUTH_ERROR") -> None:
-      """Initialize authentication error.
+        """Initialize authentication error.
 
-      Args:
-          message: Human-readable error message
-          error_code: Machine-readable error code
+        Args:
+            message: Human-readable error message
+            error_code: Machine-readable error code
 
-      """
-      super().__init__(message)
-      self.message = message
-      self.error_code = error_code
+        """
+        super().__init__(message)
+        self.message = message
+        self.error_code = error_code
 
 
 class FlextAuthenticationError(FlextAuthError):
     """Exception raised for authentication failures."""
 
     def __init__(self, message: str = "Authentication failed") -> None:
-      """Initialize authentication error."""
-      super().__init__(message, "AUTH_FAILED")
+        """Initialize authentication error."""
+        super().__init__(message, "AUTH_FAILED")
 
 
 class FlextAuthorizationError(FlextAuthError):
     """Exception raised for authorization failures."""
 
     def __init__(self, message: str = "Access denied") -> None:
-      """Initialize authorization error."""
-      super().__init__(message, "AUTH_DENIED")
+        """Initialize authorization error."""
+        super().__init__(message, "AUTH_DENIED")
 
 
 # =============================================================================
@@ -53,27 +53,27 @@ class FlextInvalidCredentialsError(FlextAuthenticationError):
     """Exception raised for invalid username/password."""
 
     def __init__(self, message: str = "Invalid credentials") -> None:
-      """Initialize invalid credentials error."""
-      super().__init__(message)
-      self.error_code = "AUTH_INVALID_CREDENTIALS"
+        """Initialize invalid credentials error."""
+        super().__init__(message)
+        self.error_code = "AUTH_INVALID_CREDENTIALS"
 
 
 class FlextAccountLockedError(FlextAuthenticationError):
     """Exception raised for locked user accounts."""
 
     def __init__(self, message: str = "Account is locked") -> None:
-      """Initialize account locked error."""
-      super().__init__(message)
-      self.error_code = "AUTH_ACCOUNT_LOCKED"
+        """Initialize account locked error."""
+        super().__init__(message)
+        self.error_code = "AUTH_ACCOUNT_LOCKED"
 
 
 class FlextAccountInactiveError(FlextAuthenticationError):
     """Exception raised for inactive user accounts."""
 
     def __init__(self, message: str = "Account is inactive") -> None:
-      """Initialize account inactive error."""
-      super().__init__(message)
-      self.error_code = "AUTH_ACCOUNT_INACTIVE"
+        """Initialize account inactive error."""
+        super().__init__(message)
+        self.error_code = "AUTH_ACCOUNT_INACTIVE"
 
 
 # =============================================================================
@@ -85,26 +85,26 @@ class FlextTokenError(FlextAuthError):
     """Base exception for token-related errors."""
 
     def __init__(self, message: str) -> None:
-      """Initialize token error."""
-      super().__init__(message, "AUTH_TOKEN_ERROR")
+        """Initialize token error."""
+        super().__init__(message, "AUTH_TOKEN_ERROR")
 
 
 class FlextInvalidTokenError(FlextTokenError):
     """Exception raised for invalid tokens."""
 
     def __init__(self, message: str = "Invalid token") -> None:
-      """Initialize invalid token error."""
-      super().__init__(message)
-      self.error_code = "AUTH_INVALID_TOKEN"
+        """Initialize invalid token error."""
+        super().__init__(message)
+        self.error_code = "AUTH_INVALID_TOKEN"
 
 
 class FlextExpiredTokenError(FlextTokenError):
     """Exception raised for expired tokens."""
 
     def __init__(self, message: str = "Token has expired") -> None:
-      """Initialize expired token error."""
-      super().__init__(message)
-      self.error_code = "AUTH_TOKEN_EXPIRED"
+        """Initialize expired token error."""
+        super().__init__(message)
+        self.error_code = "AUTH_TOKEN_EXPIRED"
 
 
 # =============================================================================
@@ -116,26 +116,26 @@ class FlextSessionError(FlextAuthError):
     """Base exception for session-related errors."""
 
     def __init__(self, message: str) -> None:
-      """Initialize session error."""
-      super().__init__(message, "AUTH_SESSION_ERROR")
+        """Initialize session error."""
+        super().__init__(message, "AUTH_SESSION_ERROR")
 
 
 class FlextInvalidSessionError(FlextSessionError):
     """Exception raised for invalid sessions."""
 
     def __init__(self, message: str = "Invalid session") -> None:
-      """Initialize invalid session error."""
-      super().__init__(message)
-      self.error_code = "AUTH_INVALID_SESSION"
+        """Initialize invalid session error."""
+        super().__init__(message)
+        self.error_code = "AUTH_INVALID_SESSION"
 
 
 class FlextExpiredSessionError(FlextSessionError):
     """Exception raised for expired sessions."""
 
     def __init__(self, message: str = "Session has expired") -> None:
-      """Initialize expired session error."""
-      super().__init__(message)
-      self.error_code = "AUTH_SESSION_EXPIRED"
+        """Initialize expired session error."""
+        super().__init__(message)
+        self.error_code = "AUTH_SESSION_EXPIRED"
 
 
 # =============================================================================
@@ -147,30 +147,30 @@ class FlextPermissionError(FlextAuthorizationError):
     """Exception raised for permission-related errors."""
 
     def __init__(self, message: str = "Permission denied") -> None:
-      """Initialize permission error."""
-      super().__init__(message)
-      self.error_code = "AUTH_PERMISSION_DENIED"
+        """Initialize permission error."""
+        super().__init__(message)
+        self.error_code = "AUTH_PERMISSION_DENIED"
 
 
 class FlextInsufficientPermissionError(FlextPermissionError):
     """Exception raised for insufficient permissions."""
 
     def __init__(self, required_permission: str) -> None:
-      """Initialize insufficient permission error."""
-      message = f"Insufficient permission: '{required_permission}' required"
-      super().__init__(message)
-      self.required_permission = required_permission
+        """Initialize insufficient permission error."""
+        message = f"Insufficient permission: '{required_permission}' required"
+        super().__init__(message)
+        self.required_permission = required_permission
 
 
 class FlextRoleRequiredError(FlextAuthorizationError):
     """Exception raised when specific role is required."""
 
     def __init__(self, required_role: str) -> None:
-      """Initialize role required error."""
-      message = f"Role '{required_role}' required"
-      super().__init__(message)
-      self.error_code = "AUTH_ROLE_REQUIRED"
-      self.required_role = required_role
+        """Initialize role required error."""
+        message = f"Role '{required_role}' required"
+        super().__init__(message)
+        self.error_code = "AUTH_ROLE_REQUIRED"
+        self.required_role = required_role
 
 
 # =============================================================================
@@ -182,18 +182,18 @@ class FlextValidationError(FlextAuthError):
     """Exception raised for validation errors."""
 
     def __init__(self, message: str, field: str | None = None) -> None:
-      """Initialize validation error."""
-      super().__init__(message, "AUTH_VALIDATION_ERROR")
-      self.field = field
+        """Initialize validation error."""
+        super().__init__(message, "AUTH_VALIDATION_ERROR")
+        self.field = field
 
 
 class FlextPasswordValidationError(FlextValidationError):
     """Exception raised for password validation errors."""
 
     def __init__(self, message: str = "Password does not meet requirements") -> None:
-      """Initialize password validation error."""
-      super().__init__(message, "password")
-      self.error_code = "AUTH_PASSWORD_INVALID"
+        """Initialize password validation error."""
+        super().__init__(message, "password")
+        self.error_code = "AUTH_PASSWORD_INVALID"
 
 
 # =============================================================================

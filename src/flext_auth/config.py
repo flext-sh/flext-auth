@@ -48,68 +48,68 @@ class FlextAuthConfig(FlextBaseConfigModel):
 
     # Authentication specific settings
     password_min_length: int = Field(
-      8,
-      description="Minimum password length",
-      ge=4,
-      le=256,
+        8,
+        description="Minimum password length",
+        ge=4,
+        le=256,
     )
     password_max_length: int = Field(
-      128,
-      description="Maximum password length",
-      ge=8,
-      le=1024,
+        128,
+        description="Maximum password length",
+        ge=8,
+        le=1024,
     )
     bcrypt_rounds: int = Field(12, description="BCrypt rounds", ge=4, le=20)
 
     # Security settings
     max_login_attempts: int = Field(
-      5,
-      description="Maximum login attempts",
-      ge=1,
-      le=10,
+        5,
+        description="Maximum login attempts",
+        ge=1,
+        le=10,
     )
     lockout_duration_minutes: int = Field(
-      30,
-      description="Account lockout duration",
-      ge=1,
-      le=1440,
+        30,
+        description="Account lockout duration",
+        ge=1,
+        le=1440,
     )
     session_timeout_hours: int = Field(24, description="Session timeout", ge=1, le=168)
     max_concurrent_sessions: int = Field(
-      5,
-      description="Maximum concurrent sessions",
-      ge=1,
-      le=20,
+        5,
+        description="Maximum concurrent sessions",
+        ge=1,
+        le=20,
     )
 
     # Rate limiting
     rate_limit_per_minute: int = Field(
-      60,
-      description="General rate limit per minute",
-      ge=1,
+        60,
+        description="General rate limit per minute",
+        ge=1,
     )
     auth_rate_limit_per_minute: int = Field(
-      5,
-      description="Auth rate limit per minute",
-      ge=1,
+        5,
+        description="Auth rate limit per minute",
+        ge=1,
     )
 
     # JWT settings - added for backward compatibility with tests
     access_token_expire_minutes: int = Field(
-      30,
-      description="JWT access token expiration minutes",
-      ge=1,
-      le=10080,  # 1 week max
+        30,
+        description="JWT access token expiration minutes",
+        ge=1,
+        le=10080,  # 1 week max
     )
     refresh_token_expire_days: int = Field(
-      7,
-      description="JWT refresh token expiration days",
-      ge=1,
-      le=90,  # 3 months max
+        7,
+        description="JWT refresh token expiration days",
+        ge=1,
+        le=90,  # 3 months max
     )
     jwt_secret_key: str | None = Field(
-      None,
-      description="JWT secret key for token signing",
+        None,
+        description="JWT secret key for token signing",
     )
 
 
@@ -121,8 +121,8 @@ class FlextAuthApplicationConfig(FlextBaseConfigModel):
 
     # Authentication-specific settings
     auth: FlextAuthConfig = Field(
-      default_factory=FlextAuthConfig,
-      description="Authentication configuration",
+        default_factory=FlextAuthConfig,
+        description="Authentication configuration",
     )
 
 
@@ -135,155 +135,155 @@ class DatabaseConfig(BaseModel):
     """Database configuration with backward compatibility wrapper."""
 
     def __init__(self, **kwargs: object) -> None:
-      """Initialize with backward compatibility for legacy interface."""
-      # Extract and validate pool settings using helper methods
-      min_pool_size = self._extract_int_setting(
-          kwargs,
-          "min_pool_size",
-          "DATABASE_MIN_POOL_SIZE",
-          1,
-      )
-      max_pool_size = self._extract_int_setting(
-          kwargs,
-          "max_pool_size",
-          "DATABASE_MAX_POOL_SIZE",
-          10,
-      )
-      command_timeout = self._extract_int_setting(
-          kwargs,
-          "command_timeout",
-          "DATABASE_COMMAND_TIMEOUT",
-          60,
-      )
+        """Initialize with backward compatibility for legacy interface."""
+        # Extract and validate pool settings using helper methods
+        min_pool_size = self._extract_int_setting(
+            kwargs,
+            "min_pool_size",
+            "DATABASE_MIN_POOL_SIZE",
+            1,
+        )
+        max_pool_size = self._extract_int_setting(
+            kwargs,
+            "max_pool_size",
+            "DATABASE_MAX_POOL_SIZE",
+            10,
+        )
+        command_timeout = self._extract_int_setting(
+            kwargs,
+            "command_timeout",
+            "DATABASE_COMMAND_TIMEOUT",
+            60,
+        )
 
-      # Process URL settings
-      self._original_url = self._extract_url_setting(kwargs)
+        # Process URL settings
+        self._original_url = self._extract_url_setting(kwargs)
 
-      # Validate settings
-      self._validate_pool_sizes(min_pool_size, max_pool_size)
+        # Validate settings
+        self._validate_pool_sizes(min_pool_size, max_pool_size)
 
-      # Store validated values
-      self._min_pool_size = min_pool_size
-      self._max_pool_size = max_pool_size
-      self._command_timeout = command_timeout
+        # Store validated values
+        self._min_pool_size = min_pool_size
+        self._max_pool_size = max_pool_size
+        self._command_timeout = command_timeout
 
-      # Create internal flext-core config with safe defaults
-      try:
-          # Type-safe approach: create with minimal parameters for
-          # flext-core compatibility
-          self._core_config = FlextDatabaseConfig(
-              host="localhost",
-              database="flext",
-              username="postgres",
-              password=SecretStr("password"),
-          )
-      except (RuntimeError, ValueError, TypeError, KeyError):
-          # Fallback if flext-core config fails
-          self._core_config = FlextDatabaseConfig(
-              host="localhost",
-              database="flext",
-              username="postgres",
-              password=SecretStr("password"),
-          )
+        # Create internal flext-core config with safe defaults
+        try:
+            # Type-safe approach: create with minimal parameters for
+            # flext-core compatibility
+            self._core_config = FlextDatabaseConfig(
+                host="localhost",
+                database="flext",
+                username="postgres",
+                password=SecretStr("password"),
+            )
+        except (RuntimeError, ValueError, TypeError, KeyError):
+            # Fallback if flext-core config fails
+            self._core_config = FlextDatabaseConfig(
+                host="localhost",
+                database="flext",
+                username="postgres",
+                password=SecretStr("password"),
+            )
 
     def _extract_int_setting(
-      self,
-      kwargs: dict[str, object],
-      key: str,
-      env_key: str,
-      default: int,
+        self,
+        kwargs: dict[str, object],
+        key: str,
+        env_key: str,
+        default: int,
     ) -> int:
-      """Extract and validate integer setting from kwargs or environment."""
-      raw_value = kwargs.pop(key, os.getenv(env_key, str(default)))
-      try:
-          if isinstance(raw_value, int):
-              return raw_value
-          return int(str(raw_value)) if raw_value is not None else default
-      except (ValueError, TypeError):
-          return default
+        """Extract and validate integer setting from kwargs or environment."""
+        raw_value = kwargs.pop(key, os.getenv(env_key, str(default)))
+        try:
+            if isinstance(raw_value, int):
+                return raw_value
+            return int(str(raw_value)) if raw_value is not None else default
+        except (ValueError, TypeError):
+            return default
 
     def _extract_url_setting(self, kwargs: dict[str, object]) -> str | None:
-      """Extract and validate database URL from kwargs or environment."""
-      url_raw = kwargs.get("url")
-      original_url = str(url_raw) if url_raw is not None else None
+        """Extract and validate database URL from kwargs or environment."""
+        url_raw = kwargs.get("url")
+        original_url = str(url_raw) if url_raw is not None else None
 
-      if original_url is None:
-          original_url = os.getenv("DATABASE_URL")
+        if original_url is None:
+            original_url = os.getenv("DATABASE_URL")
 
-      if original_url and not original_url.startswith(
-          ("postgresql://", "postgresql+asyncpg://"),
-      ):
-          msg = "Database URL must start with postgresql"
-          raise ValueError(msg)
+        if original_url and not original_url.startswith(
+            ("postgresql://", "postgresql+asyncpg://"),
+        ):
+            msg = "Database URL must start with postgresql"
+            raise ValueError(msg)
 
-      return original_url
+        return original_url
 
     def _validate_pool_sizes(self, min_pool_size: int, max_pool_size: int) -> None:
-      """Validate pool size ranges."""
+        """Validate pool size ranges."""
 
-      def raise_validation_error(msg: str) -> Never:
-          raise ValueError(msg)
+        def raise_validation_error(msg: str) -> Never:
+            raise ValueError(msg)
 
-      if min_pool_size < 1:
-          raise_validation_error("Minimum pool size must be at least 1")
+        if min_pool_size < 1:
+            raise_validation_error("Minimum pool size must be at least 1")
 
-      max_min_pool_size = 20
-      max_max_pool_size = 100
+        max_min_pool_size = 20
+        max_max_pool_size = 100
 
-      if min_pool_size > max_min_pool_size:
-          raise_validation_error("Minimum pool size cannot exceed 20")
-      if max_pool_size > max_max_pool_size:
-          raise_validation_error("Maximum pool size cannot exceed 100")
+        if min_pool_size > max_min_pool_size:
+            raise_validation_error("Minimum pool size cannot exceed 20")
+        if max_pool_size > max_max_pool_size:
+            raise_validation_error("Maximum pool size cannot exceed 100")
 
     def __getattr__(self, name: str) -> object:
-      """Delegate unknown attributes to core config."""
-      return getattr(self._core_config, name)
+        """Delegate unknown attributes to core config."""
+        return getattr(self._core_config, name)
 
     def _get_default_port(self) -> int:
-      """Get default PostgreSQL port."""
-      return 5432
+        """Get default PostgreSQL port."""
+        return 5432
 
     @property
     def url(self) -> str:
-      """Get database URL from components for backward compatibility."""
-      # If an original URL was provided, return it
-      if self._original_url is not None:
-          return self._original_url
+        """Get database URL from components for backward compatibility."""
+        # If an original URL was provided, return it
+        if self._original_url is not None:
+            return self._original_url
 
-      # Specific validation: return empty string if default/empty configuration
-      if (
-          self.host == "localhost"
-          and self.database == "flext"
-          and self.username == "postgres"
-          and self.port == self._get_default_port()
-      ):
-          # Default configuration - test expects empty string
-          return ""
+        # Specific validation: return empty string if default/empty configuration
+        if (
+            self.host == "localhost"
+            and self.database == "flext"
+            and self.username == "postgres"
+            and self.port == self._get_default_port()
+        ):
+            # Default configuration - test expects empty string
+            return ""
 
-      # Custom configuration - generate complete URL
-      if hasattr(self, "password") and self.password:
-          password_str = (
-              self.password.get_secret_value()
-              if hasattr(self.password, "get_secret_value")
-              else str(self.password)
-          )
-          return f"postgresql://{self.username}:{password_str}@{self.host}:{self.port}/{self.database}"
-      return f"postgresql://{self.username}@{self.host}:{self.port}/{self.database}"
+        # Custom configuration - generate complete URL
+        if hasattr(self, "password") and self.password:
+            password_str = (
+                self.password.get_secret_value()
+                if hasattr(self.password, "get_secret_value")
+                else str(self.password)
+            )
+            return f"postgresql://{self.username}:{password_str}@{self.host}:{self.port}/{self.database}"
+        return f"postgresql://{self.username}@{self.host}:{self.port}/{self.database}"
 
     @property
     def min_pool_size(self) -> int:
-      """Get minimum pool size for backward compatibility."""
-      return getattr(self, "_min_pool_size", 1)
+        """Get minimum pool size for backward compatibility."""
+        return getattr(self, "_min_pool_size", 1)
 
     @property
     def max_pool_size(self) -> int:
-      """Get maximum pool size for backward compatibility."""
-      return getattr(self, "_max_pool_size", 10)
+        """Get maximum pool size for backward compatibility."""
+        return getattr(self, "_max_pool_size", 10)
 
     @property
     def command_timeout(self) -> int:
-      """Get command timeout for backward compatibility."""
-      return getattr(self, "_command_timeout", 60)
+        """Get command timeout for backward compatibility."""
+        return getattr(self, "_command_timeout", 60)
 
 
 class JWTConfig(FlextBaseConfigModel):
@@ -292,12 +292,12 @@ class JWTConfig(FlextBaseConfigModel):
     secret_key: str = Field(default="", description="JWT secret key")
     algorithm: str = Field(default="HS256", description="JWT algorithm")
     access_token_expire_minutes: int = Field(
-      default=30,
-      description="Access token expiration minutes",
+        default=30,
+        description="Access token expiration minutes",
     )
     refresh_token_expire_days: int = Field(
-      default=7,
-      description="Refresh token expiration days",
+        default=7,
+        description="Refresh token expiration days",
     )
 
     # Disable loading from .env to avoid leaking repo defaults into tests.
@@ -307,56 +307,56 @@ class JWTConfig(FlextBaseConfigModel):
     @field_validator("algorithm")
     @classmethod
     def validate_algorithm(cls, value: str) -> str:
-      """Validate supported JWT algorithms and return the value."""
-      valid_algorithms = ["HS256", "HS384", "HS512", "RS256", "RS384", "RS512"]
-      if value not in valid_algorithms:
-          msg = f"JWT algorithm must be one of {valid_algorithms}"
-          raise ValueError(msg)
-      return value
+        """Validate supported JWT algorithms and return the value."""
+        valid_algorithms = ["HS256", "HS384", "HS512", "RS256", "RS384", "RS512"]
+        if value not in valid_algorithms:
+            msg = f"JWT algorithm must be one of {valid_algorithms}"
+            raise ValueError(msg)
+        return value
 
     def validate_secret_key(self) -> None:
-      """Validate secret key strength."""
-      if not self.secret_key or self.secret_key.strip() == "":
-          msg = "JWT secret key cannot be empty"
-          raise ValueError(msg)
-      if len(self.secret_key) < MIN_JWT_SECRET_LENGTH:
-          msg = "JWT secret key must be at least 32 characters long"
-          raise ValueError(msg)
+        """Validate secret key strength."""
+        if not self.secret_key or self.secret_key.strip() == "":
+            msg = "JWT secret key cannot be empty"
+            raise ValueError(msg)
+        if len(self.secret_key) < MIN_JWT_SECRET_LENGTH:
+            msg = "JWT secret key must be at least 32 characters long"
+            raise ValueError(msg)
 
     @classmethod
     def generate_secret_key(cls) -> str:
-      """Generate secure secret key."""
-      return secrets.token_urlsafe(32)
+        """Generate secure secret key."""
+        return secrets.token_urlsafe(32)
 
     def validate_business_rules(self) -> FlextResult[None]:
-      """Validate JWT-specific business rules."""
-      errors = []
+        """Validate JWT-specific business rules."""
+        errors = []
 
-      # Algorithm validation
-      valid_algorithms = ["HS256", "HS384", "HS512", "RS256", "RS384", "RS512"]
-      if self.algorithm not in valid_algorithms:
-          errors.append(f"JWT algorithm must be one of {valid_algorithms}")
+        # Algorithm validation
+        valid_algorithms = ["HS256", "HS384", "HS512", "RS256", "RS384", "RS512"]
+        if self.algorithm not in valid_algorithms:
+            errors.append(f"JWT algorithm must be one of {valid_algorithms}")
 
-      # Secret key validation
-      if not self.secret_key or self.secret_key.strip() == "":
-          errors.append("JWT secret key cannot be empty")
-      elif len(self.secret_key) < MIN_JWT_SECRET_LENGTH:
-          errors.append(
-              f"JWT secret key must be at least {MIN_JWT_SECRET_LENGTH} characters long",
-          )
+        # Secret key validation
+        if not self.secret_key or self.secret_key.strip() == "":
+            errors.append("JWT secret key cannot be empty")
+        elif len(self.secret_key) < MIN_JWT_SECRET_LENGTH:
+            errors.append(
+                f"JWT secret key must be at least {MIN_JWT_SECRET_LENGTH} characters long",
+            )
 
-      # Token expiration validation
-      if self.access_token_expire_minutes <= 0:
-          errors.append("Access token expiration must be positive")
-      elif self.access_token_expire_minutes > MAX_ACCESS_TOKEN_MINUTES:
-          errors.append(
-              "Access token expiration should not exceed 24 hours for security",
-          )
+        # Token expiration validation
+        if self.access_token_expire_minutes <= 0:
+            errors.append("Access token expiration must be positive")
+        elif self.access_token_expire_minutes > MAX_ACCESS_TOKEN_MINUTES:
+            errors.append(
+                "Access token expiration should not exceed 24 hours for security",
+            )
 
-      if self.refresh_token_expire_days <= 0:
-          errors.append("Refresh token expiration must be positive")
+        if self.refresh_token_expire_days <= 0:
+            errors.append("Refresh token expiration must be positive")
 
-      return FlextResult.fail("; ".join(errors)) if errors else FlextResult.ok(None)
+        return FlextResult.fail("; ".join(errors)) if errors else FlextResult.ok(None)
 
 
 class SecurityConfig(FlextBaseConfigModel):
@@ -364,69 +364,69 @@ class SecurityConfig(FlextBaseConfigModel):
 
     password_rounds: int = Field(12, description="BCrypt rounds", ge=4, le=20)
     max_failed_attempts: int = Field(
-      5,
-      description="Max failed login attempts",
-      ge=1,
-      le=10,
+        5,
+        description="Max failed login attempts",
+        ge=1,
+        le=10,
     )
     lockout_duration_minutes: int = Field(
-      30,
-      description="Account lockout duration",
-      ge=1,
-      le=1440,
+        30,
+        description="Account lockout duration",
+        ge=1,
+        le=1440,
     )
     session_expire_hours: int = Field(
-      24,
-      description="Session timeout hours",
-      ge=1,
-      le=168,
+        24,
+        description="Session timeout hours",
+        ge=1,
+        le=168,
     )
     max_concurrent_sessions: int = Field(
-      5,
-      description="Max concurrent sessions",
-      ge=1,
-      le=20,
+        5,
+        description="Max concurrent sessions",
+        ge=1,
+        le=20,
     )
     require_email_verification: bool = Field(
-      default=False,
-      description="Require email verification",
+        default=False,
+        description="Require email verification",
     )
     enable_2fa: bool = Field(
-      default=False,
-      description="Enable two-factor authentication",
+        default=False,
+        description="Enable two-factor authentication",
     )
 
     model_config = SettingsConfigDict(env_prefix="SECURITY_")
 
     def validate_business_rules(self) -> FlextResult[None]:
-      """Validate security-specific business rules."""
-      errors = []
+        """Validate security-specific business rules."""
+        errors = []
 
-      # Password rounds validation
-      if self.password_rounds < MIN_BCRYPT_ROUNDS:
-          errors.append("BCrypt rounds must be at least 4 for basic security")
-      elif self.password_rounds > MAX_BCRYPT_ROUNDS:
-          errors.append(
-              "BCrypt rounds should not exceed 20 to avoid performance issues",
-          )
+        # Password rounds validation
+        if self.password_rounds < MIN_BCRYPT_ROUNDS:
+            errors.append("BCrypt rounds must be at least 4 for basic security")
+        elif self.password_rounds > MAX_BCRYPT_ROUNDS:
+            errors.append(
+                "BCrypt rounds should not exceed 20 to avoid performance issues",
+            )
 
-      # Failed attempts validation
-      if self.max_failed_attempts > MAX_FAILED_ATTEMPTS:
-          errors.append("Max failed attempts should not exceed 10")
+        # Failed attempts validation
+        if self.max_failed_attempts > MAX_FAILED_ATTEMPTS:
+            errors.append("Max failed attempts should not exceed 10")
 
-      # Lockout duration validation
-      if self.lockout_duration_minutes > MAX_LOCKOUT_MINUTES:
-          errors.append("Lockout duration should not exceed 24 hours")
+        # Lockout duration validation
+        if self.lockout_duration_minutes > MAX_LOCKOUT_MINUTES:
+            errors.append("Lockout duration should not exceed 24 hours")
 
-      # Session timeout validation
-      if self.session_expire_hours > MAX_SESSION_HOURS:
-          errors.append("Session timeout should not exceed 1 week for security")
+        # Session timeout validation
+        if self.session_expire_hours > MAX_SESSION_HOURS:
+            errors.append("Session timeout should not exceed 1 week for security")
 
-      # Concurrent sessions validation
-      if self.max_concurrent_sessions > MAX_CONCURRENT_SESSIONS:
-          errors.append("Max concurrent sessions should not exceed 20")
+        # Concurrent sessions validation
+        if self.max_concurrent_sessions > MAX_CONCURRENT_SESSIONS:
+            errors.append("Max concurrent sessions should not exceed 20")
 
-      return FlextResult.fail("; ".join(errors)) if errors else FlextResult.ok(None)
+        return FlextResult.fail("; ".join(errors)) if errors else FlextResult.ok(None)
 
 
 class ServerConfig(FlextBaseConfigModel):
@@ -439,20 +439,20 @@ class ServerConfig(FlextBaseConfigModel):
     model_config = SettingsConfigDict(env_prefix="SERVER_")
 
     def validate_business_rules(self) -> FlextResult[None]:
-      """Validate server-specific business rules."""
-      errors = []
+        """Validate server-specific business rules."""
+        errors = []
 
-      # Port validation
-      if self.port < 1 or self.port > MAX_PORT:
-          errors.append("Server port must be between 1 and 65535")
-      elif self.port < MIN_PRIVILEGED_PORT and not self.debug:
-          errors.append("Production servers should not use privileged ports (< 1024)")
+        # Port validation
+        if self.port < 1 or self.port > MAX_PORT:
+            errors.append("Server port must be between 1 and 65535")
+        elif self.port < MIN_PRIVILEGED_PORT and not self.debug:
+            errors.append("Production servers should not use privileged ports (< 1024)")
 
-      # Host validation
-      if not self.host or self.host.strip() == "":
-          errors.append("Server host cannot be empty")
+        # Host validation
+        if not self.host or self.host.strip() == "":
+            errors.append("Server host cannot be empty")
 
-      return FlextResult.fail("; ".join(errors)) if errors else FlextResult.ok(None)
+        return FlextResult.fail("; ".join(errors)) if errors else FlextResult.ok(None)
 
 
 class AppConfig(FlextBaseConfigModel):
@@ -466,96 +466,96 @@ class AppConfig(FlextBaseConfigModel):
 
     # Nested configurations
     database: DatabaseConfig = Field(
-      default_factory=DatabaseConfig,
-      description="Database configuration",
+        default_factory=DatabaseConfig,
+        description="Database configuration",
     )
     jwt: JWTConfig = Field(default_factory=JWTConfig, description="JWT configuration")
     security: SecurityConfig = Field(
-      default_factory=SecurityConfig,
-      description="Security configuration",
+        default_factory=SecurityConfig,
+        description="Security configuration",
     )
     server: ServerConfig = Field(
-      default_factory=ServerConfig,
-      description="Server configuration",
+        default_factory=ServerConfig,
+        description="Server configuration",
     )
 
     model_config = SettingsConfigDict(env_prefix="APP_")
 
     def validate_business_rules(self) -> FlextResult[None]:
-      """Validate application-wide business rules."""
-      errors = []
+        """Validate application-wide business rules."""
+        errors = []
 
-      # Environment validation
-      allowed_environments = {"development", "staging", "production", "test"}
-      if self.environment not in allowed_environments:
-          errors.append(f"Environment must be one of: {allowed_environments}")
+        # Environment validation
+        allowed_environments = {"development", "staging", "production", "test"}
+        if self.environment not in allowed_environments:
+            errors.append(f"Environment must be one of: {allowed_environments}")
 
-      # Application name validation
-      if not self.app_name or self.app_name.strip() == "":
-          errors.append("Application name cannot be empty")
+        # Application name validation
+        if not self.app_name or self.app_name.strip() == "":
+            errors.append("Application name cannot be empty")
 
-      # Production validation
-      if self.environment == "production" and self.debug:
-          errors.append("Debug mode must be disabled in production")
+        # Production validation
+        if self.environment == "production" and self.debug:
+            errors.append("Debug mode must be disabled in production")
 
-      # Validate nested configurations for production
-      if self.environment == "production":
-          jwt_validation = self.jwt.validate_business_rules()
-          if not jwt_validation.is_success:
-              errors.append(f"JWT configuration invalid: {jwt_validation.error}")
+        # Validate nested configurations for production
+        if self.environment == "production":
+            jwt_validation = self.jwt.validate_business_rules()
+            if not jwt_validation.is_success:
+                errors.append(f"JWT configuration invalid: {jwt_validation.error}")
 
-          security_validation = self.security.validate_business_rules()
-          if not security_validation.is_success:
-              errors.append(
-                  f"Security configuration invalid: {security_validation.error}",
-              )
+            security_validation = self.security.validate_business_rules()
+            if not security_validation.is_success:
+                errors.append(
+                    f"Security configuration invalid: {security_validation.error}",
+                )
 
-          server_validation = self.server.validate_business_rules()
-          if not server_validation.is_success:
-              errors.append(
-                  f"Server configuration invalid: {server_validation.error}",
-              )
+            server_validation = self.server.validate_business_rules()
+            if not server_validation.is_success:
+                errors.append(
+                    f"Server configuration invalid: {server_validation.error}",
+                )
 
-      return FlextResult.fail("; ".join(errors)) if errors else FlextResult.ok(None)
+        return FlextResult.fail("; ".join(errors)) if errors else FlextResult.ok(None)
 
     def model_dump_safe(self) -> dict[str, object]:
-      """Dump model data with sensitive information redacted."""
-      # Get the regular model dump
-      dump = self.model_dump()
+        """Dump model data with sensitive information redacted."""
+        # Get the regular model dump
+        dump = self.model_dump()
 
-      # Handle DatabaseConfig manually since it's not a Pydantic model
-      if hasattr(self, "database") and self.database:
-          db_url = getattr(self.database, "url", "")
-          if db_url and "://" in db_url:
-              # Replace password in URL
-              redacted_url = re.sub(r"://([^:]+):([^@]+)@", r"://[REDACTED]@", db_url)
-              dump["database"] = {"url": redacted_url}
-          else:
-              dump["database"] = {"url": db_url}
+        # Handle DatabaseConfig manually since it's not a Pydantic model
+        if hasattr(self, "database") and self.database:
+            db_url = getattr(self.database, "url", "")
+            if db_url and "://" in db_url:
+                # Replace password in URL
+                redacted_url = re.sub(r"://([^:]+):([^@]+)@", r"://[REDACTED]@", db_url)
+                dump["database"] = {"url": redacted_url}
+            else:
+                dump["database"] = {"url": db_url}
 
-      # Redact JWT secret key
-      if "jwt" in dump and "secret_key" in dump["jwt"]:
-          redacted_value = "[REDACTED]"  # nosec B105
-          dump["jwt"]["secret_key"] = redacted_value
+        # Redact JWT secret key
+        if "jwt" in dump and "secret_key" in dump["jwt"]:
+            redacted_value = "[REDACTED]"  # nosec B105
+            dump["jwt"]["secret_key"] = redacted_value
 
-      return dump
+        return dump
 
 
 def validate_production_config(config: AppConfig) -> bool:
     """Production configuration validation with critical field checks."""
     # Validate database URL is not empty
     if hasattr(config, "database") and config.database:
-      db_url = getattr(config.database, "url", "")
-      if not db_url or db_url.strip() == "":
-          msg = "Production database URL is required"
-          raise ValueError(msg)
+        db_url = getattr(config.database, "url", "")
+        if not db_url or db_url.strip() == "":
+            msg = "Production database URL is required"
+            raise ValueError(msg)
 
     # Validate JWT secret key is not empty
     if hasattr(config, "jwt") and config.jwt:
-      jwt_secret = getattr(config.jwt, "secret_key", "")
-      if not jwt_secret or jwt_secret.strip() == "":
-          msg = "Production JWT secret key is required"
-          raise ValueError(msg)
+        jwt_secret = getattr(config.jwt, "secret_key", "")
+        if not jwt_secret or jwt_secret.strip() == "":
+            msg = "Production JWT secret key is required"
+            raise ValueError(msg)
 
     # Validate required fields exist
     config_dict = config.model_dump()
@@ -572,9 +572,9 @@ def create_auth_config(**overrides: object) -> FlextAuthConfig:
     """Create authentication configuration."""
     # Type-safe creation using Pydantic v2 model_validate
     if overrides:
-      # Filter None values and use model_validate for type safety
-      filtered_overrides = {k: v for k, v in overrides.items() if v is not None}
-      return FlextAuthConfig.model_validate(filtered_overrides)
+        # Filter None values and use model_validate for type safety
+        filtered_overrides = {k: v for k, v in overrides.items() if v is not None}
+        return FlextAuthConfig.model_validate(filtered_overrides)
     return FlextAuthConfig()
 
 
@@ -582,9 +582,9 @@ def create_complete_auth_config(**overrides: object) -> FlextAuthApplicationConf
     """Create complete authentication application configuration."""
     # Type-safe creation using Pydantic v2 model_validate
     if overrides:
-      # Filter None values and use model_validate for type safety
-      filtered_overrides = {k: v for k, v in overrides.items() if v is not None}
-      return FlextAuthApplicationConfig.model_validate(filtered_overrides)
+        # Filter None values and use model_validate for type safety
+        filtered_overrides = {k: v for k, v in overrides.items() if v is not None}
+        return FlextAuthApplicationConfig.model_validate(filtered_overrides)
     return FlextAuthApplicationConfig()
 
 
@@ -592,7 +592,7 @@ def get_default_secret(key_name: str) -> str:
     """Get default secret from environment or generate secure fallback."""
     env_value = os.getenv(key_name)
     if env_value:
-      return env_value
+        return env_value
     return secrets.token_urlsafe(32)
 
 
@@ -604,10 +604,10 @@ def get_default_secret(key_name: str) -> str:
 def create_development_config() -> FlextAuthApplicationConfig:
     """Create development configuration with reasonable defaults."""
     return FlextAuthApplicationConfig(
-      auth=FlextAuthConfig(
-          debug=True,
-          environment="development",
-      ),
+        auth=FlextAuthConfig(
+            debug=True,
+            environment="development",
+        ),
     )
 
 
@@ -615,15 +615,15 @@ def create_production_config() -> FlextAuthApplicationConfig:
     """Create production configuration requiring environment variables."""
     jwt_secret = os.getenv("FLEXT_AUTH_JWT_SECRET_KEY")
     if not jwt_secret or len(jwt_secret) < MIN_JWT_SECRET_LENGTH:
-      msg = "Production requires FLEXT_AUTH_JWT_SECRET_KEY (min 32 chars)"
-      raise ValueError(msg)
+        msg = "Production requires FLEXT_AUTH_JWT_SECRET_KEY (min 32 chars)"
+        raise ValueError(msg)
 
     return FlextAuthApplicationConfig(
-      auth=FlextAuthConfig(
-          debug=False,
-          environment="production",
-          jwt_secret_key=jwt_secret,
-      ),
+        auth=FlextAuthConfig(
+            debug=False,
+            environment="production",
+            jwt_secret_key=jwt_secret,
+        ),
     )
 
 

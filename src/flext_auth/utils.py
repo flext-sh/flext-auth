@@ -24,11 +24,11 @@ def convert_user_to_dict(user: FlextUser) -> dict[str, object]:
 
     """
     return {
-      "id": user.id,
-      "username": user.username,
-      "email": user.email,
-      "role": (user.role.value if hasattr(user.role, "value") else str(user.role)),
-      "status": (
-          user.status.value if hasattr(user.status, "value") else str(user.status)
-      ),
+        "id": user.id,
+        "username": user.username,
+        "email": user.email,
+        "role": (user.role.value if hasattr(user.role, "value") else str(user.role)),
+        "status": (
+            user.status.value if hasattr(user.status, "value") else str(user.status)
+        ),
     }

@@ -84,9 +84,9 @@ def demo_all_factory_functions() -> None:
 
     # Quick start with options
     flext_auth_quick_start(
-      REDACTED_LDAP_BIND_PASSWORD_username="demo_REDACTED_LDAP_BIND_PASSWORD",
-      REDACTED_LDAP_BIND_PASSWORD_email="demo@example.com",
-      create_REDACTED_LDAP_BIND_PASSWORD=False,
+        REDACTED_LDAP_BIND_PASSWORD_username="demo_REDACTED_LDAP_BIND_PASSWORD",
+        REDACTED_LDAP_BIND_PASSWORD_email="demo@example.com",
+        create_REDACTED_LDAP_BIND_PASSWORD=False,
     )
 
 
@@ -108,10 +108,10 @@ def demo_all_jwt_operations() -> None:
     """Demonstra todas as operações JWT."""
     # JWT payload
     payload = {
-      "user_id": "demo_user_123",
-      "username": "demo_user",
-      "role": ADMIN_ROLE,
-      "session_id": "demo_session_456",
+        "user_id": "demo_user_123",
+        "username": "demo_user",
+        "role": ADMIN_ROLE,
+        "session_id": "demo_session_456",
     }
 
     secret = EXAMPLE_JWT_SECRET
@@ -119,86 +119,86 @@ def demo_all_jwt_operations() -> None:
     # Generate JWT
     token_result = flext_auth_generate_jwt(payload, secret=secret, expires_minutes=30)
     if token_result.success:
-      token = token_result.data
+        token = token_result.data
 
-      # Decode JWT
-      decoded = flext_auth_decode_jwt(token, secret)
-      if decoded:
-          pass
+        # Decode JWT
+        decoded = flext_auth_decode_jwt(token, secret)
+        if decoded:
+            pass
 
-      # Extract user context
-      context = flext_auth_extract_user_context(token, secret)
-      if context:
-          context["token_type"]
-          context["username"]
+        # Extract user context
+        context = flext_auth_extract_user_context(token, secret)
+        if context:
+            context["token_type"]
+            context["username"]
     else:
-      token = None
+        token = None
 
     # Create auth context (only if token was generated)
     if token:
-      auth_context = flext_auth_create_auth_context(
-          token,
-          secret,
-          include_permissions=True,
-      )
-      if auth_context:
-          pass
+        auth_context = flext_auth_create_auth_context(
+            token,
+            secret,
+            include_permissions=True,
+        )
+        if auth_context:
+            pass
 
 
 def demo_all_token_types() -> None:
     """Demonstra todos os tipos de tokens."""
     # API Key
     api_key = flext_auth_create_api_key(
-      user_id="api_user_789",
-      scope="api",
-      expires_days=365,
-      secret=EXAMPLE_API_SECRET,
+        user_id="api_user_789",
+        scope="api",
+        expires_days=365,
+        secret=EXAMPLE_API_SECRET,
     )
 
     # Service Token
     flext_auth_create_service_token(
-      service_name="demo-service",
-      permissions=["read", "write", "execute"],
-      expires_hours=72,
-      secret=EXAMPLE_SERVICE_SECRET,
+        service_name="demo-service",
+        permissions=["read", "write", "execute"],
+        expires_hours=72,
+        secret=EXAMPLE_SERVICE_SECRET,
     )
 
     # Multi-Factor Token
     flext_auth_create_multi_factor_token(
-      user_id="mfa_user_101",
-      factor_type="totp",
-      expires_minutes=5,
-      secret=EXAMPLE_MFA_SECRET,
+        user_id="mfa_user_101",
+        factor_type="totp",
+        expires_minutes=5,
+        secret=EXAMPLE_MFA_SECRET,
     )
 
     # Validate API Key
     api_validation = flext_auth_validate_api_key(
-      api_key,
-      "api-secret-key-256-bits-minimum-length",
+        api_key,
+        "api-secret-key-256-bits-minimum-length",
     )
     if api_validation:
-      pass
+        pass
 
 
 def demo_all_session_operations() -> None:
     """Demonstra todas as operações de sessão."""
     # Secure session basic
     basic_session = flext_auth_create_secure_session(
-      user_id="session_user_202",
-      username="session_user",
-      role=MODERATOR_ROLE,
-      expires_hours=24,
+        user_id="session_user_202",
+        username="session_user",
+        role=MODERATOR_ROLE,
+        expires_hours=24,
     )
     basic_session["username"]
     basic_session["expires_at"]
 
     # Secure session with permissions
     flext_auth_create_secure_session(
-      user_id="session_user_303",
-      username="enhanced_user",
-      role=ADMIN_ROLE,
-      expires_hours=12,
-      include_permissions=True,
+        user_id="session_user_303",
+        username="enhanced_user",
+        role=ADMIN_ROLE,
+        expires_hours=12,
+        include_permissions=True,
     )
 
     # Web session from request data (skipping due to async context issue)
@@ -212,45 +212,45 @@ def demo_all_role_permission_operations() -> None:
 
     # Permission validation tests
     test_cases = [
-      (ADMIN_ROLE, "REDACTED_LDAP_BIND_PASSWORD"),
-      (MODERATOR_ROLE, "moderate"),
-      (USER_ROLE, "read"),
-      (GUEST_ROLE, "read_public"),
-      (USER_ROLE, "REDACTED_LDAP_BIND_PASSWORD"),  # Should fail
+        (ADMIN_ROLE, "REDACTED_LDAP_BIND_PASSWORD"),
+        (MODERATOR_ROLE, "moderate"),
+        (USER_ROLE, "read"),
+        (GUEST_ROLE, "read_public"),
+        (USER_ROLE, "REDACTED_LDAP_BIND_PASSWORD"),  # Should fail
     ]
 
     for role, permission in test_cases:
-      flext_auth_validate_permissions(role, permission, hierarchy)
+        flext_auth_validate_permissions(role, permission, hierarchy)
 
 
 def demo_all_validation_operations() -> None:
     """Demonstra todas as operações de validação."""
     # Email validation
     test_emails = [
-      "valid@example.com",
-      "test.user+tag@domain.co.uk",
-      "invalid.email",
-      "user@",
-      "@domain.com",
+        "valid@example.com",
+        "test.user+tag@domain.co.uk",
+        "invalid.email",
+        "user@",
+        "@domain.com",
     ]
 
     for email in test_emails:
-      flext_auth_validate_email(email)
+        flext_auth_validate_email(email)
 
     # Token checking
     secret = EXAMPLE_CHECK_SECRET
     test_token_result = flext_auth_generate_jwt(
-      {"user_id": "check_user", "username": "checker", "role": USER_ROLE},
-      secret=secret,
+        {"user_id": "check_user", "username": "checker", "role": USER_ROLE},
+        secret=secret,
     )
 
     if test_token_result.success:
-      test_token = test_token_result.data
-      check_result_result = flext_auth_check_token(test_token, secret)
-      if check_result_result.success:
-          check_result = check_result_result.data
-          if check_result["valid"]:
-              pass
+        test_token = test_token_result.data
+        check_result_result = flext_auth_check_token(test_token, secret)
+        if check_result_result.success:
+            check_result = check_result_result.data
+            if check_result["valid"]:
+                pass
 
 
 def demo_ultra_helpers() -> None:
@@ -263,14 +263,14 @@ def demo_ultra_helpers() -> None:
     # Instant API
     instant_api_result = flext_auth_instant_api("instant_service", "api")
     if instant_api_result.success:
-      pass
+        pass
 
     # Complete workflow (will fail in async context but demonstrates availability)
     flext_auth_complete_workflow(
-      "workflow_user",
-      "workflow@example.com",
-      "WorkflowPass123!",
-      role="user",
+        "workflow_user",
+        "workflow@example.com",
+        "WorkflowPass123!",
+        role="user",
     )
 
 
@@ -280,24 +280,24 @@ def demo_decorators() -> None:
 
     @flext_auth_required(secret_key=secret)
     def protected_function(
-      _request: dict[str, object],
-      **_kwargs: object,
+        _request: dict[str, object],
+        **_kwargs: object,
     ) -> dict[str, object]:
-      return {"message": "Protected access granted"}
+        return {"message": "Protected access granted"}
 
     @flext_auth_role_required(ADMIN_ROLE, secret_key=secret)
     def REDACTED_LDAP_BIND_PASSWORD_function(
-      _request: dict[str, object],
-      **_kwargs: object,
+        _request: dict[str, object],
+        **_kwargs: object,
     ) -> dict[str, object]:
-      return {"message": "Admin access granted"}
+        return {"message": "Admin access granted"}
 
     @flext_auth_permission_required("delete")
     def permission_function(
-      _request: dict[str, object],
-      **_kwargs: object,
+        _request: dict[str, object],
+        **_kwargs: object,
     ) -> dict[str, object]:
-      return {"message": "Permission granted"}
+        return {"message": "Permission granted"}
 
     # Mock request (will fail auth but shows decorator usage)
     mock_request = {"headers": {"Authorization": "Bearer invalid"}}
@@ -311,15 +311,15 @@ def demo_mixin_pattern() -> None:
     """Demonstra o padrão FlextAuthMixin."""
 
     class DemoController(FlextAuthMixin):
-      def process_request(self, token: str = "") -> dict[str, object]:
-          user = self.get_current_user(token)
-          has_read = self.check_permission(token, "read") if token else False
+        def process_request(self, token: str = "") -> dict[str, object]:
+            user = self.get_current_user(token)
+            has_read = self.check_permission(token, "read") if token else False
 
-          return {
-              "user_found": user is not None,
-              "has_read_permission": has_read,
-              "controller_type": self.__class__.__name__,
-          }
+            return {
+                "user_found": user is not None,
+                "has_read_permission": has_read,
+                "controller_type": self.__class__.__name__,
+            }
 
     controller = DemoController()
     controller.process_request()
@@ -332,23 +332,23 @@ async def demo_full_auth_lifecycle() -> None:
 
     # Register user with validation
     register_result = await auth.register_validated(
-      username="lifecycle_user",
-      email="lifecycle@example.com",
-      password=EXAMPLE_LIFECYCLE_PASSWORD,
-      role="user",
-      require_strong_password=True,
+        username="lifecycle_user",
+        email="lifecycle@example.com",
+        password=EXAMPLE_LIFECYCLE_PASSWORD,
+        role="user",
+        require_strong_password=True,
     )
 
     if register_result.success:
-      # Create complete session
-      session_result = await auth.create_user_session(
-          "lifecycle_user",
-          "LifecyclePass123!",
-          include_user_data=True,
-      )
+        # Create complete session
+        session_result = await auth.create_user_session(
+            "lifecycle_user",
+            "LifecyclePass123!",
+            include_user_data=True,
+        )
 
-      if session_result.success:
-          pass
+        if session_result.success:
+            pass
 
 
 async def demo_batch_operations() -> None:
@@ -358,23 +358,23 @@ async def demo_batch_operations() -> None:
 
     # Batch user registration
     users = [
-      {
-          "username": "batch1",
-          "email": "batch1@example.com",
-          "password": EXAMPLE_BATCH_PASSWORD_1,
-          "role": "user",
-      },
-      {
-          "username": "batch2",
-          "email": "batch2@example.com",
-          "password": EXAMPLE_BATCH_PASSWORD_2,
-          "role": "moderator",
-      },
+        {
+            "username": "batch1",
+            "email": "batch1@example.com",
+            "password": EXAMPLE_BATCH_PASSWORD_1,
+            "role": "user",
+        },
+        {
+            "username": "batch2",
+            "email": "batch2@example.com",
+            "password": EXAMPLE_BATCH_PASSWORD_2,
+            "role": "moderator",
+        },
     ]
 
     batch_result = await batch_ops.register_multiple(users, validate_all=True)
     if batch_result.success:
-      pass
+        pass
 
 
 def demo_type_definitions() -> None:
@@ -385,28 +385,28 @@ def demo_type_definitions() -> None:
 async def main() -> None:
     """Execute comprehensive demonstration of ALL flext-auth functionality."""
     try:
-      # All sync demonstrations
-      demo_all_constants_and_configs()
-      demo_all_factory_functions()
-      demo_all_password_operations()
-      demo_all_jwt_operations()
-      demo_all_token_types()
-      demo_all_session_operations()
-      demo_all_role_permission_operations()
-      demo_all_validation_operations()
-      demo_ultra_helpers()
-      demo_decorators()
-      demo_mixin_pattern()
-      demo_type_definitions()
+        # All sync demonstrations
+        demo_all_constants_and_configs()
+        demo_all_factory_functions()
+        demo_all_password_operations()
+        demo_all_jwt_operations()
+        demo_all_token_types()
+        demo_all_session_operations()
+        demo_all_role_permission_operations()
+        demo_all_validation_operations()
+        demo_ultra_helpers()
+        demo_decorators()
+        demo_mixin_pattern()
+        demo_type_definitions()
 
-      # All async demonstrations
-      await demo_full_auth_lifecycle()
-      await demo_batch_operations()
+        # All async demonstrations
+        await demo_full_auth_lifecycle()
+        await demo_batch_operations()
 
     except (RuntimeError, ValueError, TypeError) as e:
-      # Re-raise with additional context for debugging
-      msg = f"Demonstration failed: {type(e).__name__}: {e}"
-      raise RuntimeError(msg) from e
+        # Re-raise with additional context for debugging
+        msg = f"Demonstration failed: {type(e).__name__}: {e}"
+        raise RuntimeError(msg) from e
 
 
 if __name__ == "__main__":

@@ -27,10 +27,10 @@ def debug_password_service() -> None:
     hash_result = service.hash_password(password)
 
     if hash_result.success and hash_result.data:
-      hashed = str(hash_result.data)
+        hashed = str(hash_result.data)
 
-      # Test verification
-      service.verify_password(password, hashed)
+        # Test verification
+        service.verify_password(password, hashed)
 
     # Test helper functions
     helper_hash = flext_auth_hash_password(password, rounds=4)
@@ -47,27 +47,27 @@ def debug_jwt_service() -> None:
 
     # Test access token generation
     access_result = service.generate_access_token(
-      user_id=payload["user_id"],
-      username=payload["username"],
-      role=payload["role"],
+        user_id=payload["user_id"],
+        username=payload["username"],
+        role=payload["role"],
     )
 
     if access_result.success and access_result.data:
-      token = access_result.data
+        token = access_result.data
 
-      # Test verification
-      verify_result = service.verify_token(token)
-      if verify_result.success and verify_result.data:
-          pass
+        # Test verification
+        verify_result = service.verify_token(token)
+        if verify_result.success and verify_result.data:
+            pass
 
     # Test helper functions
     helper_token_result = flext_auth_generate_jwt(payload)
     if helper_token_result.success and helper_token_result.data:
-      helper_token = helper_token_result.data
+        helper_token = helper_token_result.data
 
-      helper_validate = flext_auth_validate_jwt(helper_token)
-      if helper_validate.success and helper_validate.data:
-          pass
+        helper_validate = flext_auth_validate_jwt(helper_token)
+        if helper_validate.success and helper_validate.data:
+            pass
 
 
 def main() -> None:

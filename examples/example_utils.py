@@ -31,21 +31,21 @@ def run_example_suite(
     """
 
     async def _run_suite() -> None:
-      # Print header with dynamic width based on title
-      max(50, len(title) + 10)
+        # Print header with dynamic width based on title
+        max(50, len(title) + 10)
 
-      # Run synchronous examples
-      for example_func in sync_examples:
-          example_func()
+        # Run synchronous examples
+        for example_func in sync_examples:
+            example_func()
 
-      # Run asynchronous examples if provided
-      if async_examples:
-          for async_example_func in async_examples:
-              await async_example_func()
+        # Run asynchronous examples if provided
+        if async_examples:
+            for async_example_func in async_examples:
+                await async_example_func()
 
-      # Print success message
-      if success_message:
-          pass
+        # Print success message
+        if success_message:
+            pass
 
     # Run the async suite
     asyncio.run(_run_suite())
@@ -73,11 +73,11 @@ def create_example_runner(
     """
 
     def runner(
-      sync_examples: list[Callable[[], None]],
-      async_examples: list[Callable[[], Awaitable[None]]] | None = None,
+        sync_examples: list[Callable[[], None]],
+        async_examples: list[Callable[[], Awaitable[None]]] | None = None,
     ) -> None:
-      """Run example suite with predefined title and message."""
-      run_example_suite(title, sync_examples, async_examples, success_message)
+        """Run example suite with predefined title and message."""
+        run_example_suite(title, sync_examples, async_examples, success_message)
 
     return runner
 
@@ -86,15 +86,15 @@ def create_example_runner(
 basic_example_runner = create_example_runner(
     "FLEXT Auth - Basic Usage Examples",
     (
-      "ALL BASIC EXAMPLES COMPLETED SUCCESSFULLY!\n"
-      "All methods used exist and work correctly."
+        "ALL BASIC EXAMPLES COMPLETED SUCCESSFULLY!\n"
+        "All methods used exist and work correctly."
     ),
 )
 
 advanced_example_runner = create_example_runner(
     "FLEXT Auth - Advanced Features Examples",
     (
-      "ALL ADVANCED EXAMPLES COMPLETED SUCCESSFULLY!\n"
-      "All methods demonstrate real flext-auth advanced functionality."
+        "ALL ADVANCED EXAMPLES COMPLETED SUCCESSFULLY!\n"
+        "All methods demonstrate real flext-auth advanced functionality."
     ),
 )

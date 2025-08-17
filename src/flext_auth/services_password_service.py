@@ -109,401 +109,401 @@ class FlextPasswordService:
     """
 
     def __init__(self, rounds: int = 12) -> None:
-      """Initialize password service.
+        """Initialize password service.
 
-      Args:
-          rounds: Bcrypt cost factor (4-20, higher = more secure but slower)
+        Args:
+            rounds: Bcrypt cost factor (4-20, higher = more secure but slower)
 
-      """
-      if not MIN_BCRYPT_ROUNDS <= rounds <= MAX_BCRYPT_ROUNDS:
-          msg = "Bcrypt rounds must be between 4 and 20"
-          raise FlextValidationError(
-              msg,
-              field="rounds",
-              value=rounds,
-              context={
-                  "min_value": MIN_BCRYPT_ROUNDS,
-                  "max_value": MAX_BCRYPT_ROUNDS,
-              },
-          )
-      self.rounds = rounds
+        """
+        if not MIN_BCRYPT_ROUNDS <= rounds <= MAX_BCRYPT_ROUNDS:
+            msg = "Bcrypt rounds must be between 4 and 20"
+            raise FlextValidationError(
+                msg,
+                field="rounds",
+                value=rounds,
+                context={
+                    "min_value": MIN_BCRYPT_ROUNDS,
+                    "max_value": MAX_BCRYPT_ROUNDS,
+                },
+            )
+        self.rounds = rounds
 
     def hash_password(
-      self,
-      plain_password: str | FlextPlainPassword,
+        self,
+        plain_password: str | FlextPlainPassword,
     ) -> FlextResult[FlextHashedPassword]:
-      """Hash password using bcrypt with proper salt.
+        """Hash password using bcrypt with proper salt.
 
-      Args:
-          plain_password: Plain text password to hash
+        Args:
+            plain_password: Plain text password to hash
 
-      Returns:
-          FlextResult containing hashed password or error
+        Returns:
+            FlextResult containing hashed password or error
 
-      """
-      try:
-          # Handle both string and value-object-like input (duck-typing)
-          if isinstance(plain_password, str):
-              password_str = plain_password
-          else:
-              candidate = getattr(plain_password, "value", None)
-              password_str = (
-                  candidate if isinstance(candidate, str) else str(plain_password)
-              )
+        """
+        try:
+            # Handle both string and value-object-like input (duck-typing)
+            if isinstance(plain_password, str):
+                password_str = plain_password
+            else:
+                candidate = getattr(plain_password, "value", None)
+                password_str = (
+                    candidate if isinstance(candidate, str) else str(plain_password)
+                )
 
-          # Validate password if it's a string
-          if isinstance(plain_password, str):
-              try:
-                  # Validate via Pydantic factory for precise typing
-                  FlextPlainPassword.model_validate({"value": password_str})
-              except (ValueError, TypeError) as e:
-                  return FlextResult.fail(f"Password validation failed: {e}")
+            # Validate password if it's a string
+            if isinstance(plain_password, str):
+                try:
+                    # Validate via Pydantic factory for precise typing
+                    FlextPlainPassword.model_validate({"value": password_str})
+                except (ValueError, TypeError) as e:
+                    return FlextResult.fail(f"Password validation failed: {e}")
 
-          # Generate salt and hash
-          password_bytes = password_str.encode("utf-8")
-          salt = bcrypt.gensalt(rounds=self.rounds)
-          hashed_bytes = bcrypt.hashpw(password_bytes, salt)
-          hashed_str = hashed_bytes.decode("utf-8")
+            # Generate salt and hash
+            password_bytes = password_str.encode("utf-8")
+            salt = bcrypt.gensalt(rounds=self.rounds)
+            hashed_bytes = bcrypt.hashpw(password_bytes, salt)
+            hashed_str = hashed_bytes.decode("utf-8")
 
-          return FlextResult.ok(
-              FlextHashedPassword.model_validate({"value": hashed_str}),
-          )
+            return FlextResult.ok(
+                FlextHashedPassword.model_validate({"value": hashed_str}),
+            )
 
-      except (ValueError, TypeError, OSError) as e:
-          return FlextResult.fail(f"Password hashing failed: {e}")
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Password hashing failed: {e}")
 
     def verify_password(
-      self,
-      plain_password: str | FlextPlainPassword,
-      hashed_password: str | FlextHashedPassword,
+        self,
+        plain_password: str | FlextPlainPassword,
+        hashed_password: str | FlextHashedPassword,
     ) -> FlextResult[bool]:
-      """Verify password against bcrypt hash.
+        """Verify password against bcrypt hash.
 
-      Args:
-          plain_password: Plain text password to verify
-          hashed_password: Stored bcrypt hash
+        Args:
+            plain_password: Plain text password to verify
+            hashed_password: Stored bcrypt hash
 
-      Returns:
-          FlextResult containing verification result
+        Returns:
+            FlextResult containing verification result
 
-      """
-      try:
-          # Handle both string and value object inputs (duck-typing)
-          if isinstance(plain_password, str):
-              password_str = plain_password
-          else:
-              pval = getattr(plain_password, "value", None)
-              password_str = pval if isinstance(pval, str) else str(plain_password)
+        """
+        try:
+            # Handle both string and value object inputs (duck-typing)
+            if isinstance(plain_password, str):
+                password_str = plain_password
+            else:
+                pval = getattr(plain_password, "value", None)
+                password_str = pval if isinstance(pval, str) else str(plain_password)
 
-          if isinstance(hashed_password, str):
-              hash_str = hashed_password
-          else:
-              hval = getattr(hashed_password, "value", None)
-              hash_str = hval if isinstance(hval, str) else str(hashed_password)
+            if isinstance(hashed_password, str):
+                hash_str = hashed_password
+            else:
+                hval = getattr(hashed_password, "value", None)
+                hash_str = hval if isinstance(hval, str) else str(hashed_password)
 
-          # Verify hash format
-          if not hash_str.startswith("$2b$"):
-              return FlextResult.fail(
-                  "Failed to verify password: Invalid hash format",
-              )
+            # Verify hash format
+            if not hash_str.startswith("$2b$"):
+                return FlextResult.fail(
+                    "Failed to verify password: Invalid hash format",
+                )
 
-          # Verify password
-          password_bytes = password_str.encode("utf-8")
-          hash_bytes = hash_str.encode("utf-8")
+            # Verify password
+            password_bytes = password_str.encode("utf-8")
+            hash_bytes = hash_str.encode("utf-8")
 
-          is_valid = bcrypt.checkpw(password_bytes, hash_bytes)
-          return FlextResult.ok(is_valid)
+            is_valid = bcrypt.checkpw(password_bytes, hash_bytes)
+            return FlextResult.ok(is_valid)
 
-      except (ValueError, TypeError, OSError) as e:
-          return FlextResult.fail(
-              f"Password verification failed: {e}",
-          )
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(
+                f"Password verification failed: {e}",
+            )
 
     def generate_secure_password(
-      self,
-      length: int = 16,
+        self,
+        length: int = 16,
     ) -> FlextResult[FlextPlainPassword]:
-      """Generate a cryptographically secure password.
+        """Generate a cryptographically secure password.
 
-      Args:
-          length: Password length (minimum 12)
+        Args:
+            length: Password length (minimum 12)
 
-      Returns:
-          FlextResult containing generated password
+        Returns:
+            FlextResult containing generated password
 
-      """
-      try:
-          if length < MIN_PASSWORD_LENGTH:
-              return FlextResult.fail(
-                  "Password length must be at least 8 characters",
-              )
-          if length > MAX_PASSWORD_LENGTH:
-              return FlextResult.fail(
-                  "Password length must be at most 128 characters",
-              )
+        """
+        try:
+            if length < MIN_PASSWORD_LENGTH:
+                return FlextResult.fail(
+                    "Password length must be at least 8 characters",
+                )
+            if length > MAX_PASSWORD_LENGTH:
+                return FlextResult.fail(
+                    "Password length must be at most 128 characters",
+                )
 
-          # Character sets
-          uppercase = string.ascii_uppercase
-          lowercase = string.ascii_lowercase
-          digits = string.digits
-          symbols = '!@#$%^&*(),.?":{}|<>'
+            # Character sets
+            uppercase = string.ascii_uppercase
+            lowercase = string.ascii_lowercase
+            digits = string.digits
+            symbols = '!@#$%^&*(),.?":{}|<>'
 
-          # Ensure at least one character from each set
-          password_chars = [
-              secrets.choice(uppercase),
-              secrets.choice(lowercase),
-              secrets.choice(digits),
-              secrets.choice(symbols),
-          ]
+            # Ensure at least one character from each set
+            password_chars = [
+                secrets.choice(uppercase),
+                secrets.choice(lowercase),
+                secrets.choice(digits),
+                secrets.choice(symbols),
+            ]
 
-          # Fill remaining length with random characters from all sets
-          all_chars = uppercase + lowercase + digits + symbols
-          password_chars.extend(secrets.choice(all_chars) for _ in range(length - 4))
+            # Fill remaining length with random characters from all sets
+            all_chars = uppercase + lowercase + digits + symbols
+            password_chars.extend(secrets.choice(all_chars) for _ in range(length - 4))
 
-          # Shuffle the password
-          password_list = list(password_chars)
-          for i in range(len(password_list)):
-              j = secrets.randbelow(len(password_list))
-              password_list[i], password_list[j] = password_list[j], password_list[i]
+            # Shuffle the password
+            password_list = list(password_chars)
+            for i in range(len(password_list)):
+                j = secrets.randbelow(len(password_list))
+                password_list[i], password_list[j] = password_list[j], password_list[i]
 
-          password = "".join(password_list)
+            password = "".join(password_list)
 
-          # Validate the generated password and return as FlextPlainPassword
-          try:
-              password_obj = FlextPlainPassword.model_validate({"value": password})
-              # Ensure VO validates its business rules (raises or returns failure)
-              vo_validation = password_obj.validate_business_rules()
-              if vo_validation.success:
-                  return FlextResult.ok(password_obj)
-              return FlextResult.fail(vo_validation.error or "Invalid password")
-          except (ValueError, TypeError) as e:
-              return FlextResult.fail(f"Generated password validation failed: {e}")
+            # Validate the generated password and return as FlextPlainPassword
+            try:
+                password_obj = FlextPlainPassword.model_validate({"value": password})
+                # Ensure VO validates its business rules (raises or returns failure)
+                vo_validation = password_obj.validate_business_rules()
+                if vo_validation.success:
+                    return FlextResult.ok(password_obj)
+                return FlextResult.fail(vo_validation.error or "Invalid password")
+            except (ValueError, TypeError) as e:
+                return FlextResult.fail(f"Generated password validation failed: {e}")
 
-      except (ValueError, TypeError, OSError) as e:
-          return FlextResult.fail(f"Password generation failed: {e}")
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Password generation failed: {e}")
 
     def _analyze_password_basic_properties(self, password: str) -> dict[str, object]:
-      """Analyze basic password properties."""
-      return {
-          "score": 0,
-          "length": len(password),
-          "has_uppercase": bool(any(c.isupper() for c in password)),
-          "has_lowercase": bool(any(c.islower() for c in password)),
-          "has_digits": bool(any(c.isdigit() for c in password)),
-          "has_symbols": bool(any(c in '!@#$%^&*(),.?":{}|<>' for c in password)),
-          "has_common_patterns": False,
-          "estimated_crack_time": "unknown",
-          "feedback": [],
-      }
+        """Analyze basic password properties."""
+        return {
+            "score": 0,
+            "length": len(password),
+            "has_uppercase": bool(any(c.isupper() for c in password)),
+            "has_lowercase": bool(any(c.islower() for c in password)),
+            "has_digits": bool(any(c.isdigit() for c in password)),
+            "has_symbols": bool(any(c in '!@#$%^&*(),.?":{}|<>' for c in password)),
+            "has_common_patterns": False,
+            "estimated_crack_time": "unknown",
+            "feedback": [],
+        }
 
     def _calculate_password_score(self, analysis: dict[str, object]) -> int:
-      """Calculate password strength score."""
-      score = 0
+        """Calculate password strength score."""
+        score = 0
 
-      # Extract values with proper type casting
-      length = int(analysis["length"]) if isinstance(analysis["length"], int) else 0
-      has_uppercase = bool(analysis.get("has_uppercase"))
-      has_lowercase = bool(analysis.get("has_lowercase"))
-      has_digits = bool(analysis.get("has_digits"))
-      has_symbols = bool(analysis.get("has_symbols"))
+        # Extract values with proper type casting
+        length = int(analysis["length"]) if isinstance(analysis["length"], int) else 0
+        has_uppercase = bool(analysis.get("has_uppercase"))
+        has_lowercase = bool(analysis.get("has_lowercase"))
+        has_digits = bool(analysis.get("has_digits"))
+        has_symbols = bool(analysis.get("has_symbols"))
 
-      # Length scoring
-      if length >= MIN_PASSWORD_LENGTH:
-          score += 1
-      if length >= RECOMMENDED_PASSWORD_LENGTH:
-          score += 1
-      if length >= STRONG_PASSWORD_LENGTH:
-          score += 1
+        # Length scoring
+        if length >= MIN_PASSWORD_LENGTH:
+            score += 1
+        if length >= RECOMMENDED_PASSWORD_LENGTH:
+            score += 1
+        if length >= STRONG_PASSWORD_LENGTH:
+            score += 1
 
-      # Character variety scoring
-      if has_uppercase:
-          score += 1
-      if has_lowercase:
-          score += 1
-      if has_digits:
-          score += 1
-      if has_symbols:
-          score += 1
+        # Character variety scoring
+        if has_uppercase:
+            score += 1
+        if has_lowercase:
+            score += 1
+        if has_digits:
+            score += 1
+        if has_symbols:
+            score += 1
 
-      # Bonus for very long passwords
-      if length >= VERY_LONG_PASSWORD_LENGTH:
-          score += 1
-      if length >= EXTREME_PASSWORD_LENGTH:
-          score += 1
+        # Bonus for very long passwords
+        if length >= VERY_LONG_PASSWORD_LENGTH:
+            score += 1
+        if length >= EXTREME_PASSWORD_LENGTH:
+            score += 1
 
-      return score
+        return score
 
     def _generate_password_feedback(self, analysis: dict[str, object]) -> list[str]:
-      """Generate feedback messages for password improvement."""
-      feedback = []
+        """Generate feedback messages for password improvement."""
+        feedback = []
 
-      # Extract values with proper type casting
-      length = int(analysis["length"]) if isinstance(analysis["length"], int) else 0
-      has_uppercase = bool(analysis.get("has_uppercase"))
-      has_lowercase = bool(analysis.get("has_lowercase"))
-      has_digits = bool(analysis.get("has_digits"))
-      has_symbols = bool(analysis.get("has_symbols"))
+        # Extract values with proper type casting
+        length = int(analysis["length"]) if isinstance(analysis["length"], int) else 0
+        has_uppercase = bool(analysis.get("has_uppercase"))
+        has_lowercase = bool(analysis.get("has_lowercase"))
+        has_digits = bool(analysis.get("has_digits"))
+        has_symbols = bool(analysis.get("has_symbols"))
 
-      if length < MIN_PASSWORD_LENGTH:
-          feedback.append(
-              f"Password should be at least {MIN_PASSWORD_LENGTH} characters long",
-          )
-      elif length < RECOMMENDED_PASSWORD_LENGTH:
-          feedback.append(
-              f"Consider using at least {RECOMMENDED_PASSWORD_LENGTH} characters "
-              f"for better security",
-          )
+        if length < MIN_PASSWORD_LENGTH:
+            feedback.append(
+                f"Password should be at least {MIN_PASSWORD_LENGTH} characters long",
+            )
+        elif length < RECOMMENDED_PASSWORD_LENGTH:
+            feedback.append(
+                f"Consider using at least {RECOMMENDED_PASSWORD_LENGTH} characters "
+                f"for better security",
+            )
 
-      if not has_uppercase:
-          feedback.append("Add uppercase letters (A-Z)")
-      if not has_lowercase:
-          feedback.append("Add lowercase letters (a-z)")
-      if not has_digits:
-          feedback.append("Add numbers (0-9)")
-      if not has_symbols:
-          feedback.append("Add special characters (!@#$%^&*)")
+        if not has_uppercase:
+            feedback.append("Add uppercase letters (A-Z)")
+        if not has_lowercase:
+            feedback.append("Add lowercase letters (a-z)")
+        if not has_digits:
+            feedback.append("Add numbers (0-9)")
+        if not has_symbols:
+            feedback.append("Add special characters (!@#$%^&*)")
 
-      score_value = analysis.get("score", 0)
-      score = int(score_value) if isinstance(score_value, int) else 0
+        score_value = analysis.get("score", 0)
+        score = int(score_value) if isinstance(score_value, int) else 0
 
-      if score >= EXCELLENT_STRENGTH_SCORE:
-          feedback.append("Excellent password strength!")
-      elif score >= STRONG_STRENGTH_SCORE:
-          feedback.append("Good password strength")
-      elif score >= MIN_STRENGTH_SCORE:
-          feedback.append("Moderate password strength")
-      else:
-          feedback.append("Weak password - consider strengthening")
+        if score >= EXCELLENT_STRENGTH_SCORE:
+            feedback.append("Excellent password strength!")
+        elif score >= STRONG_STRENGTH_SCORE:
+            feedback.append("Good password strength")
+        elif score >= MIN_STRENGTH_SCORE:
+            feedback.append("Moderate password strength")
+        else:
+            feedback.append("Weak password - consider strengthening")
 
-      return feedback
+        return feedback
 
     def _estimate_crack_time(self, analysis: dict[str, object]) -> str:
-      """Estimate password crack time based on complexity."""
-      score_value = analysis.get("score", 0)
-      score = int(score_value) if isinstance(score_value, int) else 0
+        """Estimate password crack time based on complexity."""
+        score_value = analysis.get("score", 0)
+        score = int(score_value) if isinstance(score_value, int) else 0
 
-      if score >= EXCELLENT_STRENGTH_SCORE:
-          return "centuries"
-      if score >= STRONG_STRENGTH_SCORE:
-          return "decades"
-      if score >= MIN_STRENGTH_SCORE:
-          return "years"
-      if score >= MINIMUM_CRACK_TIME_SCORE:
-          return "months"
-      return "days or less"
+        if score >= EXCELLENT_STRENGTH_SCORE:
+            return "centuries"
+        if score >= STRONG_STRENGTH_SCORE:
+            return "decades"
+        if score >= MIN_STRENGTH_SCORE:
+            return "years"
+        if score >= MINIMUM_CRACK_TIME_SCORE:
+            return "months"
+        return "days or less"
 
     def check_password_strength(
-      self,
-      password: str | FlextPlainPassword,
+        self,
+        password: str | FlextPlainPassword,
     ) -> FlextResult[dict[str, object]]:
-      """Analyze password strength and return detailed feedback.
+        """Analyze password strength and return detailed feedback.
 
-      Args:
-          password: Password to analyze
+        Args:
+            password: Password to analyze
 
-      Returns:
-          FlextResult containing strength analysis
+        Returns:
+            FlextResult containing strength analysis
 
-      """
-      try:
-          # Convert to string if needed (duck-typing)
-          if isinstance(password, str):
-              password_str = password
-          else:
-              pval = getattr(password, "value", None)
-              password_str = pval if isinstance(pval, str) else str(password)
+        """
+        try:
+            # Convert to string if needed (duck-typing)
+            if isinstance(password, str):
+                password_str = password
+            else:
+                pval = getattr(password, "value", None)
+                password_str = pval if isinstance(pval, str) else str(password)
 
-          # Use helper methods to analyze password
-          analysis = self._analyze_password_basic_properties(password_str)
+            # Use helper methods to analyze password
+            analysis = self._analyze_password_basic_properties(password_str)
 
-          # Calculate score using helper method
-          analysis["score"] = self._calculate_password_score(analysis)
+            # Calculate score using helper method
+            analysis["score"] = self._calculate_password_score(analysis)
 
-          # Check for common patterns
-          common_patterns = ["123", "abc", "password", "REDACTED_LDAP_BIND_PASSWORD", "qwerty"]
-          if any(pattern in password_str.lower() for pattern in common_patterns):
-              analysis["has_common_patterns"] = True
-              score_value = analysis.get("score", 0)
-              current_score = int(score_value) if isinstance(score_value, int) else 0
-              # Ensure score doesn't go negative
-              analysis["score"] = max(0, current_score - 2)
+            # Check for common patterns
+            common_patterns = ["123", "abc", "password", "REDACTED_LDAP_BIND_PASSWORD", "qwerty"]
+            if any(pattern in password_str.lower() for pattern in common_patterns):
+                analysis["has_common_patterns"] = True
+                score_value = analysis.get("score", 0)
+                current_score = int(score_value) if isinstance(score_value, int) else 0
+                # Ensure score doesn't go negative
+                analysis["score"] = max(0, current_score - 2)
 
-          # Generate feedback using helper method
-          analysis["feedback"] = self._generate_password_feedback(analysis)
+            # Generate feedback using helper method
+            analysis["feedback"] = self._generate_password_feedback(analysis)
 
-          # Add common pattern feedback
-          if analysis.get("has_common_patterns", False):
-              feedback_list = analysis.get("feedback", [])
-              if isinstance(feedback_list, list):
-                  feedback_list.append("Avoid common patterns and dictionary words")
-                  analysis["feedback"] = feedback_list
+            # Add common pattern feedback
+            if analysis.get("has_common_patterns", False):
+                feedback_list = analysis.get("feedback", [])
+                if isinstance(feedback_list, list):
+                    feedback_list.append("Avoid common patterns and dictionary words")
+                    analysis["feedback"] = feedback_list
 
-          # Determine strength rating
-          score_value = analysis.get("score", 0)
-          final_score = int(score_value) if isinstance(score_value, int) else 0
-          if final_score >= STRONG_STRENGTH_SCORE:
-              analysis["strength"] = "strong"
-              analysis["is_strong"] = True
-          elif final_score >= MIN_STRENGTH_SCORE:
-              analysis["strength"] = "medium"
-              analysis["is_strong"] = False
-          else:
-              analysis["strength"] = "weak"
-              analysis["is_strong"] = False
+            # Determine strength rating
+            score_value = analysis.get("score", 0)
+            final_score = int(score_value) if isinstance(score_value, int) else 0
+            if final_score >= STRONG_STRENGTH_SCORE:
+                analysis["strength"] = "strong"
+                analysis["is_strong"] = True
+            elif final_score >= MIN_STRENGTH_SCORE:
+                analysis["strength"] = "medium"
+                analysis["is_strong"] = False
+            else:
+                analysis["strength"] = "weak"
+                analysis["is_strong"] = False
 
-          # Estimate crack time using helper method
-          analysis["estimated_crack_time"] = self._estimate_crack_time(analysis)
+            # Estimate crack time using helper method
+            analysis["estimated_crack_time"] = self._estimate_crack_time(analysis)
 
-          return FlextResult.ok(analysis)
+            return FlextResult.ok(analysis)
 
-      except (ValueError, TypeError, OSError) as e:
-          return FlextResult.fail(
-              f"Password strength analysis failed: {e}",
-          )
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(
+                f"Password strength analysis failed: {e}",
+            )
 
     def generate_password_reset_token(self) -> FlextResult[str]:
-      """Generate secure password reset token.
+        """Generate secure password reset token.
 
-      Returns:
-          FlextResult containing URL-safe token
+        Returns:
+            FlextResult containing URL-safe token
 
-      """
-      try:
-          token = secrets.token_urlsafe(TOKEN_BYTES)  # 256 bits of entropy
-          return FlextResult.ok(token)
-      except (ValueError, TypeError, OSError) as e:
-          return FlextResult.fail(f"Token generation failed: {e}")
+        """
+        try:
+            token = secrets.token_urlsafe(TOKEN_BYTES)  # 256 bits of entropy
+            return FlextResult.ok(token)
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Token generation failed: {e}")
 
     def is_password_compromised(self, password: str) -> FlextResult[bool]:
-      """Check if password appears in common breach databases.
+        """Check if password appears in common breach databases.
 
-      This is a placeholder implementation. In production, you might use
-      services like HaveIBeenPwned API or maintain your own breach database.
+        This is a placeholder implementation. In production, you might use
+        services like HaveIBeenPwned API or maintain your own breach database.
 
-      Args:
-          password: Password to check
+        Args:
+            password: Password to check
 
-      Returns:
-          FlextResult indicating if password is compromised
+        Returns:
+            FlextResult indicating if password is compromised
 
-      """
-      try:
-          # Placeholder implementation - in production, integrate with breach APIs
-          common_passwords = [
-              "password",
-              "123456",
-              "password123",
-              "REDACTED_LDAP_BIND_PASSWORD",
-              "qwerty",
-              "letmein",
-              "welcome",
-              "monkey",
-              "dragon",
-              "password1",
-          ]
+        """
+        try:
+            # Placeholder implementation - in production, integrate with breach APIs
+            common_passwords = [
+                "password",
+                "123456",
+                "password123",
+                "REDACTED_LDAP_BIND_PASSWORD",
+                "qwerty",
+                "letmein",
+                "welcome",
+                "monkey",
+                "dragon",
+                "password1",
+            ]
 
-          is_compromised = password.lower() in common_passwords
-          return FlextResult.ok(is_compromised)
+            is_compromised = password.lower() in common_passwords
+            return FlextResult.ok(is_compromised)
 
-      except (ValueError, TypeError, OSError) as e:
-          return FlextResult.fail(f"Breach check failed: {e}")
+        except (ValueError, TypeError, OSError) as e:
+            return FlextResult.fail(f"Breach check failed: {e}")

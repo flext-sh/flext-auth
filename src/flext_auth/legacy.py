@@ -14,9 +14,9 @@ import warnings
 def _deprecation_warning(old_name: str, new_name: str) -> None:
     """Issue a deprecation warning for legacy imports."""
     warnings.warn(
-      f"{old_name} is deprecated, use {new_name} instead",
-      DeprecationWarning,
-      stacklevel=3,
+        f"{old_name} is deprecated, use {new_name} instead",
+        DeprecationWarning,
+        stacklevel=3,
     )
 
 
@@ -30,8 +30,8 @@ def auth_service(*args: object, **kwargs: object) -> object:  # noqa: ARG001
     """
     _deprecation_warning("AuthService", "FlextAuthService")
     msg = (
-      "Legacy auth_service() is broken due to typed constructors. "
-      "Use flext_auth_quick_start() or FlextAuthService directly."
+        "Legacy auth_service() is broken due to typed constructors. "
+        "Use flext_auth_quick_start() or FlextAuthService directly."
     )
     raise DeprecationWarning(msg)
 
@@ -45,8 +45,8 @@ def auth_config(*args: object, **kwargs: object) -> object:  # noqa: ARG001
     """
     _deprecation_warning("AuthConfig", "FlextAuthConfig")
     msg = (
-      "Legacy auth_config() is broken due to Pydantic settings. "
-      "Use FlextAuthConfig() directly."
+        "Legacy auth_config() is broken due to Pydantic settings. "
+        "Use FlextAuthConfig() directly."
     )
     raise DeprecationWarning(msg)
 
@@ -78,7 +78,7 @@ def validation_error(*args: object, **kwargs: object) -> object:  # noqa: ARG001
     """Legacy alias for FlextAuthValidationError - DEPRECATED AND BROKEN."""
     _deprecation_warning("ValidationError", "FlextAuthValidationError")
     msg = (
-      "Legacy validation_error() is broken. Use FlextAuthValidationError() directly."
+        "Legacy validation_error() is broken. Use FlextAuthValidationError() directly."
     )
     raise DeprecationWarning(msg)
 
@@ -103,8 +103,8 @@ def quick_start(*args: object, **kwargs: object) -> object:  # noqa: ARG001
     """
     _deprecation_warning("quick_start", "flext_auth_quick_start")
     msg = (
-      "Legacy quick_start() is broken due to typed parameters. "
-      "Use flext_auth_quick_start() directly."
+        "Legacy quick_start() is broken due to typed parameters. "
+        "Use flext_auth_quick_start() directly."
     )
     raise DeprecationWarning(msg)
 
@@ -118,8 +118,8 @@ def hash_password(*args: object, **kwargs: object) -> object:  # noqa: ARG001
     """
     _deprecation_warning("hash_password", "flext_auth_hash_password")
     msg = (
-      "Legacy hash_password() is broken due to typed parameters. "
-      "Use flext_auth_hash_password() directly."
+        "Legacy hash_password() is broken due to typed parameters. "
+        "Use flext_auth_hash_password() directly."
     )
     raise DeprecationWarning(msg)
 
@@ -133,8 +133,8 @@ def verify_password(*args: object, **kwargs: object) -> object:  # noqa: ARG001
     """
     _deprecation_warning("verify_password", "flext_auth_verify_password")
     msg = (
-      "Legacy verify_password() is broken due to typed parameters. "
-      "Use flext_auth_verify_password() directly."
+        "Legacy verify_password() is broken due to typed parameters. "
+        "Use flext_auth_verify_password() directly."
     )
     raise DeprecationWarning(msg)
 
@@ -148,8 +148,8 @@ def generate_jwt(*args: object, **kwargs: object) -> object:  # noqa: ARG001
     """
     _deprecation_warning("generate_jwt", "flext_auth_generate_jwt")
     msg = (
-      "Legacy generate_jwt() is broken due to typed parameters. "
-      "Use flext_auth_generate_jwt() directly."
+        "Legacy generate_jwt() is broken due to typed parameters. "
+        "Use flext_auth_generate_jwt() directly."
     )
     raise DeprecationWarning(msg)
 
@@ -163,8 +163,8 @@ def validate_jwt(*args: object, **kwargs: object) -> object:  # noqa: ARG001
     """
     _deprecation_warning("validate_jwt", "flext_auth_validate_jwt")
     msg = (
-      "Legacy validate_jwt() is broken due to typed parameters. "
-      "Use flext_auth_validate_jwt() directly."
+        "Legacy validate_jwt() is broken due to typed parameters. "
+        "Use flext_auth_validate_jwt() directly."
     )
     raise DeprecationWarning(msg)
 
