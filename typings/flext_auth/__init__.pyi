@@ -208,7 +208,6 @@ __all__ = [
     "UserRepository",
     "__version__",
     "__version_info__",
-    "annotations",
     "create_auth_config",
     "create_auth_service",
     "create_development_config",

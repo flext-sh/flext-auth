@@ -747,13 +747,13 @@ class FlextUser(FlextAggregateRoot):
 
 ```python
 # Should use CQRS patterns from flext-core
-from flext_core import FlextCommand, FlextHandler
+from flext_core import FlextCommand, FlextMessageHandler
 
 class LoginCommand(FlextCommand):
     username: str
     password: str
 
-class LoginHandler(FlextHandler[LoginCommand, LoginResult]):
+class LoginHandler(FlextMessageHandler[LoginCommand, LoginResult]):
     def handle(self, command: LoginCommand) -> FlextResult[LoginResult]:
         # Implementation
 ```

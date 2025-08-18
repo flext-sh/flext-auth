@@ -1,9 +1,6 @@
 from collections.abc import Awaitable, Callable as Callable
-from typing import TypeVar
 
 from _typeshed import Incomplete
-
-T = TypeVar("T")
 
 def run_example_suite(
     title: str,

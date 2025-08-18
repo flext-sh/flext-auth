@@ -17,7 +17,7 @@ from flext_core import (
     FlextDatabaseConfig,
     FlextResult,
 )
-from pydantic import BaseModel, Field, SecretStr, field_validator
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import SettingsConfigDict
 
 # Configuration constants
@@ -131,7 +131,7 @@ class FlextAuthApplicationConfig(FlextBaseConfigModel):
 # =============================================================================
 
 
-class DatabaseConfig(BaseModel):
+class DatabaseConfig(FlextBaseConfigModel):
     """Database configuration with backward compatibility wrapper."""
 
     def __init__(self, **kwargs: object) -> None:

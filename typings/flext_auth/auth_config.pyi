@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from _typeshed import Incomplete
 from flext_core import FlextBaseConfigModel, FlextSettings, TEntityId
 
@@ -88,7 +90,7 @@ class JWTConfig(FlextSettings):
     algorithm: str
     access_token_expire_minutes: int
     refresh_token_expire_days: int
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     def __init__(self, **kwargs: object) -> None: ...
     def validate_secret_key(self) -> None: ...
     @classmethod
@@ -102,13 +104,13 @@ class SecurityConfig(FlextSettings):
     max_concurrent_sessions: int
     require_email_verification: bool
     enable_2fa: bool
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
 
 class ServerConfig(FlextSettings):
     debug: bool
     host: str
     port: int
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
 
 class AppConfig(FlextSettings):
     name: str
@@ -120,7 +122,7 @@ class AppConfig(FlextSettings):
     jwt: JWTConfig
     security: SecurityConfig
     server: ServerConfig
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     def model_dump_safe(self) -> dict[str, object]: ...
 
 def create_auth_config(**overrides: object) -> FlextAuthConfig: ...

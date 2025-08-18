@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import ParamSpec, Protocol
+from typing import Protocol
 
 from _typeshed import Incomplete
 from flext_core import FlextResult
@@ -17,7 +17,6 @@ __all__ = [
     "flext_auth_role_required",
 ]
 
-P = ParamSpec("P")
 DecoratorReturnType = object
 type SimpleAuthFunction = Callable[[object], DecoratorReturnType]
 type BinaryAuthFunction = Callable[[object, object], DecoratorReturnType]

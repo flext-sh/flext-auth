@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from _typeshed import Incomplete
 from flext_core import FlextBaseConfigModel, FlextResult
 from pydantic import BaseModel
@@ -60,7 +62,7 @@ class JWTConfig(FlextBaseConfigModel):
     algorithm: str
     access_token_expire_minutes: int
     refresh_token_expire_days: int
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     @classmethod
     def validate_algorithm(cls, value: str) -> str: ...
     def validate_secret_key(self) -> None: ...
@@ -76,14 +78,14 @@ class SecurityConfig(FlextBaseConfigModel):
     max_concurrent_sessions: int
     require_email_verification: bool
     enable_2fa: bool
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     def validate_business_rules(self) -> FlextResult[None]: ...
 
 class ServerConfig(FlextBaseConfigModel):
     debug: bool
     host: str
     port: int
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     def validate_business_rules(self) -> FlextResult[None]: ...
 
 class AppConfig(FlextBaseConfigModel):
@@ -96,7 +98,7 @@ class AppConfig(FlextBaseConfigModel):
     jwt: JWTConfig
     security: SecurityConfig
     server: ServerConfig
-    model_config: Incomplete
+    model_config: ClassVar[Incomplete]
     def validate_business_rules(self) -> FlextResult[None]: ...
     def model_dump_safe(self) -> dict[str, object]: ...
 
