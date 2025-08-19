@@ -182,12 +182,12 @@ def create_error_result(
     error_code: str = "AUTH_ERROR",
 ) -> FlextResult[None]:
     """Create a standardized error result."""
-    return FlextResult.fail(f"[{error_code}] {message}")
+    return FlextResult[None].fail(f"[{error_code}] {message}")
 
 
 def handle_exception(e: Exception, operation: str = "operation") -> FlextResult[None]:
     """Handle exception and return standardized error result."""
-    return FlextResult.fail(f"Failed to {operation}: {e}")
+    return FlextResult[None].fail(f"Failed to {operation}: {e}")
 
 
 # =============================================================================

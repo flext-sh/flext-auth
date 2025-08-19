@@ -68,12 +68,12 @@ class TestFlextAuthBasics:
 
     def test_flext_result_pattern(self) -> None:
         """Test FlextResult is properly accessible."""
-        success_result = FlextResult.ok("test data")
+        success_result = FlextResult[None].ok("test data")
         assert success_result.success
         assert success_result.data == "test data"
         assert success_result.error is None
 
-        fail_result = FlextResult.fail("test error")
+        fail_result = FlextResult[None].fail("test error")
         assert not fail_result.success
         assert fail_result.data is None
         assert fail_result.error == "test error"

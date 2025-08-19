@@ -210,12 +210,12 @@ class FlextUser(FlextEntity):
             # REFACTORING: Strategy Pattern - validation rules as strategies
             validation_errors = self._execute_user_validation_strategies()
             if validation_errors:
-                return FlextResult.fail(validation_errors[0])  # Return first error
+                return FlextResult[None].fail(validation_errors[0])  # Return first error
 
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
 
         except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
-            return FlextResult.fail(f"User validation error: {e}")
+            return FlextResult[None].fail(f"User validation error: {e}")
 
     def _execute_user_validation_strategies(self) -> list[str]:
         """Execute all user validation strategies - Railway-Oriented Programming.
@@ -250,7 +250,7 @@ class FlextUser(FlextEntity):
         validation_errors = self._execute_user_validation_strategies()
         if validation_errors:
             raise ValueError(validation_errors[0])  # Raise first error as ValueError
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 class FlextSessionStatus(StrEnum):
@@ -330,14 +330,14 @@ class FlextSession(FlextEntity):
     def validate_domain_rules(self) -> FlextResult[None]:
         """Validate session domain rules and business invariants."""
         if not self.id:
-            return FlextResult.fail("Session ID cannot be empty")
+            return FlextResult[None].fail("Session ID cannot be empty")
         if not self.user_id:
-            return FlextResult.fail("User ID cannot be empty")
+            return FlextResult[None].fail("User ID cannot be empty")
         if not self.access_token:
-            return FlextResult.fail("Access token cannot be empty")
+            return FlextResult[None].fail("Access token cannot be empty")
         if self.expires_at <= datetime.now(UTC):
-            return FlextResult.fail("Session expiration must be in the future")
-        return FlextResult.ok(None)
+            return FlextResult[None].fail("Session expiration must be in the future")
+        return FlextResult[None].ok(None)
 
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
@@ -354,7 +354,7 @@ class FlextSession(FlextEntity):
         if self.expires_at <= datetime.now(UTC):
             msg = "Session expiration must be in the future"
             raise ValueError(msg)
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 class FlextPermission(FlextEntity):
@@ -389,7 +389,7 @@ class FlextPermission(FlextEntity):
         if not self.action:
             msg = "Permission action cannot be empty"
             raise ValueError(msg)
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 class FlextRole(FlextEntity):
@@ -430,7 +430,7 @@ class FlextRole(FlextEntity):
             # REFACTORING: Railway-Oriented Programming - reduces 6 returns to 2
             return self._execute_role_validation_strategies()
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(f"Role validation failed: {e}")
+            return FlextResult[None].fail(f"Role validation failed: {e}")
 
     def _execute_role_validation_strategies(self) -> FlextResult[None]:
         """Execute role validation strategies - Railway-Oriented Programming."""
@@ -452,26 +452,26 @@ class FlextRole(FlextEntity):
         # Railway-Oriented Programming: First failure stops execution
         for condition, error_message in validation_rules:
             if condition:
-                return FlextResult.fail(error_message)
+                return FlextResult[None].fail(error_message)
 
         # All validations passed
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
         # Execute role validation strategies and return FlextResult (FlextRole uses Result pattern)
         # Validation strategy pipeline - each validation can fail early
         if not self.id:
-            return FlextResult.fail("Role ID cannot be empty")
+            return FlextResult[None].fail("Role ID cannot be empty")
         if not self.name:
-            return FlextResult.fail("Role name cannot be empty")
+            return FlextResult[None].fail("Role name cannot be empty")
         if not self.description:
-            return FlextResult.fail("Role description cannot be empty")
+            return FlextResult[None].fail("Role description cannot be empty")
         if len(self.name) > MAX_NAME_LENGTH:
-            return FlextResult.fail("Role name must be at most 100 characters")
+            return FlextResult[None].fail("Role name must be at most 100 characters")
         if len(self.description) > MAX_DESCRIPTION_LENGTH:
-            return FlextResult.fail("Role description must be at most 500 characters")
-        return FlextResult.ok(None)
+            return FlextResult[None].fail("Role description must be at most 500 characters")
+        return FlextResult[None].ok(None)
 
 
 class FlextLoginAttempt(FlextEntity):
@@ -495,12 +495,12 @@ class FlextLoginAttempt(FlextEntity):
             # REFACTORING: Strategy Pattern - validation rules as strategies
             validation_errors = self._execute_validation_strategies()
             if validation_errors:
-                return FlextResult.fail(validation_errors[0])  # Return first error
+                return FlextResult[None].fail(validation_errors[0])  # Return first error
 
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
 
         except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
-            return FlextResult.fail(f"Validation error: {e}")
+            return FlextResult[None].fail(f"Validation error: {e}")
 
     def _execute_validation_strategies(self) -> list[str]:
         """Execute all validation strategies - Railway-Oriented Programming.
@@ -539,7 +539,7 @@ class FlextLoginAttempt(FlextEntity):
         validation_errors = self._execute_validation_strategies()
         if validation_errors:
             raise ValueError(validation_errors[0])  # Raise first error as ValueError
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 # =============================================================================
@@ -589,12 +589,12 @@ class FlextBaseToken(FlextEntity):
             # REFACTORING: Strategy Pattern - validation rules as strategies
             validation_errors = self._execute_common_validation_strategies()
             if validation_errors:
-                return FlextResult.fail(validation_errors[0])  # Return first error
+                return FlextResult[None].fail(validation_errors[0])  # Return first error
 
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
 
         except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
-            return FlextResult.fail(f"Token validation error: {e}")
+            return FlextResult[None].fail(f"Token validation error: {e}")
 
     def _execute_common_validation_strategies(self) -> list[str]:
         """Execute all common validation strategies - Railway-Oriented Programming.
@@ -631,7 +631,7 @@ class FlextBaseToken(FlextEntity):
     def _validate_specific_rules(self) -> FlextResult[None]:
         """Abstract method: validate token-specific rules."""
         # Base implementation has no specific rules
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""

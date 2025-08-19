@@ -102,13 +102,13 @@ class FlextAuthService:
             await asyncio.sleep(0.001)  # Simulate async operation
 
             # For reorganization purposes, return a failure with context
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 f"Authentication service requires full implementation for user: {username} "
                 f"from IP: {ip_address} (password provided: {'yes' if password else 'no'})",
             )
 
         except Exception as e:
-            return FlextResult.fail(f"Authentication failed for {username}: {e}")
+            return FlextResult[None].fail(f"Authentication failed for {username}: {e}")
 
     async def validate_token(self, token: str) -> FlextResult[FlextSecurityContext]:
         """Validate JWT token and return security context.
@@ -124,7 +124,7 @@ class FlextAuthService:
             # Validate token using JWT service
             claims_result = self.deps.jwt_service.verify_token(token)
             if not claims_result.success or not claims_result.data:
-                return FlextResult.fail("Invalid token")
+                return FlextResult[None].fail("Invalid token")
 
             claims = claims_result.data
 
@@ -139,10 +139,10 @@ class FlextAuthService:
                 },
             )
 
-            return FlextResult.ok(context)
+            return FlextResult[None].ok(context)
 
         except Exception as e:
-            return FlextResult.fail(f"Token validation failed: {e}")
+            return FlextResult[None].fail(f"Token validation failed: {e}")
 
     async def logout_user(self, _user_id: str, _session_id: str) -> FlextResult[bool]:
         """Logout user by revoking session.
@@ -160,10 +160,10 @@ class FlextAuthService:
             # Placeholder for reorganization
             await asyncio.sleep(0.001)  # Simulate async operation
 
-            return FlextResult.fail("Logout service requires full implementation")
+            return FlextResult[None].fail("Logout service requires full implementation")
 
         except Exception as e:
-            return FlextResult.fail(f"Logout failed: {e}")
+            return FlextResult[None].fail(f"Logout failed: {e}")
 
 
 # =============================================================================

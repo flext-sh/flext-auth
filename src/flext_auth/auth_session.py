@@ -73,17 +73,17 @@ class InMemorySessionRepository(SessionRepository):
         """Save session to memory (async)."""
         try:
             self._sessions[str(session.id)] = session
-            return FlextResult.ok(session)
+            return FlextResult[None].ok(session)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to save session: {e}")
+            return FlextResult[None].fail(f"Failed to save session: {e}")
 
     def find_by_id(self, session_id: str) -> FlextResult[FlextSession | None]:
         """Find session by ID."""
         try:
             session = self._sessions.get(session_id)
-            return FlextResult.ok(session)
+            return FlextResult[None].ok(session)
         except (KeyError, ValueError, TypeError) as e:
-            return FlextResult.fail(f"Failed to find session: {e}")
+            return FlextResult[None].fail(f"Failed to find session: {e}")
 
     def find_by_user_id(self, user_id: str) -> FlextResult[list[FlextSession]]:
         """Find all sessions for a user."""
@@ -93,9 +93,9 @@ class InMemorySessionRepository(SessionRepository):
                 for session in self._sessions.values()
                 if session.user_id == user_id
             ]
-            return FlextResult.ok(user_sessions)
+            return FlextResult[None].ok(user_sessions)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to find user sessions: {e}")
+            return FlextResult[None].fail(f"Failed to find user sessions: {e}")
 
     def revoke_all_sessions_for_user(self, user_id: str) -> FlextResult[int]:
         """Revoke all sessions for a user."""
@@ -110,9 +110,9 @@ class InMemorySessionRepository(SessionRepository):
                     self._sessions[session_id] = revoked_session
                     revoked_count += 1
 
-            return FlextResult.ok(revoked_count)
+            return FlextResult[None].ok(revoked_count)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to revoke user sessions: {e}")
+            return FlextResult[None].fail(f"Failed to revoke user sessions: {e}")
 
     def cleanup_expired_sessions(self) -> FlextResult[int]:
         """Clean up expired sessions."""
@@ -127,9 +127,9 @@ class InMemorySessionRepository(SessionRepository):
                     expired_sessions.append(session_id)
             for session_id in expired_sessions:
                 del self._sessions[session_id]
-            return FlextResult.ok(len(expired_sessions))
+            return FlextResult[None].ok(len(expired_sessions))
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to cleanup expired sessions: {e}")
+            return FlextResult[None].fail(f"Failed to cleanup expired sessions: {e}")
 
     # Additional async compatibility methods used by refactored service
     async def get_by_id(self, session_id: str) -> FlextResult[FlextSession | None]:
@@ -143,10 +143,10 @@ class InMemorySessionRepository(SessionRepository):
             if session_id in self._sessions:
                 session = self._sessions[session_id]
                 self._sessions[session_id] = session.revoke()
-                return FlextResult.ok(data=True)
-            return FlextResult.ok(data=False)
+                return FlextResult[None].ok(True)
+            return FlextResult[None].ok(False)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to revoke session: {e}")
+            return FlextResult[None].fail(f"Failed to revoke session: {e}")
 
     async def revoke_all_user_sessions(self, user_id: str) -> FlextResult[int]:
         return self.revoke_all_sessions_for_user(user_id)
@@ -161,9 +161,9 @@ class InMemorySessionRepository(SessionRepository):
                 and session.status == FlextSessionStatus.ACTIVE
                 and session.expires_at > datetime.now(UTC)
             )
-            return FlextResult.ok(active_count)
+            return FlextResult[None].ok(active_count)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to count active sessions: {e}")
+            return FlextResult[None].fail(f"Failed to count active sessions: {e}")
 
 
 # =============================================================================

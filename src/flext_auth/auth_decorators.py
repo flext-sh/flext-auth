@@ -160,7 +160,7 @@ def _validate_token_with_auth_instance(
             if validation_result.success and validation_result.data:
                 # Convert SecurityContext to dict
                 context = validation_result.data
-                return FlextResult.ok(
+                return FlextResult[None].ok(
                     {
                         "user_id": context.user_id,
                         "username": context.username,
@@ -168,14 +168,14 @@ def _validate_token_with_auth_instance(
                         "permissions": context.permissions,
                     },
                 )
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 validation_result.error or "Token validation failed",
             )
 
         return asyncio.run(_validate())
     except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
         logger.exception("Token validation error")
-        return FlextResult.fail(f"Authentication error: {e}")
+        return FlextResult[None].fail(f"Authentication error: {e}")
 
 
 def _validate_token_with_secret(
@@ -190,7 +190,7 @@ def _validate_token_with_secret(
         if validation_result.success and validation_result.data:
             # Convert claims to dict format
             claims = validation_result.data
-            return FlextResult.ok(
+            return FlextResult[None].ok(
                 {
                     "user_id": getattr(claims, "user_id", ""),
                     "username": getattr(claims, "username", ""),
@@ -200,10 +200,10 @@ def _validate_token_with_secret(
                     "iat": getattr(claims, "iat", 0),
                 },
             )
-        return FlextResult.fail(validation_result.error or "Token validation failed")
+        return FlextResult[None].fail(validation_result.error or "Token validation failed")
     except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
         logger.exception("Token validation error")
-        return FlextResult.fail(f"Authentication error: {e}")
+        return FlextResult[None].fail(f"Authentication error: {e}")
 
 
 # =============================================================================
@@ -539,7 +539,7 @@ class FlextAuthMixin:
             elif auth_config:
                 self._auth_config = auth_config
                 # FlextAuthService requires dependencies - for mixins, return error
-                return FlextResult.fail(
+                return FlextResult[None].fail(
                     "FlextAuthService requires dependencies. "
                     "Please provide auth_service directly or use "
                     "flext_auth_quick_start()",
@@ -549,7 +549,7 @@ class FlextAuthMixin:
                 from flext_auth.auth_config import FlextAuthConfig  # noqa: PLC0415
 
                 self._auth_config = FlextAuthConfig()
-                return FlextResult.fail(
+                return FlextResult[None].fail(
                     "Cannot create FlextAuthService without dependencies. "
                     "Please provide auth_service parameter or use "
                     "flext_auth_quick_start()",
@@ -559,10 +559,10 @@ class FlextAuthMixin:
                 "Authentication initialized for class",
                 class_name=self.__class__.__name__,
             )
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
         except Exception as e:
             logger.exception("Failed to initialize authentication")
-            return FlextResult.fail(f"Auth initialization failed: {e}")
+            return FlextResult[None].fail(f"Auth initialization failed: {e}")
 
     def authenticate_user(
         self,
@@ -580,13 +580,13 @@ class FlextAuthMixin:
 
         """
         if not self._auth_service:
-            return FlextResult.fail("Authentication not initialized")
+            return FlextResult[None].fail("Authentication not initialized")
 
         try:
             # Auth service methods are async - mixins provide sync wrapper
             async def _auth() -> FlextResult[dict[str, object]]:
                 if self._auth_service is None:
-                    return FlextResult.fail("Auth service not initialized")
+                    return FlextResult[None].fail("Auth service not initialized")
                 auth_result = await self._auth_service.authenticate_user(
                     username,
                     password,
@@ -594,15 +594,15 @@ class FlextAuthMixin:
                 )
                 if auth_result.success and auth_result.data:
                     # Convert auth result to dict format
-                    return FlextResult.ok(
+                    return FlextResult[None].ok(
                         {"authenticated": True, "user": auth_result.data},
                     )
-                return FlextResult.fail(auth_result.error or "Authentication failed")
+                return FlextResult[None].fail(auth_result.error or "Authentication failed")
 
             return asyncio.run(_auth())
         except Exception as e:
             logger.exception("Authentication failed")
-            return FlextResult.fail(f"Authentication error: {e}")
+            return FlextResult[None].fail(f"Authentication error: {e}")
 
     def validate_token(self, token: str) -> FlextResult[dict[str, object]]:
         """Validate authentication token.
@@ -615,18 +615,18 @@ class FlextAuthMixin:
 
         """
         if not self._auth_service:
-            return FlextResult.fail("Authentication not initialized")
+            return FlextResult[None].fail("Authentication not initialized")
 
         try:
             # Auth service method is async
             async def _validate() -> FlextResult[dict[str, object]]:
                 if self._auth_service is None:
-                    return FlextResult.fail("Auth service not initialized")
+                    return FlextResult[None].fail("Auth service not initialized")
                 validation_result = await self._auth_service.validate_token(token)
                 if validation_result.success and validation_result.data:
                     # Convert SecurityContext to dict format
                     context = validation_result.data
-                    return FlextResult.ok(
+                    return FlextResult[None].ok(
                         {
                             "user_id": context.user_id,
                             "username": context.username,
@@ -634,14 +634,14 @@ class FlextAuthMixin:
                             "permissions": context.permissions,
                         },
                     )
-                return FlextResult.fail(
+                return FlextResult[None].fail(
                     validation_result.error or "Token validation failed",
                 )
 
             return asyncio.run(_validate())
         except Exception as e:
             logger.exception("Token validation failed")
-            return FlextResult.fail(f"Token validation error: {e}")
+            return FlextResult[None].fail(f"Token validation error: {e}")
 
     # Lightweight helpers expected by tests
     def get_current_user(self, token: str | None) -> dict[str, object] | None:
@@ -663,18 +663,18 @@ class FlextAuthMixin:
 
             async def _run() -> FlextResult[dict[str, object]]:
                 if self._auth_service is None:
-                    return FlextResult.fail("Authentication not initialized")
+                    return FlextResult[None].fail("Authentication not initialized")
                 svc_res = await self._auth_service.authenticate_user(
                     username,
                     password,
                     ip_address="127.0.0.1",
                 )
                 if not svc_res.is_success:
-                    return FlextResult.fail(svc_res.error or "Authentication failed")
+                    return FlextResult[None].fail(svc_res.error or "Authentication failed")
                 # Convert FlextUser to dict format for downstream usage
                 # Type-safe: successful authentication returns FlextUser object
                 user = svc_res.data
-                return FlextResult.ok(
+                return FlextResult[None].ok(
                     {
                         "authenticated": True,
                         "user": {
@@ -714,7 +714,7 @@ class FlextAuthMixin:
 
         """
         if not self._auth_service:
-            return FlextResult.fail("Authentication not initialized")
+            return FlextResult[None].fail("Authentication not initialized")
 
         try:
             # Use JWT service directly since FlextAuthService lacks generate_token
@@ -732,7 +732,7 @@ class FlextAuthMixin:
             )
         except Exception as e:
             logger.exception("Token generation failed")
-            return FlextResult.fail(f"Token generation error: {e}")
+            return FlextResult[None].fail(f"Token generation error: {e}")
 
     def check_permission(
         self,
@@ -758,7 +758,7 @@ class FlextAuthMixin:
                 jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
                 result = jwt_service.verify_token(token_or_user_data)
                 if not result.success or not result.data:
-                    return FlextResult.fail("Invalid token")
+                    return FlextResult[None].fail("Invalid token")
 
                 claims = result.data
                 user_data = {
@@ -776,23 +776,23 @@ class FlextAuthMixin:
                 isinstance(user_permissions, list)
                 and required_permission in user_permissions
             ):
-                return FlextResult.ok(data=True)
+                return FlextResult[None].ok(True)
 
             # If no explicit permissions, check role-based permissions
             role = user_data.get("role", "")
             if role == "REDACTED_LDAP_BIND_PASSWORD":
                 # Admin has all permissions
-                return FlextResult.ok(data=True)
+                return FlextResult[None].ok(True)
             if (role == "moderator" and required_permission in {"read", "write"}) or (
                 role == "user" and required_permission == "read"
             ):
-                return FlextResult.ok(data=True)
+                return FlextResult[None].ok(True)
 
-            return FlextResult.ok(data=False)
+            return FlextResult[None].ok(False)
 
         except Exception as e:
             logger.exception("Permission check failed")
-            return FlextResult.fail(f"Permission check error: {e}")
+            return FlextResult[None].fail(f"Permission check error: {e}")
 
     def check_role(
         self,
@@ -812,10 +812,10 @@ class FlextAuthMixin:
         try:
             user_role = user_data.get("role", "")
             has_role = user_role == required_role
-            return FlextResult.ok(data=has_role)
+            return FlextResult[None].ok(has_role)
         except Exception as e:
             logger.exception("Role check failed")
-            return FlextResult.fail(f"Role check error: {e}")
+            return FlextResult[None].fail(f"Role check error: {e}")
 
     @property
     def is_auth_initialized(self) -> bool:
@@ -853,7 +853,7 @@ class _AuthCompat:
         _password: str,
     ) -> FlextResult[bool]:
         # Interface stub to satisfy tests that call controller._auth.register
-        return FlextResult.ok(data=True)
+        return FlextResult[None].ok(True)
 
 
 class FlextAuthUserMixin:
@@ -877,10 +877,10 @@ class FlextAuthUserMixin:
         try:
             self._current_user = user_data.copy()
             logger.debug("Current user set", user_id=user_data.get("id"))
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
         except Exception as e:
             logger.exception("Failed to set current user")
-            return FlextResult.fail(f"Set user error: {e}")
+            return FlextResult[None].fail(f"Set user error: {e}")
 
     def get_current_user(self) -> FlextResult[dict[str, object]]:
         """Get current user data.
@@ -890,9 +890,9 @@ class FlextAuthUserMixin:
 
         """
         if self._current_user is None:
-            return FlextResult.fail("No current user set")
+            return FlextResult[None].fail("No current user set")
 
-        return FlextResult.ok(self._current_user.copy())
+        return FlextResult[None].ok(self._current_user.copy())
 
     def clear_current_user(self) -> FlextResult[None]:
         """Clear current user.
@@ -903,7 +903,7 @@ class FlextAuthUserMixin:
         """
         self._current_user = None
         logger.debug("Current user cleared")
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def is_user_in_role(self, role: str) -> FlextResult[bool]:
         """Check if current user has specified role.
@@ -916,10 +916,10 @@ class FlextAuthUserMixin:
 
         """
         if self._current_user is None:
-            return FlextResult.fail("No current user set")
+            return FlextResult[None].fail("No current user set")
 
         user_role = self._current_user.get("role", "")
-        return FlextResult.ok(user_role == role)
+        return FlextResult[None].ok(user_role == role)
 
     def is_user_has_permission(self, permission: str) -> FlextResult[bool]:
         """Check if current user has specified permission.
@@ -932,7 +932,7 @@ class FlextAuthUserMixin:
 
         """
         if self._current_user is None:
-            return FlextResult.fail("No current user set")
+            return FlextResult[None].fail("No current user set")
 
         user_permissions = self._current_user.get("permissions", [])
         # Ensure permissions is a list of strings
@@ -940,7 +940,7 @@ class FlextAuthUserMixin:
             has_permission = permission in user_permissions
         else:
             has_permission = False
-        return FlextResult.ok(has_permission)
+        return FlextResult[None].ok(has_permission)
 
     @property
     def has_current_user(self) -> bool:

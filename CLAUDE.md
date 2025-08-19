@@ -740,7 +740,7 @@ class FlextUser(FlextAggregateRoot):
     def login(self) -> FlextResult[None]:
         # Emit domain events for observability
         self.raise_event(UserLoggedInEvent(self.id))
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 ```
 
 #### 3. Command/Query Pattern

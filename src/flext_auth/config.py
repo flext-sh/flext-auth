@@ -356,7 +356,7 @@ class JWTConfig(FlextBaseConfigModel):
         if self.refresh_token_expire_days <= 0:
             errors.append("Refresh token expiration must be positive")
 
-        return FlextResult.fail("; ".join(errors)) if errors else FlextResult.ok(None)
+        return FlextResult[None].fail("; ".join(errors)) if errors else FlextResult[None].ok(None)
 
 
 class SecurityConfig(FlextBaseConfigModel):
@@ -426,7 +426,7 @@ class SecurityConfig(FlextBaseConfigModel):
         if self.max_concurrent_sessions > MAX_CONCURRENT_SESSIONS:
             errors.append("Max concurrent sessions should not exceed 20")
 
-        return FlextResult.fail("; ".join(errors)) if errors else FlextResult.ok(None)
+        return FlextResult[None].fail("; ".join(errors)) if errors else FlextResult[None].ok(None)
 
 
 class ServerConfig(FlextBaseConfigModel):
@@ -452,7 +452,7 @@ class ServerConfig(FlextBaseConfigModel):
         if not self.host or self.host.strip() == "":
             errors.append("Server host cannot be empty")
 
-        return FlextResult.fail("; ".join(errors)) if errors else FlextResult.ok(None)
+        return FlextResult[None].fail("; ".join(errors)) if errors else FlextResult[None].ok(None)
 
 
 class AppConfig(FlextBaseConfigModel):
@@ -516,7 +516,7 @@ class AppConfig(FlextBaseConfigModel):
                     f"Server configuration invalid: {server_validation.error}",
                 )
 
-        return FlextResult.fail("; ".join(errors)) if errors else FlextResult.ok(None)
+        return FlextResult[None].fail("; ".join(errors)) if errors else FlextResult[None].ok(None)
 
     def model_dump_safe(self) -> dict[str, object]:
         """Dump model data with sensitive information redacted."""

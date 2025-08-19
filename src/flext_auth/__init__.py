@@ -296,9 +296,9 @@ class FlextAuth:
         result = await self._service.register_user(data)
         # Upcast to FlextResult[object] for facade typing
         return (
-            FlextResult.ok(result.data)
+            FlextResult[None].ok(result.data)
             if result.is_success
-            else FlextResult.fail(result.error or "Registration failed")
+            else FlextResult[None].fail(result.error or "Registration failed")
         )
 
     async def login(
@@ -315,9 +315,9 @@ class FlextAuth:
     async def validate(self, token: str) -> FlextResult[dict[str, object]]:
         res = await self._service.validate_token(token)
         if not res.is_success or not res.data:
-            return FlextResult.fail(res.error or "Token validation failed")
+            return FlextResult[None].fail(res.error or "Token validation failed")
         ctx = res.data
-        return FlextResult.ok(
+        return FlextResult[None].ok(
             {
                 "user_id": ctx.user_id,
                 "username": ctx.username,
@@ -357,9 +357,9 @@ class FlextAuth:
             )
             reg = await self._service.register_user(reg_data)
             return (
-                FlextResult.ok(reg.data)
+                FlextResult[None].ok(reg.data)
                 if reg.success
-                else FlextResult.fail(reg.error or "Registration failed")
+                else FlextResult[None].fail(reg.error or "Registration failed")
             )
         if (
             isinstance(data_or_username, str)
@@ -372,7 +372,7 @@ class FlextAuth:
                 password,
                 role=FlextUserRole(role) if role else FlextUserRole.USER,
             )
-        return FlextResult.fail("Invalid registration parameters")
+        return FlextResult[None].fail("Invalid registration parameters")
 
     # Synchronous compatibility API expected by some tests
     def register_user(
@@ -426,9 +426,9 @@ class FlextAuth:
         # Forward raw security context for helpers that expect object with attributes, but conform facade type
         res = await self._service.validate_token(token)
         return (
-            FlextResult.ok(res.data)
+            FlextResult[None].ok(res.data)
             if res.is_success
-            else FlextResult.fail(res.error or "Token validation failed")
+            else FlextResult[None].fail(res.error or "Token validation failed")
         )
 
     async def login_and_validate(
@@ -438,27 +438,27 @@ class FlextAuth:
     ) -> FlextResult[dict[str, object]]:
         login_result = await self.login(username, password)
         if not login_result.is_success:
-            return FlextResult.fail(login_result.error or "Login failed")
+            return FlextResult[None].fail(login_result.error or "Login failed")
 
         # Validate login_result.data exists and is a dict
         if not login_result.data or not isinstance(login_result.data, dict):
-            return FlextResult.fail("Invalid login result format")
+            return FlextResult[None].fail("Invalid login result format")
 
         login_data = login_result.data
         tokens = login_data.get("tokens", {})
         if not isinstance(tokens, dict):
-            return FlextResult.fail("Invalid tokens format")
+            return FlextResult[None].fail("Invalid tokens format")
         access = tokens.get("access_token")
         if not isinstance(access, str):
-            return FlextResult.fail("Access token missing")
+            return FlextResult[None].fail("Access token missing")
 
         # Validate the token
         validate_result = await self.validate(access)
         if not validate_result.is_success:
-            return FlextResult.fail(validate_result.error or "Token validation failed")
+            return FlextResult[None].fail(validate_result.error or "Token validation failed")
 
         # Return structure expected by tests
-        return FlextResult.ok(
+        return FlextResult[None].ok(
             {
                 "login": True,
                 "token": access,
@@ -546,14 +546,14 @@ class FlextAuth:
     ) -> FlextResult[dict[str, object]]:
         # Validate email format first
         if not flext_auth_validate_email(email):
-            return FlextResult.fail("Invalid email format")
+            return FlextResult[None].fail("Invalid email format")
 
         # Validate password strength if required
         strength = None
         if require_strong_password:
             strength = flext_auth_validate_password_strength(password)
             if not strength["valid"]:
-                return FlextResult.fail("Weak password")
+                return FlextResult[None].fail("Weak password")
 
         reg = await self._service.register_user(
             _RegistrationData(
@@ -564,8 +564,8 @@ class FlextAuth:
             ),
         )
         if not reg.is_success or not reg.data:
-            return FlextResult.fail(reg.error or "Registration failed")
-        return FlextResult.ok(
+            return FlextResult[None].fail(reg.error or "Registration failed")
+        return FlextResult[None].ok(
             {
                 "user": {
                     "id": reg.data.id,
@@ -590,9 +590,9 @@ class FlextAuth:
             ip_address="127.0.0.1",
         )
         if not auth.is_success:
-            return FlextResult.fail(auth.error or "Authentication failed")
+            return FlextResult[None].fail(auth.error or "Authentication failed")
         if not auth.data or not isinstance(auth.data, dict):
-            return FlextResult.fail("Invalid authentication data format")
+            return FlextResult[None].fail("Invalid authentication data format")
         auth_data: dict[str, object] = auth.data
         tokens = auth_data.get("tokens", {})
         access_token = ""
@@ -606,7 +606,7 @@ class FlextAuth:
         }
         if include_user_data:
             result["user"] = auth_data.get("user", {})
-        return FlextResult.ok(result)
+        return FlextResult[None].ok(result)
 
 
 def flext_auth_quick_start(
@@ -627,9 +627,9 @@ def flext_auth_quick_start(
         **extra,
     )
     if not service_result.success or not service_result.data:
-        return FlextResult.fail(service_result.error or "Quick start failed")
+        return FlextResult[None].fail(service_result.error or "Quick start failed")
     # Pass the config to FlextAuth constructor so it can be accessed by tests
-    return FlextResult.ok(FlextAuth(config=config, _service=service_result.data))
+    return FlextResult[None].ok(FlextAuth(config=config, _service=service_result.data))
 
 
 # Re-exports via direct imports above are sufficient for public API

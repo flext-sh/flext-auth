@@ -192,12 +192,12 @@ class FlextUser(FlextEntity):
         try:
             validation_errors = self._execute_user_validation_strategies()
             if validation_errors:
-                return FlextResult.fail(validation_errors[0])  # Return first error
+                return FlextResult[None].fail(validation_errors[0])  # Return first error
 
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
 
         except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
-            return FlextResult.fail(f"User validation error: {e}")
+            return FlextResult[None].fail(f"User validation error: {e}")
 
     def _execute_user_validation_strategies(self) -> list[str]:
         """Execute all user validation strategies - Railway-Oriented Programming."""
@@ -228,7 +228,7 @@ class FlextUser(FlextEntity):
         validation_errors = self._execute_user_validation_strategies()
         if validation_errors:
             raise ValueError(validation_errors[0])  # Raise first error as ValueError
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 class FlextSession(FlextEntity):
@@ -297,14 +297,14 @@ class FlextSession(FlextEntity):
     def validate_domain_rules(self) -> FlextResult[None]:
         """Validate session domain rules and business invariants."""
         if not self.id:
-            return FlextResult.fail("Session ID cannot be empty")
+            return FlextResult[None].fail("Session ID cannot be empty")
         if not self.user_id:
-            return FlextResult.fail("User ID cannot be empty")
+            return FlextResult[None].fail("User ID cannot be empty")
         if not self.access_token:
-            return FlextResult.fail("Access token cannot be empty")
+            return FlextResult[None].fail("Access token cannot be empty")
         if self.expires_at <= datetime.now(UTC):
-            return FlextResult.fail("Session expiration must be in the future")
-        return FlextResult.ok(None)
+            return FlextResult[None].fail("Session expiration must be in the future")
+        return FlextResult[None].ok(None)
 
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
@@ -320,7 +320,7 @@ class FlextSession(FlextEntity):
         if self.expires_at <= datetime.now(UTC):
             msg = "Session expiration must be in the future"
             raise ValueError(msg)
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 class FlextPermission(FlextEntity):
@@ -355,7 +355,7 @@ class FlextPermission(FlextEntity):
         if not self.action:
             msg = "Permission action cannot be empty"
             raise ValueError(msg)
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 class FlextRole(FlextEntity):
@@ -391,7 +391,7 @@ class FlextRole(FlextEntity):
         try:
             return self._execute_role_validation_strategies()
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(f"Role validation failed: {e}")
+            return FlextResult[None].fail(f"Role validation failed: {e}")
 
     def _execute_role_validation_strategies(self) -> FlextResult[None]:
         """Execute role validation strategies - Railway-Oriented Programming."""
@@ -412,24 +412,24 @@ class FlextRole(FlextEntity):
         # Railway-Oriented Programming: First failure stops execution
         for condition, error_message in validation_rules:
             if condition:
-                return FlextResult.fail(error_message)
+                return FlextResult[None].fail(error_message)
 
         # All validations passed
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
         if not self.id:
-            return FlextResult.fail("Role ID cannot be empty")
+            return FlextResult[None].fail("Role ID cannot be empty")
         if not self.name:
-            return FlextResult.fail("Role name cannot be empty")
+            return FlextResult[None].fail("Role name cannot be empty")
         if not self.description:
-            return FlextResult.fail("Role description cannot be empty")
+            return FlextResult[None].fail("Role description cannot be empty")
         if len(self.name) > MAX_NAME_LENGTH:
-            return FlextResult.fail("Role name must be at most 100 characters")
+            return FlextResult[None].fail("Role name must be at most 100 characters")
         if len(self.description) > MAX_DESCRIPTION_LENGTH:
-            return FlextResult.fail("Role description must be at most 500 characters")
-        return FlextResult.ok(None)
+            return FlextResult[None].fail("Role description must be at most 500 characters")
+        return FlextResult[None].ok(None)
 
 
 class FlextLoginAttempt(FlextEntity):
@@ -448,12 +448,12 @@ class FlextLoginAttempt(FlextEntity):
         try:
             validation_errors = self._execute_validation_strategies()
             if validation_errors:
-                return FlextResult.fail(validation_errors[0])  # Return first error
+                return FlextResult[None].fail(validation_errors[0])  # Return first error
 
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
 
         except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
-            return FlextResult.fail(f"Validation error: {e}")
+            return FlextResult[None].fail(f"Validation error: {e}")
 
     def _execute_validation_strategies(self) -> list[str]:
         """Execute all validation strategies - Railway-Oriented Programming."""
@@ -488,7 +488,7 @@ class FlextLoginAttempt(FlextEntity):
         validation_errors = self._execute_validation_strategies()
         if validation_errors:
             raise ValueError(validation_errors[0])  # Raise first error as ValueError
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 # =============================================================================
@@ -529,12 +529,12 @@ class FlextBaseToken(FlextEntity):
         try:
             validation_errors = self._execute_common_validation_strategies()
             if validation_errors:
-                return FlextResult.fail(validation_errors[0])  # Return first error
+                return FlextResult[None].fail(validation_errors[0])  # Return first error
 
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
 
         except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
-            return FlextResult.fail(f"Token validation error: {e}")
+            return FlextResult[None].fail(f"Token validation error: {e}")
 
     def _execute_common_validation_strategies(self) -> list[str]:
         """Execute all common validation strategies - Railway-Oriented Programming."""
@@ -568,7 +568,7 @@ class FlextBaseToken(FlextEntity):
     def _validate_specific_rules(self) -> FlextResult[None]:
         """Abstract method: validate token-specific rules."""
         # Base implementation has no specific rules
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
@@ -655,12 +655,12 @@ class InMemoryUserRepository(UserRepository):
             # Check for username conflicts
             existing_username = self._username_index.get(user.username.lower())
             if existing_username and existing_username != user.id:
-                return FlextResult.fail(f"Username '{user.username}' already exists")
+                return FlextResult[FlextUser].fail(f"Username '{user.username}' already exists")
 
             # Check for email conflicts
             existing_email = self._email_index.get(str(user.email).lower())
             if existing_email and existing_email != user.id:
-                return FlextResult.fail(f"Email '{user.email}' already exists")
+                return FlextResult[FlextUser].fail(f"Email '{user.email}' already exists")
 
             # Create user with updated timestamp (entities are immutable)
             updated_user = FlextUser(
@@ -682,49 +682,49 @@ class InMemoryUserRepository(UserRepository):
             self._username_index[updated_user.username.lower()] = str(updated_user.id)
             self._email_index[str(updated_user.email).lower()] = str(updated_user.id)
 
-            return FlextResult.ok(updated_user)
+            return FlextResult[FlextUser].ok(updated_user)
 
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to save user: {e}")
+            return FlextResult[FlextUser].fail(f"Failed to save user: {e}")
 
     async def get_by_id(self, user_id: str) -> FlextResult[FlextUser | None]:
         """Get user by ID."""
         try:
             user = self._users.get(user_id)
-            return FlextResult.ok(user)
+            return FlextResult[FlextUser | None].ok(user)
         except (KeyError, ValueError, TypeError) as e:
-            return FlextResult.fail(f"Failed to get user by ID: {e}")
+            return FlextResult[FlextUser | None].fail(f"Failed to get user by ID: {e}")
 
     async def get_by_username(self, username: str) -> FlextResult[FlextUser | None]:
         """Get user by username."""
         try:
             user_id = self._username_index.get(username.lower())
             if not user_id:
-                return FlextResult.ok(None)
+                return FlextResult[None].ok(None)
 
             user = self._users.get(user_id)
-            return FlextResult.ok(user)
+            return FlextResult[FlextUser | None].ok(user)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to get user by username: {e}")
+            return FlextResult[FlextUser | None].fail(f"Failed to get user by username: {e}")
 
     async def get_by_email(self, email: str) -> FlextResult[FlextUser | None]:
         """Get user by email."""
         try:
             user_id = self._email_index.get(email.lower())
             if not user_id:
-                return FlextResult.ok(None)
+                return FlextResult[None].ok(None)
 
             user = self._users.get(user_id)
-            return FlextResult.ok(user)
+            return FlextResult[FlextUser | None].ok(user)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to get user by email: {e}")
+            return FlextResult[FlextUser | None].fail(f"Failed to get user by email: {e}")
 
     async def delete(self, user_id: str) -> FlextResult[bool]:
         """Delete user from memory."""
         try:
             user = self._users.get(user_id)
             if not user:
-                return FlextResult.ok(data=False)
+                return FlextResult[bool].ok(False)
 
             # Remove from indexes
             self._username_index.pop(user.username.lower(), None)
@@ -733,9 +733,9 @@ class InMemoryUserRepository(UserRepository):
             # Remove user
             del self._users[user_id]
 
-            return FlextResult.ok(data=True)
+            return FlextResult[bool].ok(True)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to delete user: {e}")
+            return FlextResult[bool].fail(f"Failed to delete user: {e}")
 
     async def list_users(
         self,
@@ -758,9 +758,9 @@ class InMemoryUserRepository(UserRepository):
             end = offset + limit
             paginated_users = users[offset:end]
 
-            return FlextResult.ok(paginated_users)
+            return FlextResult[list[FlextUser]].ok(paginated_users)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to list users: {e}")
+            return FlextResult[list[FlextUser]].fail(f"Failed to list users: {e}")
 
     async def count_users(
         self,
@@ -773,9 +773,9 @@ class InMemoryUserRepository(UserRepository):
             else:
                 count = len(self._users)
 
-            return FlextResult.ok(count)
+            return FlextResult[int].ok(count)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to count users: {e}")
+            return FlextResult[int].fail(f"Failed to count users: {e}")
 
 
 # =============================================================================

@@ -584,12 +584,12 @@ class TestFlextAuthConfiguration:
     def test_flext_result_import(self) -> None:
         """Test FlextResult can be imported from root."""
         # FlextResult should be available from root namespace
-        result = FlextResult.ok("test")
+        result = FlextResult[None].ok("test")
         assert result.success
         if result.data != "test":
             raise AssertionError(f"Expected {'test'}, got {result.data}")
 
-        failure = FlextResult.fail("error")
+        failure = FlextResult[None].fail("error")
         assert not failure.success
         if failure.error != "error":
             raise AssertionError(f"Expected {'error'}, got {failure.error}")
@@ -626,7 +626,7 @@ class TestPublicInterface:
         # Test instances work
         auth = FlextAuth()
         config = FlextAuthConfig()
-        result = FlextResult.ok("test")
+        result = FlextResult[None].ok("test")
 
         assert auth is not None
         assert config is not None

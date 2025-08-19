@@ -49,8 +49,8 @@ class ValidationCommand:
     def execute(self) -> FlextResult[None]:
         """Execute validation command."""
         if self.condition:
-            return FlextResult.fail(self.error_message)
-        return FlextResult.ok(None)
+            return FlextResult[None].fail(self.error_message)
+        return FlextResult[None].ok(None)
 
 
 class ValidationStrategy(ABC):
@@ -99,7 +99,7 @@ class PasswordStrengthValidationStrategy(ValidationStrategy):
             if not result.success:
                 return result
 
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 class UserValidationStrategy(ValidationStrategy):
@@ -128,7 +128,7 @@ class UserValidationStrategy(ValidationStrategy):
             if not result.success:
                 return result
 
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 class PermissionStrategy(ABC):
@@ -150,7 +150,7 @@ class AdminPermissionStrategy(PermissionStrategy):
         check_data: PermissionCheckData,
     ) -> FlextResult[bool]:
         """Admin users have all permissions - Parameter Object Pattern."""
-        return FlextResult.ok(check_data.user.role == FlextUserRole.ADMIN)
+        return FlextResult[None].ok(check_data.user.role == FlextUserRole.ADMIN)
 
 
 class RoleBasedPermissionStrategy(PermissionStrategy):
@@ -162,7 +162,7 @@ class RoleBasedPermissionStrategy(PermissionStrategy):
     ) -> FlextResult[bool]:
         """Check permissions based on user role - Parameter Object Pattern."""
         if not check_data.roles:
-            return FlextResult.ok(PERMISSION_DENIED)
+            return FlextResult[None].ok(PERMISSION_DENIED)
 
         # For compatibility with tests
         user_role_name = "user_manager"
@@ -173,9 +173,9 @@ class RoleBasedPermissionStrategy(PermissionStrategy):
                     permission.resource == check_data.resource
                     and permission.action == check_data.action
                 ):
-                    return FlextResult.ok(PERMISSION_GRANTED)
+                    return FlextResult[None].ok(PERMISSION_GRANTED)
 
-        return FlextResult.ok(PERMISSION_DENIED)
+        return FlextResult[None].ok(PERMISSION_DENIED)
 
 
 # =============================================================================
@@ -296,7 +296,7 @@ class FlextAuthenticationService:
                 email=email,
             )
             if not user_validation.success:
-                return FlextResult.fail(
+                return FlextResult[None].fail(
                     user_validation.error or "User validation failed",
                 )
 
@@ -304,7 +304,7 @@ class FlextAuthenticationService:
                 password=password,
             )
             if not password_validation.success:
-                return FlextResult.fail(
+                return FlextResult[None].fail(
                     password_validation.error or "Password validation failed",
                 )
 
@@ -318,10 +318,10 @@ class FlextAuthenticationService:
                 status=FlextUserStatus.ACTIVE,
             )
 
-            return FlextResult.ok(user)
+            return FlextResult[None].ok(user)
 
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(str(e))
+            return FlextResult[None].fail(str(e))
 
     def authenticate_user(
         self,
@@ -333,7 +333,7 @@ class FlextAuthenticationService:
         try:
             # Look up user in provided dictionary
             if username not in users:
-                return FlextResult.fail("User not found")
+                return FlextResult[None].fail("User not found")
 
             user = users[username]
 
@@ -341,11 +341,11 @@ class FlextAuthenticationService:
             # In real implementation, this would hash and compare
             test_password = "TestPass123!"  # noqa: S105
             if password == test_password:
-                return FlextResult.ok(user)
-            return FlextResult.fail("Invalid credentials")
+                return FlextResult[None].ok(user)
+            return FlextResult[None].fail("Invalid credentials")
 
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(str(e))
+            return FlextResult[None].fail(str(e))
 
     def change_password(
         self,
@@ -360,12 +360,12 @@ class FlextAuthenticationService:
                 password=new_password,
             )
             if not validation_result.success:
-                return FlextResult.fail(validation_result.error or "Validation failed")
+                return FlextResult[None].fail(validation_result.error or "Validation failed")
 
             # Hash the new password and update user
             hash_result = self._deps.password_service.hash_password(new_password)
             if not hash_result.success or not hash_result.data:
-                return FlextResult.fail("Failed to hash password")
+                return FlextResult[None].fail("Failed to hash password")
 
             new_password_hash = str(hash_result.data)
 
@@ -387,17 +387,17 @@ class FlextAuthenticationService:
             # Save updated user to repository
             save_result = asyncio.run(self._deps.user_repo.save(updated_user))
             if not save_result.success:
-                return FlextResult.fail(
+                return FlextResult[None].fail(
                     f"Failed to save password change: {save_result.error}",
                 )
 
             # Revoke all existing sessions for security
             self._deps.session_repo.revoke_all_sessions_for_user(str(user.id))
 
-            return FlextResult.ok(PASSWORD_CHANGE_SUCCESS)
+            return FlextResult[None].ok(PASSWORD_CHANGE_SUCCESS)
 
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(f"Password change failed: {e}")
+            return FlextResult[None].fail(f"Password change failed: {e}")
 
 
 class FlextAuthorizationService:
@@ -419,7 +419,7 @@ class FlextAuthorizationService:
         """Create role with validation."""
         try:
             if not name or not name.strip():
-                return FlextResult.fail("Role name cannot be empty")
+                return FlextResult[None].fail("Role name cannot be empty")
 
             # Create role entity
             role = FlextRole(
@@ -429,10 +429,10 @@ class FlextAuthorizationService:
                 permissions=permissions or [],
             )
 
-            return FlextResult.ok(role)
+            return FlextResult[None].ok(role)
 
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(str(e))
+            return FlextResult[None].fail(str(e))
 
     def check_permission(
         self,
@@ -456,7 +456,7 @@ class FlextAuthorizationService:
             # Handle legacy signature: check_permission(user, resource, action, roles)
             if isinstance(check_data, FlextUser):
                 if resource is None or action is None:
-                    return FlextResult.fail(
+                    return FlextResult[None].fail(
                         "Resource and action required for legacy signature",
                     )
 
@@ -480,7 +480,7 @@ class FlextAuthorizationService:
             return self._deps.role_permission_strategy.check_permission(check_data)
 
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(str(e))
+            return FlextResult[None].fail(str(e))
 
     def check_permission_legacy(
         self,
@@ -541,9 +541,9 @@ class FlextSessionService:
                 status=FlextSessionStatus.ACTIVE,
             )
 
-            return FlextResult.ok(session)
+            return FlextResult[None].ok(session)
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(str(e))
+            return FlextResult[None].fail(str(e))
 
     def validate_session(self, session: FlextSession) -> FlextResult[bool]:
         """Validate session - simplified method."""
@@ -553,32 +553,32 @@ class FlextSessionService:
                 session.expires_at < datetime.now(UTC)
                 or session.status == FlextSessionStatus.REVOKED
             ):
-                return FlextResult.ok(SESSION_INVALID)
+                return FlextResult[None].ok(SESSION_INVALID)
 
-            return FlextResult.ok(SESSION_VALID)
+            return FlextResult[None].ok(SESSION_VALID)
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(str(e))
+            return FlextResult[None].fail(str(e))
 
     def revoke_session(self, session_id: str) -> FlextResult[bool]:
         """Revoke session - simplified implementation."""
         try:
             if not session_id or not session_id.strip():
-                return FlextResult.fail("Session ID is required")
+                return FlextResult[None].fail("Session ID is required")
 
             session_result = self._deps.session_repo.find_by_id(session_id)
             if not session_result.success or not session_result.data:
-                return FlextResult.fail("Session not found")
+                return FlextResult[None].fail("Session not found")
 
             session = session_result.data
             # Already revoked sessions are considered successful
             if session.status == FlextSessionStatus.REVOKED:
-                return FlextResult.ok(LOGOUT_SUCCESS)
+                return FlextResult[None].ok(LOGOUT_SUCCESS)
 
             # Revoke and save
             revoked_session = session.revoke()
             save_result = self._deps.session_repo.save_sync(revoked_session)
 
-            return FlextResult.ok(save_result.success)
+            return FlextResult[None].ok(save_result.success)
 
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(f"Session revocation failed: {e}")
+            return FlextResult[None].fail(f"Session revocation failed: {e}")

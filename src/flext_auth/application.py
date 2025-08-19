@@ -43,7 +43,7 @@ class FlextAuthenticationService(FlextDomainService[str]):
             FlextResult indicating this method should not be used directly
 
         """
-        return FlextResult.fail(
+        return FlextResult[str].fail(
             "Use specific service methods instead of execute",
         )
 
@@ -73,7 +73,7 @@ class FlextAuthenticationService(FlextDomainService[str]):
                 .map(self._handle_successful_authentication)
             )
         except (KeyError, ValueError, AttributeError, TypeError) as e:
-            return FlextResult.fail(f"Authentication failed: {e}")
+            return FlextResult[str].fail(f"Authentication failed: {e}")
 
     def _get_user_from_dict(
         self,
@@ -83,16 +83,16 @@ class FlextAuthenticationService(FlextDomainService[str]):
         """Get user from dictionary - Single Responsibility Principle."""
         user = users.get(username)
         if not user:
-            return FlextResult.fail("User not found")
-        return FlextResult.ok(user)
+            return FlextResult[str].fail("User not found")
+        return FlextResult[object].ok(user)
 
     def _validate_user_status(self, user: FlextUser) -> FlextResult[FlextUser]:
         """Validate user account status - Single Responsibility Principle."""
         if not user.is_active():
-            return FlextResult.fail("User account is inactive")
+            return FlextResult[str].fail("User account is inactive")
         if user.is_locked():
-            return FlextResult.fail("User account is locked")
-        return FlextResult.ok(user)
+            return FlextResult[str].fail("User account is locked")
+        return FlextResult[object].ok(user)
 
     def _verify_user_password(
         self,
@@ -105,9 +105,9 @@ class FlextAuthenticationService(FlextDomainService[str]):
 
         if not verify_result.success or not verify_result.data:
             user.increment_failed_login()
-            return FlextResult.fail("Invalid password")
+            return FlextResult[str].fail("Invalid password")
 
-        return FlextResult.ok(user)
+        return FlextResult[object].ok(user)
 
     def _handle_successful_authentication(self, user: FlextUser) -> FlextUser:
         """Handle successful authentication - Single Responsibility Principle."""
@@ -138,14 +138,14 @@ class FlextAuthenticationService(FlextDomainService[str]):
                 FlextUserEmail.model_validate({"value": email})
                 FlextPlainPassword.model_validate({"value": password})
             except (ValueError, TypeError, AttributeError) as e:
-                return FlextResult.fail(f"Input validation failed: {e}")
+                return FlextResult[str].fail(f"Input validation failed: {e}")
 
             password_service = FlextPasswordService()
             hash_result = password_service.hash_password(
                 FlextPlainPassword.model_validate({"value": password}),
             )
             if not hash_result.success:
-                return FlextResult.fail(
+                return FlextResult[str].fail(
                     f"Password hashing failed: {hash_result.error}",
                 )
 
@@ -161,12 +161,12 @@ class FlextAuthenticationService(FlextDomainService[str]):
             )
 
             if not user.is_valid():
-                return FlextResult.fail("Invalid user data")
+                return FlextResult[str].fail("Invalid user data")
 
-            return FlextResult.ok(user)
+            return FlextResult[object].ok(user)
 
         except (ValueError, TypeError, AttributeError, KeyError) as e:
-            return FlextResult.fail(f"User creation failed: {e}")
+            return FlextResult[str].fail(f"User creation failed: {e}")
 
     def change_password(
         self,
@@ -194,13 +194,13 @@ class FlextAuthenticationService(FlextDomainService[str]):
                 user.password_hash,
             )
             if not verify_result.success or not verify_result.data:
-                return FlextResult.fail("Current password is incorrect")
+                return FlextResult[str].fail("Current password is incorrect")
 
             # Validate new password using value object
             try:
                 FlextPlainPassword.model_validate({"value": new_password})
             except (ValueError, TypeError, AttributeError) as e:
-                return FlextResult.fail(
+                return FlextResult[str].fail(
                     f"New password validation failed: {e}",
                 )
 
@@ -209,15 +209,15 @@ class FlextAuthenticationService(FlextDomainService[str]):
                 FlextPlainPassword.model_validate({"value": new_password}),
             )
             if not hash_result.success:
-                return FlextResult.fail(
+                return FlextResult[str].fail(
                     f"Password hashing failed: {hash_result.error}",
                 )
 
             user.password_hash = hash_result.data.value if hash_result.data else ""
-            return FlextResult.ok(data=True)
+            return FlextResult[object].ok(True)
 
         except (ValueError, TypeError, AttributeError, KeyError) as e:
-            return FlextResult.fail(f"Password change failed: {e}")
+            return FlextResult[str].fail(f"Password change failed: {e}")
 
 
 class FlextSessionService(FlextDomainService[str]):
@@ -233,7 +233,7 @@ class FlextSessionService(FlextDomainService[str]):
             FlextResult indicating this method should not be used directly
 
         """
-        return FlextResult.fail(
+        return FlextResult[str].fail(
             "Use specific service methods instead of execute",
         )
 
@@ -258,7 +258,7 @@ class FlextSessionService(FlextDomainService[str]):
         """
         try:
             if not user.is_active():
-                return FlextResult.fail("Cannot create session for inactive user")
+                return FlextResult[str].fail("Cannot create session for inactive user")
 
             session = FlextSession(
                 id=str(uuid.uuid4()),
@@ -272,12 +272,12 @@ class FlextSessionService(FlextDomainService[str]):
             )
 
             if not session.has_valid_data():
-                return FlextResult.fail("Invalid session data")
+                return FlextResult[str].fail("Invalid session data")
 
-            return FlextResult.ok(session)
+            return FlextResult[object].ok(session)
 
         except (ValueError, TypeError, AttributeError, KeyError, OSError) as e:
-            return FlextResult.fail(f"Session creation failed: {e}")
+            return FlextResult[str].fail(f"Session creation failed: {e}")
 
     def validate_session(self, session: FlextSession) -> FlextResult[bool]:
         """Validate a session.
@@ -291,12 +291,12 @@ class FlextSessionService(FlextDomainService[str]):
         """
         try:
             if not session.is_valid():
-                return FlextResult.fail("Session is not valid")
+                return FlextResult[str].fail("Session is not valid")
 
-            return FlextResult.ok(data=True)
+            return FlextResult[object].ok(True)
 
         except (ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Session validation failed: {e}")
+            return FlextResult[str].fail(f"Session validation failed: {e}")
 
     def revoke_session(self, session: FlextSession) -> FlextResult[bool]:
         """Revoke a session.
@@ -310,10 +310,10 @@ class FlextSessionService(FlextDomainService[str]):
         """
         try:
             session.revoke()
-            return FlextResult.ok(data=True)
+            return FlextResult[object].ok(True)
 
         except (ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Session revocation failed: {e}")
+            return FlextResult[str].fail(f"Session revocation failed: {e}")
 
 
 class FlextAuthorizationService(FlextDomainService[str]):
@@ -329,7 +329,7 @@ class FlextAuthorizationService(FlextDomainService[str]):
             FlextResult indicating this method should not be used directly
 
         """
-        return FlextResult.fail(
+        return FlextResult[str].fail(
             "Use specific service methods instead of execute",
         )
 
@@ -355,18 +355,18 @@ class FlextAuthorizationService(FlextDomainService[str]):
         try:
             # Admin users have all permissions
             if user.is_REDACTED_LDAP_BIND_PASSWORD():
-                return FlextResult.ok(data=True)
+                return FlextResult[object].ok(True)
 
             # If roles are provided, check role permissions
             if roles:
                 user_role = roles.get(user.role)
                 if user_role and user_role.has_permission(resource, action):
-                    return FlextResult.ok(data=True)
+                    return FlextResult[object].ok(True)
 
-            return FlextResult.ok(data=False)
+            return FlextResult[object].ok(False)
 
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Permission check failed: {e}")
+            return FlextResult[str].fail(f"Permission check failed: {e}")
 
     def create_role(
         self,
@@ -387,7 +387,7 @@ class FlextAuthorizationService(FlextDomainService[str]):
         """
         try:
             if not name:
-                return FlextResult.fail("Role name is required")
+                return FlextResult[str].fail("Role name is required")
 
             role = FlextRole(
                 id=str(uuid.uuid4()),
@@ -397,12 +397,12 @@ class FlextAuthorizationService(FlextDomainService[str]):
             )
 
             if not role.is_valid():
-                return FlextResult.fail("Invalid role data")
+                return FlextResult[str].fail("Invalid role data")
 
-            return FlextResult.ok(role)
+            return FlextResult[object].ok(role)
 
         except (ValueError, TypeError, AttributeError, KeyError) as e:
-            return FlextResult.fail(f"Role creation failed: {e}")
+            return FlextResult[str].fail(f"Role creation failed: {e}")
 
 
 # Backwards compatibility aliases

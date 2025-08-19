@@ -222,11 +222,11 @@ def flext_auth_quick_start(
         # Tests expect FlextAuth but the function signature says FlextAuthService
         # This is a design inconsistency that needs to be resolved
         _logger.info("FlextAuth quick start completed successfully")
-        return FlextResult.ok(auth_service)
+        return FlextResult[None].ok(auth_service)
 
     except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
         _logger.exception("FlextAuth quick start failed")
-        return FlextResult.fail(f"Quick start error: {e}")
+        return FlextResult[None].fail(f"Quick start error: {e}")
 
 
 def flext_auth_hash_password(password: str, rounds: int = 12) -> str:
@@ -318,7 +318,7 @@ def flext_auth_generate_jwt(
 
     except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
         _logger.exception("JWT generation failed")
-        return FlextResult.fail(f"JWT generation error: {e}")
+        return FlextResult[None].fail(f"JWT generation error: {e}")
 
 
 def flext_auth_validate_jwt(
@@ -338,7 +338,7 @@ def flext_auth_validate_jwt(
     try:
         # Validate token content (type is already guaranteed by signature)
         if not token or (isinstance(token, str) and token.strip() == ""):
-            return FlextResult.fail("Token cannot be empty")
+            return FlextResult[None].fail("Token cannot be empty")
 
         if not secret:
             secret = DEFAULT_JWT_SECRET
@@ -358,7 +358,7 @@ def flext_auth_validate_jwt(
             claims = result.data
             exp_time = getattr(claims, "exp", 0)
             iat_time = getattr(claims, "iat", 0)
-            return FlextResult.ok(
+            return FlextResult[None].ok(
                 {
                     "user_id": getattr(claims, "sub", ""),  # JWT standard 'sub'
                     "username": getattr(claims, "username", ""),
@@ -370,11 +370,11 @@ def flext_auth_validate_jwt(
                     "issued": iat_time,
                 },
             )
-        return FlextResult.fail(result.error or "Token validation failed")
+        return FlextResult[None].fail(result.error or "Token validation failed")
 
     except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
         _logger.exception("JWT validation failed")
-        return FlextResult.fail(f"JWT validation error: {e}")
+        return FlextResult[None].fail(f"JWT validation error: {e}")
 
 
 def flext_auth_validate_email(email: str) -> bool:
@@ -513,11 +513,11 @@ def flext_auth_check_token(
     """
     # Handle empty token case with expected error message
     if not token or token.strip() == "":
-        return FlextResult.fail("Token is required")
+        return FlextResult[None].fail("Token is required")
 
     # Handle obvious invalid formats
     if "." not in token or len(token.split(".")) != JWT_PARTS_COUNT:
-        return FlextResult.fail("Invalid JWT format")
+        return FlextResult[None].fail("Invalid JWT format")
 
     result = flext_auth_validate_jwt(token, secret)
     if result.success and result.data:
@@ -527,7 +527,7 @@ def flext_auth_check_token(
         # Ensure required fields are present with defaults
         token_data.setdefault("permissions", [])
         token_data.setdefault("security_checks", [])
-        return FlextResult.ok(token_data)
+        return FlextResult[None].ok(token_data)
     # Normalize error messages to match test expectations
     error = result.error or "Unknown error"
     if "Token cannot be empty" in error:
@@ -537,7 +537,7 @@ def flext_auth_check_token(
     elif "Invalid header string" in error or "codec can't decode" in error:
         error = "Token validation failed"
 
-    return FlextResult.fail(error)
+    return FlextResult[None].fail(error)
 
 
 def flext_auth_create_secure_session(
@@ -699,9 +699,9 @@ def flext_auth_complete_workflow(
             config=auth_config,
         )
         auth_service = FlextAuthService(dependencies)
-        setup_result = FlextResult.ok(auth_service)
+        setup_result = FlextResult[None].ok(auth_service)
         if not setup_result.success:
-            return FlextResult.fail(f"Setup failed: {setup_result.error}")
+            return FlextResult[None].fail(f"Setup failed: {setup_result.error}")
 
         service_data = setup_result.data
         # Type-safe: data guaranteed to exist after success check
@@ -717,16 +717,16 @@ def flext_auth_complete_workflow(
 
         register_result = asyncio.run(auth_service.register_user(registration_data))
         if not register_result.success:
-            return FlextResult.fail(f"Registration failed: {register_result.error}")
+            return FlextResult[None].fail(f"Registration failed: {register_result.error}")
 
         # Authenticate user with required ip_address parameter
         auth_result = asyncio.run(
             auth_service.authenticate_user(username, password, ip_address="127.0.0.1"),
         )
         if not auth_result.success:
-            return FlextResult.fail(f"Authentication failed: {auth_result.error}")
+            return FlextResult[None].fail(f"Authentication failed: {auth_result.error}")
 
-        return FlextResult.ok(
+        return FlextResult[None].ok(
             {
                 "auth_service": auth_service,
                 "user": register_result.data,
@@ -737,7 +737,7 @@ def flext_auth_complete_workflow(
 
     except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
         _logger.exception("Complete workflow failed")
-        return FlextResult.fail(f"Workflow error: {e}")
+        return FlextResult[None].fail(f"Workflow error: {e}")
 
 
 # =============================================================================
@@ -819,10 +819,10 @@ class FlextAuthBatchOperations:
                     continue
 
         if validate_all and errors:
-            return FlextResult.fail(
+            return FlextResult[None].fail(
                 f"Batch registration errors: {', '.join(errors)}",
             )
-        return FlextResult.ok(results)
+        return FlextResult[None].ok(results)
 
     async def validate_multiple_tokens(
         self,
@@ -836,7 +836,7 @@ class FlextAuthBatchOperations:
                 valid_tokens.append({"user_id": result.data.user_id})
             else:
                 errors.append(result.error or "Token validation failed")
-        return FlextResult.ok(
+        return FlextResult[None].ok(
             {"valid_tokens": valid_tokens, "errors": errors, "total": len(tokens)},
         )
 
@@ -860,7 +860,7 @@ class FlextAuthBatchOperations:
             )
             if auth_result.success and auth_result.data:
                 sessions.append(auth_result.data)
-        return FlextResult.ok(
+        return FlextResult[None].ok(
             {"sessions": sessions, "total": len(sessions), "hours": session_hours},
         )
 
@@ -917,10 +917,10 @@ def flext_auth_instant_api(
     try:
         # Validate required parameters
         if not service_name or not service_name.strip():
-            return FlextResult.fail("Username and scope are required")
+            return FlextResult[None].fail("Username and scope are required")
 
         if expires_days <= 0:
-            return FlextResult.fail("Expires days must be between 1 and 3650")
+            return FlextResult[None].fail("Expires days must be between 1 and 3650")
 
         # Generate API key (JWT token)
         payload = {
@@ -936,11 +936,11 @@ def flext_auth_instant_api(
             expires_minutes=expires_days * 24 * 60,
         )
         if not token_result.success:
-            return FlextResult.fail(f"Failed to create API key: {token_result.error}")
+            return FlextResult[None].fail(f"Failed to create API key: {token_result.error}")
 
         # Return API information with headers as expected by tests
         api_key = token_result.data
-        return FlextResult.ok(
+        return FlextResult[None].ok(
             {
                 "api_key": api_key,
                 "headers": {"Authorization": f"Bearer {api_key}"},
@@ -954,7 +954,7 @@ def flext_auth_instant_api(
         )
 
     except Exception as e:
-        return FlextResult.fail(f"Instant API creation failed: {e!s}")
+        return FlextResult[None].fail(f"Instant API creation failed: {e!s}")
 
 
 def flext_auth_middleware_factory(
@@ -1049,7 +1049,7 @@ def flext_auth_one_liner(
         # Validate all inputs and setup - consolidated error handling
         validation_result = _validate_and_setup_auth(username, email, password)
         if validation_result.is_failure:
-            return FlextResult.fail(validation_result.error or "Validation failed")
+            return FlextResult[None].fail(validation_result.error or "Validation failed")
 
         auth = validation_result.data
         # Type-safe: data guaranteed to exist after success check
@@ -1069,7 +1069,7 @@ def flext_auth_one_liner(
         return result
 
     except Exception as e:
-        return FlextResult.fail(f"One-liner auth failed: {e!s}")
+        return FlextResult[None].fail(f"One-liner auth failed: {e!s}")
 
 
 def _validate_and_setup_auth(
@@ -1090,15 +1090,15 @@ def _validate_and_setup_auth(
         validation_errors.append("Weak password")
 
     if validation_errors:
-        return FlextResult.fail("; ".join(validation_errors))
+        return FlextResult[None].fail("; ".join(validation_errors))
 
     # Create quick auth instance
     auth_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
     if not auth_result.success:
-        return FlextResult.fail(f"Auth setup failed: {auth_result.error}")
+        return FlextResult[None].fail(f"Auth setup failed: {auth_result.error}")
 
     # Type-safe: data guaranteed to exist after success check
-    return FlextResult.ok(auth_result.data)
+    return FlextResult[None].ok(auth_result.data)
 
 
 def _execute_auth_workflow(
@@ -1123,18 +1123,18 @@ def _execute_auth_workflow(
             auth.register_user(registration_data),
         )
         if not register_result.success:
-            return FlextResult.fail(f"Registration failed: {register_result.error}")
+            return FlextResult[None].fail(f"Registration failed: {register_result.error}")
 
         # Authenticate user with proper parameters
         login_result = loop.run_until_complete(
             auth.authenticate_user(username, password, ip_address="127.0.0.1"),
         )
         if not login_result.success:
-            return FlextResult.fail(f"Login failed: {login_result.error}")
+            return FlextResult[None].fail(f"Login failed: {login_result.error}")
 
         # Return complete auth data and include derived auth_context
         login_data = login_result.data or {}
-        result = FlextResult.ok(
+        result = FlextResult[None].ok(
             {
                 "user": login_data.get("user"),
                 "tokens": login_data.get("tokens"),

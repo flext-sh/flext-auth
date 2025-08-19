@@ -139,7 +139,7 @@ class FlextPasswordService:
                 try:
                     FlextPlainPassword.model_validate({"value": password_str})
                 except (ValueError, TypeError) as e:
-                    return FlextResult.fail(f"Password validation failed: {e}")
+                    return FlextResult[object].fail(f"Password validation failed: {e}")
 
             # Generate salt and hash
             password_bytes = password_str.encode("utf-8")
@@ -150,16 +150,16 @@ class FlextPasswordService:
             try:
                 hashed_vo = FlextHashedPassword.model_validate({"value": hashed_str})
             except (ValueError, TypeError) as e:
-                return FlextResult.fail(f"Password hashing failed: {e}")
+                return FlextResult[object].fail(f"Password hashing failed: {e}")
             # Domain VO may raise inside validate_business_rules; call to ensure validity
             try:
                 _ = hashed_vo.validate_business_rules()
             except Exception as e:
-                return FlextResult.fail(f"Password hashing failed: {e}")
-            return FlextResult.ok(hashed_vo)
+                return FlextResult[object].fail(f"Password hashing failed: {e}")
+            return FlextResult[object].ok(hashed_vo)
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult.fail(f"Password hashing failed: {e}")
+            return FlextResult[object].fail(f"Password hashing failed: {e}")
 
     def verify_password(
         self,
@@ -191,7 +191,7 @@ class FlextPasswordService:
 
             # Verify hash format
             if not hash_str.startswith("$2b$"):
-                return FlextResult.fail(
+                return FlextResult[object].fail(
                     "Failed to verify password: Invalid hash format",
                 )
 
@@ -200,10 +200,10 @@ class FlextPasswordService:
             hash_bytes = hash_str.encode("utf-8")
 
             is_valid = bcrypt.checkpw(password_bytes, hash_bytes)
-            return FlextResult.ok(is_valid)
+            return FlextResult[object].ok(is_valid)
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult.fail(
+            return FlextResult[object].fail(
                 f"Password verification failed: {e}",
             )
 
@@ -222,11 +222,11 @@ class FlextPasswordService:
         """
         try:
             if length < MIN_PASSWORD_LENGTH:
-                return FlextResult.fail(
+                return FlextResult[object].fail(
                     "Password length must be at least 8 characters",
                 )
             if length > MAX_PASSWORD_LENGTH:
-                return FlextResult.fail(
+                return FlextResult[object].fail(
                     f"Password length must be at most {MAX_PASSWORD_LENGTH} characters",
                 )
 
@@ -259,12 +259,12 @@ class FlextPasswordService:
             # Validate the generated password and return as FlextPlainPassword
             try:
                 password_obj = FlextPlainPassword.model_validate({"value": password})
-                return FlextResult.ok(password_obj)
+                return FlextResult[object].ok(password_obj)
             except (ValueError, TypeError) as e:
-                return FlextResult.fail(f"Generated password validation failed: {e}")
+                return FlextResult[object].fail(f"Generated password validation failed: {e}")
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult.fail(f"Password generation failed: {e}")
+            return FlextResult[object].fail(f"Password generation failed: {e}")
 
     def check_password_strength(
         self,
@@ -328,10 +328,10 @@ class FlextPasswordService:
             # Estimate crack time using helper method
             analysis["estimated_crack_time"] = self._estimate_crack_time(analysis)
 
-            return FlextResult.ok(analysis)
+            return FlextResult[object].ok(analysis)
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult.fail(
+            return FlextResult[object].fail(
                 f"Password strength analysis failed: {e}",
             )
 
@@ -454,9 +454,9 @@ class FlextPasswordService:
         """
         try:
             token = secrets.token_urlsafe(TOKEN_BYTES)  # 256 bits of entropy
-            return FlextResult.ok(token)
+            return FlextResult[object].ok(token)
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult.fail(f"Token generation failed: {e}")
+            return FlextResult[object].fail(f"Token generation failed: {e}")
 
     def is_password_compromised(self, password: str) -> FlextResult[bool]:
         """Check if password appears in common breach databases.
@@ -487,10 +487,10 @@ class FlextPasswordService:
             ]
 
             is_compromised = password.lower() in common_passwords
-            return FlextResult.ok(is_compromised)
+            return FlextResult[object].ok(is_compromised)
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult.fail(f"Breach check failed: {e}")
+            return FlextResult[object].fail(f"Breach check failed: {e}")
 
 
 # =============================================================================
@@ -554,10 +554,10 @@ class FlextJWTService:
 
             token = jwt.encode(claims, self.secret_key, algorithm=self.algorithm)
             # PyJWT 2.0+ returns str directly
-            return FlextResult.ok(str(token))
+            return FlextResult[object].ok(str(token))
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult.fail(f"Failed to generate access token: {e}")
+            return FlextResult[object].fail(f"Failed to generate access token: {e}")
 
     def generate_refresh_token(
         self,
@@ -581,10 +581,10 @@ class FlextJWTService:
 
             token = jwt.encode(claims, self.secret_key, algorithm=self.algorithm)
             # PyJWT 2.0+ returns str directly
-            return FlextResult.ok(str(token))
+            return FlextResult[object].ok(str(token))
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult.fail(f"Failed to generate refresh token: {e}")
+            return FlextResult[object].fail(f"Failed to generate refresh token: {e}")
 
     def generate_token_pair(
         self,
@@ -604,19 +604,19 @@ class FlextJWTService:
                 extra_claims,
             )
             if not access_result.success:
-                return FlextResult.fail(f"Access token failed: {access_result.error}")
+                return FlextResult[object].fail(f"Access token failed: {access_result.error}")
 
             refresh_result = self.generate_refresh_token(user_id, session_id)
             if not refresh_result.success:
-                return FlextResult.fail(f"Refresh token failed: {refresh_result.error}")
+                return FlextResult[object].fail(f"Refresh token failed: {refresh_result.error}")
 
             access_token = access_result.data
             refresh_token = refresh_result.data
 
             if not access_token or not refresh_token:
-                return FlextResult.fail("Failed to generate token data")
+                return FlextResult[object].fail("Failed to generate token data")
 
-            return FlextResult.ok(
+            return FlextResult[object].ok(
                 {
                     "access_token": access_token,
                     "refresh_token": refresh_token,
@@ -626,7 +626,7 @@ class FlextJWTService:
             )
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult.fail(f"Failed to generate token pair: {e}")
+            return FlextResult[object].fail(f"Failed to generate token pair: {e}")
 
     def verify_token(self, token: str) -> FlextResult[FlextJWTClaims]:
         """Verify and decode JWT token."""
@@ -642,14 +642,14 @@ class FlextJWTService:
             )
 
             claims = FlextJWTClaims(**payload)
-            return FlextResult.ok(claims)
+            return FlextResult[object].ok(claims)
 
         except jwt.ExpiredSignatureError:
-            return FlextResult.fail("Token has expired")
+            return FlextResult[object].fail("Token has expired")
         except jwt.InvalidTokenError as e:
-            return FlextResult.fail(f"Failed to verify token: {e}")
+            return FlextResult[object].fail(f"Failed to verify token: {e}")
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult.fail(f"Failed to verify token: {e}")
+            return FlextResult[object].fail(f"Failed to verify token: {e}")
 
     def refresh_access_token(self, refresh_token: str) -> FlextResult[str]:
         """Generate new access token from refresh token."""
@@ -657,16 +657,16 @@ class FlextJWTService:
             # Verify refresh token
             verify_result = self.verify_token(refresh_token)
             if not verify_result.success:
-                return FlextResult.fail(f"Invalid refresh token: {verify_result.error}")
+                return FlextResult[object].fail(f"Invalid refresh token: {verify_result.error}")
 
             claims = verify_result.data
 
             if not claims:
-                return FlextResult.fail("No claims in refresh token")
+                return FlextResult[object].fail("No claims in refresh token")
 
             # Ensure it's a refresh token
             if claims.token_type != FlextAuthConstants.TokenTypes.REFRESH:
-                return FlextResult.fail("Invalid token type for refresh")
+                return FlextResult[object].fail("Invalid token type for refresh")
 
             # Generate new access token (we need to get user details)
             username = getattr(claims, "username", "user")
@@ -680,7 +680,7 @@ class FlextJWTService:
             )
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult.fail(f"Token refresh failed: {e}")
+            return FlextResult[object].fail(f"Token refresh failed: {e}")
 
     def extract_user_id(self, token: str) -> FlextResult[str]:
         """Extract user ID from token without full verification."""
@@ -692,12 +692,12 @@ class FlextJWTService:
             )
             user_id = payload.get("sub")
             if not user_id:
-                return FlextResult.fail("No user ID in token")
+                return FlextResult[object].fail("No user ID in token")
 
-            return FlextResult.ok(user_id)
+            return FlextResult[object].ok(user_id)
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult.fail(f"Failed to extract user ID: {e}")
+            return FlextResult[object].fail(f"Failed to extract user ID: {e}")
 
     def get_token_claims(self, token: str) -> FlextResult[FlextJWTClaims]:
         """Get all claims from token."""
@@ -705,18 +705,18 @@ class FlextJWTService:
             # Verify and get claims
             verify_result = self.verify_token(token)
             if not verify_result.success:
-                return FlextResult.fail(
+                return FlextResult[object].fail(
                     f"Failed to decode token: {verify_result.error}",
                 )
 
             claims = verify_result.data
             if not claims:
-                return FlextResult.fail("No claims in token")
+                return FlextResult[object].fail("No claims in token")
 
-            return FlextResult.ok(claims)
+            return FlextResult[object].ok(claims)
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult.fail(f"Failed to get token claims: {e}")
+            return FlextResult[object].fail(f"Failed to get token claims: {e}")
 
     def get_token_expiry(self, token: str) -> FlextResult[datetime]:
         """Get token expiry time."""
@@ -727,13 +727,13 @@ class FlextJWTService:
             )
             exp = payload.get("exp")
             if not exp:
-                return FlextResult.fail("No expiry in token")
+                return FlextResult[object].fail("No expiry in token")
 
             expiry = datetime.fromtimestamp(exp, tz=UTC)
-            return FlextResult.ok(expiry)
+            return FlextResult[object].ok(expiry)
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult.fail(f"Failed to get token expiry: {e}")
+            return FlextResult[object].fail(f"Failed to get token expiry: {e}")
 
     def is_token_expired(self, token: str) -> FlextResult[bool]:
         """Check if token is expired without full verification."""
@@ -741,18 +741,18 @@ class FlextJWTService:
             expiry_result = self.get_token_expiry(token)
             if not expiry_result.success:
                 token_is_expired = True
-                return FlextResult.ok(token_is_expired)
+                return FlextResult[object].ok(token_is_expired)
 
             expiry = expiry_result.data
             if not expiry:
                 token_is_expired = True
-                return FlextResult.ok(token_is_expired)
+                return FlextResult[object].ok(token_is_expired)
             is_expired = datetime.now(UTC) >= expiry
-            return FlextResult.ok(bool(is_expired))
+            return FlextResult[object].ok(bool(is_expired))
 
         except (ValueError, TypeError, OSError) as e:
             logger.warning(f"Token expiry check failed: {e}")
-            return FlextResult.fail(f"Token expiry check failed: {e}")
+            return FlextResult[object].fail(f"Token expiry check failed: {e}")
 
 
 # =============================================================================
@@ -770,8 +770,8 @@ class ValidationCommand:
     def execute(self) -> FlextResult[None]:
         """Execute validation command."""
         if self.condition:
-            return FlextResult.fail(self.error_message)
-        return FlextResult.ok(None)
+            return FlextResult[object].fail(self.error_message)
+        return FlextResult[object].ok(None)
 
 
 class ValidationStrategy(ABC):
@@ -820,7 +820,7 @@ class PasswordStrengthValidationStrategy(ValidationStrategy):
             if not result.success:
                 return result
 
-        return FlextResult.ok(None)
+        return FlextResult[object].ok(None)
 
 
 class UserValidationStrategy(ValidationStrategy):
@@ -849,7 +849,7 @@ class UserValidationStrategy(ValidationStrategy):
             if not result.success:
                 return result
 
-        return FlextResult.ok(None)
+        return FlextResult[object].ok(None)
 
 
 class PermissionStrategy(ABC):
@@ -884,9 +884,9 @@ class AdminPermissionStrategy(PermissionStrategy):
         # Pydantic v2 models are immutable-like; access attribute directly
         # When legacy signature is used, check_data can be a FlextUser
         if isinstance(check_data, FlextUser):
-            return FlextResult.ok(check_data.role == FlextUserRole.ADMIN)
+            return FlextResult[object].ok(check_data.role == FlextUserRole.ADMIN)
         # PermissionCheckData is a dataclass; direct attribute access is safe
-        return FlextResult.ok(check_data.user.role == FlextUserRole.ADMIN)
+        return FlextResult[object].ok(check_data.user.role == FlextUserRole.ADMIN)
 
 
 class RoleBasedPermissionStrategy(PermissionStrategy):
@@ -898,7 +898,7 @@ class RoleBasedPermissionStrategy(PermissionStrategy):
     ) -> FlextResult[bool]:
         """Check permissions based on user role - Parameter Object Pattern."""
         if not check_data.roles:
-            return FlextResult.ok(PERMISSION_DENIED)
+            return FlextResult[object].ok(PERMISSION_DENIED)
 
         # For compatibility with tests
         user_role_name = "user_manager"
@@ -909,9 +909,9 @@ class RoleBasedPermissionStrategy(PermissionStrategy):
                     permission.resource == check_data.resource
                     and permission.action == check_data.action
                 ):
-                    return FlextResult.ok(PERMISSION_GRANTED)
+                    return FlextResult[object].ok(PERMISSION_GRANTED)
 
-        return FlextResult.ok(PERMISSION_DENIED)
+        return FlextResult[object].ok(PERMISSION_DENIED)
 
 
 @dataclass
@@ -969,7 +969,7 @@ class FlextAuthenticationService:
                 email=email,
             )
             if not user_validation.success:
-                return FlextResult.fail(
+                return FlextResult[object].fail(
                     user_validation.error or "User validation failed",
                 )
 
@@ -977,14 +977,14 @@ class FlextAuthenticationService:
                 password=password,
             )
             if not password_validation.success:
-                return FlextResult.fail(
+                return FlextResult[object].fail(
                     password_validation.error or "Password validation failed",
                 )
 
             # Hash the password for the new user
             hash_result = self._deps.password_service.hash_password(password)
             if not hash_result.success or not hash_result.data:
-                return FlextResult.fail("Failed to hash password")
+                return FlextResult[object].fail("Failed to hash password")
             password_hash = hash_result.data.value
 
             # Create user entity
@@ -997,10 +997,10 @@ class FlextAuthenticationService:
                 status=FlextUserStatus.ACTIVE,
             )
 
-            return FlextResult.ok(user)
+            return FlextResult[object].ok(user)
 
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(str(e))
+            return FlextResult[object].fail(str(e))
 
     def authenticate_user(
         self,
@@ -1012,18 +1012,18 @@ class FlextAuthenticationService:
         try:
             # Look up user in provided dictionary
             if username not in users:
-                return FlextResult.fail("User not found")
+                return FlextResult[object].fail("User not found")
 
             user = users[username]
 
             # Simple password verification for compatibility
             test_password = os.getenv("FLEXT_TEST_PASSWORD", "TestPass123!")
             if password == test_password:  # nosec B105 - Test authentication only
-                return FlextResult.ok(user)
-            return FlextResult.fail("Invalid credentials")
+                return FlextResult[object].ok(user)
+            return FlextResult[object].fail("Invalid credentials")
 
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(str(e))
+            return FlextResult[object].fail(str(e))
 
     def change_password(
         self,
@@ -1041,18 +1041,18 @@ class FlextAuthenticationService:
                     existing_hash,
                 )
                 if not verify_current.success or not verify_current.data:
-                    return FlextResult.fail("Current password is incorrect")
+                    return FlextResult[object].fail("Current password is incorrect")
             # Use Strategy Pattern for password validation
             validation_result = self._deps.password_validation_strategy.validate(
                 password=new_password,
             )
             if not validation_result.success:
-                return FlextResult.fail(validation_result.error or "Validation failed")
+                return FlextResult[object].fail(validation_result.error or "Validation failed")
 
             # Hash the new password and update user
             hash_result = self._deps.password_service.hash_password(new_password)
             if not hash_result.success or not hash_result.data:
-                return FlextResult.fail("Failed to hash password")
+                return FlextResult[object].fail("Failed to hash password")
 
             new_password_hash = hash_result.data.value
 
@@ -1089,17 +1089,17 @@ class FlextAuthenticationService:
             }
             save_result = asyncio.run(self._deps.user_repo.save(updated_user))
             if not save_result.success:
-                return FlextResult.fail(
+                return FlextResult[object].fail(
                     f"Failed to save password change: {save_result.error}",
                 )
 
             # Revoke all existing sessions for security
             self._deps.session_repo.revoke_all_sessions_for_user(str(user.id))
 
-            return FlextResult.ok(PASSWORD_CHANGE_SUCCESS)
+            return FlextResult[object].ok(PASSWORD_CHANGE_SUCCESS)
 
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(f"Password change failed: {e}")
+            return FlextResult[object].fail(f"Password change failed: {e}")
 
 
 class FlextAuthorizationService:
@@ -1136,7 +1136,7 @@ class FlextAuthorizationService:
         """Create role with validation."""
         try:
             if not name or not name.strip():
-                return FlextResult.fail("Role name cannot be empty")
+                return FlextResult[object].fail("Role name cannot be empty")
 
             # Create role entity
             role = FlextRole(
@@ -1146,10 +1146,10 @@ class FlextAuthorizationService:
                 permissions=permissions or [],
             )
 
-            return FlextResult.ok(role)
+            return FlextResult[object].ok(role)
 
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(str(e))
+            return FlextResult[object].fail(str(e))
 
     def check_permission(
         self,
@@ -1163,7 +1163,7 @@ class FlextAuthorizationService:
             # Handle legacy signature: check_permission(user, resource, action, roles)
             if isinstance(check_data, FlextUser):
                 if resource is None or action is None:
-                    return FlextResult.fail(
+                    return FlextResult[object].fail(
                         "Resource and action required for legacy signature",
                     )
 
@@ -1208,7 +1208,7 @@ class FlextAuthorizationService:
             return self._deps.role_permission_strategy.check_permission(role_input)
 
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(str(e))
+            return FlextResult[object].fail(str(e))
 
     def check_permission_legacy(
         self,
@@ -1281,9 +1281,9 @@ class FlextSessionService:
                 status=FlextSessionStatus.ACTIVE,
             )
 
-            return FlextResult.ok(session)
+            return FlextResult[object].ok(session)
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(str(e))
+            return FlextResult[object].fail(str(e))
 
     def validate_session(self, session: FlextSession) -> FlextResult[bool]:
         """Validate session - simplified method."""
@@ -1293,35 +1293,35 @@ class FlextSessionService:
                 session.expires_at < datetime.now(UTC)
                 or session.status == FlextSessionStatus.REVOKED
             ):
-                return FlextResult.ok(SESSION_INVALID)
+                return FlextResult[object].ok(SESSION_INVALID)
 
-            return FlextResult.ok(SESSION_VALID)
+            return FlextResult[object].ok(SESSION_VALID)
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(str(e))
+            return FlextResult[object].fail(str(e))
 
     def revoke_session(self, session_id: str) -> FlextResult[bool]:
         """Revoke session - simplified implementation."""
         try:
             if not session_id or not session_id.strip():
-                return FlextResult.fail("Session ID is required")
+                return FlextResult[object].fail("Session ID is required")
 
             session_result = self._deps.session_repo.find_by_id(session_id)
             if not session_result.success or not session_result.data:
-                return FlextResult.fail("Session not found")
+                return FlextResult[object].fail("Session not found")
 
             session = session_result.data
             # Already revoked sessions are considered successful
             if session.status.name == "REVOKED":
-                return FlextResult.ok(LOGOUT_SUCCESS)
+                return FlextResult[object].ok(LOGOUT_SUCCESS)
 
             # Revoke and save
             revoked_session = session.revoke()
             save_result = asyncio.run(self._deps.session_repo.save(revoked_session))
 
-            return FlextResult.ok(save_result.success)
+            return FlextResult[object].ok(save_result.success)
 
         except (ValueError, TypeError) as e:
-            return FlextResult.fail(f"Session revocation failed: {e}")
+            return FlextResult[object].fail(f"Session revocation failed: {e}")
 
 
 # =============================================================================

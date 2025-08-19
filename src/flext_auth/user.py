@@ -70,12 +70,12 @@ class InMemoryUserRepository(UserRepository):
             # Check for username conflicts
             existing_username = self._username_index.get(user.username.lower())
             if existing_username and existing_username != user.id:
-                return FlextResult.fail(f"Username '{user.username}' already exists")
+                return FlextResult[None].fail(f"Username '{user.username}' already exists")
 
             # Check for email conflicts
             existing_email = self._email_index.get(str(user.email).lower())
             if existing_email and existing_email != user.id:
-                return FlextResult.fail(f"Email '{user.email}' already exists")
+                return FlextResult[None].fail(f"Email '{user.email}' already exists")
 
             # Create user with updated timestamp (entities are immutable)
             updated_user = FlextUser(
@@ -97,49 +97,49 @@ class InMemoryUserRepository(UserRepository):
             self._username_index[updated_user.username.lower()] = str(updated_user.id)
             self._email_index[str(updated_user.email).lower()] = str(updated_user.id)
 
-            return FlextResult.ok(updated_user)
+            return FlextResult[None].ok(updated_user)
 
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to save user: {e}")
+            return FlextResult[None].fail(f"Failed to save user: {e}")
 
     async def get_by_id(self, user_id: str) -> FlextResult[FlextUser | None]:
         """Get user by ID."""
         try:
             user = self._users.get(user_id)
-            return FlextResult.ok(user)
+            return FlextResult[None].ok(user)
         except (KeyError, ValueError, TypeError) as e:
-            return FlextResult.fail(f"Failed to get user by ID: {e}")
+            return FlextResult[None].fail(f"Failed to get user by ID: {e}")
 
     async def get_by_username(self, username: str) -> FlextResult[FlextUser | None]:
         """Get user by username."""
         try:
             user_id = self._username_index.get(username.lower())
             if not user_id:
-                return FlextResult.ok(None)
+                return FlextResult[None].ok(None)
 
             user = self._users.get(user_id)
-            return FlextResult.ok(user)
+            return FlextResult[None].ok(user)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to get user by username: {e}")
+            return FlextResult[None].fail(f"Failed to get user by username: {e}")
 
     async def get_by_email(self, email: str) -> FlextResult[FlextUser | None]:
         """Get user by email."""
         try:
             user_id = self._email_index.get(email.lower())
             if not user_id:
-                return FlextResult.ok(None)
+                return FlextResult[None].ok(None)
 
             user = self._users.get(user_id)
-            return FlextResult.ok(user)
+            return FlextResult[None].ok(user)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to get user by email: {e}")
+            return FlextResult[None].fail(f"Failed to get user by email: {e}")
 
     async def delete(self, user_id: str) -> FlextResult[bool]:
         """Delete user from memory."""
         try:
             user = self._users.get(user_id)
             if not user:
-                return FlextResult.ok(data=False)
+                return FlextResult[bool].ok(False)
 
             # Remove from indexes
             self._username_index.pop(user.username.lower(), None)
@@ -148,9 +148,9 @@ class InMemoryUserRepository(UserRepository):
             # Remove user
             del self._users[user_id]
 
-            return FlextResult.ok(data=True)
+            return FlextResult[bool].ok(True)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to delete user: {e}")
+            return FlextResult[None].fail(f"Failed to delete user: {e}")
 
     async def list_users(
         self,
@@ -173,9 +173,9 @@ class InMemoryUserRepository(UserRepository):
             end = offset + limit
             paginated_users = users[offset:end]
 
-            return FlextResult.ok(paginated_users)
+            return FlextResult[None].ok(paginated_users)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to list users: {e}")
+            return FlextResult[None].fail(f"Failed to list users: {e}")
 
     async def count_users(
         self,
@@ -188,9 +188,9 @@ class InMemoryUserRepository(UserRepository):
             else:
                 count = len(self._users)
 
-            return FlextResult.ok(count)
+            return FlextResult[None].ok(count)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult.fail(f"Failed to count users: {e}")
+            return FlextResult[None].fail(f"Failed to count users: {e}")
 
 
 # PostgreSQL implementation removed to eliminate code duplication

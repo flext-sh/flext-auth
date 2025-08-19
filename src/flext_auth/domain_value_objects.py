@@ -57,14 +57,14 @@ class FlextUsername(FlextValueObject):
         """Validate username domain rules and business constraints."""
         if len(self.value) < MIN_USERNAME_LENGTH:
             msg = "Username must be at least 3 characters"
-            return FlextResult.fail(msg)
+            return FlextResult[None].fail(msg)
         if len(self.value) > MAX_USERNAME_LENGTH:
             msg = "Username must be at most 50 characters"
-            return FlextResult.fail(msg)
+            return FlextResult[None].fail(msg)
         if not re.match(r"^[a-zA-Z0-9_-]+$", self.value):
             msg = "Username can only contain letters, numbers, underscores, and hyphens"
-            return FlextResult.fail(msg)
-        return FlextResult.ok(None)
+            return FlextResult[None].fail(msg)
+        return FlextResult[None].ok(None)
 
 
 class FlextUserEmail(FlextValueObject):
@@ -80,9 +80,9 @@ class FlextUserEmail(FlextValueObject):
         """Validate email domain rules and business constraints."""
         if "@" not in str(self.value):
             msg = "Email must contain @ symbol"
-            return FlextResult.fail(msg)
+            return FlextResult[None].fail(msg)
         # Additional validation is handled by EmailStr type
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 class FlextPlainPassword(FlextValueObject):
@@ -126,12 +126,12 @@ class FlextPlainPassword(FlextValueObject):
             # REFACTORING: Strategy Pattern - validation rules as strategies
             validation_errors = self._execute_password_validation_strategies()
             if validation_errors:
-                return FlextResult.fail(validation_errors[0])  # Return first error
+                return FlextResult[None].fail(validation_errors[0])  # Return first error
 
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
 
         except Exception as e:
-            return FlextResult.fail(f"Password validation error: {e}")
+            return FlextResult[None].fail(f"Password validation error: {e}")
 
     def _execute_password_validation_strategies(self) -> list[str]:
         """Execute all password validation strategies - Railway-Oriented Programming.
@@ -190,7 +190,7 @@ class FlextHashedPassword(FlextValueObject):
         if not self.value.startswith("$2b$"):
             msg = "Invalid bcrypt hash format"
             raise ValueError(msg)  # Test compatibility
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 class FlextAuthToken(FlextValueObject):
@@ -214,7 +214,7 @@ class FlextAuthToken(FlextValueObject):
         if len(self.value) < MIN_AUTH_TOKEN_LENGTH:
             msg = "Auth token must be at least 10 characters"
             raise ValueError(msg)
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 # =============================================================================
@@ -278,7 +278,7 @@ class FlextBaseTokenValueObject(FlextValueObject):
     def _validate_specific_rules(self) -> FlextResult[None]:
         """Abstract method: validate token-specific rules."""
         # Base implementation has no specific rules
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 class FlextRefreshToken(FlextBaseTokenValueObject):
@@ -301,7 +301,7 @@ class FlextRefreshToken(FlextBaseTokenValueObject):
         if len(self.value) < MIN_REFRESH_TOKEN_LENGTH:
             msg = "Refresh token must be at least 32 characters"
             raise ValueError(msg)
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 class FlextSessionToken(FlextBaseTokenValueObject):
@@ -324,7 +324,7 @@ class FlextSessionToken(FlextBaseTokenValueObject):
         if len(self.value) < MIN_SESSION_TOKEN_LENGTH:
             msg = "Session token must be at least 16 characters"
             raise ValueError(msg)
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 class FlextIPAddress(FlextValueObject):
@@ -352,10 +352,10 @@ class FlextIPAddress(FlextValueObject):
         """Validate IP address domain rules and business constraints."""
         try:
             ipaddress.ip_address(self.value)
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
         except ValueError as e:
             msg: str = f"Invalid IP address: {e}"
-            return FlextResult.fail(msg)
+            return FlextResult[None].fail(msg)
 
 
 class FlextUserAgent(FlextValueObject):
@@ -394,7 +394,7 @@ class FlextUserAgent(FlextValueObject):
         if len(self.value) > MAX_USER_AGENT_LENGTH:
             msg = "User agent must be at most 500 characters"
             raise ValueError(msg)
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
 
 class FlextPasswordResetToken(FlextBaseTokenValueObject):
@@ -418,8 +418,8 @@ class FlextPasswordResetToken(FlextBaseTokenValueObject):
         """Validate password reset token specific rules."""
         if len(self.value) < MIN_PASSWORD_RESET_TOKEN_LENGTH:
             msg = "Password reset token must be at least 32 characters"
-            return FlextResult.fail(msg)
-        return FlextResult.ok(None)
+            return FlextResult[None].fail(msg)
+        return FlextResult[None].ok(None)
 
 
 class FlextEmailVerificationToken(FlextBaseTokenValueObject):
@@ -443,8 +443,8 @@ class FlextEmailVerificationToken(FlextBaseTokenValueObject):
         """Validate email verification token specific rules."""
         if len(self.value) < MIN_EMAIL_VERIFICATION_TOKEN_LENGTH:
             msg = "Email verification token must be at least 32 characters"
-            return FlextResult.fail(msg)
-        return FlextResult.ok(None)
+            return FlextResult[None].fail(msg)
+        return FlextResult[None].ok(None)
 
 
 class FlextJWTClaims(FlextValueObject):
@@ -480,7 +480,7 @@ class FlextJWTClaims(FlextValueObject):
             # Raise ValueError for test compatibility
             raise ValueError(validation_errors[0])
 
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def _collect_validation_errors(self) -> list[str]:
         """DRY helper: Collect all validation errors using Strategy Pattern."""
@@ -548,4 +548,4 @@ class FlextSecurityContext(FlextValueObject):
         if self.role not in {"user", "REDACTED_LDAP_BIND_PASSWORD", "moderator"}:
             msg = "Role must be one of: user, REDACTED_LDAP_BIND_PASSWORD, moderator"
             raise ValueError(msg)
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
