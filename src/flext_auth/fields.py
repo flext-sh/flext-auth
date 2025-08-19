@@ -181,12 +181,14 @@ class FlextAuthFieldSchema:
         for field in required_fields:
             field_name = field.field_name
             if field_name not in user_data and field.required:
-                return FlextResult[None].fail(f"Required field '{field_name}' is missing")
+                return FlextResult[dict[str, object]].fail(
+                    f"Required field '{field_name}' is missing"
+                )
 
             if field_name in user_data:
                 validation_result = field.validate_value(user_data[field_name])
                 if validation_result.is_failure:
-                    return FlextResult[None].fail(
+                    return FlextResult[dict[str, object]].fail(
                         f"Field '{field_name}' validation failed: "
                         f"{validation_result.error}",
                     )
@@ -200,7 +202,7 @@ class FlextAuthFieldSchema:
             if field_name in user_data:
                 validation_result = field.validate_value(user_data[field_name])
                 if validation_result.is_failure:
-                    return FlextResult[None].fail(
+                    return FlextResult[dict[str, object]].fail(
                         f"Field '{field_name}' validation failed: "
                         f"{validation_result.error}",
                     )
@@ -208,7 +210,7 @@ class FlextAuthFieldSchema:
             elif field.default_value is not None:
                 validated_data[field_name] = field.default_value
 
-        return FlextResult[None].ok(validated_data)
+        return FlextResult[dict[str, object]].ok(validated_data)
 
     @classmethod
     def get_field_metadata(cls) -> dict[str, dict[str, object]]:
@@ -231,11 +233,12 @@ class FlextAuthFieldSchema:
 
         metadata: dict[str, dict[str, object]] = {}
         for field in all_fields:
-            # Cast field metadata to dict[str, object] for type safety
-            field_metadata = field.get_field_metadata()
-            # Convert to expected type preserving all values
-            typed_metadata: dict[str, object] = dict(field_metadata.items())
-            metadata[field.field_name] = typed_metadata
+            # Simple metadata extraction - field doesn't have get_field_metadata
+            metadata[field.field_name] = {
+                "field_name": field.field_name,
+                "required": field.required,
+                "default_value": field.default_value,
+            }
 
         return metadata
 
@@ -305,13 +308,13 @@ def validate_username_uniqueness(
     basic_validation = FlextAuthFieldSchema.USERNAME.validate_value(username)
     if basic_validation.is_failure:
         error_msg = basic_validation.error or "Username validation failed"
-        return FlextResult[None].fail(error_msg)
+        return FlextResult[str].fail(error_msg)
 
     # Check uniqueness
     if username.lower() in [existing.lower() for existing in existing_usernames]:
-        return FlextResult[None].fail(f"Username '{username}' is already taken")
+        return FlextResult[str].fail(f"Username '{username}' is already taken")
 
-    return FlextResult[None].ok(username)
+    return FlextResult[str].ok(username)
 
 
 def validate_email_uniqueness(
@@ -332,13 +335,13 @@ def validate_email_uniqueness(
     basic_validation = FlextAuthFieldSchema.EMAIL.validate_value(email)
     if basic_validation.is_failure:
         error_msg = basic_validation.error or "Email validation failed"
-        return FlextResult[None].fail(error_msg)
+        return FlextResult[str].fail(error_msg)
 
     # Check uniqueness
     if email.lower() in [existing.lower() for existing in existing_emails]:
-        return FlextResult[None].fail(f"Email '{email}' is already registered")
+        return FlextResult[str].fail(f"Email '{email}' is already registered")
 
-    return FlextResult[None].ok(email)
+    return FlextResult[str].ok(email)
 
 
 def _analyze_password_characteristics(password: str) -> dict[str, object]:
@@ -431,7 +434,7 @@ def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:
     basic_validation = FlextAuthFieldSchema.PASSWORD.validate_value(password)
     if basic_validation.is_failure:
         error_msg = basic_validation.error or "Password validation failed"
-        return FlextResult[None].fail(error_msg)
+        return FlextResult[dict[str, object]].fail(error_msg)
 
     # Strategy Pattern: delegate analysis to specialized functions
     analysis = _analyze_password_characteristics(password)
@@ -448,7 +451,7 @@ def validate_password_strength(password: str) -> FlextResult[dict[str, object]]:
         },
     )
 
-    return FlextResult[None].ok(analysis)
+    return FlextResult[dict[str, object]].ok(analysis)
 
 
 def validate_session_expiry(
@@ -471,19 +474,19 @@ def validate_session_expiry(
     )
     if basic_validation.is_failure:
         error_msg = basic_validation.error or "Session expiry validation failed"
-        return FlextResult[None].fail(error_msg)
+        return FlextResult[int].fail(error_msg)
 
     # Additional business rule validation
     if session_expire_hours > max_hours:
-        return FlextResult[None].fail(
+        return FlextResult[int].fail(
             f"Session expiry cannot exceed {max_hours} hours ({max_hours // 24} days)",
         )
 
     # Warn about very short sessions
     if session_expire_hours < 1:
-        return FlextResult[None].fail("Session expiry must be at least 1 hour")
+        return FlextResult[int].fail("Session expiry must be at least 1 hour")
 
-    return FlextResult[None].ok(session_expire_hours)
+    return FlextResult[int].ok(session_expire_hours)
 
 
 def validate_failed_attempts_threshold(
@@ -506,15 +509,15 @@ def validate_failed_attempts_threshold(
     )
     if basic_validation.is_failure:
         error_msg = basic_validation.error or "Failed attempts validation failed"
-        return FlextResult[None].fail(error_msg)
+        return FlextResult[int].fail(error_msg)
 
     # Security-based validation
     if failed_attempts > max_attempts:
-        return FlextResult[None].fail(
+        return FlextResult[int].fail(
             f"Failed attempts threshold too high for security (max: {max_attempts})",
         )
 
-    return FlextResult[None].ok(failed_attempts)
+    return FlextResult[int].ok(failed_attempts)
 
 
 def validate_user_role_permissions(
@@ -535,7 +538,7 @@ def validate_user_role_permissions(
     basic_validation = FlextAuthFieldSchema.ROLE.validate_value(role)
     if basic_validation.is_failure:
         error_msg = basic_validation.error or "Role validation failed"
-        return FlextResult[None].fail(error_msg)
+        return FlextResult[str].fail(error_msg)
 
     # Define role-permission mapping
     role_permissions = {
@@ -547,7 +550,7 @@ def validate_user_role_permissions(
 
     # Check if role exists and has required permissions
     if role not in role_permissions:
-        return FlextResult[None].fail(f"Unknown role '{role}'")
+        return FlextResult[str].fail(f"Unknown role '{role}'")
 
     role_perms = role_permissions[role]
     missing_permissions = [
@@ -555,12 +558,12 @@ def validate_user_role_permissions(
     ]
 
     if missing_permissions:
-        return FlextResult[None].fail(
+        return FlextResult[str].fail(
             f"Role '{role}' missing required permissions: "
             f"{', '.join(missing_permissions)}",
         )
 
-    return FlextResult[None].ok(role)
+    return FlextResult[str].ok(role)
 
 
 # =============================================================================
@@ -581,8 +584,8 @@ def validate_username(username: str) -> FlextResult[str]:
     validation_result = FlextAuthFieldSchema.USERNAME.validate_value(username)
     if validation_result.is_failure:
         error_msg = validation_result.error or "Username validation failed"
-        return FlextResult[None].fail(error_msg)
-    return FlextResult[None].ok(username)
+        return FlextResult[str].fail(error_msg)
+    return FlextResult[str].ok(username)
 
 
 def validate_email(email: str) -> FlextResult[str]:
@@ -598,8 +601,8 @@ def validate_email(email: str) -> FlextResult[str]:
     validation_result = FlextAuthFieldSchema.EMAIL.validate_value(email)
     if validation_result.is_failure:
         error_msg = validation_result.error or "Email validation failed"
-        return FlextResult[None].fail(error_msg)
-    return FlextResult[None].ok(email)
+        return FlextResult[str].fail(error_msg)
+    return FlextResult[str].ok(email)
 
 
 def validate_password(password: str) -> FlextResult[str]:
@@ -615,8 +618,8 @@ def validate_password(password: str) -> FlextResult[str]:
     validation_result = FlextAuthFieldSchema.PASSWORD.validate_value(password)
     if validation_result.is_failure:
         error_msg = validation_result.error or "Password validation failed"
-        return FlextResult[None].fail(error_msg)
-    return FlextResult[None].ok(password)
+        return FlextResult[str].fail(error_msg)
+    return FlextResult[str].ok(password)
 
 
 def validate_role(role: str) -> FlextResult[str]:
@@ -632,8 +635,8 @@ def validate_role(role: str) -> FlextResult[str]:
     validation_result = FlextAuthFieldSchema.ROLE.validate_value(role)
     if validation_result.is_failure:
         error_msg = validation_result.error or "Role validation failed"
-        return FlextResult[None].fail(error_msg)
-    return FlextResult[None].ok(role)
+        return FlextResult[str].fail(error_msg)
+    return FlextResult[str].ok(role)
 
 
 def get_auth_field_by_name(field_name: str) -> FlextResult[FlextFieldCore]:
@@ -681,7 +684,7 @@ def validate_complete_user_registration(
     # Validate password strength
     strength_result = validate_password_strength(password)
     if strength_result.is_failure:
-        return FlextResult[None].fail(
+        return FlextResult[dict[str, object]].fail(
             f"Password strength validation failed: {strength_result.error}",
         )
 
@@ -693,12 +696,12 @@ def validate_complete_user_registration(
             feedback_str = ", ".join(str(f) for f in feedback)
         else:
             feedback_str = "No specific suggestions available"
-        return FlextResult[None].fail(f"Password too weak. Suggestions: {feedback_str}")
+        return FlextResult[dict[str, object]].fail(f"Password too weak. Suggestions: {feedback_str}")
 
     # Add strength analysis to validated data
     validated_data["password_strength"] = strength_analysis
 
-    return FlextResult[None].ok(validated_data)
+    return FlextResult[dict[str, object]].ok(validated_data)
 
 
 def validate_user_profile_update(
@@ -740,16 +743,16 @@ def validate_user_profile_update(
             continue
 
         if validation_result.is_failure:
-            return FlextResult[None].fail(
+            return FlextResult[dict[str, object]].fail(
                 f"Field '{field_name}' validation failed: {validation_result.error}",
             )
 
         validated_changes[field_name] = validation_result.data
 
     if not validated_changes:
-        return FlextResult[None].fail("No valid changes detected in user data")
+        return FlextResult[dict[str, object]].fail("No valid changes detected in user data")
 
-    return FlextResult[None].ok(dict(validated_changes))  # Convert to dict[str, object]
+    return FlextResult[dict[str, object]].ok(dict(validated_changes))  # Convert to dict[str, object]
 
 
 def _validate_ip_address(
@@ -849,9 +852,9 @@ def validate_security_context(
     for validator in validators:
         result = validator(security_data, validated_context)
         if result.is_failure:
-            return FlextResult[None].fail(result.error or "Validation failed")
+            return FlextResult[dict[str, object]].fail(result.error or "Validation failed")
 
-    return FlextResult[None].ok(dict(validated_context))
+    return FlextResult[dict[str, object]].ok(dict(validated_context))
 
 
 # Export the schema for use in other modules

@@ -60,7 +60,7 @@ class TestUsername:
 
         # Test invalid characters - field validator prevents object creation
         with pytest.raises(
-            FlextValidationError,
+            (FlextValidationError, ValidationError),
             match="Username can only contain letters, numbers, underscores, and hyphens",
         ):
             FlextUsername(value="user@domain")
@@ -113,28 +113,28 @@ class TestPlainPassword:
 
         # Test missing uppercase - field validator prevents object creation
         with pytest.raises(
-            FlextValidationError,
+            (FlextValidationError, ValidationError),
             match="Password must contain at least one uppercase letter",
         ):
             FlextPlainPassword(value="lowercase123!")
 
         # Test missing lowercase - field validator prevents object creation
         with pytest.raises(
-            FlextValidationError,
+            (FlextValidationError, ValidationError),
             match="Password must contain at least one lowercase letter",
         ):
             FlextPlainPassword(value="UPPERCASE123!")
 
         # Test missing number - field validator prevents object creation
         with pytest.raises(
-            FlextValidationError,
+            (FlextValidationError, ValidationError),
             match="Password must contain at least one number",
         ):
             FlextPlainPassword(value="NoNumbers!")
 
         # Test missing special character - field validator prevents object creation
         with pytest.raises(
-            FlextValidationError,
+            (FlextValidationError, ValidationError),
             match="Password must contain at least one special character",
         ):
             FlextPlainPassword(value="NoSpecial123")

@@ -27,6 +27,10 @@ class FlextAuthSemanticConstants(FlextConstants):
     specific values while maintaining full backward compatibility.
     """
 
+    # Boolean constants to avoid ruff FBT003 errors
+    SUCCESS = True
+    FAILURE = False
+
     class Authentication:
         """Authentication pattern constants."""
 

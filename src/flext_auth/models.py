@@ -19,8 +19,8 @@ from flext_core import (
 )
 from pydantic import Field
 
-# Import all value objects from domain_value_objects to maintain single source of truth
-from flext_auth.domain_value_objects import (
+from flext_auth.constants import FlextAuthSemanticConstants
+from flext_auth.value_objects import (
     FlextHashedPassword,
     FlextJWTClaims,
     FlextPlainPassword,
@@ -192,7 +192,9 @@ class FlextUser(FlextEntity):
         try:
             validation_errors = self._execute_user_validation_strategies()
             if validation_errors:
-                return FlextResult[None].fail(validation_errors[0])  # Return first error
+                return FlextResult[None].fail(
+                    validation_errors[0]
+                )  # Return first error
 
             return FlextResult[None].ok(None)
 
@@ -428,7 +430,9 @@ class FlextRole(FlextEntity):
         if len(self.name) > MAX_NAME_LENGTH:
             return FlextResult[None].fail("Role name must be at most 100 characters")
         if len(self.description) > MAX_DESCRIPTION_LENGTH:
-            return FlextResult[None].fail("Role description must be at most 500 characters")
+            return FlextResult[None].fail(
+                "Role description must be at most 500 characters"
+            )
         return FlextResult[None].ok(None)
 
 
@@ -448,7 +452,9 @@ class FlextLoginAttempt(FlextEntity):
         try:
             validation_errors = self._execute_validation_strategies()
             if validation_errors:
-                return FlextResult[None].fail(validation_errors[0])  # Return first error
+                return FlextResult[None].fail(
+                    validation_errors[0]
+                )  # Return first error
 
             return FlextResult[None].ok(None)
 
@@ -529,7 +535,9 @@ class FlextBaseToken(FlextEntity):
         try:
             validation_errors = self._execute_common_validation_strategies()
             if validation_errors:
-                return FlextResult[None].fail(validation_errors[0])  # Return first error
+                return FlextResult[None].fail(
+                    validation_errors[0]
+                )  # Return first error
 
             return FlextResult[None].ok(None)
 
@@ -655,12 +663,16 @@ class InMemoryUserRepository(UserRepository):
             # Check for username conflicts
             existing_username = self._username_index.get(user.username.lower())
             if existing_username and existing_username != user.id:
-                return FlextResult[FlextUser].fail(f"Username '{user.username}' already exists")
+                return FlextResult[FlextUser].fail(
+                    f"Username '{user.username}' already exists"
+                )
 
             # Check for email conflicts
             existing_email = self._email_index.get(str(user.email).lower())
             if existing_email and existing_email != user.id:
-                return FlextResult[FlextUser].fail(f"Email '{user.email}' already exists")
+                return FlextResult[FlextUser].fail(
+                    f"Email '{user.email}' already exists"
+                )
 
             # Create user with updated timestamp (entities are immutable)
             updated_user = FlextUser(
@@ -700,31 +712,35 @@ class InMemoryUserRepository(UserRepository):
         try:
             user_id = self._username_index.get(username.lower())
             if not user_id:
-                return FlextResult[None].ok(None)
+                return FlextResult[FlextUser | None].ok(None)
 
             user = self._users.get(user_id)
             return FlextResult[FlextUser | None].ok(user)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[FlextUser | None].fail(f"Failed to get user by username: {e}")
+            return FlextResult[FlextUser | None].fail(
+                f"Failed to get user by username: {e}"
+            )
 
     async def get_by_email(self, email: str) -> FlextResult[FlextUser | None]:
         """Get user by email."""
         try:
             user_id = self._email_index.get(email.lower())
             if not user_id:
-                return FlextResult[None].ok(None)
+                return FlextResult[FlextUser | None].ok(None)
 
             user = self._users.get(user_id)
             return FlextResult[FlextUser | None].ok(user)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[FlextUser | None].fail(f"Failed to get user by email: {e}")
+            return FlextResult[FlextUser | None].fail(
+                f"Failed to get user by email: {e}"
+            )
 
     async def delete(self, user_id: str) -> FlextResult[bool]:
         """Delete user from memory."""
         try:
             user = self._users.get(user_id)
             if not user:
-                return FlextResult[bool].ok(False)
+                return FlextResult.ok(FlextAuthSemanticConstants.FAILURE)
 
             # Remove from indexes
             self._username_index.pop(user.username.lower(), None)
@@ -733,7 +749,7 @@ class InMemoryUserRepository(UserRepository):
             # Remove user
             del self._users[user_id]
 
-            return FlextResult[bool].ok(True)
+            return FlextResult.ok(FlextAuthSemanticConstants.SUCCESS)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[bool].fail(f"Failed to delete user: {e}")
 

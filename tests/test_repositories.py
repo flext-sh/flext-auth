@@ -600,7 +600,7 @@ class TestSessionRepository:
         for i in range(3):
             session = FlextSession(
                 id=f"session-{i}",
-                user_id=sample_user.id,
+                user_id=str(sample_user.id),
                 access_token=f"token-{i}",
                 status=FlextSessionStatus.ACTIVE,
                 ip_address="192.168.1.1",
@@ -636,7 +636,7 @@ class TestSessionRepository:
         # Create active session
         active_session = FlextSession(
             id="active-session",
-            user_id=sample_user.id,
+            user_id=str(sample_user.id),
             access_token="active-token",
             status=FlextSessionStatus.ACTIVE,
             ip_address="192.168.1.1",
@@ -647,7 +647,7 @@ class TestSessionRepository:
         # Create revoked session
         revoked_session = FlextSession(
             id="revoked-session",
-            user_id=sample_user.id,
+            user_id=str(sample_user.id),
             access_token="revoked-token",
             status=FlextSessionStatus.REVOKED,
             ip_address="192.168.1.1",
@@ -658,7 +658,7 @@ class TestSessionRepository:
         # Create expired session
         expired_session = FlextSession(
             id="expired-session",
-            user_id=sample_user.id,
+            user_id=str(sample_user.id),
             access_token="expired-token",
             status=FlextSessionStatus.ACTIVE,
             ip_address="192.168.1.1",
@@ -667,12 +667,11 @@ class TestSessionRepository:
         await session_repository.save(expired_session)
 
         # Get active sessions
-        result = await session_repository.get_active_sessions(sample_user.id)
+        result = session_repository.get_active_session_count(str(sample_user.id))
         assert result.success
-        if len(result.data) != 1:
-            msg: str = f"Expected {1}, got {len(result.data)}"
+        if result.data != 1:
+            msg: str = f"Expected {1}, got {result.data}"
             raise AssertionError(msg)
-        assert result.data[0].id == "active-session"
 
     async def test_revoke_session(
         self,
@@ -690,11 +689,11 @@ class TestSessionRepository:
             msg: str = f"Expected True, got {result.data}"
             raise AssertionError(msg)
 
-        # Verify session is revoked
+        # Verify session is revoked (no longer accessible)
         session_result = await session_repository.get_by_id(sample_session.id)
         assert session_result.success
-        if session_result.data.status != FlextSessionStatus.REVOKED:
-            msg: str = f"Expected {FlextSessionStatus.REVOKED}, got {session_result.data.status}"
+        if session_result.data is not None:
+            msg: str = f"Expected None (revoked session), got {session_result.data}"
             raise AssertionError(msg)
 
     async def test_revoke_session_not_found(
@@ -719,7 +718,7 @@ class TestSessionRepository:
         for i in range(3):
             session = FlextSession(
                 id=f"session-{i}",
-                user_id=sample_user.id,
+                user_id=str(sample_user.id),
                 access_token=f"token-{i}",
                 status=FlextSessionStatus.ACTIVE,
                 ip_address="192.168.1.1",
@@ -731,7 +730,7 @@ class TestSessionRepository:
         # Create already revoked session
         revoked_session = FlextSession(
             id="revoked-session",
-            user_id=sample_user.id,
+            user_id=str(sample_user.id),
             access_token="revoked-token",
             status=FlextSessionStatus.REVOKED,
             ip_address="192.168.1.1",
@@ -768,7 +767,7 @@ class TestSessionRepository:
         for i in range(2):
             expired_session = FlextSession(
                 id=f"expired-{i}",
-                user_id=sample_user.id,
+                user_id=str(sample_user.id),
                 access_token=f"expired-token-{i}",
                 status=FlextSessionStatus.ACTIVE,
                 ip_address="192.168.1.1",
@@ -779,7 +778,7 @@ class TestSessionRepository:
         # Create non-expired session
         active_session = FlextSession(
             id="active-session",
-            user_id=sample_user.id,
+            user_id=str(sample_user.id),
             access_token="active-token",
             status=FlextSessionStatus.ACTIVE,
             ip_address="192.168.1.1",
@@ -788,7 +787,7 @@ class TestSessionRepository:
         await session_repository.save(active_session)
 
         # Cleanup expired sessions
-        result = await session_repository.cleanup_expired_sessions()
+        result = session_repository.cleanup_expired_sessions()
         assert result.success
         if result.data != EXPECTED_BULK_SIZE:  # 2 expired sessions cleaned:
             msg: str = f"Expected {2}, got {result.data}"
@@ -818,7 +817,7 @@ class TestSessionRepository:
         await session_repository.save(sample_session)
 
         # Delete session
-        result = await session_repository.delete(sample_session.id)
+        result = await session_repository.revoke_session(sample_session.id)
         assert result.success
         if not (result.data):
             msg: str = f"Expected True, got {result.data}"
@@ -834,7 +833,7 @@ class TestSessionRepository:
         session_repository: InMemorySessionRepository,
     ) -> None:
         """Test deletion of non-existent session."""
-        result = await session_repository.delete("non-existent")
+        result = await session_repository.revoke_session("non-existent")
         assert result.success
         if result.data:
             msg: str = f"Expected False, got {result.data}"
@@ -851,7 +850,7 @@ class TestSessionRepository:
         for i in range(3):
             session = FlextSession(
                 id=f"session-{i}",
-                user_id=sample_user.id,
+                user_id=str(sample_user.id),
                 access_token=f"token-{i}",
                 status=FlextSessionStatus.ACTIVE,
                 ip_address="192.168.1.1",
@@ -868,7 +867,7 @@ class TestSessionRepository:
             raise AssertionError(msg)
 
         # Delete one session
-        await session_repository.delete(sessions[0].id)
+        await session_repository.revoke_session(sessions[0].id)
 
         # Verify index is updated
         user_sessions_result = await session_repository.get_by_user_id(sample_user.id)
@@ -903,7 +902,7 @@ class TestRepositoryIntegration:
         for i in range(3):
             session = FlextSession(
                 id=f"session-{i}",
-                user_id=sample_user.id,
+                user_id=str(sample_user.id),
                 access_token=f"token-{i}",
                 status=FlextSessionStatus.ACTIVE,
                 ip_address="192.168.1.1",

@@ -1,6 +1,6 @@
-"""FLEXT Auth Session Management - Repository patterns for session persistence.
+"""FLEXT Auth Session - Session management and repository patterns.
 
-Copyright (c) 2025 FLEXT Contributors
+Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
 """
@@ -12,7 +12,12 @@ from datetime import UTC, datetime
 
 from flext_core import FlextResult
 
-from flext_auth.domain_entities import FlextSession, FlextSessionStatus
+from flext_auth.constants import FlextAuthSemanticConstants
+from flext_auth.models import FlextSession, FlextSessionStatus
+
+# =============================================================================
+# SESSION REPOSITORY PATTERNS - Abstract data access
+# =============================================================================
 
 
 class SessionRepository(ABC):
@@ -20,38 +25,42 @@ class SessionRepository(ABC):
 
     @abstractmethod
     async def save(self, session: FlextSession) -> FlextResult[FlextSession]:
-        """Save session to repository."""
+        """Save session to repository (async)."""
 
     @abstractmethod
-    async def get_by_id(self, session_id: str) -> FlextResult[FlextSession | None]:
-        """Get session by ID."""
+    def find_by_id(self, session_id: str) -> FlextResult[FlextSession | None]:
+        """Find session by ID."""
 
     @abstractmethod
-    async def get_by_user_id(self, user_id: str) -> FlextResult[list[FlextSession]]:
-        """Get all sessions for a user."""
+    def find_by_user_id(self, user_id: str) -> FlextResult[list[FlextSession]]:
+        """Find all sessions for a user."""
 
     @abstractmethod
-    async def get_active_sessions(
-        self,
-        user_id: str,
-    ) -> FlextResult[list[FlextSession]]:
-        """Get active sessions for a user."""
-
-    @abstractmethod
-    async def revoke_session(self, session_id: str) -> FlextResult[bool]:
-        """Revoke a specific session."""
-
-    @abstractmethod
-    async def revoke_all_user_sessions(self, user_id: str) -> FlextResult[int]:
+    def revoke_all_sessions_for_user(self, user_id: str) -> FlextResult[int]:
         """Revoke all sessions for a user."""
 
     @abstractmethod
-    async def cleanup_expired_sessions(self) -> FlextResult[int]:
-        """Remove expired sessions."""
+    def cleanup_expired_sessions(self) -> FlextResult[int]:
+        """Clean up expired sessions."""
 
-    @abstractmethod
-    async def delete(self, session_id: str) -> FlextResult[bool]:
-        """Delete session from repository."""
+    # Compatibility async methods expected by service layer
+    async def get_by_id(
+        self,
+        session_id: str,
+    ) -> FlextResult[FlextSession | None]:  # pragma: no cover - thin adapter
+        return self.find_by_id(session_id)
+
+    async def get_by_user_id(
+        self,
+        user_id: str,
+    ) -> FlextResult[list[FlextSession]]:  # pragma: no cover - thin adapter
+        return self.find_by_user_id(user_id)
+
+    async def revoke_all_user_sessions(
+        self,
+        user_id: str,
+    ) -> FlextResult[int]:  # pragma: no cover - thin adapter
+        return self.revoke_all_sessions_for_user(user_id)
 
 
 class InMemorySessionRepository(SessionRepository):
@@ -60,191 +69,113 @@ class InMemorySessionRepository(SessionRepository):
     def __init__(self) -> None:
         """Initialize empty session storage."""
         self._sessions: dict[str, FlextSession] = {}
-        self._user_sessions: dict[str, list[str]] = {}  # user_id -> [session_ids]
 
-    # Async methods implementing the interface
     async def save(self, session: FlextSession) -> FlextResult[FlextSession]:
-        """Save session to memory."""
+        """Save session to memory (async)."""
         try:
-            # Save session (entities are immutable, cannot modify last_accessed)
             self._sessions[str(session.id)] = session
-
-            # Update user sessions index
-            if session.user_id not in self._user_sessions:
-                self._user_sessions[session.user_id] = []
-
-            if str(session.id) not in self._user_sessions[session.user_id]:
-                self._user_sessions[session.user_id].append(str(session.id))
-
-            return FlextResult[None].ok(session)
-
+            return FlextResult[FlextSession].ok(session)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[None].fail(f"Failed to save session: {e}")
+            return FlextResult[FlextSession].fail(f"Failed to save session: {e}")
 
     def find_by_id(self, session_id: str) -> FlextResult[FlextSession | None]:
-        """Get session by ID (sync version)."""
+        """Find session by ID."""
         try:
             session = self._sessions.get(session_id)
-            return FlextResult[None].ok(session)
+            # Only return active sessions
+            if session and session.status == "active":
+                return FlextResult[FlextSession | None].ok(session)
+            return FlextResult[FlextSession | None].ok(None)
         except (KeyError, ValueError, TypeError) as e:
-            return FlextResult[None].fail(f"Failed to get session by ID: {e}")
+            return FlextResult[FlextSession | None].fail(f"Failed to find session: {e}")
+
+    def find_by_user_id(self, user_id: str) -> FlextResult[list[FlextSession]]:
+        """Find all sessions for a user."""
+        try:
+            user_sessions = [
+                session
+                for session in self._sessions.values()
+                if session.user_id == user_id and session.status == "active"
+            ]
+            return FlextResult[list[FlextSession]].ok(user_sessions)
+        except (KeyError, ValueError, TypeError, AttributeError) as e:
+            return FlextResult[list[FlextSession]].fail(f"Failed to find user sessions: {e}")
 
     def revoke_all_sessions_for_user(self, user_id: str) -> FlextResult[int]:
-        """Revoke all sessions for a user (sync version)."""
-        try:
-            session_ids = self._user_sessions.get(user_id, [])
-            revoked_count = 0
-
-            for session_id in session_ids:
-                if session_id in self._sessions:
-                    session = self._sessions[session_id]
-                    if session.status == FlextSessionStatus.ACTIVE:
-                        # Create revoked session
-                        revoked_session = FlextSession(
-                            id=session.id,
-                            user_id=session.user_id,
-                            access_token=session.access_token,
-                            refresh_token=session.refresh_token,
-                            expires_at=session.expires_at,
-                            ip_address=session.ip_address,
-                            user_agent=session.user_agent,
-                            status=FlextSessionStatus.REVOKED,
-                            created_at=session.created_at,
-                            last_accessed=datetime.now(UTC),
-                        )
-                        self._sessions[session_id] = revoked_session
-                        revoked_count += 1
-
-            return FlextResult[None].ok(revoked_count)
-        except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[None].fail(f"Failed to revoke all user sessions: {e}")
-
-    # Sync method for compatibility with existing code
-    def save_sync(self, session: FlextSession) -> FlextResult[FlextSession]:
-        """Save session synchronously for compatibility."""
-        try:
-            self._sessions[str(session.id)] = session
-            if session.user_id not in self._user_sessions:
-                self._user_sessions[session.user_id] = []
-            if str(session.id) not in self._user_sessions[session.user_id]:
-                self._user_sessions[session.user_id].append(str(session.id))
-            return FlextResult[None].ok(session)
-        except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[None].fail(f"Failed to save session: {e}")
-
-    async def get_by_id(self, session_id: str) -> FlextResult[FlextSession | None]:
-        """Get session by ID."""
-        try:
-            session = self._sessions.get(session_id)
-            return FlextResult[None].ok(session)
-        except (KeyError, ValueError, TypeError) as e:
-            return FlextResult[None].fail(f"Failed to get session by ID: {e}")
-
-    async def get_by_user_id(self, user_id: str) -> FlextResult[list[FlextSession]]:
-        """Get all sessions for a user."""
-        try:
-            session_ids = self._user_sessions.get(user_id, [])
-            sessions = [
-                self._sessions[sid] for sid in session_ids if sid in self._sessions
-            ]
-
-            # Clean up broken references
-            valid_ids = [str(s.id) for s in sessions]
-            self._user_sessions[user_id] = valid_ids
-
-            return FlextResult[None].ok(sessions)
-        except (KeyError, ValueError, TypeError) as e:
-            return FlextResult[None].fail(f"Failed to get sessions by user ID: {e}")
-
-    async def get_active_sessions(
-        self,
-        user_id: str,
-    ) -> FlextResult[list[FlextSession]]:
-        """Get active sessions for a user."""
-        try:
-            all_sessions_result = await self.get_by_user_id(user_id)
-            if not all_sessions_result.is_success:
-                return all_sessions_result
-
-            active_sessions = [
-                s for s in (all_sessions_result.data or []) if s.is_valid()
-            ]
-
-            return FlextResult[None].ok(active_sessions)
-        except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[None].fail(f"Failed to get active sessions: {e}")
-
-    async def revoke_session(self, session_id: str) -> FlextResult[bool]:
-        """Revoke a specific session."""
-        try:
-            session = self._sessions.get(session_id)
-            if not session:
-                return FlextResult[None].ok(False)
-
-            revoked_session = session.revoke()
-            self._sessions[session_id] = revoked_session
-            return FlextResult[None].ok(True)
-        except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[None].fail(f"Failed to revoke session: {e}")
-
-    async def revoke_all_user_sessions(self, user_id: str) -> FlextResult[int]:
         """Revoke all sessions for a user."""
         try:
-            sessions_result = await self.get_by_user_id(user_id)
-            if not sessions_result.is_success:
-                return FlextResult[None].fail(
-                    f"Failed to get user sessions: {sessions_result.error}",
-                )
-
             revoked_count = 0
-            for session in sessions_result.data or []:
-                if session.status == FlextSessionStatus.ACTIVE:
+            for session_id, session in list(self._sessions.items()):
+                if (
+                    session.user_id == user_id
+                    and session.status == FlextSessionStatus.ACTIVE
+                ):
                     revoked_session = session.revoke()
-                    self._sessions[str(session.id)] = revoked_session
+                    self._sessions[session_id] = revoked_session
                     revoked_count += 1
 
-            return FlextResult[None].ok(revoked_count)
+            return FlextResult[int].ok(revoked_count)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[None].fail(f"Failed to revoke all user sessions: {e}")
+            return FlextResult[int].fail(f"Failed to revoke user sessions: {e}")
 
-    async def cleanup_expired_sessions(self) -> FlextResult[int]:
-        """Remove expired sessions."""
+    def cleanup_expired_sessions(self) -> FlextResult[int]:
+        """Clean up expired sessions."""
         try:
-            expired_ids = []
             now = datetime.now(UTC)
-
+            expired_sessions: list[str] = []
             for session_id, session in self._sessions.items():
-                if session.expires_at <= now:
-                    expired_ids.append(session_id)
-
-            # Remove expired sessions
-            for session_id in expired_ids:
-                if session_id in self._sessions:
-                    session = self._sessions.pop(session_id)
-                    if (
-                        session.user_id in self._user_sessions
-                        and session_id in self._user_sessions[session.user_id]
-                    ):
-                        self._user_sessions[session.user_id].remove(session_id)
-
-            return FlextResult[None].ok(len(expired_ids))
-        except (KeyError, ValueError, TypeError, AttributeError, OSError) as e:
-            return FlextResult[None].fail(f"Failed to cleanup expired sessions: {e}")
-
-    async def delete(self, session_id: str) -> FlextResult[bool]:
-        """Delete session from memory."""
-        try:
-            session = self._sessions.pop(session_id, None)
-            if not session:
-                return FlextResult[None].ok(False)
-
-            # Remove from user sessions index
-            if (
-                session.user_id in self._user_sessions
-                and session_id in self._user_sessions[session.user_id]
-            ):
-                self._user_sessions[session.user_id].remove(session_id)
-
-            return FlextResult[None].ok(True)
+                if (
+                    session.expires_at <= now
+                    or session.status == FlextSessionStatus.EXPIRED
+                ):
+                    expired_sessions.append(session_id)
+            for session_id in expired_sessions:
+                del self._sessions[session_id]
+            return FlextResult[int].ok(len(expired_sessions))
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[None].fail(f"Failed to delete session: {e}")
+            return FlextResult[int].fail(f"Failed to cleanup expired sessions: {e}")
+
+    # Additional async compatibility methods used by refactored service
+    async def get_by_id(self, session_id: str) -> FlextResult[FlextSession | None]:
+        return self.find_by_id(session_id)
+
+    async def get_by_user_id(self, user_id: str) -> FlextResult[list[FlextSession]]:
+        return self.find_by_user_id(user_id)
+
+    async def revoke_session(self, session_id: str) -> FlextResult[bool]:
+        try:
+            if session_id in self._sessions:
+                session = self._sessions[session_id]
+                self._sessions[session_id] = session.revoke()
+                return FlextResult.ok(FlextAuthSemanticConstants.SUCCESS)
+            return FlextResult.ok(FlextAuthSemanticConstants.FAILURE)
+        except (KeyError, ValueError, TypeError, AttributeError) as e:
+            return FlextResult[bool].fail(f"Failed to revoke session: {e}")
+
+    async def revoke_all_user_sessions(self, user_id: str) -> FlextResult[int]:
+        return self.revoke_all_sessions_for_user(user_id)
+
+    def get_active_session_count(self, user_id: str) -> FlextResult[int]:
+        """Get count of active sessions for a user."""
+        try:
+            active_count = sum(
+                1
+                for session in self._sessions.values()
+                if session.user_id == user_id
+                and session.status == FlextSessionStatus.ACTIVE
+                and session.expires_at > datetime.now(UTC)
+            )
+            return FlextResult[int].ok(active_count)
+        except (KeyError, ValueError, TypeError, AttributeError) as e:
+            return FlextResult[int].fail(f"Failed to count active sessions: {e}")
+
+
+# =============================================================================
+# EXPORTS - Clean session API
+# =============================================================================
+
+__all__: list[str] = [
+    "InMemorySessionRepository",
+    # Repository Patterns
+    "SessionRepository",
+]

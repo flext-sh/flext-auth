@@ -14,6 +14,7 @@ import pytest
 
 from flext_auth import (
     FlextAuthService,
+    FlextAuthServiceConfig,
     FlextAuthServiceDependencies,
     FlextJWTService,
     FlextPasswordService,
@@ -43,6 +44,7 @@ class TestFlextAuthService:
             session_repository=self.session_repo,
             password_service=self.password_service,
             jwt_service=self.jwt_service,
+            config=FlextAuthServiceConfig(),  # Add missing config parameter
         )
         self.auth_service = FlextAuthService(dependencies)
 

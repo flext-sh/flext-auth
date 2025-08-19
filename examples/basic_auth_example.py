@@ -23,26 +23,40 @@ from flext_auth import (
 
 
 def main() -> None:
-    """Run basic authentication example."""  # 1. Password Hashing Example
+    """Run basic authentication example."""
+    # 1. Password Hashing Example
     password = "SecurePassword123!"  # noqa: S105 - Example password for documentation
-    flext_auth_hash_password(password)
+    hashed_password = flext_auth_hash_password(password)
+    print(f"Password hashed: {hashed_password}")
 
     # 2. JWT Token Example
-    payload = {"user_id": "user123", "username": "testuser", "role": "REDACTED_LDAP_BIND_PASSWORD"}
+    payload: dict[str, object] = {
+        "user_id": "user123",
+        "username": "testuser",
+        "role": "REDACTED_LDAP_BIND_PASSWORD",
+    }
 
-    token_result = flext_auth_generate_jwt(payload)
-    if token_result.success and token_result.data:
-        token = token_result.data
+    # flext_auth_generate_jwt returns a string directly
+    token = flext_auth_generate_jwt(payload)
+    print(f"JWT Token generated: {token}")
 
-        # Validate token
-        validation = flext_auth_validate_jwt(token)
-        if validation.success and validation.data:
-            pass
+    # Validate token - flext_auth_validate_jwt returns dict[str, object]
+    validation = flext_auth_validate_jwt(token)
+    if validation.get("valid", False):
+        print(
+            f"Token validated successfully for user: {validation.get('username', 'unknown')}"
+        )
+    else:
+        print("Token validation failed")
 
-    # 3. Quick Start Example
+    # 3. Quick Start Example - returns FlextResult[object]
     setup_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-    if setup_result.success:
-        pass
+    if setup_result.success and setup_result.data:
+        print("Quick start completed successfully")
+        # Store the auth service for potential future use
+        _auth_service = setup_result.data
+    else:
+        print(f"Quick start failed: {setup_result.error}")
 
     # 4. FlextAuth Class Example
     auth = FlextAuth()
@@ -54,11 +68,16 @@ def main() -> None:
         password="DemoPassword123!",  # noqa: S106 - Example password for documentation
     )
 
-    if isinstance(user_result, dict) and "error" not in user_result:
+    if "error" not in user_result:
+        print("User registered successfully")
         # Try to authenticate
         auth_result = auth.authenticate_user("demouser", "DemoPassword123!")
-        if isinstance(auth_result, dict) and "error" not in auth_result:
-            pass
+        if "error" not in auth_result:
+            print("User authenticated successfully")
+        else:
+            print(f"Authentication failed: {auth_result.get('error', 'Unknown error')}")
+    else:
+        print(f"User registration failed: {user_result.get('error', 'Unknown error')}")
 
 
 if __name__ == "__main__":

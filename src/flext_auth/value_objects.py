@@ -126,7 +126,9 @@ class FlextPlainPassword(FlextValueObject):
             # REFACTORING: Strategy Pattern - validation rules as strategies
             validation_errors = self._execute_password_validation_strategies()
             if validation_errors:
-                return FlextResult[None].fail(validation_errors[0])  # Return first error
+                return FlextResult[None].fail(
+                    validation_errors[0]
+                )  # Return first error
 
             return FlextResult[None].ok(None)
 

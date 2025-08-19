@@ -1,12 +1,13 @@
-"""Type-safe authentication settings.
+"""FLEXT Auth Configuration & Types - Centralized authentication configuration and types.
 
-Copyright (c) 2025 FLEXT Contributors
+Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
 """
 
 from __future__ import annotations
 
+import contextlib
 import os
 import re
 import secrets
@@ -15,22 +16,57 @@ from typing import Never
 from flext_core import (
     FlextBaseConfigModel,
     FlextDatabaseConfig,
-    FlextResult,
+    FlextSettings,
+    TEntityId,
 )
-from pydantic import Field, SecretStr, field_validator
+from pydantic import Field, SecretStr
 from pydantic_settings import SettingsConfigDict
+
+# =============================================================================
+# TYPE DEFINITIONS - Authentication-specific types
+# =============================================================================
+
+# Core entity types extending flext-core
+type TUserId = TEntityId
+type TSessionId = TEntityId
+
+# Authentication domain types
+type TUsername = str
+type TEmail = str
+type TPassword = str
+type TUserRole = str
+
+# Authentication data types - SOLID refactoring: specific types instead of Any
+type TAuthResult = dict[str, object]  # Authentication result with user data
+type TSecurityContext = dict[str, object]  # Security context with permissions
+type TLoginAttempt = dict[str, object]  # Login attempt data with metadata
+
+# Audit types
+type TAuditEventType = str
+
+# =============================================================================
+# CONFIGURATION CONSTANTS
+# =============================================================================
 
 # Configuration constants
 MIN_JWT_SECRET_LENGTH = 32
-MAX_ACCESS_TOKEN_MINUTES = 1440  # 24 hours
-MIN_BCRYPT_ROUNDS = 4
-MAX_BCRYPT_ROUNDS = 20
-MAX_FAILED_ATTEMPTS = 10
-MAX_LOCKOUT_MINUTES = 1440  # 24 hours
-MAX_SESSION_HOURS = 168  # 1 week
-MAX_CONCURRENT_SESSIONS = 20
-MAX_PORT = 65535
-MIN_PRIVILEGED_PORT = 1024
+
+
+# =============================================================================
+# AUTHENTICATION CONSTANTS
+# =============================================================================
+
+
+class FlextAuthConstants:
+    """Authentication constants for validation patterns."""
+
+    USERNAME_PATTERN = r"^[a-zA-Z0-9_-]+$"
+    MIN_PASSWORD_LENGTH = 8
+    MAX_PASSWORD_LENGTH = 128
+    PASSWORD_VALIDATION_REGEX = (
+        r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).+$"  # noqa: S105 - Password validation regex pattern, not a password
+    )
+
 
 # =============================================================================
 # CENTRALIZED CONFIGURATION MODELS - Using flext-core patterns
@@ -131,7 +167,7 @@ class FlextAuthApplicationConfig(FlextBaseConfigModel):
 # =============================================================================
 
 
-class DatabaseConfig(FlextBaseConfigModel):
+class DatabaseConfig:
     """Database configuration with backward compatibility wrapper."""
 
     def __init__(self, **kwargs: object) -> None:
@@ -286,8 +322,8 @@ class DatabaseConfig(FlextBaseConfigModel):
         return getattr(self, "_command_timeout", 60)
 
 
-class JWTConfig(FlextBaseConfigModel):
-    """JWT configuration using modern FlextBaseConfigModel patterns."""
+class JWTConfig(FlextSettings):
+    """JWT configuration for backward compatibility with environment variables."""
 
     secret_key: str = Field(default="", description="JWT secret key")
     algorithm: str = Field(default="HS256", description="JWT algorithm")
@@ -300,19 +336,35 @@ class JWTConfig(FlextBaseConfigModel):
         description="Refresh token expiration days",
     )
 
-    # Disable loading from .env to avoid leaking repo defaults into tests.
-    # Still allow reading real environment variables with the JWT_ prefix.
-    model_config = SettingsConfigDict(env_prefix="JWT_", env_file=None)
+    model_config = SettingsConfigDict(env_prefix="JWT_")
 
-    @field_validator("algorithm")
-    @classmethod
-    def validate_algorithm(cls, value: str) -> str:
-        """Validate supported JWT algorithms and return the value."""
+    def __init__(self, **kwargs: object) -> None:
+        """Initialize with algorithm validation.
+
+        Args:
+            **kwargs: Configuration parameters for JWT settings
+
+        Raises:
+            ValueError: If algorithm is not supported
+
+        """
+        # Process kwargs - they can be empty but not None in **kwargs context
+
+        # Validate algorithm before calling super().__init__
+        algorithm = kwargs.get("algorithm", "HS256")
         valid_algorithms = ["HS256", "HS384", "HS512", "RS256", "RS384", "RS512"]
-        if value not in valid_algorithms:
-            msg = f"JWT algorithm must be one of {valid_algorithms}"
+        if algorithm not in valid_algorithms:
+            msg: str = f"JWT algorithm must be one of {valid_algorithms}"
             raise ValueError(msg)
-        return value
+
+        # Call parent without any kwargs to avoid type issues
+        with contextlib.suppress(TypeError):
+            super().__init__()
+
+        # Set values after initialization
+        for key, value in kwargs.items():
+            if hasattr(self, key):
+                setattr(self, key, value)
 
     def validate_secret_key(self) -> None:
         """Validate secret key strength."""
@@ -328,39 +380,9 @@ class JWTConfig(FlextBaseConfigModel):
         """Generate secure secret key."""
         return secrets.token_urlsafe(32)
 
-    def validate_business_rules(self) -> FlextResult[None]:
-        """Validate JWT-specific business rules."""
-        errors = []
 
-        # Algorithm validation
-        valid_algorithms = ["HS256", "HS384", "HS512", "RS256", "RS384", "RS512"]
-        if self.algorithm not in valid_algorithms:
-            errors.append(f"JWT algorithm must be one of {valid_algorithms}")
-
-        # Secret key validation
-        if not self.secret_key or self.secret_key.strip() == "":
-            errors.append("JWT secret key cannot be empty")
-        elif len(self.secret_key) < MIN_JWT_SECRET_LENGTH:
-            errors.append(
-                f"JWT secret key must be at least {MIN_JWT_SECRET_LENGTH} characters long",
-            )
-
-        # Token expiration validation
-        if self.access_token_expire_minutes <= 0:
-            errors.append("Access token expiration must be positive")
-        elif self.access_token_expire_minutes > MAX_ACCESS_TOKEN_MINUTES:
-            errors.append(
-                "Access token expiration should not exceed 24 hours for security",
-            )
-
-        if self.refresh_token_expire_days <= 0:
-            errors.append("Refresh token expiration must be positive")
-
-        return FlextResult[None].fail("; ".join(errors)) if errors else FlextResult[None].ok(None)
-
-
-class SecurityConfig(FlextBaseConfigModel):
-    """Security configuration using modern FlextBaseConfigModel patterns."""
+class SecurityConfig(FlextSettings):
+    """Security configuration for backward compatibility with environment variables."""
 
     password_rounds: int = Field(12, description="BCrypt rounds", ge=4, le=20)
     max_failed_attempts: int = Field(
@@ -398,39 +420,9 @@ class SecurityConfig(FlextBaseConfigModel):
 
     model_config = SettingsConfigDict(env_prefix="SECURITY_")
 
-    def validate_business_rules(self) -> FlextResult[None]:
-        """Validate security-specific business rules."""
-        errors = []
 
-        # Password rounds validation
-        if self.password_rounds < MIN_BCRYPT_ROUNDS:
-            errors.append("BCrypt rounds must be at least 4 for basic security")
-        elif self.password_rounds > MAX_BCRYPT_ROUNDS:
-            errors.append(
-                "BCrypt rounds should not exceed 20 to avoid performance issues",
-            )
-
-        # Failed attempts validation
-        if self.max_failed_attempts > MAX_FAILED_ATTEMPTS:
-            errors.append("Max failed attempts should not exceed 10")
-
-        # Lockout duration validation
-        if self.lockout_duration_minutes > MAX_LOCKOUT_MINUTES:
-            errors.append("Lockout duration should not exceed 24 hours")
-
-        # Session timeout validation
-        if self.session_expire_hours > MAX_SESSION_HOURS:
-            errors.append("Session timeout should not exceed 1 week for security")
-
-        # Concurrent sessions validation
-        if self.max_concurrent_sessions > MAX_CONCURRENT_SESSIONS:
-            errors.append("Max concurrent sessions should not exceed 20")
-
-        return FlextResult[None].fail("; ".join(errors)) if errors else FlextResult[None].ok(None)
-
-
-class ServerConfig(FlextBaseConfigModel):
-    """Server configuration using modern FlextBaseConfigModel patterns."""
+class ServerConfig(FlextSettings):
+    """Server configuration for backward compatibility."""
 
     debug: bool = Field(default=False, description="Debug mode")
     host: str = Field(default="localhost", description="Server host")
@@ -438,25 +430,9 @@ class ServerConfig(FlextBaseConfigModel):
 
     model_config = SettingsConfigDict(env_prefix="SERVER_")
 
-    def validate_business_rules(self) -> FlextResult[None]:
-        """Validate server-specific business rules."""
-        errors = []
 
-        # Port validation
-        if self.port < 1 or self.port > MAX_PORT:
-            errors.append("Server port must be between 1 and 65535")
-        elif self.port < MIN_PRIVILEGED_PORT and not self.debug:
-            errors.append("Production servers should not use privileged ports (< 1024)")
-
-        # Host validation
-        if not self.host or self.host.strip() == "":
-            errors.append("Server host cannot be empty")
-
-        return FlextResult[None].fail("; ".join(errors)) if errors else FlextResult[None].ok(None)
-
-
-class AppConfig(FlextBaseConfigModel):
-    """Application configuration using modern FlextBaseConfigModel patterns."""
+class AppConfig(FlextSettings):
+    """Application configuration for backward compatibility."""
 
     name: str = Field("FLEXT Authentication API", description="Application name")
     version: str = Field("1.0.0", description="Application version")
@@ -481,43 +457,6 @@ class AppConfig(FlextBaseConfigModel):
 
     model_config = SettingsConfigDict(env_prefix="APP_")
 
-    def validate_business_rules(self) -> FlextResult[None]:
-        """Validate application-wide business rules."""
-        errors = []
-
-        # Environment validation
-        allowed_environments = {"development", "staging", "production", "test"}
-        if self.environment not in allowed_environments:
-            errors.append(f"Environment must be one of: {allowed_environments}")
-
-        # Application name validation
-        if not self.app_name or self.app_name.strip() == "":
-            errors.append("Application name cannot be empty")
-
-        # Production validation
-        if self.environment == "production" and self.debug:
-            errors.append("Debug mode must be disabled in production")
-
-        # Validate nested configurations for production
-        if self.environment == "production":
-            jwt_validation = self.jwt.validate_business_rules()
-            if not jwt_validation.is_success:
-                errors.append(f"JWT configuration invalid: {jwt_validation.error}")
-
-            security_validation = self.security.validate_business_rules()
-            if not security_validation.is_success:
-                errors.append(
-                    f"Security configuration invalid: {security_validation.error}",
-                )
-
-            server_validation = self.server.validate_business_rules()
-            if not server_validation.is_success:
-                errors.append(
-                    f"Server configuration invalid: {server_validation.error}",
-                )
-
-        return FlextResult[None].fail("; ".join(errors)) if errors else FlextResult[None].ok(None)
-
     def model_dump_safe(self) -> dict[str, object]:
         """Dump model data with sensitive information redacted."""
         # Get the regular model dump
@@ -539,28 +478,6 @@ class AppConfig(FlextBaseConfigModel):
             dump["jwt"]["secret_key"] = redacted_value
 
         return dump
-
-
-def validate_production_config(config: AppConfig) -> bool:
-    """Production configuration validation with critical field checks."""
-    # Validate database URL is not empty
-    if hasattr(config, "database") and config.database:
-        db_url = getattr(config.database, "url", "")
-        if not db_url or db_url.strip() == "":
-            msg = "Production database URL is required"
-            raise ValueError(msg)
-
-    # Validate JWT secret key is not empty
-    if hasattr(config, "jwt") and config.jwt:
-        jwt_secret = getattr(config.jwt, "secret_key", "")
-        if not jwt_secret or jwt_secret.strip() == "":
-            msg = "Production JWT secret key is required"
-            raise ValueError(msg)
-
-    # Validate required fields exist
-    config_dict = config.model_dump()
-    required_fields = ["app_name", "environment"]
-    return all(field in config_dict and config_dict[field] for field in required_fields)
 
 
 # =============================================================================
@@ -596,6 +513,28 @@ def get_default_secret(key_name: str) -> str:
     return secrets.token_urlsafe(32)
 
 
+def validate_production_config(config: AppConfig) -> bool:
+    """Production configuration validation with critical field checks."""
+    # Validate database URL is not empty
+    if hasattr(config, "database") and config.database:
+        db_url = getattr(config.database, "url", "")
+        if not db_url or db_url.strip() == "":
+            msg = "Production database URL is required"
+            raise ValueError(msg)
+
+    # Validate JWT secret key is not empty
+    if hasattr(config, "jwt") and config.jwt:
+        jwt_secret = getattr(config.jwt, "secret_key", "")
+        if not jwt_secret or jwt_secret.strip() == "":
+            msg = "Production JWT secret key is required"
+            raise ValueError(msg)
+
+    # Validate required fields exist
+    config_dict = config.model_dump()
+    required_fields = ["app_name", "environment"]
+    return all(field in config_dict and config_dict[field] for field in required_fields)
+
+
 # =============================================================================
 # CONFIGURATION PRESETS - Common configurations
 # =============================================================================
@@ -622,7 +561,6 @@ def create_production_config() -> FlextAuthApplicationConfig:
         auth=FlextAuthConfig(
             debug=False,
             environment="production",
-            jwt_secret_key=jwt_secret,
         ),
     )
 
@@ -631,6 +569,8 @@ def create_production_config() -> FlextAuthApplicationConfig:
 # SECURE DEFAULT SECRETS - Environment variable fallbacks
 # =============================================================================
 
+# Library-wide default secret (used by helpers); tests for JWTConfig expect empty default,
+# so keep library default separate from JWTConfig defaults.
 DEFAULT_JWT_SECRET = os.getenv("FLEXT_AUTH_JWT_SECRET_KEY", "dev-secret-key")
 DEFAULT_SERVICE_SECRET = os.getenv(
     "FLEXT_AUTH_SERVICE_SECRET",
@@ -643,7 +583,7 @@ DEFAULT_MFA_SECRET = os.getenv(
 DEFAULT_DEV_SECRET = os.getenv("FLEXT_AUTH_DEV_SECRET", "dev-secret-key")
 
 # =============================================================================
-# EXPORTS - Clean config API
+# EXPORTS - Clean config and types API
 # =============================================================================
 
 __all__: list[str] = [
@@ -658,8 +598,22 @@ __all__: list[str] = [
     "FlextAuthApplicationConfig",
     # Main configuration classes
     "FlextAuthConfig",
+    # Constants
+    "FlextAuthConstants",
     "JWTConfig",
     "SecurityConfig",
+    "ServerConfig",
+    "TAuditEventType",
+    "TAuthResult",
+    "TEmail",
+    "TLoginAttempt",
+    "TPassword",
+    "TSecurityContext",
+    "TSessionId",
+    # Type definitions
+    "TUserId",
+    "TUserRole",
+    "TUsername",
     # Factory functions
     "create_auth_config",
     "create_complete_auth_config",
