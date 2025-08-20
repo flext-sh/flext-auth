@@ -130,7 +130,7 @@ class FlextAuthConfig(FlextBaseConfigModel):
         ge=1,
     )
 
-    # JWT settings - added for backward compatibility with tests
+    # JWT settings
     access_token_expire_minutes: int = Field(
         30,
         description="JWT access token expiration minutes",
@@ -157,7 +157,23 @@ class FlextAuthApplicationConfig(FlextBaseConfigModel):
 
     # Authentication-specific settings
     auth: FlextAuthConfig = Field(
-        default_factory=FlextAuthConfig,
+        default_factory=lambda: FlextAuthConfig(
+            app_name="FlextAuth",
+            version="1.0.0",
+            environment="development",
+            password_min_length=8,
+            password_max_length=128,
+            bcrypt_rounds=12,
+            max_login_attempts=5,
+            lockout_duration_minutes=30,
+            session_timeout_hours=24,
+            max_concurrent_sessions=5,
+            rate_limit_per_minute=60,
+            auth_rate_limit_per_minute=5,
+            access_token_expire_minutes=30,
+            refresh_token_expire_days=7,
+            jwt_secret_key="dev-secret-key-change-in-production"  # noqa: S106
+        ),
         description="Authentication configuration",
     )
 
@@ -298,11 +314,11 @@ class DatabaseConfig:
 
         # Custom configuration - generate complete URL
         if hasattr(self, "password") and self.password:
-            password_str = (
-                self.password.get_secret_value()
-                if hasattr(self.password, "get_secret_value")
-                else str(self.password)
-            )
+            # Type-safe secret value extraction
+            if hasattr(self.password, "get_secret_value") and callable(self.password.get_secret_value):
+                password_str = self.password.get_secret_value()
+            else:
+                password_str = str(self.password)
             return f"postgresql://{self.username}:{password_str}@{self.host}:{self.port}/{self.database}"
         return f"postgresql://{self.username}@{self.host}:{self.port}/{self.database}"
 
@@ -442,16 +458,16 @@ class AppConfig(FlextSettings):
 
     # Nested configurations
     database: DatabaseConfig = Field(
-        default_factory=DatabaseConfig,
+        default_factory=lambda: DatabaseConfig(),
         description="Database configuration",
     )
-    jwt: JWTConfig = Field(default_factory=JWTConfig, description="JWT configuration")
+    jwt: JWTConfig = Field(default_factory=lambda: JWTConfig(), description="JWT configuration")
     security: SecurityConfig = Field(
-        default_factory=SecurityConfig,
+        default_factory=lambda: SecurityConfig(),
         description="Security configuration",
     )
     server: ServerConfig = Field(
-        default_factory=ServerConfig,
+        default_factory=lambda: ServerConfig(),
         description="Server configuration",
     )
 

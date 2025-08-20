@@ -156,7 +156,7 @@ from flext_auth.constants import (
 # Helper functions are now in legacy.py for backward compatibility
 from flext_auth.legacy import (
     FlextAuthBatchOperations,
-    FlextAuthUser,
+    # FlextAuthUser,  # Commented out - not accessed
     flext_auth_batch_operations,
     flext_auth_generate_jwt,
     flext_auth_hash_password,
@@ -202,11 +202,11 @@ from flext_auth.value_objects import (
 # APPLICATION SERVICES
 # =============================================================================
 
-from flext_auth.application_services import (
-    FlextAuthenticationService as AppFlextAuthenticationService,
-    FlextAuthorizationService as AppFlextAuthorizationService,
-    FlextSessionService as AppFlextSessionService,
-)
+# from flext_auth.application_services import (
+#     # AppFlextAuthenticationService,  # Commented out - not accessed
+#     # AppFlextAuthorizationService,   # Commented out - not accessed
+#     # AppFlextSessionService,         # Commented out - not accessed
+# )
 
 # =============================================================================
 # API FACADE
@@ -327,7 +327,7 @@ __all__: list[str] = [
     "FlextPasswordValidationError",
     # Helper functions
     "flext_auth_quick_start",
-    "flext_auth_create_development_service",
+    # "flext_auth_create_development_service",  # Function not present in module
     # Constants
     "DEFAULT_JWT_SECRET",
     "DEFAULT_DEV_SECRET",

@@ -43,6 +43,7 @@ type FlextAuthAuditEventType = str
 # LEGACY COMPATIBILITY TYPES - For backward compatibility
 # =============================================================================
 
+
 class FlextAuthUserDataType(TypedDict, total=False):
     """FlextAuth user data type definition."""
 
@@ -106,6 +107,7 @@ class FlextAuthClaimsType(TypedDict, total=False):
 # CONFIGURATION TYPES - FlextAuth configuration
 # =============================================================================
 
+
 class FlextAuthConfigType(TypedDict, total=False):
     """FlextAuth configuration type definition."""
 
@@ -131,6 +133,7 @@ class FlextAuthConfigType(TypedDict, total=False):
 # API RESPONSE TYPES - FlextAuth API responses
 # =============================================================================
 
+
 class FlextAuthResponseType(TypedDict, total=False):
     """FlextAuth API response type definition."""
 
@@ -153,6 +156,7 @@ class FlextAuthAuthResponseType(TypedDict, total=False):
 # =============================================================================
 # VALIDATION TYPES - FlextAuth validation
 # =============================================================================
+
 
 class FlextAuthValidationResultType(TypedDict, total=False):
     """FlextAuth validation result type definition."""

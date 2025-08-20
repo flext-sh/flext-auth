@@ -10,12 +10,12 @@ SPDX-License-Identifier: MIT
 
 from flext_auth.decorators import (
     FlextAuthMixin,
-    FlextAuthUserMixin,
     FlextAuthSessionMixin,
+    FlextAuthUserMixin,
 )
 
 __all__ = [
     "FlextAuthMixin",
-    "FlextAuthUserMixin", 
     "FlextAuthSessionMixin",
+    "FlextAuthUserMixin",
 ]

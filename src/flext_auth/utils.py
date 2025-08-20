@@ -251,7 +251,9 @@ class FlextAuthErrorUtils:
         return FlextResult[None].fail(f"[{error_code}] {message}")
 
     @staticmethod
-    def handle_exception(e: Exception, operation: str = "operation") -> FlextResult[None]:
+    def handle_exception(
+        e: Exception, operation: str = "operation"
+    ) -> FlextResult[None]:
         """Handle exception and return standardized error result."""
         return FlextResult[None].fail(f"Failed to {operation}: {e}")
 
@@ -259,6 +261,7 @@ class FlextAuthErrorUtils:
 # =============================================================================
 # BACKWARD COMPATIBILITY FUNCTIONS - Legacy helper functions
 # =============================================================================
+
 
 # Functions that should actually be imported from legacy.py
 def generate_secure_password(length: int = 16) -> str:

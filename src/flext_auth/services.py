@@ -20,7 +20,7 @@ import bcrypt
 import jwt
 from flext_core import FlextResult, FlextValidationError, get_logger
 
-from flext_auth.constants import FlextAuthConstants
+from flext_auth.constants import DEFAULT_JWT_SECRET, FlextAuthConstants
 from flext_auth.entities import (
     FlextPermission,
     FlextRole,
@@ -68,7 +68,6 @@ class TokenType(StrEnum):
 
 
 # Application service constants
-TEST_JWT_SECRET = os.getenv("TEST_JWT_SECRET", secrets.token_urlsafe(32))
 MAX_PASSWORD_LENGTH = 128  # Add constant for magic value
 PASSWORD_CHANGE_SUCCESS = True
 PERMISSION_GRANTED = True
@@ -139,7 +138,9 @@ class FlextPasswordService:
                 try:
                     FlextPlainPassword.model_validate({"value": password_str})
                 except (ValueError, TypeError) as e:
-                    return FlextResult[FlextHashedPassword].fail(f"Password validation failed: {e}")
+                    return FlextResult[FlextHashedPassword].fail(
+                        f"Password validation failed: {e}"
+                    )
 
             # Generate salt and hash
             password_bytes = password_str.encode("utf-8")
@@ -150,16 +151,22 @@ class FlextPasswordService:
             try:
                 hashed_vo = FlextHashedPassword.model_validate({"value": hashed_str})
             except (ValueError, TypeError) as e:
-                return FlextResult[FlextHashedPassword].fail(f"Password hashing failed: {e}")
+                return FlextResult[FlextHashedPassword].fail(
+                    f"Password hashing failed: {e}"
+                )
             # Domain VO may raise inside validate_business_rules; call to ensure validity
             try:
                 _ = hashed_vo.validate_business_rules()
             except Exception as e:
-                return FlextResult[FlextHashedPassword].fail(f"Password hashing failed: {e}")
+                return FlextResult[FlextHashedPassword].fail(
+                    f"Password hashing failed: {e}"
+                )
             return FlextResult[FlextHashedPassword].ok(hashed_vo)
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult[FlextHashedPassword].fail(f"Password hashing failed: {e}")
+            return FlextResult[FlextHashedPassword].fail(
+                f"Password hashing failed: {e}"
+            )
 
     def verify_password(
         self,
@@ -266,7 +273,9 @@ class FlextPasswordService:
                 )
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult[FlextPlainPassword].fail(f"Password generation failed: {e}")
+            return FlextResult[FlextPlainPassword].fail(
+                f"Password generation failed: {e}"
+            )
 
     def check_password_strength(
         self,
@@ -632,7 +641,9 @@ class FlextJWTService:
             )
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult[dict[str, str]].fail(f"Failed to generate token pair: {e}")
+            return FlextResult[dict[str, str]].fail(
+                f"Failed to generate token pair: {e}"
+            )
 
     def verify_token(self, token: str) -> FlextResult[FlextJWTClaims]:
         """Verify and decode JWT token."""
@@ -949,7 +960,7 @@ class FlextAuthenticationService:
         user_repo = InMemoryUserRepository()
         session_repo = InMemorySessionRepository()
         password_service = FlextPasswordService()
-        jwt_service = FlextJWTService(secret_key=TEST_JWT_SECRET)
+        jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
 
         return ServiceDependencies(
             user_repo=user_repo,
@@ -1024,9 +1035,12 @@ class FlextAuthenticationService:
 
             user = users[username]
 
-            # Simple password verification for compatibility
-            test_password = os.getenv("FLEXT_TEST_PASSWORD", "TestPass123!")
-            if password == test_password:  # nosec B105 - Test authentication only
+            # Verify password using bcrypt
+            password_service = FlextPasswordService()
+            verification_result = password_service.verify_password(
+                password, user.password_hash
+            )
+            if verification_result.success and verification_result.data:
                 return FlextResult[FlextUser].ok(user)
             return FlextResult[FlextUser].fail("Invalid credentials")
 
@@ -1124,7 +1138,7 @@ class FlextAuthorizationService:
         user_repo = InMemoryUserRepository()
         session_repo = InMemorySessionRepository()
         password_service = FlextPasswordService()
-        jwt_service = FlextJWTService(secret_key=TEST_JWT_SECRET)
+        jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
 
         return ServiceDependencies(
             user_repo=user_repo,
@@ -1150,33 +1164,37 @@ class FlextAuthorizationService:
 
             # Convert permissions to dictionaries if they are FlextPermission instances
             permissions_list = permissions or []
-            permissions_data = []
-            
+            permissions_data: list[dict[str, object]] = []
+
             for perm in permissions_list:
                 # If it's a FlextPermission instance, convert to dict
-                if hasattr(perm, 'model_dump'):
+                if hasattr(perm, "model_dump"):
                     permissions_data.append(perm.model_dump())
-                elif hasattr(perm, '__dict__'):
+                elif hasattr(perm, "__dict__"):
                     # Convert object to dict for basic compatibility
-                    permissions_data.append({
-                        'id': str(getattr(perm, 'id', '')),
-                        'name': str(getattr(perm, 'name', '')),
-                        'description': str(getattr(perm, 'description', '')),
-                        'resource': str(getattr(perm, 'resource', '')),
-                        'action': str(getattr(perm, 'action', '')),
-                    })
+                    permissions_data.append(
+                        {
+                            "id": str(getattr(perm, "id", "")),
+                            "name": str(getattr(perm, "name", "")),
+                            "description": str(getattr(perm, "description", "")),
+                            "resource": str(getattr(perm, "resource", "")),
+                            "action": str(getattr(perm, "action", "")),
+                        }
+                    )
                 else:
-                    # Assume it's already a dict
-                    permissions_data.append(perm)
+                    # Convert unknown type to dict representation
+                    permissions_data.append({"unknown": str(perm)})
 
             # Create role entity with converted data
-            role = FlextRole.model_validate({
-                'id': f"role_{name}",
-                'name': name,
-                'description': description,
-                'permissions': permissions_data,
-                'is_system_role': False
-            })
+            role = FlextRole.model_validate(
+                {
+                    "id": f"role_{name}",
+                    "name": name,
+                    "description": description,
+                    "permissions": permissions_data,
+                    "is_system_role": False,
+                }
+            )
 
             return FlextResult[FlextRole].ok(role)
 
@@ -1279,7 +1297,7 @@ class FlextSessionService:
         user_repo = InMemoryUserRepository()
         session_repo = InMemorySessionRepository()
         password_service = FlextPasswordService()
-        jwt_service = FlextJWTService(secret_key=TEST_JWT_SECRET)
+        jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
 
         return ServiceDependencies(
             user_repo=user_repo,

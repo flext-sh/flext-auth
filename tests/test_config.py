@@ -40,25 +40,35 @@ class TestDatabaseConfig:
         assert config.command_timeout == 60
 
     def test_database_config_env_vars(self) -> None:
-        """Test database configuration from environment variables."""
-        with patch.dict(
-            os.environ,
-            {
-                "DATABASE_URL": "postgresql://user:pass@localhost/testdb",
-                "DATABASE_MIN_POOL_SIZE": "2",
-                "DATABASE_MAX_POOL_SIZE": "20",
-                "DATABASE_COMMAND_TIMEOUT": "120",
-            },
-        ):
+        """Test database configuration from environment variables - REAL execution."""
+        # Set real environment variables
+        original_values = {}
+        env_vars = {
+            "DATABASE_URL": "postgresql://user:pass@localhost/testdb",
+            "DATABASE_MIN_POOL_SIZE": "2",
+            "DATABASE_MAX_POOL_SIZE": "20",
+            "DATABASE_COMMAND_TIMEOUT": "120",
+        }
+
+        # Store original values
+        for key in env_vars:
+            original_values[key] = os.environ.get(key)
+            os.environ[key] = env_vars[key]
+
+        try:
+            # Test real configuration loading
             config = DatabaseConfig()
-            if config.url != "postgresql://user:pass@localhost/testdb":
-                raise AssertionError(
-                    f"Expected {'postgresql://user:pass@localhost/testdb'}, got {config.url}",
-                )
+            assert config.url == "postgresql://user:pass@localhost/testdb"
             assert config.min_pool_size == EXPECTED_BULK_SIZE
-            if config.max_pool_size != 20:
-                raise AssertionError(f"Expected {20}, got {config.max_pool_size}")
+            assert config.max_pool_size == 20
             assert config.command_timeout == 120
+        finally:
+            # Restore original environment
+            for key, original_value in original_values.items():
+                if original_value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = original_value
 
     def test_database_url_validation_valid_postgresql(self) -> None:
         """Test valid PostgreSQL URL validation."""

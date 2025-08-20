@@ -20,6 +20,9 @@ from flext_core import (
 from pydantic import Field
 
 from flext_auth.constants import FlextAuthSemanticConstants
+
+# Import FlextUser from entities to avoid duplication
+from flext_auth.entities import FlextUser, FlextUserRole, FlextUserStatus
 from flext_auth.value_objects import (
     FlextHashedPassword,
     FlextJWTClaims,
@@ -51,21 +54,7 @@ MIN_PASSWORD_RESET_TOKEN_LENGTH = 32
 MIN_EMAIL_VERIFICATION_TOKEN_LENGTH = 32
 
 
-class FlextUserStatus(StrEnum):
-    """User account status."""
-
-    ACTIVE = "active"
-    INACTIVE = "inactive"
-    LOCKED = "locked"
-    PENDING_VERIFICATION = "pending_verification"
-
-
-class FlextUserRole(StrEnum):
-    """User roles in the system."""
-
-    USER = "user"
-    ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
-    MODERATOR = "moderator"
+# FlextUserStatus and FlextUserRole imported from entities.py to avoid duplication
 
 
 class FlextSessionStatus(StrEnum):
@@ -81,156 +70,8 @@ class FlextSessionStatus(StrEnum):
 # =============================================================================
 
 
-class FlextUser(FlextEntity):
-    """Rich user entity with authentication business logic and domain rules.
-
-    This entity represents a user account in the FLEXT authentication system,
-    following Domain-Driven Design patterns. It encapsulates both user data
-    and authentication-related business logic including account lockout,
-    failed login tracking, and role-based access control.
-    """
-
-    id: FlextEntityId = Field(..., description="Unique user identifier")
-    username: str = Field(..., description="Username")
-    email: str = Field(..., description="User email address")
-    password_hash: str = Field(..., description="Bcrypt password hash")
-    role: FlextUserRole = Field(default=FlextUserRole.USER, description="User role")
-    status: FlextUserStatus = Field(
-        default=FlextUserStatus.ACTIVE,
-        description="Account status",
-    )
-    failed_login_attempts: int = Field(
-        default=0,
-        ge=0,
-        description="Failed login count",
-    )
-    locked_until: datetime | None = Field(
-        default=None,
-        description="Account lock expiration",
-    )
-    last_login: datetime | None = Field(
-        default=None,
-        description="Last successful login",
-    )
-    created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
-    updated_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
-
-    def is_active(self) -> bool:
-        """Check if user account is active."""
-        return self.status == FlextUserStatus.ACTIVE
-
-    def is_locked(self) -> bool:
-        """Check if user account is locked."""
-        if self.status == FlextUserStatus.LOCKED:
-            return True
-
-        return bool(self.locked_until and datetime.now(UTC) < self.locked_until)
-
-    def unlock_account(self) -> FlextUser:
-        """Create new User instance with unlocked account."""
-        return FlextUser(
-            id=self.id,
-            username=self.username,
-            email=self.email,
-            password_hash=self.password_hash,
-            role=self.role,
-            status=FlextUserStatus.ACTIVE,
-            failed_login_attempts=0,
-            locked_until=None,
-            last_login=self.last_login,
-            created_at=self.created_at,
-            updated_at=datetime.now(UTC),
-        )
-
-    def increment_failed_login(self) -> FlextUser:
-        """Create new User instance with incremented failed login attempts."""
-        return FlextUser(
-            id=self.id,
-            username=self.username,
-            email=self.email,
-            password_hash=self.password_hash,
-            role=self.role,
-            status=self.status,
-            failed_login_attempts=self.failed_login_attempts + 1,
-            locked_until=self.locked_until,
-            last_login=self.last_login,
-            created_at=self.created_at,
-            updated_at=datetime.now(UTC),
-        )
-
-    def reset_failed_login(self) -> FlextUser:
-        """Create new User instance with reset failed login attempts."""
-        return FlextUser(
-            id=self.id,
-            username=self.username,
-            email=self.email,
-            password_hash=self.password_hash,
-            role=self.role,
-            status=self.status,
-            failed_login_attempts=0,
-            locked_until=self.locked_until,
-            last_login=datetime.now(UTC),
-            created_at=self.created_at,
-            updated_at=datetime.now(UTC),
-        )
-
-    def is_valid(self) -> bool:
-        """Validate user entity data."""
-        return (
-            len(self.username) >= MIN_USERNAME_LENGTH
-            and len(self.username) <= MAX_USERNAME_LENGTH
-            and "@" in self.email
-            and len(self.password_hash) > 0
-        )
-
-    def is_REDACTED_LDAP_BIND_PASSWORD(self) -> bool:
-        """Check if user is REDACTED_LDAP_BIND_PASSWORD."""
-        return self.role == FlextUserRole.ADMIN
-
-    def validate_domain_rules(self) -> FlextResult[None]:
-        """Validate user domain rules using Railway-Oriented Programming."""
-        try:
-            validation_errors = self._execute_user_validation_strategies()
-            if validation_errors:
-                return FlextResult[None].fail(
-                    validation_errors[0]
-                )  # Return first error
-
-            return FlextResult[None].ok(None)
-
-        except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
-            return FlextResult[None].fail(f"User validation error: {e}")
-
-    def _execute_user_validation_strategies(self) -> list[str]:
-        """Execute all user validation strategies - Railway-Oriented Programming."""
-        errors = []
-
-        # Username validation strategies
-        if len(self.username) < MIN_USERNAME_LENGTH:
-            errors.append("Username must be at least 3 characters")
-        if len(self.username) > MAX_USERNAME_LENGTH:
-            errors.append("Username must be at most 50 characters")
-
-        # Email validation strategies
-        if "@" not in self.email:
-            errors.append("Email must contain @ symbol")
-
-        # Password hash validation strategies
-        if not self.password_hash:
-            errors.append("Password hash cannot be empty")
-
-        # Failed login attempts validation strategies
-        if self.failed_login_attempts < 0:
-            errors.append("Failed login attempts cannot be negative")
-
-        return errors
-
-    def validate_business_rules(self) -> FlextResult[None]:
-        """Validate business rules required by FlextEntity abstract method."""
-        validation_errors = self._execute_user_validation_strategies()
-        if validation_errors:
-            raise ValueError(validation_errors[0])  # Raise first error as ValueError
-        return FlextResult[None].ok(None)
+# FlextUser is imported from entities.py to avoid duplication
+# Domain entities should be in their proper place
 
 
 class FlextSession(FlextEntity):

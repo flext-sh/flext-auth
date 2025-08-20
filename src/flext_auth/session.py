@@ -43,6 +43,10 @@ class SessionRepository(ABC):
     def cleanup_expired_sessions(self) -> FlextResult[int]:
         """Clean up expired sessions."""
 
+    @abstractmethod
+    async def revoke_session(self, session_id: str) -> FlextResult[bool]:
+        """Revoke a specific session by ID."""
+
     # Compatibility async methods expected by service layer
     async def get_by_id(
         self,
@@ -64,7 +68,7 @@ class SessionRepository(ABC):
 
 
 class InMemorySessionRepository(SessionRepository):
-    """In-memory session repository for testing and development."""
+    """In-memory session repository implementation."""
 
     def __init__(self) -> None:
         """Initialize empty session storage."""
@@ -99,7 +103,9 @@ class InMemorySessionRepository(SessionRepository):
             ]
             return FlextResult[list[FlextSession]].ok(user_sessions)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[list[FlextSession]].fail(f"Failed to find user sessions: {e}")
+            return FlextResult[list[FlextSession]].fail(
+                f"Failed to find user sessions: {e}"
+            )
 
     def revoke_all_sessions_for_user(self, user_id: str) -> FlextResult[int]:
         """Revoke all sessions for a user."""

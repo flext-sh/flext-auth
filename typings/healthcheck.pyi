@@ -1,3 +1,0 @@
-HTTP_OK: int
-
-def main() -> int: ...

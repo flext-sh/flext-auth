@@ -56,7 +56,7 @@ class TestRefactoredAuthSystem:
         auth = auth_result.data
         assert auth is not None
         # Check that it has the required auth interface methods
-        assert hasattr(auth, 'authenticate_user') and hasattr(auth, 'register_user')
+        assert hasattr(auth, "authenticate_user") and hasattr(auth, "register_user")
 
     def test_dependency_injection_resolution(self) -> None:
         """Test that dependency injection works correctly after refactoring."""
@@ -190,9 +190,15 @@ class TestRefactoredAuthSystem:
         password_service: FlextPasswordService = auth.password_service
 
         # Verify proper typing - auth_service can be mock for API compatibility
-        assert hasattr(auth_service, 'register_user') and hasattr(auth_service, 'authenticate_user')
-        assert hasattr(jwt_service, 'generate_token') and hasattr(jwt_service, 'verify_token')
-        assert hasattr(password_service, 'hash_password') and hasattr(password_service, 'verify_password')
+        assert hasattr(auth_service, "register_user") and hasattr(
+            auth_service, "authenticate_user"
+        )
+        assert hasattr(jwt_service, "generate_token") and hasattr(
+            jwt_service, "verify_token"
+        )
+        assert hasattr(password_service, "hash_password") and hasattr(
+            password_service, "verify_password"
+        )
 
     def test_clean_architecture_boundaries(self) -> None:
         """Test that Clean Architecture boundaries are respected."""

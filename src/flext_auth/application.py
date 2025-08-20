@@ -11,7 +11,7 @@ import secrets
 import uuid
 from datetime import UTC, datetime, timedelta
 
-from flext_core import FlextDomainService, FlextResult
+from flext_core import FlextDomainService, FlextEntityId, FlextResult
 
 from flext_auth.constants import FlextAuthSemanticConstants
 from flext_auth.entities import (
@@ -153,7 +153,7 @@ class FlextAuthenticationService(FlextDomainService[str]):
             password_hash = hash_result.data.value if hash_result.data else ""
 
             user = FlextUser(
-                id=str(uuid.uuid4()),
+                id=FlextEntityId(str(uuid.uuid4())),
                 username=username,
                 email=email,
                 password_hash=password_hash,
@@ -215,7 +215,7 @@ class FlextAuthenticationService(FlextDomainService[str]):
                 )
 
             user.password_hash = hash_result.data.value if hash_result.data else ""
-            return FlextResult.ok(FlextAuthSemanticConstants.SUCCESS)
+            return FlextResult[bool].ok(FlextAuthSemanticConstants.SUCCESS)
 
         except (ValueError, TypeError, AttributeError, KeyError) as e:
             return FlextResult[bool].fail(f"Password change failed: {e}")
@@ -259,10 +259,12 @@ class FlextSessionService(FlextDomainService[str]):
         """
         try:
             if not user.is_active():
-                return FlextResult[FlextSession].fail("Cannot create session for inactive user")
+                return FlextResult[FlextSession].fail(
+                    "Cannot create session for inactive user"
+                )
 
             session = FlextSession(
-                id=str(uuid.uuid4()),
+                id=FlextEntityId(str(uuid.uuid4())),
                 user_id=str(user.id),
                 access_token=secrets.token_urlsafe(32),
                 refresh_token=secrets.token_urlsafe(32),
@@ -292,12 +294,12 @@ class FlextSessionService(FlextDomainService[str]):
         """
         try:
             if not session.is_valid():
-                return FlextResult[str].fail("Session is not valid")
+                return FlextResult[bool].fail("Session is not valid")
 
-            return FlextResult.ok(FlextAuthSemanticConstants.SUCCESS)
+            return FlextResult[bool].ok(FlextAuthSemanticConstants.SUCCESS)
 
         except (ValueError, TypeError, AttributeError) as e:
-            return FlextResult[str].fail(f"Session validation failed: {e}")
+            return FlextResult[bool].fail(f"Session validation failed: {e}")
 
     def revoke_session(self, session: FlextSession) -> FlextResult[bool]:
         """Revoke a session.
@@ -311,10 +313,10 @@ class FlextSessionService(FlextDomainService[str]):
         """
         try:
             session.revoke()
-            return FlextResult.ok(FlextAuthSemanticConstants.SUCCESS)
+            return FlextResult[bool].ok(FlextAuthSemanticConstants.SUCCESS)
 
         except (ValueError, TypeError, AttributeError) as e:
-            return FlextResult[str].fail(f"Session revocation failed: {e}")
+            return FlextResult[bool].fail(f"Session revocation failed: {e}")
 
 
 class FlextAuthorizationService(FlextDomainService[str]):
@@ -356,18 +358,18 @@ class FlextAuthorizationService(FlextDomainService[str]):
         try:
             # Admin users have all permissions
             if user.is_REDACTED_LDAP_BIND_PASSWORD():
-                return FlextResult.ok(FlextAuthSemanticConstants.SUCCESS)
+                return FlextResult[bool].ok(FlextAuthSemanticConstants.SUCCESS)
 
             # If roles are provided, check role permissions
             if roles:
                 user_role = roles.get(user.role)
                 if user_role and user_role.has_permission(resource, action):
-                    return FlextResult.ok(FlextAuthSemanticConstants.SUCCESS)
+                    return FlextResult[bool].ok(FlextAuthSemanticConstants.SUCCESS)
 
-            return FlextResult.ok(FlextAuthSemanticConstants.FAILURE)
+            return FlextResult[bool].ok(FlextAuthSemanticConstants.FAILURE)
 
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[str].fail(f"Permission check failed: {e}")
+            return FlextResult[bool].fail(f"Permission check failed: {e}")
 
     def create_role(
         self,
@@ -388,22 +390,22 @@ class FlextAuthorizationService(FlextDomainService[str]):
         """
         try:
             if not name:
-                return FlextResult[str].fail("Role name is required")
+                return FlextResult[FlextRole].fail("Role name is required")
 
             role = FlextRole(
-                id=str(uuid.uuid4()),
+                id=FlextEntityId(str(uuid.uuid4())),
                 name=name,
                 description=description,
                 permissions=permissions or [],
             )
 
             if not role.is_valid():
-                return FlextResult[str].fail("Invalid role data")
+                return FlextResult[FlextRole].fail("Invalid role data")
 
-            return FlextResult[object].ok(role)
+            return FlextResult[FlextRole].ok(role)
 
         except (ValueError, TypeError, AttributeError, KeyError) as e:
-            return FlextResult[str].fail(f"Role creation failed: {e}")
+            return FlextResult[FlextRole].fail(f"Role creation failed: {e}")
 
 
 # Backwards compatibility aliases

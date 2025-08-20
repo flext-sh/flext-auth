@@ -218,7 +218,9 @@ class FlextJWTService:
             )
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult[dict[str, str]].fail(f"Failed to generate token pair: {e}")
+            return FlextResult[dict[str, str]].fail(
+                f"Failed to generate token pair: {e}"
+            )
 
     def verify_token(self, token: str) -> FlextResult[JWTClaims]:
         """Verify and decode JWT token."""

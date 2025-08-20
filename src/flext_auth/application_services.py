@@ -12,14 +12,14 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
-from flext_core import FlextResult
+from flext_core import FlextEntityId, FlextResult, FlextTimestamp
 
 from flext_auth.app import (
     FlextAuthService,
     FlextAuthServiceConfig,
     FlextAuthServiceDependencies,
 )
-from flext_auth.constants import TEST_JWT_SECRET
+from flext_auth.constants import DEFAULT_JWT_SECRET
 from flext_auth.entities import (
     FlextPermission,
     FlextRole,
@@ -211,7 +211,7 @@ def _create_auth_service_dependencies() -> ServiceDependencies:
     user_repo = InMemoryUserRepository()
     session_repo = InMemorySessionRepository()
     password_service = FlextPasswordService()
-    jwt_service = FlextJWTService(secret_key=TEST_JWT_SECRET)
+    jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
 
     # Create dependencies object using Parameter Object Pattern
     dependencies = FlextAuthServiceDependencies(
@@ -309,7 +309,7 @@ class FlextAuthenticationService:
 
             # Create user entity
             user = FlextUser(
-                id=f"user_{username}",
+                id=FlextEntityId(f"user_{username}"),
                 username=username,
                 email=email,
                 password_hash="",  # Will be set by password service
@@ -336,10 +336,12 @@ class FlextAuthenticationService:
 
             user = users[username]
 
-            # Simple password verification for compatibility
-            # In real implementation, this would hash and compare
-            test_password = "TestPass123!"  # noqa: S105
-            if password == test_password:
+            # Verify password using bcrypt
+            password_service = FlextPasswordService()
+            verification_result = password_service.verify_password(
+                password, user.password_hash
+            )
+            if verification_result.success and verification_result.data:
                 return FlextResult[FlextUser].ok(user)
             return FlextResult[FlextUser].fail("Invalid credentials")
 
@@ -381,7 +383,7 @@ class FlextAuthenticationService:
                 failed_login_attempts=0,  # Reset failed attempts
                 locked_until=None,  # Clear any lockout
                 created_at=user.created_at,
-                updated_at=datetime.now(UTC),
+                updated_at=FlextTimestamp(datetime.now(UTC)),
                 last_login=user.last_login,
             )
 
@@ -418,7 +420,6 @@ class FlextAuthorizationService:
         permissions: list[FlextPermission] | None = None,
     ) -> FlextResult[FlextRole]:
         """Create role with validation."""
-        print(f"DEBUG: create_role called with name={name}, permissions={type(permissions)}")
         try:
             if not name or not name.strip():
                 return FlextResult[FlextRole].fail("Role name cannot be empty")
@@ -426,39 +427,40 @@ class FlextAuthorizationService:
             # Convert permissions to dictionaries if they are FlextPermission instances
             permissions_list = permissions or []
             permissions_data = []
-            print(f"DEBUG: permissions_list length: {len(permissions_list)}")
-            
+
             for perm in permissions_list:
                 # If it's a FlextPermission instance, convert to dict
-                if hasattr(perm, 'model_dump'):
+                if hasattr(perm, "model_dump"):
                     converted = perm.model_dump()
-                    print(f"DEBUG: Converted permission to dict: {type(converted)}")
                     permissions_data.append(converted)
-                elif hasattr(perm, '__dict__'):
+                elif hasattr(perm, "__dict__"):
                     # Convert object to dict for basic compatibility
-                    permissions_data.append({
-                        'id': str(getattr(perm, 'id', '')),
-                        'name': str(getattr(perm, 'name', '')),
-                        'description': str(getattr(perm, 'description', '')),
-                        'resource': str(getattr(perm, 'resource', '')),
-                        'action': str(getattr(perm, 'action', '')),
-                    })
+                    permissions_data.append(
+                        {
+                            "id": str(getattr(perm, "id", "")),
+                            "name": str(getattr(perm, "name", "")),
+                            "description": str(getattr(perm, "description", "")),
+                            "resource": str(getattr(perm, "resource", "")),
+                            "action": str(getattr(perm, "action", "")),
+                        }
+                    )
                 else:
-                    # Assume it's already a dict
-                    permissions_data.append(perm)
-            
-            print(f"DEBUG: Final permissions_data: {len(permissions_data)} items")
+                    # Convert unknown object to dict structure
+                    permissions_data.append(
+                        {"raw_permission": str(perm), "type": str(type(perm).__name__)}
+                    )
 
             # Create role entity
-            from flext_auth.entities import FlextRole  # noqa: PLC0415
-            
-            role = FlextRole.model_validate({
-                'id': f"role_{name}",
-                'name': name,
-                'description': description,
-                'permissions': permissions_data,
-                'is_system_role': False
-            })
+
+            role = FlextRole.model_validate(
+                {
+                    "id": f"role_{name}",
+                    "name": name,
+                    "description": description,
+                    "permissions": permissions_data,
+                    "is_system_role": False,
+                }
+            )
 
             return FlextResult[FlextRole].ok(role)
 
@@ -562,7 +564,7 @@ class FlextSessionService:
         try:
             # Create session entity
             session = FlextSession(
-                id=f"session_{user.id}",
+                id=FlextEntityId(f"session_{user.id}"),
                 user_id=str(user.id),
                 access_token=f"token_{user.id}",
                 refresh_token=f"refresh_{user.id}",
@@ -602,12 +604,12 @@ class FlextSessionService:
 
             session = session_result.data
             # Already revoked sessions are considered successful
-            if session.status == FlextSessionStatus.REVOKED:
+            if str(session.status) == "revoked":
                 return FlextResult[bool].ok(LOGOUT_SUCCESS)
 
             # Revoke and save
             revoked_session = session.revoke()
-            save_result = self._deps.session_repo.save_sync(revoked_session)
+            save_result = asyncio.run(self._deps.session_repo.save(revoked_session))
 
             return FlextResult[bool].ok(save_result.success)
 

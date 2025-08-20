@@ -23,7 +23,9 @@ EXPECTED_DATA_COUNT = 3
 def test_flext_auth_hash_password() -> None:
     """Test password hashing helper."""
     password = "TestPassword123!"
-    hashed = flext_auth_hash_password(password)  # Legacy function doesn't take rounds parameter
+    hashed = flext_auth_hash_password(
+        password
+    )  # Legacy function doesn't take rounds parameter
 
     assert hashed != password
     assert len(hashed) > 50

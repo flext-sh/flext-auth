@@ -19,7 +19,52 @@ from flext_auth import (
 
 
 class TestFlextAuthBasics:
-    """Test basic flext-auth functionality."""
+    """Test basic flext-auth functionality with REAL execution."""
+
+    def test_complete_authentication_flow_real_execution(self) -> None:
+        """Test complete authentication flow - REAL code execution without mocks."""
+        # Create real auth service
+        auth_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+        assert auth_result.success, f"Auth service creation failed: {auth_result.error}"
+        auth = auth_result.data
+
+        # Test real user registration
+        username = "testuser"
+        email = "test@example.com"
+        password = "SecurePassword123!"
+
+        # Execute real registration
+        register_result = auth.register_user(username, email, password)
+        assert isinstance(register_result, dict)
+        assert "username" in register_result
+        assert register_result["username"] == username
+
+        # Execute real authentication
+        auth_result = auth.authenticate_user(username, password)
+        assert isinstance(auth_result, dict)
+        assert "user" in auth_result
+        assert auth_result["user"]["username"] == username
+
+        # Test password hashing is real bcrypt
+        password_service = auth.password_service
+        hash_result = password_service.hash_password(password)
+        assert hash_result.success, f"Password hashing failed: {hash_result.error}"
+        assert hash_result.data is not None
+        hashed = hash_result.data.value
+        assert hashed.startswith("$2b$")  # Real bcrypt format
+        assert len(hashed) > 50  # Real bcrypt length
+
+        # Test JWT service integration with real token generation
+        jwt_service = auth.jwt_service
+        token_result = jwt_service.generate_access_token(
+            user_id="user123", username=username, role="user", session_id="session123"
+        )
+        assert token_result.success, f"JWT generation failed: {token_result.error}"
+        assert token_result.data is not None
+        token = token_result.data
+        assert isinstance(token, str)
+        assert len(token) > 100  # Real JWT length
+        assert token.count(".") == 2  # Real JWT format (header.payload.signature)
 
     def test_flext_auth_instantiation(self) -> None:
         """Test FlextAuth class can be instantiated."""
@@ -35,16 +80,23 @@ class TestFlextAuthBasics:
         auth_service = result.data
         assert hasattr(auth_service, "service")
 
-    def test_password_hashing(self) -> None:
-        """Test password hashing and verification."""
+    def test_password_hashing_real_execution(self) -> None:
+        """Test password hashing and verification - REAL bcrypt execution."""
         password = "SecurePassword123!"
+
+        # Execute real bcrypt hashing
         hashed = flext_auth_hash_password(password)
         assert hashed != password
         assert len(hashed) > 10
+        assert hashed.startswith("$2b$")  # Verify real bcrypt format
 
-        # Test verification
+        # Test real password verification
         assert flext_auth_verify_password(password, hashed) is True
         assert flext_auth_verify_password("wrong", hashed) is False
+
+        # Test edge cases with real execution
+        assert flext_auth_verify_password("", hashed) is False
+        assert flext_auth_verify_password(password, "invalid_hash") is False
 
     def test_jwt_generation_and_validation(self) -> None:
         """Test JWT token generation and validation."""

@@ -589,7 +589,9 @@ class FlextAuthMixin:
             # Auth service methods are async - mixins provide sync wrapper
             async def _auth() -> FlextResult[dict[str, object]]:
                 if self._auth_service is None:
-                    return FlextResult[dict[str, object]].fail("Auth service not initialized")
+                    return FlextResult[dict[str, object]].fail(
+                        "Auth service not initialized"
+                    )
                 auth_result = await self._auth_service.authenticate_user(
                     username,
                     password,
@@ -626,7 +628,9 @@ class FlextAuthMixin:
             # Auth service method is async
             async def _validate() -> FlextResult[dict[str, object]]:
                 if self._auth_service is None:
-                    return FlextResult[dict[str, object]].fail("Auth service not initialized")
+                    return FlextResult[dict[str, object]].fail(
+                        "Auth service not initialized"
+                    )
                 validation_result = await self._auth_service.validate_token(token)
                 if validation_result.success and validation_result.data:
                     # Convert SecurityContext to dict format
@@ -668,7 +672,9 @@ class FlextAuthMixin:
 
             async def _run() -> FlextResult[dict[str, object]]:
                 if self._auth_service is None:
-                    return FlextResult[dict[str, object]].fail("Authentication not initialized")
+                    return FlextResult[dict[str, object]].fail(
+                        "Authentication not initialized"
+                    )
                 svc_res = await self._auth_service.authenticate_user(
                     username,
                     password,

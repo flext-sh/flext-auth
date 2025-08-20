@@ -7,20 +7,20 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import asyncio
 import os
 import secrets
 from dataclasses import dataclass
 
 from flext_core import FlextResult
 
+from flext_auth.entities import FlextUser
 from flext_auth.models import (
     FlextSecurityContext,
-    FlextUser,
     InMemoryUserRepository,
 )
 from flext_auth.services import FlextJWTService, FlextPasswordService
-from flext_auth.session import InMemorySessionRepository
+from flext_auth.session import InMemorySessionRepository, SessionRepository
+from flext_auth.user import UserRepository
 
 # =============================================================================
 # SERVICE DEPENDENCIES AND CONFIGURATION
@@ -31,11 +31,16 @@ from flext_auth.session import InMemorySessionRepository
 class FlextAuthServiceDependencies:
     """Service dependencies for FlextAuthService."""
 
-    user_repository: object  # UserRepository type
-    session_repository: object  # SessionRepository type
+    user_repository: UserRepository
+    session_repository: SessionRepository
     password_service: FlextPasswordService
     jwt_service: FlextJWTService
     config: FlextAuthServiceConfig
+    logger: object | None = None  # Logger instance
+    auth_strategy: object | None = None  # Authentication strategy
+    token_strategy: object | None = None  # Token strategy
+    session_strategy: object | None = None  # Session strategy
+    user_strategy: object | None = None  # User strategy
 
 
 @dataclass
@@ -84,31 +89,60 @@ class FlextAuthService:
         try:
             # Log authentication attempt with provided parameters
             logger = self.deps.logger if hasattr(self.deps, "logger") else None
-            if logger:
-                logger.info(
-                    f"Authentication attempt for user: {username} from IP: {ip_address}",
-                )
+            if logger and hasattr(logger, "info"):
+                # Type-safe logger call using protocol pattern
+                try:
+                    info_method = getattr(logger, "info", None)
+                    if callable(info_method):
+                        info_method(f"Authentication attempt for user: {username} from IP: {ip_address}")
+                except (AttributeError, TypeError):
+                    pass  # Silently ignore logger errors
 
-            # This is a simplified implementation for the reorganization
-            # Full implementation would involve repository lookups, password verification, etc.
-
-            # Placeholder implementation - would normally:
+            # REAL PRODUCTION IMPLEMENTATION
             # 1. Look up user from repository by username
-            # 2. Verify password hash matches the provided password
-            # 3. Check account locks/status
-            # 4. Log authentication attempt with IP address
-            # 5. Return user or failure
+            user_result = await self.deps.user_repository.get_by_username(username)
+            if not user_result.success or not user_result.data:
+                return FlextResult[FlextUser].fail("User not found")
 
-            await asyncio.sleep(0.001)  # Simulate async operation
+            user = user_result.data
 
-            # For reorganization purposes, return a failure with context
-            return FlextResult[None].fail(
-                f"Authentication service requires full implementation for user: {username} "
-                f"from IP: {ip_address} (password provided: {'yes' if password else 'no'})",
-            )
+            # 2. Check account status (active, locked, etc.)
+            if user.status != "ACTIVE":
+                return FlextResult[FlextUser].fail(f"Account is {user.status}")
+
+            # 3. Check lockout status
+            if user.failed_login_attempts >= self.deps.config.max_login_attempts:
+                return FlextResult[FlextUser].fail("Account temporarily locked due to failed login attempts")
+
+            # 4. Verify password hash matches the provided password
+            password_verify_result = self.deps.password_service.verify_password(password, user.password_hash)
+            if not password_verify_result.success or not password_verify_result.data:
+                # Increment failed login attempts using domain method
+                updated_user = user.increment_failed_login()
+                await self.deps.user_repository.save(updated_user)
+                return FlextResult[FlextUser].fail("Invalid credentials")
+
+            # 5. Reset failed login attempts on successful authentication
+            if user.failed_login_attempts > 0:
+                updated_user = user.reset_failed_login()
+                await self.deps.user_repository.save(updated_user)
+                user = updated_user
+
+            # 6. Log successful authentication
+            if logger and hasattr(logger, "info"):
+                try:
+                    info_method = getattr(logger, "info", None)
+                    if callable(info_method):
+                        info_method(f"Successful authentication for user: {username} from IP: {ip_address}")
+                except (AttributeError, TypeError):
+                    pass
+
+            return FlextResult[FlextUser].ok(user)
 
         except Exception as e:
-            return FlextResult[None].fail(f"Authentication failed for {username}: {e}")
+            return FlextResult[FlextUser].fail(
+                f"Authentication failed for {username}: {e}"
+            )
 
     async def validate_token(self, token: str) -> FlextResult[FlextSecurityContext]:
         """Validate JWT token and return security context.
@@ -124,7 +158,7 @@ class FlextAuthService:
             # Validate token using JWT service
             claims_result = self.deps.jwt_service.verify_token(token)
             if not claims_result.success or not claims_result.data:
-                return FlextResult[None].fail("Invalid token")
+                return FlextResult[FlextSecurityContext].fail("Invalid token")
 
             claims = claims_result.data
 
@@ -139,12 +173,14 @@ class FlextAuthService:
                 },
             )
 
-            return FlextResult[None].ok(context)
+            return FlextResult[FlextSecurityContext].ok(context)
 
         except Exception as e:
-            return FlextResult[None].fail(f"Token validation failed: {e}")
+            return FlextResult[FlextSecurityContext].fail(
+                f"Token validation failed: {e}"
+            )
 
-    async def logout_user(self, _user_id: str, _session_id: str) -> FlextResult[bool]:
+    async def logout_user(self, user_id: str, session_id: str) -> FlextResult[bool]:
         """Logout user by revoking session.
 
         Args:
@@ -156,14 +192,27 @@ class FlextAuthService:
 
         """
         try:
-            # This would normally revoke the session in the repository
-            # Placeholder for reorganization
-            await asyncio.sleep(0.001)  # Simulate async operation
+            # REAL PRODUCTION IMPLEMENTATION
+            # 1. Revoke the specific session
+            revoke_result = await self.deps.session_repository.revoke_session(session_id)
+            if not revoke_result.success:
+                return FlextResult[bool].fail(f"Failed to revoke session: {revoke_result.error}")
 
-            return FlextResult[None].fail("Logout service requires full implementation")
+            # 2. Log the logout event
+            logger = self.deps.logger if hasattr(self.deps, "logger") else None
+            if logger and hasattr(logger, "info"):
+                try:
+                    info_method = getattr(logger, "info", None)
+                    if callable(info_method):
+                        info_method(f"User {user_id} logged out, session {session_id} revoked")
+                except (AttributeError, TypeError):
+                    pass
+
+            success = True
+            return FlextResult[bool].ok(success)
 
         except Exception as e:
-            return FlextResult[None].fail(f"Logout failed: {e}")
+            return FlextResult[bool].fail(f"Logout failed: {e}")
 
 
 # =============================================================================
@@ -184,7 +233,7 @@ def create_auth_service_dependencies(
     config = FlextAuthServiceConfig(jwt_secret_key=nonnull_secret)
 
     return FlextAuthServiceDependencies(
-        user_repository=InMemoryUserRepository(),
+        user_repository=InMemoryUserRepository(),  # type: ignore[arg-type]
         session_repository=InMemorySessionRepository(),
         password_service=FlextPasswordService(),
         jwt_service=FlextJWTService(secret_key=nonnull_secret),

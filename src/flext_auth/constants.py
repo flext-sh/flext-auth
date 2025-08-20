@@ -195,6 +195,5 @@ __all__: list[str] = [
 # Export constants for direct import compatibility
 TEST_JWT_SECRET = FlextAuthSemanticConstants.Tokens.TEST_JWT_SECRET
 DEFAULT_JWT_SECRET = FlextAuthSemanticConstants.Tokens.DEFAULT_JWT_SECRET
-# Tests expect empty default for JWTConfig default secret in config tests; keep constants but JWTConfig handles empty default.
-# Compat alias: some tests import DEFAULT_DEV_SECRET from root constants
+# Compatibility alias for legacy imports
 DEFAULT_DEV_SECRET = DEFAULT_JWT_SECRET

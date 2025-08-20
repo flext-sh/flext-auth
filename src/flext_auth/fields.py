@@ -696,7 +696,9 @@ def validate_complete_user_registration(
             feedback_str = ", ".join(str(f) for f in feedback)
         else:
             feedback_str = "No specific suggestions available"
-        return FlextResult[dict[str, object]].fail(f"Password too weak. Suggestions: {feedback_str}")
+        return FlextResult[dict[str, object]].fail(
+            f"Password too weak. Suggestions: {feedback_str}"
+        )
 
     # Add strength analysis to validated data
     validated_data["password_strength"] = strength_analysis
@@ -750,9 +752,13 @@ def validate_user_profile_update(
         validated_changes[field_name] = validation_result.data
 
     if not validated_changes:
-        return FlextResult[dict[str, object]].fail("No valid changes detected in user data")
+        return FlextResult[dict[str, object]].fail(
+            "No valid changes detected in user data"
+        )
 
-    return FlextResult[dict[str, object]].ok(dict(validated_changes))  # Convert to dict[str, object]
+    return FlextResult[dict[str, object]].ok(
+        dict(validated_changes)
+    )  # Convert to dict[str, object]
 
 
 def _validate_ip_address(
@@ -852,7 +858,9 @@ def validate_security_context(
     for validator in validators:
         result = validator(security_data, validated_context)
         if result.is_failure:
-            return FlextResult[dict[str, object]].fail(result.error or "Validation failed")
+            return FlextResult[dict[str, object]].fail(
+                result.error or "Validation failed"
+            )
 
     return FlextResult[dict[str, object]].ok(dict(validated_context))
 

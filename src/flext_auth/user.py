@@ -57,7 +57,7 @@ class UserRepository(ABC):
 
 
 class InMemoryUserRepository(UserRepository):
-    """In-memory user repository for testing and development."""
+    """In-memory user repository implementation."""
 
     def __init__(self) -> None:
         """Initialize empty user storage."""
@@ -78,7 +78,9 @@ class InMemoryUserRepository(UserRepository):
             # Check for email conflicts
             existing_email = self._email_index.get(str(user.email).lower())
             if existing_email and existing_email != user.id:
-                return FlextResult[FlextUser].fail(f"Email '{user.email}' already exists")
+                return FlextResult[FlextUser].fail(
+                    f"Email '{user.email}' already exists"
+                )
 
             # Create user with updated timestamp (entities are immutable)
             updated_user = FlextUser(
@@ -123,7 +125,9 @@ class InMemoryUserRepository(UserRepository):
             user = self._users.get(user_id)
             return FlextResult[FlextUser | None].ok(user)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[FlextUser | None].fail(f"Failed to get user by username: {e}")
+            return FlextResult[FlextUser | None].fail(
+                f"Failed to get user by username: {e}"
+            )
 
     async def get_by_email(self, email: str) -> FlextResult[FlextUser | None]:
         """Get user by email."""
@@ -135,7 +139,9 @@ class InMemoryUserRepository(UserRepository):
             user = self._users.get(user_id)
             return FlextResult[FlextUser | None].ok(user)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[FlextUser | None].fail(f"Failed to get user by email: {e}")
+            return FlextResult[FlextUser | None].fail(
+                f"Failed to get user by email: {e}"
+            )
 
     async def delete(self, user_id: str) -> FlextResult[bool]:
         """Delete user from memory."""

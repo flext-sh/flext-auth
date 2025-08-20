@@ -16,8 +16,6 @@ from pathlib import Path
 
 from flext_auth import (
     FlextAuth,
-    FlextAuthConfig,
-    FlextUserRole,
     flext_auth_permission_required,
     flext_auth_required,
     flext_auth_role_required,
@@ -32,8 +30,8 @@ from flext_auth.legacy import (
 
 # Import utilities
 from flext_auth.utils import (
-    generate_secure_token,
     generate_secure_password,
+    generate_secure_token,
 )
 
 # Add examples directory to path for imports
@@ -49,7 +47,7 @@ EXAMPLE_JWT_SECRET = "my-super-secure-jwt-secret-key-256-bits-minimum-length-req
 def example_advanced_configuration() -> None:
     """Demonstrate advanced configuration options."""
     print("FlextAuth advanced configuration (placeholder)")
-    
+
     # Create auth with basic config
     auth = FlextAuth()
     print("Advanced configuration applied successfully")
@@ -85,10 +83,10 @@ def example_secure_token_generation() -> None:
     # Generate secure tokens
     api_token = generate_secure_token(32)
     session_token = generate_secure_token(16)
-    
+
     print(f"API token generated: {api_token[:8]}...")
     print(f"Session token generated: {session_token[:8]}...")
-    
+
     # Generate secure password
     password = generate_secure_password(12)
     print(f"Secure password generated: {password[:4]}...")
@@ -97,13 +95,13 @@ def example_secure_token_generation() -> None:
 def example_decorators() -> None:
     """Demonstrate authentication decorators (placeholder)."""
     print("Authentication decorators example")
-    
+
     # These decorators exist but need proper setup to work
     # For demonstration, we just confirm they're importable
     assert flext_auth_required is not None
-    assert flext_auth_role_required is not None  
+    assert flext_auth_role_required is not None
     assert flext_auth_permission_required is not None
-    
+
     print("All decorators imported successfully")
 
 
@@ -111,11 +109,11 @@ def example_batch_operations_working() -> None:
     """Demonstrate batch operations that actually work."""
     # Create batch operations instance
     batch = flext_auth_batch_operations()
-    
+
     # Add some operations (these are placeholder operations)
     batch.add_operation({"action": "create_user", "username": "user1"})
     batch.add_operation({"action": "create_user", "username": "user2"})
-    
+
     # Execute batch (returns list of results)
     results = batch.execute()
     print(f"Batch operations completed: {len(results)} operations")
@@ -124,15 +122,15 @@ def example_batch_operations_working() -> None:
 def example_auth_service_methods() -> None:
     """Demonstrate working FlextAuth methods."""
     auth = FlextAuth()
-    
+
     # Test user creation
     result = auth.create_user("testuser", "test@example.com", "SecurePass123!")
-    if hasattr(result, 'success') and result.success:
+    if hasattr(result, "success") and result.success:
         print("User creation successful via FlextAuth API")
-        
+
         # Test authentication
         auth_result = auth.authenticate("testuser", "SecurePass123!")
-        if hasattr(auth_result, 'success') and auth_result.success:
+        if hasattr(auth_result, "success") and auth_result.success:
             print("Authentication successful via FlextAuth API")
     else:
         print("User creation handled (may exist already)")

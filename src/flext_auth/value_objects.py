@@ -183,15 +183,14 @@ class FlextHashedPassword(FlextValueObject):
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate hashed password domain rules and business constraints.
 
-        NOTE: For backward compatibility with tests, this method can raise
-        ValueError when validation fails, while still supporting FlextResult pattern.
+        NOTE: This method can raise ValueError when validation fails.
         """
         if len(self.value) < MIN_BCRYPT_HASH_LENGTH:
             msg = "Invalid bcrypt hash length"
-            raise ValueError(msg)  # Test compatibility
+            raise ValueError(msg)
         if not self.value.startswith("$2b$"):
             msg = "Invalid bcrypt hash format"
-            raise ValueError(msg)  # Test compatibility
+            raise ValueError(msg)
         return FlextResult[None].ok(None)
 
 
@@ -257,7 +256,7 @@ class FlextBaseTokenValueObject(FlextValueObject):
         return self._validate_specific_rules()
 
     def _validate_common_rules(self) -> None:
-        """Apply common validation rules; raise ValueError for test compatibility."""
+        """Apply common validation rules."""
         if not self.value:
             msg: str = f"{self._get_token_type_name()} cannot be empty"
             raise ValueError(msg)
@@ -470,7 +469,7 @@ class FlextJWTClaims(FlextValueObject):
         return max(0, int(self.exp - datetime.now(UTC).timestamp()))
 
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate JWT claims domain rules - raises ValueError for test compatibility.
+        """Validate JWT claims domain rules .
 
         SOLID REFACTORING: Reduced from 6 returns to 2 returns using
         Railway-Oriented Programming + Strategy Pattern.
@@ -479,7 +478,6 @@ class FlextJWTClaims(FlextValueObject):
         validation_errors = self._collect_validation_errors()
 
         if validation_errors:
-            # Raise ValueError for test compatibility
             raise ValueError(validation_errors[0])
 
         return FlextResult[None].ok(None)

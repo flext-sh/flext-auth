@@ -31,10 +31,6 @@ from flext_auth.legacy import (
 )
 
 # Import utilities
-from flext_auth.utils import (
-    FlextAuthTokenUtils,
-    generate_secure_token,
-)
 
 # Add examples directory to path for imports
 examples_dir = Path(__file__).parent

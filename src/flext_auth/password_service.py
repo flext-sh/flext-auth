@@ -157,7 +157,9 @@ class FlextPasswordService:
                     # Validate via Pydantic factory for precise typing
                     FlextPlainPassword.model_validate({"value": password_str})
                 except (ValueError, TypeError) as e:
-                    return FlextResult[FlextHashedPassword].fail(f"Password validation failed: {e}")
+                    return FlextResult[FlextHashedPassword].fail(
+                        f"Password validation failed: {e}"
+                    )
 
             # Generate salt and hash
             password_bytes = password_str.encode("utf-8")
@@ -170,7 +172,9 @@ class FlextPasswordService:
             )
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult[FlextHashedPassword].fail(f"Password hashing failed: {e}")
+            return FlextResult[FlextHashedPassword].fail(
+                f"Password hashing failed: {e}"
+            )
 
     def verify_password(
         self,
@@ -275,14 +279,18 @@ class FlextPasswordService:
                 vo_validation = password_obj.validate_business_rules()
                 if vo_validation.success:
                     return FlextResult[FlextPlainPassword].ok(password_obj)
-                return FlextResult[FlextPlainPassword].fail(vo_validation.error or "Invalid password")
+                return FlextResult[FlextPlainPassword].fail(
+                    vo_validation.error or "Invalid password"
+                )
             except (ValueError, TypeError) as e:
                 return FlextResult[FlextPlainPassword].fail(
                     f"Generated password validation failed: {e}"
                 )
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult[FlextPlainPassword].fail(f"Password generation failed: {e}")
+            return FlextResult[FlextPlainPassword].fail(
+                f"Password generation failed: {e}"
+            )
 
     def _analyze_password_basic_properties(self, password: str) -> dict[str, object]:
         """Analyze basic password properties."""
