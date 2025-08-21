@@ -7,6 +7,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import override
+
 from flext_core import FlextResult, FlextTimestamp
 
 from flext_auth.constants import FlextAuthSemanticConstants
@@ -87,6 +89,7 @@ class InMemoryUserRepository(FlextUserRepository):
                 f"Failed to get user by username: {e}"
             )
 
+    @override
     async def get_by_email(self, email: str) -> FlextResult[FlextUser | None]:
         """Get user by email."""
         try:
@@ -101,12 +104,13 @@ class InMemoryUserRepository(FlextUserRepository):
                 f"Failed to get user by email: {e}"
             )
 
+    @override
     async def delete(self, user_id: str) -> FlextResult[bool]:
         """Delete user from memory."""
         try:
             user = self._users.get(user_id)
             if not user:
-                return FlextResult.ok(FlextAuthSemanticConstants.FAILURE)
+                return FlextResult[bool].ok(FlextAuthSemanticConstants.FAILURE)
 
             # Remove from indexes
             self._username_index.pop(user.username.lower(), None)
@@ -115,10 +119,11 @@ class InMemoryUserRepository(FlextUserRepository):
             # Remove user
             del self._users[user_id]
 
-            return FlextResult.ok(FlextAuthSemanticConstants.SUCCESS)
+            return FlextResult[bool].ok(FlextAuthSemanticConstants.SUCCESS)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[bool].fail(f"Failed to delete user: {e}")
 
+    @override
     async def list_users(
         self,
         limit: int = 100,
@@ -144,6 +149,7 @@ class InMemoryUserRepository(FlextUserRepository):
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[list[FlextUser]].fail(f"Failed to list users: {e}")
 
+    @override
     async def count_users(
         self,
         status: FlextUserStatus | None = None,

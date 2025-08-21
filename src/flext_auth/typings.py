@@ -39,6 +39,18 @@ type FlextAuthSecurityContext = dict[str, object]
 type FlextAuthLoginAttempt = dict[str, object]
 type FlextAuthAuditEventType = str
 
+# Legacy type aliases for backward compatibility (referenced in __all__)
+type TEmail = FlextAuthEmail
+type TPassword = FlextAuthPassword
+type TSessionId = FlextAuthSessionId
+type TUserId = FlextAuthUserId
+type TUserRole = FlextAuthRoleType
+type TUsername = FlextAuthUsername
+type TAuditEventType = FlextAuthAuditEventType
+type TAuthResult = FlextAuthResult
+type TLoginAttempt = FlextAuthLoginAttempt
+type TSecurityContext = FlextAuthSecurityContext
+
 # =============================================================================
 # USER DATA TYPES - Current API user data types
 # =============================================================================

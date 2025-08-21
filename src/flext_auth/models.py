@@ -10,6 +10,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
+from typing import override
 
 from flext_core import (
     FlextEntity,
@@ -148,6 +149,7 @@ class FlextSession(FlextEntity):
             return FlextResult[None].fail("Session expiration must be in the future")
         return FlextResult[None].ok(None)
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
         if not self.id:
@@ -183,6 +185,7 @@ class FlextPermission(FlextEntity):
             and len(self.action) > 0
         )
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate permission business rules and business invariants."""
         if not self.id:
@@ -259,6 +262,7 @@ class FlextRole(FlextEntity):
         # All validations passed
         return FlextResult[None].ok(None)
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
         if not self.id:
@@ -329,6 +333,7 @@ class FlextLoginAttempt(FlextEntity):
 
         return errors
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
         validation_errors = self._execute_validation_strategies()
@@ -418,6 +423,7 @@ class FlextBaseToken(FlextEntity):
         # Base implementation has no specific rules
         return FlextResult[None].ok(None)
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
         validation_errors = self._execute_common_validation_strategies()
@@ -430,6 +436,7 @@ class FlextBaseToken(FlextEntity):
 class FlextPasswordResetToken(FlextBaseToken):
     """Password reset token entity - inherits common behavior from base."""
 
+    @override
     def _get_token_type(self) -> str:
         """Return token type for error messages."""
         return "Password reset token"
@@ -438,6 +445,7 @@ class FlextPasswordResetToken(FlextBaseToken):
 class FlextEmailVerificationToken(FlextBaseToken):
     """Email verification token entity - inherits common behavior from base."""
 
+    @override
     def _get_token_type(self) -> str:
         """Return token type for error messages."""
         return "Email verification token"
@@ -497,6 +505,7 @@ class InMemoryUserRepository(UserRepository):
         self._username_index: dict[str, str] = {}  # username -> user_id
         self._email_index: dict[str, str] = {}  # email -> user_id
 
+    @override
     async def save(self, user: FlextUser) -> FlextResult[FlextUser]:
         """Save user to memory."""
         try:
@@ -539,6 +548,7 @@ class InMemoryUserRepository(UserRepository):
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[FlextUser].fail(f"Failed to save user: {e}")
 
+    @override
     async def get_by_id(self, user_id: str) -> FlextResult[FlextUser | None]:
         """Get user by ID."""
         try:
@@ -547,6 +557,7 @@ class InMemoryUserRepository(UserRepository):
         except (KeyError, ValueError, TypeError) as e:
             return FlextResult[FlextUser | None].fail(f"Failed to get user by ID: {e}")
 
+    @override
     async def get_by_username(self, username: str) -> FlextResult[FlextUser | None]:
         """Get user by username."""
         try:

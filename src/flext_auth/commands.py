@@ -12,7 +12,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, TypeVar, override
 
-from flext_core import FlextCommands, FlextResult
+from flext_core import FlextCommands, FlextEntityId, FlextResult
 from pydantic import Field
 
 from flext_auth.entities import FlextUser, FlextUserRole, FlextUserStatus
@@ -49,9 +49,11 @@ class CreateUserCommand(FlextCommands.Command):
         errors: list[str] = []
 
         # Username validation
-        if not self.username or len(self.username) < 3:
+        min_username_length = 3
+        max_username_length = 50
+        if not self.username or len(self.username) < min_username_length:
             errors.append("Username must be at least 3 characters")
-        if len(self.username) > 50:
+        if len(self.username) > max_username_length:
             errors.append("Username cannot exceed 50 characters")
 
         # Email validation
@@ -59,7 +61,8 @@ class CreateUserCommand(FlextCommands.Command):
             errors.append("Valid email address required")
 
         # Password validation
-        if not self.password or len(self.password) < 8:
+        min_password_length = 8
+        if not self.password or len(self.password) < min_password_length:
             errors.append("Password must be at least 8 characters")
 
         if errors:
@@ -97,7 +100,8 @@ class ChangePasswordCommand(FlextCommands.Command):
 
         if not self.current_password:
             errors.append("Current password required")
-        if not self.new_password or len(self.new_password) < 8:
+        min_password_length = 8
+        if not self.new_password or len(self.new_password) < min_password_length:
             errors.append("New password must be at least 8 characters")
         if self.current_password == self.new_password:
             errors.append("New password must be different from current")
@@ -180,65 +184,80 @@ class CreateUserCommandHandler(
             )
 
         try:
-            # Check user uniqueness - REAL repository operation
-            existing_user = FlextAuthUtilities.get_user_by_username_safe(
-                self._user_repository, command.username
-            )
-            if existing_user.success and existing_user.value:
-                return FlextResult[dict[str, object]].fail("Username already exists")
+            # Check uniqueness constraints
+            uniqueness_result = self._validate_user_uniqueness(command)
+            if not uniqueness_result.success:
+                return uniqueness_result
 
-            existing_email = FlextAuthUtilities.get_user_by_email_safe(
-                self._user_repository, command.email
-            )
-            if existing_email.success and existing_email.value:
-                return FlextResult[dict[str, object]].fail("Email already exists")
+            # Create and save user
+            return self._create_and_save_user(command)
 
-            # Hash password - REAL password service
-            hash_result = self._password_service.hash_password(command.password)
-            if not hash_result.success:
-                return FlextResult[dict[str, object]].fail("Failed to hash password")
+        except Exception as e:
+            return FlextResult[dict[str, object]].fail(f"User creation failed: {e}")
 
-            # Create user entity - REAL domain entity
-            from flext_core import FlextEntityId
+    def _validate_user_uniqueness(self, command: CreateUserCommand) -> FlextResult[dict[str, object]]:
+        """Validate username and email uniqueness."""
+        # Check user uniqueness - REAL repository operation
+        existing_user = FlextAuthUtilities.get_user_by_username_safe(
+            self._user_repository, command.username
+        )
+        if existing_user.success and existing_user.value:
+            return FlextResult[dict[str, object]].fail("Username already exists")
 
-            user = FlextUser(
-                id=FlextEntityId(f"user_{command.username}"),
-                username=command.username,
-                email=command.email,
-                password_hash=str(
-                    hash_result.value
-                ),  # FlextHashedPassword has __str__ method
-                role=command.role,
-                status=FlextUserStatus.ACTIVE,
-            )
+        existing_email = FlextAuthUtilities.get_user_by_email_safe(
+            self._user_repository, command.email
+        )
+        if existing_email.success and existing_email.value:
+            return FlextResult[dict[str, object]].fail("Email already exists")
 
-            # Save user - REAL repository operation
-            save_result = FlextAuthUtilities.save_user_safe(self._user_repository, user)
-            if not save_result.success:
-                return FlextResult[dict[str, object]].fail("Failed to save user")
+        return FlextResult[dict[str, object]].ok({})
 
-            # Emit domain event - REAL event sourcing
-            user.add_domain_event(
-                "user.created",
-                {
-                    "user_id": str(user.id),
-                    "username": user.username,
-                    "email": user.email,
-                    "role": str(user.role),
-                    "created_by_command": str(command.command_id),
-                },
-            )
+    def _create_and_save_user(self, command: CreateUserCommand) -> FlextResult[dict[str, object]]:
+        """Create user entity and save to repository."""
+        # Hash password - REAL password service
+        hash_result = self._password_service.hash_password(command.password)
+        if not hash_result.success:
+            return FlextResult[dict[str, object]].fail("Failed to hash password")
 
-            return FlextResult[dict[str, object]].ok(
-                {
-                    "user_created": True,
-                    "user_id": str(user.id),
-                    "username": user.username,
-                    "email": user.email,
-                    "command_id": str(command.command_id),
-                    "events_count": len(user.domain_events.root),
-                }
-            )
+        # Create user entity - REAL domain entity
+        user = FlextUser(
+            id=FlextEntityId(f"user_{command.username}"),
+            username=command.username,
+            email=command.email,
+            password_hash=str(
+                hash_result.value
+            ),  # FlextHashedPassword has __str__ method
+            role=command.role,
+            status=FlextUserStatus.ACTIVE,
+        )
+
+        # Save user - REAL repository operation
+        save_result = FlextAuthUtilities.save_user_safe(self._user_repository, user)
+        if not save_result.success:
+            return FlextResult[dict[str, object]].fail("Failed to save user")
+
+        # Emit domain event - REAL event sourcing
+        user.add_domain_event(
+            "user.created",
+            {
+                "user_id": str(user.id),
+                "username": user.username,
+                "email": user.email,
+                "role": str(user.role),
+                "created_by_command": str(command.command_id),
+            },
+        )
+
+        return FlextResult[dict[str, object]].ok(
+            {
+                "user_created": True,
+                "user_id": str(user.id),
+                "username": user.username,
+                "email": user.email,
+                "command_id": str(command.command_id),
+                "events_count": len(user.domain_events.root),
+            }
+        )
 
         except Exception as e:
             return FlextResult[dict[str, object]].fail(f"User creation failed: {e}")

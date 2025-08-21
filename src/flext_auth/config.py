@@ -15,11 +15,11 @@ from typing import Never, Protocol
 
 from flext_core import (
     FlextBaseConfigModel,
-    FlextDatabaseConfig,
+    FlextDatabaseModel,
     FlextSettings,
     TEntityId,
 )
-from pydantic import Field, SecretStr
+from pydantic import Field
 from pydantic_settings import SettingsConfigDict
 
 
@@ -229,23 +229,17 @@ class DatabaseConfig:
         self._max_pool_size = max_pool_size
         self._command_timeout = command_timeout
 
-        # Create internal flext-core config with safe defaults
-        try:
-            # Type-safe approach: create with minimal parameters
-            self._core_config = FlextDatabaseConfig(
-                host="localhost",
-                database="flext",
-                username="postgres",
-                password=SecretStr("password"),
-            )
-        except (RuntimeError, ValueError, TypeError, KeyError):
-            # Use default configuration if core config initialization fails
-            self._core_config = FlextDatabaseConfig(
-                host="localhost",
-                database="flext",
-                username="postgres",
-                password=SecretStr("password"),
-            )
+        # Store database config as simple dict since FlextDatabaseModel is generic
+        self._core_config_dict = {
+            "host": "localhost",
+            "port": 5432,
+            "database": "flext",
+            "username": "postgres",
+            "password": "password",
+            "connection_timeout": command_timeout,
+        }
+        # Create a generic FlextModel instance for compatibility
+        self._core_config = FlextDatabaseModel()
 
     def _extract_int_setting(
         self,
@@ -303,29 +297,27 @@ class DatabaseConfig:
     @property
     def password(self) -> _SecretProtocol | None:
         """Get password as SecretProtocol for type safety."""
-        if hasattr(self._core_config, "password"):
-            return self._core_config.password
-        return None
+        return self._core_config_dict.get("password")
 
     @property
     def host(self) -> str:
         """Get database host."""
-        return str(getattr(self._core_config, "host", "localhost"))
+        return str(self._core_config_dict.get("host", "localhost"))
 
     @property
     def port(self) -> int:
         """Get database port."""
-        return int(getattr(self._core_config, "port", self._get_default_port()))
+        return int(self._core_config_dict.get("port", self._get_default_port()))
 
     @property
     def database(self) -> str:
         """Get database name."""
-        return str(getattr(self._core_config, "database", "flext"))
+        return str(self._core_config_dict.get("database", "flext"))
 
     @property
     def username(self) -> str:
         """Get database username."""
-        return str(getattr(self._core_config, "username", "postgres"))
+        return str(self._core_config_dict.get("username", "postgres"))
 
     def _get_default_port(self) -> int:
         """Get default PostgreSQL port."""

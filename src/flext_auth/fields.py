@@ -190,7 +190,7 @@ class FlextAuthFieldSchema:
                 if validation_result.is_failure:
                     return FlextResult[dict[str, object]].fail(
                         f"Field '{field_name}' validation failed: "
-                         f"{validation_result.error}",
+                        f"{validation_result.error}"
                     )
                 validated_data[field_name] = validation_result.value
 
@@ -204,7 +204,7 @@ class FlextAuthFieldSchema:
                 if validation_result.is_failure:
                     return FlextResult[dict[str, object]].fail(
                         f"Field '{field_name}' validation failed: "
-                         f"{validation_result.error}",
+                        f"{validation_result.error}"
                     )
                 validated_data[field_name] = validation_result.value
             elif field.default_value is not None:
@@ -560,7 +560,7 @@ def validate_user_role_permissions(
     if missing_permissions:
         return FlextResult[str].fail(
             f"Role '{role}' missing required permissions: "
-             f"{', '.join(missing_permissions)}",
+            f"{', '.join(missing_permissions)}"
         )
 
     return FlextResult[str].ok(role)

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
+from typing import override
 
 from flext_core import FlextEntity, FlextResult, FlextTimestamp
 from pydantic import Field
@@ -303,6 +304,7 @@ class FlextUser(FlextEntity):
 
         return errors
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
         # Execute validation strategies and raise ValueError if validation fails
@@ -398,6 +400,7 @@ class FlextSession(FlextEntity):
             return FlextResult[None].fail("Session expiration must be in the future")
         return FlextResult[None].ok(None)
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
         # Execute validation and raise ValueError if validation fails
@@ -434,6 +437,7 @@ class FlextPermission(FlextEntity):
             and len(self.action) > 0
         )
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate permission business rules and business invariants."""
         if not self.id:
@@ -516,6 +520,7 @@ class FlextRole(FlextEntity):
         # All validations passed
         return FlextResult[None].ok(None)
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
         # Execute role validation strategies and return FlextResult (FlextRole uses Result pattern)
@@ -596,6 +601,7 @@ class FlextLoginAttempt(FlextEntity):
 
         return errors
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
         # Execute login attempt validation strategies and raise ValueError if validation fails
@@ -698,6 +704,7 @@ class FlextBaseToken(FlextEntity):
         # Base implementation has no specific rules
         return FlextResult[None].ok(None)
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
         # Execute common validation strategies and raise ValueError if validation fails
@@ -711,6 +718,7 @@ class FlextBaseToken(FlextEntity):
 class FlextPasswordResetToken(FlextBaseToken):
     """Password reset token entity - inherits common behavior from base."""
 
+    @override
     def _get_token_type(self) -> str:
         """Return token type for error messages."""
         return "Password reset token"
@@ -719,6 +727,7 @@ class FlextPasswordResetToken(FlextBaseToken):
 class FlextEmailVerificationToken(FlextBaseToken):
     """Email verification token entity - inherits common behavior from base."""
 
+    @override
     def _get_token_type(self) -> str:
         """Return token type for error messages."""
         return "Email verification token"

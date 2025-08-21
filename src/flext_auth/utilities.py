@@ -9,6 +9,7 @@ operations, following SOLID principles and reducing code duplication.
 
 from __future__ import annotations
 
+import asyncio
 from typing import TYPE_CHECKING
 
 from flext_core import FlextResult
@@ -41,13 +42,7 @@ class FlextAuthUtilities:
 
         """
         try:
-            # Check if repository has sync method (InMemoryUserRepository)
-            if hasattr(repository, "get_by_username_sync"):
-                return repository.get_by_username_sync(username)
-
-            # Otherwise use async method in sync context (SimplePostgreSQLUserRepository)
-            import asyncio
-
+            # All repositories have async methods - use them in sync context
             try:
                 loop = asyncio.get_event_loop()
                 return loop.run_until_complete(repository.get_by_username(username))
@@ -73,13 +68,7 @@ class FlextAuthUtilities:
 
         """
         try:
-            # Check if repository has sync method (InMemoryUserRepository)
-            if hasattr(repository, "get_by_email_sync"):
-                return repository.get_by_email_sync(email)
-
-            # Otherwise use async method in sync context (SimplePostgreSQLUserRepository)
-            import asyncio
-
+            # All repositories have async methods - use them in sync context
             try:
                 loop = asyncio.get_event_loop()
                 return loop.run_until_complete(repository.get_by_email(email))
@@ -104,13 +93,7 @@ class FlextAuthUtilities:
 
         """
         try:
-            # Check if repository has sync method (InMemoryUserRepository)
-            if hasattr(repository, "save_sync"):
-                return repository.save_sync(user)
-
-            # Otherwise use async method in sync context (SimplePostgreSQLUserRepository)
-            import asyncio
-
+            # All repositories have async methods - use them in sync context
             try:
                 loop = asyncio.get_event_loop()
                 return loop.run_until_complete(repository.save(user))
@@ -133,7 +116,7 @@ class FlextAuthUtilities:
             Boolean value or False if result failed
 
         """
-        return result.unwrap_or(False)
+        return result.unwrap_or(False)  # noqa: FBT003
 
     @staticmethod
     def unwrap_or_empty_string(result: FlextResult[str]) -> str:
@@ -160,6 +143,89 @@ class FlextAuthUtilities:
 
         """
         return result.unwrap_or(None)
+
+    @staticmethod
+    def unwrap_or_zero(result: FlextResult[int]) -> int:
+        """Utility to unwrap FlextResult[int] with 0 fallback.
+
+        Args:
+            result: FlextResult containing integer value
+
+        Returns:
+            Integer value or 0 if result failed
+
+        """
+        return result.unwrap_or(0)
+
+    @staticmethod
+    def unwrap_or_empty_list(result: FlextResult[list[object]]) -> list[object]:
+        """Utility to unwrap FlextResult[list] with empty list fallback.
+
+        Args:
+            result: FlextResult containing list value
+
+        Returns:
+            List value or empty list if result failed
+
+        """
+        return result.unwrap_or([])
+
+    @staticmethod
+    def is_successful_auth(result: FlextResult[dict[str, object]]) -> bool:
+        """Check if authentication result is successful using unwrap_or pattern.
+
+        Args:
+            result: Authentication result
+
+        Returns:
+            True if successful, False otherwise
+
+        """
+        return result.success and bool(result.unwrap_or({}))
+
+    @staticmethod
+    def is_valid_and_has_value(result: FlextResult[object]) -> bool:
+        """Check if FlextResult is successful and has a truthy value.
+
+        Replaces verbose pattern: result.success and result.value
+
+        Args:
+            result: FlextResult to check
+
+        Returns:
+            True if result is successful and has truthy value, False otherwise
+
+        """
+        return result.success and bool(result.value)
+
+    @staticmethod
+    def is_invalid_or_empty(result: FlextResult[object]) -> bool:
+        """Check if FlextResult is failed or has no value.
+
+        Replaces verbose pattern: not result.success or not result.value
+
+        Args:
+            result: FlextResult to check
+
+        Returns:
+            True if result is failed or has falsy value, False otherwise
+
+        """
+        return not result.success or not bool(result.value)
+
+    @staticmethod
+    def get_username_or_anonymous(result: FlextResult[dict[str, object]]) -> str:
+        """Extract username from auth result or return 'anonymous'.
+
+        Args:
+            result: Authentication result
+
+        Returns:
+            Username or 'anonymous' if not found
+
+        """
+        auth_data = result.unwrap_or({})
+        return str(auth_data.get("username", "anonymous"))
 
 
 __all__ = [

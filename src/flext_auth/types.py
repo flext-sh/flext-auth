@@ -9,23 +9,17 @@ the authentication system to avoid circular imports.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from flext_auth.repositories_simple import (
-        SimplePostgreSQLSessionRepository,
-        SimplePostgreSQLUserRepository,
-    )
-    from flext_auth.session import InMemorySessionRepository
-    from flext_auth.user import InMemoryUserRepository
 
     # Union types for repository flexibility - prevents circular imports
-    UserRepositoryType = Union[
-        "InMemoryUserRepository", "SimplePostgreSQLUserRepository"
-    ]
-    SessionRepositoryType = Union[
-        "InMemorySessionRepository", "SimplePostgreSQLSessionRepository"
-    ]
+    UserRepositoryType = (
+        "InMemoryUserRepository" | "SimplePostgreSQLUserRepository"
+    )
+    SessionRepositoryType = (
+        "InMemorySessionRepository" | "SimplePostgreSQLSessionRepository"
+    )
 else:
     # Runtime fallback - use string forward references
     UserRepositoryType = "InMemoryUserRepository | SimplePostgreSQLUserRepository"

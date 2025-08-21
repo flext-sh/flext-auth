@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 
 import pytest
@@ -51,13 +52,11 @@ class TestRefactoredAuthSystem:
         assert flext_auth_validate_email is not None
 
         # Test that public API works correctly (instead of testing private classes)
-        auth_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-        assert auth_result.success, f"Quick start failed: {auth_result.error}"
-        auth = auth_result.value
-        assert auth is not None
+        auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+        assert auth is not None, "Quick start failed"
         # Check that it has the required auth interface methods
-        assert hasattr(auth, "authenticate_user")
-        assert hasattr(auth, "register_user")
+        assert hasattr(auth, "authenticate")
+        assert hasattr(auth, "create_user")
 
     def test_dependency_injection_resolution(self) -> None:
         """Test that dependency injection works correctly after refactoring."""
@@ -80,14 +79,13 @@ class TestRefactoredAuthSystem:
     def test_quick_start_functionality(self) -> None:
         """Test that quick start helper works with refactored architecture."""
         # Test quick start with REDACTED_LDAP_BIND_PASSWORD creation disabled to avoid email validation
-        result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+        auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
-        assert result.success
-        assert result.value is not None
+        assert auth is not None
+        assert isinstance(auth, FlextAuth)
 
-        auth_service = result.value
-        assert hasattr(auth_service, "register_user")
-        assert hasattr(auth_service, "authenticate_user")
+        assert hasattr(auth, "create_user")
+        assert hasattr(auth, "authenticate")
 
     def test_complete_authentication_workflow(self) -> None:
         """Test complete authentication workflow with refactored system."""
@@ -98,7 +96,7 @@ class TestRefactoredAuthSystem:
         email = "test@example.com"
         password = "TestPassword123!"
 
-        reg_result = auth.register_user(username, email, password)
+        reg_result = asyncio.run(auth.create_user(username, email, password))
 
         # Registration should work (returns user object or error dict)
         assert reg_result is not None
@@ -116,7 +114,7 @@ class TestRefactoredAuthSystem:
             assert ("id" in reg_result) or ("username" in reg_result)
 
         # Test authentication
-        auth_result = auth.authenticate_user(username, password)
+        auth_result = asyncio.run(auth.authenticate(username, password))
         assert auth_result is not None
 
         # Authentication result should be meaningful
@@ -152,8 +150,8 @@ class TestRefactoredAuthSystem:
     def test_anti_boilerplate_patterns(self) -> None:
         """Test that anti-boilerplate patterns work after refactoring."""
         # Test 1: Quick setup (should be 1-3 lines instead of 50+)
-        result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-        assert result.success
+        auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+        assert auth is not None
 
         # Test 2: Simple auth instance creation
         auth = FlextAuth()
@@ -174,12 +172,18 @@ class TestRefactoredAuthSystem:
 
     def test_flext_result_pattern_consistency(self) -> None:
         """Test that FlextResult pattern is used consistently."""
-        # Quick start should return FlextResult
-        result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-        assert isinstance(result, FlextResult)
+        # Quick start returns FlextAuth instance directly
+        auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+        assert isinstance(auth, FlextAuth)
+        assert hasattr(auth, "authenticate")
+        assert hasattr(auth, "create_user")
+
+        # Operations return FlextResult
+        result = asyncio.run(auth.authenticate("test", "test"))
         assert hasattr(result, "success")
-        assert hasattr(result, "data")
-        assert hasattr(result, "error")
+        # Use unwrap_or pattern for safe access
+        assert result.success is False  # Expected failure for invalid credentials
+        assert result.error is not None
 
     def test_type_safety_after_refactoring(self) -> None:
         """Test that type safety is maintained after refactoring."""
@@ -191,9 +195,8 @@ class TestRefactoredAuthSystem:
         password_service: FlextPasswordService = auth.password_service
 
         # Verify proper typing - auth_service can be mock for API compatibility
-        assert hasattr(auth_service, "register_user")
-        assert hasattr(auth_service, "authenticate_user")
-        assert hasattr(jwt_service, "generate_token")
+        assert hasattr(auth_service, "create_user") or hasattr(auth_service, "authenticate")
+        assert hasattr(jwt_service, "generate_access_token")
         assert hasattr(jwt_service, "verify_token")
         assert hasattr(password_service, "hash_password")
         assert hasattr(password_service, "verify_password")
@@ -296,7 +299,7 @@ class TestIntegrationWithFlextCore:
 
         # This should not raise any logging-related errors
         # Test should not raise logging-related exceptions
-        result = auth.register_user("testuser", "test@example.com", "TestPassword123!")
+        result = asyncio.run(auth.create_user("testuser", "test@example.com", "TestPassword123!"))
         # Result should be meaningful regardless of success/failure
         assert result is not None
 

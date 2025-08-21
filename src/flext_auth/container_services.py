@@ -96,7 +96,7 @@ def configure_flext_auth_container(
             auth_rate_limit_per_minute=5,
             access_token_expire_minutes=30,
             refresh_token_expire_days=7,
-            jwt_secret_key="dev-secret-key-change-in-production",
+            jwt_secret_key="dev-secret-key-change-in-production",  # noqa: S106
         )
 
     # Register configuration first

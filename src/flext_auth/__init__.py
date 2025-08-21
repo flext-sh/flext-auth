@@ -118,6 +118,7 @@ from flext_auth.user import InMemoryUserRepository
 # UTILITIES
 # =============================================================================
 
+# from flext_auth.utilities import FlextAuthUtilities  # Not exposed in public API
 from flext_auth.api import (
     generate_secure_password,
     generate_secure_token,

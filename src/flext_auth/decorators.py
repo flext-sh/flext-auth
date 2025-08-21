@@ -570,8 +570,8 @@ class FlextAuthMixin:
                 # FlextAuthService requires dependencies - for mixins, return error
                 return FlextResult[None].fail(
                     "FlextAuthService requires dependencies. "
-                     "Please provide auth_service directly or use "
-                     "flext_auth_quick_start()",
+                    "Please provide auth_service directly or use "
+                    "flext_auth_quick_start()"
                 )
             else:
                 # Use default configuration but cannot create service without deps
@@ -596,8 +596,8 @@ class FlextAuthMixin:
                 )
                 return FlextResult[None].fail(
                     "Cannot create FlextAuthService without dependencies. "
-                     "Please provide auth_service parameter or use "
-                     "flext_auth_quick_start()",
+                    "Please provide auth_service parameter or use "
+                    "flext_auth_quick_start()"
                 )
 
             logger.info(
@@ -700,7 +700,7 @@ class FlextAuthMixin:
             return None
         jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
         result = jwt_service.verify_token(token)
-        if not result.success or not result.value:
+        if not result.unwrap_or(None):
             return None
         claims = result.value
         return {
@@ -812,7 +812,7 @@ class FlextAuthMixin:
 
                 jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
                 result = jwt_service.verify_token(token_or_user_data)
-                if not result.success or not result.value:
+                if not result.unwrap_or(None):
                     return FlextResult[bool].fail("Invalid token")
 
                 claims = result.value

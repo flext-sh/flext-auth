@@ -7,6 +7,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import re
+import secrets
+import string
+from datetime import UTC, datetime
+
 from flext_core import FlextEntityId, FlextResult
 
 from flext_auth.config import FlextAuthConfig
@@ -94,100 +99,46 @@ class FlextAuth:
         self, username: str, password: str
     ) -> FlextResult[dict[str, object]]:
         """Authenticate user with username and password."""
-        if not username or not password:
-            return FlextResult[dict[str, object]].fail(
-                "Username and password are required"
-            )
+        # Validate input
+        validation_result = self._validate_auth_input(username, password)
+        if validation_result:
+            return validation_result
 
-        # Use services from container - eliminates field dependencies
         try:
-            # Get services from container
-            services_result = get_flext_auth_services()
-            if not services_result.success:
-                return FlextResult[dict[str, object]].fail("Failed to get services")
-
-            services = services_result.value
-            user_repository = services.get("user_repository")
-            if not user_repository:
-                return FlextResult[dict[str, object]].fail(
-                    "User repository not available"
-                )
-
-            # Type narrowing for mypy
-            if not isinstance(
-                user_repository,
-                (InMemoryUserRepository, SimplePostgreSQLUserRepository),
-            ):
-                return FlextResult[dict[str, object]].fail(
-                    "Invalid user repository type"
-                )
-
-            # Check if user exists
-            user_result = await user_repository.get_by_username(username)
+            # Get services and validate user
+            user_result = await self._get_and_validate_user(username, password)
             if not user_result.success:
-                return FlextResult[dict[str, object]].fail("Invalid credentials")
+                return user_result
 
-            if not hasattr(user_result, "value") or user_result.value is None:
-                return FlextResult[dict[str, object]].fail("Invalid credentials")
-
-            user = user_result.value
-
-            # Get password service from container
-            password_service_result = get_password_service()
-            if not password_service_result.success:
-                return FlextResult[dict[str, object]].fail(
-                    "Password service not available"
-                )
-
-            password_service = password_service_result.value
-
-            # Verify password
-            password_result = password_service.verify_password(
-                password, user.password_hash
-            )
-            if not password_result.success or not password_result.value:
-                return FlextResult[dict[str, object]].fail("Invalid credentials")
+            user_data = user_result.value
+            # Generate and return token
+            return self._generate_auth_token(user_data)
 
         except Exception as e:
             return FlextResult[dict[str, object]].fail(f"Authentication error: {e}")
 
-        # Get JWT service from container for token generation
-        jwt_service_result = get_jwt_service()
-        if not jwt_service_result.success:
-            return FlextResult[dict[str, object]].fail("JWT service not available")
-
-        jwt_service = jwt_service_result.value
-
-        # Generate token for successful authentication
-        token_result = jwt_service.generate_access_token(
-            user_id=str(user.id),
-            username=user.username,
-            role=str(user.role),
-            session_id="sync_session",
-        )
-
-        if not token_result.success:
-            return FlextResult[dict[str, object]].fail("Failed to generate token")
-
-        return FlextResult[dict[str, object]].ok(
-            {
-                "authenticated": True,
-                "user": {"username": user.username, "email": user.email},
-                "access_token": token_result.value,
-            }
-        )
-
-    async def create_user(
-        self, username: str, email: str, password: str
-    ) -> FlextResult[dict[str, object]]:
-        """Create a new user."""
-        # Validate inputs
-        if not username or not email or not password:
+    def _validate_auth_input(self, username: str, password: str) -> FlextResult[dict[str, object]] | None:
+        """Validate authentication input parameters."""
+        if not username or not password:
             return FlextResult[dict[str, object]].fail(
-                "Username, email, and password are required"
+                "Username and password are required"
             )
+        return None
 
-        # Get services from container
+    async def _get_and_validate_user(self, username: str, password: str) -> FlextResult[dict[str, object]]:
+        """Get user from repository and validate password."""
+        # Get user repository
+        repo_result = self._get_user_repository()
+        if not repo_result.success:
+            return repo_result
+
+        user_repository = repo_result.value
+
+        # Get user and validate password
+        return await self._validate_user_password(username, password, user_repository)
+
+    def _get_user_repository(self) -> FlextResult[dict[str, object]]:
+        """Get user repository from container with type validation."""
         services_result = get_flext_auth_services()
         if not services_result.success:
             return FlextResult[dict[str, object]].fail("Failed to get services")
@@ -199,30 +150,136 @@ class FlextAuth:
 
         # Type narrowing for mypy
         if not isinstance(
-            user_repository, (InMemoryUserRepository, SimplePostgreSQLUserRepository)
+            user_repository,
+            (InMemoryUserRepository, SimplePostgreSQLUserRepository),
         ):
             return FlextResult[dict[str, object]].fail("Invalid user repository type")
 
-        # Check uniqueness with pure async
-        error_msg = await self._validate_user_uniqueness(
-            username, email, user_repository
-        )
-        if error_msg:
-            return FlextResult[dict[str, object]].fail(error_msg)
+        return FlextResult[dict[str, object]].ok(user_repository)
 
-        # Get password service from container
+    async def _validate_user_password(
+        self, username: str, password: str, user_repository: object
+    ) -> FlextResult[dict[str, object]]:
+        """Validate user exists and password is correct."""
+        # Check if user exists
+        user_result = await user_repository.get_by_username(username)
+        if not user_result.success or not user_result.value:
+            return FlextResult[dict[str, object]].fail("Invalid credentials")
+
+        user = user_result.value
+
+        # Verify password
         password_service_result = get_password_service()
         if not password_service_result.success:
             return FlextResult[dict[str, object]].fail("Password service not available")
 
         password_service = password_service_result.value
+        password_result = password_service.verify_password(password, user.password_hash)
+        if not password_result.unwrap_or(False):  # noqa: FBT003
+            return FlextResult[dict[str, object]].fail("Invalid credentials")
 
-        # Hash password and create user
+        return FlextResult[dict[str, object]].ok(user)
+
+    def _generate_auth_token(self, user: object) -> FlextResult[dict[str, object]]:
+        """Generate authentication token for successful login."""
+        jwt_service_result = get_jwt_service()
+        if not jwt_service_result.success:
+            return FlextResult[dict[str, object]].fail("JWT service not available")
+
+        jwt_service = jwt_service_result.value
+        token_result = jwt_service.generate_access_token(
+            user_id=str(user.id),
+            username=user.username,
+            role=str(user.role),
+            session_id="sync_session",
+        )
+
+        if not token_result.success:
+            return FlextResult[dict[str, object]].fail("Failed to generate token")
+
+        return FlextResult[dict[str, object]].ok({
+            "authenticated": True,
+            "user": {"username": user.username, "email": user.email},
+            "access_token": token_result.value,
+        })
+
+    async def create_user(
+        self, username: str, email: str, password: str
+    ) -> FlextResult[dict[str, object]]:
+        """Create a new user."""
+        # Validate input
+        validation_result = self._validate_create_user_input(username, email, password)
+        if validation_result:
+            return validation_result
+
+        # Get repository and validate uniqueness
+        repository_result = await self._get_repository_and_validate_uniqueness(
+            username, email
+        )
+        if not repository_result.success:
+            return repository_result
+
+        user_repository = repository_result.value
+
+        # Create and save user
+        return await self._create_and_save_user(
+            username, email, password, user_repository
+        )
+
+    def _validate_create_user_input(
+        self, username: str, email: str, password: str
+    ) -> FlextResult[dict[str, object]] | None:
+        """Validate create user input parameters."""
+        if not username or not email or not password:
+            return FlextResult[dict[str, object]].fail(
+                "Username, email, and password are required"
+            )
+        return None
+
+    async def _get_repository_and_validate_uniqueness(
+        self, username: str, email: str
+    ) -> FlextResult[object]:
+        """Get user repository and validate uniqueness constraints."""
+        # Get services from container
+        services_result = get_flext_auth_services()
+        if not services_result.success:
+            return FlextResult[object].fail("Failed to get services")
+
+        services = services_result.value
+        user_repository = services.get("user_repository")
+        if not user_repository:
+            return FlextResult[object].fail("User repository not available")
+
+        # Type narrowing for mypy
+        if not isinstance(
+            user_repository, (InMemoryUserRepository, SimplePostgreSQLUserRepository)
+        ):
+            return FlextResult[object].fail("Invalid user repository type")
+
+        # Check uniqueness
+        error_msg = await self._validate_user_uniqueness(
+            username, email, user_repository
+        )
+        if error_msg:
+            return FlextResult[object].fail(error_msg)
+
+        return FlextResult[object].ok(user_repository)
+
+    async def _create_and_save_user(
+        self, username: str, email: str, password: str, user_repository: object
+    ) -> FlextResult[dict[str, object]]:
+        """Create user entity and save to repository."""
+        # Get password service and hash password
+        password_service_result = get_password_service()
+        if not password_service_result.success:
+            return FlextResult[dict[str, object]].fail("Password service not available")
+
+        password_service = password_service_result.value
         hash_result = password_service.hash_password(password)
         if not hash_result.success or not hash_result.value:
             return FlextResult[dict[str, object]].fail("Failed to hash password")
 
-        # Create and save user
+        # Create user entity
         user = FlextUser(
             id=FlextEntityId(f"user_{username}"),
             username=username,
@@ -232,18 +289,17 @@ class FlextAuth:
             status=FlextUserStatus.ACTIVE,
         )
 
+        # Save user
         save_error = await self._save_user_safely(user, user_repository)
         if save_error:
             return FlextResult[dict[str, object]].fail(save_error)
 
-        return FlextResult[dict[str, object]].ok(
-            {
-                "user_created": True,
-                "username": user.username,
-                "email": user.email,
-                "id": str(user.id),
-            }
-        )
+        return FlextResult[dict[str, object]].ok({
+            "user_created": True,
+            "username": user.username,
+            "email": user.email,
+            "id": str(user.id),
+        })
 
     async def _validate_user_uniqueness(
         self, username: str, email: str, user_repository: UserRepositoryType
@@ -260,7 +316,8 @@ class FlextAuth:
                 ):
                     return "Username already exists"
             else:
-                return f"Username check failed: {existing_user_result.error or 'Unknown error'}"
+                error_msg = existing_user_result.error or "Unknown error"
+                return f"Username check failed: {error_msg}"
 
             # Check for existing email - pure async
             existing_email_result = await user_repository.get_by_email(email)
@@ -316,7 +373,7 @@ class FlextAuth:
             auth_rate_limit_per_minute=5,
             access_token_expire_minutes=30,
             refresh_token_expire_days=7,
-            jwt_secret_key="dev-secret-key-change-in-production",
+            jwt_secret_key=DEFAULT_JWT_SECRET,
         )
 
     @property
@@ -397,22 +454,19 @@ type FlextAuthClaims = dict[str, object]
 # =============================================================================
 
 
+# Constants for JWT security - noqa: S105 (dev secret is intentional)
+DEFAULT_JWT_SECRET = "dev-secret-key-change-in-production"  # noqa: S105
+MIN_PASSWORD_LENGTH_CONSTANT = 8
+
+
 def flext_auth_quick_start(
     *,
-    create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
-    REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-    REDACTED_LDAP_BIND_PASSWORD_password: str | None = None,
-    jwt_secret: str = "dev-secret-key-change-in-production",
-    **extra: object,
+    jwt_secret: str = DEFAULT_JWT_SECRET,
 ) -> FlextAuth:
     """Quick start helper using FlextAuth API.
 
     Args:
-        create_REDACTED_LDAP_BIND_PASSWORD: Whether to create REDACTED_LDAP_BIND_PASSWORD user (currently not implemented)
-        REDACTED_LDAP_BIND_PASSWORD_username: Admin username (for future implementation)
-        REDACTED_LDAP_BIND_PASSWORD_password: Admin password (for future implementation)
-        jwt_secret: JWT secret key
-        **extra: Additional configuration (ignored)
+        jwt_secret: JWT secret key for token signing
 
     Returns:
         Configured FlextAuth instance
@@ -485,7 +539,7 @@ def flext_auth_generate_jwt(
     username: str,
     role: str = "user",
     session_id: str = "default",
-    jwt_secret: str = "dev-secret-key-change-in-production",
+    jwt_secret: str = DEFAULT_JWT_SECRET,
 ) -> FlextResult[str]:
     """Generate JWT token using current JWT service.
 
@@ -516,7 +570,7 @@ def flext_auth_generate_jwt(
 
 def flext_auth_validate_jwt(
     token: str,
-    jwt_secret: str = "dev-secret-key-change-in-production",
+    jwt_secret: str = DEFAULT_JWT_SECRET,
 ) -> FlextResult[dict[str, object]]:
     """Validate JWT token using current JWT service.
 
@@ -551,26 +605,22 @@ def flext_auth_validate_jwt(
     return FlextResult[dict[str, object]].ok(claims_dict)
 
 
-def flext_auth_validate_email(email: str) -> FlextResult[bool]:
+def flext_auth_validate_email(email: str) -> bool:
     """Validate email format using simple regex.
 
     Args:
         email: Email address to validate
 
     Returns:
-        FlextResult containing validation result
+        Boolean indicating if email is valid
 
     """
-    import re
-
     if not email or not isinstance(email, str):
-        return FlextResult[bool].fail("Email must be a non-empty string")
+        return False
 
     # Simple email regex validation
     email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-    is_valid = bool(re.match(email_pattern, email.strip()))
-
-    return FlextResult[bool].ok(is_valid)
+    return bool(re.match(email_pattern, email.strip()))
 
 
 def flext_auth_validate_password_strength(password: str) -> FlextResult[bool]:
@@ -583,12 +633,16 @@ def flext_auth_validate_password_strength(password: str) -> FlextResult[bool]:
         FlextResult containing validation result
 
     """
+    # Constants for password validation
+    min_password_length = MIN_PASSWORD_LENGTH_CONSTANT
+    required_char_types = 3
+
     if not password or not isinstance(password, str):
         return FlextResult[bool].fail("Password must be a non-empty string")
 
     # Check minimum length
-    if len(password) < 8:
-        return FlextResult[bool].ok(False)
+    if len(password) < min_password_length:
+        return FlextResult[bool].ok(False)  # noqa: FBT003
 
     # Check for required character types
     has_upper = any(c.isupper() for c in password)
@@ -598,7 +652,7 @@ def flext_auth_validate_password_strength(password: str) -> FlextResult[bool]:
 
     # Password is strong if it has at least 3 of 4 character types
     strength_score = sum([has_upper, has_lower, has_digit, has_special])
-    is_strong = strength_score >= 3
+    is_strong = strength_score >= required_char_types
 
     return FlextResult[bool].ok(is_strong)
 
@@ -614,9 +668,6 @@ def generate_secure_token(length: int = 32) -> str:
         Secure random token string
 
     """
-    import secrets
-    import string
-
     alphabet = string.ascii_letters + string.digits
     return "".join(secrets.choice(alphabet) for _ in range(length))
 
@@ -631,15 +682,12 @@ def generate_secure_password(length: int = 16) -> str:
         Secure random password string
 
     """
-    import secrets
-    import string
-
     # Ensure password has all character types
     alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
     password = "".join(secrets.choice(alphabet) for _ in range(length))
 
     # Ensure at least one of each type
-    if length >= 8:
+    if length >= MIN_PASSWORD_LENGTH_CONSTANT:
         # Replace some random positions with required character types
         password = list(password)
         password[0] = secrets.choice(string.ascii_uppercase)
@@ -653,15 +701,13 @@ def generate_secure_password(length: int = 16) -> str:
     return password
 
 
-def get_utc_now():
+def get_utc_now() -> datetime:
     """Get current UTC datetime.
 
     Returns:
         Current UTC datetime
 
     """
-    from datetime import UTC, datetime
-
     return datetime.now(UTC)
 
 
@@ -675,7 +721,7 @@ def is_strong_password(password: str) -> bool:
         True if password is strong, False otherwise
 
     """
-    return flext_auth_validate_password_strength(password).unwrap_or(False)
+    return flext_auth_validate_password_strength(password).unwrap_or(False)  # noqa: FBT003
 
 
 def mask_sensitive_data(data: str, visible_chars: int = 4, mask_char: str = "*") -> str:

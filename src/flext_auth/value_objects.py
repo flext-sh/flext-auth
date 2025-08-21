@@ -118,6 +118,7 @@ class FlextPlainPassword(FlextValueObject):
         """Return protected password."""
         return "[PROTECTED]"
 
+    @override
     def __repr__(self) -> str:
         """Return protected password representation."""
         return "FlextPlainPassword([PROTECTED])"
@@ -147,7 +148,7 @@ class FlextPlainPassword(FlextValueObject):
 
         SOLID REFACTORING: Strategy Pattern implementation for password validation.
         """
-        errors = []
+        errors: list[str] = []
 
         # Length validation strategies
         if len(self.value) < MIN_PASSWORD_LENGTH:
@@ -184,6 +185,7 @@ class FlextHashedPassword(FlextValueObject):
         """Return hashed password."""
         return "[HASHED]"
 
+    @override
     def __repr__(self) -> str:
         """Return hashed password representation."""
         return "FlextHashedPassword([HASHED])"
@@ -251,6 +253,7 @@ class FlextBaseTokenValueObject(FlextValueObject):
         """Return protected token representation - Template Method."""
         return f"[{self._get_token_display_name()}]"
 
+    @override
     def __repr__(self) -> str:
         """Return protected token class representation - Template Method."""
         return f"{self._get_token_class_name()}([PROTECTED])"

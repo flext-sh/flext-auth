@@ -361,7 +361,7 @@ class FlextPasswordService:
         elif length < RECOMMENDED_PASSWORD_LENGTH:
             feedback.append(
                 f"Consider using at least {RECOMMENDED_PASSWORD_LENGTH} characters "
-                 f"for better security",
+                f"for better security",
             )
 
         if not has_uppercase:

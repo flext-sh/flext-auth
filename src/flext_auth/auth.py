@@ -283,17 +283,16 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
         """Execute authentication pipeline with early exits."""
         # Step 1: Find user
         user_result = await self.user_repo.get_by_username(username)
-        if not user_result.success or not user_result.value:
+        user = user_result.unwrap_or(None)
+        if not user:
             return FlextResult[dict[str, object]].fail("Invalid username or password")
-
-        user = user_result.value
 
         # Step 2: Verify password
         password_result = self.password_service.verify_password(
             password,
             user.password_hash,
         )
-        if not password_result.success or not password_result.value:
+        if not password_result.unwrap_or(False):  # noqa: FBT003
             return FlextResult[dict[str, object]].fail("Invalid username or password")
 
         # Step 3: Generate tokens and session
@@ -448,10 +447,11 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
             )
 
         user_result = await self.user_repo.get_by_username(claims.username)
-        if not user_result.success or not user_result.value:
+        user = user_result.unwrap_or(None)
+        if not user:
             return FlextResult[tuple[JWTClaims, User]].fail("User not found")
 
-        return FlextResult[tuple[JWTClaims, User]].ok((claims, user_result.value))
+        return FlextResult[tuple[JWTClaims, User]].ok((claims, user))
 
     async def _validate_session(self, claims: JWTClaims) -> FlextResult[bool]:
         """Validate session if present in claims."""
@@ -478,7 +478,7 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
 
         # Implement proper refresh token validation and generation
         verify_result = self.jwt_service.verify_token(refresh_token)
-        if not verify_result.success or not verify_result.value:
+        if not verify_result.unwrap_or(None):
             return FlextResult[dict[str, object]].fail("Invalid refresh token")
 
         claims = verify_result.value
@@ -1718,7 +1718,7 @@ class FlextAuthService:
                 ).message,
             )
 
-        return FlextResult.ok(FlextAuthSemanticConstants.FAILURE)
+        return FlextResult[bool].ok(FlextAuthSemanticConstants.FAILURE)
 
     # REFACTORING: Single Responsibility Principle methods for authenticate_user
 

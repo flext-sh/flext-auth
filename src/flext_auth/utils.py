@@ -148,7 +148,7 @@ class FlextAuthValidationUtils:
     @staticmethod
     def validate_password_strength(password: str) -> FlextAuthValidationResultType:
         """Validate password strength and return detailed result."""
-        errors = []
+        errors: list[str] = []
         score = 0
 
         if len(password) < _MIN_PASSWORD_LENGTH:
