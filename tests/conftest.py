@@ -147,7 +147,7 @@ def sample_users_dict(
         msg: str = f"Password hashing failed: {hash_result.error}"
         raise ValueError(msg)
 
-    password_hash = hash_result.data.value if hash_result.data else ""
+    password_hash = hash_result.value.value if hash_result.value else ""
 
     # Create user dictionary manually
     user = {

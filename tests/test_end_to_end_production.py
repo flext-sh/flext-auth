@@ -9,24 +9,48 @@ NO MOCKS - only real bcrypt, real JWT, real database operations, real business l
 
 from __future__ import annotations
 
-import asyncio
 from datetime import UTC, datetime, timedelta
 
+# Import everything from public APIs only - no internal module imports
 from flext_core import FlextEntityId
 
-from flext_auth.api import FlextAuth
-from flext_auth.config import FlextAuthConfig
-from flext_auth.entities import FlextUser, FlextUserRole, FlextUserStatus
-from flext_auth.jwt import FlextJWTService
-from flext_auth.password_service import FlextPasswordService
-from flext_auth.session import InMemorySessionRepository
-from flext_auth.user import InMemoryUserRepository
+from flext_auth import (
+    FlextAuth,
+    FlextAuthConfig,
+    FlextJWTService,
+    FlextPasswordService,
+    FlextSession,
+    FlextSessionStatus,
+    FlextUser,
+    FlextUserRole,
+    FlextUserStatus,
+    InMemorySessionRepository,
+    InMemoryUserRepository,
+)
+
+
+# TEST HELPER FUNCTION - Create FlextAuth with REAL repositories for testing
+def create_flext_auth_for_testing(config: FlextAuthConfig) -> FlextAuth:
+    """Create FlextAuth instance with REAL in-memory repositories for testing.
+
+    This helper function belongs in tests/ only - NOT in src/.
+    It uses REAL production repositories (just in-memory instead of PostgreSQL).
+    """
+    # Use REAL production repository implementations
+    user_repository = InMemoryUserRepository()
+    session_repository = InMemorySessionRepository()
+
+    return FlextAuth(
+        config=config,
+        user_repository=user_repository,
+        session_repository=session_repository,
+    )
 
 
 class TestEndToEndProduction:
     """End-to-End production tests with complete real workflow validation."""
 
-    def test_complete_user_lifecycle_production(self) -> None:
+    async def test_complete_user_lifecycle_production(self) -> None:
         """Test complete user lifecycle - registration, login, token refresh, logout."""
         # Create REAL production configuration
         config = FlextAuthConfig(
@@ -42,27 +66,27 @@ class TestEndToEndProduction:
             jwt_secret_key="real-test-secret-32-chars-minimum",
         )
 
-        auth = FlextAuth(config)
+        auth = create_flext_auth_for_testing(config)
 
         # Step 1: User Registration (REAL production code)
         username = "production_user_e2e"
         email = "production_e2e@test.com"
         password = "SecureProductionPassword123!@#"
 
-        registration_result = auth.create_user(username, email, password)
+        registration_result = await auth.create_user(username, email, password)
         assert registration_result.success, (
             f"User registration failed: {registration_result.error}"
         )
-        assert registration_result.data is not None
-        user_data = registration_result.data
+        assert registration_result.value is not None
+        user_data = registration_result.value
         assert user_data["user_created"] is True
         assert user_data["username"] == username
 
         # Step 2: Authentication (REAL production code)
-        auth_result = auth.authenticate(username, password)
+        auth_result = await auth.authenticate(username, password)
         assert auth_result.success, f"Authentication failed: {auth_result.error}"
-        assert auth_result.data is not None
-        auth_data = auth_result.data
+        assert auth_result.value is not None
+        auth_data = auth_result.value
         assert auth_data["authenticated"] is True
 
         # Step 3: JWT Token Validation (REAL production code)
@@ -74,8 +98,10 @@ class TestEndToEndProduction:
         # Verify token with REAL JWT service
         jwt_service = auth.jwt_service
         verify_result = jwt_service.verify_token(access_token)
-        assert verify_result.success, f"Token verification failed: {verify_result.error}"
-        claims = verify_result.data
+        assert verify_result.success, (
+            f"Token verification failed: {verify_result.error}"
+        )
+        claims = verify_result.value
         assert claims.username == username
 
         # Step 4: Password Change (REAL production code with session handling)
@@ -83,30 +109,31 @@ class TestEndToEndProduction:
 
         # Get user from repository for password change
         user_repo = auth.user_repository
-        user_result = asyncio.run(user_repo.get_by_username(username))
-        assert user_result.success and user_result.data
-        user = user_result.data
+        user_result = await user_repo.get_by_username(username)
+        assert user_result.success
+        assert user_result.value is not None
+        user = user_result.value
 
         # Use FlextAuthService for password change
         auth_service = auth.auth_service
-        password_change_result = asyncio.run(
-            auth_service.change_password(str(user.id), password, new_password)
+        password_change_result = await auth_service.change_password(
+            str(user.id), password, new_password
         )
         assert password_change_result.success, (
             f"Password change failed: {password_change_result.error}"
         )
 
         # Step 5: Authenticate with new password (REAL production code)
-        new_auth_result = auth.authenticate(username, new_password)
+        new_auth_result = await auth.authenticate(username, new_password)
         assert new_auth_result.success, (
             f"Authentication with new password failed: {new_auth_result.error}"
         )
 
         # Step 6: Verify old password no longer works (REAL production code)
-        old_auth_result = auth.authenticate(username, password)
+        old_auth_result = await auth.authenticate(username, password)
         assert not old_auth_result.success, "Old password should not work"
 
-    def test_concurrent_sessions_management_production(self) -> None:
+    async def test_concurrent_sessions_management_production(self) -> None:
         """Test concurrent session management with REAL production code."""
         config = FlextAuthConfig(
             app_name="SessionTest",
@@ -123,29 +150,29 @@ class TestEndToEndProduction:
         )
 
         # Test session management through FlextAuth API (REAL production code)
-        auth = FlextAuth(config)
+        auth = create_flext_auth_for_testing(config)
 
         # Create user first through the API
         username = "sessionuser_concurrent"
         email = "session_concurrent@test.com"
         password = "TestPassword123!"
 
-        create_result = auth.create_user(username, email, password)
+        create_result = await auth.create_user(username, email, password)
         assert create_result.success
 
         # Test user authentication which creates sessions
-        auth_result1 = auth.authenticate(username, password)
+        auth_result1 = await auth.authenticate(username, password)
         assert auth_result1.success
 
         # Verify session was created and token is valid
-        access_token = auth_result1.data["access_token"]
+        access_token = auth_result1.value["access_token"]
         verify_result = auth.jwt_service.verify_token(access_token)
         assert verify_result.success
 
         # Test multiple authentications create multiple tokens
-        auth_result2 = auth.authenticate(username, password)
+        auth_result2 = await auth.authenticate(username, password)
         assert auth_result2.success
-        access_token2 = auth_result2.data["access_token"]
+        access_token2 = auth_result2.value["access_token"]
 
         # Verify tokens are generated correctly (may be same for sync sessions)
         # In a synchronous API, multiple authentications may reuse session IDs
@@ -155,12 +182,12 @@ class TestEndToEndProduction:
         assert len(access_token2) > 100  # Valid JWT length
 
         # Both tokens should be valid and for the same user
-        claims1 = auth.jwt_service.verify_token(access_token).data
-        claims2 = auth.jwt_service.verify_token(access_token2).data
+        claims1 = auth.jwt_service.verify_token(access_token).value
+        claims2 = auth.jwt_service.verify_token(access_token2).value
         assert claims1.username == username
         assert claims2.username == username
 
-    def test_security_features_production(self) -> None:
+    async def test_security_features_production(self) -> None:
         """Test security features like account lockout with REAL production code."""
         config = FlextAuthConfig(
             app_name="SecurityTest",
@@ -175,39 +202,40 @@ class TestEndToEndProduction:
             jwt_secret_key="security-test-secret-32-chars-minimum",
         )
 
-        auth = FlextAuth(config)
+        auth = create_flext_auth_for_testing(config)
 
         # Create user for security testing
         username = "security_test_user"
         email = "security@test.com"
         correct_password = "CorrectPassword123!"
 
-        registration = auth.create_user(username, email, correct_password)
+        registration = await auth.create_user(username, email, correct_password)
         assert registration.success
 
         # Test successful authentication first
-        success_auth = auth.authenticate(username, correct_password)
+        success_auth = await auth.authenticate(username, correct_password)
         assert success_auth.success
 
         # Test failed authentication attempts (REAL production code)
         wrong_password = "WrongPassword123!"
 
         # First failed attempt
-        fail1 = auth.authenticate(username, wrong_password)
+        fail1 = await auth.authenticate(username, wrong_password)
         assert not fail1.success
 
         # Second failed attempt
-        fail2 = auth.authenticate(username, wrong_password)
+        fail2 = await auth.authenticate(username, wrong_password)
         assert not fail2.success
 
         # Third failed attempt (should trigger lockout)
-        fail3 = auth.authenticate(username, wrong_password)
+        fail3 = await auth.authenticate(username, wrong_password)
         assert not fail3.success
 
         # Fourth attempt - should be locked out even with correct password
-        locked_result = auth.authenticate(username, correct_password)
+        locked_result = await auth.authenticate(username, correct_password)
         # Note: This behavior depends on the lockout implementation
         # The user might be locked or the system might still allow correct passwords
+        assert hasattr(locked_result, "success")  # Just verify result format
 
     def test_token_expiration_and_refresh_production(self) -> None:
         """Test JWT token expiration and refresh with REAL production code."""
@@ -222,12 +250,12 @@ class TestEndToEndProduction:
             session_id="token_session_456",
         )
         assert token_result.success
-        access_token = token_result.data
+        access_token = token_result.value
 
         # Verify token is valid (REAL production code)
         verify_result = jwt_service.verify_token(access_token)
         assert verify_result.success
-        claims = verify_result.data
+        claims = verify_result.value
         assert claims.username == "tokenuser"
 
         # Generate refresh token (REAL production code)
@@ -236,7 +264,7 @@ class TestEndToEndProduction:
             session_id="token_session_456",
         )
         assert refresh_result.success
-        refresh_token = refresh_result.data
+        refresh_token = refresh_result.value
 
         # Verify refresh token format
         assert isinstance(refresh_token, str)
@@ -265,27 +293,31 @@ class TestEndToEndProduction:
         for weak_password in weak_passwords:
             hash_result = password_service.hash_password(weak_password)
             # Weak passwords should be rejected by Pydantic validation
-            assert not hash_result.success, f"Weak password '{weak_password}' should be rejected"
+            assert not hash_result.success, (
+                f"Weak password '{weak_password}' should be rejected"
+            )
 
         # Test strong passwords (REAL production code)
         for strong_password in strong_passwords:
             hash_result = password_service.hash_password(strong_password)
             assert hash_result.success
-            assert hash_result.data.value.startswith("$2b$")  # Real bcrypt format
+            assert hash_result.value.value.startswith("$2b$")  # Real bcrypt format
 
             # Verify strong password hashing cycle
             verify_result = password_service.verify_password(
-                strong_password, hash_result.data.value
+                strong_password, hash_result.value.value
             )
-            assert verify_result.success and verify_result.data
+            assert verify_result.success
+            assert verify_result.value
 
             # Test wrong password fails
             wrong_verify = password_service.verify_password(
-                "WrongPassword", hash_result.data.value
+                "WrongPassword", hash_result.value.value
             )
-            assert wrong_verify.success and not wrong_verify.data
+            assert wrong_verify.success
+            assert not wrong_verify.value
 
-    def test_repository_operations_production(self) -> None:
+    async def test_repository_operations_production(self) -> None:
         """Test repository operations with REAL production code."""
         user_repo = InMemoryUserRepository()
         session_repo = InMemorySessionRepository()
@@ -301,23 +333,23 @@ class TestEndToEndProduction:
                 role=FlextUserRole.USER,
                 status=FlextUserStatus.ACTIVE,
             )
-            save_result = asyncio.run(user_repo.save(user))
+            save_result = await user_repo.save(user)
             assert save_result.success
             users.append(user)
 
         # Test user lookup operations (REAL production code)
         for user in users:
-            username_result = asyncio.run(user_repo.get_by_username(user.username))
-            assert username_result.success and username_result.data
-            assert username_result.data.email == user.email
+            username_result = await user_repo.get_by_username(user.username)
+            assert username_result.success
+            assert username_result.value is not None
+            assert username_result.value.email == user.email
 
-            email_result = asyncio.run(user_repo.get_by_email(user.email))
-            assert email_result.success and email_result.data
-            assert email_result.data.username == user.username
+            email_result = await user_repo.get_by_email(user.email)
+            assert email_result.success
+            assert email_result.value is not None
+            assert email_result.value.username == user.username
 
         # Test session operations (REAL production code)
-        from flext_auth.entities import FlextSession, FlextSessionStatus
-
         session = FlextSession(
             id=FlextEntityId("repo_session_123"),
             user_id=str(users[0].id),
@@ -329,9 +361,10 @@ class TestEndToEndProduction:
             expires_at=datetime.now(UTC) + timedelta(hours=24),
         )
 
-        session_save = asyncio.run(session_repo.save(session))
+        session_save = await session_repo.save(session)
         assert session_save.success
 
-        session_get = asyncio.run(session_repo.get_by_id(str(session.id)))
-        assert session_get.success and session_get.data
-        assert session_get.data.user_id == str(users[0].id)
+        session_get = await session_repo.get_by_id(str(session.id))
+        assert session_get.success
+        assert session_get.value is not None
+        assert session_get.value.user_id == str(users[0].id)

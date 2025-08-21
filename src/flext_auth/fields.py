@@ -190,9 +190,9 @@ class FlextAuthFieldSchema:
                 if validation_result.is_failure:
                     return FlextResult[dict[str, object]].fail(
                         f"Field '{field_name}' validation failed: "
-                        f"{validation_result.error}",
+                         f"{validation_result.error}",
                     )
-                validated_data[field_name] = validation_result.data
+                validated_data[field_name] = validation_result.value
 
         # Validate optional fields if present
         optional_fields = [cls.SESSION_EXPIRE, cls.FAILED_ATTEMPTS, cls.LOCKOUT_ENABLED]
@@ -204,9 +204,9 @@ class FlextAuthFieldSchema:
                 if validation_result.is_failure:
                     return FlextResult[dict[str, object]].fail(
                         f"Field '{field_name}' validation failed: "
-                        f"{validation_result.error}",
+                         f"{validation_result.error}",
                     )
-                validated_data[field_name] = validation_result.data
+                validated_data[field_name] = validation_result.value
             elif field.default_value is not None:
                 validated_data[field_name] = field.default_value
 
@@ -560,7 +560,7 @@ def validate_user_role_permissions(
     if missing_permissions:
         return FlextResult[str].fail(
             f"Role '{role}' missing required permissions: "
-            f"{', '.join(missing_permissions)}",
+             f"{', '.join(missing_permissions)}",
         )
 
     return FlextResult[str].ok(role)
@@ -674,7 +674,7 @@ def validate_complete_user_registration(
     if basic_validation.is_failure:
         return basic_validation
 
-    validated_data = basic_validation.data
+    validated_data = basic_validation.value
 
     # Perform advanced validations
     validated_data.get("username", "")
@@ -688,7 +688,7 @@ def validate_complete_user_registration(
             f"Password strength validation failed: {strength_result.error}",
         )
 
-    strength_analysis = strength_result.data
+    strength_analysis = strength_result.value
 
     if strength_analysis.get("strength") == "weak":
         feedback = strength_analysis.get("feedback", [])
@@ -749,7 +749,7 @@ def validate_user_profile_update(
                 f"Field '{field_name}' validation failed: {validation_result.error}",
             )
 
-        validated_changes[field_name] = validation_result.data
+        validated_changes[field_name] = validation_result.value
 
     if not validated_changes:
         return FlextResult[dict[str, object]].fail(

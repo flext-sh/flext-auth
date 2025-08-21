@@ -7,20 +7,21 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from datetime import UTC, datetime
 
 from flext_core import FlextResult
 
 from flext_auth.constants import FlextAuthSemanticConstants
 from flext_auth.models import FlextSession, FlextSessionStatus
+from flext_auth.repositories_simple import FlextSessionRepository
 
 # =============================================================================
 # SESSION REPOSITORY PATTERNS - Abstract data access
 # =============================================================================
 
 
-class SessionRepository(ABC):
+class SessionRepository(FlextSessionRepository):
     """Abstract repository for session operations."""
 
     @abstractmethod
@@ -40,14 +41,14 @@ class SessionRepository(ABC):
         """Revoke all sessions for a user."""
 
     @abstractmethod
-    def cleanup_expired_sessions(self) -> FlextResult[int]:
+    async def cleanup_expired_sessions(self) -> FlextResult[int]:
         """Clean up expired sessions."""
 
     @abstractmethod
     async def revoke_session(self, session_id: str) -> FlextResult[bool]:
         """Revoke a specific session by ID."""
 
-    # Compatibility async methods expected by service layer
+    # Async methods expected by service layer
     async def get_by_id(
         self,
         session_id: str,
@@ -67,7 +68,7 @@ class SessionRepository(ABC):
         return self.revoke_all_sessions_for_user(user_id)
 
 
-class InMemorySessionRepository(SessionRepository):
+class InMemorySessionRepository(FlextSessionRepository):
     """In-memory session repository implementation."""
 
     def __init__(self) -> None:
@@ -124,7 +125,7 @@ class InMemorySessionRepository(SessionRepository):
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[int].fail(f"Failed to revoke user sessions: {e}")
 
-    def cleanup_expired_sessions(self) -> FlextResult[int]:
+    async def cleanup_expired_sessions(self) -> FlextResult[int]:
         """Clean up expired sessions."""
         try:
             now = datetime.now(UTC)
@@ -141,7 +142,7 @@ class InMemorySessionRepository(SessionRepository):
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[int].fail(f"Failed to cleanup expired sessions: {e}")
 
-    # Additional async compatibility methods used by refactored service
+    # Additional async methods used by refactored service
     async def get_by_id(self, session_id: str) -> FlextResult[FlextSession | None]:
         return self.find_by_id(session_id)
 
@@ -174,6 +175,21 @@ class InMemorySessionRepository(SessionRepository):
             return FlextResult[int].ok(active_count)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[int].fail(f"Failed to count active sessions: {e}")
+
+    # Required FlextSessionRepository abstract methods
+    async def delete(self, session_id: str) -> FlextResult[bool]:
+        """Delete session from memory."""
+        try:
+            if session_id in self._sessions:
+                del self._sessions[session_id]
+                return FlextResult[bool].ok(FlextAuthSemanticConstants.SUCCESS)
+            return FlextResult[bool].ok(FlextAuthSemanticConstants.FAILURE)
+        except (KeyError, ValueError, TypeError, AttributeError) as e:
+            return FlextResult[bool].fail(f"Failed to delete session: {e}")
+
+    async def cleanup_expired(self) -> FlextResult[int]:
+        """Cleanup expired sessions - async version."""
+        return await self.cleanup_expired_sessions()
 
 
 # =============================================================================

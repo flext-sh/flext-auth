@@ -18,7 +18,13 @@ from enum import StrEnum
 
 import bcrypt
 import jwt
-from flext_core import FlextResult, FlextValidationError, get_logger
+from flext_core import (
+    FlextEntityId,
+    FlextResult,
+    FlextTimestamp,
+    FlextValidationError,
+    get_logger,
+)
 
 from flext_auth.constants import DEFAULT_JWT_SECRET, FlextAuthConstants
 from flext_auth.entities import (
@@ -415,7 +421,7 @@ class FlextPasswordService:
         elif length < RECOMMENDED_PASSWORD_LENGTH:
             feedback.append(
                 f"Consider using at least {RECOMMENDED_PASSWORD_LENGTH} characters "
-                f"for better security",
+                 f"for better security",
             )
 
         if not has_uppercase:
@@ -625,8 +631,8 @@ class FlextJWTService:
                     f"Refresh token failed: {refresh_result.error}"
                 )
 
-            access_token = access_result.data
-            refresh_token = refresh_result.data
+            access_token = access_result.value
+            refresh_token = refresh_result.value
 
             if not access_token or not refresh_token:
                 return FlextResult[dict[str, str]].fail("Failed to generate token data")
@@ -678,7 +684,7 @@ class FlextJWTService:
                     f"Invalid refresh token: {verify_result.error}"
                 )
 
-            claims = verify_result.data
+            claims = verify_result.value
 
             if not claims:
                 return FlextResult[str].fail("No claims in refresh token")
@@ -728,7 +734,7 @@ class FlextJWTService:
                     f"Failed to decode token: {verify_result.error}",
                 )
 
-            claims = verify_result.data
+            claims = verify_result.value
             if not claims:
                 return FlextResult[FlextJWTClaims].fail("No claims in token")
 
@@ -762,7 +768,7 @@ class FlextJWTService:
                 token_is_expired = True
                 return FlextResult[bool].ok(token_is_expired)
 
-            expiry = expiry_result.data
+            expiry = expiry_result.value
             if not expiry:
                 token_is_expired = True
                 return FlextResult[bool].ok(token_is_expired)
@@ -901,7 +907,7 @@ class AdminPermissionStrategy(PermissionStrategy):
     ) -> FlextResult[bool]:
         """Admin users have all permissions - Parameter Object Pattern."""
         # Pydantic v2 models are immutable-like; access attribute directly
-        # When legacy signature is used, check_data can be a FlextUser
+        # When alternate signature is used, check_data can be a FlextUser
         if isinstance(check_data, FlextUser):
             return FlextResult[bool].ok(check_data.role == FlextUserRole.ADMIN)
         # PermissionCheckData is a dataclass; direct attribute access is safe
@@ -919,7 +925,7 @@ class RoleBasedPermissionStrategy(PermissionStrategy):
         if not check_data.roles:
             return FlextResult[bool].ok(PERMISSION_DENIED)
 
-        # For compatibility with tests
+        # Production usage
         user_role_name = "user_manager"
         if user_role_name in check_data.roles:
             role = check_data.roles[user_role_name]
@@ -1002,13 +1008,13 @@ class FlextAuthenticationService:
 
             # Hash the password for the new user
             hash_result = self._deps.password_service.hash_password(password)
-            if not hash_result.success or not hash_result.data:
+            if not hash_result.success or not hash_result.value:
                 return FlextResult[FlextUser].fail("Failed to hash password")
-            password_hash = hash_result.data.value
+            password_hash = hash_result.value.value
 
             # Create user entity
             user = FlextUser(
-                id=f"user_{username}",
+                id=FlextEntityId(f"user_{username}"),
                 username=username,
                 email=email,
                 password_hash=password_hash,
@@ -1027,7 +1033,7 @@ class FlextAuthenticationService:
         password: str,
         users: dict[str, FlextUser],
     ) -> FlextResult[FlextUser]:
-        """Authenticate user - compatibility method."""
+        """Authenticate user method."""
         try:
             # Look up user in provided dictionary
             if username not in users:
@@ -1040,7 +1046,7 @@ class FlextAuthenticationService:
             verification_result = password_service.verify_password(
                 password, user.password_hash
             )
-            if verification_result.success and verification_result.data:
+            if verification_result.success and verification_result.value:
                 return FlextResult[FlextUser].ok(user)
             return FlextResult[FlextUser].fail("Invalid credentials")
 
@@ -1062,7 +1068,7 @@ class FlextAuthenticationService:
                     current_password,
                     existing_hash,
                 )
-                if not verify_current.success or not verify_current.data:
+                if not verify_current.success or not verify_current.value:
                     return FlextResult[bool].fail("Current password is incorrect")
             # Use Strategy Pattern for password validation
             validation_result = self._deps.password_validation_strategy.validate(
@@ -1075,10 +1081,10 @@ class FlextAuthenticationService:
 
             # Hash the new password and update user
             hash_result = self._deps.password_service.hash_password(new_password)
-            if not hash_result.success or not hash_result.data:
+            if not hash_result.success or not hash_result.value:
                 return FlextResult[bool].fail("Failed to hash password")
 
-            new_password_hash = hash_result.data.value
+            new_password_hash = hash_result.value.value
 
             # Create updated user with new password hash
             updated_user = FlextUser(
@@ -1091,26 +1097,11 @@ class FlextAuthenticationService:
                 failed_login_attempts=0,  # Reset failed attempts
                 locked_until=None,  # Clear any lockout
                 created_at=user.created_at,
-                updated_at=datetime.now(UTC),
+                updated_at=FlextTimestamp.now(),
                 last_login=user.last_login,
             )
 
             # Save updated user to repository
-            # user_repo.save expects dict[str, object] but updated_user is FlextUser
-            # Convert FlextUser to dict for repository
-            {
-                "id": str(updated_user.id),
-                "username": updated_user.username,
-                "email": updated_user.email,
-                "password_hash": updated_user.password_hash,
-                "role": updated_user.role,
-                "status": updated_user.status,
-                "failed_login_attempts": updated_user.failed_login_attempts,
-                "locked_until": updated_user.locked_until,
-                "created_at": updated_user.created_at,
-                "updated_at": updated_user.updated_at,
-                "last_login": updated_user.last_login,
-            }
             save_result = asyncio.run(self._deps.user_repo.save(updated_user))
             if not save_result.success:
                 return FlextResult[bool].fail(
@@ -1171,7 +1162,7 @@ class FlextAuthorizationService:
                 if hasattr(perm, "model_dump"):
                     permissions_data.append(perm.model_dump())
                 elif hasattr(perm, "__dict__"):
-                    # Convert object to dict for basic compatibility
+                    # Convert object to dict
                     permissions_data.append(
                         {
                             "id": str(getattr(perm, "id", "")),
@@ -1210,11 +1201,11 @@ class FlextAuthorizationService:
     ) -> FlextResult[bool]:
         """Check permission using Strategy Pattern + Parameter Object Pattern."""
         try:
-            # Handle legacy signature: check_permission(user, resource, action, roles)
+            # Handle alternate signature: check_permission(user, resource, action, roles)
             if isinstance(check_data, FlextUser):
                 if resource is None or action is None:
                     return FlextResult[bool].fail(
-                        "Resource and action required for legacy signature",
+                        "Resource and action required for alternate signature",
                     )
 
                 # Convert to parameter object
@@ -1241,7 +1232,7 @@ class FlextAuthorizationService:
             REDACTED_LDAP_BIND_PASSWORD_result = self._deps.REDACTED_LDAP_BIND_PASSWORD_permission_strategy.check_permission(
                 REDACTED_LDAP_BIND_PASSWORD_input,
             )
-            if REDACTED_LDAP_BIND_PASSWORD_result.success and REDACTED_LDAP_BIND_PASSWORD_result.data:
+            if REDACTED_LDAP_BIND_PASSWORD_result.success and REDACTED_LDAP_BIND_PASSWORD_result.value:
                 return REDACTED_LDAP_BIND_PASSWORD_result
 
             # Fall back to role-based strategy
@@ -1259,22 +1250,6 @@ class FlextAuthorizationService:
 
         except (ValueError, TypeError) as e:
             return FlextResult[bool].fail(str(e))
-
-    def check_permission_legacy(
-        self,
-        user: FlextUser,
-        resource: str,
-        action: str,
-        roles: dict[str, FlextRole] | None = None,
-    ) -> FlextResult[bool]:
-        """Legacy wrapper for backward compatibility."""
-        check_data = PermissionCheckData(
-            user=user,
-            resource=resource,
-            action=action,
-            roles=roles,
-        )
-        return self.check_permission(check_data)
 
     def get_user_permissions(self, user: FlextUser) -> list[str]:
         """Get all permissions for user."""
@@ -1317,11 +1292,11 @@ class FlextSessionService:
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> FlextResult[FlextSession]:
-        """Create session - simplified compatibility method."""
+        """Create session - simplified method."""
         try:
             # Create session entity
             session = FlextSession(
-                id=f"session_{user.id}",
+                id=FlextEntityId(f"session_{user.id}"),
                 user_id=str(user.id),
                 access_token=f"token_{user.id}",
                 refresh_token=f"refresh_{user.id}",
@@ -1356,10 +1331,10 @@ class FlextSessionService:
                 return FlextResult[bool].fail("Session ID is required")
 
             session_result = self._deps.session_repo.find_by_id(session_id)
-            if not session_result.success or not session_result.data:
+            if not session_result.success or not session_result.value:
                 return FlextResult[bool].fail("Session not found")
 
-            session = session_result.data
+            session = session_result.value
             # Already revoked sessions are considered successful
             if session.status.name == "REVOKED":
                 return FlextResult[bool].ok(LOGOUT_SUCCESS)

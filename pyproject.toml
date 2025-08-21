@@ -27,6 +27,7 @@ classifiers = [
 ]
 dependencies = [
     "argon2-cffi>=25.1.0",
+    "asyncpg>=0.30.0",
     "bcrypt>=4.3.0",
     "click>=8.2.1",
     "cryptography>=45.0.5",
@@ -38,7 +39,7 @@ dependencies = [
     "pyjwt>=2.9.0",
     "python-jose[cryptography]>=3.3.0",
     "redis>=5.3.0",
-    "sqlalchemy>=2.0.41",
+    "sqlalchemy[asyncio]>=2.0.41",
     "structlog>=25.4.0",
 ]
 keywords = [

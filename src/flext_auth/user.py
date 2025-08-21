@@ -7,56 +7,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
-from datetime import UTC, datetime
-
-from flext_core import FlextResult
+from flext_core import FlextResult, FlextTimestamp
 
 from flext_auth.constants import FlextAuthSemanticConstants
 from flext_auth.entities import FlextUser, FlextUserStatus
+from flext_auth.repositories_simple import FlextUserRepository
 
 
-class UserRepository(ABC):
-    """Abstract repository for user operations."""
-
-    @abstractmethod
-    async def save(self, user: FlextUser) -> FlextResult[FlextUser]:
-        """Save user to repository."""
-
-    @abstractmethod
-    async def get_by_id(self, user_id: str) -> FlextResult[FlextUser | None]:
-        """Get user by ID."""
-
-    @abstractmethod
-    async def get_by_username(self, username: str) -> FlextResult[FlextUser | None]:
-        """Get user by username."""
-
-    @abstractmethod
-    async def get_by_email(self, email: str) -> FlextResult[FlextUser | None]:
-        """Get user by email."""
-
-    @abstractmethod
-    async def delete(self, user_id: str) -> FlextResult[bool]:
-        """Delete user from repository."""
-
-    @abstractmethod
-    async def list_users(
-        self,
-        limit: int = 100,
-        offset: int = 0,
-        status: FlextUserStatus | None = None,
-    ) -> FlextResult[list[FlextUser]]:
-        """List users with pagination and filtering."""
-
-    @abstractmethod
-    async def count_users(
-        self,
-        status: FlextUserStatus | None = None,
-    ) -> FlextResult[int]:
-        """Count users with optional status filter."""
-
-
-class InMemoryUserRepository(UserRepository):
+class InMemoryUserRepository(FlextUserRepository):
     """In-memory user repository implementation."""
 
     def __init__(self) -> None:
@@ -94,7 +52,7 @@ class InMemoryUserRepository(UserRepository):
                 locked_until=user.locked_until,
                 last_login=user.last_login,
                 created_at=user.created_at,
-                updated_at=datetime.now(UTC),
+                updated_at=FlextTimestamp.now(),
             )
 
             # Save user
@@ -200,6 +158,80 @@ class InMemoryUserRepository(UserRepository):
             return FlextResult[int].ok(count)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[int].fail(f"Failed to count users: {e}")
+
+    # =============================================================================
+    # SYNC METHODS FOR COMMAND HANDLERS (CQRS requires sync handlers)
+    # =============================================================================
+
+    def save_sync(self, user: FlextUser) -> FlextResult[FlextUser]:
+        """Save user to memory (sync version for CQRS commands)."""
+        try:
+            # Check for username conflicts
+            existing_username = self._username_index.get(user.username.lower())
+            if existing_username and existing_username != str(user.id):
+                return FlextResult[FlextUser].fail(
+                    f"Username '{user.username}' already exists"
+                )
+
+            # Check for email conflicts
+            existing_email = self._email_index.get(str(user.email).lower())
+            if existing_email and existing_email != str(user.id):
+                return FlextResult[FlextUser].fail(
+                    f"Email '{user.email}' already exists"
+                )
+
+            # Create user with updated timestamp (entities are immutable)
+            updated_user = FlextUser(
+                id=user.id,
+                username=user.username,
+                email=user.email,
+                password_hash=user.password_hash,
+                role=user.role,
+                status=user.status,
+                failed_login_attempts=user.failed_login_attempts,
+                locked_until=user.locked_until,
+                last_login=user.last_login,
+                created_at=user.created_at,
+                updated_at=FlextTimestamp.now(),
+            )
+
+            # Save user
+            self._users[str(updated_user.id)] = updated_user
+            self._username_index[updated_user.username.lower()] = str(updated_user.id)
+            self._email_index[str(updated_user.email).lower()] = str(updated_user.id)
+
+            return FlextResult[FlextUser].ok(updated_user)
+
+        except (KeyError, ValueError, TypeError, AttributeError) as e:
+            return FlextResult[FlextUser].fail(f"Failed to save user: {e}")
+
+    def get_by_username_sync(self, username: str) -> FlextResult[FlextUser | None]:
+        """Get user by username (sync version for CQRS commands)."""
+        try:
+            user_id = self._username_index.get(username.lower())
+            if not user_id:
+                return FlextResult[FlextUser | None].ok(None)
+
+            user = self._users.get(user_id)
+            return FlextResult[FlextUser | None].ok(user)
+        except (KeyError, ValueError, TypeError, AttributeError) as e:
+            return FlextResult[FlextUser | None].fail(
+                f"Failed to get user by username: {e}"
+            )
+
+    def get_by_email_sync(self, email: str) -> FlextResult[FlextUser | None]:
+        """Get user by email (sync version for CQRS commands)."""
+        try:
+            user_id = self._email_index.get(email.lower())
+            if not user_id:
+                return FlextResult[FlextUser | None].ok(None)
+
+            user = self._users.get(user_id)
+            return FlextResult[FlextUser | None].ok(user)
+        except (KeyError, ValueError, TypeError, AttributeError) as e:
+            return FlextResult[FlextUser | None].fail(
+                f"Failed to get user by email: {e}"
+            )
 
 
 # PostgreSQL implementation removed to eliminate code duplication

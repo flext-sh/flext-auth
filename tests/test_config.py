@@ -51,9 +51,9 @@ class TestDatabaseConfig:
         }
 
         # Store original values
-        for key in env_vars:
+        for key, value in env_vars.items():
             original_values[key] = os.environ.get(key)
-            os.environ[key] = env_vars[key]
+            os.environ[key] = value
 
         try:
             # Test real configuration loading

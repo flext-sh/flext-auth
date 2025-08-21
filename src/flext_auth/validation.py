@@ -46,7 +46,7 @@ class FlextAuthValidators:
                 f"Username cannot exceed {MAX_USERNAME_LENGTH} characters",
             )
 
-        if not re.match(FlextAuthConstants.USERNAME_PATTERN, username):
+        if not re.match(FlextAuthConstants.Authentication.USERNAME_PATTERN, username):
             return FlextResult[None].fail("Username contains invalid characters")
 
         return FlextResult[None].ok(None)
@@ -65,22 +65,24 @@ class FlextAuthValidators:
         if not FlextValidators.is_non_empty_string(password):
             return FlextResult[None].fail("Password cannot be empty")
 
-        if len(password) < FlextAuthConstants.MIN_PASSWORD_LENGTH:
+        if len(password) < FlextAuthConstants.Authentication.MIN_PASSWORD_LENGTH:
             return FlextResult[None].fail(
-                f"Password must be at least "
-                f"{FlextAuthConstants.MIN_PASSWORD_LENGTH} characters",
+                "Password must be at least "
+                 f"{FlextAuthConstants.Authentication.MIN_PASSWORD_LENGTH} characters",
             )
 
-        if len(password) > FlextAuthConstants.MAX_PASSWORD_LENGTH:
+        if len(password) > FlextAuthConstants.Authentication.MAX_PASSWORD_LENGTH:
             return FlextResult[None].fail(
-                f"Password cannot exceed "
-                f"{FlextAuthConstants.MAX_PASSWORD_LENGTH} characters",
+                "Password cannot exceed "
+                 f"{FlextAuthConstants.Authentication.MAX_PASSWORD_LENGTH} characters",
             )
 
-        if not re.match(FlextAuthConstants.PASSWORD_VALIDATION_REGEX, password):
+        if not FlextAuthConstants.Authentication.PASSWORD_VALIDATION_REGEX.match(
+            password
+        ):
             return FlextResult[None].fail(
                 "Password must contain uppercase, lowercase, digit and "
-                "special character",
+                 "special character",
             )
 
         return FlextResult[None].ok(None)

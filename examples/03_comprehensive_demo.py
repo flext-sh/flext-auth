@@ -14,6 +14,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+# Import everything from public API only - no internal module imports
 from flext_auth import (
     FlextAuth,
     FlextResult,
@@ -22,8 +23,6 @@ from flext_auth import (
     flext_auth_quick_start,
     flext_auth_validate_jwt,
     flext_auth_verify_password,
-)
-from flext_auth.utils import (
     generate_secure_password,
     generate_secure_token,
     is_strong_password,
@@ -33,7 +32,7 @@ from flext_auth.utils import (
 examples_dir = Path(__file__).parent
 sys.path.insert(0, str(examples_dir))
 
-from example_utils import basic_example_runner
+from example_utils import basic_example_runner  # noqa: E402
 
 # Demo constants
 DEMO_JWT_SECRET = "comprehensive-demo-secret-key-256-bits-minimum-required"  # noqa: S105
@@ -50,7 +49,7 @@ def demo_complete_auth_workflow() -> None:
     # 2. Create user account
     username = "demo_user"
     email = "demo@example.com"
-    password = "DemoSecurePass123!"
+    password = "DemoSecurePass123!"  # noqa: S105
 
     result = auth.create_user(username, email, password)
     if hasattr(result, "success") and result.success:
@@ -71,8 +70,8 @@ def demo_password_security() -> None:
     print("=== PASSWORD SECURITY DEMO ===")
 
     # Password strength validation
-    weak_password = "123"
-    strong_password = "MyVerySecurePassword123!"
+    weak_password = "123"  # noqa: S105
+    strong_password = "MyVerySecurePassword123!"  # noqa: S105
 
     print(
         f"Weak password '{weak_password}' is strong: {is_strong_password(weak_password)}"
@@ -141,14 +140,18 @@ def demo_quick_start_helper() -> None:
     # Quick start without REDACTED_LDAP_BIND_PASSWORD user
     service = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
     print("✓ Quick start service created (no REDACTED_LDAP_BIND_PASSWORD)")
-    assert hasattr(service, "service")
+    if not hasattr(service, "service"):
+        msg = "Service missing expected attribute"
+        raise AttributeError(msg)
 
     # Quick start with configuration
     service2 = flext_auth_quick_start(
         create_REDACTED_LDAP_BIND_PASSWORD=False, config={"jwt_secret": "custom-secret"}
     )
     print("✓ Quick start service created (with config)")
-    assert hasattr(service2, "service")
+    if not hasattr(service2, "service"):
+        msg = "Service2 missing expected attribute"
+        raise AttributeError(msg)
 
 
 def demo_flext_result_pattern() -> None:
@@ -157,7 +160,7 @@ def demo_flext_result_pattern() -> None:
 
     # Success result
     success = FlextResult[str].ok("Operation successful")
-    print(f"✓ Success result: {success.success}, data: {success.data}")
+    print(f"✓ Success result: {success.success}, data: {success.value}")
 
     # Failure result
     failure = FlextResult[str].fail("Operation failed")
@@ -165,7 +168,7 @@ def demo_flext_result_pattern() -> None:
 
     # Pattern usage
     if success.success:
-        print(f"✓ Pattern: Success case handled - {success.data}")
+        print(f"✓ Pattern: Success case handled - {success.value}")
 
     if not failure.success:
         print(f"✓ Pattern: Failure case handled - {failure.error}")

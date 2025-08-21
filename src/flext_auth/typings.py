@@ -40,7 +40,7 @@ type FlextAuthLoginAttempt = dict[str, object]
 type FlextAuthAuditEventType = str
 
 # =============================================================================
-# LEGACY COMPATIBILITY TYPES - For backward compatibility
+# USER DATA TYPES - Current API user data types
 # =============================================================================
 
 
@@ -177,16 +177,8 @@ class FlextAuthFieldValidationType(TypedDict, total=False):
 
 
 # =============================================================================
-# LEGACY ALIASES - For backward compatibility (old names)
+# TYPE EXPORTS - Clean type exports
 # =============================================================================
-
-# Keep old type aliases for backward compatibility
-type TUserId = FlextAuthUserId
-type TSessionId = FlextAuthSessionId
-type TUsername = FlextAuthUsername
-type TEmail = FlextAuthEmail
-type TPassword = FlextAuthPassword
-type TUserRole = FlextAuthRoleType
 type TAuthResult = FlextAuthResult
 type TSecurityContext = FlextAuthSecurityContext
 type TLoginAttempt = FlextAuthLoginAttempt

@@ -60,15 +60,15 @@ class TestFlextAuthService:
         result = await self.auth_service.register_user(registration_data)
 
         assert result.success
-        assert result.data is not None
-        if result.data.username != "testuser":
-            msg1: str = f"Expected {'testuser'}, got {result.data.username}"
+        assert result.value is not None
+        if result.value.username != "testuser":
+            msg1: str = f"Expected {'testuser'}, got {result.value.username}"
             raise AssertionError(msg1)
-        assert result.data.email == "test@example.com"
-        if result.data.role != FlextUserRole.USER:
-            msg2: str = f"Expected {FlextUserRole.USER}, got {result.data.role}"
+        assert result.value.email == "test@example.com"
+        if result.value.role != FlextUserRole.USER:
+            msg2: str = f"Expected {FlextUserRole.USER}, got {result.value.role}"
             raise AssertionError(msg2)
-        assert result.data.status == FlextUserStatus.ACTIVE
+        assert result.value.status == FlextUserStatus.ACTIVE
 
     @pytest.mark.unit
     async def test_register_user_duplicate_username(self) -> None:
@@ -137,15 +137,15 @@ class TestFlextAuthService:
         )
 
         assert result.success
-        if "user" not in result.data:
-            msg: str = f"Expected {'user'} in {result.data}"
+        if "user" not in result.value:
+            msg: str = f"Expected {'user'} in {result.value}"
             raise AssertionError(msg)
-        assert "session" in result.data
-        if "tokens" not in result.data:
-            msg: str = f"Expected {'tokens'} in {result.data}"
+        assert "session" in result.value
+        if "tokens" not in result.value:
+            msg: str = f"Expected {'tokens'} in {result.value}"
             raise AssertionError(msg)
-        if result.data["user"]["username"] != "testuser":
-            msg: str = f"Expected {'testuser'}, got {result.data['user']['username']}"
+        if result.value["user"]["username"] != "testuser":
+            msg: str = f"Expected {'testuser'}, got {result.value['user']['username']}"
             raise AssertionError(msg)
 
     @pytest.mark.unit
@@ -202,16 +202,16 @@ class TestFlextAuthService:
             ip_address="127.0.0.1",
         )
 
-        token = auth_result.data["tokens"]["access_token"]
+        token = auth_result.value["tokens"]["access_token"]
 
         # Validate token
         result = await self.auth_service.validate_token(token)
 
         assert result.success
-        if result.data.username != "testuser":
-            msg: str = f"Expected {'testuser'}, got {result.data.username}"
+        if result.value.username != "testuser":
+            msg: str = f"Expected {'testuser'}, got {result.value.username}"
             raise AssertionError(msg)
-        assert result.data.user_id is not None
+        assert result.value.user_id is not None
 
     @pytest.mark.unit
     async def test_validate_token_invalid(self) -> None:
@@ -244,7 +244,7 @@ class TestFlextAuthService:
         assert auth_result.success
 
         # Validate token
-        token = auth_result.data["tokens"]["access_token"]
+        token = auth_result.value["tokens"]["access_token"]
         validate_result = await self.auth_service.validate_token(token)
         assert validate_result.success
 
@@ -266,8 +266,8 @@ class TestFlextAuthService:
 
         assert result.success
         # Password should be hashed, not stored in plain text
-        assert result.data.password_hash != password
-        assert result.data.password_hash.startswith("$2b$")  # bcrypt format
+        assert result.value.password_hash != password
+        assert result.value.password_hash.startswith("$2b$")  # bcrypt format
 
     @pytest.mark.security
     async def test_account_lockout_protection(self) -> None:
@@ -298,7 +298,7 @@ class TestFlextAuthService:
         # System may return success via strategy pattern or proper lockout error
         if result.success:
             # Account lockout working - even with correct password, access_token should be real JWT or empty
-            access_token = result.data.get("access_token", "")
+            access_token = result.value.get("access_token", "")
             # If account is locked, token should be empty or a warning token
             assert access_token == "" or len(access_token) > 10, (
                 f"Unexpected token format: {access_token}"

@@ -1,14 +1,12 @@
-"""FLEXT Auth Helpers - Compatibility module for helper functions.
+"""FLEXT Auth Helpers - Current API helper functions.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
 """
 
-# This module provides a compatibility layer for helper functions
-# The actual implementations are in legacy.py
-
-from flext_auth.legacy import (
+# Helper functions using main API
+from flext_auth.api import (
     flext_auth_generate_jwt,
     flext_auth_hash_password,
     flext_auth_quick_start,

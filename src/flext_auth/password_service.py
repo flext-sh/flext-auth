@@ -91,12 +91,12 @@ class FlextPasswordService:
       >>> # Hash a password securely
       >>> hash_result = service.hash_password("MySecurePassword123!")
       >>> if hash_result.success:
-      ...     password_hash = hash_result.data.value
+      ...     password_hash = hash_result.value.value
       ...     # Verify password later
       ...     verify_result = service.verify_password(
       ...         "MySecurePassword123!", password_hash
       ...     )
-      ...     if verify_result.success and verify_result.data:
+      ...     if verify_result.success and verify_result.value:
       ...         print("Password verified")
 
     Security Guidelines:
@@ -361,7 +361,7 @@ class FlextPasswordService:
         elif length < RECOMMENDED_PASSWORD_LENGTH:
             feedback.append(
                 f"Consider using at least {RECOMMENDED_PASSWORD_LENGTH} characters "
-                f"for better security",
+                 f"for better security",
             )
 
         if not has_uppercase:

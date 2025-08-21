@@ -78,10 +78,10 @@ class TestUserRepository:
         result = await user_repository.save(sample_user)
 
         assert result.success
-        if result.data.id != sample_user.id:
-            msg: str = f"Expected {sample_user.id}, got {result.data.id}"
+        if result.value.id != sample_user.id:
+            msg: str = f"Expected {sample_user.id}, got {result.value.id}"
             raise AssertionError(msg)
-        assert result.data.username == sample_user.username
+        assert result.value.username == sample_user.username
 
     async def test_save_user_duplicate_username(
         self,
@@ -156,8 +156,8 @@ class TestUserRepository:
         )
         result2 = await user_repository.save(updated_user)
         assert result2.success
-        if result2.data.status != FlextUserStatus.INACTIVE:
-            msg: str = f"Expected {FlextUserStatus.INACTIVE}, got {result2.data.status}"
+        if result2.value.status != FlextUserStatus.INACTIVE:
+            msg: str = f"Expected {FlextUserStatus.INACTIVE}, got {result2.value.status}"
             raise AssertionError(msg)
 
     async def test_get_user_by_id_success(
@@ -172,11 +172,11 @@ class TestUserRepository:
         # Get user by ID
         result = await user_repository.get_by_id(sample_user.id)
         assert result.success
-        assert result.data is not None
-        if result.data.id != sample_user.id:
-            msg: str = f"Expected {sample_user.id}, got {result.data.id}"
+        assert result.value is not None
+        if result.value.id != sample_user.id:
+            msg: str = f"Expected {sample_user.id}, got {result.value.id}"
             raise AssertionError(msg)
-        assert result.data.username == sample_user.username
+        assert result.value.username == sample_user.username
 
     async def test_get_user_by_id_not_found(
         self,
@@ -185,7 +185,7 @@ class TestUserRepository:
         """Test user retrieval with non-existent ID."""
         result = await user_repository.get_by_id("non-existent")
         assert result.success
-        assert result.data is None
+        assert result.value is None
 
     async def test_get_user_by_username_success(
         self,
@@ -199,9 +199,9 @@ class TestUserRepository:
         # Get user by username
         result = await user_repository.get_by_username(sample_user.username)
         assert result.success
-        assert result.data is not None
-        if result.data.username != sample_user.username:
-            msg: str = f"Expected {sample_user.username}, got {result.data.username}"
+        assert result.value is not None
+        if result.value.username != sample_user.username:
+            msg: str = f"Expected {sample_user.username}, got {result.value.username}"
             raise AssertionError(msg)
 
     async def test_get_user_by_username_case_insensitive(
@@ -216,9 +216,9 @@ class TestUserRepository:
         # Get user with different case
         result = await user_repository.get_by_username(sample_user.username.upper())
         assert result.success
-        assert result.data is not None
-        if result.data.username != sample_user.username:
-            msg: str = f"Expected {sample_user.username}, got {result.data.username}"
+        assert result.value is not None
+        if result.value.username != sample_user.username:
+            msg: str = f"Expected {sample_user.username}, got {result.value.username}"
             raise AssertionError(msg)
 
     async def test_get_user_by_username_not_found(
@@ -228,7 +228,7 @@ class TestUserRepository:
         """Test user retrieval with non-existent username."""
         result = await user_repository.get_by_username("nonexistent")
         assert result.success
-        assert result.data is None
+        assert result.value is None
 
     async def test_get_user_by_email_success(
         self,
@@ -242,9 +242,9 @@ class TestUserRepository:
         # Get user by email
         result = await user_repository.get_by_email(str(sample_user.email))
         assert result.success
-        assert result.data is not None
-        if str(result.data.email) != str(sample_user.email):
-            msg: str = f"Expected {sample_user.email!s}, got {result.data.email!s}"
+        assert result.value is not None
+        if str(result.value.email) != str(sample_user.email):
+            msg: str = f"Expected {sample_user.email!s}, got {result.value.email!s}"
             raise AssertionError(msg)
 
     async def test_get_user_by_email_case_insensitive(
@@ -259,9 +259,9 @@ class TestUserRepository:
         # Get user with different case
         result = await user_repository.get_by_email(str(sample_user.email).upper())
         assert result.success
-        assert result.data is not None
-        if str(result.data.email) != str(sample_user.email):
-            msg: str = f"Expected {sample_user.email!s}, got {result.data.email!s}"
+        assert result.value is not None
+        if str(result.value.email) != str(sample_user.email):
+            msg: str = f"Expected {sample_user.email!s}, got {result.value.email!s}"
             raise AssertionError(msg)
 
     async def test_get_user_by_email_not_found(
@@ -271,7 +271,7 @@ class TestUserRepository:
         """Test user retrieval with non-existent email."""
         result = await user_repository.get_by_email("nonexistent@example.com")
         assert result.success
-        assert result.data is None
+        assert result.value is None
 
     async def test_delete_user_success(
         self,
@@ -285,14 +285,14 @@ class TestUserRepository:
         # Delete user
         result = await user_repository.delete(sample_user.id)
         assert result.success
-        if not (result.data):
-            msg: str = f"Expected True, got {result.data}"
+        if not (result.value):
+            msg: str = f"Expected True, got {result.value}"
             raise AssertionError(msg)
 
         # Verify user is gone
         get_result = await user_repository.get_by_id(sample_user.id)
         assert get_result.success
-        assert get_result.data is None
+        assert get_result.value is None
 
     async def test_delete_user_not_found(
         self,
@@ -301,8 +301,8 @@ class TestUserRepository:
         """Test deletion of non-existent user."""
         result = await user_repository.delete("non-existent")
         assert result.success
-        if result.data:
-            msg: str = f"Expected False, got {result.data}"
+        if result.value:
+            msg: str = f"Expected False, got {result.value}"
             raise AssertionError(msg)
 
     async def test_list_users_no_filter(
@@ -329,12 +329,12 @@ class TestUserRepository:
         # List all users
         result = await user_repository.list_users()
         assert result.success
-        if len(result.data) != 5:
-            msg: str = f"Expected {5}, got {len(result.data)}"
+        if len(result.value) != 5:
+            msg: str = f"Expected {5}, got {len(result.value)}"
             raise AssertionError(msg)
 
         # Should be sorted by created_at (newest first)
-        sorted_users = result.data
+        sorted_users = result.value
         for i in range(len(sorted_users) - 1):
             if sorted_users[i].created_at < sorted_users[i + 1].created_at:
                 msg: str = f"Expected {sorted_users[i].created_at} >= {sorted_users[i + 1].created_at}"
@@ -375,11 +375,11 @@ class TestUserRepository:
         # List active users
         active_result = await user_repository.list_users(status=FlextUserStatus.ACTIVE)
         assert active_result.success
-        if len(active_result.data) != EXPECTED_DATA_COUNT:
-            msg: str = f"Expected {3}, got {len(active_result.data)}"
+        if len(active_result.value) != EXPECTED_DATA_COUNT:
+            msg: str = f"Expected {3}, got {len(active_result.value)}"
             raise AssertionError(msg)
-        if not all(u.status == FlextUserStatus.ACTIVE for u in active_result.data):
-            msg: str = f"Expected all users to be ACTIVE in {active_result.data}"
+        if not all(u.status == FlextUserStatus.ACTIVE for u in active_result.value):
+            msg: str = f"Expected all users to be ACTIVE in {active_result.value}"
             raise AssertionError(msg)
 
         # List inactive users
@@ -387,11 +387,11 @@ class TestUserRepository:
             status=FlextUserStatus.INACTIVE,
         )
         assert inactive_result.success
-        if len(inactive_result.data) != EXPECTED_DATA_COUNT:
-            msg: str = f"Expected {3}, got {len(inactive_result.data)}"
+        if len(inactive_result.value) != EXPECTED_DATA_COUNT:
+            msg: str = f"Expected {3}, got {len(inactive_result.value)}"
             raise AssertionError(msg)
-        if not all(u.status == FlextUserStatus.INACTIVE for u in inactive_result.data):
-            msg: str = f"Expected all users to be INACTIVE in {inactive_result.data}"
+        if not all(u.status == FlextUserStatus.INACTIVE for u in inactive_result.value):
+            msg: str = f"Expected all users to be INACTIVE in {inactive_result.value}"
             raise AssertionError(msg)
 
     async def test_list_users_pagination(
@@ -414,20 +414,20 @@ class TestUserRepository:
         # Get first page
         page1 = await user_repository.list_users(limit=3, offset=0)
         assert page1.success
-        if len(page1.data) != EXPECTED_DATA_COUNT:
-            msg: str = f"Expected {3}, got {len(page1.data)}"
+        if len(page1.value) != EXPECTED_DATA_COUNT:
+            msg: str = f"Expected {3}, got {len(page1.value)}"
             raise AssertionError(msg)
 
         # Get second page
         page2 = await user_repository.list_users(limit=3, offset=3)
         assert page2.success
-        if len(page2.data) != EXPECTED_DATA_COUNT:
-            msg: str = f"Expected {3}, got {len(page2.data)}"
+        if len(page2.value) != EXPECTED_DATA_COUNT:
+            msg: str = f"Expected {3}, got {len(page2.value)}"
             raise AssertionError(msg)
 
         # Pages should not overlap
-        page1_ids = {u.id for u in page1.data}
-        page2_ids = {u.id for u in page2.data}
+        page1_ids = {u.id for u in page1.value}
+        page2_ids = {u.id for u in page2.value}
         assert page1_ids.isdisjoint(page2_ids)
 
     async def test_count_users_no_filter(
@@ -449,8 +449,8 @@ class TestUserRepository:
 
         result = await user_repository.count_users()
         assert result.success
-        if result.data != 5:
-            msg: str = f"Expected {5}, got {result.data}"
+        if result.value != 5:
+            msg: str = f"Expected {5}, got {result.value}"
             raise AssertionError(msg)
 
     async def test_count_users_with_status_filter(
@@ -484,8 +484,8 @@ class TestUserRepository:
         # Count active users
         active_count = await user_repository.count_users(status=FlextUserStatus.ACTIVE)
         assert active_count.success
-        if active_count.data != EXPECTED_DATA_COUNT:
-            msg: str = f"Expected {3}, got {active_count.data}"
+        if active_count.value != EXPECTED_DATA_COUNT:
+            msg: str = f"Expected {3}, got {active_count.value}"
             raise AssertionError(msg)
 
         # Count inactive users
@@ -493,8 +493,8 @@ class TestUserRepository:
             status=FlextUserStatus.INACTIVE,
         )
         assert inactive_count.success
-        if inactive_count.data != EXPECTED_BULK_SIZE:
-            msg: str = f"Expected {2}, got {inactive_count.data}"
+        if inactive_count.value != EXPECTED_BULK_SIZE:
+            msg: str = f"Expected {2}, got {inactive_count.value}"
             raise AssertionError(msg)
 
 
@@ -510,10 +510,10 @@ class TestSessionRepository:
         result = await session_repository.save(sample_session)
 
         assert result.success
-        if result.data.id != sample_session.id:
-            msg: str = f"Expected {sample_session.id}, got {result.data.id}"
+        if result.value.id != sample_session.id:
+            msg: str = f"Expected {sample_session.id}, got {result.value.id}"
             raise AssertionError(msg)
-        assert result.data.user_id == sample_session.user_id
+        assert result.value.user_id == sample_session.user_id
 
     async def test_save_session_preserves_data(
         self,
@@ -525,14 +525,14 @@ class TestSessionRepository:
         assert result.success
 
         # Session data should be preserved exactly
-        if result.data.id != sample_session.id:
-            msg: str = f"Expected {sample_session.id}, got {result.data.id}"
+        if result.value.id != sample_session.id:
+            msg: str = f"Expected {sample_session.id}, got {result.value.id}"
             raise AssertionError(msg)
-        assert result.data.user_id == sample_session.user_id
-        if result.data.access_token != sample_session.access_token:
-            msg: str = f"Expected {sample_session.access_token}, got {result.data.access_token}"
+        assert result.value.user_id == sample_session.user_id
+        if result.value.access_token != sample_session.access_token:
+            msg: str = f"Expected {sample_session.access_token}, got {result.value.access_token}"
             raise AssertionError(msg)
-        assert result.data.last_accessed == sample_session.last_accessed
+        assert result.value.last_accessed == sample_session.last_accessed
 
     async def test_save_session_update_existing(
         self,
@@ -557,9 +557,9 @@ class TestSessionRepository:
         )
         result2 = await session_repository.save(updated_session)
         assert result2.success
-        if result2.data.status != FlextSessionStatus.REVOKED:
+        if result2.value.status != FlextSessionStatus.REVOKED:
             msg: str = (
-                f"Expected {FlextSessionStatus.REVOKED}, got {result2.data.status}"
+                f"Expected {FlextSessionStatus.REVOKED}, got {result2.value.status}"
             )
             raise AssertionError(msg)
 
@@ -575,9 +575,9 @@ class TestSessionRepository:
         # Get session by ID
         result = await session_repository.get_by_id(sample_session.id)
         assert result.success
-        assert result.data is not None
-        if result.data.id != sample_session.id:
-            msg: str = f"Expected {sample_session.id}, got {result.data.id}"
+        assert result.value is not None
+        if result.value.id != sample_session.id:
+            msg: str = f"Expected {sample_session.id}, got {result.value.id}"
             raise AssertionError(msg)
 
     async def test_get_session_by_id_not_found(
@@ -587,7 +587,7 @@ class TestSessionRepository:
         """Test session retrieval with non-existent ID."""
         result = await session_repository.get_by_id("non-existent")
         assert result.success
-        assert result.data is None
+        assert result.value is None
 
     async def test_get_sessions_by_user_id(
         self,
@@ -612,8 +612,8 @@ class TestSessionRepository:
         # Get sessions by user ID
         result = await session_repository.get_by_user_id(sample_user.id)
         assert result.success
-        if len(result.data) != EXPECTED_DATA_COUNT:
-            msg: str = f"Expected {3}, got {len(result.data)}"
+        if len(result.value) != EXPECTED_DATA_COUNT:
+            msg: str = f"Expected {3}, got {len(result.value)}"
             raise AssertionError(msg)
 
     async def test_get_sessions_by_user_id_not_found(
@@ -623,8 +623,8 @@ class TestSessionRepository:
         """Test getting sessions for non-existent user."""
         result = await session_repository.get_by_user_id("non-existent-user")
         assert result.success
-        if len(result.data) != 0:
-            msg: str = f"Expected {0}, got {len(result.data)}"
+        if len(result.value) != 0:
+            msg: str = f"Expected {0}, got {len(result.value)}"
             raise AssertionError(msg)
 
     async def test_get_active_sessions(
@@ -669,8 +669,8 @@ class TestSessionRepository:
         # Get active sessions
         result = session_repository.get_active_session_count(str(sample_user.id))
         assert result.success
-        if result.data != 1:
-            msg: str = f"Expected {1}, got {result.data}"
+        if result.value != 1:
+            msg: str = f"Expected {1}, got {result.value}"
             raise AssertionError(msg)
 
     async def test_revoke_session(
@@ -685,15 +685,15 @@ class TestSessionRepository:
         # Revoke session
         result = await session_repository.revoke_session(sample_session.id)
         assert result.success
-        if not (result.data):
-            msg: str = f"Expected True, got {result.data}"
+        if not (result.value):
+            msg: str = f"Expected True, got {result.value}"
             raise AssertionError(msg)
 
         # Verify session is revoked (no longer accessible)
         session_result = await session_repository.get_by_id(sample_session.id)
         assert session_result.success
-        if session_result.data is not None:
-            msg: str = f"Expected None (revoked session), got {session_result.data}"
+        if session_result.value is not None:
+            msg: str = f"Expected None (revoked session), got {session_result.value}"
             raise AssertionError(msg)
 
     async def test_revoke_session_not_found(
@@ -703,8 +703,8 @@ class TestSessionRepository:
         """Test revoking non-existent session."""
         result = await session_repository.revoke_session("non-existent")
         assert result.success
-        if result.data:
-            msg: str = f"Expected False, got {result.data}"
+        if result.value:
+            msg: str = f"Expected False, got {result.value}"
             raise AssertionError(msg)
 
     async def test_revoke_all_user_sessions(
@@ -742,15 +742,15 @@ class TestSessionRepository:
         result = await session_repository.revoke_all_user_sessions(sample_user.id)
         assert result.success
         # Only 3 active sessions were revoked
-        if result.data != EXPECTED_DATA_COUNT:
-            msg: str = f"Expected {EXPECTED_DATA_COUNT} (only active sessions), got {result.data}"
+        if result.value != EXPECTED_DATA_COUNT:
+            msg: str = f"Expected {EXPECTED_DATA_COUNT} (only active sessions), got {result.value}"
             raise AssertionError(msg)
 
         # Verify all sessions are now revoked
         all_sessions_result = await session_repository.get_by_user_id(sample_user.id)
         assert all_sessions_result.success
 
-        for session in all_sessions_result.data:
+        for session in all_sessions_result.value:
             if session.status != FlextSessionStatus.REVOKED:
                 msg: str = (
                     f"Expected {FlextSessionStatus.REVOKED}, got {session.status}"
@@ -789,23 +789,23 @@ class TestSessionRepository:
         # Cleanup expired sessions
         result = session_repository.cleanup_expired_sessions()
         assert result.success
-        if result.data != EXPECTED_BULK_SIZE:  # 2 expired sessions cleaned:
-            msg: str = f"Expected {2}, got {result.data}"
+        if result.value != EXPECTED_BULK_SIZE:  # 2 expired sessions cleaned:
+            msg: str = f"Expected {2}, got {result.value}"
             raise AssertionError(msg)
 
         # Verify expired sessions are gone
         expired1_result = await session_repository.get_by_id("expired-0")
         assert expired1_result.success
-        assert expired1_result.data is None
+        assert expired1_result.value is None
 
         expired2_result = await session_repository.get_by_id("expired-1")
         assert expired2_result.success
-        assert expired2_result.data is None
+        assert expired2_result.value is None
 
         # Verify active session remains
         active_result = await session_repository.get_by_id("active-session")
         assert active_result.success
-        assert active_result.data is not None
+        assert active_result.value is not None
 
     async def test_delete_session(
         self,
@@ -819,14 +819,14 @@ class TestSessionRepository:
         # Delete session
         result = await session_repository.revoke_session(sample_session.id)
         assert result.success
-        if not (result.data):
-            msg: str = f"Expected True, got {result.data}"
+        if not (result.value):
+            msg: str = f"Expected True, got {result.value}"
             raise AssertionError(msg)
 
         # Verify session is gone
         get_result = await session_repository.get_by_id(sample_session.id)
         assert get_result.success
-        assert get_result.data is None
+        assert get_result.value is None
 
     async def test_delete_session_not_found(
         self,
@@ -835,8 +835,8 @@ class TestSessionRepository:
         """Test deletion of non-existent session."""
         result = await session_repository.revoke_session("non-existent")
         assert result.success
-        if result.data:
-            msg: str = f"Expected False, got {result.data}"
+        if result.value:
+            msg: str = f"Expected False, got {result.value}"
             raise AssertionError(msg)
 
     async def test_session_user_index_consistency(
@@ -862,8 +862,8 @@ class TestSessionRepository:
         # Verify all sessions are indexed
         user_sessions_result = await session_repository.get_by_user_id(sample_user.id)
         assert user_sessions_result.success
-        if len(user_sessions_result.data) != EXPECTED_DATA_COUNT:
-            msg: str = f"Expected {3}, got {len(user_sessions_result.data)}"
+        if len(user_sessions_result.value) != EXPECTED_DATA_COUNT:
+            msg: str = f"Expected {3}, got {len(user_sessions_result.value)}"
             raise AssertionError(msg)
 
         # Delete one session
@@ -872,12 +872,12 @@ class TestSessionRepository:
         # Verify index is updated
         user_sessions_result = await session_repository.get_by_user_id(sample_user.id)
         assert user_sessions_result.success
-        if len(user_sessions_result.data) != EXPECTED_BULK_SIZE:
-            msg: str = f"Expected {2}, got {len(user_sessions_result.data)}"
+        if len(user_sessions_result.value) != EXPECTED_BULK_SIZE:
+            msg: str = f"Expected {2}, got {len(user_sessions_result.value)}"
             raise AssertionError(msg)
 
         # Verify correct sessions remain
-        remaining_ids = {s.id for s in user_sessions_result.data}
+        remaining_ids = {s.id for s in user_sessions_result.value}
         expected_ids = {sessions[1].id, sessions[2].id}
         if remaining_ids != expected_ids:
             msg: str = f"Expected {expected_ids}, got {remaining_ids}"
@@ -914,8 +914,8 @@ class TestRepositoryIntegration:
         # Get user sessions
         user_sessions = await session_repository.get_by_user_id(sample_user.id)
         assert user_sessions.success
-        if len(user_sessions.data) != EXPECTED_DATA_COUNT:
-            msg: str = f"Expected {3}, got {len(user_sessions.data)}"
+        if len(user_sessions.value) != EXPECTED_DATA_COUNT:
+            msg: str = f"Expected {3}, got {len(user_sessions.value)}"
             raise AssertionError(msg)
 
         # Delete user but keep sessions (orphaned sessions)
@@ -924,8 +924,8 @@ class TestRepositoryIntegration:
         # Sessions should still exist (repository doesn't enforce FK constraints)
         user_sessions = await session_repository.get_by_user_id(sample_user.id)
         assert user_sessions.success
-        if len(user_sessions.data) != EXPECTED_DATA_COUNT:
-            msg: str = f"Expected {3}, got {len(user_sessions.data)}"
+        if len(user_sessions.value) != EXPECTED_DATA_COUNT:
+            msg: str = f"Expected {3}, got {len(user_sessions.value)}"
             raise AssertionError(msg)
 
     async def test_repository_error_handling(
@@ -937,11 +937,11 @@ class TestRepositoryIntegration:
         # Test with None values (should be handled gracefully)
         user_result = await user_repository.get_by_id("")
         assert user_result.success
-        assert user_result.data is None
+        assert user_result.value is None
 
         session_result = await session_repository.get_by_id("")
         assert session_result.success
-        assert session_result.data is None
+        assert session_result.value is None
 
         # Test with invalid data types (should be handled by entity validation)
         # These tests verify the repository doesn't crash on edge cases

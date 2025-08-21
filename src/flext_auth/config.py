@@ -11,7 +11,7 @@ import contextlib
 import os
 import re
 import secrets
-from typing import Never
+from typing import Never, Protocol
 
 from flext_core import (
     FlextBaseConfigModel,
@@ -21,6 +21,16 @@ from flext_core import (
 )
 from pydantic import Field, SecretStr
 from pydantic_settings import SettingsConfigDict
+
+
+# Protocol for password secret handling - SOLID typing without Any
+class _SecretProtocol(Protocol):
+    """Protocol for password secret objects from flext-core."""
+
+    def get_secret_value(self) -> str:
+        """Get the secret value as string."""
+        ...
+
 
 # =============================================================================
 # TYPE DEFINITIONS - Authentication-specific types
@@ -172,22 +182,22 @@ class FlextAuthApplicationConfig(FlextBaseConfigModel):
             auth_rate_limit_per_minute=5,
             access_token_expire_minutes=30,
             refresh_token_expire_days=7,
-            jwt_secret_key="dev-secret-key-change-in-production"  # noqa: S106
+            jwt_secret_key="dev-secret-key-change-in-production",  # noqa: S106
         ),
         description="Authentication configuration",
     )
 
 
 # =============================================================================
-# BACKWARD COMPATIBILITY - Legacy configuration classes
+# SIMPLIFIED CONFIGURATION CLASSES - Current API
 # =============================================================================
 
 
 class DatabaseConfig:
-    """Database configuration with backward compatibility wrapper."""
+    """Database configuration for current API."""
 
     def __init__(self, **kwargs: object) -> None:
-        """Initialize with backward compatibility for legacy interface."""
+        """Initialize database configuration."""
         # Extract and validate pool settings using helper methods
         min_pool_size = self._extract_int_setting(
             kwargs,
@@ -221,8 +231,7 @@ class DatabaseConfig:
 
         # Create internal flext-core config with safe defaults
         try:
-            # Type-safe approach: create with minimal parameters for
-            # flext-core compatibility
+            # Type-safe approach: create with minimal parameters
             self._core_config = FlextDatabaseConfig(
                 host="localhost",
                 database="flext",
@@ -230,7 +239,7 @@ class DatabaseConfig:
                 password=SecretStr("password"),
             )
         except (RuntimeError, ValueError, TypeError, KeyError):
-            # Fallback if flext-core config fails
+            # Use default configuration if core config initialization fails
             self._core_config = FlextDatabaseConfig(
                 host="localhost",
                 database="flext",
@@ -291,13 +300,40 @@ class DatabaseConfig:
         """Delegate unknown attributes to core config."""
         return getattr(self._core_config, name)
 
+    @property
+    def password(self) -> _SecretProtocol | None:
+        """Get password as SecretProtocol for type safety."""
+        if hasattr(self._core_config, "password"):
+            return self._core_config.password
+        return None
+
+    @property
+    def host(self) -> str:
+        """Get database host."""
+        return str(getattr(self._core_config, "host", "localhost"))
+
+    @property
+    def port(self) -> int:
+        """Get database port."""
+        return int(getattr(self._core_config, "port", self._get_default_port()))
+
+    @property
+    def database(self) -> str:
+        """Get database name."""
+        return str(getattr(self._core_config, "database", "flext"))
+
+    @property
+    def username(self) -> str:
+        """Get database username."""
+        return str(getattr(self._core_config, "username", "postgres"))
+
     def _get_default_port(self) -> int:
         """Get default PostgreSQL port."""
         return 5432
 
     @property
     def url(self) -> str:
-        """Get database URL from components for backward compatibility."""
+        """Get database URL from components."""
         # If an original URL was provided, return it
         if self._original_url is not None:
             return self._original_url
@@ -309,37 +345,34 @@ class DatabaseConfig:
             and self.username == "postgres"
             and self.port == self._get_default_port()
         ):
-            # Default configuration - test expects empty string
+            # Default configuration - empty for development
             return ""
 
         # Custom configuration - generate complete URL
-        if hasattr(self, "password") and self.password:
-            # Type-safe secret value extraction
-            if hasattr(self.password, "get_secret_value") and callable(self.password.get_secret_value):
-                password_str = self.password.get_secret_value()
-            else:
-                password_str = str(self.password)
+        if self.password:
+            # Type-safe secret value extraction using Protocol
+            password_str = self.password.get_secret_value()
             return f"postgresql://{self.username}:{password_str}@{self.host}:{self.port}/{self.database}"
         return f"postgresql://{self.username}@{self.host}:{self.port}/{self.database}"
 
     @property
     def min_pool_size(self) -> int:
-        """Get minimum pool size for backward compatibility."""
+        """Get minimum pool size."""
         return getattr(self, "_min_pool_size", 1)
 
     @property
     def max_pool_size(self) -> int:
-        """Get maximum pool size for backward compatibility."""
+        """Get maximum pool size."""
         return getattr(self, "_max_pool_size", 10)
 
     @property
     def command_timeout(self) -> int:
-        """Get command timeout for backward compatibility."""
+        """Get command timeout."""
         return getattr(self, "_command_timeout", 60)
 
 
 class JWTConfig(FlextSettings):
-    """JWT configuration for backward compatibility with environment variables."""
+    """JWT configuration with environment variables."""
 
     secret_key: str = Field(default="", description="JWT secret key")
     algorithm: str = Field(default="HS256", description="JWT algorithm")
@@ -398,7 +431,7 @@ class JWTConfig(FlextSettings):
 
 
 class SecurityConfig(FlextSettings):
-    """Security configuration for backward compatibility with environment variables."""
+    """Security configuration with environment variables."""
 
     password_rounds: int = Field(12, description="BCrypt rounds", ge=4, le=20)
     max_failed_attempts: int = Field(
@@ -438,7 +471,7 @@ class SecurityConfig(FlextSettings):
 
 
 class ServerConfig(FlextSettings):
-    """Server configuration for backward compatibility."""
+    """Server configuration."""
 
     debug: bool = Field(default=False, description="Debug mode")
     host: str = Field(default="localhost", description="Server host")
@@ -448,7 +481,7 @@ class ServerConfig(FlextSettings):
 
 
 class AppConfig(FlextSettings):
-    """Application configuration for backward compatibility."""
+    """Application configuration."""
 
     name: str = Field("FLEXT Authentication API", description="Application name")
     version: str = Field("1.0.0", description="Application version")
@@ -458,16 +491,24 @@ class AppConfig(FlextSettings):
 
     # Nested configurations
     database: DatabaseConfig = Field(
-        default_factory=lambda: DatabaseConfig(),
+        default_factory=DatabaseConfig,
         description="Database configuration",
     )
-    jwt: JWTConfig = Field(default_factory=lambda: JWTConfig(), description="JWT configuration")
+    jwt: JWTConfig = Field(
+        default_factory=JWTConfig, description="JWT configuration"
+    )
     security: SecurityConfig = Field(
-        default_factory=lambda: SecurityConfig(),
+        default_factory=lambda: SecurityConfig(
+            password_rounds=12,
+            max_failed_attempts=5,
+            lockout_duration_minutes=30,
+            session_expire_hours=24,
+            max_concurrent_sessions=5,
+        ),
         description="Security configuration",
     )
     server: ServerConfig = Field(
-        default_factory=lambda: ServerConfig(),
+        default_factory=ServerConfig,
         description="Server configuration",
     )
 
@@ -508,7 +549,24 @@ def create_auth_config(**overrides: object) -> FlextAuthConfig:
         # Filter None values and use model_validate for type safety
         filtered_overrides = {k: v for k, v in overrides.items() if v is not None}
         return FlextAuthConfig.model_validate(filtered_overrides)
-    return FlextAuthConfig()
+    # CRITICAL FIX: All required parameters for FlextAuthConfig
+    return FlextAuthConfig(
+        app_name="FlextAuth",
+        version="1.0.0",
+        environment="development",
+        password_min_length=8,
+        password_max_length=128,
+        bcrypt_rounds=12,
+        max_login_attempts=5,
+        lockout_duration_minutes=30,
+        session_timeout_hours=24,
+        max_concurrent_sessions=5,
+        rate_limit_per_minute=60,
+        auth_rate_limit_per_minute=5,
+        access_token_expire_minutes=30,
+        refresh_token_expire_days=7,
+        jwt_secret_key=get_default_secret("FLEXT_AUTH_JWT_SECRET_KEY"),
+    )
 
 
 def create_complete_auth_config(**overrides: object) -> FlextAuthApplicationConfig:
@@ -518,11 +576,14 @@ def create_complete_auth_config(**overrides: object) -> FlextAuthApplicationConf
         # Filter None values and use model_validate for type safety
         filtered_overrides = {k: v for k, v in overrides.items() if v is not None}
         return FlextAuthApplicationConfig.model_validate(filtered_overrides)
-    return FlextAuthApplicationConfig()
+    # CRITICAL FIX: Required parameter for FlextAuthApplicationConfig
+    return FlextAuthApplicationConfig(
+        app_name="FlextAuth",
+    )
 
 
 def get_default_secret(key_name: str) -> str:
-    """Get default secret from environment or generate secure fallback."""
+    """Get default secret from environment or generate secure random value."""
     env_value = os.getenv(key_name)
     if env_value:
         return env_value
@@ -559,9 +620,24 @@ def validate_production_config(config: AppConfig) -> bool:
 def create_development_config() -> FlextAuthApplicationConfig:
     """Create development configuration with reasonable defaults."""
     return FlextAuthApplicationConfig(
+        app_name="FlextAuth",
         auth=FlextAuthConfig(
+            app_name="FlextAuth",
+            version="1.0.0",
             debug=True,
             environment="development",
+            password_min_length=8,
+            password_max_length=128,
+            bcrypt_rounds=12,
+            max_login_attempts=5,
+            lockout_duration_minutes=30,
+            session_timeout_hours=24,
+            max_concurrent_sessions=5,
+            rate_limit_per_minute=60,
+            auth_rate_limit_per_minute=5,
+            access_token_expire_minutes=30,
+            refresh_token_expire_days=7,
+            jwt_secret_key=get_default_secret("FLEXT_AUTH_JWT_SECRET_KEY"),
         ),
     )
 
@@ -574,19 +650,33 @@ def create_production_config() -> FlextAuthApplicationConfig:
         raise ValueError(msg)
 
     return FlextAuthApplicationConfig(
+        app_name="FlextAuth",
         auth=FlextAuthConfig(
+            app_name="FlextAuth",
+            version="1.0.0",
             debug=False,
             environment="production",
+            password_min_length=8,
+            password_max_length=128,
+            bcrypt_rounds=12,
+            max_login_attempts=5,
+            lockout_duration_minutes=30,
+            session_timeout_hours=24,
+            max_concurrent_sessions=5,
+            rate_limit_per_minute=60,
+            auth_rate_limit_per_minute=5,
+            access_token_expire_minutes=30,
+            refresh_token_expire_days=7,
+            jwt_secret_key=jwt_secret,
         ),
     )
 
 
 # =============================================================================
-# SECURE DEFAULT SECRETS - Environment variable fallbacks
+# SECURE DEFAULT SECRETS - Environment variable defaults
 # =============================================================================
 
-# Library-wide default secret (used by helpers); tests for JWTConfig expect empty default,
-# so keep library default separate from JWTConfig defaults.
+# Library-wide default secrets for production and development environments.
 DEFAULT_JWT_SECRET = os.getenv("FLEXT_AUTH_JWT_SECRET_KEY", "dev-secret-key")
 DEFAULT_SERVICE_SECRET = os.getenv(
     "FLEXT_AUTH_SERVICE_SECRET",
@@ -608,7 +698,7 @@ __all__: list[str] = [
     "DEFAULT_JWT_SECRET",
     "DEFAULT_MFA_SECRET",
     "DEFAULT_SERVICE_SECRET",
-    # Backward compatibility
+    # Configuration classes
     "AppConfig",
     "DatabaseConfig",
     "FlextAuthApplicationConfig",

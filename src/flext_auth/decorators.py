@@ -22,6 +22,36 @@ from flext_auth.config import DEFAULT_JWT_SECRET, FlextAuthConfig
 from flext_auth.constants import FlextAuthSemanticConstants
 from flext_auth.services import FlextJWTService
 
+
+# HTTP Request Protocol for type safety - SOLID typing without Any
+class _HTTPHeaders(Protocol):
+    """Protocol for HTTP headers object."""
+
+    def get(self, key: str, default: str = "") -> str:
+        """Get header value by key."""
+        ...
+
+
+class _HTTPRequest(Protocol):
+    """Protocol for HTTP request objects (FastAPI/Flask)."""
+
+    headers: _HTTPHeaders
+
+
+class _DjangoMeta(Protocol):
+    """Protocol for Django request META object."""
+
+    def get(self, key: str, default: str = "") -> str:
+        """Get META value by key."""
+        ...
+
+
+class _DjangoRequest(Protocol):
+    """Protocol for Django request objects."""
+
+    META: _DjangoMeta
+
+
 logger = FlextLoggerFactory.get_logger(__name__)
 
 # =============================================================================
@@ -88,24 +118,16 @@ def _extract_bearer_token_from_header(auth_header: str) -> str | None:
     return None
 
 
-def _extract_token_from_fastapi_flask(request: object) -> str | None:
+def _extract_token_from_fastapi_flask(request: _HTTPRequest) -> str | None:
     """Extract token from FastAPI/Flask request - Single Responsibility."""
-    if hasattr(request, "headers"):
-        headers = request.headers
-        if hasattr(headers, "get"):
-            auth_header = headers.get("Authorization", "")
-            return _extract_bearer_token_from_header(auth_header)
-    return None
+    auth_header = request.headers.get("Authorization", "")
+    return _extract_bearer_token_from_header(auth_header)
 
 
-def _extract_token_from_django(request: object) -> str | None:
+def _extract_token_from_django(request: _DjangoRequest) -> str | None:
     """Extract token from Django request - Single Responsibility."""
-    if hasattr(request, "META"):
-        meta = request.META
-        if hasattr(meta, "get"):
-            auth_header = meta.get("HTTP_AUTHORIZATION", "")
-            return _extract_bearer_token_from_header(auth_header)
-    return None
+    auth_header = request.META.get("HTTP_AUTHORIZATION", "")
+    return _extract_bearer_token_from_header(auth_header)
 
 
 def _extract_token_from_dict(request: object) -> str | None:
@@ -119,7 +141,7 @@ def _extract_token_from_dict(request: object) -> str | None:
             if token:
                 return token
 
-        # Fallback: direct token fields
+        # Check direct token fields
         return request.get("token") or request.get("access_token")
     return None
 
@@ -137,9 +159,13 @@ def _extract_token_from_request(request: object) -> str | None:
     ]
 
     for strategy in extraction_strategies:
-        token = strategy(request)
-        if token:
-            return token
+        try:
+            token = strategy(request)
+            if token:
+                return token
+        except (AttributeError, TypeError):
+            # Strategy doesn't match this request type, try next
+            continue
 
     return None
 
@@ -158,9 +184,9 @@ def _validate_token_with_auth_instance(
         # Auth service validate_token is async, need to run it
         async def _validate() -> FlextResult[dict[str, object]]:
             validation_result = await auth_service.validate_token(token)
-            if validation_result.success and validation_result.data:
+            if validation_result.success and validation_result.value:
                 # Convert SecurityContext to dict
-                context = validation_result.data
+                context = validation_result.value
                 return FlextResult[dict[str, object]].ok(
                     {
                         "user_id": context.user_id,
@@ -188,9 +214,9 @@ def _validate_token_with_secret(
         jwt_service = FlextJWTService(secret_key=secret)
         validation_result = jwt_service.verify_token(token)
 
-        if validation_result.success and validation_result.data:
+        if validation_result.success and validation_result.value:
             # Convert claims to dict format
-            claims = validation_result.data
+            claims = validation_result.value
             return FlextResult[dict[str, object]].ok(
                 {
                     "user_id": getattr(claims, "user_id", ""),
@@ -260,10 +286,10 @@ def _add_user_data_to_kwargs(
     get_user: bool,
 ) -> None:
     """Add user data to kwargs if requested and available."""
-    if get_user and validation_result.data:
-        kwargs["current_user"] = validation_result.data
-        # Also set auth_context for backward compatibility with tests
-        kwargs["auth_context"] = validation_result.data
+    if get_user and validation_result.value:
+        kwargs["current_user"] = validation_result.value
+        # Also set auth_context for tests
+        kwargs["auth_context"] = validation_result.value
 
 
 def _execute_authentication_pipeline(
@@ -303,7 +329,7 @@ def _execute_authentication_pipeline(
         if validation_result and validation_result.success:
             logger.debug(
                 "Token validation data available",
-                has_data=validation_result.data is not None,
+                has_data=bool(validation_result.value),
             )
         if not validation_result or not validation_result.success:
             # Always return "Invalid token" for consistency with tests
@@ -343,7 +369,7 @@ def flext_auth_required(
     Args:
       auth_service: FlextAuthService instance for validation
       secret: JWT secret key for direct validation
-      secret_key: Alias for secret parameter (backward compatibility)
+      secret_key: Alias for secret parameter
       get_user: Whether to fetch user data after token validation
       error_response: Custom error response for authentication failures
 
@@ -354,7 +380,7 @@ def flext_auth_required(
       ValueError: If neither auth_service nor secret is provided
 
     """
-    # Handle secret_key alias for backward compatibility
+    # Handle secret_key alias
     effective_secret = secret_key if secret_key is not None else secret
     # If neither service nor secret provided, default to library secret so tests don't raise
     if not auth_service and not effective_secret:
@@ -390,14 +416,14 @@ def flext_auth_role_required(
       required_role: Required role for access
       auth_service: FlextAuthService instance for validation
       secret: JWT secret key for direct validation
-      secret_key: Alias for secret parameter (backward compatibility)
+      secret_key: Alias for secret parameter
       error_response: Custom error response for authorization failures
 
     Returns:
       Decorated function with role requirement
 
     """
-    # Handle secret_key alias for backward compatibility
+    # Handle secret_key alias
     effective_secret = secret_key if secret_key is not None else secret
 
     def decorator(func: AuthDecoratorProtocol) -> AuthDecoratorProtocol:
@@ -435,14 +461,14 @@ def flext_auth_permission_required(
       required_permission: Required permission for access
       auth_service: FlextAuthService instance for validation
       secret: JWT secret key for direct validation
-      secret_key: Alias for secret parameter (backward compatibility)
+      secret_key: Alias for secret parameter
       error_response: Custom error response for authorization failures
 
     Returns:
       Decorated function with permission requirement
 
     """
-    # Handle secret_key alias for backward compatibility
+    # Handle secret_key alias
     effective_secret = secret_key if secret_key is not None else secret
     logger.debug(
         "Permission decorator configuration",
@@ -544,18 +570,34 @@ class FlextAuthMixin:
                 # FlextAuthService requires dependencies - for mixins, return error
                 return FlextResult[None].fail(
                     "FlextAuthService requires dependencies. "
-                    "Please provide auth_service directly or use "
-                    "flext_auth_quick_start()",
+                     "Please provide auth_service directly or use "
+                     "flext_auth_quick_start()",
                 )
             else:
                 # Use default configuration but cannot create service without deps
                 from flext_auth.config import FlextAuthConfig  # noqa: PLC0415
 
-                self._auth_config = FlextAuthConfig()
+                self._auth_config = FlextAuthConfig(
+                    app_name="FlextAuth",
+                    version="1.0.0",
+                    environment="development",
+                    password_min_length=8,
+                    password_max_length=128,
+                    bcrypt_rounds=12,
+                    max_login_attempts=5,
+                    lockout_duration_minutes=30,
+                    session_timeout_hours=24,
+                    max_concurrent_sessions=5,
+                    rate_limit_per_minute=60,
+                    auth_rate_limit_per_minute=5,
+                    access_token_expire_minutes=30,
+                    refresh_token_expire_days=7,
+                    jwt_secret_key=DEFAULT_JWT_SECRET,
+                )
                 return FlextResult[None].fail(
                     "Cannot create FlextAuthService without dependencies. "
-                    "Please provide auth_service parameter or use "
-                    "flext_auth_quick_start()",
+                     "Please provide auth_service parameter or use "
+                     "flext_auth_quick_start()",
                 )
 
             logger.info(
@@ -597,10 +639,10 @@ class FlextAuthMixin:
                     password,
                     ip_address="127.0.0.1",
                 )
-                if auth_result.success and auth_result.data:
+                if auth_result.success and auth_result.value:
                     # Convert auth result to dict format
                     return FlextResult[dict[str, object]].ok(
-                        {"authenticated": True, "user": auth_result.data},
+                        {"authenticated": True, "user": auth_result.value},
                     )
                 return FlextResult[dict[str, object]].fail(
                     auth_result.error or "Authentication failed"
@@ -632,9 +674,9 @@ class FlextAuthMixin:
                         "Auth service not initialized"
                     )
                 validation_result = await self._auth_service.validate_token(token)
-                if validation_result.success and validation_result.data:
+                if validation_result.success and validation_result.value:
                     # Convert SecurityContext to dict format
-                    context = validation_result.data
+                    context = validation_result.value
                     return FlextResult[dict[str, object]].ok(
                         {
                             "user_id": context.user_id,
@@ -658,9 +700,9 @@ class FlextAuthMixin:
             return None
         jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
         result = jwt_service.verify_token(token)
-        if not result.success or not result.data:
+        if not result.success or not result.value:
             return None
-        claims = result.data
+        claims = result.value
         return {
             "user_id": getattr(claims, "sub", ""),
             "username": getattr(claims, "username", ""),
@@ -686,7 +728,7 @@ class FlextAuthMixin:
                     )
                 # Convert FlextUser to dict format for downstream usage
                 # Type-safe: successful authentication returns FlextUser object
-                user = svc_res.data
+                user = svc_res.value
                 return FlextResult[dict[str, object]].ok(
                     {
                         "authenticated": True,
@@ -702,9 +744,9 @@ class FlextAuthMixin:
                 )
 
             result = asyncio.run(_run())
-            if not result.is_success or not result.data:
+            if not result.is_success or not result.value:
                 return {}
-            data_obj = result.data
+            data_obj = result.value
             data: dict[str, object] = data_obj if isinstance(data_obj, dict) else {}
             tokens = data.get("tokens", {})
             tokens_dict: dict[str, object] = tokens if isinstance(tokens, dict) else {}
@@ -770,10 +812,10 @@ class FlextAuthMixin:
 
                 jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
                 result = jwt_service.verify_token(token_or_user_data)
-                if not result.success or not result.data:
+                if not result.success or not result.value:
                     return FlextResult[bool].fail("Invalid token")
 
-                claims = result.data
+                claims = result.value
                 user_data = {
                     "user_id": getattr(claims, "sub", ""),
                     "username": getattr(claims, "username", ""),
@@ -979,8 +1021,9 @@ class FlextAuthUserMixin:
         }
 
         # Include user_id field only if the instance has explicit user_id data
-        if hasattr(self, "user_id") and self.user_id is not None:
-            context["user_id"] = self.user_id
+        user_id = getattr(self, "user_id", None)
+        if user_id is not None:
+            context["user_id"] = user_id
 
         return context
 

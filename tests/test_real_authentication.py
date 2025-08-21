@@ -10,21 +10,20 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from flext_auth.entities import FlextUser
-    from flext_auth.jwt import FlextJWTService
-    from flext_auth.password_service import FlextPasswordService
-
-# Direct imports without going through __init__.py to avoid flext-core issues
+# Import everything through public API only - no internal module imports
 from flext_core import FlextEntityId
 
-from flext_auth.config import FlextAuthConfig
-from flext_auth.entities import FlextUser, FlextUserRole, FlextUserStatus
-from flext_auth.jwt import FlextJWTService
-from flext_auth.password_service import FlextPasswordService
-from flext_auth.value_objects import FlextHashedPassword, FlextPlainPassword
+from flext_auth import (
+    FlextAuthConfig,
+    FlextHashedPassword,
+    FlextJWTService,
+    FlextPasswordService,
+    FlextPlainPassword,
+    FlextUser,
+    FlextUserRole,
+    FlextUserStatus,
+)
 
 
 class TestRealAuthentication:
@@ -43,9 +42,9 @@ class TestRealAuthentication:
         # Execute real bcrypt hashing
         hash_result = password_service.hash_password(plain_password)
         assert hash_result.success, f"Hashing failed: {hash_result.error}"
-        assert hash_result.data is not None
+        assert hash_result.value is not None
 
-        hashed_password: FlextHashedPassword = hash_result.data
+        hashed_password: FlextHashedPassword = hash_result.value
         assert hashed_password.value.startswith("$2b$")  # Real bcrypt format
         assert len(hashed_password.value) > 50  # Real bcrypt length
 
@@ -54,14 +53,14 @@ class TestRealAuthentication:
             "SecurePassword123!", hashed_password.value
         )
         assert verify_result.success
-        assert verify_result.data is True
+        assert verify_result.value is True
 
         # Test real verification - wrong password
         wrong_verify = password_service.verify_password(
             "WrongPassword", hashed_password.value
         )
         assert wrong_verify.success
-        assert wrong_verify.data is False
+        assert wrong_verify.value is False
 
     def test_real_jwt_token_generation_and_validation(self) -> None:
         """Test real JWT token generation and validation with PyJWT."""
@@ -75,9 +74,9 @@ class TestRealAuthentication:
             user_id="user123", username="testuser", role="user", session_id="session123"
         )
         assert access_result.success, f"Token generation failed: {access_result.error}"
-        assert access_result.data is not None
+        assert access_result.value is not None
 
-        access_token: str = access_result.data
+        access_token: str = access_result.value
         assert isinstance(access_token, str)
         assert len(access_token) > 100  # Real JWT length
         assert (
@@ -89,9 +88,9 @@ class TestRealAuthentication:
         assert verify_result.success, (
             f"Token verification failed: {verify_result.error}"
         )
-        assert verify_result.data is not None
+        assert verify_result.value is not None
 
-        claims = verify_result.data
+        claims = verify_result.value
         assert claims.sub == "user123"
         assert claims.username == "testuser"
         assert claims.role == "user"
@@ -158,17 +157,19 @@ class TestRealAuthentication:
         # Test multiple hashes are different (salt)
         hash_result2 = password_service.hash_password(plain_password)
         assert hash_result2.success
-        assert hash_result.data != hash_result2.data  # Different salts
+        assert hash_result.value != hash_result2.value  # Different salts
 
         # But both verify correctly
         verify1 = password_service.verify_password(
-            "TestPassword123!", hash_result.data.value
+            "TestPassword123!", hash_result.value.value
         )
         verify2 = password_service.verify_password(
-            "TestPassword123!", hash_result2.data.value
+            "TestPassword123!", hash_result2.value.value
         )
-        assert verify1.success and verify1.data
-        assert verify2.success and verify2.data
+        assert verify1.success
+        assert verify1.value
+        assert verify2.success
+        assert verify2.value
 
     def test_real_configuration_loading(self) -> None:
         """Test real configuration loading and validation."""

@@ -49,7 +49,7 @@ class TestJWTService:
         )
 
         assert result.success
-        token = result.data
+        token = result.value
         assert isinstance(token, str)
         assert len(token) > 0
         if (
@@ -70,7 +70,7 @@ class TestJWTService:
         )
 
         assert result.success
-        token = result.data
+        token = result.value
         assert isinstance(token, str)
 
     def test_generate_refresh_token_success(self) -> None:
@@ -83,7 +83,7 @@ class TestJWTService:
         result = service.generate_refresh_token(user_id="user-123")
 
         assert result.success
-        token = result.data
+        token = result.value
         assert isinstance(token, str)
         assert len(token) > 0
         if token.count(".") != EXPECTED_BULK_SIZE:  # JWT format
@@ -100,12 +100,12 @@ class TestJWTService:
             role="user",
         )
         assert create_result.success
-        token = create_result.data
+        token = create_result.value
 
         # Verify token
         verify_result = service.verify_token(token)
         assert verify_result.success
-        claims = verify_result.data
+        claims = verify_result.value
         assert isinstance(claims, FlextJWTClaims)
         if claims.sub != "user-123":
             raise AssertionError(f"Expected {'user-123'}, got {claims.sub}")
@@ -139,7 +139,7 @@ class TestJWTService:
             role="user",
         )
         assert create_result.success
-        token = create_result.data
+        token = create_result.value
 
         # Wait a moment to ensure expiration (not practical in real tests)
         # Instead, we'll test with a token that has past expiration
@@ -164,7 +164,7 @@ class TestJWTService:
             role="user",
         )
         assert create_result.success
-        token = create_result.data
+        token = create_result.value
 
         # Try to verify with service2 (different secret)
         verify_result = service2.verify_token(token)
@@ -181,12 +181,12 @@ class TestJWTService:
         # Create refresh token
         refresh_result = service.generate_refresh_token(user_id="user-123")
         assert refresh_result.success
-        refresh_token = refresh_result.data
+        refresh_token = refresh_result.value
 
         # Verify refresh token
         verify_result = service.verify_token(refresh_token)
         assert verify_result.success
-        claims = verify_result.data
+        claims = verify_result.value
         if claims.sub != "user-123":
             raise AssertionError(f"Expected {'user-123'}, got {claims.sub}")
         assert claims.token_type == "refresh"
@@ -202,12 +202,12 @@ class TestJWTService:
             role="REDACTED_LDAP_BIND_PASSWORD",
         )
         assert create_result.success
-        token = create_result.data
+        token = create_result.value
 
         # Get claims
         claims_result = service.get_token_claims(token)
         assert claims_result.success
-        claims = claims_result.data
+        claims = claims_result.value
         if claims.sub != "user-123":
             raise AssertionError(f"Expected {'user-123'}, got {claims.sub}")
         assert claims.username == "testuser"
@@ -239,12 +239,12 @@ class TestJWTService:
             role="user",
         )
         assert create_result.success
-        token = create_result.data
+        token = create_result.value
 
         # Verify token and check expiration is in the future
         verify_result = service.verify_token(token)
         assert verify_result.success
-        claims = verify_result.data
+        claims = verify_result.value
 
         # Expiration should be approximately 60 minutes from now
         expected_exp = datetime.now(UTC) + timedelta(minutes=60)
@@ -271,7 +271,7 @@ class TestJWTService:
             )
             assert create_result.success
 
-            verify_result = service.verify_token(create_result.data)
+            verify_result = service.verify_token(create_result.value)
             assert verify_result.success
 
     def test_jwt_claims_validation(self) -> None:
@@ -287,9 +287,9 @@ class TestJWTService:
         assert create_result.success
 
         # Verify and validate claims
-        verify_result = service.verify_token(create_result.data)
+        verify_result = service.verify_token(create_result.value)
         assert verify_result.success
-        claims = verify_result.data
+        claims = verify_result.value
 
         # Claims should be valid
         claims.validate_business_rules()  # Should not raise

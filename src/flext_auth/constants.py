@@ -10,8 +10,8 @@ from __future__ import annotations
 import os
 import re
 import secrets
-from enum import Enum
 
+# from enum import Enum  # Removed unused import
 from flext_core import FlextConstants
 
 # =============================================================================
@@ -24,7 +24,7 @@ class FlextAuthSemanticConstants(FlextConstants):
 
     Modern Python 3.13 constants following semantic grouping patterns.
     Extends the FLEXT ecosystem constants with authentication and security
-    specific values while maintaining full backward compatibility.
+    specific values for the current flext-core API.
     """
 
     # Boolean constants to avoid ruff FBT003 errors
@@ -37,8 +37,7 @@ class FlextAuthSemanticConstants(FlextConstants):
         USERNAME_PATTERN = r"^[a-zA-Z0-9_]{3,50}$"
 
         PASSWORD_VALIDATION_REGEX = re.compile(
-            r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?])"
-            r".{8,128}$",
+            r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]).{8,128}$"
         )
         # CONSUME from single source - NO DUPLICATION
         MIN_PASSWORD_LENGTH = FlextConstants.Limits.MIN_PASSWORD_LENGTH
@@ -67,7 +66,7 @@ class FlextAuthSemanticConstants(FlextConstants):
         JWT_ALGORITHM = "HS256"
 
         # Test secrets for development/testing only (secure defaults)
-        TEST_JWT_SECRET = os.getenv("TEST_JWT_SECRET", secrets.token_urlsafe(32))
+        DEV_JWT_SECRET = os.getenv("DEV_JWT_SECRET", secrets.token_urlsafe(32))
         DEFAULT_JWT_SECRET = os.getenv(
             "FLEXT_AUTH_JWT_SECRET_KEY",
             secrets.token_urlsafe(32),
@@ -98,13 +97,12 @@ class FlextAuthSemanticConstants(FlextConstants):
 
 
 class FlextAuthConstants(FlextAuthSemanticConstants):
-    """Authentication constants with backward compatibility.
+    """Authentication constants for current API.
 
-    Legacy compatibility layer providing both modern semantic access
-    and traditional flat constant access patterns for smooth migration.
+    Modern constant access using semantic grouping patterns.
     """
 
-    # Modern semantic access (Primary API) - direct references
+    # Semantic access (Primary API) - direct references
     Authentication = FlextAuthSemanticConstants.Authentication
     Security = FlextAuthSemanticConstants.Security
     Sessions = FlextAuthSemanticConstants.Sessions
@@ -112,69 +110,6 @@ class FlextAuthConstants(FlextAuthSemanticConstants):
     UserStatus = FlextAuthSemanticConstants.UserStatus
     UserRoles = FlextAuthSemanticConstants.UserRoles
     TokenTypes = FlextAuthSemanticConstants.TokenTypes
-
-    # Legacy compatibility - flat access patterns (DEPRECATED - use semantic access)
-    USERNAME_PATTERN = FlextAuthSemanticConstants.Authentication.USERNAME_PATTERN
-    PASSWORD_VALIDATION_REGEX = (
-        FlextAuthSemanticConstants.Authentication.PASSWORD_VALIDATION_REGEX
-    )
-    MIN_PASSWORD_LENGTH = FlextAuthSemanticConstants.Authentication.MIN_PASSWORD_LENGTH
-    MAX_PASSWORD_LENGTH = FlextAuthSemanticConstants.Authentication.MAX_PASSWORD_LENGTH
-    MIN_PASSWORD_SECURITY_SCORE = (
-        FlextAuthSemanticConstants.Authentication.MIN_PASSWORD_SECURITY_SCORE
-    )
-
-    DEFAULT_MAX_LOGIN_ATTEMPTS = (
-        FlextAuthSemanticConstants.Security.DEFAULT_MAX_LOGIN_ATTEMPTS
-    )
-    DEFAULT_LOCKOUT_DURATION_MINUTES = (
-        FlextAuthSemanticConstants.Security.DEFAULT_LOCKOUT_DURATION_MINUTES
-    )
-    MAX_ACCOUNT_LOCK_HOURS = FlextAuthSemanticConstants.Security.MAX_ACCOUNT_LOCK_HOURS
-    DEFAULT_BCRYPT_ROUNDS = FlextAuthSemanticConstants.Security.DEFAULT_BCRYPT_ROUNDS
-
-    DEFAULT_SESSION_TIMEOUT_HOURS = (
-        FlextAuthSemanticConstants.Sessions.DEFAULT_SESSION_TIMEOUT_HOURS
-    )
-    MAX_CONCURRENT_SESSIONS = (
-        FlextAuthSemanticConstants.Sessions.MAX_CONCURRENT_SESSIONS
-    )
-
-    DEFAULT_ACCESS_TOKEN_MINUTES = (
-        FlextAuthSemanticConstants.Tokens.DEFAULT_ACCESS_TOKEN_MINUTES
-    )
-    DEFAULT_REFRESH_TOKEN_DAYS = (
-        FlextAuthSemanticConstants.Tokens.DEFAULT_REFRESH_TOKEN_DAYS
-    )
-    JWT_ALGORITHM = FlextAuthSemanticConstants.Tokens.JWT_ALGORITHM
-    TEST_JWT_SECRET = FlextAuthSemanticConstants.Tokens.TEST_JWT_SECRET
-    DEFAULT_JWT_SECRET = FlextAuthSemanticConstants.Tokens.DEFAULT_JWT_SECRET
-
-
-class FlextUserStatusEnum(Enum):
-    """User status enumeration (DEPRECATED - use FlextAuthConstants.UserStatus.*)."""
-
-    ACTIVE = FlextAuthSemanticConstants.UserStatus.ACTIVE
-    INACTIVE = FlextAuthSemanticConstants.UserStatus.INACTIVE
-    SUSPENDED = FlextAuthSemanticConstants.UserStatus.SUSPENDED
-    LOCKED = FlextAuthSemanticConstants.UserStatus.LOCKED
-
-
-class FlextUserRoleEnum(Enum):
-    """User role enumeration (DEPRECATED - use FlextAuthConstants.UserRoles.*)."""
-
-    ADMIN = FlextAuthSemanticConstants.UserRoles.ADMIN
-    USER = FlextAuthSemanticConstants.UserRoles.USER
-    GUEST = FlextAuthSemanticConstants.UserRoles.GUEST
-
-
-class FlextTokenTypeEnum(Enum):
-    """Token type enumeration (DEPRECATED - use FlextAuthConstants.TokenTypes.*)."""
-
-    ACCESS = FlextAuthSemanticConstants.TokenTypes.ACCESS
-    REFRESH = FlextAuthSemanticConstants.TokenTypes.REFRESH
-    RESET = FlextAuthSemanticConstants.TokenTypes.RESET
-    VERIFICATION = FlextAuthSemanticConstants.TokenTypes.VERIFICATION
 
 
 # =============================================================================
@@ -184,16 +119,12 @@ class FlextTokenTypeEnum(Enum):
 __all__: list[str] = [
     "DEFAULT_DEV_SECRET",
     "DEFAULT_JWT_SECRET",
-    "TEST_JWT_SECRET",
+    "DEV_JWT_SECRET",
     "FlextAuthConstants",
     "FlextAuthSemanticConstants",
-    "FlextTokenTypeEnum",
-    "FlextUserRoleEnum",
-    "FlextUserStatusEnum",
 ]
 
-# Export constants for direct import compatibility
-TEST_JWT_SECRET = FlextAuthSemanticConstants.Tokens.TEST_JWT_SECRET
+# Export constants for direct import
+DEV_JWT_SECRET = FlextAuthSemanticConstants.Tokens.DEV_JWT_SECRET
 DEFAULT_JWT_SECRET = FlextAuthSemanticConstants.Tokens.DEFAULT_JWT_SECRET
-# Compatibility alias for legacy imports
 DEFAULT_DEV_SECRET = DEFAULT_JWT_SECRET

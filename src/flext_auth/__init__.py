@@ -110,14 +110,15 @@ from flext_auth.password_service import FlextPasswordService
 # REPOSITORIES
 # =============================================================================
 
-from flext_auth.session import InMemorySessionRepository, SessionRepository
-from flext_auth.user import InMemoryUserRepository, UserRepository
+from flext_auth.repositories_simple import FlextSessionRepository, FlextUserRepository
+from flext_auth.session import InMemorySessionRepository
+from flext_auth.user import InMemoryUserRepository
 
 # =============================================================================
 # UTILITIES
 # =============================================================================
 
-from flext_auth.utils import (
+from flext_auth.api import (
     generate_secure_password,
     generate_secure_token,
     get_utc_now,
@@ -133,8 +134,8 @@ from flext_auth.validation import (
     FlextAuthValidators,
 )
 
-# Import validation functions from legacy for backward compatibility
-from flext_auth.legacy import (
+# Import validation functions from main API
+from flext_auth.api import (
     flext_auth_validate_email,
     flext_auth_validate_password_strength,
 )
@@ -153,11 +154,8 @@ from flext_auth.constants import (
 # HELPERS AND PUBLIC UTILITY FUNCTIONS
 # =============================================================================
 
-# Helper functions are now in legacy.py for backward compatibility
-from flext_auth.legacy import (
-    FlextAuthBatchOperations,
-    # FlextAuthUser,  # Commented out - not accessed
-    flext_auth_batch_operations,
+# Helper functions using main API
+from flext_auth.api import (
     flext_auth_generate_jwt,
     flext_auth_hash_password,
     flext_auth_quick_start,
@@ -215,15 +213,12 @@ from flext_auth.value_objects import (
 from flext_auth.api import FlextAuth
 
 # =============================================================================
-# LEGACY COMPATIBILITY
+# CURRENT API CONSTANTS AND TYPES
 # =============================================================================
 
-from flext_auth.legacy import (
+from flext_auth.api import (
     ADMIN_ROLE,
     USER_ROLE,
-    FLEXT_AUTH_ADMIN,
-    FLEXT_AUTH_USER,
-    FLEXT_AUTH_GUEST,
     FlextAuthRole,
     FlextAuthPermissions,
     FlextAuthUserData,
@@ -232,6 +227,13 @@ from flext_auth.legacy import (
     FlextAuthHeaders,
     FlextAuthClaims,
 )
+
+# Role aliases using current entities
+# FlextUserRole already imported above at line 182
+
+FLEXT_AUTH_ADMIN = FlextUserRole.ADMIN.value
+FLEXT_AUTH_USER = FlextUserRole.USER.value
+FLEXT_AUTH_GUEST = "guest"  # Not in current entities, using string literal
 
 # =============================================================================
 # JWT SERVICE
@@ -288,9 +290,9 @@ __all__: list[str] = [
     "FlextPasswordService",
     "FlextJWTService",
     # Repositories
-    "UserRepository",
+    "FlextUserRepository",
     "InMemoryUserRepository",
-    "SessionRepository",
+    "FlextSessionRepository",
     "InMemorySessionRepository",
     # Decorators and mixins
     "flext_auth_required",
@@ -334,7 +336,7 @@ __all__: list[str] = [
     "FlextAuthConstants",
     # Factory functions
     "create_auth_service",
-    # Legacy constants and typedefs
+    # Role constants and type definitions
     "ADMIN_ROLE",
     "USER_ROLE",
     "FLEXT_AUTH_ADMIN",
@@ -354,9 +356,7 @@ __all__: list[str] = [
     "flext_auth_validate_jwt",
     "flext_auth_validate_email",
     "flext_auth_validate_password_strength",
-    # Batch operations
-    "FlextAuthBatchOperations",
-    "flext_auth_batch_operations",
+    # Batch operations removed - not implemented in consolidated API
     # Domain value objects
     "FlextAuthToken",
     "FlextIPAddress",

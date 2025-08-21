@@ -11,6 +11,7 @@ import asyncio
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from typing import override
 
 from flext_core import FlextEntityId, FlextResult, FlextTimestamp
 
@@ -65,6 +66,7 @@ class PasswordStrengthValidationStrategy(ValidationStrategy):
 
     MIN_PASSWORD_LENGTH = 8
 
+    @override
     def validate(self, **kwargs: object) -> FlextResult[None]:
         """Validate password strength using Command Pattern."""
         password = str(kwargs.get("password", ""))
@@ -106,6 +108,7 @@ class UserValidationStrategy(ValidationStrategy):
 
     MIN_USERNAME_LENGTH = 3
 
+    @override
     def validate(self, **kwargs: object) -> FlextResult[None]:
         """Validate user data using Command Pattern."""
         username = str(kwargs.get("username", ""))
@@ -144,6 +147,7 @@ class PermissionStrategy(ABC):
 class AdminPermissionStrategy(PermissionStrategy):
     """Strategy Pattern: Admin permission strategy."""
 
+    @override
     def check_permission(
         self,
         check_data: PermissionCheckData,
@@ -155,6 +159,7 @@ class AdminPermissionStrategy(PermissionStrategy):
 class RoleBasedPermissionStrategy(PermissionStrategy):
     """Strategy Pattern: Role-based permission strategy."""
 
+    @override
     def check_permission(
         self,
         check_data: PermissionCheckData,
@@ -163,7 +168,7 @@ class RoleBasedPermissionStrategy(PermissionStrategy):
         if not check_data.roles:
             return FlextResult[bool].ok(PERMISSION_DENIED)
 
-        # For compatibility with tests
+        # Production usage
         user_role_name = "user_manager"
         if user_role_name in check_data.roles:
             role = check_data.roles[user_role_name]
@@ -202,7 +207,7 @@ def _create_auth_service_dependencies() -> ServiceDependencies:
     """Create service dependencies with strategies.
 
     SOLID REFACTORING: Parameter Object Pattern + Strategy Pattern injection
-    to reduce complexity and improve testability.
+    to reduce complexity and improve maintainability.
 
     Returns:
       ServiceDependencies with all configured dependencies
@@ -328,7 +333,7 @@ class FlextAuthenticationService:
         password: str,
         users: dict[str, FlextUser],
     ) -> FlextResult[FlextUser]:
-        """Authenticate user - compatibility method."""
+        """Authenticate user method."""
         try:
             # Look up user in provided dictionary
             if username not in users:
@@ -341,7 +346,7 @@ class FlextAuthenticationService:
             verification_result = password_service.verify_password(
                 password, user.password_hash
             )
-            if verification_result.success and verification_result.data:
+            if verification_result.success and verification_result.value:
                 return FlextResult[FlextUser].ok(user)
             return FlextResult[FlextUser].fail("Invalid credentials")
 
@@ -367,10 +372,10 @@ class FlextAuthenticationService:
 
             # Hash the new password and update user
             hash_result = self._deps.password_service.hash_password(new_password)
-            if not hash_result.success or not hash_result.data:
+            if not hash_result.success or not hash_result.value:
                 return FlextResult[bool].fail("Failed to hash password")
 
-            new_password_hash = str(hash_result.data)
+            new_password_hash = str(hash_result.value)
 
             # Create updated user with new password hash
             updated_user = FlextUser(
@@ -434,7 +439,7 @@ class FlextAuthorizationService:
                     converted = perm.model_dump()
                     permissions_data.append(converted)
                 elif hasattr(perm, "__dict__"):
-                    # Convert object to dict for basic compatibility
+                    # Convert object to dict
                     permissions_data.append(
                         {
                             "id": str(getattr(perm, "id", "")),
@@ -476,21 +481,21 @@ class FlextAuthorizationService:
     ) -> FlextResult[bool]:
         """Check permission using Strategy Pattern + Parameter Object Pattern.
 
-        SOLID REFACTORING: Supports both new Parameter Object and legacy signatures.
+        SOLID REFACTORING: Supports Parameter Object and multiple signatures.
 
         Args:
-            check_data: Either PermissionCheckData object OR FlextUser for legacy
-            resource: Resource name (for legacy signature only)
-            action: Action name (for legacy signature only)
-            roles: Roles dict (for legacy signature only)
+            check_data: Either PermissionCheckData object OR FlextUser
+            resource: Resource name (for alternate signature)
+            action: Action name (for alternate signature)
+            roles: Roles dict (for alternate signature)
 
         """
         try:
-            # Handle legacy signature: check_permission(user, resource, action, roles)
+            # Handle alternate signature: check_permission(user, resource, action, roles)
             if isinstance(check_data, FlextUser):
                 if resource is None or action is None:
                     return FlextResult[bool].fail(
-                        "Resource and action required for legacy signature",
+                        "Resource and action required for alternate signature",
                     )
 
                 # Convert to parameter object
@@ -506,7 +511,7 @@ class FlextAuthorizationService:
             REDACTED_LDAP_BIND_PASSWORD_result = self._deps.REDACTED_LDAP_BIND_PASSWORD_permission_strategy.check_permission(
                 check_data,
             )
-            if REDACTED_LDAP_BIND_PASSWORD_result.success and REDACTED_LDAP_BIND_PASSWORD_result.data:
+            if REDACTED_LDAP_BIND_PASSWORD_result.success and REDACTED_LDAP_BIND_PASSWORD_result.value:
                 return REDACTED_LDAP_BIND_PASSWORD_result
 
             # Fall back to role-based strategy
@@ -514,25 +519,6 @@ class FlextAuthorizationService:
 
         except (ValueError, TypeError) as e:
             return FlextResult[bool].fail(str(e))
-
-    def check_permission_legacy(
-        self,
-        user: FlextUser,
-        resource: str,
-        action: str,
-        roles: dict[str, FlextRole] | None = None,
-    ) -> FlextResult[bool]:
-        """Legacy wrapper for backward compatibility.
-
-        SOLID REFACTORING: Wrapper that converts old parameters to Parameter Object.
-        """
-        check_data = PermissionCheckData(
-            user=user,
-            resource=resource,
-            action=action,
-            roles=roles,
-        )
-        return self.check_permission(check_data)
 
     def get_user_permissions(self, user: FlextUser) -> list[str]:
         """Get all permissions for user."""
@@ -560,7 +546,7 @@ class FlextSessionService:
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> FlextResult[FlextSession]:
-        """Create session - simplified compatibility method."""
+        """Create session - simplified method."""
         try:
             # Create session entity
             session = FlextSession(
@@ -599,10 +585,10 @@ class FlextSessionService:
                 return FlextResult[bool].fail("Session ID is required")
 
             session_result = self._deps.session_repo.find_by_id(session_id)
-            if not session_result.success or not session_result.data:
+            if not session_result.success or not session_result.value:
                 return FlextResult[bool].fail("Session not found")
 
-            session = session_result.data
+            session = session_result.value
             # Already revoked sessions are considered successful
             if str(session.status) == "revoked":
                 return FlextResult[bool].ok(LOGOUT_SUCCESS)

@@ -259,11 +259,11 @@ class FlextAuthErrorUtils:
 
 
 # =============================================================================
-# BACKWARD COMPATIBILITY FUNCTIONS - Legacy helper functions
+# HELPER FUNCTIONS - Current API helper functions
 # =============================================================================
 
 
-# Functions that should actually be imported from legacy.py
+# Helper functions using current API patterns
 def generate_secure_password(length: int = 16) -> str:
     """Generate secure password - delegates to FlextAuthPasswordUtils."""
     return FlextAuthPasswordUtils.generate_secure_password(length)
@@ -302,7 +302,7 @@ __all__ = [
     "FlextAuthTimeUtils",
     "FlextAuthTokenUtils",
     "FlextAuthValidationUtils",
-    # Backward compatibility functions
+    # Helper functions
     "generate_secure_password",
     "generate_secure_token",
     "get_utc_now",

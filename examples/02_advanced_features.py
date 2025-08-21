@@ -14,22 +14,14 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+# Import everything from public API only - no legacy or internal imports
 from flext_auth import (
     FlextAuth,
+    flext_auth_generate_jwt,
     flext_auth_permission_required,
     flext_auth_required,
     flext_auth_role_required,
-)
-
-# Import from legacy module for backward compatibility
-from flext_auth.legacy import (
-    flext_auth_batch_operations,
-    flext_auth_generate_jwt,
     flext_auth_validate_jwt,
-)
-
-# Import utilities
-from flext_auth.utils import (
     generate_secure_password,
     generate_secure_token,
 )
@@ -38,7 +30,7 @@ from flext_auth.utils import (
 examples_dir = Path(__file__).parent
 sys.path.insert(0, str(examples_dir))
 
-from example_utils import basic_example_runner
+from example_utils import basic_example_runner  # noqa: E402
 
 # Example constants - not for production use
 EXAMPLE_JWT_SECRET = "my-super-secure-jwt-secret-key-256-bits-minimum-length-required"  # noqa: S105
@@ -50,32 +42,35 @@ def example_advanced_configuration() -> None:
 
     # Create auth with basic config
     auth = FlextAuth()
-    print("Advanced configuration applied successfully")
+    print(f"Advanced configuration applied successfully: {auth}")
 
 
 def example_jwt_operations() -> None:
-    """Advanced JWT operations example."""
-    # Custom payload
-    user_payload = {
-        "user_id": "user_12345",
-        "username": "advanced_user",
-        "role": "REDACTED_LDAP_BIND_PASSWORD",
-        "session_id": "session_67890",
-        "department": "engineering",
-    }
+    """Advanced JWT operations example using REAL current API."""
+    # Generate JWT using current API
+    jwt_result = flext_auth_generate_jwt(
+        user_id="user_12345",
+        username="advanced_user",
+        role="REDACTED_LDAP_BIND_PASSWORD",
+        session_id="session_67890",
+        jwt_secret=EXAMPLE_JWT_SECRET,
+    )
 
-    # Generate JWT (legacy function returns string directly)
-    secret = EXAMPLE_JWT_SECRET
-    token = flext_auth_generate_jwt(user_payload, secret=secret)
-    print(f"JWT generated successfully (length: {len(token)})")
+    if jwt_result.success:
+        token = jwt_result.value
+        print(f"✅ JWT generated successfully (length: {len(token)})")
 
-    # Validate JWT (legacy function returns dict directly)
-    decoded = flext_auth_validate_jwt(token, secret)
-    if isinstance(decoded, dict) and decoded.get("valid"):
-        print("JWT validation successful")
-        print(f"User ID: {decoded.get('user_id', 'N/A')}")
+        # Validate JWT using current API
+        validation_result = flext_auth_validate_jwt(token, EXAMPLE_JWT_SECRET)
+        if validation_result.success:
+            claims = validation_result.value
+            print("✅ JWT validation successful")
+            print(f"✅ User ID: {claims.get('user_id', 'N/A')}")
+            print(f"✅ Username: {claims.get('username', 'N/A')}")
+        else:
+            print(f"❌ JWT validation failed: {validation_result.error}")
     else:
-        print("JWT validation failed")
+        print(f"❌ JWT generation failed: {jwt_result.error}")
 
 
 def example_secure_token_generation() -> None:
@@ -98,9 +93,13 @@ def example_decorators() -> None:
 
     # These decorators exist but need proper setup to work
     # For demonstration, we just confirm they're importable
-    assert flext_auth_required is not None
-    assert flext_auth_role_required is not None
-    assert flext_auth_permission_required is not None
+    if not (
+        flext_auth_required
+        and flext_auth_role_required
+        and flext_auth_permission_required
+    ):
+        msg = "Decorators not properly imported"
+        raise RuntimeError(msg)
 
     print("All decorators imported successfully")
 

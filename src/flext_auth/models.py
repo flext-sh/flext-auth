@@ -13,7 +13,6 @@ from enum import StrEnum
 
 from flext_core import (
     FlextEntity,
-    FlextEntityId,
     FlextResult,
     FlextTimestamp,
 )
@@ -45,7 +44,7 @@ MAX_NAME_LENGTH = 100
 MAX_DESCRIPTION_LENGTH = 500
 MAX_SESSION_ID_LENGTH = 32
 MIN_TOKEN_LENGTH = 32
-MIN_BCRYPT_HASH_LENGTH = 56  # Adjusted to match test expectations
+MIN_BCRYPT_HASH_LENGTH = 56  # Minimum bcrypt hash length for production
 MIN_AUTH_TOKEN_LENGTH = 10
 MIN_REFRESH_TOKEN_LENGTH = 32
 MIN_SESSION_TOKEN_LENGTH = 16
@@ -77,7 +76,7 @@ class FlextSessionStatus(StrEnum):
 class FlextSession(FlextEntity):
     """User session entity."""
 
-    id: FlextEntityId = Field(..., description="Unique session identifier")
+    # id is inherited from FlextEntity - no need to redefine
     user_id: str = Field(..., description="User ID owning this session")
     access_token: str = Field(..., description="JWT access token")
     refresh_token: str | None = Field(default=None, description="JWT refresh token")
@@ -169,7 +168,7 @@ class FlextSession(FlextEntity):
 class FlextPermission(FlextEntity):
     """Permission entity."""
 
-    id: FlextEntityId = Field(..., description="Permission identifier")
+    # id is inherited from FlextEntity - no need to redefine
     name: str = Field(..., description="Permission name")
     description: str = Field(..., description="Permission description")
     resource: str = Field(..., description="Resource this permission applies to")
@@ -204,7 +203,7 @@ class FlextPermission(FlextEntity):
 class FlextRole(FlextEntity):
     """Role entity with permissions."""
 
-    id: FlextEntityId = Field(..., description="Role identifier")
+    # id is inherited from FlextEntity - no need to redefine
     name: str = Field(..., description="Role name")
     description: str = Field(..., description="Role description")
     permissions: list[FlextPermission] = Field(
@@ -280,7 +279,7 @@ class FlextRole(FlextEntity):
 class FlextLoginAttempt(FlextEntity):
     """Login attempt tracking."""
 
-    id: FlextEntityId = Field(..., description="Attempt identifier")
+    # id is inherited from FlextEntity - no need to redefine
     username: str = Field(..., description="Username attempted")
     ip_address: str = Field(..., description="Client IP address")
     user_agent: str | None = Field(default=None, description="Client user agent")
@@ -346,7 +345,7 @@ class FlextLoginAttempt(FlextEntity):
 class FlextBaseToken(FlextEntity):
     """Base token entity - Template Method Pattern for DRY principle."""
 
-    id: FlextEntityId = Field(..., description="Token identifier")
+    # id is inherited from FlextEntity - no need to redefine
     user_id: str = Field(..., description="User ID")
     token: str = Field(..., description="Token value")
     expires_at: datetime = Field(..., description="Token expiration")
@@ -490,7 +489,7 @@ class UserRepository(ABC):
 
 
 class InMemoryUserRepository(UserRepository):
-    """In-memory user repository for testing and development."""
+    """In-memory user repository for development and demonstrations."""
 
     def __init__(self) -> None:
         """Initialize empty user storage."""
@@ -527,7 +526,7 @@ class InMemoryUserRepository(UserRepository):
                 locked_until=user.locked_until,
                 last_login=user.last_login,
                 created_at=user.created_at,
-                updated_at=datetime.now(UTC),
+                updated_at=FlextTimestamp.now(),
             )
 
             # Save user
@@ -641,7 +640,7 @@ class InMemoryUserRepository(UserRepository):
 
 
 def convert_user_to_dict(user: FlextUser) -> dict[str, object]:
-    """Convert FlextUser to dictionary for compatibility."""
+    """Convert FlextUser to dictionary."""
     return {
         "id": user.id,
         "username": user.username,

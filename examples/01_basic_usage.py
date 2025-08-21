@@ -11,25 +11,19 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import asyncio
 import sys
 from pathlib import Path
 
+# Import everything from public API only - no legacy or internal imports
 from flext_auth import (
     FlextAuth,
     FlextAuthMixin,
-)
-
-# Import helper functions from legacy module for backward compatibility
-from flext_auth.legacy import (
     flext_auth_hash_password,
     flext_auth_quick_start,
     flext_auth_validate_email,
     flext_auth_validate_password_strength,
     flext_auth_verify_password,
-)
-
-# Import utility functions
-from flext_auth.utils import (
     generate_secure_password,
     is_strong_password,
 )
@@ -54,7 +48,9 @@ EXAMPLE_WORKFLOW_PASSWORD = "WorkflowPass123!"  # noqa: S105 - Example password 
 def example_basic_authentication() -> None:
     """Demonstrate basic authentication with FlextAuth."""
     # Criar instância de autenticação para desenvolvimento
-    _ = FlextAuth()  # Use underscore to indicate intentionally unused variable
+    _ = (
+        FlextAuth.create_for_testing_with_in_memory()
+    )  # Use underscore to indicate intentionally unused variable
 
     # Demonstrar configurações padrão
     print("Auth service created with default config")
@@ -107,25 +103,25 @@ def example_email_validation() -> None:
 async def example_user_lifecycle() -> None:
     """Demonstrate a complete user lifecycle."""
     # Criar serviço de autenticação
-    auth = FlextAuth()
+    auth = FlextAuth.create_for_testing_with_in_memory()
     print("Created FlextAuth instance")
 
-    # Simulate user registration (simplified since complex methods don't exist yet)
-    user_result = auth.create_user(
+    # Simulate user registration using real async API
+    user_result = await auth.create_user(
         "testuser", "testuser@example.com", EXAMPLE_USER_PASSWORD
     )
 
     if user_result.success:
         print("User created successfully")
-        user_data = user_result.data
+        user_data = user_result.value
         if user_data and isinstance(user_data, dict):
             print(f"Created user: {user_data.get('username', 'unknown')}")
 
-    # Simulate authentication
-    auth_result = auth.authenticate("testuser", EXAMPLE_USER_PASSWORD)
+    # Simulate authentication using real async API
+    auth_result = await auth.authenticate("testuser", EXAMPLE_USER_PASSWORD)
     if auth_result.success:
         print("Authentication successful")
-        auth_data = auth_result.data
+        auth_data = auth_result.value
         if auth_data and isinstance(auth_data, dict):
             print(f"Authenticated user: {auth_data.get('username', 'unknown')}")
     else:
@@ -181,41 +177,45 @@ def example_ultra_helpers() -> None:
     """Demonstrate ultra-helpers for massive code reduction."""
     # Create authentication service with quick start helper
     auth_service = flext_auth_quick_start()
-    print("Quick start service created")
+    print(f"Quick start service created: {auth_service}")
 
-    # Basic authentication demo
-    auth = FlextAuth()
-    user_result = auth.create_user("testuser", "test@example.com", "TestPass123!")
+    # Basic authentication demo using real async API
+    auth = FlextAuth.create_for_testing_with_in_memory()
+    user_result = asyncio.run(
+        auth.create_user("testuser", "test@example.com", "TestPass123!")
+    )
 
     if user_result.success:
         print("User created via ultra helper")
-        auth_result = auth.authenticate("testuser", "TestPass123!")
+        auth_result = asyncio.run(auth.authenticate("testuser", "TestPass123!"))
         if auth_result.success:
             print("Authentication successful via ultra helper")
 
 
 async def example_advanced_registration() -> None:
     """Demonstrate advanced registration with validation."""
-    auth = FlextAuth()
+    auth = FlextAuth.create_for_testing_with_in_memory()
 
     # First validate password strength
     password_strength = flext_auth_validate_password_strength(EXAMPLE_ADVANCED_PASSWORD)
     if password_strength.get("is_strong"):
         print("Password meets strength requirements")
 
-        # Create user with strong password
-        register_result = auth.create_user(
+        # Create user with strong password using real async API
+        register_result = await auth.create_user(
             "advanceduser", "advanced@example.com", EXAMPLE_ADVANCED_PASSWORD
         )
 
         if register_result.success:
             print("Advanced user registration successful")
-            user_data = register_result.data
+            user_data = register_result.value
             if isinstance(user_data, dict):
                 print(f"Registered user: {user_data.get('username', 'unknown')}")
 
-            # Authenticate the newly created user
-            auth_result = auth.authenticate("advanceduser", EXAMPLE_ADVANCED_PASSWORD)
+            # Authenticate the newly created user using real async API
+            auth_result = await auth.authenticate(
+                "advanceduser", EXAMPLE_ADVANCED_PASSWORD
+            )
             if auth_result.success:
                 print("Advanced user authentication successful")
 
@@ -223,21 +223,25 @@ async def example_advanced_registration() -> None:
 def example_complete_workflow() -> None:
     """Demonstrate a complete workflow in a single function."""
     # Create service and user in one workflow
-    auth = FlextAuth()
+    auth = FlextAuth.create_for_testing_with_in_memory()
 
-    # Step 1: Create user
-    user_result = auth.create_user(
-        "workflowuser", "workflow@example.com", EXAMPLE_WORKFLOW_PASSWORD
+    # Step 1: Create user using real async API
+    user_result = asyncio.run(
+        auth.create_user(
+            "workflowuser", "workflow@example.com", EXAMPLE_WORKFLOW_PASSWORD
+        )
     )
 
     if user_result.success:
         print("Workflow: User created")
 
-        # Step 2: Authenticate user
-        auth_result = auth.authenticate("workflowuser", EXAMPLE_WORKFLOW_PASSWORD)
+        # Step 2: Authenticate user using real async API
+        auth_result = asyncio.run(
+            auth.authenticate("workflowuser", EXAMPLE_WORKFLOW_PASSWORD)
+        )
         if auth_result.success:
             print("Workflow: Authentication successful")
-            auth_data = auth_result.data
+            auth_data = auth_result.value
             if isinstance(auth_data, dict):
                 username = auth_data.get("username", "unknown")
                 print(f"Workflow completed for user: {username}")

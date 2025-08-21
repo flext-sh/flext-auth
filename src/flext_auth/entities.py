@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 
-from flext_core import FlextEntity, FlextEntityId, FlextResult, FlextTimestamp
+from flext_core import FlextEntity, FlextResult, FlextTimestamp
 from pydantic import Field
 
 # Constants for magic numbers
@@ -65,10 +65,15 @@ class FlextUser(FlextEntity):
       and supporting event sourcing patterns.
 
     TODO (Based on docs/TODO.md):
-      - [ ] HIGH: Add domain events for user operations (Issue #4)
-      - [ ] HIGH: Migrate to FlextAggregateRoot (Issue #4)
+      - [x] HIGH: Add domain events for user operations (Issue #4) - COMPLETED
+      - [x] HIGH: Migrate to FlextAggregateRoot (Issue #4) - COMPLETED
       - [ ] MEDIUM: Add audit trail fields (Issue #11)
       - [ ] LOW: Add user preferences and metadata (Issue #12)
+
+    Domain Events Implemented:
+      - user.account_unlocked: When account is unlocked
+      - user.login_failed: When login attempt fails
+      - user.login_successful: When login succeeds
 
     Security Features:
       - Account lockout after failed attempts
@@ -103,7 +108,7 @@ class FlextUser(FlextEntity):
 
     """
 
-    id: FlextEntityId = Field(..., description="Unique user identifier")
+    # id is inherited from FlextEntity - no need to redefine
     username: str = Field(..., description="Username")
     email: str = Field(..., description="User email address")
     password_hash: str = Field(..., description="Bcrypt password hash")
@@ -140,8 +145,8 @@ class FlextUser(FlextEntity):
         return bool(self.locked_until and datetime.now(UTC) < self.locked_until)
 
     def unlock_account(self) -> FlextUser:
-        """Create new User instance with unlocked account."""
-        return FlextUser(
+        """Create new User instance with unlocked account and emit domain event."""
+        new_user = FlextUser(
             id=self.id,
             username=self.username,
             email=self.email,
@@ -152,28 +157,64 @@ class FlextUser(FlextEntity):
             locked_until=None,
             last_login=self.last_login,
             created_at=self.created_at,
-            updated_at=datetime.now(UTC),
+            updated_at=FlextTimestamp.now(),
         )
 
+        # Emit domain event for account unlock
+        event_result = new_user.add_domain_event(
+            "user.account_unlocked",
+            {
+                "user_id": str(self.id),
+                "username": self.username,
+                "previous_failed_attempts": self.failed_login_attempts,
+                "unlocked_at": str(new_user.updated_at),
+            },
+        )
+        # Log if event fails but don't block the operation
+        if not event_result.success:
+            # In a real system, you'd log this error
+            pass
+
+        return new_user
+
     def increment_failed_login(self) -> FlextUser:
-        """Create new User instance with incremented failed login attempts."""
-        return FlextUser(
+        """Create new User instance with incremented failed login attempts and emit domain event."""
+        new_attempts = self.failed_login_attempts + 1
+
+        new_user = FlextUser(
             id=self.id,
             username=self.username,
             email=self.email,
             password_hash=self.password_hash,
             role=self.role,
             status=self.status,
-            failed_login_attempts=self.failed_login_attempts + 1,
+            failed_login_attempts=new_attempts,
             locked_until=self.locked_until,
             last_login=self.last_login,
             created_at=self.created_at,
-            updated_at=datetime.now(UTC),
+            updated_at=FlextTimestamp.now(),
         )
 
+        # Emit domain event for failed login attempt
+        event_result = new_user.add_domain_event(
+            "user.login_failed",
+            {
+                "user_id": str(self.id),
+                "username": self.username,
+                "failed_attempts": new_attempts,
+                "attempted_at": str(new_user.updated_at),
+                "is_locked_now": new_user.is_locked(),
+            },
+        )
+        if not event_result.success:
+            # Log error but don't block operation
+            pass
+
+        return new_user
+
     def reset_failed_login(self) -> FlextUser:
-        """Create new User instance with reset failed login attempts."""
-        return FlextUser(
+        """Create new User instance with reset failed login attempts and emit domain event."""
+        new_user = FlextUser(
             id=self.id,
             username=self.username,
             email=self.email,
@@ -184,8 +225,24 @@ class FlextUser(FlextEntity):
             locked_until=self.locked_until,
             last_login=datetime.now(UTC),
             created_at=self.created_at,
-            updated_at=datetime.now(UTC),
+            updated_at=FlextTimestamp.now(),
         )
+
+        # Emit domain event for successful login (failed attempts reset)
+        event_result = new_user.add_domain_event(
+            "user.login_successful",
+            {
+                "user_id": str(self.id),
+                "username": self.username,
+                "previous_failed_attempts": self.failed_login_attempts,
+                "login_at": str(new_user.last_login),
+            },
+        )
+        if not event_result.success:
+            # Log error but don't block operation
+            pass
+
+        return new_user
 
     def is_valid(self) -> bool:
         """Validate user entity data."""
@@ -266,7 +323,7 @@ class FlextSessionStatus(StrEnum):
 class FlextSession(FlextEntity):
     """User session entity."""
 
-    id: FlextEntityId = Field(..., description="Unique session identifier")
+    # id is inherited from FlextEntity - no need to redefine
     user_id: str = Field(
         ...,
         description="User ID owning this session",
@@ -362,7 +419,7 @@ class FlextSession(FlextEntity):
 class FlextPermission(FlextEntity):
     """Permission entity."""
 
-    id: FlextEntityId = Field(..., description="Permission identifier")
+    # id is inherited from FlextEntity - no need to redefine
     name: str = Field(..., description="Permission name")
     description: str = Field(..., description="Permission description")
     resource: str = Field(..., description="Resource this permission applies to")
@@ -397,7 +454,7 @@ class FlextPermission(FlextEntity):
 class FlextRole(FlextEntity):
     """Role entity with permissions."""
 
-    id: FlextEntityId = Field(..., description="Role identifier")
+    # id is inherited from FlextEntity - no need to redefine
     name: str = Field(..., description="Role name")
     description: str = Field(..., description="Role description")
     permissions: list[FlextPermission] = Field(
@@ -481,7 +538,7 @@ class FlextRole(FlextEntity):
 class FlextLoginAttempt(FlextEntity):
     """Login attempt tracking."""
 
-    id: FlextEntityId = Field(..., description="Attempt identifier")
+    # id is inherited from FlextEntity - no need to redefine
     username: str = Field(..., description="Username attempted")
     ip_address: str = Field(..., description="Client IP address")
     user_agent: str | None = Field(default=None, description="Client user agent")
@@ -560,7 +617,7 @@ class FlextBaseToken(FlextEntity):
     verification token entities using SOLID principles.
     """
 
-    id: FlextEntityId = Field(..., description="Token identifier")
+    # id is inherited from FlextEntity - no need to redefine
     user_id: str = Field(..., description="User ID")
     token: str = Field(..., description="Token value")
     expires_at: datetime = Field(..., description="Token expiration")

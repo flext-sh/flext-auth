@@ -51,10 +51,10 @@ def main() -> None:
 
     # 3. Quick Start Example - returns FlextResult[object]
     setup_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-    if setup_result.success and setup_result.data:
+    if setup_result.success and setup_result.value:
         print("Quick start completed successfully")
         # Store the auth service for potential future use
-        _auth_service = setup_result.data
+        _auth_service = setup_result.value
     else:
         print(f"Quick start failed: {setup_result.error}")
 

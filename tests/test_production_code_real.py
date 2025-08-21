@@ -9,18 +9,28 @@ All functionality is validated against real bcrypt, real JWT, real database oper
 
 from __future__ import annotations
 
+import asyncio
 import time
+from datetime import UTC, datetime, timedelta
 
+# Import everything from public APIs only - no internal module imports
 from flext_core import FlextEntityId
 
-from flext_auth.api import FlextAuth
-from flext_auth.config import FlextAuthConfig
-from flext_auth.entities import FlextUser, FlextUserRole, FlextUserStatus
-from flext_auth.jwt import FlextJWTService
-from flext_auth.password_service import FlextPasswordService
-from flext_auth.session import InMemorySessionRepository
-from flext_auth.user import InMemoryUserRepository
-from flext_auth.value_objects import FlextHashedPassword, FlextPlainPassword
+from flext_auth import (
+    FlextAuth,
+    FlextAuthConfig,
+    FlextHashedPassword,
+    FlextJWTService,
+    FlextPasswordService,
+    FlextPlainPassword,
+    FlextSession,
+    FlextSessionStatus,
+    FlextUser,
+    FlextUserRole,
+    FlextUserStatus,
+    InMemorySessionRepository,
+    InMemoryUserRepository,
+)
 
 
 class TestRealProductionCode:
@@ -39,9 +49,9 @@ class TestRealProductionCode:
         # Execute REAL bcrypt hashing (production code)
         hash_result = service.hash_password(plain_password)
         assert hash_result.success, f"Real hashing failed: {hash_result.error}"
-        assert hash_result.data is not None
+        assert hash_result.value is not None
 
-        hashed_password: FlextHashedPassword = hash_result.data
+        hashed_password: FlextHashedPassword = hash_result.value
 
         # Validate REAL bcrypt format
         assert hashed_password.value.startswith("$2b$"), "Must be real bcrypt format"
@@ -53,12 +63,12 @@ class TestRealProductionCode:
             "RealPassword123!@#", hashed_password.value
         )
         assert verify_result.success, "Verification should succeed"
-        assert verify_result.data is True, "Password should match"
+        assert verify_result.value is True, "Password should match"
 
         # Test REAL verification with wrong password
         wrong_result = service.verify_password("WrongPassword", hashed_password.value)
         assert wrong_result.success, "Verification call should succeed"
-        assert wrong_result.data is False, "Wrong password should not match"
+        assert wrong_result.value is False, "Wrong password should not match"
 
     def test_real_jwt_service_production_tokens(self) -> None:
         """Test real FlextJWTService with actual PyJWT tokens."""
@@ -77,9 +87,9 @@ class TestRealProductionCode:
         assert token_result.success, (
             f"Real token generation failed: {token_result.error}"
         )
-        assert token_result.data is not None
+        assert token_result.value is not None
 
-        access_token: str = token_result.data
+        access_token: str = token_result.value
 
         # Validate REAL JWT format
         assert isinstance(access_token, str), "Token must be string"
@@ -91,9 +101,9 @@ class TestRealProductionCode:
         assert verify_result.success, (
             f"Real token verification failed: {verify_result.error}"
         )
-        assert verify_result.data is not None
+        assert verify_result.value is not None
 
-        claims = verify_result.data
+        claims = verify_result.value
         assert claims.sub == "real_user_123", "Subject must match"
         assert claims.username == "realuser", "Username must match"
         assert claims.role == "REDACTED_LDAP_BIND_PASSWORD", "Role must match"
@@ -115,27 +125,25 @@ class TestRealProductionCode:
         )
 
         # Execute REAL save operation (production code)
-        import asyncio
-
         save_result = asyncio.run(repo.save(user))
         assert save_result.success, f"Real save failed: {save_result.error}"
-        assert save_result.data is not None
-        saved_user = save_result.data
+        assert save_result.value is not None
+        saved_user = save_result.value
         assert saved_user.username == "productionuser"
 
         # Execute REAL lookup by username (production code)
         lookup_result = asyncio.run(repo.get_by_username("productionuser"))
         assert lookup_result.success, f"Real lookup failed: {lookup_result.error}"
-        assert lookup_result.data is not None
-        found_user = lookup_result.data
+        assert lookup_result.value is not None
+        found_user = lookup_result.value
         assert found_user.email == "production@real.com"
         assert found_user.role == FlextUserRole.USER
 
         # Execute REAL lookup by email (production code)
         email_result = asyncio.run(repo.get_by_email("production@real.com"))
         assert email_result.success, f"Real email lookup failed: {email_result.error}"
-        assert email_result.data is not None
-        assert email_result.data.username == "productionuser"
+        assert email_result.value is not None
+        assert email_result.value.username == "productionuser"
 
     def test_real_complete_authentication_workflow(self) -> None:
         """Test complete authentication workflow with REAL production code."""
@@ -153,28 +161,28 @@ class TestRealProductionCode:
             jwt_secret_key="real-production-jwt-secret-key-minimum-32-characters",
         )
 
-        auth = FlextAuth(config)
+        auth = FlextAuth.create_for_testing_with_in_memory(config)
 
         # Test REAL user creation (production code)
         username = "realproductionuser"
         email = "realproduction@example.com"
         password = "RealProductionPassword123!@#$"
 
-        create_result = auth.create_user(username, email, password)
+        create_result = asyncio.run(auth.create_user(username, email, password))
         assert create_result.success, (
             f"Real user creation failed: {create_result.error}"
         )
-        assert create_result.data is not None
-        user_data = create_result.data
+        assert create_result.value is not None
+        user_data = create_result.value
         assert user_data["user_created"] is True
         assert user_data["username"] == username
         assert user_data["email"] == email
 
         # Test REAL authentication (production code)
-        auth_result = auth.authenticate(username, password)
+        auth_result = asyncio.run(auth.authenticate(username, password))
         assert auth_result.success, f"Real authentication failed: {auth_result.error}"
-        assert auth_result.data is not None
-        auth_data = auth_result.data
+        assert auth_result.value is not None
+        auth_data = auth_result.value
         assert auth_data["authenticated"] is True
         assert "access_token" in auth_data
         assert "user" in auth_data
@@ -187,7 +195,7 @@ class TestRealProductionCode:
         assert access_token.count(".") == 2  # Real JWT format
 
         # Test REAL authentication with wrong password
-        wrong_auth = auth.authenticate(username, "WrongPassword")
+        wrong_auth = asyncio.run(auth.authenticate(username, "WrongPassword"))
         assert not wrong_auth.success, "Wrong password should fail"
         assert "Invalid credentials" in str(wrong_auth.error)
 
@@ -211,16 +219,18 @@ class TestRealProductionCode:
         # Test that multiple hashes produce different results (salt)
         hash_result2 = service.hash_password(password)
         assert hash_result2.success, "Second hash must succeed"
-        assert hash_result.data != hash_result2.data, (
+        assert hash_result.value != hash_result2.value, (
             "Different salts must produce different hashes"
         )
 
         # But both should verify correctly
         password_str = "SecurityTestPassword123!"
-        verify1 = service.verify_password(password_str, hash_result.data.value)
-        verify2 = service.verify_password(password_str, hash_result2.data.value)
-        assert verify1.success and verify1.data, "First hash must verify"
-        assert verify2.success and verify2.data, "Second hash must verify"
+        verify1 = service.verify_password(password_str, hash_result.value.value)
+        verify2 = service.verify_password(password_str, hash_result2.value.value)
+        assert verify1.success, "First hash must verify"
+        assert verify1.value, "First hash must verify"
+        assert verify2.success, "Second hash must verify"
+        assert verify2.value, "Second hash must verify"
 
     def test_real_domain_entity_business_logic(self) -> None:
         """Test real domain entity business logic without mocks."""
@@ -268,10 +278,6 @@ class TestRealProductionCode:
         repo = InMemorySessionRepository()
 
         # Create REAL session entity
-        from datetime import UTC, datetime, timedelta
-
-        from flext_auth.entities import FlextSession, FlextSessionStatus
-
         session = FlextSession(
             id=FlextEntityId("real_session_999"),
             user_id="real_user_888",
@@ -284,18 +290,16 @@ class TestRealProductionCode:
         )
 
         # Execute REAL session operations (production code)
-        import asyncio
-
         # Save session
         save_result = asyncio.run(repo.save(session))
         assert save_result.success, f"Real session save failed: {save_result.error}"
-        assert save_result.data is not None
+        assert save_result.value is not None
 
         # Retrieve by ID
         get_result = asyncio.run(repo.get_by_id(str(session.id)))
         assert get_result.success, f"Real session retrieval failed: {get_result.error}"
-        assert get_result.data is not None
-        retrieved_session = get_result.data
+        assert get_result.value is not None
+        retrieved_session = get_result.value
         assert retrieved_session.user_id == "real_user_888"
         assert retrieved_session.ip_address == "192.168.1.100"
 

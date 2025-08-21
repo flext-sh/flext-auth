@@ -10,6 +10,7 @@ from __future__ import annotations
 import ipaddress
 import re
 from datetime import UTC, datetime
+from typing import override
 
 from flext_core import FlextResult, FlextValidationError, FlextValueObject
 from pydantic import EmailStr, Field, field_validator
@@ -19,7 +20,7 @@ MIN_USERNAME_LENGTH = 3
 MAX_USERNAME_LENGTH = 50
 MIN_PASSWORD_LENGTH = 8
 MAX_PASSWORD_LENGTH = 128
-MIN_BCRYPT_HASH_LENGTH = 56  # Adjusted to match test expectations
+MIN_BCRYPT_HASH_LENGTH = 56  # Minimum bcrypt hash length for production
 MIN_AUTH_TOKEN_LENGTH = 10
 MIN_REFRESH_TOKEN_LENGTH = 32
 MIN_SESSION_TOKEN_LENGTH = 16
@@ -49,10 +50,12 @@ class FlextUsername(FlextValueObject):
             )
         return v.lower()
 
+    @override
     def __str__(self) -> str:
         """Return username as string."""
         return self.value
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate username domain rules and business constraints."""
         if len(self.value) < MIN_USERNAME_LENGTH:
@@ -72,10 +75,12 @@ class FlextUserEmail(FlextValueObject):
 
     value: EmailStr
 
+    @override
     def __str__(self) -> str:
         """Return email as string."""
         return str(self.value)
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate email domain rules and business constraints."""
         if "@" not in str(self.value):
@@ -108,6 +113,7 @@ class FlextPlainPassword(FlextValueObject):
             raise FlextValidationError(msg, field="value")
         return v
 
+    @override
     def __str__(self) -> str:
         """Return protected password."""
         return "[PROTECTED]"
@@ -116,6 +122,7 @@ class FlextPlainPassword(FlextValueObject):
         """Return protected password representation."""
         return "FlextPlainPassword([PROTECTED])"
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate plain password domain rules using Railway-Oriented Programming.
 
@@ -172,6 +179,7 @@ class FlextHashedPassword(FlextValueObject):
         """Perform basic validation; detailed checks in validate_business_rules."""
         return v
 
+    @override
     def __str__(self) -> str:
         """Return hashed password."""
         return "[HASHED]"
@@ -180,6 +188,7 @@ class FlextHashedPassword(FlextValueObject):
         """Return hashed password representation."""
         return "FlextHashedPassword([HASHED])"
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate hashed password domain rules and business constraints.
 
@@ -200,12 +209,14 @@ class FlextAuthToken(FlextValueObject):
     value: str = Field(...)  # No min_length to allow custom validation
     token_type: str = Field(default="Bearer")
 
+    @override
     def __str__(self) -> str:
         """Return auth token."""
         return f"{self.token_type} {self.value}"
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate auth token domain rules - raises ValueError for compatibility."""
+        """Validate auth token domain rules - raises ValueError."""
         if not self.value:
             msg = "Auth token value cannot be empty"
             raise ValueError(msg)
@@ -235,6 +246,7 @@ class FlextBaseTokenValueObject(FlextValueObject):
         ...,
     )  # No min_length to allow custom validation in validate_business_rules
 
+    @override
     def __str__(self) -> str:
         """Return protected token representation - Template Method."""
         return f"[{self._get_token_display_name()}]"
@@ -243,10 +255,11 @@ class FlextBaseTokenValueObject(FlextValueObject):
         """Return protected token class representation - Template Method."""
         return f"{self._get_token_class_name()}([PROTECTED])"
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Template Method: validates common rules + specific rules.
 
-        NOTE: For test compatibility, validation errors raise ValueError
+        NOTE: Production validation - errors raise ValueError for proper handling
         while still supporting FlextResult pattern.
         """
         # Validate common rules (DRY principle)
@@ -261,21 +274,25 @@ class FlextBaseTokenValueObject(FlextValueObject):
             msg: str = f"{self._get_token_type_name()} cannot be empty"
             raise ValueError(msg)
 
+    @override
     def _get_token_display_name(self) -> str:
         """Abstract method: get token display name for __str__."""
         msg = "Subclasses must implement _get_token_display_name"
         raise NotImplementedError(msg)
 
+    @override
     def _get_token_class_name(self) -> str:
         """Abstract method: get token class name for __repr__."""
         msg = "Subclasses must implement _get_token_class_name"
         raise NotImplementedError(msg)
 
+    @override
     def _get_token_type_name(self) -> str:
         """Abstract method: get token type name for error messages."""
         msg = "Subclasses must implement _get_token_type_name"
         raise NotImplementedError(msg)
 
+    @override
     def _validate_specific_rules(self) -> FlextResult[None]:
         """Abstract method: validate token-specific rules."""
         # Base implementation has no specific rules
@@ -285,18 +302,22 @@ class FlextBaseTokenValueObject(FlextValueObject):
 class FlextRefreshToken(FlextBaseTokenValueObject):
     """Refresh token value object - inherits common behavior from base."""
 
+    @override
     def _get_token_display_name(self) -> str:
         """Return token display name."""
         return "REFRESH_TOKEN"
 
+    @override
     def _get_token_class_name(self) -> str:
         """Return token class name."""
         return "RefreshToken"
 
+    @override
     def _get_token_type_name(self) -> str:
         """Return token type name."""
         return "Refresh token value"
 
+    @override
     def _validate_specific_rules(self) -> FlextResult[None]:
         """Validate refresh token specific rules - raises ValueError."""
         if len(self.value) < MIN_REFRESH_TOKEN_LENGTH:
@@ -308,18 +329,22 @@ class FlextRefreshToken(FlextBaseTokenValueObject):
 class FlextSessionToken(FlextBaseTokenValueObject):
     """Session token value object - inherits common behavior from base."""
 
+    @override
     def _get_token_display_name(self) -> str:
         """Return token display name."""
         return "SESSION_TOKEN"
 
+    @override
     def _get_token_class_name(self) -> str:
         """Return token class name."""
         return "FlextSessionToken"
 
+    @override
     def _get_token_type_name(self) -> str:
         """Return token type name."""
         return "Session token value"
 
+    @override
     def _validate_specific_rules(self) -> FlextResult[None]:
         """Validate session token specific rules - raises ValueError."""
         if len(self.value) < MIN_SESSION_TOKEN_LENGTH:
@@ -345,10 +370,12 @@ class FlextIPAddress(FlextValueObject):
         else:
             return v
 
+    @override
     def __str__(self) -> str:
         """Return user agent."""
         return self.value
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate IP address domain rules and business constraints."""
         try:
@@ -366,6 +393,7 @@ class FlextUserAgent(FlextValueObject):
         ...,
     )  # No max_length to allow custom validation in validate_business_rules
 
+    @override
     def __str__(self) -> str:
         """Return user agent."""
         return self.value
@@ -387,8 +415,9 @@ class FlextUserAgent(FlextValueObject):
             return "Edge"
         return "Unknown"
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate user agent domain rules - raises ValueError for compatibility."""
+        """Validate user agent domain rules - raises ValueError."""
         if not self.value:
             msg = "User agent cannot be empty"
             raise ValueError(msg)
@@ -403,18 +432,22 @@ class FlextPasswordResetToken(FlextBaseTokenValueObject):
 
     value: str = Field(..., min_length=32)
 
+    @override
     def _get_token_display_name(self) -> str:
         """Return token display name."""
         return "RESET_TOKEN"
 
+    @override
     def _get_token_class_name(self) -> str:
         """Return token class name."""
         return "PasswordResetToken"
 
+    @override
     def _get_token_type_name(self) -> str:
         """Return token type name."""
         return "Password reset token"
 
+    @override
     def _validate_specific_rules(self) -> FlextResult[None]:
         """Validate password reset token specific rules."""
         if len(self.value) < MIN_PASSWORD_RESET_TOKEN_LENGTH:
@@ -428,18 +461,22 @@ class FlextEmailVerificationToken(FlextBaseTokenValueObject):
 
     value: str = Field(..., min_length=32)
 
+    @override
     def _get_token_display_name(self) -> str:
         """Return token display name."""
         return "VERIFICATION_TOKEN"
 
+    @override
     def _get_token_class_name(self) -> str:
         """Return token class name."""
         return "EmailVerificationToken"
 
+    @override
     def _get_token_type_name(self) -> str:
         """Return token type name."""
         return "Email verification token"
 
+    @override
     def _validate_specific_rules(self) -> FlextResult[None]:
         """Validate email verification token specific rules."""
         if len(self.value) < MIN_EMAIL_VERIFICATION_TOKEN_LENGTH:
@@ -468,6 +505,7 @@ class FlextJWTClaims(FlextValueObject):
         """Get seconds until token expires."""
         return max(0, int(self.exp - datetime.now(UTC).timestamp()))
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate JWT claims domain rules .
 
@@ -531,6 +569,7 @@ class FlextSecurityContext(FlextValueObject):
         """Check if user is REDACTED_LDAP_BIND_PASSWORD."""
         return self.role == "REDACTED_LDAP_BIND_PASSWORD"
 
+    @override
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate security context domain rules - raises ValueError."""
         if not self.user_id:

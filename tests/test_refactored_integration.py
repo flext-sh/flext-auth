@@ -53,10 +53,11 @@ class TestRefactoredAuthSystem:
         # Test that public API works correctly (instead of testing private classes)
         auth_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
         assert auth_result.success, f"Quick start failed: {auth_result.error}"
-        auth = auth_result.data
+        auth = auth_result.value
         assert auth is not None
         # Check that it has the required auth interface methods
-        assert hasattr(auth, "authenticate_user") and hasattr(auth, "register_user")
+        assert hasattr(auth, "authenticate_user")
+        assert hasattr(auth, "register_user")
 
     def test_dependency_injection_resolution(self) -> None:
         """Test that dependency injection works correctly after refactoring."""
@@ -82,9 +83,9 @@ class TestRefactoredAuthSystem:
         result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
         assert result.success
-        assert result.data is not None
+        assert result.value is not None
 
-        auth_service = result.data
+        auth_service = result.value
         assert hasattr(auth_service, "register_user")
         assert hasattr(auth_service, "authenticate_user")
 
@@ -190,15 +191,12 @@ class TestRefactoredAuthSystem:
         password_service: FlextPasswordService = auth.password_service
 
         # Verify proper typing - auth_service can be mock for API compatibility
-        assert hasattr(auth_service, "register_user") and hasattr(
-            auth_service, "authenticate_user"
-        )
-        assert hasattr(jwt_service, "generate_token") and hasattr(
-            jwt_service, "verify_token"
-        )
-        assert hasattr(password_service, "hash_password") and hasattr(
-            password_service, "verify_password"
-        )
+        assert hasattr(auth_service, "register_user")
+        assert hasattr(auth_service, "authenticate_user")
+        assert hasattr(jwt_service, "generate_token")
+        assert hasattr(jwt_service, "verify_token")
+        assert hasattr(password_service, "hash_password")
+        assert hasattr(password_service, "verify_password")
 
     def test_clean_architecture_boundaries(self) -> None:
         """Test that Clean Architecture boundaries are respected."""
@@ -284,7 +282,7 @@ class TestIntegrationWithFlextCore:
         # Retrieve services from container
         auth_service_result = container.get("auth_service")
         assert auth_service_result.success
-        assert auth_service_result.data is not None
+        assert auth_service_result.value is not None
 
     def test_flext_logging_integration(self) -> None:
         """Test that logging works correctly with flext-core patterns."""

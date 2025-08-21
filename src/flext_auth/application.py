@@ -10,6 +10,7 @@ from __future__ import annotations
 import secrets
 import uuid
 from datetime import UTC, datetime, timedelta
+from typing import override
 
 from flext_core import FlextDomainService, FlextEntityId, FlextResult
 
@@ -34,6 +35,7 @@ from flext_auth.value_objects import (
 class FlextAuthenticationService(FlextDomainService[str]):
     """Service for authentication operations."""
 
+    @override
     def execute(self) -> FlextResult[str]:
         """Execute service operation (required by FlextDomainService).
 
@@ -104,7 +106,7 @@ class FlextAuthenticationService(FlextDomainService[str]):
         password_service = FlextPasswordService()
         verify_result = password_service.verify_password(password, user.password_hash)
 
-        if not verify_result.success or not verify_result.data:
+        if not verify_result.success or not verify_result.value:
             user.increment_failed_login()
             return FlextResult[FlextUser].fail("Invalid password")
 
@@ -150,7 +152,7 @@ class FlextAuthenticationService(FlextDomainService[str]):
                     f"Password hashing failed: {hash_result.error}",
                 )
 
-            password_hash = hash_result.data.value if hash_result.data else ""
+            password_hash = hash_result.value.value if hash_result.value else ""
 
             user = FlextUser(
                 id=FlextEntityId(str(uuid.uuid4())),
@@ -194,7 +196,7 @@ class FlextAuthenticationService(FlextDomainService[str]):
                 old_password,
                 user.password_hash,
             )
-            if not verify_result.success or not verify_result.data:
+            if not verify_result.success or not verify_result.value:
                 return FlextResult[bool].fail("Current password is incorrect")
 
             # Validate new password using value object
@@ -214,7 +216,7 @@ class FlextAuthenticationService(FlextDomainService[str]):
                     f"Password hashing failed: {hash_result.error}",
                 )
 
-            user.password_hash = hash_result.data.value if hash_result.data else ""
+            user.password_hash = hash_result.value.value if hash_result.value else ""
             return FlextResult[bool].ok(FlextAuthSemanticConstants.SUCCESS)
 
         except (ValueError, TypeError, AttributeError, KeyError) as e:
@@ -224,6 +226,7 @@ class FlextAuthenticationService(FlextDomainService[str]):
 class FlextSessionService(FlextDomainService[str]):
     """Service for session management operations."""
 
+    @override
     def execute(self) -> FlextResult[str]:
         """Execute service operation (required by FlextDomainService).
 
@@ -322,6 +325,7 @@ class FlextSessionService(FlextDomainService[str]):
 class FlextAuthorizationService(FlextDomainService[str]):
     """Service for authorization operations."""
 
+    @override
     def execute(self) -> FlextResult[str]:
         """Execute service operation (required by FlextDomainService).
 
@@ -408,7 +412,7 @@ class FlextAuthorizationService(FlextDomainService[str]):
             return FlextResult[FlextRole].fail(f"Role creation failed: {e}")
 
 
-# Backwards compatibility aliases
+# Alternative aliases
 AuthenticationService = FlextAuthenticationService
 SessionService = FlextSessionService
 AuthorizationService = FlextAuthorizationService

@@ -47,7 +47,9 @@ def demonstrate_legacy_compatibility() -> None:
     # Legacy quick start still works
     legacy_service = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
     print("✓ Legacy quick start still functional")
-    assert legacy_service is not None
+    if legacy_service is None:
+        msg = "Legacy service creation failed"
+        raise RuntimeError(msg)
 
     # Legacy wrapper provides compatibility
     print("✓ Legacy compatibility layer working")
@@ -60,7 +62,7 @@ def demonstrate_flext_result_integration() -> None:
     # FlextResult pattern usage
     success_example = FlextResult[str].ok("Refactoring successful")
     print(f"✓ FlextResult success: {success_example.success}")
-    print(f"  Data: {success_example.data}")
+    print(f"  Data: {success_example.value}")
 
     failure_example = FlextResult[str].fail("Example failure case")
     print(f"✓ FlextResult failure: {failure_example.success}")
@@ -73,7 +75,7 @@ def demonstrate_system_architecture() -> None:
 
     # Clean separation of concerns
     auth = FlextAuth()
-    print("✓ Clean Architecture implemented")
+    print(f"✓ Clean Architecture implemented: {auth}")
     print("  - Domain layer: User entities, value objects")
     print("  - Application layer: Use case orchestration")
     print("  - Infrastructure layer: Repositories, services")

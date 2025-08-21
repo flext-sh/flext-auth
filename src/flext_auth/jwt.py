@@ -80,7 +80,7 @@ class FlextJWTService:
       ...     user_id="usr_123", username="john_doe", role="USER"
       ... )
       >>> if token_result.success:
-      ...     validation = service.verify_token(token_result.data)
+      ...     validation = service.verify_token(token_result.value)
 
     Security Warnings:
       - Secret keys must be cryptographically secure (32+ characters)
@@ -202,8 +202,8 @@ class FlextJWTService:
                     f"Refresh token failed: {refresh_result.error}"
                 )
 
-            access_token = access_result.data
-            refresh_token = refresh_result.data
+            access_token = access_result.value
+            refresh_token = refresh_result.value
 
             if not access_token or not refresh_token:
                 return FlextResult[dict[str, str]].fail("Failed to generate token data")
@@ -268,7 +268,7 @@ class FlextJWTService:
                     f"Invalid refresh token: {verify_result.error}"
                 )
 
-            claims = verify_result.data
+            claims = verify_result.value
 
             if not claims:
                 return FlextResult[str].fail("No claims in refresh token")
@@ -320,7 +320,7 @@ class FlextJWTService:
                     f"Failed to decode token: {verify_result.error}",
                 )
 
-            claims = verify_result.data
+            claims = verify_result.value
             if not claims:
                 return FlextResult[JWTClaims].fail("No claims in token")
 
@@ -354,7 +354,7 @@ class FlextJWTService:
                 token_is_expired = True
                 return FlextResult[bool].ok(token_is_expired)
 
-            expiry = expiry_result.data
+            expiry = expiry_result.value
             if not expiry:
                 token_is_expired = True
                 return FlextResult[bool].ok(token_is_expired)
