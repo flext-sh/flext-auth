@@ -12,7 +12,7 @@ import re
 from datetime import UTC, datetime
 from typing import override
 
-from flext_core import FlextResult, FlextValidationError, FlextValueObject
+from flext_core import FlextResult, FlextValidationError, FlextValue
 from pydantic import EmailStr, Field, field_validator
 
 # Constants for validation limits
@@ -29,7 +29,7 @@ MIN_PASSWORD_RESET_TOKEN_LENGTH = 32
 MIN_EMAIL_VERIFICATION_TOKEN_LENGTH = 32
 
 
-class FlextUsername(FlextValueObject):
+class FlextUsername(FlextValue):
     """Username value object with validation."""
 
     value: str = Field(..., min_length=3, max_length=50)
@@ -70,7 +70,7 @@ class FlextUsername(FlextValueObject):
         return FlextResult[None].ok(None)
 
 
-class FlextUserEmail(FlextValueObject):
+class FlextUserEmail(FlextValue):
     """Email value object with validation."""
 
     value: EmailStr
@@ -90,7 +90,7 @@ class FlextUserEmail(FlextValueObject):
         return FlextResult[None].ok(None)
 
 
-class FlextPlainPassword(FlextValueObject):
+class FlextPlainPassword(FlextValue):
     """Plain password value object with validation."""
 
     value: str = Field(..., min_length=8, max_length=128)
@@ -169,7 +169,7 @@ class FlextPlainPassword(FlextValueObject):
         return errors
 
 
-class FlextHashedPassword(FlextValueObject):
+class FlextHashedPassword(FlextValue):
     """Hashed password value object."""
 
     value: str = Field(..., min_length=1)  # Allow validation in validate_business_rules
@@ -205,7 +205,7 @@ class FlextHashedPassword(FlextValueObject):
         return FlextResult[None].ok(None)
 
 
-class FlextAuthToken(FlextValueObject):
+class FlextAuthToken(FlextValue):
     """Authentication token value object."""
 
     value: str = Field(...)  # No min_length to allow custom validation
@@ -236,7 +236,7 @@ class FlextAuthToken(FlextValueObject):
 # =============================================================================
 
 
-class FlextBaseTokenValueObject(FlextValueObject):
+class FlextBaseTokenValueObject(FlextValue):
     """Base token value object - Template Method Pattern for DRY principle.
 
     Eliminates massive code duplication between token value objects using
@@ -356,7 +356,7 @@ class FlextSessionToken(FlextBaseTokenValueObject):
         return FlextResult[None].ok(None)
 
 
-class FlextIPAddress(FlextValueObject):
+class FlextIPAddress(FlextValue):
     """IP address value object with validation."""
 
     value: str = Field(..., min_length=7, max_length=45)  # IPv4 or IPv6
@@ -389,7 +389,7 @@ class FlextIPAddress(FlextValueObject):
             return FlextResult[None].fail(msg)
 
 
-class FlextUserAgent(FlextValueObject):
+class FlextUserAgent(FlextValue):
     """User agent value object."""
 
     value: str = Field(
@@ -488,7 +488,7 @@ class FlextEmailVerificationToken(FlextBaseTokenValueObject):
         return FlextResult[None].ok(None)
 
 
-class FlextJWTClaims(FlextValueObject):
+class FlextJWTClaims(FlextValue):
     """JWT claims value object."""
 
     sub: str = Field(..., description="Subject (user ID)")
@@ -553,7 +553,7 @@ class FlextJWTClaims(FlextValueObject):
         return [error_msg for condition, error_msg in validators if condition()]
 
 
-class FlextSecurityContext(FlextValueObject):
+class FlextSecurityContext(FlextValue):
     """Security context for current request."""
 
     user_id: str

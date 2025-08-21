@@ -259,9 +259,6 @@ class CreateUserCommandHandler(
             }
         )
 
-        except Exception as e:
-            return FlextResult[dict[str, object]].fail(f"User creation failed: {e}")
-
 
 class AuthenticateUserCommandHandler(
     FlextCommands.Handler[AuthenticateUserCommand, dict[str, object]]
@@ -304,63 +301,81 @@ class AuthenticateUserCommandHandler(
             )
 
         try:
-            # Get user - REAL repository operation
-            user_result = FlextAuthUtilities.get_user_by_username_safe(
-                self._user_repository, command.username
-            )
-            if not user_result.success or not user_result.value:
-                return FlextResult[dict[str, object]].fail("Invalid credentials")
+            # Get and validate user
+            user_result = self._get_and_validate_user_for_auth(command)
+            if not user_result.success:
+                return user_result
 
-            user = user_result.value
-
-            # Check account status
-            if not user.is_active():
-                return FlextResult[dict[str, object]].fail(
-                    f"Account is {user.status.value}"
-                )
-
-            if user.is_locked():
-                return FlextResult[dict[str, object]].fail("Account is locked")
-
-            # Verify password - REAL password service
-            password_result = self._password_service.verify_password(
-                command.password, user.password_hash
-            )
-
-            if not password_result.success or not password_result.value:
-                # Increment failed attempts - REAL domain logic with events
-                failed_user = user.increment_failed_login()
-                FlextAuthUtilities.save_user_safe(self._user_repository, failed_user)
-                return FlextResult[dict[str, object]].fail("Invalid credentials")
-
-            # Reset failed attempts on success - REAL domain logic with events
-            success_user = user.reset_failed_login()
-            FlextAuthUtilities.save_user_safe(self._user_repository, success_user)
-
-            # Generate JWT token - REAL JWT service
-            token_result = self._jwt_service.generate_access_token(
-                user_id=str(user.id),
-                username=user.username,
-                role=str(user.role),
-                session_id=str(command.command_id),
-            )
-
-            if not token_result.success:
-                return FlextResult[dict[str, object]].fail("Failed to generate token")
-
-            return FlextResult[dict[str, object]].ok(
-                {
-                    "authenticated": True,
-                    "user_id": str(user.id),
-                    "username": user.username,
-                    "access_token": token_result.value,
-                    "command_id": str(command.command_id),
-                    "events_count": len(success_user.domain_events.root),
-                }
-            )
+            # Authenticate and generate token
+            return self._authenticate_and_generate_token(command, user_result.value)
 
         except Exception as e:
             return FlextResult[dict[str, object]].fail(f"Authentication failed: {e}")
+
+    def _get_and_validate_user_for_auth(
+        self, command: AuthenticateUserCommand
+    ) -> FlextResult[object]:
+        """Get user and validate account status."""
+        # Get user - REAL repository operation
+        user_result = FlextAuthUtilities.get_user_by_username_safe(
+            self._user_repository, command.username
+        )
+        if not user_result.success or not user_result.value:
+            return FlextResult[object].fail("Invalid credentials")
+
+        user = user_result.value
+
+        # Check account status
+        if not user.is_active():
+            return FlextResult[object].fail(
+                f"Account is {user.status.value}"
+            )
+
+        if user.is_locked():
+            return FlextResult[object].fail("Account is locked")
+
+        return FlextResult[object].ok(user)
+
+    def _authenticate_and_generate_token(
+        self, command: AuthenticateUserCommand, user: object
+    ) -> FlextResult[dict[str, object]]:
+        """Authenticate password and generate token."""
+        # Verify password - REAL password service
+        password_result = self._password_service.verify_password(
+            command.password, user.password_hash
+        )
+
+        if not password_result.success or not password_result.value:
+            # Increment failed attempts - REAL domain logic with events
+            failed_user = user.increment_failed_login()
+            FlextAuthUtilities.save_user_safe(self._user_repository, failed_user)
+            return FlextResult[dict[str, object]].fail("Invalid credentials")
+
+        # Reset failed attempts on success - REAL domain logic with events
+        success_user = user.reset_failed_login()
+        FlextAuthUtilities.save_user_safe(self._user_repository, success_user)
+
+        # Generate JWT token - REAL JWT service
+        token_result = self._jwt_service.generate_access_token(
+            user_id=str(user.id),
+            username=user.username,
+            role=str(user.role),
+            session_id=str(command.command_id),
+        )
+
+        if not token_result.success:
+            return FlextResult[dict[str, object]].fail("Failed to generate token")
+
+        return FlextResult[dict[str, object]].ok(
+            {
+                "authenticated": True,
+                "user_id": str(user.id),
+                "username": user.username,
+                "access_token": token_result.value,
+                "command_id": str(command.command_id),
+                "events_count": len(success_user.domain_events.root),
+            }
+        )
 
 
 # =============================================================================

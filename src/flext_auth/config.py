@@ -486,9 +486,7 @@ class AppConfig(FlextSettings):
         default_factory=DatabaseConfig,
         description="Database configuration",
     )
-    jwt: JWTConfig = Field(
-        default_factory=JWTConfig, description="JWT configuration"
-    )
+    jwt: JWTConfig = Field(default_factory=JWTConfig, description="JWT configuration")
     security: SecurityConfig = Field(
         default_factory=lambda: SecurityConfig(
             password_rounds=12,

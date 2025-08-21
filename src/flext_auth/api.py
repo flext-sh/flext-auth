@@ -117,7 +117,9 @@ class FlextAuth:
         except Exception as e:
             return FlextResult[dict[str, object]].fail(f"Authentication error: {e}")
 
-    def _validate_auth_input(self, username: str, password: str) -> FlextResult[dict[str, object]] | None:
+    def _validate_auth_input(
+        self, username: str, password: str
+    ) -> FlextResult[dict[str, object]] | None:
         """Validate authentication input parameters."""
         if not username or not password:
             return FlextResult[dict[str, object]].fail(
@@ -125,7 +127,9 @@ class FlextAuth:
             )
         return None
 
-    async def _get_and_validate_user(self, username: str, password: str) -> FlextResult[dict[str, object]]:
+    async def _get_and_validate_user(
+        self, username: str, password: str
+    ) -> FlextResult[dict[str, object]]:
         """Get user from repository and validate password."""
         # Get user repository
         repo_result = self._get_user_repository()
@@ -197,11 +201,13 @@ class FlextAuth:
         if not token_result.success:
             return FlextResult[dict[str, object]].fail("Failed to generate token")
 
-        return FlextResult[dict[str, object]].ok({
-            "authenticated": True,
-            "user": {"username": user.username, "email": user.email},
-            "access_token": token_result.value,
-        })
+        return FlextResult[dict[str, object]].ok(
+            {
+                "authenticated": True,
+                "user": {"username": user.username, "email": user.email},
+                "access_token": token_result.value,
+            }
+        )
 
     async def create_user(
         self, username: str, email: str, password: str
@@ -294,12 +300,14 @@ class FlextAuth:
         if save_error:
             return FlextResult[dict[str, object]].fail(save_error)
 
-        return FlextResult[dict[str, object]].ok({
-            "user_created": True,
-            "username": user.username,
-            "email": user.email,
-            "id": str(user.id),
-        })
+        return FlextResult[dict[str, object]].ok(
+            {
+                "user_created": True,
+                "username": user.username,
+                "email": user.email,
+                "id": str(user.id),
+            }
+        )
 
     async def _validate_user_uniqueness(
         self, username: str, email: str, user_repository: UserRepositoryType

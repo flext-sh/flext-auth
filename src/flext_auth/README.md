@@ -185,7 +185,7 @@ auth = flext_auth_quick_start()
 
 - `FlextResult[T]` - Type-safe error handling throughout
 - `FlextEntity` - Rich domain entities with business logic
-- `FlextValueObject` - Immutable validated value objects
+- `FlextValue` - Immutable validated value objects
 - `FlextContainer` - Dependency injection (TODO)
 - `FlextAggregateRoot` - Event sourcing capabilities (TODO)
 

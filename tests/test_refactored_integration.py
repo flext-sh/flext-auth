@@ -195,7 +195,9 @@ class TestRefactoredAuthSystem:
         password_service: FlextPasswordService = auth.password_service
 
         # Verify proper typing - auth_service can be mock for API compatibility
-        assert hasattr(auth_service, "create_user") or hasattr(auth_service, "authenticate")
+        assert hasattr(auth_service, "create_user") or hasattr(
+            auth_service, "authenticate"
+        )
         assert hasattr(jwt_service, "generate_access_token")
         assert hasattr(jwt_service, "verify_token")
         assert hasattr(password_service, "hash_password")
@@ -299,7 +301,9 @@ class TestIntegrationWithFlextCore:
 
         # This should not raise any logging-related errors
         # Test should not raise logging-related exceptions
-        result = asyncio.run(auth.create_user("testuser", "test@example.com", "TestPassword123!"))
+        result = asyncio.run(
+            auth.create_user("testuser", "test@example.com", "TestPassword123!")
+        )
         # Result should be meaningful regardless of success/failure
         assert result is not None
 

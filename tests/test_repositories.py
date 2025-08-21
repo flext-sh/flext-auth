@@ -157,7 +157,9 @@ class TestUserRepository:
         result2 = await user_repository.save(updated_user)
         assert result2.success
         if result2.value.status != FlextUserStatus.INACTIVE:
-            msg: str = f"Expected {FlextUserStatus.INACTIVE}, got {result2.value.status}"
+            msg: str = (
+                f"Expected {FlextUserStatus.INACTIVE}, got {result2.value.status}"
+            )
             raise AssertionError(msg)
 
     async def test_get_user_by_id_success(
