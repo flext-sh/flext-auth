@@ -275,7 +275,7 @@ class FlextRole(FlextEntity):
             return FlextResult[None].fail("Role name must be at most 100 characters")
         if len(self.description) > MAX_DESCRIPTION_LENGTH:
             return FlextResult[None].fail(
-                "Role description must be at most 500 characters"
+                "Role description must be at most 500 characters",
             )
         return FlextResult[None].ok(None)
 
@@ -297,7 +297,7 @@ class FlextLoginAttempt(FlextEntity):
             validation_errors = self._execute_validation_strategies()
             if validation_errors:
                 return FlextResult[None].fail(
-                    validation_errors[0]
+                    validation_errors[0],
                 )  # Return first error
 
             return FlextResult[None].ok(None)
@@ -381,7 +381,7 @@ class FlextBaseToken(FlextEntity):
             validation_errors = self._execute_common_validation_strategies()
             if validation_errors:
                 return FlextResult[None].fail(
-                    validation_errors[0]
+                    validation_errors[0],
                 )  # Return first error
 
             return FlextResult[None].ok(None)
@@ -513,14 +513,14 @@ class InMemoryUserRepository(UserRepository):
             existing_username = self._username_index.get(user.username.lower())
             if existing_username and existing_username != user.id:
                 return FlextResult[FlextUser].fail(
-                    f"Username '{user.username}' already exists"
+                    f"Username '{user.username}' already exists",
                 )
 
             # Check for email conflicts
             existing_email = self._email_index.get(str(user.email).lower())
             if existing_email and existing_email != user.id:
                 return FlextResult[FlextUser].fail(
-                    f"Email '{user.email}' already exists"
+                    f"Email '{user.email}' already exists",
                 )
 
             # Create user with updated timestamp (entities are immutable)
@@ -569,7 +569,7 @@ class InMemoryUserRepository(UserRepository):
             return FlextResult[FlextUser | None].ok(user)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[FlextUser | None].fail(
-                f"Failed to get user by username: {e}"
+                f"Failed to get user by username: {e}",
             )
 
     async def get_by_email(self, email: str) -> FlextResult[FlextUser | None]:
@@ -583,7 +583,7 @@ class InMemoryUserRepository(UserRepository):
             return FlextResult[FlextUser | None].ok(user)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[FlextUser | None].fail(
-                f"Failed to get user by email: {e}"
+                f"Failed to get user by email: {e}",
             )
 
     async def delete(self, user_id: str) -> FlextResult[bool]:

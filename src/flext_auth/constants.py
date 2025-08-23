@@ -37,7 +37,7 @@ class FlextAuthSemanticConstants(FlextConstants):
         USERNAME_PATTERN = r"^[a-zA-Z0-9_]{3,50}$"
 
         PASSWORD_VALIDATION_REGEX = re.compile(
-            r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]).{8,128}$"
+            r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]).{8,128}$",
         )
         # CONSUME from single source - NO DUPLICATION
         MIN_PASSWORD_LENGTH = FlextConstants.Limits.MIN_PASSWORD_LENGTH

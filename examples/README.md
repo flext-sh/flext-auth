@@ -33,7 +33,7 @@ from flext_auth import flext_auth_quick_start
 # Ready-to-use authentication service
 auth_result = flext_auth_quick_start()
 if auth_result.success:
-    auth = auth_result.data
+    auth = auth_result.value
     result = auth.authenticate_user("username", "password")
 ```
 
@@ -53,7 +53,7 @@ from flext_auth import flext_auth_quick_start
 # Zero-config authentication setup
 auth_result = flext_auth_quick_start()
 if auth_result.success:
-    auth = auth_result.data
+    auth = auth_result.value
 
     # Register a user
     register_result = auth.register_user("john", "john@example.com", "SecurePass123!")
@@ -185,7 +185,7 @@ from flext_auth import flext_auth_quick_start, flext_auth_required
 
 app = FastAPI()
 auth_result = flext_auth_quick_start()
-auth = auth_result.data
+auth = auth_result.value
 
 @app.post("/login")
 async def login(username: str, password: str):
@@ -206,7 +206,7 @@ from flext_auth import flext_auth_quick_start, flext_auth_required
 
 app = Flask(__name__)
 auth_result = flext_auth_quick_start()
-auth = auth_result.data
+auth = auth_result.value
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -228,7 +228,7 @@ from django.views.decorators.csrf import csrf_exempt
 from flext_auth import flext_auth_quick_start, flext_auth_required
 
 auth_result = flext_auth_quick_start()
-auth = auth_result.data
+auth = auth_result.value
 
 @csrf_exempt
 def login(request):

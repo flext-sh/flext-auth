@@ -193,13 +193,13 @@ class FlextJWTService:
             )
             if not access_result.success:
                 return FlextResult[dict[str, str]].fail(
-                    f"Access token failed: {access_result.error}"
+                    f"Access token failed: {access_result.error}",
                 )
 
             refresh_result = self.generate_refresh_token(user_id, session_id)
             if not refresh_result.success:
                 return FlextResult[dict[str, str]].fail(
-                    f"Refresh token failed: {refresh_result.error}"
+                    f"Refresh token failed: {refresh_result.error}",
                 )
 
             access_token = access_result.value
@@ -219,7 +219,7 @@ class FlextJWTService:
 
         except (ValueError, TypeError, OSError) as e:
             return FlextResult[dict[str, str]].fail(
-                f"Failed to generate token pair: {e}"
+                f"Failed to generate token pair: {e}",
             )
 
     def verify_token(self, token: str) -> FlextResult[JWTClaims]:
@@ -265,7 +265,7 @@ class FlextJWTService:
             verify_result = self.verify_token(refresh_token)
             if not verify_result.success:
                 return FlextResult[str].fail(
-                    f"Invalid refresh token: {verify_result.error}"
+                    f"Invalid refresh token: {verify_result.error}",
                 )
 
             claims = verify_result.value

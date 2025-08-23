@@ -93,7 +93,7 @@ class FlextAuthService:
                     info_method = getattr(logger, "info", None)
                     if callable(info_method):
                         info_method(
-                            f"Authentication attempt for user: {username} from IP: {ip_address}"
+                            f"Authentication attempt for user: {username} from IP: {ip_address}",
                         )
                 except (AttributeError, TypeError):
                     pass  # Silently ignore logger errors
@@ -113,12 +113,12 @@ class FlextAuthService:
             # 3. Check lockout status
             if user.failed_login_attempts >= self.deps.config.max_login_attempts:
                 return FlextResult[FlextUser].fail(
-                    "Account temporarily locked due to failed login attempts"
+                    "Account temporarily locked due to failed login attempts",
                 )
 
             # 4. Verify password hash matches the provided password
             password_verify_result = self.deps.password_service.verify_password(
-                password, user.password_hash
+                password, user.password_hash,
             )
             if not password_verify_result.success or not password_verify_result.value:
                 # Increment failed login attempts using domain method
@@ -138,7 +138,7 @@ class FlextAuthService:
                     info_method = getattr(logger, "info", None)
                     if callable(info_method):
                         info_method(
-                            f"Successful authentication for user: {username} from IP: {ip_address}"
+                            f"Successful authentication for user: {username} from IP: {ip_address}",
                         )
                 except (AttributeError, TypeError):
                     pass
@@ -147,7 +147,7 @@ class FlextAuthService:
 
         except Exception as e:
             return FlextResult[FlextUser].fail(
-                f"Authentication failed for {username}: {e}"
+                f"Authentication failed for {username}: {e}",
             )
 
     async def validate_token(self, token: str) -> FlextResult[FlextSecurityContext]:
@@ -183,7 +183,7 @@ class FlextAuthService:
 
         except Exception as e:
             return FlextResult[FlextSecurityContext].fail(
-                f"Token validation failed: {e}"
+                f"Token validation failed: {e}",
             )
 
     async def logout_user(self, user_id: str, session_id: str) -> FlextResult[bool]:
@@ -201,11 +201,11 @@ class FlextAuthService:
             # REAL PRODUCTION IMPLEMENTATION
             # 1. Revoke the specific session
             revoke_result = await self.deps.session_repository.revoke_session(
-                session_id
+                session_id,
             )
             if not revoke_result.success:
                 return FlextResult[bool].fail(
-                    f"Failed to revoke session: {revoke_result.error}"
+                    f"Failed to revoke session: {revoke_result.error}",
                 )
 
             # 2. Log the logout event
@@ -215,7 +215,7 @@ class FlextAuthService:
                     info_method = getattr(logger, "info", None)
                     if callable(info_method):
                         info_method(
-                            f"User {user_id} logged out, session {session_id} revoked"
+                            f"User {user_id} logged out, session {session_id} revoked",
                         )
                 except (AttributeError, TypeError):
                     pass

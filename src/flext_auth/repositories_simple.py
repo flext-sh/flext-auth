@@ -42,7 +42,7 @@ class AsyncPGConnectionContext(Protocol):
         ...
 
     async def __aexit__(
-        self, exc_type: object, exc_val: object, exc_tb: object
+        self, exc_type: object, exc_val: object, exc_tb: object,
     ) -> None:
         """Exit context manager."""
         ...
@@ -172,7 +172,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
 
                 if existing:
                     return FlextResult[FlextUser].fail(
-                        f"User with username '{user.username}' or email '{user.email}' already exists"
+                        f"User with username '{user.username}' or email '{user.email}' already exists",
                     )
 
                 # Insert new user
@@ -208,7 +208,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
         try:
             async with self._pool.acquire() as conn:
                 row = await conn.fetchrow(
-                    "SELECT * FROM flext_users WHERE id = $1", user_id
+                    "SELECT * FROM flext_users WHERE id = $1", user_id,
                 )
 
                 if not row:
@@ -219,7 +219,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
 
         except Exception as e:
             return FlextResult[FlextUser | None].fail(
-                f"Database error getting user: {e}"
+                f"Database error getting user: {e}",
             )
 
     async def get_by_username(self, username: str) -> FlextResult[FlextUser | None]:
@@ -227,7 +227,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
         try:
             async with self._pool.acquire() as conn:
                 row = await conn.fetchrow(
-                    "SELECT * FROM flext_users WHERE username = $1", username
+                    "SELECT * FROM flext_users WHERE username = $1", username,
                 )
 
                 if not row:
@@ -238,7 +238,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
 
         except Exception as e:
             return FlextResult[FlextUser | None].fail(
-                f"Database error getting user: {e}"
+                f"Database error getting user: {e}",
             )
 
     async def get_by_email(self, email: str) -> FlextResult[FlextUser | None]:
@@ -246,7 +246,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
         try:
             async with self._pool.acquire() as conn:
                 row = await conn.fetchrow(
-                    "SELECT * FROM flext_users WHERE email = $1", email
+                    "SELECT * FROM flext_users WHERE email = $1", email,
                 )
 
                 if not row:
@@ -257,7 +257,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
 
         except Exception as e:
             return FlextResult[FlextUser | None].fail(
-                f"Database error getting user: {e}"
+                f"Database error getting user: {e}",
             )
 
     async def delete(self, user_id: str) -> FlextResult[bool]:
@@ -265,7 +265,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
         try:
             async with self._pool.acquire() as conn:
                 result = await conn.execute(
-                    "DELETE FROM flext_users WHERE id = $1", user_id
+                    "DELETE FROM flext_users WHERE id = $1", user_id,
                 )
                 return FlextResult[bool].ok(result == "DELETE 1")
 
@@ -309,7 +309,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
 
         except Exception as e:
             return FlextResult[list[FlextUser]].fail(
-                f"Database error listing users: {e}"
+                f"Database error listing users: {e}",
             )
 
     async def count_users(
@@ -396,7 +396,7 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
         try:
             async with self._pool.acquire() as conn:
                 row = await conn.fetchrow(
-                    "SELECT * FROM flext_sessions WHERE id = $1", session_id
+                    "SELECT * FROM flext_sessions WHERE id = $1", session_id,
                 )
 
                 if not row:
@@ -407,7 +407,7 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
 
         except Exception as e:
             return FlextResult[FlextSession | None].fail(
-                f"Database error getting session: {e}"
+                f"Database error getting session: {e}",
             )
 
     async def get_by_user_id(self, user_id: str) -> FlextResult[list[FlextSession]]:
@@ -428,7 +428,7 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
 
         except Exception as e:
             return FlextResult[list[FlextSession]].fail(
-                f"Database error getting sessions: {e}"
+                f"Database error getting sessions: {e}",
             )
 
     async def delete(self, session_id: str) -> FlextResult[bool]:
@@ -436,7 +436,7 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
         try:
             async with self._pool.acquire() as conn:
                 result = await conn.execute(
-                    "DELETE FROM flext_sessions WHERE id = $1", session_id
+                    "DELETE FROM flext_sessions WHERE id = $1", session_id,
                 )
                 return FlextResult[bool].ok(result == "DELETE 1")
 
@@ -526,13 +526,11 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
 
 async def create_postgresql_pool(database_url: str) -> AsyncPGPool:
     """Create REAL PostgreSQL connection pool - proper typing."""
-    try:
-        import asyncpg as pg
-    except ImportError as e:
+    if asyncpg is None:
         msg = "asyncpg is required for PostgreSQL support"
-        raise ImportError(msg) from e
+        raise ImportError(msg)
 
-    pool = await pg.create_pool(
+    pool = await asyncpg.create_pool(
         database_url,
         min_size=1,
         max_size=10,

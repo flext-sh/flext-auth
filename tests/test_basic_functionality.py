@@ -145,7 +145,7 @@ class TestFlextAuthBasics:
 
         fail_result = FlextResult[None].fail("test error")
         assert not fail_result.success
-        # Don't access .data on failed result - it raises exception in current FlextResult
+        # Don't access .value on failed result - it raises exception in current FlextResult
         assert fail_result.error == "test error"
 
 

@@ -269,7 +269,7 @@ class FlextUser(FlextEntity):
             validation_errors = self._execute_user_validation_strategies()
             if validation_errors:
                 return FlextResult[None].fail(
-                    validation_errors[0]
+                    validation_errors[0],
                 )  # Return first error
 
             return FlextResult[None].ok(None)
@@ -535,7 +535,7 @@ class FlextRole(FlextEntity):
             return FlextResult[None].fail("Role name must be at most 100 characters")
         if len(self.description) > MAX_DESCRIPTION_LENGTH:
             return FlextResult[None].fail(
-                "Role description must be at most 500 characters"
+                "Role description must be at most 500 characters",
             )
         return FlextResult[None].ok(None)
 
@@ -562,7 +562,7 @@ class FlextLoginAttempt(FlextEntity):
             validation_errors = self._execute_validation_strategies()
             if validation_errors:
                 return FlextResult[None].fail(
-                    validation_errors[0]
+                    validation_errors[0],
                 )  # Return first error
 
             return FlextResult[None].ok(None)
@@ -659,7 +659,7 @@ class FlextBaseToken(FlextEntity):
             validation_errors = self._execute_common_validation_strategies()
             if validation_errors:
                 return FlextResult[None].fail(
-                    validation_errors[0]
+                    validation_errors[0],
                 )  # Return first error
 
             return FlextResult[None].ok(None)

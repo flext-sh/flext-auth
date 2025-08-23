@@ -327,7 +327,7 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
         )
         if not refresh_token_result.success:
             return FlextResult[dict[str, object]].fail(
-                "Refresh token generation failed"
+                "Refresh token generation failed",
             )
 
         # Type-safe token extraction (data guaranteed to exist after success check)
@@ -443,7 +443,7 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
         # Get user from repository to ensure they still exist
         if not claims.username:
             return FlextResult[tuple[JWTClaims, User]].fail(
-                "Invalid token: no username in claims"
+                "Invalid token: no username in claims",
             )
 
         user_result = await self.user_repo.get_by_username(claims.username)
@@ -493,7 +493,7 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
 
         if not new_access_result.success or not new_access_result.value:
             return FlextResult[dict[str, object]].fail(
-                "Failed to generate new access token"
+                "Failed to generate new access token",
             )
 
         # Generate new refresh token
@@ -504,7 +504,7 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
 
         if not new_refresh_result.success or not new_refresh_result.value:
             return FlextResult[dict[str, object]].fail(
-                "Failed to generate new refresh token"
+                "Failed to generate new refresh token",
             )
 
         return FlextResult[dict[str, object]].ok(
@@ -886,15 +886,15 @@ class FlextAuthService:
             token_result = await self._validate_token_stage(token, strategies)
             if not token_result.success or not token_result.value:
                 return FlextResult[SecurityContext].fail(
-                    token_result.error or "Token validation failed"
+                    token_result.error or "Token validation failed",
                 )
 
             user_result = await self._validate_user_stage(
-                token_result.value, strategies
+                token_result.value, strategies,
             )
             if not user_result.success or not user_result.value:
                 return FlextResult[SecurityContext].fail(
-                    user_result.error or "User validation failed"
+                    user_result.error or "User validation failed",
                 )
 
             session_result = await self._validate_session_stage(
@@ -927,7 +927,7 @@ class FlextAuthService:
         claims = token_validation.value
         if not claims:
             return FlextResult[JWTClaims].fail(
-                f"{strategies.validation_context} no data"
+                f"{strategies.validation_context} no data",
             )
 
         return FlextResult[JWTClaims].ok(claims)
@@ -943,17 +943,17 @@ class FlextAuthService:
         user_validation = await strategies.user_validator(claims)
         if not user_validation.success:
             return FlextResult[dict[str, User | JWTClaims]].fail(
-                user_validation.error or "User validation failed"
+                user_validation.error or "User validation failed",
             )
 
         user = user_validation.value
         if not user:
             return FlextResult[dict[str, User | JWTClaims]].fail(
-                "User validation returned no data"
+                "User validation returned no data",
             )
 
         return FlextResult[dict[str, User | JWTClaims]].ok(
-            {"user": user, "claims": claims}
+            {"user": user, "claims": claims},
         )
 
     async def _validate_session_stage(
@@ -994,15 +994,15 @@ class FlextAuthService:
             token_result = await self._validate_token_stage(token, strategies)
             if not token_result.success or not token_result.value:
                 return FlextResult[SecurityContext].fail(
-                    token_result.error or "Token validation failed"
+                    token_result.error or "Token validation failed",
                 )
 
             user_result = await self._validate_user_stage(
-                token_result.value, strategies
+                token_result.value, strategies,
             )
             if not user_result.success or not user_result.value:
                 return FlextResult[SecurityContext].fail(
-                    user_result.error or "User validation failed"
+                    user_result.error or "User validation failed",
                 )
 
             session_result = await self._validate_session_stage(
@@ -1020,14 +1020,14 @@ class FlextAuthService:
             )
             if not final_result.success:
                 return FlextResult[SecurityContext].fail(
-                    final_result.error or "Result creation failed"
+                    final_result.error or "Result creation failed",
                 )
 
             return final_result
 
         except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
             return FlextResult[SecurityContext].fail(
-                f"Pipeline execution failed: {e!s}"
+                f"Pipeline execution failed: {e!s}",
             )
 
     async def _execute_token_refresh_pipeline_impl(
@@ -1041,15 +1041,15 @@ class FlextAuthService:
             token_result = await self._validate_token_stage(token, strategies)
             if not token_result.success or not token_result.value:
                 return FlextResult[dict[str, object]].fail(
-                    token_result.error or "Token validation failed"
+                    token_result.error or "Token validation failed",
                 )
 
             user_result = await self._validate_user_stage(
-                token_result.value, strategies
+                token_result.value, strategies,
             )
             if not user_result.success or not user_result.value:
                 return FlextResult[dict[str, object]].fail(
-                    user_result.error or "User validation failed"
+                    user_result.error or "User validation failed",
                 )
 
             session_result = await self._validate_session_stage(
@@ -1067,14 +1067,14 @@ class FlextAuthService:
             )
             if not final_result.success:
                 return FlextResult[dict[str, object]].fail(
-                    final_result.error or "Result creation failed"
+                    final_result.error or "Result creation failed",
                 )
 
             return final_result
 
         except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
             return FlextResult[dict[str, object]].fail(
-                f"Pipeline execution failed: {e!s}"
+                f"Pipeline execution failed: {e!s}",
             )
 
     async def _create_security_context_result(
@@ -1147,7 +1147,7 @@ class FlextAuthService:
         user_id_result = self.jwt_service.extract_user_id(token)
         if not user_id_result.success or not user_id_result.value:
             return FlextResult[bool].ok(
-                FlextAuthSemanticConstants.FAILURE
+                FlextAuthSemanticConstants.FAILURE,
             )  # No valid user ID, logout unsuccessful
 
         revoke_result = await self.session_repo.revoke_all_user_sessions(
@@ -1210,7 +1210,7 @@ class FlextAuthService:
 
         if not validation.success:
             return FlextResult[bool].fail(
-                validation.error or "Current password is incorrect"
+                validation.error or "Current password is incorrect",
             )
 
         return FlextResult[bool].ok(FlextAuthSemanticConstants.SUCCESS)
@@ -1238,7 +1238,7 @@ class FlextAuthService:
         )
         if not hash_validation.success:
             return FlextResult[str].fail(
-                hash_validation.error or "Password hashing failed"
+                hash_validation.error or "Password hashing failed",
             )
 
         # hash_result.value is guaranteed to be FlextHashedPassword when success=True
@@ -1299,13 +1299,13 @@ class FlextAuthService:
         user_validation = await self._validate_password_change_user(user_id)
         if not user_validation.success:
             return FlextResult[tuple[User, str]].fail(
-                user_validation.error or "User validation failed"
+                user_validation.error or "User validation failed",
             )
 
         user = user_validation.value
         if not user:
             return FlextResult[tuple[User, str]].fail(
-                "User validation returned no data"
+                "User validation returned no data",
             )
 
         # Current password verification pipeline
@@ -1338,13 +1338,13 @@ class FlextAuthService:
         password_hashing = await self._hash_new_password(new_password)
         if not password_hashing.success:
             return FlextResult[tuple[User, str]].fail(
-                password_hashing.error or "Password hashing failed"
+                password_hashing.error or "Password hashing failed",
             )
 
         new_password_hash = password_hashing.value
         if not new_password_hash:
             return FlextResult[tuple[User, str]].fail(
-                "Password hashing returned no data"
+                "Password hashing returned no data",
             )
 
         return FlextResult[tuple[User, str]].ok((user, new_password_hash))
@@ -1415,7 +1415,7 @@ class FlextAuthService:
         )
         if not uniqueness_check.success:
             return FlextResult[User].fail(
-                uniqueness_check.error or "Uniqueness check failed"
+                uniqueness_check.error or "Uniqueness check failed",
             )
 
         # Step 3: Create and save user
@@ -1550,7 +1550,7 @@ class FlextAuthService:
 
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult[list[dict[str, object]]].fail(
-                f"Failed to get user sessions: {e}"
+                f"Failed to get user sessions: {e}",
             )
 
     # Private helper methods
@@ -1567,7 +1567,7 @@ class FlextAuthService:
                 {"value": registration_data.password},
             )
             return FlextResult[tuple[Username, UserEmail, PlainPassword]].ok(
-                (username_vo, email_vo, password_vo)
+                (username_vo, email_vo, password_vo),
             )
         except (ValueError, TypeError) as e:
             return FlextResult[tuple[Username, UserEmail, PlainPassword]].fail(
@@ -1835,7 +1835,7 @@ class FlextAuthService:
         )
         if not session_result.success:
             return FlextResult[dict[str, object]].fail(
-                f"Session creation failed: {session_result.error}"
+                f"Session creation failed: {session_result.error}",
             )
 
         session = session_result.value
@@ -1849,7 +1849,7 @@ class FlextAuthService:
         )
         if not tokens_result.success:
             return FlextResult[dict[str, object]].fail(
-                f"Token generation failed: {tokens_result.error}"
+                f"Token generation failed: {tokens_result.error}",
             )
 
         tokens = tokens_result.value
@@ -1979,7 +1979,7 @@ class FlextAuthService:
         )
         if not tokens_result.success:
             return FlextResult[dict[str, object]].fail(
-                f"Token generation failed: {tokens_result.error}"
+                f"Token generation failed: {tokens_result.error}",
             )
 
         # Type-safe: data guaranteed to exist after success check
@@ -2024,7 +2024,7 @@ class FlextAuthService:
         )
         if not user_result.success or not user_result.value:
             return FlextResult[dict[str, object]].fail(
-                user_result.error or "User validation failed"
+                user_result.error or "User validation failed",
             )
 
         # Password verification stage

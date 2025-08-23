@@ -117,7 +117,7 @@ class LockUserAccountCommand(FlextCommands.Command):
     target_user_id: str = Field(..., description="User ID to lock")
     reason: str = Field(..., description="Reason for account lock")
     locked_until: datetime | None = Field(
-        default=None, description="Lock expiration (None = permanent)"
+        default=None, description="Lock expiration (None = permanent)",
     )
 
     @override
@@ -148,7 +148,7 @@ class UnlockUserAccountCommand(FlextCommands.Command):
 
 
 class CreateUserCommandHandler(
-    FlextCommands.Handler[CreateUserCommand, dict[str, object]]
+    FlextCommands.Handler[CreateUserCommand, dict[str, object]],
 ):
     """Handler for user creation - REAL production implementation."""
 
@@ -180,7 +180,7 @@ class CreateUserCommandHandler(
         validation = command.validate_command()
         if not validation.success:
             return FlextResult[dict[str, object]].fail(
-                validation.error or "Validation failed"
+                validation.error or "Validation failed",
             )
 
         try:
@@ -199,13 +199,13 @@ class CreateUserCommandHandler(
         """Validate username and email uniqueness."""
         # Check user uniqueness - REAL repository operation
         existing_user = FlextAuthUtilities.get_user_by_username_safe(
-            self._user_repository, command.username
+            self._user_repository, command.username,
         )
         if existing_user.success and existing_user.value:
             return FlextResult[dict[str, object]].fail("Username already exists")
 
         existing_email = FlextAuthUtilities.get_user_by_email_safe(
-            self._user_repository, command.email
+            self._user_repository, command.email,
         )
         if existing_email.success and existing_email.value:
             return FlextResult[dict[str, object]].fail("Email already exists")
@@ -225,7 +225,7 @@ class CreateUserCommandHandler(
             username=command.username,
             email=command.email,
             password_hash=str(
-                hash_result.value
+                hash_result.value,
             ),  # FlextHashedPassword has __str__ method
             role=command.role,
             status=FlextUserStatus.ACTIVE,
@@ -256,12 +256,12 @@ class CreateUserCommandHandler(
                 "email": user.email,
                 "command_id": str(command.command_id),
                 "events_count": len(user.domain_events.root),
-            }
+            },
         )
 
 
 class AuthenticateUserCommandHandler(
-    FlextCommands.Handler[AuthenticateUserCommand, dict[str, object]]
+    FlextCommands.Handler[AuthenticateUserCommand, dict[str, object]],
 ):
     """Handler for user authentication - REAL production implementation."""
 
@@ -290,14 +290,14 @@ class AuthenticateUserCommandHandler(
 
     @override
     def handle(
-        self, command: AuthenticateUserCommand
+        self, command: AuthenticateUserCommand,
     ) -> FlextResult[dict[str, object]]:
         """Handle user authentication with REAL business logic."""
         # Validate command
         validation = command.validate_command()
         if not validation.success:
             return FlextResult[dict[str, object]].fail(
-                validation.error or "Validation failed"
+                validation.error or "Validation failed",
             )
 
         try:
@@ -313,12 +313,12 @@ class AuthenticateUserCommandHandler(
             return FlextResult[dict[str, object]].fail(f"Authentication failed: {e}")
 
     def _get_and_validate_user_for_auth(
-        self, command: AuthenticateUserCommand
+        self, command: AuthenticateUserCommand,
     ) -> FlextResult[object]:
         """Get user and validate account status."""
         # Get user - REAL repository operation
         user_result = FlextAuthUtilities.get_user_by_username_safe(
-            self._user_repository, command.username
+            self._user_repository, command.username,
         )
         if not user_result.success or not user_result.value:
             return FlextResult[object].fail("Invalid credentials")
@@ -328,7 +328,7 @@ class AuthenticateUserCommandHandler(
         # Check account status
         if not user.is_active():
             return FlextResult[object].fail(
-                f"Account is {user.status.value}"
+                f"Account is {user.status.value}",
             )
 
         if user.is_locked():
@@ -337,12 +337,12 @@ class AuthenticateUserCommandHandler(
         return FlextResult[object].ok(user)
 
     def _authenticate_and_generate_token(
-        self, command: AuthenticateUserCommand, user: object
+        self, command: AuthenticateUserCommand, user: object,
     ) -> FlextResult[dict[str, object]]:
         """Authenticate password and generate token."""
         # Verify password - REAL password service
         password_result = self._password_service.verify_password(
-            command.password, user.password_hash
+            command.password, user.password_hash,
         )
 
         if not password_result.success or not password_result.value:
@@ -374,7 +374,7 @@ class AuthenticateUserCommandHandler(
                 "access_token": token_result.value,
                 "command_id": str(command.command_id),
                 "events_count": len(success_user.domain_events.root),
-            }
+            },
         )
 
 
@@ -397,7 +397,7 @@ def register_auth_commands(
 
         # Register authenticate handler
         auth_handler = AuthenticateUserCommandHandler(
-            user_repository, password_service, jwt_service
+            user_repository, password_service, jwt_service,
         )
         command_bus.register_handler(AuthenticateUserCommand, auth_handler)
 

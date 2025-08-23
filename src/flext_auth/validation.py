@@ -76,7 +76,7 @@ class FlextAuthValidators:
             )
 
         if not FlextAuthConstants.Authentication.PASSWORD_VALIDATION_REGEX.match(
-            password
+            password,
         ):
             return FlextResult[None].fail(
                 "Password must contain uppercase, lowercase, digit and special character",

@@ -158,7 +158,7 @@ class FlextPasswordService:
                     FlextPlainPassword.model_validate({"value": password_str})
                 except (ValueError, TypeError) as e:
                     return FlextResult[FlextHashedPassword].fail(
-                        f"Password validation failed: {e}"
+                        f"Password validation failed: {e}",
                     )
 
             # Generate salt and hash
@@ -173,7 +173,7 @@ class FlextPasswordService:
 
         except (ValueError, TypeError, OSError) as e:
             return FlextResult[FlextHashedPassword].fail(
-                f"Password hashing failed: {e}"
+                f"Password hashing failed: {e}",
             )
 
     def verify_password(
@@ -280,16 +280,16 @@ class FlextPasswordService:
                 if vo_validation.success:
                     return FlextResult[FlextPlainPassword].ok(password_obj)
                 return FlextResult[FlextPlainPassword].fail(
-                    vo_validation.error or "Invalid password"
+                    vo_validation.error or "Invalid password",
                 )
             except (ValueError, TypeError) as e:
                 return FlextResult[FlextPlainPassword].fail(
-                    f"Generated password validation failed: {e}"
+                    f"Generated password validation failed: {e}",
                 )
 
         except (ValueError, TypeError, OSError) as e:
             return FlextResult[FlextPlainPassword].fail(
-                f"Password generation failed: {e}"
+                f"Password generation failed: {e}",
             )
 
     def _analyze_password_basic_properties(self, password: str) -> dict[str, object]:

@@ -96,7 +96,7 @@ class FlextAuth:
         )
 
     async def authenticate(
-        self, username: str, password: str
+        self, username: str, password: str,
     ) -> FlextResult[dict[str, object]]:
         """Authenticate user with username and password."""
         # Validate input
@@ -118,17 +118,17 @@ class FlextAuth:
             return FlextResult[dict[str, object]].fail(f"Authentication error: {e}")
 
     def _validate_auth_input(
-        self, username: str, password: str
+        self, username: str, password: str,
     ) -> FlextResult[dict[str, object]] | None:
         """Validate authentication input parameters."""
         if not username or not password:
             return FlextResult[dict[str, object]].fail(
-                "Username and password are required"
+                "Username and password are required",
             )
         return None
 
     async def _get_and_validate_user(
-        self, username: str, password: str
+        self, username: str, password: str,
     ) -> FlextResult[dict[str, object]]:
         """Get user from repository and validate password."""
         # Get user repository
@@ -162,7 +162,7 @@ class FlextAuth:
         return FlextResult[dict[str, object]].ok(user_repository)
 
     async def _validate_user_password(
-        self, username: str, password: str, user_repository: object
+        self, username: str, password: str, user_repository: object,
     ) -> FlextResult[dict[str, object]]:
         """Validate user exists and password is correct."""
         # Check if user exists
@@ -206,11 +206,11 @@ class FlextAuth:
                 "authenticated": True,
                 "user": {"username": user.username, "email": user.email},
                 "access_token": token_result.value,
-            }
+            },
         )
 
     async def create_user(
-        self, username: str, email: str, password: str
+        self, username: str, email: str, password: str,
     ) -> FlextResult[dict[str, object]]:
         """Create a new user."""
         # Validate input
@@ -220,7 +220,7 @@ class FlextAuth:
 
         # Get repository and validate uniqueness
         repository_result = await self._get_repository_and_validate_uniqueness(
-            username, email
+            username, email,
         )
         if not repository_result.success:
             return repository_result
@@ -229,21 +229,21 @@ class FlextAuth:
 
         # Create and save user
         return await self._create_and_save_user(
-            username, email, password, user_repository
+            username, email, password, user_repository,
         )
 
     def _validate_create_user_input(
-        self, username: str, email: str, password: str
+        self, username: str, email: str, password: str,
     ) -> FlextResult[dict[str, object]] | None:
         """Validate create user input parameters."""
         if not username or not email or not password:
             return FlextResult[dict[str, object]].fail(
-                "Username, email, and password are required"
+                "Username, email, and password are required",
             )
         return None
 
     async def _get_repository_and_validate_uniqueness(
-        self, username: str, email: str
+        self, username: str, email: str,
     ) -> FlextResult[object]:
         """Get user repository and validate uniqueness constraints."""
         # Get services from container
@@ -258,13 +258,13 @@ class FlextAuth:
 
         # Type narrowing for mypy
         if not isinstance(
-            user_repository, (InMemoryUserRepository, SimplePostgreSQLUserRepository)
+            user_repository, (InMemoryUserRepository, SimplePostgreSQLUserRepository),
         ):
             return FlextResult[object].fail("Invalid user repository type")
 
         # Check uniqueness
         error_msg = await self._validate_user_uniqueness(
-            username, email, user_repository
+            username, email, user_repository,
         )
         if error_msg:
             return FlextResult[object].fail(error_msg)
@@ -272,7 +272,7 @@ class FlextAuth:
         return FlextResult[object].ok(user_repository)
 
     async def _create_and_save_user(
-        self, username: str, email: str, password: str, user_repository: object
+        self, username: str, email: str, password: str, user_repository: object,
     ) -> FlextResult[dict[str, object]]:
         """Create user entity and save to repository."""
         # Get password service and hash password
@@ -306,11 +306,11 @@ class FlextAuth:
                 "username": user.username,
                 "email": user.email,
                 "id": str(user.id),
-            }
+            },
         )
 
     async def _validate_user_uniqueness(
-        self, username: str, email: str, user_repository: UserRepositoryType
+        self, username: str, email: str, user_repository: UserRepositoryType,
     ) -> str | None:
         """Validate that username and email are unique."""
         try:
@@ -344,7 +344,7 @@ class FlextAuth:
             return f"User validation error: {e}"
 
     async def _save_user_safely(
-        self, user: FlextUser, user_repository: UserRepositoryType
+        self, user: FlextUser, user_repository: UserRepositoryType,
     ) -> str | None:
         """Save user safely and return error message if any."""
         try:
@@ -419,7 +419,7 @@ class FlextAuth:
         if services_result.success:
             user_repo = services_result.value.get("user_repository")
             if isinstance(
-                user_repo, (InMemoryUserRepository, SimplePostgreSQLUserRepository)
+                user_repo, (InMemoryUserRepository, SimplePostgreSQLUserRepository),
             ):
                 return user_repo
         msg = "User repository not available from container"
@@ -536,7 +536,7 @@ def flext_auth_verify_password(password: str, hashed: str) -> FlextResult[bool]:
 
     if not verify_result.success:
         return FlextResult[bool].fail(
-            verify_result.error or "Password verification failed"
+            verify_result.error or "Password verification failed",
         )
 
     return FlextResult[bool].ok(verify_result.value)
@@ -595,7 +595,7 @@ def flext_auth_validate_jwt(
 
     if not validate_result.success:
         return FlextResult[dict[str, object]].fail(
-            validate_result.error or "JWT validation failed"
+            validate_result.error or "JWT validation failed",
         )
 
     # Convert JWTClaims object to dict

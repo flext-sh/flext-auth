@@ -182,7 +182,7 @@ class FlextAuthFieldSchema:
             field_name = field.field_name
             if field_name not in user_data and field.required:
                 return FlextResult[dict[str, object]].fail(
-                    f"Required field '{field_name}' is missing"
+                    f"Required field '{field_name}' is missing",
                 )
 
             if field_name in user_data:
@@ -190,7 +190,7 @@ class FlextAuthFieldSchema:
                 if validation_result.is_failure:
                     return FlextResult[dict[str, object]].fail(
                         f"Field '{field_name}' validation failed: "
-                        f"{validation_result.error}"
+                        f"{validation_result.error}",
                     )
                 validated_data[field_name] = validation_result.value
 
@@ -204,7 +204,7 @@ class FlextAuthFieldSchema:
                 if validation_result.is_failure:
                     return FlextResult[dict[str, object]].fail(
                         f"Field '{field_name}' validation failed: "
-                        f"{validation_result.error}"
+                        f"{validation_result.error}",
                     )
                 validated_data[field_name] = validation_result.value
             elif field.default_value is not None:
@@ -560,7 +560,7 @@ def validate_user_role_permissions(
     if missing_permissions:
         return FlextResult[str].fail(
             f"Role '{role}' missing required permissions: "
-            f"{', '.join(missing_permissions)}"
+            f"{', '.join(missing_permissions)}",
         )
 
     return FlextResult[str].ok(role)
@@ -697,7 +697,7 @@ def validate_complete_user_registration(
         else:
             feedback_str = "No specific suggestions available"
         return FlextResult[dict[str, object]].fail(
-            f"Password too weak. Suggestions: {feedback_str}"
+            f"Password too weak. Suggestions: {feedback_str}",
         )
 
     # Add strength analysis to validated data
@@ -753,11 +753,11 @@ def validate_user_profile_update(
 
     if not validated_changes:
         return FlextResult[dict[str, object]].fail(
-            "No valid changes detected in user data"
+            "No valid changes detected in user data",
         )
 
     return FlextResult[dict[str, object]].ok(
-        dict(validated_changes)
+        dict(validated_changes),
     )  # Convert to dict[str, object]
 
 
@@ -859,7 +859,7 @@ def validate_security_context(
         result = validator(security_data, validated_context)
         if result.is_failure:
             return FlextResult[dict[str, object]].fail(
-                result.error or "Validation failed"
+                result.error or "Validation failed",
             )
 
     return FlextResult[dict[str, object]].ok(dict(validated_context))

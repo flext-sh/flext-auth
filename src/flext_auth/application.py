@@ -263,7 +263,7 @@ class FlextSessionService(FlextDomainService[str]):
         try:
             if not user.is_active():
                 return FlextResult[FlextSession].fail(
-                    "Cannot create session for inactive user"
+                    "Cannot create session for inactive user",
                 )
 
             session = FlextSession(

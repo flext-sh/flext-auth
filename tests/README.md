@@ -146,7 +146,7 @@ def test_user_authentication_with_valid_credentials():
 
     # Then: Authentication succeeds
     assert result.success
-    assert result.data.username == "john"
+    assert result.value.username == "john"
 ```
 
 ### Factory Pattern for Test Data

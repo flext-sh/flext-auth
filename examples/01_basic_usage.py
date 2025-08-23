@@ -47,10 +47,8 @@ EXAMPLE_WORKFLOW_PASSWORD = "WorkflowPass123!"  # noqa: S105 - Example password 
 
 def example_basic_authentication() -> None:
     """Demonstrate basic authentication with FlextAuth."""
-    # Criar instância de autenticação para desenvolvimento
-    _ = (
-        FlextAuth.create_for_testing_with_in_memory()
-    )  # Use underscore to indicate intentionally unused variable
+    # Criar instância de autenticação para desenvolvimento (usando in-memory por padrão)
+    auth = FlextAuth()  # Creates in-memory repositories by default
 
     # Demonstrar configurações padrão
     print("Auth service created with default config")
@@ -71,10 +69,9 @@ def example_password_operations() -> None:
     is_invalid = flext_auth_verify_password(wrong_password, hashed_password)
     print(f"Password verification (incorrect): {is_invalid}")
 
-    # Análise de força da senha
-    strength = flext_auth_validate_password_strength(password)
-    if strength.get("feedback"):
-        print(f"Password strength: {strength.get('is_strong')}")
+    # Análise de força da senha - use unwrap_or pattern
+    is_strong = flext_auth_validate_password_strength(password).unwrap_or(False)
+    print(f"Password strength: {is_strong}")
 
     # Generate secure password
     secure_password = generate_secure_password()
@@ -102,8 +99,8 @@ def example_email_validation() -> None:
 
 async def example_user_lifecycle() -> None:
     """Demonstrate a complete user lifecycle."""
-    # Criar serviço de autenticação
-    auth = FlextAuth.create_for_testing_with_in_memory()
+    # Criar serviço de autenticação (in-memory por padrão)
+    auth = FlextAuth()
     print("Created FlextAuth instance")
 
     # Simulate user registration using real async API
@@ -130,8 +127,9 @@ async def example_user_lifecycle() -> None:
 
 def example_quick_helpers() -> None:
     """Demonstrate quick helpers and utilities."""
-    # Setup instantâneo
-    flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    # Setup instantâneo (não precisa create_REDACTED_LDAP_BIND_PASSWORD, usa padrão)
+    auth = flext_auth_quick_start()
+    print(f"Quick start service: {auth}")
 
     # Headers padrão (implementação real)
 
@@ -179,8 +177,8 @@ def example_ultra_helpers() -> None:
     auth_service = flext_auth_quick_start()
     print(f"Quick start service created: {auth_service}")
 
-    # Basic authentication demo using real async API
-    auth = FlextAuth.create_for_testing_with_in_memory()
+    # Basic authentication demo using real async API (in-memory por padrão)
+    auth = FlextAuth()
     user_result = asyncio.run(
         auth.create_user("testuser", "test@example.com", "TestPass123!")
     )
@@ -194,11 +192,11 @@ def example_ultra_helpers() -> None:
 
 async def example_advanced_registration() -> None:
     """Demonstrate advanced registration with validation."""
-    auth = FlextAuth.create_for_testing_with_in_memory()
+    auth = FlextAuth()
 
-    # First validate password strength
-    password_strength = flext_auth_validate_password_strength(EXAMPLE_ADVANCED_PASSWORD)
-    if password_strength.get("is_strong"):
+    # First validate password strength - use unwrap_or pattern
+    is_strong = flext_auth_validate_password_strength(EXAMPLE_ADVANCED_PASSWORD).unwrap_or(False)
+    if is_strong:
         print("Password meets strength requirements")
 
         # Create user with strong password using real async API
@@ -222,8 +220,8 @@ async def example_advanced_registration() -> None:
 
 def example_complete_workflow() -> None:
     """Demonstrate a complete workflow in a single function."""
-    # Create service and user in one workflow
-    auth = FlextAuth.create_for_testing_with_in_memory()
+    # Create service and user in one workflow (in-memory por padrão)
+    auth = FlextAuth()
 
     # Step 1: Create user using real async API
     user_result = asyncio.run(

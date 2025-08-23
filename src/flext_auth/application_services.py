@@ -344,7 +344,7 @@ class FlextAuthenticationService:
             # Verify password using bcrypt
             password_service = FlextPasswordService()
             verification_result = password_service.verify_password(
-                password, user.password_hash
+                password, user.password_hash,
             )
             if verification_result.success and verification_result.value:
                 return FlextResult[FlextUser].ok(user)
@@ -367,7 +367,7 @@ class FlextAuthenticationService:
             )
             if not validation_result.success:
                 return FlextResult[bool].fail(
-                    validation_result.error or "Validation failed"
+                    validation_result.error or "Validation failed",
                 )
 
             # Hash the new password and update user
@@ -447,12 +447,12 @@ class FlextAuthorizationService:
                             "description": str(getattr(perm, "description", "")),
                             "resource": str(getattr(perm, "resource", "")),
                             "action": str(getattr(perm, "action", "")),
-                        }
+                        },
                     )
                 else:
                     # Convert unknown object to dict structure
                     permissions_data.append(
-                        {"raw_permission": str(perm), "type": str(type(perm).__name__)}
+                        {"raw_permission": str(perm), "type": str(type(perm).__name__)},
                     )
 
             # Create role entity
@@ -464,7 +464,7 @@ class FlextAuthorizationService:
                     "description": description,
                     "permissions": permissions_data,
                     "is_system_role": False,
-                }
+                },
             )
 
             return FlextResult[FlextRole].ok(role)

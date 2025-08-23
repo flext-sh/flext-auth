@@ -105,7 +105,7 @@ class InMemorySessionRepository(FlextSessionRepository):
             return FlextResult[list[FlextSession]].ok(user_sessions)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[list[FlextSession]].fail(
-                f"Failed to find user sessions: {e}"
+                f"Failed to find user sessions: {e}",
             )
 
     def revoke_all_sessions_for_user(self, user_id: str) -> FlextResult[int]:

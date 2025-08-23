@@ -25,7 +25,7 @@ class FlextAuthUtilities:
 
     @staticmethod
     def get_user_by_username_safe(
-        repository: UserRepositoryType, username: str
+        repository: UserRepositoryType, username: str,
     ) -> FlextResult[FlextUser | None]:
         """Safely get user by username from either sync or async repository.
 
@@ -55,7 +55,7 @@ class FlextAuthUtilities:
 
     @staticmethod
     def get_user_by_email_safe(
-        repository: UserRepositoryType, email: str
+        repository: UserRepositoryType, email: str,
     ) -> FlextResult[FlextUser | None]:
         """Safely get user by email from either sync or async repository.
 
@@ -80,7 +80,7 @@ class FlextAuthUtilities:
 
     @staticmethod
     def save_user_safe(
-        repository: UserRepositoryType, user: FlextUser
+        repository: UserRepositoryType, user: FlextUser,
     ) -> FlextResult[FlextUser]:
         """Safely save user to either sync or async repository.
 

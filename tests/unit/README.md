@@ -105,8 +105,8 @@ def test_user_authentication_with_valid_credentials():
 
     # Then: Authentication succeeds
     assert result.success
-    assert result.data.username == "john"
-    assert result.data.is_authenticated is True
+    assert result.value.username == "john"
+    assert result.value.is_authenticated is True
 ```
 
 ### Mock Strategy
@@ -117,7 +117,7 @@ def mock_password_service():
     """Mock password service for isolated testing."""
     with patch('flext_auth.services.FlextPasswordService') as mock:
         mock.hash_password.return_value = FlextResult[None].ok("hashed_password")
-        mock.verify_password.return_value = FlextResult[None].ok(data=True)
+        mock.verify_password.return_value = FlextResult[None].ok(True)
         yield mock
 
 @pytest.fixture
@@ -233,7 +233,7 @@ def test_authentication_failure_returns_error():
     # Then: Result indicates failure with appropriate error
     assert result.is_failure
     assert "invalid credentials" in result.error.lower()
-    assert result.data is None
+    assert result.value is None
 ```
 
 ### Testing Domain Invariants

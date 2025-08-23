@@ -228,7 +228,7 @@ def _validate_token_with_secret(
                 },
             )
         return FlextResult[dict[str, object]].fail(
-            validation_result.error or "Token validation failed"
+            validation_result.error or "Token validation failed",
         )
     except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
         logger.exception("Token validation error")
@@ -571,7 +571,7 @@ class FlextAuthMixin:
                 return FlextResult[None].fail(
                     "FlextAuthService requires dependencies. "
                     "Please provide auth_service directly or use "
-                    "flext_auth_quick_start()"
+                    "flext_auth_quick_start()",
                 )
             else:
                 # Use default configuration but cannot create service without deps
@@ -597,7 +597,7 @@ class FlextAuthMixin:
                 return FlextResult[None].fail(
                     "Cannot create FlextAuthService without dependencies. "
                     "Please provide auth_service parameter or use "
-                    "flext_auth_quick_start()"
+                    "flext_auth_quick_start()",
                 )
 
             logger.info(
@@ -632,7 +632,7 @@ class FlextAuthMixin:
             async def _auth() -> FlextResult[dict[str, object]]:
                 if self._auth_service is None:
                     return FlextResult[dict[str, object]].fail(
-                        "Auth service not initialized"
+                        "Auth service not initialized",
                     )
                 auth_result = await self._auth_service.authenticate_user(
                     username,
@@ -645,7 +645,7 @@ class FlextAuthMixin:
                         {"authenticated": True, "user": auth_result.value},
                     )
                 return FlextResult[dict[str, object]].fail(
-                    auth_result.error or "Authentication failed"
+                    auth_result.error or "Authentication failed",
                 )
 
             return asyncio.run(_auth())
@@ -671,7 +671,7 @@ class FlextAuthMixin:
             async def _validate() -> FlextResult[dict[str, object]]:
                 if self._auth_service is None:
                     return FlextResult[dict[str, object]].fail(
-                        "Auth service not initialized"
+                        "Auth service not initialized",
                     )
                 validation_result = await self._auth_service.validate_token(token)
                 if validation_result.success and validation_result.value:
@@ -715,7 +715,7 @@ class FlextAuthMixin:
             async def _run() -> FlextResult[dict[str, object]]:
                 if self._auth_service is None:
                     return FlextResult[dict[str, object]].fail(
-                        "Authentication not initialized"
+                        "Authentication not initialized",
                     )
                 svc_res = await self._auth_service.authenticate_user(
                     username,
@@ -724,7 +724,7 @@ class FlextAuthMixin:
                 )
                 if not svc_res.is_success:
                     return FlextResult[dict[str, object]].fail(
-                        svc_res.error or "Authentication failed"
+                        svc_res.error or "Authentication failed",
                     )
                 # Convert FlextUser to dict format for downstream usage
                 # Type-safe: successful authentication returns FlextUser object

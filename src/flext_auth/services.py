@@ -145,7 +145,7 @@ class FlextPasswordService:
                     FlextPlainPassword.model_validate({"value": password_str})
                 except (ValueError, TypeError) as e:
                     return FlextResult[FlextHashedPassword].fail(
-                        f"Password validation failed: {e}"
+                        f"Password validation failed: {e}",
                     )
 
             # Generate salt and hash
@@ -158,20 +158,20 @@ class FlextPasswordService:
                 hashed_vo = FlextHashedPassword.model_validate({"value": hashed_str})
             except (ValueError, TypeError) as e:
                 return FlextResult[FlextHashedPassword].fail(
-                    f"Password hashing failed: {e}"
+                    f"Password hashing failed: {e}",
                 )
             # Domain VO may raise inside validate_business_rules; call to ensure validity
             try:
                 _ = hashed_vo.validate_business_rules()
             except Exception as e:
                 return FlextResult[FlextHashedPassword].fail(
-                    f"Password hashing failed: {e}"
+                    f"Password hashing failed: {e}",
                 )
             return FlextResult[FlextHashedPassword].ok(hashed_vo)
 
         except (ValueError, TypeError, OSError) as e:
             return FlextResult[FlextHashedPassword].fail(
-                f"Password hashing failed: {e}"
+                f"Password hashing failed: {e}",
             )
 
     def verify_password(
@@ -275,12 +275,12 @@ class FlextPasswordService:
                 return FlextResult[FlextPlainPassword].ok(password_obj)
             except (ValueError, TypeError) as e:
                 return FlextResult[FlextPlainPassword].fail(
-                    f"Generated password validation failed: {e}"
+                    f"Generated password validation failed: {e}",
                 )
 
         except (ValueError, TypeError, OSError) as e:
             return FlextResult[FlextPlainPassword].fail(
-                f"Password generation failed: {e}"
+                f"Password generation failed: {e}",
             )
 
     def check_password_strength(
@@ -622,13 +622,13 @@ class FlextJWTService:
             )
             if not access_result.success:
                 return FlextResult[dict[str, str]].fail(
-                    f"Access token failed: {access_result.error}"
+                    f"Access token failed: {access_result.error}",
                 )
 
             refresh_result = self.generate_refresh_token(user_id, session_id)
             if not refresh_result.success:
                 return FlextResult[dict[str, str]].fail(
-                    f"Refresh token failed: {refresh_result.error}"
+                    f"Refresh token failed: {refresh_result.error}",
                 )
 
             access_token = access_result.value
@@ -648,7 +648,7 @@ class FlextJWTService:
 
         except (ValueError, TypeError, OSError) as e:
             return FlextResult[dict[str, str]].fail(
-                f"Failed to generate token pair: {e}"
+                f"Failed to generate token pair: {e}",
             )
 
     def verify_token(self, token: str) -> FlextResult[FlextJWTClaims]:
@@ -681,7 +681,7 @@ class FlextJWTService:
             verify_result = self.verify_token(refresh_token)
             if not verify_result.success:
                 return FlextResult[str].fail(
-                    f"Invalid refresh token: {verify_result.error}"
+                    f"Invalid refresh token: {verify_result.error}",
                 )
 
             claims = verify_result.value
@@ -1044,7 +1044,7 @@ class FlextAuthenticationService:
             # Verify password using bcrypt
             password_service = FlextPasswordService()
             verification_result = password_service.verify_password(
-                password, user.password_hash
+                password, user.password_hash,
             )
             if verification_result.success and verification_result.value:
                 return FlextResult[FlextUser].ok(user)
@@ -1076,7 +1076,7 @@ class FlextAuthenticationService:
             )
             if not validation_result.success:
                 return FlextResult[bool].fail(
-                    validation_result.error or "Validation failed"
+                    validation_result.error or "Validation failed",
                 )
 
             # Hash the new password and update user
@@ -1170,7 +1170,7 @@ class FlextAuthorizationService:
                             "description": str(getattr(perm, "description", "")),
                             "resource": str(getattr(perm, "resource", "")),
                             "action": str(getattr(perm, "action", "")),
-                        }
+                        },
                     )
                 else:
                     # Convert unknown type to dict representation
@@ -1184,7 +1184,7 @@ class FlextAuthorizationService:
                     "description": description,
                     "permissions": permissions_data,
                     "is_system_role": False,
-                }
+                },
             )
 
             return FlextResult[FlextRole].ok(role)

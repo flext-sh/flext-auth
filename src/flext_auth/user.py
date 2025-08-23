@@ -32,14 +32,14 @@ class InMemoryUserRepository(FlextUserRepository):
             existing_username = self._username_index.get(user.username.lower())
             if existing_username and existing_username != user.id:
                 return FlextResult[FlextUser].fail(
-                    f"Username '{user.username}' already exists"
+                    f"Username '{user.username}' already exists",
                 )
 
             # Check for email conflicts
             existing_email = self._email_index.get(str(user.email).lower())
             if existing_email and existing_email != user.id:
                 return FlextResult[FlextUser].fail(
-                    f"Email '{user.email}' already exists"
+                    f"Email '{user.email}' already exists",
                 )
 
             # Create user with updated timestamp (entities are immutable)
@@ -86,7 +86,7 @@ class InMemoryUserRepository(FlextUserRepository):
             return FlextResult[FlextUser | None].ok(user)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[FlextUser | None].fail(
-                f"Failed to get user by username: {e}"
+                f"Failed to get user by username: {e}",
             )
 
     @override
@@ -101,7 +101,7 @@ class InMemoryUserRepository(FlextUserRepository):
             return FlextResult[FlextUser | None].ok(user)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[FlextUser | None].fail(
-                f"Failed to get user by email: {e}"
+                f"Failed to get user by email: {e}",
             )
 
     @override
@@ -176,14 +176,14 @@ class InMemoryUserRepository(FlextUserRepository):
             existing_username = self._username_index.get(user.username.lower())
             if existing_username and existing_username != str(user.id):
                 return FlextResult[FlextUser].fail(
-                    f"Username '{user.username}' already exists"
+                    f"Username '{user.username}' already exists",
                 )
 
             # Check for email conflicts
             existing_email = self._email_index.get(str(user.email).lower())
             if existing_email and existing_email != str(user.id):
                 return FlextResult[FlextUser].fail(
-                    f"Email '{user.email}' already exists"
+                    f"Email '{user.email}' already exists",
                 )
 
             # Create user with updated timestamp (entities are immutable)
@@ -222,7 +222,7 @@ class InMemoryUserRepository(FlextUserRepository):
             return FlextResult[FlextUser | None].ok(user)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[FlextUser | None].fail(
-                f"Failed to get user by username: {e}"
+                f"Failed to get user by username: {e}",
             )
 
     def get_by_email_sync(self, email: str) -> FlextResult[FlextUser | None]:
@@ -236,7 +236,7 @@ class InMemoryUserRepository(FlextUserRepository):
             return FlextResult[FlextUser | None].ok(user)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[FlextUser | None].fail(
-                f"Failed to get user by email: {e}"
+                f"Failed to get user by email: {e}",
             )
 
 

@@ -13,6 +13,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from flext_core import (
+    FlextCommands,
     FlextContainer,
     FlextResult,
     FlextServiceKey,
@@ -45,8 +46,7 @@ USER_REPOSITORY_KEY = FlextServiceKey[UserRepositoryType]("user_repository")
 SESSION_REPOSITORY_KEY = FlextServiceKey[SessionRepositoryType]("session_repository")
 AUTH_SERVICE_KEY = FlextServiceKey["FlextAuthService"]("auth_service")
 
-# Import FlextCommands from flext-core - using current API only
-from flext_core import FlextCommands
+# FlextCommands already imported at top
 
 COMMAND_BUS_KEY = FlextServiceKey[FlextCommands.Bus]("command_bus")
 
@@ -56,92 +56,80 @@ COMMAND_BUS_KEY = FlextServiceKey[FlextCommands.Bus]("command_bus")
 # =============================================================================
 
 
-def configure_flext_auth_container(
-    container: FlextContainer | None = None,
-    config: FlextAuthConfig | None = None,
-    user_repository: UserRepositoryType | None = None,
-    session_repository: SessionRepositoryType | None = None,
-) -> FlextResult[FlextContainer]:
-    """Configure FlextAuth services in the DI container.
+def _create_default_config() -> FlextAuthConfig:
+    """Create default FlextAuth configuration."""
+    return FlextAuthConfig(
+        app_name="FlextAuth",
+        version="1.0.0",
+        environment="development",
+        password_min_length=8,
+        password_max_length=128,
+        bcrypt_rounds=12,
+        max_login_attempts=5,
+        lockout_duration_minutes=30,
+        session_timeout_hours=24,
+        max_concurrent_sessions=5,
+        rate_limit_per_minute=60,
+        auth_rate_limit_per_minute=5,
+        access_token_expire_minutes=30,
+        refresh_token_expire_days=7,
+        jwt_secret_key="dev-secret-key-change-in-production",  # noqa: S106
+    )
 
-    This function consolidates ALL service registration to eliminate duplications
-    and provide a single configuration point for the entire authentication system.
 
-    Args:
-        container: Optional existing container (creates new if None)
-        config: Optional auth configuration (creates default if None)
-        user_repository: Optional user repository (in-memory or PostgreSQL, creates in-memory if None)
-        session_repository: Optional session repository (in-memory or PostgreSQL, creates in-memory if None)
-
-    Returns:
-        FlextResult containing configured container or error
-
-    """
-    if container is None:
-        container = get_flext_container()
-
-    if config is None:
-        config = FlextAuthConfig(
-            app_name="FlextAuth",
-            version="1.0.0",
-            environment="development",
-            password_min_length=8,
-            password_max_length=128,
-            bcrypt_rounds=12,
-            max_login_attempts=5,
-            lockout_duration_minutes=30,
-            session_timeout_hours=24,
-            max_concurrent_sessions=5,
-            rate_limit_per_minute=60,
-            auth_rate_limit_per_minute=5,
-            access_token_expire_minutes=30,
-            refresh_token_expire_days=7,
-            jwt_secret_key="dev-secret-key-change-in-production",  # noqa: S106
-        )
-
+def _register_core_services(
+    config: FlextAuthConfig,
+) -> FlextResult[tuple[FlextPasswordService, FlextJWTService]]:
+    """Register core services (config, password, JWT)."""
     # Register configuration first
     register_result = register_typed(AUTH_CONFIG_KEY, config)
     if not register_result.success:
-        return FlextResult[FlextContainer].fail(
-            f"Failed to register auth config: {register_result.error}"
-        )
+        return FlextResult.fail(f"Failed to register auth config: {register_result.error}")
 
     # Register password service
     password_service = FlextPasswordService()
     register_result = register_typed(PASSWORD_SERVICE_KEY, password_service)
     if not register_result.success:
-        return FlextResult[FlextContainer].fail(
-            f"Failed to register password service: {register_result.error}"
-        )
+        return FlextResult.fail(f"Failed to register password service: {register_result.error}")
 
     # Register JWT service
     jwt_service = FlextJWTService(
-        secret_key=config.jwt_secret_key or "dev-secret-key-change-in-production"
+        secret_key=config.jwt_secret_key or "dev-secret-key-change-in-production",
     )
     register_result = register_typed(JWT_SERVICE_KEY, jwt_service)
     if not register_result.success:
-        return FlextResult[FlextContainer].fail(
-            f"Failed to register JWT service: {register_result.error}"
-        )
+        return FlextResult.fail(f"Failed to register JWT service: {register_result.error}")
 
-    # Register repositories (in-memory by default for flexibility)
-    if user_repository is None:
-        user_repository = InMemoryUserRepository()
-    register_result = register_typed(USER_REPOSITORY_KEY, user_repository)
+    return FlextResult.ok((password_service, jwt_service))
+
+
+def _register_repositories(
+    user_repository: UserRepositoryType | None,
+    session_repository: SessionRepositoryType | None,
+) -> FlextResult[tuple[UserRepositoryType, SessionRepositoryType]]:
+    """Register repositories with defaults if None."""
+    # Register user repository
+    final_user_repo = user_repository or InMemoryUserRepository()
+    register_result = register_typed(USER_REPOSITORY_KEY, final_user_repo)
     if not register_result.success:
-        return FlextResult[FlextContainer].fail(
-            f"Failed to register user repository: {register_result.error}"
-        )
+        return FlextResult.fail(f"Failed to register user repository: {register_result.error}")
 
-    if session_repository is None:
-        session_repository = InMemorySessionRepository()
-    register_result = register_typed(SESSION_REPOSITORY_KEY, session_repository)
+    # Register session repository
+    final_session_repo = session_repository or InMemorySessionRepository()
+    register_result = register_typed(SESSION_REPOSITORY_KEY, final_session_repo)
     if not register_result.success:
-        return FlextResult[FlextContainer].fail(
-            f"Failed to register session repository: {register_result.error}"
-        )
+        return FlextResult.fail(f"Failed to register session repository: {register_result.error}")
 
-    # Register main auth service (imported here to avoid circular imports)
+    return FlextResult.ok((final_user_repo, final_session_repo))
+
+
+def _register_auth_service(
+    user_repository: UserRepositoryType,
+    session_repository: SessionRepositoryType,
+    password_service: FlextPasswordService,
+    jwt_service: FlextJWTService,
+) -> FlextResult[None]:
+    """Register main auth service."""
     from flext_auth.auth import FlextAuthService, FlextAuthServiceDependencies
 
     dependencies = FlextAuthServiceDependencies(
@@ -155,33 +143,73 @@ def configure_flext_auth_container(
     auth_service = FlextAuthService(dependencies)
     register_result = register_typed(AUTH_SERVICE_KEY, auth_service)
     if not register_result.success:
-        return FlextResult[FlextContainer].fail(
-            f"Failed to register auth service: {register_result.error}"
-        )
+        return FlextResult.fail(f"Failed to register auth service: {register_result.error}")
 
-    # Register command bus and CQRS handlers
+    return FlextResult.ok(None)
+
+
+def _register_command_bus(
+    user_repository: UserRepositoryType,
+    password_service: FlextPasswordService,
+    jwt_service: FlextJWTService,
+) -> FlextResult[None]:
+    """Register command bus and CQRS handlers."""
     try:
         # Create and register command bus
         command_bus = FlextCommands.Bus()
         register_result = register_typed(COMMAND_BUS_KEY, command_bus)
         if not register_result.success:
-            return FlextResult[FlextContainer].fail(
-                f"Failed to register command bus: {register_result.error}"
-            )
+            return FlextResult.fail(f"Failed to register command bus: {register_result.error}")
 
-        # Register authentication command handlers (import here to avoid circular import)
+        # Register authentication command handlers
         from flext_auth.commands import register_auth_commands
 
         handler_register_result = register_auth_commands(
-            command_bus, user_repository, password_service, jwt_service
+            command_bus, user_repository, password_service, jwt_service,
         )
         if not handler_register_result.success:
-            return FlextResult[FlextContainer].fail(
-                f"Failed to register auth command handlers: {handler_register_result.error}"
-            )
+            return FlextResult.fail(f"Failed to register auth command handlers: {handler_register_result.error}")
 
+        return FlextResult.ok(None)
     except Exception as e:
-        return FlextResult[FlextContainer].fail(f"Failed to setup CQRS commands: {e}")
+        return FlextResult.fail(f"Failed to setup CQRS commands: {e}")
+
+
+def configure_flext_auth_container(
+    container: FlextContainer | None = None,
+    config: FlextAuthConfig | None = None,
+    user_repository: UserRepositoryType | None = None,
+    session_repository: SessionRepositoryType | None = None,
+) -> FlextResult[FlextContainer]:
+    """Configure FlextAuth services in the DI container."""
+    container = container or get_flext_container()
+    config = config or _create_default_config()
+
+    # Register core services
+    core_result = _register_core_services(config)
+    if core_result.is_failure:
+        return FlextResult[FlextContainer].fail(core_result.error)
+    password_service, jwt_service = core_result.value
+
+    # Register repositories
+    repo_result = _register_repositories(user_repository, session_repository)
+    if repo_result.is_failure:
+        return FlextResult[FlextContainer].fail(repo_result.error)
+    final_user_repo, final_session_repo = repo_result.value
+
+    # Register auth service
+    auth_result = _register_auth_service(
+        final_user_repo, final_session_repo, password_service, jwt_service,
+    )
+    if auth_result.is_failure:
+        return FlextResult[FlextContainer].fail(auth_result.error)
+
+    # Register command bus
+    command_result = _register_command_bus(
+        final_user_repo, password_service, jwt_service,
+    )
+    if command_result.is_failure:
+        return FlextResult[FlextContainer].fail(command_result.error)
 
     return FlextResult[FlextContainer].ok(container)
 
@@ -200,49 +228,38 @@ def get_flext_auth_services(
 
     services: dict[str, object] = {}
 
-    # Get each service using type-safe keys
-    from flext_core import get_typed
+    # Use unwrap_or pattern for cleaner service collection
+    config = get_typed(AUTH_CONFIG_KEY, FlextAuthConfig).unwrap_or(None)
+    if config:
+        services["config"] = config
 
-    config_result = get_typed(AUTH_CONFIG_KEY, FlextAuthConfig)
-    if config_result.success:
-        services["config"] = config_result.value
+    password_service = get_typed(PASSWORD_SERVICE_KEY, FlextPasswordService).unwrap_or(None)
+    if password_service:
+        services["password_service"] = password_service
 
-    password_result = get_typed(PASSWORD_SERVICE_KEY, FlextPasswordService)
-    if password_result.success:
-        services["password_service"] = password_result.value
+    jwt_service = get_typed(JWT_SERVICE_KEY, FlextJWTService).unwrap_or(None)
+    if jwt_service:
+        services["jwt_service"] = jwt_service
 
-    jwt_result = get_typed(JWT_SERVICE_KEY, FlextJWTService)
-    if jwt_result.success:
-        services["jwt_service"] = jwt_result.value
+    # Get repositories - use unwrap_or for cleaner handling
+    user_repo = container.get(str(USER_REPOSITORY_KEY)).unwrap_or(None)
+    if user_repo:
+        services["user_repository"] = user_repo
 
-    # Get repositories using proper FlextContainer.get() API
-    try:
-        user_repo_result = container.get(str(USER_REPOSITORY_KEY))
-        if user_repo_result.success:
-            services["user_repository"] = user_repo_result.value
+    session_repo = container.get(str(SESSION_REPOSITORY_KEY)).unwrap_or(None)
+    if session_repo:
+        services["session_repository"] = session_repo
 
-        session_repo_result = container.get(str(SESSION_REPOSITORY_KEY))
-        if session_repo_result.success:
-            services["session_repository"] = session_repo_result.value
-    except Exception:
-        # Fallback if container access fails
-        pass
-
-    # Import here to avoid circular imports
+    # Get auth service (TYPE_CHECKING import resolved at runtime)
     from flext_auth.auth import FlextAuthService
+    auth_service = get_typed(AUTH_SERVICE_KEY, FlextAuthService).unwrap_or(None)
+    if auth_service:
+        services["auth_service"] = auth_service
 
-    auth_service_result = get_typed(AUTH_SERVICE_KEY, FlextAuthService)
-    if auth_service_result.success:
-        services["auth_service"] = auth_service_result.value
-
-    # Get command bus
-    try:
-        command_bus_result = get_typed(COMMAND_BUS_KEY, FlextCommands.Bus)
-        if command_bus_result.success:
-            services["command_bus"] = command_bus_result.value
-    except Exception:
-        # Command bus is optional in service collection
-        pass
+    # Get command bus (optional) - use unwrap_or
+    command_bus = get_typed(COMMAND_BUS_KEY, FlextCommands.Bus).unwrap_or(None)
+    if command_bus:
+        services["command_bus"] = command_bus
 
     return FlextResult[dict[str, object]].ok(services)
 
@@ -276,11 +293,11 @@ def get_command_bus() -> FlextResult[FlextCommands.Bus | None]:
         if bus_result.success:
             return FlextResult[FlextCommands.Bus | None].ok(bus_result.value)
         return FlextResult[FlextCommands.Bus | None].fail(
-            bus_result.error or "Command bus not available"
+            bus_result.error or "Command bus not available",
         )
     except Exception as e:
         return FlextResult[FlextCommands.Bus | None].fail(
-            f"Command bus not available: {e}"
+            f"Command bus not available: {e}",
         )
 
 
