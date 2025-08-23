@@ -48,7 +48,7 @@ EXAMPLE_WORKFLOW_PASSWORD = "WorkflowPass123!"  # noqa: S105 - Example password 
 def example_basic_authentication() -> None:
     """Demonstrate basic authentication with FlextAuth."""
     # Criar instância de autenticação para desenvolvimento (usando in-memory por padrão)
-    auth = FlextAuth()  # Creates in-memory repositories by default
+    FlextAuth()  # Creates in-memory repositories by default
 
     # Demonstrar configurações padrão
     print("Auth service created with default config")
@@ -195,7 +195,9 @@ async def example_advanced_registration() -> None:
     auth = FlextAuth()
 
     # First validate password strength - use unwrap_or pattern
-    is_strong = flext_auth_validate_password_strength(EXAMPLE_ADVANCED_PASSWORD).unwrap_or(False)
+    is_strong = flext_auth_validate_password_strength(
+        EXAMPLE_ADVANCED_PASSWORD
+    ).unwrap_or(False)
     if is_strong:
         print("Password meets strength requirements")
 

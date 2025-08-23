@@ -84,13 +84,17 @@ def _register_core_services(
     # Register configuration first
     register_result = register_typed(AUTH_CONFIG_KEY, config)
     if not register_result.success:
-        return FlextResult.fail(f"Failed to register auth config: {register_result.error}")
+        return FlextResult.fail(
+            f"Failed to register auth config: {register_result.error}"
+        )
 
     # Register password service
     password_service = FlextPasswordService()
     register_result = register_typed(PASSWORD_SERVICE_KEY, password_service)
     if not register_result.success:
-        return FlextResult.fail(f"Failed to register password service: {register_result.error}")
+        return FlextResult.fail(
+            f"Failed to register password service: {register_result.error}"
+        )
 
     # Register JWT service
     jwt_service = FlextJWTService(
@@ -98,7 +102,9 @@ def _register_core_services(
     )
     register_result = register_typed(JWT_SERVICE_KEY, jwt_service)
     if not register_result.success:
-        return FlextResult.fail(f"Failed to register JWT service: {register_result.error}")
+        return FlextResult.fail(
+            f"Failed to register JWT service: {register_result.error}"
+        )
 
     return FlextResult.ok((password_service, jwt_service))
 
@@ -112,13 +118,17 @@ def _register_repositories(
     final_user_repo = user_repository or InMemoryUserRepository()
     register_result = register_typed(USER_REPOSITORY_KEY, final_user_repo)
     if not register_result.success:
-        return FlextResult.fail(f"Failed to register user repository: {register_result.error}")
+        return FlextResult.fail(
+            f"Failed to register user repository: {register_result.error}"
+        )
 
     # Register session repository
     final_session_repo = session_repository or InMemorySessionRepository()
     register_result = register_typed(SESSION_REPOSITORY_KEY, final_session_repo)
     if not register_result.success:
-        return FlextResult.fail(f"Failed to register session repository: {register_result.error}")
+        return FlextResult.fail(
+            f"Failed to register session repository: {register_result.error}"
+        )
 
     return FlextResult.ok((final_user_repo, final_session_repo))
 
@@ -143,7 +153,9 @@ def _register_auth_service(
     auth_service = FlextAuthService(dependencies)
     register_result = register_typed(AUTH_SERVICE_KEY, auth_service)
     if not register_result.success:
-        return FlextResult.fail(f"Failed to register auth service: {register_result.error}")
+        return FlextResult.fail(
+            f"Failed to register auth service: {register_result.error}"
+        )
 
     return FlextResult.ok(None)
 
@@ -159,16 +171,23 @@ def _register_command_bus(
         command_bus = FlextCommands.Bus()
         register_result = register_typed(COMMAND_BUS_KEY, command_bus)
         if not register_result.success:
-            return FlextResult.fail(f"Failed to register command bus: {register_result.error}")
+            return FlextResult.fail(
+                f"Failed to register command bus: {register_result.error}"
+            )
 
         # Register authentication command handlers
         from flext_auth.commands import register_auth_commands
 
         handler_register_result = register_auth_commands(
-            command_bus, user_repository, password_service, jwt_service,
+            command_bus,
+            user_repository,
+            password_service,
+            jwt_service,
         )
         if not handler_register_result.success:
-            return FlextResult.fail(f"Failed to register auth command handlers: {handler_register_result.error}")
+            return FlextResult.fail(
+                f"Failed to register auth command handlers: {handler_register_result.error}"
+            )
 
         return FlextResult.ok(None)
     except Exception as e:
@@ -199,14 +218,19 @@ def configure_flext_auth_container(
 
     # Register auth service
     auth_result = _register_auth_service(
-        final_user_repo, final_session_repo, password_service, jwt_service,
+        final_user_repo,
+        final_session_repo,
+        password_service,
+        jwt_service,
     )
     if auth_result.is_failure:
         return FlextResult[FlextContainer].fail(auth_result.error)
 
     # Register command bus
     command_result = _register_command_bus(
-        final_user_repo, password_service, jwt_service,
+        final_user_repo,
+        password_service,
+        jwt_service,
     )
     if command_result.is_failure:
         return FlextResult[FlextContainer].fail(command_result.error)
@@ -233,7 +257,9 @@ def get_flext_auth_services(
     if config:
         services["config"] = config
 
-    password_service = get_typed(PASSWORD_SERVICE_KEY, FlextPasswordService).unwrap_or(None)
+    password_service = get_typed(PASSWORD_SERVICE_KEY, FlextPasswordService).unwrap_or(
+        None
+    )
     if password_service:
         services["password_service"] = password_service
 
@@ -252,6 +278,7 @@ def get_flext_auth_services(
 
     # Get auth service (TYPE_CHECKING import resolved at runtime)
     from flext_auth.auth import FlextAuthService
+
     auth_service = get_typed(AUTH_SERVICE_KEY, FlextAuthService).unwrap_or(None)
     if auth_service:
         services["auth_service"] = auth_service

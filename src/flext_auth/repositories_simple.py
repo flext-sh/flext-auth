@@ -42,7 +42,10 @@ class AsyncPGConnectionContext(Protocol):
         ...
 
     async def __aexit__(
-        self, exc_type: object, exc_val: object, exc_tb: object,
+        self,
+        exc_type: object,
+        exc_val: object,
+        exc_tb: object,
     ) -> None:
         """Exit context manager."""
         ...
@@ -208,7 +211,8 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
         try:
             async with self._pool.acquire() as conn:
                 row = await conn.fetchrow(
-                    "SELECT * FROM flext_users WHERE id = $1", user_id,
+                    "SELECT * FROM flext_users WHERE id = $1",
+                    user_id,
                 )
 
                 if not row:
@@ -227,7 +231,8 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
         try:
             async with self._pool.acquire() as conn:
                 row = await conn.fetchrow(
-                    "SELECT * FROM flext_users WHERE username = $1", username,
+                    "SELECT * FROM flext_users WHERE username = $1",
+                    username,
                 )
 
                 if not row:
@@ -246,7 +251,8 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
         try:
             async with self._pool.acquire() as conn:
                 row = await conn.fetchrow(
-                    "SELECT * FROM flext_users WHERE email = $1", email,
+                    "SELECT * FROM flext_users WHERE email = $1",
+                    email,
                 )
 
                 if not row:
@@ -265,7 +271,8 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
         try:
             async with self._pool.acquire() as conn:
                 result = await conn.execute(
-                    "DELETE FROM flext_users WHERE id = $1", user_id,
+                    "DELETE FROM flext_users WHERE id = $1",
+                    user_id,
                 )
                 return FlextResult[bool].ok(result == "DELETE 1")
 
@@ -396,7 +403,8 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
         try:
             async with self._pool.acquire() as conn:
                 row = await conn.fetchrow(
-                    "SELECT * FROM flext_sessions WHERE id = $1", session_id,
+                    "SELECT * FROM flext_sessions WHERE id = $1",
+                    session_id,
                 )
 
                 if not row:
@@ -436,7 +444,8 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
         try:
             async with self._pool.acquire() as conn:
                 result = await conn.execute(
-                    "DELETE FROM flext_sessions WHERE id = $1", session_id,
+                    "DELETE FROM flext_sessions WHERE id = $1",
+                    session_id,
                 )
                 return FlextResult[bool].ok(result == "DELETE 1")
 

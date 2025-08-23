@@ -118,7 +118,8 @@ class FlextAuthService:
 
             # 4. Verify password hash matches the provided password
             password_verify_result = self.deps.password_service.verify_password(
-                password, user.password_hash,
+                password,
+                user.password_hash,
             )
             if not password_verify_result.success or not password_verify_result.value:
                 # Increment failed login attempts using domain method

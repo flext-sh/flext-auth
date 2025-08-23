@@ -890,7 +890,8 @@ class FlextAuthService:
                 )
 
             user_result = await self._validate_user_stage(
-                token_result.value, strategies,
+                token_result.value,
+                strategies,
             )
             if not user_result.success or not user_result.value:
                 return FlextResult[SecurityContext].fail(
@@ -998,7 +999,8 @@ class FlextAuthService:
                 )
 
             user_result = await self._validate_user_stage(
-                token_result.value, strategies,
+                token_result.value,
+                strategies,
             )
             if not user_result.success or not user_result.value:
                 return FlextResult[SecurityContext].fail(
@@ -1045,7 +1047,8 @@ class FlextAuthService:
                 )
 
             user_result = await self._validate_user_stage(
-                token_result.value, strategies,
+                token_result.value,
+                strategies,
             )
             if not user_result.success or not user_result.value:
                 return FlextResult[dict[str, object]].fail(

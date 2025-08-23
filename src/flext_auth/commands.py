@@ -117,7 +117,8 @@ class LockUserAccountCommand(FlextCommands.Command):
     target_user_id: str = Field(..., description="User ID to lock")
     reason: str = Field(..., description="Reason for account lock")
     locked_until: datetime | None = Field(
-        default=None, description="Lock expiration (None = permanent)",
+        default=None,
+        description="Lock expiration (None = permanent)",
     )
 
     @override
@@ -195,24 +196,30 @@ class CreateUserCommandHandler(
         except Exception as e:
             return FlextResult[dict[str, object]].fail(f"User creation failed: {e}")
 
-    def _validate_user_uniqueness(self, command: CreateUserCommand) -> FlextResult[dict[str, object]]:
+    def _validate_user_uniqueness(
+        self, command: CreateUserCommand
+    ) -> FlextResult[dict[str, object]]:
         """Validate username and email uniqueness."""
         # Check user uniqueness - REAL repository operation
         existing_user = FlextAuthUtilities.get_user_by_username_safe(
-            self._user_repository, command.username,
+            self._user_repository,
+            command.username,
         )
         if existing_user.success and existing_user.value:
             return FlextResult[dict[str, object]].fail("Username already exists")
 
         existing_email = FlextAuthUtilities.get_user_by_email_safe(
-            self._user_repository, command.email,
+            self._user_repository,
+            command.email,
         )
         if existing_email.success and existing_email.value:
             return FlextResult[dict[str, object]].fail("Email already exists")
 
         return FlextResult[dict[str, object]].ok({})
 
-    def _create_and_save_user(self, command: CreateUserCommand) -> FlextResult[dict[str, object]]:
+    def _create_and_save_user(
+        self, command: CreateUserCommand
+    ) -> FlextResult[dict[str, object]]:
         """Create user entity and save to repository."""
         # Hash password - REAL password service
         hash_result = self._password_service.hash_password(command.password)
@@ -290,7 +297,8 @@ class AuthenticateUserCommandHandler(
 
     @override
     def handle(
-        self, command: AuthenticateUserCommand,
+        self,
+        command: AuthenticateUserCommand,
     ) -> FlextResult[dict[str, object]]:
         """Handle user authentication with REAL business logic."""
         # Validate command
@@ -313,12 +321,14 @@ class AuthenticateUserCommandHandler(
             return FlextResult[dict[str, object]].fail(f"Authentication failed: {e}")
 
     def _get_and_validate_user_for_auth(
-        self, command: AuthenticateUserCommand,
+        self,
+        command: AuthenticateUserCommand,
     ) -> FlextResult[object]:
         """Get user and validate account status."""
         # Get user - REAL repository operation
         user_result = FlextAuthUtilities.get_user_by_username_safe(
-            self._user_repository, command.username,
+            self._user_repository,
+            command.username,
         )
         if not user_result.success or not user_result.value:
             return FlextResult[object].fail("Invalid credentials")
@@ -337,12 +347,15 @@ class AuthenticateUserCommandHandler(
         return FlextResult[object].ok(user)
 
     def _authenticate_and_generate_token(
-        self, command: AuthenticateUserCommand, user: object,
+        self,
+        command: AuthenticateUserCommand,
+        user: object,
     ) -> FlextResult[dict[str, object]]:
         """Authenticate password and generate token."""
         # Verify password - REAL password service
         password_result = self._password_service.verify_password(
-            command.password, user.password_hash,
+            command.password,
+            user.password_hash,
         )
 
         if not password_result.success or not password_result.value:
@@ -397,7 +410,9 @@ def register_auth_commands(
 
         # Register authenticate handler
         auth_handler = AuthenticateUserCommandHandler(
-            user_repository, password_service, jwt_service,
+            user_repository,
+            password_service,
+            jwt_service,
         )
         command_bus.register_handler(AuthenticateUserCommand, auth_handler)
 

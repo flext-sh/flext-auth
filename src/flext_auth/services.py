@@ -1044,7 +1044,8 @@ class FlextAuthenticationService:
             # Verify password using bcrypt
             password_service = FlextPasswordService()
             verification_result = password_service.verify_password(
-                password, user.password_hash,
+                password,
+                user.password_hash,
             )
             if verification_result.success and verification_result.value:
                 return FlextResult[FlextUser].ok(user)

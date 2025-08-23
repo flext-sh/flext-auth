@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from flext_auth.entities import FlextUser
     from flext_auth.models import FlextSession
 
+
 # Protocol-based types for proper typing without circular imports
 class UserRepositoryProtocol(Protocol):
     """Protocol for user repository implementations."""
@@ -37,6 +38,7 @@ class UserRepositoryProtocol(Protocol):
         """Get user by email."""
         ...
 
+
 class SessionRepositoryProtocol(Protocol):
     """Protocol for session repository implementations."""
 
@@ -55,6 +57,7 @@ class SessionRepositoryProtocol(Protocol):
     async def delete(self, session_id: str) -> FlextResult[bool]:
         """Delete session."""
         ...
+
 
 # Type aliases using protocols
 UserRepositoryType = UserRepositoryProtocol

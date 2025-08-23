@@ -252,7 +252,8 @@ class FlextAuthErrorUtils:
 
     @staticmethod
     def handle_exception(
-        e: Exception, operation: str = "operation",
+        e: Exception,
+        operation: str = "operation",
     ) -> FlextResult[None]:
         """Handle exception and return standardized error result."""
         return FlextResult[None].fail(f"Failed to {operation}: {e}")
