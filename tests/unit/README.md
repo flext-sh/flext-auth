@@ -117,7 +117,7 @@ def mock_password_service():
     """Mock password service for isolated testing."""
     with patch('flext_auth.services.FlextPasswordService') as mock:
         mock.hash_password.return_value = FlextResult[None].ok("hashed_password")
-        mock.verify_password.return_value = FlextResult[None].ok(True)
+        mock.verify_password.return_value = FlextResult[None].ok(data=True)
         yield mock
 
 @pytest.fixture
