@@ -789,7 +789,7 @@ class TestSessionRepository:
         await session_repository.save(active_session)
 
         # Cleanup expired sessions
-        result = session_repository.cleanup_expired_sessions()
+        result = await session_repository.cleanup_expired_sessions()
         assert result.success
         if result.value != EXPECTED_BULK_SIZE:  # 2 expired sessions cleaned:
             msg: str = f"Expected {2}, got {result.value}"

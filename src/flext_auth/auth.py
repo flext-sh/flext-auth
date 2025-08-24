@@ -8,11 +8,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import secrets
-from abc import ABC, abstractmethod
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import cast, override
+from typing import Protocol, cast, override
 
 from flext_core import (
     FlextAlreadyExistsError,
@@ -36,14 +35,15 @@ from flext_auth.models import (
     FlextSession as Session,
     FlextSessionStatus as SessionStatus,
 )
-from flext_auth.password_service import (
+from flext_auth.password import (
     FlextPasswordService as PasswordService,
 )
-from flext_auth.repositories_simple import (
+from flext_auth.repositories import (
     FlextSessionRepository,
     FlextUserRepository,
 )
-from flext_auth.value_objects import (
+from flext_auth.types import SessionRepositoryType, UserRepositoryType
+from flext_auth.values import (
     FlextJWTClaims as JWTClaims,
     FlextPlainPassword as PlainPassword,
     FlextSecurityContext as SecurityContext,
@@ -100,8 +100,8 @@ class FlextAuthServiceConfig:
 class FlextAuthServiceDependencies:
     """Parameter Object for FlextAuthService dependencies - reduces arguments."""
 
-    user_repository: FlextUserRepository
-    session_repository: FlextSessionRepository
+    user_repository: UserRepositoryType
+    session_repository: SessionRepositoryType
     password_service: PasswordService
     jwt_service: JWTService
     config: FlextAuthServiceConfig | None = None
@@ -128,10 +128,9 @@ class FlextUserRegistrationData:
 # =============================================================================
 
 
-class AuthenticationStrategy(ABC):
-    """Strategy Pattern: Abstract base for authentication operations."""
+class AuthenticationStrategy(Protocol):
+    """Strategy Pattern: Authentication protocol using flext-core patterns."""
 
-    @abstractmethod
     async def authenticate(
         self,
         username: str,
@@ -140,24 +139,24 @@ class AuthenticationStrategy(ABC):
         user_agent: str | None,
     ) -> FlextResult[dict[str, object]]:
         """Execute authentication strategy."""
+        ...
 
 
-class TokenManagementStrategy(ABC):
-    """Strategy Pattern: Abstract base for token operations."""
+class TokenManagementStrategy(Protocol):
+    """Strategy Pattern: Token management protocol using flext-core patterns."""
 
-    @abstractmethod
     async def validate_token(self, token: str) -> FlextResult[SecurityContext]:
         """Validate token using specific strategy."""
+        ...
 
-    @abstractmethod
     async def refresh_token(self, refresh_token: str) -> FlextResult[dict[str, object]]:
         """Refresh token using specific strategy."""
+        ...
 
 
-class SessionManagementStrategy(ABC):
-    """Strategy Pattern: Abstract base for session operations."""
+class SessionManagementStrategy(Protocol):
+    """Strategy Pattern: Session management protocol using flext-core patterns."""
 
-    @abstractmethod
     async def create_session(
         self,
         user: User,
@@ -165,17 +164,18 @@ class SessionManagementStrategy(ABC):
         user_agent: str | None,
     ) -> FlextResult[Session]:
         """Create session using specific strategy."""
+        ...
 
 
-class UserManagementStrategy(ABC):
-    """Strategy Pattern: Abstract base for user operations."""
+class UserManagementStrategy(Protocol):
+    """Strategy Pattern: User management protocol using flext-core patterns."""
 
-    @abstractmethod
     async def register_user(
         self,
         registration_data: FlextUserRegistrationData,
     ) -> FlextResult[User]:
         """Register user using specific strategy."""
+        ...
 
 
 # =============================================================================
@@ -241,10 +241,10 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
 
     def __init__(
         self,
-        user_repo: FlextUserRepository,
+        user_repo: UserRepositoryType,
         password_service: PasswordService,
         jwt_service: JWTService,
-        session_repo: FlextSessionRepository,
+        session_repo: SessionRepositoryType,
         config: FlextAuthServiceConfig,
     ) -> None:
         """Initialize dependencies for authentication strategy."""
@@ -283,7 +283,9 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
         """Execute authentication pipeline with early exits."""
         # Step 1: Find user
         user_result = await self.user_repo.get_by_username(username)
-        user = user_result.unwrap_or(None)
+        if not user_result.success or not user_result.value:
+            return FlextResult[dict[str, object]].fail("Invalid username or password")
+        user = user_result.value
         if not user:
             return FlextResult[dict[str, object]].fail("Invalid username or password")
 
@@ -292,7 +294,7 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
             password,
             user.password_hash,
         )
-        if not password_result.unwrap_or(False):  # noqa: FBT003
+        if not password_result.unwrap_or(default=False):
             return FlextResult[dict[str, object]].fail("Invalid username or password")
 
         # Step 3: Generate tokens and session
@@ -378,8 +380,8 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
     def __init__(
         self,
         jwt_service: JWTService,
-        user_repo: FlextUserRepository,
-        session_repo: FlextSessionRepository,
+        user_repo: UserRepositoryType,
+        session_repo: SessionRepositoryType,
     ) -> None:
         """Initialize dependencies for token management strategy."""
         self.jwt_service = jwt_service
@@ -447,7 +449,9 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
             )
 
         user_result = await self.user_repo.get_by_username(claims.username)
-        user = user_result.unwrap_or(None)
+        if not user_result.success or not user_result.value:
+            return FlextResult[tuple[JWTClaims, User]].fail("User not found")
+        user = user_result.value
         if not user:
             return FlextResult[tuple[JWTClaims, User]].fail("User not found")
 
@@ -478,7 +482,7 @@ class DefaultTokenManagementStrategy(TokenManagementStrategy):
 
         # Implement proper refresh token validation and generation
         verify_result = self.jwt_service.verify_token(refresh_token)
-        if not verify_result.unwrap_or(None):
+        if not verify_result.success:
             return FlextResult[dict[str, object]].fail("Invalid refresh token")
 
         claims = verify_result.value
@@ -520,7 +524,7 @@ class DefaultSessionManagementStrategy(SessionManagementStrategy):
 
     def __init__(
         self,
-        session_repo: FlextSessionRepository,
+        session_repo: SessionRepositoryType,
         config: FlextAuthServiceConfig,
     ) -> None:
         """Initialize dependencies for session management strategy."""
@@ -554,7 +558,7 @@ class DefaultUserManagementStrategy(UserManagementStrategy):
 
     def __init__(
         self,
-        user_repo: FlextUserRepository,
+        user_repo: UserRepositoryType,
         password_service: PasswordService,
     ) -> None:
         """Initialize dependencies for user management strategy."""
@@ -1519,6 +1523,24 @@ class FlextAuthService:
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult[int].fail(f"Session cleanup failed: {e}")
 
+    # Alias methods for backwards compatibility
+    async def create_user(
+        self,
+        registration_data: FlextUserRegistrationData,
+    ) -> FlextResult[User]:
+        """Create user - alias for register_user for backwards compatibility."""
+        return await self.register_user(registration_data)
+
+    async def authenticate(
+        self,
+        username: str,
+        password: str,
+        ip_address: str,
+        user_agent: str | None = None,
+    ) -> FlextResult[dict[str, object]]:
+        """Authenticate user - alias for authenticate_user for backwards compatibility."""
+        return await self.authenticate_user(username, password, ip_address, user_agent)
+
     async def get_user_sessions(
         self,
         user_id: str,
@@ -1718,7 +1740,7 @@ class FlextAuthService:
                     f"{field_name} '{value}' already exists",
                     resource_type=resource_type,
                     resource_id=value,
-                ).message,
+                ).message,  # type: ignore[attr-defined]
             )
 
         return FlextResult[bool].ok(FlextAuthSemanticConstants.FAILURE)

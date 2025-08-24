@@ -14,7 +14,7 @@ from flext_core import FlextResult
 
 from flext_auth.constants import FlextAuthSemanticConstants
 from flext_auth.models import FlextSession, FlextSessionStatus
-from flext_auth.repositories_simple import FlextSessionRepository
+from flext_auth.repositories import FlextSessionRepository
 
 # =============================================================================
 # SESSION REPOSITORY PATTERNS - Abstract data access
@@ -25,7 +25,7 @@ class SessionRepository(FlextSessionRepository):
     """Abstract repository for session operations."""
 
     @abstractmethod
-    async def save(self, session: FlextSession) -> FlextResult[FlextSession]:
+    async def save(self, entity: FlextSession) -> FlextResult[FlextSession]:
         """Save session to repository (async)."""
 
     @abstractmethod
@@ -51,9 +51,9 @@ class SessionRepository(FlextSessionRepository):
     # Async methods expected by service layer
     async def get_by_id(
         self,
-        session_id: str,
+        entity_id: str,
     ) -> FlextResult[FlextSession | None]:  # pragma: no cover - thin adapter
-        return self.find_by_id(session_id)
+        return self.find_by_id(entity_id)
 
     async def get_by_user_id(
         self,
@@ -75,11 +75,11 @@ class InMemorySessionRepository(FlextSessionRepository):
         """Initialize empty session storage."""
         self._sessions: dict[str, FlextSession] = {}
 
-    async def save(self, session: FlextSession) -> FlextResult[FlextSession]:
+    async def save(self, entity: FlextSession) -> FlextResult[FlextSession]:
         """Save session to memory (async)."""
         try:
-            self._sessions[str(session.id)] = session
-            return FlextResult[FlextSession].ok(session)
+            self._sessions[str(entity.id)] = entity
+            return FlextResult[FlextSession].ok(entity)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[FlextSession].fail(f"Failed to save session: {e}")
 
@@ -143,8 +143,8 @@ class InMemorySessionRepository(FlextSessionRepository):
             return FlextResult[int].fail(f"Failed to cleanup expired sessions: {e}")
 
     # Additional async methods used by refactored service
-    async def get_by_id(self, session_id: str) -> FlextResult[FlextSession | None]:
-        return self.find_by_id(session_id)
+    async def get_by_id(self, entity_id: str) -> FlextResult[FlextSession | None]:
+        return self.find_by_id(entity_id)
 
     async def get_by_user_id(self, user_id: str) -> FlextResult[list[FlextSession]]:
         return self.find_by_user_id(user_id)
@@ -177,11 +177,11 @@ class InMemorySessionRepository(FlextSessionRepository):
             return FlextResult[int].fail(f"Failed to count active sessions: {e}")
 
     # Required FlextSessionRepository abstract methods
-    async def delete(self, session_id: str) -> FlextResult[bool]:
+    async def delete(self, entity_id: str) -> FlextResult[bool]:
         """Delete session from memory."""
         try:
-            if session_id in self._sessions:
-                del self._sessions[session_id]
+            if entity_id in self._sessions:
+                del self._sessions[entity_id]
                 return FlextResult[bool].ok(FlextAuthSemanticConstants.SUCCESS)
             return FlextResult[bool].ok(FlextAuthSemanticConstants.FAILURE)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
@@ -190,6 +190,14 @@ class InMemorySessionRepository(FlextSessionRepository):
     async def cleanup_expired(self) -> FlextResult[int]:
         """Cleanup expired sessions - async version."""
         return await self.cleanup_expired_sessions()
+
+    async def find_all(self) -> FlextResult[list[FlextSession]]:
+        """Find all sessions - implementing core Repository pattern."""
+        try:
+            sessions = list(self._sessions.values())
+            return FlextResult[list[FlextSession]].ok(sessions)
+        except Exception as e:
+            return FlextResult[list[FlextSession]].fail(f"Failed to get all sessions: {e}")
 
 
 # =============================================================================

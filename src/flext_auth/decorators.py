@@ -12,15 +12,26 @@ import functools
 import secrets
 from collections.abc import Callable
 from datetime import UTC, datetime
-from typing import ParamSpec, Protocol
+from typing import ParamSpec, Protocol, cast
 
-from flext_core import FlextResult
-from flext_core.loggings import FlextLoggerFactory
+from flext_core import (
+    FlextLoggerFactory,  # Use root-level import
+    FlextResult,
+)
 
 from flext_auth.app import FlextAuthService
 from flext_auth.config import DEFAULT_JWT_SECRET, FlextAuthConfig
 from flext_auth.constants import FlextAuthSemanticConstants
 from flext_auth.services import FlextJWTService
+
+
+# Token extraction strategy protocol for type safety
+class _TokenExtractionStrategy(Protocol):
+    """Protocol for token extraction strategies."""
+
+    def __call__(self, request: object) -> str | None:
+        """Extract token from request object."""
+        ...
 
 
 # HTTP Request Protocol for type safety - SOLID typing without Any
@@ -152,9 +163,9 @@ def _extract_token_from_request(request: object) -> str | None:
     Supports FastAPI, Django, Flask, and dict-based requests.
     """
     # Strategy Pattern: Try each extraction method in sequence
-    extraction_strategies = [
-        _extract_token_from_fastapi_flask,
-        _extract_token_from_django,
+    extraction_strategies: list[_TokenExtractionStrategy] = [
+        cast("_TokenExtractionStrategy", _extract_token_from_fastapi_flask),
+        cast("_TokenExtractionStrategy", _extract_token_from_django),
         _extract_token_from_dict,
     ]
 
@@ -577,23 +588,12 @@ class FlextAuthMixin:
                 # Use default configuration but cannot create service without deps
                 from flext_auth.config import FlextAuthConfig  # noqa: PLC0415
 
-                self._auth_config = FlextAuthConfig(
-                    app_name="FlextAuth",
-                    version="1.0.0",
-                    environment="development",
-                    password_min_length=8,
-                    password_max_length=128,
-                    bcrypt_rounds=12,
-                    max_login_attempts=5,
-                    lockout_duration_minutes=30,
-                    session_timeout_hours=24,
-                    max_concurrent_sessions=5,
-                    rate_limit_per_minute=60,
-                    auth_rate_limit_per_minute=5,
-                    access_token_expire_minutes=30,
-                    refresh_token_expire_days=7,
-                    jwt_secret_key=DEFAULT_JWT_SECRET,
-                )
+                self._auth_config = FlextAuthConfig()
+                # Set development defaults
+                if hasattr(self._auth_config, "environment"):
+                    self._auth_config.environment = "development"
+                if hasattr(self._auth_config, "jwt_secret_key"):
+                    self._auth_config.jwt_secret_key = DEFAULT_JWT_SECRET
                 return FlextResult[None].fail(
                     "Cannot create FlextAuthService without dependencies. "
                     "Please provide auth_service parameter or use "
@@ -700,7 +700,7 @@ class FlextAuthMixin:
             return None
         jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
         result = jwt_service.verify_token(token)
-        if not result.unwrap_or(None):
+        if not result.success:
             return None
         claims = result.value
         return {
@@ -812,7 +812,7 @@ class FlextAuthMixin:
 
                 jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
                 result = jwt_service.verify_token(token_or_user_data)
-                if not result.unwrap_or(None):
+                if not result.success:
                     return FlextResult[bool].fail("Invalid token")
 
                 claims = result.value

@@ -9,11 +9,10 @@ from __future__ import annotations
 
 import re
 
-from flext_core import FlextResult
-from flext_core.validation import FlextValidators
+from flext_core import FlextResult, FlextValidation
 
-from flext_auth.auth_types import TEmail, TPassword, TUsername
 from flext_auth.constants import FlextAuthConstants
+from flext_auth.types import TEmail, TPassword, TUsername
 
 # =============================================================================
 # VALIDATION CONSTANTS
@@ -33,7 +32,7 @@ class FlextAuthValidators:
     @staticmethod
     def validate_username(username: TUsername) -> FlextResult[None]:
         """Validate username using flext-core validators."""
-        if not FlextValidators.is_non_empty_string(username):
+        if not FlextValidation.is_non_empty_string(username):
             return FlextResult[None].fail("Username cannot be empty")
 
         if len(username) < MIN_USERNAME_LENGTH:
@@ -62,7 +61,7 @@ class FlextAuthValidators:
     @staticmethod
     def validate_password(password: TPassword) -> FlextResult[None]:
         """Validate password using flext-core validators."""
-        if not FlextValidators.is_non_empty_string(password):
+        if not FlextValidation.is_non_empty_string(password):
             return FlextResult[None].fail("Password cannot be empty")
 
         if len(password) < FlextAuthConstants.Authentication.MIN_PASSWORD_LENGTH:
@@ -87,7 +86,7 @@ class FlextAuthValidators:
     @staticmethod
     def validate_user_id(user_id: str) -> FlextResult[None]:
         """Validate user ID using flext-core validators."""
-        if not FlextValidators.is_non_empty_string(user_id):
+        if not FlextValidation.is_non_empty_string(user_id):
             return FlextResult[None].fail("User ID cannot be empty")
         return FlextResult[None].ok(None)
 

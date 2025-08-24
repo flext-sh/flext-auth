@@ -11,15 +11,16 @@ import asyncio
 import os
 import secrets
 import string
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
+from typing import Protocol
 
 import bcrypt
 import jwt
 from flext_core import (
     FlextEntityId,
+    FlextProtocols,  # Use centralized protocols
     FlextResult,
     FlextTimestamp,
     FlextValidationError,
@@ -37,10 +38,10 @@ from flext_auth.models import (
     FlextUser,
     FlextUserRole,
     FlextUserStatus,
-    InMemoryUserRepository,
 )
 from flext_auth.session import InMemorySessionRepository
-from flext_auth.value_objects import (
+from flext_auth.user import InMemoryUserRepository
+from flext_auth.values import (
     FlextHashedPassword,
     FlextJWTClaims,
     FlextPlainPassword,
@@ -799,12 +800,12 @@ class ValidationCommand:
         return FlextResult[None].ok(None)
 
 
-class ValidationStrategy(ABC):
-    """Strategy Pattern: Abstract base for validation strategies."""
+class ValidationStrategy(FlextProtocols.Foundation.Validator[object], Protocol):
+    """Strategy Pattern: Validation protocol using flext-core patterns."""
 
-    @abstractmethod
-    def validate(self, **kwargs: object) -> FlextResult[None]:
-        """Execute validation strategy."""
+    def validate(self, data: object) -> FlextResult[None]:
+        """Execute validation strategy using flext-core Validator protocol."""
+        ...
 
 
 class PasswordStrengthValidationStrategy(ValidationStrategy):
@@ -812,9 +813,12 @@ class PasswordStrengthValidationStrategy(ValidationStrategy):
 
     MIN_PASSWORD_LENGTH = 8
 
-    def validate(self, **kwargs: object) -> FlextResult[None]:
+    def validate(self, data: object) -> FlextResult[None]:
         """Validate password strength using Command Pattern."""
-        password = str(kwargs.get("password", ""))
+        if isinstance(data, dict):
+            password = str(data.get("password", ""))
+        else:
+            password = str(data) if data else ""
 
         commands = [
             ValidationCommand(
@@ -853,10 +857,14 @@ class UserValidationStrategy(ValidationStrategy):
 
     MIN_USERNAME_LENGTH = 3
 
-    def validate(self, **kwargs: object) -> FlextResult[None]:
+    def validate(self, data: object) -> FlextResult[None]:
         """Validate user data using Command Pattern."""
-        username = str(kwargs.get("username", ""))
-        email = str(kwargs.get("email", ""))
+        if isinstance(data, dict):
+            username = str(data.get("username", ""))
+            email = str(data.get("email", ""))
+        else:
+            username = ""
+            email = ""
 
         commands = [
             ValidationCommand(
@@ -877,15 +885,15 @@ class UserValidationStrategy(ValidationStrategy):
         return FlextResult[None].ok(None)
 
 
-class PermissionStrategy(ABC):
-    """Strategy Pattern: Abstract base for permission strategies."""
+class PermissionStrategy(Protocol):
+    """Strategy Pattern: Permission protocol using flext-core patterns."""
 
-    @abstractmethod
     def check_permission(
         self,
         check_data: PermissionCheckData,
     ) -> FlextResult[bool]:
         """Check permission using specific strategy with Parameter Object."""
+        ...
 
 
 @dataclass(frozen=True)
@@ -990,8 +998,7 @@ class FlextAuthenticationService:
         try:
             # Use Strategy Pattern for validation
             user_validation = self._deps.user_validation_strategy.validate(
-                username=username,
-                email=email,
+                {"username": username, "email": email}
             )
             if not user_validation.success:
                 return FlextResult[FlextUser].fail(
@@ -999,7 +1006,7 @@ class FlextAuthenticationService:
                 )
 
             password_validation = self._deps.password_validation_strategy.validate(
-                password=password,
+                {"password": password}
             )
             if not password_validation.success:
                 return FlextResult[FlextUser].fail(
@@ -1073,7 +1080,7 @@ class FlextAuthenticationService:
                     return FlextResult[bool].fail("Current password is incorrect")
             # Use Strategy Pattern for password validation
             validation_result = self._deps.password_validation_strategy.validate(
-                password=new_password,
+                {"password": new_password}
             )
             if not validation_result.success:
                 return FlextResult[bool].fail(

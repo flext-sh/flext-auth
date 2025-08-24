@@ -74,7 +74,7 @@ class FlextAuthConstants:
     MIN_PASSWORD_LENGTH = 8
     MAX_PASSWORD_LENGTH = 128
     PASSWORD_VALIDATION_REGEX = (
-        r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).+$"  # noqa: S105 - Password validation regex pattern, not a password
+        r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).+$"  # noqa: S105
     )
 
 
@@ -87,74 +87,64 @@ class FlextAuthConfig(FlextBaseConfigModel):
     """Centralized authentication configuration using flext-core models."""
 
     # Application settings
-    app_name: str = Field("FlextAuth", description="Application name")
-    version: str = Field("1.0.0", description="Application version")
+    app_name: str = Field(default="FlextAuth", description="Application name")
+    version: str = Field(default="1.0.0", description="Application version")
     debug: bool = Field(default=False, description="Debug mode")
-    environment: str = Field("development", description="Environment name")
+    environment: str = Field(default="development", description="Environment name")
 
     # Authentication specific settings
-    password_min_length: int = Field(
-        8,
+    password_min_length: int = Field(default=8,
         description="Minimum password length",
         ge=4,
         le=256,
     )
-    password_max_length: int = Field(
-        128,
+    password_max_length: int = Field(default=128,
         description="Maximum password length",
         ge=8,
         le=1024,
     )
-    bcrypt_rounds: int = Field(12, description="BCrypt rounds", ge=4, le=20)
+    bcrypt_rounds: int = Field(default=12, description="BCrypt rounds", ge=4, le=20)
 
     # Security settings
-    max_login_attempts: int = Field(
-        5,
+    max_login_attempts: int = Field(default=5,
         description="Maximum login attempts",
         ge=1,
         le=10,
     )
-    lockout_duration_minutes: int = Field(
-        30,
+    lockout_duration_minutes: int = Field(default=30,
         description="Account lockout duration",
         ge=1,
         le=1440,
     )
-    session_timeout_hours: int = Field(24, description="Session timeout", ge=1, le=168)
-    max_concurrent_sessions: int = Field(
-        5,
+    session_timeout_hours: int = Field(default=24, description="Session timeout", ge=1, le=168)
+    max_concurrent_sessions: int = Field(default=5,
         description="Maximum concurrent sessions",
         ge=1,
         le=20,
     )
 
     # Rate limiting
-    rate_limit_per_minute: int = Field(
-        60,
+    rate_limit_per_minute: int = Field(default=60,
         description="General rate limit per minute",
         ge=1,
     )
-    auth_rate_limit_per_minute: int = Field(
-        5,
+    auth_rate_limit_per_minute: int = Field(default=5,
         description="Auth rate limit per minute",
         ge=1,
     )
 
     # JWT settings
-    access_token_expire_minutes: int = Field(
-        30,
+    access_token_expire_minutes: int = Field(default=30,
         description="JWT access token expiration minutes",
         ge=1,
         le=10080,  # 1 week max
     )
-    refresh_token_expire_days: int = Field(
-        7,
+    refresh_token_expire_days: int = Field(default=7,
         description="JWT refresh token expiration days",
         ge=1,
         le=90,  # 3 months max
     )
-    jwt_secret_key: str | None = Field(
-        None,
+    jwt_secret_key: str | None = Field(default=None,
         description="JWT secret key for token signing",
     )
 
@@ -163,27 +153,11 @@ class FlextAuthApplicationConfig(FlextBaseConfigModel):
     """Complete application configuration extending FlextBaseConfigModel."""
 
     # Override app-specific defaults
-    app_name: str = Field("FlextAuth", description="Application name")
+    app_name: str = Field(default="FlextAuth", description="Application name")
 
     # Authentication-specific settings
     auth: FlextAuthConfig = Field(
-        default_factory=lambda: FlextAuthConfig(
-            app_name="FlextAuth",
-            version="1.0.0",
-            environment="development",
-            password_min_length=8,
-            password_max_length=128,
-            bcrypt_rounds=12,
-            max_login_attempts=5,
-            lockout_duration_minutes=30,
-            session_timeout_hours=24,
-            max_concurrent_sessions=5,
-            rate_limit_per_minute=60,
-            auth_rate_limit_per_minute=5,
-            access_token_expire_minutes=30,
-            refresh_token_expire_days=7,
-            jwt_secret_key="dev-secret-key-change-in-production",  # noqa: S106
-        ),
+        default_factory=FlextAuthConfig,
         description="Authentication configuration",
     )
 
@@ -297,7 +271,7 @@ class DatabaseConfig:
     @property
     def password(self) -> _SecretProtocol | None:
         """Get password as SecretProtocol for type safety."""
-        return self._core_config_dict.get("password")
+        return self._core_config_dict.get("password")  # type: ignore[return-value]
 
     @property
     def host(self) -> str:
@@ -307,7 +281,12 @@ class DatabaseConfig:
     @property
     def port(self) -> int:
         """Get database port."""
-        return int(self._core_config_dict.get("port", self._get_default_port()))
+        port_value = self._core_config_dict.get("port", self._get_default_port())
+        if isinstance(port_value, int):
+            return port_value
+        if isinstance(port_value, str) and port_value.isdigit():
+            return int(port_value)
+        return self._get_default_port()
 
     @property
     def database(self) -> str:
@@ -368,12 +347,10 @@ class JWTConfig(FlextSettings):
 
     secret_key: str = Field(default="", description="JWT secret key")
     algorithm: str = Field(default="HS256", description="JWT algorithm")
-    access_token_expire_minutes: int = Field(
-        default=30,
+    access_token_expire_minutes: int = Field(default=30,
         description="Access token expiration minutes",
     )
-    refresh_token_expire_days: int = Field(
-        default=7,
+    refresh_token_expire_days: int = Field(default=7,
         description="Refresh token expiration days",
     )
 
@@ -425,37 +402,31 @@ class JWTConfig(FlextSettings):
 class SecurityConfig(FlextSettings):
     """Security configuration with environment variables."""
 
-    password_rounds: int = Field(12, description="BCrypt rounds", ge=4, le=20)
-    max_failed_attempts: int = Field(
-        5,
+    password_rounds: int = Field(default=12, description="BCrypt rounds", ge=4, le=20)
+    max_failed_attempts: int = Field(default=5,
         description="Max failed login attempts",
         ge=1,
         le=10,
     )
-    lockout_duration_minutes: int = Field(
-        30,
+    lockout_duration_minutes: int = Field(default=30,
         description="Account lockout duration",
         ge=1,
         le=1440,
     )
-    session_expire_hours: int = Field(
-        24,
+    session_expire_hours: int = Field(default=24,
         description="Session timeout hours",
         ge=1,
         le=168,
     )
-    max_concurrent_sessions: int = Field(
-        5,
+    max_concurrent_sessions: int = Field(default=5,
         description="Max concurrent sessions",
         ge=1,
         le=20,
     )
-    require_email_verification: bool = Field(
-        default=False,
+    require_email_verification: bool = Field(default=False,
         description="Require email verification",
     )
-    enable_2fa: bool = Field(
-        default=False,
+    enable_2fa: bool = Field(default=False,
         description="Enable two-factor authentication",
     )
 
@@ -475,26 +446,23 @@ class ServerConfig(FlextSettings):
 class AppConfig(FlextSettings):
     """Application configuration."""
 
-    name: str = Field("FLEXT Authentication API", description="Application name")
-    version: str = Field("1.0.0", description="Application version")
-    app_name: str = Field("FlextAuth", description="Application name")
+    name: str = Field(default="FLEXT Authentication API", description="Application name")
+    version: str = Field(default="1.0.0", description="Application version")
+    app_name: str = Field(default="FlextAuth", description="Application name")
     debug: bool = Field(default=False, description="Debug mode")
-    environment: str = Field("development", description="Environment")
+    environment: str = Field(default="development", description="Environment")
 
     # Nested configurations
     database: DatabaseConfig = Field(
         default_factory=DatabaseConfig,
         description="Database configuration",
     )
-    jwt: JWTConfig = Field(default_factory=JWTConfig, description="JWT configuration")
+    jwt: JWTConfig = Field(
+        default_factory=JWTConfig,
+        description="JWT configuration"
+    )
     security: SecurityConfig = Field(
-        default_factory=lambda: SecurityConfig(
-            password_rounds=12,
-            max_failed_attempts=5,
-            lockout_duration_minutes=30,
-            session_expire_hours=24,
-            max_concurrent_sessions=5,
-        ),
+        default_factory=SecurityConfig,
         description="Security configuration",
     )
     server: ServerConfig = Field(
@@ -539,24 +507,12 @@ def create_auth_config(**overrides: object) -> FlextAuthConfig:
         # Filter None values and use model_validate for type safety
         filtered_overrides = {k: v for k, v in overrides.items() if v is not None}
         return FlextAuthConfig.model_validate(filtered_overrides)
-    # CRITICAL FIX: All required parameters for FlextAuthConfig
-    return FlextAuthConfig(
-        app_name="FlextAuth",
-        version="1.0.0",
-        environment="development",
-        password_min_length=8,
-        password_max_length=128,
-        bcrypt_rounds=12,
-        max_login_attempts=5,
-        lockout_duration_minutes=30,
-        session_timeout_hours=24,
-        max_concurrent_sessions=5,
-        rate_limit_per_minute=60,
-        auth_rate_limit_per_minute=5,
-        access_token_expire_minutes=30,
-        refresh_token_expire_days=7,
-        jwt_secret_key=get_default_secret("FLEXT_AUTH_JWT_SECRET_KEY"),
-    )
+    # Use default constructor with defaults from class
+    config = FlextAuthConfig()
+    # Override JWT secret if needed
+    if hasattr(config, "jwt_secret_key"):
+        config.jwt_secret_key = get_default_secret("FLEXT_AUTH_JWT_SECRET_KEY")
+    return config
 
 
 def create_complete_auth_config(**overrides: object) -> FlextAuthApplicationConfig:
@@ -566,10 +522,8 @@ def create_complete_auth_config(**overrides: object) -> FlextAuthApplicationConf
         # Filter None values and use model_validate for type safety
         filtered_overrides = {k: v for k, v in overrides.items() if v is not None}
         return FlextAuthApplicationConfig.model_validate(filtered_overrides)
-    # CRITICAL FIX: Required parameter for FlextAuthApplicationConfig
-    return FlextAuthApplicationConfig(
-        app_name="FlextAuth",
-    )
+    # Use default constructor with built-in defaults
+    return FlextAuthApplicationConfig()
 
 
 def get_default_secret(key_name: str) -> str:
@@ -609,27 +563,17 @@ def validate_production_config(config: AppConfig) -> bool:
 
 def create_development_config() -> FlextAuthApplicationConfig:
     """Create development configuration with reasonable defaults."""
-    return FlextAuthApplicationConfig(
-        app_name="FlextAuth",
-        auth=FlextAuthConfig(
-            app_name="FlextAuth",
-            version="1.0.0",
-            debug=True,
-            environment="development",
-            password_min_length=8,
-            password_max_length=128,
-            bcrypt_rounds=12,
-            max_login_attempts=5,
-            lockout_duration_minutes=30,
-            session_timeout_hours=24,
-            max_concurrent_sessions=5,
-            rate_limit_per_minute=60,
-            auth_rate_limit_per_minute=5,
-            access_token_expire_minutes=30,
-            refresh_token_expire_days=7,
-            jwt_secret_key=get_default_secret("FLEXT_AUTH_JWT_SECRET_KEY"),
-        ),
-    )
+    auth_config = FlextAuthConfig()
+    if hasattr(auth_config, "debug"):
+        auth_config.debug = True
+    if hasattr(auth_config, "environment"):
+        auth_config.environment = "development"
+    if hasattr(auth_config, "jwt_secret_key"):
+        auth_config.jwt_secret_key = get_default_secret("FLEXT_AUTH_JWT_SECRET_KEY")
+    app_config = FlextAuthApplicationConfig()
+    if hasattr(app_config, "auth"):
+        app_config.auth = auth_config
+    return app_config
 
 
 def create_production_config() -> FlextAuthApplicationConfig:
@@ -639,27 +583,19 @@ def create_production_config() -> FlextAuthApplicationConfig:
         msg = "Production requires FLEXT_AUTH_JWT_SECRET_KEY (min 32 chars)"
         raise ValueError(msg)
 
-    return FlextAuthApplicationConfig(
-        app_name="FlextAuth",
-        auth=FlextAuthConfig(
-            app_name="FlextAuth",
-            version="1.0.0",
-            debug=False,
-            environment="production",
-            password_min_length=8,
-            password_max_length=128,
-            bcrypt_rounds=12,
-            max_login_attempts=5,
-            lockout_duration_minutes=30,
-            session_timeout_hours=24,
-            max_concurrent_sessions=5,
-            rate_limit_per_minute=60,
-            auth_rate_limit_per_minute=5,
-            access_token_expire_minutes=30,
-            refresh_token_expire_days=7,
-            jwt_secret_key=jwt_secret,
-        ),
-    )
+    auth_config = FlextAuthConfig()
+    if hasattr(auth_config, "debug"):
+        auth_config.debug = False
+    if hasattr(auth_config, "environment"):
+        auth_config.environment = "production"
+    if hasattr(auth_config, "jwt_secret_key"):
+        auth_config.jwt_secret_key = jwt_secret
+    app_config = FlextAuthApplicationConfig()
+    if hasattr(app_config, "app_name"):
+        app_config.app_name = "FlextAuth"
+    if hasattr(app_config, "auth"):
+        app_config.auth = auth_config
+    return app_config
 
 
 # =============================================================================

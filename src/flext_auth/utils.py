@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 from flext_core import FlextResult
 
 if TYPE_CHECKING:
-    from flext_auth.typings import FlextAuthValidationResultType
+    from flext_auth import FlextAuthValidationResultType
 
 # =============================================================================
 # CONSTANTS - Password validation constants

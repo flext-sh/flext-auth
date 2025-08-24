@@ -104,13 +104,20 @@ from flext_auth.services import (
     FlextSessionService,
 )
 
-from flext_auth.password_service import FlextPasswordService
+from flext_auth.password import FlextPasswordService
 
 # =============================================================================
 # REPOSITORIES
 # =============================================================================
 
-from flext_auth.repositories_simple import FlextSessionRepository, FlextUserRepository
+from flext_auth.repositories import (
+    FlextSessionRepository,
+    FlextUserRepository,
+    SimplePostgreSQLSessionRepository,
+    SimplePostgreSQLUserRepository,
+    create_postgresql_pool,
+    initialize_database_schema,
+)
 from flext_auth.session import InMemorySessionRepository
 from flext_auth.user import InMemoryUserRepository
 
@@ -149,6 +156,7 @@ from flext_auth.constants import (
     DEFAULT_DEV_SECRET,
     DEFAULT_JWT_SECRET,
     FlextAuthConstants,
+    FlextAuthSemanticConstants,
 )
 
 # =============================================================================
@@ -189,7 +197,7 @@ from flext_auth.models import (
 # DOMAIN VALUE OBJECTS
 # =============================================================================
 
-from flext_auth.value_objects import (
+from flext_auth.values import (
     FlextAuthToken,
     FlextIPAddress,
     FlextRefreshToken,
@@ -243,6 +251,57 @@ FLEXT_AUTH_GUEST = "guest"  # Not in current entities, using string literal
 from flext_auth.jwt import FlextJWTService
 
 # =============================================================================
+# TYPE ALIASES AND PROTOCOLS
+# =============================================================================
+
+from flext_auth.types import (
+    SessionRepositoryType,
+    UserRepositoryType,
+    TEmail,
+    TPassword,
+    TUsername,
+)
+
+# =============================================================================
+# COMMAND HANDLERS AND CQRS
+# =============================================================================
+
+from flext_auth.commands import register_auth_commands
+
+# =============================================================================
+# TYPE DEFINITIONS
+# =============================================================================
+
+from flext_auth.typings import FlextAuthValidationResultType
+
+# =============================================================================
+# MODULAR CLIENT CLASS (Flext[Area][Module] Pattern)
+# =============================================================================
+
+from flext_auth.client import (
+    FlextAuthClient,
+    flext_auth_client_authenticate_user,
+    flext_auth_client_generate_jwt,
+    flext_auth_client_hash_password,
+    flext_auth_client_quick_start,
+    flext_auth_client_validate_email,
+    flext_auth_client_verify_password,
+)
+
+# =============================================================================
+# DEPENDENCY INJECTION CONTAINER
+# =============================================================================
+
+from flext_auth.container import (
+    configure_flext_auth_container,
+    get_auth_service,
+    get_command_bus,
+    get_flext_auth_services,
+    get_jwt_service,
+    get_password_service,
+)
+
+# =============================================================================
 # EXPORTS - Complete API surface
 # =============================================================================
 
@@ -252,6 +311,8 @@ __all__: list[str] = [
     "__version_info__",
     # Core types
     "FlextResult",
+    # MAIN MODULAR CLIENT (Flext[Area][Module] pattern)
+    "FlextAuthClient",
     # Public facade and config
     "FlextAuth",
     "FlextAuthConfig",
@@ -295,6 +356,18 @@ __all__: list[str] = [
     "InMemoryUserRepository",
     "FlextSessionRepository",
     "InMemorySessionRepository",
+    "SimplePostgreSQLSessionRepository",
+    "SimplePostgreSQLUserRepository",
+    "create_postgresql_pool",
+    "initialize_database_schema",
+    # Repository types
+    "SessionRepositoryType",
+    "UserRepositoryType",
+    # Type definitions
+    "FlextAuthValidationResultType",
+    "TEmail",
+    "TPassword",
+    "TUsername",
     # Decorators and mixins
     "flext_auth_required",
     "flext_auth_role_required",
@@ -335,8 +408,25 @@ __all__: list[str] = [
     "DEFAULT_JWT_SECRET",
     "DEFAULT_DEV_SECRET",
     "FlextAuthConstants",
+    "FlextAuthSemanticConstants",
     # Factory functions
     "create_auth_service",
+    # Command handlers
+    "register_auth_commands",
+    # DI Container functions
+    "configure_flext_auth_container",
+    "get_auth_service",
+    "get_command_bus",
+    "get_flext_auth_services",
+    "get_jwt_service",
+    "get_password_service",
+    # FlextAuthClient legacy compatibility functions
+    "flext_auth_client_authenticate_user",
+    "flext_auth_client_generate_jwt",
+    "flext_auth_client_hash_password",
+    "flext_auth_client_quick_start",
+    "flext_auth_client_validate_email",
+    "flext_auth_client_verify_password",
     # Role constants and type definitions
     "ADMIN_ROLE",
     "USER_ROLE",

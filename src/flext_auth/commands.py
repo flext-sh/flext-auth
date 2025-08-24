@@ -23,7 +23,7 @@ from flext_auth.utilities import FlextAuthUtilities
 
 if TYPE_CHECKING:
     from flext_auth.jwt import FlextJWTService
-    from flext_auth.password_service import FlextPasswordService
+    from flext_auth.password import FlextPasswordService
 
 # Type variables for command/response patterns
 UserT = TypeVar("UserT", bound=FlextUser)
@@ -312,7 +312,7 @@ class AuthenticateUserCommandHandler(
             # Get and validate user
             user_result = self._get_and_validate_user_for_auth(command)
             if not user_result.success:
-                return user_result
+                return FlextResult[dict[str, object]].fail(user_result.error or "Authentication failed")
 
             # Authenticate and generate token
             return self._authenticate_and_generate_token(command, user_result.value)
@@ -323,7 +323,7 @@ class AuthenticateUserCommandHandler(
     def _get_and_validate_user_for_auth(
         self,
         command: AuthenticateUserCommand,
-    ) -> FlextResult[object]:
+    ) -> FlextResult[FlextUser]:
         """Get user and validate account status."""
         # Get user - REAL repository operation
         user_result = FlextAuthUtilities.get_user_by_username_safe(
@@ -331,25 +331,25 @@ class AuthenticateUserCommandHandler(
             command.username,
         )
         if not user_result.success or not user_result.value:
-            return FlextResult[object].fail("Invalid credentials")
+            return FlextResult[FlextUser].fail("Invalid credentials")
 
         user = user_result.value
 
         # Check account status
         if not user.is_active():
-            return FlextResult[object].fail(
+            return FlextResult[FlextUser].fail(
                 f"Account is {user.status.value}",
             )
 
         if user.is_locked():
-            return FlextResult[object].fail("Account is locked")
+            return FlextResult[FlextUser].fail("Account is locked")
 
-        return FlextResult[object].ok(user)
+        return FlextResult[FlextUser].ok(user)
 
     def _authenticate_and_generate_token(
         self,
         command: AuthenticateUserCommand,
-        user: object,
+        user: FlextUser,
     ) -> FlextResult[dict[str, object]]:
         """Authenticate password and generate token."""
         # Verify password - REAL password service

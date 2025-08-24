@@ -32,17 +32,17 @@ from flext_auth import (
 examples_dir = Path(__file__).parent
 sys.path.insert(0, str(examples_dir))
 
-from example_utils import basic_example_runner  # noqa: E402
+from example_utils import basic_example_runner
 
 # Example constants - not for production use
 # These are intentionally hardcoded for demonstration purposes only
 
-EXAMPLE_PASSWORD = "MySecurePassword123!"  # noqa: S105 - Example password for documentation
-EXAMPLE_WRONG_PASSWORD = "WrongPassword"  # noqa: S105 - Example password for documentation
-EXAMPLE_TOKEN = "sample_token_12345"  # noqa: S105 - Example token for documentation
-EXAMPLE_USER_PASSWORD = "StrongPass123!"  # noqa: S105 - Example password for documentation
-EXAMPLE_ADVANCED_PASSWORD = "AdvancedPass123!"  # noqa: S105 - Example password for documentation
-EXAMPLE_WORKFLOW_PASSWORD = "WorkflowPass123!"  # noqa: S105 - Example password for documentation
+EXAMPLE_PASSWORD = "MySecurePassword123!"
+EXAMPLE_WRONG_PASSWORD = "WrongPassword"
+EXAMPLE_TOKEN = "sample_token_12345"
+EXAMPLE_USER_PASSWORD = "StrongPass123!"
+EXAMPLE_ADVANCED_PASSWORD = "AdvancedPass123!"
+EXAMPLE_WORKFLOW_PASSWORD = "WorkflowPass123!"
 
 
 def example_basic_authentication() -> None:
@@ -51,7 +51,6 @@ def example_basic_authentication() -> None:
     FlextAuth()  # Creates in-memory repositories by default
 
     # Demonstrar configurações padrão
-    print("Auth service created with default config")
 
 
 def example_password_operations() -> None:
@@ -61,25 +60,20 @@ def example_password_operations() -> None:
     hashed_password = flext_auth_hash_password(password)  # Uses default rounds
 
     # Verificação de senha
-    is_valid = flext_auth_verify_password(password, hashed_password)
-    print(f"Password verification (correct): {is_valid}")
+    flext_auth_verify_password(password, hashed_password)
 
     # Verificação com senha incorreta
     wrong_password = EXAMPLE_WRONG_PASSWORD
-    is_invalid = flext_auth_verify_password(wrong_password, hashed_password)
-    print(f"Password verification (incorrect): {is_invalid}")
+    flext_auth_verify_password(wrong_password, hashed_password)
 
     # Análise de força da senha - use unwrap_or pattern
-    is_strong = flext_auth_validate_password_strength(password).unwrap_or(False)
-    print(f"Password strength: {is_strong}")
+    flext_auth_validate_password_strength(password).unwrap_or(False)
 
     # Generate secure password
-    secure_password = generate_secure_password()
-    print(f"Generated secure password: {secure_password[:8]}...")
+    generate_secure_password()
 
     # Check password strength
-    is_strong = is_strong_password(password)
-    print(f"Is strong password: {is_strong}")
+    is_strong_password(password)
 
 
 def example_email_validation() -> None:
@@ -87,21 +81,18 @@ def example_email_validation() -> None:
     # Emails válidos
     valid_emails = ["user@example.com", "REDACTED_LDAP_BIND_PASSWORD@flext.io", "test.user+tag@domain.co.uk"]
     for email in valid_emails:
-        is_valid = flext_auth_validate_email(email)
-        print(f"Email {email}: {'valid' if is_valid else 'invalid'}")
+        flext_auth_validate_email(email)
 
     # Emails inválidos
     invalid_emails = ["invalid", "user@", "@domain.com", "user..double@domain.com"]
     for email in invalid_emails:
-        is_valid = flext_auth_validate_email(email)
-        print(f"Email {email}: {'valid' if is_valid else 'invalid'}")
+        flext_auth_validate_email(email)
 
 
 async def example_user_lifecycle() -> None:
     """Demonstrate a complete user lifecycle."""
     # Criar serviço de autenticação (in-memory por padrão)
     auth = FlextAuth()
-    print("Created FlextAuth instance")
 
     # Simulate user registration using real async API
     user_result = await auth.create_user(
@@ -109,27 +100,22 @@ async def example_user_lifecycle() -> None:
     )
 
     if user_result.success:
-        print("User created successfully")
         user_data = user_result.value
         if user_data and isinstance(user_data, dict):
-            print(f"Created user: {user_data.get('username', 'unknown')}")
+            pass
 
     # Simulate authentication using real async API
     auth_result = await auth.authenticate("testuser", EXAMPLE_USER_PASSWORD)
     if auth_result.success:
-        print("Authentication successful")
         auth_data = auth_result.value
         if auth_data and isinstance(auth_data, dict):
-            print(f"Authenticated user: {auth_data.get('username', 'unknown')}")
-    else:
-        print("Authentication failed")
+            pass
 
 
 def example_quick_helpers() -> None:
     """Demonstrate quick helpers and utilities."""
     # Setup instantâneo (não precisa create_REDACTED_LDAP_BIND_PASSWORD, usa padrão)
-    auth = flext_auth_quick_start()
-    print(f"Quick start service: {auth}")
+    flext_auth_quick_start()
 
     # Headers padrão (implementação real)
 
@@ -174,8 +160,7 @@ def example_mixin_usage() -> None:
 def example_ultra_helpers() -> None:
     """Demonstrate ultra-helpers for massive code reduction."""
     # Create authentication service with quick start helper
-    auth_service = flext_auth_quick_start()
-    print(f"Quick start service created: {auth_service}")
+    flext_auth_quick_start()
 
     # Basic authentication demo using real async API (in-memory por padrão)
     auth = FlextAuth()
@@ -184,10 +169,9 @@ def example_ultra_helpers() -> None:
     )
 
     if user_result.success:
-        print("User created via ultra helper")
         auth_result = asyncio.run(auth.authenticate("testuser", "TestPass123!"))
         if auth_result.success:
-            print("Authentication successful via ultra helper")
+            pass
 
 
 async def example_advanced_registration() -> None:
@@ -199,25 +183,22 @@ async def example_advanced_registration() -> None:
         EXAMPLE_ADVANCED_PASSWORD
     ).unwrap_or(False)
     if is_strong:
-        print("Password meets strength requirements")
-
         # Create user with strong password using real async API
         register_result = await auth.create_user(
             "advanceduser", "advanced@example.com", EXAMPLE_ADVANCED_PASSWORD
         )
 
         if register_result.success:
-            print("Advanced user registration successful")
             user_data = register_result.value
             if isinstance(user_data, dict):
-                print(f"Registered user: {user_data.get('username', 'unknown')}")
+                pass
 
             # Authenticate the newly created user using real async API
             auth_result = await auth.authenticate(
                 "advanceduser", EXAMPLE_ADVANCED_PASSWORD
             )
             if auth_result.success:
-                print("Advanced user authentication successful")
+                pass
 
 
 def example_complete_workflow() -> None:
@@ -233,22 +214,14 @@ def example_complete_workflow() -> None:
     )
 
     if user_result.success:
-        print("Workflow: User created")
-
         # Step 2: Authenticate user using real async API
         auth_result = asyncio.run(
             auth.authenticate("workflowuser", EXAMPLE_WORKFLOW_PASSWORD)
         )
         if auth_result.success:
-            print("Workflow: Authentication successful")
             auth_data = auth_result.value
             if isinstance(auth_data, dict):
-                username = auth_data.get("username", "unknown")
-                print(f"Workflow completed for user: {username}")
-        else:
-            print("Workflow: Authentication failed")
-    else:
-        print("Workflow: User creation failed")
+                auth_data.get("username", "unknown")
 
 
 def main() -> None:

@@ -16,7 +16,7 @@ import jwt
 from flext_core import FlextResult, get_logger
 
 from flext_auth.constants import FlextAuthConstants
-from flext_auth.value_objects import (
+from flext_auth.values import (
     FlextJWTClaims as JWTClaims,
 )
 

@@ -7,7 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from typing import override
@@ -20,10 +19,9 @@ from flext_core import (
 from pydantic import Field
 
 from flext_auth.constants import FlextAuthSemanticConstants
-
-# Import FlextUser from entities to avoid duplication
 from flext_auth.entities import FlextUser, FlextUserRole, FlextUserStatus
-from flext_auth.value_objects import (
+from flext_auth.types import UserRepositoryProtocol
+from flext_auth.values import (
     FlextHashedPassword,
     FlextJWTClaims,
     FlextPlainPassword,
@@ -456,44 +454,9 @@ class FlextEmailVerificationToken(FlextBaseToken):
 # =============================================================================
 
 
-class UserRepository(ABC):
-    """Abstract repository for user operations."""
-
-    @abstractmethod
-    async def save(self, user: FlextUser) -> FlextResult[FlextUser]:
-        """Save user to repository."""
-
-    @abstractmethod
-    async def get_by_id(self, user_id: str) -> FlextResult[FlextUser | None]:
-        """Get user by ID."""
-
-    @abstractmethod
-    async def get_by_username(self, username: str) -> FlextResult[FlextUser | None]:
-        """Get user by username."""
-
-    @abstractmethod
-    async def get_by_email(self, email: str) -> FlextResult[FlextUser | None]:
-        """Get user by email."""
-
-    @abstractmethod
-    async def delete(self, user_id: str) -> FlextResult[bool]:
-        """Delete user from repository."""
-
-    @abstractmethod
-    async def list_users(
-        self,
-        limit: int = 100,
-        offset: int = 0,
-        status: FlextUserStatus | None = None,
-    ) -> FlextResult[list[FlextUser]]:
-        """List users with pagination and filtering."""
-
-    @abstractmethod
-    async def count_users(
-        self,
-        status: FlextUserStatus | None = None,
-    ) -> FlextResult[int]:
-        """Count users with optional status filter."""
+# ✅ CORRECT - Use centralized repository protocol from types.py
+# Replaces duplicate protocol definition with import from centralized types
+UserRepository = UserRepositoryProtocol
 
 
 class InMemoryUserRepository(UserRepository):
@@ -506,35 +469,35 @@ class InMemoryUserRepository(UserRepository):
         self._email_index: dict[str, str] = {}  # email -> user_id
 
     @override
-    async def save(self, user: FlextUser) -> FlextResult[FlextUser]:
+    async def save(self, entity: FlextUser) -> FlextResult[FlextUser]:
         """Save user to memory."""
         try:
             # Check for username conflicts
-            existing_username = self._username_index.get(user.username.lower())
-            if existing_username and existing_username != user.id:
+            existing_username = self._username_index.get(entity.username.lower())
+            if existing_username and existing_username != entity.id:
                 return FlextResult[FlextUser].fail(
-                    f"Username '{user.username}' already exists",
+                    f"Username '{entity.username}' already exists",
                 )
 
             # Check for email conflicts
-            existing_email = self._email_index.get(str(user.email).lower())
-            if existing_email and existing_email != user.id:
+            existing_email = self._email_index.get(str(entity.email).lower())
+            if existing_email and existing_email != entity.id:
                 return FlextResult[FlextUser].fail(
-                    f"Email '{user.email}' already exists",
+                    f"Email '{entity.email}' already exists",
                 )
 
             # Create user with updated timestamp (entities are immutable)
             updated_user = FlextUser(
-                id=user.id,
-                username=user.username,
-                email=user.email,
-                password_hash=user.password_hash,
-                role=user.role,
-                status=user.status,
-                failed_login_attempts=user.failed_login_attempts,
-                locked_until=user.locked_until,
-                last_login=user.last_login,
-                created_at=user.created_at,
+                id=entity.id,
+                username=entity.username,
+                email=entity.email,
+                password_hash=entity.password_hash,
+                role=entity.role,
+                status=entity.status,
+                failed_login_attempts=entity.failed_login_attempts,
+                locked_until=entity.locked_until,
+                last_login=entity.last_login,
+                created_at=entity.created_at,
                 updated_at=FlextTimestamp.now(),
             )
 
@@ -549,10 +512,10 @@ class InMemoryUserRepository(UserRepository):
             return FlextResult[FlextUser].fail(f"Failed to save user: {e}")
 
     @override
-    async def get_by_id(self, user_id: str) -> FlextResult[FlextUser | None]:
+    async def get_by_id(self, entity_id: str) -> FlextResult[FlextUser | None]:
         """Get user by ID."""
         try:
-            user = self._users.get(user_id)
+            user = self._users.get(entity_id)
             return FlextResult[FlextUser | None].ok(user)
         except (KeyError, ValueError, TypeError) as e:
             return FlextResult[FlextUser | None].fail(f"Failed to get user by ID: {e}")
@@ -586,10 +549,10 @@ class InMemoryUserRepository(UserRepository):
                 f"Failed to get user by email: {e}",
             )
 
-    async def delete(self, user_id: str) -> FlextResult[bool]:
+    async def delete(self, entity_id: str) -> FlextResult[bool]:
         """Delete user from memory."""
         try:
-            user = self._users.get(user_id)
+            user = self._users.get(entity_id)
             if not user:
                 return FlextResult.ok(FlextAuthSemanticConstants.FAILURE)
 
@@ -598,7 +561,7 @@ class InMemoryUserRepository(UserRepository):
             self._email_index.pop(str(user.email).lower(), None)
 
             # Remove user
-            del self._users[user_id]
+            del self._users[entity_id]
 
             return FlextResult.ok(FlextAuthSemanticConstants.SUCCESS)
         except (KeyError, ValueError, TypeError, AttributeError) as e:

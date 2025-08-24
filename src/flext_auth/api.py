@@ -15,7 +15,7 @@ from datetime import UTC, datetime
 from flext_core import FlextEntityId, FlextResult
 
 from flext_auth.config import FlextAuthConfig
-from flext_auth.container_services import (
+from flext_auth.container import (
     SessionRepositoryType,
     UserRepositoryType,
     configure_flext_auth_container,
@@ -26,8 +26,8 @@ from flext_auth.container_services import (
 )
 from flext_auth.entities import FlextUser, FlextUserRole, FlextUserStatus
 from flext_auth.jwt import FlextJWTService
-from flext_auth.password_service import FlextPasswordService
-from flext_auth.repositories_simple import (
+from flext_auth.password import FlextPasswordService
+from flext_auth.repositories import (
     SimplePostgreSQLSessionRepository,
     SimplePostgreSQLUserRepository,
     create_postgresql_pool,
@@ -95,6 +95,21 @@ class FlextAuth:
             session_repository=session_repo,
         )
 
+    @classmethod
+    def create_for_testing_with_in_memory(
+        cls,
+        config: FlextAuthConfig | None = None,
+    ) -> FlextAuth:
+        """Create FlextAuth instance with in-memory repositories for testing."""
+        user_repo = InMemoryUserRepository()
+        session_repo = InMemorySessionRepository()
+
+        return cls(
+            config=config,
+            user_repository=user_repo,
+            session_repository=session_repo,
+        )
+
     async def authenticate(
         self,
         username: str,
@@ -113,8 +128,12 @@ class FlextAuth:
                 return user_result
 
             user_data = user_result.value
+            # Extract user object from validation result
+            user = user_data["user"]
+            if not isinstance(user, FlextUser):
+                return FlextResult[dict[str, object]].fail("Invalid user object")
             # Generate and return token
-            return self._generate_auth_token(user_data)
+            return self._generate_auth_token(user)
 
         except Exception as e:
             return FlextResult[dict[str, object]].fail(f"Authentication error: {e}")
@@ -140,38 +159,38 @@ class FlextAuth:
         # Get user repository
         repo_result = self._get_user_repository()
         if not repo_result.success:
-            return repo_result
+            return FlextResult[dict[str, object]].fail(repo_result.error or "Failed to get user repository")
 
         user_repository = repo_result.value
 
         # Get user and validate password
         return await self._validate_user_password(username, password, user_repository)
 
-    def _get_user_repository(self) -> FlextResult[dict[str, object]]:
+    def _get_user_repository(self) -> FlextResult[InMemoryUserRepository | SimplePostgreSQLUserRepository]:
         """Get user repository from container with type validation."""
         services_result = get_flext_auth_services()
         if not services_result.success:
-            return FlextResult[dict[str, object]].fail("Failed to get services")
+            return FlextResult[InMemoryUserRepository | SimplePostgreSQLUserRepository].fail("Failed to get services")
 
         services = services_result.value
         user_repository = services.get("user_repository")
         if not user_repository:
-            return FlextResult[dict[str, object]].fail("User repository not available")
+            return FlextResult[InMemoryUserRepository | SimplePostgreSQLUserRepository].fail("User repository not available")
 
         # Type narrowing for mypy
         if not isinstance(
             user_repository,
             (InMemoryUserRepository, SimplePostgreSQLUserRepository),
         ):
-            return FlextResult[dict[str, object]].fail("Invalid user repository type")
+            return FlextResult[InMemoryUserRepository | SimplePostgreSQLUserRepository].fail("Invalid user repository type")
 
-        return FlextResult[dict[str, object]].ok(user_repository)
+        return FlextResult[InMemoryUserRepository | SimplePostgreSQLUserRepository].ok(user_repository)
 
     async def _validate_user_password(
         self,
         username: str,
         password: str,
-        user_repository: object,
+        user_repository: InMemoryUserRepository | SimplePostgreSQLUserRepository,
     ) -> FlextResult[dict[str, object]]:
         """Validate user exists and password is correct."""
         # Check if user exists
@@ -188,12 +207,15 @@ class FlextAuth:
 
         password_service = password_service_result.value
         password_result = password_service.verify_password(password, user.password_hash)
-        if not password_result.unwrap_or(False):  # noqa: FBT003
+        if not password_result.unwrap_or(default=False):
             return FlextResult[dict[str, object]].fail("Invalid credentials")
 
-        return FlextResult[dict[str, object]].ok(user)
+        return FlextResult[dict[str, object]].ok({
+            "user": user,
+            "validated": True
+        })
 
-    def _generate_auth_token(self, user: object) -> FlextResult[dict[str, object]]:
+    def _generate_auth_token(self, user: FlextUser) -> FlextResult[dict[str, object]]:
         """Generate authentication token for successful login."""
         jwt_service_result = get_jwt_service()
         if not jwt_service_result.success:
@@ -236,9 +258,13 @@ class FlextAuth:
             email,
         )
         if not repository_result.success:
-            return repository_result
+            return FlextResult[dict[str, object]].fail(repository_result.error or "Failed to get repository")
 
         user_repository = repository_result.value
+
+        # Type validation
+        if not isinstance(user_repository, (InMemoryUserRepository, SimplePostgreSQLUserRepository)):
+            return FlextResult[dict[str, object]].fail("Invalid user repository type")
 
         # Create and save user
         return await self._create_and_save_user(
@@ -300,7 +326,7 @@ class FlextAuth:
         username: str,
         email: str,
         password: str,
-        user_repository: object,
+        user_repository: InMemoryUserRepository | SimplePostgreSQLUserRepository,
     ) -> FlextResult[dict[str, object]]:
         """Create user entity and save to repository."""
         # Get password service and hash password
@@ -398,24 +424,11 @@ class FlextAuth:
             config = services_result.value.get("config")
             if config and isinstance(config, FlextAuthConfig):
                 return config
-        # Create default configuration
-        return FlextAuthConfig(
-            app_name="FlextAuth",
-            version="1.0.0",
-            environment="development",
-            password_min_length=8,
-            password_max_length=128,
-            bcrypt_rounds=12,
-            max_login_attempts=5,
-            lockout_duration_minutes=30,
-            session_timeout_hours=24,
-            max_concurrent_sessions=5,
-            rate_limit_per_minute=60,
-            auth_rate_limit_per_minute=5,
-            access_token_expire_minutes=30,
-            refresh_token_expire_days=7,
-            jwt_secret_key=DEFAULT_JWT_SECRET,
-        )
+        # Create default configuration (use defaults from class)
+        config = FlextAuthConfig()        # Override JWT secret if needed
+        if hasattr(config, "jwt_secret_key"):
+            config.jwt_secret_key = DEFAULT_JWT_SECRET
+        return config
 
     @property
     def service(self) -> object:
@@ -504,34 +517,21 @@ MIN_PASSWORD_LENGTH_CONSTANT = 8
 def flext_auth_quick_start(
     *,
     jwt_secret: str = DEFAULT_JWT_SECRET,
+    create_REDACTED_LDAP_BIND_PASSWORD: bool = True,  # noqa: ARG001
 ) -> FlextAuth:
     """Quick start helper using FlextAuth API.
 
     Args:
         jwt_secret: JWT secret key for token signing
+        create_REDACTED_LDAP_BIND_PASSWORD: Whether to create default REDACTED_LDAP_BIND_PASSWORD user
 
     Returns:
         Configured FlextAuth instance
 
     """
-    config = FlextAuthConfig(
-        app_name="FlextAuth",
-        version="1.0.0",
-        environment="development",
-        password_min_length=8,
-        password_max_length=128,
-        bcrypt_rounds=12,
-        max_login_attempts=5,
-        lockout_duration_minutes=30,
-        session_timeout_hours=24,
-        max_concurrent_sessions=5,
-        rate_limit_per_minute=60,
-        auth_rate_limit_per_minute=5,
-        access_token_expire_minutes=30,
-        refresh_token_expire_days=7,
-        jwt_secret_key=jwt_secret,
-    )
-
+    config = FlextAuthConfig()    # Set custom JWT secret
+    if hasattr(config, "jwt_secret_key"):
+        config.jwt_secret_key = jwt_secret
     return FlextAuth(config=config)
 
 
@@ -726,21 +726,19 @@ def generate_secure_password(length: int = 16) -> str:
     """
     # Ensure password has all character types
     alphabet = string.ascii_letters + string.digits + "!@#$%^&*"
-    password = "".join(secrets.choice(alphabet) for _ in range(length))
+    password_chars = [secrets.choice(alphabet) for _ in range(length)]
 
     # Ensure at least one of each type
     if length >= MIN_PASSWORD_LENGTH_CONSTANT:
         # Replace some random positions with required character types
-        password = list(password)
-        password[0] = secrets.choice(string.ascii_uppercase)
-        password[1] = secrets.choice(string.ascii_lowercase)
-        password[2] = secrets.choice(string.digits)
-        password[3] = secrets.choice("!@#$%^&*")
+        password_chars[0] = secrets.choice(string.ascii_uppercase)
+        password_chars[1] = secrets.choice(string.ascii_lowercase)
+        password_chars[2] = secrets.choice(string.digits)
+        password_chars[3] = secrets.choice("!@#$%^&*")
         # Shuffle to avoid predictable positions
-        secrets.SystemRandom().shuffle(password)
-        password = "".join(password)
+        secrets.SystemRandom().shuffle(password_chars)
 
-    return password
+    return "".join(password_chars)
 
 
 def get_utc_now() -> datetime:
@@ -763,7 +761,7 @@ def is_strong_password(password: str) -> bool:
         True if password is strong, False otherwise
 
     """
-    return flext_auth_validate_password_strength(password).unwrap_or(False)  # noqa: FBT003
+    return flext_auth_validate_password_strength(password).unwrap_or(default=False)
 
 
 def mask_sensitive_data(data: str, visible_chars: int = 4, mask_char: str = "*") -> str:

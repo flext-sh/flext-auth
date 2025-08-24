@@ -119,7 +119,7 @@ class FlextAuthUtilities:
             Boolean value or False if result failed
 
         """
-        return result.unwrap_or(False)  # noqa: FBT003
+        return result.unwrap_or(default=False)
 
     @staticmethod
     def unwrap_or_empty_string(result: FlextResult[str]) -> str:

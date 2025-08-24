@@ -189,12 +189,8 @@ class FlextAuthFieldValidationType(TypedDict, total=False):
 
 
 # =============================================================================
-# TYPE EXPORTS - Clean type exports
+# TYPE EXPORTS - Clean type exports (using definitions from above)
 # =============================================================================
-type TAuthResult = FlextAuthResult
-type TSecurityContext = FlextAuthSecurityContext
-type TLoginAttempt = FlextAuthLoginAttempt
-type TAuditEventType = FlextAuthAuditEventType
 
 # =============================================================================
 # EXPORTS - All FlextAuth types

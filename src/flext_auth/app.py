@@ -15,7 +15,7 @@ from flext_core import FlextResult
 
 from flext_auth.entities import FlextUser
 from flext_auth.models import FlextSecurityContext
-from flext_auth.repositories_simple import FlextSessionRepository, FlextUserRepository
+from flext_auth.repositories import FlextSessionRepository, FlextUserRepository
 from flext_auth.services import FlextJWTService, FlextPasswordService
 from flext_auth.session import InMemorySessionRepository
 from flext_auth.user import InMemoryUserRepository

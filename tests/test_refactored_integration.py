@@ -98,19 +98,33 @@ class TestRefactoredAuthSystem:
 
         reg_result = asyncio.run(auth.create_user(username, email, password))
 
-        # Registration should work (returns user object or error dict)
+        # Registration should work (returns FlextResult with user object or error)
         assert reg_result is not None
-        if isinstance(reg_result, dict) and "error" in reg_result:
-            # If there's an error, it should be descriptive
-            assert "error" in reg_result
+
+        # Handle FlextResult objects properly
+        if hasattr(reg_result, "success") and hasattr(reg_result, "value"):
+            if not reg_result.success:
+                # If there's an error, it should be descriptive
+                error_msg = str(reg_result.error)
+                # Common validation errors are acceptable
+                assert any(
+                    x in error_msg.lower()
+                    for x in ["validation", "exists", "invalid", "required"]
+                )
+            else:
+                # If successful, should be a user dict with id or username
+                user_data = reg_result.value
+                assert isinstance(user_data, dict)
+                assert ("id" in user_data) or ("username" in user_data)
+        elif isinstance(reg_result, dict) and "error" in reg_result:
+            # Legacy dict format - still support it
             error_msg = str(reg_result["error"])
-            # Common validation errors are acceptable
             assert any(
                 x in error_msg.lower()
                 for x in ["validation", "exists", "invalid", "required"]
             )
-        else:
-            # If successful, should be a user dict with id or username
+        elif isinstance(reg_result, dict):
+            # Legacy dict format - successful
             assert ("id" in reg_result) or ("username" in reg_result)
 
         # Test authentication
