@@ -38,6 +38,7 @@ class _SecretProtocol(FlextProtocols.Infrastructure.Configurable):
         """Get the secret value as string."""
         ...
 
+
 # =============================================================================
 # TYPE DEFINITIONS - Authentication-specific types
 # =============================================================================

@@ -11,7 +11,8 @@ import os
 import secrets
 from dataclasses import dataclass
 
-from flext_core import FlextResult
+from flext_core import FlextDomainService, FlextResult
+from pydantic import Field
 
 from .entities import FlextUser
 from .models import FlextSecurityContext
@@ -56,16 +57,43 @@ class FlextAuthServiceConfig:
 # =============================================================================
 
 
-class FlextAuthService:
+class FlextAuthService(FlextDomainService[dict[str, object]]):
     """Main authentication service for FLEXT ecosystem.
 
     This service provides the primary interface for authentication operations,
     orchestrating domain services and maintaining clean architecture boundaries.
     """
 
-    def __init__(self, dependencies: FlextAuthServiceDependencies) -> None:
+    dependencies: FlextAuthServiceDependencies = Field(..., description="Service dependencies")
+
+    def model_post_init(self, __context: dict[str, object] | None = None, /) -> None:
         """Initialize authentication service with dependencies."""
-        self.deps = dependencies
+        super().model_post_init(__context)
+        self.deps = self.dependencies
+
+    def execute(self) -> FlextResult[dict[str, object]]:
+        """Execute service information retrieval.
+
+        Returns service configuration and capabilities as the primary domain operation.
+        """
+        try:
+            service_info = {
+                "service_type": "FlextAuthService",
+                "capabilities": [
+                    "authenticate_user",
+                    "create_user",
+                    "get_user_by_username",
+                    "validate_token",
+                    "logout_user",
+                    "refresh_token"
+                ],
+                "architecture": "clean_architecture",
+                "domain_driven_design": True,
+                "initialized_at": "runtime"
+            }
+            return FlextResult[dict[str, object]].ok(service_info)
+        except Exception as e:
+            return FlextResult[dict[str, object]].fail(f"Service execution failed: {e}")
 
     async def authenticate_user(
         self,

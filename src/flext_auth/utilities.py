@@ -9,7 +9,6 @@ operations, following SOLID principles and reducing code duplication.
 
 from __future__ import annotations
 
-import asyncio
 from typing import TYPE_CHECKING
 
 from flext_core import FlextResult
@@ -44,13 +43,8 @@ class FlextAuthUtilities:
 
         """
         try:
-            # All repositories have async methods - use them in sync context
-            try:
-                loop = asyncio.get_event_loop()
-                return loop.run_until_complete(repository.get_by_username(username))
-            except RuntimeError:
-                # No event loop, create new one
-                return asyncio.run(repository.get_by_username(username))
+            # Repositories are synchronous according to flext-core patterns
+            return repository.get_by_username(username)
 
         except Exception as e:
             return FlextResult[FlextUser | None].fail(f"Repository error: {e}")
@@ -71,12 +65,8 @@ class FlextAuthUtilities:
 
         """
         try:
-            # All repositories have async methods - use them in sync context
-            try:
-                loop = asyncio.get_event_loop()
-                return loop.run_until_complete(repository.get_by_email(email))
-            except RuntimeError:
-                return asyncio.run(repository.get_by_email(email))
+            # Repositories are synchronous according to flext-core patterns
+            return repository.get_by_email(email)
 
         except Exception as e:
             return FlextResult[FlextUser | None].fail(f"Repository error: {e}")
@@ -97,12 +87,8 @@ class FlextAuthUtilities:
 
         """
         try:
-            # All repositories have async methods - use them in sync context
-            try:
-                loop = asyncio.get_event_loop()
-                return loop.run_until_complete(repository.save(user))
-            except RuntimeError:
-                return asyncio.run(repository.save(user))
+            # Repositories are synchronous according to flext-core patterns
+            return repository.save(user)
 
         except Exception as e:
             return FlextResult[FlextUser].fail(f"Repository save error: {e}")

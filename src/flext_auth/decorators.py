@@ -10,9 +10,9 @@ from __future__ import annotations
 import asyncio
 import functools
 import secrets
+from abc import abstractmethod
 from collections.abc import Callable
 from datetime import UTC, datetime
-from abc import abstractmethod
 from typing import ParamSpec, cast
 
 from flext_core import (
@@ -41,6 +41,7 @@ class _TokenExtractionStrategy(FlextProtocols.Foundation.Callable[str | None]):
         """Extract token from request object."""
         ...
 
+
 # FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Connection for HTTP headers
 class _HTTPHeaders(FlextProtocols.Infrastructure.Connection):
     """Protocol for HTTP headers object.
@@ -53,6 +54,7 @@ class _HTTPHeaders(FlextProtocols.Infrastructure.Connection):
     def get(self, key: str, default: str = "") -> str:
         """Get header value by key."""
         ...
+
 
 # FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Connection for HTTP request
 class _HTTPRequest(FlextProtocols.Infrastructure.Connection):
@@ -77,6 +79,7 @@ class _DjangoMeta(FlextProtocols.Infrastructure.Connection):
     def get(self, key: str, default: str = "") -> str:
         """Get META value by key."""
         ...
+
 
 # FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Connection for Django request
 class _DjangoRequest(FlextProtocols.Infrastructure.Connection):
@@ -123,6 +126,8 @@ class AuthDecoratorProtocol(FlextProtocols.Foundation.DecoratedCallable[object])
     def __call__(self, *args: object, **kwargs: object) -> object:
         """Protocol for functions that can be decorated with auth."""
         ...
+
+
 DecoratorCallable = Callable[[AuthDecoratorProtocol], AuthDecoratorProtocol]
 
 

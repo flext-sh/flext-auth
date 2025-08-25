@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import override
 
-from flext_core import FlextEntity, FlextResult, FlextTimestamp
+from flext_core import FlextAggregateRoot, FlextEntity, FlextResult, FlextTimestamp
 from pydantic import Field
 
 # Constants for magic numbers
@@ -44,7 +44,7 @@ class FlextUserRole(StrEnum):
     MODERATOR = "moderator"
 
 
-class FlextUser(FlextEntity):
+class FlextUser(FlextAggregateRoot):
     """Rich user entity with authentication business logic and domain rules.
 
     This entity represents a user account in the FLEXT authentication system,
@@ -314,8 +314,6 @@ class FlextUser(FlextEntity):
         return FlextResult[None].ok(None)
 
 
-
-
 class FlextPermission(FlextEntity):
     """Permission entity."""
 
@@ -352,7 +350,7 @@ class FlextPermission(FlextEntity):
         return FlextResult[None].ok(None)
 
 
-class FlextRole(FlextEntity):
+class FlextRole(FlextAggregateRoot):
     """Role entity with permissions."""
 
     # id is inherited from FlextEntity - no need to redefine

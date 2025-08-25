@@ -12,10 +12,12 @@ import string
 
 import bcrypt
 from flext_core import (
+    FlextDomainService,
     FlextResult,
     FlextValidationError,
     get_logger,
 )
+from pydantic import Field
 
 from .models import (
     MAX_PASSWORD_LENGTH,
@@ -45,7 +47,7 @@ TOKEN_BYTES = 32
 logger = get_logger(__name__)
 
 
-class FlextPasswordService:
+class FlextPasswordService(FlextDomainService[dict[str, object]]):
     """Enterprise password service providing secure password operations.
 
     This service handles all password-related operations including secure hashing,
@@ -108,25 +110,60 @@ class FlextPasswordService:
 
     """
 
-    def __init__(self, rounds: int = 12) -> None:
-        """Initialize password service.
+    rounds: int = Field(default=12, ge=MIN_BCRYPT_ROUNDS, le=MAX_BCRYPT_ROUNDS, description="Bcrypt cost factor (4-20)")
 
-        Args:
-            rounds: Bcrypt cost factor (4-20, higher = more secure but slower)
-
-        """
-        if not MIN_BCRYPT_ROUNDS <= rounds <= MAX_BCRYPT_ROUNDS:
+    def model_post_init(self, __context: dict[str, object] | None = None, /) -> None:
+        """Validate configuration after model initialization."""
+        super().model_post_init(__context)
+        if not MIN_BCRYPT_ROUNDS <= self.rounds <= MAX_BCRYPT_ROUNDS:
             msg = "Bcrypt rounds must be between 4 and 20"
             raise FlextValidationError(
                 msg,
                 field="rounds",
-                value=rounds,
+                value=self.rounds,
                 context={
                     "min_value": MIN_BCRYPT_ROUNDS,
                     "max_value": MAX_BCRYPT_ROUNDS,
                 },
             )
-        self.rounds = rounds
+
+    def validate_config(self) -> FlextResult[None]:
+        """Validate service configuration."""
+        if not MIN_BCRYPT_ROUNDS <= self.rounds <= MAX_BCRYPT_ROUNDS:
+            return FlextResult[None].fail(
+                f"Bcrypt rounds must be between {MIN_BCRYPT_ROUNDS} and {MAX_BCRYPT_ROUNDS}, got {self.rounds}"
+            )
+        return FlextResult[None].ok(None)
+
+    def execute(self) -> FlextResult[dict[str, object]]:
+        """Execute service information retrieval.
+
+        Returns service configuration and capabilities as the primary domain operation.
+        """
+        try:
+            config_result = self.validate_config()
+            if config_result.is_failure:
+                return FlextResult[dict[str, object]].fail(config_result.error or "Configuration invalid")
+
+            service_info = {
+                "service_type": "FlextPasswordService",
+                "bcrypt_rounds": self.rounds,
+                "capabilities": [
+                    "hash_password",
+                    "verify_password",
+                    "generate_secure_password",
+                    "check_password_strength",
+                    "generate_password_reset_token",
+                    "is_password_compromised"
+                ],
+                "config_valid": True,
+                "initialized_at": "runtime"
+            }
+
+            return FlextResult[dict[str, object]].ok(service_info)
+
+        except Exception as e:
+            return FlextResult[dict[str, object]].fail(f"Service execution failed: {e}")
 
     def hash_password(
         self,

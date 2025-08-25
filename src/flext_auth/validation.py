@@ -12,7 +12,9 @@ import re
 from flext_core import FlextResult, FlextValidation
 
 from .constants import FlextAuthConstants
-from .flext_auth_types import TEmail, TPassword, TUsername
+
+# Type aliases as direct types
+# TEmail, TPassword, TUsername are all str
 
 # =============================================================================
 # VALIDATION CONSTANTS
@@ -30,7 +32,7 @@ class FlextAuthValidators:
     """Authentication validators using flext-core patterns."""
 
     @staticmethod
-    def validate_username(username: TUsername) -> FlextResult[None]:
+    def validate_username(username: str) -> FlextResult[None]:
         """Validate username using flext-core validators."""
         if not FlextValidation.is_non_empty_string(username):
             return FlextResult[None].fail("Username cannot be empty")
@@ -51,7 +53,7 @@ class FlextAuthValidators:
         return FlextResult[None].ok(None)
 
     @staticmethod
-    def validate_email(email: TEmail) -> FlextResult[None]:
+    def validate_email(email: str) -> FlextResult[None]:
         """Validate email using flext-core validators."""
         email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
         if not re.match(email_pattern, email):
@@ -59,7 +61,7 @@ class FlextAuthValidators:
         return FlextResult[None].ok(None)
 
     @staticmethod
-    def validate_password(password: TPassword) -> FlextResult[None]:
+    def validate_password(password: str) -> FlextResult[None]:
         """Validate password using flext-core validators."""
         if not FlextValidation.is_non_empty_string(password):
             return FlextResult[None].fail("Password cannot be empty")

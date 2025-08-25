@@ -46,11 +46,11 @@ from .values import (
 
 class FlextAuthModels(FlextModel):
     """Single consolidated class containing ALL authentication models.
-    
+
     FLEXT REFACTORING: Consolidates ALL model definitions into one class following
     FLEXT architectural standards. Individual models available as nested classes
     for organization while maintaining single entry point.
-    
+
     Usage:
         models = FlextAuthModels()
         session = models.Session(...)
@@ -96,7 +96,7 @@ class FlextAuthModels(FlextModel):
         user_id: str = Field(..., description="User ID owning this session")
         access_token: str = Field(..., description="JWT access token")
         refresh_token: str | None = Field(default=None, description="JWT refresh token")
-        status: SessionStatus = Field(
+        status: FlextAuthModels.SessionStatus = Field(
             default="active",
             description="Session status",
         )
@@ -161,7 +161,7 @@ class FlextAuthModels(FlextModel):
         # id is inherited from FlextEntity - no need to redefine
         name: str = Field(..., description="Role name")
         description: str = Field(..., description="Role description")
-        permissions: list[Permission] = Field(
+        permissions: list[FlextAuthModels.Permission] = Field(
             default_factory=list,
             description="Role permissions",
         )
@@ -186,9 +186,9 @@ class FlextAuthModels(FlextModel):
                 return FlextResult[None].fail("Role name cannot be empty")
             if not self.description:
                 return FlextResult[None].fail("Role description cannot be empty")
-            if len(self.name) > 100:
+            if len(self.name) > FlextAuthModels.MAX_NAME_LENGTH:
                 return FlextResult[None].fail("Role name must be at most 100 characters")
-            if len(self.description) > 500:
+            if len(self.description) > FlextAuthModels.MAX_DESCRIPTION_LENGTH:
                 return FlextResult[None].fail(
                     "Role description must be at most 500 characters",
                 )
@@ -199,22 +199,22 @@ class FlextAuthModels(FlextModel):
     # =============================================================================
 
     @property
-    def FlextSession(self) -> type[Session]:
+    def FlextSession(self) -> type[FlextAuthModels.Session]:  # noqa: N802
         """Legacy compatibility property."""
         return self.Session
 
     @property
-    def FlextPermission(self) -> type[Permission]:
+    def FlextPermission(self) -> type[FlextAuthModels.Permission]:  # noqa: N802
         """Legacy compatibility property."""
         return self.Permission
 
     @property
-    def FlextRole(self) -> type[Role]:
+    def FlextRole(self) -> type[FlextAuthModels.Role]:  # noqa: N802
         """Legacy compatibility property."""
         return self.Role
 
     @property
-    def FlextSessionStatus(self) -> type[SessionStatus]:
+    def FlextSessionStatus(self) -> type[FlextAuthModels.SessionStatus]:  # noqa: N802
         """Legacy compatibility property."""
         return self.SessionStatus
 
@@ -379,13 +379,15 @@ def convert_user_to_dict(user: FlextUser) -> dict[str, object]:
 
 # Create backward compatibility aliases for legacy imports
 FlextSession = FlextAuthModels.Session
-FlextPermission = FlextAuthModels.Permission  
+FlextPermission = FlextAuthModels.Permission
 FlextRole = FlextAuthModels.Role
 FlextSessionStatus = FlextAuthModels.SessionStatus
+
 
 # Add missing legacy classes that are imported by other modules
 class FlextLoginAttempt(FlextEntity):
     """Login attempt tracking - legacy compatibility class."""
+
     username: str = Field(..., description="Username attempted")
     ip_address: str = Field(..., description="Client IP address")
     user_agent: str | None = Field(default=None, description="Client user agent")
@@ -397,12 +399,16 @@ class FlextLoginAttempt(FlextEntity):
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules required by FlextEntity abstract method."""
         if not self.id:
-            raise ValueError("Login attempt ID cannot be empty")
+            msg = "Login attempt ID cannot be empty"
+            raise ValueError(msg)
         if not self.username:
-            raise ValueError("Username cannot be empty")
+            msg = "Username cannot be empty"
+            raise ValueError(msg)
         if not self.ip_address:
-            raise ValueError("IP address cannot be empty")
+            msg = "IP address cannot be empty"
+            raise ValueError(msg)
         return FlextResult[None].ok(None)
+
 
 # Export constants for backward compatibility
 MIN_USERNAME_LENGTH = FlextAuthModels.MIN_USERNAME_LENGTH
@@ -416,31 +422,31 @@ MIN_TOKEN_LENGTH = FlextAuthModels.MIN_TOKEN_LENGTH
 MIN_BCRYPT_HASH_LENGTH = FlextAuthModels.MIN_BCRYPT_HASH_LENGTH
 
 __all__: list[str] = [
-    # CONSOLIDATED CLASS - FLEXT Pattern (main export)
-    "FlextAuthModels",
-    # Legacy class exports for backward compatibility
-    "FlextSession",
-    "FlextPermission", 
-    "FlextRole",
-    "FlextSessionStatus",
-    "FlextLoginAttempt",
+    "MAX_DESCRIPTION_LENGTH",
+    "MAX_NAME_LENGTH",
+    "MAX_PASSWORD_LENGTH",
+    "MAX_SESSION_ID_LENGTH",
+    "MAX_USERNAME_LENGTH",
+    "MIN_BCRYPT_HASH_LENGTH",
+    "MIN_PASSWORD_LENGTH",
+    "MIN_TOKEN_LENGTH",
     # Legacy constant exports for backward compatibility
     "MIN_USERNAME_LENGTH",
-    "MAX_USERNAME_LENGTH", 
-    "MIN_PASSWORD_LENGTH",
-    "MAX_PASSWORD_LENGTH",
-    "MAX_NAME_LENGTH",
-    "MAX_DESCRIPTION_LENGTH",
-    "MAX_SESSION_ID_LENGTH",
-    "MIN_TOKEN_LENGTH",
-    "MIN_BCRYPT_HASH_LENGTH",
+    # CONSOLIDATED CLASS - FLEXT Pattern (main export)
+    "FlextAuthModels",
     # Legacy exports for backward compatibility
     "FlextEmailVerificationToken",
     "FlextHashedPassword",
     "FlextJWTClaims",
+    "FlextLoginAttempt",
     "FlextPasswordResetToken",
+    "FlextPermission",
     "FlextPlainPassword",
+    "FlextRole",
     "FlextSecurityContext",
+    # Legacy class exports for backward compatibility
+    "FlextSession",
+    "FlextSessionStatus",
     # Domain Entities
     "FlextUser",
     "FlextUserEmail",
@@ -455,4 +461,3 @@ __all__: list[str] = [
     # Utilities
     "convert_user_to_dict",
 ]
-

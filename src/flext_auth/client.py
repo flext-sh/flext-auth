@@ -244,7 +244,7 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             # For now, use the sync JWT validation
             jwt_validation = self.validate_jwt(token)
             if jwt_validation.is_success:
-                jwt_data = jwt_validation.data
+                jwt_data = jwt_validation.value
                 return FlextResult.ok({
                     "user_id": jwt_data.get("user_id", "unknown"),
                     "username": jwt_data.get("username", "unknown"),
@@ -266,8 +266,8 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             # Use internal method that replicates flext_auth_hash_password
             hashed = flext_auth_hash_password(password)
             if hashed.is_success:
-                # FlextResult uses .data property, not .value
-                return FlextResult.ok(hashed.data)
+                # FlextResult has both .data and .value properties (identical)
+                return FlextResult.ok(hashed.value)
             return FlextResult.fail(hashed.error or "Password hashing failed")
 
         except Exception as e:
@@ -279,8 +279,8 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             # Use internal method that replicates flext_auth_verify_password
             verified = flext_auth_verify_password(password, hashed_password)
             if verified.is_success:
-                # FlextResult uses .data property, not .value
-                return FlextResult.ok(verified.data)
+                # FlextResult has both .data and .value properties (identical)
+                return FlextResult.ok(verified.value)
             return FlextResult.fail(verified.error or "Password verification failed")
 
         except Exception as e:
@@ -292,8 +292,8 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             # Use internal method that replicates flext_auth_validate_password_strength
             validation = flext_auth_validate_password_strength(password)
             if validation.is_success:
-                # FlextResult uses .data property, not .value
-                return FlextResult.ok(validation.data)
+                # FlextResult has both .data and .value properties (identical)
+                return FlextResult.ok(validation.value)
             return FlextResult.fail(validation.error or "Password validation failed")
 
         except Exception as e:
@@ -324,8 +324,8 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             # Function signature: (user_id, username, role='user', session_id='default', jwt_secret='dev-secret...')
             jwt_result = flext_auth_generate_jwt(user_id, username, role)
             if jwt_result.is_success:
-                # FlextResult uses .data property, not .value
-                return FlextResult.ok(jwt_result.data)
+                # FlextResult has both .data and .value properties (identical)
+                return FlextResult.ok(jwt_result.value)
             return FlextResult.fail(jwt_result.error or "JWT generation failed")
 
         except Exception as e:
@@ -337,8 +337,8 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             # Use internal method that replicates flext_auth_validate_jwt
             validation_result = flext_auth_validate_jwt(token)
             if validation_result.is_success:
-                # FlextResult uses .data property, not .value
-                return FlextResult.ok(validation_result.data)
+                # FlextResult has both .data and .value properties (identical)
+                return FlextResult.ok(validation_result.value)
             return FlextResult.fail(validation_result.error or "JWT validation failed")
 
         except Exception as e:

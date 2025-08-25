@@ -7,11 +7,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import abstractmethod
 import asyncio
 import os
 import secrets
 import string
+from abc import abstractmethod
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
@@ -888,6 +888,7 @@ class ValidationStrategy(FlextProtocols.Foundation.Validator[object]):
         """Execute validation strategy using flext-core Validator protocol."""
         ...
 
+
 class PasswordStrengthValidationStrategy(ValidationStrategy):
     """Strategy Pattern: Password strength validation."""
 
@@ -980,6 +981,7 @@ class PermissionStrategy(FlextProtocols.Infrastructure.Auth):
     ) -> FlextResult[bool]:
         """Check permission using specific strategy with Parameter Object."""
         ...
+
 
 @dataclass(frozen=True)
 class PermissionCheckData:

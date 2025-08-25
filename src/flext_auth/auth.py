@@ -8,10 +8,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import secrets
+from abc import abstractmethod
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from abc import abstractmethod
 from typing import cast, override
 
 from flext_core import (
