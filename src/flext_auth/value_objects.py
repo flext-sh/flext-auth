@@ -9,7 +9,7 @@ This module is deprecated. Use 'flext_auth.values' instead.
 # Legacy compatibility facade
 import warnings
 
-from flext_auth.values import *  # noqa: F403,F401
+from .values import *  # noqa: F403,F401
 
 warnings.warn(
     "value_objects module is deprecated, use 'flext_auth.values' instead",

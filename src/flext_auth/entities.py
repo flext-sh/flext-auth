@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import override
 
@@ -314,109 +314,6 @@ class FlextUser(FlextEntity):
         return FlextResult[None].ok(None)
 
 
-class FlextSessionStatus(StrEnum):
-    """Session status."""
-
-    ACTIVE = "active"
-    EXPIRED = "expired"
-    REVOKED = "revoked"
-
-
-class FlextSession(FlextEntity):
-    """User session entity."""
-
-    # id is inherited from FlextEntity - no need to redefine
-    user_id: str = Field(
-        ...,
-        description="User ID owning this session",
-    )
-    access_token: str = Field(..., description="JWT access token")
-    refresh_token: str | None = Field(default=None, description="JWT refresh token")
-    status: FlextSessionStatus = Field(
-        default=FlextSessionStatus.ACTIVE,
-        description="Session status",
-    )
-    ip_address: str | None = Field(default=None, description="Client IP address")
-    user_agent: str | None = Field(default=None, description="Client user agent")
-    expires_at: datetime = Field(..., description="Session expiration time")
-    created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
-    last_accessed: datetime = Field(default_factory=lambda: datetime.now(UTC))
-
-    def is_valid(self) -> bool:
-        """Check if session is valid (active and not expired)."""
-        if self.status != FlextSessionStatus.ACTIVE:
-            return False
-
-        return datetime.now(UTC) < self.expires_at
-
-    def extend_session(self, minutes: int = 30) -> FlextSession:
-        """Create new Session instance with extended expiration."""
-        return FlextSession(
-            id=self.id,
-            user_id=self.user_id,
-            access_token=self.access_token,
-            refresh_token=self.refresh_token,
-            status=self.status,
-            ip_address=self.ip_address,
-            user_agent=self.user_agent,
-            expires_at=datetime.now(UTC) + timedelta(minutes=minutes),
-            created_at=self.created_at,
-            last_accessed=datetime.now(UTC),
-        )
-
-    def revoke(self) -> FlextSession:
-        """Create new Session instance with revoked status."""
-        return FlextSession(
-            id=self.id,
-            user_id=self.user_id,
-            access_token=self.access_token,
-            refresh_token=self.refresh_token,
-            status=FlextSessionStatus.REVOKED,
-            ip_address=self.ip_address,
-            user_agent=self.user_agent,
-            expires_at=self.expires_at,
-            created_at=self.created_at,
-            last_accessed=self.last_accessed,
-        )
-
-    def has_valid_data(self) -> bool:
-        """Validate session entity data structure."""
-        return (
-            len(str(self.id)) > 0
-            and len(str(self.user_id)) > 0
-            and len(self.access_token) > 0
-            and self.expires_at > datetime.now(UTC)
-        )
-
-    def validate_domain_rules(self) -> FlextResult[None]:
-        """Validate session domain rules and business invariants."""
-        if not self.id:
-            return FlextResult[None].fail("Session ID cannot be empty")
-        if not self.user_id:
-            return FlextResult[None].fail("User ID cannot be empty")
-        if not self.access_token:
-            return FlextResult[None].fail("Access token cannot be empty")
-        if self.expires_at <= datetime.now(UTC):
-            return FlextResult[None].fail("Session expiration must be in the future")
-        return FlextResult[None].ok(None)
-
-    @override
-    def validate_business_rules(self) -> FlextResult[None]:
-        """Validate business rules required by FlextEntity abstract method."""
-        # Execute validation and raise ValueError if validation fails
-        if not self.id:
-            msg = "Session ID cannot be empty"
-            raise ValueError(msg)
-        if not self.user_id:
-            msg = "User ID cannot be empty"
-            raise ValueError(msg)
-        if not self.access_token:
-            msg = "Access token cannot be empty"
-            raise ValueError(msg)
-        if self.expires_at <= datetime.now(UTC):
-            msg = "Session expiration must be in the future"
-            raise ValueError(msg)
-        return FlextResult[None].ok(None)
 
 
 class FlextPermission(FlextEntity):
@@ -612,18 +509,14 @@ class FlextLoginAttempt(FlextEntity):
 
 
 # =============================================================================
-# REFACTORING: Template Method Pattern - eliminates 33 lines duplication
+# =============================================================================
+# TOKEN ENTITIES - Using flext-core FlextEntity directly (no local base classes)
 # =============================================================================
 
 
-class FlextBaseToken(FlextEntity):
-    """Base token entity - Template Method Pattern for DRY principle.
+class FlextPasswordResetToken(FlextEntity):
+    """Password reset token entity using flext-core patterns."""
 
-    Eliminates massive code duplication between password reset and email
-    verification token entities using SOLID principles.
-    """
-
-    # id is inherited from FlextEntity - no need to redefine
     user_id: str = Field(..., description="User ID")
     token: str = Field(..., description="Token value")
     expires_at: datetime = Field(..., description="Token expiration")
@@ -631,103 +524,71 @@ class FlextBaseToken(FlextEntity):
     created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
 
     def is_valid(self) -> bool:
-        """Check if token is valid - Common behavior for all tokens."""
+        """Check if token is valid."""
         return not self.used and datetime.now(UTC) < self.expires_at
 
     def use_token(self) -> None:
-        """Mark token as used - Common behavior for all tokens."""
+        """Mark token as used."""
         object.__setattr__(self, "used", True)
-
-    def validate_domain_rules(self) -> FlextResult[None]:
-        """Template Method: validates common rules + specific rules."""
-        # Validate common rules (DRY principle)
-        common_validation = self._validate_common_rules()
-        if not common_validation.is_success:
-            return common_validation
-
-        # Template Method: delegate specific validation to subclasses
-        return self._validate_specific_rules()
-
-    def _validate_common_rules(self) -> FlextResult[None]:
-        """Apply common validation rules using Railway-Oriented Programming.
-
-        SOLID REFACTORING: Reduced from 7 returns to 2 returns using
-        Railway-Oriented Programming + Strategy Pattern.
-        """
-        try:
-            # REFACTORING: Strategy Pattern - validation rules as strategies
-            validation_errors = self._execute_common_validation_strategies()
-            if validation_errors:
-                return FlextResult[None].fail(
-                    validation_errors[0],
-                )  # Return first error
-
-            return FlextResult[None].ok(None)
-
-        except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
-            return FlextResult[None].fail(f"Token validation error: {e}")
-
-    def _execute_common_validation_strategies(self) -> list[str]:
-        """Execute all common validation strategies - Railway-Oriented Programming.
-
-        SOLID REFACTORING: Strategy Pattern implementation for token validation.
-        """
-        errors = []
-
-        # Basic field validation strategies
-        if not self.id:
-            errors.append(f"{self._get_token_type()} ID cannot be empty")
-        if not self.user_id:
-            errors.append("User ID cannot be empty")
-        if not self.token:
-            errors.append(f"{self._get_token_type()} cannot be empty")
-
-        # Length validation strategies
-        if len(self.token) < MIN_TOKEN_LENGTH:
-            errors.append(f"{self._get_token_type()} must be at least 32 characters")
-
-        # Temporal validation strategies
-        if self.expires_at <= datetime.now(UTC):
-            errors.append(f"{self._get_token_type()} expiration must be in the future")
-        if self.created_at.root > datetime.now(UTC):
-            errors.append("Token creation time cannot be in the future")
-
-        return errors
-
-    def _get_token_type(self) -> str:
-        """Abstract method: get token type for error messages."""
-        msg = "Subclasses must implement _get_token_type"
-        raise NotImplementedError(msg)
-
-    def _validate_specific_rules(self) -> FlextResult[None]:
-        """Abstract method: validate token-specific rules."""
-        # Base implementation has no specific rules
-        return FlextResult[None].ok(None)
 
     @override
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate business rules required by FlextEntity abstract method."""
-        # Execute common validation strategies and raise ValueError if validation fails
-        validation_errors = self._execute_common_validation_strategies()
-        if validation_errors:
-            raise ValueError(validation_errors[0])  # Raise first error as ValueError
-        # If common validation passes, call specific validation (no-op for base class)
-        return self._validate_specific_rules()
+        """Validate business rules required by FlextEntity."""
+        try:
+            # Validate user_id
+            if not self.user_id:
+                return FlextResult[None].fail("User ID cannot be empty")
+
+            # Validate token
+            if not self.token:
+                return FlextResult[None].fail("Password reset token cannot be empty")
+            if len(self.token) < MIN_TOKEN_LENGTH:
+                return FlextResult[None].fail("Password reset token must be at least 32 characters")
+
+            # Validate expiration
+            if self.expires_at <= datetime.now(UTC):
+                return FlextResult[None].fail("Password reset token expiration must be in the future")
+
+            return FlextResult[None].ok(None)
+        except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
+            return FlextResult[None].fail(f"Password reset token validation error: {e}")
 
 
-class FlextPasswordResetToken(FlextBaseToken):
-    """Password reset token entity - inherits common behavior from base."""
+class FlextEmailVerificationToken(FlextEntity):
+    """Email verification token entity using flext-core patterns."""
+
+    user_id: str = Field(..., description="User ID")
+    token: str = Field(..., description="Token value")
+    expires_at: datetime = Field(..., description="Token expiration")
+    used: bool = Field(default=False, description="Whether token has been used")
+    created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
+
+    def is_valid(self) -> bool:
+        """Check if token is valid."""
+        return not self.used and datetime.now(UTC) < self.expires_at
+
+    def use_token(self) -> None:
+        """Mark token as used."""
+        object.__setattr__(self, "used", True)
 
     @override
-    def _get_token_type(self) -> str:
-        """Return token type for error messages."""
-        return "Password reset token"
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate business rules required by FlextEntity."""
+        try:
+            # Validate user_id
+            if not self.user_id:
+                return FlextResult[None].fail("User ID cannot be empty")
 
+            # Validate token
+            if not self.token:
+                return FlextResult[None].fail("Email verification token cannot be empty")
+            if len(self.token) < MIN_TOKEN_LENGTH:
+                return FlextResult[None].fail("Email verification token must be at least 32 characters")
 
-class FlextEmailVerificationToken(FlextBaseToken):
-    """Email verification token entity - inherits common behavior from base."""
+            # Validate expiration
+            if self.expires_at <= datetime.now(UTC):
+                return FlextResult[None].fail("Email verification token expiration must be in the future")
 
-    @override
-    def _get_token_type(self) -> str:
-        """Return token type for error messages."""
-        return "Email verification token"
+            return FlextResult[None].ok(None)
+        except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
+            return FlextResult[None].fail(f"Email verification token validation error: {e}")

@@ -13,12 +13,12 @@ from dataclasses import dataclass
 
 from flext_core import FlextResult
 
-from flext_auth.entities import FlextUser
-from flext_auth.models import FlextSecurityContext
-from flext_auth.repositories import FlextSessionRepository, FlextUserRepository
-from flext_auth.services import FlextJWTService, FlextPasswordService
-from flext_auth.session import InMemorySessionRepository
-from flext_auth.user import InMemoryUserRepository
+from .entities import FlextUser
+from .models import FlextSecurityContext
+from .repositories import FlextSessionRepository, FlextUserRepository
+from .services import FlextJWTService, FlextPasswordService
+from .session import InMemorySessionRepository
+from .user import InMemoryUserRepository
 
 # =============================================================================
 # SERVICE DEPENDENCIES AND CONFIGURATION

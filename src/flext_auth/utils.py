@@ -1,7 +1,11 @@
-"""FLEXT Auth Utils - FlextAuth utility classes with static methods.
+"""FLEXT Auth Utils - Single FlextAuthUtils class following Flext[Area][Module] pattern.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
+
+This module implements the Flext[Area][Module] pattern with a single FlextAuthUtils
+class that consolidates ALL authentication utility functionality. It follows FLEXT
+architectural standards by providing all utility methods within a single class.
 
 """
 
@@ -10,26 +14,59 @@ from __future__ import annotations
 import secrets
 import string
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING
 
 from flext_core import FlextResult
 
-if TYPE_CHECKING:
-    from flext_auth import FlextAuthValidationResultType
-
-# =============================================================================
-# CONSTANTS - Password validation constants
-# =============================================================================
-
-_MIN_PASSWORD_LENGTH = 8
-
-# =============================================================================
-# FLEXT AUTH UTILITIES - Classes with static methods only
-# =============================================================================
+from .typings import FlextAuthValidationResultType
 
 
-class FlextAuthTokenUtils:
-    """FlextAuth token utilities with static methods."""
+class FlextAuthUtils:
+    """Single authentication utilities class following Flext[Area][Module] pattern.
+
+    This class consolidates ALL authentication utility functionality that was previously
+    scattered across multiple utility classes. Following FLEXT architectural standards,
+    all utility methods are now available through a single class interface.
+
+    All methods are static since they are utilities that don't require instance state.
+    This maintains compatibility with existing usage patterns while providing a unified
+    interface following the Flext[Area][Module] architectural pattern.
+
+    Example:
+        Token generation:
+
+        >>> token = FlextAuthUtils.generate_secure_token(32)
+        >>> api_key = FlextAuthUtils.generate_api_key("auth", 24)
+
+        Password utilities:
+
+        >>> password = FlextAuthUtils.generate_secure_password(16)
+        >>> is_strong = FlextAuthUtils.is_strong_password(password)
+        >>> validation = FlextAuthUtils.validate_password_strength(password)
+
+        Time operations:
+
+        >>> now = FlextAuthUtils.get_utc_now()
+        >>> future = FlextAuthUtils.add_minutes_to_now(30)
+
+        Data utilities:
+
+        >>> masked = FlextAuthUtils.mask_sensitive_data("secret123", 2)
+        >>> filtered = FlextAuthUtils.filter_sensitive_data({"password": "secret"})
+
+    """
+
+    # =============================================================================
+    # CONSTANTS - Centralized constants for all utility methods
+    # =============================================================================
+
+    MIN_PASSWORD_LENGTH = 8
+    DEFAULT_TOKEN_LENGTH = 32
+    DEFAULT_PASSWORD_LENGTH = 16
+    DEFAULT_VISIBLE_CHARS = 4
+
+    # =============================================================================
+    # TOKEN UTILITIES - Methods from FlextAuthTokenUtils
+    # =============================================================================
 
     @staticmethod
     def generate_secure_token(length: int = 32) -> str:
@@ -42,14 +79,14 @@ class FlextAuthTokenUtils:
         token = secrets.token_urlsafe(length)
         return f"{prefix}_{token}"
 
-
-class FlextAuthPasswordUtils:
-    """FlextAuth password utilities with static methods."""
+    # =============================================================================
+    # PASSWORD UTILITIES - Methods from FlextAuthPasswordUtils
+    # =============================================================================
 
     @staticmethod
     def generate_secure_password(length: int = 16) -> str:
         """Generate a secure random password with mixed characters."""
-        length = max(length, 8)
+        length = max(length, FlextAuthUtils.MIN_PASSWORD_LENGTH)
 
         # Character sets
         uppercase = string.ascii_uppercase
@@ -80,8 +117,7 @@ class FlextAuthPasswordUtils:
     @staticmethod
     def is_strong_password(password: str) -> bool:
         """Check if password meets basic strength requirements."""
-        min_password_length = 8
-        if len(password) < min_password_length:
+        if len(password) < FlextAuthUtils.MIN_PASSWORD_LENGTH:
             return False
 
         has_upper = any(c.isupper() for c in password)
@@ -91,67 +127,13 @@ class FlextAuthPasswordUtils:
 
         return has_upper and has_lower and has_digit and has_symbol
 
-
-class FlextAuthDataUtils:
-    """FlextAuth data utilities with static methods."""
-
-    @staticmethod
-    def mask_sensitive_data(data: str, visible_chars: int = 4) -> str:
-        """Mask sensitive data showing only first few characters."""
-        if len(data) <= visible_chars:
-            return "*" * len(data)
-        return data[:visible_chars] + "*" * (len(data) - visible_chars)
-
-    @staticmethod
-    def sanitize_input(input_str: str) -> str:
-        """Sanitize input string by trimming whitespace."""
-        return input_str.strip()
-
-
-class FlextAuthTimeUtils:
-    """FlextAuth time utilities with static methods."""
-
-    @staticmethod
-    def get_utc_now() -> datetime:
-        """Get current UTC datetime."""
-        return datetime.now(UTC)
-
-    @staticmethod
-    def is_expired(expires_at: datetime) -> bool:
-        """Check if datetime is in the past."""
-        return FlextAuthTimeUtils.get_utc_now() >= expires_at
-
-    @staticmethod
-    def add_minutes_to_now(minutes: int) -> datetime:
-        """Add minutes to current UTC time."""
-        return FlextAuthTimeUtils.get_utc_now() + timedelta(minutes=minutes)
-
-    @staticmethod
-    def add_hours_to_now(hours: int) -> datetime:
-        """Add hours to current UTC time."""
-        return FlextAuthTimeUtils.get_utc_now() + timedelta(hours=hours)
-
-    @staticmethod
-    def add_days_to_now(days: int) -> datetime:
-        """Add days to current UTC time."""
-        return FlextAuthTimeUtils.get_utc_now() + timedelta(days=days)
-
-
-class FlextAuthValidationUtils:
-    """FlextAuth validation utilities with static methods."""
-
-    @staticmethod
-    def is_valid_email_format(email: str) -> bool:
-        """Validate basic email format."""
-        return "@" in email and "." in email.rsplit("@", maxsplit=1)[-1]
-
     @staticmethod
     def validate_password_strength(password: str) -> FlextAuthValidationResultType:
         """Validate password strength and return detailed result."""
         errors: list[str] = []
         score = 0
 
-        if len(password) < _MIN_PASSWORD_LENGTH:
+        if len(password) < FlextAuthUtils.MIN_PASSWORD_LENGTH:
             errors.append("Password must be at least 8 characters long")
         else:
             score += 1
@@ -183,9 +165,63 @@ class FlextAuthValidationUtils:
             "score": score,
         }
 
+    # =============================================================================
+    # DATA UTILITIES - Methods from FlextAuthDataUtils
+    # =============================================================================
 
-class FlextAuthConversionUtils:
-    """FlextAuth conversion utilities with static methods."""
+    @staticmethod
+    def mask_sensitive_data(data: str, visible_chars: int = 4) -> str:
+        """Mask sensitive data showing only first few characters."""
+        if len(data) <= visible_chars:
+            return "*" * len(data)
+        return data[:visible_chars] + "*" * (len(data) - visible_chars)
+
+    @staticmethod
+    def sanitize_input(input_str: str) -> str:
+        """Sanitize input string by trimming whitespace."""
+        return input_str.strip()
+
+    # =============================================================================
+    # TIME UTILITIES - Methods from FlextAuthTimeUtils
+    # =============================================================================
+
+    @staticmethod
+    def get_utc_now() -> datetime:
+        """Get current UTC datetime."""
+        return datetime.now(UTC)
+
+    @staticmethod
+    def is_expired(expires_at: datetime) -> bool:
+        """Check if datetime is in the past."""
+        return FlextAuthUtils.get_utc_now() >= expires_at
+
+    @staticmethod
+    def add_minutes_to_now(minutes: int) -> datetime:
+        """Add minutes to current UTC time."""
+        return FlextAuthUtils.get_utc_now() + timedelta(minutes=minutes)
+
+    @staticmethod
+    def add_hours_to_now(hours: int) -> datetime:
+        """Add hours to current UTC time."""
+        return FlextAuthUtils.get_utc_now() + timedelta(hours=hours)
+
+    @staticmethod
+    def add_days_to_now(days: int) -> datetime:
+        """Add days to current UTC time."""
+        return FlextAuthUtils.get_utc_now() + timedelta(days=days)
+
+    # =============================================================================
+    # VALIDATION UTILITIES - Methods from FlextAuthValidationUtils
+    # =============================================================================
+
+    @staticmethod
+    def is_valid_email_format(email: str) -> bool:
+        """Validate basic email format."""
+        return "@" in email and "." in email.rsplit("@", maxsplit=1)[-1]
+
+    # =============================================================================
+    # CONVERSION UTILITIES - Methods from FlextAuthConversionUtils
+    # =============================================================================
 
     @staticmethod
     def safe_str(value: object) -> str:
@@ -211,9 +247,9 @@ class FlextAuthConversionUtils:
             return value.lower() in {"true", "1", "yes", "on"}
         return bool(value) if value is not None else default
 
-
-class FlextAuthDictUtils:
-    """FlextAuth dictionary utilities with static methods."""
+    # =============================================================================
+    # DICTIONARY UTILITIES - Methods from FlextAuthDictUtils
+    # =============================================================================
 
     @staticmethod
     def extract_dict_value(
@@ -238,9 +274,9 @@ class FlextAuthDictUtils:
 
         return filtered
 
-
-class FlextAuthErrorUtils:
-    """FlextAuth error utilities with static methods."""
+    # =============================================================================
+    # ERROR UTILITIES - Methods from FlextAuthErrorUtils
+    # =============================================================================
 
     @staticmethod
     def create_error_result(
@@ -260,53 +296,69 @@ class FlextAuthErrorUtils:
 
 
 # =============================================================================
-# HELPER FUNCTIONS - Current API helper functions
+# BACKWARD COMPATIBILITY ALIASES - Legacy function aliases to class methods
 # =============================================================================
 
-
-# Helper functions using current API patterns
+# Legacy functions that delegate to FlextAuthUtils methods for backward compatibility
 def generate_secure_password(length: int = 16) -> str:
-    """Generate secure password - delegates to FlextAuthPasswordUtils."""
-    return FlextAuthPasswordUtils.generate_secure_password(length)
+    """Generate secure password - delegates to FlextAuthUtils (legacy function)."""
+    return FlextAuthUtils.generate_secure_password(length)
 
 
 def generate_secure_token(length: int = 32) -> str:
-    """Generate secure token - delegates to FlextAuthTokenUtils."""
-    return FlextAuthTokenUtils.generate_secure_token(length)
+    """Generate secure token - delegates to FlextAuthUtils (legacy function)."""
+    return FlextAuthUtils.generate_secure_token(length)
 
 
 def get_utc_now() -> datetime:
-    """Get UTC now - delegates to FlextAuthTimeUtils."""
-    return FlextAuthTimeUtils.get_utc_now()
+    """Get UTC now - delegates to FlextAuthUtils (legacy function)."""
+    return FlextAuthUtils.get_utc_now()
 
 
 def is_strong_password(password: str) -> bool:
-    """Check password strength - delegates to FlextAuthPasswordUtils."""
-    return FlextAuthPasswordUtils.is_strong_password(password)
+    """Check password strength - delegates to FlextAuthUtils (legacy function)."""
+    return FlextAuthUtils.is_strong_password(password)
 
 
 def mask_sensitive_data(data: str, visible_chars: int = 4) -> str:
-    """Mask sensitive data - delegates to FlextAuthDataUtils."""
-    return FlextAuthDataUtils.mask_sensitive_data(data, visible_chars)
+    """Mask sensitive data - delegates to FlextAuthUtils (legacy function)."""
+    return FlextAuthUtils.mask_sensitive_data(data, visible_chars)
 
+
+# Legacy class aliases for backward compatibility
+# All methods are now available through FlextAuthUtils, but these aliases maintain compatibility
+FlextAuthTokenUtils = FlextAuthUtils  # All token methods available through FlextAuthUtils
+FlextAuthPasswordUtils = FlextAuthUtils  # All password methods available through FlextAuthUtils
+FlextAuthDataUtils = FlextAuthUtils  # All data methods available through FlextAuthUtils
+FlextAuthTimeUtils = FlextAuthUtils  # All time methods available through FlextAuthUtils
+FlextAuthValidationUtils = FlextAuthUtils  # All validation methods available through FlextAuthUtils
+FlextAuthConversionUtils = FlextAuthUtils  # All conversion methods available through FlextAuthUtils
+FlextAuthDictUtils = FlextAuthUtils  # All dict methods available through FlextAuthUtils
+FlextAuthErrorUtils = FlextAuthUtils  # All error methods available through FlextAuthUtils
 
 # =============================================================================
-# EXPORTS - All FlextAuth utility classes
+# EXPORTS - Single class with legacy compatibility aliases
 # =============================================================================
 
 __all__ = [
-    "FlextAuthConversionUtils",
-    "FlextAuthDataUtils",
-    "FlextAuthDictUtils",
-    "FlextAuthErrorUtils",
-    "FlextAuthPasswordUtils",
-    "FlextAuthTimeUtils",
-    "FlextAuthTokenUtils",
-    "FlextAuthValidationUtils",
-    # Helper functions
-    "generate_secure_password",
-    "generate_secure_token",
-    "get_utc_now",
-    "is_strong_password",
-    "mask_sensitive_data",
+    "FlextAuthConversionUtils",  # → FlextAuthUtils (all conversion methods)
+    "FlextAuthDataUtils",       # → FlextAuthUtils (all data methods)
+    "FlextAuthDictUtils",       # → FlextAuthUtils (all dict methods)
+    "FlextAuthErrorUtils",      # → FlextAuthUtils (all error methods)
+    "FlextAuthPasswordUtils",   # → FlextAuthUtils (all password methods)
+    "FlextAuthTimeUtils",       # → FlextAuthUtils (all time methods)
+    # =============================================================================
+    # LEGACY COMPATIBILITY ALIASES - Backward compatibility class aliases
+    # =============================================================================
+    "FlextAuthTokenUtils",      # → FlextAuthUtils (all token methods)
+    "FlextAuthUtils",  # 🎯 MAIN CLASS: Single class following Flext[Area][Module] pattern
+    "FlextAuthValidationUtils",  # → FlextAuthUtils (all validation methods)
+    # =============================================================================
+    # LEGACY COMPATIBILITY FUNCTIONS - Backward compatibility function aliases
+    # =============================================================================
+    "generate_secure_password",  # → FlextAuthUtils.generate_secure_password()
+    "generate_secure_token",    # → FlextAuthUtils.generate_secure_token()
+    "get_utc_now",              # → FlextAuthUtils.get_utc_now()
+    "is_strong_password",       # → FlextAuthUtils.is_strong_password()
+    "mask_sensitive_data",      # → FlextAuthUtils.mask_sensitive_data()
 ]

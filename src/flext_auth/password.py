@@ -17,7 +17,7 @@ from flext_core import (
     get_logger,
 )
 
-from flext_auth.models import (
+from .models import (
     MAX_PASSWORD_LENGTH,
     FlextHashedPassword,
     FlextPlainPassword,

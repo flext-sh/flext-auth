@@ -11,39 +11,42 @@ import secrets
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Protocol, cast, override
+from abc import abstractmethod
+from typing import cast, override
 
 from flext_core import (
     FlextAlreadyExistsError,
+    FlextDomainService,
     FlextEntityId,
     FlextOperationError,
+    FlextProtocols,
     FlextResult,
     FlextTimestamp,
     FlextValidationError,
     get_logger,
 )
 
-from flext_auth.constants import FlextAuthConstants, FlextAuthSemanticConstants
-from flext_auth.entities import (
+from .constants import FlextAuthConstants, FlextAuthSemanticConstants
+from .entities import (
     FlextLoginAttempt as LoginAttempt,
     FlextUser as User,
     FlextUserRole as UserRole,
     FlextUserStatus as UserStatus,
 )
-from flext_auth.jwt import FlextJWTService as JWTService
-from flext_auth.models import (
+from .flext_auth_types import SessionRepositoryType, UserRepositoryType
+from .jwt import FlextJWTService as JWTService
+from .models import (
     FlextSession as Session,
     FlextSessionStatus as SessionStatus,
 )
-from flext_auth.password import (
+from .password import (
     FlextPasswordService as PasswordService,
 )
-from flext_auth.repositories import (
+from .repositories import (
     FlextSessionRepository,
     FlextUserRepository,
 )
-from flext_auth.types import SessionRepositoryType, UserRepositoryType
-from flext_auth.values import (
+from .values import (
     FlextJWTClaims as JWTClaims,
     FlextPlainPassword as PlainPassword,
     FlextSecurityContext as SecurityContext,
@@ -128,9 +131,15 @@ class FlextUserRegistrationData:
 # =============================================================================
 
 
-class AuthenticationStrategy(Protocol):
-    """Strategy Pattern: Authentication protocol using flext-core patterns."""
+# FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Auth instead of local Protocol
+class AuthenticationStrategy(FlextProtocols.Infrastructure.Auth):
+    """Strategy Pattern: Authentication protocol using flext-core patterns.
 
+    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Infrastructure.Auth
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
+
+    @abstractmethod
     async def authenticate(
         self,
         username: str,
@@ -141,22 +150,33 @@ class AuthenticationStrategy(Protocol):
         """Execute authentication strategy."""
         ...
 
+# FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Auth for token management
+class TokenManagementStrategy(FlextProtocols.Infrastructure.Auth):
+    """Strategy Pattern: Token management protocol using flext-core patterns.
 
-class TokenManagementStrategy(Protocol):
-    """Strategy Pattern: Token management protocol using flext-core patterns."""
+    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Infrastructure.Auth
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
 
+    @abstractmethod
     async def validate_token(self, token: str) -> FlextResult[SecurityContext]:
         """Validate token using specific strategy."""
         ...
 
+    @abstractmethod
     async def refresh_token(self, refresh_token: str) -> FlextResult[dict[str, object]]:
         """Refresh token using specific strategy."""
         ...
 
+# FLEXT MIGRATION: Use FlextProtocols.Domain.Service for session management
+class SessionManagementStrategy(FlextProtocols.Domain.Service):
+    """Strategy Pattern: Session management protocol using flext-core patterns.
 
-class SessionManagementStrategy(Protocol):
-    """Strategy Pattern: Session management protocol using flext-core patterns."""
+    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Domain.Service
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
 
+    @abstractmethod
     async def create_session(
         self,
         user: User,
@@ -166,17 +186,21 @@ class SessionManagementStrategy(Protocol):
         """Create session using specific strategy."""
         ...
 
+# FLEXT MIGRATION: Use FlextProtocols.Domain.Service for user management
+class UserManagementStrategy(FlextProtocols.Domain.Service):
+    """Strategy Pattern: User management protocol using flext-core patterns.
 
-class UserManagementStrategy(Protocol):
-    """Strategy Pattern: User management protocol using flext-core patterns."""
+    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Domain.Service
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
 
+    @abstractmethod
     async def register_user(
         self,
         registration_data: FlextUserRegistrationData,
     ) -> FlextResult[User]:
         """Register user using specific strategy."""
         ...
-
 
 # =============================================================================
 # REFACTORING: Template Method Pattern - eliminates 103 repetitive patterns
@@ -649,63 +673,38 @@ class TokenRefreshPipelineStrategies:
     validation_context: str
 
 
-class FlextAuthService:
+class FlextAuthService(FlextDomainService[dict[str, object]]):
     """REFACTORED: Authentication service using Strategy Pattern.
 
     Complexity reduced from 119 to ~40 by delegating responsibilities to strategies.
     Uses Strategy Pattern for authentication, token management, session management,
     and user management operations.
+
+    ARCHITECTURAL FIX: Now follows FlextDomainService pattern correctly:
+    - Dependencies as Pydantic fields (not in __init__)
+    - Frozen model compliance
+    - execute() method for business logic
     """
 
-    def __init__(self, dependencies: FlextAuthServiceDependencies) -> None:
-        """Initialize authentication service - Parameter Object Pattern."""
-        self.user_repo = dependencies.user_repository
-        self.session_repo = dependencies.session_repository
-        self.password_service = dependencies.password_service
-        self.jwt_service = dependencies.jwt_service
+    # Pydantic fields for FlextDomainService (frozen model pattern)
+    user_repo: FlextUserRepository
+    session_repo: FlextSessionRepository
+    password_service: PasswordService
+    jwt_service: JWTService
+    config: FlextAuthServiceConfig
 
-        # Use provided config or default
-        self.config = dependencies.config or FlextAuthServiceConfig()
+    # Computed properties from config
+    max_failed_attempts: int
+    lockout_duration_minutes: int
+    session_expire_hours: int
+    max_concurrent_sessions: int
 
-        # Extract commonly used values
-        self.max_failed_attempts = self.config.max_failed_attempts
-        self.lockout_duration_minutes = self.config.lockout_duration_minutes
-        self.session_expire_hours = self.config.session_expire_hours
-        self.max_concurrent_sessions = self.config.max_concurrent_sessions
-
-        # REFACTORING: Initialize strategies (dependency injection)
-        self.auth_strategy = (
-            dependencies.auth_strategy
-            or DefaultAuthenticationStrategy(
-                dependencies.user_repository,
-                dependencies.password_service,
-                dependencies.jwt_service,
-                dependencies.session_repository,
-                self.config,
-            )
-        )
-        self.token_strategy = (
-            dependencies.token_strategy
-            or DefaultTokenManagementStrategy(
-                dependencies.jwt_service,
-                dependencies.user_repository,
-                dependencies.session_repository,
-            )
-        )
-        self.session_strategy = (
-            dependencies.session_strategy
-            or DefaultSessionManagementStrategy(
-                dependencies.session_repository,
-                self.config,
-            )
-        )
-        self.user_strategy = (
-            dependencies.user_strategy
-            or DefaultUserManagementStrategy(
-                dependencies.user_repository,
-                dependencies.password_service,
-            )
-        )
+    # Strategy Pattern dependencies - using object for Pydantic compatibility
+    # Runtime types are enforced by the Protocol definitions above
+    auth_strategy: object  # AuthenticationStrategy
+    token_strategy: object  # TokenManagementStrategy
+    session_strategy: object  # SessionManagementStrategy
+    user_strategy: object  # UserManagementStrategy
 
     @classmethod
     def create_default(
@@ -716,15 +715,47 @@ class FlextAuthService:
         jwt_service: JWTService,
         config: FlextAuthServiceConfig | None = None,
     ) -> FlextAuthService:
-        """Create service."""
-        dependencies = FlextAuthServiceDependencies(
-            user_repository=user_repository,
-            session_repository=session_repository,
+        """Create service using Pydantic constructor pattern."""
+        actual_config = config or FlextAuthServiceConfig()
+
+        # Create default strategies
+        auth_strategy = DefaultAuthenticationStrategy(
+            user_repository,
+            password_service,
+            jwt_service,
+            session_repository,
+            actual_config,
+        )
+        token_strategy = DefaultTokenManagementStrategy(
+            jwt_service,
+            user_repository,
+            session_repository,
+        )
+        session_strategy = DefaultSessionManagementStrategy(
+            session_repository,
+            actual_config,
+        )
+        user_strategy = DefaultUserManagementStrategy(
+            user_repository,
+            password_service,
+        )
+
+        # Use Pydantic constructor with all fields
+        return cls(
+            user_repo=user_repository,
+            session_repo=session_repository,
             password_service=password_service,
             jwt_service=jwt_service,
-            config=config,
+            config=actual_config,
+            max_failed_attempts=actual_config.max_failed_attempts,
+            lockout_duration_minutes=actual_config.lockout_duration_minutes,
+            session_expire_hours=actual_config.session_expire_hours,
+            max_concurrent_sessions=actual_config.max_concurrent_sessions,
+            auth_strategy=auth_strategy,
+            token_strategy=token_strategy,
+            session_strategy=session_strategy,
+            user_strategy=user_strategy,
         )
-        return cls(dependencies)
 
     async def register_user(
         self,
@@ -733,7 +764,7 @@ class FlextAuthService:
         """Register user using Strategy Pattern - SOLID refactored."""
         try:
             # REFACTORING: Delegate to user management strategy
-            return await self.user_strategy.register_user(registration_data)
+            return await cast("UserManagementStrategy", self.user_strategy).register_user(registration_data)
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult[User].fail(f"User registration failed: {e}")
 
@@ -751,7 +782,7 @@ class FlextAuthService:
         """
         try:
             # REFACTORING: Delegate to authentication strategy
-            return await self.auth_strategy.authenticate(
+            return await cast("AuthenticationStrategy", self.auth_strategy).authenticate(
                 username,
                 password,
                 ip_address,
@@ -773,7 +804,7 @@ class FlextAuthService:
         """Validate JWT token using Strategy Pattern - SOLID refactored."""
         try:
             # REFACTORING: Delegate to token management strategy
-            return await self.token_strategy.validate_token(token)
+            return await cast("TokenManagementStrategy", self.token_strategy).validate_token(token)
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult[SecurityContext].fail(f"Token validation failed: {e}")
 
@@ -781,7 +812,7 @@ class FlextAuthService:
         """Refresh token using Strategy Pattern - SOLID refactored."""
         try:
             # REFACTORING: Delegate to token management strategy
-            return await self.token_strategy.refresh_token(refresh_token)
+            return await cast("TokenManagementStrategy", self.token_strategy).refresh_token(refresh_token)
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult[dict[str, object]].fail(f"Token refresh failed: {e}")
 
@@ -794,7 +825,7 @@ class FlextAuthService:
         """Create session using Strategy Pattern - SOLID refactored."""
         try:
             # REFACTORING: Delegate to session management strategy
-            return await self.session_strategy.create_session(
+            return await cast("SessionManagementStrategy", self.session_strategy).create_session(
                 user,
                 ip_address,
                 user_agent,
@@ -2069,3 +2100,24 @@ class FlextAuthService:
             ip_address,
             user_agent,
         )
+
+    def execute(self) -> FlextResult[dict[str, object]]:
+        """Execute the domain service operation.
+
+        Implementation of abstract method from FlextDomainService.
+        Returns service status and configuration information.
+        """
+        return FlextResult[dict[str, object]].ok({
+            "service": "FlextAuthService",
+            "status": "ready",
+            "max_failed_attempts": self.max_failed_attempts,
+            "lockout_duration_minutes": self.lockout_duration_minutes,
+            "session_expire_hours": self.session_expire_hours,
+            "max_concurrent_sessions": self.max_concurrent_sessions,
+            "strategies": {
+                "auth_strategy": type(self.auth_strategy).__name__,
+                "token_strategy": type(self.token_strategy).__name__,
+                "session_strategy": type(self.session_strategy).__name__,
+                "user_strategy": type(self.user_strategy).__name__,
+            },
+        })

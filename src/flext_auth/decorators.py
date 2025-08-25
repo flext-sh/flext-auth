@@ -12,53 +12,79 @@ import functools
 import secrets
 from collections.abc import Callable
 from datetime import UTC, datetime
-from typing import ParamSpec, Protocol, cast
+from abc import abstractmethod
+from typing import ParamSpec, cast
 
 from flext_core import (
     FlextLoggerFactory,  # Use root-level import
+    FlextProtocols,
     FlextResult,
 )
 
-from flext_auth.app import FlextAuthService
-from flext_auth.config import DEFAULT_JWT_SECRET, FlextAuthConfig
-from flext_auth.constants import FlextAuthSemanticConstants
-from flext_auth.services import FlextJWTService
+# Direct imports to avoid circular dependencies
+from .auth import FlextAuthService
+from .config import FlextAuthConfig
+from .constants import DEFAULT_JWT_SECRET, FlextAuthSemanticConstants
+from .jwt import FlextJWTService
 
 
-# Token extraction strategy protocol for type safety
-class _TokenExtractionStrategy(Protocol):
-    """Protocol for token extraction strategies."""
+# FLEXT MIGRATION: Use FlextProtocols.Foundation.Callable for token extraction
+class _TokenExtractionStrategy(FlextProtocols.Foundation.Callable[str | None]):
+    """Protocol for token extraction strategies.
 
+    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Foundation.Callable
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
+
+    @abstractmethod
     def __call__(self, request: object) -> str | None:
         """Extract token from request object."""
         ...
 
+# FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Connection for HTTP headers
+class _HTTPHeaders(FlextProtocols.Infrastructure.Connection):
+    """Protocol for HTTP headers object.
 
-# HTTP Request Protocol for type safety - SOLID typing without Any
-class _HTTPHeaders(Protocol):
-    """Protocol for HTTP headers object."""
+    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Infrastructure.Connection
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
 
+    @abstractmethod
     def get(self, key: str, default: str = "") -> str:
         """Get header value by key."""
         ...
 
+# FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Connection for HTTP request
+class _HTTPRequest(FlextProtocols.Infrastructure.Connection):
+    """Protocol for HTTP request objects (FastAPI/Flask).
 
-class _HTTPRequest(Protocol):
-    """Protocol for HTTP request objects (FastAPI/Flask)."""
+    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Infrastructure.Connection
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
 
     headers: _HTTPHeaders
 
 
-class _DjangoMeta(Protocol):
-    """Protocol for Django request META object."""
+# FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Connection for Django META
+class _DjangoMeta(FlextProtocols.Infrastructure.Connection):
+    """Protocol for Django request META object.
 
+    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Infrastructure.Connection
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
+
+    @abstractmethod
     def get(self, key: str, default: str = "") -> str:
         """Get META value by key."""
         ...
 
+# FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Connection for Django request
+class _DjangoRequest(FlextProtocols.Infrastructure.Connection):
+    """Protocol for Django request objects.
 
-class _DjangoRequest(Protocol):
-    """Protocol for Django request objects."""
+    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Infrastructure.Connection
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
 
     META: _DjangoMeta
 
@@ -85,12 +111,18 @@ AuthenticatedFunction = (
 )
 
 
-# Protocol for decorator function typing without explicit Any
-class AuthDecoratorProtocol(Protocol):
+# FLEXT MIGRATION: Use FlextProtocols.Foundation.DecoratedCallable for auth decorator
+class AuthDecoratorProtocol(FlextProtocols.Foundation.DecoratedCallable[object]):
+    """Protocol for functions that can be decorated with auth.
+
+    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Foundation.DecoratedCallable
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
+
+    @abstractmethod
     def __call__(self, *args: object, **kwargs: object) -> object:
         """Protocol for functions that can be decorated with auth."""
-
-
+        ...
 DecoratorCallable = Callable[[AuthDecoratorProtocol], AuthDecoratorProtocol]
 
 
@@ -586,7 +618,7 @@ class FlextAuthMixin:
                 )
             else:
                 # Use default configuration but cannot create service without deps
-                from flext_auth.config import FlextAuthConfig  # noqa: PLC0415
+                from flext_auth import FlextAuthConfig  # noqa: PLC0415
 
                 self._auth_config = FlextAuthConfig()
                 # Set development defaults
@@ -726,19 +758,17 @@ class FlextAuthMixin:
                     return FlextResult[dict[str, object]].fail(
                         svc_res.error or "Authentication failed",
                     )
-                # Convert FlextUser to dict format for downstream usage
-                # Type-safe: successful authentication returns FlextUser object
-                user = svc_res.value
+                # Convert authentication result to dict format for downstream usage
+                # Type-safe: successful authentication returns dict[str, object]
+                user_data = svc_res.value
                 return FlextResult[dict[str, object]].ok(
                     {
                         "authenticated": True,
                         "user": {
-                            "id": str(user.id),
-                            "username": user.username,
-                            "email": user.email,
-                            "role": user.role.value
-                            if hasattr(user.role, "value")
-                            else str(user.role),
+                            "id": str(user_data.get("id", "unknown")),
+                            "username": str(user_data.get("username", "unknown")),
+                            "email": str(user_data.get("email", "unknown")),
+                            "role": str(user_data.get("role", "user")),
                         },
                     },
                 )
@@ -808,7 +838,7 @@ class FlextAuthMixin:
             # Handle token string by decoding to user data
             if isinstance(token_or_user_data, str):
                 # Decode JWT token to get user data
-                from flext_auth.jwt import FlextJWTService  # noqa: PLC0415
+                from flext_auth import FlextJWTService  # noqa: PLC0415
 
                 jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
                 result = jwt_service.verify_token(token_or_user_data)

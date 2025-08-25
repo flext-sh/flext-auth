@@ -258,7 +258,7 @@ markers = [
 ]
 
 [tool.ruff]
-extend = "../.config/tools/.ruff-shared.toml"
+extend = "../ruff-shared.toml"
 lint.isort.known-first-party = ["flext_auth"]
 
 

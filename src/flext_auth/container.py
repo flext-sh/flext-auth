@@ -21,17 +21,17 @@ from flext_core import (
     register_typed,
 )
 
-from flext_auth.config import FlextAuthConfig
-from flext_auth.jwt import FlextJWTService
-from flext_auth.password import FlextPasswordService
-from flext_auth.session import InMemorySessionRepository
-from flext_auth.user import InMemoryUserRepository
+from .config import FlextAuthConfig
+from .jwt import FlextJWTService
+from .password import FlextPasswordService
+from .session import InMemorySessionRepository
+from .user import InMemoryUserRepository
 
 if TYPE_CHECKING:
-    from flext_auth.auth import FlextAuthService  # noqa: PLC0415
+    from .auth import FlextAuthService  # noqa: PLC0415
 
 # Import Union types to avoid circular imports
-from flext_auth.types import SessionRepositoryType, UserRepositoryType
+from .flext_auth_types import SessionRepositoryType, UserRepositoryType
 
 
 class FlextAuthContainer(FlextContainer):
@@ -82,7 +82,6 @@ class FlextAuthContainer(FlextContainer):
     SESSION_REPOSITORY_KEY = FlextServiceKey[SessionRepositoryType]("session_repository")
     AUTH_SERVICE_KEY = FlextServiceKey["FlextAuthService"]("auth_service")
     COMMAND_BUS_KEY = FlextServiceKey[FlextCommands.Bus]("command_bus")
-
 
     def __init__(self) -> None:
         """Initialize FlextAuthContainer with enhanced authentication capabilities."""
@@ -135,7 +134,6 @@ class FlextAuthContainer(FlextContainer):
 
         return FlextResult.ok((password_service, jwt_service))
 
-
     def register_repositories(
         self,
         user_repository: UserRepositoryType | None,
@@ -160,7 +158,6 @@ class FlextAuthContainer(FlextContainer):
 
         return FlextResult.ok((final_user_repo, final_session_repo))
 
-
     def register_auth_service(
         self,
         user_repository: UserRepositoryType,
@@ -169,20 +166,16 @@ class FlextAuthContainer(FlextContainer):
         jwt_service: FlextJWTService,
     ) -> FlextResult[None]:
         """Register main auth service."""
-        from flext_auth.auth import (  # noqa: PLC0415
-            FlextAuthService,
-            FlextAuthServiceDependencies,
-        )
+        from .auth import FlextAuthService  # noqa: PLC0415
 
-        dependencies = FlextAuthServiceDependencies(
+        # Use the new create_default method instead of old constructor
+        auth_service = FlextAuthService.create_default(
             user_repository=user_repository,
             session_repository=session_repository,
             password_service=password_service,
             jwt_service=jwt_service,
-            config=None,  # Will use container-registered config
+            config=None,  # Will use default config
         )
-
-        auth_service = FlextAuthService(dependencies)
         register_result = register_typed(self.AUTH_SERVICE_KEY, auth_service)
         if not register_result.success:
             return FlextResult.fail(
@@ -190,7 +183,6 @@ class FlextAuthContainer(FlextContainer):
             )
 
         return FlextResult.ok(None)
-
 
     def register_command_bus(
         self,
@@ -209,7 +201,7 @@ class FlextAuthContainer(FlextContainer):
                 )
 
             # Register authentication command handlers
-            from flext_auth.commands import register_auth_commands  # noqa: PLC0415
+            from .commands import register_auth_commands  # noqa: PLC0415
 
             handler_register_result = register_auth_commands(
                 command_bus,
@@ -225,7 +217,6 @@ class FlextAuthContainer(FlextContainer):
             return FlextResult.ok(None)
         except Exception as e:
             return FlextResult.fail(f"Failed to setup CQRS commands: {e}")
-
 
     def configure_auth_services(
         self,
@@ -269,7 +260,6 @@ class FlextAuthContainer(FlextContainer):
 
         return FlextResult[None].ok(None)
 
-
     def get_auth_services(self) -> FlextResult[dict[str, object]]:
         """Get all registered FlextAuth services from this container.
 
@@ -292,17 +282,29 @@ class FlextAuthContainer(FlextContainer):
         if jwt_result.success:
             services["jwt_service"] = jwt_result.value
 
-        # Get repositories - check success first
-        user_repo_result = self.get(str(self.USER_REPOSITORY_KEY))
-        if user_repo_result.success:
-            services["user_repository"] = user_repo_result.value
+        # Get repositories - use get_typed for consistency with other services
+        try:
+            # Using types imported at module top-level
 
-        session_repo_result = self.get(str(self.SESSION_REPOSITORY_KEY))
-        if session_repo_result.success:
-            services["session_repository"] = session_repo_result.value
+            user_repo_result = get_typed(self.USER_REPOSITORY_KEY, UserRepositoryType)  # type: ignore[type-abstract]
+            if user_repo_result.success:
+                services["user_repository"] = user_repo_result.value
+
+            session_repo_result = get_typed(self.SESSION_REPOSITORY_KEY, SessionRepositoryType)  # type: ignore[type-abstract]
+            if session_repo_result.success:
+                services["session_repository"] = session_repo_result.value
+        except Exception:
+            # Fallback to generic get method if get_typed fails with union types
+            user_repo_fallback = self.get(str(self.USER_REPOSITORY_KEY))
+            if user_repo_fallback.success:
+                services["user_repository"] = user_repo_fallback.value
+
+            session_repo_fallback = self.get(str(self.SESSION_REPOSITORY_KEY))
+            if session_repo_fallback.success:
+                services["session_repository"] = session_repo_fallback.value
 
         # Get auth service (TYPE_CHECKING import resolved at runtime)
-        from flext_auth.auth import FlextAuthService  # noqa: PLC0415
+        from .auth import FlextAuthService  # noqa: PLC0415
 
         auth_result = get_typed(self.AUTH_SERVICE_KEY, FlextAuthService)
         if auth_result.success:
@@ -315,14 +317,13 @@ class FlextAuthContainer(FlextContainer):
 
         return FlextResult[dict[str, object]].ok(services)
 
-
     # =============================================================================
     # CONVENIENCE METHODS - Easy service access
     # =============================================================================
 
     def get_auth_service(self) -> FlextResult[FlextAuthService]:
         """Get authenticated FlextAuthService from this container."""
-        from flext_auth.auth import FlextAuthService  # noqa: PLC0415
+        from .auth import FlextAuthService  # noqa: PLC0415
 
         return get_typed(self.AUTH_SERVICE_KEY, FlextAuthService)
 
@@ -356,6 +357,7 @@ class FlextAuthContainer(FlextContainer):
 # Global container instance for backward compatibility
 _global_auth_container = FlextAuthContainer()
 
+
 # Alias functions that delegate to the global container instance
 def configure_flext_auth_container(
     container: FlextContainer | None = None,
@@ -369,9 +371,10 @@ def configure_flext_auth_container(
         result = target_container.configure_auth_services(config, user_repository, session_repository)
         if result.is_success:
             return FlextResult[FlextContainer].ok(target_container)
-        return FlextResult[FlextContainer].fail(result.error)
+        return FlextResult[FlextContainer].fail(result.error or "Configuration failed")
     # Fallback for regular FlextContainer
     return FlextResult[FlextContainer].fail("Container must be FlextAuthContainer")
+
 
 def get_flext_auth_services(
     container: FlextContainer | None = None,
@@ -381,17 +384,21 @@ def get_flext_auth_services(
         return container.get_auth_services()
     return _global_auth_container.get_auth_services()
 
+
 def get_auth_service() -> FlextResult[FlextAuthService]:
     """Get authenticated FlextAuthService from global container (legacy function)."""
     return _global_auth_container.get_auth_service()
+
 
 def get_password_service() -> FlextResult[FlextPasswordService]:
     """Get FlextPasswordService from global container (legacy function)."""
     return _global_auth_container.get_password_service()
 
+
 def get_jwt_service() -> FlextResult[FlextJWTService]:
     """Get FlextJWTService from global container (legacy function)."""
     return _global_auth_container.get_jwt_service()
+
 
 def get_command_bus() -> FlextResult[FlextCommands.Bus | None]:
     """Get FlextCommands.Bus from global container (legacy function)."""

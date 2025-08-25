@@ -9,17 +9,19 @@ SIMPLIFIED REAL PRODUCTION REPOSITORIES - NO MOCKS, NO FAKES.
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Protocol, cast
+from abc import abstractmethod
+from typing import TYPE_CHECKING, cast
 
 from flext_core import (
     FlextEntityId,
+    FlextProtocols,
     FlextResult,
     FlextTimestamp,
 )
 
-from flext_auth.entities import FlextUser, FlextUserRole, FlextUserStatus
-from flext_auth.models import FlextSession, FlextSessionStatus
-from flext_auth.types import SessionRepositoryProtocol, UserRepositoryProtocol
+from .entities import FlextUser, FlextUserRole, FlextUserStatus
+from .flext_auth_types import SessionRepositoryProtocol, UserRepositoryProtocol
+from .models import FlextSession, FlextSessionStatus
 
 if TYPE_CHECKING:
     import asyncpg  # type: ignore[import-untyped]
@@ -30,21 +32,31 @@ else:
         asyncpg = None  # type: ignore[assignment]
 
 
-class AsyncPGPool(Protocol):
-    """Protocol for asyncpg connection pool - REAL typing without Any."""
+# FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Connection for database pool
+class AsyncPGPool(FlextProtocols.Infrastructure.Connection):
+    """Protocol for asyncpg connection pool - REAL typing without Any.
 
+    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Infrastructure.Connection
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
+
+    @abstractmethod
     def acquire(self) -> AsyncPGConnectionContext:
         """Acquire connection from pool."""
         ...
 
+# FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Connection for connection context
+class AsyncPGConnectionContext(FlextProtocols.Infrastructure.Connection):
+    """Protocol for asyncpg connection context manager - REAL typing.
 
-class AsyncPGConnectionContext(Protocol):
-    """Protocol for asyncpg connection context manager - REAL typing."""
+    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Infrastructure.Connection
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
 
+    @abstractmethod
     async def __aenter__(self) -> AsyncPGConnection:
         """Enter context manager."""
         ...
-
     async def __aexit__(
         self,
         exc_type: object,
@@ -52,36 +64,45 @@ class AsyncPGConnectionContext(Protocol):
         exc_tb: object,
     ) -> None:
         """Exit context manager."""
-        ...
 
 
-class AsyncPGConnection(Protocol):
-    """Protocol for asyncpg connection - REAL typing without Any."""
+# FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Connection for database connection
+class AsyncPGConnection(FlextProtocols.Infrastructure.Connection):
+    """Protocol for asyncpg connection - REAL typing without Any.
 
+    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Infrastructure.Connection
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
+
+    @abstractmethod
     async def execute(self, query: str, *args: object) -> str:
         """Execute query returning result string."""
         ...
-
+    @abstractmethod
     async def fetchval(self, query: str, *args: object) -> object:
         """Fetch single value."""
         ...
-
+    @abstractmethod
     async def fetchrow(self, query: str, *args: object) -> AsyncPGRecord | None:
         """Fetch single row."""
         ...
-
+    @abstractmethod
     async def fetch(self, query: str, *args: object) -> list[AsyncPGRecord]:
         """Fetch multiple rows."""
         ...
 
+# FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Connection for database record
+class AsyncPGRecord(FlextProtocols.Infrastructure.Connection):
+    """Protocol for asyncpg record - REAL typing with proper types.
 
-class AsyncPGRecord(Protocol):
-    """Protocol for asyncpg record - REAL typing with proper types."""
+    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Infrastructure.Connection
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
 
+    @abstractmethod
     def __getitem__(self, key: str) -> str | int | datetime | None:
         """Get field value by name with proper database types."""
         ...
-
 
 # ✅ CORRECT - Use centralized repository protocol from types.py
 # Replaces duplicate protocol definition with import from centralized types

@@ -11,9 +11,9 @@ from typing import override
 
 from flext_core import FlextResult, FlextTimestamp
 
-from flext_auth.constants import FlextAuthSemanticConstants
-from flext_auth.entities import FlextUser, FlextUserStatus
-from flext_auth.repositories import FlextUserRepository
+from .constants import FlextAuthSemanticConstants
+from .entities import FlextUser, FlextUserStatus
+from .repositories import FlextUserRepository
 
 
 class InMemoryUserRepository(FlextUserRepository):

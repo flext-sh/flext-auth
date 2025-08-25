@@ -25,7 +25,7 @@ __version_info__ = tuple(int(x) for x in __version__.split(".") if x.isdigit())
 # ==============================================================================
 
 # Main application service - using the full-featured implementation
-from flext_auth.auth import (
+from .auth import (
     FlextAuthService,
     FlextAuthServiceConfig,
     FlextAuthServiceDependencies,
@@ -33,7 +33,7 @@ from flext_auth.auth import (
 )
 
 # Simple auth service factory
-from flext_auth.app import (
+from .app import (
     create_auth_service,
 )
 
@@ -43,7 +43,7 @@ from flext_auth.app import (
 
 from flext_core import FlextResult
 
-from flext_auth.config import (
+from .config import (
     AppConfig,
     DatabaseConfig,
     FlextAuthApplicationConfig,
@@ -61,7 +61,7 @@ from flext_auth.config import (
 # DECORATORS AND MIXINS
 # =============================================================================
 
-from flext_auth.decorators import (
+from .decorators import (
     FlextAuthMixin,
     FlextAuthSessionMixin,
     FlextAuthUserMixin,
@@ -74,7 +74,7 @@ from flext_auth.decorators import (
 # EXCEPTIONS
 # =============================================================================
 
-from flext_auth.exceptions import (
+from .exceptions import (
     FlextAccountInactiveError,
     FlextAccountLockedError,
     FlextAuthenticationError,
@@ -98,19 +98,19 @@ from flext_auth.exceptions import (
 # SERVICES LAYER
 # =============================================================================
 
-from flext_auth.services import (
+from .services import (
     FlextAuthenticationService,
     FlextAuthorizationService,
     FlextSessionService,
 )
 
-from flext_auth.password import FlextPasswordService
+from .password import FlextPasswordService
 
 # =============================================================================
 # REPOSITORIES
 # =============================================================================
 
-from flext_auth.repositories import (
+from .repositories import (
     FlextSessionRepository,
     FlextUserRepository,
     SimplePostgreSQLSessionRepository,
@@ -118,15 +118,15 @@ from flext_auth.repositories import (
     create_postgresql_pool,
     initialize_database_schema,
 )
-from flext_auth.session import InMemorySessionRepository
-from flext_auth.user import InMemoryUserRepository
+from .session import InMemorySessionRepository
+from .user import InMemoryUserRepository
 
 # =============================================================================
 # UTILITIES
 # =============================================================================
 
-# from flext_auth.utilities import FlextAuthUtilities  # Not exposed in public API
-from flext_auth.api import (
+# from .utilities import FlextAuthUtilities  # Not exposed in public API
+from .api import (
     generate_secure_password,
     generate_secure_token,
     get_utc_now,
@@ -138,12 +138,12 @@ from flext_auth.api import (
 # VALIDATION AND FIELDS
 # =============================================================================
 
-from flext_auth.validation import (
+from .validation import (
     FlextAuthValidators,
 )
 
 # Import validation functions from main API
-from flext_auth.api import (
+from .api import (
     flext_auth_validate_email,
     flext_auth_validate_password_strength,
 )
@@ -152,7 +152,7 @@ from flext_auth.api import (
 # CONSTANTS
 # =============================================================================
 
-from flext_auth.constants import (
+from .constants import (
     DEFAULT_DEV_SECRET,
     DEFAULT_JWT_SECRET,
     FlextAuthConstants,
@@ -164,7 +164,7 @@ from flext_auth.constants import (
 # =============================================================================
 
 # Helper functions using main API
-from flext_auth.api import (
+from .api import (
     flext_auth_generate_jwt,
     flext_auth_hash_password,
     flext_auth_quick_start,
@@ -176,7 +176,7 @@ from flext_auth.api import (
 # DOMAIN MODELS
 # =============================================================================
 
-from flext_auth.models import (
+from .models import (
     FlextHashedPassword,
     FlextJWTClaims,
     FlextLoginAttempt,
@@ -197,7 +197,7 @@ from flext_auth.models import (
 # DOMAIN VALUE OBJECTS
 # =============================================================================
 
-from flext_auth.values import (
+from .values import (
     FlextAuthToken,
     FlextIPAddress,
     FlextRefreshToken,
@@ -209,7 +209,7 @@ from flext_auth.values import (
 # APPLICATION SERVICES
 # =============================================================================
 
-# from flext_auth.application_services import (
+# from .application_services import (
 #     # AppFlextAuthenticationService,  # Commented out - not accessed
 #     # AppFlextAuthorizationService,   # Commented out - not accessed
 #     # AppFlextSessionService,         # Commented out - not accessed
@@ -219,13 +219,13 @@ from flext_auth.values import (
 # API FACADE
 # =============================================================================
 
-from flext_auth.api import FlextAuth
+from .api import FlextAuth
 
 # =============================================================================
 # CURRENT API CONSTANTS AND TYPES
 # =============================================================================
 
-from flext_auth.api import (
+from .api import (
     ADMIN_ROLE,
     USER_ROLE,
     FlextAuthRole,
@@ -248,13 +248,13 @@ FLEXT_AUTH_GUEST = "guest"  # Not in current entities, using string literal
 # JWT SERVICE
 # =============================================================================
 
-from flext_auth.jwt import FlextJWTService
+from .jwt import FlextJWTService
 
 # =============================================================================
 # TYPE ALIASES AND PROTOCOLS
 # =============================================================================
 
-from flext_auth.types import (
+from .flext_auth_types import (
     SessionRepositoryType,
     UserRepositoryType,
     TEmail,
@@ -266,19 +266,19 @@ from flext_auth.types import (
 # COMMAND HANDLERS AND CQRS
 # =============================================================================
 
-from flext_auth.commands import register_auth_commands
+from .commands import register_auth_commands
 
 # =============================================================================
 # TYPE DEFINITIONS
 # =============================================================================
 
-from flext_auth.typings import FlextAuthValidationResultType
+from .typings import FlextAuthValidationResultType
 
 # =============================================================================
 # MODULAR CLIENT CLASS (Flext[Area][Module] Pattern)
 # =============================================================================
 
-from flext_auth.client import (
+from .client import (
     FlextAuthClient,
     flext_auth_client_authenticate_user,
     flext_auth_client_generate_jwt,
@@ -292,7 +292,7 @@ from flext_auth.client import (
 # DEPENDENCY INJECTION CONTAINER
 # =============================================================================
 
-from flext_auth.container import (
+from .container import (
     configure_flext_auth_container,
     get_auth_service,
     get_command_bus,

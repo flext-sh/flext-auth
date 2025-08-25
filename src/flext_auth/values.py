@@ -232,123 +232,58 @@ class FlextAuthToken(FlextValue):
 
 
 # =============================================================================
-# REFACTORING: Template Method Pattern - eliminates 22 lines duplication
+# =============================================================================
+# TOKEN VALUE OBJECTS - Using flext-core FlextValue directly (no local base classes)
 # =============================================================================
 
 
-class FlextBaseTokenValueObject(FlextValue):
-    """Base token value object - Template Method Pattern for DRY principle.
+class FlextRefreshToken(FlextValue):
+    """Refresh token value object using flext-core patterns."""
 
-    Eliminates massive code duplication between token value objects using
-    SOLID principles. Template Method Pattern defines the skeleton of validation
-    algorithm while allowing subclasses to customize specific steps.
-    """
-
-    value: str = Field(
-        ...,
-    )  # No min_length to allow custom validation in validate_business_rules
+    value: str = Field(..., description="Refresh token value")
 
     @override
     def __str__(self) -> str:
-        """Return protected token representation - Template Method."""
-        return f"[{self._get_token_display_name()}]"
+        """Return protected token representation."""
+        return "[REFRESH_TOKEN]"
 
     @override
     def __repr__(self) -> str:
-        """Return protected token class representation - Template Method."""
-        return f"{self._get_token_class_name()}([PROTECTED])"
+        """Return protected token class representation."""
+        return "RefreshToken([PROTECTED])"
 
     @override
     def validate_business_rules(self) -> FlextResult[None]:
-        """Template Method: validates common rules + specific rules.
-
-        NOTE: Production validation - errors raise ValueError for proper handling
-        while still supporting FlextResult pattern.
-        """
-        # Validate common rules (DRY principle)
-        self._validate_common_rules()
-
-        # Template Method: delegate specific validation to subclasses
-        return self._validate_specific_rules()
-
-    def _validate_common_rules(self) -> None:
-        """Apply common validation rules."""
+        """Validate refresh token business rules."""
         if not self.value:
-            msg: str = f"{self._get_token_type_name()} cannot be empty"
-            raise ValueError(msg)
-
-    def _get_token_display_name(self) -> str:
-        """Abstract method: get token display name for __str__."""
-        msg = "Subclasses must implement _get_token_display_name"
-        raise NotImplementedError(msg)
-
-    def _get_token_class_name(self) -> str:
-        """Abstract method: get token class name for __repr__."""
-        msg = "Subclasses must implement _get_token_class_name"
-        raise NotImplementedError(msg)
-
-    def _get_token_type_name(self) -> str:
-        """Abstract method: get token type name for error messages."""
-        msg = "Subclasses must implement _get_token_type_name"
-        raise NotImplementedError(msg)
-
-    def _validate_specific_rules(self) -> FlextResult[None]:
-        """Abstract method: validate token-specific rules."""
-        # Base implementation has no specific rules
-        return FlextResult[None].ok(None)
-
-
-class FlextRefreshToken(FlextBaseTokenValueObject):
-    """Refresh token value object - inherits common behavior from base."""
-
-    @override
-    def _get_token_display_name(self) -> str:
-        """Return token display name."""
-        return "REFRESH_TOKEN"
-
-    @override
-    def _get_token_class_name(self) -> str:
-        """Return token class name."""
-        return "RefreshToken"
-
-    @override
-    def _get_token_type_name(self) -> str:
-        """Return token type name."""
-        return "Refresh token value"
-
-    @override
-    def _validate_specific_rules(self) -> FlextResult[None]:
-        """Validate refresh token specific rules - raises ValueError."""
+            return FlextResult[None].fail("Refresh token value cannot be empty")
         if len(self.value) < MIN_REFRESH_TOKEN_LENGTH:
-            msg = "Refresh token must be at least 32 characters"
-            raise ValueError(msg)
+            return FlextResult[None].fail("Refresh token must be at least 32 characters")
         return FlextResult[None].ok(None)
 
 
-class FlextSessionToken(FlextBaseTokenValueObject):
-    """Session token value object - inherits common behavior from base."""
+class FlextSessionToken(FlextValue):
+    """Session token value object using flext-core patterns."""
+
+    value: str = Field(..., description="Session token value")
 
     @override
-    def _get_token_display_name(self) -> str:
-        """Return token display name."""
-        return "SESSION_TOKEN"
+    def __str__(self) -> str:
+        """Return protected token representation."""
+        return "[SESSION_TOKEN]"
 
     @override
-    def _get_token_class_name(self) -> str:
-        """Return token class name."""
-        return "FlextSessionToken"
+    def __repr__(self) -> str:
+        """Return protected token class representation."""
+        return "FlextSessionToken([PROTECTED])"
 
     @override
-    def _get_token_type_name(self) -> str:
-        """Return token type name."""
-        return "Session token value"
-
-    @override
-    def _validate_specific_rules(self) -> FlextResult[None]:
-        """Validate session token specific rules - raises ValueError."""
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate session token business rules."""
+        if not self.value:
+            return FlextResult[None].fail("Session token value cannot be empty")
         if len(self.value) < MIN_SESSION_TOKEN_LENGTH:
-            msg = "Session token must be at least 16 characters"
-            raise ValueError(msg)
+            return FlextResult[None].fail("Session token must be at least 16 characters")
         return FlextResult[None].ok(None)
 
 
@@ -426,61 +361,53 @@ class FlextUserAgent(FlextValue):
         return FlextResult[None].ok(None)
 
 
-class FlextPasswordResetToken(FlextBaseTokenValueObject):
-    """Password reset token value object - inherits common behavior from base."""
+class FlextPasswordResetToken(FlextValue):
+    """Password reset token value object using flext-core patterns."""
 
-    value: str = Field(..., min_length=32)
-
-    @override
-    def _get_token_display_name(self) -> str:
-        """Return token display name."""
-        return "RESET_TOKEN"
+    value: str = Field(..., description="Password reset token value", min_length=32)
 
     @override
-    def _get_token_class_name(self) -> str:
-        """Return token class name."""
-        return "PasswordResetToken"
+    def __str__(self) -> str:
+        """Return protected token representation."""
+        return "[RESET_TOKEN]"
 
     @override
-    def _get_token_type_name(self) -> str:
-        """Return token type name."""
-        return "Password reset token"
+    def __repr__(self) -> str:
+        """Return protected token class representation."""
+        return "PasswordResetToken([PROTECTED])"
 
     @override
-    def _validate_specific_rules(self) -> FlextResult[None]:
-        """Validate password reset token specific rules."""
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate password reset token business rules."""
+        if not self.value:
+            return FlextResult[None].fail("Password reset token cannot be empty")
         if len(self.value) < MIN_PASSWORD_RESET_TOKEN_LENGTH:
-            msg = "Password reset token must be at least 32 characters"
-            return FlextResult[None].fail(msg)
+            return FlextResult[None].fail("Password reset token must be at least 32 characters")
         return FlextResult[None].ok(None)
 
 
-class FlextEmailVerificationToken(FlextBaseTokenValueObject):
-    """Email verification token value object - inherits common behavior from base."""
+class FlextEmailVerificationToken(FlextValue):
+    """Email verification token value object using flext-core patterns."""
 
-    value: str = Field(..., min_length=32)
-
-    @override
-    def _get_token_display_name(self) -> str:
-        """Return token display name."""
-        return "VERIFICATION_TOKEN"
+    value: str = Field(..., description="Email verification token value", min_length=32)
 
     @override
-    def _get_token_class_name(self) -> str:
-        """Return token class name."""
-        return "EmailVerificationToken"
+    def __str__(self) -> str:
+        """Return protected token representation."""
+        return "[VERIFICATION_TOKEN]"
 
     @override
-    def _get_token_type_name(self) -> str:
-        """Return token type name."""
-        return "Email verification token"
+    def __repr__(self) -> str:
+        """Return protected token class representation."""
+        return "EmailVerificationToken([PROTECTED])"
 
     @override
-    def _validate_specific_rules(self) -> FlextResult[None]:
-        """Validate email verification token specific rules."""
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate email verification token business rules."""
+        if not self.value:
+            return FlextResult[None].fail("Email verification token cannot be empty")
         if len(self.value) < MIN_EMAIL_VERIFICATION_TOKEN_LENGTH:
-            msg = "Email verification token must be at least 32 characters"
-            return FlextResult[None].fail(msg)
+            return FlextResult[None].fail("Email verification token must be at least 32 characters")
         return FlextResult[None].ok(None)
 
 

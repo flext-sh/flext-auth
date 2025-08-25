@@ -15,7 +15,6 @@ import pytest
 from flext_auth import (
     FlextAuthService,
     FlextAuthServiceConfig,
-    FlextAuthServiceDependencies,
     FlextJWTService,
     FlextPasswordService,
     FlextUserRegistrationData,
@@ -38,15 +37,14 @@ class TestFlextAuthService:
             secret_key="test-secret-key",
             access_token_expire_minutes=30,
         )
-        # Create dependencies object for new API
-        dependencies = FlextAuthServiceDependencies(
+        # Create auth service using new constructor pattern
+        self.auth_service = FlextAuthService.create_default(
             user_repository=self.user_repo,
             session_repository=self.session_repo,
             password_service=self.password_service,
             jwt_service=self.jwt_service,
-            config=FlextAuthServiceConfig(),  # Add missing config parameter
+            config=FlextAuthServiceConfig(),
         )
-        self.auth_service = FlextAuthService(dependencies)
 
     @pytest.mark.unit
     async def test_register_user_success(self) -> None:

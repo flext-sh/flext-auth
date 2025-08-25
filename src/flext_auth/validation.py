@@ -11,8 +11,8 @@ import re
 
 from flext_core import FlextResult, FlextValidation
 
-from flext_auth.constants import FlextAuthConstants
-from flext_auth.types import TEmail, TPassword, TUsername
+from .constants import FlextAuthConstants
+from .flext_auth_types import TEmail, TPassword, TUsername
 
 # =============================================================================
 # VALIDATION CONSTANTS

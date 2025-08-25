@@ -12,11 +12,13 @@ import secrets
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 
+# PyJWT package imports - use standard pattern
 import jwt
 from flext_core import FlextResult, get_logger
+from jwt import ExpiredSignatureError, InvalidTokenError
 
-from flext_auth.constants import FlextAuthConstants
-from flext_auth.values import (
+from .constants import FlextAuthConstants
+from .values import (
     FlextJWTClaims as JWTClaims,
 )
 
@@ -251,9 +253,9 @@ class FlextJWTService:
             claims = JWTClaims(**payload)
             return FlextResult[JWTClaims].ok(claims)
 
-        except jwt.ExpiredSignatureError:
+        except ExpiredSignatureError:
             return FlextResult[JWTClaims].fail("Token has expired")
-        except jwt.InvalidTokenError as e:
+        except InvalidTokenError as e:
             return FlextResult[JWTClaims].fail(f"Failed to verify token: {e}")
         except (ValueError, TypeError, OSError) as e:
             return FlextResult[JWTClaims].fail(f"Failed to verify token: {e}")

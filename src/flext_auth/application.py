@@ -14,19 +14,21 @@ from typing import override
 
 from flext_core import FlextDomainService, FlextEntityId, FlextResult
 
-from flext_auth import (
-    FlextAuthSemanticConstants,
-    FlextPasswordService,
+# Direct imports to avoid circular dependencies
+from .constants import FlextAuthSemanticConstants
+from .entities import (
     FlextPermission,
-    FlextPlainPassword,
     FlextRole,
-    FlextSession,
-    FlextSessionStatus,
     FlextUser,
-    FlextUserEmail,
-    FlextUsername,
     FlextUserRole,
     FlextUserStatus,
+)
+from .models import FlextSession, FlextSessionStatus
+from .password import FlextPasswordService
+from .values import (
+    FlextPlainPassword,
+    FlextUserEmail,
+    FlextUsername,
 )
 
 

@@ -15,15 +15,14 @@ from typing import TYPE_CHECKING, TypeVar, override
 from flext_core import FlextCommands, FlextEntityId, FlextResult
 from pydantic import Field
 
-from flext_auth.entities import FlextUser, FlextUserRole, FlextUserStatus
-
-# Import Union type from separate types module to avoid circular import
-from flext_auth.types import UserRepositoryType
-from flext_auth.utilities import FlextAuthUtilities
+# Direct imports to avoid circular dependencies
+from .entities import FlextUser, FlextUserRole, FlextUserStatus
+from .flext_auth_types import UserRepositoryType
+from .utilities import FlextAuthUtilities
 
 if TYPE_CHECKING:
-    from flext_auth.jwt import FlextJWTService
-    from flext_auth.password import FlextPasswordService
+    from .jwt import FlextJWTService
+    from .password import FlextPasswordService
 
 # Type variables for command/response patterns
 UserT = TypeVar("UserT", bound=FlextUser)

@@ -14,10 +14,11 @@ from typing import TYPE_CHECKING
 
 from flext_core import FlextResult
 
-from flext_auth.entities import FlextUser
+# Direct imports to avoid circular dependencies
+from .entities import FlextUser
 
 if TYPE_CHECKING:
-    from flext_auth.types import UserRepositoryType
+    from .flext_auth_types import UserRepositoryType
 
 
 class FlextAuthUtilities:

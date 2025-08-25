@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 """
 
 # Helper functions using main API
-from flext_auth.api import (
+from .api import (
     flext_auth_generate_jwt,
     flext_auth_hash_password,
     flext_auth_quick_start,

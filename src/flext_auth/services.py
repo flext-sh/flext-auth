@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from abc import abstractmethod
 import asyncio
 import os
 import secrets
@@ -14,11 +15,11 @@ import string
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
-from typing import Protocol
 
 import bcrypt
 import jwt
 from flext_core import (
+    FlextDomainService,  # Import FlextDomainService for service migration
     FlextEntityId,
     FlextProtocols,  # Use centralized protocols
     FlextResult,
@@ -26,22 +27,21 @@ from flext_core import (
     FlextValidationError,
     get_logger,
 )
+from pydantic import ConfigDict, Field
 
-from flext_auth.constants import DEFAULT_JWT_SECRET, FlextAuthConstants
-from flext_auth.entities import (
+# Direct imports to avoid circular dependencies
+from .constants import DEFAULT_JWT_SECRET, FlextAuthConstants
+from .entities import (
     FlextPermission,
     FlextRole,
-    FlextSession,
-    FlextSessionStatus,
-)
-from flext_auth.models import (
     FlextUser,
     FlextUserRole,
     FlextUserStatus,
 )
-from flext_auth.session import InMemorySessionRepository
-from flext_auth.user import InMemoryUserRepository
-from flext_auth.values import (
+from .models import FlextSession, FlextSessionStatus
+from .session import InMemorySessionRepository
+from .user import InMemoryUserRepository
+from .values import (
     FlextHashedPassword,
     FlextJWTClaims,
     FlextPlainPassword,
@@ -92,33 +92,68 @@ logger = get_logger(__name__)
 # =============================================================================
 
 
-class FlextPasswordService:
+class FlextPasswordService(FlextDomainService[dict[str, object]]):
     """Enterprise password service providing secure password operations.
 
     This service handles all password-related operations including secure hashing,
     verification, strength analysis, and policy enforcement. It uses bcrypt for
     password hashing and follows enterprise security best practices.
+
+    Migrated to FlextDomainService pattern for standardization.
     """
 
-    def __init__(self, rounds: int = 12) -> None:
-        """Initialize password service.
+    rounds: int = Field(default=12, ge=MIN_BCRYPT_ROUNDS, le=MAX_BCRYPT_ROUNDS, description="Bcrypt cost factor (4-20)")
 
-        Args:
-            rounds: Bcrypt cost factor (4-20, higher = more secure but slower)
-
-        """
-        if not MIN_BCRYPT_ROUNDS <= rounds <= MAX_BCRYPT_ROUNDS:
+    def model_post_init(self, __context: dict[str, object] | None = None, /) -> None:
+        """Validate configuration after model initialization."""
+        super().model_post_init(__context)
+        if not MIN_BCRYPT_ROUNDS <= self.rounds <= MAX_BCRYPT_ROUNDS:
             msg = "Bcrypt rounds must be between 4 and 20"
             raise FlextValidationError(
                 msg,
                 field="rounds",
-                value=rounds,
+                value=self.rounds,
                 context={
                     "min_value": MIN_BCRYPT_ROUNDS,
                     "max_value": MAX_BCRYPT_ROUNDS,
                 },
             )
-        self.rounds = rounds
+
+    def validate_config(self) -> FlextResult[None]:
+        """Validate service configuration."""
+        if not MIN_BCRYPT_ROUNDS <= self.rounds <= MAX_BCRYPT_ROUNDS:
+            return FlextResult[None].fail(
+                f"Bcrypt rounds must be between {MIN_BCRYPT_ROUNDS} and {MAX_BCRYPT_ROUNDS}, got {self.rounds}"
+            )
+        return FlextResult[None].ok(None)
+
+    def execute(self) -> FlextResult[dict[str, object]]:
+        """Execute service information retrieval.
+
+        Returns service configuration and capabilities as the primary domain operation.
+        """
+        try:
+            config_result = self.validate_config()
+            if config_result.is_failure:
+                return FlextResult[dict[str, object]].fail(config_result.error or "Configuration invalid")
+
+            service_info = {
+                "service_type": "FlextPasswordService",
+                "bcrypt_rounds": self.rounds,
+                "capabilities": [
+                    "hash_password",
+                    "verify_password",
+                    "generate_secure_password",
+                    "check_password_strength",
+                    "generate_password_reset_token",
+                    "is_password_compromised"
+                ],
+                "security_level": "enterprise",
+                "algorithm": "bcrypt"
+            }
+            return FlextResult[dict[str, object]].ok(service_info)
+        except Exception as e:
+            return FlextResult[dict[str, object]].fail(f"Service execution failed: {e}")
 
     def hash_password(
         self,
@@ -516,30 +551,70 @@ class FlextPasswordService:
 # =============================================================================
 
 
-class FlextJWTService:
+class FlextJWTService(FlextDomainService[dict[str, object]]):
     """Enterprise JWT service providing secure token operations for FLEXT Auth.
 
     This service handles all JWT token operations including generation, validation,
     and claim extraction. It follows enterprise security practices and integrates
     with the FLEXT authentication ecosystem using railway-oriented programming.
+
+    Migrated to FlextDomainService pattern for standardization.
     """
 
-    def __init__(
-        self,
-        secret_key: str,
-        algorithm: str = "HS256",
-        access_token_expire_minutes: int = 30,
-        refresh_token_expire_days: int = 7,
-    ) -> None:
-        """Initialize JWT service with configuration."""
-        if not secret_key or secret_key == DEV_SECRET_KEY:
+    secret_key: str = Field(description="JWT secret key for token signing")
+    algorithm: str = Field(default="HS256", description="JWT algorithm (HS256, RS256, etc.)")
+    access_token_expire_minutes: int = Field(default=30, gt=0, description="Access token expiration in minutes")
+    refresh_token_expire_days: int = Field(default=7, gt=0, description="Refresh token expiration in days")
+
+    def model_post_init(self, __context: dict[str, object] | None = None, /) -> None:
+        """Validate configuration after model initialization."""
+        super().model_post_init(__context)
+        if not self.secret_key or self.secret_key == DEV_SECRET_KEY:
             msg = "Production JWT secret key is required"
             raise ValueError(msg)
 
-        self.secret_key = secret_key
-        self.algorithm = algorithm
-        self.access_token_expire_minutes = access_token_expire_minutes
-        self.refresh_token_expire_days = refresh_token_expire_days
+    def validate_config(self) -> FlextResult[None]:
+        """Validate service configuration."""
+        if not self.secret_key or self.secret_key == DEV_SECRET_KEY:
+            return FlextResult[None].fail("Production JWT secret key is required")
+        if self.access_token_expire_minutes <= 0:
+            return FlextResult[None].fail("Access token expiration must be positive")
+        if self.refresh_token_expire_days <= 0:
+            return FlextResult[None].fail("Refresh token expiration must be positive")
+        return FlextResult[None].ok(None)
+
+    def execute(self) -> FlextResult[dict[str, object]]:
+        """Execute service information retrieval.
+
+        Returns service configuration and capabilities as the primary domain operation.
+        """
+        try:
+            config_result = self.validate_config()
+            if config_result.is_failure:
+                return FlextResult[dict[str, object]].fail(config_result.error or "Configuration invalid")
+
+            service_info = {
+                "service_type": "FlextJWTService",
+                "algorithm": self.algorithm,
+                "access_token_expire_minutes": self.access_token_expire_minutes,
+                "refresh_token_expire_days": self.refresh_token_expire_days,
+                "capabilities": [
+                    "generate_access_token",
+                    "generate_refresh_token",
+                    "generate_token_pair",
+                    "verify_token",
+                    "refresh_access_token",
+                    "extract_user_id",
+                    "get_token_claims",
+                    "get_token_expiry",
+                    "is_token_expired"
+                ],
+                "security_level": "enterprise",
+                "token_standard": "JWT"
+            }
+            return FlextResult[dict[str, object]].ok(service_info)
+        except Exception as e:
+            return FlextResult[dict[str, object]].fail(f"Service execution failed: {e}")
 
     def generate_access_token(
         self,
@@ -800,13 +875,18 @@ class ValidationCommand:
         return FlextResult[None].ok(None)
 
 
-class ValidationStrategy(FlextProtocols.Foundation.Validator[object], Protocol):
-    """Strategy Pattern: Validation protocol using flext-core patterns."""
+# FLEXT MIGRATION: Use FlextProtocols.Foundation.Validator directly
+class ValidationStrategy(FlextProtocols.Foundation.Validator[object]):
+    """Strategy Pattern: Validation protocol using flext-core patterns.
 
+    FLEXT REFACTORING: Migrated from Protocol to use FlextProtocols.Foundation.Validator
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
+
+    @abstractmethod
     def validate(self, data: object) -> FlextResult[None]:
         """Execute validation strategy using flext-core Validator protocol."""
         ...
-
 
 class PasswordStrengthValidationStrategy(ValidationStrategy):
     """Strategy Pattern: Password strength validation."""
@@ -885,16 +965,21 @@ class UserValidationStrategy(ValidationStrategy):
         return FlextResult[None].ok(None)
 
 
-class PermissionStrategy(Protocol):
-    """Strategy Pattern: Permission protocol using flext-core patterns."""
+# FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Auth for permission strategy
+class PermissionStrategy(FlextProtocols.Infrastructure.Auth):
+    """Strategy Pattern: Permission protocol using flext-core patterns.
 
+    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Infrastructure.Auth
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
+
+    @abstractmethod
     def check_permission(
         self,
         check_data: PermissionCheckData,
     ) -> FlextResult[bool]:
         """Check permission using specific strategy with Parameter Object."""
         ...
-
 
 @dataclass(frozen=True)
 class PermissionCheckData:
@@ -962,11 +1047,61 @@ class ServiceDependencies:
     role_permission_strategy: RoleBasedPermissionStrategy
 
 
-class FlextAuthenticationService:
-    """Authentication service using Strategy Pattern."""
+class FlextAuthenticationService(FlextDomainService[dict[str, object]]):
+    """Authentication service using Strategy Pattern.
 
-    def __init__(self) -> None:
-        """Initialize authentication service with strategies."""
+    Migrated to FlextDomainService pattern for standardization.
+    """
+
+    # Pydantic fields for service configuration - inherited behavior from FlextDomainService
+    model_config = ConfigDict(
+        frozen=True,
+        validate_assignment=True,
+        extra="forbid",
+        arbitrary_types_allowed=True,  # Allow complex service dependencies
+    )
+
+    def execute(self) -> FlextResult[dict[str, object]]:
+        """Execute service information retrieval.
+
+        Returns:
+            FlextResult containing service configuration and capabilities
+
+        """
+        try:
+            deps = self._create_auth_service_dependencies()
+            return FlextResult[dict[str, object]].ok({
+                "service_type": "authentication",
+                "capabilities": {
+                    "user_creation": True,
+                    "user_authentication": True,
+                    "password_change": True,
+                    "strategy_pattern": True,
+                    "validation_strategies": {
+                        "password_strength": True,
+                        "user_validation": True,
+                        "REDACTED_LDAP_BIND_PASSWORD_permission": True,
+                        "role_based_permission": True,
+                    }
+                },
+                "repositories": {
+                    "user_repository": "in_memory",
+                    "session_repository": "in_memory",
+                },
+                "services": {
+                    "password_service": deps.password_service.__class__.__name__,
+                    "jwt_service": deps.jwt_service.__class__.__name__,
+                }
+            })
+        except Exception as e:
+            return FlextResult[dict[str, object]].fail(f"Service information retrieval failed: {e}")
+
+    def __init__(self, **data: object) -> None:
+        """Initialize authentication service with strategies.
+
+        Maintains backward compatibility while using FlextDomainService pattern.
+        """
+        super().__init__(**data)
         self._deps = self._create_auth_service_dependencies()
 
     def _create_auth_service_dependencies(self) -> ServiceDependencies:
@@ -1125,11 +1260,59 @@ class FlextAuthenticationService:
             return FlextResult[bool].fail(f"Password change failed: {e}")
 
 
-class FlextAuthorizationService:
-    """Authorization service using Strategy Pattern."""
+class FlextAuthorizationService(FlextDomainService[dict[str, object]]):
+    """Authorization service using Strategy Pattern.
 
-    def __init__(self) -> None:
-        """Initialize authorization service with strategies."""
+    Migrated to FlextDomainService pattern for standardization.
+    """
+
+    # Pydantic fields for service configuration - inherited behavior from FlextDomainService
+    model_config = ConfigDict(
+        frozen=True,
+        validate_assignment=True,
+        extra="forbid",
+        arbitrary_types_allowed=True,  # Allow complex service dependencies
+    )
+
+    def execute(self) -> FlextResult[dict[str, object]]:
+        """Execute service information retrieval.
+
+        Returns:
+            FlextResult containing service configuration and capabilities
+
+        """
+        try:
+            deps = self._create_auth_service_dependencies()
+            return FlextResult[dict[str, object]].ok({
+                "service_type": "authorization",
+                "capabilities": {
+                    "role_creation": True,
+                    "permission_checking": True,
+                    "user_permissions": True,
+                    "strategy_pattern": True,
+                    "permission_strategies": {
+                        "REDACTED_LDAP_BIND_PASSWORD_permission": True,
+                        "role_based_permission": True,
+                    }
+                },
+                "repositories": {
+                    "user_repository": "in_memory",
+                    "session_repository": "in_memory",
+                },
+                "services": {
+                    "password_service": deps.password_service.__class__.__name__,
+                    "jwt_service": deps.jwt_service.__class__.__name__,
+                }
+            })
+        except Exception as e:
+            return FlextResult[dict[str, object]].fail(f"Service information retrieval failed: {e}")
+
+    def __init__(self, **data: object) -> None:
+        """Initialize authorization service with strategies.
+
+        Maintains backward compatibility while using FlextDomainService pattern.
+        """
+        super().__init__(**data)
         self._deps = self._create_auth_service_dependencies()
 
     def _create_auth_service_dependencies(self) -> ServiceDependencies:
@@ -1268,12 +1451,31 @@ class FlextAuthorizationService:
         return []
 
 
-class FlextSessionService:
-    """Session service with simplified operations."""
+class FlextSessionService(FlextDomainService[dict[str, object]]):
+    """Session service using Strategy Pattern.
+
+    Migrated to FlextDomainService pattern for standardization.
+    """
+
+    model_config = ConfigDict(
+        frozen=True,
+        validate_assignment=True,
+        extra="forbid",
+        arbitrary_types_allowed=True,
+    )
 
     def __init__(self) -> None:
         """Initialize session service with dependencies."""
+        super().__init__()
         self._deps = self._create_auth_service_dependencies()
+
+    def execute(self) -> FlextResult[dict[str, object]]:
+        """Execute service information retrieval."""
+        return FlextResult[dict[str, object]].ok({
+            "service_type": "FlextSessionService",
+            "capabilities": ["create_session", "validate_session", "revoke_session"],
+            "description": "Enterprise session management with lifecycle operations"
+        })
 
     def _create_auth_service_dependencies(self) -> ServiceDependencies:
         """Create service dependencies with strategies."""

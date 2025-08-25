@@ -8,7 +8,8 @@ SPDX-License-Identifier: MIT
 # This module provides mixin classes
 # The actual implementations are in decorators.py
 
-from flext_auth.decorators import (
+# Direct imports to avoid circular dependencies
+from .decorators import (
     FlextAuthMixin,
     FlextAuthSessionMixin,
     FlextAuthUserMixin,

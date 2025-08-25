@@ -208,15 +208,14 @@ class TestRefreshToken:
         valid_token.validate_business_rules()  # Should not raise
 
         # Test empty value - fails at validate_business_rules level
-        with pytest.raises(ValueError, match="Refresh token value cannot be empty"):
-            FlextRefreshToken(value="").validate_business_rules()
+        result = FlextRefreshToken(value="").validate_business_rules()
+        assert result.is_failure
+        assert "Refresh token value cannot be empty" in result.error
 
         # Test short token
-        with pytest.raises(
-            ValueError,
-            match="Refresh token must be at least 32 characters",
-        ):
-            FlextRefreshToken(value="short").validate_business_rules()
+        result = FlextRefreshToken(value="short").validate_business_rules()
+        assert result.is_failure
+        assert "Refresh token must be at least 32 characters" in result.error
 
 
 class TestSessionToken:
@@ -235,15 +234,14 @@ class TestSessionToken:
         valid_token.validate_business_rules()  # Should not raise
 
         # Test empty value
-        with pytest.raises(ValueError, match="Session token value cannot be empty"):
-            FlextSessionToken(value="").validate_business_rules()
+        result = FlextSessionToken(value="").validate_business_rules()
+        assert result.is_failure
+        assert "Session token value cannot be empty" in result.error
 
         # Test short token
-        with pytest.raises(
-            ValueError,
-            match="Session token must be at least 16 characters",
-        ):
-            FlextSessionToken(value="short").validate_business_rules()
+        result = FlextSessionToken(value="short").validate_business_rules()
+        assert result.is_failure
+        assert "Session token must be at least 16 characters" in result.error
 
 
 class TestIPAddress:

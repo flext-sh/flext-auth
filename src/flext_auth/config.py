@@ -11,11 +11,13 @@ import contextlib
 import os
 import re
 import secrets
-from typing import Never, Protocol
+from abc import abstractmethod
+from typing import Never
 
 from flext_core import (
     FlextBaseConfigModel,
     FlextDatabaseModel,
+    FlextProtocols,
     FlextSettings,
     TEntityId,
 )
@@ -23,14 +25,18 @@ from pydantic import Field
 from pydantic_settings import SettingsConfigDict
 
 
-# Protocol for password secret handling - SOLID typing without Any
-class _SecretProtocol(Protocol):
-    """Protocol for password secret objects from flext-core."""
+# FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Configurable for secret handling
+class _SecretProtocol(FlextProtocols.Infrastructure.Configurable):
+    """Protocol for password secret objects from flext-core.
 
+    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Infrastructure.Configurable
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
+
+    @abstractmethod
     def get_secret_value(self) -> str:
         """Get the secret value as string."""
         ...
-
 
 # =============================================================================
 # TYPE DEFINITIONS - Authentication-specific types

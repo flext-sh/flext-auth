@@ -10,7 +10,8 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Protocol, override
+from abc import abstractmethod
+from typing import override
 
 from flext_core import (
     FlextEntityId,
@@ -19,24 +20,32 @@ from flext_core import (
     FlextTimestamp,
 )
 
-from flext_auth.app import (
+# Direct imports to avoid circular dependencies
+from .auth import (
     FlextAuthService,
     FlextAuthServiceConfig,
-    FlextAuthServiceDependencies,
 )
-from flext_auth.constants import DEFAULT_JWT_SECRET
-from flext_auth.entities import (
+from .constants import DEFAULT_JWT_SECRET
+from .entities import (
     FlextPermission,
     FlextRole,
-    FlextSession,
-    FlextSessionStatus,
     FlextUser,
     FlextUserRole,
     FlextUserStatus,
 )
-from flext_auth.services import FlextJWTService, FlextPasswordService
-from flext_auth.session import InMemorySessionRepository
-from flext_auth.user import InMemoryUserRepository
+from .jwt import FlextJWTService
+from .models import FlextSession, FlextSessionStatus
+from .password import FlextPasswordService
+
+# FLEXT REFACTORING: Import centralized protocols from services.py
+# Eliminates duplicate PermissionStrategy protocol definition - DRY principle
+from .services import (
+    AdminPermissionStrategy,
+    PermissionCheckData,
+    RoleBasedPermissionStrategy,
+)
+from .session import InMemorySessionRepository
+from .user import InMemoryUserRepository
 
 # =============================================================================
 # REFACTORING: Command Pattern - Encapsulates operations as objects
@@ -57,13 +66,18 @@ class ValidationCommand:
         return FlextResult[None].ok(None)
 
 
-class ValidationStrategy(FlextProtocols.Foundation.Validator[object], Protocol):
-    """Strategy Pattern: Validation protocol using flext-core patterns."""
+# FLEXT MIGRATION: Use FlextProtocols.Foundation.Validator directly
+class ValidationStrategy(FlextProtocols.Foundation.Validator[object]):
+    """Strategy Pattern: Validation protocol using flext-core patterns.
 
+    FLEXT REFACTORING: Migrated from Protocol to use FlextProtocols.Foundation.Validator
+    to eliminate Protocol duplication and ensure architectural compliance.
+    """
+
+    @abstractmethod
     def validate(self, data: object) -> FlextResult[None]:
         """Execute validation strategy using flext-core Validator protocol."""
         ...
-
 
 class PasswordStrengthValidationStrategy(ValidationStrategy):
     """Strategy Pattern: Password strength validation."""
@@ -144,54 +158,6 @@ class UserValidationStrategy(ValidationStrategy):
         return FlextResult[None].ok(None)
 
 
-class PermissionStrategy(Protocol):
-    """Strategy Pattern: Permission protocol using flext-core patterns."""
-
-    def check_permission(
-        self,
-        check_data: PermissionCheckData,
-    ) -> FlextResult[bool]:
-        """Check permission using specific strategy with Parameter Object."""
-        ...
-
-
-class AdminPermissionStrategy(PermissionStrategy):
-    """Strategy Pattern: Admin permission strategy."""
-
-    @override
-    def check_permission(
-        self,
-        check_data: PermissionCheckData,
-    ) -> FlextResult[bool]:
-        """Admin users have all permissions - Parameter Object Pattern."""
-        return FlextResult[bool].ok(check_data.user.role == FlextUserRole.ADMIN)
-
-
-class RoleBasedPermissionStrategy(PermissionStrategy):
-    """Strategy Pattern: Role-based permission strategy."""
-
-    @override
-    def check_permission(
-        self,
-        check_data: PermissionCheckData,
-    ) -> FlextResult[bool]:
-        """Check permissions based on user role - Parameter Object Pattern."""
-        if not check_data.roles:
-            return FlextResult[bool].ok(PERMISSION_DENIED)
-
-        # Production usage
-        user_role_name = "user_manager"
-        if user_role_name in check_data.roles:
-            role = check_data.roles[user_role_name]
-            for permission in role.permissions:
-                if (
-                    permission.resource == check_data.resource
-                    and permission.action == check_data.action
-                ):
-                    return FlextResult[bool].ok(PERMISSION_GRANTED)
-
-        return FlextResult[bool].ok(PERMISSION_DENIED)
-
 
 # =============================================================================
 # REFACTORING: Factory Pattern - Dependency creation with Strategy injection
@@ -229,15 +195,15 @@ def _create_auth_service_dependencies() -> ServiceDependencies:
     password_service = FlextPasswordService()
     jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
 
-    # Create dependencies object using Parameter Object Pattern
-    dependencies = FlextAuthServiceDependencies(
+    # Dependencies created directly through FlextAuthService factory
+    # FlextAuthService now uses Pydantic model construction
+    auth_service = FlextAuthService.create_default(
         user_repository=user_repo,
         session_repository=session_repo,
         password_service=password_service,
         jwt_service=jwt_service,
         config=FlextAuthServiceConfig(),
     )
-    auth_service = FlextAuthService(dependencies)
 
     return ServiceDependencies(
         user_repo=user_repo,
@@ -257,18 +223,8 @@ def _create_auth_service_dependencies() -> ServiceDependencies:
 # =============================================================================
 
 
-@dataclass(frozen=True)
-class PermissionCheckData:
-    """Parameter Object for permission checking - reduces parameter count.
-
-    SOLID REFACTORING: Reduces check_permission parameters from 4 to 1
-    using Parameter Object Pattern.
-    """
-
-    user: FlextUser
-    resource: str
-    action: str
-    roles: dict[str, FlextRole] | None = None
+# FLEXT REFACTORING: PermissionCheckData moved to services.py to eliminate duplication
+# Import already added above - this duplicate class definition removed
 
 
 # Constants for FlextResult boolean values to avoid FBT003 lint errors

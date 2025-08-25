@@ -14,27 +14,22 @@ from datetime import UTC, datetime
 
 from flext_core import FlextEntityId, FlextResult
 
-from flext_auth.config import FlextAuthConfig
-from flext_auth.container import (
+from .config import FlextAuthConfig
+from .container import (
     SessionRepositoryType,
     UserRepositoryType,
-    configure_flext_auth_container,
-    get_auth_service,
-    get_flext_auth_services,
-    get_jwt_service,
-    get_password_service,
 )
-from flext_auth.entities import FlextUser, FlextUserRole, FlextUserStatus
-from flext_auth.jwt import FlextJWTService
-from flext_auth.password import FlextPasswordService
-from flext_auth.repositories import (
+from .entities import FlextUser, FlextUserRole, FlextUserStatus
+from .jwt import FlextJWTService
+from .password import FlextPasswordService
+from .repositories import (
     SimplePostgreSQLSessionRepository,
     SimplePostgreSQLUserRepository,
     create_postgresql_pool,
     initialize_database_schema,
 )
-from flext_auth.session import InMemorySessionRepository
-from flext_auth.user import InMemoryUserRepository
+from .session import InMemorySessionRepository
+from .user import InMemoryUserRepository
 
 
 class FlextAuth:
@@ -51,9 +46,13 @@ class FlextAuth:
         session_repository: SessionRepositoryType | None = None,
     ) -> None:
         """Initialize FlextAuth using FlextContainer DI to eliminate duplications."""
-        # Configure container with provided or default services
-        container_result = configure_flext_auth_container(
-            container=None,
+        # Store the container instance to avoid global container issues
+        from .container import FlextAuthContainer  # noqa: PLC0415
+
+        self._container = FlextAuthContainer()
+
+        # Configure the specific container instance with provided services
+        container_result = self._container.configure_auth_services(
             config=config,
             user_repository=user_repository,
             session_repository=session_repository,
@@ -63,8 +62,8 @@ class FlextAuth:
             msg = f"Failed to configure FlextAuth container: {container_result.error}"
             raise RuntimeError(msg)
 
-        # Get auth service from container - eliminates manual instantiation
-        auth_service_result = get_auth_service()
+        # Get auth service from our specific container instance
+        auth_service_result = self._container.get_auth_service()
         if not auth_service_result.success:
             msg = f"Failed to get auth service: {auth_service_result.error}"
             raise RuntimeError(msg)
@@ -168,7 +167,7 @@ class FlextAuth:
 
     def _get_user_repository(self) -> FlextResult[InMemoryUserRepository | SimplePostgreSQLUserRepository]:
         """Get user repository from container with type validation."""
-        services_result = get_flext_auth_services()
+        services_result = self._container.get_auth_services()
         if not services_result.success:
             return FlextResult[InMemoryUserRepository | SimplePostgreSQLUserRepository].fail("Failed to get services")
 
@@ -201,7 +200,7 @@ class FlextAuth:
         user = user_result.value
 
         # Verify password
-        password_service_result = get_password_service()
+        password_service_result = self._container.get_password_service()
         if not password_service_result.success:
             return FlextResult[dict[str, object]].fail("Password service not available")
 
@@ -217,7 +216,7 @@ class FlextAuth:
 
     def _generate_auth_token(self, user: FlextUser) -> FlextResult[dict[str, object]]:
         """Generate authentication token for successful login."""
-        jwt_service_result = get_jwt_service()
+        jwt_service_result = self._container.get_jwt_service()
         if not jwt_service_result.success:
             return FlextResult[dict[str, object]].fail("JWT service not available")
 
@@ -294,7 +293,7 @@ class FlextAuth:
     ) -> FlextResult[object]:
         """Get user repository and validate uniqueness constraints."""
         # Get services from container
-        services_result = get_flext_auth_services()
+        services_result = self._container.get_auth_services()
         if not services_result.success:
             return FlextResult[object].fail("Failed to get services")
 
@@ -330,7 +329,7 @@ class FlextAuth:
     ) -> FlextResult[dict[str, object]]:
         """Create user entity and save to repository."""
         # Get password service and hash password
-        password_service_result = get_password_service()
+        password_service_result = self._container.get_password_service()
         if not password_service_result.success:
             return FlextResult[dict[str, object]].fail("Password service not available")
 
@@ -419,7 +418,7 @@ class FlextAuth:
     @property
     def config(self) -> FlextAuthConfig:
         """Get the authentication configuration from container."""
-        services_result = get_flext_auth_services()
+        services_result = self._container.get_auth_services()
         if services_result.success:
             config = services_result.value.get("config")
             if config and isinstance(config, FlextAuthConfig):
@@ -443,7 +442,7 @@ class FlextAuth:
     @property
     def jwt_service(self) -> FlextJWTService:
         """Get JWT service for token operations from container."""
-        jwt_service_result = get_jwt_service()
+        jwt_service_result = self._container.get_jwt_service()
         if jwt_service_result.success:
             return jwt_service_result.value
         msg = f"JWT service not available: {jwt_service_result.error}"
@@ -452,7 +451,7 @@ class FlextAuth:
     @property
     def password_service(self) -> FlextPasswordService:
         """Get password service for password operations from container."""
-        password_service_result = get_password_service()
+        password_service_result = self._container.get_password_service()
         if password_service_result.success:
             return password_service_result.value
         msg = f"Password service not available: {password_service_result.error}"
@@ -461,7 +460,7 @@ class FlextAuth:
     @property
     def user_repository(self) -> UserRepositoryType:
         """Get user repository for user management from container."""
-        services_result = get_flext_auth_services()
+        services_result = self._container.get_auth_services()
         if services_result.success:
             user_repo = services_result.value.get("user_repository")
             if isinstance(
@@ -475,7 +474,7 @@ class FlextAuth:
     @property
     def session_repository(self) -> SessionRepositoryType:
         """Get session repository for session management from container."""
-        services_result = get_flext_auth_services()
+        services_result = self._container.get_auth_services()
         if services_result.success:
             session_repo = services_result.value.get("session_repository")
             if isinstance(
