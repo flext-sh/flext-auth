@@ -673,7 +673,7 @@ class TokenRefreshPipelineStrategies:
     validation_context: str
 
 
-class FlextAuthService(FlextDomainService[dict[str, object]]):
+class FlextAuthService(FlextDomainService[str]):
     """REFACTORED: Authentication service using Strategy Pattern.
 
     Complexity reduced from 119 to ~40 by delegating responsibilities to strategies.

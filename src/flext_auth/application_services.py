@@ -242,7 +242,7 @@ LOGOUT_SUCCESS = True
 # =============================================================================
 
 
-class FlextAuthenticationService(FlextDomainService[dict[str, object]]):
+class FlextAuthenticationService(FlextDomainService[bool]):
     """REFACTORED: Authentication service using Strategy Pattern.
 
     Complexity reduced from ~25 to ~8 using Strategy Pattern to extract
@@ -401,7 +401,7 @@ class FlextAuthenticationService(FlextDomainService[dict[str, object]]):
             return FlextResult[bool].fail(f"Password change failed: {e}")
 
 
-class FlextAuthorizationService(FlextDomainService[dict[str, object]]):
+class FlextAuthorizationService(FlextDomainService[bool]):
     """REFACTORED: Authorization service using Strategy Pattern.
 
     Complexity reduced from ~15 to ~5 using Strategy Pattern for permissions.
@@ -547,7 +547,7 @@ class FlextAuthorizationService(FlextDomainService[dict[str, object]]):
         return []
 
 
-class FlextSessionService(FlextDomainService[dict[str, object]]):
+class FlextSessionService(FlextDomainService[str]):
     """REFACTORED: Session service with simplified operations.
 
     Complexity reduced from ~12 to ~4 by eliminating over-engineering.

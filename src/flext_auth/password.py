@@ -47,7 +47,7 @@ TOKEN_BYTES = 32
 logger = get_logger(__name__)
 
 
-class FlextPasswordService(FlextDomainService[dict[str, object]]):
+class FlextPasswordService(FlextDomainService[str]):
     """Enterprise password service providing secure password operations.
 
     This service handles all password-related operations including secure hashing,

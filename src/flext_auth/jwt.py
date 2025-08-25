@@ -29,7 +29,7 @@ from .values import (
 DEV_SECRET_KEY = os.getenv("FLEXT_JWT_SECRET", secrets.token_urlsafe(32))
 
 
-class FlextJWTSystem(FlextDomainService[dict[str, object]]):
+class FlextJWTSystem(FlextDomainService[str]):
     """SINGLE CONSOLIDATED CLASS for all JWT functionality.
 
     Following FLEXT architectural patterns - consolidates ALL JWT functionality

@@ -57,7 +57,7 @@ class FlextAuthServiceConfig:
 # =============================================================================
 
 
-class FlextAuthService(FlextDomainService[dict[str, object]]):
+class FlextAuthService(FlextDomainService[str]):
     """Main authentication service for FLEXT ecosystem.
 
     This service provides the primary interface for authentication operations,

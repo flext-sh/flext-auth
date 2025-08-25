@@ -92,7 +92,7 @@ logger = get_logger(__name__)
 # =============================================================================
 
 
-class FlextPasswordService(FlextDomainService[dict[str, object]]):
+class FlextPasswordService(FlextDomainService[str]):
     """Enterprise password service providing secure password operations.
 
     This service handles all password-related operations including secure hashing,
@@ -127,33 +127,23 @@ class FlextPasswordService(FlextDomainService[dict[str, object]]):
             )
         return FlextResult[None].ok(None)
 
-    def execute(self) -> FlextResult[dict[str, object]]:
-        """Execute service information retrieval.
+    def execute(self) -> FlextResult[str]:
+        """Execute service configuration validation.
 
-        Returns service configuration and capabilities as the primary domain operation.
+        Returns service status as string - the primary domain operation.
         """
         try:
             config_result = self.validate_config()
             if config_result.is_failure:
-                return FlextResult[dict[str, object]].fail(config_result.error or "Configuration invalid")
+                return FlextResult[str].fail(config_result.error or "Configuration invalid")
 
-            service_info = {
-                "service_type": "FlextPasswordService",
-                "bcrypt_rounds": self.rounds,
-                "capabilities": [
-                    "hash_password",
-                    "verify_password",
-                    "generate_secure_password",
-                    "check_password_strength",
-                    "generate_password_reset_token",
-                    "is_password_compromised"
-                ],
-                "security_level": "enterprise",
-                "algorithm": "bcrypt"
-            }
-            return FlextResult[dict[str, object]].ok(service_info)
+            status_message = (
+                f"FlextPasswordService configured with {self.rounds} bcrypt rounds, "
+                "enterprise-grade security enabled"
+            )
+            return FlextResult[str].ok(status_message)
         except Exception as e:
-            return FlextResult[dict[str, object]].fail(f"Service execution failed: {e}")
+            return FlextResult[str].fail(f"Service execution failed: {e}")
 
     def hash_password(
         self,
@@ -322,7 +312,7 @@ class FlextPasswordService(FlextDomainService[dict[str, object]]):
     def check_password_strength(
         self,
         password: str | FlextPlainPassword,
-    ) -> FlextResult[dict[str, object]]:
+    ) -> FlextResult[str]:
         """Analyze password strength and return detailed feedback.
 
         Args:
@@ -381,10 +371,10 @@ class FlextPasswordService(FlextDomainService[dict[str, object]]):
             # Estimate crack time using helper method
             analysis["estimated_crack_time"] = self._estimate_crack_time(analysis)
 
-            return FlextResult[dict[str, object]].ok(analysis)
+            return FlextResult[str].ok(analysis)
 
         except (ValueError, TypeError, OSError) as e:
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[str].fail(
                 f"Password strength analysis failed: {e}",
             )
 
@@ -551,7 +541,7 @@ class FlextPasswordService(FlextDomainService[dict[str, object]]):
 # =============================================================================
 
 
-class FlextJWTService(FlextDomainService[dict[str, object]]):
+class FlextJWTService(FlextDomainService[str]):
     """Enterprise JWT service providing secure token operations for FLEXT Auth.
 
     This service handles all JWT token operations including generation, validation,
@@ -583,38 +573,23 @@ class FlextJWTService(FlextDomainService[dict[str, object]]):
             return FlextResult[None].fail("Refresh token expiration must be positive")
         return FlextResult[None].ok(None)
 
-    def execute(self) -> FlextResult[dict[str, object]]:
-        """Execute service information retrieval.
+    def execute(self) -> FlextResult[str]:
+        """Execute service status check.
 
-        Returns service configuration and capabilities as the primary domain operation.
+        Returns service status as string - the primary domain operation.
         """
         try:
             config_result = self.validate_config()
             if config_result.is_failure:
-                return FlextResult[dict[str, object]].fail(config_result.error or "Configuration invalid")
+                return FlextResult[str].fail(config_result.error or "Configuration invalid")
 
-            service_info = {
-                "service_type": "FlextJWTService",
-                "algorithm": self.algorithm,
-                "access_token_expire_minutes": self.access_token_expire_minutes,
-                "refresh_token_expire_days": self.refresh_token_expire_days,
-                "capabilities": [
-                    "generate_access_token",
-                    "generate_refresh_token",
-                    "generate_token_pair",
-                    "verify_token",
-                    "refresh_access_token",
-                    "extract_user_id",
-                    "get_token_claims",
-                    "get_token_expiry",
-                    "is_token_expired"
-                ],
-                "security_level": "enterprise",
-                "token_standard": "JWT"
-            }
-            return FlextResult[dict[str, object]].ok(service_info)
+            status_message = (
+                f"FlextJWTService configured with {self.algorithm} algorithm, "
+                f"access tokens expire in {self.access_token_expire_minutes} minutes"
+            )
+            return FlextResult[str].ok(status_message)
         except Exception as e:
-            return FlextResult[dict[str, object]].fail(f"Service execution failed: {e}")
+            return FlextResult[str].fail(f"Service execution failed: {e}")
 
     def generate_access_token(
         self,
@@ -1049,7 +1024,7 @@ class ServiceDependencies:
     role_permission_strategy: RoleBasedPermissionStrategy
 
 
-class FlextAuthenticationService(FlextDomainService[dict[str, object]]):
+class FlextAuthenticationService(FlextDomainService[bool]): # AUTH
     """Authentication service using Strategy Pattern.
 
     Migrated to FlextDomainService pattern for standardization.
@@ -1063,7 +1038,7 @@ class FlextAuthenticationService(FlextDomainService[dict[str, object]]):
         arbitrary_types_allowed=True,  # Allow complex service dependencies
     )
 
-    def execute(self) -> FlextResult[dict[str, object]]:
+    def execute(self) -> FlextResult[str]:
         """Execute service information retrieval.
 
         Returns:
@@ -1072,7 +1047,7 @@ class FlextAuthenticationService(FlextDomainService[dict[str, object]]):
         """
         try:
             deps = self._create_auth_service_dependencies()
-            return FlextResult[dict[str, object]].ok({
+            return FlextResult[str].ok({
                 "service_type": "authentication",
                 "capabilities": {
                     "user_creation": True,
@@ -1096,7 +1071,7 @@ class FlextAuthenticationService(FlextDomainService[dict[str, object]]):
                 }
             })
         except Exception as e:
-            return FlextResult[dict[str, object]].fail(f"Service information retrieval failed: {e}")
+            return FlextResult[str].fail(f"Service information retrieval failed: {e}")
 
     def __init__(self, **data: object) -> None:
         """Initialize authentication service with strategies.
@@ -1262,7 +1237,7 @@ class FlextAuthenticationService(FlextDomainService[dict[str, object]]):
             return FlextResult[bool].fail(f"Password change failed: {e}")
 
 
-class FlextAuthorizationService(FlextDomainService[dict[str, object]]):
+class FlextAuthorizationService(FlextDomainService[bool]):
     """Authorization service using Strategy Pattern.
 
     Migrated to FlextDomainService pattern for standardization.
@@ -1276,7 +1251,7 @@ class FlextAuthorizationService(FlextDomainService[dict[str, object]]):
         arbitrary_types_allowed=True,  # Allow complex service dependencies
     )
 
-    def execute(self) -> FlextResult[dict[str, object]]:
+    def execute(self) -> FlextResult[str]:
         """Execute service information retrieval.
 
         Returns:
@@ -1285,7 +1260,7 @@ class FlextAuthorizationService(FlextDomainService[dict[str, object]]):
         """
         try:
             deps = self._create_auth_service_dependencies()
-            return FlextResult[dict[str, object]].ok({
+            return FlextResult[str].ok({
                 "service_type": "authorization",
                 "capabilities": {
                     "role_creation": True,
@@ -1307,7 +1282,7 @@ class FlextAuthorizationService(FlextDomainService[dict[str, object]]):
                 }
             })
         except Exception as e:
-            return FlextResult[dict[str, object]].fail(f"Service information retrieval failed: {e}")
+            return FlextResult[str].fail(f"Service information retrieval failed: {e}")
 
     def __init__(self, **data: object) -> None:
         """Initialize authorization service with strategies.
@@ -1453,7 +1428,7 @@ class FlextAuthorizationService(FlextDomainService[dict[str, object]]):
         return []
 
 
-class FlextSessionService(FlextDomainService[dict[str, object]]):
+class FlextSessionService(FlextDomainService[str]):
     """Session service using Strategy Pattern.
 
     Migrated to FlextDomainService pattern for standardization.
@@ -1471,9 +1446,9 @@ class FlextSessionService(FlextDomainService[dict[str, object]]):
         super().__init__()
         self._deps = self._create_auth_service_dependencies()
 
-    def execute(self) -> FlextResult[dict[str, object]]:
+    def execute(self) -> FlextResult[str]:
         """Execute service information retrieval."""
-        return FlextResult[dict[str, object]].ok({
+        return FlextResult[str].ok({
             "service_type": "FlextSessionService",
             "capabilities": ["create_session", "validate_session", "revoke_session"],
             "description": "Enterprise session management with lifecycle operations"
