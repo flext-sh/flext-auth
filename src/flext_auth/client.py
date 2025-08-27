@@ -13,12 +13,12 @@ from __future__ import annotations
 from datetime import datetime
 
 from flext_core import (
+    FlextConstants,
     FlextContainer,
     FlextDomainService,
+    FlextLogger,
     FlextResult,
     FlextTypes,
-    get_flext_container,
-    get_logger,
 )
 
 from flext_auth.api import FlextAuth
@@ -84,9 +84,9 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
         super().__init__()
 
         # Use dependency injection from flext-core
-        self._container = container or get_flext_container()
+        self._container = container or FlextContainer.get_global()
         self._config = config or self._create_default_config()
-        self._logger = get_logger(__name__)
+        self._logger: FlextLogger = FlextLogger(__name__)
 
         # Initialize internal services (private - external access via methods only)
         self._auth_container: FlextAuthContainer | None = None
@@ -180,7 +180,7 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
         self,
         username: str,
         password: str,  # noqa: ARG002
-        ip_address: str = "127.0.0.1",
+        ip_address: str = FlextConstants.Infrastructure.DEFAULT_HOST,
         user_agent: str | None = None,
     ) -> FlextResult[FlextTypes.Core.Dict]:
         """Authenticate user credentials (method replacing authenticate functions)."""
@@ -256,14 +256,12 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             jwt_validation = self.validate_jwt(token)
             if jwt_validation.is_success:
                 jwt_data = jwt_validation.value
-                return FlextResult.ok(
-                    {
-                        "user_id": jwt_data.get("user_id", "unknown"),
-                        "username": jwt_data.get("username", "unknown"),
-                        "role": jwt_data.get("role", "user"),
-                        "valid": True,
-                    }
-                )
+                return FlextResult.ok({
+                    "user_id": jwt_data.get("user_id", "unknown"),
+                    "username": jwt_data.get("username", "unknown"),
+                    "role": jwt_data.get("role", "user"),
+                    "valid": True,
+                })
             return FlextResult.fail(jwt_validation.error or "Token validation failed")
 
         except Exception as e:
@@ -488,7 +486,7 @@ _global_auth_client = FlextAuthClient()
 def flext_auth_client_authenticate_user(
     username: str,
     password: str,
-    ip_address: str = "127.0.0.1",
+    ip_address: str = FlextConstants.Infrastructure.DEFAULT_HOST,
     user_agent: str | None = None,
 ) -> FlextResult[FlextTypes.Core.Dict]:
     """Authenticate user using global FlextAuthClient (legacy function)."""

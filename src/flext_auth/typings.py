@@ -10,15 +10,15 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TypedDict
 
-from flext_core import TEntityId
+from flext_core import FlextTypes
 
 # =============================================================================
 # CORE ENTITY TYPES - Extending flext-core
 # =============================================================================
 
-type FlextAuthUserId = TEntityId
-type FlextAuthSessionId = TEntityId
-type FlextAuthTokenId = TEntityId
+type FlextAuthUserId = FlextTypes.Domain.EntityId
+type FlextAuthSessionId = FlextTypes.Domain.EntityId
+type FlextAuthTokenId = FlextTypes.Domain.EntityId
 
 # =============================================================================
 # DOMAIN TYPES - FlextAuth specific

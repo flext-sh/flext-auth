@@ -16,7 +16,7 @@ from datetime import UTC, datetime
 from typing import ParamSpec, cast
 
 from flext_core import (
-    FlextLoggerFactory,
+    FlextLogger,
     FlextProtocols,
     FlextResult,
 )
@@ -91,7 +91,8 @@ class _DjangoRequest(FlextProtocols.Infrastructure.Connection):
     META: _DjangoMeta
 
 
-logger = FlextLoggerFactory.get_logger(__name__)
+# Use centralized logger from flext-core
+logger: FlextLogger = FlextLogger(__name__)
 
 # =============================================================================
 # TYPE DEFINITIONS - Decorator and Mixin types

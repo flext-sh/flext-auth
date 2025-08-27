@@ -15,15 +15,13 @@ from datetime import UTC, datetime, timedelta
 from typing import cast, override
 
 from flext_core import (
-    FlextExceptions.AlreadyExistsError,
     FlextDomainService,
     FlextEntityId,
-    FlextExceptions.OperationError,
+    FlextExceptions,
+    FlextLogger,
     FlextProtocols,
     FlextResult,
     FlextTimestamp,
-    FlextExceptions.ValidationError,
-    get_logger,
 )
 
 from flext_auth.constants import FlextAuthConstants, FlextAuthSemanticConstants
@@ -74,7 +72,7 @@ TokenCreator = Callable[[User, JWTClaims], Awaitable[FlextResult[dict[str, objec
 REFRESH_TOKEN_TYPE = FlextAuthConstants.TokenTypes.REFRESH
 
 # Initialize logger using FLEXT patterns
-logger = get_logger(__name__)
+logger: FlextLogger = FlextLogger(__name__)
 
 
 # REFACTORING: Parameter Object pattern to reduce parameter count
@@ -1520,7 +1518,7 @@ class FlextAuthService(FlextDomainService[str]):
         hash_result = self.password_service.hash_password(password_vo)
         if not hash_result.success:
             return FlextResult[User].fail(
-                FlextExceptions.OperationError(
+                FlextExceptions.ValidationError(
                     f"Password hashing failed: {hash_result.error}",
                     operation="password_hashing",
                     stage="user_creation",
@@ -1772,7 +1770,7 @@ class FlextAuthService(FlextDomainService[str]):
 
         if not existing_result.success:
             return FlextResult[bool].fail(
-                FlextExceptions.OperationError(
+                FlextExceptions.ValidationError(
                     f"Failed to check existing {field_name.lower()}: {existing_result.error}",
                     operation="user_lookup",
                     stage=check_stage,
@@ -1781,7 +1779,7 @@ class FlextAuthService(FlextDomainService[str]):
 
         if existing_result.value:
             return FlextResult[bool].fail(
-                FlextExceptions.AlreadyExistsError(
+                FlextExceptions.ValidationError(
                     f"{field_name} '{value}' already exists",
                     resource_type=resource_type,
                     resource_id=value,

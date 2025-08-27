@@ -16,10 +16,11 @@ from typing import Never
 
 from flext_core import (
     FlextBaseConfigModel,
-    FlextDatabaseModel,
+    FlextConfig,
+    FlextConstants,
+    FlextModel,
     FlextProtocols,
-    FlextSettings,
-    TEntityId,
+    FlextTypes,
 )
 from pydantic import Field
 from pydantic_settings import SettingsConfigDict
@@ -44,8 +45,8 @@ class _SecretProtocol(FlextProtocols.Infrastructure.Configurable):
 # =============================================================================
 
 # Core entity types extending flext-core
-type TUserId = TEntityId
-type TSessionId = TEntityId
+type TUserId = FlextTypes.Domain.EntityId
+type TSessionId = FlextTypes.Domain.EntityId
 
 # Authentication domain types
 type TUsername = str
@@ -78,8 +79,6 @@ class FlextAuthConstants:
     """Authentication constants for validation patterns."""
 
     USERNAME_PATTERN = r"^[a-zA-Z0-9_-]+$"
-    MIN_PASSWORD_LENGTH = 8
-    MAX_PASSWORD_LENGTH = 128
     PASSWORD_VALIDATION_REGEX = (
         r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).+$"  # noqa: S105
     )
@@ -202,13 +201,13 @@ class DatabaseConfig:
             kwargs,
             "max_pool_size",
             "DATABASE_MAX_POOL_SIZE",
-            10,
+            FlextConstants.Platform.DATABASE_MAX_POOL_SIZE,
         )
         command_timeout = self._extract_int_setting(
             kwargs,
             "command_timeout",
             "DATABASE_COMMAND_TIMEOUT",
-            60,
+            FlextConstants.Defaults.DATABASE_COMMAND_TIMEOUT,
         )
 
         # Process URL settings
@@ -224,15 +223,15 @@ class DatabaseConfig:
 
         # Store database config as simple dict since FlextDatabaseModel is generic
         self._core_config_dict = {
-            "host": "localhost",
-            "port": 5432,
-            "database": "flext",
-            "username": "postgres",
-            "password": "password",
+            "host": FlextConstants.Infrastructure.DEFAULT_HOST,
+            "port": FlextConstants.Platform.POSTGRES_PORT,
+            "database": FlextConstants.Platform.DEFAULT_DATABASE_NAME,
+            "username": FlextConstants.Platform.DEFAULT_DATABASE_USER,
+            "password": FlextConstants.Platform.DEFAULT_DATABASE_PASSWORD,
             "connection_timeout": command_timeout,
         }
         # Create a generic FlextModel instance for compatibility
-        self._core_config = FlextDatabaseModel()
+        self._core_config = FlextModel()
 
     def _extract_int_setting(
         self,
@@ -275,13 +274,17 @@ class DatabaseConfig:
         if min_pool_size < 1:
             raise_validation_error("Minimum pool size must be at least 1")
 
-        max_min_pool_size = 20
-        max_max_pool_size = 100
+        max_min_pool_size = FlextConstants.Platform.DATABASE_MIN_POOL_SIZE_LIMIT
+        max_max_pool_size = FlextConstants.Platform.DATABASE_MAX_POOL_SIZE_LIMIT
 
         if min_pool_size > max_min_pool_size:
-            raise_validation_error("Minimum pool size cannot exceed 20")
+            raise_validation_error(
+                f"Minimum pool size cannot exceed {max_min_pool_size}"
+            )
         if max_pool_size > max_max_pool_size:
-            raise_validation_error("Maximum pool size cannot exceed 100")
+            raise_validation_error(
+                f"Maximum pool size cannot exceed {max_max_pool_size}"
+            )
 
     def __getattr__(self, name: str) -> object:
         """Delegate unknown attributes to core config."""
@@ -361,7 +364,7 @@ class DatabaseConfig:
         return getattr(self, "_command_timeout", 60)
 
 
-class JWTConfig(FlextSettings):
+class JWTConfig(FlextConfig):
     """JWT configuration with environment variables."""
 
     secret_key: str = Field(default="", description="JWT secret key")
@@ -420,7 +423,7 @@ class JWTConfig(FlextSettings):
         return secrets.token_urlsafe(32)
 
 
-class SecurityConfig(FlextSettings):
+class SecurityConfig(FlextConfig):
     """Security configuration with environment variables."""
 
     password_rounds: int = Field(default=12, description="BCrypt rounds", ge=4, le=20)
@@ -460,7 +463,7 @@ class SecurityConfig(FlextSettings):
     model_config = SettingsConfigDict(env_prefix="SECURITY_")
 
 
-class ServerConfig(FlextSettings):
+class ServerConfig(FlextConfig):
     """Server configuration."""
 
     debug: bool = Field(default=False, description="Debug mode")
@@ -470,7 +473,7 @@ class ServerConfig(FlextSettings):
     model_config = SettingsConfigDict(env_prefix="SERVER_")
 
 
-class AppConfig(FlextSettings):
+class AppConfig(FlextConfig):
     """Application configuration."""
 
     name: str = Field(

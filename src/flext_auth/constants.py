@@ -53,8 +53,6 @@ class FlextAuthConstants(FlextConstants):
     )
 
     # CONSUME from flext-core single source - NO DUPLICATION
-    MIN_PASSWORD_LENGTH: ClassVar[int] = FlextConstants.Limits.MIN_PASSWORD_LENGTH
-    MAX_PASSWORD_LENGTH: ClassVar[int] = FlextConstants.Limits.MAX_PASSWORD_LENGTH
     MIN_PASSWORD_SECURITY_SCORE: ClassVar[int] = 4
 
     # =============================================================================
@@ -70,15 +68,15 @@ class FlextAuthConstants(FlextConstants):
     # SESSION CONSTANTS - Session management settings
     # =============================================================================
 
-    DEFAULT_SESSION_TIMEOUT_HOURS: ClassVar[int] = 24
-    MAX_CONCURRENT_SESSIONS: ClassVar[int] = 5
+    DEFAULT_SESSION_TIMEOUT_HOURS: ClassVar[int] = FlextConstants.Auth.DEFAULT_SESSION_TIMEOUT // 3600  # Convert seconds to hours
+    MAX_CONCURRENT_SESSIONS: ClassVar[int] = FlextConstants.Auth.MAX_SESSIONS_PER_USER
 
     # =============================================================================
     # TOKEN CONSTANTS - JWT and token configuration
     # =============================================================================
 
-    DEFAULT_ACCESS_TOKEN_MINUTES: ClassVar[int] = 30
-    DEFAULT_REFRESH_TOKEN_DAYS: ClassVar[int] = 7
+    DEFAULT_ACCESS_TOKEN_MINUTES: ClassVar[int] = FlextConstants.Auth.DEFAULT_TOKEN_EXPIRY // 60  # Convert seconds to minutes
+    DEFAULT_REFRESH_TOKEN_DAYS: ClassVar[int] = FlextConstants.Auth.MAX_TOKEN_EXPIRY // 86400  # Convert seconds to days
     JWT_ALGORITHM: ClassVar[str] = "HS256"  # noqa: S105
 
     # Secure secret generation with environment variable support
@@ -127,8 +125,6 @@ class FlextAuthConstants(FlextConstants):
         PASSWORD_VALIDATION_REGEX = re.compile(
             r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]).{8,128}$",
         )
-        MIN_PASSWORD_LENGTH = FlextConstants.Limits.MIN_PASSWORD_LENGTH
-        MAX_PASSWORD_LENGTH = FlextConstants.Limits.MAX_PASSWORD_LENGTH
         MIN_PASSWORD_SECURITY_SCORE = 4
 
     class Security:
@@ -179,6 +175,9 @@ class FlextAuthConstants(FlextConstants):
         RESET = "reset"  # noqa: S105
         VERIFICATION = "verification"  # noqa: S105
 
+    MIN_PASSWORD_LENGTH: int = FlextConstants.Validation.MIN_PASSWORD_LENGTH
+    MAX_PASSWORD_LENGTH: int = FlextConstants.Validation.MAX_PASSWORD_LENGTH
+
 
 # =============================================================================
 # BACKWARD COMPATIBILITY - Legacy class and constant exports
@@ -187,10 +186,11 @@ class FlextAuthConstants(FlextConstants):
 # Create backward compatibility aliases for legacy imports
 FlextAuthSemanticConstants = FlextAuthConstants
 
-# Legacy constant exports for direct import
+# Legacy constant exports at module level for direct import compatibility
 DEV_JWT_SECRET = FlextAuthConstants.DEV_JWT_SECRET
 DEFAULT_JWT_SECRET = FlextAuthConstants.DEFAULT_JWT_SECRET
 DEFAULT_DEV_SECRET = DEFAULT_JWT_SECRET
+
 
 # =============================================================================
 # EXPORTS - Clean constants API

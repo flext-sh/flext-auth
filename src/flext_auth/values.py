@@ -12,7 +12,7 @@ import re
 from datetime import UTC, datetime
 from typing import override
 
-from flext_core import FlextResult, FlextExceptions, FlextValue
+from flext_core import FlextConstants, FlextExceptions, FlextResult, FlextValue
 from pydantic import EmailStr, Field, field_validator
 
 # Constants for validation limits
@@ -38,14 +38,14 @@ class FlextUsername(FlextValue):
     @classmethod
     def validate_username(cls, v: str) -> str:
         """Validate username format."""
-        if not re.match(r"^[a-zA-Z0-9_-]+$", v):
+        if not re.match(FlextConstants.Patterns.ALPHANUMERIC_UNDERSCORE_DASH, v):
             msg = "Username can only contain letters, numbers, underscores, and hyphens"
             raise FlextExceptions.ValidationError(
                 message=msg,
                 context={
                     "error_code": "AUTH_INVALID_USERNAME",
                     "username": v,
-                    "pattern": "^[a-zA-Z0-9_-]+$",
+                    "pattern": FlextConstants.Patterns.ALPHANUMERIC_UNDERSCORE_DASH,
                 },
             )
         return v.lower()
@@ -64,7 +64,7 @@ class FlextUsername(FlextValue):
         if len(self.value) > MAX_USERNAME_LENGTH:
             msg = "Username must be at most 50 characters"
             return FlextResult[None].fail(msg)
-        if not re.match(r"^[a-zA-Z0-9_-]+$", self.value):
+        if not re.match(FlextConstants.Patterns.ALPHANUMERIC_UNDERSCORE_DASH, self.value):
             msg = "Username can only contain letters, numbers, underscores, and hyphens"
             return FlextResult[None].fail(msg)
         return FlextResult[None].ok(None)

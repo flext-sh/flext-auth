@@ -77,7 +77,6 @@ from .decorators import (
 from .exceptions import (
     FlextAccountInactiveError,
     FlextAccountLockedError,
-    FlextExceptions.AuthenticationError,
     FlextAuthError,
     FlextAuthorizationError,
     FlextExpiredSessionError,
@@ -87,12 +86,13 @@ from .exceptions import (
     FlextInvalidSessionError,
     FlextInvalidTokenError,
     FlextPasswordValidationError,
-    FlextExceptions.PermissionError,
     FlextRoleRequiredError,
     FlextSessionError,
     FlextTokenError,
-    FlextExceptions.ValidationError,
 )
+
+# Import FlextExceptions separately for access to core exception types
+from flext_core import FlextExceptions
 
 # =============================================================================
 # SERVICES LAYER
@@ -385,12 +385,12 @@ __all__: list[str] = [
     "mask_sensitive_data",
     # Exceptions
     "FlextAuthError",
-    "FlextExceptions.AuthenticationError",
+    "FlextExceptions",
     "FlextAuthorizationError",
     "FlextTokenError",
     "FlextSessionError",
-    "FlextExceptions.PermissionError",
-    "FlextExceptions.ValidationError",
+    "FlextExceptions",
+    "FlextExceptions",
     "FlextInvalidCredentialsError",
     "FlextAccountLockedError",
     "FlextAccountInactiveError",

@@ -1,12 +1,8 @@
-#!/usr/bin/env python3
 """Test standalone constants.py consolidation WITHOUT flext-core dependencies."""
 
-# Test FlextAuthConstants consolidation WITHOUT importing flext-core
-import os
-import pathlib
 import sys
 
-sys.path.insert(0, os.path.join(pathlib.Path(__file__).parent, "src"))
+from flext_auth.constants import FlextAuthConstants, FlextAuthSemanticConstants
 
 
 # Mock flext_core.FlextConstants to avoid import issues
@@ -17,12 +13,9 @@ class MockFlextConstants:
 
 
 # Inject mock before importing
-sys.modules["flext_core"] = type("module", (), {
-    "FlextConstants": MockFlextConstants
-})()
+sys.modules["flext_core"] = type("module", (), {"FlextConstants": MockFlextConstants})()
 
 # Now test our constants.py
-from flext_auth.constants import FlextAuthConstants, FlextAuthSemanticConstants
 
 
 def test_consolidated_constants() -> None:

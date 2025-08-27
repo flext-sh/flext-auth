@@ -7,28 +7,21 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import logging
 import secrets
 import string
 
 import bcrypt
-from flext_core import (
-    FlextDomainService,
-    FlextResult,
-    FlextExceptions.ValidationError,
-    get_logger,
-)
+from flext_core import FlextDomainService, FlextExceptions, FlextResult
 from pydantic import Field
 
-from flext_auth.models import (
-    MAX_PASSWORD_LENGTH,
-    FlextHashedPassword,
-    FlextPlainPassword,
-)
+from flext_auth.constants import FlextAuthConstants
+from flext_auth.models import FlextHashedPassword, FlextPlainPassword
 
 # Constants for password validation
 MIN_BCRYPT_ROUNDS = 4
 MAX_BCRYPT_ROUNDS = 20
-MIN_PASSWORD_LENGTH = 8
+MIN_PASSWORD_LENGTH = FlextAuthConstants.MIN_PASSWORD_LENGTH
 RECOMMENDED_PASSWORD_LENGTH = 12
 STRONG_PASSWORD_LENGTH = 16
 MIN_STRENGTH_SCORE = 4
@@ -43,8 +36,7 @@ SECONDS_PER_DAY = 86400
 SECONDS_PER_YEAR = 31536000
 TOKEN_BYTES = 32
 
-# Initialize logger using FLEXT patterns
-logger = get_logger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class FlextPasswordService(FlextDomainService[dict[str, object]]):
@@ -281,13 +273,13 @@ class FlextPasswordService(FlextDomainService[dict[str, object]]):
 
         """
         try:
-            if length < MIN_PASSWORD_LENGTH:
+            if length < FlextAuthConstants.MIN_PASSWORD_LENGTH:
                 return FlextResult[FlextPlainPassword].fail(
-                    "Password length must be at least 8 characters",
+                    f"Password length must be at least {FlextAuthConstants.MIN_PASSWORD_LENGTH} characters",
                 )
-            if length > MAX_PASSWORD_LENGTH:
+            if length > FlextAuthConstants.MAX_PASSWORD_LENGTH:
                 return FlextResult[FlextPlainPassword].fail(
-                    "Password length must be at most 128 characters",
+                    f"Password length must be at most {FlextAuthConstants.MAX_PASSWORD_LENGTH} characters",
                 )
 
             # Character sets
@@ -362,7 +354,7 @@ class FlextPasswordService(FlextDomainService[dict[str, object]]):
         has_symbols = bool(analysis.get("has_symbols"))
 
         # Length scoring
-        if length >= MIN_PASSWORD_LENGTH:
+        if length >= FlextAuthConstants.MIN_PASSWORD_LENGTH:
             score += 1
         if length >= RECOMMENDED_PASSWORD_LENGTH:
             score += 1
@@ -398,9 +390,9 @@ class FlextPasswordService(FlextDomainService[dict[str, object]]):
         has_digits = bool(analysis.get("has_digits"))
         has_symbols = bool(analysis.get("has_symbols"))
 
-        if length < MIN_PASSWORD_LENGTH:
+        if length < FlextAuthConstants.MIN_PASSWORD_LENGTH:
             feedback.append(
-                f"Password should be at least {MIN_PASSWORD_LENGTH} characters long",
+                f"Password should be at least {FlextAuthConstants.MIN_PASSWORD_LENGTH} characters long",
             )
         elif length < RECOMMENDED_PASSWORD_LENGTH:
             feedback.append(

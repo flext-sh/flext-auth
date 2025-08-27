@@ -62,12 +62,12 @@ mock_flext_core.FlextResult = MockFlextResult
 mock_flext_core.FlextDomainService = MockFlextDomainService
 mock_flext_core.FlextConstants = MockFlextConstants
 mock_flext_core.FlextValue = MockFlextValue
-mock_flext_core.FlextExceptions.ValidationError = MockFlextValidationError
+mock_flext_core.FlextExceptions = MockFlextValidationError
 mock_flext_core.get_logger = mock_get_logger
 
 # Add other potential imports
-mock_flext_core.FlextExceptions.AlreadyExistsError = type(
-    "FlextExceptions.AlreadyExistsError", (Exception,), {}
+mock_flext_core.FlextExceptions = type(
+    "FlextExceptions", (Exception,), {}
 )
 
 # Inject the mock into sys.modules

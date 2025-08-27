@@ -97,8 +97,8 @@ class FlextAuthModels(FlextModel):
         user_id: str = Field(..., description="User ID owning this session")
         access_token: str = Field(..., description="JWT access token")
         refresh_token: str | None = Field(default=None, description="JWT refresh token")
-        status: FlextAuthModels.SessionStatus = Field(
-            default=FlextAuthModels.SessionStatus.ACTIVE,
+        status: str = Field(
+            default="active",
             description="Session status",
         )
         ip_address: str | None = Field(default=None, description="Client IP address")

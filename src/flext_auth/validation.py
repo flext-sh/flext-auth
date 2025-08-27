@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 
-from flext_core import FlextResult, FlextValidation
+from flext_core import FlextConstants, FlextResult, FlextValidation
 
 from flext_auth.constants import FlextAuthConstants
 
@@ -17,8 +17,9 @@ from flext_auth.constants import FlextAuthConstants
 # VALIDATION CONSTANTS
 # =============================================================================
 
-MIN_USERNAME_LENGTH = 3
-MAX_USERNAME_LENGTH = 50
+# FlextConstants already imported above in main imports
+MIN_USERNAME_LENGTH = FlextConstants.Auth.MIN_USERNAME_LENGTH
+MAX_USERNAME_LENGTH = FlextConstants.Auth.MAX_USERNAME_LENGTH
 
 # =============================================================================
 # AUTHENTICATION VALIDATORS - Using flext-core directly
@@ -52,8 +53,7 @@ class FlextAuthValidators:
     @staticmethod
     def validate_email(email: str) -> FlextResult[None]:
         """Validate email using flext-core validators."""
-        email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-        if not re.match(email_pattern, email):
+        if not re.match(FlextConstants.Patterns.EMAIL_PATTERN, email):
             return FlextResult[None].fail("Invalid email format")
         return FlextResult[None].ok(None)
 

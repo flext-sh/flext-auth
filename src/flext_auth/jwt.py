@@ -16,7 +16,7 @@ from enum import StrEnum
 from typing import ClassVar
 
 import jwt
-from flext_core import FlextDomainService, FlextResult, get_logger
+from flext_core import FlextDomainService, FlextLogger, FlextResult
 from jwt import ExpiredSignatureError, InvalidTokenError
 
 from flext_auth.constants import FlextAuthConstants
@@ -344,7 +344,7 @@ class FlextJWTSystem(FlextDomainService[dict[str, object]]):
                 return FlextResult[bool].ok(bool(is_expired))
 
             except (ValueError, TypeError, OSError) as e:
-                logger = get_logger(__name__)
+                logger: FlextLogger = FlextLogger(__name__)
                 logger.warning(f"Token expiry check failed: {e}")
                 return FlextResult[bool].fail(f"Token expiry check failed: {e}")
 
@@ -371,7 +371,7 @@ class FlextJWTSystem(FlextDomainService[dict[str, object]]):
             access_token_expire_minutes=access_token_expire_minutes,
             refresh_token_expire_days=refresh_token_expire_days,
         )
-        self._logger = get_logger(__name__)
+        self._logger: FlextLogger = FlextLogger(__name__)
 
         super().__init__()
 
@@ -458,7 +458,7 @@ TokenType = FlextJWTSystem.TokenType
 FlextJWTService = FlextJWTSystem
 
 # Initialize logger using FLEXT patterns
-logger = get_logger(__name__)
+logger: FlextLogger = FlextLogger(__name__)
 
 __all__ = [
     "DEV_SECRET_KEY",

@@ -16,58 +16,50 @@ _MIN_LENGTH_BASIC = 8
 _MIN_LENGTH_STRONG = 12
 _MIN_COMPLEXITY_CATEGORIES = 6
 _MIN_COMPLEXITY_GOOD = 4
-_MAX_COMMON_LENGTH = 12
+# FlextConstants already imported above in main imports
+
+_MAX_COMMON_LENGTH = FlextConstants.Auth.MAX_COMMON_LENGTH
 
 # =============================================================================
 # AUTHENTICATION FIELD REGISTRY - Using FlextCore field patterns
 # =============================================================================
 
 # Username field with proper validation
-USERNAME_FIELD = FlextFields.create_string_field(
-    field_id="auth_username",
-    field_name="username",
+USERNAME_FIELD = FlextFields.Core.StringField(
+    "username",
     min_length=3,
     max_length=50,
-    pattern=r"^[a-zA-Z0-9_-]+$",
+    pattern=FlextConstants.Patterns.ALPHANUMERIC_UNDERSCORE_DASH,
     required=True,
     description="User login identifier",
-    example="john_doe123",
-    tags=["authentication", "identifier", "required"],
 )
-# Register the field
-FlextFields.register_field(USERNAME_FIELD)
+
+# Create a registry instance and register the field
+_registry = FlextFields.Registry.FieldRegistry()
+_registry.register_field("auth_username", USERNAME_FIELD)
 
 # Email field using flext-core EMAIL_PATTERN
-EMAIL_FIELD = FlextFields.create_string_field(
-    field_id="auth_email",
-    field_name="email",
-    pattern=FlextConstants.Patterns.EMAIL_PATTERN,
-    max_length=254,  # RFC 5321 limit
+EMAIL_FIELD = FlextFields.Core.EmailField(
+    "email",
     required=True,
     description="User email address for authentication and communication",
-    example="user@example.com",
-    tags=["authentication", "contact", "required"],
-    indexed=True,  # Commonly queried field
 )
-# Register the field
-FlextFields.register_field(EMAIL_FIELD)
+# Register the field using Registry
+_registry.register_field("auth_email", EMAIL_FIELD)
 
 # Password field (for validation, not storage)
-PASSWORD_FIELD = FlextFields.create_string_field(
-    field_id="auth_password",
-    field_name="password",
+PASSWORD_FIELD = FlextFields.Core.StringField(
+    "password",
     min_length=8,
     max_length=128,
     required=True,
     description="User password meeting security requirements",
-    sensitive=True,  # Mark as sensitive data
-    tags=["authentication", "security", "sensitive"],
 )
-# Register the field
-FlextFields.register_field(PASSWORD_FIELD)
+# Register the field using Registry
+_registry.register_field("auth_password", PASSWORD_FIELD)
 
 # User role field with allowed values
-ROLE_FIELD = FlextFields.create_string_field(
+ROLE_FIELD = FlextFields.Core.StringField(
     field_id="auth_role",
     field_name="role",
     allowed_values=["REDACTED_LDAP_BIND_PASSWORD", "user", "guest"],
@@ -78,10 +70,10 @@ ROLE_FIELD = FlextFields.create_string_field(
     tags=["authorization", "access_control"],
 )
 # Register the field
-FlextFields.register_field(ROLE_FIELD)
+FlextFields.Registry.register(ROLE_FIELD)
 
 # User status field
-STATUS_FIELD = FlextFields.create_string_field(
+STATUS_FIELD = FlextFields.Core.StringField(
     field_id="auth_status",
     field_name="status",
     allowed_values=["active", "inactive", "locked", "pending"],
@@ -92,10 +84,10 @@ STATUS_FIELD = FlextFields.create_string_field(
     tags=["account_management", "security"],
 )
 # Register the field
-FlextFields.register_field(STATUS_FIELD)
+FlextFields.Registry.register(STATUS_FIELD)
 
 # Session expiry field
-SESSION_EXPIRE_FIELD = FlextFields.create_integer_field(
+SESSION_EXPIRE_FIELD = FlextFields.Core.IntegerField(
     field_id="auth_session_expire",
     field_name="session_expire_hours",
     min_value=1,
@@ -107,10 +99,10 @@ SESSION_EXPIRE_FIELD = FlextFields.create_integer_field(
     tags=["session", "security", "timeout"],
 )
 # Register the field
-FlextFields.register_field(SESSION_EXPIRE_FIELD)
+FlextFields.Registry.register(SESSION_EXPIRE_FIELD)
 
 # Failed login attempts field
-FAILED_ATTEMPTS_FIELD = FlextFields.create_integer_field(
+FAILED_ATTEMPTS_FIELD = FlextFields.Core.IntegerField(
     field_id="auth_failed_attempts",
     field_name="failed_attempts",
     min_value=0,
@@ -121,10 +113,10 @@ FAILED_ATTEMPTS_FIELD = FlextFields.create_integer_field(
     tags=["security", "monitoring", "lockout"],
 )
 # Register the field
-FlextFields.register_field(FAILED_ATTEMPTS_FIELD)
+FlextFields.Registry.register(FAILED_ATTEMPTS_FIELD)
 
 # Account lockout enabled field
-LOCKOUT_ENABLED_FIELD = FlextFields.create_boolean_field(
+LOCKOUT_ENABLED_FIELD = FlextFields.Core.BooleanField(
     field_id="auth_lockout_enabled",
     field_name="lockout_enabled",
     default_value=True,
@@ -133,7 +125,7 @@ LOCKOUT_ENABLED_FIELD = FlextFields.create_boolean_field(
     tags=["security", "configuration", "lockout"],
 )
 # Register the field
-FlextFields.register_field(LOCKOUT_ENABLED_FIELD)
+FlextFields.Registry.register(LOCKOUT_ENABLED_FIELD)
 
 # =============================================================================
 # AUTHENTICATION FIELD SCHEMA - Complete validation schema

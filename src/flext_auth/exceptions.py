@@ -430,7 +430,7 @@ FlextAuthErrorCodes = FlextAuthExceptionSystem.ErrorCodes
 FlextAuthError = FlextAuthExceptionSystem.AuthError
 
 # All exception types are now just the single consolidated class
-FlextExceptions.AuthenticationError = FlextAuthExceptionSystem.AuthError
+FlextExceptions = FlextAuthExceptionSystem.AuthError
 FlextAuthorizationError = FlextAuthExceptionSystem.AuthError
 FlextInvalidCredentialsError = FlextAuthExceptionSystem.AuthError
 FlextAccountLockedError = FlextAuthExceptionSystem.AuthError
@@ -441,10 +441,10 @@ FlextExpiredTokenError = FlextAuthExceptionSystem.AuthError
 FlextSessionError = FlextAuthExceptionSystem.AuthError
 FlextInvalidSessionError = FlextAuthExceptionSystem.AuthError
 FlextExpiredSessionError = FlextAuthExceptionSystem.AuthError
-FlextExceptions.PermissionError = FlextAuthExceptionSystem.AuthError
+FlextExceptions = FlextAuthExceptionSystem.AuthError
 FlextInsufficientPermissionError = FlextAuthExceptionSystem.AuthError
 FlextRoleRequiredError = FlextAuthExceptionSystem.AuthError
-FlextExceptions.ValidationError = FlextAuthExceptionSystem.AuthError
+FlextExceptions = FlextAuthExceptionSystem.AuthError
 FlextPasswordValidationError = FlextAuthExceptionSystem.AuthError
 
 __all__: list[str] = [  # noqa: RUF022
@@ -455,7 +455,7 @@ __all__: list[str] = [  # noqa: RUF022
     # Backward compatibility aliases (all point to FlextAuthError)
     "FlextAccountInactiveError",
     "FlextAccountLockedError",
-    "FlextExceptions.AuthenticationError",
+    "FlextExceptions",
     "FlextAuthorizationError",
     "FlextExpiredSessionError",
     "FlextExpiredTokenError",
@@ -464,9 +464,9 @@ __all__: list[str] = [  # noqa: RUF022
     "FlextInvalidSessionError",
     "FlextInvalidTokenError",
     "FlextPasswordValidationError",
-    "FlextExceptions.PermissionError",
+    "FlextExceptions",
     "FlextRoleRequiredError",
     "FlextSessionError",
     "FlextTokenError",
-    "FlextExceptions.ValidationError",
+    "FlextExceptions",
 ]

@@ -12,7 +12,7 @@ import secrets
 import string
 from datetime import UTC, datetime
 
-from flext_core import FlextEntityId, FlextResult
+from flext_core import FlextConstants, FlextEntityId, FlextResult
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.container import (
@@ -673,8 +673,7 @@ def flext_auth_validate_email(email: str) -> bool:
         return False
 
     # Simple email regex validation
-    email_pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-    return bool(re.match(email_pattern, email.strip()))
+    return bool(re.match(FlextConstants.Patterns.EMAIL_PATTERN, email.strip()))
 
 
 def flext_auth_validate_password_strength(password: str) -> FlextResult[bool]:

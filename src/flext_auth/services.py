@@ -21,11 +21,11 @@ import jwt
 from flext_core import (
     FlextDomainService,
     FlextEntityId,
+    FlextExceptions,
+    FlextLogger,
     FlextProtocols,
     FlextResult,
     FlextTimestamp,
-    FlextExceptions.ValidationError,
-    get_logger,
 )
 from pydantic import ConfigDict, Field
 
@@ -83,7 +83,7 @@ SESSION_INVALID = False
 LOGOUT_SUCCESS = True
 
 # Initialize logger using FLEXT patterns
-logger = get_logger(__name__)
+logger: FlextLogger = FlextLogger(__name__)
 
 
 # =============================================================================
