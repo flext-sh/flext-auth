@@ -15,11 +15,11 @@ from typing import ClassVar, override
 
 from flext_core import FlextDomainService, FlextResult
 
-from .models import FlextSession, FlextSessionStatus
-from .repositories import FlextSessionRepository
+from flext_auth.models import FlextSession, FlextSessionStatus
+from flext_auth.repositories import FlextSessionRepository
 
 
-class FlextAuthSessionSystem(FlextDomainService[dict]):
+class FlextAuthSessionSystem(FlextDomainService[dict[str, object]]):
     """SINGLE CONSOLIDATED CLASS for all session functionality.
 
     Following FLEXT architectural patterns - consolidates ALL session functionality
@@ -46,8 +46,8 @@ class FlextAuthSessionSystem(FlextDomainService[dict]):
         """Nested abstract repository for session operations."""
 
         @abstractmethod
-        async def save(self, entity: FlextSession) -> FlextResult[FlextSession]:
-            """Save session to repository (async)."""
+        def save(self, entity: FlextSession) -> FlextResult[FlextSession]:
+            """Save session to repository."""
 
         @abstractmethod
         @override
@@ -63,11 +63,11 @@ class FlextAuthSessionSystem(FlextDomainService[dict]):
             """Revoke all sessions for a user."""
 
         @abstractmethod
-        async def cleanup_expired_sessions(self) -> FlextResult[int]:
+        def cleanup_expired_sessions(self) -> FlextResult[int]:
             """Clean up expired sessions."""
 
         @abstractmethod
-        async def revoke_session(self, session_id: str) -> FlextResult[bool]:
+        def revoke_session(self, session_id: str) -> FlextResult[bool]:
             """Revoke a specific session by ID."""
 
         # Async adapter for service layer compatibility
@@ -96,8 +96,8 @@ class FlextAuthSessionSystem(FlextDomainService[dict]):
             """Initialize empty session storage."""
             self._sessions: dict[str, FlextSession] = {}
 
-        async def save(self, entity: FlextSession) -> FlextResult[FlextSession]:
-            """Save session to memory (async)."""
+        def save(self, entity: FlextSession) -> FlextResult[FlextSession]:
+            """Save session to memory."""
             try:
                 self._sessions[str(entity.id)] = entity
                 return FlextResult[FlextSession].ok(entity)
@@ -114,7 +114,9 @@ class FlextAuthSessionSystem(FlextDomainService[dict]):
                     return FlextResult[FlextSession | None].ok(session)
                 return FlextResult[FlextSession | None].ok(None)
             except (KeyError, ValueError, TypeError) as e:
-                return FlextResult[FlextSession | None].fail(f"Failed to find session: {e}")
+                return FlextResult[FlextSession | None].fail(
+                    f"Failed to find session: {e}"
+                )
 
         def find_by_user_id(self, user_id: str) -> FlextResult[list[FlextSession]]:
             """Find all sessions for a user."""
@@ -165,11 +167,11 @@ class FlextAuthSessionSystem(FlextDomainService[dict]):
                 return FlextResult[int].fail(f"Failed to cleanup expired sessions: {e}")
 
         @override
-        def delete(self, session_id: str) -> FlextResult[None]:
+        def delete(self, entity_id: str) -> FlextResult[None]:
             """Delete session by ID (sync for flext-core compliance)."""
             try:
-                if session_id in self._sessions:
-                    del self._sessions[session_id]
+                if entity_id in self._sessions:
+                    del self._sessions[entity_id]
                     return FlextResult[None].ok(None)
                 return FlextResult[None].fail("Session not found")
             except Exception as e:
@@ -181,14 +183,16 @@ class FlextAuthSessionSystem(FlextDomainService[dict]):
             try:
                 return FlextResult[list[FlextSession]].ok(list(self._sessions.values()))
             except Exception as e:
-                return FlextResult[list[FlextSession]].fail(f"Failed to find all sessions: {e}")
+                return FlextResult[list[FlextSession]].fail(
+                    f"Failed to find all sessions: {e}"
+                )
 
-        def revoke_session(self, session_id: str) -> FlextResult[bool]:
+        def revoke(self, entity_id: str) -> FlextResult[bool]:
             """Revoke a specific session (sync for flext-core compliance)."""
             try:
-                if session_id in self._sessions:
-                    session = self._sessions[session_id]
-                    self._sessions[session_id] = session.revoke()
+                if entity_id in self._sessions:
+                    session = self._sessions[entity_id]
+                    self._sessions[entity_id] = session.revoke()
                     success_value = True
                     return FlextResult[bool].ok(success_value)
                 return FlextResult[bool].fail("Session not found")
@@ -216,7 +220,9 @@ class FlextAuthSessionSystem(FlextDomainService[dict]):
             if sync_result.success:
                 success_value = True
                 return FlextResult[bool].ok(success_value)
-            return FlextResult[bool].fail(sync_result.error or "Failed to delete session")
+            return FlextResult[bool].fail(
+                sync_result.error or "Failed to delete session"
+            )
 
         async def cleanup_expired(self) -> FlextResult[int]:
             """Cleanup expired sessions - async version."""
@@ -238,12 +244,14 @@ class FlextAuthSessionSystem(FlextDomainService[dict]):
 
     def execute(self) -> FlextResult[dict]:
         """Execute session system validation and return system info."""
-        return FlextResult[dict].ok({
-            "repository_type": type(self._repository).__name__,
-            "default_timeout_hours": self.DEFAULT_SESSION_TIMEOUT_HOURS,
-            "max_concurrent_sessions": self.MAX_CONCURRENT_SESSIONS_PER_USER,
-            "status": "initialized"
-        })
+        return FlextResult[dict].ok(
+            {
+                "repository_type": type(self._repository).__name__,
+                "default_timeout_hours": self.DEFAULT_SESSION_TIMEOUT_HOURS,
+                "max_concurrent_sessions": self.MAX_CONCURRENT_SESSIONS_PER_USER,
+                "status": "initialized",
+            }
+        )
 
     # ==========================================================================
     # PUBLIC API METHODS - Session management operations
@@ -266,7 +274,7 @@ class FlextAuthSessionSystem(FlextDomainService[dict]):
                 user_id=user_id,
                 expires_at=expires_at,
                 status=FlextSessionStatus.ACTIVE,
-                metadata=metadata or {}
+                metadata=metadata or {},
             )
 
             return FlextResult[FlextSession].ok(session)
@@ -303,10 +311,14 @@ class FlextAuthSessionSystem(FlextDomainService[dict]):
         if not sessions_result.success:
             return FlextResult[int].fail(sessions_result.error)
 
-        active_count = len([
-            s for s in sessions_result.value
-            if s.status == FlextSessionStatus.ACTIVE and s.expires_at > datetime.now(UTC)
-        ])
+        active_count = len(
+            [
+                s
+                for s in sessions_result.value
+                if s.status == FlextSessionStatus.ACTIVE
+                and s.expires_at > datetime.now(UTC)
+            ]
+        )
         return FlextResult[int].ok(active_count)
 
 

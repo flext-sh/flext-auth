@@ -11,10 +11,7 @@ import re
 
 from flext_core import FlextResult, FlextValidation
 
-from .constants import FlextAuthConstants
-
-# Type aliases as direct types
-# TEmail, TPassword, TUsername are all str
+from flext_auth.constants import FlextAuthConstants
 
 # =============================================================================
 # VALIDATION CONSTANTS

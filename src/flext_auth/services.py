@@ -19,29 +19,28 @@ from enum import StrEnum
 import bcrypt
 import jwt
 from flext_core import (
-    FlextDomainService,  # Import FlextDomainService for service migration
+    FlextDomainService,
     FlextEntityId,
-    FlextProtocols,  # Use centralized protocols
+    FlextProtocols,
     FlextResult,
     FlextTimestamp,
-    FlextValidationError,
+    FlextExceptions.ValidationError,
     get_logger,
 )
 from pydantic import ConfigDict, Field
 
-# Direct imports to avoid circular dependencies
-from .constants import DEFAULT_JWT_SECRET, FlextAuthConstants
-from .entities import (
+from flext_auth.constants import DEFAULT_JWT_SECRET, FlextAuthConstants
+from flext_auth.entities import (
     FlextPermission,
     FlextRole,
     FlextUser,
     FlextUserRole,
     FlextUserStatus,
 )
-from .models import FlextSession, FlextSessionStatus
-from .session import InMemorySessionRepository
-from .user import InMemoryUserRepository
-from .values import (
+from flext_auth.models import FlextSession, FlextSessionStatus
+from flext_auth.session import InMemorySessionRepository
+from flext_auth.user import InMemoryUserRepository
+from flext_auth.values import (
     FlextHashedPassword,
     FlextJWTClaims,
     FlextPlainPassword,
@@ -102,14 +101,19 @@ class FlextPasswordService(FlextDomainService[str]):
     Migrated to FlextDomainService pattern for standardization.
     """
 
-    rounds: int = Field(default=12, ge=MIN_BCRYPT_ROUNDS, le=MAX_BCRYPT_ROUNDS, description="Bcrypt cost factor (4-20)")
+    rounds: int = Field(
+        default=12,
+        ge=MIN_BCRYPT_ROUNDS,
+        le=MAX_BCRYPT_ROUNDS,
+        description="Bcrypt cost factor (4-20)",
+    )
 
     def model_post_init(self, __context: dict[str, object] | None = None, /) -> None:
         """Validate configuration after model initialization."""
         super().model_post_init(__context)
         if not MIN_BCRYPT_ROUNDS <= self.rounds <= MAX_BCRYPT_ROUNDS:
             msg = "Bcrypt rounds must be between 4 and 20"
-            raise FlextValidationError(
+            raise FlextExceptions.ValidationError(
                 msg,
                 field="rounds",
                 value=self.rounds,
@@ -135,7 +139,9 @@ class FlextPasswordService(FlextDomainService[str]):
         try:
             config_result = self.validate_config()
             if config_result.is_failure:
-                return FlextResult[str].fail(config_result.error or "Configuration invalid")
+                return FlextResult[str].fail(
+                    config_result.error or "Configuration invalid"
+                )
 
             status_message = (
                 f"FlextPasswordService configured with {self.rounds} bcrypt rounds, "
@@ -552,9 +558,15 @@ class FlextJWTService(FlextDomainService[str]):
     """
 
     secret_key: str = Field(description="JWT secret key for token signing")
-    algorithm: str = Field(default="HS256", description="JWT algorithm (HS256, RS256, etc.)")
-    access_token_expire_minutes: int = Field(default=30, gt=0, description="Access token expiration in minutes")
-    refresh_token_expire_days: int = Field(default=7, gt=0, description="Refresh token expiration in days")
+    algorithm: str = Field(
+        default="HS256", description="JWT algorithm (HS256, RS256, etc.)"
+    )
+    access_token_expire_minutes: int = Field(
+        default=30, gt=0, description="Access token expiration in minutes"
+    )
+    refresh_token_expire_days: int = Field(
+        default=7, gt=0, description="Refresh token expiration in days"
+    )
 
     def model_post_init(self, __context: dict[str, object] | None = None, /) -> None:
         """Validate configuration after model initialization."""
@@ -581,7 +593,9 @@ class FlextJWTService(FlextDomainService[str]):
         try:
             config_result = self.validate_config()
             if config_result.is_failure:
-                return FlextResult[str].fail(config_result.error or "Configuration invalid")
+                return FlextResult[str].fail(
+                    config_result.error or "Configuration invalid"
+                )
 
             status_message = (
                 f"FlextJWTService configured with {self.algorithm} algorithm, "
@@ -1024,7 +1038,7 @@ class ServiceDependencies:
     role_permission_strategy: RoleBasedPermissionStrategy
 
 
-class FlextAuthenticationService(FlextDomainService[bool]): # AUTH
+class FlextAuthenticationService(FlextDomainService[bool]):  # AUTH
     """Authentication service using Strategy Pattern.
 
     Migrated to FlextDomainService pattern for standardization.
@@ -1047,29 +1061,31 @@ class FlextAuthenticationService(FlextDomainService[bool]): # AUTH
         """
         try:
             deps = self._create_auth_service_dependencies()
-            return FlextResult[str].ok({
-                "service_type": "authentication",
-                "capabilities": {
-                    "user_creation": True,
-                    "user_authentication": True,
-                    "password_change": True,
-                    "strategy_pattern": True,
-                    "validation_strategies": {
-                        "password_strength": True,
-                        "user_validation": True,
-                        "REDACTED_LDAP_BIND_PASSWORD_permission": True,
-                        "role_based_permission": True,
-                    }
-                },
-                "repositories": {
-                    "user_repository": "in_memory",
-                    "session_repository": "in_memory",
-                },
-                "services": {
-                    "password_service": deps.password_service.__class__.__name__,
-                    "jwt_service": deps.jwt_service.__class__.__name__,
+            return FlextResult[str].ok(
+                {
+                    "service_type": "authentication",
+                    "capabilities": {
+                        "user_creation": True,
+                        "user_authentication": True,
+                        "password_change": True,
+                        "strategy_pattern": True,
+                        "validation_strategies": {
+                            "password_strength": True,
+                            "user_validation": True,
+                            "REDACTED_LDAP_BIND_PASSWORD_permission": True,
+                            "role_based_permission": True,
+                        },
+                    },
+                    "repositories": {
+                        "user_repository": "in_memory",
+                        "session_repository": "in_memory",
+                    },
+                    "services": {
+                        "password_service": deps.password_service.__class__.__name__,
+                        "jwt_service": deps.jwt_service.__class__.__name__,
+                    },
                 }
-            })
+            )
         except Exception as e:
             return FlextResult[str].fail(f"Service information retrieval failed: {e}")
 
@@ -1260,27 +1276,29 @@ class FlextAuthorizationService(FlextDomainService[bool]):
         """
         try:
             deps = self._create_auth_service_dependencies()
-            return FlextResult[str].ok({
-                "service_type": "authorization",
-                "capabilities": {
-                    "role_creation": True,
-                    "permission_checking": True,
-                    "user_permissions": True,
-                    "strategy_pattern": True,
-                    "permission_strategies": {
-                        "REDACTED_LDAP_BIND_PASSWORD_permission": True,
-                        "role_based_permission": True,
-                    }
-                },
-                "repositories": {
-                    "user_repository": "in_memory",
-                    "session_repository": "in_memory",
-                },
-                "services": {
-                    "password_service": deps.password_service.__class__.__name__,
-                    "jwt_service": deps.jwt_service.__class__.__name__,
+            return FlextResult[str].ok(
+                {
+                    "service_type": "authorization",
+                    "capabilities": {
+                        "role_creation": True,
+                        "permission_checking": True,
+                        "user_permissions": True,
+                        "strategy_pattern": True,
+                        "permission_strategies": {
+                            "REDACTED_LDAP_BIND_PASSWORD_permission": True,
+                            "role_based_permission": True,
+                        },
+                    },
+                    "repositories": {
+                        "user_repository": "in_memory",
+                        "session_repository": "in_memory",
+                    },
+                    "services": {
+                        "password_service": deps.password_service.__class__.__name__,
+                        "jwt_service": deps.jwt_service.__class__.__name__,
+                    },
                 }
-            })
+            )
         except Exception as e:
             return FlextResult[str].fail(f"Service information retrieval failed: {e}")
 
@@ -1448,11 +1466,17 @@ class FlextSessionService(FlextDomainService[str]):
 
     def execute(self) -> FlextResult[str]:
         """Execute service information retrieval."""
-        return FlextResult[str].ok({
-            "service_type": "FlextSessionService",
-            "capabilities": ["create_session", "validate_session", "revoke_session"],
-            "description": "Enterprise session management with lifecycle operations"
-        })
+        return FlextResult[str].ok(
+            {
+                "service_type": "FlextSessionService",
+                "capabilities": [
+                    "create_session",
+                    "validate_session",
+                    "revoke_session",
+                ],
+                "description": "Enterprise session management with lifecycle operations",
+            }
+        )
 
     def _create_auth_service_dependencies(self) -> ServiceDependencies:
         """Create service dependencies with strategies."""

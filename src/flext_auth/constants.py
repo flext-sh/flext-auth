@@ -82,7 +82,9 @@ class FlextAuthConstants(FlextConstants):
     JWT_ALGORITHM: ClassVar[str] = "HS256"  # noqa: S105
 
     # Secure secret generation with environment variable support
-    DEV_JWT_SECRET: ClassVar[str] = os.getenv("DEV_JWT_SECRET", secrets.token_urlsafe(32))
+    DEV_JWT_SECRET: ClassVar[str] = os.getenv(
+        "DEV_JWT_SECRET", secrets.token_urlsafe(32)
+    )
     DEFAULT_JWT_SECRET: ClassVar[str] = os.getenv(
         "FLEXT_AUTH_JWT_SECRET_KEY",
         secrets.token_urlsafe(32),
@@ -150,7 +152,9 @@ class FlextAuthConstants(FlextConstants):
         DEFAULT_REFRESH_TOKEN_DAYS = 7
         JWT_ALGORITHM = "HS256"  # noqa: S105
         DEV_JWT_SECRET = os.getenv("DEV_JWT_SECRET", secrets.token_urlsafe(32))
-        DEFAULT_JWT_SECRET = os.getenv("FLEXT_AUTH_JWT_SECRET_KEY", secrets.token_urlsafe(32))
+        DEFAULT_JWT_SECRET = os.getenv(
+            "FLEXT_AUTH_JWT_SECRET_KEY", secrets.token_urlsafe(32)
+        )
 
     class UserStatus:
         """Backward compatibility nested class for UserStatus constants."""

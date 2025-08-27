@@ -10,8 +10,6 @@ management functionality through methods rather than standalone functions.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from flext_core import (
     FlextCommands,
     FlextContainer,
@@ -21,17 +19,13 @@ from flext_core import (
     register_typed,
 )
 
-from .config import FlextAuthConfig
-from .jwt import FlextJWTService
-from .password import FlextPasswordService
-from .session import InMemorySessionRepository
-from .user import InMemoryUserRepository
-
-if TYPE_CHECKING:
-    from .auth import FlextAuthService  # noqa: PLC0415
-
-# Import Union types to avoid circular imports
-from .flext_auth_types import SessionRepositoryType, UserRepositoryType
+from flext_auth.auth import FlextAuthService
+from flext_auth.config import FlextAuthConfig
+from flext_auth.flext_auth_types import SessionRepositoryType, UserRepositoryType
+from flext_auth.jwt import FlextJWTService
+from flext_auth.password import FlextPasswordService
+from flext_auth.session import InMemorySessionRepository
+from flext_auth.user import InMemoryUserRepository
 
 
 class FlextAuthContainer(FlextContainer):
@@ -79,7 +73,9 @@ class FlextAuthContainer(FlextContainer):
     PASSWORD_SERVICE_KEY = FlextServiceKey[FlextPasswordService]("password_service")
     JWT_SERVICE_KEY = FlextServiceKey[FlextJWTService]("jwt_service")
     USER_REPOSITORY_KEY = FlextServiceKey[UserRepositoryType]("user_repository")
-    SESSION_REPOSITORY_KEY = FlextServiceKey[SessionRepositoryType]("session_repository")
+    SESSION_REPOSITORY_KEY = FlextServiceKey[SessionRepositoryType](
+        "session_repository"
+    )
     AUTH_SERVICE_KEY = FlextServiceKey["FlextAuthService"]("auth_service")
     COMMAND_BUS_KEY = FlextServiceKey[FlextCommands.Bus]("command_bus")
 
@@ -150,7 +146,9 @@ class FlextAuthContainer(FlextContainer):
 
         # Register session repository
         final_session_repo = session_repository or InMemorySessionRepository()
-        register_result = register_typed(self.SESSION_REPOSITORY_KEY, final_session_repo)
+        register_result = register_typed(
+            self.SESSION_REPOSITORY_KEY, final_session_repo
+        )
         if not register_result.success:
             return FlextResult.fail(
                 f"Failed to register session repository: {register_result.error}"
@@ -230,13 +228,17 @@ class FlextAuthContainer(FlextContainer):
         # Register core services
         core_result = self.register_core_services(config)
         if core_result.is_failure:
-            return FlextResult[None].fail(core_result.error or "Failed to register core services")
+            return FlextResult[None].fail(
+                core_result.error or "Failed to register core services"
+            )
         password_service, jwt_service = core_result.value
 
         # Register repositories
         repo_result = self.register_repositories(user_repository, session_repository)
         if repo_result.is_failure:
-            return FlextResult[None].fail(repo_result.error or "Failed to register repositories")
+            return FlextResult[None].fail(
+                repo_result.error or "Failed to register repositories"
+            )
         final_user_repo, final_session_repo = repo_result.value
 
         # Register auth service
@@ -247,7 +249,9 @@ class FlextAuthContainer(FlextContainer):
             jwt_service,
         )
         if auth_result.is_failure:
-            return FlextResult[None].fail(auth_result.error or "Failed to register auth service")
+            return FlextResult[None].fail(
+                auth_result.error or "Failed to register auth service"
+            )
 
         # Register command bus
         command_result = self.register_command_bus(
@@ -256,7 +260,9 @@ class FlextAuthContainer(FlextContainer):
             jwt_service,
         )
         if command_result.is_failure:
-            return FlextResult[None].fail(command_result.error or "Failed to register command bus")
+            return FlextResult[None].fail(
+                command_result.error or "Failed to register command bus"
+            )
 
         return FlextResult[None].ok(None)
 
@@ -290,7 +296,9 @@ class FlextAuthContainer(FlextContainer):
             if user_repo_result.success:
                 services["user_repository"] = user_repo_result.value
 
-            session_repo_result = get_typed(self.SESSION_REPOSITORY_KEY, SessionRepositoryType)  # type: ignore[type-abstract]
+            session_repo_result = get_typed(
+                self.SESSION_REPOSITORY_KEY, SessionRepositoryType
+            )  # type: ignore[type-abstract]
             if session_repo_result.success:
                 services["session_repository"] = session_repo_result.value
         except Exception:
@@ -368,7 +376,9 @@ def configure_flext_auth_container(
     """Configure FlextAuth services in the DI container (legacy function)."""
     target_container = container or _global_auth_container
     if isinstance(target_container, FlextAuthContainer):
-        result = target_container.configure_auth_services(config, user_repository, session_repository)
+        result = target_container.configure_auth_services(
+            config, user_repository, session_repository
+        )
         if result.is_success:
             return FlextResult[FlextContainer].ok(target_container)
         return FlextResult[FlextContainer].fail(result.error or "Configuration failed")
@@ -416,9 +426,9 @@ __all__ = [
     # LEGACY COMPATIBILITY ALIASES - Backward compatibility functions
     # =============================================================================
     "configure_flext_auth_container",  # → FlextAuthContainer.configure_auth_services()
-    "get_auth_service",               # → FlextAuthContainer.get_auth_service()
-    "get_command_bus",                # → FlextAuthContainer.get_command_bus()
-    "get_flext_auth_services",         # → FlextAuthContainer.get_auth_services()
-    "get_jwt_service",                # → FlextAuthContainer.get_jwt_service()
-    "get_password_service",           # → FlextAuthContainer.get_password_service()
+    "get_auth_service",  # → FlextAuthContainer.get_auth_service()
+    "get_command_bus",  # → FlextAuthContainer.get_command_bus()
+    "get_flext_auth_services",  # → FlextAuthContainer.get_auth_services()
+    "get_jwt_service",  # → FlextAuthContainer.get_jwt_service()
+    "get_password_service",  # → FlextAuthContainer.get_password_service()
 ]

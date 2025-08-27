@@ -15,13 +15,12 @@ from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from typing import ClassVar
 
-# PyJWT package imports - use standard pattern
 import jwt
 from flext_core import FlextDomainService, FlextResult, get_logger
 from jwt import ExpiredSignatureError, InvalidTokenError
 
-from .constants import FlextAuthConstants
-from .values import (
+from flext_auth.constants import FlextAuthConstants
+from flext_auth.values import (
     FlextJWTClaims as JWTClaims,
 )
 
@@ -29,7 +28,7 @@ from .values import (
 DEV_SECRET_KEY = os.getenv("FLEXT_JWT_SECRET", secrets.token_urlsafe(32))
 
 
-class FlextJWTSystem(FlextDomainService[str]):
+class FlextJWTSystem(FlextDomainService[dict[str, object]]):
     """SINGLE CONSOLIDATED CLASS for all JWT functionality.
 
     Following FLEXT architectural patterns - consolidates ALL JWT functionality
@@ -189,7 +188,9 @@ class FlextJWTSystem(FlextDomainService[str]):
                 refresh_token = refresh_result.value
 
                 if not access_token or not refresh_token:
-                    return FlextResult[dict[str, str]].fail("Failed to generate token data")
+                    return FlextResult[dict[str, str]].fail(
+                        "Failed to generate token data"
+                    )
 
                 return FlextResult[dict[str, str]].ok(
                     {
@@ -376,12 +377,14 @@ class FlextJWTSystem(FlextDomainService[str]):
 
     def execute(self) -> FlextResult[dict[str, object]]:
         """Execute JWT system validation and return system info."""
-        return FlextResult[dict[str, object]].ok({
-            "algorithm": self._service.algorithm,
-            "access_token_expire_minutes": self._service.access_token_expire_minutes,
-            "refresh_token_expire_days": self._service.refresh_token_expire_days,
-            "status": "initialized"
-        })
+        return FlextResult[dict[str, object]].ok(
+            {
+                "algorithm": self._service.algorithm,
+                "access_token_expire_minutes": self._service.access_token_expire_minutes,
+                "refresh_token_expire_days": self._service.refresh_token_expire_days,
+                "status": "initialized",
+            }
+        )
 
     # ==========================================================================
     # PUBLIC API METHODS - Delegate to internal service
@@ -462,5 +465,5 @@ __all__ = [
     "FlextJWTService",  # Backward compatibility
     "FlextJWTSystem",
     "JWTClaims",
-    "TokenType",        # Backward compatibility
+    "TokenType",  # Backward compatibility
 ]

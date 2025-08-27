@@ -17,7 +17,7 @@ from datetime import UTC, datetime, timedelta
 
 from flext_core import FlextResult
 
-from .typings import FlextAuthValidationResultType
+from flext_auth.typings import FlextAuthValidationResultType
 
 
 class FlextAuthUtils:
@@ -299,6 +299,7 @@ class FlextAuthUtils:
 # BACKWARD COMPATIBILITY ALIASES - Legacy function aliases to class methods
 # =============================================================================
 
+
 # Legacy functions that delegate to FlextAuthUtils methods for backward compatibility
 def generate_secure_password(length: int = 16) -> str:
     """Generate secure password - delegates to FlextAuthUtils (legacy function)."""
@@ -327,14 +328,24 @@ def mask_sensitive_data(data: str, visible_chars: int = 4) -> str:
 
 # Legacy class aliases for backward compatibility
 # All methods are now available through FlextAuthUtils, but these aliases maintain compatibility
-FlextAuthTokenUtils = FlextAuthUtils  # All token methods available through FlextAuthUtils
-FlextAuthPasswordUtils = FlextAuthUtils  # All password methods available through FlextAuthUtils
+FlextAuthTokenUtils = (
+    FlextAuthUtils  # All token methods available through FlextAuthUtils
+)
+FlextAuthPasswordUtils = (
+    FlextAuthUtils  # All password methods available through FlextAuthUtils
+)
 FlextAuthDataUtils = FlextAuthUtils  # All data methods available through FlextAuthUtils
 FlextAuthTimeUtils = FlextAuthUtils  # All time methods available through FlextAuthUtils
-FlextAuthValidationUtils = FlextAuthUtils  # All validation methods available through FlextAuthUtils
-FlextAuthConversionUtils = FlextAuthUtils  # All conversion methods available through FlextAuthUtils
+FlextAuthValidationUtils = (
+    FlextAuthUtils  # All validation methods available through FlextAuthUtils
+)
+FlextAuthConversionUtils = (
+    FlextAuthUtils  # All conversion methods available through FlextAuthUtils
+)
 FlextAuthDictUtils = FlextAuthUtils  # All dict methods available through FlextAuthUtils
-FlextAuthErrorUtils = FlextAuthUtils  # All error methods available through FlextAuthUtils
+FlextAuthErrorUtils = (
+    FlextAuthUtils  # All error methods available through FlextAuthUtils
+)
 
 # =============================================================================
 # EXPORTS - Single class with legacy compatibility aliases
@@ -342,23 +353,23 @@ FlextAuthErrorUtils = FlextAuthUtils  # All error methods available through Flex
 
 __all__ = [
     "FlextAuthConversionUtils",  # → FlextAuthUtils (all conversion methods)
-    "FlextAuthDataUtils",       # → FlextAuthUtils (all data methods)
-    "FlextAuthDictUtils",       # → FlextAuthUtils (all dict methods)
-    "FlextAuthErrorUtils",      # → FlextAuthUtils (all error methods)
-    "FlextAuthPasswordUtils",   # → FlextAuthUtils (all password methods)
-    "FlextAuthTimeUtils",       # → FlextAuthUtils (all time methods)
+    "FlextAuthDataUtils",  # → FlextAuthUtils (all data methods)
+    "FlextAuthDictUtils",  # → FlextAuthUtils (all dict methods)
+    "FlextAuthErrorUtils",  # → FlextAuthUtils (all error methods)
+    "FlextAuthPasswordUtils",  # → FlextAuthUtils (all password methods)
+    "FlextAuthTimeUtils",  # → FlextAuthUtils (all time methods)
     # =============================================================================
     # LEGACY COMPATIBILITY ALIASES - Backward compatibility class aliases
     # =============================================================================
-    "FlextAuthTokenUtils",      # → FlextAuthUtils (all token methods)
+    "FlextAuthTokenUtils",  # → FlextAuthUtils (all token methods)
     "FlextAuthUtils",  # 🎯 MAIN CLASS: Single class following Flext[Area][Module] pattern
     "FlextAuthValidationUtils",  # → FlextAuthUtils (all validation methods)
     # =============================================================================
     # LEGACY COMPATIBILITY FUNCTIONS - Backward compatibility function aliases
     # =============================================================================
     "generate_secure_password",  # → FlextAuthUtils.generate_secure_password()
-    "generate_secure_token",    # → FlextAuthUtils.generate_secure_token()
-    "get_utc_now",              # → FlextAuthUtils.get_utc_now()
-    "is_strong_password",       # → FlextAuthUtils.is_strong_password()
-    "mask_sensitive_data",      # → FlextAuthUtils.mask_sensitive_data()
+    "generate_secure_token",  # → FlextAuthUtils.generate_secure_token()
+    "get_utc_now",  # → FlextAuthUtils.get_utc_now()
+    "is_strong_password",  # → FlextAuthUtils.is_strong_password()
+    "mask_sensitive_data",  # → FlextAuthUtils.mask_sensitive_data()
 ]

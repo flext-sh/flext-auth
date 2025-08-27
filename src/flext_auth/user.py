@@ -11,9 +11,8 @@ from typing import override
 
 from flext_core import FlextResult, FlextTimestamp
 
-from .constants import FlextAuthSemanticConstants
-from .entities import FlextUser, FlextUserStatus
-from .repositories import FlextUserRepository
+from flext_auth.entities import FlextUser, FlextUserStatus
+from flext_auth.repositories import FlextUserRepository
 
 
 class InMemoryUserRepository(FlextUserRepository):
@@ -25,7 +24,7 @@ class InMemoryUserRepository(FlextUserRepository):
         self._username_index: dict[str, str] = {}  # username -> user_id
         self._email_index: dict[str, str] = {}  # email -> user_id
 
-    async def save(self, entity: FlextUser) -> FlextResult[FlextUser]:
+    def save(self, entity: FlextUser) -> FlextResult[FlextUser]:
         """Save user to memory."""
         try:
             # Check for username conflicts
@@ -67,7 +66,7 @@ class InMemoryUserRepository(FlextUserRepository):
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[FlextUser].fail(f"Failed to save user: {e}")
 
-    async def get_by_id(self, entity_id: str) -> FlextResult[FlextUser | None]:
+    def get_by_id(self, entity_id: str) -> FlextResult[FlextUser | None]:
         """Get user by ID."""
         try:
             user = self._users.get(entity_id)
@@ -75,7 +74,7 @@ class InMemoryUserRepository(FlextUserRepository):
         except (KeyError, ValueError, TypeError) as e:
             return FlextResult[FlextUser | None].fail(f"Failed to get user by ID: {e}")
 
-    async def get_by_username(self, username: str) -> FlextResult[FlextUser | None]:
+    def get_by_username(self, username: str) -> FlextResult[FlextUser | None]:
         """Get user by username."""
         try:
             user_id = self._username_index.get(username.lower())
@@ -90,7 +89,7 @@ class InMemoryUserRepository(FlextUserRepository):
             )
 
     @override
-    async def get_by_email(self, email: str) -> FlextResult[FlextUser | None]:
+    def get_by_email(self, email: str) -> FlextResult[FlextUser | None]:
         """Get user by email."""
         try:
             user_id = self._email_index.get(email.lower())
@@ -105,12 +104,12 @@ class InMemoryUserRepository(FlextUserRepository):
             )
 
     @override
-    async def delete(self, entity_id: str) -> FlextResult[bool]:
+    def delete(self, entity_id: str) -> FlextResult[None]:
         """Delete user from memory."""
         try:
             user = self._users.get(entity_id)
             if not user:
-                return FlextResult[bool].ok(FlextAuthSemanticConstants.FAILURE)
+                return FlextResult[None].fail("User not found")
 
             # Remove from indexes
             self._username_index.pop(user.username.lower(), None)
@@ -119,9 +118,9 @@ class InMemoryUserRepository(FlextUserRepository):
             # Remove user
             del self._users[entity_id]
 
-            return FlextResult[bool].ok(FlextAuthSemanticConstants.SUCCESS)
+            return FlextResult[None].ok(None)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[bool].fail(f"Failed to delete user: {e}")
+            return FlextResult[None].fail(f"Failed to delete user: {e}")
 
     async def list_users(
         self,
@@ -237,7 +236,7 @@ class InMemoryUserRepository(FlextUserRepository):
                 f"Failed to get user by email: {e}",
             )
 
-    async def find_all(self) -> FlextResult[list[FlextUser]]:
+    def find_all(self) -> FlextResult[list[FlextUser]]:
         """Find all users - implementing core Repository pattern."""
         try:
             users = list(self._users.values())

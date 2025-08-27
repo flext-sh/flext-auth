@@ -12,7 +12,7 @@ import re
 from datetime import UTC, datetime
 from typing import override
 
-from flext_core import FlextResult, FlextValidationError, FlextValue
+from flext_core import FlextResult, FlextExceptions, FlextValue
 from pydantic import EmailStr, Field, field_validator
 
 # Constants for validation limits
@@ -20,7 +20,7 @@ MIN_USERNAME_LENGTH = 3
 MAX_USERNAME_LENGTH = 50
 MIN_PASSWORD_LENGTH = 8
 MAX_PASSWORD_LENGTH = 128
-MIN_BCRYPT_HASH_LENGTH = 56  # Minimum bcrypt hash length for production
+MIN_BCRYPT_HASH_LENGTH = 56
 MIN_AUTH_TOKEN_LENGTH = 10
 MIN_REFRESH_TOKEN_LENGTH = 32
 MIN_SESSION_TOKEN_LENGTH = 16
@@ -40,7 +40,7 @@ class FlextUsername(FlextValue):
         """Validate username format."""
         if not re.match(r"^[a-zA-Z0-9_-]+$", v):
             msg = "Username can only contain letters, numbers, underscores, and hyphens"
-            raise FlextValidationError(
+            raise FlextExceptions.ValidationError(
                 message=msg,
                 context={
                     "error_code": "AUTH_INVALID_USERNAME",
@@ -101,16 +101,16 @@ class FlextPlainPassword(FlextValue):
         """Validate password strength."""
         if not re.search(r"[A-Z]", v):
             msg = "Password must contain at least one uppercase letter"
-            raise FlextValidationError(msg, field="value")
+            raise FlextExceptions.ValidationError(msg, field="value")
         if not re.search(r"[a-z]", v):
             msg = "Password must contain at least one lowercase letter"
-            raise FlextValidationError(msg, field="value")
+            raise FlextExceptions.ValidationError(msg, field="value")
         if not re.search(r"\d", v):
             msg = "Password must contain at least one number"
-            raise FlextValidationError(msg, field="value")
+            raise FlextExceptions.ValidationError(msg, field="value")
         if not re.search(r'[!@#$%^&*(),.?":{}|<>]', v):
             msg = "Password must contain at least one special character"
-            raise FlextValidationError(msg, field="value")
+            raise FlextExceptions.ValidationError(msg, field="value")
         return v
 
     @override
@@ -258,7 +258,9 @@ class FlextRefreshToken(FlextValue):
         if not self.value:
             return FlextResult[None].fail("Refresh token value cannot be empty")
         if len(self.value) < MIN_REFRESH_TOKEN_LENGTH:
-            return FlextResult[None].fail("Refresh token must be at least 32 characters")
+            return FlextResult[None].fail(
+                "Refresh token must be at least 32 characters"
+            )
         return FlextResult[None].ok(None)
 
 
@@ -283,7 +285,9 @@ class FlextSessionToken(FlextValue):
         if not self.value:
             return FlextResult[None].fail("Session token value cannot be empty")
         if len(self.value) < MIN_SESSION_TOKEN_LENGTH:
-            return FlextResult[None].fail("Session token must be at least 16 characters")
+            return FlextResult[None].fail(
+                "Session token must be at least 16 characters"
+            )
         return FlextResult[None].ok(None)
 
 
@@ -382,7 +386,9 @@ class FlextPasswordResetToken(FlextValue):
         if not self.value:
             return FlextResult[None].fail("Password reset token cannot be empty")
         if len(self.value) < MIN_PASSWORD_RESET_TOKEN_LENGTH:
-            return FlextResult[None].fail("Password reset token must be at least 32 characters")
+            return FlextResult[None].fail(
+                "Password reset token must be at least 32 characters"
+            )
         return FlextResult[None].ok(None)
 
 
@@ -407,7 +413,9 @@ class FlextEmailVerificationToken(FlextValue):
         if not self.value:
             return FlextResult[None].fail("Email verification token cannot be empty")
         if len(self.value) < MIN_EMAIL_VERIFICATION_TOKEN_LENGTH:
-            return FlextResult[None].fail("Email verification token must be at least 32 characters")
+            return FlextResult[None].fail(
+                "Email verification token must be at least 32 characters"
+            )
         return FlextResult[None].ok(None)
 
 

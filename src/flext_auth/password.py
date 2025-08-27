@@ -14,12 +14,12 @@ import bcrypt
 from flext_core import (
     FlextDomainService,
     FlextResult,
-    FlextValidationError,
+    FlextExceptions.ValidationError,
     get_logger,
 )
 from pydantic import Field
 
-from .models import (
+from flext_auth.models import (
     MAX_PASSWORD_LENGTH,
     FlextHashedPassword,
     FlextPlainPassword,
@@ -47,7 +47,7 @@ TOKEN_BYTES = 32
 logger = get_logger(__name__)
 
 
-class FlextPasswordService(FlextDomainService[str]):
+class FlextPasswordService(FlextDomainService[dict[str, object]]):
     """Enterprise password service providing secure password operations.
 
     This service handles all password-related operations including secure hashing,
@@ -110,14 +110,19 @@ class FlextPasswordService(FlextDomainService[str]):
 
     """
 
-    rounds: int = Field(default=12, ge=MIN_BCRYPT_ROUNDS, le=MAX_BCRYPT_ROUNDS, description="Bcrypt cost factor (4-20)")
+    rounds: int = Field(
+        default=12,
+        ge=MIN_BCRYPT_ROUNDS,
+        le=MAX_BCRYPT_ROUNDS,
+        description="Bcrypt cost factor (4-20)",
+    )
 
     def model_post_init(self, __context: dict[str, object] | None = None, /) -> None:
         """Validate configuration after model initialization."""
         super().model_post_init(__context)
         if not MIN_BCRYPT_ROUNDS <= self.rounds <= MAX_BCRYPT_ROUNDS:
             msg = "Bcrypt rounds must be between 4 and 20"
-            raise FlextValidationError(
+            raise FlextExceptions.ValidationError(
                 msg,
                 field="rounds",
                 value=self.rounds,
@@ -143,7 +148,9 @@ class FlextPasswordService(FlextDomainService[str]):
         try:
             config_result = self.validate_config()
             if config_result.is_failure:
-                return FlextResult[dict[str, object]].fail(config_result.error or "Configuration invalid")
+                return FlextResult[dict[str, object]].fail(
+                    config_result.error or "Configuration invalid"
+                )
 
             service_info = {
                 "service_type": "FlextPasswordService",
@@ -154,10 +161,10 @@ class FlextPasswordService(FlextDomainService[str]):
                     "generate_secure_password",
                     "check_password_strength",
                     "generate_password_reset_token",
-                    "is_password_compromised"
+                    "is_password_compromised",
                 ],
                 "config_valid": True,
-                "initialized_at": "runtime"
+                "initialized_at": "runtime",
             }
 
             return FlextResult[dict[str, object]].ok(service_info)

@@ -15,38 +15,38 @@ from datetime import UTC, datetime, timedelta
 from typing import cast, override
 
 from flext_core import (
-    FlextAlreadyExistsError,
+    FlextExceptions.AlreadyExistsError,
     FlextDomainService,
     FlextEntityId,
-    FlextOperationError,
+    FlextExceptions.OperationError,
     FlextProtocols,
     FlextResult,
     FlextTimestamp,
-    FlextValidationError,
+    FlextExceptions.ValidationError,
     get_logger,
 )
 
-from .constants import FlextAuthConstants, FlextAuthSemanticConstants
-from .entities import (
+from flext_auth.constants import FlextAuthConstants, FlextAuthSemanticConstants
+from flext_auth.entities import (
     FlextLoginAttempt as LoginAttempt,
     FlextUser as User,
     FlextUserRole as UserRole,
     FlextUserStatus as UserStatus,
 )
-from .flext_auth_types import SessionRepositoryType, UserRepositoryType
-from .jwt import FlextJWTService as JWTService
-from .models import (
+from flext_auth.flext_auth_types import SessionRepositoryType, UserRepositoryType
+from flext_auth.jwt import FlextJWTService as JWTService
+from flext_auth.models import (
     FlextSession as Session,
     FlextSessionStatus as SessionStatus,
 )
-from .password import (
+from flext_auth.password import (
     FlextPasswordService as PasswordService,
 )
-from .repositories import (
+from flext_auth.repositories import (
     FlextSessionRepository,
     FlextUserRepository,
 )
-from .values import (
+from flext_auth.values import (
     FlextJWTClaims as JWTClaims,
     FlextPlainPassword as PlainPassword,
     FlextSecurityContext as SecurityContext,
@@ -150,6 +150,7 @@ class AuthenticationStrategy(FlextProtocols.Infrastructure.Auth):
         """Execute authentication strategy."""
         ...
 
+
 # FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Auth for token management
 class TokenManagementStrategy(FlextProtocols.Infrastructure.Auth):
     """Strategy Pattern: Token management protocol using flext-core patterns.
@@ -167,6 +168,7 @@ class TokenManagementStrategy(FlextProtocols.Infrastructure.Auth):
     async def refresh_token(self, refresh_token: str) -> FlextResult[dict[str, object]]:
         """Refresh token using specific strategy."""
         ...
+
 
 # FLEXT MIGRATION: Use FlextProtocols.Domain.Service for session management
 class SessionManagementStrategy(FlextProtocols.Domain.Service):
@@ -186,6 +188,7 @@ class SessionManagementStrategy(FlextProtocols.Domain.Service):
         """Create session using specific strategy."""
         ...
 
+
 # FLEXT MIGRATION: Use FlextProtocols.Domain.Service for user management
 class UserManagementStrategy(FlextProtocols.Domain.Service):
     """Strategy Pattern: User management protocol using flext-core patterns.
@@ -201,6 +204,7 @@ class UserManagementStrategy(FlextProtocols.Domain.Service):
     ) -> FlextResult[User]:
         """Register user using specific strategy."""
         ...
+
 
 # =============================================================================
 # REFACTORING: Template Method Pattern - eliminates 103 repetitive patterns
@@ -764,7 +768,9 @@ class FlextAuthService(FlextDomainService[str]):
         """Register user using Strategy Pattern - SOLID refactored."""
         try:
             # REFACTORING: Delegate to user management strategy
-            return await cast("UserManagementStrategy", self.user_strategy).register_user(registration_data)
+            return await cast(
+                "UserManagementStrategy", self.user_strategy
+            ).register_user(registration_data)
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult[User].fail(f"User registration failed: {e}")
 
@@ -782,7 +788,9 @@ class FlextAuthService(FlextDomainService[str]):
         """
         try:
             # REFACTORING: Delegate to authentication strategy
-            return await cast("AuthenticationStrategy", self.auth_strategy).authenticate(
+            return await cast(
+                "AuthenticationStrategy", self.auth_strategy
+            ).authenticate(
                 username,
                 password,
                 ip_address,
@@ -804,7 +812,9 @@ class FlextAuthService(FlextDomainService[str]):
         """Validate JWT token using Strategy Pattern - SOLID refactored."""
         try:
             # REFACTORING: Delegate to token management strategy
-            return await cast("TokenManagementStrategy", self.token_strategy).validate_token(token)
+            return await cast(
+                "TokenManagementStrategy", self.token_strategy
+            ).validate_token(token)
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult[SecurityContext].fail(f"Token validation failed: {e}")
 
@@ -812,7 +822,9 @@ class FlextAuthService(FlextDomainService[str]):
         """Refresh token using Strategy Pattern - SOLID refactored."""
         try:
             # REFACTORING: Delegate to token management strategy
-            return await cast("TokenManagementStrategy", self.token_strategy).refresh_token(refresh_token)
+            return await cast(
+                "TokenManagementStrategy", self.token_strategy
+            ).refresh_token(refresh_token)
         except (RuntimeError, ValueError, OSError) as e:
             return FlextResult[dict[str, object]].fail(f"Token refresh failed: {e}")
 
@@ -825,7 +837,9 @@ class FlextAuthService(FlextDomainService[str]):
         """Create session using Strategy Pattern - SOLID refactored."""
         try:
             # REFACTORING: Delegate to session management strategy
-            return await cast("SessionManagementStrategy", self.session_strategy).create_session(
+            return await cast(
+                "SessionManagementStrategy", self.session_strategy
+            ).create_session(
                 user,
                 ip_address,
                 user_agent,
@@ -1506,7 +1520,7 @@ class FlextAuthService(FlextDomainService[str]):
         hash_result = self.password_service.hash_password(password_vo)
         if not hash_result.success:
             return FlextResult[User].fail(
-                FlextOperationError(
+                FlextExceptions.OperationError(
                     f"Password hashing failed: {hash_result.error}",
                     operation="password_hashing",
                     stage="user_creation",
@@ -1627,7 +1641,7 @@ class FlextAuthService(FlextDomainService[str]):
             )
         except (ValueError, TypeError) as e:
             return FlextResult[tuple[Username, UserEmail, PlainPassword]].fail(
-                FlextValidationError(
+                FlextExceptions.ValidationError(
                     f"Input validation failed: {e}",
                     context={
                         "username": registration_data.username,
@@ -1758,7 +1772,7 @@ class FlextAuthService(FlextDomainService[str]):
 
         if not existing_result.success:
             return FlextResult[bool].fail(
-                FlextOperationError(
+                FlextExceptions.OperationError(
                     f"Failed to check existing {field_name.lower()}: {existing_result.error}",
                     operation="user_lookup",
                     stage=check_stage,
@@ -1767,7 +1781,7 @@ class FlextAuthService(FlextDomainService[str]):
 
         if existing_result.value:
             return FlextResult[bool].fail(
-                FlextAlreadyExistsError(
+                FlextExceptions.AlreadyExistsError(
                     f"{field_name} '{value}' already exists",
                     resource_type=resource_type,
                     resource_id=value,
@@ -2107,17 +2121,19 @@ class FlextAuthService(FlextDomainService[str]):
         Implementation of abstract method from FlextDomainService.
         Returns service status and configuration information.
         """
-        return FlextResult[dict[str, object]].ok({
-            "service": "FlextAuthService",
-            "status": "ready",
-            "max_failed_attempts": self.max_failed_attempts,
-            "lockout_duration_minutes": self.lockout_duration_minutes,
-            "session_expire_hours": self.session_expire_hours,
-            "max_concurrent_sessions": self.max_concurrent_sessions,
-            "strategies": {
-                "auth_strategy": type(self.auth_strategy).__name__,
-                "token_strategy": type(self.token_strategy).__name__,
-                "session_strategy": type(self.session_strategy).__name__,
-                "user_strategy": type(self.user_strategy).__name__,
-            },
-        })
+        return FlextResult[dict[str, object]].ok(
+            {
+                "service": "FlextAuthService",
+                "status": "ready",
+                "max_failed_attempts": self.max_failed_attempts,
+                "lockout_duration_minutes": self.lockout_duration_minutes,
+                "session_expire_hours": self.session_expire_hours,
+                "max_concurrent_sessions": self.max_concurrent_sessions,
+                "strategies": {
+                    "auth_strategy": type(self.auth_strategy).__name__,
+                    "token_strategy": type(self.token_strategy).__name__,
+                    "session_strategy": type(self.session_strategy).__name__,
+                    "user_strategy": type(self.user_strategy).__name__,
+                },
+            }
+        )

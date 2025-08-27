@@ -16,16 +16,15 @@ from datetime import UTC, datetime
 from typing import ParamSpec, cast
 
 from flext_core import (
-    FlextLoggerFactory,  # Use root-level import
+    FlextLoggerFactory,
     FlextProtocols,
     FlextResult,
 )
 
-# Direct imports to avoid circular dependencies
-from .auth import FlextAuthService
-from .config import FlextAuthConfig
-from .constants import DEFAULT_JWT_SECRET, FlextAuthSemanticConstants
-from .jwt import FlextJWTService
+from flext_auth.auth import FlextAuthService
+from flext_auth.config import FlextAuthConfig
+from flext_auth.constants import DEFAULT_JWT_SECRET, FlextAuthSemanticConstants
+from flext_auth.jwt import FlextJWTService
 
 
 # FLEXT MIGRATION: Use FlextProtocols.Foundation.Callable for token extraction

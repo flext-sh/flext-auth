@@ -16,37 +16,33 @@ from typing import override
 from flext_core import (
     FlextDomainService,
     FlextEntityId,
-    FlextProtocols,  # Use centralized protocols
+    FlextProtocols,
     FlextResult,
     FlextTimestamp,
 )
 
-# Direct imports to avoid circular dependencies
-from .auth import (
+from flext_auth.auth import (
     FlextAuthService,
     FlextAuthServiceConfig,
 )
-from .constants import DEFAULT_JWT_SECRET
-from .entities import (
+from flext_auth.constants import DEFAULT_JWT_SECRET
+from flext_auth.entities import (
     FlextPermission,
     FlextRole,
     FlextUser,
     FlextUserRole,
     FlextUserStatus,
 )
-from .jwt import FlextJWTService
-from .models import FlextSession, FlextSessionStatus
-from .password import FlextPasswordService
-
-# FLEXT REFACTORING: Import centralized protocols from services.py
-# Eliminates duplicate PermissionStrategy protocol definition - DRY principle
-from .services import (
+from flext_auth.jwt import FlextJWTService
+from flext_auth.models import FlextSession, FlextSessionStatus
+from flext_auth.password import FlextPasswordService
+from flext_auth.services import (
     AdminPermissionStrategy,
     PermissionCheckData,
     RoleBasedPermissionStrategy,
 )
-from .session import InMemorySessionRepository
-from .user import InMemoryUserRepository
+from flext_auth.session import InMemorySessionRepository
+from flext_auth.user import InMemoryUserRepository
 
 # =============================================================================
 # REFACTORING: Command Pattern - Encapsulates operations as objects
@@ -268,11 +264,11 @@ class FlextAuthenticationService(FlextDomainService[bool]):
                     "get_user",
                     "update_user",
                     "delete_user",
-                    "list_users"
+                    "list_users",
                 ],
                 "strategy_pattern": True,
                 "complexity_reduced": True,
-                "initialized_at": "runtime"
+                "initialized_at": "runtime",
             }
             return FlextResult[dict[str, object]].ok(service_info)
         except Exception as e:
@@ -426,11 +422,11 @@ class FlextAuthorizationService(FlextDomainService[bool]):
                     "check_permission",
                     "assign_role",
                     "revoke_role",
-                    "list_permissions"
+                    "list_permissions",
                 ],
                 "strategy_pattern": True,
                 "complexity_reduced": True,
-                "initialized_at": "runtime"
+                "initialized_at": "runtime",
             }
             return FlextResult[dict[str, object]].ok(service_info)
         except Exception as e:
@@ -572,11 +568,11 @@ class FlextSessionService(FlextDomainService[str]):
                     "revoke_session",
                     "cleanup_expired",
                     "validate_session",
-                    "refresh_session"
+                    "refresh_session",
                 ],
                 "complexity_reduced": True,
                 "over_engineering_eliminated": True,
-                "initialized_at": "runtime"
+                "initialized_at": "runtime",
             }
             return FlextResult[dict[str, object]].ok(service_info)
         except Exception as e:

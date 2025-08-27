@@ -9,15 +9,10 @@ operations, following SOLID principles and reducing code duplication.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from flext_core import FlextResult
 
-# Direct imports to avoid circular dependencies
-from .entities import FlextUser
-
-if TYPE_CHECKING:
-    from .flext_auth_types import UserRepositoryType
+from flext_auth.entities import FlextUser
+from flext_auth.flext_auth_types import UserRepositoryType
 
 
 class FlextAuthUtilities:

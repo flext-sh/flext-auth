@@ -21,16 +21,15 @@ from flext_core import (
     get_logger,
 )
 
-# Direct imports to avoid circular dependencies
-from .api import FlextAuth
-from .auth import (
+from flext_auth.api import FlextAuth
+from flext_auth.auth import (
     FlextAuthService,
     FlextUserRegistrationData,
 )
-from .config import FlextAuthConfig
-from .container import FlextAuthContainer
-from .flext_auth_types import SessionRepositoryType, UserRepositoryType
-from .helpers import (
+from flext_auth.config import FlextAuthConfig
+from flext_auth.container import FlextAuthContainer
+from flext_auth.flext_auth_types import SessionRepositoryType, UserRepositoryType
+from flext_auth.helpers import (
     flext_auth_generate_jwt,
     flext_auth_hash_password,
     flext_auth_quick_start,
@@ -44,8 +43,8 @@ from .helpers import (
     is_strong_password,
     mask_sensitive_data,
 )
-from .jwt import FlextJWTService
-from .password import FlextPasswordService
+from flext_auth.jwt import FlextJWTService
+from flext_auth.password import FlextPasswordService
 
 
 class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
@@ -98,7 +97,9 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
         # Track initialization state
         self._is_configured = False
 
-        self._logger.info("FlextAuthClient initialized following Flext[Area][Module] pattern")
+        self._logger.info(
+            "FlextAuthClient initialized following Flext[Area][Module] pattern"
+        )
 
     # =============================================================================
     # FLEXT CORE PROTOCOL IMPLEMENTATION (from FlextDomainService)
@@ -144,12 +145,16 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             )
 
             if config_result.is_failure:
-                return FlextResult.fail(f"Container configuration failed: {config_result.error}")
+                return FlextResult.fail(
+                    f"Container configuration failed: {config_result.error}"
+                )
 
             # Get configured services from container
             auth_service_result = self._auth_container.get_auth_service()
             if auth_service_result.is_failure:
-                return FlextResult.fail(f"Auth service not available: {auth_service_result.error}")
+                return FlextResult.fail(
+                    f"Auth service not available: {auth_service_result.error}"
+                )
             self._auth_service = auth_service_result.value
 
             password_service_result = self._auth_container.get_password_service()
@@ -182,7 +187,9 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
         if not self._auth_service:
             config_result = self.configure_services()
             if config_result.is_failure:
-                return FlextResult.fail(f"Service not configured: {config_result.error}")
+                return FlextResult.fail(
+                    f"Service not configured: {config_result.error}"
+                )
 
         if self._auth_service is None:
             return FlextResult.fail("Auth service not available")
@@ -210,7 +217,9 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
         if not self._auth_service:
             config_result = self.configure_services()
             if config_result.is_failure:
-                return FlextResult.fail(f"Service not configured: {config_result.error}")
+                return FlextResult.fail(
+                    f"Service not configured: {config_result.error}"
+                )
 
         if self._auth_service is None:
             return FlextResult.fail("Auth service not available")
@@ -234,7 +243,9 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
         if not self._auth_service:
             config_result = self.configure_services()
             if config_result.is_failure:
-                return FlextResult.fail(f"Service not configured: {config_result.error}")
+                return FlextResult.fail(
+                    f"Service not configured: {config_result.error}"
+                )
 
         if self._auth_service is None:
             return FlextResult.fail("Auth service not available")
@@ -245,12 +256,14 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             jwt_validation = self.validate_jwt(token)
             if jwt_validation.is_success:
                 jwt_data = jwt_validation.value
-                return FlextResult.ok({
-                    "user_id": jwt_data.get("user_id", "unknown"),
-                    "username": jwt_data.get("username", "unknown"),
-                    "role": jwt_data.get("role", "user"),
-                    "valid": True,
-                })
+                return FlextResult.ok(
+                    {
+                        "user_id": jwt_data.get("user_id", "unknown"),
+                        "username": jwt_data.get("username", "unknown"),
+                        "role": jwt_data.get("role", "user"),
+                        "valid": True,
+                    }
+                )
             return FlextResult.fail(jwt_validation.error or "Token validation failed")
 
         except Exception as e:
@@ -390,7 +403,9 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             # Configure services first
             config_result = self.configure_services()
             if config_result.is_failure:
-                return FlextResult.fail(f"Quick start configuration failed: {config_result.error}")
+                return FlextResult.fail(
+                    f"Quick start configuration failed: {config_result.error}"
+                )
 
             # Use internal method that replicates flext_auth_quick_start
             quick_start_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=create_REDACTED_LDAP_BIND_PASSWORD)
@@ -477,7 +492,9 @@ def flext_auth_client_authenticate_user(
     user_agent: str | None = None,
 ) -> FlextResult[FlextTypes.Core.Dict]:
     """Authenticate user using global FlextAuthClient (legacy function)."""
-    return _global_auth_client.authenticate_user(username, password, ip_address, user_agent)
+    return _global_auth_client.authenticate_user(
+        username, password, ip_address, user_agent
+    )
 
 
 def flext_auth_client_hash_password(password: str) -> FlextResult[str]:
@@ -485,7 +502,9 @@ def flext_auth_client_hash_password(password: str) -> FlextResult[str]:
     return _global_auth_client.hash_password(password)
 
 
-def flext_auth_client_verify_password(password: str, hashed_password: str) -> FlextResult[bool]:
+def flext_auth_client_verify_password(
+    password: str, hashed_password: str
+) -> FlextResult[bool]:
     """Verify password using global FlextAuthClient (legacy function)."""
     return _global_auth_client.verify_password(password, hashed_password)
 
@@ -520,10 +539,10 @@ __all__ = [
     # =============================================================================
     # LEGACY COMPATIBILITY ALIASES - Backward compatibility functions
     # =============================================================================
-    "flext_auth_client_authenticate_user",     # → FlextAuthClient.authenticate_user()
-    "flext_auth_client_generate_jwt",          # → FlextAuthClient.generate_jwt()
-    "flext_auth_client_hash_password",         # → FlextAuthClient.hash_password()
-    "flext_auth_client_quick_start",           # → FlextAuthClient.quick_start()
-    "flext_auth_client_validate_email",        # → FlextAuthClient.validate_email()
-    "flext_auth_client_verify_password",       # → FlextAuthClient.verify_password()
+    "flext_auth_client_authenticate_user",  # → FlextAuthClient.authenticate_user()
+    "flext_auth_client_generate_jwt",  # → FlextAuthClient.generate_jwt()
+    "flext_auth_client_hash_password",  # → FlextAuthClient.hash_password()
+    "flext_auth_client_quick_start",  # → FlextAuthClient.quick_start()
+    "flext_auth_client_validate_email",  # → FlextAuthClient.validate_email()
+    "flext_auth_client_verify_password",  # → FlextAuthClient.verify_password()
 ]

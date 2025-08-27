@@ -21,16 +21,15 @@ from flext_core import (
 )
 from pydantic import Field
 
-# Direct imports to avoid circular dependencies
-from .entities import (
+from flext_auth.entities import (
     FlextEmailVerificationToken,
     FlextPasswordResetToken,
     FlextUser,
     FlextUserRole,
     FlextUserStatus,
 )
-from .flext_auth_types import UserRepositoryType
-from .values import (
+from flext_auth.flext_auth_types import UserRepositoryType
+from flext_auth.values import (
     FlextHashedPassword,
     FlextJWTClaims,
     FlextPlainPassword,
@@ -70,7 +69,9 @@ class FlextAuthModels(FlextModel):
     MAX_DESCRIPTION_LENGTH: ClassVar[int] = 500
     MAX_SESSION_ID_LENGTH: ClassVar[int] = 32
     MIN_TOKEN_LENGTH: ClassVar[int] = 32
-    MIN_BCRYPT_HASH_LENGTH: ClassVar[int] = 56  # Minimum bcrypt hash length for production
+    MIN_BCRYPT_HASH_LENGTH: ClassVar[int] = (
+        56  # Minimum bcrypt hash length for production
+    )
     MIN_AUTH_TOKEN_LENGTH: ClassVar[int] = 10
     MIN_REFRESH_TOKEN_LENGTH: ClassVar[int] = 32
     MIN_SESSION_TOKEN_LENGTH: ClassVar[int] = 16
@@ -97,7 +98,7 @@ class FlextAuthModels(FlextModel):
         access_token: str = Field(..., description="JWT access token")
         refresh_token: str | None = Field(default=None, description="JWT refresh token")
         status: FlextAuthModels.SessionStatus = Field(
-            default="active",
+            default=FlextAuthModels.SessionStatus.ACTIVE,
             description="Session status",
         )
         ip_address: str | None = Field(default=None, description="Client IP address")
@@ -187,7 +188,9 @@ class FlextAuthModels(FlextModel):
             if not self.description:
                 return FlextResult[None].fail("Role description cannot be empty")
             if len(self.name) > FlextAuthModels.MAX_NAME_LENGTH:
-                return FlextResult[None].fail("Role name must be at most 100 characters")
+                return FlextResult[None].fail(
+                    "Role name must be at most 100 characters"
+                )
             if len(self.description) > FlextAuthModels.MAX_DESCRIPTION_LENGTH:
                 return FlextResult[None].fail(
                     "Role description must be at most 500 characters",

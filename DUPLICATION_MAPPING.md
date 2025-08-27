@@ -114,7 +114,7 @@ class InMemoryUserRepository(FlextProtocols.Domain.Repository[FlextUser]):
 - Custom email/password validation logic
 - Duplicated validation patterns across services
 
-**✅ FLEXT-CORE ALTERNATIVE**: `FlextValidationError` and validation protocols
+**✅ FLEXT-CORE ALTERNATIVE**: `FlextExceptions.ValidationError` and validation protocols
 - Centralized validation with standard error handling
 - Built-in validation predicates and composable patterns
 - Type-safe validation with FlextResult integration
@@ -128,7 +128,7 @@ class FlextAuthValidators:
         # Custom email validation
 
 # NEW: Use flext-core validation patterns
-from flext_core import FlextValidationError
+from flext_core import FlextExceptions.ValidationError
 
 def validate_email(email: str) -> FlextResult[None]:
     # Use centralized validation with FlextResult

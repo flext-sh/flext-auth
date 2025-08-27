@@ -11,8 +11,9 @@ from __future__ import annotations
 import asyncio
 from abc import abstractmethod
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
+import asyncpg  # type: ignore[import-untyped]
 from flext_core import (
     FlextEntityId,
     FlextProtocols,
@@ -20,17 +21,12 @@ from flext_core import (
     FlextTimestamp,
 )
 
-from .entities import FlextUser, FlextUserRole, FlextUserStatus
-from .flext_auth_types import SessionRepositoryProtocol, UserRepositoryProtocol
-from .models import FlextSession, FlextSessionStatus
-
-if TYPE_CHECKING:
-    import asyncpg  # type: ignore[import-untyped]
-else:
-    try:
-        import asyncpg
-    except ImportError:
-        asyncpg = None  # type: ignore[assignment]
+from flext_auth.entities import FlextUser, FlextUserRole, FlextUserStatus
+from flext_auth.flext_auth_types import (
+    SessionRepositoryProtocol,
+    UserRepositoryProtocol,
+)
+from flext_auth.models import FlextSession, FlextSessionStatus
 
 
 # FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Connection for database pool
@@ -131,6 +127,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
 
     def save(self, entity: FlextUser) -> FlextResult[FlextUser]:
         """Save user to REAL PostgreSQL database (sync interface with async implementation)."""
+
         async def _async_save() -> FlextResult[FlextUser]:
             try:
                 async with self._pool.acquire() as conn:
@@ -181,6 +178,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
 
     def get_by_id(self, entity_id: str) -> FlextResult[FlextUser | None]:
         """Get user by ID from REAL PostgreSQL database (sync interface with async implementation)."""
+
         async def _async_get_by_id() -> FlextResult[FlextUser | None]:
             try:
                 async with self._pool.acquire() as conn:
@@ -207,6 +205,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
 
     def get_by_username(self, username: str) -> FlextResult[FlextUser | None]:
         """Get user by username from REAL PostgreSQL database (sync interface with async implementation)."""
+
         async def _async_get_by_username() -> FlextResult[FlextUser | None]:
             try:
                 async with self._pool.acquire() as conn:
@@ -233,6 +232,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
 
     def get_by_email(self, email: str) -> FlextResult[FlextUser | None]:
         """Get user by email from REAL PostgreSQL database (sync interface with async implementation)."""
+
         async def _async_get_by_email() -> FlextResult[FlextUser | None]:
             try:
                 async with self._pool.acquire() as conn:
@@ -259,6 +259,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
 
     def delete(self, entity_id: str) -> FlextResult[None]:
         """Delete user from REAL PostgreSQL database (sync interface with async implementation)."""
+
         async def _async_delete() -> FlextResult[None]:
             try:
                 async with self._pool.acquire() as conn:
@@ -285,6 +286,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
         status: FlextUserStatus | None = None,
     ) -> FlextResult[list[FlextUser]]:
         """List users from REAL PostgreSQL database with pagination (sync interface with async implementation)."""
+
         async def _async_list_users() -> FlextResult[list[FlextUser]]:
             try:
                 async with self._pool.acquire() as conn:
@@ -329,6 +331,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
         status: FlextUserStatus | None = None,
     ) -> FlextResult[int]:
         """Count users in REAL PostgreSQL database (sync interface with async implementation)."""
+
         async def _async_count_users() -> FlextResult[int]:
             try:
                 async with self._pool.acquire() as conn:
@@ -370,6 +373,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
 
     def find_all(self) -> FlextResult[list[FlextUser]]:
         """Find all users - implementing core Repository pattern (sync interface with async implementation)."""
+
         async def _async_find_all() -> FlextResult[list[FlextUser]]:
             try:
                 async with self._pool.acquire() as conn:
@@ -394,6 +398,7 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
 
     def save(self, entity: FlextSession) -> FlextResult[FlextSession]:
         """Save session to REAL PostgreSQL database (sync interface with async implementation)."""
+
         async def _async_save() -> FlextResult[FlextSession]:
             try:
                 async with self._pool.acquire() as conn:
@@ -424,7 +429,9 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
                     return FlextResult[FlextSession].ok(entity)
 
             except Exception as e:
-                return FlextResult[FlextSession].fail(f"Database error saving session: {e}")
+                return FlextResult[FlextSession].fail(
+                    f"Database error saving session: {e}"
+                )
 
         try:
             return asyncio.run(_async_save())
@@ -433,6 +440,7 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
 
     def get_by_id(self, entity_id: str) -> FlextResult[FlextSession | None]:
         """Get session by ID from REAL PostgreSQL database (sync interface with async implementation)."""
+
         async def _async_get_by_id() -> FlextResult[FlextSession | None]:
             try:
                 async with self._pool.acquire() as conn:
@@ -459,6 +467,7 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
 
     def get_by_user_id(self, user_id: str) -> FlextResult[list[FlextSession]]:
         """Get all sessions for user from REAL PostgreSQL database (sync interface with async implementation)."""
+
         async def _async_get_by_user_id() -> FlextResult[list[FlextSession]]:
             try:
                 async with self._pool.acquire() as conn:
@@ -486,6 +495,7 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
 
     def delete(self, entity_id: str) -> FlextResult[None]:
         """Delete session from REAL PostgreSQL database (sync interface with async implementation)."""
+
         async def _async_delete() -> FlextResult[None]:
             try:
                 async with self._pool.acquire() as conn:
@@ -507,6 +517,7 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
 
     def cleanup_expired(self) -> FlextResult[int]:
         """Cleanup expired sessions from REAL PostgreSQL database (sync interface with async implementation)."""
+
         async def _async_cleanup_expired() -> FlextResult[int]:
             try:
                 async with self._pool.acquire() as conn:
@@ -532,6 +543,7 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
 
     def revoke_session(self, session_id: str) -> FlextResult[bool]:
         """Revoke a specific session by ID (sync interface with async implementation)."""
+
         async def _async_revoke_session() -> FlextResult[bool]:
             try:
                 async with self._pool.acquire() as conn:
@@ -560,6 +572,7 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
 
     def revoke_all_user_sessions(self, user_id: str) -> FlextResult[int]:
         """Revoke all sessions for a user (sync interface with async implementation)."""
+
         async def _async_revoke_all_user_sessions() -> FlextResult[int]:
             try:
                 async with self._pool.acquire() as conn:
@@ -577,7 +590,9 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
                     return FlextResult[int].ok(count)
 
             except Exception as e:
-                return FlextResult[int].fail(f"Database error revoking user sessions: {e}")
+                return FlextResult[int].fail(
+                    f"Database error revoking user sessions: {e}"
+                )
 
         try:
             return asyncio.run(_async_revoke_all_user_sessions())
@@ -605,6 +620,7 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
 
     def find_all(self) -> FlextResult[list[FlextSession]]:
         """Find all sessions - implementing core Repository pattern (sync interface with async implementation)."""
+
         async def _async_find_all() -> FlextResult[list[FlextSession]]:
             try:
                 async with self._pool.acquire() as conn:
@@ -622,6 +638,7 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
 
 def create_postgresql_pool(database_url: str) -> AsyncPGPool:
     """Create REAL PostgreSQL connection pool - proper typing (sync interface with async implementation)."""
+
     async def _async_create_pool() -> AsyncPGPool:
         if asyncpg is None:
             msg = "asyncpg is required for PostgreSQL support"
@@ -640,6 +657,7 @@ def create_postgresql_pool(database_url: str) -> AsyncPGPool:
 
 def initialize_database_schema(pool: AsyncPGPool) -> FlextResult[None]:
     """Initialize REAL database schemas - proper typing (sync interface with async implementation)."""
+
     async def _async_initialize_schema() -> FlextResult[None]:
         try:
             async with pool.acquire() as conn:

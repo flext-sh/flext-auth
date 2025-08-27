@@ -42,9 +42,15 @@ class MockFlextValidationError(Exception):
 
 def mock_get_logger(name):
     class MockLogger:
-        def warning(self, msg) -> None: pass
-        def info(self, msg) -> None: pass
-        def error(self, msg) -> None: pass
+        def warning(self, msg) -> None:
+            pass
+
+        def info(self, msg) -> None:
+            pass
+
+        def error(self, msg) -> None:
+            pass
+
     return MockLogger()
 
 
@@ -56,11 +62,13 @@ mock_flext_core.FlextResult = MockFlextResult
 mock_flext_core.FlextDomainService = MockFlextDomainService
 mock_flext_core.FlextConstants = MockFlextConstants
 mock_flext_core.FlextValue = MockFlextValue
-mock_flext_core.FlextValidationError = MockFlextValidationError
+mock_flext_core.FlextExceptions.ValidationError = MockFlextValidationError
 mock_flext_core.get_logger = mock_get_logger
 
 # Add other potential imports
-mock_flext_core.FlextAlreadyExistsError = type("FlextAlreadyExistsError", (Exception,), {})
+mock_flext_core.FlextExceptions.AlreadyExistsError = type(
+    "FlextExceptions.AlreadyExistsError", (Exception,), {}
+)
 
 # Inject the mock into sys.modules
 sys.modules["flext_core"] = mock_flext_core
@@ -90,7 +98,9 @@ try:
 
     # Test instance creation (with mock secret)
     try:
-        jwt_system = FlextJWTSystem(secret_key="test-secret-key-32-characters-long", algorithm="HS256")
+        jwt_system = FlextJWTSystem(
+            secret_key="test-secret-key-32-characters-long", algorithm="HS256"
+        )
 
         # Test that methods are available (just signature, not execution due to PyJWT dependency)
         assert hasattr(jwt_system, "generate_access_token")

@@ -100,12 +100,14 @@ class FlextAuthConfig(FlextBaseConfigModel):
     environment: str = Field(default="development", description="Environment name")
 
     # Authentication specific settings
-    password_min_length: int = Field(default=8,
+    password_min_length: int = Field(
+        default=8,
         description="Minimum password length",
         ge=4,
         le=256,
     )
-    password_max_length: int = Field(default=128,
+    password_max_length: int = Field(
+        default=128,
         description="Maximum password length",
         ge=8,
         le=1024,
@@ -113,45 +115,55 @@ class FlextAuthConfig(FlextBaseConfigModel):
     bcrypt_rounds: int = Field(default=12, description="BCrypt rounds", ge=4, le=20)
 
     # Security settings
-    max_login_attempts: int = Field(default=5,
+    max_login_attempts: int = Field(
+        default=5,
         description="Maximum login attempts",
         ge=1,
         le=10,
     )
-    lockout_duration_minutes: int = Field(default=30,
+    lockout_duration_minutes: int = Field(
+        default=30,
         description="Account lockout duration",
         ge=1,
         le=1440,
     )
-    session_timeout_hours: int = Field(default=24, description="Session timeout", ge=1, le=168)
-    max_concurrent_sessions: int = Field(default=5,
+    session_timeout_hours: int = Field(
+        default=24, description="Session timeout", ge=1, le=168
+    )
+    max_concurrent_sessions: int = Field(
+        default=5,
         description="Maximum concurrent sessions",
         ge=1,
         le=20,
     )
 
     # Rate limiting
-    rate_limit_per_minute: int = Field(default=60,
+    rate_limit_per_minute: int = Field(
+        default=60,
         description="General rate limit per minute",
         ge=1,
     )
-    auth_rate_limit_per_minute: int = Field(default=5,
+    auth_rate_limit_per_minute: int = Field(
+        default=5,
         description="Auth rate limit per minute",
         ge=1,
     )
 
     # JWT settings
-    access_token_expire_minutes: int = Field(default=30,
+    access_token_expire_minutes: int = Field(
+        default=30,
         description="JWT access token expiration minutes",
         ge=1,
         le=10080,  # 1 week max
     )
-    refresh_token_expire_days: int = Field(default=7,
+    refresh_token_expire_days: int = Field(
+        default=7,
         description="JWT refresh token expiration days",
         ge=1,
         le=90,  # 3 months max
     )
-    jwt_secret_key: str | None = Field(default=None,
+    jwt_secret_key: str | None = Field(
+        default=None,
         description="JWT secret key for token signing",
     )
 
@@ -354,10 +366,12 @@ class JWTConfig(FlextSettings):
 
     secret_key: str = Field(default="", description="JWT secret key")
     algorithm: str = Field(default="HS256", description="JWT algorithm")
-    access_token_expire_minutes: int = Field(default=30,
+    access_token_expire_minutes: int = Field(
+        default=30,
         description="Access token expiration minutes",
     )
-    refresh_token_expire_days: int = Field(default=7,
+    refresh_token_expire_days: int = Field(
+        default=7,
         description="Refresh token expiration days",
     )
 
@@ -410,30 +424,36 @@ class SecurityConfig(FlextSettings):
     """Security configuration with environment variables."""
 
     password_rounds: int = Field(default=12, description="BCrypt rounds", ge=4, le=20)
-    max_failed_attempts: int = Field(default=5,
+    max_failed_attempts: int = Field(
+        default=5,
         description="Max failed login attempts",
         ge=1,
         le=10,
     )
-    lockout_duration_minutes: int = Field(default=30,
+    lockout_duration_minutes: int = Field(
+        default=30,
         description="Account lockout duration",
         ge=1,
         le=1440,
     )
-    session_expire_hours: int = Field(default=24,
+    session_expire_hours: int = Field(
+        default=24,
         description="Session timeout hours",
         ge=1,
         le=168,
     )
-    max_concurrent_sessions: int = Field(default=5,
+    max_concurrent_sessions: int = Field(
+        default=5,
         description="Max concurrent sessions",
         ge=1,
         le=20,
     )
-    require_email_verification: bool = Field(default=False,
+    require_email_verification: bool = Field(
+        default=False,
         description="Require email verification",
     )
-    enable_2fa: bool = Field(default=False,
+    enable_2fa: bool = Field(
+        default=False,
         description="Enable two-factor authentication",
     )
 
@@ -453,7 +473,9 @@ class ServerConfig(FlextSettings):
 class AppConfig(FlextSettings):
     """Application configuration."""
 
-    name: str = Field(default="FLEXT Authentication API", description="Application name")
+    name: str = Field(
+        default="FLEXT Authentication API", description="Application name"
+    )
     version: str = Field(default="1.0.0", description="Application version")
     app_name: str = Field(default="FlextAuth", description="Application name")
     debug: bool = Field(default=False, description="Debug mode")
@@ -464,10 +486,7 @@ class AppConfig(FlextSettings):
         default_factory=DatabaseConfig,
         description="Database configuration",
     )
-    jwt: JWTConfig = Field(
-        default_factory=JWTConfig,
-        description="JWT configuration"
-    )
+    jwt: JWTConfig = Field(default_factory=JWTConfig, description="JWT configuration")
     security: SecurityConfig = Field(
         default_factory=SecurityConfig,
         description="Security configuration",

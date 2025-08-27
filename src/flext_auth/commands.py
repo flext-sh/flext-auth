@@ -10,19 +10,16 @@ NO MOCKS - only production command/handler implementations.
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, TypeVar, override
+from typing import TypeVar, override
 
 from flext_core import FlextCommands, FlextEntityId, FlextResult
 from pydantic import Field
 
-# Direct imports to avoid circular dependencies
-from .entities import FlextUser, FlextUserRole, FlextUserStatus
-from .flext_auth_types import UserRepositoryType
-from .utilities import FlextAuthUtilities
-
-if TYPE_CHECKING:
-    from .jwt import FlextJWTService
-    from .password import FlextPasswordService
+from flext_auth.entities import FlextUser, FlextUserRole, FlextUserStatus
+from flext_auth.flext_auth_types import UserRepositoryType
+from flext_auth.jwt import FlextJWTService
+from flext_auth.password import FlextPasswordService
+from flext_auth.utilities import FlextAuthUtilities
 
 # Type variables for command/response patterns
 UserT = TypeVar("UserT", bound=FlextUser)
@@ -311,7 +308,9 @@ class AuthenticateUserCommandHandler(
             # Get and validate user
             user_result = self._get_and_validate_user_for_auth(command)
             if not user_result.success:
-                return FlextResult[dict[str, object]].fail(user_result.error or "Authentication failed")
+                return FlextResult[dict[str, object]].fail(
+                    user_result.error or "Authentication failed"
+                )
 
             # Authenticate and generate token
             return self._authenticate_and_generate_token(command, user_result.value)

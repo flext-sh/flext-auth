@@ -14,12 +14,12 @@ from dataclasses import dataclass
 from flext_core import FlextDomainService, FlextResult
 from pydantic import Field
 
-from .entities import FlextUser
-from .models import FlextSecurityContext
-from .repositories import FlextSessionRepository, FlextUserRepository
-from .services import FlextJWTService, FlextPasswordService
-from .session import InMemorySessionRepository
-from .user import InMemoryUserRepository
+from flext_auth.entities import FlextUser
+from flext_auth.models import FlextSecurityContext
+from flext_auth.repositories import FlextSessionRepository, FlextUserRepository
+from flext_auth.services import FlextJWTService, FlextPasswordService
+from flext_auth.session import InMemorySessionRepository
+from flext_auth.user import InMemoryUserRepository
 
 # =============================================================================
 # SERVICE DEPENDENCIES AND CONFIGURATION
@@ -64,7 +64,9 @@ class FlextAuthService(FlextDomainService[str]):
     orchestrating domain services and maintaining clean architecture boundaries.
     """
 
-    dependencies: FlextAuthServiceDependencies = Field(..., description="Service dependencies")
+    dependencies: FlextAuthServiceDependencies = Field(
+        ..., description="Service dependencies"
+    )
 
     def model_post_init(self, __context: dict[str, object] | None = None, /) -> None:
         """Initialize authentication service with dependencies."""
@@ -85,11 +87,11 @@ class FlextAuthService(FlextDomainService[str]):
                     "get_user_by_username",
                     "validate_token",
                     "logout_user",
-                    "refresh_token"
+                    "refresh_token",
                 ],
                 "architecture": "clean_architecture",
                 "domain_driven_design": True,
-                "initialized_at": "runtime"
+                "initialized_at": "runtime",
             }
             return FlextResult[dict[str, object]].ok(service_info)
         except Exception as e:

@@ -541,11 +541,15 @@ class FlextPasswordResetToken(FlextEntity):
             if not self.token:
                 return FlextResult[None].fail("Password reset token cannot be empty")
             if len(self.token) < MIN_TOKEN_LENGTH:
-                return FlextResult[None].fail("Password reset token must be at least 32 characters")
+                return FlextResult[None].fail(
+                    "Password reset token must be at least 32 characters"
+                )
 
             # Validate expiration
             if self.expires_at <= datetime.now(UTC):
-                return FlextResult[None].fail("Password reset token expiration must be in the future")
+                return FlextResult[None].fail(
+                    "Password reset token expiration must be in the future"
+                )
 
             return FlextResult[None].ok(None)
         except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
@@ -579,14 +583,22 @@ class FlextEmailVerificationToken(FlextEntity):
 
             # Validate token
             if not self.token:
-                return FlextResult[None].fail("Email verification token cannot be empty")
+                return FlextResult[None].fail(
+                    "Email verification token cannot be empty"
+                )
             if len(self.token) < MIN_TOKEN_LENGTH:
-                return FlextResult[None].fail("Email verification token must be at least 32 characters")
+                return FlextResult[None].fail(
+                    "Email verification token must be at least 32 characters"
+                )
 
             # Validate expiration
             if self.expires_at <= datetime.now(UTC):
-                return FlextResult[None].fail("Email verification token expiration must be in the future")
+                return FlextResult[None].fail(
+                    "Email verification token expiration must be in the future"
+                )
 
             return FlextResult[None].ok(None)
         except (RuntimeError, ValueError, TypeError, KeyError, AttributeError) as e:
-            return FlextResult[None].fail(f"Email verification token validation error: {e}")
+            return FlextResult[None].fail(
+                f"Email verification token validation error: {e}"
+            )

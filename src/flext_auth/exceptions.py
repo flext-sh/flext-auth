@@ -12,7 +12,6 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import ClassVar
 
-# Use flext-core base exception system
 from flext_core import FlextExceptions, FlextResult
 
 
@@ -86,21 +85,16 @@ class FlextAuthExceptionSystem(FlextExceptions):
             # Authentication context
             username: str | None = None,
             user_id: str | None = None,
-
             # Token context
             token: str | None = None,
             token_type: str | None = None,
-
             # Session context
             session_id: str | None = None,
-
             # Permission context
             required_permission: str | None = None,
             required_role: str | None = None,
-
             # Validation context
             field: str | None = None,
-
             # Additional context
             context: dict[str, str | int | float | bool] | None = None,
         ) -> None:
@@ -109,7 +103,9 @@ class FlextAuthExceptionSystem(FlextExceptions):
 
             # Core error information
             self.message = message
-            self.error_code = str(error_code or FlextAuthExceptionSystem.ErrorCodes.AUTH_ERROR)
+            self.error_code = str(
+                error_code or FlextAuthExceptionSystem.ErrorCodes.AUTH_ERROR
+            )
 
             # Authentication context
             self.username = username
@@ -378,9 +374,7 @@ class FlextAuthExceptionSystem(FlextExceptions):
 
         # Convert generic exception to auth error
         auth_error = self.AuthError(
-            str(e),
-            self.ErrorCodes.AUTH_ERROR,
-            context=context or {}
+            str(e), self.ErrorCodes.AUTH_ERROR, context=context or {}
         )
         return auth_error.to_result()
 
@@ -436,7 +430,7 @@ FlextAuthErrorCodes = FlextAuthExceptionSystem.ErrorCodes
 FlextAuthError = FlextAuthExceptionSystem.AuthError
 
 # All exception types are now just the single consolidated class
-FlextAuthenticationError = FlextAuthExceptionSystem.AuthError
+FlextExceptions.AuthenticationError = FlextAuthExceptionSystem.AuthError
 FlextAuthorizationError = FlextAuthExceptionSystem.AuthError
 FlextInvalidCredentialsError = FlextAuthExceptionSystem.AuthError
 FlextAccountLockedError = FlextAuthExceptionSystem.AuthError
@@ -447,10 +441,10 @@ FlextExpiredTokenError = FlextAuthExceptionSystem.AuthError
 FlextSessionError = FlextAuthExceptionSystem.AuthError
 FlextInvalidSessionError = FlextAuthExceptionSystem.AuthError
 FlextExpiredSessionError = FlextAuthExceptionSystem.AuthError
-FlextPermissionError = FlextAuthExceptionSystem.AuthError
+FlextExceptions.PermissionError = FlextAuthExceptionSystem.AuthError
 FlextInsufficientPermissionError = FlextAuthExceptionSystem.AuthError
 FlextRoleRequiredError = FlextAuthExceptionSystem.AuthError
-FlextValidationError = FlextAuthExceptionSystem.AuthError
+FlextExceptions.ValidationError = FlextAuthExceptionSystem.AuthError
 FlextPasswordValidationError = FlextAuthExceptionSystem.AuthError
 
 __all__: list[str] = [  # noqa: RUF022
@@ -458,11 +452,10 @@ __all__: list[str] = [  # noqa: RUF022
     # Main consolidated exception class
     "FlextAuthError",
     "FlextAuthErrorCodes",
-
     # Backward compatibility aliases (all point to FlextAuthError)
     "FlextAccountInactiveError",
     "FlextAccountLockedError",
-    "FlextAuthenticationError",
+    "FlextExceptions.AuthenticationError",
     "FlextAuthorizationError",
     "FlextExpiredSessionError",
     "FlextExpiredTokenError",
@@ -471,9 +464,9 @@ __all__: list[str] = [  # noqa: RUF022
     "FlextInvalidSessionError",
     "FlextInvalidTokenError",
     "FlextPasswordValidationError",
-    "FlextPermissionError",
+    "FlextExceptions.PermissionError",
     "FlextRoleRequiredError",
     "FlextSessionError",
     "FlextTokenError",
-    "FlextValidationError",
+    "FlextExceptions.ValidationError",
 ]
