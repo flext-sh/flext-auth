@@ -14,10 +14,9 @@ from enum import StrEnum
 from typing import ClassVar, override
 
 from flext_core import (
-    FlextEntity,
+    FlextModels,
     FlextModel,
     FlextResult,
-    FlextTimestamp,
 )
 from pydantic import Field
 
@@ -90,10 +89,10 @@ class FlextAuthModels(FlextModel):
     # DOMAIN ENTITIES - Rich business objects nested inside consolidated class
     # =============================================================================
 
-    class Session(FlextEntity):
+    class Session(FlextModels.Entity):
         """User session entity nested inside consolidated class."""
 
-        # id is inherited from FlextEntity - no need to redefine
+        # id is inherited from FlextModels.Entity - no need to redefine
         user_id: str = Field(..., description="User ID owning this session")
         access_token: str = Field(..., description="JWT access token")
         refresh_token: str | None = Field(default=None, description="JWT refresh token")
@@ -104,7 +103,7 @@ class FlextAuthModels(FlextModel):
         ip_address: str | None = Field(default=None, description="Client IP address")
         user_agent: str | None = Field(default=None, description="Client user agent")
         expires_at: datetime = Field(..., description="Session expiration time")
-        created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
+        created_at: FlextModels.Timestamp = Field(default_factory=lambda: FlextModels.Timestamp(datetime.now(UTC)))
         last_accessed: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
         def is_valid(self) -> bool:
@@ -115,7 +114,7 @@ class FlextAuthModels(FlextModel):
 
         @override
         def validate_business_rules(self) -> FlextResult[None]:
-            """Validate business rules required by FlextEntity abstract method."""
+            """Validate business rules required by FlextModels.Entity abstract method."""
             if not self.id:
                 msg = "Session ID cannot be empty"
                 raise ValueError(msg)
@@ -130,10 +129,10 @@ class FlextAuthModels(FlextModel):
                 raise ValueError(msg)
             return FlextResult[None].ok(None)
 
-    class Permission(FlextEntity):
+    class Permission(FlextModels.Entity):
         """Permission entity nested inside consolidated class."""
 
-        # id is inherited from FlextEntity - no need to redefine
+        # id is inherited from FlextModels.Entity - no need to redefine
         name: str = Field(..., description="Permission name")
         description: str = Field(..., description="Permission description")
         resource: str = Field(..., description="Resource this permission applies to")
@@ -156,10 +155,10 @@ class FlextAuthModels(FlextModel):
                 raise ValueError(msg)
             return FlextResult[None].ok(None)
 
-    class Role(FlextEntity):
+    class Role(FlextModels.Entity):
         """Role entity with permissions nested inside consolidated class."""
 
-        # id is inherited from FlextEntity - no need to redefine
+        # id is inherited from FlextModels.Entity - no need to redefine
         name: str = Field(..., description="Role name")
         description: str = Field(..., description="Role description")
         permissions: list[FlextAuthModels.Permission] = Field(
@@ -170,7 +169,7 @@ class FlextAuthModels(FlextModel):
             default=False,
             description="Whether this is a system role",
         )
-        created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
+        created_at: FlextModels.Timestamp = Field(default_factory=lambda: FlextModels.Timestamp(datetime.now(UTC)))
 
         def has_permission(self, resource: str, action: str) -> bool:
             """Check if role has specific permission."""
@@ -180,7 +179,7 @@ class FlextAuthModels(FlextModel):
 
         @override
         def validate_business_rules(self) -> FlextResult[None]:
-            """Validate business rules required by FlextEntity abstract method."""
+            """Validate business rules required by FlextModels.Entity abstract method."""
             if not self.id:
                 return FlextResult[None].fail("Role ID cannot be empty")
             if not self.name:
@@ -202,22 +201,22 @@ class FlextAuthModels(FlextModel):
     # =============================================================================
 
     @property
-    def FlextSession(self) -> type[FlextAuthModels.Session]:  # noqa: N802
+    def FlextSession(self) -> type[FlextAuthModels.Session]:
         """Legacy compatibility property."""
         return self.Session
 
     @property
-    def FlextPermission(self) -> type[FlextAuthModels.Permission]:  # noqa: N802
+    def FlextPermission(self) -> type[FlextAuthModels.Permission]:
         """Legacy compatibility property."""
         return self.Permission
 
     @property
-    def FlextRole(self) -> type[FlextAuthModels.Role]:  # noqa: N802
+    def FlextRole(self) -> type[FlextAuthModels.Role]:
         """Legacy compatibility property."""
         return self.Role
 
     @property
-    def FlextSessionStatus(self) -> type[FlextAuthModels.SessionStatus]:  # noqa: N802
+    def FlextSessionStatus(self) -> type[FlextAuthModels.SessionStatus]:
         """Legacy compatibility property."""
         return self.SessionStatus
 
@@ -270,7 +269,7 @@ class InMemoryUserRepository(UserRepository):
                 locked_until=entity.locked_until,
                 last_login=entity.last_login,
                 created_at=entity.created_at,
-                updated_at=FlextTimestamp.now(),
+                updated_at=FlextModels.Timestamp(datetime.now(UTC)),
             )
 
             # Save user
@@ -388,7 +387,7 @@ FlextSessionStatus = FlextAuthModels.SessionStatus
 
 
 # Add missing legacy classes that are imported by other modules
-class FlextLoginAttempt(FlextEntity):
+class FlextLoginAttempt(FlextModels.Entity):
     """Login attempt tracking - legacy compatibility class."""
 
     username: str = Field(..., description="Username attempted")
@@ -400,7 +399,7 @@ class FlextLoginAttempt(FlextEntity):
 
     @override
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate business rules required by FlextEntity abstract method."""
+        """Validate business rules required by FlextModels.Entity abstract method."""
         if not self.id:
             msg = "Login attempt ID cannot be empty"
             raise ValueError(msg)

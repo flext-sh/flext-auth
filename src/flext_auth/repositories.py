@@ -15,10 +15,9 @@ from typing import cast
 
 import asyncpg  # type: ignore[import-untyped]
 from flext_core import (
-    FlextEntityId,
+    FlextModels,
     FlextProtocols,
     FlextResult,
-    FlextTimestamp,
 )
 
 from flext_auth.entities import FlextUser, FlextUserRole, FlextUserStatus
@@ -31,7 +30,7 @@ from flext_auth.models import FlextSession, FlextSessionStatus
 
 # FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Connection for database pool
 class AsyncPGPool(FlextProtocols.Infrastructure.Connection):
-    """Protocol for asyncpg connection pool - REAL typing without Any.
+    """Protocol for asyncpg connection pool - REAL typing without object.
 
     FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Infrastructure.Connection
     to eliminate Protocol duplication and ensure architectural compliance.
@@ -67,7 +66,7 @@ class AsyncPGConnectionContext(FlextProtocols.Infrastructure.Connection):
 
 # FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Connection for database connection
 class AsyncPGConnection(FlextProtocols.Infrastructure.Connection):
-    """Protocol for asyncpg connection - REAL typing without Any.
+    """Protocol for asyncpg connection - REAL typing without object.
 
     FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Infrastructure.Connection
     to eliminate Protocol duplication and ensure architectural compliance.
@@ -356,7 +355,7 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
     def _row_to_user(self, row: AsyncPGRecord) -> FlextUser:
         """Convert database row to FlextUser entity - REAL typing."""
         return FlextUser(
-            id=FlextEntityId(str(row["id"])),
+            id=FlextModels.EntityId(str(row["id"])),
             username=str(row["username"]),
             email=str(row["email"]),
             password_hash=str(row["password_hash"]),
@@ -365,10 +364,10 @@ class SimplePostgreSQLUserRepository(FlextUserRepository):
             failed_login_attempts=cast("int", row["failed_login_attempts"] or 0),
             locked_until=cast("datetime | None", row["locked_until"]),
             last_login=cast("datetime | None", row["last_login"]),
-            created_at=FlextTimestamp(cast("datetime", row["created_at"])),
-            updated_at=FlextTimestamp(cast("datetime", row["updated_at"]))
+            created_at=FlextModels.Timestamp(cast("datetime", row["created_at"])),
+            updated_at=FlextModels.Timestamp(cast("datetime", row["updated_at"]))
             if row["updated_at"]
-            else FlextTimestamp.now(),
+            else FlextModels.Timestamp(datetime.now(UTC)),
         )
 
     def find_all(self) -> FlextResult[list[FlextUser]]:
@@ -606,7 +605,7 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
     def _row_to_session(self, row: AsyncPGRecord) -> FlextSession:
         """Convert database row to FlextSession entity - REAL typing."""
         return FlextSession(
-            id=FlextEntityId(str(row["id"])),
+            id=FlextModels.EntityId(str(row["id"])),
             user_id=str(row["user_id"]),
             access_token=str(row["access_token"]),
             refresh_token=str(row["refresh_token"]) if row["refresh_token"] else None,
@@ -614,7 +613,7 @@ class SimplePostgreSQLSessionRepository(FlextSessionRepository):
             ip_address=str(row["ip_address"]) if row["ip_address"] else None,
             user_agent=str(row["user_agent"]) if row["user_agent"] else None,
             expires_at=cast("datetime", row["expires_at"]),
-            created_at=FlextTimestamp(cast("datetime", row["created_at"])),
+            created_at=FlextModels.Timestamp(cast("datetime", row["created_at"])),
             last_accessed=cast("datetime", row["last_accessed"]),
         )
 

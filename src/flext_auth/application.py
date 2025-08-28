@@ -12,7 +12,7 @@ import uuid
 from datetime import UTC, datetime, timedelta
 from typing import override
 
-from flext_core import FlextDomainService, FlextEntityId, FlextResult
+from flext_core import FlextDomainService, FlextModels, FlextResult
 
 from flext_auth.constants import FlextAuthSemanticConstants
 from flext_auth.entities import (
@@ -154,7 +154,7 @@ class FlextAuthenticationService(FlextDomainService[str]):
             password_hash = hash_result.value.value if hash_result.value else ""
 
             user = FlextUser(
-                id=FlextEntityId(str(uuid.uuid4())),
+                id=FlextModels.EntityId(str(uuid.uuid4())),
                 username=username,
                 email=email,
                 password_hash=password_hash,
@@ -266,7 +266,7 @@ class FlextSessionService(FlextDomainService[str]):
                 )
 
             session = FlextSession(
-                id=FlextEntityId(str(uuid.uuid4())),
+                id=FlextModels.EntityId(str(uuid.uuid4())),
                 user_id=str(user.id),
                 access_token=secrets.token_urlsafe(32),
                 refresh_token=secrets.token_urlsafe(32),
@@ -396,7 +396,7 @@ class FlextAuthorizationService(FlextDomainService[str]):
                 return FlextResult[FlextRole].fail("Role name is required")
 
             role = FlextRole(
-                id=FlextEntityId(str(uuid.uuid4())),
+                id=FlextModels.EntityId(str(uuid.uuid4())),
                 name=name,
                 description=description,
                 permissions=permissions or [],

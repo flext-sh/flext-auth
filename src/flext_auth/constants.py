@@ -68,16 +68,22 @@ class FlextAuthConstants(FlextConstants):
     # SESSION CONSTANTS - Session management settings
     # =============================================================================
 
-    DEFAULT_SESSION_TIMEOUT_HOURS: ClassVar[int] = FlextConstants.Auth.DEFAULT_SESSION_TIMEOUT // 3600  # Convert seconds to hours
+    DEFAULT_SESSION_TIMEOUT_HOURS: ClassVar[int] = (
+        FlextConstants.Auth.DEFAULT_SESSION_TIMEOUT // 3600
+    )  # Convert seconds to hours
     MAX_CONCURRENT_SESSIONS: ClassVar[int] = FlextConstants.Auth.MAX_SESSIONS_PER_USER
 
     # =============================================================================
     # TOKEN CONSTANTS - JWT and token configuration
     # =============================================================================
 
-    DEFAULT_ACCESS_TOKEN_MINUTES: ClassVar[int] = FlextConstants.Auth.DEFAULT_TOKEN_EXPIRY // 60  # Convert seconds to minutes
-    DEFAULT_REFRESH_TOKEN_DAYS: ClassVar[int] = FlextConstants.Auth.MAX_TOKEN_EXPIRY // 86400  # Convert seconds to days
-    JWT_ALGORITHM: ClassVar[str] = "HS256"  # noqa: S105
+    DEFAULT_ACCESS_TOKEN_MINUTES: ClassVar[int] = (
+        FlextConstants.Auth.DEFAULT_TOKEN_EXPIRY // 60
+    )  # Convert seconds to minutes
+    DEFAULT_REFRESH_TOKEN_DAYS: ClassVar[int] = (
+        FlextConstants.Auth.MAX_TOKEN_EXPIRY // 86400
+    )  # Convert seconds to days
+    JWT_ALGORITHM: ClassVar[str] = "HS256"
 
     # Secure secret generation with environment variable support
     DEV_JWT_SECRET: ClassVar[str] = os.getenv(
@@ -109,10 +115,10 @@ class FlextAuthConstants(FlextConstants):
     # TOKEN TYPE CONSTANTS - Token type definitions
     # =============================================================================
 
-    TOKEN_TYPE_ACCESS: ClassVar[str] = "access"  # noqa: S105
-    TOKEN_TYPE_REFRESH: ClassVar[str] = "refresh"  # noqa: S105
-    TOKEN_TYPE_RESET: ClassVar[str] = "reset"  # noqa: S105
-    TOKEN_TYPE_VERIFICATION: ClassVar[str] = "verification"  # noqa: S105
+    TOKEN_TYPE_ACCESS: ClassVar[str] = "access"
+    TOKEN_TYPE_REFRESH: ClassVar[str] = "refresh"
+    TOKEN_TYPE_RESET: ClassVar[str] = "reset"
+    TOKEN_TYPE_VERIFICATION: ClassVar[str] = "verification"
 
     # =============================================================================
     # BACKWARD COMPATIBILITY - Legacy nested class access patterns
@@ -146,7 +152,7 @@ class FlextAuthConstants(FlextConstants):
 
         DEFAULT_ACCESS_TOKEN_MINUTES = 30
         DEFAULT_REFRESH_TOKEN_DAYS = 7
-        JWT_ALGORITHM = "HS256"  # noqa: S105
+        JWT_ALGORITHM = "HS256"
         DEV_JWT_SECRET = os.getenv("DEV_JWT_SECRET", secrets.token_urlsafe(32))
         DEFAULT_JWT_SECRET = os.getenv(
             "FLEXT_AUTH_JWT_SECRET_KEY", secrets.token_urlsafe(32)
@@ -170,10 +176,10 @@ class FlextAuthConstants(FlextConstants):
     class TokenTypes:
         """Backward compatibility nested class for TokenTypes constants."""
 
-        ACCESS = "access"  # noqa: S105
-        REFRESH = "refresh"  # noqa: S105
-        RESET = "reset"  # noqa: S105
-        VERIFICATION = "verification"  # noqa: S105
+        ACCESS = "access"
+        REFRESH = "refresh"
+        RESET = "reset"
+        VERIFICATION = "verification"
 
     MIN_PASSWORD_LENGTH: int = FlextConstants.Validation.MIN_PASSWORD_LENGTH
     MAX_PASSWORD_LENGTH: int = FlextConstants.Validation.MAX_PASSWORD_LENGTH

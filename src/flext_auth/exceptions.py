@@ -31,7 +31,7 @@ class FlextAuthExceptionSystem(FlextExceptions):
 
     # Default error messages
     DEFAULT_AUTH_ERROR_MESSAGE: ClassVar[str] = "Authentication error occurred"
-    DEFAULT_TOKEN_ERROR_MESSAGE: ClassVar[str] = "Token validation failed"  # noqa: S105
+    DEFAULT_TOKEN_ERROR_MESSAGE: ClassVar[str] = "Token validation failed"
     DEFAULT_SESSION_ERROR_MESSAGE: ClassVar[str] = "Session validation failed"
 
     # ==========================================================================
@@ -52,9 +52,9 @@ class FlextAuthExceptionSystem(FlextExceptions):
         ACCOUNT_INACTIVE = "AUTH_ACCOUNT_INACTIVE"
 
         # Token errors
-        TOKEN_ERROR = "AUTH_TOKEN_ERROR"  # noqa: S105
-        INVALID_TOKEN = "AUTH_INVALID_TOKEN"  # noqa: S105
-        EXPIRED_TOKEN = "AUTH_TOKEN_EXPIRED"  # noqa: S105
+        TOKEN_ERROR = "AUTH_TOKEN_ERROR"
+        INVALID_TOKEN = "AUTH_INVALID_TOKEN"
+        EXPIRED_TOKEN = "AUTH_TOKEN_EXPIRED"
 
         # Session errors
         SESSION_ERROR = "AUTH_SESSION_ERROR"
@@ -68,7 +68,7 @@ class FlextAuthExceptionSystem(FlextExceptions):
 
         # Validation errors
         VALIDATION_ERROR = "AUTH_VALIDATION_ERROR"
-        PASSWORD_INVALID = "AUTH_PASSWORD_INVALID"  # noqa: S105
+        PASSWORD_INVALID = "AUTH_PASSWORD_INVALID"
 
     class AuthError(Exception):
         """NESTED CONSOLIDATED authentication exception handling all authentication scenarios.
@@ -380,7 +380,7 @@ class FlextAuthExceptionSystem(FlextExceptions):
 
     def validate_and_raise(
         self,
-        condition: bool,  # noqa: FBT001
+        condition: bool,
         error_message: str,
         error_code: ErrorCodes | str | None = None,
         *,
@@ -447,7 +447,7 @@ FlextRoleRequiredError = FlextAuthExceptionSystem.AuthError
 FlextExceptions = FlextAuthExceptionSystem.AuthError
 FlextPasswordValidationError = FlextAuthExceptionSystem.AuthError
 
-__all__: list[str] = [  # noqa: RUF022
+__all__: list[str] = [
     "FlextAuthExceptionSystem",
     # Main consolidated exception class
     "FlextAuthError",

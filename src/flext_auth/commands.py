@@ -12,7 +12,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TypeVar, override
 
-from flext_core import FlextCommands, FlextEntityId, FlextResult
+from flext_core import FlextCommands, FlextModels, FlextResult
 from pydantic import Field
 
 from flext_auth.entities import FlextUser, FlextUserRole, FlextUserStatus
@@ -224,7 +224,7 @@ class CreateUserCommandHandler(
 
         # Create user entity - REAL domain entity
         user = FlextUser(
-            id=FlextEntityId(f"user_{command.username}"),
+            id=FlextModels.EntityId(f"user_{command.username}"),
             username=command.username,
             email=command.email,
             password_hash=str(

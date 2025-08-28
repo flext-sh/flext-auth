@@ -95,7 +95,7 @@ class FlextAuthContainer(FlextContainer):
         if hasattr(config, "environment"):
             config.environment = "development"
         if hasattr(config, "jwt_secret_key"):
-            config.jwt_secret_key = "dev-secret-key-change-in-production"  # noqa: S105
+            config.jwt_secret_key = "dev-secret-key-change-in-production"
         return config
 
     def register_core_services(
@@ -164,7 +164,7 @@ class FlextAuthContainer(FlextContainer):
         jwt_service: FlextJWTService,
     ) -> FlextResult[None]:
         """Register main auth service."""
-        from .auth import FlextAuthService  # noqa: PLC0415
+        from .auth import FlextAuthService
 
         # Use the new create_default method instead of old constructor
         auth_service = FlextAuthService.create_default(
@@ -199,7 +199,7 @@ class FlextAuthContainer(FlextContainer):
                 )
 
             # Register authentication command handlers
-            from .commands import register_auth_commands  # noqa: PLC0415
+            from .commands import register_auth_commands
 
             handler_register_result = register_auth_commands(
                 command_bus,
@@ -312,7 +312,7 @@ class FlextAuthContainer(FlextContainer):
                 services["session_repository"] = session_repo_fallback.value
 
         # Get auth service (TYPE_CHECKING import resolved at runtime)
-        from .auth import FlextAuthService  # noqa: PLC0415
+        from .auth import FlextAuthService
 
         auth_result = get_typed(self.AUTH_SERVICE_KEY, FlextAuthService)
         if auth_result.success:
@@ -331,7 +331,7 @@ class FlextAuthContainer(FlextContainer):
 
     def get_auth_service(self) -> FlextResult[FlextAuthService]:
         """Get authenticated FlextAuthService from this container."""
-        from .auth import FlextAuthService  # noqa: PLC0415
+        from .auth import FlextAuthService
 
         return get_typed(self.AUTH_SERVICE_KEY, FlextAuthService)
 

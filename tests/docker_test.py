@@ -59,7 +59,7 @@ def test_basic_functionality() -> bool | None:
             return False
 
         # Test password hashing
-        password = "TestPassword123!"  # noqa: S105
+        password = "TestPassword123!"
         flext_auth_hash_password(password, rounds=4)  # Fast for testing
 
         # Test email validation

@@ -12,7 +12,7 @@ from __future__ import annotations
 import time
 
 # Import everything through public API only - no internal module imports
-from flext_core import FlextEntityId
+from flext_core import FlextModels
 
 from flext_auth import (
     FlextAuthConfig,
@@ -100,7 +100,7 @@ class TestRealAuthentication:
         """Test real user entity creation with domain validation."""
         # Create real user entity
         user: FlextUser = FlextUser(
-            id=FlextEntityId("user-123"),
+            id=FlextModels.EntityId("user-123"),
             username="testuser",
             email="test@example.com",
             password_hash="$2b$12$abcdefghijklmnopqrstuvwxyz",
@@ -116,7 +116,7 @@ class TestRealAuthentication:
 
         # Test real immutable updates - create locked user manually to test unlock
         locked_user = FlextUser(
-            id=FlextEntityId("user-456"),
+            id=FlextModels.EntityId("user-456"),
             username="lockeduser",
             email="locked@example.com",
             password_hash="$2b$12$abcdefghijklmnopqrstuvwxyz",

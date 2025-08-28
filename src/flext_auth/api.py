@@ -12,7 +12,7 @@ import secrets
 import string
 from datetime import UTC, datetime
 
-from flext_core import FlextConstants, FlextEntityId, FlextResult
+from flext_core import FlextConstants, FlextModels, FlextResult
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.container import (
@@ -47,7 +47,7 @@ class FlextAuth:
     ) -> None:
         """Initialize FlextAuth using FlextContainer DI to eliminate duplications."""
         # Store the container instance to avoid global container issues
-        from .container import FlextAuthContainer  # noqa: PLC0415
+        from .container import FlextAuthContainer
 
         self._container = FlextAuthContainer()
 
@@ -353,7 +353,7 @@ class FlextAuth:
 
         # Create user entity
         user = FlextUser(
-            id=FlextEntityId(f"user_{username}"),
+            id=FlextModels.EntityId(f"user_{username}"),
             username=username,
             email=email,
             password_hash=hash_result.value.value,  # FlextHashedPassword.value
@@ -522,14 +522,14 @@ type FlextAuthClaims = dict[str, object]
 
 
 # Constants for JWT security - noqa: S105 (dev secret is intentional)
-DEFAULT_JWT_SECRET = "dev-secret-key-change-in-production"  # noqa: S105
+DEFAULT_JWT_SECRET = "dev-secret-key-change-in-production"
 MIN_PASSWORD_LENGTH_CONSTANT = 8
 
 
 def flext_auth_quick_start(
     *,
     jwt_secret: str = DEFAULT_JWT_SECRET,
-    create_REDACTED_LDAP_BIND_PASSWORD: bool = True,  # noqa: ARG001
+    create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
 ) -> FlextAuth:
     """Quick start helper using FlextAuth API.
 
@@ -695,7 +695,7 @@ def flext_auth_validate_password_strength(password: str) -> FlextResult[bool]:
 
     # Check minimum length
     if len(password) < min_password_length:
-        return FlextResult[bool].ok(False)  # noqa: FBT003
+        return FlextResult[bool].ok(False)
 
     # Check for required character types
     has_upper = any(c.isupper() for c in password)

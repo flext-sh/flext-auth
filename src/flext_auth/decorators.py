@@ -623,7 +623,7 @@ class FlextAuthMixin:
                 )
             else:
                 # Use default configuration but cannot create service without deps
-                from flext_auth import FlextAuthConfig  # noqa: PLC0415
+                from flext_auth import FlextAuthConfig
 
                 self._auth_config = FlextAuthConfig()
                 # Set development defaults
@@ -843,7 +843,7 @@ class FlextAuthMixin:
             # Handle token string by decoding to user data
             if isinstance(token_or_user_data, str):
                 # Decode JWT token to get user data
-                from flext_auth import FlextJWTService  # noqa: PLC0415
+                from flext_auth import FlextJWTService
 
                 jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
                 result = jwt_service.verify_token(token_or_user_data)

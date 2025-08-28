@@ -12,7 +12,7 @@ import re
 from datetime import UTC, datetime
 from typing import override
 
-from flext_core import FlextConstants, FlextExceptions, FlextResult, FlextValue
+from flext_core import FlextConstants, FlextExceptions, FlextResult, FlextModels
 from pydantic import EmailStr, Field, field_validator
 
 # Constants for validation limits
@@ -29,7 +29,7 @@ MIN_PASSWORD_RESET_TOKEN_LENGTH = 32
 MIN_EMAIL_VERIFICATION_TOKEN_LENGTH = 32
 
 
-class FlextUsername(FlextValue):
+class FlextUsername(FlextModels.Value):
     """Username value object with validation."""
 
     value: str = Field(..., min_length=3, max_length=50)
@@ -70,7 +70,7 @@ class FlextUsername(FlextValue):
         return FlextResult[None].ok(None)
 
 
-class FlextUserEmail(FlextValue):
+class FlextUserEmail(FlextModels.Value):
     """Email value object with validation."""
 
     value: EmailStr
@@ -90,7 +90,7 @@ class FlextUserEmail(FlextValue):
         return FlextResult[None].ok(None)
 
 
-class FlextPlainPassword(FlextValue):
+class FlextPlainPassword(FlextModels.Value):
     """Plain password value object with validation."""
 
     value: str = Field(..., min_length=8, max_length=128)
@@ -169,7 +169,7 @@ class FlextPlainPassword(FlextValue):
         return errors
 
 
-class FlextHashedPassword(FlextValue):
+class FlextHashedPassword(FlextModels.Value):
     """Hashed password value object."""
 
     value: str = Field(..., min_length=1)  # Allow validation in validate_business_rules
@@ -205,7 +205,7 @@ class FlextHashedPassword(FlextValue):
         return FlextResult[None].ok(None)
 
 
-class FlextAuthToken(FlextValue):
+class FlextAuthToken(FlextModels.Value):
     """Authentication token value object."""
 
     value: str = Field(...)  # No min_length to allow custom validation
@@ -237,7 +237,7 @@ class FlextAuthToken(FlextValue):
 # =============================================================================
 
 
-class FlextRefreshToken(FlextValue):
+class FlextRefreshToken(FlextModels.Value):
     """Refresh token value object using flext-core patterns."""
 
     value: str = Field(..., description="Refresh token value")
@@ -264,7 +264,7 @@ class FlextRefreshToken(FlextValue):
         return FlextResult[None].ok(None)
 
 
-class FlextSessionToken(FlextValue):
+class FlextSessionToken(FlextModels.Value):
     """Session token value object using flext-core patterns."""
 
     value: str = Field(..., description="Session token value")
@@ -291,7 +291,7 @@ class FlextSessionToken(FlextValue):
         return FlextResult[None].ok(None)
 
 
-class FlextIPAddress(FlextValue):
+class FlextIPAddress(FlextModels.Value):
     """IP address value object with validation."""
 
     value: str = Field(..., min_length=7, max_length=45)  # IPv4 or IPv6
@@ -324,7 +324,7 @@ class FlextIPAddress(FlextValue):
             return FlextResult[None].fail(msg)
 
 
-class FlextUserAgent(FlextValue):
+class FlextUserAgent(FlextModels.Value):
     """User agent value object."""
 
     value: str = Field(
@@ -365,7 +365,7 @@ class FlextUserAgent(FlextValue):
         return FlextResult[None].ok(None)
 
 
-class FlextPasswordResetToken(FlextValue):
+class FlextPasswordResetToken(FlextModels.Value):
     """Password reset token value object using flext-core patterns."""
 
     value: str = Field(..., description="Password reset token value", min_length=32)
@@ -392,7 +392,7 @@ class FlextPasswordResetToken(FlextValue):
         return FlextResult[None].ok(None)
 
 
-class FlextEmailVerificationToken(FlextValue):
+class FlextEmailVerificationToken(FlextModels.Value):
     """Email verification token value object using flext-core patterns."""
 
     value: str = Field(..., description="Email verification token value", min_length=32)
@@ -419,7 +419,7 @@ class FlextEmailVerificationToken(FlextValue):
         return FlextResult[None].ok(None)
 
 
-class FlextJWTClaims(FlextValue):
+class FlextJWTClaims(FlextModels.Value):
     """JWT claims value object."""
 
     sub: str = Field(..., description="Subject (user ID)")
@@ -484,7 +484,7 @@ class FlextJWTClaims(FlextValue):
         return [error_msg for condition, error_msg in validators if condition()]
 
 
-class FlextSecurityContext(FlextValue):
+class FlextSecurityContext(FlextModels.Value):
     """Security context for current request."""
 
     user_id: str

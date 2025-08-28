@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_core import FlextResult, FlextTimestamp
+from flext_core import FlextResult, FlextModels
 
 from flext_auth.entities import FlextUser, FlextUserStatus
 from flext_auth.repositories import FlextUserRepository
@@ -53,7 +53,7 @@ class InMemoryUserRepository(FlextUserRepository):
                 locked_until=entity.locked_until,
                 last_login=entity.last_login,
                 created_at=entity.created_at,
-                updated_at=FlextTimestamp.now(),
+                updated_at=FlextModels.Timestamp(datetime.now(UTC)),
             )
 
             # Save user
@@ -195,7 +195,7 @@ class InMemoryUserRepository(FlextUserRepository):
                 locked_until=entity.locked_until,
                 last_login=entity.last_login,
                 created_at=entity.created_at,
-                updated_at=FlextTimestamp.now(),
+                updated_at=FlextModels.Timestamp(datetime.now(UTC)),
             )
 
             # Save user

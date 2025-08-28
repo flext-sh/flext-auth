@@ -16,12 +16,11 @@ from typing import cast, override
 
 from flext_core import (
     FlextDomainService,
-    FlextEntityId,
+    FlextModels,
     FlextExceptions,
     FlextLogger,
     FlextProtocols,
     FlextResult,
-    FlextTimestamp,
 )
 
 from flext_auth.constants import FlextAuthConstants, FlextAuthSemanticConstants
@@ -364,7 +363,7 @@ class DefaultAuthenticationStrategy(AuthenticationStrategy):
 
         # Create and save session
         session = Session(
-            id=FlextEntityId(session_id),
+            id=FlextModels.EntityId(session_id),
             user_id=str(user.id),
             access_token=access_token,
             refresh_token=refresh_token,
@@ -566,7 +565,7 @@ class DefaultSessionManagementStrategy(SessionManagementStrategy):
     ) -> FlextResult[Session]:
         """Create new session for user."""
         session = Session(
-            id=FlextEntityId(secrets.token_urlsafe(32)),
+            id=FlextModels.EntityId(secrets.token_urlsafe(32)),
             user_id=str(user.id),
             access_token="",
             refresh_token=None,
@@ -622,7 +621,7 @@ class DefaultUserManagementStrategy(UserManagementStrategy):
             return FlextResult[User].fail("Password hashing returned no data")
 
         user = User(
-            id=FlextEntityId(f"user_{registration_data.username}"),
+            id=FlextModels.EntityId(f"user_{registration_data.username}"),
             username=registration_data.username,
             email=registration_data.email,
             # Extract from FlextHashedPassword
@@ -1313,7 +1312,7 @@ class FlextAuthService(FlextDomainService[str]):
             locked_until=user.locked_until,
             last_login=user.last_login,
             created_at=user.created_at,
-            updated_at=FlextTimestamp(datetime.now(UTC)),
+            updated_at=FlextModels.Timestamp(datetime.now(UTC)),
         )
 
         save_result = await self.user_repo.save(updated_user)
@@ -1527,7 +1526,7 @@ class FlextAuthService(FlextDomainService[str]):
 
         # Create user entity
         user = User(
-            id=FlextEntityId(secrets.token_urlsafe(16)),
+            id=FlextModels.EntityId(secrets.token_urlsafe(16)),
             username=registration_data.username,
             email=email_vo.value,
             password_hash=hash_result.value.value if hash_result.value else "",
@@ -1676,7 +1675,7 @@ class FlextAuthService(FlextDomainService[str]):
                     ),
                     last_login=user.last_login,
                     created_at=user.created_at,
-                    updated_at=FlextTimestamp(datetime.now(UTC)),
+                    updated_at=FlextModels.Timestamp(datetime.now(UTC)),
                 )
 
             save_result = await self.user_repo.save(user)
@@ -1705,7 +1704,7 @@ class FlextAuthService(FlextDomainService[str]):
         try:
             # Create login attempt entity for potential audit repository
             LoginAttempt(
-                id=FlextEntityId(secrets.token_urlsafe(16)),
+                id=FlextModels.EntityId(secrets.token_urlsafe(16)),
                 username=attempt_data.username,
                 ip_address=attempt_data.ip_address,
                 user_agent=attempt_data.user_agent,

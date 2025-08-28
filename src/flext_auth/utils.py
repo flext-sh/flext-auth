@@ -15,7 +15,7 @@ import secrets
 import string
 from datetime import UTC, datetime, timedelta
 
-from flext_core import FlextResult
+from flext_core import FlextResult, FlextUtilities
 
 from flext_auth.typings import FlextAuthValidationResultType
 
@@ -226,26 +226,17 @@ class FlextAuthUtils:
     @staticmethod
     def safe_str(value: object) -> str:
         """Safely convert value to string."""
-        if value is None:
-            return ""
-        return str(value)
+        return FlextUtilities.TextProcessor.safe_string(value)
 
     @staticmethod
     def safe_int(value: object, default: int = 0) -> int:
         """Safely convert value to integer."""
-        try:
-            return int(str(value)) if value is not None else default
-        except (ValueError, TypeError):
-            return default
+        return FlextUtilities.Conversions.safe_int(value, default)
 
     @staticmethod
     def safe_bool(value: object, *, default: bool = False) -> bool:
         """Safely convert value to boolean."""
-        if isinstance(value, bool):
-            return value
-        if isinstance(value, str):
-            return value.lower() in {"true", "1", "yes", "on"}
-        return bool(value) if value is not None else default
+        return FlextUtilities.Conversions.safe_bool(value, default=default)
 
     # =============================================================================
     # DICTIONARY UTILITIES - Methods from FlextAuthDictUtils

@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import override
 
-from flext_core import FlextAggregateRoot, FlextEntity, FlextResult, FlextTimestamp
+from flext_core import FlextAggregates, FlextModels, FlextResult
 from pydantic import Field
 
 # Constants for magic numbers
@@ -44,7 +44,7 @@ class FlextUserRole(StrEnum):
     MODERATOR = "moderator"
 
 
-class FlextUser(FlextAggregateRoot):
+class FlextUser(FlextModels.Entity):
     """Rich user entity with authentication business logic and domain rules.
 
     This entity represents a user account in the FLEXT authentication system,
@@ -67,7 +67,7 @@ class FlextUser(FlextAggregateRoot):
 
     TODO (Based on docs/TODO.md):
       - [x] HIGH: Add domain events for user operations (Issue #4) - COMPLETED
-      - [x] HIGH: Migrate to FlextAggregateRoot (Issue #4) - COMPLETED
+      - [x] HIGH: Migrate to FlextAggregates (Issue #4) - COMPLETED
       - [ ] MEDIUM: Add audit trail fields (Issue #11)
       - [ ] LOW: Add user preferences and metadata (Issue #12)
 
@@ -109,7 +109,7 @@ class FlextUser(FlextAggregateRoot):
 
     """
 
-    # id is inherited from FlextEntity - no need to redefine
+    # id is inherited from FlextModels.Entity - no need to redefine
     username: str = Field(..., description="Username")
     email: str = Field(..., description="User email address")
     password_hash: str = Field(..., description="Bcrypt password hash")
@@ -131,8 +131,8 @@ class FlextUser(FlextAggregateRoot):
         default=None,
         description="Last successful login",
     )
-    created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
-    updated_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     def is_active(self) -> bool:
         """Check if user account is active."""
@@ -158,23 +158,17 @@ class FlextUser(FlextAggregateRoot):
             locked_until=None,
             last_login=self.last_login,
             created_at=self.created_at,
-            updated_at=FlextTimestamp.now(),
+            updated_at=datetime.now(UTC),
         )
 
         # Emit domain event for account unlock
-        event_result = new_user.add_domain_event(
-            "user.account_unlocked",
-            {
-                "user_id": str(self.id),
-                "username": self.username,
-                "previous_failed_attempts": self.failed_login_attempts,
-                "unlocked_at": str(new_user.updated_at),
-            },
-        )
-        # Log if event fails but don't block the operation
-        if not event_result.success:
-            # In a real system, you'd log this error
-            pass
+        new_user.add_domain_event({
+            "event_type": "user.account_unlocked",
+            "user_id": str(self.id),
+            "username": self.username,
+            "previous_failed_attempts": self.failed_login_attempts,
+            "unlocked_at": str(new_user.updated_at),
+        })
 
         return new_user
 
@@ -193,23 +187,18 @@ class FlextUser(FlextAggregateRoot):
             locked_until=self.locked_until,
             last_login=self.last_login,
             created_at=self.created_at,
-            updated_at=FlextTimestamp.now(),
+            updated_at=datetime.now(UTC),
         )
 
         # Emit domain event for failed login attempt
-        event_result = new_user.add_domain_event(
-            "user.login_failed",
-            {
-                "user_id": str(self.id),
-                "username": self.username,
-                "failed_attempts": new_attempts,
-                "attempted_at": str(new_user.updated_at),
-                "is_locked_now": new_user.is_locked(),
-            },
-        )
-        if not event_result.success:
-            # Log error but don't block operation
-            pass
+        new_user.add_domain_event({
+            "event_type": "user.login_failed",
+            "user_id": str(self.id),
+            "username": self.username,
+            "failed_attempts": new_attempts,
+            "attempted_at": str(new_user.updated_at),
+            "is_locked_now": new_user.is_locked(),
+        })
 
         return new_user
 
@@ -226,22 +215,17 @@ class FlextUser(FlextAggregateRoot):
             locked_until=self.locked_until,
             last_login=datetime.now(UTC),
             created_at=self.created_at,
-            updated_at=FlextTimestamp.now(),
+            updated_at=datetime.now(UTC),
         )
 
         # Emit domain event for successful login (failed attempts reset)
-        event_result = new_user.add_domain_event(
-            "user.login_successful",
-            {
-                "user_id": str(self.id),
-                "username": self.username,
-                "previous_failed_attempts": self.failed_login_attempts,
-                "login_at": str(new_user.last_login),
-            },
-        )
-        if not event_result.success:
-            # Log error but don't block operation
-            pass
+        new_user.add_domain_event({
+            "event_type": "user.login_successful",
+            "user_id": str(self.id),
+            "username": self.username,
+            "previous_failed_attempts": self.failed_login_attempts,
+            "login_at": str(new_user.last_login),
+        })
 
         return new_user
 
@@ -306,7 +290,7 @@ class FlextUser(FlextAggregateRoot):
 
     @override
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate business rules required by FlextEntity abstract method."""
+        """Validate business rules required by FlextModels.Entity abstract method."""
         # Execute validation strategies and raise ValueError if validation fails
         validation_errors = self._execute_user_validation_strategies()
         if validation_errors:
@@ -314,10 +298,10 @@ class FlextUser(FlextAggregateRoot):
         return FlextResult[None].ok(None)
 
 
-class FlextPermission(FlextEntity):
+class FlextPermission(FlextModels.Entity):
     """Permission entity."""
 
-    # id is inherited from FlextEntity - no need to redefine
+    # id is inherited from FlextModels.Entity - no need to redefine
     name: str = Field(..., description="Permission name")
     description: str = Field(..., description="Permission description")
     resource: str = Field(..., description="Resource this permission applies to")
@@ -350,10 +334,10 @@ class FlextPermission(FlextEntity):
         return FlextResult[None].ok(None)
 
 
-class FlextRole(FlextAggregateRoot):
+class FlextRole(FlextModels.Entity):
     """Role entity with permissions."""
 
-    # id is inherited from FlextEntity - no need to redefine
+    # id is inherited from FlextModels.Entity - no need to redefine
     name: str = Field(..., description="Role name")
     description: str = Field(..., description="Role description")
     permissions: list[FlextPermission] = Field(
@@ -364,7 +348,7 @@ class FlextRole(FlextAggregateRoot):
         default=False,
         description="Whether this is a system role",
     )
-    created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     def has_permission(self, resource: str, action: str) -> bool:
         """Check if role has specific permission."""
@@ -417,7 +401,7 @@ class FlextRole(FlextAggregateRoot):
 
     @override
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate business rules required by FlextEntity abstract method."""
+        """Validate business rules required by FlextModels.Entity abstract method."""
         # Execute role validation strategies and return FlextResult (FlextRole uses Result pattern)
         # Validation strategy pipeline - each validation can fail early
         if not self.id:
@@ -435,10 +419,10 @@ class FlextRole(FlextAggregateRoot):
         return FlextResult[None].ok(None)
 
 
-class FlextLoginAttempt(FlextEntity):
+class FlextLoginAttempt(FlextModels.Entity):
     """Login attempt tracking."""
 
-    # id is inherited from FlextEntity - no need to redefine
+    # id is inherited from FlextModels.Entity - no need to redefine
     username: str = Field(..., description="Username attempted")
     ip_address: str = Field(..., description="Client IP address")
     user_agent: str | None = Field(default=None, description="Client user agent")
@@ -498,7 +482,7 @@ class FlextLoginAttempt(FlextEntity):
 
     @override
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate business rules required by FlextEntity abstract method."""
+        """Validate business rules required by FlextModels.Entity abstract method."""
         # Execute login attempt validation strategies and raise ValueError if validation fails
         validation_errors = self._execute_validation_strategies()
         if validation_errors:
@@ -508,18 +492,18 @@ class FlextLoginAttempt(FlextEntity):
 
 # =============================================================================
 # =============================================================================
-# TOKEN ENTITIES - Using flext-core FlextEntity directly (no local base classes)
+# TOKEN ENTITIES - Using flext-core FlextModels.Entity directly (no local base classes)
 # =============================================================================
 
 
-class FlextPasswordResetToken(FlextEntity):
+class FlextPasswordResetToken(FlextModels.Entity):
     """Password reset token entity using flext-core patterns."""
 
     user_id: str = Field(..., description="User ID")
     token: str = Field(..., description="Token value")
     expires_at: datetime = Field(..., description="Token expiration")
     used: bool = Field(default=False, description="Whether token has been used")
-    created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     def is_valid(self) -> bool:
         """Check if token is valid."""
@@ -531,7 +515,7 @@ class FlextPasswordResetToken(FlextEntity):
 
     @override
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate business rules required by FlextEntity."""
+        """Validate business rules required by FlextModels.Entity."""
         try:
             # Validate user_id
             if not self.user_id:
@@ -556,14 +540,14 @@ class FlextPasswordResetToken(FlextEntity):
             return FlextResult[None].fail(f"Password reset token validation error: {e}")
 
 
-class FlextEmailVerificationToken(FlextEntity):
+class FlextEmailVerificationToken(FlextModels.Entity):
     """Email verification token entity using flext-core patterns."""
 
     user_id: str = Field(..., description="User ID")
     token: str = Field(..., description="Token value")
     expires_at: datetime = Field(..., description="Token expiration")
     used: bool = Field(default=False, description="Whether token has been used")
-    created_at: FlextTimestamp = Field(default_factory=FlextTimestamp.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     def is_valid(self) -> bool:
         """Check if token is valid."""
@@ -575,7 +559,7 @@ class FlextEmailVerificationToken(FlextEntity):
 
     @override
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate business rules required by FlextEntity."""
+        """Validate business rules required by FlextModels.Entity."""
         try:
             # Validate user_id
             if not self.user_id:

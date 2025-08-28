@@ -124,7 +124,7 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
         config = FlextAuthConfig()
         # Override defaults with development settings
         config.environment = "development"
-        config.jwt_secret_key = "dev-secret-key-change-in-production"  # noqa: S105,S106
+        config.jwt_secret_key = "dev-secret-key-change-in-production"
         config.access_token_expire_minutes = 30
         config.refresh_token_expire_days = 7
         return config
@@ -179,7 +179,7 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
     def authenticate_user(
         self,
         username: str,
-        password: str,  # noqa: ARG002
+        password: str,
         ip_address: str = FlextConstants.Infrastructure.DEFAULT_HOST,
         user_agent: str | None = None,
     ) -> FlextResult[FlextTypes.Core.Dict]:
@@ -327,7 +327,7 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
         user_id: str,
         username: str,
         role: str,
-        expires_in_minutes: int = 30,  # noqa: ARG002
+        expires_in_minutes: int = 30,
     ) -> FlextResult[str]:
         """Generate JWT token (method replacing flext_auth_generate_jwt)."""
         try:
@@ -392,9 +392,9 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
 
     def quick_start(
         self,
-        create_REDACTED_LDAP_BIND_PASSWORD: bool = True,  # noqa: FBT001, FBT002
-        REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",  # noqa: ARG002
-        REDACTED_LDAP_BIND_PASSWORD_password: str = "REDACTED_LDAP_BIND_PASSWORD123",  # noqa: S107, ARG002
+        create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
+        REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
+        REDACTED_LDAP_BIND_PASSWORD_password: str = "REDACTED_LDAP_BIND_PASSWORD123",
     ) -> FlextResult[FlextAuth]:
         """Quick start authentication setup (method replacing flext_auth_quick_start)."""
         try:
@@ -526,7 +526,7 @@ def flext_auth_client_quick_start(
     *,
     create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
     REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-    REDACTED_LDAP_BIND_PASSWORD_password: str = "REDACTED_LDAP_BIND_PASSWORD123",  # noqa: S107
+    REDACTED_LDAP_BIND_PASSWORD_password: str = "REDACTED_LDAP_BIND_PASSWORD123",
 ) -> FlextResult[FlextAuth]:
     """Quick start using global FlextAuthClient (legacy function)."""
     return _global_auth_client.quick_start(create_REDACTED_LDAP_BIND_PASSWORD, REDACTED_LDAP_BIND_PASSWORD_username, REDACTED_LDAP_BIND_PASSWORD_password)

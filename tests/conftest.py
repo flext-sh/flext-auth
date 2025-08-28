@@ -54,7 +54,7 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 def pytest_collection_modifyitems(
-    config: pytest.Config,  # noqa: ARG001
+    config: pytest.Config,
     items: list[pytest.Item],
 ) -> None:
     """Modify test items by adding markers based on test location and names."""

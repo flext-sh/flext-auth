@@ -15,10 +15,9 @@ from typing import override
 
 from flext_core import (
     FlextDomainService,
-    FlextEntityId,
+    FlextModels,
     FlextProtocols,
     FlextResult,
-    FlextTimestamp,
 )
 
 from flext_auth.auth import (
@@ -302,7 +301,7 @@ class FlextAuthenticationService(FlextDomainService[bool]):
 
             # Create user entity
             user = FlextUser(
-                id=FlextEntityId(f"user_{username}"),
+                id=FlextModels.EntityId(f"user_{username}"),
                 username=username,
                 email=email,
                 password_hash="",  # Will be set by password service
@@ -377,7 +376,7 @@ class FlextAuthenticationService(FlextDomainService[bool]):
                 failed_login_attempts=0,  # Reset failed attempts
                 locked_until=None,  # Clear any lockout
                 created_at=user.created_at,
-                updated_at=FlextTimestamp(datetime.now(UTC)),
+                updated_at=FlextModels.Timestamp(datetime.now(UTC)),
                 last_login=user.last_login,
             )
 
@@ -589,7 +588,7 @@ class FlextSessionService(FlextDomainService[str]):
         try:
             # Create session entity
             session = FlextSession(
-                id=FlextEntityId(f"session_{user.id}"),
+                id=FlextModels.EntityId(f"session_{user.id}"),
                 user_id=str(user.id),
                 access_token=f"token_{user.id}",
                 refresh_token=f"refresh_{user.id}",

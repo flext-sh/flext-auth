@@ -54,7 +54,7 @@ type TEmail = str
 type TPassword = str
 type TUserRole = str
 
-# Authentication data types - SOLID refactoring: specific types instead of Any
+# Authentication data types - SOLID refactoring: specific types instead of object
 type TAuthResult = dict[str, object]  # Authentication result with user data
 type TSecurityContext = dict[str, object]  # Security context with permissions
 type TLoginAttempt = dict[str, object]  # Login attempt data with metadata
@@ -80,7 +80,7 @@ class FlextAuthConstants:
 
     USERNAME_PATTERN = r"^[a-zA-Z0-9_-]+$"
     PASSWORD_VALIDATION_REGEX = (
-        r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).+$"  # noqa: S105
+        r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).+$"
     )
 
 

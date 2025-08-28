@@ -32,7 +32,7 @@ poetry run uvicorn flext_auth.main:app --reload
 **What Needs Work:**
 
 - FlextContainer dependency injection integration
-- Domain events (uses FlextAggregateRoot but no events)
+- Domain events (uses FlextAggregates but no events)
 - CQRS command/handler patterns
 - Plugin architecture integration
 
