@@ -20,11 +20,11 @@ import bcrypt
 import jwt
 from flext_core import (
     FlextDomainService,
-    FlextModels,
     FlextExceptions,
-    FlextLogger,
+    FlextModels,
     FlextProtocols,
     FlextResult,
+    get_logger,
 )
 from pydantic import ConfigDict, Field
 
@@ -82,7 +82,7 @@ SESSION_INVALID = False
 LOGOUT_SUCCESS = True
 
 # Initialize logger using FLEXT patterns
-logger: FlextLogger = FlextLogger(__name__)
+logger = get_logger(__name__)
 
 
 # =============================================================================

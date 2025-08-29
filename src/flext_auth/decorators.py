@@ -16,9 +16,9 @@ from datetime import UTC, datetime
 from typing import ParamSpec, cast
 
 from flext_core import (
-    FlextLogger,
     FlextProtocols,
     FlextResult,
+    get_logger,
 )
 
 from flext_auth.auth import FlextAuthService
@@ -92,7 +92,7 @@ class _DjangoRequest(FlextProtocols.Infrastructure.Connection):
 
 
 # Use centralized logger from flext-core
-logger: FlextLogger = FlextLogger(__name__)
+logger = get_logger(__name__)
 
 # =============================================================================
 # TYPE DEFINITIONS - Decorator and Mixin types
@@ -623,8 +623,6 @@ class FlextAuthMixin:
                 )
             else:
                 # Use default configuration but cannot create service without deps
-                from flext_auth import FlextAuthConfig
-
                 self._auth_config = FlextAuthConfig()
                 # Set development defaults
                 if hasattr(self._auth_config, "environment"):
@@ -843,8 +841,6 @@ class FlextAuthMixin:
             # Handle token string by decoding to user data
             if isinstance(token_or_user_data, str):
                 # Decode JWT token to get user data
-                from flext_auth import FlextJWTService
-
                 jwt_service = FlextJWTService(secret_key=DEFAULT_JWT_SECRET)
                 result = jwt_service.verify_token(token_or_user_data)
                 if not result.success:

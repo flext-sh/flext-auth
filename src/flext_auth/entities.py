@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import override
 
-from flext_core import FlextAggregates, FlextModels, FlextResult
+from flext_core import FlextModels, FlextResult
 from pydantic import Field
 
 # Constants for magic numbers

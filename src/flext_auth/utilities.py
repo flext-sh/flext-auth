@@ -9,6 +9,8 @@ operations, following SOLID principles and reducing code duplication.
 
 from __future__ import annotations
 
+from typing import cast
+
 from flext_core import FlextResult
 
 from flext_auth.entities import FlextUser
@@ -83,7 +85,8 @@ class FlextAuthUtilities:
         """
         try:
             # Repositories are synchronous according to flext-core patterns
-            return repository.save(user)
+            result = repository.save(user)
+            return cast("FlextResult[FlextUser]", result)
 
         except Exception as e:
             return FlextResult[FlextUser].fail(f"Repository save error: {e}")

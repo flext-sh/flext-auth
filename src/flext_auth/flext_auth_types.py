@@ -9,12 +9,13 @@ All authentication type definitions consolidated into FlextAuthTypes.
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from flext_core import FlextProtocols, FlextResult
 
-from flext_auth.entities import FlextUser
-from flext_auth.models import FlextSession
+if TYPE_CHECKING:
+    from flext_auth.entities import FlextUser
+    from flext_auth.models import FlextSession
 
 
 class FlextAuthTypes:

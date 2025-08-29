@@ -79,8 +79,8 @@ class FlextAuthConstants:
     """Authentication constants for validation patterns."""
 
     USERNAME_PATTERN = r"^[a-zA-Z0-9_-]+$"
-    PASSWORD_VALIDATION_REGEX = (
-        r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).+$"
+    PASSWORD_VALIDATION_REGEX = (  # Regex pattern for password validation, not a password/secret
+        r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).+$"  # noqa: S105
     )
 
 
@@ -201,13 +201,13 @@ class DatabaseConfig:
             kwargs,
             "max_pool_size",
             "DATABASE_MAX_POOL_SIZE",
-            FlextConstants.Platform.DATABASE_MAX_POOL_SIZE,
+            FlextConstants.Platform.DB_MAX_CONNECTIONS,
         )
         command_timeout = self._extract_int_setting(
             kwargs,
             "command_timeout",
             "DATABASE_COMMAND_TIMEOUT",
-            FlextConstants.Defaults.DATABASE_COMMAND_TIMEOUT,
+            FlextConstants.Defaults.DB_TIMEOUT,
         )
 
         # Process URL settings
@@ -223,11 +223,11 @@ class DatabaseConfig:
 
         # Store database config as simple dict since FlextDatabaseModel is generic
         self._core_config_dict = {
-            "host": FlextConstants.Infrastructure.DEFAULT_HOST,
-            "port": FlextConstants.Platform.POSTGRES_PORT,
-            "database": FlextConstants.Platform.DEFAULT_DATABASE_NAME,
-            "username": FlextConstants.Platform.DEFAULT_DATABASE_USER,
-            "password": FlextConstants.Platform.DEFAULT_DATABASE_PASSWORD,
+            "host": FlextConstants.Platform.DEFAULT_HOST,
+            "port": FlextConstants.Platform.POSTGRESQL_PORT,
+            "database": "flext_auth",  # Use reasonable default database name
+            "username": "flext_user",  # Use reasonable default username
+            "password": "flext_password",  # Use reasonable default password
             "connection_timeout": command_timeout,
         }
         # Create a generic FlextModel instance for compatibility
@@ -274,8 +274,8 @@ class DatabaseConfig:
         if min_pool_size < 1:
             raise_validation_error("Minimum pool size must be at least 1")
 
-        max_min_pool_size = FlextConstants.Platform.DATABASE_MIN_POOL_SIZE_LIMIT
-        max_max_pool_size = FlextConstants.Platform.DATABASE_MAX_POOL_SIZE_LIMIT
+        max_min_pool_size = FlextConstants.Platform.DB_MAX_CONNECTIONS  # Use available constant
+        max_max_pool_size = FlextConstants.Platform.DB_MAX_CONNECTIONS * 2  # Reasonable limit
 
         if min_pool_size > max_min_pool_size:
             raise_validation_error(
@@ -482,13 +482,9 @@ class AppConfig(FlextConfig):
     version: str = Field(default="1.0.0", description="Application version")
     app_name: str = Field(default="FlextAuth", description="Application name")
     debug: bool = Field(default=False, description="Debug mode")
-    environment: str = Field(default="development", description="Environment")
+    environment: FlextTypes.Config.Environment = Field(default="development", description="Environment")
 
-    # Nested configurations
-    database: DatabaseConfig = Field(
-        default_factory=DatabaseConfig,
-        description="Database configuration",
-    )
+    # Nested configurations - use arbitrary types for non-Pydantic classes
     jwt: JWTConfig = Field(default_factory=JWTConfig, description="JWT configuration")
     security: SecurityConfig = Field(
         default_factory=SecurityConfig,
@@ -499,7 +495,22 @@ class AppConfig(FlextConfig):
         description="Server configuration",
     )
 
-    model_config = SettingsConfigDict(env_prefix="APP_")
+    model_config = SettingsConfigDict(env_prefix="APP_", arbitrary_types_allowed=True)
+
+    # Custom database handling
+    def __init__(self, **kwargs: object) -> None:
+        """Initialize with database config handling."""
+        # Extract database config separately
+        database_config = kwargs.pop("database", None)
+        super().__init__(**kwargs)
+
+        # Handle database config manually
+        if database_config is None:
+            self.database = DatabaseConfig()
+        elif isinstance(database_config, DatabaseConfig):
+            self.database = database_config
+        else:
+            self.database = DatabaseConfig(**(database_config if isinstance(database_config, dict) else {}))  # type: ignore[arg-type]
 
     def model_dump_safe(self) -> dict[str, object]:
         """Dump model data with sensitive information redacted."""

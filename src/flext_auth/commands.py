@@ -31,7 +31,7 @@ AuthResponseT = TypeVar("AuthResponseT", bound=dict[str, object])
 # =============================================================================
 
 
-class CreateUserCommand(FlextCommands.Command):
+class CreateUserCommand(FlextCommands.Models.Command):
     """Command to create a new user - REAL production command."""
 
     username: str = Field(..., description="Unique username")
@@ -67,7 +67,7 @@ class CreateUserCommand(FlextCommands.Command):
         return FlextResult[None].ok(None)
 
 
-class AuthenticateUserCommand(FlextCommands.Command):
+class AuthenticateUserCommand(FlextCommands.Models.Command):
     """Command to authenticate a user - REAL production command."""
 
     username: str = Field(..., description="Username for authentication")
@@ -83,7 +83,7 @@ class AuthenticateUserCommand(FlextCommands.Command):
         return FlextResult[None].ok(None)
 
 
-class ChangePasswordCommand(FlextCommands.Command):
+class ChangePasswordCommand(FlextCommands.Models.Command):
     """Command to change user password - REAL production command."""
 
     current_password: str = Field(..., description="Current password")
@@ -107,7 +107,7 @@ class ChangePasswordCommand(FlextCommands.Command):
         return FlextResult[None].ok(None)
 
 
-class LockUserAccountCommand(FlextCommands.Command):
+class LockUserAccountCommand(FlextCommands.Models.Command):
     """Command to lock user account - REAL production command."""
 
     target_user_id: str = Field(..., description="User ID to lock")
@@ -125,7 +125,7 @@ class LockUserAccountCommand(FlextCommands.Command):
         return FlextResult[None].ok(None)
 
 
-class UnlockUserAccountCommand(FlextCommands.Command):
+class UnlockUserAccountCommand(FlextCommands.Models.Command):
     """Command to unlock user account - REAL production command."""
 
     target_user_id: str = Field(..., description="User ID to unlock")
@@ -145,7 +145,7 @@ class UnlockUserAccountCommand(FlextCommands.Command):
 
 
 class CreateUserCommandHandler(
-    FlextCommands.Handler[CreateUserCommand, dict[str, object]],
+    FlextCommands.Handlers.CommandHandler[CreateUserCommand, dict[str, object]],
 ):
     """Handler for user creation - REAL production implementation."""
 
@@ -264,7 +264,7 @@ class CreateUserCommandHandler(
 
 
 class AuthenticateUserCommandHandler(
-    FlextCommands.Handler[AuthenticateUserCommand, dict[str, object]],
+    FlextCommands.Handlers.CommandHandler[AuthenticateUserCommand, dict[str, object]],
 ):
     """Handler for user authentication - REAL production implementation."""
 

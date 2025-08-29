@@ -16,8 +16,9 @@ from enum import StrEnum
 from typing import ClassVar
 
 import jwt
-from flext_core import FlextDomainService, FlextLogger, FlextResult
+from flext_core import FlextDomainService, FlextResult, get_logger
 from jwt import ExpiredSignatureError, InvalidTokenError
+from pydantic import ConfigDict
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.values import (
@@ -56,6 +57,9 @@ class FlextJWTSystem(FlextDomainService[dict[str, object]]):
       - Factory Pattern: Token generation with different types
       - Strategy Pattern: Pluggable signing algorithms
     """
+
+    # Pydantic model configuration
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     # ==========================================================================
     # CONSTANTS AND TYPE DEFINITIONS
@@ -344,7 +348,7 @@ class FlextJWTSystem(FlextDomainService[dict[str, object]]):
                 return FlextResult[bool].ok(bool(is_expired))
 
             except (ValueError, TypeError, OSError) as e:
-                logger: FlextLogger = FlextLogger(__name__)
+                logger = get_logger(__name__)
                 logger.warning(f"Token expiry check failed: {e}")
                 return FlextResult[bool].fail(f"Token expiry check failed: {e}")
 
@@ -364,16 +368,29 @@ class FlextJWTSystem(FlextDomainService[dict[str, object]]):
             msg = "Production JWT secret key is required"
             raise ValueError(msg)
 
-        # Initialize service before super().__init__() as FlextModel requires all fields
-        self._service = self.Service(
-            secret_key=secret_key,
-            algorithm=algorithm,
-            access_token_expire_minutes=access_token_expire_minutes,
-            refresh_token_expire_days=refresh_token_expire_days,
-        )
-        self._logger: FlextLogger = FlextLogger(__name__)
+        # Store configuration for model_post_init
+        self._jwt_config = {
+            "secret_key": secret_key,
+            "algorithm": algorithm,
+            "access_token_expire_minutes": access_token_expire_minutes,
+            "refresh_token_expire_days": refresh_token_expire_days,
+        }
 
         super().__init__()
+
+    def model_post_init(self, __context: object | None, /) -> None:
+        """Initialize service after Pydantic model initialization."""
+        super().model_post_init(__context)
+
+        # Now we can safely set custom attributes
+        config = self._jwt_config
+        object.__setattr__(self, "_service", self.Service(
+            secret_key=config["secret_key"],
+            algorithm=config["algorithm"],
+            access_token_expire_minutes=config["access_token_expire_minutes"],
+            refresh_token_expire_days=config["refresh_token_expire_days"],
+        ))
+        object.__setattr__(self, "_logger", get_logger(__name__))
 
     def execute(self) -> FlextResult[dict[str, object]]:
         """Execute JWT system validation and return system info."""
@@ -458,7 +475,7 @@ TokenType = FlextJWTSystem.TokenType
 FlextJWTService = FlextJWTSystem
 
 # Initialize logger using FLEXT patterns
-logger: FlextLogger = FlextLogger(__name__)
+logger = get_logger(__name__)
 
 __all__ = [
     "DEV_SECRET_KEY",

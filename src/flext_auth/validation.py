@@ -20,6 +20,8 @@ from flext_auth.constants import FlextAuthConstants
 # FlextConstants already imported above in main imports
 MIN_USERNAME_LENGTH = FlextConstants.Auth.MIN_USERNAME_LENGTH
 MAX_USERNAME_LENGTH = FlextConstants.Auth.MAX_USERNAME_LENGTH
+MIN_PASSWORD_LENGTH = FlextConstants.Auth.MIN_PASSWORD_LENGTH
+MAX_PASSWORD_LENGTH = FlextConstants.Auth.MAX_PASSWORD_LENGTH
 
 # =============================================================================
 # AUTHENTICATION VALIDATORS - Using flext-core directly
@@ -32,7 +34,7 @@ class FlextAuthValidators:
     @staticmethod
     def validate_username(username: str) -> FlextResult[None]:
         """Validate username using flext-core validators."""
-        if not FlextValidation.is_non_empty_string(username):
+        if not FlextValidation.validate_non_empty_string_func(username):
             return FlextResult[None].fail("Username cannot be empty")
 
         if len(username) < MIN_USERNAME_LENGTH:
@@ -60,17 +62,17 @@ class FlextAuthValidators:
     @staticmethod
     def validate_password(password: str) -> FlextResult[None]:
         """Validate password using flext-core validators."""
-        if not FlextValidation.is_non_empty_string(password):
+        if not FlextValidation.validate_non_empty_string_func(password):
             return FlextResult[None].fail("Password cannot be empty")
 
-        if len(password) < FlextAuthConstants.Authentication.MIN_PASSWORD_LENGTH:
+        if len(password) < MIN_PASSWORD_LENGTH:
             return FlextResult[None].fail(
-                f"Password must be at least {FlextAuthConstants.Authentication.MIN_PASSWORD_LENGTH} characters",
+                f"Password must be at least {MIN_PASSWORD_LENGTH} characters",
             )
 
-        if len(password) > FlextAuthConstants.Authentication.MAX_PASSWORD_LENGTH:
+        if len(password) > MAX_PASSWORD_LENGTH:
             return FlextResult[None].fail(
-                f"Password cannot exceed {FlextAuthConstants.Authentication.MAX_PASSWORD_LENGTH} characters",
+                f"Password cannot exceed {MAX_PASSWORD_LENGTH} characters",
             )
 
         if not FlextAuthConstants.Authentication.PASSWORD_VALIDATION_REGEX.match(
@@ -85,7 +87,7 @@ class FlextAuthValidators:
     @staticmethod
     def validate_user_id(user_id: str) -> FlextResult[None]:
         """Validate user ID using flext-core validators."""
-        if not FlextValidation.is_non_empty_string(user_id):
+        if not FlextValidation.validate_non_empty_string_func(user_id):
             return FlextResult[None].fail("User ID cannot be empty")
         return FlextResult[None].ok(None)
 

@@ -11,7 +11,7 @@ import os
 import secrets
 from dataclasses import dataclass
 
-from flext_core import FlextDomainService, FlextLogger, FlextResult
+from flext_core import FlextDomainService, FlextResult, get_logger
 from pydantic import Field
 
 from flext_auth.entities import FlextUser
@@ -35,7 +35,7 @@ class FlextAuthServiceDependencies:
     password_service: FlextPasswordService
     jwt_service: FlextJWTService
     config: FlextAuthServiceConfig
-    logger: FlextLogger | None = None  # Logger instance
+    logger: object | None = None  # Logger instance
     auth_strategy: object | None = None  # Authentication strategy
     token_strategy: object | None = None  # Token strategy
     session_strategy: object | None = None  # Session strategy

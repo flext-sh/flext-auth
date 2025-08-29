@@ -14,8 +14,9 @@ from enum import StrEnum
 from typing import ClassVar, override
 
 from flext_core import (
-    FlextModels,
     FlextModel,
+    FlextModels,
+    FlextProtocols,
     FlextResult,
 )
 from pydantic import Field
@@ -27,7 +28,6 @@ from flext_auth.entities import (
     FlextUserRole,
     FlextUserStatus,
 )
-from flext_auth.flext_auth_types import UserRepositoryType
 from flext_auth.values import (
     FlextHashedPassword,
     FlextJWTClaims,
@@ -103,7 +103,7 @@ class FlextAuthModels(FlextModel):
         ip_address: str | None = Field(default=None, description="Client IP address")
         user_agent: str | None = Field(default=None, description="Client user agent")
         expires_at: datetime = Field(..., description="Session expiration time")
-        created_at: FlextModels.Timestamp = Field(default_factory=lambda: FlextModels.Timestamp(datetime.now(UTC)))
+        created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
         last_accessed: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
         def is_valid(self) -> bool:
@@ -169,7 +169,7 @@ class FlextAuthModels(FlextModel):
             default=False,
             description="Whether this is a system role",
         )
-        created_at: FlextModels.Timestamp = Field(default_factory=lambda: FlextModels.Timestamp(datetime.now(UTC)))
+        created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
         def has_permission(self, resource: str, action: str) -> bool:
             """Check if role has specific permission."""
@@ -201,22 +201,22 @@ class FlextAuthModels(FlextModel):
     # =============================================================================
 
     @property
-    def FlextSession(self) -> type[FlextAuthModels.Session]:
+    def flext_session(self) -> type[FlextAuthModels.Session]:  # noqa: N802
         """Legacy compatibility property."""
         return self.Session
 
     @property
-    def FlextPermission(self) -> type[FlextAuthModels.Permission]:
+    def flext_permission(self) -> type[FlextAuthModels.Permission]:  # noqa: N802
         """Legacy compatibility property."""
         return self.Permission
 
     @property
-    def FlextRole(self) -> type[FlextAuthModels.Role]:
+    def flext_role(self) -> type[FlextAuthModels.Role]:  # noqa: N802
         """Legacy compatibility property."""
         return self.Role
 
     @property
-    def FlextSessionStatus(self) -> type[FlextAuthModels.SessionStatus]:
+    def flext_session_status(self) -> type[FlextAuthModels.SessionStatus]:  # noqa: N802
         """Legacy compatibility property."""
         return self.SessionStatus
 
@@ -225,9 +225,9 @@ class FlextAuthModels(FlextModel):
 # REPOSITORY PATTERNS - Abstract data access
 # =============================================================================
 
-# ✅ CORRECT - Use centralized repository protocol from types.py
-# Replaces duplicate protocol definition with import from centralized types
-UserRepository = UserRepositoryType
+# ✅ CORRECT - Use centralized repository protocol from flext-core
+# Avoid circular dependency by using flext-core directly
+UserRepository = FlextProtocols.Domain.Repository["FlextUser"]
 
 
 class InMemoryUserRepository(UserRepository):
@@ -269,7 +269,7 @@ class InMemoryUserRepository(UserRepository):
                 locked_until=entity.locked_until,
                 last_login=entity.last_login,
                 created_at=entity.created_at,
-                updated_at=FlextModels.Timestamp(datetime.now(UTC)),
+                updated_at=datetime.now(UTC),
             )
 
             # Save user
@@ -346,7 +346,7 @@ class InMemoryUserRepository(UserRepository):
         try:
             users = list(self._users.values())
             # Sort by created_at (newest first)
-            users.sort(key=lambda u: u.created_at.root, reverse=True)
+            users.sort(key=lambda u: u.created_at, reverse=True)
             return FlextResult[list[FlextUser]].ok(users)
         except (KeyError, ValueError, TypeError, AttributeError) as e:
             return FlextResult[list[FlextUser]].fail(f"Failed to find all users: {e}")

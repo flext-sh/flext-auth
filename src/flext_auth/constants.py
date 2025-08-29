@@ -112,13 +112,13 @@ class FlextAuthConstants(FlextConstants):
     ROLE_GUEST: ClassVar[str] = "guest"
 
     # =============================================================================
-    # TOKEN TYPE CONSTANTS - Token type definitions
+    # TOKEN TYPE CONSTANTS - Token type definitions (not passwords/secrets)
     # =============================================================================
 
-    TOKEN_TYPE_ACCESS: ClassVar[str] = "access"
-    TOKEN_TYPE_REFRESH: ClassVar[str] = "refresh"
-    TOKEN_TYPE_RESET: ClassVar[str] = "reset"
-    TOKEN_TYPE_VERIFICATION: ClassVar[str] = "verification"
+    TOKEN_TYPE_ACCESS: ClassVar[str] = "access"  # Token type identifier, not secret  # noqa: S105
+    TOKEN_TYPE_REFRESH: ClassVar[str] = "refresh"  # Token type identifier, not secret  # noqa: S105
+    TOKEN_TYPE_RESET: ClassVar[str] = "reset"  # Token type identifier, not secret  # noqa: S105
+    TOKEN_TYPE_VERIFICATION: ClassVar[str] = "verification"  # Token type identifier, not secret  # noqa: S105
 
     # =============================================================================
     # BACKWARD COMPATIBILITY - Legacy nested class access patterns

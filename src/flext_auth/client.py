@@ -10,26 +10,20 @@ through methods rather than standalone functions, eliminating code duplication.
 
 from __future__ import annotations
 
+import secrets
 from datetime import datetime
 
 from flext_core import (
     FlextConstants,
     FlextContainer,
     FlextDomainService,
-    FlextLogger,
     FlextResult,
     FlextTypes,
+    get_logger,
 )
 
-from flext_auth.api import FlextAuth
-from flext_auth.auth import (
-    FlextAuthService,
-    FlextUserRegistrationData,
-)
-from flext_auth.config import FlextAuthConfig
-from flext_auth.container import FlextAuthContainer
-from flext_auth.flext_auth_types import SessionRepositoryType, UserRepositoryType
-from flext_auth.helpers import (
+from flext_auth.api import (
+    FlextAuth,
     flext_auth_generate_jwt,
     flext_auth_hash_password,
     flext_auth_quick_start,
@@ -43,6 +37,14 @@ from flext_auth.helpers import (
     is_strong_password,
     mask_sensitive_data,
 )
+from flext_auth.auth import (
+    FlextAuthService,
+    FlextUserRegistrationData,
+)
+from flext_auth.config import FlextAuthConfig
+from flext_auth.constants import FlextAuthConstants
+from flext_auth.container import FlextAuthContainer
+from flext_auth.flext_auth_types import SessionRepositoryType, UserRepositoryType
 from flext_auth.jwt import FlextJWTService
 from flext_auth.password import FlextPasswordService
 
@@ -86,7 +88,7 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
         # Use dependency injection from flext-core
         self._container = container or FlextContainer.get_global()
         self._config = config or self._create_default_config()
-        self._logger: FlextLogger = FlextLogger(__name__)
+        self._logger = get_logger(__name__)
 
         # Initialize internal services (private - external access via methods only)
         self._auth_container: FlextAuthContainer | None = None
@@ -124,7 +126,7 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
         config = FlextAuthConfig()
         # Override defaults with development settings
         config.environment = "development"
-        config.jwt_secret_key = "dev-secret-key-change-in-production"
+        config.jwt_secret_key = FlextAuthConstants.DEV_JWT_SECRET
         config.access_token_expire_minutes = 30
         config.refresh_token_expire_days = 7
         return config
@@ -179,7 +181,7 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
     def authenticate_user(
         self,
         username: str,
-        password: str,
+        _password: str,  # TODO(@flext-team): Implement password validation in auth service (flext/flext-auth#1)  # noqa: FIX002
         ip_address: str = FlextConstants.Infrastructure.DEFAULT_HOST,
         user_agent: str | None = None,
     ) -> FlextResult[FlextTypes.Core.Dict]:
@@ -327,7 +329,7 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
         user_id: str,
         username: str,
         role: str,
-        expires_in_minutes: int = 30,
+        _expires_in_minutes: int = 30,  # TODO(@flext-team): Implement expiration in JWT generation (flext/flext-auth#2)  # noqa: FIX002
     ) -> FlextResult[str]:
         """Generate JWT token (method replacing flext_auth_generate_jwt)."""
         try:
@@ -392,9 +394,10 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
 
     def quick_start(
         self,
+        *,
         create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
         REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-        REDACTED_LDAP_BIND_PASSWORD_password: str = "REDACTED_LDAP_BIND_PASSWORD123",
+        REDACTED_LDAP_BIND_PASSWORD_password: str | None = None,
     ) -> FlextResult[FlextAuth]:
         """Quick start authentication setup (method replacing flext_auth_quick_start)."""
         try:
@@ -405,8 +408,16 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
                     f"Quick start configuration failed: {config_result.error}"
                 )
 
+            # Generate secure temporary password if none provided
+            if REDACTED_LDAP_BIND_PASSWORD_password is None and create_REDACTED_LDAP_BIND_PASSWORD:
+                REDACTED_LDAP_BIND_PASSWORD_password = f"temp_{secrets.token_urlsafe(8)}"
+
             # Use internal method that replicates flext_auth_quick_start
-            quick_start_result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=create_REDACTED_LDAP_BIND_PASSWORD)
+            quick_start_result = flext_auth_quick_start(
+                create_REDACTED_LDAP_BIND_PASSWORD=create_REDACTED_LDAP_BIND_PASSWORD,
+                REDACTED_LDAP_BIND_PASSWORD_username=REDACTED_LDAP_BIND_PASSWORD_username,
+                REDACTED_LDAP_BIND_PASSWORD_password=REDACTED_LDAP_BIND_PASSWORD_password,
+            )
             # quick_start_result is FlextAuth instance, not FlextResult
             return FlextResult.ok(quick_start_result)
 
@@ -526,9 +537,13 @@ def flext_auth_client_quick_start(
     *,
     create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
     REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-    REDACTED_LDAP_BIND_PASSWORD_password: str = "REDACTED_LDAP_BIND_PASSWORD123",
+    REDACTED_LDAP_BIND_PASSWORD_password: str | None = None,
 ) -> FlextResult[FlextAuth]:
     """Quick start using global FlextAuthClient (legacy function)."""
+    # Generate secure temporary password if none provided
+    if REDACTED_LDAP_BIND_PASSWORD_password is None and create_REDACTED_LDAP_BIND_PASSWORD:
+        REDACTED_LDAP_BIND_PASSWORD_password = f"temp_{secrets.token_urlsafe(8)}"
+
     return _global_auth_client.quick_start(create_REDACTED_LDAP_BIND_PASSWORD, REDACTED_LDAP_BIND_PASSWORD_username, REDACTED_LDAP_BIND_PASSWORD_password)
 
 

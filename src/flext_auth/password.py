@@ -7,12 +7,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import logging
 import secrets
 import string
 
 import bcrypt
-from flext_core import FlextDomainService, FlextExceptions, FlextResult
+from flext_core import FlextDomainService, FlextExceptions, FlextResult, get_logger
 from pydantic import Field
 
 from flext_auth.constants import FlextAuthConstants
@@ -36,7 +35,7 @@ SECONDS_PER_DAY = 86400
 SECONDS_PER_YEAR = 31536000
 TOKEN_BYTES = 32
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class FlextPasswordService(FlextDomainService[dict[str, object]]):

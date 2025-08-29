@@ -12,7 +12,7 @@ import re
 from datetime import UTC, datetime
 from typing import override
 
-from flext_core import FlextConstants, FlextExceptions, FlextResult, FlextModels
+from flext_core import FlextConstants, FlextExceptions, FlextModels, FlextResult
 from pydantic import EmailStr, Field, field_validator
 
 # Constants for validation limits

@@ -7,15 +7,18 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import asyncio
 import re
 import secrets
 import string
 from datetime import UTC, datetime
 
-from flext_core import FlextConstants, FlextModels, FlextResult
+from flext_core import FlextConstants, FlextModels, FlextResult, get_logger
 
 from flext_auth.config import FlextAuthConfig
+from flext_auth.constants import FlextAuthConstants
 from flext_auth.container import (
+    FlextAuthContainer,
     SessionRepositoryType,
     UserRepositoryType,
 )
@@ -47,8 +50,6 @@ class FlextAuth:
     ) -> None:
         """Initialize FlextAuth using FlextContainer DI to eliminate duplications."""
         # Store the container instance to avoid global container issues
-        from .container import FlextAuthContainer
-
         self._container = FlextAuthContainer()
 
         # Configure the specific container instance with provided services
@@ -521,8 +522,8 @@ type FlextAuthClaims = dict[str, object]
 # =============================================================================
 
 
-# Constants for JWT security - noqa: S105 (dev secret is intentional)
-DEFAULT_JWT_SECRET = "dev-secret-key-change-in-production"
+# Constants for JWT security from FlextAuthConstants
+DEFAULT_JWT_SECRET = FlextAuthConstants.DEFAULT_JWT_SECRET
 MIN_PASSWORD_LENGTH_CONSTANT = 8
 
 
@@ -544,7 +545,31 @@ def flext_auth_quick_start(
     config = FlextAuthConfig()  # Set custom JWT secret
     if hasattr(config, "jwt_secret_key"):
         config.jwt_secret_key = jwt_secret
-    return FlextAuth(config=config)
+    auth = FlextAuth(config=config)
+
+    # Create default REDACTED_LDAP_BIND_PASSWORD user if requested
+    if create_REDACTED_LDAP_BIND_PASSWORD:
+
+        # Generate secure REDACTED_LDAP_BIND_PASSWORD password
+        REDACTED_LDAP_BIND_PASSWORD_password = f"REDACTED_LDAP_BIND_PASSWORD_{secrets.token_urlsafe(12)}"
+
+        # Create REDACTED_LDAP_BIND_PASSWORD user (sync version)
+        try:
+            result = asyncio.run(auth.create_user(
+                username="REDACTED_LDAP_BIND_PASSWORD",
+                email="REDACTED_LDAP_BIND_PASSWORD@example.com",
+                password=REDACTED_LDAP_BIND_PASSWORD_password,
+                role="REDACTED_LDAP_BIND_PASSWORD"
+            ))
+            if result.success:
+                logger = get_logger(__name__)
+                logger.info("Admin user created with password: %s", REDACTED_LDAP_BIND_PASSWORD_password)
+        except Exception as e:
+            # Admin creation failed - continue without REDACTED_LDAP_BIND_PASSWORD
+            logger = get_logger(__name__)
+            logger.warning("Failed to create REDACTED_LDAP_BIND_PASSWORD user: %s", e)
+
+    return auth
 
 
 def flext_auth_hash_password(password: str) -> FlextResult[str]:
@@ -695,7 +720,8 @@ def flext_auth_validate_password_strength(password: str) -> FlextResult[bool]:
 
     # Check minimum length
     if len(password) < min_password_length:
-        return FlextResult[bool].ok(False)
+        is_valid = False
+        return FlextResult[bool].ok(is_valid)
 
     # Check for required character types
     has_upper = any(c.isupper() for c in password)

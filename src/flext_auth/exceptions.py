@@ -29,10 +29,10 @@ class FlextAuthExceptionSystem(FlextExceptions):
     # CONSTANTS AND CONFIGURATION
     # ==========================================================================
 
-    # Default error messages
-    DEFAULT_AUTH_ERROR_MESSAGE: ClassVar[str] = "Authentication error occurred"
-    DEFAULT_TOKEN_ERROR_MESSAGE: ClassVar[str] = "Token validation failed"
-    DEFAULT_SESSION_ERROR_MESSAGE: ClassVar[str] = "Session validation failed"
+    # Default error messages (not passwords/secrets)
+    DEFAULT_AUTH_ERROR_MESSAGE: ClassVar[str] = "Authentication error occurred"  # Error message, not secret
+    DEFAULT_TOKEN_ERROR_MESSAGE: ClassVar[str] = "Token validation failed"  # Error message, not secret  # noqa: S105
+    DEFAULT_SESSION_ERROR_MESSAGE: ClassVar[str] = "Session validation failed"  # Error message, not secret
 
     # ==========================================================================
     # NESTED CLASSES FOR ORGANIZATION
@@ -51,10 +51,10 @@ class FlextAuthExceptionSystem(FlextExceptions):
         ACCOUNT_LOCKED = "AUTH_ACCOUNT_LOCKED"
         ACCOUNT_INACTIVE = "AUTH_ACCOUNT_INACTIVE"
 
-        # Token errors
-        TOKEN_ERROR = "AUTH_TOKEN_ERROR"
-        INVALID_TOKEN = "AUTH_INVALID_TOKEN"
-        EXPIRED_TOKEN = "AUTH_TOKEN_EXPIRED"
+        # Token errors (error codes, not passwords/secrets)
+        TOKEN_ERROR = "AUTH_TOKEN_ERROR"  # Error code, not secret  # noqa: S105
+        INVALID_TOKEN = "AUTH_INVALID_TOKEN"  # Error code, not secret  # noqa: S105
+        EXPIRED_TOKEN = "AUTH_TOKEN_EXPIRED"  # Error code, not secret  # noqa: S105
 
         # Session errors
         SESSION_ERROR = "AUTH_SESSION_ERROR"
@@ -66,9 +66,9 @@ class FlextAuthExceptionSystem(FlextExceptions):
         INSUFFICIENT_PERMISSION = "AUTH_INSUFFICIENT_PERMISSION"
         ROLE_REQUIRED = "AUTH_ROLE_REQUIRED"
 
-        # Validation errors
-        VALIDATION_ERROR = "AUTH_VALIDATION_ERROR"
-        PASSWORD_INVALID = "AUTH_PASSWORD_INVALID"
+        # Validation errors (error codes, not passwords/secrets)
+        VALIDATION_ERROR = "AUTH_VALIDATION_ERROR"  # Error code, not secret
+        PASSWORD_INVALID = "AUTH_PASSWORD_INVALID"  # Error code, not secret  # noqa: S105
 
     class AuthError(Exception):
         """NESTED CONSOLIDATED authentication exception handling all authentication scenarios.
@@ -380,10 +380,10 @@ class FlextAuthExceptionSystem(FlextExceptions):
 
     def validate_and_raise(
         self,
-        condition: bool,
+        *,
+        condition: bool,  # FBT001: Boolean condition parameter is appropriate for validation
         error_message: str,
         error_code: ErrorCodes | str | None = None,
-        *,
         username: str | None = None,
         user_id: str | None = None,
         token: str | None = None,
@@ -430,7 +430,6 @@ FlextAuthErrorCodes = FlextAuthExceptionSystem.ErrorCodes
 FlextAuthError = FlextAuthExceptionSystem.AuthError
 
 # All exception types are now just the single consolidated class
-FlextExceptions = FlextAuthExceptionSystem.AuthError
 FlextAuthorizationError = FlextAuthExceptionSystem.AuthError
 FlextInvalidCredentialsError = FlextAuthExceptionSystem.AuthError
 FlextAccountLockedError = FlextAuthExceptionSystem.AuthError
@@ -441,22 +440,21 @@ FlextExpiredTokenError = FlextAuthExceptionSystem.AuthError
 FlextSessionError = FlextAuthExceptionSystem.AuthError
 FlextInvalidSessionError = FlextAuthExceptionSystem.AuthError
 FlextExpiredSessionError = FlextAuthExceptionSystem.AuthError
-FlextExceptions = FlextAuthExceptionSystem.AuthError
 FlextInsufficientPermissionError = FlextAuthExceptionSystem.AuthError
 FlextRoleRequiredError = FlextAuthExceptionSystem.AuthError
-FlextExceptions = FlextAuthExceptionSystem.AuthError
 FlextPasswordValidationError = FlextAuthExceptionSystem.AuthError
 
+# Type alias for backward compatibility - FlextExceptions already imported from flext_core
+
 __all__: list[str] = [
-    "FlextAuthExceptionSystem",
-    # Main consolidated exception class
-    "FlextAuthError",
-    "FlextAuthErrorCodes",
-    # Backward compatibility aliases (all point to FlextAuthError)
+    # Main consolidated exception classes
     "FlextAccountInactiveError",
     "FlextAccountLockedError",
-    "FlextExceptions",
+    "FlextAuthError",
+    "FlextAuthErrorCodes",
+    "FlextAuthExceptionSystem",
     "FlextAuthorizationError",
+    "FlextExceptions",
     "FlextExpiredSessionError",
     "FlextExpiredTokenError",
     "FlextInsufficientPermissionError",
@@ -464,9 +462,7 @@ __all__: list[str] = [
     "FlextInvalidSessionError",
     "FlextInvalidTokenError",
     "FlextPasswordValidationError",
-    "FlextExceptions",
     "FlextRoleRequiredError",
     "FlextSessionError",
     "FlextTokenError",
-    "FlextExceptions",
 ]

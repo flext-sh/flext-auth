@@ -16,11 +16,11 @@ from typing import cast, override
 
 from flext_core import (
     FlextDomainService,
-    FlextModels,
     FlextExceptions,
-    FlextLogger,
+    FlextModels,
     FlextProtocols,
     FlextResult,
+    get_logger,
 )
 
 from flext_auth.constants import FlextAuthConstants, FlextAuthSemanticConstants
@@ -71,7 +71,7 @@ TokenCreator = Callable[[User, JWTClaims], Awaitable[FlextResult[dict[str, objec
 REFRESH_TOKEN_TYPE = FlextAuthConstants.TokenTypes.REFRESH
 
 # Initialize logger using FLEXT patterns
-logger: FlextLogger = FlextLogger(__name__)
+logger = get_logger(__name__)
 
 
 # REFACTORING: Parameter Object pattern to reduce parameter count
