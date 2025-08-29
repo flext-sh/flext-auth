@@ -14,7 +14,7 @@ import asyncio
 from pathlib import Path
 
 import pytest
-from flext_core import FlextContainer, FlextResult, get_logger
+from flext_core import FlextContainer, FlextLogger, FlextResult
 
 from flext_auth import (
     FlextAuth,
@@ -306,7 +306,7 @@ class TestIntegrationWithFlextCore:
     def test_flext_logging_integration(self) -> None:
         """Test that logging works correctly with flext-core patterns."""
         # Should be able to get logger
-        logger = get_logger("test_auth")
+        logger = FlextLogger("test_auth")
         assert logger is not None
 
         # Auth system should work with logging

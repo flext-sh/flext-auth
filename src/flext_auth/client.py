@@ -17,9 +17,9 @@ from flext_core import (
     FlextConstants,
     FlextContainer,
     FlextDomainService,
+    FlextLogger,
     FlextResult,
     FlextTypes,
-    get_logger,
 )
 
 from flext_auth.api import (
@@ -88,7 +88,7 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
         # Use dependency injection from flext-core
         self._container = container or FlextContainer.get_global()
         self._config = config or self._create_default_config()
-        self._logger = get_logger(__name__)
+        self._logger = FlextLogger(__name__)
 
         # Initialize internal services (private - external access via methods only)
         self._auth_container: FlextAuthContainer | None = None
@@ -115,7 +115,7 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             "auth_service_available": self._auth_service is not None,
             "timestamp": self.get_utc_now().isoformat(),
         }
-        return FlextResult.ok(health_data)
+        return FlextResult[FlextTypes.Core.Dict].ok(health_data)
 
     # =============================================================================
     # CONFIGURATION METHODS (replacing config functions)
@@ -147,14 +147,14 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             )
 
             if config_result.is_failure:
-                return FlextResult.fail(
+                return FlextResult[None].fail(
                     f"Container configuration failed: {config_result.error}"
                 )
 
             # Get configured services from container
             auth_service_result = self._auth_container.get_auth_service()
             if auth_service_result.is_failure:
-                return FlextResult.fail(
+                return FlextResult[None].fail(
                     f"Auth service not available: {auth_service_result.error}"
                 )
             self._auth_service = auth_service_result.value
@@ -169,10 +169,10 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
 
             self._is_configured = True
             self._logger.info("FlextAuthClient services configured successfully")
-            return FlextResult.ok(None)
+            return FlextResult[None].ok(None)
 
         except Exception as e:
-            return FlextResult.fail(f"Service configuration error: {e}")
+            return FlextResult[None].fail(f"Service configuration error: {e}")
 
     # =============================================================================
     # AUTHENTICATION METHODS (replacing auth functions)
@@ -189,12 +189,12 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
         if not self._auth_service:
             config_result = self.configure_services()
             if config_result.is_failure:
-                return FlextResult.fail(
+                return FlextResult[FlextTypes.Core.Dict].fail(
                     f"Service not configured: {config_result.error}"
                 )
 
         if self._auth_service is None:
-            return FlextResult.fail("Auth service not available")
+            return FlextResult[FlextTypes.Core.Dict].fail("Auth service not available")
 
         try:
             # Note: This will need to be adapted for sync operation
@@ -206,10 +206,10 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
                 "ip_address": ip_address,
                 "user_agent": user_agent,
             }
-            return FlextResult.ok(auth_data)
+            return FlextResult[FlextTypes.Core.Dict].ok(auth_data)
 
         except Exception as e:
-            return FlextResult.fail(f"Authentication error: {e}")
+            return FlextResult[FlextTypes.Core.Dict].fail(f"Authentication error: {e}")
 
     def register_user(
         self,
@@ -219,12 +219,12 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
         if not self._auth_service:
             config_result = self.configure_services()
             if config_result.is_failure:
-                return FlextResult.fail(
+                return FlextResult[FlextTypes.Core.Dict].fail(
                     f"Service not configured: {config_result.error}"
                 )
 
         if self._auth_service is None:
-            return FlextResult.fail("Auth service not available")
+            return FlextResult[FlextTypes.Core.Dict].fail("Auth service not available")
 
         try:
             # Note: This will need to be adapted for sync operation
@@ -235,22 +235,22 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
                 "email": registration_data.email,
                 "registered": True,
             }
-            return FlextResult.ok(register_data)
+            return FlextResult[FlextTypes.Core.Dict].ok(register_data)
 
         except Exception as e:
-            return FlextResult.fail(f"Registration error: {e}")
+            return FlextResult[FlextTypes.Core.Dict].fail(f"Registration error: {e}")
 
     def validate_token(self, token: str) -> FlextResult[FlextTypes.Core.Dict]:
         """Validate JWT token (method replacing token validation functions)."""
         if not self._auth_service:
             config_result = self.configure_services()
             if config_result.is_failure:
-                return FlextResult.fail(
+                return FlextResult[FlextTypes.Core.Dict].fail(
                     f"Service not configured: {config_result.error}"
                 )
 
         if self._auth_service is None:
-            return FlextResult.fail("Auth service not available")
+            return FlextResult[FlextTypes.Core.Dict].fail("Auth service not available")
 
         try:
             # Note: This will need to be adapted for sync operation
@@ -258,16 +258,20 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             jwt_validation = self.validate_jwt(token)
             if jwt_validation.is_success:
                 jwt_data = jwt_validation.value
-                return FlextResult.ok({
+                return FlextResult[FlextTypes.Core.Dict].ok({
                     "user_id": jwt_data.get("user_id", "unknown"),
                     "username": jwt_data.get("username", "unknown"),
                     "role": jwt_data.get("role", "user"),
                     "valid": True,
                 })
-            return FlextResult.fail(jwt_validation.error or "Token validation failed")
+            return FlextResult[FlextTypes.Core.Dict].fail(
+                jwt_validation.error or "Token validation failed"
+            )
 
         except Exception as e:
-            return FlextResult.fail(f"Token validation error: {e}")
+            return FlextResult[FlextTypes.Core.Dict].fail(
+                f"Token validation error: {e}"
+            )
 
     # =============================================================================
     # PASSWORD METHODS (replacing password utility functions)
@@ -280,11 +284,11 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             hashed = flext_auth_hash_password(password)
             if hashed.is_success:
                 # FlextResult has both .data and .value properties (identical)
-                return FlextResult.ok(hashed.value)
-            return FlextResult.fail(hashed.error or "Password hashing failed")
+                return FlextResult[str].ok(hashed.value)
+            return FlextResult[str].fail(hashed.error or "Password hashing failed")
 
         except Exception as e:
-            return FlextResult.fail(f"Password hashing error: {e}")
+            return FlextResult[str].fail(f"Password hashing error: {e}")
 
     def verify_password(self, password: str, hashed_password: str) -> FlextResult[bool]:
         """Verify password against hash (method replacing flext_auth_verify_password)."""
@@ -293,11 +297,13 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             verified = flext_auth_verify_password(password, hashed_password)
             if verified.is_success:
                 # FlextResult has both .data and .value properties (identical)
-                return FlextResult.ok(verified.value)
-            return FlextResult.fail(verified.error or "Password verification failed")
+                return FlextResult[bool].ok(verified.value)
+            return FlextResult[bool].fail(
+                verified.error or "Password verification failed"
+            )
 
         except Exception as e:
-            return FlextResult.fail(f"Password verification error: {e}")
+            return FlextResult[bool].fail(f"Password verification error: {e}")
 
     def validate_password_strength(self, password: str) -> FlextResult[bool]:
         """Validate password strength (method replacing flext_auth_validate_password_strength)."""
@@ -306,11 +312,13 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             validation = flext_auth_validate_password_strength(password)
             if validation.is_success:
                 # FlextResult has both .data and .value properties (identical)
-                return FlextResult.ok(validation.value)
-            return FlextResult.fail(validation.error or "Password validation failed")
+                return FlextResult[bool].ok(validation.value)
+            return FlextResult[bool].fail(
+                validation.error or "Password validation failed"
+            )
 
         except Exception as e:
-            return FlextResult.fail(f"Password strength validation error: {e}")
+            return FlextResult[bool].fail(f"Password strength validation error: {e}")
 
     def is_strong_password(self, password: str) -> bool:
         """Check if password is strong (method replacing is_strong_password function)."""
@@ -338,11 +346,11 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             jwt_result = flext_auth_generate_jwt(user_id, username, role)
             if jwt_result.is_success:
                 # FlextResult has both .data and .value properties (identical)
-                return FlextResult.ok(jwt_result.value)
-            return FlextResult.fail(jwt_result.error or "JWT generation failed")
+                return FlextResult[str].ok(jwt_result.value)
+            return FlextResult[str].fail(jwt_result.error or "JWT generation failed")
 
         except Exception as e:
-            return FlextResult.fail(f"JWT generation error: {e}")
+            return FlextResult[str].fail(f"JWT generation error: {e}")
 
     def validate_jwt(self, token: str) -> FlextResult[FlextTypes.Core.Dict]:
         """Validate JWT token format (method replacing flext_auth_validate_jwt)."""
@@ -351,11 +359,13 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             validation_result = flext_auth_validate_jwt(token)
             if validation_result.is_success:
                 # FlextResult has both .data and .value properties (identical)
-                return FlextResult.ok(validation_result.value)
-            return FlextResult.fail(validation_result.error or "JWT validation failed")
+                return FlextResult[FlextTypes.Core.Dict].ok(validation_result.value)
+            return FlextResult[FlextTypes.Core.Dict].fail(
+                validation_result.error or "JWT validation failed"
+            )
 
         except Exception as e:
-            return FlextResult.fail(f"JWT validation error: {e}")
+            return FlextResult[FlextTypes.Core.Dict].fail(f"JWT validation error: {e}")
 
     # =============================================================================
     # VALIDATION METHODS (replacing validation utility functions)
@@ -367,10 +377,10 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             # Use internal method that replicates flext_auth_validate_email
             # Note: flext_auth_validate_email returns boolean directly, not FlextResult
             validation = flext_auth_validate_email(email)
-            return FlextResult.ok(validation)
+            return FlextResult[bool].ok(validation)
 
         except Exception as e:
-            return FlextResult.fail(f"Email validation error: {e}")
+            return FlextResult[bool].fail(f"Email validation error: {e}")
 
     # =============================================================================
     # UTILITY METHODS (replacing utility functions)
@@ -404,7 +414,7 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             # Configure services first
             config_result = self.configure_services()
             if config_result.is_failure:
-                return FlextResult.fail(
+                return FlextResult[FlextAuth].fail(
                     f"Quick start configuration failed: {config_result.error}"
                 )
 
@@ -419,10 +429,10 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
                 REDACTED_LDAP_BIND_PASSWORD_password=REDACTED_LDAP_BIND_PASSWORD_password,
             )
             # quick_start_result is FlextAuth instance, not FlextResult
-            return FlextResult.ok(quick_start_result)
+            return FlextResult[FlextAuth].ok(quick_start_result)
 
         except Exception as e:
-            return FlextResult.fail(f"Quick start error: {e}")
+            return FlextResult[FlextAuth].fail(f"Quick start error: {e}")
 
     # =============================================================================
     # CONTAINER METHODS (replacing container functions)
@@ -431,31 +441,41 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
     def get_auth_services(self) -> FlextResult[FlextTypes.Core.Dict]:
         """Get all configured authentication services."""
         if not self._auth_container:
-            return FlextResult.fail("Authentication container not configured")
+            return FlextResult[FlextTypes.Core.Dict].fail(
+                "Authentication container not configured"
+            )
 
         services_result = self._auth_container.get_auth_services()
         if services_result.is_success:
-            return FlextResult.ok(services_result.value)
-        return FlextResult.fail(services_result.error or "Failed to get auth services")
+            return FlextResult[FlextTypes.Core.Dict].ok(services_result.value)
+        return FlextResult[FlextTypes.Core.Dict].fail(
+            services_result.error or "Failed to get auth services"
+        )
 
     def get_auth_service(self) -> FlextResult[FlextAuthService]:
         """Get main authentication service."""
         if not self._auth_container:
-            return FlextResult.fail("Authentication container not configured")
+            return FlextResult[FlextAuthService].fail(
+                "Authentication container not configured"
+            )
 
         return self._auth_container.get_auth_service()
 
     def get_password_service(self) -> FlextResult[FlextPasswordService]:
         """Get password service."""
         if not self._auth_container:
-            return FlextResult.fail("Authentication container not configured")
+            return FlextResult[FlextPasswordService].fail(
+                "Authentication container not configured"
+            )
 
         return self._auth_container.get_password_service()
 
     def get_jwt_service(self) -> FlextResult[FlextJWTService]:
         """Get JWT service."""
         if not self._auth_container:
-            return FlextResult.fail("Authentication container not configured")
+            return FlextResult[FlextJWTService].fail(
+                "Authentication container not configured"
+            )
 
         return self._auth_container.get_jwt_service()
 
@@ -482,7 +502,7 @@ class FlextAuthClient(FlextDomainService[FlextTypes.Core.Dict]):
             except Exception:
                 health_data["password_service_working"] = False
 
-        return FlextResult.ok(health_data)
+        return FlextResult[FlextTypes.Core.Dict].ok(health_data)
 
 
 # =============================================================================

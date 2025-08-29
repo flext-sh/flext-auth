@@ -21,10 +21,10 @@ import jwt
 from flext_core import (
     FlextDomainService,
     FlextExceptions,
+    FlextLogger,
     FlextModels,
     FlextProtocols,
     FlextResult,
-    get_logger,
 )
 from pydantic import ConfigDict, Field
 
@@ -82,7 +82,7 @@ SESSION_INVALID = False
 LOGOUT_SUCCESS = True
 
 # Initialize logger using FLEXT patterns
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 # =============================================================================
@@ -1060,31 +1060,29 @@ class FlextAuthenticationService(FlextDomainService[bool]):  # AUTH
         """
         try:
             deps = self._create_auth_service_dependencies()
-            return FlextResult[str].ok(
-                {
-                    "service_type": "authentication",
-                    "capabilities": {
-                        "user_creation": True,
-                        "user_authentication": True,
-                        "password_change": True,
-                        "strategy_pattern": True,
-                        "validation_strategies": {
-                            "password_strength": True,
-                            "user_validation": True,
-                            "REDACTED_LDAP_BIND_PASSWORD_permission": True,
-                            "role_based_permission": True,
-                        },
+            return FlextResult[str].ok({
+                "service_type": "authentication",
+                "capabilities": {
+                    "user_creation": True,
+                    "user_authentication": True,
+                    "password_change": True,
+                    "strategy_pattern": True,
+                    "validation_strategies": {
+                        "password_strength": True,
+                        "user_validation": True,
+                        "REDACTED_LDAP_BIND_PASSWORD_permission": True,
+                        "role_based_permission": True,
                     },
-                    "repositories": {
-                        "user_repository": "in_memory",
-                        "session_repository": "in_memory",
-                    },
-                    "services": {
-                        "password_service": deps.password_service.__class__.__name__,
-                        "jwt_service": deps.jwt_service.__class__.__name__,
-                    },
-                }
-            )
+                },
+                "repositories": {
+                    "user_repository": "in_memory",
+                    "session_repository": "in_memory",
+                },
+                "services": {
+                    "password_service": deps.password_service.__class__.__name__,
+                    "jwt_service": deps.jwt_service.__class__.__name__,
+                },
+            })
         except Exception as e:
             return FlextResult[str].fail(f"Service information retrieval failed: {e}")
 
@@ -1124,17 +1122,18 @@ class FlextAuthenticationService(FlextDomainService[bool]):  # AUTH
         """Create user using Strategy Pattern validation."""
         try:
             # Use Strategy Pattern for validation
-            user_validation = self._deps.user_validation_strategy.validate(
-                {"username": username, "email": email}
-            )
+            user_validation = self._deps.user_validation_strategy.validate({
+                "username": username,
+                "email": email,
+            })
             if not user_validation.success:
                 return FlextResult[FlextUser].fail(
                     user_validation.error or "User validation failed",
                 )
 
-            password_validation = self._deps.password_validation_strategy.validate(
-                {"password": password}
-            )
+            password_validation = self._deps.password_validation_strategy.validate({
+                "password": password
+            })
             if not password_validation.success:
                 return FlextResult[FlextUser].fail(
                     password_validation.error or "Password validation failed",
@@ -1206,9 +1205,9 @@ class FlextAuthenticationService(FlextDomainService[bool]):  # AUTH
                 if not verify_current.success or not verify_current.value:
                     return FlextResult[bool].fail("Current password is incorrect")
             # Use Strategy Pattern for password validation
-            validation_result = self._deps.password_validation_strategy.validate(
-                {"password": new_password}
-            )
+            validation_result = self._deps.password_validation_strategy.validate({
+                "password": new_password
+            })
             if not validation_result.success:
                 return FlextResult[bool].fail(
                     validation_result.error or "Validation failed",
@@ -1275,29 +1274,27 @@ class FlextAuthorizationService(FlextDomainService[bool]):
         """
         try:
             deps = self._create_auth_service_dependencies()
-            return FlextResult[str].ok(
-                {
-                    "service_type": "authorization",
-                    "capabilities": {
-                        "role_creation": True,
-                        "permission_checking": True,
-                        "user_permissions": True,
-                        "strategy_pattern": True,
-                        "permission_strategies": {
-                            "REDACTED_LDAP_BIND_PASSWORD_permission": True,
-                            "role_based_permission": True,
-                        },
+            return FlextResult[str].ok({
+                "service_type": "authorization",
+                "capabilities": {
+                    "role_creation": True,
+                    "permission_checking": True,
+                    "user_permissions": True,
+                    "strategy_pattern": True,
+                    "permission_strategies": {
+                        "REDACTED_LDAP_BIND_PASSWORD_permission": True,
+                        "role_based_permission": True,
                     },
-                    "repositories": {
-                        "user_repository": "in_memory",
-                        "session_repository": "in_memory",
-                    },
-                    "services": {
-                        "password_service": deps.password_service.__class__.__name__,
-                        "jwt_service": deps.jwt_service.__class__.__name__,
-                    },
-                }
-            )
+                },
+                "repositories": {
+                    "user_repository": "in_memory",
+                    "session_repository": "in_memory",
+                },
+                "services": {
+                    "password_service": deps.password_service.__class__.__name__,
+                    "jwt_service": deps.jwt_service.__class__.__name__,
+                },
+            })
         except Exception as e:
             return FlextResult[str].fail(f"Service information retrieval failed: {e}")
 
@@ -1465,17 +1462,15 @@ class FlextSessionService(FlextDomainService[str]):
 
     def execute(self) -> FlextResult[str]:
         """Execute service information retrieval."""
-        return FlextResult[str].ok(
-            {
-                "service_type": "FlextSessionService",
-                "capabilities": [
-                    "create_session",
-                    "validate_session",
-                    "revoke_session",
-                ],
-                "description": "Enterprise session management with lifecycle operations",
-            }
-        )
+        return FlextResult[str].ok({
+            "service_type": "FlextSessionService",
+            "capabilities": [
+                "create_session",
+                "validate_session",
+                "revoke_session",
+            ],
+            "description": "Enterprise session management with lifecycle operations",
+        })
 
     def _create_auth_service_dependencies(self) -> ServiceDependencies:
         """Create service dependencies with strategies."""

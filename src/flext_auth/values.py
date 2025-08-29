@@ -64,7 +64,9 @@ class FlextUsername(FlextModels.Value):
         if len(self.value) > MAX_USERNAME_LENGTH:
             msg = "Username must be at most 50 characters"
             return FlextResult[None].fail(msg)
-        if not re.match(FlextConstants.Patterns.ALPHANUMERIC_UNDERSCORE_DASH, self.value):
+        if not re.match(
+            FlextConstants.Patterns.ALPHANUMERIC_UNDERSCORE_DASH, self.value
+        ):
             msg = "Username can only contain letters, numbers, underscores, and hyphens"
             return FlextResult[None].fail(msg)
         return FlextResult[None].ok(None)
@@ -233,7 +235,7 @@ class FlextAuthToken(FlextModels.Value):
 
 # =============================================================================
 # =============================================================================
-# TOKEN VALUE OBJECTS - Using flext-core FlextValue directly (no local base classes)
+# TOKEN VALUE OBJECTS - Using flext-core FlextModels.Value directly (no local base classes)
 # =============================================================================
 
 

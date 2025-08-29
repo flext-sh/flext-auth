@@ -61,14 +61,12 @@ mock_flext_core = types.ModuleType("flext_core")
 mock_flext_core.FlextResult = MockFlextResult
 mock_flext_core.FlextDomainService = MockFlextDomainService
 mock_flext_core.FlextConstants = MockFlextConstants
-mock_flext_core.FlextValue = MockFlextValue
+mock_flext_core.FlextModels.Value = MockFlextValue
 mock_flext_core.FlextExceptions = MockFlextValidationError
-mock_flext_core.get_logger = mock_get_logger
+mock_flext_core.FlextLogger = mock_get_logger
 
 # Add other potential imports
-mock_flext_core.FlextExceptions = type(
-    "FlextExceptions", (Exception,), {}
-)
+mock_flext_core.FlextExceptions = type("FlextExceptions", (Exception,), {})
 
 # Inject the mock into sys.modules
 sys.modules["flext_core"] = mock_flext_core

@@ -15,7 +15,7 @@ from abc import abstractmethod
 from typing import Never
 
 from flext_core import (
-    FlextBaseConfigModel,
+    FlextConfig.BaseConfigModel,
     FlextConfig,
     FlextConstants,
     FlextModel,
@@ -89,7 +89,7 @@ class FlextAuthConstants:
 # =============================================================================
 
 
-class FlextAuthConfig(FlextBaseConfigModel):
+class FlextAuthConfig(FlextConfig.BaseConfigModel):
     """Centralized authentication configuration using flext-core models."""
 
     # Application settings
@@ -167,8 +167,8 @@ class FlextAuthConfig(FlextBaseConfigModel):
     )
 
 
-class FlextAuthApplicationConfig(FlextBaseConfigModel):
-    """Complete application configuration extending FlextBaseConfigModel."""
+class FlextAuthApplicationConfig(FlextConfig.BaseConfigModel):
+    """Complete application configuration extending FlextConfig.BaseConfigModel."""
 
     # Override app-specific defaults
     app_name: str = Field(default="FlextAuth", description="Application name")

@@ -11,7 +11,7 @@ import secrets
 import string
 
 import bcrypt
-from flext_core import FlextDomainService, FlextExceptions, FlextResult, get_logger
+from flext_core import FlextDomainService, FlextExceptions, FlextLogger, FlextResult
 from pydantic import Field
 
 from flext_auth.constants import FlextAuthConstants
@@ -35,7 +35,7 @@ SECONDS_PER_DAY = 86400
 SECONDS_PER_YEAR = 31536000
 TOKEN_BYTES = 32
 
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 class FlextPasswordService(FlextDomainService[dict[str, object]]):

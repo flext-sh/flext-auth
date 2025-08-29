@@ -13,7 +13,7 @@ import secrets
 import string
 from datetime import UTC, datetime
 
-from flext_core import FlextConstants, FlextModels, FlextResult, get_logger
+from flext_core import FlextConstants, FlextLogger, FlextModels, FlextResult
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
@@ -549,24 +549,25 @@ def flext_auth_quick_start(
 
     # Create default REDACTED_LDAP_BIND_PASSWORD user if requested
     if create_REDACTED_LDAP_BIND_PASSWORD:
-
         # Generate secure REDACTED_LDAP_BIND_PASSWORD password
         REDACTED_LDAP_BIND_PASSWORD_password = f"REDACTED_LDAP_BIND_PASSWORD_{secrets.token_urlsafe(12)}"
 
         # Create REDACTED_LDAP_BIND_PASSWORD user (sync version)
         try:
-            result = asyncio.run(auth.create_user(
-                username="REDACTED_LDAP_BIND_PASSWORD",
-                email="REDACTED_LDAP_BIND_PASSWORD@example.com",
-                password=REDACTED_LDAP_BIND_PASSWORD_password,
-                role="REDACTED_LDAP_BIND_PASSWORD"
-            ))
+            result = asyncio.run(
+                auth.create_user(
+                    username="REDACTED_LDAP_BIND_PASSWORD",
+                    email="REDACTED_LDAP_BIND_PASSWORD@example.com",
+                    password=REDACTED_LDAP_BIND_PASSWORD_password,
+                    role="REDACTED_LDAP_BIND_PASSWORD",
+                )
+            )
             if result.success:
-                logger = get_logger(__name__)
+                logger = FlextLogger(__name__)
                 logger.info("Admin user created with password: %s", REDACTED_LDAP_BIND_PASSWORD_password)
         except Exception as e:
             # Admin creation failed - continue without REDACTED_LDAP_BIND_PASSWORD
-            logger = get_logger(__name__)
+            logger = FlextLogger(__name__)
             logger.warning("Failed to create REDACTED_LDAP_BIND_PASSWORD user: %s", e)
 
     return auth

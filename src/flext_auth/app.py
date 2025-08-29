@@ -11,7 +11,7 @@ import os
 import secrets
 from dataclasses import dataclass
 
-from flext_core import FlextDomainService, FlextResult, get_logger
+from flext_core import FlextDomainService, FlextResult
 from pydantic import Field
 
 from flext_auth.entities import FlextUser

@@ -16,9 +16,9 @@ from datetime import UTC, datetime
 from typing import ParamSpec, cast
 
 from flext_core import (
+    FlextLogger,
     FlextProtocols,
     FlextResult,
-    get_logger,
 )
 
 from flext_auth.auth import FlextAuthService
@@ -92,7 +92,7 @@ class _DjangoRequest(FlextProtocols.Infrastructure.Connection):
 
 
 # Use centralized logger from flext-core
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 # =============================================================================
 # TYPE DEFINITIONS - Decorator and Mixin types

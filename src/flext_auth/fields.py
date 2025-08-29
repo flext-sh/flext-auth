@@ -37,7 +37,9 @@ USERNAME_FIELD = FlextFields.Core.StringField(
     required=True,
     description="User login identifier",
 )
-_registry.register_field("auth_username", cast("FlextFields.Core.BaseField[object]", USERNAME_FIELD))
+_registry.register_field(
+    "auth_username", cast("FlextFields.Core.BaseField[object]", USERNAME_FIELD)
+)
 
 # Email field using flext-core EMAIL_PATTERN
 EMAIL_FIELD = FlextFields.Core.EmailField(
@@ -45,7 +47,9 @@ EMAIL_FIELD = FlextFields.Core.EmailField(
     required=True,
     description="User email address for authentication and communication",
 )
-_registry.register_field("auth_email", cast("FlextFields.Core.BaseField[object]", EMAIL_FIELD))
+_registry.register_field(
+    "auth_email", cast("FlextFields.Core.BaseField[object]", EMAIL_FIELD)
+)
 
 # Password field (for validation, not storage)
 PASSWORD_FIELD = FlextFields.Core.StringField(
@@ -55,7 +59,9 @@ PASSWORD_FIELD = FlextFields.Core.StringField(
     required=True,
     description="User password meeting security requirements",
 )
-_registry.register_field("auth_password", cast("FlextFields.Core.BaseField[object]", PASSWORD_FIELD))
+_registry.register_field(
+    "auth_password", cast("FlextFields.Core.BaseField[object]", PASSWORD_FIELD)
+)
 
 # User role field with allowed values - Note: API doesn't support allowed_values directly
 ROLE_FIELD = FlextFields.Core.StringField(
@@ -64,7 +70,9 @@ ROLE_FIELD = FlextFields.Core.StringField(
     default="user",
     description="User authorization role",
 )
-_registry.register_field("auth_role", cast("FlextFields.Core.BaseField[object]", ROLE_FIELD))
+_registry.register_field(
+    "auth_role", cast("FlextFields.Core.BaseField[object]", ROLE_FIELD)
+)
 
 # User status field
 STATUS_FIELD = FlextFields.Core.StringField(
@@ -73,7 +81,9 @@ STATUS_FIELD = FlextFields.Core.StringField(
     default="pending",
     description="Current user account status",
 )
-_registry.register_field("auth_status", cast("FlextFields.Core.BaseField[object]", STATUS_FIELD))
+_registry.register_field(
+    "auth_status", cast("FlextFields.Core.BaseField[object]", STATUS_FIELD)
+)
 
 # Session expiry field
 SESSION_EXPIRE_FIELD = FlextFields.Core.IntegerField(
@@ -84,7 +94,10 @@ SESSION_EXPIRE_FIELD = FlextFields.Core.IntegerField(
     required=False,
     description="Session expiration time in hours",
 )
-_registry.register_field("auth_session_expire", cast("FlextFields.Core.BaseField[object]", SESSION_EXPIRE_FIELD))
+_registry.register_field(
+    "auth_session_expire",
+    cast("FlextFields.Core.BaseField[object]", SESSION_EXPIRE_FIELD),
+)
 
 # Failed login attempts field
 FAILED_ATTEMPTS_FIELD = FlextFields.Core.IntegerField(
@@ -95,7 +108,10 @@ FAILED_ATTEMPTS_FIELD = FlextFields.Core.IntegerField(
     required=False,
     description="Count of consecutive failed login attempts",
 )
-_registry.register_field("auth_failed_attempts", cast("FlextFields.Core.BaseField[object]", FAILED_ATTEMPTS_FIELD))
+_registry.register_field(
+    "auth_failed_attempts",
+    cast("FlextFields.Core.BaseField[object]", FAILED_ATTEMPTS_FIELD),
+)
 
 # Account lockout enabled field
 LOCKOUT_ENABLED_FIELD = FlextFields.Core.BooleanField(
@@ -104,7 +120,10 @@ LOCKOUT_ENABLED_FIELD = FlextFields.Core.BooleanField(
     required=False,
     description="Whether account lockout is enabled for security",
 )
-_registry.register_field("auth_lockout_enabled", cast("FlextFields.Core.BaseField[object]", LOCKOUT_ENABLED_FIELD))
+_registry.register_field(
+    "auth_lockout_enabled",
+    cast("FlextFields.Core.BaseField[object]", LOCKOUT_ENABLED_FIELD),
+)
 
 # =============================================================================
 # AUTHENTICATION FIELD SCHEMA - Complete validation schema
@@ -175,7 +194,9 @@ class FlextAuthFieldSchema:
         for optional_field in optional_fields:
             field_name = optional_field.name
             if field_name in user_data:
-                opt_validation_result: FlextResult[object] = optional_field.validate(user_data[field_name])
+                opt_validation_result: FlextResult[object] = optional_field.validate(
+                    user_data[field_name]
+                )
                 if opt_validation_result.is_failure:
                     return FlextResult[dict[str, object]].fail(
                         f"Field '{field_name}' validation failed: "
@@ -595,7 +616,9 @@ def validate_role(role: str) -> FlextResult[str]:
     return FlextResult[str].ok(role)
 
 
-def get_auth_field_by_name(field_name: str) -> FlextResult[FlextFields.Core.BaseField[object]]:
+def get_auth_field_by_name(
+    field_name: str,
+) -> FlextResult[FlextFields.Core.BaseField[object]]:
     """Get authentication field by name from the registry.
 
     Args:

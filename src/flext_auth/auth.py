@@ -17,11 +17,12 @@ from typing import cast, override
 from flext_core import (
     FlextDomainService,
     FlextExceptions,
+    FlextLogger,
     FlextModels,
     FlextProtocols,
     FlextResult,
-    get_logger,
 )
+from flext_core.result import FlextResult
 
 from flext_auth.constants import FlextAuthConstants, FlextAuthSemanticConstants
 from flext_auth.entities import (
@@ -71,7 +72,7 @@ TokenCreator = Callable[[User, JWTClaims], Awaitable[FlextResult[dict[str, objec
 REFRESH_TOKEN_TYPE = FlextAuthConstants.TokenTypes.REFRESH
 
 # Initialize logger using FLEXT patterns
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 
 # REFACTORING: Parameter Object pattern to reduce parameter count
@@ -597,8 +598,10 @@ class DefaultUserManagementStrategy(UserManagementStrategy):
     ) -> FlextResult[User]:
         """Register new user."""
         # Check if username already exists
-        existing_user_result = await self.user_repo.get_by_username(
-            registration_data.username,
+        existing_user_result: FlextResult[FlextUser | None] = (
+            self.user_repo.get_by_username(
+                registration_data.username,
+            )
         )
         if existing_user_result.success and existing_user_result.value:
             return FlextResult[User].fail("Username already exists")
@@ -2118,19 +2121,17 @@ class FlextAuthService(FlextDomainService[str]):
         Implementation of abstract method from FlextDomainService.
         Returns service status and configuration information.
         """
-        return FlextResult[dict[str, object]].ok(
-            {
-                "service": "FlextAuthService",
-                "status": "ready",
-                "max_failed_attempts": self.max_failed_attempts,
-                "lockout_duration_minutes": self.lockout_duration_minutes,
-                "session_expire_hours": self.session_expire_hours,
-                "max_concurrent_sessions": self.max_concurrent_sessions,
-                "strategies": {
-                    "auth_strategy": type(self.auth_strategy).__name__,
-                    "token_strategy": type(self.token_strategy).__name__,
-                    "session_strategy": type(self.session_strategy).__name__,
-                    "user_strategy": type(self.user_strategy).__name__,
-                },
-            }
-        )
+        return FlextResult[dict[str, object]].ok({
+            "service": "FlextAuthService",
+            "status": "ready",
+            "max_failed_attempts": self.max_failed_attempts,
+            "lockout_duration_minutes": self.lockout_duration_minutes,
+            "session_expire_hours": self.session_expire_hours,
+            "max_concurrent_sessions": self.max_concurrent_sessions,
+            "strategies": {
+                "auth_strategy": type(self.auth_strategy).__name__,
+                "token_strategy": type(self.token_strategy).__name__,
+                "session_strategy": type(self.session_strategy).__name__,
+                "user_strategy": type(self.user_strategy).__name__,
+            },
+        })

@@ -58,17 +58,30 @@ class MockFlextDomainService(MockFlextModel, MockFlextSerializableMixin):
 class MockFlextProtocols:
     class Domain:
         class Repository:
-            def get_by_id(self, id) -> Never: raise NotImplementedError
-            def save(self, entity) -> Never: raise NotImplementedError
-            def delete(self, id) -> Never: raise NotImplementedError
-            def find_all(self) -> Never: raise NotImplementedError
+            def get_by_id(self, id) -> Never:
+                raise NotImplementedError
+
+            def save(self, entity) -> Never:
+                raise NotImplementedError
+
+            def delete(self, id) -> Never:
+                raise NotImplementedError
+
+            def find_all(self) -> Never:
+                raise NotImplementedError
 
 
 def mock_get_logger(name):
     class MockLogger:
-        def warning(self, msg) -> None: pass
-        def info(self, msg) -> None: pass
-        def error(self, msg) -> None: pass
+        def warning(self, msg) -> None:
+            pass
+
+        def info(self, msg) -> None:
+            pass
+
+        def error(self, msg) -> None:
+            pass
+
     return MockLogger()
 
 
@@ -79,7 +92,7 @@ mock_flext_core.FlextExceptions = MockFlextExceptions
 mock_flext_core.FlextDomainService = MockFlextDomainService
 mock_flext_core.FlextModel = MockFlextModel
 mock_flext_core.FlextSerializableMixin = MockFlextSerializableMixin
-mock_flext_core.get_logger = mock_get_logger
+mock_flext_core.FlextLogger = mock_get_logger
 mock_flext_core.FlextProtocols = MockFlextProtocols
 
 sys.modules["flext_core"] = mock_flext_core
@@ -133,5 +146,6 @@ try:
 
 except Exception:
     import traceback
+
     traceback.print_exc()
     sys.exit(1)

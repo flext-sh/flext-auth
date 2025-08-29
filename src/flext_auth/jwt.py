@@ -16,7 +16,7 @@ from enum import StrEnum
 from typing import ClassVar
 
 import jwt
-from flext_core import FlextDomainService, FlextResult, get_logger
+from flext_core import FlextDomainService, FlextLogger, FlextResult
 from jwt import ExpiredSignatureError, InvalidTokenError
 from pydantic import ConfigDict
 
@@ -348,7 +348,7 @@ class FlextJWTSystem(FlextDomainService[dict[str, object]]):
                 return FlextResult[bool].ok(bool(is_expired))
 
             except (ValueError, TypeError, OSError) as e:
-                logger = get_logger(__name__)
+                logger = FlextLogger(__name__)
                 logger.warning(f"Token expiry check failed: {e}")
                 return FlextResult[bool].fail(f"Token expiry check failed: {e}")
 
@@ -384,24 +384,26 @@ class FlextJWTSystem(FlextDomainService[dict[str, object]]):
 
         # Now we can safely set custom attributes
         config = self._jwt_config
-        object.__setattr__(self, "_service", self.Service(
-            secret_key=config["secret_key"],
-            algorithm=config["algorithm"],
-            access_token_expire_minutes=config["access_token_expire_minutes"],
-            refresh_token_expire_days=config["refresh_token_expire_days"],
-        ))
-        object.__setattr__(self, "_logger", get_logger(__name__))
+        object.__setattr__(
+            self,
+            "_service",
+            self.Service(
+                secret_key=config["secret_key"],
+                algorithm=config["algorithm"],
+                access_token_expire_minutes=config["access_token_expire_minutes"],
+                refresh_token_expire_days=config["refresh_token_expire_days"],
+            ),
+        )
+        object.__setattr__(self, "_logger", FlextLogger(__name__))
 
     def execute(self) -> FlextResult[dict[str, object]]:
         """Execute JWT system validation and return system info."""
-        return FlextResult[dict[str, object]].ok(
-            {
-                "algorithm": self._service.algorithm,
-                "access_token_expire_minutes": self._service.access_token_expire_minutes,
-                "refresh_token_expire_days": self._service.refresh_token_expire_days,
-                "status": "initialized",
-            }
-        )
+        return FlextResult[dict[str, object]].ok({
+            "algorithm": self._service.algorithm,
+            "access_token_expire_minutes": self._service.access_token_expire_minutes,
+            "refresh_token_expire_days": self._service.refresh_token_expire_days,
+            "status": "initialized",
+        })
 
     # ==========================================================================
     # PUBLIC API METHODS - Delegate to internal service
@@ -475,7 +477,7 @@ TokenType = FlextJWTSystem.TokenType
 FlextJWTService = FlextJWTSystem
 
 # Initialize logger using FLEXT patterns
-logger = get_logger(__name__)
+logger = FlextLogger(__name__)
 
 __all__ = [
     "DEV_SECRET_KEY",
