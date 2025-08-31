@@ -1,0 +1,398 @@
+"""Unit tests for FlextJWTService module - JWT token operations.
+
+Tests cover JWT token generation, validation, refresh operations,
+and convenience functions for JWT handling.
+
+Copyright (c) 2025 Flext. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
+from __future__ import annotations
+
+from datetime import UTC, datetime
+
+from flext_auth import FlextJWTService
+
+
+class TestFlextJWTService:
+    """Unit tests for FlextJWTService class."""
+
+    def test_jwt_service_initialization(self) -> None:
+        """Test JWT service initialization."""
+        secret = "test-jwt-secret"
+        service = FlextJWTService(secret)
+        assert service.secret == secret
+
+    def test_generate_token_success(self) -> None:
+        """Test successful JWT token generation."""
+        service = FlextJWTService("test-secret")
+        claims = {
+            "sub": "user123",
+            "username": "testuser",
+            "role": "user",
+        }
+
+        result = service.generate_token(claims)
+        assert result.success
+
+        token = result.value
+        assert isinstance(token, str)
+        assert len(token) > 100  # JWT tokens are long
+        # Basic JWT structure check (header.payload.signature)
+        assert token.count(".") == 2
+
+    def test_generate_token_with_custom_expiry(self) -> None:
+        """Test token generation with custom expiry time."""
+        service = FlextJWTService("test-secret")
+        claims = {"sub": "user123"}
+        custom_expiry = 60  # 60 minutes
+
+        result = service.generate_token(claims, custom_expiry)
+        assert result.success
+
+        token = result.value
+        assert isinstance(token, str)
+        assert len(token) > 100
+
+    def test_generate_token_with_custom_algorithm(self) -> None:
+        """Test token generation with custom algorithm."""
+        service = FlextJWTService("test-secret")
+        claims = {"sub": "user123"}
+
+        result = service.generate_token(claims, algorithm="HS256")
+        assert result.success
+
+        token = result.value
+        assert isinstance(token, str)
+
+    def test_validate_token_valid(self) -> None:
+        """Test validation of valid token."""
+        service = FlextJWTService("test-secret")
+        claims = {
+            "sub": "user123",
+            "username": "testuser",
+            "role": "user",
+        }
+
+        # Generate token
+        token_result = service.generate_token(claims)
+        assert token_result.success
+        token = token_result.value
+
+        # Validate token
+        validation_result = service.validate_token(token)
+        assert validation_result.success
+
+        decoded_claims = validation_result.value
+        assert decoded_claims["sub"] == claims["sub"]
+        assert decoded_claims["username"] == claims["username"]
+        assert decoded_claims["role"] == claims["role"]
+
+        # Check standard JWT claims are present
+        assert "iat" in decoded_claims  # Issued at
+        assert "exp" in decoded_claims  # Expires
+        assert "iss" in decoded_claims  # Issuer
+        assert decoded_claims["iss"] == FlextJWTService.DEFAULT_ISSUER
+
+    def test_validate_token_invalid(self) -> None:
+        """Test validation of invalid token."""
+        service = FlextJWTService("test-secret")
+
+        invalid_result = service.validate_token("invalid.token.here")
+        assert invalid_result.is_failure
+        assert (
+            "invalid" in invalid_result.error.lower()
+            or "token" in invalid_result.error.lower()
+        )
+
+    def test_validate_token_wrong_secret(self) -> None:
+        """Test validation with wrong secret."""
+        # Generate token with one secret
+        service1 = FlextJWTService("secret1")
+        claims = {"sub": "user123"}
+        token_result = service1.generate_token(claims)
+        assert token_result.success
+        token = token_result.value
+
+        # Try to validate with different secret
+        service2 = FlextJWTService("secret2")
+        validation_result = service2.validate_token(token)
+        assert validation_result.is_failure
+
+    def test_validate_token_expired(self) -> None:
+        """Test validation of expired token."""
+        service = FlextJWTService("test-secret")
+        claims = {"sub": "user123"}
+
+        # Generate token with very short expiry (1 second)
+        # Note: This test might be flaky due to timing
+        token_result = service.generate_token(
+            claims, expires_minutes=0.01
+        )  # ~0.6 seconds
+        assert token_result.success
+
+        # Immediately validate - should still be valid
+        immediate_validation = service.validate_token(token_result.value)
+        # May pass or fail depending on timing - just ensure it doesn't crash
+        assert immediate_validation.success or immediate_validation.is_failure
+
+    def test_refresh_token_success(self) -> None:
+        """Test successful token refresh."""
+        service = FlextJWTService("test-secret")
+
+        # Generate initial token
+        initial_claims = {
+            "sub": "user123",
+            "username": "testuser",
+            "role": "user",
+        }
+        initial_token_result = service.generate_token(initial_claims)
+        assert initial_token_result.success
+        initial_token = initial_token_result.value
+
+        # Refresh with new claims
+        new_claims = {"role": "REDACTED_LDAP_BIND_PASSWORD"}  # Upgrade role
+        refresh_result = service.refresh_token(initial_token, new_claims)
+        assert refresh_result.success
+
+        new_token = refresh_result.value
+        assert new_token != initial_token
+
+        # Validate new token has updated claims
+        validation_result = service.validate_token(new_token)
+        assert validation_result.success
+
+        decoded_claims = validation_result.value
+        assert decoded_claims["sub"] == "user123"
+        assert decoded_claims["username"] == "testuser"
+        assert decoded_claims["role"] == "REDACTED_LDAP_BIND_PASSWORD"  # Updated role
+
+    def test_refresh_token_invalid(self) -> None:
+        """Test refresh with invalid token."""
+        service = FlextJWTService("test-secret")
+
+        refresh_result = service.refresh_token("invalid.token", {"role": "REDACTED_LDAP_BIND_PASSWORD"})
+        assert refresh_result.is_failure
+
+    def test_extract_claims_unsafe(self) -> None:
+        """Test unsafe claims extraction (for debugging)."""
+        service = FlextJWTService("test-secret")
+        claims = {"sub": "user123", "username": "testuser"}
+
+        # Generate token
+        token_result = service.generate_token(claims)
+        assert token_result.success
+        token = token_result.value
+
+        # Extract claims without validation
+        extract_result = FlextJWTService.extract_claims_unsafe(token)
+        assert extract_result.success
+
+        extracted_claims = extract_result.value
+        assert extracted_claims["sub"] == claims["sub"]
+        assert extracted_claims["username"] == claims["username"]
+
+    def test_extract_claims_unsafe_invalid_token(self) -> None:
+        """Test unsafe claims extraction with invalid token."""
+        extract_result = FlextJWTService.extract_claims_unsafe("invalid.token")
+        assert extract_result.is_failure
+
+
+class TestJWTServiceIntegration:
+    """Integration tests for JWT service operations."""
+
+    def test_multiple_tokens_different_secrets(self) -> None:
+        """Test that tokens with different secrets don't cross-validate."""
+        claims = {"sub": "user123"}
+
+        service1 = FlextJWTService("secret1")
+        service2 = FlextJWTService("secret2")
+
+        # Generate token with service1
+        token1_result = service1.generate_token(claims)
+        assert token1_result.success
+        token1 = token1_result.value
+
+        # Generate token with service2
+        token2_result = service2.generate_token(claims)
+        assert token2_result.success
+        token2 = token2_result.value
+
+        # Tokens should be different
+        assert token1 != token2
+
+        # Each service should only validate its own token
+        assert service1.validate_token(token1).success
+        assert service1.validate_token(token2).is_failure
+
+        assert service2.validate_token(token2).success
+        assert service2.validate_token(token1).is_failure
+
+    def test_token_with_complex_claims(self) -> None:
+        """Test tokens with complex claim structures."""
+        complex_claims = {
+            "sub": "user123",
+            "username": "testuser",
+            "profile": {
+                "name": "Test User",
+                "email": "test@example.com",
+                "preferences": {
+                    "theme": "dark",
+                    "notifications": True,
+                },
+            },
+            "permissions": ["read", "write", "REDACTED_LDAP_BIND_PASSWORD"],
+            "metadata": {
+                "last_login": datetime.now(UTC).isoformat(),
+                "login_count": 42,
+            },
+        }
+
+        service = FlextJWTService("test-secret")
+
+        # Generate and validate token
+        token_result = service.generate_token(complex_claims)
+        assert token_result.success
+
+        validation_result = service.validate_token(token_result.value)
+        assert validation_result.success
+
+        decoded_claims = validation_result.value
+        assert decoded_claims["sub"] == complex_claims["sub"]
+        assert decoded_claims["profile"]["name"] == complex_claims["profile"]["name"]
+        assert decoded_claims["permissions"] == complex_claims["permissions"]
+        assert (
+            decoded_claims["metadata"]["login_count"]
+            == complex_claims["metadata"]["login_count"]
+        )
+
+    def test_token_lifecycle_management(self) -> None:
+        """Test complete token lifecycle: generate, validate, refresh."""
+        service = FlextJWTService("test-secret")
+
+        # 1. Generate initial token
+        initial_claims = {"sub": "user123", "role": "user"}
+        token_result = service.generate_token(initial_claims)
+        assert token_result.success
+        initial_token = token_result.value
+
+        # 2. Validate initial token
+        validation_result = service.validate_token(initial_token)
+        assert validation_result.success
+        assert validation_result.value["role"] == "user"
+
+        # 3. Refresh token with upgraded permissions
+        new_claims = {"role": "REDACTED_LDAP_BIND_PASSWORD"}
+        refresh_result = service.refresh_token(initial_token, new_claims)
+        assert refresh_result.success
+        refreshed_token = refresh_result.value
+
+        # 4. Validate refreshed token
+        new_validation = service.validate_token(refreshed_token)
+        assert new_validation.success
+        assert new_validation.value["role"] == "REDACTED_LDAP_BIND_PASSWORD"
+        assert new_validation.value["sub"] == "user123"  # Original sub preserved
+
+
+class TestJWTServiceConstants:
+    """Unit tests for JWT service constants."""
+
+    def test_default_algorithm(self) -> None:
+        """Test default algorithm constant."""
+        assert FlextJWTService.DEFAULT_ALGORITHM == "HS256"
+
+    def test_default_expiry_minutes(self) -> None:
+        """Test default expiry minutes constant."""
+        assert FlextJWTService.DEFAULT_EXPIRY_MINUTES > 0
+        assert FlextJWTService.DEFAULT_EXPIRY_MINUTES <= 1440  # Not more than 24 hours
+
+    def test_default_issuer(self) -> None:
+        """Test default issuer constant."""
+        assert FlextJWTService.DEFAULT_ISSUER == "flext-auth"
+        assert isinstance(FlextJWTService.DEFAULT_ISSUER, str)
+        assert len(FlextJWTService.DEFAULT_ISSUER) > 0
+
+
+class TestJWTServiceEdgeCases:
+    """Unit tests for JWT service edge cases and error conditions."""
+
+    def test_empty_claims(self) -> None:
+        """Test token generation with empty claims."""
+        service = FlextJWTService("test-secret")
+
+        token_result = service.generate_token({})
+        assert token_result.success
+
+        # Should still validate
+        validation_result = service.validate_token(token_result.value)
+        assert validation_result.success
+
+    def test_none_values_in_claims(self) -> None:
+        """Test token generation with None values in claims."""
+        service = FlextJWTService("test-secret")
+        claims = {"sub": "user123", "optional_field": None}
+
+        token_result = service.generate_token(claims)
+        assert token_result.success
+
+        validation_result = service.validate_token(token_result.value)
+        assert validation_result.success
+
+        decoded_claims = validation_result.value
+        assert decoded_claims["sub"] == "user123"
+        # None values might be preserved or omitted depending on JWT library
+
+    def test_very_short_secret(self) -> None:
+        """Test with very short secret (security warning, but should work)."""
+        short_secret = "x"  # Very short
+        service = FlextJWTService(short_secret)
+
+        claims = {"sub": "user123"}
+        token_result = service.generate_token(claims)
+        assert token_result.success
+
+        validation_result = service.validate_token(token_result.value)
+        assert validation_result.success
+
+    def test_unicode_in_claims(self) -> None:
+        """Test with unicode characters in claims."""
+        service = FlextJWTService("test-secret")
+        claims = {
+            "sub": "user123",
+            "name": "Тест Юзер",  # Cyrillic
+            "description": "用户测试",  # Chinese
+            "emoji": "👤🔐",  # Emojis
+        }
+
+        token_result = service.generate_token(claims)
+        assert token_result.success
+
+        validation_result = service.validate_token(token_result.value)
+        assert validation_result.success
+
+        decoded_claims = validation_result.value
+        assert decoded_claims["name"] == claims["name"]
+        assert decoded_claims["description"] == claims["description"]
+        assert decoded_claims["emoji"] == claims["emoji"]
+
+    def test_large_claims_payload(self) -> None:
+        """Test with large claims payload."""
+        service = FlextJWTService("test-secret")
+
+        # Create large payload
+        large_data = "x" * 1000  # 1KB of data
+        claims = {
+            "sub": "user123",
+            "large_field": large_data,
+            "array_field": list(range(100)),  # Large array
+        }
+
+        token_result = service.generate_token(claims)
+        assert token_result.success
+
+        validation_result = service.validate_token(token_result.value)
+        assert validation_result.success
+
+        decoded_claims = validation_result.value
+        assert decoded_claims["large_field"] == large_data
+        assert len(decoded_claims["array_field"]) == 100

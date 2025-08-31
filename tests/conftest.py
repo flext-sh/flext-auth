@@ -11,10 +11,7 @@ from uuid import uuid4
 
 import pytest
 
-from flext_auth import (
-    FlextPasswordService as PasswordService,
-    FlextPlainPassword as PlainPassword,
-)
+from flext_auth import FlextPasswordService
 
 # ============================================================================
 # Pytest Configuration
@@ -54,7 +51,7 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 def pytest_collection_modifyitems(
-    _config: pytest.Config,
+    config: pytest.Config,  # noqa: ARG001
     items: list[pytest.Item],
 ) -> None:
     """Modify test items by adding markers based on test location and names."""
@@ -139,9 +136,7 @@ def sample_users_dict(
     """Create a simple users dictionary for testing authentication."""
     # Create user with hashed password using proper services
     password_service = PasswordService()
-    hash_result = password_service.hash_password(
-        PlainPassword.model_validate({"value": "SecurePassword123!"}),
-    )
+    hash_result = password_service.hash_password("SecurePassword123!")
 
     if not hash_result.success:
         msg: str = f"Password hashing failed: {hash_result.error}"

@@ -17,12 +17,16 @@ class MockFlextConstants:
 sys.modules["flext_core"] = type("module", (), {"FlextConstants": MockFlextConstants})()
 
 # Import directly from constants.py file
-constants_file_path = os.path.join(pathlib.Path(__file__).parent, "src", "flext_auth", "constants.py")
+constants_file_path = os.path.join(
+    pathlib.Path(__file__).parent, "src", "flext_auth", "constants.py"
+)
 
 # Load the constants module directly
 import importlib.util
 
-spec = importlib.util.spec_from_file_location("flext_auth_constants", constants_file_path)
+spec = importlib.util.spec_from_file_location(
+    "flext_auth_constants", constants_file_path
+)
 constants_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(constants_module)
 

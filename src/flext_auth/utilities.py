@@ -1,221 +1,253 @@
-"""FLEXT Auth Utilities - Utility functions for common authentication operations.
+"""FLEXT Auth Utilities - Utility classes and helper methods.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
-
-This module provides utility functions and classes for common authentication
-operations, following SOLID principles and reducing code duplication.
 """
 
 from __future__ import annotations
 
-from typing import cast
+import secrets
+import string
+from datetime import UTC, datetime
+from typing import Callable
 
 from flext_core import FlextResult
 
-from flext_auth.entities import FlextUser
-from flext_auth.flext_auth_types import UserRepositoryType
+from flext_auth.core import FlextAuth
+from flext_auth.typings import FlextAuthTypes
 
 
 class FlextAuthUtilities:
-    """Utility class with static methods for common auth operations."""
+    """Authentication utilities consolidated class."""
 
     @staticmethod
-    def get_user_by_username_safe(
-        repository: UserRepositoryType,
-        username: str,
-    ) -> FlextResult[FlextUser | None]:
-        """Safely get user by username from either sync or async repository.
+    def validate_username(username: FlextAuthTypes.Username) -> FlextResult[None]:
+        """Validate username format."""
+        from flext_auth.constants import FlextAuthConstants
 
-        This utility handles the Union type repository pattern by checking
-        which type of repository we have and calling the appropriate method.
-        For async repositories, it runs them in a sync context.
-
-        Args:
-            repository: Either InMemoryUserRepository or SimplePostgreSQLUserRepository
-            username: Username to search for
-
-        Returns:
-            FlextResult containing user or None if not found
-
-        """
-        try:
-            # Repositories are synchronous according to flext-core patterns
-            return repository.get_by_username(username)
-
-        except Exception as e:
-            return FlextResult[FlextUser | None].fail(f"Repository error: {e}")
+        if (
+            not username
+            or len(username.strip()) < FlextAuthConstants.MIN_USERNAME_LENGTH
+        ):
+            return FlextResult[None].fail("Username must be at least 3 characters")
+        if len(username.strip()) > FlextAuthConstants.MAX_USERNAME_LENGTH:
+            return FlextResult[None].fail("Username must be at most 50 characters")
+        if not username.replace("_", "").isalnum():
+            return FlextResult[None].fail(
+                "Username can only contain letters, numbers, and underscores"
+            )
+        return FlextResult[None].ok(None)
 
     @staticmethod
-    def get_user_by_email_safe(
-        repository: UserRepositoryType,
-        email: str,
-    ) -> FlextResult[FlextUser | None]:
-        """Safely get user by email from either sync or async repository.
-
-        Args:
-            repository: Either InMemoryUserRepository or SimplePostgreSQLUserRepository
-            email: Email to search for
-
-        Returns:
-            FlextResult containing user or None if not found
-
-        """
-        try:
-            # Repositories are synchronous according to flext-core patterns
-            return repository.get_by_email(email)
-
-        except Exception as e:
-            return FlextResult[FlextUser | None].fail(f"Repository error: {e}")
+    def validate_email(email: FlextAuthTypes.String) -> FlextResult[bool]:
+        """Validate email format."""
+        if "@" not in email or "." not in email.split("@")[-1]:
+            return FlextResult[bool].fail("Invalid email format")
+        if email.count("@") != 1:
+            return FlextResult[bool].fail("Invalid email format")
+        local, domain = email.split("@")
+        if not local or not domain:
+            return FlextResult[bool].fail("Invalid email format")
+        if ".." in email:
+            return FlextResult[bool].fail("Invalid email format")
+        valid = True
+        return FlextResult[bool].ok(valid)
 
     @staticmethod
-    def save_user_safe(
-        repository: UserRepositoryType,
-        user: FlextUser,
-    ) -> FlextResult[FlextUser]:
-        """Safely save user to either sync or async repository.
+    def generate_secure_password(length: int = 16) -> str:
+        """Generate a secure password."""
+        length = max(length, 8)
 
-        Args:
-            repository: Either InMemoryUserRepository or SimplePostgreSQLUserRepository
-            user: User entity to save
+        # Character sets
+        lowercase = string.ascii_lowercase
+        uppercase = string.ascii_uppercase
+        digits = string.digits
+        special = '!@#$%^&*(),.?":{}|<>'
 
-        Returns:
-            FlextResult containing saved user or error
+        # Ensure at least one of each type
+        password = [
+            secrets.choice(lowercase),
+            secrets.choice(uppercase),
+            secrets.choice(digits),
+            secrets.choice(special),
+        ]
 
-        """
-        try:
-            # Repositories are synchronous according to flext-core patterns
-            result = repository.save(user)
-            return cast("FlextResult[FlextUser]", result)
+        # Fill the rest randomly
+        all_chars = lowercase + uppercase + digits + special
+        password.extend(secrets.choice(all_chars) for _ in range(length - 4))
 
-        except Exception as e:
-            return FlextResult[FlextUser].fail(f"Repository save error: {e}")
+        # Shuffle the password
+        secrets.SystemRandom().shuffle(password)
 
-    @staticmethod
-    def unwrap_or_false(result: FlextResult[bool]) -> bool:
-        """Utility to unwrap FlextResult[bool] with False fallback.
-
-        Uses modern FlextResult.unwrap_or() pattern for cleaner code.
-
-        Args:
-            result: FlextResult containing boolean value
-
-        Returns:
-            Boolean value or False if result failed
-
-        """
-        return result.unwrap_or(default=False)
+        return "".join(password)
 
     @staticmethod
-    def unwrap_or_empty_string(result: FlextResult[str]) -> str:
-        """Utility to unwrap FlextResult[str] with empty string fallback.
-
-        Args:
-            result: FlextResult containing string value
-
-        Returns:
-            String value or empty string if result failed
-
-        """
-        return result.unwrap_or("")
+    def generate_session_id() -> str:
+        """Generate secure session ID."""
+        return secrets.token_urlsafe(32)
 
     @staticmethod
-    def unwrap_or_none(result: FlextResult[object]) -> object | None:
-        """Utility to unwrap FlextResult with None fallback.
-
-        Args:
-            result: FlextResult containing any value
-
-        Returns:
-            Value or None if result failed
-
-        """
-        return result.unwrap_or(None)
-
-    @staticmethod
-    def unwrap_or_zero(result: FlextResult[int]) -> int:
-        """Utility to unwrap FlextResult[int] with 0 fallback.
-
-        Args:
-            result: FlextResult containing integer value
-
-        Returns:
-            Integer value or 0 if result failed
-
-        """
-        return result.unwrap_or(0)
+    def create_audit_context(
+        user_id: str,
+        action: str,
+        source: str,
+    ) -> dict[str, str]:
+        """Create audit context."""
+        return {
+            "user_id": user_id,
+            "action": action,
+            "source": source,
+            "timestamp": datetime.now(UTC).isoformat(),
+        }
 
     @staticmethod
-    def unwrap_or_empty_list(result: FlextResult[list[object]]) -> list[object]:
-        """Utility to unwrap FlextResult[list] with empty list fallback.
+    def quick_start(
+        *,
+        create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
+        REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
+        REDACTED_LDAP_BIND_PASSWORD_password: str = "REDACTED_LDAP_BIND_PASSWORD123!A",  # noqa: S107
+    ) -> FlextAuth:
+        """Create FlextAuth instance with optional REDACTED_LDAP_BIND_PASSWORD user."""
+        from flext_auth.core import FlextAuth
 
-        Args:
-            result: FlextResult containing list value
-
-        Returns:
-            List value or empty list if result failed
-
-        """
-        return result.unwrap_or([])
-
-    @staticmethod
-    def is_successful_auth(result: FlextResult[dict[str, object]]) -> bool:
-        """Check if authentication result is successful using unwrap_or pattern.
-
-        Args:
-            result: Authentication result
-
-        Returns:
-            True if successful, False otherwise
-
-        """
-        return result.success and bool(result.unwrap_or({}))
+        return FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD, REDACTED_LDAP_BIND_PASSWORD_username, REDACTED_LDAP_BIND_PASSWORD_password)
 
     @staticmethod
-    def is_valid_and_has_value(result: FlextResult[object]) -> bool:
-        """Check if FlextResult is successful and has a truthy value.
+    def hash_password(
+        password: FlextAuthTypes.String, rounds: int = 12
+    ) -> FlextResult[str]:
+        """Hash password using FlextPasswordService."""
+        from flext_auth.services import FlextPasswordService
 
-        Replaces verbose pattern: result.success and result.value
-
-        Args:
-            result: FlextResult to check
-
-        Returns:
-            True if result is successful and has truthy value, False otherwise
-
-        """
-        return result.success and bool(result.value)
+        service = FlextPasswordService()
+        return service.hash_password(password, rounds)
 
     @staticmethod
-    def is_invalid_or_empty(result: FlextResult[object]) -> bool:
-        """Check if FlextResult is failed or has no value.
+    def generate_jwt(
+        claims: FlextAuthTypes.Dict,
+        expiry_minutes: int = 30,
+        secret: FlextAuthTypes.AccessToken | None = None,
+    ) -> FlextResult[str]:
+        """Generate JWT token using FlextJWTService."""
+        from flext_auth.constants import FlextAuthConstants
+        from flext_auth.services import FlextJWTService
 
-        Replaces verbose pattern: not result.success or not result.value
-
-        Args:
-            result: FlextResult to check
-
-        Returns:
-            True if result is failed or has falsy value, False otherwise
-
-        """
-        return not result.success or not bool(result.value)
+        jwt_secret = secret or FlextAuthConstants.DEFAULT_JWT_SECRET
+        return FlextJWTService.generate_token_static(jwt_secret, claims, expiry_minutes)
 
     @staticmethod
-    def get_username_or_anonymous(result: FlextResult[dict[str, object]]) -> str:
-        """Extract username from auth result or return 'anonymous'.
+    def validate_jwt(
+        token: str, secret: FlextAuthTypes.AccessToken | None = None
+    ) -> FlextResult[FlextAuthTypes.Dict]:
+        """Validate JWT token using FlextJWTService."""
+        from flext_auth.constants import FlextAuthConstants
+        from flext_auth.services import FlextJWTService
 
-        Args:
-            result: Authentication result
+        jwt_secret = secret or FlextAuthConstants.DEFAULT_JWT_SECRET
+        return FlextJWTService.validate_token_static(jwt_secret, token)
 
-        Returns:
-            Username or 'anonymous' if not found
 
-        """
-        auth_data = result.unwrap_or({})
-        return str(auth_data.get("username", "anonymous"))
+# Legacy compatibility functions for examples
+def flext_auth_quick_start(
+    *,
+    create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
+    REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
+    REDACTED_LDAP_BIND_PASSWORD_password: str = "REDACTED_LDAP_BIND_PASSWORD123!A",  # noqa: S107
+) -> FlextAuth:
+    """Create FlextAuth instance with optional REDACTED_LDAP_BIND_PASSWORD user."""
+    return FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD, REDACTED_LDAP_BIND_PASSWORD_username, REDACTED_LDAP_BIND_PASSWORD_password)
+
+
+def flext_auth_hash_password(
+    password: FlextAuthTypes.String, rounds: int = 12
+) -> FlextResult[str]:
+    """Hash password using FlextPasswordService."""
+    return FlextAuthUtilities.hash_password(password, rounds)
+
+
+def flext_auth_generate_jwt(
+    *,
+    user_id: str,
+    username: str,
+    role: str,
+    session_id: str,
+    jwt_secret: str,
+    expiry_minutes: int = 30,
+) -> FlextResult[str]:
+    """Generate JWT token using FlextJWTService."""
+    claims: FlextAuthTypes.Dict = {
+        "sub": user_id,
+        "username": username,
+        "role": role,
+        "session_id": session_id,
+    }
+    return FlextAuthUtilities.generate_jwt(claims, expiry_minutes, jwt_secret)
+
+
+def flext_auth_validate_jwt(
+    token: str, jwt_secret: str
+) -> FlextResult[FlextAuthTypes.Dict]:
+    """Validate JWT token using FlextJWTService."""
+    return FlextAuthUtilities.validate_jwt(token, jwt_secret)
+
+
+def flext_auth_validate_email(email: FlextAuthTypes.String) -> FlextResult[bool]:
+    """Validate email format."""
+    return FlextAuthUtilities.validate_email(email)
+
+
+def generate_secure_password(length: int = 16) -> str:
+    """Generate a secure password."""
+    return FlextAuthUtilities.generate_secure_password(length)
+
+
+def generate_secure_token(length: int = 32) -> str:
+    """Generate secure token."""
+    return secrets.token_urlsafe(length)
+
+
+# Decorators for compatibility (placeholder implementations)
+def flext_auth_required(func: Callable[..., object]) -> Callable[..., object]:  # type: ignore[explicit-any]
+    """Authentication required decorator."""
+    def wrapper(*args: object, **kwargs: object) -> object:
+        return func(*args, **kwargs)
+    return wrapper
+
+
+def flext_auth_role_required(required_role: str) -> Callable[[Callable[..., object]], Callable[..., object]]:  # type: ignore[explicit-any] # noqa: ARG001
+    """Role required decorator."""
+    def decorator(func: Callable[..., object]) -> Callable[..., object]:  # type: ignore[explicit-any]
+        def wrapper(*args: object, **kwargs: object) -> object:
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def flext_auth_permission_required(required_permission: str) -> Callable[[Callable[..., object]], Callable[..., object]]:  # type: ignore[explicit-any] # noqa: ARG001
+    """Permission required decorator."""
+    def decorator(func: Callable[..., object]) -> Callable[..., object]:  # type: ignore[explicit-any]
+        def wrapper(*args: object, **kwargs: object) -> object:
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def create_auth_service() -> FlextAuth:
+    """Create FlextAuth service instance."""
+    return FlextAuth()
 
 
 __all__ = [
     "FlextAuthUtilities",
+    "create_auth_service",
+    "flext_auth_generate_jwt",
+    "flext_auth_hash_password",
+    "flext_auth_permission_required",
+    "flext_auth_quick_start",
+    "flext_auth_required",
+    "flext_auth_role_required",
+    "flext_auth_validate_email",
+    "flext_auth_validate_jwt",
+    "generate_secure_password",
+    "generate_secure_token",
 ]

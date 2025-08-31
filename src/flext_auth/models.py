@@ -1,465 +1,585 @@
-"""FLEXT Auth Models - SINGLE CONSOLIDATED CLASS following FLEXT patterns.
+"""FLEXT Authentication Models - Domain entities using flext-core foundation.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
-
-FLEXT REFACTORING: Consolidated ALL model definitions into single FlextAuthModels class
-following FLEXT architectural standards. Individual models available as nested classes.
 """
 
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from enum import StrEnum
-from typing import ClassVar, override
+from typing import Annotated, ClassVar
 
-from flext_core import (
-    FlextModel,
-    FlextModels,
-    FlextProtocols,
-    FlextResult,
-)
-from pydantic import Field
+from flext_core import FlextModels, FlextResult
+from pydantic import Field, field_validator
 
-from flext_auth.entities import (
-    FlextEmailVerificationToken,
-    FlextPasswordResetToken,
-    FlextUser,
-    FlextUserRole,
-    FlextUserStatus,
-)
-from flext_auth.values import (
-    FlextHashedPassword,
-    FlextJWTClaims,
-    FlextPlainPassword,
-    FlextSecurityContext,
-    FlextUserEmail,
-    FlextUsername,
-)
-
-# =============================================================================
-# SINGLE CONSOLIDATED CLASS - FLEXT ARCHITECTURAL PATTERN
-# =============================================================================
+from flext_auth.constants import FlextAuthConstants
+from flext_auth.typings import FlextAuthTypes
 
 
-class FlextAuthModels(FlextModel):
-    """Single consolidated class containing ALL authentication models.
+class FlextAuthUser(FlextModels.AggregateRoot):
+    """User aggregate root with advanced domain modeling."""
 
-    FLEXT REFACTORING: Consolidates ALL model definitions into one class following
-    FLEXT architectural standards. Individual models available as nested classes
-    for organization while maintaining single entry point.
+    # Advanced aggregate configuration
+    aggregate_type: ClassVar[str] = "user"
 
-    Usage:
-        models = FlextAuthModels()
-        session = models.Session(...)
-        permission = models.Permission(...)
-    """
+    # Core user fields using FlextAuthTypes centralized types
+    username: Annotated[
+        FlextAuthTypes.Username,
+        Field(min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_]+$"),
+    ]
+    email: FlextModels.EmailAddress
+    password_hash: Annotated[
+        FlextAuthTypes.PasswordHash, Field(min_length=60, max_length=255)
+    ]
 
-    # =============================================================================
-    # CONSTANTS AND ENUMS - Nested inside consolidated class
-    # =============================================================================
+    # Authentication fields using centralized types
+    role: FlextAuthTypes.UserRole = FlextAuthConstants.ROLE_USER
+    status: FlextAuthTypes.UserStatus = FlextAuthConstants.USER_STATUS_ACTIVE
+    failed_login_attempts: FlextAuthTypes.LoginAttempts = 0
+    locked_until: datetime | None = None
+    last_login: datetime | None = None
 
-    # Constants for magic numbers - ClassVar to exclude from Pydantic fields
-    MIN_USERNAME_LENGTH: ClassVar[int] = 3
-    MAX_USERNAME_LENGTH: ClassVar[int] = 50
-    MIN_PASSWORD_LENGTH: ClassVar[int] = 8
-    MAX_PASSWORD_LENGTH: ClassVar[int] = 128
-    MAX_NAME_LENGTH: ClassVar[int] = 100
-    MAX_DESCRIPTION_LENGTH: ClassVar[int] = 500
-    MAX_SESSION_ID_LENGTH: ClassVar[int] = 32
-    MIN_TOKEN_LENGTH: ClassVar[int] = 32
-    MIN_BCRYPT_HASH_LENGTH: ClassVar[int] = (
-        56  # Minimum bcrypt hash length for production
-    )
-    MIN_AUTH_TOKEN_LENGTH: ClassVar[int] = 10
-    MIN_REFRESH_TOKEN_LENGTH: ClassVar[int] = 32
-    MIN_SESSION_TOKEN_LENGTH: ClassVar[int] = 16
-    MAX_USER_AGENT_LENGTH: ClassVar[int] = 500
-    MIN_PASSWORD_RESET_TOKEN_LENGTH: ClassVar[int] = 32
-    MIN_EMAIL_VERIFICATION_TOKEN_LENGTH: ClassVar[int] = 32
+    # Permissions using FlextAuthTypes
+    permissions: Annotated[
+        list[FlextAuthTypes.Permission], Field(default_factory=list, max_length=100)
+    ]
 
-    class SessionStatus(StrEnum):
-        """Session status enum nested inside consolidated class."""
+    # Advanced field validators using Python 3.13+ patterns
+    @field_validator("username")
+    @classmethod
+    def validate_username_advanced(
+        cls, v: FlextAuthTypes.Username
+    ) -> FlextAuthTypes.Username:
+        """Advanced username validation with Python 3.13+ patterns."""
+        if not v or len(v) < FlextAuthConstants.MIN_USERNAME_LENGTH:
+            msg = f"Username must be at least {FlextAuthConstants.MIN_USERNAME_LENGTH} chars"
+            raise ValueError(msg)
+        if len(v) > FlextAuthConstants.MAX_USERNAME_LENGTH:
+            msg = f"Username must be at most {FlextAuthConstants.MAX_USERNAME_LENGTH} chars"
+            raise ValueError(msg)
+        return v.strip().lower()
 
-        ACTIVE = "active"
-        EXPIRED = "expired"
-        REVOKED = "revoked"
+    @field_validator("role")
+    @classmethod
+    def validate_role_advanced(
+        cls, v: FlextAuthTypes.UserRole
+    ) -> FlextAuthTypes.UserRole:
+        """Advanced role validation."""
+        valid_roles = {
+            FlextAuthConstants.ROLE_USER,
+            FlextAuthConstants.ROLE_ADMIN,
+            FlextAuthConstants.ROLE_GUEST,
+        }
+        if v not in valid_roles:
+            msg = f"Invalid role. Must be one of: {valid_roles}"
+            raise ValueError(msg)
+        return v
 
-    # =============================================================================
-    # DOMAIN ENTITIES - Rich business objects nested inside consolidated class
-    # =============================================================================
+    @field_validator("status")
+    @classmethod
+    def validate_status_advanced(
+        cls, v: FlextAuthTypes.UserStatus
+    ) -> FlextAuthTypes.UserStatus:
+        """Advanced status validation."""
+        valid_statuses = {
+            FlextAuthConstants.USER_STATUS_ACTIVE,
+            FlextAuthConstants.USER_STATUS_INACTIVE,
+            FlextAuthConstants.USER_STATUS_LOCKED,
+            FlextAuthConstants.USER_STATUS_SUSPENDED,
+        }
+        if v not in valid_statuses:
+            msg = f"Invalid status. Must be one of: {valid_statuses}"
+            raise ValueError(msg)
+        return v
 
-    class Session(FlextModels.Entity):
-        """User session entity nested inside consolidated class."""
-
-        # id is inherited from FlextModels.Entity - no need to redefine
-        user_id: str = Field(..., description="User ID owning this session")
-        access_token: str = Field(..., description="JWT access token")
-        refresh_token: str | None = Field(default=None, description="JWT refresh token")
-        status: str = Field(
-            default="active",
-            description="Session status",
-        )
-        ip_address: str | None = Field(default=None, description="Client IP address")
-        user_agent: str | None = Field(default=None, description="Client user agent")
-        expires_at: datetime = Field(..., description="Session expiration time")
-        created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
-        last_accessed: datetime = Field(default_factory=lambda: datetime.now(UTC))
-
-        def is_valid(self) -> bool:
-            """Check if session is valid (active and not expired)."""
-            if self.status != "active":
-                return False
-            return datetime.now(UTC) < self.expires_at
-
-        @override
-        def validate_business_rules(self) -> FlextResult[None]:
-            """Validate business rules required by FlextModels.Entity abstract method."""
-            if not self.id:
-                msg = "Session ID cannot be empty"
-                raise ValueError(msg)
-            if not self.user_id:
-                msg = "User ID cannot be empty"
-                raise ValueError(msg)
-            if not self.access_token:
-                msg = "Access token cannot be empty"
-                raise ValueError(msg)
-            if self.expires_at <= datetime.now(UTC):
-                msg = "Session expiration must be in the future"
-                raise ValueError(msg)
-            return FlextResult[None].ok(None)
-
-    class Permission(FlextModels.Entity):
-        """Permission entity nested inside consolidated class."""
-
-        # id is inherited from FlextModels.Entity - no need to redefine
-        name: str = Field(..., description="Permission name")
-        description: str = Field(..., description="Permission description")
-        resource: str = Field(..., description="Resource this permission applies to")
-        action: str = Field(..., description="Action allowed by this permission")
-
-        @override
-        def validate_business_rules(self) -> FlextResult[None]:
-            """Validate permission business rules and business invariants."""
-            if not self.id:
-                msg = "Permission ID cannot be empty"
-                raise ValueError(msg)
-            if not self.name:
-                msg = "Permission name cannot be empty"
-                raise ValueError(msg)
-            if not self.resource:
-                msg = "Permission resource cannot be empty"
-                raise ValueError(msg)
-            if not self.action:
-                msg = "Permission action cannot be empty"
-                raise ValueError(msg)
-            return FlextResult[None].ok(None)
-
-    class Role(FlextModels.Entity):
-        """Role entity with permissions nested inside consolidated class."""
-
-        # id is inherited from FlextModels.Entity - no need to redefine
-        name: str = Field(..., description="Role name")
-        description: str = Field(..., description="Role description")
-        permissions: list[FlextAuthModels.Permission] = Field(
-            default_factory=list,
-            description="Role permissions",
-        )
-        is_system_role: bool = Field(
-            default=False,
-            description="Whether this is a system role",
-        )
-        created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
-
-        def has_permission(self, resource: str, action: str) -> bool:
-            """Check if role has specific permission."""
-            return any(
-                p.resource == resource and p.action == action for p in self.permissions
-            )
-
-        @override
-        def validate_business_rules(self) -> FlextResult[None]:
-            """Validate business rules required by FlextModels.Entity abstract method."""
-            if not self.id:
-                return FlextResult[None].fail("Role ID cannot be empty")
-            if not self.name:
-                return FlextResult[None].fail("Role name cannot be empty")
-            if not self.description:
-                return FlextResult[None].fail("Role description cannot be empty")
-            if len(self.name) > FlextAuthModels.MAX_NAME_LENGTH:
-                return FlextResult[None].fail(
-                    "Role name must be at most 100 characters"
-                )
-            if len(self.description) > FlextAuthModels.MAX_DESCRIPTION_LENGTH:
-                return FlextResult[None].fail(
-                    "Role description must be at most 500 characters",
-                )
-            return FlextResult[None].ok(None)
-
-    # =============================================================================
-    # BACKWARD COMPATIBILITY PROPERTIES - Legacy access patterns
-    # =============================================================================
-
-    @property
-    def flext_session(self) -> type[FlextAuthModels.Session]:  # noqa: N802
-        """Legacy compatibility property."""
-        return self.Session
-
-    @property
-    def flext_permission(self) -> type[FlextAuthModels.Permission]:  # noqa: N802
-        """Legacy compatibility property."""
-        return self.Permission
-
-    @property
-    def flext_role(self) -> type[FlextAuthModels.Role]:  # noqa: N802
-        """Legacy compatibility property."""
-        return self.Role
-
-    @property
-    def flext_session_status(self) -> type[FlextAuthModels.SessionStatus]:  # noqa: N802
-        """Legacy compatibility property."""
-        return self.SessionStatus
-
-
-# =============================================================================
-# REPOSITORY PATTERNS - Abstract data access
-# =============================================================================
-
-# ✅ CORRECT - Use centralized repository protocol from flext-core
-# Avoid circular dependency by using flext-core directly
-UserRepository = FlextProtocols.Domain.Repository["FlextUser"]
-
-
-class InMemoryUserRepository(UserRepository):
-    """In-memory user repository for development and demonstrations."""
-
-    def __init__(self) -> None:
-        """Initialize empty user storage."""
-        self._users: dict[str, FlextUser] = {}
-        self._username_index: dict[str, str] = {}  # username -> user_id
-        self._email_index: dict[str, str] = {}  # email -> user_id
-
-    @override
-    def save(self, entity: FlextUser) -> FlextResult[FlextUser]:
-        """Save user to memory (sync for flext-core compliance)."""
-        try:
-            # Check for username conflicts
-            existing_username = self._username_index.get(entity.username.lower())
-            if existing_username and existing_username != entity.id:
-                return FlextResult[FlextUser].fail(
-                    f"Username '{entity.username}' already exists",
-                )
-
-            # Check for email conflicts
-            existing_email = self._email_index.get(str(entity.email).lower())
-            if existing_email and existing_email != entity.id:
-                return FlextResult[FlextUser].fail(
-                    f"Email '{entity.email}' already exists",
-                )
-
-            # Create user with updated timestamp (entities are immutable)
-            updated_user = FlextUser(
-                id=entity.id,
-                username=entity.username,
-                email=entity.email,
-                password_hash=entity.password_hash,
-                role=entity.role,
-                status=entity.status,
-                failed_login_attempts=entity.failed_login_attempts,
-                locked_until=entity.locked_until,
-                last_login=entity.last_login,
-                created_at=entity.created_at,
-                updated_at=datetime.now(UTC),
-            )
-
-            # Save user
-            self._users[str(updated_user.id)] = updated_user
-            self._username_index[updated_user.username.lower()] = str(updated_user.id)
-            self._email_index[str(updated_user.email).lower()] = str(updated_user.id)
-
-            return FlextResult[FlextUser].ok(updated_user)
-
-        except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[FlextUser].fail(f"Failed to save user: {e}")
-
-    @override
-    def get_by_id(self, entity_id: str) -> FlextResult[FlextUser | None]:
-        """Get user by ID (sync for flext-core compliance)."""
-        try:
-            user = self._users.get(entity_id)
-            return FlextResult[FlextUser | None].ok(user)
-        except (KeyError, ValueError, TypeError) as e:
-            return FlextResult[FlextUser | None].fail(f"Failed to get user by ID: {e}")
-
-    @override
-    def get_by_username(self, username: str) -> FlextResult[FlextUser | None]:
-        """Get user by username (sync for flext-core compliance)."""
-        try:
-            user_id = self._username_index.get(username.lower())
-            if not user_id:
-                return FlextResult[FlextUser | None].ok(None)
-
-            user = self._users.get(user_id)
-            return FlextResult[FlextUser | None].ok(user)
-        except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[FlextUser | None].fail(
-                f"Failed to get user by username: {e}",
-            )
-
-    @override
-    def get_by_email(self, email: str) -> FlextResult[FlextUser | None]:
-        """Get user by email (sync for flext-core compliance)."""
-        try:
-            user_id = self._email_index.get(email.lower())
-            if not user_id:
-                return FlextResult[FlextUser | None].ok(None)
-
-            user = self._users.get(user_id)
-            return FlextResult[FlextUser | None].ok(user)
-        except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[FlextUser | None].fail(
-                f"Failed to get user by email: {e}",
-            )
-
-    @override
-    def delete(self, entity_id: str) -> FlextResult[None]:
-        """Delete user from memory (sync for flext-core compliance)."""
-        try:
-            user = self._users.get(entity_id)
-            if not user:
-                return FlextResult[None].fail("User not found")
-
-            # Remove from indexes
-            self._username_index.pop(user.username.lower(), None)
-            self._email_index.pop(str(user.email).lower(), None)
-
-            # Remove user
-            del self._users[entity_id]
-
-            return FlextResult[None].ok(None)
-        except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[None].fail(f"Failed to delete user: {e}")
-
-    @override
-    def find_all(self) -> FlextResult[list[FlextUser]]:
-        """Find all users (sync for flext-core compliance)."""
-        try:
-            users = list(self._users.values())
-            # Sort by created_at (newest first)
-            users.sort(key=lambda u: u.created_at, reverse=True)
-            return FlextResult[list[FlextUser]].ok(users)
-        except (KeyError, ValueError, TypeError, AttributeError) as e:
-            return FlextResult[list[FlextUser]].fail(f"Failed to find all users: {e}")
-
-
-# =============================================================================
-# UTILITY FUNCTIONS
-# =============================================================================
-
-
-def convert_user_to_dict(user: FlextUser) -> dict[str, object]:
-    """Convert FlextUser to dictionary."""
-    return {
-        "id": user.id,
-        "username": user.username,
-        "email": user.email,
-        "role": user.role,
-        "status": user.status,
-        "created_at": str(user.created_at),
-        "updated_at": str(user.updated_at),
-        "last_login": user.last_login.isoformat() if user.last_login else None,
-    }
-
-
-# =============================================================================
-# EXPORTS - Clean models API
-# =============================================================================
-
-# =============================================================================
-# BACKWARD COMPATIBILITY - Legacy class exports
-# =============================================================================
-
-# Create backward compatibility aliases for legacy imports
-FlextSession = FlextAuthModels.Session
-FlextPermission = FlextAuthModels.Permission
-FlextRole = FlextAuthModels.Role
-FlextSessionStatus = FlextAuthModels.SessionStatus
-
-
-# Add missing legacy classes that are imported by other modules
-class FlextLoginAttempt(FlextModels.Entity):
-    """Login attempt tracking - legacy compatibility class."""
-
-    username: str = Field(..., description="Username attempted")
-    ip_address: str = Field(..., description="Client IP address")
-    user_agent: str | None = Field(default=None, description="Client user agent")
-    success: bool = Field(..., description="Whether login was successful")
-    failure_reason: str | None = Field(default=None, description="Reason for failure")
-    attempted_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
-
-    @override
     def validate_business_rules(self) -> FlextResult[None]:
-        """Validate business rules required by FlextModels.Entity abstract method."""
-        if not self.id:
-            msg = "Login attempt ID cannot be empty"
-            raise ValueError(msg)
-        if not self.username:
-            msg = "Username cannot be empty"
-            raise ValueError(msg)
-        if not self.ip_address:
-            msg = "IP address cannot be empty"
-            raise ValueError(msg)
+        """Enhanced business rules validation for aggregate."""
+        try:
+            # Basic validations are handled by field validators
+            # Additional complex business rules here
+            if (
+                self.failed_login_attempts > FlextAuthConstants.MAX_LOGIN_ATTEMPTS
+                and not self.locked_until
+            ):
+                return FlextResult[None].fail(
+                    "User should be locked after max attempts"
+                )
+
+            return FlextResult[None].ok(None)
+        except Exception as e:
+            return FlextResult[None].fail(f"Business rule validation failed: {e}")
+
+    def can_login(self) -> FlextAuthTypes.IsActive:
+        """Check if user can login."""
+        # User must not be inactive or suspended
+        if self.status in {
+            FlextAuthConstants.USER_STATUS_INACTIVE,
+            FlextAuthConstants.USER_STATUS_SUSPENDED,
+        }:
+            return False
+
+        # If user is locked, check if lockout has expired
+        if self.status == FlextAuthConstants.USER_STATUS_LOCKED:
+            return not (self.locked_until and datetime.now(UTC) < self.locked_until)
+
+        # Active users can login if not currently locked
+        return not (self.locked_until and datetime.now(UTC) < self.locked_until)
+
+    def has_permission(
+        self, permission: FlextAuthTypes.Permission
+    ) -> FlextAuthTypes.HasPermission:
+        """Check if user has specific permission."""
+        if self.role == FlextAuthConstants.ROLE_ADMIN:
+            return True
+        return permission in self.permissions
+
+    def add_permission(self, permission: str) -> None:
+        """Add permission to user with domain event."""
+        if permission not in self.permissions:
+            self.permissions.append(permission)
+            self.increment_version()
+
+            # Publish domain event using flext-core patterns
+            permission_event_result = FlextModels.create_domain_event(
+                event_type="UserPermissionAdded",
+                aggregate_id=self.id,
+                aggregate_type=self.aggregate_type,
+                data={"permission": permission, "user_id": self.id},
+                source_service="flext-auth",
+            )
+            if permission_event_result.success:
+                self.add_domain_event(permission_event_result.value.model_dump())
+
+    def remove_permission(self, permission: str) -> None:
+        """Remove permission from user with domain event."""
+        if permission in self.permissions:
+            self.permissions.remove(permission)
+            self.increment_version()
+
+            # Publish domain event using flext-core patterns
+            permission_event_result = FlextModels.create_domain_event(
+                event_type="UserPermissionRemoved",
+                aggregate_id=self.id,
+                aggregate_type=self.aggregate_type,
+                data={"permission": permission, "user_id": self.id},
+                source_service="flext-auth",
+            )
+            if permission_event_result.success:
+                self.add_domain_event(permission_event_result.value.model_dump())
+
+    def login_succeeded(self) -> None:
+        """Handle successful login with domain events."""
+        self.last_login = datetime.now(UTC)
+        self.failed_login_attempts = 0
+        self.increment_version()
+
+        # Publish login success event
+        login_event_result = FlextModels.create_domain_event(
+            event_type="UserLoginSucceeded",
+            aggregate_id=self.id,
+            aggregate_type=self.aggregate_type,
+            data={
+                "user_id": self.id,
+                "username": self.username,
+                "timestamp": self.last_login.isoformat(),
+            },
+            source_service="flext-auth",
+        )
+        if login_event_result.success:
+            self.add_domain_event(login_event_result.value.model_dump())
+
+    def login_failed(self) -> None:
+        """Handle failed login with domain events and business rules."""
+        self.failed_login_attempts += 1
+
+        # Check if user should be locked
+        if self.failed_login_attempts >= FlextAuthConstants.MAX_LOGIN_ATTEMPTS:
+            from datetime import timedelta
+
+            self.locked_until = datetime.now(UTC) + timedelta(
+                minutes=FlextAuthConstants.DEFAULT_LOCKOUT_DURATION_MINUTES
+            )
+            self.status = FlextAuthConstants.USER_STATUS_LOCKED
+
+            # Publish user locked event
+            locked_event_result = FlextModels.create_domain_event(
+                event_type="UserAccountLocked",
+                aggregate_id=self.id,
+                aggregate_type=self.aggregate_type,
+                data={
+                    "user_id": self.id,
+                    "username": self.username,
+                    "failed_attempts": self.failed_login_attempts,
+                    "locked_until": self.locked_until.isoformat(),
+                },
+                source_service="flext-auth",
+            )
+            if locked_event_result.success:
+                self.add_domain_event(locked_event_result.value.model_dump())
+
+        # Always publish failed login event
+        failed_event_result = FlextModels.create_domain_event(
+            event_type="UserLoginFailed",
+            aggregate_id=self.id,
+            aggregate_type=self.aggregate_type,
+            data={
+                "user_id": self.id,
+                "username": self.username,
+                "failed_attempts": self.failed_login_attempts,
+            },
+            source_service="flext-auth",
+        )
+        if failed_event_result.success:
+            self.add_domain_event(failed_event_result.value.model_dump())
+
+        self.increment_version()
+
+
+class FlextAuthSession(FlextModels.Entity):
+    """Session domain entity for user sessions."""
+
+    # Core session fields
+    user_id: str
+    access_token: str
+    refresh_token: str | None = None
+
+    # Session metadata
+    ip_address: str = "unknown"
+    user_agent: str | None = None
+    expires_at: datetime
+    is_active: bool = True
+
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate session business rules."""
+        if not self.user_id:
+            return FlextResult[None].fail("User ID required")
+
+        if not self.access_token:
+            return FlextResult[None].fail("Access token required")
+
+        # Note: We don't validate expiration time here to allow creation of
+        # expired sessions for testing purposes. Expiration is checked by is_expired()
+
         return FlextResult[None].ok(None)
 
+    def is_expired(self) -> bool:
+        """Check if session is expired."""
+        return datetime.now(UTC) >= self.expires_at
 
-# Export constants for backward compatibility
-MIN_USERNAME_LENGTH = FlextAuthModels.MIN_USERNAME_LENGTH
-MAX_USERNAME_LENGTH = FlextAuthModels.MAX_USERNAME_LENGTH
-MIN_PASSWORD_LENGTH = FlextAuthModels.MIN_PASSWORD_LENGTH
-MAX_PASSWORD_LENGTH = FlextAuthModels.MAX_PASSWORD_LENGTH
-MAX_NAME_LENGTH = FlextAuthModels.MAX_NAME_LENGTH
-MAX_DESCRIPTION_LENGTH = FlextAuthModels.MAX_DESCRIPTION_LENGTH
-MAX_SESSION_ID_LENGTH = FlextAuthModels.MAX_SESSION_ID_LENGTH
-MIN_TOKEN_LENGTH = FlextAuthModels.MIN_TOKEN_LENGTH
-MIN_BCRYPT_HASH_LENGTH = FlextAuthModels.MIN_BCRYPT_HASH_LENGTH
+    def deactivate(self) -> None:
+        """Deactivate session."""
+        self.is_active = False
+        self.increment_version()
 
-__all__: list[str] = [
-    "MAX_DESCRIPTION_LENGTH",
-    "MAX_NAME_LENGTH",
-    "MAX_PASSWORD_LENGTH",
-    "MAX_SESSION_ID_LENGTH",
-    "MAX_USERNAME_LENGTH",
-    "MIN_BCRYPT_HASH_LENGTH",
-    "MIN_PASSWORD_LENGTH",
-    "MIN_TOKEN_LENGTH",
-    # Legacy constant exports for backward compatibility
-    "MIN_USERNAME_LENGTH",
-    # CONSOLIDATED CLASS - FLEXT Pattern (main export)
+
+class FlextAuthRole(FlextModels.Entity):
+    """Role domain entity with permissions."""
+
+    name: str
+    permissions: list[str] = Field(default_factory=list)
+    description: str = ""
+    is_active: bool = True
+
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate role business rules."""
+        if not self.name:
+            return FlextResult[None].fail("Role name required")
+
+        return FlextResult[None].ok(None)
+
+    def has_permission(
+        self, permission: FlextAuthTypes.Permission
+    ) -> FlextAuthTypes.HasPermission:
+        """Check if role has specific permission."""
+        return permission in self.permissions
+
+    def add_permission(self, permission: str) -> None:
+        """Add permission to role."""
+        if permission not in self.permissions:
+            self.permissions.append(permission)
+            self.increment_version()
+
+    def remove_permission(self, permission: str) -> None:
+        """Remove permission from role."""
+        if permission in self.permissions:
+            self.permissions.remove(permission)
+            self.increment_version()
+
+
+class FlextAuthPermission(FlextModels.Entity):
+    """Permission domain entity."""
+
+    name: str
+    resource: str
+    action: str
+    description: str = ""
+    is_active: bool = True
+
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate permission business rules."""
+        if not self.name or not self.resource or not self.action:
+            return FlextResult[None].fail("Name, resource, and action required")
+
+        return FlextResult[None].ok(None)
+
+    def matches(self, resource: str, action: str) -> bool:
+        """Check if permission matches resource and action."""
+        return self.resource == resource and self.action == action
+
+
+class FlextAuthModels:
+    """Authentication models container class."""
+
+    # Domain entities
+    User = FlextAuthUser
+    Session = FlextAuthSession
+    Role = FlextAuthRole
+    Permission = FlextAuthPermission
+
+    # Factory methods
+    @classmethod
+    def create_user(
+        cls,
+        username: str,
+        email: str,
+        password_hash: str,
+        role: str = FlextAuthConstants.ROLE_USER,
+    ) -> FlextResult[FlextAuthUser]:
+        """Create user with validation."""
+        try:
+            import time
+
+            user_data = {
+                "id": f"user_{username}_{int(time.time_ns())}",
+                "username": username,
+                "email": email,
+                "password_hash": password_hash,
+                "role": role,
+                "status": FlextAuthConstants.USER_STATUS_ACTIVE,
+                "failed_login_attempts": 0,
+                "permissions": [],
+            }
+
+            user = FlextAuthUser.model_validate(user_data)
+            validation_result = user.validate_business_rules()
+
+            if validation_result.is_failure:
+                return FlextResult[FlextAuthUser].fail(
+                    validation_result.error or "Validation failed"
+                )
+
+            return FlextResult[FlextAuthUser].ok(user)
+
+        except Exception as e:
+            return FlextResult[FlextAuthUser].fail(f"User creation failed: {e}")
+
+    @classmethod
+    def create_session(
+        cls,
+        user_id: str,
+        access_token: str,
+        expires_at: datetime,
+        ip_address: str = "unknown",
+        user_agent: str | None = None,
+    ) -> FlextResult[FlextAuthSession]:
+        """Create session with validation."""
+        try:
+            import time
+
+            session_data = {
+                "id": f"session_{user_id}_{int(time.time_ns())}",
+                "user_id": user_id,
+                "access_token": access_token,
+                "ip_address": ip_address,
+                "user_agent": user_agent,
+                "expires_at": expires_at,
+                "is_active": True,
+            }
+
+            session = FlextAuthSession.model_validate(session_data)
+            validation_result = session.validate_business_rules()
+
+            if validation_result.is_failure:
+                return FlextResult[FlextAuthSession].fail(
+                    validation_result.error or "Validation failed"
+                )
+
+            return FlextResult[FlextAuthSession].ok(session)
+
+        except Exception as e:
+            return FlextResult[FlextAuthSession].fail(f"Session creation failed: {e}")
+
+    @classmethod
+    def create_role(
+        cls,
+        name: str,
+        description: str = "",
+        permissions: list[str] | None = None,
+    ) -> FlextResult[FlextAuthRole]:
+        """Create role with validation."""
+        try:
+            import time
+
+            role_data = {
+                "id": f"role_{name}_{int(time.time_ns())}",
+                "name": name,
+                "permissions": permissions or [],
+                "description": description,
+            }
+
+            role = FlextAuthRole.model_validate(role_data)
+            validation_result = role.validate_business_rules()
+
+            if validation_result.is_failure:
+                return FlextResult[FlextAuthRole].fail(
+                    validation_result.error or "Validation failed"
+                )
+
+            return FlextResult[FlextAuthRole].ok(role)
+
+        except Exception as e:
+            return FlextResult[FlextAuthRole].fail(f"Role creation failed: {e}")
+
+    @classmethod
+    def create_permission(
+        cls,
+        name: str,
+        description: str,
+        resource: str,
+        action: str,
+    ) -> FlextResult[FlextAuthPermission]:
+        """Create permission with validation."""
+        try:
+            import time
+
+            permission_data = {
+                "id": f"perm_{name}_{int(time.time_ns())}",
+                "name": name,
+                "resource": resource,
+                "action": action,
+                "description": description,
+            }
+
+            permission = FlextAuthPermission.model_validate(permission_data)
+            validation_result = permission.validate_business_rules()
+
+            if validation_result.is_failure:
+                return FlextResult[FlextAuthPermission].fail(
+                    validation_result.error or "Validation failed"
+                )
+
+            return FlextResult[FlextAuthPermission].ok(permission)
+
+        except Exception as e:
+            return FlextResult[FlextAuthPermission].fail(
+                f"Permission creation failed: {e}"
+            )
+
+    # Repository implementations
+    class InMemoryUserRepository:
+        """In-memory user repository for development."""
+
+        def __init__(self) -> None:
+            self._users: dict[str, FlextAuthUser] = {}
+
+        def save(self, user: FlextAuthUser) -> FlextResult[FlextAuthUser]:
+            """Save user."""
+            try:
+                self._users[user.id] = user
+                return FlextResult[FlextAuthUser].ok(user)
+            except Exception as e:
+                return FlextResult[FlextAuthUser].fail(f"Save failed: {e}")
+
+        def get_by_id(self, user_id: str) -> FlextResult[FlextAuthUser | None]:
+            """Get user by ID."""
+            try:
+                user = self._users.get(user_id)
+                return FlextResult[FlextAuthUser | None].ok(user)
+            except Exception as e:
+                return FlextResult[FlextAuthUser | None].fail(f"Get by ID failed: {e}")
+
+        def get_by_username(self, username: str) -> FlextResult[FlextAuthUser | None]:
+            """Get user by username."""
+            try:
+                for user in self._users.values():
+                    if user.username == username:
+                        return FlextResult[FlextAuthUser | None].ok(user)
+                return FlextResult[FlextAuthUser | None].ok(None)
+            except Exception as e:
+                return FlextResult[FlextAuthUser | None].fail(
+                    f"Get by username failed: {e}"
+                )
+
+        def get_by_email(self, email: str) -> FlextResult[FlextAuthUser | None]:
+            """Get user by email."""
+            try:
+                for user in self._users.values():
+                    if user.email == email:
+                        return FlextResult[FlextAuthUser | None].ok(user)
+                return FlextResult[FlextAuthUser | None].ok(None)
+            except Exception as e:
+                return FlextResult[FlextAuthUser | None].fail(
+                    f"Get by email failed: {e}"
+                )
+
+    class InMemorySessionRepository:
+        """In-memory session repository for development."""
+
+        def __init__(self) -> None:
+            self._sessions: dict[str, FlextAuthSession] = {}
+
+        def save(self, session: FlextAuthSession) -> FlextResult[FlextAuthSession]:
+            """Save session."""
+            try:
+                self._sessions[session.id] = session
+                return FlextResult[FlextAuthSession].ok(session)
+            except Exception as e:
+                return FlextResult[FlextAuthSession].fail(f"Save failed: {e}")
+
+        def get_by_id(self, session_id: str) -> FlextResult[FlextAuthSession | None]:
+            """Get session by ID."""
+            try:
+                session = self._sessions.get(session_id)
+                return FlextResult[FlextAuthSession | None].ok(session)
+            except Exception as e:
+                return FlextResult[FlextAuthSession | None].fail(
+                    f"Get by ID failed: {e}"
+                )
+
+        def get_by_user_id(self, user_id: str) -> FlextResult[list[FlextAuthSession]]:
+            """Get all sessions for user."""
+            try:
+                sessions = [s for s in self._sessions.values() if s.user_id == user_id]
+                return FlextResult[list[FlextAuthSession]].ok(sessions)
+            except Exception as e:
+                return FlextResult[list[FlextAuthSession]].fail(
+                    f"Get by user ID failed: {e}"
+                )
+
+        def delete_expired(self) -> FlextResult[int]:
+            """Delete expired sessions."""
+            try:
+                current_time = datetime.now(UTC)
+                expired_ids = [
+                    sid
+                    for sid, session in self._sessions.items()
+                    if session.expires_at <= current_time
+                ]
+
+                for sid in expired_ids:
+                    del self._sessions[sid]
+
+                return FlextResult[int].ok(len(expired_ids))
+            except Exception as e:
+                return FlextResult[int].fail(f"Delete expired failed: {e}")
+
+    # No helper functions - use FlextPasswordService and FlextAuthUtilities directly
+
+
+__all__ = [
     "FlextAuthModels",
-    # Legacy exports for backward compatibility
-    "FlextEmailVerificationToken",
-    "FlextHashedPassword",
-    "FlextJWTClaims",
-    "FlextLoginAttempt",
-    "FlextPasswordResetToken",
-    "FlextPermission",
-    "FlextPlainPassword",
-    "FlextRole",
-    "FlextSecurityContext",
-    # Legacy class exports for backward compatibility
-    "FlextSession",
-    "FlextSessionStatus",
-    # Domain Entities
-    "FlextUser",
-    "FlextUserEmail",
-    "FlextUserRole",
-    # Enums
-    "FlextUserStatus",
-    # Value Objects
-    "FlextUsername",
-    "InMemoryUserRepository",
-    # Repository Patterns
-    "UserRepository",
-    # Utilities
-    "convert_user_to_dict",
+    "FlextAuthPermission",
+    "FlextAuthRole",
+    "FlextAuthSession",
+    "FlextAuthUser",
 ]

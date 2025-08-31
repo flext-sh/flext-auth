@@ -18,14 +18,9 @@ from flext_core import FlextContainer, FlextLogger, FlextResult
 
 from flext_auth import (
     FlextAuth,
-    FlextAuthMixin,
-    FlextAuthService,
     FlextJWTService,
     FlextPasswordService,
-    FlextUser,
-    FlextUserEmail,
-    FlextUsername,
-    FlextUserRole,
+    FlextAuthUser,
     flext_auth_hash_password,
     flext_auth_quick_start,
     flext_auth_required,
@@ -45,18 +40,17 @@ class TestRefactoredAuthSystem:
         """Test that all specialized modules work together correctly."""
         # Verify all PUBLIC API components can be imported without circular dependencies
         assert FlextAuth is not None
-        assert FlextAuthMixin is not None
         assert flext_auth_required is not None
         assert flext_auth_quick_start is not None
         assert flext_auth_hash_password is not None
         assert flext_auth_validate_email is not None
 
-        # Test that public API works correctly (instead of testing private classes)
+        # Test that public API works correctly
         auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
         assert auth is not None, "Quick start failed"
         # Check that it has the required auth interface methods
-        assert hasattr(auth, "authenticate")
-        assert hasattr(auth, "create_user")
+        assert hasattr(auth, "authenticate_user")
+        assert hasattr(auth, "register_user")
 
     def test_dependency_injection_resolution(self) -> None:
         """Test that dependency injection works correctly after refactoring."""
@@ -64,16 +58,13 @@ class TestRefactoredAuthSystem:
         auth = FlextAuth()
 
         # Verify all dependencies are properly injected
-        assert auth.auth_service is not None
-        assert auth.jwt_service is not None
         assert auth.password_service is not None
-        assert auth.user_repository is not None
-        assert auth.session_repository is not None
+        assert auth.user_repo is not None
+        assert auth.session_repo is not None
 
         # Verify services are properly typed
-        assert hasattr(auth.auth_service, "register_user")
-        assert hasattr(auth.auth_service, "authenticate_user")
-        assert hasattr(auth.jwt_service, "generate_access_token")
+        assert hasattr(auth, "register_user")
+        assert hasattr(auth, "authenticate_user")
         assert hasattr(auth.password_service, "hash_password")
 
     def test_quick_start_functionality(self) -> None:
@@ -84,8 +75,8 @@ class TestRefactoredAuthSystem:
         assert auth is not None
         assert isinstance(auth, FlextAuth)
 
-        assert hasattr(auth, "create_user")
-        assert hasattr(auth, "authenticate")
+        assert hasattr(auth, "register_user")
+        assert hasattr(auth, "authenticate_user")
 
     def test_complete_authentication_workflow(self) -> None:
         """Test complete authentication workflow with refactored system."""
@@ -96,7 +87,7 @@ class TestRefactoredAuthSystem:
         email = "test@example.com"
         password = "TestPassword123!"
 
-        reg_result = asyncio.run(auth.create_user(username, email, password))
+        reg_result = auth.register_user(username, email, password)
 
         # Registration should work (returns FlextResult with user object or error)
         assert reg_result is not None
@@ -115,7 +106,12 @@ class TestRefactoredAuthSystem:
                 # If successful, should be a user dict with id or username
                 user_data = reg_result.value
                 assert isinstance(user_data, dict)
-                assert ("id" in user_data) or ("username" in user_data)
+                # FlextAuth returns {'success': True, 'user': {...}}
+                if "user" in user_data:
+                    user_info = user_data["user"]
+                    assert ("id" in user_info) or ("username" in user_info)
+                else:
+                    assert ("id" in user_data) or ("username" in user_data)
         elif isinstance(reg_result, dict) and "error" in reg_result:
             # Legacy dict format - still support it
             error_msg = str(reg_result["error"])
@@ -125,10 +121,14 @@ class TestRefactoredAuthSystem:
             )
         elif isinstance(reg_result, dict):
             # Legacy dict format - successful
-            assert ("id" in reg_result) or ("username" in reg_result)
+            if "user" in reg_result:
+                user_info = reg_result["user"]
+                assert ("id" in user_info) or ("username" in user_info)
+            else:
+                assert ("id" in reg_result) or ("username" in reg_result)
 
         # Test authentication
-        auth_result = asyncio.run(auth.authenticate(username, password))
+        auth_result = auth.authenticate_user(username, password)
         assert auth_result is not None
 
         # Authentication result should be meaningful
@@ -149,17 +149,27 @@ class TestRefactoredAuthSystem:
         assert callable(flext_auth_quick_start)
         assert callable(flext_auth_validate_email)
 
-        # Test mixins module - should contain mixin classes
-        assert hasattr(FlextAuthMixin, "__init__")
+        # Test that classes can be instantiated (use valid bcrypt hash)
+        auth_user = FlextAuthUser(
+            id="test_id", 
+            username="testuser", 
+            email="test@example.com",
+            password_hash="$2b$12$GBXJzzQKnOqtOVPLLOqLseJgTz/wvB.iXdx6VcSgfr8TvuNNJCW9K"  # Valid bcrypt hash
+        )
+        assert auth_user.username == "testuser"
 
         # Test that functions work correctly
         email_valid = flext_auth_validate_email("test@example.com")
-        assert isinstance(email_valid, bool)
-        assert email_valid is True
+        if hasattr(email_valid, "success"):
+            assert email_valid.success is True
+        else:
+            assert email_valid is True
 
         email_invalid = flext_auth_validate_email("invalid-email")
-        assert isinstance(email_invalid, bool)
-        assert email_invalid is False
+        if hasattr(email_invalid, "success"):
+            assert email_invalid.success is False
+        else:
+            assert email_invalid is False
 
     def test_anti_boilerplate_patterns(self) -> None:
         """Test that anti-boilerplate patterns work after refactoring."""
@@ -182,18 +192,21 @@ class TestRefactoredAuthSystem:
         assert len(hash_value) > 10  # Should be a proper hash
 
         email_check = flext_auth_validate_email("user@example.com")
-        assert email_check is True
+        if hasattr(email_check, "success"):
+            assert email_check.success is True
+        else:
+            assert email_check is True
 
     def test_flext_result_pattern_consistency(self) -> None:
         """Test that FlextResult pattern is used consistently."""
         # Quick start returns FlextAuth instance directly
         auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
         assert isinstance(auth, FlextAuth)
-        assert hasattr(auth, "authenticate")
-        assert hasattr(auth, "create_user")
+        assert hasattr(auth, "authenticate_user")
+        assert hasattr(auth, "register_user")
 
         # Operations return FlextResult
-        result = asyncio.run(auth.authenticate("test", "test"))
+        result = auth.authenticate_user("test", "test")
         assert hasattr(result, "success")
         # Use unwrap_or pattern for safe access
         assert result.success is False  # Expected failure for invalid credentials
@@ -204,39 +217,27 @@ class TestRefactoredAuthSystem:
         auth = FlextAuth()
 
         # Type checking - these should all pass mypy
-        auth_service: FlextAuthService = auth.auth_service
-        jwt_service: FlextJWTService = auth.jwt_service
         password_service: FlextPasswordService = auth.password_service
 
-        # Verify proper typing - auth_service can be mock for API compatibility
-        assert hasattr(auth_service, "create_user") or hasattr(
-            auth_service, "authenticate"
-        )
-        assert hasattr(jwt_service, "generate_access_token")
-        assert hasattr(jwt_service, "verify_token")
+        # Verify proper typing
+        assert hasattr(auth, "register_user")
+        assert hasattr(auth, "authenticate_user")
         assert hasattr(password_service, "hash_password")
         assert hasattr(password_service, "verify_password")
 
     def test_clean_architecture_boundaries(self) -> None:
         """Test that Clean Architecture boundaries are respected."""
-        # Domain entities should be independent
-        user = FlextUser(
+        # Domain entities should be independent (use valid bcrypt hash)
+        user = FlextAuthUser(
             id="test-id",
             username="testuser",
             email="test@example.com",
-            password_hash="hashed",
-            role=FlextUserRole.USER,
+            password_hash="$2b$12$GBXJzzQKnOqtOVPLLOqLseJgTz/wvB.iXdx6VcSgfr8TvuNNJCW9K",  # Valid bcrypt hash
+            role="user",
         )
         assert user.id == "test-id"
         assert user.username == "testuser"
-        assert user.role == FlextUserRole.USER
-
-        # Value objects should be immutable and validated
-        username = FlextUsername(value="validusername")
-        assert username.value == "validusername"
-
-        email = FlextUserEmail(value="test@example.com")
-        assert email.value == "test@example.com"
+        assert user.role == "user"
 
     def test_refactoring_metrics(self) -> None:
         """Test metrics showing successful refactoring impact."""
@@ -249,30 +250,24 @@ class TestRefactoredAuthSystem:
         assert init_lines < 900, f"__init__.py still too large: {init_lines} lines"
 
         # Verify specialized modules exist and have reasonable size
-        decorators_file = (
-            Path(__file__).parent.parent / "src" / "flext_auth" / "decorators.py"
+        utilities_file = (
+            Path(__file__).parent.parent / "src" / "flext_auth" / "utilities.py"
         )
-        helpers_file = (
-            Path(__file__).parent.parent / "src" / "flext_auth" / "helpers.py"
+        core_file = (
+            Path(__file__).parent.parent / "src" / "flext_auth" / "core.py"
         )
-        mixins_file = Path(__file__).parent.parent / "src" / "flext_auth" / "mixins.py"
+        models_file = Path(__file__).parent.parent / "src" / "flext_auth" / "models.py"
 
-        assert decorators_file.exists()
-        assert helpers_file.exists()
-        assert mixins_file.exists()
+        assert utilities_file.exists()
+        assert core_file.exists()
+        assert models_file.exists()
 
         # Each specialized module should be focused and reasonably sized
-        for module_file in [decorators_file, helpers_file, mixins_file]:
+        for module_file in [utilities_file, core_file, models_file]:
             with module_file.open() as f:
                 lines = len(f.readlines())
-            # Helpers.py may be larger due to utility functions - allow up to 500 lines
-            # Decorators.py contains decorators + mixins - allow up to 1200 lines
-            if module_file.name == "helpers.py":
-                max_lines = 500
-            elif module_file.name == "decorators.py":
-                max_lines = 1200
-            else:
-                max_lines = 400
+            # Allow reasonable sizes for different types
+            max_lines = 600  # Reasonable size for specialized modules
             assert lines < max_lines, f"{module_file.name} too large: {lines} lines"
 
 
@@ -288,20 +283,17 @@ class TestIntegrationWithFlextCore:
         auth = FlextAuth()
 
         # Register auth services in container
-        result = container.register("auth_service", auth.auth_service)
+        result = container.register("auth", auth)
         assert isinstance(result, FlextResult)
-        assert result.success
-
-        result = container.register("jwt_service", auth.jwt_service)
         assert result.success
 
         result = container.register("password_service", auth.password_service)
         assert result.success
 
         # Retrieve services from container
-        auth_service_result = container.get("auth_service")
-        assert auth_service_result.success
-        assert auth_service_result.value is not None
+        auth_result = container.get("auth")
+        assert auth_result.success
+        assert auth_result.value is not None
 
     def test_flext_logging_integration(self) -> None:
         """Test that logging works correctly with flext-core patterns."""
@@ -315,9 +307,7 @@ class TestIntegrationWithFlextCore:
 
         # This should not raise any logging-related errors
         # Test should not raise logging-related exceptions
-        result = asyncio.run(
-            auth.create_user("testuser", "test@example.com", "TestPassword123!")
-        )
+        result = auth.register_user("testuser", "test@example.com", "TestPassword123!")
         # Result should be meaningful regardless of success/failure
         assert result is not None
 

@@ -13,20 +13,13 @@ from __future__ import annotations
 import pytest
 
 from flext_auth import (
-    FlextAuthService,
-    FlextAuthServiceConfig,
     FlextJWTService,
     FlextPasswordService,
-    FlextUserRegistrationData,
-    FlextUserRole,
-    FlextUserStatus,
-    InMemorySessionRepository,
-    InMemoryUserRepository,
 )
 
 
-class TestFlextAuthService:
-    """Enterprise tests for FlextAuthService."""
+class TestFlextAuth:
+    """Enterprise tests for FlextAuth."""
 
     def setup_method(self) -> None:
         """Setup test dependencies."""

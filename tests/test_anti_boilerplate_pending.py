@@ -12,50 +12,33 @@ from __future__ import annotations
 
 import pytest
 
-from flext_auth import (
-    ADMIN_ROLE,
-    DEFAULT_JWT_SECRET,
-    USER_ROLE,
-    FlextAuthMixin,
-    flext_auth_generate_jwt,
-    flext_auth_permission_required,
-    flext_auth_required,
-    flext_auth_role_required,
-    flext_auth_validate_jwt,
-)
+from flext_auth import FlextAuthConstants, FlextAuthUtilities
 
 
-@pytest.mark.skip(reason="Anti-boilerplate functions not fully implemented yet")
 class TestAntiBoilerplateFunctionality:
     """Test placeholder for anti-boilerplate functionality - PENDING IMPLEMENTATION."""
 
     def test_basic_imports_work(self) -> None:
         """Test that basic imports work correctly."""
         # Test that constants are available
-        assert ADMIN_ROLE is not None
-        assert USER_ROLE is not None
-        assert DEFAULT_JWT_SECRET is not None
+        assert FlextAuthConstants.ROLE_ADMIN is not None
+        assert FlextAuthConstants.ROLE_USER is not None
+        assert FlextAuthConstants.DEFAULT_JWT_SECRET is not None
 
-        # Test that decorators are available
-        assert flext_auth_required is not None
-        assert flext_auth_role_required is not None
-        assert flext_auth_permission_required is not None
-
-        # Test that mixin is available
-        assert FlextAuthMixin is not None
-
-        # Test that working helper functions are available
-        assert flext_auth_generate_jwt is not None
-        assert flext_auth_validate_jwt is not None
+        # Test that utility functions are available
+        assert FlextAuthUtilities.generate_jwt is not None
+        assert FlextAuthUtilities.validate_jwt is not None
 
     def test_basic_jwt_functionality(self) -> None:
         """Test basic JWT functionality that exists."""
         # Test JWT generation
-        token = flext_auth_generate_jwt({"user_id": "test", "username": "testuser"})
-        assert isinstance(token, str)
-        assert len(token) > 0
+        result = FlextAuthUtilities.generate_jwt({"user_id": "test", "username": "testuser"})
+        assert result.success
+        assert isinstance(result.value, str)
+        assert len(result.value) > 0
 
         # Test JWT validation
-        result = flext_auth_validate_jwt(token)
-        assert isinstance(result, dict)
-        assert "valid" in result
+        validate_result = FlextAuthUtilities.validate_jwt(result.value)
+        assert validate_result.success
+        assert isinstance(validate_result.value, dict)
+        assert "username" in validate_result.value

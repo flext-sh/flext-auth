@@ -12,17 +12,14 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from flext_auth import (
-    FlextPermission,
-    FlextRole,
-    FlextSession,
-    FlextSessionStatus,
-    FlextUser,
-    FlextUserRole,
-    FlextUserStatus,
+    FlextAuthPermission,
+    FlextAuthRole,
+    FlextAuthSession,
+    FlextAuthUser,
 )
 
 
-class TestFlextUser:
+class TestFlextAuthUser:
     """Test FlextUser entity."""
 
     def test_user_creation(self) -> None:

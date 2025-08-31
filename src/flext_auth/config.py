@@ -1,697 +1,185 @@
-"""FLEXT Auth Configuration & Types - Centralized authentication configuration and types.
+"""FLEXT Auth Configuration - Type-safe configuration management.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
 
-import contextlib
 import os
-import re
-import secrets
-from abc import abstractmethod
-from typing import Never
 
-from flext_core import (
-    FlextConfig.BaseConfigModel,
-    FlextConfig,
-    FlextConstants,
-    FlextModel,
-    FlextProtocols,
-    FlextTypes,
-)
-from pydantic import Field
-from pydantic_settings import SettingsConfigDict
+from pydantic import BaseModel, Field
+
+from flext_auth.constants import FlextAuthConstants
+from flext_auth.typings import FlextAuthTypes
 
 
-# FLEXT MIGRATION: Use FlextProtocols.Infrastructure.Configurable for secret handling
-class _SecretProtocol(FlextProtocols.Infrastructure.Configurable):
-    """Protocol for password secret objects from flext-core.
+class DatabaseConfig(BaseModel):
+    """Database configuration settings."""
 
-    FLEXT REFACTORING: Migrated from local Protocol to FlextProtocols.Infrastructure.Configurable
-    to eliminate Protocol duplication and ensure architectural compliance.
-    """
-
-    @abstractmethod
-    def get_secret_value(self) -> str:
-        """Get the secret value as string."""
-        ...
+    url: FlextAuthTypes.URL = Field(
+        default="sqlite:///auth.db", description="Database URL"
+    )
+    pool_size: int = Field(default=10, description="Connection pool size")
+    max_overflow: int = Field(default=20, description="Maximum pool overflow")
+    echo: bool = Field(default=False, description="Echo SQL queries")
 
 
-# =============================================================================
-# TYPE DEFINITIONS - Authentication-specific types
-# =============================================================================
+class JWTConfig(BaseModel):
+    """JWT configuration settings."""
 
-# Core entity types extending flext-core
-type TUserId = FlextTypes.Domain.EntityId
-type TSessionId = FlextTypes.Domain.EntityId
-
-# Authentication domain types
-type TUsername = str
-type TEmail = str
-type TPassword = str
-type TUserRole = str
-
-# Authentication data types - SOLID refactoring: specific types instead of object
-type TAuthResult = dict[str, object]  # Authentication result with user data
-type TSecurityContext = dict[str, object]  # Security context with permissions
-type TLoginAttempt = dict[str, object]  # Login attempt data with metadata
-
-# Audit types
-type TAuditEventType = str
-
-# =============================================================================
-# CONFIGURATION CONSTANTS
-# =============================================================================
-
-# Configuration constants
-MIN_JWT_SECRET_LENGTH = 32
-
-
-# =============================================================================
-# AUTHENTICATION CONSTANTS
-# =============================================================================
-
-
-class FlextAuthConstants:
-    """Authentication constants for validation patterns."""
-
-    USERNAME_PATTERN = r"^[a-zA-Z0-9_-]+$"
-    PASSWORD_VALIDATION_REGEX = (  # Regex pattern for password validation, not a password/secret
-        r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?\":{}|<>]).+$"  # noqa: S105
+    secret_key: FlextAuthTypes.String = Field(
+        default=FlextAuthConstants.DEFAULT_JWT_SECRET, description="JWT secret key"
+    )
+    algorithm: FlextAuthTypes.String = Field(
+        default="HS256", description="JWT algorithm"
+    )
+    access_token_expire_minutes: int = Field(
+        default=FlextAuthConstants.DEFAULT_ACCESS_TOKEN_MINUTES,
+        description="Access token expiration in minutes",
+    )
+    refresh_token_expire_days: int = Field(
+        default=FlextAuthConstants.DEFAULT_REFRESH_TOKEN_DAYS,
+        description="Refresh token expiration in days",
     )
 
 
-# =============================================================================
-# CENTRALIZED CONFIGURATION MODELS - Using flext-core patterns
-# =============================================================================
+class SecurityConfig(BaseModel):
+    """Security configuration settings."""
 
-
-class FlextAuthConfig(FlextConfig.BaseConfigModel):
-    """Centralized authentication configuration using flext-core models."""
-
-    # Application settings
-    app_name: str = Field(default="FlextAuth", description="Application name")
-    version: str = Field(default="1.0.0", description="Application version")
-    debug: bool = Field(default=False, description="Debug mode")
-    environment: str = Field(default="development", description="Environment name")
-
-    # Authentication specific settings
-    password_min_length: int = Field(
-        default=8,
-        description="Minimum password length",
-        ge=4,
-        le=256,
+    bcrypt_rounds: int = Field(
+        default=FlextAuthConstants.DEFAULT_BCRYPT_ROUNDS,
+        description="Bcrypt hash rounds",
     )
-    password_max_length: int = Field(
-        default=128,
-        description="Maximum password length",
-        ge=8,
-        le=1024,
-    )
-    bcrypt_rounds: int = Field(default=12, description="BCrypt rounds", ge=4, le=20)
-
-    # Security settings
     max_login_attempts: int = Field(
-        default=5,
-        description="Maximum login attempts",
-        ge=1,
-        le=10,
+        default=FlextAuthConstants.DEFAULT_MAX_LOGIN_ATTEMPTS,
+        description="Maximum failed login attempts before lockout",
     )
     lockout_duration_minutes: int = Field(
-        default=30,
-        description="Account lockout duration",
-        ge=1,
-        le=1440,
+        default=FlextAuthConstants.DEFAULT_LOCKOUT_DURATION_MINUTES,
+        description="Account lockout duration in minutes",
     )
     session_timeout_hours: int = Field(
-        default=24, description="Session timeout", ge=1, le=168
-    )
-    max_concurrent_sessions: int = Field(
-        default=5,
-        description="Maximum concurrent sessions",
-        ge=1,
-        le=20,
-    )
-
-    # Rate limiting
-    rate_limit_per_minute: int = Field(
-        default=60,
-        description="General rate limit per minute",
-        ge=1,
-    )
-    auth_rate_limit_per_minute: int = Field(
-        default=5,
-        description="Auth rate limit per minute",
-        ge=1,
-    )
-
-    # JWT settings
-    access_token_expire_minutes: int = Field(
-        default=30,
-        description="JWT access token expiration minutes",
-        ge=1,
-        le=10080,  # 1 week max
-    )
-    refresh_token_expire_days: int = Field(
-        default=7,
-        description="JWT refresh token expiration days",
-        ge=1,
-        le=90,  # 3 months max
-    )
-    jwt_secret_key: str | None = Field(
-        default=None,
-        description="JWT secret key for token signing",
+        default=FlextAuthConstants.DEFAULT_SESSION_TIMEOUT_HOURS,
+        description="Session timeout in hours",
     )
 
 
-class FlextAuthApplicationConfig(FlextConfig.BaseConfigModel):
-    """Complete application configuration extending FlextConfig.BaseConfigModel."""
+class AppConfig(BaseModel):
+    """Main application configuration."""
 
-    # Override app-specific defaults
-    app_name: str = Field(default="FlextAuth", description="Application name")
-
-    # Authentication-specific settings
-    auth: FlextAuthConfig = Field(
-        default_factory=FlextAuthConfig,
-        description="Authentication configuration",
+    # Environment
+    environment: FlextAuthTypes.String = Field(
+        default=os.getenv("FLEXT_ENV", "development"),
+        description="Application environment",
     )
-
-
-# =============================================================================
-# SIMPLIFIED CONFIGURATION CLASSES - Current API
-# =============================================================================
-
-
-class DatabaseConfig:
-    """Database configuration for current API."""
-
-    def __init__(self, **kwargs: object) -> None:
-        """Initialize database configuration."""
-        # Extract and validate pool settings using helper methods
-        min_pool_size = self._extract_int_setting(
-            kwargs,
-            "min_pool_size",
-            "DATABASE_MIN_POOL_SIZE",
-            1,
-        )
-        max_pool_size = self._extract_int_setting(
-            kwargs,
-            "max_pool_size",
-            "DATABASE_MAX_POOL_SIZE",
-            FlextConstants.Platform.DB_MAX_CONNECTIONS,
-        )
-        command_timeout = self._extract_int_setting(
-            kwargs,
-            "command_timeout",
-            "DATABASE_COMMAND_TIMEOUT",
-            FlextConstants.Defaults.DB_TIMEOUT,
-        )
-
-        # Process URL settings
-        self._original_url = self._extract_url_setting(kwargs)
-
-        # Validate settings
-        self._validate_pool_sizes(min_pool_size, max_pool_size)
-
-        # Store validated values
-        self._min_pool_size = min_pool_size
-        self._max_pool_size = max_pool_size
-        self._command_timeout = command_timeout
-
-        # Store database config as simple dict since FlextDatabaseModel is generic
-        self._core_config_dict = {
-            "host": FlextConstants.Platform.DEFAULT_HOST,
-            "port": FlextConstants.Platform.POSTGRESQL_PORT,
-            "database": "flext_auth",  # Use reasonable default database name
-            "username": "flext_user",  # Use reasonable default username
-            "password": "flext_password",  # Use reasonable default password
-            "connection_timeout": command_timeout,
-        }
-        # Create a generic FlextModel instance for compatibility
-        self._core_config = FlextModel()
-
-    def _extract_int_setting(
-        self,
-        kwargs: dict[str, object],
-        key: str,
-        env_key: str,
-        default: int,
-    ) -> int:
-        """Extract and validate integer setting from kwargs or environment."""
-        raw_value = kwargs.pop(key, os.getenv(env_key, str(default)))
-        try:
-            if isinstance(raw_value, int):
-                return raw_value
-            return int(str(raw_value)) if raw_value is not None else default
-        except (ValueError, TypeError):
-            return default
-
-    def _extract_url_setting(self, kwargs: dict[str, object]) -> str | None:
-        """Extract and validate database URL from kwargs or environment."""
-        url_raw = kwargs.get("url")
-        original_url = str(url_raw) if url_raw is not None else None
-
-        if original_url is None:
-            original_url = os.getenv("DATABASE_URL")
-
-        if original_url and not original_url.startswith(
-            ("postgresql://", "postgresql+asyncpg://"),
-        ):
-            msg = "Database URL must start with postgresql"
-            raise ValueError(msg)
-
-        return original_url
-
-    def _validate_pool_sizes(self, min_pool_size: int, max_pool_size: int) -> None:
-        """Validate pool size ranges."""
-
-        def raise_validation_error(msg: str) -> Never:
-            raise ValueError(msg)
-
-        if min_pool_size < 1:
-            raise_validation_error("Minimum pool size must be at least 1")
-
-        max_min_pool_size = FlextConstants.Platform.DB_MAX_CONNECTIONS  # Use available constant
-        max_max_pool_size = FlextConstants.Platform.DB_MAX_CONNECTIONS * 2  # Reasonable limit
-
-        if min_pool_size > max_min_pool_size:
-            raise_validation_error(
-                f"Minimum pool size cannot exceed {max_min_pool_size}"
-            )
-        if max_pool_size > max_max_pool_size:
-            raise_validation_error(
-                f"Maximum pool size cannot exceed {max_max_pool_size}"
-            )
-
-    def __getattr__(self, name: str) -> object:
-        """Delegate unknown attributes to core config."""
-        return getattr(self._core_config, name)
-
-    @property
-    def password(self) -> _SecretProtocol | None:
-        """Get password as SecretProtocol for type safety."""
-        return self._core_config_dict.get("password")  # type: ignore[return-value]
-
-    @property
-    def host(self) -> str:
-        """Get database host."""
-        return str(self._core_config_dict.get("host", "localhost"))
-
-    @property
-    def port(self) -> int:
-        """Get database port."""
-        port_value = self._core_config_dict.get("port", self._get_default_port())
-        if isinstance(port_value, int):
-            return port_value
-        if isinstance(port_value, str) and port_value.isdigit():
-            return int(port_value)
-        return self._get_default_port()
-
-    @property
-    def database(self) -> str:
-        """Get database name."""
-        return str(self._core_config_dict.get("database", "flext"))
-
-    @property
-    def username(self) -> str:
-        """Get database username."""
-        return str(self._core_config_dict.get("username", "postgres"))
-
-    def _get_default_port(self) -> int:
-        """Get default PostgreSQL port."""
-        return 5432
-
-    @property
-    def url(self) -> str:
-        """Get database URL from components."""
-        # If an original URL was provided, return it
-        if self._original_url is not None:
-            return self._original_url
-
-        # Specific validation: return empty string if default/empty configuration
-        if (
-            self.host == "localhost"
-            and self.database == "flext"
-            and self.username == "postgres"
-            and self.port == self._get_default_port()
-        ):
-            # Default configuration - empty for development
-            return ""
-
-        # Custom configuration - generate complete URL
-        if self.password:
-            # Type-safe secret value extraction using Protocol
-            password_str = self.password.get_secret_value()
-            return f"postgresql://{self.username}:{password_str}@{self.host}:{self.port}/{self.database}"
-        return f"postgresql://{self.username}@{self.host}:{self.port}/{self.database}"
-
-    @property
-    def min_pool_size(self) -> int:
-        """Get minimum pool size."""
-        return getattr(self, "_min_pool_size", 1)
-
-    @property
-    def max_pool_size(self) -> int:
-        """Get maximum pool size."""
-        return getattr(self, "_max_pool_size", 10)
-
-    @property
-    def command_timeout(self) -> int:
-        """Get command timeout."""
-        return getattr(self, "_command_timeout", 60)
-
-
-class JWTConfig(FlextConfig):
-    """JWT configuration with environment variables."""
-
-    secret_key: str = Field(default="", description="JWT secret key")
-    algorithm: str = Field(default="HS256", description="JWT algorithm")
-    access_token_expire_minutes: int = Field(
-        default=30,
-        description="Access token expiration minutes",
-    )
-    refresh_token_expire_days: int = Field(
-        default=7,
-        description="Refresh token expiration days",
-    )
-
-    model_config = SettingsConfigDict(env_prefix="JWT_")
-
-    def __init__(self, **kwargs: object) -> None:
-        """Initialize with algorithm validation.
-
-        Args:
-            **kwargs: Configuration parameters for JWT settings
-
-        Raises:
-            ValueError: If algorithm is not supported
-
-        """
-        # Process kwargs - they can be empty but not None in **kwargs context
-
-        # Validate algorithm before calling super().__init__
-        algorithm = kwargs.get("algorithm", "HS256")
-        valid_algorithms = ["HS256", "HS384", "HS512", "RS256", "RS384", "RS512"]
-        if algorithm not in valid_algorithms:
-            msg: str = f"JWT algorithm must be one of {valid_algorithms}"
-            raise ValueError(msg)
-
-        # Call parent without any kwargs to avoid type issues
-        with contextlib.suppress(TypeError):
-            super().__init__()
-
-        # Set values after initialization
-        for key, value in kwargs.items():
-            if hasattr(self, key):
-                setattr(self, key, value)
-
-    def validate_secret_key(self) -> None:
-        """Validate secret key strength."""
-        if not self.secret_key or self.secret_key.strip() == "":
-            msg = "JWT secret key cannot be empty"
-            raise ValueError(msg)
-        if len(self.secret_key) < MIN_JWT_SECRET_LENGTH:
-            msg = "JWT secret key must be at least 32 characters long"
-            raise ValueError(msg)
-
-    @classmethod
-    def generate_secret_key(cls) -> str:
-        """Generate secure secret key."""
-        return secrets.token_urlsafe(32)
-
-
-class SecurityConfig(FlextConfig):
-    """Security configuration with environment variables."""
-
-    password_rounds: int = Field(default=12, description="BCrypt rounds", ge=4, le=20)
-    max_failed_attempts: int = Field(
-        default=5,
-        description="Max failed login attempts",
-        ge=1,
-        le=10,
-    )
-    lockout_duration_minutes: int = Field(
-        default=30,
-        description="Account lockout duration",
-        ge=1,
-        le=1440,
-    )
-    session_expire_hours: int = Field(
-        default=24,
-        description="Session timeout hours",
-        ge=1,
-        le=168,
-    )
-    max_concurrent_sessions: int = Field(
-        default=5,
-        description="Max concurrent sessions",
-        ge=1,
-        le=20,
-    )
-    require_email_verification: bool = Field(
-        default=False,
-        description="Require email verification",
-    )
-    enable_2fa: bool = Field(
-        default=False,
-        description="Enable two-factor authentication",
-    )
-
-    model_config = SettingsConfigDict(env_prefix="SECURITY_")
-
-
-class ServerConfig(FlextConfig):
-    """Server configuration."""
-
     debug: bool = Field(default=False, description="Debug mode")
-    host: str = Field(default="localhost", description="Server host")
-    port: int = Field(default=8000, description="Server port")
 
-    model_config = SettingsConfigDict(env_prefix="SERVER_")
-
-
-class AppConfig(FlextConfig):
-    """Application configuration."""
-
-    name: str = Field(
-        default="FLEXT Authentication API", description="Application name"
+    # Sub-configurations
+    database: DatabaseConfig = Field(
+        default_factory=DatabaseConfig, description="Database configuration"
     )
-    version: str = Field(default="1.0.0", description="Application version")
-    app_name: str = Field(default="FlextAuth", description="Application name")
-    debug: bool = Field(default=False, description="Debug mode")
-    environment: FlextTypes.Config.Environment = Field(default="development", description="Environment")
-
-    # Nested configurations - use arbitrary types for non-Pydantic classes
     jwt: JWTConfig = Field(default_factory=JWTConfig, description="JWT configuration")
     security: SecurityConfig = Field(
-        default_factory=SecurityConfig,
-        description="Security configuration",
-    )
-    server: ServerConfig = Field(
-        default_factory=ServerConfig,
-        description="Server configuration",
+        default_factory=SecurityConfig, description="Security configuration"
     )
 
-    model_config = SettingsConfigDict(env_prefix="APP_", arbitrary_types_allowed=True)
+    # Service settings
+    host: FlextAuthTypes.String = Field(default="localhost", description="Service host")
+    port: int = Field(default=8000, description="Service port")
 
-    # Custom database handling
-    def __init__(self, **kwargs: object) -> None:
-        """Initialize with database config handling."""
-        # Extract database config separately
-        database_config = kwargs.pop("database", None)
-        super().__init__(**kwargs)
-
-        # Handle database config manually
-        if database_config is None:
-            self.database = DatabaseConfig()
-        elif isinstance(database_config, DatabaseConfig):
-            self.database = database_config
-        else:
-            self.database = DatabaseConfig(**(database_config if isinstance(database_config, dict) else {}))  # type: ignore[arg-type]
-
-    def model_dump_safe(self) -> dict[str, object]:
-        """Dump model data with sensitive information redacted."""
-        # Get the regular model dump
-        dump = self.model_dump()
-
-        # Handle DatabaseConfig manually since it's not a Pydantic model
-        if hasattr(self, "database") and self.database:
-            db_url = getattr(self.database, "url", "")
-            if db_url and "://" in db_url:
-                # Replace password in URL
-                redacted_url = re.sub(r"://([^:]+):([^@]+)@", r"://[REDACTED]@", db_url)
-                dump["database"] = {"url": redacted_url}
-            else:
-                dump["database"] = {"url": db_url}
-
-        # Redact JWT secret key
-        if "jwt" in dump and "secret_key" in dump["jwt"]:
-            redacted_value = "[REDACTED]"  # nosec B105
-            dump["jwt"]["secret_key"] = redacted_value
-
-        return dump
+    @classmethod
+    def from_env(cls) -> AppConfig:
+        """Create configuration from environment variables."""
+        return cls(
+            environment=os.getenv("FLEXT_ENV", "development"),
+            debug=os.getenv("FLEXT_DEBUG", "false").lower() == "true",
+            database=DatabaseConfig(
+                url=os.getenv("DATABASE_URL", "sqlite:///auth.db"),
+                echo=os.getenv("DB_ECHO", "false").lower() == "true",
+            ),
+            jwt=JWTConfig(
+                secret_key=os.getenv(
+                    "JWT_SECRET_KEY", FlextAuthConstants.DEFAULT_JWT_SECRET
+                ),
+                access_token_expire_minutes=int(
+                    os.getenv("JWT_ACCESS_EXPIRE_MINUTES", "30")
+                ),
+            ),
+            security=SecurityConfig(
+                bcrypt_rounds=int(os.getenv("BCRYPT_ROUNDS", "12")),
+                max_login_attempts=int(os.getenv("MAX_LOGIN_ATTEMPTS", "5")),
+                lockout_duration_minutes=int(
+                    os.getenv("LOCKOUT_DURATION_MINUTES", "30")
+                ),
+            ),
+            host=os.getenv("HOST", "localhost"),
+            port=int(os.getenv("PORT", "8000")),
+        )
 
 
-# =============================================================================
-# CONFIGURATION FACTORY FUNCTIONS - Simplified creation
-# =============================================================================
+def validate_production_config(config: AppConfig) -> list[str]:
+    """Validate configuration for production use."""
+    issues = []
+
+    # Check JWT secret in production
+    if config.environment == "production":
+        if config.jwt.secret_key == FlextAuthConstants.DEFAULT_JWT_SECRET:
+            issues.append("Using default JWT secret key in production is insecure")
+
+        if (
+            config.security.bcrypt_rounds
+            < FlextAuthConstants.MIN_PRODUCTION_BCRYPT_ROUNDS
+        ):
+            issues.append(
+                f"Bcrypt rounds too low for production (minimum: {FlextAuthConstants.MIN_PRODUCTION_BCRYPT_ROUNDS})"
+            )
+
+        if config.database.url.startswith("sqlite://"):
+            issues.append("SQLite database not recommended for production")
+
+    return issues
 
 
-def create_auth_config(**overrides: object) -> FlextAuthConfig:
-    """Create authentication configuration."""
-    # Type-safe creation using Pydantic v2 model_validate
-    if overrides:
-        # Filter None values and use model_validate for type safety
-        filtered_overrides = {k: v for k, v in overrides.items() if v is not None}
-        return FlextAuthConfig.model_validate(filtered_overrides)
-    # Use default constructor with defaults from class
-    config = FlextAuthConfig()
-    # Override JWT secret if needed
-    if hasattr(config, "jwt_secret_key"):
-        config.jwt_secret_key = get_default_secret("FLEXT_AUTH_JWT_SECRET_KEY")
-    return config
+# Value objects for type safety
+class FlextUserEmail(BaseModel):
+    """Type-safe email value object."""
+
+    value: FlextAuthTypes.String = Field(..., description="Email address")
+
+    def __str__(self) -> str:
+        """Return the email address as a string."""
+        return self.value
 
 
-def create_complete_auth_config(**overrides: object) -> FlextAuthApplicationConfig:
-    """Create complete authentication application configuration."""
-    # Type-safe creation using Pydantic v2 model_validate
-    if overrides:
-        # Filter None values and use model_validate for type safety
-        filtered_overrides = {k: v for k, v in overrides.items() if v is not None}
-        return FlextAuthApplicationConfig.model_validate(filtered_overrides)
-    # Use default constructor with built-in defaults
-    return FlextAuthApplicationConfig()
+class FlextUsername(BaseModel):
+    """Type-safe username value object."""
+
+    value: FlextAuthTypes.String = Field(..., description="Username")
+
+    def __str__(self) -> str:
+        """Return the username as a string."""
+        return self.value
 
 
-def get_default_secret(key_name: str) -> str:
-    """Get default secret from environment or generate secure random value."""
-    env_value = os.getenv(key_name)
-    if env_value:
-        return env_value
-    return secrets.token_urlsafe(32)
+class FlextJWTClaims(BaseModel):
+    """JWT claims structure."""
+
+    sub: FlextAuthTypes.String = Field(..., description="Subject (user ID)")
+    username: FlextAuthTypes.String = Field(..., description="Username")
+    role: FlextAuthTypes.String = Field(..., description="User role")
+    iat: int = Field(..., description="Issued at timestamp")
+    exp: int = Field(..., description="Expiration timestamp")
+    iss: FlextAuthTypes.String = Field(default="flext-auth", description="Issuer")
 
 
-def validate_production_config(config: AppConfig) -> bool:
-    """Production configuration validation with critical field checks."""
-    # Validate database URL is not empty
-    if hasattr(config, "database") and config.database:
-        db_url = getattr(config.database, "url", "")
-        if not db_url or db_url.strip() == "":
-            msg = "Production database URL is required"
-            raise ValueError(msg)
-
-    # Validate JWT secret key is not empty
-    if hasattr(config, "jwt") and config.jwt:
-        jwt_secret = getattr(config.jwt, "secret_key", "")
-        if not jwt_secret or jwt_secret.strip() == "":
-            msg = "Production JWT secret key is required"
-            raise ValueError(msg)
-
-    # Validate required fields exist
-    config_dict = config.model_dump()
-    required_fields = ["app_name", "environment"]
-    return all(field in config_dict and config_dict[field] for field in required_fields)
-
-
-# =============================================================================
-# CONFIGURATION PRESETS - Common configurations
-# =============================================================================
-
-
-def create_development_config() -> FlextAuthApplicationConfig:
-    """Create development configuration with reasonable defaults."""
-    auth_config = FlextAuthConfig()
-    if hasattr(auth_config, "debug"):
-        auth_config.debug = True
-    if hasattr(auth_config, "environment"):
-        auth_config.environment = "development"
-    if hasattr(auth_config, "jwt_secret_key"):
-        auth_config.jwt_secret_key = get_default_secret("FLEXT_AUTH_JWT_SECRET_KEY")
-    app_config = FlextAuthApplicationConfig()
-    if hasattr(app_config, "auth"):
-        app_config.auth = auth_config
-    return app_config
-
-
-def create_production_config() -> FlextAuthApplicationConfig:
-    """Create production configuration requiring environment variables."""
-    jwt_secret = os.getenv("FLEXT_AUTH_JWT_SECRET_KEY")
-    if not jwt_secret or len(jwt_secret) < MIN_JWT_SECRET_LENGTH:
-        msg = "Production requires FLEXT_AUTH_JWT_SECRET_KEY (min 32 chars)"
-        raise ValueError(msg)
-
-    auth_config = FlextAuthConfig()
-    if hasattr(auth_config, "debug"):
-        auth_config.debug = False
-    if hasattr(auth_config, "environment"):
-        auth_config.environment = "production"
-    if hasattr(auth_config, "jwt_secret_key"):
-        auth_config.jwt_secret_key = jwt_secret
-    app_config = FlextAuthApplicationConfig()
-    if hasattr(app_config, "app_name"):
-        app_config.app_name = "FlextAuth"
-    if hasattr(app_config, "auth"):
-        app_config.auth = auth_config
-    return app_config
-
-
-# =============================================================================
-# SECURE DEFAULT SECRETS - Environment variable defaults
-# =============================================================================
-
-# Library-wide default secrets for production and development environments.
-DEFAULT_JWT_SECRET = os.getenv("FLEXT_AUTH_JWT_SECRET_KEY", "dev-secret-key")
-DEFAULT_SERVICE_SECRET = os.getenv(
-    "FLEXT_AUTH_SERVICE_SECRET",
-    get_default_secret("FLEXT_AUTH_SERVICE_SECRET"),
-)
-DEFAULT_MFA_SECRET = os.getenv(
-    "FLEXT_AUTH_MFA_SECRET",
-    get_default_secret("FLEXT_AUTH_MFA_SECRET"),
-)
-DEFAULT_DEV_SECRET = os.getenv("FLEXT_AUTH_DEV_SECRET", "dev-secret-key")
-
-# =============================================================================
-# EXPORTS - Clean config and types API
-# =============================================================================
-
-__all__: list[str] = [
-    # Default secrets
-    "DEFAULT_DEV_SECRET",
-    "DEFAULT_JWT_SECRET",
-    "DEFAULT_MFA_SECRET",
-    "DEFAULT_SERVICE_SECRET",
-    # Configuration classes
+__all__ = [
     "AppConfig",
     "DatabaseConfig",
-    "FlextAuthApplicationConfig",
-    # Main configuration classes
-    "FlextAuthConfig",
-    # Constants
-    "FlextAuthConstants",
+    "FlextJWTClaims",
+    "FlextUserEmail",
+    "FlextUsername",
     "JWTConfig",
     "SecurityConfig",
-    "ServerConfig",
-    "TAuditEventType",
-    "TAuthResult",
-    "TEmail",
-    "TLoginAttempt",
-    "TPassword",
-    "TSecurityContext",
-    "TSessionId",
-    # Type definitions
-    "TUserId",
-    "TUserRole",
-    "TUsername",
-    # Factory functions
-    "create_auth_config",
-    "create_complete_auth_config",
-    "create_development_config",
-    "create_production_config",
-    # Utilities
-    "get_default_secret",
     "validate_production_config",
 ]

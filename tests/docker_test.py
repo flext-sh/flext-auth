@@ -12,107 +12,97 @@ import sys
 import traceback
 
 from flext_auth import (
-    ADMIN_ROLE,
-    USER_ROLE,
-    AppConfig,
     FlextAuth,
-    FlextUserEmail,
-    FlextUsername,
-    flext_auth_hash_password,
-    flext_auth_quick_start,
-    flext_auth_validate_email,
+    FlextAuthConstants,
+    FlextPasswordService,
 )
+from flext_auth.utilities import FlextAuthUtilities
 
 
-def test_basic_imports() -> bool | None:
+def test_basic_imports() -> None:
     """Test that all basic imports work."""
     try:
-        # All imports are now at top-level
+        # Test real classes
         _ = (
-            ADMIN_ROLE,
-            USER_ROLE,
             FlextAuth,
-            flext_auth_hash_password,
-            flext_auth_quick_start,
-            flext_auth_validate_email,
+            FlextAuthConstants,
+            FlextPasswordService,
+            FlextAuthUtilities,
         )
-
-        # Suppress unused import warnings
-        _ = (
-            ADMIN_ROLE,
-            USER_ROLE,
-            FlextAuth,
-            flext_auth_hash_password,
-            flext_auth_quick_start,
-            flext_auth_validate_email,
-        )
-        return True
+        assert True
     except ImportError:
-        return False
+        msg = "Import failed"
+        raise AssertionError(msg)
 
 
-def test_basic_functionality() -> bool | None:
+def test_basic_functionality() -> None:
     """Test basic authentication functionality."""
     try:
-        # All imports are now at top-level
-        if flext_auth_hash_password is None:
-            return False
-
-        # Test password hashing
+        # Test password hashing using real class
+        password_service = FlextPasswordService()
         password = "TestPassword123!"
-        flext_auth_hash_password(password, rounds=4)  # Fast for testing
+        hash_result = password_service.hash_password(
+            password, rounds=4
+        )  # Fast for testing
+        assert hash_result.success, "Password hashing failed"
 
-        # Test email validation
-        if flext_auth_validate_email is not None:
-            flext_auth_validate_email("test@example.com")
-            flext_auth_validate_email("invalid-email")
+        # Test email validation using real class
+        email_result = FlextAuthUtilities.validate_email("test@example.com")
+        assert email_result.success, "Valid email validation failed"
+
+        # Test invalid email
+        invalid_result = FlextAuthUtilities.validate_email("invalid-email")
+        assert not invalid_result.success, "Invalid email should fail validation"
 
         # Test FlextAuth instantiation
-        if FlextAuth is not None:
-            FlextAuth()
-
-        return True
+        auth = FlextAuth()
+        assert auth is not None, "FlextAuth instantiation failed"
     except Exception:
         traceback.print_exc()
-        return False
+        msg = "Test failed"
+        raise AssertionError(msg)
 
 
-def test_quick_start() -> bool | None:
+def test_quick_start() -> None:
     """Test quick start functionality."""
     try:
-        # All imports are now at top-level
-        if flext_auth_quick_start is None:
-            return False
+        # Use FlextAuth.quick_start method
+        auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+        assert auth is not None, "FlextAuth.quick_start failed"
 
-        result = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-
-        if result.success:
-            pass
-
-        return result.success
+        # Verify it's a FlextAuth instance
+        assert isinstance(auth, FlextAuth), (
+            "FlextAuth.quick_start should return FlextAuth instance"
+        )
     except Exception:
         traceback.print_exc()
-        return False
+        msg = "Test failed"
+        raise AssertionError(msg)
 
 
-def test_examples_core_functionality() -> bool | None:
+def test_examples_core_functionality() -> None:
     """Test that core functionality from examples works."""
     try:
-        # All imports are now at top-level
-        if AppConfig is None or FlextUserEmail is None or FlextUsername is None:
-            return False
+        # Test constants availability
+        REDACTED_LDAP_BIND_PASSWORD_role = FlextAuthConstants.ROLE_ADMIN
+        user_role = FlextAuthConstants.ROLE_USER
+        assert REDACTED_LDAP_BIND_PASSWORD_role and user_role, "Constants not available"
 
-        # Test configuration
-        AppConfig()
+        # Test password service functionality
+        password_service = FlextPasswordService()
+        test_password = "TestPassword123!"
+        strength_result = password_service.validate_password_strength(test_password)
+        assert strength_result.success, "Password strength validation failed"
 
-        # Test domain entities
-        FlextUsername(value="testuser")
-        FlextUserEmail(value="test@example.com")
-
-        return True
+        # Test utilities
+        secure_password = FlextAuthUtilities.generate_secure_password(16)
+        assert secure_password and len(secure_password) == 16, (
+            "Secure password generation failed"
+        )
     except Exception:
         traceback.print_exc()
-        return False
+        msg = "Test failed"
+        raise AssertionError(msg)
 
 
 def main() -> int:

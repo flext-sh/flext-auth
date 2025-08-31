@@ -139,7 +139,7 @@ make validate                                       # All quality gates must pas
 
 **❌ Missing flext-core Integration:**
 - **FlextContainer**: No dependency injection container usage
-- **Event Sourcing**: No domain events despite FlextAggregateRoot availability
+- **Event Sourcing**: No domain events despite FlextModels.AggregateRoot availability
 - **CQRS Commands**: No command/handler pattern implementation
 - **Shared Domain**: Creates local domain models instead of shared patterns
 
@@ -297,7 +297,7 @@ This project is part of the larger FLEXT ecosystem and:
 
 **❌ Missing Integration (CRITICAL GAPS):**
 - **FlextContainer**: No dependency injection container usage
-- **Event Sourcing**: No domain events despite FlextAggregateRoot availability
+- **Event Sourcing**: No domain events despite FlextModels.AggregateRoot availability
 - **CQRS Commands**: No command/handler pattern implementation
 
 ## Troubleshooting
@@ -330,7 +330,7 @@ make doctor                  # Complete health check
 When working on this codebase, prioritize these missing flext-core integrations:
 
 1. **FlextContainer DI**: Replace manual dependency creation with container registration
-2. **Domain Events**: Migrate entities to `FlextAggregateRoot` and add event publishing  
+2. **Domain Events**: Migrate entities to `FlextModels.AggregateRoot` and add event publishing  
 3. **CQRS Commands**: Implement command/handler patterns for authentication operations
 4. **Error Handling**: Ensure all FlextResult usage follows ecosystem patterns
 

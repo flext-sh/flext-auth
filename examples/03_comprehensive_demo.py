@@ -11,10 +11,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-# Import everything from public API only - no internal module imports
 from flext_auth import (
     FlextAuth,
     FlextResult,
@@ -27,11 +23,7 @@ from flext_auth import (
     generate_secure_token,
 )
 
-# Add examples directory to path for imports
-examples_dir = Path(__file__).parent
-sys.path.insert(0, str(examples_dir))
-
-from example_utils import basic_example_runner
+from .example_utils import basic_example_runner
 
 # Demo constants
 DEMO_JWT_SECRET = "comprehensive-demo-secret-key-256-bits-minimum-required"

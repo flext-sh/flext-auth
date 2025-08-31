@@ -11,10 +11,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-# Import everything from public API only - no legacy or internal imports
 from flext_auth import (
     FlextAuth,
     flext_auth_generate_jwt,
@@ -25,10 +21,6 @@ from flext_auth import (
     generate_secure_password,
     generate_secure_token,
 )
-
-# Add examples directory to path for imports
-examples_dir = Path(__file__).parent
-sys.path.insert(0, str(examples_dir))
 
 from example_utils import basic_example_runner
 
@@ -115,13 +107,13 @@ def example_auth_service_methods() -> None:
     """Demonstrate working FlextAuth methods."""
     auth = FlextAuth()
 
-    # Test user creation
-    result = auth.create_user("testuser", "test@example.com", "SecurePass123!")
+    # Test user registration
+    result = auth.register_user("testuser", "test@example.com", "SecurePass123!")
     if hasattr(result, "success") and result.success:
         # Test authentication
-        auth_result = auth.authenticate("testuser", "SecurePass123!")
+        auth_result = auth.authenticate_user("testuser", "SecurePass123!")
         if hasattr(auth_result, "success") and auth_result.success:
-            pass
+            print("✅ Authentication service methods working correctly")
 
 
 def main() -> None:

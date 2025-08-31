@@ -11,28 +11,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import asyncio
-import sys
-from pathlib import Path
-
-# Import everything from public API only - no legacy or internal imports
-from flext_auth import (
-    FlextAuth,
-    FlextAuthMixin,
-    flext_auth_hash_password,
-    flext_auth_quick_start,
-    flext_auth_validate_email,
-    flext_auth_validate_password_strength,
-    flext_auth_verify_password,
-    generate_secure_password,
-    is_strong_password,
-)
-
-# Add examples directory to path for imports
-examples_dir = Path(__file__).parent
-sys.path.insert(0, str(examples_dir))
+# import asyncio  # Not needed
 
 from example_utils import basic_example_runner
+
+from flext_auth import (
+    FlextAuth,
+    FlextPasswordService,
+)
+# from flext_auth.mixins import FlextAuthMixin  # Disabled
 
 # Example constants - not for production use
 # These are intentionally hardcoded for demonstration purposes only
@@ -55,47 +42,102 @@ def example_basic_authentication() -> None:
 
 def example_password_operations() -> None:
     """Demonstrate password operations."""
+    # Create password service instance
+    password_service = FlextPasswordService()
+
     # Hash de senha
     password = EXAMPLE_PASSWORD
-    hashed_password = flext_auth_hash_password(password)  # Uses default rounds
+    hash_result = password_service.hash_password(password)  # Uses default rounds
+    if hash_result.success:
+        hashed_password = hash_result.value
 
-    # Verificação de senha
-    flext_auth_verify_password(password, hashed_password)
+        # Verificação de senha
+        verify_result = password_service.verify_password(password, hashed_password)
+        print(
+            f"Password verification: {'✅ Success' if verify_result.success and verify_result.value else '❌ Failed'}"
+        )
 
-    # Verificação com senha incorreta
-    wrong_password = EXAMPLE_WRONG_PASSWORD
-    flext_auth_verify_password(wrong_password, hashed_password)
+        # Verificação com senha incorreta
+        wrong_password = EXAMPLE_WRONG_PASSWORD
+        wrong_verify_result = password_service.verify_password(
+            wrong_password, hashed_password
+        )
+        print(
+            f"Wrong password verification: {'❌ Failed (expected)' if not wrong_verify_result.value else '⚠️ Unexpected success'}"
+        )
 
-    # Análise de força da senha - use unwrap_or pattern
-    flext_auth_validate_password_strength(password).unwrap_or(False)
+    # Análise de força da senha
+    strength_result = password_service.validate_password_strength(password)
+    print(f"Password strength: {'✅ Strong' if strength_result.success else '❌ Weak'}")
 
-    # Generate secure password
-    generate_secure_password()
+    # Generate secure password manually (no utilities)
+    import secrets
+    import string
+    
+    # Manual secure password generation
+    length = 12
+    lowercase = string.ascii_lowercase
+    uppercase = string.ascii_uppercase
+    digits = string.digits
+    special = '!@#$%^&*(),.?":{}|<>'
+    
+    secure_password = [
+        secrets.choice(lowercase),
+        secrets.choice(uppercase), 
+        secrets.choice(digits),
+        secrets.choice(special),
+    ]
+    
+    all_chars = lowercase + uppercase + digits + special
+    secure_password.extend(secrets.choice(all_chars) for _ in range(length - 4))
+    secrets.SystemRandom().shuffle(secure_password)
+    secure_password_str = "".join(secure_password)
+    
+    print(f"Generated secure password: {secure_password_str[:10]}...")
 
     # Check password strength
-    is_strong_password(password)
+    strength_check = password_service.validate_password_strength(secure_password_str)
+    print(f"Is strong password: {'✅ Yes' if strength_check.success else '❌ No'}")
 
 
 def example_email_validation() -> None:
     """Demonstrate email validation."""
+    
+    def validate_email_manual(email: str) -> bool:
+        """Manual email validation without utilities."""
+        if "@" not in email or "." not in email.split("@")[-1]:
+            return False
+        if email.count("@") != 1:
+            return False
+        local, domain = email.split("@")
+        if not local or not domain:
+            return False
+        if ".." in email:
+            return False
+        return True
+
     # Emails válidos
     valid_emails = ["user@example.com", "REDACTED_LDAP_BIND_PASSWORD@flext.io", "test.user+tag@domain.co.uk"]
     for email in valid_emails:
-        flext_auth_validate_email(email)
+        is_valid = validate_email_manual(email)
+        print(f"Email {email}: {'✅ Valid' if is_valid else '❌ Invalid'}")
 
     # Emails inválidos
     invalid_emails = ["invalid", "user@", "@domain.com", "user..double@domain.com"]
     for email in invalid_emails:
-        flext_auth_validate_email(email)
+        is_valid = validate_email_manual(email)
+        print(
+            f"Email {email}: {'❌ Invalid (expected)' if not is_valid else '⚠️ Unexpected valid'}"
+        )
 
 
-async def example_user_lifecycle() -> None:
+def example_user_lifecycle() -> None:
     """Demonstrate a complete user lifecycle."""
     # Criar serviço de autenticação (in-memory por padrão)
     auth = FlextAuth()
 
     # Simulate user registration using real async API
-    user_result = await auth.create_user(
+    user_result = auth.register_user(
         "testuser", "testuser@example.com", EXAMPLE_USER_PASSWORD
     )
 
@@ -105,100 +147,103 @@ async def example_user_lifecycle() -> None:
             pass
 
     # Simulate authentication using real async API
-    auth_result = await auth.authenticate("testuser", EXAMPLE_USER_PASSWORD)
+    auth_result = auth.authenticate_user("testuser", EXAMPLE_USER_PASSWORD)
     if auth_result.success:
         auth_data = auth_result.value
         if auth_data and isinstance(auth_data, dict):
             pass
 
 
-def example_quick_helpers() -> None:
-    """Demonstrate quick helpers and utilities."""
-    # Setup instantâneo (não precisa create_REDACTED_LDAP_BIND_PASSWORD, usa padrão)
-    flext_auth_quick_start()
+def example_direct_auth() -> None:
+    """Demonstrate direct FlextAuth usage."""
+    # Setup direto usando classe (sem helpers)
+    auth = FlextAuth()
+    print("✅ Direct FlextAuth instance created")
 
-    # Headers padrão (implementação real)
-
-    # Responses padrão (implementação real)
+    # Show configuration
+    print(f"JWT Secret length: {len(auth.jwt_secret)} characters")
+    print(f"Password rounds: {auth.password_rounds}")
+    print(f"Token expiry: {auth.token_expiry_minutes} minutes")
 
 
 def example_mixin_usage() -> None:
-    """Demonstrate how to use ``FlextAuthMixin``."""
+    """Demonstrate how to use basic authentication patterns."""
 
-    class MyController(FlextAuthMixin):
+    class MyController:
         """Example controller with authentication capabilities."""
 
         def handle_request(self, token: str) -> dict[str, object]:
             """Handle request with authentication - simplified implementation."""
-            # Initialize auth for the controller - mixin requires auth_service
-            # For demonstration, we'll show the initialization pattern
-
-            # In real usage, you would pass an auth_service instance:
-            # auth_service = get_auth_service_from_di_container()
-            # init_result = self.init_auth(auth_service=auth_service)
-
-            # For this example, we'll simulate the mixin behavior without actual auth
-            init_result_success = False  # Mixin requires dependencies as documented
-
             return {
                 "success": True,
-                "message": "Controller demonstrates FlextAuth mixin pattern",
-                "auth_initialized": init_result_success,
+                "message": "Controller demonstrates basic pattern",
                 "token_provided": bool(token),
-                "note": "Mixin requires auth_service parameter for full initialization",
             }
 
-    # Use the controller
+    # Create the controller
     controller = MyController()
+    print("Controller created successfully")
+    
+    # Test request with token
+    result = controller.handle_request("sample_token")
+    print(f"Request result: {result}")
 
-    # Test request with and without token
-    controller.handle_request("sample_token")
 
-    controller.handle_request("")
-
-
-def example_ultra_helpers() -> None:
-    """Demonstrate ultra-helpers for massive code reduction."""
-    # Create authentication service with quick start helper
-    flext_auth_quick_start()
+def example_direct_workflow() -> None:
+    """Demonstrate direct FlextAuth workflow."""
+    # Create authentication service directly (no helpers)
+    auth = FlextAuth()
+    print("✅ Direct FlextAuth authentication created")
 
     # Basic authentication demo using real async API (in-memory por padrão)
-    auth = FlextAuth()
-    user_result = asyncio.run(
-        auth.create_user("testuser", "test@example.com", "TestPass123!")
-    )
+    user_result = auth.register_user("testuser", "test@example.com", "TestPass123!")
 
     if user_result.success:
-        auth_result = asyncio.run(auth.authenticate("testuser", "TestPass123!"))
+        print("✅ User created successfully")
+        auth_result = auth.authenticate_user("testuser", "TestPass123!")
         if auth_result.success:
-            pass
+            print("✅ User authenticated successfully")
+        else:
+            print(f"❌ Authentication failed: {auth_result.error}")
+    else:
+        print(f"❌ User creation failed: {user_result.error}")
 
 
-async def example_advanced_registration() -> None:
+def example_advanced_registration() -> None:
     """Demonstrate advanced registration with validation."""
     auth = FlextAuth()
 
-    # First validate password strength - use unwrap_or pattern
-    is_strong = flext_auth_validate_password_strength(
+    # First validate password strength
+    strength_result = FlextPasswordService().validate_password_strength(
         EXAMPLE_ADVANCED_PASSWORD
-    ).unwrap_or(False)
-    if is_strong:
+    )
+    if strength_result.success:
+        print("✅ Password is strong enough for registration")
+
         # Create user with strong password using real async API
-        register_result = await auth.create_user(
+        register_result = auth.register_user(
             "advanceduser", "advanced@example.com", EXAMPLE_ADVANCED_PASSWORD
         )
 
         if register_result.success:
             user_data = register_result.value
             if isinstance(user_data, dict):
-                pass
+                print(
+                    f"✅ Advanced user registered: {user_data.get('user', {}).get('username')}"
+                )
 
             # Authenticate the newly created user using real async API
-            auth_result = await auth.authenticate(
+            auth_result = auth.authenticate_user(
                 "advanceduser", EXAMPLE_ADVANCED_PASSWORD
             )
             if auth_result.success:
-                pass
+                print("✅ Advanced user authenticated successfully")
+            else:
+                print(f"❌ Advanced user authentication failed: {auth_result.error}")
+        else:
+            print(f"❌ Advanced user registration failed: {register_result.error}")
+    else:
+        print(f"❌ Password too weak: {strength_result.error}")
 
 
 def example_complete_workflow() -> None:
@@ -207,17 +252,13 @@ def example_complete_workflow() -> None:
     auth = FlextAuth()
 
     # Step 1: Create user using real async API
-    user_result = asyncio.run(
-        auth.create_user(
+    user_result = auth.register_user(
             "workflowuser", "workflow@example.com", EXAMPLE_WORKFLOW_PASSWORD
         )
-    )
 
     if user_result.success:
         # Step 2: Authenticate user using real async API
-        auth_result = asyncio.run(
-            auth.authenticate("workflowuser", EXAMPLE_WORKFLOW_PASSWORD)
-        )
+        auth_result = auth.authenticate_user("workflowuser", EXAMPLE_WORKFLOW_PASSWORD)
         if auth_result.success:
             auth_data = auth_result.value
             if isinstance(auth_data, dict):
@@ -231,9 +272,9 @@ def main() -> None:
         example_basic_authentication,
         example_password_operations,
         example_email_validation,
-        example_quick_helpers,
+        example_direct_auth,
         example_mixin_usage,
-        example_ultra_helpers,
+        example_direct_workflow,
         example_complete_workflow,
     ]
 

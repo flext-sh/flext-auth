@@ -1,4 +1,4 @@
-"""Tests for clean flext-auth implementation - focused on helpers only.
+"""Tests for clean flext-auth implementation - focused on real classes.
 
 Copyright (c) 2025 FLEXT Contributors
 SPDX-License-Identifier: MIT
@@ -8,24 +8,22 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_auth import (
-    flext_auth_generate_jwt,
-    flext_auth_hash_password,
-    flext_auth_validate_email,
-    flext_auth_validate_jwt,
-    flext_auth_validate_password_strength,
-    flext_auth_verify_password,
+    FlextAuth,
+    FlextAuthConstants,
+    FlextJWTService,
+    FlextPasswordService,
 )
+from flext_auth.utilities import FlextAuthUtilities
 
 # Constants
-EXPECTED_DATA_COUNT = 3
+EXPECTED_JWT_PARTS = 3
 
 
 def test_flext_auth_hash_password() -> None:
-    """Test password hashing helper."""
+    """Test password hashing with FlextPasswordService."""
+    password_service = FlextPasswordService()
     password = "TestPassword123!"
-    result = flext_auth_hash_password(
-        password
-    )  # Legacy function doesn't take rounds parameter
+    result = password_service.hash_password(password)
 
     assert result.success
     hashed = result.value
@@ -34,97 +32,113 @@ def test_flext_auth_hash_password() -> None:
     assert hashed.startswith("$2b$")
 
     # Test verification
-    verify_result = flext_auth_verify_password(password, hashed)
+    verify_result = password_service.verify_password(password, hashed)
     assert verify_result.success
     assert verify_result.value is True
 
-    wrong_verify_result = flext_auth_verify_password("wrong", hashed)
+    wrong_verify_result = password_service.verify_password("wrong", hashed)
     assert wrong_verify_result.success
     assert wrong_verify_result.value is False
 
 
-def test_flext_auth_jwt_helpers() -> None:
-    """Test JWT helpers."""
-    user_id = "123"
-    username = "test"
+def test_flext_auth_jwt_service() -> None:
+    """Test JWT service functionality."""
     jwt_secret = "test-secret-key"
+    jwt_service = FlextJWTService(jwt_secret)
 
-    # Generate token with correct parameters
-    token_result = flext_auth_generate_jwt(
-        user_id=user_id,
-        username=username,
-        jwt_secret=jwt_secret
-    )
+    claims = {"sub": "123", "username": "test", "role": "user"}
+
+    # Generate token
+    token_result = jwt_service.generate_token(claims)
     assert token_result.success
     token = token_result.value
     assert isinstance(token, str)
     assert token != ""
-    assert len(token.split(".")) == EXPECTED_DATA_COUNT
+    assert len(token.split(".")) == EXPECTED_JWT_PARTS
 
     # Validate token
-    decoded_result = flext_auth_validate_jwt(token, jwt_secret=jwt_secret)
+    decoded_result = jwt_service.validate_token(token)
     assert decoded_result.success
     decoded = decoded_result.value
     assert isinstance(decoded, dict)
 
     # Token should be valid and contain user data
-    assert "user_id" in decoded
+    assert "sub" in decoded
     assert "username" in decoded
-    assert decoded["user_id"] == user_id
-    assert decoded["username"] == username
+    assert decoded["sub"] == "123"
+    assert decoded["username"] == "test"
 
 
-def test_flext_auth_validation_helpers() -> None:
-    """Test validation helpers."""
-    # Email validation - returns bool directly
-    assert flext_auth_validate_email("test@example.com") is True
-    assert flext_auth_validate_email("invalid-email") is False
+def test_flext_auth_validation_utilities() -> None:
+    """Test validation utilities."""
+    # Email validation - returns FlextResult
+    valid_email_result = FlextAuthUtilities.validate_email("test@example.com")
+    assert valid_email_result.success is True
 
-    # Password strength - returns FlextResult[bool]
-    strong_result = flext_auth_validate_password_strength("StrongPassword123!")
-    assert strong_result.success
-    assert isinstance(strong_result.value, bool)
-    assert strong_result.value is True
+    invalid_email_result = FlextAuthUtilities.validate_email("invalid-email")
+    assert invalid_email_result.success is False
 
-    weak_result = flext_auth_validate_password_strength("123")
-    assert weak_result.success
-    assert isinstance(weak_result.value, bool)
-    assert weak_result.value is False
+    # Password strength validation
+    password_service = FlextPasswordService()
+    strong_result = password_service.validate_password_strength("StrongPassword123!")
+    assert strong_result.success is True
+
+    weak_result = password_service.validate_password_strength("weak")
+    assert weak_result.success is False
 
 
-def test_flext_auth_session_helper() -> None:
-    """Test JWT token creation as session alternative."""
-    # Use JWT token generation as session creation alternative
-    # since flext_auth_create_secure_session doesn't exist yet
-    payload = {"user_id": "user123", "username": "testuser", "role": "REDACTED_LDAP_BIND_PASSWORD"}
-    token_result = flext_auth_generate_jwt(
-        user_id=payload["user_id"],
-        username=payload["username"],
-        role=payload["role"]
+def test_flext_auth_integration() -> None:
+    """Test complete FlextAuth integration."""
+    # Create FlextAuth instance
+    auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    assert isinstance(auth, FlextAuth)
+
+    # Test user registration
+    username = "testuser"
+    email = "test@example.com"
+    password = "TestPassword123!"
+
+    register_result = auth.register_user(
+        username=username,
+        email=email,
+        password=password,
+        role=FlextAuthConstants.ROLE_USER,
     )
+    assert register_result.success
 
-    assert token_result.success
-    token = token_result.value
-    assert isinstance(token, str)
-    assert len(token) > 0
+    # Test user authentication
+    auth_result = auth.authenticate_user(username, password)
+    assert auth_result.success
 
-    # Validate token to check payload
-    validation_result = flext_auth_validate_jwt(token)
-    assert validation_result.success
-    validation_data = validation_result.value
-    assert isinstance(validation_data, dict)
+    # Extract token from auth result
+    auth_data = auth_result.value
+    assert isinstance(auth_data, dict)
+    assert "tokens" in auth_data
+    tokens = auth_data["tokens"]
+    assert isinstance(tokens, dict)
+    access_token = tokens["access_token"]
 
-    # Basic validation - token structure exists
-    assert "user_id" in validation_data
-    assert "username" in validation_data
+    # Test token validation
+    validate_result = auth.validate_token(access_token)
+    assert validate_result.success
 
 
-if __name__ == "__main__":
-    """Run tests directly."""
-    try:
-        test_flext_auth_hash_password()
-        test_flext_auth_jwt_helpers()
-        test_flext_auth_validation_helpers()
-        test_flext_auth_session_helper()
-    except (RuntimeError, ValueError, TypeError):
-        pass
+def test_utilities_secure_password_generation() -> None:
+    """Test secure password generation."""
+    # Generate secure password
+    secure_password = FlextAuthUtilities.generate_secure_password(16)
+    assert len(secure_password) == 16
+    assert isinstance(secure_password, str)
+
+    # Test that generated password is strong
+    password_service = FlextPasswordService()
+    strength_result = password_service.validate_password_strength(secure_password)
+    assert strength_result.success is True
+
+
+def test_constants_availability() -> None:
+    """Test that constants are available."""
+    assert FlextAuthConstants.ROLE_USER is not None
+    assert FlextAuthConstants.ROLE_ADMIN is not None
+    assert FlextAuthConstants.DEFAULT_BCRYPT_ROUNDS > 0
+    assert FlextAuthConstants.DEFAULT_ACCESS_TOKEN_MINUTES > 0

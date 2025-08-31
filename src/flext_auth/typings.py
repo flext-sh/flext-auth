@@ -1,232 +1,232 @@
-"""FLEXT Auth Typings - Centralized type definitions for the authentication system.
+"""FLEXT Auth Type Definitions - Comprehensive types using flext-core as foundation.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
 
+FlextAuthTypes class using maximum FlextTypes coverage for all library needs.
 """
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import TypedDict
-
 from flext_core import FlextTypes
 
 # =============================================================================
-# CORE ENTITY TYPES - Extending flext-core
-# =============================================================================
-
-type FlextAuthUserId = FlextTypes.Domain.EntityId
-type FlextAuthSessionId = FlextTypes.Domain.EntityId
-type FlextAuthTokenId = FlextTypes.Domain.EntityId
-
-# =============================================================================
-# DOMAIN TYPES - FlextAuth specific
-# =============================================================================
-
-type FlextAuthUsername = str
-type FlextAuthEmail = str
-type FlextAuthPassword = str
-type FlextAuthRoleType = str
-type FlextAuthPermissionType = str
-
-# =============================================================================
-# AUTHENTICATION DATA TYPES - Structured types
-# =============================================================================
-
-type FlextAuthResult = dict[str, object]
-type FlextAuthSecurityContext = dict[str, object]
-type FlextAuthLoginAttempt = dict[str, object]
-type FlextAuthAuditEventType = str
-
-# Legacy type aliases for backward compatibility (referenced in __all__)
-type TEmail = FlextAuthEmail
-type TPassword = FlextAuthPassword
-type TSessionId = FlextAuthSessionId
-type TUserId = FlextAuthUserId
-type TUserRole = FlextAuthRoleType
-type TUsername = FlextAuthUsername
-type TAuditEventType = FlextAuthAuditEventType
-type TAuthResult = FlextAuthResult
-type TLoginAttempt = FlextAuthLoginAttempt
-type TSecurityContext = FlextAuthSecurityContext
-
-# =============================================================================
-# USER DATA TYPES - Current API user data types
+# FLEXT AUTH TYPES - Complete type system using maximum FlextTypes coverage
 # =============================================================================
 
 
-class FlextAuthUserDataType(TypedDict, total=False):
-    """FlextAuth user data type definition."""
+class FlextAuthTypes:
+    """Complete type system for flext-auth using maximum FlextTypes coverage.
 
-    id: str
-    username: str
-    email: str
-    role: str
-    is_active: bool
-    permissions: list[str]
-    created_at: datetime
-    last_login: datetime
+    Provides all types needed by the authentication library, leveraging
+    flext-core types extensively for consistency and interoperability.
+    """
 
+    # =========================================================================
+    # AUTHENTICATION TYPES - Based on FlextTypes.Auth
+    # =========================================================================
 
-class FlextAuthSessionDataType(TypedDict, total=False):
-    """FlextAuth session data type definition."""
+    # User identity types
+    type UserId = FlextTypes.Auth.UserId  # str - User identifier
+    type Username = FlextTypes.Auth.Username  # str - Username
+    type UserRole = FlextTypes.Auth.Role  # str - User role
+    type Permission = FlextTypes.Auth.Permission  # str - Permission string
+    type Scope = FlextTypes.Auth.Scope  # str - Authorization scope
 
-    id: str
-    user_id: str
-    token: str
-    expires_at: datetime
-    created_at: datetime
-    is_active: bool
-    ip_address: str
-    user_agent: str
+    # Token types
+    type AccessToken = FlextTypes.Auth.AccessToken  # str - JWT access token
+    type RefreshToken = FlextTypes.Auth.RefreshToken  # str - JWT refresh token
+    type TokenPayload = FlextTypes.Auth.TokenPayload  # dict[str, object] - JWT claims
 
+    # =========================================================================
+    # CORE PRIMITIVE TYPES - Based on FlextTypes.Core
+    # =========================================================================
 
-class FlextAuthTokenDataType(TypedDict, total=False):
-    """FlextAuth token data type definition."""
+    # String types
+    type String = FlextTypes.Core.String  # str - String type
+    type Id = FlextTypes.Core.Id  # str - Generic identifier
+    type Identifier = FlextTypes.Core.Identifier  # str - Entity identifier
+    type UUID = FlextTypes.Core.UUID  # str - UUID string
+    type ErrorMessage = FlextTypes.Core.ErrorMessage  # str - Error message
+    type LogMessage = FlextTypes.Core.LogMessage  # str - Log message
 
-    access_token: str
-    refresh_token: str
-    token_type: str
-    expires_in: int
-    scope: str
+    # Numeric types
+    type Integer = int  # int - Integer type
+    type Float = FlextTypes.Core.Float  # float - Float type
 
+    # Boolean types
+    type Boolean = FlextTypes.Core.Boolean  # bool - Boolean type
 
-class FlextAuthHeadersType(TypedDict, total=False):
-    """FlextAuth headers type definition."""
+    # Collection types
+    type List = FlextTypes.Core.List  # list[object] - List type
+    type Dict = FlextTypes.Core.Dict  # dict[str, object] - Dictionary type
+    type JsonValue = FlextTypes.Core.JsonValue  # JSON value union
+    type JsonObject = FlextTypes.Core.JsonObject  # dict[str, JsonValue]
+    type Object = FlextTypes.Core.Object  # object - Generic object
+    type Value = FlextTypes.Core.Value  # Union value type
 
-    Authorization: str
-    Content_Type: str
-    Accept: str
+    # =========================================================================
+    # DOMAIN TYPES - Based on FlextTypes.Domain
+    # =========================================================================
 
+    # Domain entity types
+    type EntityId = FlextTypes.Domain.EntityId  # str - Entity identifier
 
-class FlextAuthClaimsType(TypedDict, total=False):
-    """FlextAuth JWT claims type definition."""
+    # =========================================================================
+    # RESULT TYPES - Based on FlextTypes.Result
+    # =========================================================================
 
-    sub: str
-    username: str
-    email: str
-    role: str
-    permissions: list[str]
-    is_active: bool
-    iat: int
-    exp: int
-    iss: str
-    aud: str
+    # Result pattern types
+    type ResultType[T] = FlextTypes.Result.ResultType[T]  # FlextResult[T]
+    type Success[T] = FlextTypes.Result.Success[T]  # Success result
+
+    # =========================================================================
+    # SERVICE TYPES - Based on FlextTypes.Service
+    # =========================================================================
+
+    # Service layer types
+    type ServiceInstance = FlextTypes.Service.ServiceInstance  # object - Service
+    type ServiceDict = FlextTypes.Service.ServiceDict  # dict[str, ServiceInstance]
+    type FactoryDict = FlextTypes.Service.FactoryDict  # dict[str, Factory]
+    type ServiceName = FlextTypes.Service.ServiceName  # str - Service name
+
+    # =========================================================================
+    # CONFIG TYPES - Based on FlextTypes.Config
+    # =========================================================================
+
+    # Configuration types
+    type ConfigValue = FlextTypes.Config.ConfigValue  # Union config value
+    type ConfigDict = FlextTypes.Config.ConfigDict  # dict[str, ConfigValue]
+    type Environment = FlextTypes.Config.Environment  # Environment literal
+    type LogLevel = FlextTypes.Config.LogLevel  # Log level literal
+    type ValidationResult = FlextTypes.Config.ValidationResult  # bool
+
+    # =========================================================================
+    # VALIDATION TYPES - Based on FlextTypes.Validation
+    # =========================================================================
+
+    # Validation types
+    type Email = FlextTypes.Validation.Email  # str - Email format
+    type EmailValidationResult = (
+        FlextTypes.Validation.EmailValidationResult
+    )  # FlextResult[str]
+    type Url = FlextTypes.Validation.Url  # str - URL format
+    type Phone = FlextTypes.Validation.Phone  # str - Phone format
+    type PositiveNumber = FlextTypes.Validation.PositiveNumber  # float | int
+    type PredicateFunction = FlextTypes.Validation.PredicateFunction  # Callable
+    type Pattern = FlextTypes.Validation.Pattern  # str - Regex pattern
+    type ValidationRule = FlextTypes.Validation.ValidationRule  # str - Rule
+    type ValidationMessage = FlextTypes.Validation.ValidationMessage  # str - Message
+    type ValidationCode = FlextTypes.Validation.ValidationCode  # str - Code
+
+    # =========================================================================
+    # CONTAINER TYPES - Based on FlextTypes.Container
+    # =========================================================================
+
+    # Dependency injection types
+    type ServiceKey = FlextTypes.Container.ServiceKey  # str - Service key
+    type ServiceRegistration = (
+        FlextTypes.Container.ServiceRegistration
+    )  # FlextResult[None]
+    type ServiceRetrieval = FlextTypes.Container.ServiceRetrieval  # FlextResult[object]
+    type FactoryFunction = FlextTypes.Container.FactoryFunction  # Callable[[], object]
+    type FactoryRegistration = (
+        FlextTypes.Container.FactoryRegistration
+    )  # FlextResult[None]
+
+    # =========================================================================
+    # HANDLER TYPES - Based on FlextTypes.Handler
+    # =========================================================================
+
+    # CQRS Handler types
+    type Command = FlextTypes.Handler.Command  # object - Command
+    type Query = FlextTypes.Handler.Query  # object - Query
+    type Event = FlextTypes.Handler.Event  # dict[str, object] - Event
+    type CommandHandler = FlextTypes.Handler.CommandHandler  # Callable
+    type QueryHandler = FlextTypes.Handler.QueryHandler  # Callable
+    type EventHandler = FlextTypes.Handler.EventHandler  # Callable
+    type HandlerName = FlextTypes.Handler.HandlerName  # str - Handler name
+    type HandlerMetadata = FlextTypes.Handler.HandlerMetadata  # dict[str, object]
+    type Context = FlextTypes.Handler.Context  # dict[str, object]
+    type ProcessingResult = FlextTypes.Handler.ProcessingResult  # object
+
+    # =========================================================================
+    # LOGGING TYPES - Based on FlextTypes.Logging
+    # =========================================================================
+
+    # Logging types
+    type LogEntry = FlextTypes.Logging.LogEntry  # dict[str, object]
+    type LogContext = FlextTypes.Logging.LogContext  # dict[str, str]
+    type LogMetadata = FlextTypes.Logging.LogMetadata  # dict[str, object]
+    type ContextDict = FlextTypes.Logging.ContextDict  # dict[str, object]
+    type LogData = FlextTypes.Logging.LogData  # dict[str, object]
+
+    # =========================================================================
+    # NETWORK TYPES - Based on FlextTypes.Network
+    # =========================================================================
+
+    # Network types
+    type IPAddress = FlextTypes.Network.IPAddress  # str - IP address
+    type URL = FlextTypes.Network.URL  # str - URL
+    type Headers = FlextTypes.Network.Headers  # dict[str, str]
+    type RequestBody = FlextTypes.Network.RequestBody  # Union request body
+    type ResponseBody = FlextTypes.Network.ResponseBody  # Union response body
+
+    # =========================================================================
+    # AUTH-SPECIFIC TYPES - Library-specific extensions
+    # =========================================================================
+
+    # Authentication-specific types
+    type PasswordHash = String  # str - Bcrypt password hash
+    type UserStatus = String  # str - User status (active, locked, etc.)
+    type LoginAttempts = Integer  # int - Failed login attempts count
+    type ExpiryMinutes = Integer  # int - Token expiry in minutes
+    type SessionId = String  # str - Session identifier
+    type UserAgent = String  # str - User agent string
+    type IsActive = Boolean  # bool - Active status flag
+    type HasPermission = Boolean  # bool - Permission check result
+    type TokenType = String  # str - Token type (access, refresh)
+    type LockoutDuration = Integer  # int - Account lockout duration
+
+    # Authentication result types
+    type AuthResult[T] = FlextTypes.Result.Success[T]  # Authentication operation result
+    type UserResult = AuthResult[Dict]  # User operation result
+    type TokenResult = AuthResult[String]  # Token operation result
+    type SessionResult = AuthResult[Dict]  # Session operation result
+    type LoginResult = AuthResult[Dict]  # Login operation result
+    type RegisterResult = AuthResult[Dict]  # Registration operation result
+    type LogoutResult = AuthResult[Dict]  # Logout operation result
+    type PermissionResult = AuthResult[Boolean]  # Permission check result
+    type ValidateResult = AuthResult[Dict]  # Token validation result
+
+    # Authentication data types
+    type AuthData = Dict  # dict[str, object] - Authentication response data
+    type UserData = Dict  # dict[str, object] - User data dictionary
+    type SessionData = Dict  # dict[str, object] - Session data dictionary
+    type TokenData = Dict  # dict[str, object] - Token data dictionary
+    type ClaimsData = Dict  # dict[str, object] - JWT claims data
+    type CredentialsData = Dict  # dict[str, object] - Credentials data
+    type RegistrationData = Dict  # dict[str, object] - Registration data
+
+    # Authentication configuration types
+    type AuthConfig = ConfigDict  # Authentication configuration
+    type JWTConfig = ConfigDict  # JWT configuration
+    type PasswordConfig = ConfigDict  # Password configuration
+    type SessionConfig = ConfigDict  # Session configuration
+    type SecurityConfig = ConfigDict  # Security configuration
+
+    # Service types specific to authentication
+    type AuthService = ServiceInstance  # Authentication service instance
+    type PasswordService = ServiceInstance  # Password service instance
+    type JWTService = ServiceInstance  # JWT service instance
+    type SessionService = ServiceInstance  # Session service instance
+    type UserService = ServiceInstance  # User service instance
 
 
 # =============================================================================
-# CONFIGURATION TYPES - FlextAuth configuration
-# =============================================================================
-
-
-class FlextAuthConfigType(TypedDict, total=False):
-    """FlextAuth configuration type definition."""
-
-    app_name: str
-    version: str
-    debug: bool
-    environment: str
-    password_min_length: int
-    password_max_length: int
-    bcrypt_rounds: int
-    max_login_attempts: int
-    lockout_duration_minutes: int
-    session_timeout_hours: int
-    max_concurrent_sessions: int
-    rate_limit_per_minute: int
-    auth_rate_limit_per_minute: int
-    access_token_expire_minutes: int
-    refresh_token_expire_days: int
-    jwt_secret_key: str
-
-
-# =============================================================================
-# API RESPONSE TYPES - FlextAuth API responses
-# =============================================================================
-
-
-class FlextAuthResponseType(TypedDict, total=False):
-    """FlextAuth API response type definition."""
-
-    success: bool
-    data: object
-    error: str
-    message: str
-    status_code: int
-
-
-class FlextAuthAuthResponseType(TypedDict, total=False):
-    """FlextAuth authentication response type definition."""
-
-    authenticated: bool
-    user: FlextAuthUserDataType
-    tokens: FlextAuthTokenDataType
-    session: FlextAuthSessionDataType
-
-
-# =============================================================================
-# VALIDATION TYPES - FlextAuth validation
-# =============================================================================
-
-
-class FlextAuthValidationResultType(TypedDict, total=False):
-    """FlextAuth validation result type definition."""
-
-    valid: bool
-    errors: list[str]
-    warnings: list[str]
-    score: int
-
-
-class FlextAuthFieldValidationType(TypedDict, total=False):
-    """FlextAuth field validation type definition."""
-
-    field: str
-    value: object
-    rules: list[str]
-    result: FlextAuthValidationResultType
-
-
-# =============================================================================
-# TYPE EXPORTS - Clean type exports (using definitions from above)
-# =============================================================================
-
-# =============================================================================
-# EXPORTS - All FlextAuth types
+# EXPORTS - Export the main class and commonly used types
 # =============================================================================
 
 __all__ = [
-    "FlextAuthAuditEventType",
-    "FlextAuthAuthResponseType",
-    "FlextAuthClaimsType",
-    "FlextAuthConfigType",
-    "FlextAuthEmail",
-    "FlextAuthFieldValidationType",
-    "FlextAuthHeadersType",
-    "FlextAuthLoginAttempt",
-    "FlextAuthPassword",
-    "FlextAuthPermissionType",
-    "FlextAuthResponseType",
-    "FlextAuthResult",
-    "FlextAuthRoleType",
-    "FlextAuthSecurityContext",
-    "FlextAuthSessionDataType",
-    "FlextAuthSessionId",
-    "FlextAuthTokenDataType",
-    "FlextAuthTokenId",
-    "FlextAuthUserDataType",
-    "FlextAuthUserId",
-    "FlextAuthUsername",
-    "FlextAuthValidationResultType",
-    "TAuditEventType",
-    "TAuthResult",
-    "TEmail",
-    "TLoginAttempt",
-    "TPassword",
-    "TSecurityContext",
-    "TSessionId",
-    "TUserId",
-    "TUserRole",
-    "TUsername",
+    "FlextAuthTypes",
 ]

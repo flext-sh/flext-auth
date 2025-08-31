@@ -42,9 +42,9 @@ class TestRealProductionCode:
         service = FlextPasswordService()
 
         # Test with real password
-        plain_password = FlextPlainPassword.model_validate(
-            {"value": "RealPassword123!@#"}
-        )
+        plain_password = FlextPlainPassword.model_validate({
+            "value": "RealPassword123!@#"
+        })
 
         # Execute REAL bcrypt hashing (production code)
         hash_result = service.hash_password(plain_password)
@@ -204,9 +204,9 @@ class TestRealProductionCode:
         service = FlextPasswordService()
 
         # Test REAL bcrypt timing (security requirement)
-        password = FlextPlainPassword.model_validate(
-            {"value": "SecurityTestPassword123!"}
-        )
+        password = FlextPlainPassword.model_validate({
+            "value": "SecurityTestPassword123!"
+        })
 
         start_time = time.time()
         hash_result = service.hash_password(password)
