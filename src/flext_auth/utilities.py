@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import secrets
 import string
+from collections.abc import Callable
 from datetime import UTC, datetime
-from typing import Callable
 
 from flext_core import FlextResult
 

@@ -11,6 +11,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from example_utils import basic_example_runner
+
 from flext_auth import (
     FlextAuth,
     flext_auth_generate_jwt,
@@ -21,8 +23,6 @@ from flext_auth import (
     generate_secure_password,
     generate_secure_token,
 )
-
-from example_utils import basic_example_runner
 
 # Example constants - not for production use
 EXAMPLE_JWT_SECRET = "my-super-secure-jwt-secret-key-256-bits-minimum-length-required"
