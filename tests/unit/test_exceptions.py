@@ -249,7 +249,9 @@ class TestExceptionUsagePatterns:
         """Test exceptions with custom attributes."""
 
         class CustomFlextAuthError(FlextAuthError):
-            def __init__(self, message: FlextAuthTypes.ErrorMessage, error_code: int = 0) -> None:
+            def __init__(
+                self, message: FlextAuthTypes.ErrorMessage, error_code: int = 0
+            ) -> None:
                 super().__init__(message)
                 self.error_code = error_code  # type: ignore[assignment]
 
@@ -296,7 +298,9 @@ class TestErrorHandlingIntegration:
     def test_authentication_error_scenarios(self) -> None:
         """Test error handling in authentication scenarios."""
 
-        def authenticate_user(username: FlextAuthTypes.Username, password: FlextAuthTypes.String) -> bool:
+        def authenticate_user(
+            username: FlextAuthTypes.Username, password: FlextAuthTypes.String
+        ) -> bool:
             if not username:
                 msg = "Username is required"
                 raise FlextAuthValidationError(msg)
@@ -330,7 +334,9 @@ class TestErrorHandlingIntegration:
         """Test error handling with railway-oriented programming pattern."""
         from flext_core import FlextResult
 
-        def safe_operation(value: FlextAuthTypes.String) -> FlextResult[FlextAuthTypes.String]:
+        def safe_operation(
+            value: FlextAuthTypes.String,
+        ) -> FlextResult[FlextAuthTypes.String]:
             """Operation that catches exceptions and returns FlextResult."""
             try:
                 if not value:
@@ -351,12 +357,14 @@ class TestErrorHandlingIntegration:
         # Test validation error
         validation_result = safe_operation("")
         assert validation_result.is_failure
-        assert validation_result.error is not None and "Value is required" in validation_result.error
+        assert validation_result.error is not None
+        assert "Value is required" in validation_result.error
 
         # Test auth error
         auth_result = safe_operation("error")
         assert auth_result.is_failure
-        assert auth_result.error is not None and "Operation failed" in auth_result.error
+        assert auth_result.error is not None
+        assert "Operation failed" in auth_result.error
 
     def test_layered_error_handling(self) -> None:
         """Test error handling across multiple layers."""
