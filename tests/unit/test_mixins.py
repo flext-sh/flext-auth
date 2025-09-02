@@ -13,6 +13,7 @@ import pytest
 
 from flext_auth.domain_services import FlextAuth
 from flext_auth.mixins import FlextAuthMixin
+from flext_auth.typings import FlextAuthTypes
 
 
 class TestFlextAuthMixin:
@@ -36,12 +37,12 @@ class TestFlextAuthMixin:
         """Test mixin works with multiple inheritance."""
 
         class BaseClass:
-            def __init__(self, value: str) -> None:
+            def __init__(self, value: FlextAuthTypes.String) -> None:
                 self.value = value
                 super().__init__()
 
         class TestClass(BaseClass, FlextAuthMixin):
-            def __init__(self, value: str) -> None:
+            def __init__(self, value: FlextAuthTypes.String) -> None:
                 super().__init__(value)
 
         test_obj = TestClass("test_value")
@@ -175,11 +176,11 @@ class TestFlextAuthMixinUsagePatterns:
         """Test mixin usage in a service class."""
 
         class UserService(FlextAuthMixin):
-            def __init__(self, db_connection: str) -> None:
+            def __init__(self, db_connection: FlextAuthTypes.String) -> None:
                 super().__init__()
                 self.db_connection = db_connection
 
-            def create_user(self, username: str, password: str) -> bool:
+            def create_user(self, username: FlextAuthTypes.Username, password: FlextAuthTypes.String) -> bool:
                 if not self.is_auth_initialized():
                     msg = "Authentication service not initialized"
                     raise ValueError(msg)
@@ -194,7 +195,7 @@ class TestFlextAuthMixinUsagePatterns:
                 )
                 return result.success
 
-            def authenticate_user(self, username: str, password: str) -> bool:
+            def authenticate_user(self, username: FlextAuthTypes.Username, password: FlextAuthTypes.String) -> bool:
                 if not self.is_auth_initialized():
                     return False
 
@@ -234,7 +235,7 @@ class TestFlextAuthMixinUsagePatterns:
                 super().__init__()
                 self.api_version = api_version
 
-            def login(self, username: str, password: str) -> dict[str, object]:
+            def login(self, username: FlextAuthTypes.Username, password: FlextAuthTypes.String) -> FlextAuthTypes.Dict:
                 if not self.is_auth_initialized():
                     return {"error": "Auth service not available"}
 
@@ -293,7 +294,7 @@ class TestFlextAuthMixinUsagePatterns:
                 super().__init__()
                 self.config = config
 
-            def get_current_user(self, token: str) -> dict[str, str] | None:
+            def get_current_user(self, token: FlextAuthTypes.AccessToken) -> FlextAuthTypes.Dict | None:
                 if not self.is_auth_initialized():
                     return None
 

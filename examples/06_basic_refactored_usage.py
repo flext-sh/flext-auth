@@ -11,6 +11,8 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
+import secrets
+import string
 import sys
 from datetime import UTC, datetime
 
@@ -20,6 +22,7 @@ from flext_auth import (
     FlextJWTService,
     FlextPasswordService,
 )
+from flext_auth.typings import FlextAuthTypes
 
 
 def main() -> None:
@@ -119,8 +122,6 @@ def main() -> None:
         )
 
     # Generate secure password using manual implementation (not helpers)
-    import secrets
-    import string
 
     length = 16
     lowercase = string.ascii_lowercase
@@ -154,7 +155,7 @@ def main() -> None:
     print("\n6. Email Validation")
     test_emails = ["valid@example.com", "invalid.email", "test@domain.co.uk"]
 
-    def validate_email_manual(email: str) -> bool:
+    def validate_email_manual(email: FlextAuthTypes.Email) -> bool:
         """Manual email validation without helpers."""
         if "@" not in email or "." not in email.rsplit("@", maxsplit=1)[-1]:
             return False

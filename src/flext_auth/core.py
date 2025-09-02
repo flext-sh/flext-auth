@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import secrets
+import string
 from datetime import UTC, datetime, timedelta
 from typing import cast
 
@@ -194,10 +196,10 @@ class FlextAuth:
 
     def authenticate_user(
         self,
-        username: str,
-        password: str,
-        ip_address: str | None = None,
-        user_agent: str | None = None,
+        username: FlextAuthTypes.Username,
+        password: FlextAuthTypes.String,
+        ip_address: FlextAuthTypes.IPAddress | None = None,
+        user_agent: FlextAuthTypes.UserAgent | None = None,
     ) -> FlextResult[FlextAuthTypes.AuthData]:
         """Authenticate user and create session using railway pattern."""
         try:
@@ -219,7 +221,7 @@ class FlextAuth:
             )
 
     def _validate_user_credentials(
-        self, username: str, password: str
+        self, username: FlextAuthTypes.Username, password: FlextAuthTypes.String
     ) -> FlextResult[FlextAuthUser]:
         """Validate user exists, can login, and password is correct."""
         user_result = self.user_repo.get_by_username(username)
@@ -251,7 +253,7 @@ class FlextAuth:
         user.updated_at = datetime.now(UTC)
         self.user_repo.save(user)
 
-    def validate_token(self, token: str) -> FlextResult[FlextAuthTypes.AuthData]:
+    def validate_token(self, token: FlextAuthTypes.AccessToken) -> FlextResult[FlextAuthTypes.AuthData]:
         """Validate JWT token and return user information."""
         try:
             # Clean token (remove Bearer prefix if present)
@@ -285,7 +287,7 @@ class FlextAuth:
                 f"Token validation failed: {e}"
             )
 
-    def logout_user(self, session_id: str) -> FlextResult[FlextAuthTypes.AuthData]:
+    def logout_user(self, session_id: FlextAuthTypes.SessionId) -> FlextResult[FlextAuthTypes.AuthData]:
         """Logout user by deactivating session."""
         try:
             # Get session
@@ -367,7 +369,7 @@ class FlextAuth:
             return FlextResult[FlextAuthTypes.AuthData].fail(f"Cleanup failed: {e}")
 
     def _create_authenticated_session(
-        self, user: FlextAuthUser, ip_address: str | None, user_agent: str | None
+        self, user: FlextAuthUser, ip_address: FlextAuthTypes.IPAddress | None, user_agent: FlextAuthTypes.UserAgent | None
     ) -> FlextResult[FlextAuthTypes.AuthData]:
         """Create JWT token and session for authenticated user."""
         # Generate JWT token
@@ -479,9 +481,6 @@ class FlextAuth:
         REDACTED_LDAP_BIND_PASSWORD_password: str | None = None,
     ) -> FlextAuth:
         """Create FlextAuth instance with optional REDACTED_LDAP_BIND_PASSWORD user."""
-        import secrets
-        import string
-
         auth = cls()
 
         if create_REDACTED_LDAP_BIND_PASSWORD:

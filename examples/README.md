@@ -113,13 +113,13 @@ if auth_result.success:
 - Monitoring and observability
 - Deployment configurations
 
-### 5. Basic Auth Example (`basic_auth_example.py`)
+### 5. Basic Auth Example (`05_basic_auth.py`)
 
 **Purpose**: Minimal authentication example for quick reference
 **Complexity**: Minimal
 **Use Case**: Copy-paste ready authentication
 
-### 6. Debug Auth Issues (`debug_auth_issues.py`)
+### 6. Debug Auth Issues (`09_debug_auth_issues.py`)
 
 **Purpose**: Debugging and troubleshooting patterns
 **Complexity**: Intermediate
@@ -308,10 +308,10 @@ python examples/04_refactored_system_showcase.py
 
 ```bash
 # Run with interactive mode
-python -i examples/basic_auth_example.py
+python -i examples/05_basic_auth.py
 
 # Debug mode
-python examples/debug_auth_issues.py --debug
+python examples/09_debug_auth_issues.py --debug
 ```
 
 ## Example Development

@@ -6,10 +6,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import time
 from datetime import UTC, datetime, timedelta
 from typing import Annotated, ClassVar
 
-from flext_core import FlextModels, FlextResult
+from flext_core import FlextModels, FlextResult, FlextTypes
 from pydantic import Field, field_validator
 
 from flext_auth.constants import FlextAuthConstants
@@ -133,7 +134,7 @@ class FlextAuthUser(FlextModels.Entity):
             return True
         return permission in self.permissions
 
-    def add_permission(self, permission: str) -> None:
+    def add_permission(self, permission: FlextAuthTypes.Permission) -> None:
         """Add permission to user with domain event."""
         if permission not in self.permissions:
             self.permissions.append(permission)
@@ -142,7 +143,7 @@ class FlextAuthUser(FlextModels.Entity):
             # NOTE: Domain event publishing deferred until flext-core event patterns stabilize
             # Avoiding event publishing to prevent type compatibility issues
 
-    def remove_permission(self, permission: str) -> None:
+    def remove_permission(self, permission: FlextAuthTypes.Permission) -> None:
         """Remove permission from user with domain event."""
         if permission in self.permissions:
             self.permissions.remove(permission)
@@ -171,22 +172,8 @@ class FlextAuthUser(FlextModels.Entity):
             )
             self.status = FlextAuthConstants.USER_STATUS_LOCKED
 
-            # Create user locked event data with JsonObject type
-            locked_event_data: dict[
-                str,
-                str
-                | int
-                | float
-                | bool
-                | list[
-                    str | int | float | bool | list[object] | dict[str, object] | None
-                ]
-                | dict[
-                    str,
-                    str | int | float | bool | list[object] | dict[str, object] | None,
-                ]
-                | None,
-            ] = {
+            # Create user locked event data
+            locked_event_data: FlextTypes.Core.JsonObject = {
                 "event_type": "UserAccountLocked",
                 "aggregate_id": str(self.id),
                 "user_id": str(self.id),
@@ -197,19 +184,8 @@ class FlextAuthUser(FlextModels.Entity):
             }
             self.add_domain_event(locked_event_data)
 
-        # Create failed login event data with JsonObject type
-        failed_event_data: dict[
-            str,
-            str
-            | int
-            | float
-            | bool
-            | list[str | int | float | bool | list[object] | dict[str, object] | None]
-            | dict[
-                str, str | int | float | bool | list[object] | dict[str, object] | None
-            ]
-            | None,
-        ] = {
+        # Create failed login event data
+        failed_event_data: FlextTypes.Core.JsonObject = {
             "event_type": "UserLoginFailed",
             "aggregate_id": str(self.id),
             "user_id": str(self.id),
@@ -226,13 +202,13 @@ class FlextAuthSession(FlextModels.Entity):
     """Session domain entity for user sessions."""
 
     # Core session fields
-    user_id: str
-    access_token: str
-    refresh_token: str | None = None
+    user_id: FlextAuthTypes.UserId
+    access_token: FlextAuthTypes.AccessToken
+    refresh_token: FlextAuthTypes.RefreshToken | None = None
 
     # Session metadata
-    ip_address: str = "unknown"
-    user_agent: str | None = None
+    ip_address: FlextAuthTypes.String = "unknown"
+    user_agent: FlextAuthTypes.String | None = None
     expires_at: datetime
     is_active: bool = True
 
@@ -262,9 +238,9 @@ class FlextAuthSession(FlextModels.Entity):
 class FlextAuthRole(FlextModels.Entity):
     """Role domain entity with permissions."""
 
-    name: str
-    permissions: list[str] = Field(default_factory=list)
-    description: str = ""
+    name: FlextAuthTypes.UserRole
+    permissions: list[FlextAuthTypes.Permission] = Field(default_factory=list)
+    description: FlextAuthTypes.String = ""
     is_active: bool = True
 
     def validate_business_rules(self) -> FlextResult[None]:
@@ -280,13 +256,13 @@ class FlextAuthRole(FlextModels.Entity):
         """Check if role has specific permission."""
         return permission in self.permissions
 
-    def add_permission(self, permission: str) -> None:
+    def add_permission(self, permission: FlextAuthTypes.Permission) -> None:
         """Add permission to role."""
         if permission not in self.permissions:
             self.permissions.append(permission)
             self.increment_version()
 
-    def remove_permission(self, permission: str) -> None:
+    def remove_permission(self, permission: FlextAuthTypes.Permission) -> None:
         """Remove permission from role."""
         if permission in self.permissions:
             self.permissions.remove(permission)
@@ -296,10 +272,10 @@ class FlextAuthRole(FlextModels.Entity):
 class FlextAuthPermission(FlextModels.Entity):
     """Permission domain entity."""
 
-    name: str
-    resource: str
-    action: str
-    description: str = ""
+    name: FlextAuthTypes.Permission
+    resource: FlextAuthTypes.String
+    action: FlextAuthTypes.String
+    description: FlextAuthTypes.String = ""
     is_active: bool = True
 
     def validate_business_rules(self) -> FlextResult[None]:
@@ -309,7 +285,7 @@ class FlextAuthPermission(FlextModels.Entity):
 
         return FlextResult[None].ok(None)
 
-    def matches(self, resource: str, action: str) -> bool:
+    def matches(self, resource: FlextAuthTypes.String, action: FlextAuthTypes.String) -> bool:
         """Check if permission matches resource and action."""
         return self.resource == resource and self.action == action
 
@@ -327,14 +303,13 @@ class FlextAuthModels:
     @classmethod
     def create_user(
         cls,
-        username: str,
-        email: str,
-        password_hash: str,
-        role: str = FlextAuthConstants.ROLE_USER,
+        username: FlextAuthTypes.Username,
+        email: FlextAuthTypes.String,
+        password_hash: FlextAuthTypes.String,
+        role: FlextAuthTypes.UserRole = FlextAuthConstants.ROLE_USER,
     ) -> FlextResult[FlextAuthUser]:
         """Create user with validation."""
         try:
-            import time
 
             user_data = {
                 "id": f"user_{username}_{int(time.time_ns())}",
@@ -363,15 +338,14 @@ class FlextAuthModels:
     @classmethod
     def create_session(
         cls,
-        user_id: str,
-        access_token: str,
+        user_id: FlextAuthTypes.UserId,
+        access_token: FlextAuthTypes.AccessToken,
         expires_at: datetime,
-        ip_address: str = "unknown",
-        user_agent: str | None = None,
+        ip_address: FlextAuthTypes.String = "unknown",
+        user_agent: FlextAuthTypes.String | None = None,
     ) -> FlextResult[FlextAuthSession]:
         """Create session with validation."""
         try:
-            import time
 
             session_data = {
                 "id": f"session_{user_id}_{int(time.time_ns())}",
@@ -399,13 +373,12 @@ class FlextAuthModels:
     @classmethod
     def create_role(
         cls,
-        name: str,
-        description: str = "",
-        permissions: list[str] | None = None,
+        name: FlextAuthTypes.UserRole,
+        description: FlextAuthTypes.String = "",
+        permissions: list[FlextAuthTypes.Permission] | None = None,
     ) -> FlextResult[FlextAuthRole]:
         """Create role with validation."""
         try:
-            import time
 
             role_data = {
                 "id": f"role_{name}_{int(time.time_ns())}",
@@ -437,7 +410,6 @@ class FlextAuthModels:
     ) -> FlextResult[FlextAuthPermission]:
         """Create permission with validation."""
         try:
-            import time
 
             permission_data = {
                 "id": f"perm_{name}_{int(time.time_ns())}",
@@ -477,7 +449,7 @@ class FlextAuthModels:
             except Exception as e:
                 return FlextResult[FlextAuthUser].fail(f"Save failed: {e}")
 
-        def get_by_id(self, user_id: str) -> FlextResult[FlextAuthUser | None]:
+        def get_by_id(self, user_id: FlextAuthTypes.UserId) -> FlextResult[FlextAuthUser | None]:
             """Get user by ID."""
             try:
                 user = self._users.get(user_id)
@@ -485,7 +457,7 @@ class FlextAuthModels:
             except Exception as e:
                 return FlextResult[FlextAuthUser | None].fail(f"Get by ID failed: {e}")
 
-        def get_by_username(self, username: str) -> FlextResult[FlextAuthUser | None]:
+        def get_by_username(self, username: FlextAuthTypes.Username) -> FlextResult[FlextAuthUser | None]:
             """Get user by username."""
             try:
                 for user in self._users.values():
@@ -497,7 +469,7 @@ class FlextAuthModels:
                     f"Get by username failed: {e}"
                 )
 
-        def get_by_email(self, email: str) -> FlextResult[FlextAuthUser | None]:
+        def get_by_email(self, email: FlextAuthTypes.Email) -> FlextResult[FlextAuthUser | None]:
             """Get user by email."""
             try:
                 for user in self._users.values():
@@ -524,7 +496,7 @@ class FlextAuthModels:
             except Exception as e:
                 return FlextResult[FlextAuthSession].fail(f"Save failed: {e}")
 
-        def get_by_id(self, session_id: str) -> FlextResult[FlextAuthSession | None]:
+        def get_by_id(self, session_id: FlextAuthTypes.SessionId) -> FlextResult[FlextAuthSession | None]:
             """Get session by ID."""
             try:
                 session = self._sessions.get(session_id)
@@ -534,7 +506,7 @@ class FlextAuthModels:
                     f"Get by ID failed: {e}"
                 )
 
-        def get_by_user_id(self, user_id: str) -> FlextResult[list[FlextAuthSession]]:
+        def get_by_user_id(self, user_id: FlextAuthTypes.UserId) -> FlextResult[list[FlextAuthSession]]:
             """Get all sessions for user."""
             try:
                 sessions = [s for s in self._sessions.values() if s.user_id == user_id]

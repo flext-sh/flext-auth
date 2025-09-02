@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import os
 import sys
+from typing import cast
 
 from flext_auth import (
     FlextAuth,
@@ -75,7 +76,6 @@ def main() -> None:
             print("✅ User authenticated successfully")
 
             # Extract token for validation (we know auth_result.value is dict[str, object])
-            from typing import cast
 
             auth_data = cast("dict[str, object]", auth_result.value)
             tokens_data = cast("dict[str, object]", auth_data["tokens"])

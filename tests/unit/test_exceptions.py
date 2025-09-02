@@ -14,6 +14,7 @@ from typing import Self
 import pytest
 
 from flext_auth.exceptions import FlextAuthError, FlextAuthValidationError
+from flext_auth.typings import FlextAuthTypes
 
 
 class TestFlextAuthError:
@@ -247,7 +248,7 @@ class TestExceptionUsagePatterns:
         """Test exceptions with custom attributes."""
 
         class CustomFlextAuthError(FlextAuthError):
-            def __init__(self, message: str, error_code: int = 0) -> None:
+            def __init__(self, message: FlextAuthTypes.ErrorMessage, error_code: int = 0) -> None:
                 super().__init__(message)
                 self.error_code = error_code
 
@@ -294,7 +295,7 @@ class TestErrorHandlingIntegration:
     def test_authentication_error_scenarios(self) -> None:
         """Test error handling in authentication scenarios."""
 
-        def authenticate_user(username: str, password: str) -> bool:
+        def authenticate_user(username: FlextAuthTypes.Username, password: FlextAuthTypes.String) -> bool:
             if not username:
                 msg = "Username is required"
                 raise FlextAuthValidationError(msg)
@@ -328,7 +329,7 @@ class TestErrorHandlingIntegration:
         """Test error handling with railway-oriented programming pattern."""
         from flext_core import FlextResult
 
-        def safe_operation(value: str) -> FlextResult[str]:
+        def safe_operation(value: FlextAuthTypes.String) -> FlextResult[FlextAuthTypes.String]:
             """Operation that catches exceptions and returns FlextResult."""
             try:
                 if not value:
@@ -337,9 +338,9 @@ class TestErrorHandlingIntegration:
                 if value == "error":
                     msg = "Operation failed"
                     raise FlextAuthError(msg)
-                return FlextResult[str].ok(f"Processed: {value}")
+                return FlextResult[FlextAuthTypes.String].ok(f"Processed: {value}")
             except FlextAuthError as e:
-                return FlextResult[str].fail(str(e))
+                return FlextResult[FlextAuthTypes.String].fail(str(e))
 
         # Test success case
         success_result = safe_operation("valid")
@@ -359,13 +360,13 @@ class TestErrorHandlingIntegration:
     def test_layered_error_handling(self) -> None:
         """Test error handling across multiple layers."""
 
-        def database_layer(query: str) -> str:
+        def database_layer(query: FlextAuthTypes.String) -> FlextAuthTypes.String:
             if "invalid" in query:
                 msg = "Database error"
                 raise FlextAuthError(msg)
             return "data"
 
-        def service_layer(request: str) -> str:
+        def service_layer(request: FlextAuthTypes.String) -> FlextAuthTypes.String:
             if not request:
                 msg = "Request is empty"
                 raise FlextAuthValidationError(msg)
@@ -374,7 +375,7 @@ class TestErrorHandlingIntegration:
             except FlextAuthError as e:
                 raise FlextAuthError(f"Service error: {e}") from e
 
-        def api_layer(input_data: str) -> dict[str, object]:
+        def api_layer(input_data: FlextAuthTypes.String) -> FlextAuthTypes.Dict:
             try:
                 result = service_layer(input_data)
                 return {"success": True, "data": result}

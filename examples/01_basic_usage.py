@@ -11,18 +11,17 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-# from flext_auth.mixins import FlextAuthMixin  # Disabled
-# Example constants - not for production use
-# Demo credentials - using environment variables with fallbacks for examples
 import os
+import secrets
+import string
 
-# import asyncio  # Not needed
-from example_utils import basic_example_runner
+from utils import basic_example_runner
 
 from flext_auth import (
     FlextAuth,
     FlextPasswordService,
 )
+from flext_auth.typings import FlextAuthTypes
 
 EXAMPLE_PASSWORD = os.getenv("FLEXT_DEMO_PASSWORD", "MySecurePassword123!")
 EXAMPLE_WRONG_PASSWORD = os.getenv("FLEXT_DEMO_WRONG_PASSWORD", "WrongPassword")
@@ -75,8 +74,6 @@ def example_password_operations() -> None:
     print(f"Password strength: {'✅ Strong' if strength_result.success else '❌ Weak'}")
 
     # Generate secure password manually (no utilities)
-    import secrets
-    import string
 
     # Manual secure password generation
     length = 12
@@ -107,7 +104,7 @@ def example_password_operations() -> None:
 def example_email_validation() -> None:
     """Demonstrate email validation."""
 
-    def validate_email_manual(email: str) -> bool:
+    def validate_email_manual(email: FlextAuthTypes.Email) -> bool:
         """Manual email validation without utilities."""
         if "@" not in email or "." not in email.rsplit("@", maxsplit=1)[-1]:
             return False
@@ -174,7 +171,7 @@ def example_mixin_usage() -> None:
     class MyController:
         """Example controller with authentication capabilities."""
 
-        def handle_request(self, token: str) -> dict[str, object]:
+        def handle_request(self, token: FlextAuthTypes.AccessToken) -> FlextAuthTypes.Dict:
             """Handle request with authentication - simplified implementation."""
             return {
                 "success": True,

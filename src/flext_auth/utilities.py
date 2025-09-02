@@ -82,16 +82,16 @@ class FlextAuthUtilities:
         return "".join(password)
 
     @staticmethod
-    def generate_session_id() -> str:
+    def generate_session_id() -> FlextAuthTypes.SessionId:
         """Generate secure session ID."""
         return secrets.token_urlsafe(32)
 
     @staticmethod
     def create_audit_context(
-        user_id: str,
-        action: str,
-        source: str,
-    ) -> dict[str, str]:
+        user_id: FlextAuthTypes.UserId,
+        action: FlextAuthTypes.String,
+        source: FlextAuthTypes.String,
+    ) -> FlextAuthTypes.Dict:
         """Create audit context."""
         return {
             "user_id": user_id,
@@ -104,8 +104,8 @@ class FlextAuthUtilities:
     def quick_start(
         *,
         create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
-        REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-        REDACTED_LDAP_BIND_PASSWORD_password: str | None = None,
+        REDACTED_LDAP_BIND_PASSWORD_username: FlextAuthTypes.Username = "REDACTED_LDAP_BIND_PASSWORD",
+        REDACTED_LDAP_BIND_PASSWORD_password: FlextAuthTypes.String | None = None,
     ) -> FlextAuth:
         """Create FlextAuth instance with optional REDACTED_LDAP_BIND_PASSWORD user."""
         return FlextAuth.quick_start(
@@ -134,8 +134,8 @@ class FlextAuthUtilities:
 
     @staticmethod
     def validate_jwt(
-        token: str, secret: FlextAuthTypes.AccessToken | None = None
-    ) -> FlextResult[FlextAuthTypes.Dict]:
+        token: FlextAuthTypes.AccessToken, secret: FlextAuthTypes.AccessToken | None = None
+    ) -> FlextResult[FlextAuthTypes.TokenPayload]:
         """Validate JWT token using FlextJWTService."""
         jwt_secret = secret or FlextAuthConstants.DEFAULT_JWT_SECRET
         return FlextJWTService.validate_token_static(jwt_secret, token)
@@ -145,8 +145,8 @@ class FlextAuthUtilities:
 def flext_auth_quick_start(
     *,
     create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
-    REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-    REDACTED_LDAP_BIND_PASSWORD_password: str | None = None,
+    REDACTED_LDAP_BIND_PASSWORD_username: FlextAuthTypes.Username = "REDACTED_LDAP_BIND_PASSWORD",
+    REDACTED_LDAP_BIND_PASSWORD_password: FlextAuthTypes.String | None = None,
 ) -> FlextAuth:
     """Create FlextAuth instance with optional REDACTED_LDAP_BIND_PASSWORD user."""
     return FlextAuth.quick_start(
@@ -165,13 +165,13 @@ def flext_auth_hash_password(
 
 def flext_auth_generate_jwt(
     *,
-    user_id: str,
-    username: str,
-    role: str,
-    session_id: str,
-    jwt_secret: str,
+    user_id: FlextAuthTypes.UserId,
+    username: FlextAuthTypes.Username,
+    role: FlextAuthTypes.UserRole,
+    session_id: FlextAuthTypes.SessionId,
+    jwt_secret: FlextAuthTypes.AccessToken,
     expiry_minutes: int = 30,
-) -> FlextResult[str]:
+) -> FlextResult[FlextAuthTypes.AccessToken]:
     """Generate JWT token using FlextJWTService."""
     claims: FlextAuthTypes.Dict = {
         "sub": user_id,
@@ -183,8 +183,8 @@ def flext_auth_generate_jwt(
 
 
 def flext_auth_validate_jwt(
-    token: str, jwt_secret: str
-) -> FlextResult[FlextAuthTypes.Dict]:
+    token: FlextAuthTypes.AccessToken, jwt_secret: FlextAuthTypes.AccessToken
+) -> FlextResult[FlextAuthTypes.TokenPayload]:
     """Validate JWT token using FlextJWTService."""
     return FlextAuthUtilities.validate_jwt(token, jwt_secret)
 
@@ -215,7 +215,7 @@ def flext_auth_required(func: Callable[[object], object]) -> Callable[[object], 
 
 
 def flext_auth_role_required(
-    _required_role: str,
+    _required_role: FlextAuthTypes.UserRole,
 ) -> Callable[[Callable[[object], object]], Callable[[object], object]]:
     """Role required decorator."""
 
@@ -229,7 +229,7 @@ def flext_auth_role_required(
 
 
 def flext_auth_permission_required(
-    _required_permission: str,
+    _required_permission: FlextAuthTypes.Permission,
 ) -> Callable[[Callable[[object], object]], Callable[[object], object]]:
     """Permission required decorator."""
 

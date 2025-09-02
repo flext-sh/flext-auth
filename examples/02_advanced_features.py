@@ -14,10 +14,11 @@ from __future__ import annotations
 # Example constants - not for production use
 import os
 
-from example_utils import basic_example_runner
+from utils import basic_example_runner
 
 from flext_auth import (
     FlextAuth,
+    create_auth_service,
     flext_auth_generate_jwt,
     flext_auth_permission_required,
     flext_auth_required,
@@ -84,8 +85,6 @@ def example_decorators() -> None:
 
 def example_batch_operations_working() -> None:
     """Demonstrate batch operations using real FlextAuth functionality."""
-    from flext_auth import create_auth_service
-
     # Create auth service instance
     create_auth_service()
 

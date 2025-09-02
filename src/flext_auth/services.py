@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
+import bcrypt
 import jwt
 from flext_core import FlextResult
 
@@ -29,7 +30,6 @@ class FlextPasswordService:
     ) -> FlextResult[FlextAuthTypes.String]:
         """Hash password using bcrypt with secure rounds."""
         try:
-            import bcrypt
 
             actual_rounds = rounds if rounds is not None else cls.DEFAULT_ROUNDS
             salt = bcrypt.gensalt(rounds=actual_rounds)
@@ -46,7 +46,6 @@ class FlextPasswordService:
     ) -> FlextResult[bool]:
         """Verify password against bcrypt hash."""
         try:
-            import bcrypt
 
             is_valid = bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
             return FlextResult[bool].ok(is_valid)
@@ -98,13 +97,13 @@ class FlextJWTService:
 
     def generate_access_token(
         self,
-        user_id: FlextAuthTypes.String,
+        user_id: FlextAuthTypes.UserId,
         username: FlextAuthTypes.Username,
         role: FlextAuthTypes.UserRole,
         extra_claims: FlextAuthTypes.Dict | None = None,
         expires_minutes: int | None = None,
         algorithm: FlextAuthTypes.String | None = None,
-    ) -> FlextResult[FlextAuthTypes.String]:
+    ) -> FlextResult[FlextAuthTypes.AccessToken]:
         """Generate access token for user."""
         claims = {
             "sub": user_id,
@@ -117,10 +116,10 @@ class FlextJWTService:
 
     def generate_refresh_token(
         self,
-        user_id: FlextAuthTypes.String,
+        user_id: FlextAuthTypes.UserId,
         expires_minutes: int | None = None,
         algorithm: FlextAuthTypes.String | None = None,
-    ) -> FlextResult[FlextAuthTypes.String]:
+    ) -> FlextResult[FlextAuthTypes.RefreshToken]:
         """Generate refresh token for user."""
         claims: FlextAuthTypes.TokenPayload = {
             "sub": user_id,
@@ -130,16 +129,16 @@ class FlextJWTService:
 
     def verify_token(
         self,
-        token: FlextAuthTypes.String,
+        token: FlextAuthTypes.AccessToken,
         _algorithm: FlextAuthTypes.String | None = None,
-    ) -> FlextResult[FlextAuthTypes.Dict]:
+    ) -> FlextResult[FlextAuthTypes.TokenPayload]:
         """Verify token and return claims."""
         return self.validate_token_static(self.secret, token)
 
     def get_token_claims(
         self,
-        token: FlextAuthTypes.String,
-    ) -> FlextResult[FlextAuthTypes.Dict]:
+        token: FlextAuthTypes.AccessToken,
+    ) -> FlextResult[FlextAuthTypes.TokenPayload]:
         """Get token claims without full verification."""
         return self.validate_token_static(self.secret, token)
 
@@ -149,7 +148,7 @@ class FlextJWTService:
         expires_minutes: int | None = None,
         algorithm: FlextAuthTypes.String | None = None,
         secret: FlextAuthTypes.AccessToken | None = None,
-    ) -> FlextResult[FlextAuthTypes.String]:
+    ) -> FlextResult[FlextAuthTypes.AccessToken]:
         """Generate JWT token with claims using instance secret."""
         actual_secret = secret or self.secret
         return FlextJWTService.generate_token_static(
@@ -162,7 +161,7 @@ class FlextJWTService:
         claims: FlextAuthTypes.TokenPayload,
         expires_minutes: int | None = None,
         algorithm: FlextAuthTypes.String | None = None,
-    ) -> FlextResult[FlextAuthTypes.String]:
+    ) -> FlextResult[FlextAuthTypes.AccessToken]:
         """Generate JWT token with claims - static method."""
         try:
             actual_expires = expires_minutes or FlextJWTService.DEFAULT_EXPIRY_MINUTES
@@ -178,15 +177,15 @@ class FlextJWTService:
             }
 
             token = jwt.encode(token_claims, secret, algorithm=actual_algorithm)
-            return FlextResult[FlextAuthTypes.String].ok(token)
+            return FlextResult[FlextAuthTypes.AccessToken].ok(token)
         except Exception as e:
-            return FlextResult[FlextAuthTypes.String].fail(
+            return FlextResult[FlextAuthTypes.AccessToken].fail(
                 f"Token generation failed: {e}"
             )
 
     def validate_token(
         self,
-        token: str,
+        token: FlextAuthTypes.AccessToken,
         algorithm: FlextAuthTypes.String | None = None,
         secret: FlextAuthTypes.AccessToken | None = None,
     ) -> FlextResult[FlextAuthTypes.TokenPayload]:
@@ -197,7 +196,7 @@ class FlextJWTService:
     @staticmethod
     def validate_token_static(
         secret: FlextAuthTypes.AccessToken,
-        token: str,
+        token: FlextAuthTypes.AccessToken,
         algorithm: FlextAuthTypes.String | None = None,
     ) -> FlextResult[FlextAuthTypes.TokenPayload]:
         """Validate JWT token and return claims - static method."""
@@ -223,11 +222,11 @@ class FlextJWTService:
 
     def refresh_token(
         self,
-        refresh_token: str,
+        refresh_token: FlextAuthTypes.RefreshToken,
         new_claims: FlextAuthTypes.TokenPayload | None = None,
         expires_minutes: int | None = None,
         secret: FlextAuthTypes.AccessToken | None = None,
-    ) -> FlextResult[FlextAuthTypes.String]:
+    ) -> FlextResult[FlextAuthTypes.AccessToken]:
         """Generate new access token from refresh token - instance method."""
         actual_secret = secret or self.secret
         return FlextJWTService.refresh_token_static(
@@ -237,10 +236,10 @@ class FlextJWTService:
     @staticmethod
     def refresh_token_static(
         secret: FlextAuthTypes.AccessToken,
-        refresh_token: str,
+        refresh_token: FlextAuthTypes.RefreshToken,
         new_claims: FlextAuthTypes.TokenPayload | None = None,
         expires_minutes: int | None = None,
-    ) -> FlextResult[FlextAuthTypes.String]:
+    ) -> FlextResult[FlextAuthTypes.AccessToken]:
         """Generate new access token from refresh token."""
         try:
             # Validate refresh token first
@@ -248,7 +247,7 @@ class FlextJWTService:
                 secret, refresh_token
             )
             if not validation_result.success:
-                return FlextResult[FlextAuthTypes.String].fail(
+                return FlextResult[FlextAuthTypes.AccessToken].fail(
                     f"Invalid refresh token: {validation_result.error}"
                 )
 
@@ -270,10 +269,10 @@ class FlextJWTService:
             )
 
         except Exception as e:
-            return FlextResult[FlextAuthTypes.String].fail(f"Token refresh failed: {e}")
+            return FlextResult[FlextAuthTypes.AccessToken].fail(f"Token refresh failed: {e}")
 
     @staticmethod
-    def extract_claims_unsafe(token: str) -> FlextResult[FlextAuthTypes.TokenPayload]:
+    def extract_claims_unsafe(token: FlextAuthTypes.AccessToken) -> FlextResult[FlextAuthTypes.TokenPayload]:
         """Extract claims from token without validation (for debugging)."""
         try:
             # Decode without verification for debugging purposes

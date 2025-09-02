@@ -25,7 +25,7 @@ from flext_auth import (
     generate_secure_token,
 )
 
-from .example_utils import basic_example_runner
+from .utils import basic_example_runner
 
 DEMO_JWT_SECRET = os.getenv(
     "FLEXT_DEMO_JWT_SECRET", "comprehensive-demo-secret-key-256-bits-minimum-required"
