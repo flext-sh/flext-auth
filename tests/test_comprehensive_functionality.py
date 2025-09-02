@@ -24,6 +24,14 @@ from flext_auth import (
     FlextAuthValidationError,
     FlextJWTService,
     FlextPasswordService,
+    flext_auth_generate_jwt,
+    flext_auth_hash_password,
+    flext_auth_validate_email,
+    flext_auth_validate_jwt,
+    flext_auth_validate_password_strength,
+    flext_auth_verify_password,
+    generate_secure_password,
+    is_strong_password,
 )
 
 
@@ -37,7 +45,9 @@ class TestFlextAuthCore:
         assert auth.jwt_secret is not None
         assert len(auth.jwt_secret) > 20
         assert auth.password_rounds == FlextAuthConstants.DEFAULT_BCRYPT_ROUNDS
-        assert auth.token_expiry_minutes == FlextAuthConstants.DEFAULT_ACCESS_TOKEN_MINUTES
+        assert (
+            auth.token_expiry_minutes == FlextAuthConstants.DEFAULT_ACCESS_TOKEN_MINUTES
+        )
 
         # Test custom initialization
         custom_secret = "test-secret-key"
@@ -150,7 +160,9 @@ class TestFlextAuthCore:
         tokens = auth_data["tokens"]
         assert "access_token" in tokens
         assert tokens["token_type"] == "Bearer"
-        assert tokens["expires_in"] == FlextAuthConstants.DEFAULT_ACCESS_TOKEN_MINUTES * 60
+        assert (
+            tokens["expires_in"] == FlextAuthConstants.DEFAULT_ACCESS_TOKEN_MINUTES * 60
+        )
 
         # Validate session data
         session_info = auth_data["session"]
@@ -192,7 +204,9 @@ class TestFlextAuthCore:
         # Test invalid token
         invalid_result = auth.validate_token("invalid.token.here")
         assert invalid_result.is_failure
-        assert "token" in invalid_result.error.lower()  # Should contain "token" in error
+        assert (
+            "token" in invalid_result.error.lower()
+        )  # Should contain "token" in error
 
         # Test token with Bearer prefix
         bearer_result = auth.validate_token(f"Bearer {access_token}")
@@ -208,7 +222,9 @@ class TestFlextAuthCore:
         password = "SessionTestPassword123!"
 
         auth.register_user(username, "sessiontest@example.com", password)
-        auth_result = auth.authenticate_user(username, password, "127.0.0.1", "test-agent")
+        auth_result = auth.authenticate_user(
+            username, password, "127.0.0.1", "test-agent"
+        )
         assert auth_result.success
 
         # Extract session info
@@ -277,15 +293,17 @@ class TestFlextPasswordService:
 
         # Test clearly weak passwords that should definitely fail
         weak_passwords = [
-            "weak",       # Too short (less than 8 chars)
-            "12345678",   # Only numbers, no letters or special chars
-            "",           # Empty password
-            "a",          # Single character
+            "weak",  # Too short (less than 8 chars)
+            "12345678",  # Only numbers, no letters or special chars
+            "",  # Empty password
+            "a",  # Single character
         ]
 
         for weak_password in weak_passwords:
             weak_result = service.validate_password_strength(weak_password)
-            assert weak_result.is_failure, f"Password '{weak_password}' should be invalid"
+            assert weak_result.is_failure, (
+                f"Password '{weak_password}' should be invalid"
+            )
 
     def test_password_utility_functions(self) -> None:
         """Test password utility functions."""
@@ -732,10 +750,10 @@ class TestEmailValidation:
         """Test invalid email addresses."""
         invalid_emails = [
             "invalid.email",  # No @ symbol
-            "@example.com",   # No local part
-            "user@",          # No domain
+            "@example.com",  # No local part
+            "user@",  # No domain
             "user..name@example.com",  # Double dots (should fail)
-            "",               # Empty string
+            "",  # Empty string
         ]
 
         for email in invalid_emails:
@@ -829,7 +847,9 @@ class TestRealWorldScenarios:
                 f"{weak_password}@example.com",
                 weak_password,
             )
-            assert result.is_failure, f"Weak password '{weak_password}' should be rejected"
+            assert result.is_failure, (
+                f"Weak password '{weak_password}' should be rejected"
+            )
 
     def test_authentication_security_features(self) -> None:
         """Test authentication security features like account lockout."""
@@ -849,7 +869,10 @@ class TestRealWorldScenarios:
         # Even with correct password, should fail due to lockout
         locked_auth = auth.authenticate_user(username, password)
         assert locked_auth.is_failure
-        assert "locked" in locked_auth.error.lower() or "inactive" in locked_auth.error.lower()
+        assert (
+            "locked" in locked_auth.error.lower()
+            or "inactive" in locked_auth.error.lower()
+        )
 
     def test_async_api_compatibility(self) -> None:
         """Test async API methods work correctly."""
@@ -887,19 +910,20 @@ class TestComprehensiveCoverage:
         # Test clear error conditions that should definitely fail
         error_scenarios = [
             # Empty/None values
-            ("", "empty@example.com", "Password123!"),     # Empty username
-            ("user", "", "Password123!"),                  # Empty email
-            ("user", "test@example.com", ""),              # Empty password
-
+            ("", "empty@example.com", "Password123!"),  # Empty username
+            ("user", "", "Password123!"),  # Empty email
+            ("user", "test@example.com", ""),  # Empty password
             # Clearly invalid formats
-            ("user", "invalid-email", "Password123!"),     # Invalid email (no @ or .)
-            ("user", "test@", "Password123!"),             # Invalid email (no domain)
+            ("user", "invalid-email", "Password123!"),  # Invalid email (no @ or .)
+            ("user", "test@", "Password123!"),  # Invalid email (no domain)
         ]
 
         for username, email, password in error_scenarios:
             result = auth.register_user(username, email, password)
             # All should fail for various reasons
-            assert result.is_failure, f"Registration should fail for: {username}, {email}, {password}"
+            assert result.is_failure, (
+                f"Registration should fail for: {username}, {email}, {password}"
+            )
 
     def test_boundary_conditions(self) -> None:
         """Test boundary conditions for various inputs."""
@@ -987,27 +1011,43 @@ class TestComprehensiveCoverage:
 
         for username in valid_usernames:
             if len(username) >= FlextAuthConstants.MIN_USERNAME_LENGTH:
-                assert username_pattern.match(username), f"Username '{username}' should be valid"
+                assert username_pattern.match(username), (
+                    f"Username '{username}' should be valid"
+                )
 
         for username in invalid_usernames:
-            if len(username) < FlextAuthConstants.MIN_USERNAME_LENGTH or not username_pattern.match(username):
+            if len(
+                username
+            ) < FlextAuthConstants.MIN_USERNAME_LENGTH or not username_pattern.match(
+                username
+            ):
                 # Expected to be invalid
                 pass
 
     def test_constants_consistency(self) -> None:
         """Test that constants are consistent and make sense."""
         # Test that min/max values make sense
-        assert FlextAuthConstants.MIN_PASSWORD_LENGTH <= FlextAuthConstants.MAX_PASSWORD_LENGTH
-        assert FlextAuthConstants.MIN_USERNAME_LENGTH <= FlextAuthConstants.MAX_USERNAME_LENGTH
+        assert (
+            FlextAuthConstants.MIN_PASSWORD_LENGTH
+            <= FlextAuthConstants.MAX_PASSWORD_LENGTH
+        )
+        assert (
+            FlextAuthConstants.MIN_USERNAME_LENGTH
+            <= FlextAuthConstants.MAX_USERNAME_LENGTH
+        )
 
         # Test that security values are reasonable
         assert FlextAuthConstants.DEFAULT_BCRYPT_ROUNDS >= 10  # Security minimum
         assert FlextAuthConstants.DEFAULT_MAX_LOGIN_ATTEMPTS >= 3  # Reasonable attempts
-        assert FlextAuthConstants.DEFAULT_LOCKOUT_DURATION_MINUTES >= 15  # Reasonable lockout
+        assert (
+            FlextAuthConstants.DEFAULT_LOCKOUT_DURATION_MINUTES >= 15
+        )  # Reasonable lockout
 
         # Test that session/token values are reasonable
         assert FlextAuthConstants.DEFAULT_SESSION_TIMEOUT_HOURS >= 1  # At least 1 hour
-        assert FlextAuthConstants.DEFAULT_ACCESS_TOKEN_MINUTES >= 15  # At least 15 minutes
+        assert (
+            FlextAuthConstants.DEFAULT_ACCESS_TOKEN_MINUTES >= 15
+        )  # At least 15 minutes
 
     def test_imports_and_exports(self) -> None:
         """Test that all expected classes and functions can be imported."""

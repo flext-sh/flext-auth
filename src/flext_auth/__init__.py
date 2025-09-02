@@ -5,7 +5,7 @@ and security features using flext-core foundation patterns.
 
 Architecture:
     Foundation Layer: Constants, exceptions, version (from flext-core)
-    Domain Layer: Domain entities using FlextModels.Entity patterns
+    Domain Layer: Domain entities using FlextModels patterns
     Service Layer: Authentication, password, token services
     Infrastructure Layer: Container, config, logging integration
     Support Layer: Utilities, mixins, decorators

@@ -13,7 +13,9 @@ from datetime import UTC, datetime
 
 from flext_core import FlextResult
 
+from flext_auth.constants import FlextAuthConstants
 from flext_auth.core import FlextAuth
+from flext_auth.services import FlextJWTService, FlextPasswordService
 from flext_auth.typings import FlextAuthTypes
 
 
@@ -23,8 +25,6 @@ class FlextAuthUtilities:
     @staticmethod
     def validate_username(username: FlextAuthTypes.Username) -> FlextResult[None]:
         """Validate username format."""
-        from flext_auth.constants import FlextAuthConstants
-
         if (
             not username
             or len(username.strip()) < FlextAuthConstants.MIN_USERNAME_LENGTH
@@ -105,20 +105,20 @@ class FlextAuthUtilities:
         *,
         create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
         REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-        REDACTED_LDAP_BIND_PASSWORD_password: str = "REDACTED_LDAP_BIND_PASSWORD123!A",  # noqa: S107
+        REDACTED_LDAP_BIND_PASSWORD_password: str | None = None,
     ) -> FlextAuth:
         """Create FlextAuth instance with optional REDACTED_LDAP_BIND_PASSWORD user."""
-        from flext_auth.core import FlextAuth
-
-        return FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD, REDACTED_LDAP_BIND_PASSWORD_username, REDACTED_LDAP_BIND_PASSWORD_password)
+        return FlextAuth.quick_start(
+            create_REDACTED_LDAP_BIND_PASSWORD=create_REDACTED_LDAP_BIND_PASSWORD,
+            REDACTED_LDAP_BIND_PASSWORD_username=REDACTED_LDAP_BIND_PASSWORD_username,
+            REDACTED_LDAP_BIND_PASSWORD_password=REDACTED_LDAP_BIND_PASSWORD_password,
+        )
 
     @staticmethod
     def hash_password(
         password: FlextAuthTypes.String, rounds: int = 12
     ) -> FlextResult[str]:
         """Hash password using FlextPasswordService."""
-        from flext_auth.services import FlextPasswordService
-
         service = FlextPasswordService()
         return service.hash_password(password, rounds)
 
@@ -129,9 +129,6 @@ class FlextAuthUtilities:
         secret: FlextAuthTypes.AccessToken | None = None,
     ) -> FlextResult[str]:
         """Generate JWT token using FlextJWTService."""
-        from flext_auth.constants import FlextAuthConstants
-        from flext_auth.services import FlextJWTService
-
         jwt_secret = secret or FlextAuthConstants.DEFAULT_JWT_SECRET
         return FlextJWTService.generate_token_static(jwt_secret, claims, expiry_minutes)
 
@@ -140,9 +137,6 @@ class FlextAuthUtilities:
         token: str, secret: FlextAuthTypes.AccessToken | None = None
     ) -> FlextResult[FlextAuthTypes.Dict]:
         """Validate JWT token using FlextJWTService."""
-        from flext_auth.constants import FlextAuthConstants
-        from flext_auth.services import FlextJWTService
-
         jwt_secret = secret or FlextAuthConstants.DEFAULT_JWT_SECRET
         return FlextJWTService.validate_token_static(jwt_secret, token)
 
@@ -152,10 +146,14 @@ def flext_auth_quick_start(
     *,
     create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
     REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-    REDACTED_LDAP_BIND_PASSWORD_password: str = "REDACTED_LDAP_BIND_PASSWORD123!A",  # noqa: S107
+    REDACTED_LDAP_BIND_PASSWORD_password: str | None = None,
 ) -> FlextAuth:
     """Create FlextAuth instance with optional REDACTED_LDAP_BIND_PASSWORD user."""
-    return FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD, REDACTED_LDAP_BIND_PASSWORD_username, REDACTED_LDAP_BIND_PASSWORD_password)
+    return FlextAuth.quick_start(
+        create_REDACTED_LDAP_BIND_PASSWORD=create_REDACTED_LDAP_BIND_PASSWORD,
+        REDACTED_LDAP_BIND_PASSWORD_username=REDACTED_LDAP_BIND_PASSWORD_username,
+        REDACTED_LDAP_BIND_PASSWORD_password=REDACTED_LDAP_BIND_PASSWORD_password,
+    )
 
 
 def flext_auth_hash_password(
@@ -207,28 +205,40 @@ def generate_secure_token(length: int = 32) -> str:
 
 
 # Decorators for compatibility (placeholder implementations)
-def flext_auth_required(func: Callable[..., object]) -> Callable[..., object]:  # type: ignore[explicit-any]
+def flext_auth_required(func: Callable[[object], object]) -> Callable[[object], object]:
     """Authentication required decorator."""
-    def wrapper(*args: object, **kwargs: object) -> object:
-        return func(*args, **kwargs)
+
+    def wrapper(arg: object) -> object:
+        return func(arg)
+
     return wrapper
 
 
-def flext_auth_role_required(required_role: str) -> Callable[[Callable[..., object]], Callable[..., object]]:  # type: ignore[explicit-any] # noqa: ARG001
+def flext_auth_role_required(
+    _required_role: str,
+) -> Callable[[Callable[[object], object]], Callable[[object], object]]:
     """Role required decorator."""
-    def decorator(func: Callable[..., object]) -> Callable[..., object]:  # type: ignore[explicit-any]
-        def wrapper(*args: object, **kwargs: object) -> object:
-            return func(*args, **kwargs)
+
+    def decorator(func: Callable[[object], object]) -> Callable[[object], object]:
+        def wrapper(arg: object) -> object:
+            return func(arg)
+
         return wrapper
+
     return decorator
 
 
-def flext_auth_permission_required(required_permission: str) -> Callable[[Callable[..., object]], Callable[..., object]]:  # type: ignore[explicit-any] # noqa: ARG001
+def flext_auth_permission_required(
+    _required_permission: str,
+) -> Callable[[Callable[[object], object]], Callable[[object], object]]:
     """Permission required decorator."""
-    def decorator(func: Callable[..., object]) -> Callable[..., object]:  # type: ignore[explicit-any]
-        def wrapper(*args: object, **kwargs: object) -> object:
-            return func(*args, **kwargs)
+
+    def decorator(func: Callable[[object], object]) -> Callable[[object], object]:
+        def wrapper(arg: object) -> object:
+            return func(arg)
+
         return wrapper
+
     return decorator
 
 

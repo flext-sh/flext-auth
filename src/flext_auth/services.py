@@ -131,7 +131,7 @@ class FlextJWTService:
     def verify_token(
         self,
         token: FlextAuthTypes.String,
-        algorithm: FlextAuthTypes.String | None = None,  # noqa: ARG002
+        _algorithm: FlextAuthTypes.String | None = None,
     ) -> FlextResult[FlextAuthTypes.Dict]:
         """Verify token and return claims."""
         return self.validate_token_static(self.secret, token)

@@ -101,7 +101,7 @@ class TestFlextAuthMixin:
         test_obj = TestClass()
 
         # Initialize with None
-        result = test_obj.init_auth(None)  # type: ignore[arg-type]
+        result = test_obj.init_auth(None)
 
         assert result.success
         assert test_obj.is_auth_initialized()  # None is still "initialized"

@@ -13,8 +13,15 @@ from __future__ import annotations
 import pytest
 
 from flext_auth import (
+    FlextAuthService,
+    FlextAuthServiceConfig,
     FlextJWTService,
     FlextPasswordService,
+    FlextUserRegistrationData,
+    FlextUserRole,
+    FlextUserStatus,
+    InMemorySessionRepository,
+    InMemoryUserRepository,
 )
 
 

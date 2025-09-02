@@ -9,6 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import os
 import sys
 
 from flext_auth import (
@@ -35,7 +36,7 @@ def main() -> None:
     print("\n2. Utility Functions")
 
     # Password hashing
-    password_hash = flext_auth_hash_password("TestPassword123!")  # noqa: S106
+    password_hash = flext_auth_hash_password("TestPassword123!")
     print(f"✅ Password hashed: {len(password_hash)} characters")
 
     # JWT generation and validation
@@ -60,7 +61,7 @@ def main() -> None:
     reg_result = auth.register_user(
         username="testuser",
         email="test@example.com",
-        password="SecurePassword123!",  # noqa: S106
+        password=os.getenv("FLEXT_DEMO_USER_PASSWORD", "SecurePassword123!"),
         role=FlextAuthConstants.ROLE_USER,
     )
 
@@ -68,7 +69,7 @@ def main() -> None:
         print("✅ User registered successfully")
 
         # Authenticate user
-        auth_result = auth.authenticate_user("testuser", "SecurePassword123!")  # noqa: S106
+        auth_result = auth.authenticate_user("testuser", "SecurePassword123!")
 
         if auth_result.success:
             print("✅ User authenticated successfully")
@@ -76,7 +77,7 @@ def main() -> None:
             # Extract token for validation (we know auth_result.value is dict[str, object])
             from typing import cast
 
-            auth_data = cast("dict[str, object]", auth_result.value)  # type: ignore[redundant-cast]
+            auth_data = cast("dict[str, object]", auth_result.value)
             tokens_data = cast("dict[str, object]", auth_data["tokens"])
             access_token = cast("str", tokens_data["access_token"])
 

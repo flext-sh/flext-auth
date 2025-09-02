@@ -11,6 +11,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import os
+
 from flext_auth import (
     FlextAuth,
     FlextResult,
@@ -25,8 +27,9 @@ from flext_auth import (
 
 from .example_utils import basic_example_runner
 
-# Demo constants
-DEMO_JWT_SECRET = "comprehensive-demo-secret-key-256-bits-minimum-required"
+DEMO_JWT_SECRET = os.getenv(
+    "FLEXT_DEMO_JWT_SECRET", "comprehensive-demo-secret-key-256-bits-minimum-required"
+)
 
 
 def demo_complete_auth_workflow() -> None:
@@ -37,7 +40,7 @@ def demo_complete_auth_workflow() -> None:
     # 2. Create user account
     username = "demo_user"
     email = "demo@example.com"
-    password = "DemoSecurePass123!"
+    password = os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoSecurePass123!")
 
     result = auth.create_user(username, email, password)
     if hasattr(result, "success") and result.success:
@@ -52,7 +55,9 @@ def demo_complete_auth_workflow() -> None:
 def demo_password_security() -> None:
     """Demonstrate password security features."""
     # Password strength validation
-    strong_password = "MyVerySecurePassword123!"
+    strong_password = os.getenv(
+        "FLEXT_DEMO_STRONG_PASSWORD", "MyVerySecurePassword123!"
+    )
 
     # Password hashing and verification
     hashed = flext_auth_hash_password(strong_password)

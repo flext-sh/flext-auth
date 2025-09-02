@@ -19,9 +19,7 @@ def exemplo_flext_auth() -> None:
 
     # Registrar um usuário novo
     register_result = auth.register_user(
-        "usuario_teste",
-        "usuario@example.com",
-        "MinhaSenh@123!"
+        "usuario_teste", "usuario@example.com", "MinhaSenh@123!"
     )
 
     if register_result.success:

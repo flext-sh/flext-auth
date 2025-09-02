@@ -12,10 +12,13 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from flext_auth import (
-    FlextAuthPermission,
-    FlextAuthRole,
-    FlextAuthSession,
-    FlextAuthUser,
+    FlextPermission,
+    FlextRole,
+    FlextSession,
+    FlextSessionStatus,
+    FlextUser,
+    FlextUserRole,
+    FlextUserStatus,
 )
 
 

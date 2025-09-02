@@ -12,8 +12,6 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 # Import everything from public APIs only - no internal module imports
-from flext_core import FlextModels
-
 from flext_auth import (
     FlextAuth,
     FlextAuthConfig,
@@ -326,7 +324,7 @@ class TestEndToEndProduction:
         users = []
         for i in range(3):
             user = FlextUser(
-                id=FlextModels.EntityId(f"repo_user_{i}"),
+                id=f"repo_user_{i}",
                 username=f"repouser{i}",
                 email=f"repo{i}@test.com",
                 password_hash="$2b$12$RealHashFromProductionService",
@@ -351,7 +349,7 @@ class TestEndToEndProduction:
 
         # Test session operations (REAL production code)
         session = FlextSession(
-            id=FlextModels.EntityId("repo_session_123"),
+            id="repo_session_123",
             user_id=str(users[0].id),
             access_token="real.jwt.token.from.production",
             refresh_token="real.refresh.token.from.production",

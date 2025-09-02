@@ -30,9 +30,9 @@ def test_basic_imports() -> None:
             FlextAuthUtilities,
         )
         assert True
-    except ImportError:
+    except ImportError as e:
         msg = "Import failed"
-        raise AssertionError(msg)
+        raise AssertionError(msg) from e
 
 
 def test_basic_functionality() -> None:
@@ -57,10 +57,10 @@ def test_basic_functionality() -> None:
         # Test FlextAuth instantiation
         auth = FlextAuth()
         assert auth is not None, "FlextAuth instantiation failed"
-    except Exception:
+    except Exception as e:
         traceback.print_exc()
         msg = "Test failed"
-        raise AssertionError(msg)
+        raise AssertionError(msg) from e
 
 
 def test_quick_start() -> None:
@@ -74,10 +74,10 @@ def test_quick_start() -> None:
         assert isinstance(auth, FlextAuth), (
             "FlextAuth.quick_start should return FlextAuth instance"
         )
-    except Exception:
+    except Exception as e:
         traceback.print_exc()
         msg = "Test failed"
-        raise AssertionError(msg)
+        raise AssertionError(msg) from e
 
 
 def test_examples_core_functionality() -> None:
@@ -86,7 +86,8 @@ def test_examples_core_functionality() -> None:
         # Test constants availability
         REDACTED_LDAP_BIND_PASSWORD_role = FlextAuthConstants.ROLE_ADMIN
         user_role = FlextAuthConstants.ROLE_USER
-        assert REDACTED_LDAP_BIND_PASSWORD_role and user_role, "Constants not available"
+        assert REDACTED_LDAP_BIND_PASSWORD_role, "Admin role constant not available"
+        assert user_role, "User role constant not available"
 
         # Test password service functionality
         password_service = FlextPasswordService()
@@ -96,13 +97,12 @@ def test_examples_core_functionality() -> None:
 
         # Test utilities
         secure_password = FlextAuthUtilities.generate_secure_password(16)
-        assert secure_password and len(secure_password) == 16, (
-            "Secure password generation failed"
-        )
-    except Exception:
+        assert secure_password, "Secure password generation failed"
+        assert len(secure_password) == 16, "Secure password length incorrect"
+    except Exception as e:
         traceback.print_exc()
         msg = "Test failed"
-        raise AssertionError(msg)
+        raise AssertionError(msg) from e
 
 
 def main() -> int:

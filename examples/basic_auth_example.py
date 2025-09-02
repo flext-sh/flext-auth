@@ -13,6 +13,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import os
+
 from flext_auth import (
     FlextAuth,
     flext_auth_generate_jwt,
@@ -25,7 +27,7 @@ from flext_auth import (
 def main() -> None:
     """Run basic authentication example."""
     # 1. Password Hashing Example
-    password = "SecurePassword123!"
+    password = os.getenv("FLEXT_DEMO_PASSWORD", "SecurePassword123!")
     flext_auth_hash_password(password)
 
     # 2. JWT Token Example
@@ -56,12 +58,14 @@ def main() -> None:
     user_result = auth.register_user(
         username="demouser",
         email="demo@example.com",
-        password="DemoPassword123!",
+        password=os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoPassword123!"),
     )
 
     if "error" not in user_result:
         # Try to authenticate
-        auth_result = auth.authenticate_user("demouser", "DemoPassword123!")
+        auth_result = auth.authenticate_user(
+            "demouser", os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoPassword123!")
+        )
         if "error" not in auth_result:
             pass
 

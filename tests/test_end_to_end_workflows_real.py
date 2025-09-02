@@ -16,8 +16,6 @@ from __future__ import annotations
 import asyncio
 from datetime import UTC, datetime, timedelta
 
-from flext_core import FlextModels
-
 # Import everything from public API only - no internal module imports
 from flext_auth import (
     FlextAuth,
@@ -345,7 +343,7 @@ class TestEndToEndRealWorkflows:
         users = []
         for i in range(3):
             user = FlextUser(
-                id=FlextModels.EntityId(f"workflow_user_{i}"),
+                id=f"workflow_user_{i}",
                 username=f"workflowuser{i}",
                 email=f"workflow{i}@test.com",
                 password_hash="$2b$12$RealBcryptHashFromProduction",
@@ -377,7 +375,7 @@ class TestEndToEndRealWorkflows:
         # Step 3: Create and save sessions
         for i, user in enumerate(users):
             session = FlextSession(
-                id=FlextModels.EntityId(f"workflow_session_{i}"),
+                id=f"workflow_session_{i}",
                 user_id=str(user.id),
                 access_token=f"real.jwt.token.for.user{i}",
                 refresh_token=f"real.refresh.token.for.user{i}",

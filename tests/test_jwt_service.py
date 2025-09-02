@@ -10,7 +10,7 @@ from __future__ import annotations
 import time
 from datetime import UTC, datetime, timedelta
 
-from flext_auth import FlextJWTClaims, FlextJWTService
+from flext_auth import FlextJWTService
 
 # Constants
 EXPECTED_BULK_SIZE = 2
@@ -96,10 +96,10 @@ class TestJWTService:
         claims = verify_result.value
         assert isinstance(claims, dict)
         if claims["sub"] != "user-123":
-            raise AssertionError(f"Expected {'user-123'}, got {claims["sub"]}")
+            raise AssertionError(f"Expected {'user-123'}, got {claims['sub']}")
         assert claims["username"] == "testuser"
         if claims["role"] != "user":
-            raise AssertionError(f"Expected {'user'}, got {claims["role"]}")
+            raise AssertionError(f"Expected {'user'}, got {claims['role']}")
         assert claims["token_type"] == "access"
 
     def test_verify_token_invalid(self) -> None:
@@ -172,7 +172,7 @@ class TestJWTService:
         assert verify_result.success
         claims = verify_result.value
         if claims["sub"] != "user-123":
-            raise AssertionError(f"Expected {'user-123'}, got {claims["sub"]}")
+            raise AssertionError(f"Expected {'user-123'}, got {claims['sub']}")
         assert claims["token_type"] == "refresh"
 
     def test_get_token_claims_success(self) -> None:
@@ -193,10 +193,10 @@ class TestJWTService:
         assert claims_result.success
         claims = claims_result.value
         if claims["sub"] != "user-123":
-            raise AssertionError(f"Expected {'user-123'}, got {claims["sub"]}")
+            raise AssertionError(f"Expected {'user-123'}, got {claims['sub']}")
         assert claims["username"] == "testuser"
         if claims["role"] != "REDACTED_LDAP_BIND_PASSWORD":
-            raise AssertionError(f"Expected {'REDACTED_LDAP_BIND_PASSWORD'}, got {claims["role"]}")
+            raise AssertionError(f"Expected {'REDACTED_LDAP_BIND_PASSWORD'}, got {claims['role']}")
 
     def test_get_token_claims_invalid_token(self) -> None:
         """Test getting claims from invalid token."""
@@ -238,7 +238,7 @@ class TestJWTService:
         """Test JWT service with different algorithms."""
         algorithms = ["HS256", "HS384", "HS512"]
 
-        for algorithm in algorithms:
+        for _algorithm in algorithms:
             service = FlextJWTService(secret="test-secret-key-at-least-32-chars")
 
             # Create and verify token
@@ -267,7 +267,6 @@ class TestJWTService:
         # Verify and validate claims
         verify_result = service.verify_token(create_result.value)
         assert verify_result.success
-        claims = verify_result.value
 
         # Claims should be valid
         # claims validation skipped for dict  # Should not raise

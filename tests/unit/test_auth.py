@@ -237,9 +237,7 @@ class TestFlextAuth:
         password = "SyncPassword123!"
 
         # Test user creation with current API
-        create_result = auth.register_user(
-            username, "sync@example.com", password
-        )
+        create_result = auth.register_user(username, "sync@example.com", password)
         assert create_result.success
 
         # Test authentication with current API

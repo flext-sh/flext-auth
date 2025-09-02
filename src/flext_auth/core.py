@@ -114,7 +114,7 @@ class FlextAuth:
             error_msg = f"Configuration validation failed: {e}"
             return FlextResult[None].fail(error_msg)
 
-    def register_user(  # noqa: PLR0911
+    def register_user(
         self,
         username: FlextAuthTypes.Username,
         email: FlextAuthTypes.Email,
@@ -173,24 +173,26 @@ class FlextAuth:
                 )
 
             # Return success response
-            return FlextResult[FlextAuthTypes.AuthData].ok({
-                "success": True,
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "role": user.role,
-                    "status": user.status,
-                    "created_at": user.created_at.isoformat(),
-                },
-            })
+            return FlextResult[FlextAuthTypes.AuthData].ok(
+                {
+                    "success": True,
+                    "user": {
+                        "id": user.id,
+                        "username": user.username,
+                        "email": str(user.email),
+                        "role": user.role,
+                        "status": user.status,
+                        "created_at": user.created_at.isoformat(),
+                    },
+                }
+            )
 
         except Exception as e:
             return FlextResult[FlextAuthTypes.AuthData].fail(
                 f"Registration failed: {e}"
             )
 
-    def authenticate_user(  # noqa: PLR0911
+    def authenticate_user(
         self,
         username: str,
         password: str,
@@ -268,13 +270,15 @@ class FlextAuth:
 
             claims = claims_result.value
 
-            return FlextResult[FlextAuthTypes.AuthData].ok({
-                "valid": True,
-                "claims": claims,
-                "user_id": claims.get("sub"),
-                "username": claims.get("username"),
-                "role": claims.get("role"),
-            })
+            return FlextResult[FlextAuthTypes.AuthData].ok(
+                {
+                    "valid": True,
+                    "claims": claims,
+                    "user_id": claims.get("sub"),
+                    "username": claims.get("username"),
+                    "role": claims.get("role"),
+                }
+            )
 
         except Exception as e:
             return FlextResult[FlextAuthTypes.AuthData].fail(
@@ -299,10 +303,12 @@ class FlextAuth:
             if save_result.is_failure:
                 return FlextResult[FlextAuthTypes.AuthData].fail("Session save failed")
 
-            return FlextResult[FlextAuthTypes.AuthData].ok({
-                "success": True,
-                "message": "User logged out successfully",
-            })
+            return FlextResult[FlextAuthTypes.AuthData].ok(
+                {
+                    "success": True,
+                    "message": "User logged out successfully",
+                }
+            )
 
         except Exception as e:
             return FlextResult[FlextAuthTypes.AuthData].fail(f"Logout failed: {e}")
@@ -349,11 +355,13 @@ class FlextAuth:
                 )
 
             deleted_count = cleanup_result.value
-            return FlextResult[FlextAuthTypes.AuthData].ok({
-                "success": True,
-                "deleted_sessions": deleted_count,
-                "message": f"Cleaned up {deleted_count} expired sessions",
-            })
+            return FlextResult[FlextAuthTypes.AuthData].ok(
+                {
+                    "success": True,
+                    "deleted_sessions": deleted_count,
+                    "message": f"Cleaned up {deleted_count} expired sessions",
+                }
+            )
 
         except Exception as e:
             return FlextResult[FlextAuthTypes.AuthData].fail(f"Cleanup failed: {e}")
@@ -381,26 +389,30 @@ class FlextAuth:
         session = session_result.value
 
         # Return authentication response
-        return FlextResult[FlextAuthTypes.AuthData].ok({
-            "success": True,
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "role": user.role,
-                "status": user.status,
-                "last_login": user.last_login.isoformat() if user.last_login else None,
-            },
-            "tokens": {
-                "access_token": token_result.value,
-                "token_type": "Bearer",
-                "expires_in": self.token_expiry_minutes * 60,
-            },
-            "session": {
-                "session_id": session.id,
-                "expires_at": session.expires_at.isoformat(),
-            },
-        })
+        return FlextResult[FlextAuthTypes.AuthData].ok(
+            {
+                "success": True,
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "role": user.role,
+                    "status": user.status,
+                    "last_login": user.last_login.isoformat()
+                    if user.last_login
+                    else None,
+                },
+                "tokens": {
+                    "access_token": token_result.value,
+                    "token_type": "Bearer",
+                    "expires_in": self.token_expiry_minutes * 60,
+                },
+                "session": {
+                    "session_id": session.id,
+                    "expires_at": session.expires_at.isoformat(),
+                },
+            }
+        )
 
     def _generate_access_token(self, user: FlextAuthUser) -> FlextResult[str]:
         """Generate JWT access token for user."""
@@ -461,14 +473,38 @@ class FlextAuth:
     @classmethod
     def quick_start(
         cls,
-        create_REDACTED_LDAP_BIND_PASSWORD: bool = FlextAuthConstants.SUCCESS,  # noqa: FBT001, FBT002
+        *,
+        create_REDACTED_LDAP_BIND_PASSWORD: bool = FlextAuthConstants.SUCCESS,
         REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-        REDACTED_LDAP_BIND_PASSWORD_password: str = "REDACTED_LDAP_BIND_PASSWORD123!A",  # noqa: S107
+        REDACTED_LDAP_BIND_PASSWORD_password: str | None = None,
     ) -> FlextAuth:
         """Create FlextAuth instance with optional REDACTED_LDAP_BIND_PASSWORD user."""
+        import secrets
+        import string
+
         auth = cls()
 
         if create_REDACTED_LDAP_BIND_PASSWORD:
+            # Generate a strong password if none provided (avoids hardcoded secrets)
+            if REDACTED_LDAP_BIND_PASSWORD_password is None:
+                # Ensure at least one of each required character class
+                lowercase = string.ascii_lowercase
+                uppercase = string.ascii_uppercase
+                digits = string.digits
+                special = '!@#$%^&*(),.?":{}|<>'
+                # Start with required characters
+                pwd_chars = [
+                    secrets.choice(lowercase),
+                    secrets.choice(uppercase),
+                    secrets.choice(digits),
+                    secrets.choice(special),
+                ]
+                # Fill to default length (12) for REDACTED_LDAP_BIND_PASSWORD bootstrap
+                all_chars = lowercase + uppercase + digits + special
+                pwd_chars.extend(secrets.choice(all_chars) for _ in range(8))
+                secrets.SystemRandom().shuffle(pwd_chars)
+                REDACTED_LDAP_BIND_PASSWORD_password = "".join(pwd_chars)
+
             auth.register_user(
                 username=REDACTED_LDAP_BIND_PASSWORD_username,
                 email=f"{REDACTED_LDAP_BIND_PASSWORD_username}@example.com",

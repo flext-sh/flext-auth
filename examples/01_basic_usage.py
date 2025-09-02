@@ -11,25 +11,29 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-# import asyncio  # Not needed
+# from flext_auth.mixins import FlextAuthMixin  # Disabled
+# Example constants - not for production use
+# Demo credentials - using environment variables with fallbacks for examples
+import os
 
+# import asyncio  # Not needed
 from example_utils import basic_example_runner
 
 from flext_auth import (
     FlextAuth,
     FlextPasswordService,
 )
-# from flext_auth.mixins import FlextAuthMixin  # Disabled
 
-# Example constants - not for production use
-# These are intentionally hardcoded for demonstration purposes only
-
-EXAMPLE_PASSWORD = "MySecurePassword123!"
-EXAMPLE_WRONG_PASSWORD = "WrongPassword"
-EXAMPLE_TOKEN = "sample_token_12345"
-EXAMPLE_USER_PASSWORD = "StrongPass123!"
-EXAMPLE_ADVANCED_PASSWORD = "AdvancedPass123!"
-EXAMPLE_WORKFLOW_PASSWORD = "WorkflowPass123!"
+EXAMPLE_PASSWORD = os.getenv("FLEXT_DEMO_PASSWORD", "MySecurePassword123!")
+EXAMPLE_WRONG_PASSWORD = os.getenv("FLEXT_DEMO_WRONG_PASSWORD", "WrongPassword")
+EXAMPLE_TOKEN = os.getenv("FLEXT_DEMO_TOKEN", "sample_token_12345")
+EXAMPLE_USER_PASSWORD = os.getenv("FLEXT_DEMO_USER_PASSWORD", "StrongPass123!")
+EXAMPLE_ADVANCED_PASSWORD = os.getenv(
+    "FLEXT_DEMO_ADVANCED_PASSWORD", "AdvancedPass123!"
+)
+EXAMPLE_WORKFLOW_PASSWORD = os.getenv(
+    "FLEXT_DEMO_WORKFLOW_PASSWORD", "WorkflowPass123!"
+)
 
 
 def example_basic_authentication() -> None:
@@ -73,26 +77,26 @@ def example_password_operations() -> None:
     # Generate secure password manually (no utilities)
     import secrets
     import string
-    
+
     # Manual secure password generation
     length = 12
     lowercase = string.ascii_lowercase
     uppercase = string.ascii_uppercase
     digits = string.digits
     special = '!@#$%^&*(),.?":{}|<>'
-    
+
     secure_password = [
         secrets.choice(lowercase),
-        secrets.choice(uppercase), 
+        secrets.choice(uppercase),
         secrets.choice(digits),
         secrets.choice(special),
     ]
-    
+
     all_chars = lowercase + uppercase + digits + special
     secure_password.extend(secrets.choice(all_chars) for _ in range(length - 4))
     secrets.SystemRandom().shuffle(secure_password)
     secure_password_str = "".join(secure_password)
-    
+
     print(f"Generated secure password: {secure_password_str[:10]}...")
 
     # Check password strength
@@ -102,19 +106,17 @@ def example_password_operations() -> None:
 
 def example_email_validation() -> None:
     """Demonstrate email validation."""
-    
+
     def validate_email_manual(email: str) -> bool:
         """Manual email validation without utilities."""
-        if "@" not in email or "." not in email.split("@")[-1]:
+        if "@" not in email or "." not in email.rsplit("@", maxsplit=1)[-1]:
             return False
         if email.count("@") != 1:
             return False
         local, domain = email.split("@")
         if not local or not domain:
             return False
-        if ".." in email:
-            return False
-        return True
+        return ".." not in email
 
     # Emails válidos
     valid_emails = ["user@example.com", "REDACTED_LDAP_BIND_PASSWORD@flext.io", "test.user+tag@domain.co.uk"]
@@ -183,7 +185,7 @@ def example_mixin_usage() -> None:
     # Create the controller
     controller = MyController()
     print("Controller created successfully")
-    
+
     # Test request with token
     result = controller.handle_request("sample_token")
     print(f"Request result: {result}")
@@ -253,8 +255,8 @@ def example_complete_workflow() -> None:
 
     # Step 1: Create user using real async API
     user_result = auth.register_user(
-            "workflowuser", "workflow@example.com", EXAMPLE_WORKFLOW_PASSWORD
-        )
+        "workflowuser", "workflow@example.com", EXAMPLE_WORKFLOW_PASSWORD
+    )
 
     if user_result.success:
         # Step 2: Authenticate user using real async API

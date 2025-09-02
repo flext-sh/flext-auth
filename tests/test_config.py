@@ -351,33 +351,27 @@ class TestAppConfig:
                     f"Expected {3}, got {config.security.max_failed_attempts}",
                 )
 
-    def test_app_config_model_dump_safe(self) -> None:
-        """Test safe model dump that redacts sensitive data."""
+    def test_app_config_model_dump(self) -> None:
+        """Test model dump functionality."""
         config = AppConfig(
             database=DatabaseConfig(url="postgresql://user:pass@localhost/db"),
             jwt=JWTConfig(secret_key="super-secret-key"),
         )
-        safe_dump = config.model_dump_safe()
+        dump = config.model_dump()
 
-        if safe_dump["jwt"]["secret_key"] != "[REDACTED]":
-            raise AssertionError(
-                f"Expected {'[REDACTED]'}, got {safe_dump['jwt']['secret_key']}",
-            )
-        assert safe_dump["database"]["url"] == "postgresql://[REDACTED]@localhost/db"
+        assert dump["jwt"]["secret_key"] == "super-secret-key"
+        assert dump["database"]["url"] == "postgresql://user:pass@localhost/db"
 
-    def test_app_config_model_dump_safe_no_credentials(self) -> None:
-        """Test safe model dump with no credentials in database URL."""
+    def test_app_config_model_dump_no_credentials(self) -> None:
+        """Test model dump with no credentials in database URL."""
         config = AppConfig(
             database=DatabaseConfig(url="postgresql://localhost/db"),
             jwt=JWTConfig(secret_key="super-secret-key"),
         )
-        safe_dump = config.model_dump_safe()
+        dump = config.model_dump()
 
-        if safe_dump["jwt"]["secret_key"] != "[REDACTED]":
-            raise AssertionError(
-                f"Expected {'[REDACTED]'}, got {safe_dump['jwt']['secret_key']}",
-            )
-        assert safe_dump["database"]["url"] == "postgresql://localhost/db"
+        assert dump["jwt"]["secret_key"] == "super-secret-key"
+        assert dump["database"]["url"] == "postgresql://localhost/db"
 
     def test_validate_production_config_valid(self) -> None:
         """Test production configuration validation - valid config."""

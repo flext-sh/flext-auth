@@ -10,7 +10,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import asyncio
 from pathlib import Path
 
 import pytest
@@ -18,9 +17,8 @@ from flext_core import FlextContainer, FlextLogger, FlextResult
 
 from flext_auth import (
     FlextAuth,
-    FlextJWTService,
-    FlextPasswordService,
     FlextAuthUser,
+    FlextPasswordService,
     flext_auth_hash_password,
     flext_auth_quick_start,
     flext_auth_required,
@@ -151,10 +149,10 @@ class TestRefactoredAuthSystem:
 
         # Test that classes can be instantiated (use valid bcrypt hash)
         auth_user = FlextAuthUser(
-            id="test_id", 
-            username="testuser", 
+            id="test_id",
+            username="testuser",
             email="test@example.com",
-            password_hash="$2b$12$GBXJzzQKnOqtOVPLLOqLseJgTz/wvB.iXdx6VcSgfr8TvuNNJCW9K"  # Valid bcrypt hash
+            password_hash="$2b$12$GBXJzzQKnOqtOVPLLOqLseJgTz/wvB.iXdx6VcSgfr8TvuNNJCW9K",  # Valid bcrypt hash
         )
         assert auth_user.username == "testuser"
 
@@ -253,9 +251,7 @@ class TestRefactoredAuthSystem:
         utilities_file = (
             Path(__file__).parent.parent / "src" / "flext_auth" / "utilities.py"
         )
-        core_file = (
-            Path(__file__).parent.parent / "src" / "flext_auth" / "core.py"
-        )
+        core_file = Path(__file__).parent.parent / "src" / "flext_auth" / "core.py"
         models_file = Path(__file__).parent.parent / "src" / "flext_auth" / "models.py"
 
         assert utilities_file.exists()

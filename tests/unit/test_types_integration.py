@@ -244,7 +244,9 @@ class TestModelsTypesIntegration:
         """Test that user model methods use FlextAuthTypes."""
         # Check can_login return type
         can_login_method = FlextAuthUser.can_login
-        return_annotation = getattr(can_login_method, "__annotations__", {}).get("return")
+        return_annotation = getattr(can_login_method, "__annotations__", {}).get(
+            "return"
+        )
         assert "FlextAuthTypes.IsActive" in str(return_annotation)
 
         # Check has_permission parameter and return types
@@ -266,53 +268,90 @@ class TestTypesSystemCompleteness:
     def test_all_authentication_needs_covered(self) -> None:
         """Test that FlextAuthTypes covers all authentication needs."""
         required_auth_types = [
-            "UserId", "Username", "UserRole", "Permission", "AccessToken",
-            "RefreshToken", "PasswordHash", "UserStatus", "LoginAttempts",
-            "SessionId", "TokenType", "IsActive", "HasPermission"
+            "UserId",
+            "Username",
+            "UserRole",
+            "Permission",
+            "AccessToken",
+            "RefreshToken",
+            "PasswordHash",
+            "UserStatus",
+            "LoginAttempts",
+            "SessionId",
+            "TokenType",
+            "IsActive",
+            "HasPermission",
         ]
 
         for type_name in required_auth_types:
-            assert hasattr(FlextAuthTypes, type_name), f"Missing required auth type: {type_name}"
+            assert hasattr(FlextAuthTypes, type_name), (
+                f"Missing required auth type: {type_name}"
+            )
 
     def test_all_data_types_covered(self) -> None:
         """Test that FlextAuthTypes covers all data structure needs."""
         required_data_types = [
-            "AuthData", "UserData", "SessionData", "TokenData",
-            "ClaimsData", "CredentialsData", "RegistrationData"
+            "AuthData",
+            "UserData",
+            "SessionData",
+            "TokenData",
+            "ClaimsData",
+            "CredentialsData",
+            "RegistrationData",
         ]
 
         for type_name in required_data_types:
-            assert hasattr(FlextAuthTypes, type_name), f"Missing required data type: {type_name}"
+            assert hasattr(FlextAuthTypes, type_name), (
+                f"Missing required data type: {type_name}"
+            )
 
     def test_all_result_types_covered(self) -> None:
         """Test that FlextAuthTypes covers all result pattern needs."""
         required_result_types = [
-            "AuthResult", "UserResult", "TokenResult", "SessionResult",
-            "LoginResult", "RegisterResult", "LogoutResult", "ValidateResult"
+            "AuthResult",
+            "UserResult",
+            "TokenResult",
+            "SessionResult",
+            "LoginResult",
+            "RegisterResult",
+            "LogoutResult",
+            "ValidateResult",
         ]
 
         for type_name in required_result_types:
-            assert hasattr(FlextAuthTypes, type_name), f"Missing required result type: {type_name}"
+            assert hasattr(FlextAuthTypes, type_name), (
+                f"Missing required result type: {type_name}"
+            )
 
     def test_all_config_types_covered(self) -> None:
         """Test that FlextAuthTypes covers all configuration needs."""
         required_config_types = [
-            "AuthConfig", "JWTConfig", "PasswordConfig",
-            "SessionConfig", "SecurityConfig"
+            "AuthConfig",
+            "JWTConfig",
+            "PasswordConfig",
+            "SessionConfig",
+            "SecurityConfig",
         ]
 
         for type_name in required_config_types:
-            assert hasattr(FlextAuthTypes, type_name), f"Missing required config type: {type_name}"
+            assert hasattr(FlextAuthTypes, type_name), (
+                f"Missing required config type: {type_name}"
+            )
 
     def test_all_service_types_covered(self) -> None:
         """Test that FlextAuthTypes covers all service layer needs."""
         required_service_types = [
-            "AuthService", "PasswordService", "JWTService",
-            "SessionService", "UserService"
+            "AuthService",
+            "PasswordService",
+            "JWTService",
+            "SessionService",
+            "UserService",
         ]
 
         for type_name in required_service_types:
-            assert hasattr(FlextAuthTypes, type_name), f"Missing required service type: {type_name}"
+            assert hasattr(FlextAuthTypes, type_name), (
+                f"Missing required service type: {type_name}"
+            )
 
     def test_maximum_flext_types_usage(self) -> None:
         """Test that FlextAuthTypes uses maximum FlextTypes coverage."""
@@ -326,14 +365,20 @@ class TestTypesSystemCompleteness:
                 # Check if it references FlextTypes
                 try:
                     attr_value = getattr(FlextAuthTypes, attr_name)
-                    if hasattr(attr_value, "__origin__") or str(attr_value).startswith("FlextTypes"):
+                    if hasattr(attr_value, "__origin__") or str(attr_value).startswith(
+                        "FlextTypes"
+                    ):
                         flext_types_used += 1
-                except:
+                except (AttributeError, TypeError):
                     pass
 
         # Should have high FlextTypes usage
-        usage_percentage = (flext_types_used / total_types) * 100 if total_types > 0 else 0
-        assert usage_percentage >= 70, f"FlextTypes usage too low: {usage_percentage:.1f}%"
+        usage_percentage = (
+            (flext_types_used / total_types) * 100 if total_types > 0 else 0
+        )
+        assert usage_percentage >= 70, (
+            f"FlextTypes usage too low: {usage_percentage:.1f}%"
+        )
 
 
 # Integration test to verify everything works together

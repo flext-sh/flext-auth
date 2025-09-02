@@ -14,8 +14,6 @@ import time
 from datetime import UTC, datetime, timedelta
 
 # Import everything from public APIs only - no internal module imports
-from flext_core import FlextModels
-
 from flext_auth import (
     FlextAuth,
     FlextAuthConfig,
@@ -42,9 +40,9 @@ class TestRealProductionCode:
         service = FlextPasswordService()
 
         # Test with real password
-        plain_password = FlextPlainPassword.model_validate({
-            "value": "RealPassword123!@#"
-        })
+        plain_password = FlextPlainPassword.model_validate(
+            {"value": "RealPassword123!@#"}
+        )
 
         # Execute REAL bcrypt hashing (production code)
         hash_result = service.hash_password(plain_password)
@@ -116,7 +114,7 @@ class TestRealProductionCode:
 
         # Create REAL user entity (production code)
         user = FlextUser(
-            id=FlextModels.EntityId("real_user_789"),
+            id="real_user_789",
             username="productionuser",
             email="production@real.com",
             password_hash="$2b$12$RealBcryptHashFromProductionPasswordService",
@@ -204,9 +202,9 @@ class TestRealProductionCode:
         service = FlextPasswordService()
 
         # Test REAL bcrypt timing (security requirement)
-        password = FlextPlainPassword.model_validate({
-            "value": "SecurityTestPassword123!"
-        })
+        password = FlextPlainPassword.model_validate(
+            {"value": "SecurityTestPassword123!"}
+        )
 
         start_time = time.time()
         hash_result = service.hash_password(password)
@@ -236,7 +234,7 @@ class TestRealProductionCode:
         """Test real domain entity business logic without mocks."""
         # Create REAL user entity with business logic
         user = FlextUser(
-            id=FlextModels.EntityId("business_user_123"),
+            id="business_user_123",
             username="businessuser",
             email="business@domain.com",
             password_hash="$2b$12$RealHashFromProductionService",
@@ -279,7 +277,7 @@ class TestRealProductionCode:
 
         # Create REAL session entity
         session = FlextSession(
-            id=FlextModels.EntityId("real_session_999"),
+            id="real_session_999",
             user_id="real_user_888",
             access_token="real.jwt.token.from.production.service",
             refresh_token="real.refresh.token.from.production",

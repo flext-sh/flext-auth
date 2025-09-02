@@ -462,15 +462,9 @@ class TestInMemorySessionRepository:
             "user456", "token3", expires_at, "127.0.0.1"
         )
 
-        assert (
-            session1_result.success
-        )
-        assert (
-            session2_result.success
-        )
-        assert (
-            session3_result.success
-        )
+        assert session1_result.success
+        assert session2_result.success
+        assert session3_result.success
 
         # Save all sessions
         repo.save(session1_result.value)

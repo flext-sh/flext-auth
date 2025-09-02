@@ -11,6 +11,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+# Example constants - not for production use
+import os
+
 from example_utils import basic_example_runner
 
 from flext_auth import (
@@ -24,8 +27,10 @@ from flext_auth import (
     generate_secure_token,
 )
 
-# Example constants - not for production use
-EXAMPLE_JWT_SECRET = "my-super-secure-jwt-secret-key-256-bits-minimum-length-required"
+EXAMPLE_JWT_SECRET = os.getenv(
+    "FLEXT_DEMO_JWT_SECRET",
+    "my-super-secure-jwt-secret-key-256-bits-minimum-length-required",
+)
 
 
 def example_advanced_configuration() -> None:

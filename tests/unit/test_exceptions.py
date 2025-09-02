@@ -46,16 +46,16 @@ class TestFlextAuthError:
 
     def test_flext_auth_error_can_be_raised(self) -> None:
         """Test FlextAuthError can be raised and caught."""
+        msg = "Test error"
         with pytest.raises(FlextAuthError) as exc_info:
-            msg = "Test error"
             raise FlextAuthError(msg)
 
         assert str(exc_info.value) == "Test error"
 
     def test_flext_auth_error_can_be_caught_as_exception(self) -> None:
         """Test FlextAuthError can be caught as generic Exception."""
+        msg = "Test error"
         with pytest.raises(Exception) as exc_info:
-            msg = "Test error"
             raise FlextAuthError(msg)
 
         # Should catch as generic Exception
@@ -104,16 +104,16 @@ class TestFlextAuthValidationError:
 
     def test_validation_error_can_be_raised(self) -> None:
         """Test FlextAuthValidationError can be raised and caught."""
+        msg = "Validation failed"
         with pytest.raises(FlextAuthValidationError) as exc_info:
-            msg = "Validation failed"
             raise FlextAuthValidationError(msg)
 
         assert str(exc_info.value) == "Validation failed"
 
     def test_validation_error_caught_as_base_error(self) -> None:
         """Test FlextAuthValidationError can be caught as FlextAuthError."""
+        msg = "Validation failed"
         with pytest.raises(FlextAuthError) as exc_info:
-            msg = "Validation failed"
             raise FlextAuthValidationError(msg)
 
         # Should catch as base FlextAuthError
@@ -123,8 +123,8 @@ class TestFlextAuthValidationError:
 
     def test_validation_error_caught_as_generic_exception(self) -> None:
         """Test FlextAuthValidationError can be caught as generic Exception."""
+        msg = "Validation failed"
         with pytest.raises(Exception) as exc_info:
-            msg = "Validation failed"
             raise FlextAuthValidationError(msg)
 
         assert isinstance(exc_info.value, FlextAuthValidationError)
@@ -184,7 +184,12 @@ class TestExceptionHierarchy:
         # Distinguish between types
         errors = [base_error, validation_error]
 
-        base_errors = [e for e in errors if type(e) == FlextAuthError]
+        base_errors = [
+            e
+            for e in errors
+            if isinstance(e, FlextAuthError)
+            and not isinstance(e, FlextAuthValidationError)
+        ]
         validation_errors = [
             e for e in errors if isinstance(e, FlextAuthValidationError)
         ]
@@ -202,12 +207,15 @@ class TestExceptionUsagePatterns:
         """Test exception chaining with 'raise from'."""
         original_error = ValueError("Original error")
 
-        with pytest.raises(FlextAuthError) as exc_info:
+        def _raise_chained_exception() -> None:
             try:
                 raise original_error
             except ValueError as e:
                 msg = "Authentication error"
                 raise FlextAuthError(msg) from e
+
+        with pytest.raises(FlextAuthError) as exc_info:
+            _raise_chained_exception()
 
         # Should have the original error as cause
         auth_error = exc_info.value
@@ -220,14 +228,19 @@ class TestExceptionUsagePatterns:
             def __enter__(self) -> Self:
                 return self
 
-            def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+            def __exit__(
+                self,
+                exc_type: type[BaseException] | None,
+                exc_val: BaseException | None,
+                exc_tb: object,
+            ) -> bool | None:
                 if exc_type == FlextAuthError:
                     # Handle FlextAuth errors specially
                     pass
 
         # Should work in context manager
+        msg = "test error"
         with TestContextManager(), pytest.raises(FlextAuthError):
-            msg = "test error"
             raise FlextAuthError(msg)
 
     def test_exception_with_custom_attributes(self) -> None:

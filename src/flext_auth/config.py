@@ -8,13 +8,14 @@ from __future__ import annotations
 
 import os
 
-from pydantic import BaseModel, Field
+from flext_core import FlextModels
+from pydantic import Field
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.typings import FlextAuthTypes
 
 
-class DatabaseConfig(BaseModel):
+class DatabaseConfig(FlextModels.BaseConfig):
     """Database configuration settings."""
 
     url: FlextAuthTypes.URL = Field(
@@ -25,7 +26,7 @@ class DatabaseConfig(BaseModel):
     echo: bool = Field(default=False, description="Echo SQL queries")
 
 
-class JWTConfig(BaseModel):
+class JWTConfig(FlextModels.BaseConfig):
     """JWT configuration settings."""
 
     secret_key: FlextAuthTypes.String = Field(
@@ -44,7 +45,7 @@ class JWTConfig(BaseModel):
     )
 
 
-class SecurityConfig(BaseModel):
+class SecurityConfig(FlextModels.BaseConfig):
     """Security configuration settings."""
 
     bcrypt_rounds: int = Field(
@@ -65,7 +66,7 @@ class SecurityConfig(BaseModel):
     )
 
 
-class AppConfig(BaseModel):
+class AppConfig(FlextModels.BaseConfig):
     """Main application configuration."""
 
     # Environment
@@ -142,7 +143,7 @@ def validate_production_config(config: AppConfig) -> list[str]:
 
 
 # Value objects for type safety
-class FlextUserEmail(BaseModel):
+class FlextUserEmail(FlextModels.Value):
     """Type-safe email value object."""
 
     value: FlextAuthTypes.String = Field(..., description="Email address")
@@ -152,7 +153,7 @@ class FlextUserEmail(BaseModel):
         return self.value
 
 
-class FlextUsername(BaseModel):
+class FlextUsername(FlextModels.Value):
     """Type-safe username value object."""
 
     value: FlextAuthTypes.String = Field(..., description="Username")
@@ -162,7 +163,7 @@ class FlextUsername(BaseModel):
         return self.value
 
 
-class FlextJWTClaims(BaseModel):
+class FlextJWTClaims(FlextModels.BaseConfig):
     """JWT claims structure."""
 
     sub: FlextAuthTypes.String = Field(..., description="Subject (user ID)")

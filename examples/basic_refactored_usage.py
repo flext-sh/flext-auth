@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import os
 import sys
 from datetime import UTC, datetime
 
@@ -19,10 +20,9 @@ from flext_auth import (
     FlextJWTService,
     FlextPasswordService,
 )
-from flext_auth.utilities import FlextAuthUtilities
 
 
-def main() -> None:  # noqa: PLR0915,PLR0912
+def main() -> None:
     """Demonstrate basic FLEXT Auth functionality."""
     print("🚀 FLEXT Auth - Basic Usage Examples")
     print("=" * 50)
@@ -37,7 +37,7 @@ def main() -> None:  # noqa: PLR0915,PLR0912
     registration_result = auth.register_user(
         username="demouser",
         email="demo@example.com",
-        password="DemoPassword123!",  # noqa: S106
+        password=os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoPassword123!"),
         role=FlextAuthConstants.ROLE_USER,
     )
 
@@ -66,7 +66,9 @@ def main() -> None:  # noqa: PLR0915,PLR0912
             tokens = result_data["tokens"]
             if isinstance(tokens, dict):
                 access_token_val = tokens.get("access_token", "")
-                print(f"   Access token length: {len(str(access_token_val))} characters")
+                print(
+                    f"   Access token length: {len(str(access_token_val))} characters"
+                )
                 print(f"   Token type: {tokens.get('token_type', 'N/A')}")
                 print(f"   Expires in: {tokens.get('expires_in', 0)} seconds")
 
@@ -97,7 +99,7 @@ def main() -> None:  # noqa: PLR0915,PLR0912
     password_service = FlextPasswordService()
 
     # Password strength validation
-    test_password = "TestPassword123!"  # noqa: S105
+    test_password = os.getenv("FLEXT_DEMO_TEST_PASSWORD", "TestPassword123!")
     strength_result = password_service.validate_password_strength(test_password)
     print(
         f"Password strength check: {'✅ Strong' if strength_result.success else '❌ Weak'}"
@@ -109,7 +111,9 @@ def main() -> None:  # noqa: PLR0915,PLR0912
         hashed_password = hash_result.value
         print(f"Password hashed: {hashed_password[:20]}...")
 
-        verification_result = password_service.verify_password(test_password, hashed_password)
+        verification_result = password_service.verify_password(
+            test_password, hashed_password
+        )
         print(
             f"Password verification: {'✅ Match' if verification_result.success and verification_result.value else '❌ No match'}"
         )
@@ -117,30 +121,34 @@ def main() -> None:  # noqa: PLR0915,PLR0912
     # Generate secure password using manual implementation (not helpers)
     import secrets
     import string
-    
+
     length = 16
     lowercase = string.ascii_lowercase
     uppercase = string.ascii_uppercase
     digits = string.digits
     special = '!@#$%^&*(),.?":{}|<>'
-    
+
     secure_password = [
         secrets.choice(lowercase),
-        secrets.choice(uppercase), 
+        secrets.choice(uppercase),
         secrets.choice(digits),
         secrets.choice(special),
     ]
-    
+
     all_chars = lowercase + uppercase + digits + special
     secure_password.extend(secrets.choice(all_chars) for _ in range(length - 4))
     secrets.SystemRandom().shuffle(secure_password)
     secure_password_str = "".join(secure_password)
-    
+
     print(f"Generated secure password: {secure_password_str}")
 
     # Check if it's strong
-    strength_check_result = password_service.validate_password_strength(secure_password_str)
-    print(f"Is strong password: {'✅ Yes' if strength_check_result.success else '❌ No'}")
+    strength_check_result = password_service.validate_password_strength(
+        secure_password_str
+    )
+    print(
+        f"Is strong password: {'✅ Yes' if strength_check_result.success else '❌ No'}"
+    )
 
     # 6. Email Validation - Manual implementation (not helpers)
     print("\n6. Email Validation")
@@ -148,16 +156,14 @@ def main() -> None:  # noqa: PLR0915,PLR0912
 
     def validate_email_manual(email: str) -> bool:
         """Manual email validation without helpers."""
-        if "@" not in email or "." not in email.split("@")[-1]:
+        if "@" not in email or "." not in email.rsplit("@", maxsplit=1)[-1]:
             return False
         if email.count("@") != 1:
             return False
         local, domain = email.split("@")
         if not local or not domain:
             return False
-        if ".." in email:
-            return False
-        return True
+        return ".." not in email
 
     for email in test_emails:
         is_valid = validate_email_manual(email)
@@ -166,7 +172,7 @@ def main() -> None:  # noqa: PLR0915,PLR0912
 
     # 7. JWT Service Direct Usage
     print("\n7. JWT Service Direct Usage")
-    jwt_secret = "my-secret-key"  # noqa: S105
+    jwt_secret = os.getenv("FLEXT_DEMO_JWT_SECRET", "my-secret-key")
 
     # Create JWT service instance
     jwt_service = FlextJWTService(jwt_secret)

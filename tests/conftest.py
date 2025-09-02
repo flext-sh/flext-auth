@@ -51,7 +51,7 @@ def pytest_configure(config: pytest.Config) -> None:
 
 
 def pytest_collection_modifyitems(
-    config: pytest.Config,  # noqa: ARG001
+    config: pytest.Config,
     items: list[pytest.Item],
 ) -> None:
     """Modify test items by adding markers based on test location and names."""
@@ -135,7 +135,7 @@ def sample_users_dict(
 ) -> dict[str, dict[str, str | bool]]:
     """Create a simple users dictionary for testing authentication."""
     # Create user with hashed password using proper services
-    password_service = PasswordService()
+    password_service = FlextPasswordService()
     hash_result = password_service.hash_password("SecurePassword123!")
 
     if not hash_result.success:
