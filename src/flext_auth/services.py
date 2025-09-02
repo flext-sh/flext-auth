@@ -42,7 +42,7 @@ class FlextPasswordService:
 
     @classmethod
     def verify_password(
-        cls, password: FlextAuthTypes.String, hashed: str
+        cls, password: FlextAuthTypes.String, hashed: FlextAuthTypes.PasswordHash
     ) -> FlextResult[bool]:
         """Verify password against bcrypt hash."""
         try:

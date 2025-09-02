@@ -316,7 +316,7 @@ class FlextAuth:
             return FlextResult[FlextAuthTypes.AuthData].fail(f"Logout failed: {e}")
 
     def get_user_sessions(
-        self, user_id: str
+        self, user_id: FlextAuthTypes.UserId
     ) -> FlextResult[list[FlextAuthTypes.SessionData]]:
         """Get all active sessions for a user."""
         try:

@@ -249,8 +249,8 @@ class TestFlextAuthMixinUsagePatterns:
                 return {"error": result.error}
 
             def register(
-                self, username: str, email: str, password: str
-            ) -> dict[str, object]:
+                self, username: FlextAuthTypes.Username, email: FlextAuthTypes.Email, password: FlextAuthTypes.String
+            ) -> FlextAuthTypes.Dict:
                 if not self.is_auth_initialized():
                     return {"error": "Auth service not available"}
 
@@ -440,8 +440,8 @@ class TestFlextAuthMixinIntegration:
                 self.users: list[str] = []
 
             def create_and_authenticate_user(
-                self, username: str, email: str, password: str
-            ) -> dict[str, object]:
+                self, username: FlextAuthTypes.Username, email: FlextAuthTypes.Email, password: FlextAuthTypes.String
+            ) -> FlextAuthTypes.Dict:
                 if not self.is_auth_initialized():
                     return {"error": "Auth not initialized"}
 

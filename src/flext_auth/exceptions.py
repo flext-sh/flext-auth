@@ -73,13 +73,11 @@ class FlextAuthSessionError(FlextAuthError):
         super().__init__(message, "AUTH_SESSION_ERROR")
 
 
-# Backward compatibility alias
-FlextAuthException = FlextAuthError
+# No aliases allowed - use FlextAuthError directly
 
 __all__ = [
     "FlextAuthCredentialsError",
     "FlextAuthError",
-    "FlextAuthException",
     "FlextAuthPermissionError",
     "FlextAuthSessionError",
     "FlextAuthTokenError",
