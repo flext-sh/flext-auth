@@ -12,6 +12,7 @@ from uuid import uuid4
 import pytest
 
 from flext_auth import FlextPasswordService
+from flext_auth.typings import FlextAuthTypes
 
 # ============================================================================
 # Pytest Configuration
@@ -114,7 +115,7 @@ def sample_user_data(
     sample_user_id: str,
     sample_username: str,
     sample_email: str,
-) -> dict[str, str | bool]:
+) -> FlextAuthTypes.Dict:
     """Create sample user data dictionary for testing."""
     return {
         "user_id": sample_user_id,
@@ -131,8 +132,8 @@ def sample_user_data(
 
 @pytest.fixture
 def sample_users_dict(
-    sample_user_data: dict[str, str | bool],
-) -> dict[str, dict[str, str | bool]]:
+    sample_user_data: FlextAuthTypes.Dict,
+) -> FlextAuthTypes.Dict:
     """Create a simple users dictionary for testing authentication."""
     # Create user with hashed password using proper services
     password_service = FlextPasswordService()

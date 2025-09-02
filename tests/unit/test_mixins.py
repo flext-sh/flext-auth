@@ -231,7 +231,7 @@ class TestFlextAuthMixinUsagePatterns:
         """Test mixin usage in a controller class."""
 
         class AuthController(FlextAuthMixin):
-            def __init__(self, api_version: str) -> None:
+            def __init__(self, api_version: FlextAuthTypes.String) -> None:
                 super().__init__()
                 self.api_version = api_version
 
@@ -290,7 +290,7 @@ class TestFlextAuthMixinUsagePatterns:
         """Test mixin usage with dependency injection pattern."""
 
         class AuthenticatedService(FlextAuthMixin):
-            def __init__(self, config: dict[str, str]) -> None:
+            def __init__(self, config: FlextAuthTypes.Dict) -> None:
                 super().__init__()
                 self.config = config
 
@@ -353,17 +353,17 @@ class TestFlextAuthMixinEdgeCases:
         """Test mixin in complex inheritance hierarchy."""
 
         class BaseService:
-            def __init__(self, name: str) -> None:
+            def __init__(self, name: FlextAuthTypes.String) -> None:
                 self.name = name
                 super().__init__()
 
         class CacheService(BaseService):
-            def __init__(self, name: str, cache_size: int) -> None:
+            def __init__(self, name: FlextAuthTypes.String, cache_size: int) -> None:
                 self.cache_size = cache_size
                 super().__init__(name)
 
         class AuthenticatedCacheService(CacheService, FlextAuthMixin):
-            def __init__(self, name: str, cache_size: int) -> None:
+            def __init__(self, name: FlextAuthTypes.String, cache_size: int) -> None:
                 super().__init__(name, cache_size)
 
         service = AuthenticatedCacheService("test-service", 1000)
@@ -408,11 +408,11 @@ class TestFlextAuthMixinEdgeCases:
         """Test mixin works correctly with type annotations."""
 
         class TypedService(FlextAuthMixin):
-            def __init__(self, config: dict[str, str]) -> None:
+            def __init__(self, config: FlextAuthTypes.Dict) -> None:
                 super().__init__()
-                self.config: dict[str, str] = config
+                self.config: FlextAuthTypes.Dict = config
 
-            def process_with_auth(self, data: str) -> str | None:
+            def process_with_auth(self, data: FlextAuthTypes.String) -> FlextAuthTypes.String | None:
                 auth: FlextAuth | None = self.get_auth_service()
                 if auth is None:
                     return None
@@ -437,7 +437,7 @@ class TestFlextAuthMixinIntegration:
         class UserManager(FlextAuthMixin):
             def __init__(self) -> None:
                 super().__init__()
-                self.users: list[str] = []
+                self.users: list[FlextAuthTypes.Username] = []
 
             def create_and_authenticate_user(
                 self, username: FlextAuthTypes.Username, email: FlextAuthTypes.Email, password: FlextAuthTypes.String

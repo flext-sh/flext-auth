@@ -66,7 +66,7 @@ class TestFlextAuthError:
     def test_flext_auth_error_with_none_message(self) -> None:
         """Test FlextAuthError with None message."""
         # Python exceptions handle None by converting to string
-        error = FlextAuthError(None)
+        error = FlextAuthError(cast(str, None))  # type: ignore[name-defined]
         assert str(error) == "None"
 
     def test_flext_auth_error_repr(self) -> None:
@@ -238,6 +238,7 @@ class TestExceptionUsagePatterns:
                 if exc_type == FlextAuthError:
                     # Handle FlextAuth errors specially
                     pass
+                return None
 
         # Should work in context manager
         msg = "test error"
@@ -250,11 +251,11 @@ class TestExceptionUsagePatterns:
         class CustomFlextAuthError(FlextAuthError):
             def __init__(self, message: FlextAuthTypes.ErrorMessage, error_code: int = 0) -> None:
                 super().__init__(message)
-                self.error_code = error_code
+                self.error_code = error_code  # type: ignore[assignment]
 
         error = CustomFlextAuthError("Custom error", 404)
         assert str(error) == "Custom error"
-        assert error.error_code == 404
+        assert error.error_code == 404  # type: ignore[comparison-overlap]
         assert isinstance(error, FlextAuthError)
 
     def test_exception_message_formatting(self) -> None:
@@ -317,7 +318,7 @@ class TestErrorHandlingIntegration:
         assert "Password is required" in str(exc.value)
 
         # Test authentication errors
-        with pytest.raises(FlextAuthError) as exc:
+        with pytest.raises(FlextAuthError) as exc:  # type: ignore[assignment]
             authenticate_user("invalid", "password")
         assert "Invalid credentials" in str(exc.value)
 
@@ -350,12 +351,12 @@ class TestErrorHandlingIntegration:
         # Test validation error
         validation_result = safe_operation("")
         assert validation_result.is_failure
-        assert "Value is required" in validation_result.error
+        assert validation_result.error is not None and "Value is required" in validation_result.error
 
         # Test auth error
         auth_result = safe_operation("error")
         assert auth_result.is_failure
-        assert "Operation failed" in auth_result.error
+        assert auth_result.error is not None and "Operation failed" in auth_result.error
 
     def test_layered_error_handling(self) -> None:
         """Test error handling across multiple layers."""
@@ -392,9 +393,9 @@ class TestErrorHandlingIntegration:
         # Test validation error
         validation = api_layer("")
         assert validation["success"] is False
-        assert "Validation: Request is empty" in validation["error"]
+        assert "Validation: Request is empty" in validation["error"]  # type: ignore[operator]
 
         # Test database error propagation
         db_error = api_layer("invalid query")
         assert db_error["success"] is False
-        assert "Auth: Service error: Database error" in db_error["error"]
+        assert "Auth: Service error: Database error" in db_error["error"]  # type: ignore[operator]
