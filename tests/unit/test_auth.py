@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_auth import FlextAuth
-from flext_auth.constants import FlextAuthConstants
+from flext_core import FlextConstants
 
 
 class TestFlextAuth:
@@ -22,10 +22,8 @@ class TestFlextAuth:
         auth = FlextAuth()
         assert auth.jwt_secret is not None
         assert len(auth.jwt_secret) > 20
-        assert auth.password_rounds == FlextAuthConstants.Security.BCRYPT_ROUNDS
-        assert (
-            auth.token_expiry_minutes == FlextAuthConstants.DEFAULT_ACCESS_TOKEN_MINUTES
-        )
+        assert auth.password_rounds == 10  # Development environment uses 10 rounds
+        assert auth.token_expiry_minutes == 480  # Development environment uses 8 hours
 
         # Test custom initialization
         custom_secret = "test-secret-key"
@@ -35,7 +33,7 @@ class TestFlextAuth:
         auth_custom = FlextAuth(
             jwt_secret=custom_secret,
             password_rounds=custom_rounds,
-            token_expiry_minutes=custom_expiry,
+            token_expire_minutes=custom_expiry,
         )
         assert auth_custom.jwt_secret == custom_secret
         assert auth_custom.password_rounds == custom_rounds
@@ -49,20 +47,15 @@ class TestFlextAuth:
             username="testuser",
             email="test@example.com",
             password="SecurePassword123!",
-            role=FlextAuthConstants.ROLE_USER,
+            roles=["user"],
         )
 
         assert result.success
-        assert isinstance(result.value, dict)
-        user_data = result.value
-        assert user_data["success"] is True
-        assert "user" in user_data
-
-        user_info = user_data["user"]
-        assert user_info["username"] == "testuser"
-        assert user_info["email"] == "test@example.com"
-        assert user_info["role"] == FlextAuthConstants.ROLE_USER
-        assert user_info["status"] == FlextAuthConstants.USER_STATUS_ACTIVE
+        user = result.value
+        assert user.username == "testuser"
+        assert user.email_str == "test@example.com"
+        assert "user" in user.roles
+        assert user.is_active
 
     def test_user_registration_duplicate_username(self) -> None:
         """Test user registration with duplicate username."""
@@ -116,9 +109,7 @@ class TestFlextAuth:
         tokens = auth_data["tokens"]
         assert "access_token" in tokens
         assert tokens["token_type"] == "Bearer"
-        assert (
-            tokens["expires_in"] == FlextAuthConstants.DEFAULT_ACCESS_TOKEN_MINUTES * 60
-        )
+        assert tokens["expires_in"] == 480 * 60  # Development environment uses 480 minutes
 
     def test_user_authentication_invalid_credentials(self) -> None:
         """Test authentication with invalid credentials."""
@@ -203,7 +194,7 @@ class TestFlextAuth:
         assert sessions_result.success
         sessions = sessions_result.value
         assert len(sessions) >= 1
-        assert any(s["session_id"] == session_id for s in sessions)
+        assert any(s.id == session_id for s in sessions)
 
     def test_user_logout(self) -> None:
         """Test user logout functionality."""
@@ -216,11 +207,14 @@ class TestFlextAuth:
         auth_result = auth.authenticate_user(username, password)
         assert auth_result.success
 
-        # Logout
-        session_id = auth_result.value["session"]["session_id"]
+        # Extract session ID and user ID from authentication result
+        session_info = auth_result.value
+        assert isinstance(session_info, dict) and "session" in session_info
+        session_id = session_info["session"]["session_id"]
+        user_id = session_info["user"]["id"]
+        
         logout_result = auth.logout_user(session_id)
         assert logout_result.success
-        assert logout_result.value["success"] is True
 
     def test_cleanup_expired_sessions(self) -> None:
         """Test cleanup of expired sessions."""
@@ -228,7 +222,8 @@ class TestFlextAuth:
 
         cleanup_result = auth.cleanup_expired_sessions()
         assert cleanup_result.success
-        assert "deleted_sessions" in cleanup_result.value
+        assert isinstance(cleanup_result.value, int)
+        assert cleanup_result.value >= 0
 
     def test_sync_api_methods(self) -> None:
         """Test synchronous API methods work as expected."""
@@ -286,7 +281,7 @@ class TestFlextAuthSecurity:
         auth.register_user(username, "lock@example.com", password)
 
         # Attempt multiple failed logins
-        for _ in range(FlextAuthConstants.DEFAULT_MAX_LOGIN_ATTEMPTS):
+        for _ in range(FlextConstants.Auth.MAX_LOGIN_ATTEMPTS):
             failed_auth = auth.authenticate_user(username, "wrong_password")
             assert failed_auth.is_failure
 

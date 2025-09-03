@@ -85,6 +85,26 @@ class User(FlextModels.Entity):
         default_factory=list, description="Direct permissions"
     )
 
+    @property
+    def email_str(self) -> str:
+        """Get email as a plain string for convenient access."""
+        return self.email.root
+
+    @property
+    def role(self) -> str:
+        """Get primary role for backward compatibility with tests."""
+        return self.roles[0] if self.roles else "user"
+
+    @property
+    def active(self) -> bool:
+        """Alias for is_active for backward compatibility with tests."""
+        return self.is_active
+
+    @active.setter
+    def active(self, value: bool) -> None:
+        """Set is_active through active property for backward compatibility."""
+        self.is_active = value
+
     @field_validator("username")
     @classmethod
     def validate_username(cls, v: str) -> str:
@@ -191,7 +211,7 @@ class User(FlextModels.Entity):
                 ),  # Convert string to EmailAddress
                 password_hash=password_hash,
                 full_name=full_name,
-                roles=roles or [],
+                roles=roles or ["user"],
                 permissions=[],
             )
 
@@ -211,11 +231,12 @@ class User(FlextModels.Entity):
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate user-specific business rules using railway pattern."""
         # Use FlextResult.chain_results for functional validation (fazer mais com menos!)
-        # Use type ignore for mypy chain_results generic type mismatch
+        # Type cast to object for chain_results compatibility
+        from typing import cast
         return FlextResult.chain_results(
-            self._validate_username(),  # type: ignore[arg-type]
-            self._validate_email(),  # type: ignore[arg-type]
-            self._validate_password_hash(),  # type: ignore[arg-type]
+            cast("FlextResult[object]", self._validate_username()),
+            cast("FlextResult[object]", self._validate_email()),
+            cast("FlextResult[object]", self._validate_password_hash()),
         ).map(lambda _: None)
 
     def _validate_username(self) -> FlextResult[None]:
@@ -269,7 +290,6 @@ class Session(FlextModels.Entity):
             raise ValueError(msg)
         return v
 
-    @property
     def is_expired(self) -> bool:
         """Check if session has expired."""
         return datetime.now(UTC) >= self.expires_at
@@ -277,12 +297,12 @@ class Session(FlextModels.Entity):
     @property
     def is_valid(self) -> bool:
         """Check if session is valid and active."""
-        return not self.is_expired and not self.is_revoked
+        return not self.is_expired() and not self.is_revoked
 
     @property
     def time_remaining_seconds(self) -> int:
         """Get remaining session time in seconds."""
-        if self.is_expired:
+        if self.is_expired():
             return 0
         return int((self.expires_at - datetime.now(UTC)).total_seconds())
 
@@ -754,13 +774,15 @@ def authenticate_user(
             "user": {
                 "id": user.id,
                 "username": user.username,
-                "email": str(user.email),
+                "email": user.email_str,
                 "full_name": user.full_name,
+                "role": user.role,
                 "roles": user.roles,
                 "is_verified": user.is_verified,
             },
             "session": {
                 "id": session.id,
+                "session_id": session.id,  # Backward compatibility
                 "token": session.token,
                 "expires_at": session.expires_at.isoformat(),
                 "time_remaining": session.time_remaining_seconds,

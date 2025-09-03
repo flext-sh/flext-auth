@@ -7,14 +7,13 @@ following Clean Architecture and Domain-Driven Design principles.
 Architecture:
     Foundation: FlextConstants, FlextResult integration
     Domain: User, Session, Role entities with business logic
-    Application: FlextAuthService, authentication workflows, validation
+    Application: FlextAuth main service, authentication workflows, validation
     Infrastructure: FlextAuthConfig, dependency injection support
-    Support: FlextAuth facade, convenience methods
+    Support: Convenience functions and API compatibility methods
 
 Key Components:
-    FlextAuth: Main authentication facade for simple API access
+    FlextAuth: Main authentication service with unified API
     User, Session, Role, Credential, AuthToken: Domain models directly from flext-core patterns
-    FlextAuthService: Application service orchestrating authentication workflows
     FlextAuthConfig: Type-safe configuration with environment variable support
     FlextConstants: Authentication domain constants and error codes from flext-core
 
@@ -53,66 +52,70 @@ from __future__ import annotations
 # =============================================================================
 
 from flext_auth.__version__ import *
-from flext_auth.constants import *
+
+# Import FlextResult for convenience functions
+from flext_core import FlextResult
 
 # =============================================================================
 # DOMAIN LAYER - Depends only on Foundation layer
 # =============================================================================
 
-from flext_auth.models import *
-
-# =============================================================================
-# APPLICATION LAYER - Depends on Domain + Foundation layers
-# =============================================================================
-
-from flext_auth.services import *
+from flext_auth.models import (
+    AuthToken,
+    Credential,
+    Password,
+    Role,
+    Session,
+    User,
+    authenticate_user,
+    create_session,
+    create_user,
+)
 
 # =============================================================================
 # INFRASTRUCTURE LAYER - Depends on Application + Domain + Foundation
 # =============================================================================
 
-from flext_auth.config import *
+from flext_auth.config import FlextAuthConfig
 
 # =============================================================================
 # SUPPORT LAYER - Main facade and convenience functions
 # =============================================================================
 
-from flext_auth.auth import *
+from flext_auth.auth import FlextAuth
 
 # =============================================================================
-# CONSOLIDATED EXPORTS - Combine all __all__ from modules
+# FLEXT-CORE DIRECT USAGE - No wrappers, use patterns directly
 # =============================================================================
 
-import flext_auth.__version__ as _version
-import flext_auth.auth as _auth
-import flext_auth.config as _config
-import flext_auth.constants as _constants
-import flext_auth.models as _models
-import flext_auth.services as _services
+# Users should use FlextAuth directly or flext-core patterns:
+# - FlextAuth() for main functionality
+# - FlextAuthConfig.create_for_environment() for configuration
+# - Password(value="...").hash_password() for password hashing
+# - AuthToken.create_jwt_token() for JWT generation
+# - FlextModels.EmailAddress() for email validation
 
-# Collect all __all__ exports from imported modules
-_temp_exports: list[str] = []
 
-for module in [
-    _auth,
-    _config,
-    _constants,
-    _models,
-    _services,
-    _version,
-]:
-    if hasattr(module, "__all__"):
-        _temp_exports.extend(module.__all__)
+# =============================================================================
+# EXPORTS - Direct from flext-core patterns, no complex aggregation
+# =============================================================================
 
-# Remove duplicates and sort for consistent exports - build complete list first
-_seen: set[str] = set()
-_final_exports: list[str] = []
-for item in _temp_exports:
-    if item not in _seen:
-        _seen.add(item)
-        _final_exports.append(item)
-_final_exports.sort()
-
-# Define __all__ as literal list for linter compatibility
-# This dynamic assignment is necessary for aggregating module exports
-__all__: list[str] = _final_exports  # noqa: PLE0605 # type: ignore[reportUnsupportedDunderAll]
+__all__ = [
+    # Core authentication
+    "FlextAuth",
+    "FlextAuthConfig", 
+    # Domain models
+    "User",
+    "Session", 
+    "Role",
+    "Password",
+    "Credential", 
+    "AuthToken",
+    # Domain functions
+    "create_user",
+    "authenticate_user",
+    "create_session",
+    # Foundation
+    "__version__",
+    "FlextResult",
+]

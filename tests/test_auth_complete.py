@@ -28,11 +28,11 @@ class TestFlextAuth:
         config = auth.get_config()
         assert config.jwt_secret is not None
         assert len(config.jwt_secret) > 30  # Should be secure length
-        assert config.jwt_expiry_minutes == 30
+        assert config.jwt_expiry_minutes == 480  # Development default
 
         # Test that auth is properly initialized
         jwt_settings = auth.get_jwt_settings()
-        assert jwt_settings["jwt_expiry_minutes"] == 30
+        assert jwt_settings["jwt_expiry_minutes"] == 480  # Development default
         assert jwt_settings["jwt_algorithm"] == "HS256"
 
     def test_flext_auth_with_custom_params(self) -> None:
@@ -60,7 +60,7 @@ class TestFlextAuth:
     def test_password_hashing_and_verification(self) -> None:
         """Test password hashing and verification."""
         auth = FlextAuth()
-        password = "test_password_123"
+        password = "TestPassword123!"
 
         # Hash password
         hash_result = auth.hash_password(password)
@@ -81,14 +81,14 @@ class TestFlextAuth:
         """Test successful user registration."""
         auth = FlextAuth()
 
-        result = auth.register_user("testuser", "test@example.com", "password123")
+        result = auth.register_user("testuser", "test@example.com", "Password123!")
 
         assert result.success is True
         assert result.value is not None
 
         user = result.value
         assert user.username == "testuser"
-        assert str(user.email) == "test@example.com"
+        assert user.email_str == "test@example.com"
         assert user.role == "user"
         assert user.active is True
         assert user.id.startswith("user_testuser_")
@@ -104,11 +104,11 @@ class TestFlextAuth:
         auth = FlextAuth()
 
         # Register first user
-        result1 = auth.register_user("testuser", "test1@example.com", "password123")
+        result1 = auth.register_user("testuser", "test1@example.com", "Password123!")
         assert result1.success is True
 
         # Try to register with same username
-        result2 = auth.register_user("testuser", "test2@example.com", "password456")
+        result2 = auth.register_user("testuser", "test2@example.com", "Password456!")
         assert result2.success is False
         assert "Username already exists" in result2.error
 
@@ -120,11 +120,11 @@ class TestFlextAuth:
         auth = FlextAuth()
 
         # Register first user
-        result1 = auth.register_user("user1", "test@example.com", "password123")
+        result1 = auth.register_user("user1", "test@example.com", "Password123!")
         assert result1.success is True
 
         # Try to register with same email
-        result2 = auth.register_user("user2", "test@example.com", "password456")
+        result2 = auth.register_user("user2", "test@example.com", "Password456!")
         assert result2.success is False
         assert "Email already exists" in result2.error
 
@@ -156,7 +156,7 @@ class TestFlextAuth:
         # Test invalid token
         result = auth.verify_token("invalid_token")
         assert result.success is False
-        assert "Invalid token" in result.error
+        assert "Token validation failed" in result.error
 
         # Test expired token (create with different auth instance with past time)
         auth2 = FlextAuth(token_expire_minutes=-1)  # Negative minutes = expired
@@ -171,12 +171,12 @@ class TestFlextAuth:
 
         # Register user
         register_result = auth.register_user(
-            "testuser", "test@example.com", "password123"
+            "testuser", "test@example.com", "Password123!"
         )
         assert register_result.success is True
 
         # Authenticate user
-        auth_result = auth.authenticate_user("testuser", "password123")
+        auth_result = auth.authenticate_user("testuser", "Password123!")
         assert auth_result.success is True
         assert auth_result.value is not None
 
@@ -201,7 +201,7 @@ class TestFlextAuth:
         """Test authentication with invalid username."""
         auth = FlextAuth()
 
-        result = auth.authenticate_user("nonexistent", "password123")
+        result = auth.authenticate_user("nonexistent", "Password123!")
         assert result.success is False
         assert "Invalid credentials" in result.error
 
@@ -210,7 +210,7 @@ class TestFlextAuth:
         auth = FlextAuth()
 
         # Register user
-        auth.register_user("testuser", "test@example.com", "password123")
+        auth.register_user("testuser", "test@example.com", "Password123!")
 
         # Try wrong password
         result = auth.authenticate_user("testuser", "wrongpassword")
@@ -223,7 +223,7 @@ class TestFlextAuth:
 
         # Register user
         register_result = auth.register_user(
-            "testuser", "test@example.com", "password123"
+            "testuser", "test@example.com", "Password123!"
         )
         user = register_result.value
 
@@ -231,9 +231,9 @@ class TestFlextAuth:
         user.active = False
 
         # Try to authenticate
-        result = auth.authenticate_user("testuser", "password123")
+        result = auth.authenticate_user("testuser", "Password123!")
         assert result.success is False
-        assert "Invalid credentials" in result.error
+        assert "Account is disabled" in result.error
 
     def test_get_user_by_token(self) -> None:
         """Test getting user by token."""
@@ -241,12 +241,12 @@ class TestFlextAuth:
 
         # Register user
         register_result = auth.register_user(
-            "testuser", "test@example.com", "password123"
+            "testuser", "test@example.com", "Password123!"
         )
         assert register_result.success is True
 
         # Authenticate to get token
-        auth_result = auth.authenticate_user("testuser", "password123")
+        auth_result = auth.authenticate_user("testuser", "Password123!")
         token = auth_result.value["session"]["token"]
 
         # Get user by token
@@ -260,14 +260,14 @@ class TestFlextAuth:
 
         result = auth.get_user_by_token("invalid_token")
         assert result.success is False
-        assert "Invalid token" in result.error
+        assert "Token validation failed" in result.error
 
     def test_get_user_by_username(self) -> None:
         """Test getting user by username."""
         auth = FlextAuth()
 
         # Register user
-        auth.register_user("testuser", "test@example.com", "password123")
+        auth.register_user("testuser", "test@example.com", "Password123!")
 
         # Get user by username
         result = auth.get_user_by_username("testuser")
@@ -403,7 +403,7 @@ class TestFlextAuth:
         auth = FlextAuth()
 
         # Register with mixed case
-        auth.register_user("TestUser", "Test@Example.Com", "password123")
+        auth.register_user("TestUser", "Test@Example.Com", "Password123!")
 
         # Should find user with different cases
         result1 = auth.get_user_by_username("testuser")
@@ -415,11 +415,11 @@ class TestFlextAuth:
         assert result2.value is not None
 
         # Authentication should work with different case
-        auth_result = auth.authenticate_user("TESTUSER", "password123")
+        auth_result = auth.authenticate_user("TESTUSER", "Password123!")
         assert auth_result.success is True
 
         # Should prevent duplicate registration with different case
-        dup_result = auth.register_user("testuser", "different@example.com", "password")
+        dup_result = auth.register_user("testuser", "different@example.com", "Password!")
         assert dup_result.success is False
         assert "Username already exists" in dup_result.error
 

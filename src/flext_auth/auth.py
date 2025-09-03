@@ -15,11 +15,17 @@ Usage:
 
 from __future__ import annotations
 
-from flext_core import FlextLogger, FlextResult
+from flext_core import FlextConstants, FlextLogger, FlextResult, FlextUtilities
 
 from flext_auth.config import FlextAuthConfig
-from flext_auth.models import AuthToken, Session, User
-from flext_auth.services import FlextAuthService
+from flext_auth.models import (
+    AuthToken,
+    Session,
+    User,
+    authenticate_user,
+    create_session,
+    create_user,
+)
 
 
 class FlextAuth:
@@ -105,7 +111,7 @@ class FlextAuth:
         token_expire_minutes: int | None = None,
         password_rounds: int | None = None,
     ) -> None:
-        """Initialize authentication facade with configuration.
+        """Initialize authentication service with configuration.
 
         Args:
             config: Authentication configuration (created if None)
@@ -125,28 +131,28 @@ class FlextAuth:
         self.config = config
 
         # Override config values if provided
-        actual_jwt_secret = jwt_secret or config.jwt_secret
-        actual_token_expire_minutes = token_expire_minutes or config.jwt_expiry_minutes
-        actual_password_rounds = password_rounds or config.bcrypt_rounds
+        self._jwt_secret = jwt_secret or config.jwt_secret
+        self.token_expire_minutes = token_expire_minutes or config.jwt_expiry_minutes
+        self.bcrypt_rounds = password_rounds or config.bcrypt_rounds
 
-        # Store actual values for properties
-        self._actual_password_rounds = actual_password_rounds
+        # In-memory storage (replace with database repositories in production)
+        self.users: dict[str, User] = {}
+        self.sessions: dict[str, Session] = {}
 
-        # Initialize the underlying authentication service
-        self._auth_service = FlextAuthService(
-            jwt_secret=actual_jwt_secret,
-            token_expire_minutes=actual_token_expire_minutes,
-            bcrypt_rounds=actual_password_rounds,
-        )
+        # Indexes for efficient lookups
+        self.username_index: dict[str, str] = {}  # username -> user_id
+        self.email_index: dict[str, str] = {}  # email -> user_id
+        self.user_sessions_index: dict[str, list[str]] = {}  # user_id -> [session_ids]
 
-        # Logger for facade-level operations
+        # Logger for audit trails
         self.logger = FlextLogger(__name__)
 
         self.logger.info(
-            "FlextAuth facade initialized",
+            "FlextAuth initialized",
             extra={
-                "token_expire_minutes": actual_token_expire_minutes,
-                "bcrypt_rounds": config.bcrypt_rounds,
+                "token_expire_minutes": self.token_expire_minutes,
+                "bcrypt_rounds": self.bcrypt_rounds,
+                "jwt_secret_length": len(self.jwt_secret),
             },
         )
 
@@ -158,7 +164,7 @@ class FlextAuth:
         full_name: str | None = None,
         roles: list[str] | None = None,
     ) -> FlextResult[User]:
-        """Register new user with validation.
+        """Register new user with validation and duplicate checking.
 
         Args:
             username: Unique username for authentication
@@ -171,15 +177,58 @@ class FlextAuth:
             FlextResult containing User entity or error message
 
         """
-        self.logger.info(f"FlextAuth facade: registering user {username}")
+        try:
+            self.logger.info(f"Attempting user registration for username: {username}")
 
-        return self._auth_service.register_user(
-            username=username,
-            email=email,
-            password=password,
-            full_name=full_name,
-            roles=roles,
-        )
+            # Check for duplicate username (case insensitive)
+            if username.lower() in self.username_index:
+                self.logger.warning(
+                    f"Registration failed - username already exists: {username}"
+                )
+                return FlextResult[User].fail(
+                    "Username already exists",
+                    error_code=FlextConstants.Auth.USERNAME_TAKEN,
+                )
+
+            # Check for duplicate email (case insensitive)
+            if email.lower() in self.email_index:
+                self.logger.warning(
+                    f"Registration failed - email already exists: {email}"
+                )
+                return FlextResult[User].fail(
+                    "Email already exists", error_code=FlextConstants.Auth.EMAIL_TAKEN
+                )
+
+            # Create user using domain factory method
+            user_result = create_user(
+                username=username,
+                email=email,
+                password=password,
+                full_name=full_name,
+                roles=roles,
+            )
+
+            if user_result.is_failure:
+                self.logger.error(f"User creation failed: {user_result.error}")
+                return user_result
+
+            user = user_result.value
+
+            # Store user and update indexes
+            self.users[user.id] = user
+            self.username_index[username.lower()] = user.id
+            self.email_index[email.lower()] = user.id
+            self.user_sessions_index[user.id] = []
+
+            self.logger.info(
+                f"User registered successfully: {username} (ID: {user.id})"
+            )
+
+            return FlextResult[User].ok(user)
+
+        except Exception as e:
+            self.logger.exception("User registration failed")
+            return FlextResult[User].fail(f"Registration failed: {e}")
 
     def authenticate_user(
         self,
@@ -188,7 +237,7 @@ class FlextAuth:
         client_ip: str | None = None,
         user_agent: str | None = None,
     ) -> FlextResult[dict[str, object]]:
-        """Authenticate user and create session.
+        """Authenticate user and create session with JWT token.
 
         Args:
             username: Username for authentication
@@ -197,35 +246,112 @@ class FlextAuth:
             user_agent: Client user agent (optional)
 
         Returns:
-            FlextResult containing authentication data in legacy format or error
+            FlextResult containing authentication data (user, session, jwt) or error
 
         """
-        self.logger.info(f"FlextAuth facade: authenticating user {username}")
-
-        # Get authentication result from service (use client_ip and user_agent for future logging)
-        auth_result = self._auth_service.authenticate_user(username, password)
+        self.logger.info(f"Authentication attempt for username: {username}")
 
         # Log authentication attempt with client info
         self.logger.info(
             f"Authentication attempt from {client_ip or 'unknown'} with agent {user_agent or 'unknown'}"
         )
+
+        # Execute domain authentication with proper error handling
+        try:
+            auth_result = authenticate_user(
+                username=username,
+                password=password,
+                user_storage=self.users,
+                jwt_secret=self.jwt_secret,
+            )
+        except Exception as e:
+            self.logger.exception(
+                f"Authentication operation failed for user {username}"
+            )
+            return FlextResult[dict[str, object]].fail(
+                f"Authentication operation failed: {e}"
+            )
+
         if auth_result.is_failure:
+            self.logger.warning(
+                f"Authentication failed for username: {username} - {auth_result.error}"
+            )
             return FlextResult[dict[str, object]].fail(
                 auth_result.error or "Authentication failed"
             )
 
-        # Convert to legacy structure expected by tests
         auth_data = auth_result.value
+        # Type assertion - auth_data is guaranteed to be dict from domain function
+        assert isinstance(auth_data, dict), (
+            "Authentication data must be dict from domain function"
+        )
+        auth_dict = auth_data
+        session_obj = auth_dict.get("session")
+        user_obj = auth_dict.get("user")
 
-        # Extract data from dict result (SIMPLE IS BETTER)
-        # Create combined structure that satisfies BOTH legacy tests AND functional tests
-        session_data = auth_data.get("session", {})
+        if not isinstance(session_obj, dict) or not isinstance(user_obj, dict):
+            return FlextResult[dict[str, object]].fail(
+                "Invalid session or user data format"
+            )
+
+        session_dict = session_obj
+        user_dict = user_obj
+
+        # Store session and update indexes
+        session_result = self._create_and_store_session(
+            user_id=str(user_dict["id"]),
+            session_token=str(session_dict["token"]),
+            expires_at_iso=str(session_dict["expires_at"]),
+        )
+
+        if session_result.is_failure:
+            self.logger.error(f"Session creation failed: {session_result.error}")
+            return FlextResult[dict[str, object]].fail(
+                session_result.error or "Session creation failed"
+            )
+
+        session = session_result.value
+
+        # Update auth data with session ID - ensure consistency
+        session_dict["id"] = session.id
+        session_dict["session_id"] = session.id  # Ensure session_id matches id
+        auth_dict["session"] = session_dict
+
+        self.logger.info(f"Authentication successful for username: {username}")
+
+        # Generate JWT token at service layer (not domain)
+        # Create JWT token using AuthToken with validated data
+        user_data = user_dict
+        jwt_result = AuthToken.create_jwt_token(
+            user_id=str(user_data.get("id", "")),
+            username=str(user_data.get("username", "")),
+            secret=self._jwt_secret,
+            expires_in_minutes=self.token_expire_minutes,
+        )
+
+        if jwt_result.is_failure:
+            return FlextResult[dict[str, object]].fail(
+                jwt_result.error or "JWT generation failed"
+            )
+
+        jwt_token_obj = jwt_result.value
+
+        # Convert to dict result with generated JWT - SIMPLE IS BETTER
+        result_data: dict[str, object] = {
+            "user": user_dict,
+            "session": session_dict,
+            "jwt_token": jwt_token_obj.token,
+            "expires_at": jwt_token_obj.expires_at.isoformat(),
+        }
+
+        # Create legacy structure for backward compatibility
+        session_data = result_data.get("session", {})
         legacy_structure = {
             # Legacy test expectations
             "success": True,
-            "user": auth_data["user"],
+            "user": result_data["user"],
             "tokens": {
-                "access_token": auth_data["jwt_token"],
+                "access_token": result_data["jwt_token"],
                 "token_type": "Bearer",
                 "expires_in": self.config.jwt_expiry_minutes * 60,
             },
@@ -235,8 +361,8 @@ class FlextAuth:
             if isinstance(session_data, dict)
             else None,
             # Functional test expectations (direct access)
-            "jwt_token": auth_data["jwt_token"],
-            "expires_at": auth_data["expires_at"],
+            "jwt_token": result_data["jwt_token"],
+            "expires_at": result_data["expires_at"],
         }
 
         return FlextResult[dict[str, object]].ok(legacy_structure)
@@ -251,14 +377,46 @@ class FlextAuth:
             FlextResult containing token payload or error
 
         """
-        result = self._auth_service.validate_jwt_token(token)
-        if result.is_failure:
-            return result
+        try:
+            import jwt
 
-        # Add 'valid' flag expected by tests
-        payload = result.value
-        payload["valid"] = True
-        return FlextResult[dict[str, object]].ok(payload)
+            # Remove Bearer prefix if present
+            clean_token = token
+            if token.startswith("Bearer "):
+                clean_token = token[7:]  # Remove "Bearer " prefix
+            
+            # Decode JWT token with proper options (don't verify audience for now)
+            payload = jwt.decode(
+                clean_token,
+                self._jwt_secret,
+                algorithms=[FlextConstants.Auth.JWT_DEFAULT_ALGORITHM],
+                options={"verify_aud": False},
+            )
+
+            # Log successful validation
+            self.logger.info(f"JWT token validated for user: {payload.get('user_id')}")
+
+            # Add 'valid' flag expected by tests
+            payload["valid"] = True
+
+            # Return the payload as dict
+            return FlextResult[dict[str, object]].ok(payload)
+
+        except Exception as e:
+            self.logger.exception("JWT token validation failed")
+            return FlextResult[dict[str, object]].fail(f"Token validation failed: {e}")
+
+    def verify_token(self, token: str) -> FlextResult[dict[str, object]]:
+        """Verify JWT token and return payload (API compatibility alias).
+
+        Args:
+            token: JWT token string
+
+        Returns:
+            FlextResult containing token payload or error
+
+        """
+        return self.validate_token(token)
 
     def generate_token(self, user_id: str) -> str:
         """Generate JWT token for user ID - compatibility method."""
@@ -266,7 +424,7 @@ class FlextAuth:
         # The JWT validation will handle verification later
         token_result = AuthToken.create_jwt_token(
             user_id=user_id,
-            secret=self._auth_service.jwt_secret,
+            secret=self._jwt_secret,
             expires_in_minutes=self.config.jwt_expiry_minutes,
             username=user_id,  # Use user_id as username for test compatibility
         )
@@ -287,7 +445,17 @@ class FlextAuth:
             FlextResult containing User entity or None if not found
 
         """
-        return self._auth_service.get_user_by_username(username)
+        try:
+            user_id = self.username_index.get(username.lower())
+            if not user_id:
+                return FlextResult[User | None].ok(None)
+
+            user = self.users.get(user_id)
+            return FlextResult[User | None].ok(user)
+
+        except Exception as e:
+            self.logger.exception("Failed to get user by username")
+            return FlextResult[User | None].fail(f"Failed to get user: {e}")
 
     def get_user_by_id(self, user_id: str) -> FlextResult[User | None]:
         """Get user by ID.
@@ -299,7 +467,13 @@ class FlextAuth:
             FlextResult containing User entity or None if not found
 
         """
-        return self._auth_service.get_user_by_id(user_id)
+        try:
+            user = self.users.get(user_id)
+            return FlextResult[User | None].ok(user)
+
+        except Exception as e:
+            self.logger.exception("Failed to get user by ID")
+            return FlextResult[User | None].fail(f"Failed to get user: {e}")
 
     def get_user_sessions(self, user_id: str) -> FlextResult[list[Session]]:
         """Get all active sessions for user.
@@ -311,7 +485,20 @@ class FlextAuth:
             FlextResult containing list of active sessions
 
         """
-        return self._auth_service.get_user_sessions(user_id)
+        try:
+            session_ids = self.user_sessions_index.get(user_id, [])
+            sessions = []
+
+            for session_id in session_ids:
+                session = self.sessions.get(session_id)
+                if session and session.is_valid:
+                    sessions.append(session)
+
+            return FlextResult[list[Session]].ok(sessions)
+
+        except Exception as e:
+            self.logger.exception("Failed to get user sessions")
+            return FlextResult[list[Session]].fail(f"Failed to get sessions: {e}")
 
     def revoke_session(self, session_id: str) -> FlextResult[None]:
         """Revoke specific session.
@@ -323,7 +510,23 @@ class FlextAuth:
             FlextResult indicating success or failure
 
         """
-        return self._auth_service.revoke_session(session_id)
+        try:
+            session = self.sessions.get(session_id)
+            if not session:
+                return FlextResult[None].fail(
+                    "Session not found",
+                    error_code=FlextConstants.Auth.SESSION_NOT_FOUND,
+                )
+
+            session.revoke()
+
+            self.logger.info(f"Session revoked: {session_id}")
+
+            return FlextResult[None].ok(None)
+
+        except Exception as e:
+            self.logger.exception("Failed to revoke session")
+            return FlextResult[None].fail(f"Failed to revoke session: {e}")
 
     def cleanup_expired_sessions(self) -> FlextResult[int]:
         """Remove expired sessions and return count.
@@ -332,7 +535,41 @@ class FlextAuth:
             FlextResult containing number of sessions cleaned up
 
         """
-        return self._auth_service.cleanup_expired_sessions()
+        try:
+            expired_sessions = [
+                session_id
+                for session_id, session in self.sessions.items()
+                if session.is_expired() or session.is_revoked
+            ]
+
+            # Remove expired sessions
+            for session_id in expired_sessions:
+                session = self.sessions.pop(session_id, None)
+                if session:
+                    # Remove from user sessions index
+                    user_session_ids = self.user_sessions_index.get(session.user_id, [])
+                    if session_id in user_session_ids:
+                        user_session_ids.remove(session_id)
+
+            self.logger.info(f"Cleaned up {len(expired_sessions)} expired sessions")
+
+            return FlextResult[int].ok(len(expired_sessions))
+
+        except Exception as e:
+            self.logger.exception("Session cleanup failed")
+            return FlextResult[int].fail(f"Session cleanup failed: {e}")
+
+    def logout_user(self, session_id: str) -> FlextResult[None]:
+        """Logout user by revoking their session.
+
+        Args:
+            session_id: Session ID to logout
+
+        Returns:
+            FlextResult indicating success or failure
+
+        """
+        return self.revoke_session(session_id)
 
     def get_user_by_token(self, token: str) -> FlextResult[User | None]:
         """Get user by JWT token (API compatibility method).
@@ -362,7 +599,7 @@ class FlextAuth:
         *,
         create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
         REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-        REDACTED_LDAP_BIND_PASSWORD_password: str = "AdminPassword123!",  # noqa: S107 # Development/testing method
+        REDACTED_LDAP_BIND_PASSWORD_password: str = "AdminPassword123!",
     ) -> FlextAuth:
         """Quick start method for testing/development (API compatibility method).
 
@@ -479,7 +716,7 @@ class FlextAuth:
         token_result = AuthToken.create_jwt_token(
             user_id=user_id,
             username=username,
-            secret=self._auth_service.jwt_secret,
+            secret=self._jwt_secret,
             expires_in_minutes=expiry,
         )
 
@@ -495,29 +732,29 @@ class FlextAuth:
     @property
     def jwt_secret(self) -> str:
         """Get JWT secret for API compatibility."""
-        return self._auth_service.jwt_secret
+        return self._jwt_secret
 
     @property
     def password_rounds(self) -> int:
         """Get bcrypt rounds for API compatibility."""
-        return self._actual_password_rounds
+        return self.bcrypt_rounds
 
     @property
     def token_expiry_minutes(self) -> int:
         """Get token expiry minutes for API compatibility."""
-        return self.config.jwt_expiry_minutes
+        return self.token_expire_minutes
 
     @property
-    def sessions(self) -> dict[str, object]:
+    def sessions_data(self) -> dict[str, object]:
         """Get sessions manager for API compatibility."""
         # Return with proper type annotation for API compatibility
-        return dict(self._auth_service.sessions)  # Convert to dict[str, object]
+        return dict(self.sessions)
 
     @property
-    def users(self) -> dict[str, object]:
+    def users_data(self) -> dict[str, object]:
         """Get users manager for API compatibility."""
         # Return with proper type annotation for API compatibility
-        return dict(self._auth_service.users)  # Convert to dict[str, object]
+        return dict(self.users)
 
     # =========================================================================
     # CONFIGURATION ACCESS
@@ -549,6 +786,58 @@ class FlextAuth:
 
         """
         return self.config.get_jwt_settings()
+
+    # =========================================================================
+    # PRIVATE HELPER METHODS
+    # =========================================================================
+
+    def _create_and_store_session(
+        self, user_id: str, session_token: str, expires_at_iso: str
+    ) -> FlextResult[Session]:
+        """Create session entity and store in indexes.
+
+        Args:
+            user_id: User ID for session
+            session_token: Session token string
+            expires_at_iso: Expiration timestamp in ISO format
+
+        Returns:
+            FlextResult containing Session entity
+
+        """
+        try:
+            # Parse expiration timestamp using flext-core utilities
+            expires_at = FlextUtilities.parse_iso_timestamp(expires_at_iso)
+            current_dt = FlextUtilities.parse_iso_timestamp(
+                FlextUtilities.generate_iso_timestamp()
+            )
+
+            # Create session using factory method
+            session_result = create_session(
+                user_id=user_id,
+                expires_in_minutes=int((expires_at - current_dt).total_seconds() / 60),
+            )
+
+            if session_result.is_failure:
+                return session_result
+
+            session = session_result.value
+
+            # Override token with provided token
+            session.token = session_token
+
+            # Store session and update indexes
+            self.sessions[session.id] = session
+
+            # Add to user sessions index
+            if user_id not in self.user_sessions_index:
+                self.user_sessions_index[user_id] = []
+            self.user_sessions_index[user_id].append(session.id)
+
+            return FlextResult[Session].ok(session)
+
+        except Exception as e:
+            return FlextResult[Session].fail(f"Failed to create session: {e}")
 
 
 # Module exports

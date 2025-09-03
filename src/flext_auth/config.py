@@ -401,33 +401,89 @@ class FlextAuthConfig(FlextConfig):
             env_defaults = {
                 "development": {
                     "jwt_expiry_minutes": 480,  # 8 hours
+                    "session_expiry_minutes": 600,  # 10 hours (must be > JWT)
                     "bcrypt_rounds": 10,  # Faster for development
                     "max_login_attempts": 10,  # More lenient
                 },
                 "production": {
-                    "jwt_expiry_minutes": 60,  # 1 hour
+                    "jwt_expiry_minutes": 30,  # 30 minutes for production security
+                    "session_expiry_minutes": 60,  # 1 hour (must be > JWT)
                     "bcrypt_rounds": 14,  # Higher security
                     "max_login_attempts": 5,  # Strict
                 },
                 "test": {
                     "jwt_expiry_minutes": 15,  # Short for tests
-                    "bcrypt_rounds": 8,  # Fastest
+                    "session_expiry_minutes": 30,  # 30 minutes (must be > JWT)
+                    "bcrypt_rounds": 10,  # Minimum valid (faster for tests)
                     "max_login_attempts": 20,  # Very lenient
                 },
                 "staging": {
                     "jwt_expiry_minutes": 120,  # 2 hours
+                    "session_expiry_minutes": 180,  # 3 hours (must be > JWT)
                     "bcrypt_rounds": 12,  # Balanced
                     "max_login_attempts": 5,  # Same as production
                 },
             }
 
             # Merge defaults with overrides
-            config_data = env_defaults[environment].copy()
-            # Remove environment key as it's not a FlextAuthConfig field
-            config_data.update(overrides)  # type: ignore[arg-type] # Factory method mixed types
+            config_data: dict[str, object] = {**env_defaults[environment], **overrides}
 
-            # Create configuration instance with proper typing
-            config = cls(**config_data)  # type: ignore[arg-type] # Environment-specific factory method
+            # Extract configuration parameters with safe type conversion
+            def safe_int_cast(value: object, default: int) -> int:
+                """Safely cast value to int, using default if not convertible."""
+                if isinstance(value, int):
+                    return value
+                if isinstance(value, str) and value.isdigit():
+                    return int(value)
+                return default
+
+            jwt_expiry_minutes = safe_int_cast(
+                config_data.get("jwt_expiry_minutes", FlextConstants.Auth.JWT_DEFAULT_EXPIRY_MINUTES),
+                FlextConstants.Auth.JWT_DEFAULT_EXPIRY_MINUTES
+            )
+            bcrypt_rounds = safe_int_cast(
+                config_data.get("bcrypt_rounds", FlextConstants.Auth.BCRYPT_ROUNDS),
+                FlextConstants.Auth.BCRYPT_ROUNDS
+            )
+            max_login_attempts = safe_int_cast(
+                config_data.get("max_login_attempts", FlextConstants.Auth.MAX_LOGIN_ATTEMPTS),
+                FlextConstants.Auth.MAX_LOGIN_ATTEMPTS
+            )
+            session_expiry_minutes = safe_int_cast(
+                config_data.get("session_expiry_minutes", FlextConstants.Auth.DEFAULT_SESSION_EXPIRY_MINUTES),
+                FlextConstants.Auth.DEFAULT_SESSION_EXPIRY_MINUTES
+            )
+            lockout_duration_minutes = safe_int_cast(
+                config_data.get("lockout_duration_minutes", FlextConstants.Auth.LOCKOUT_DURATION_MINUTES),
+                FlextConstants.Auth.LOCKOUT_DURATION_MINUTES
+            )
+
+            # Extract jwt_secret from config_data
+            jwt_secret = config_data.get("jwt_secret", "")
+            if isinstance(jwt_secret, str) and len(jwt_secret) > 0:
+                # Use provided secret
+                pass
+            else:
+                # Let Pydantic validator generate it
+                jwt_secret = ""
+
+            # Create configuration instance with type-safe parameters
+            config = cls(
+                jwt_secret=jwt_secret,
+                jwt_expiry_minutes=jwt_expiry_minutes,
+                bcrypt_rounds=bcrypt_rounds,
+                max_login_attempts=max_login_attempts,
+                session_expiry_minutes=session_expiry_minutes,
+                lockout_duration_minutes=lockout_duration_minutes,
+            )
+
+            # Validate the configuration for consistency
+            validation_result = config.validate_configuration()
+            if validation_result.is_failure:
+                return FlextResult[FlextAuthConfig].fail(
+                    validation_result.error or "Configuration validation failed"
+                )
+
             return FlextResult[FlextAuthConfig].ok(config)
 
         except Exception as e:
