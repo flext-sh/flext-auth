@@ -9,10 +9,10 @@ SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
+from flext_core import FlextResult
 
 from flext_auth import (
     FlextAuth,
-    FlextResult,
     flext_auth_quick_start,
 )
 

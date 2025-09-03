@@ -285,7 +285,9 @@ class FlextAuthPermission(FlextModels.Entity):
 
         return FlextResult[None].ok(None)
 
-    def matches(self, resource: FlextAuthTypes.String, action: FlextAuthTypes.String) -> bool:
+    def matches(
+        self, resource: FlextAuthTypes.String, action: FlextAuthTypes.String
+    ) -> bool:
         """Check if permission matches resource and action."""
         return self.resource == resource and self.action == action
 
@@ -310,7 +312,6 @@ class FlextAuthModels:
     ) -> FlextResult[FlextAuthUser]:
         """Create user with validation."""
         try:
-
             user_data = {
                 "id": f"user_{username}_{int(time.time_ns())}",
                 "username": username,
@@ -346,7 +347,6 @@ class FlextAuthModels:
     ) -> FlextResult[FlextAuthSession]:
         """Create session with validation."""
         try:
-
             session_data = {
                 "id": f"session_{user_id}_{int(time.time_ns())}",
                 "user_id": user_id,
@@ -379,7 +379,6 @@ class FlextAuthModels:
     ) -> FlextResult[FlextAuthRole]:
         """Create role with validation."""
         try:
-
             role_data = {
                 "id": f"role_{name}_{int(time.time_ns())}",
                 "name": name,
@@ -410,7 +409,6 @@ class FlextAuthModels:
     ) -> FlextResult[FlextAuthPermission]:
         """Create permission with validation."""
         try:
-
             permission_data = {
                 "id": f"perm_{name}_{int(time.time_ns())}",
                 "name": name,
@@ -449,7 +447,9 @@ class FlextAuthModels:
             except Exception as e:
                 return FlextResult[FlextAuthUser].fail(f"Save failed: {e}")
 
-        def get_by_id(self, user_id: FlextAuthTypes.UserId) -> FlextResult[FlextAuthUser | None]:
+        def get_by_id(
+            self, user_id: FlextAuthTypes.UserId
+        ) -> FlextResult[FlextAuthUser | None]:
             """Get user by ID."""
             try:
                 user = self._users.get(user_id)
@@ -457,7 +457,9 @@ class FlextAuthModels:
             except Exception as e:
                 return FlextResult[FlextAuthUser | None].fail(f"Get by ID failed: {e}")
 
-        def get_by_username(self, username: FlextAuthTypes.Username) -> FlextResult[FlextAuthUser | None]:
+        def get_by_username(
+            self, username: FlextAuthTypes.Username
+        ) -> FlextResult[FlextAuthUser | None]:
             """Get user by username."""
             try:
                 for user in self._users.values():
@@ -469,7 +471,9 @@ class FlextAuthModels:
                     f"Get by username failed: {e}"
                 )
 
-        def get_by_email(self, email: FlextAuthTypes.Email) -> FlextResult[FlextAuthUser | None]:
+        def get_by_email(
+            self, email: FlextAuthTypes.Email
+        ) -> FlextResult[FlextAuthUser | None]:
             """Get user by email."""
             try:
                 for user in self._users.values():
@@ -496,7 +500,9 @@ class FlextAuthModels:
             except Exception as e:
                 return FlextResult[FlextAuthSession].fail(f"Save failed: {e}")
 
-        def get_by_id(self, session_id: FlextAuthTypes.SessionId) -> FlextResult[FlextAuthSession | None]:
+        def get_by_id(
+            self, session_id: FlextAuthTypes.SessionId
+        ) -> FlextResult[FlextAuthSession | None]:
             """Get session by ID."""
             try:
                 session = self._sessions.get(session_id)
@@ -506,7 +512,9 @@ class FlextAuthModels:
                     f"Get by ID failed: {e}"
                 )
 
-        def get_by_user_id(self, user_id: FlextAuthTypes.UserId) -> FlextResult[list[FlextAuthSession]]:
+        def get_by_user_id(
+            self, user_id: FlextAuthTypes.UserId
+        ) -> FlextResult[list[FlextAuthSession]]:
             """Get all sessions for user."""
             try:
                 sessions = [s for s in self._sessions.values() if s.user_id == user_id]

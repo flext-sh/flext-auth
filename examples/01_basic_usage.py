@@ -14,14 +14,15 @@ from __future__ import annotations
 import os
 import secrets
 import string
+from collections.abc import Awaitable, Callable
 
-from utils import basic_example_runner
+from .utils import basic_example_runner
 
 from flext_auth import (
     FlextAuth,
     FlextPasswordService,
 )
-from flext_auth.typings import FlextAuthTypes
+from flext_auth import FlextAuthTypes
 
 EXAMPLE_PASSWORD = os.getenv("FLEXT_DEMO_PASSWORD", "MySecurePassword123!")
 EXAMPLE_WRONG_PASSWORD = os.getenv("FLEXT_DEMO_WRONG_PASSWORD", "WrongPassword")
@@ -171,7 +172,9 @@ def example_mixin_usage() -> None:
     class MyController:
         """Example controller with authentication capabilities."""
 
-        def handle_request(self, token: FlextAuthTypes.AccessToken) -> FlextAuthTypes.Dict:
+        def handle_request(
+            self, token: FlextAuthTypes.AccessToken
+        ) -> dict[str, object]:
             """Handle request with authentication - simplified implementation."""
             return {
                 "success": True,
@@ -227,9 +230,9 @@ def example_advanced_registration() -> None:
         if register_result.success:
             user_data = register_result.value
             if isinstance(user_data, dict):
-                print(
-                    f"✅ Advanced user registered: {user_data.get('user', {}).get('username')}"
-                )
+                user_dict = user_data.get("user", {})
+                if isinstance(user_dict, dict):
+                    print(f"✅ Advanced user registered: {user_dict.get('username')}")
 
             # Authenticate the newly created user using real async API
             auth_result = auth.authenticate_user(
@@ -277,11 +280,8 @@ def main() -> None:
         example_complete_workflow,
     ]
 
-    # Define async examples
-    async_examples = [
-        example_user_lifecycle,
-        example_advanced_registration,
-    ]
+    # Define async examples (empty for now as examples are sync)
+    async_examples: list[Callable[[], Awaitable[None]]] = []
 
     # Run all examples using shared runner (DRY principle)
     basic_example_runner(sync_examples, async_examples)

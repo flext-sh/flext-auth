@@ -66,7 +66,7 @@ class TestFlextAuthError:
     def test_flext_auth_error_with_none_message(self) -> None:
         """Test FlextAuthError with None message."""
         # Python exceptions handle None by converting to string
-        error = FlextAuthError(cast(str, None))  # type: ignore[name-defined]
+        error = FlextAuthError(cast(str, None))
         assert str(error) == "None"
 
     def test_flext_auth_error_repr(self) -> None:
@@ -253,11 +253,11 @@ class TestExceptionUsagePatterns:
                 self, message: FlextAuthTypes.ErrorMessage, error_code: int = 0
             ) -> None:
                 super().__init__(message)
-                self.error_code = error_code  # type: ignore[assignment]
+                self.error_code = error_code
 
         error = CustomFlextAuthError("Custom error", 404)
         assert str(error) == "Custom error"
-        assert error.error_code == 404  # type: ignore[comparison-overlap]
+        assert error.error_code == 404
         assert isinstance(error, FlextAuthError)
 
     def test_exception_message_formatting(self) -> None:
@@ -322,7 +322,7 @@ class TestErrorHandlingIntegration:
         assert "Password is required" in str(exc.value)
 
         # Test authentication errors
-        with pytest.raises(FlextAuthError) as exc:  # type: ignore[assignment]
+        with pytest.raises(FlextAuthError) as exc:
             authenticate_user("invalid", "password")
         assert "Invalid credentials" in str(exc.value)
 
@@ -401,9 +401,9 @@ class TestErrorHandlingIntegration:
         # Test validation error
         validation = api_layer("")
         assert validation["success"] is False
-        assert "Validation: Request is empty" in validation["error"]  # type: ignore[operator]
+        assert "Validation: Request is empty" in validation["error"]
 
         # Test database error propagation
         db_error = api_layer("invalid query")
         assert db_error["success"] is False
-        assert "Auth: Service error: Database error" in db_error["error"]  # type: ignore[operator]
+        assert "Auth: Service error: Database error" in db_error["error"]

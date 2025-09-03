@@ -11,10 +11,12 @@ from __future__ import annotations
 
 import re
 from datetime import UTC, datetime, timedelta
+from typing import cast
 
 from flext_core import FlextResult
 
 from flext_auth import (
+    AuthData,
     FlextAuth,
     FlextAuthConstants,
     FlextAuthError,
@@ -33,6 +35,8 @@ from flext_auth import (
     generate_secure_password,
     is_strong_password,
 )
+from flext_auth.core import FlextAuth
+from flext_auth.typings import AuthData
 
 
 class TestFlextAuthCore:
@@ -83,10 +87,10 @@ class TestFlextAuthCore:
 
     def test_user_registration_complete(self) -> None:
         """Test complete user registration functionality."""
-        auth = FlextAuth()
+        auth: FlextAuth = cast("FlextAuth", FlextAuth())
 
         # Test successful registration
-        result = auth.register_user(
+        result: FlextResult[AuthData] = auth.register_user(
             username="testuser",
             email="test@example.com",
             password="SecurePassword123!",
@@ -107,7 +111,7 @@ class TestFlextAuthCore:
         assert "created_at" in user_info
 
         # Test duplicate username
-        duplicate_result = auth.register_user(
+        duplicate_result: FlextResult[AuthData] = auth.register_user(
             username="testuser",  # Same username
             email="different@example.com",
             password="AnotherPassword123!",
@@ -116,7 +120,7 @@ class TestFlextAuthCore:
         assert "already exists" in duplicate_result.error
 
         # Test duplicate email
-        duplicate_email_result = auth.register_user(
+        duplicate_email_result: FlextResult[AuthData] = auth.register_user(
             username="different_user",
             email="test@example.com",  # Same email
             password="AnotherPassword123!",
@@ -126,13 +130,13 @@ class TestFlextAuthCore:
 
     def test_user_authentication_complete(self) -> None:
         """Test complete user authentication functionality."""
-        auth = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         # First register a user
         username = "authtest"
         password = "AuthTestPassword123!"
 
-        reg_result = auth.register_user(
+        reg_result: FlextResult[AuthData] = auth.register_user(
             username=username,
             email="authtest@example.com",
             password=password,
@@ -150,14 +154,14 @@ class TestFlextAuthCore:
         assert "session" in auth_data
 
         # Validate user data
-        user_info = auth_data["user"]
+        user_info = cast("dict[str, object]", auth_data["user"])
         assert user_info["username"] == username
         assert user_info["email"] == "authtest@example.com"
         assert user_info["role"] == FlextAuthConstants.ROLE_USER
         assert user_info["status"] == FlextAuthConstants.USER_STATUS_ACTIVE
 
         # Validate token data
-        tokens = auth_data["tokens"]
+        tokens = cast("dict[str, object]", auth_data["tokens"])
         assert "access_token" in tokens
         assert tokens["token_type"] == "Bearer"
         assert (
@@ -166,6 +170,7 @@ class TestFlextAuthCore:
 
         # Validate session data
         session_info = auth_data["session"]
+        session_info = cast("dict[str, object]", session_info)
         assert "session_id" in session_info
         assert "expires_at" in session_info
 
@@ -188,6 +193,7 @@ class TestFlextAuthCore:
 
         # Extract token
         tokens = auth_result.value["tokens"]
+        tokens = cast("dict[str, object]", tokens)
         access_token = tokens["access_token"]
 
         # Test valid token

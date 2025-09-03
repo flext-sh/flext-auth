@@ -134,7 +134,8 @@ class FlextAuthUtilities:
 
     @staticmethod
     def validate_jwt(
-        token: FlextAuthTypes.AccessToken, secret: FlextAuthTypes.AccessToken | None = None
+        token: FlextAuthTypes.AccessToken,
+        secret: FlextAuthTypes.AccessToken | None = None,
     ) -> FlextResult[FlextAuthTypes.TokenPayload]:
         """Validate JWT token using FlextJWTService."""
         jwt_secret = secret or FlextAuthConstants.DEFAULT_JWT_SECRET

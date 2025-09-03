@@ -175,19 +175,17 @@ class FlextAuth:
                 )
 
             # Return success response
-            return FlextResult[FlextAuthTypes.AuthData].ok(
-                {
-                    "success": True,
-                    "user": {
-                        "id": user.id,
-                        "username": user.username,
-                        "email": str(user.email),
-                        "role": user.role,
-                        "status": user.status,
-                        "created_at": user.created_at.isoformat(),
-                    },
-                }
-            )
+            return FlextResult[FlextAuthTypes.AuthData].ok({
+                "success": True,
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": str(user.email),
+                    "role": user.role,
+                    "status": user.status,
+                    "created_at": user.created_at.isoformat(),
+                },
+            })
 
         except Exception as e:
             return FlextResult[FlextAuthTypes.AuthData].fail(
@@ -253,7 +251,9 @@ class FlextAuth:
         user.updated_at = datetime.now(UTC)
         self.user_repo.save(user)
 
-    def validate_token(self, token: FlextAuthTypes.AccessToken) -> FlextResult[FlextAuthTypes.AuthData]:
+    def validate_token(
+        self, token: FlextAuthTypes.AccessToken
+    ) -> FlextResult[FlextAuthTypes.AuthData]:
         """Validate JWT token and return user information."""
         try:
             # Clean token (remove Bearer prefix if present)
@@ -272,22 +272,22 @@ class FlextAuth:
 
             claims = claims_result.value
 
-            return FlextResult[FlextAuthTypes.AuthData].ok(
-                {
-                    "valid": True,
-                    "claims": claims,
-                    "user_id": claims.get("sub"),
-                    "username": claims.get("username"),
-                    "role": claims.get("role"),
-                }
-            )
+            return FlextResult[FlextAuthTypes.AuthData].ok({
+                "valid": True,
+                "claims": claims,
+                "user_id": claims.get("sub"),
+                "username": claims.get("username"),
+                "role": claims.get("role"),
+            })
 
         except Exception as e:
             return FlextResult[FlextAuthTypes.AuthData].fail(
                 f"Token validation failed: {e}"
             )
 
-    def logout_user(self, session_id: FlextAuthTypes.SessionId) -> FlextResult[FlextAuthTypes.AuthData]:
+    def logout_user(
+        self, session_id: FlextAuthTypes.SessionId
+    ) -> FlextResult[FlextAuthTypes.AuthData]:
         """Logout user by deactivating session."""
         try:
             # Get session
@@ -305,12 +305,10 @@ class FlextAuth:
             if save_result.is_failure:
                 return FlextResult[FlextAuthTypes.AuthData].fail("Session save failed")
 
-            return FlextResult[FlextAuthTypes.AuthData].ok(
-                {
-                    "success": True,
-                    "message": "User logged out successfully",
-                }
-            )
+            return FlextResult[FlextAuthTypes.AuthData].ok({
+                "success": True,
+                "message": "User logged out successfully",
+            })
 
         except Exception as e:
             return FlextResult[FlextAuthTypes.AuthData].fail(f"Logout failed: {e}")
@@ -357,19 +355,20 @@ class FlextAuth:
                 )
 
             deleted_count = cleanup_result.value
-            return FlextResult[FlextAuthTypes.AuthData].ok(
-                {
-                    "success": True,
-                    "deleted_sessions": deleted_count,
-                    "message": f"Cleaned up {deleted_count} expired sessions",
-                }
-            )
+            return FlextResult[FlextAuthTypes.AuthData].ok({
+                "success": True,
+                "deleted_sessions": deleted_count,
+                "message": f"Cleaned up {deleted_count} expired sessions",
+            })
 
         except Exception as e:
             return FlextResult[FlextAuthTypes.AuthData].fail(f"Cleanup failed: {e}")
 
     def _create_authenticated_session(
-        self, user: FlextAuthUser, ip_address: FlextAuthTypes.IPAddress | None, user_agent: FlextAuthTypes.UserAgent | None
+        self,
+        user: FlextAuthUser,
+        ip_address: FlextAuthTypes.IPAddress | None,
+        user_agent: FlextAuthTypes.UserAgent | None,
     ) -> FlextResult[FlextAuthTypes.AuthData]:
         """Create JWT token and session for authenticated user."""
         # Generate JWT token
@@ -391,30 +390,26 @@ class FlextAuth:
         session = session_result.value
 
         # Return authentication response
-        return FlextResult[FlextAuthTypes.AuthData].ok(
-            {
-                "success": True,
-                "user": {
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                    "role": user.role,
-                    "status": user.status,
-                    "last_login": user.last_login.isoformat()
-                    if user.last_login
-                    else None,
-                },
-                "tokens": {
-                    "access_token": token_result.value,
-                    "token_type": "Bearer",
-                    "expires_in": self.token_expiry_minutes * 60,
-                },
-                "session": {
-                    "session_id": session.id,
-                    "expires_at": session.expires_at.isoformat(),
-                },
-            }
-        )
+        return FlextResult[FlextAuthTypes.AuthData].ok({
+            "success": True,
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "role": user.role,
+                "status": user.status,
+                "last_login": user.last_login.isoformat() if user.last_login else None,
+            },
+            "tokens": {
+                "access_token": token_result.value,
+                "token_type": "Bearer",
+                "expires_in": self.token_expiry_minutes * 60,
+            },
+            "session": {
+                "session_id": session.id,
+                "expires_at": session.expires_at.isoformat(),
+            },
+        })
 
     def _generate_access_token(self, user: FlextAuthUser) -> FlextResult[str]:
         """Generate JWT access token for user."""

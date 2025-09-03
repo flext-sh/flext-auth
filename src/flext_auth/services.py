@@ -30,7 +30,6 @@ class FlextPasswordService:
     ) -> FlextResult[FlextAuthTypes.String]:
         """Hash password using bcrypt with secure rounds."""
         try:
-
             actual_rounds = rounds if rounds is not None else cls.DEFAULT_ROUNDS
             salt = bcrypt.gensalt(rounds=actual_rounds)
             hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
@@ -46,7 +45,6 @@ class FlextPasswordService:
     ) -> FlextResult[bool]:
         """Verify password against bcrypt hash."""
         try:
-
             is_valid = bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
             return FlextResult[bool].ok(is_valid)
         except Exception as e:
@@ -269,10 +267,14 @@ class FlextJWTService:
             )
 
         except Exception as e:
-            return FlextResult[FlextAuthTypes.AccessToken].fail(f"Token refresh failed: {e}")
+            return FlextResult[FlextAuthTypes.AccessToken].fail(
+                f"Token refresh failed: {e}"
+            )
 
     @staticmethod
-    def extract_claims_unsafe(token: FlextAuthTypes.AccessToken) -> FlextResult[FlextAuthTypes.TokenPayload]:
+    def extract_claims_unsafe(
+        token: FlextAuthTypes.AccessToken,
+    ) -> FlextResult[FlextAuthTypes.TokenPayload]:
         """Extract claims from token without validation (for debugging)."""
         try:
             # Decode without verification for debugging purposes

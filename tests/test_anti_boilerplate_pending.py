@@ -30,12 +30,10 @@ class TestAntiBoilerplateFunctionality:
     def test_basic_jwt_functionality(self) -> None:
         """Test basic JWT functionality that exists."""
         # Test JWT generation
-        result = FlextAuthUtilities.generate_jwt(
-            {
-                "user_id": "test",
-                "username": "testuser",
-            }
-        )
+        result = FlextAuthUtilities.generate_jwt({
+            "user_id": "test",
+            "username": "testuser",
+        })
         assert result.success
         assert isinstance(result.value, str)
         assert len(result.value) > 0

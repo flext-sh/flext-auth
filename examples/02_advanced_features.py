@@ -11,10 +11,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-# Example constants - not for production use
 import os
+from collections.abc import Awaitable, Callable
 
-from utils import basic_example_runner
 
 from flext_auth import (
     FlextAuth,
@@ -27,6 +26,8 @@ from flext_auth import (
     generate_secure_password,
     generate_secure_token,
 )
+
+from .utils import basic_example_runner
 
 EXAMPLE_JWT_SECRET = os.getenv(
     "FLEXT_DEMO_JWT_SECRET",
@@ -73,14 +74,21 @@ def example_secure_token_generation() -> None:
 def example_decorators() -> None:
     """Demonstrate authentication decorators (placeholder)."""
     # These decorators exist but need proper setup to work
-    # For demonstration, we just confirm they're importable
-    if not (
-        flext_auth_required
-        and flext_auth_role_required
-        and flext_auth_permission_required
-    ):
-        msg = "Decorators not properly imported"
-        raise RuntimeError(msg)
+    # For demonstration, we just confirm they're importable and callable
+    decorators = [
+        flext_auth_required,
+        flext_auth_role_required,
+        flext_auth_permission_required,
+    ]
+
+    # Simple verification that all decorators are available
+    for decorator in decorators:
+        if not callable(decorator):
+            decorator_name = getattr(decorator, "__name__", str(decorator))
+            msg = f"Decorator {decorator_name} is not callable"
+            raise TypeError(msg)
+
+    print("✅ Authentication decorators are available and callable")
 
 
 def example_batch_operations_working() -> None:
@@ -133,7 +141,7 @@ def main() -> None:
     ]
 
     # No async examples for now
-    async_examples = []
+    async_examples: list[Callable[[], Awaitable[None]]] = []
 
     # Run all examples using shared runner (DRY principle)
     basic_example_runner(sync_examples, async_examples)

@@ -13,9 +13,9 @@ from __future__ import annotations
 
 import os
 
+from flext_core import FlextResult
 from flext_auth import (
     FlextAuth,
-    FlextResult,
     flext_auth_generate_jwt,
     flext_auth_hash_password,
     flext_auth_quick_start,

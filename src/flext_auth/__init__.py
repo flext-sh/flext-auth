@@ -54,6 +54,7 @@ from flext_auth.exceptions import *
 # =============================================================================
 
 from flext_auth.models import *
+from flext_auth.typings import *
 
 # =============================================================================
 # APPLICATION LAYER - Depends on Domain + Foundation layers
@@ -80,9 +81,6 @@ from flext_auth.utilities import *
 # CONSOLIDATED EXPORTS - Combine all __all__ from modules
 # =============================================================================
 
-# Import FlextResult for convenience (re-export flext-core)
-from flext_core import FlextResult
-
 # Combine all __all__ exports from imported modules
 import flext_auth.__version__ as _version
 import flext_auth.config as _config
@@ -92,16 +90,18 @@ import flext_auth.exceptions as _exceptions
 import flext_auth.mixins as _mixins
 import flext_auth.models as _models
 import flext_auth.services as _services
+import flext_auth.typings as _typings
 import flext_auth.utilities as _utilities
 
 # Collect all __all__ exports from imported modules
-_temp_exports: list[str] = ["FlextResult"]  # Add FlextResult to exports
+_temp_exports: list[str] = []
 
 for module in [
     _version,
     _constants,
     _exceptions,
     _models,
+    _typings,
     _core,
     _services,
     _config,
