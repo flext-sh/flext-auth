@@ -1,112 +1,105 @@
-"""FLEXT Authentication Library - Enterprise authentication following flext-core patterns.
+"""FLEXT Auth - Enterprise authentication library following flext-core patterns.
 
-This module provides comprehensive authentication workflows, session management,
-and security features using flext-core foundation patterns.
+Architectural foundation for authentication in the FLEXT ecosystem with type-safe
+error handling, domain modeling, session management, and JWT token operations
+following Clean Architecture and Domain-Driven Design principles.
 
 Architecture:
-    Foundation Layer: Constants, exceptions, version (from flext-core)
-    Domain Layer: Domain entities using FlextModels patterns
-    Service Layer: Authentication, password, token services
-    Infrastructure Layer: Container, config, logging integration
-    Support Layer: Utilities, mixins, decorators
+    Foundation: FlextConstants, FlextResult integration
+    Domain: User, Session, Role entities with business logic
+    Application: FlextAuthService, authentication workflows, validation
+    Infrastructure: FlextAuthConfig, dependency injection support
+    Support: FlextAuth facade, convenience methods
 
-Core Components:
-    FlextAuth: Main authentication service with railway-oriented programming
-    FlextAuthModels: Domain models using flext-core Entity patterns
-    FlextPasswordService: Secure bcrypt password operations
-    FlextJWTService: JWT token generation and validation
-    FlextAuthConstants: Authentication system constants (inherits FlextConstants)
-    FlextAuthExceptions: Clean exception hierarchy (inherits FlextExceptions)
-
+Key Components:
+    FlextAuth: Main authentication facade for simple API access
+    User, Session, Role, Credential, AuthToken: Domain models directly from flext-core patterns
+    FlextAuthService: Application service orchestrating authentication workflows
+    FlextAuthConfig: Type-safe configuration with environment variable support
+    FlextConstants: Authentication domain constants and error codes from flext-core
 
 Examples:
-    Basic authentication workflow:
-    >>> auth = FlextAuth()
-    >>> result = auth.authenticate_user("user", "pass")
-    >>> if result.success:
-    ...     user_data = result.value
+    Zero-configuration authentication::
 
-    Railway-oriented error handling:
-    >>> (
-    ...     FlextAuth.create_user(data)
-    ...     .flat_map(lambda u: auth.authenticate_user(u.username, password))
-    ...     .map(lambda r: create_session(r))
-    ...     .map_error(lambda e: f"Auth failed: {e}")
-    ... )
+        >>> from flext_auth import FlextAuth
+        >>> auth = FlextAuth()
+        >>> register_result = auth.register_user("john", "john@example.com", "password123")
+        >>> if register_result.success:
+        ...     user = register_result.value
+        ...     print(f"User created: {user.username}")
 
-Copyright (c) 2025 Flext. All rights reserved.
-SPDX-License-Identifier: MIT
+    Configuration-based authentication::
+
+        >>> from flext_auth import FlextAuthConfig, FlextAuth
+        >>> config_result = FlextAuthConfig.create_for_environment("production", bcrypt_rounds=14)
+        >>> if config_result.success:
+        ...     auth = FlextAuth(config=config_result.value)
+        ...     auth_result = auth.authenticate_user("john", "password123")
+
+Notes:
+    - All operations return FlextResult[T] for composable error handling
+    - Domain entities inherit from flext-core FlextModels patterns
+    - Configuration supports environment variables and validation
+    - Authentication follows Clean Architecture and DDD principles
+    - JWT tokens include proper expiration and validation
+    - Session management with automatic cleanup and security policies
 
 """
 
 from __future__ import annotations
 
 # =============================================================================
-# FOUNDATION LAYER - Import first, no dependencies on other modules
+# FOUNDATION LAYER - Import first, no dependencies on other auth modules
 # =============================================================================
 
 from flext_auth.__version__ import *
 from flext_auth.constants import *
-from flext_auth.exceptions import *
 
 # =============================================================================
 # DOMAIN LAYER - Depends only on Foundation layer
 # =============================================================================
 
 from flext_auth.models import *
-from flext_auth.typings import *
 
 # =============================================================================
 # APPLICATION LAYER - Depends on Domain + Foundation layers
 # =============================================================================
 
-# Domain services - authentication business logic
-from flext_auth.core import *
+from flext_auth.services import *
 
 # =============================================================================
 # INFRASTRUCTURE LAYER - Depends on Application + Domain + Foundation
 # =============================================================================
 
-from flext_auth.services import *
 from flext_auth.config import *
 
 # =============================================================================
-# SUPPORT LAYER - Depends on layers as needed, imported last
+# SUPPORT LAYER - Main facade and convenience functions
 # =============================================================================
 
-from flext_auth.mixins import *
-from flext_auth.utilities import *
+from flext_auth.auth import *
 
 # =============================================================================
 # CONSOLIDATED EXPORTS - Combine all __all__ from modules
 # =============================================================================
 
-# Combine all __all__ exports from imported modules
 import flext_auth.__version__ as _version
+import flext_auth.auth as _auth
 import flext_auth.config as _config
 import flext_auth.constants as _constants
-import flext_auth.core as _core
-import flext_auth.exceptions as _exceptions
-import flext_auth.mixins as _mixins
 import flext_auth.models as _models
 import flext_auth.services as _services
-import flext_auth.typings as _typings
-import flext_auth.utilities as _utilities
 
 # Collect all __all__ exports from imported modules
 _temp_exports: list[str] = []
 
 for module in [
-    _version,
-    _constants,
-    _exceptions,
-    _models,
-    _typings,
-    _core,
-    _services,
+    _auth,
     _config,
-    _mixins,
-    _utilities,
+    _constants,
+    _models,
+    _services,
+    _version,
 ]:
     if hasattr(module, "__all__"):
         _temp_exports.extend(module.__all__)
@@ -122,4 +115,4 @@ _final_exports.sort()
 
 # Define __all__ as literal list for linter compatibility
 # This dynamic assignment is necessary for aggregating module exports
-__all__: list[str] = _final_exports  # pyright: ignore[reportUnsupportedDunderAll] # noqa: PLE0605
+__all__: list[str] = _final_exports  # noqa: PLE0605 # type: ignore[reportUnsupportedDunderAll]

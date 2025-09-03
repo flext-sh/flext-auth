@@ -115,6 +115,7 @@ curl http://localhost:8000/auth/health # Health check
 **Note**: Project requires quality validation following FLEXT ecosystem standards.
 
 **Expected Quality Levels**:
+
 - **Test Coverage**: Target 90%+ (flext-core standard)
 - **Source Code Typing**: Target 100% clean (0 MyPy/PyRight errors in src/)
 - **Architecture**: Clean Architecture + DDD patterns (established)
@@ -138,12 +139,14 @@ make validate                                       # All quality gates must pas
 ### KNOWN INTEGRATION GAPS (CRITICAL)
 
 **❌ Missing flext-core Integration:**
+
 - **FlextContainer**: No dependency injection container usage
 - **Event Sourcing**: No domain events despite FlextModels.AggregateRoot availability
 - **CQRS Commands**: No command/handler pattern implementation
 - **Shared Domain**: Creates local domain models instead of shared patterns
 
 **⚠️ Configuration Files**
+
 - **pyproject.toml**: Poetry dependencies, tool configuration
 - **Makefile**: Development commands and quality gates
 - **docker-compose.yml**: Multi-service development environment
@@ -291,11 +294,13 @@ This project is part of the larger FLEXT ecosystem and:
 ### Current Integration Status
 
 **✅ Successfully Integrated:**
+
 - **FlextResult Pattern**: Type-safe error handling throughout
 - **Clean Architecture**: Domain/Application/Infrastructure separation
 - **DDD Entities**: Rich domain models following flext-core patterns
 
 **❌ Missing Integration (CRITICAL GAPS):**
+
 - **FlextContainer**: No dependency injection container usage
 - **Event Sourcing**: No domain events despite FlextModels.AggregateRoot availability
 - **CQRS Commands**: No command/handler pattern implementation
@@ -320,7 +325,7 @@ make doctor                  # Complete health check
 ### Current Project Issues (KNOWN)
 
 - **Test Import Issues**: Some test imports need resolution
-- **flext-core Integration**: Missing DI container, events, CQRS patterns  
+- **flext-core Integration**: Missing DI container, events, CQRS patterns
 - **Quality Validation**: Project needs full quality assessment
 
 ## Project-Specific Development Lessons
@@ -330,7 +335,7 @@ make doctor                  # Complete health check
 When working on this codebase, prioritize these missing flext-core integrations:
 
 1. **FlextContainer DI**: Replace manual dependency creation with container registration
-2. **Domain Events**: Migrate entities to `FlextModels.AggregateRoot` and add event publishing  
+2. **Domain Events**: Migrate entities to `FlextModels.AggregateRoot` and add event publishing
 3. **CQRS Commands**: Implement command/handler patterns for authentication operations
 4. **Error Handling**: Ensure all FlextResult usage follows ecosystem patterns
 
@@ -348,7 +353,7 @@ When working on this codebase, prioritize these missing flext-core integrations:
 poetry run python -c "from flext_auth import FlextAuth"     # Test imports
 make test                                                   # Verify current state
 
-# 2. MAKE TARGETED CHANGES  
+# 2. MAKE TARGETED CHANGES
 make validate        # Run all quality gates before proceeding
 
 # 3. QUALITY GATES (mandatory)

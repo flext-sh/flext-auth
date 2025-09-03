@@ -22,7 +22,7 @@ class TestFlextAuth:
         auth = FlextAuth()
         assert auth.jwt_secret is not None
         assert len(auth.jwt_secret) > 20
-        assert auth.password_rounds == FlextAuthConstants.DEFAULT_BCRYPT_ROUNDS
+        assert auth.password_rounds == FlextAuthConstants.Security.BCRYPT_ROUNDS
         assert (
             auth.token_expiry_minutes == FlextAuthConstants.DEFAULT_ACCESS_TOKEN_MINUTES
         )

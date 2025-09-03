@@ -1,0 +1,800 @@
+"""Real functionality tests for FlextAuth - Python 3.13 + Pydantic advanced features.
+
+Tests complete authentication workflows without mocks, using modern Python patterns.
+"""
+
+from __future__ import annotations
+
+import pytest
+from pydantic import ValidationError
+
+from flext_auth import FlextAuth, FlextAuthModels
+
+
+class TestRealAuthentication:
+    """Test real authentication workflows with modern Python 3.13 features."""
+
+    def test_complete_authentication_workflow(self) -> None:
+        """Test complete user lifecycle: register → authenticate → session → token."""
+        # Create auth instance with modern factory pattern
+        auth_result = create_auth(environment="test")
+
+        # Test user registration with strong typing
+        register_result = auth.register_user(
+            username="john_doe",
+            email="john@example.com",
+            password="SuperSecure123!@#",
+            full_name="John Doe",
+        )
+        assert register_result.success, f"Registration failed: {register_result.error}"
+        user = register_result.value
+        assert user.username == "john_doe"
+        assert user.email.root == "john@example.com"
+        assert user.full_name == "John Doe"
+        assert user.is_active
+        assert not user.is_verified  # Email not verified yet
+
+        # Test authentication with real password validation
+        auth_result = auth.authenticate_user("john_doe", "SuperSecure123!@#")
+        auth_data = auth_result.value
+
+        # Verify auth data structure (TypedDict)
+        assert "user" in auth_data
+        assert "session" in auth_data
+        assert "jwt_token" in auth_data
+        assert "expires_at" in auth_data
+
+        # Test JWT token validation
+        jwt_token = auth_data["jwt_token"]
+        token_result = auth.validate_token(jwt_token)
+        assert token_result.success, f"Token validation failed: {token_result.error}"
+        payload = token_result.value
+
+        # Verify token payload structure (TypedDict)
+        assert payload["user_id"] is not None
+        assert payload["username"] == "john_doe"
+        assert payload["exp"] > 0
+        assert payload["iat"] > 0
+
+    def test_password_strength_and_hashing(self) -> None:
+        """Test password strength validation and bcrypt hashing."""
+        auth = FlextAuth()
+
+        # Test strong password hashing
+        strong_password = "VerySecurePassword123!@#$%^&*()"
+        hash_result = auth.hash_password(strong_password)
+        assert hash_result.success, f"Hashing failed: {hash_result.error}"
+        password_hash = hash_result.value
+
+        # Verify bcrypt format
+        assert password_hash.startswith("$2b$")
+        assert len(password_hash) >= 60
+
+        # Test verification
+        assert auth.verify_password(strong_password, password_hash)
+        assert not auth.verify_password("wrong_password", password_hash)
+
+    def test_user_management_operations(self) -> None:
+        """Test user lookup and management operations."""
+        auth = FlextAuth()
+
+        # Register test user
+        register_result = auth.register_user(
+            username="test_user", email="test@example.com", password="TestPassword123!"
+        )
+        assert register_result.success
+        user = register_result.value
+        user_id = user.id
+
+        # Test get user by username
+        user_result = auth.get_user_by_username("test_user")
+        assert user_result.success
+        found_user = user_result.value
+        assert found_user is not None
+        assert found_user.username == "test_user"
+        assert found_user.id == user_id
+
+        # Test get user by ID
+        user_by_id_result = auth.get_user_by_id(user_id)
+        assert user_by_id_result.success
+        found_user_by_id = user_by_id_result.value
+        assert found_user_by_id is not None
+        assert found_user_by_id.id == user_id
+
+        # Test case insensitive username lookup
+        user_result_case = auth.get_user_by_username("TEST_USER")
+        assert user_result_case.success
+        found_user_case = user_result_case.value
+        assert found_user_case is not None
+        assert found_user_case.username == "test_user"  # Original case preserved
+
+    def test_session_management(self) -> None:
+        """Test session creation, validation, and cleanup."""
+        auth = FlextAuth()
+
+        # Register and authenticate user
+        register_result = auth.register_user(
+            "session_user", "session@example.com", "SessionPass123!"
+        )
+        assert register_result.success
+        user = register_result.value
+
+        auth.authenticate_user("session_user", "SessionPass123!")
+
+        # Get user sessions
+        sessions_result = auth.get_user_sessions(user.id)
+        assert sessions_result.success
+        sessions = sessions_result.value
+        assert len(sessions) >= 1
+
+        # Find the session from authentication
+        session = sessions[0]
+        assert session.user_id == user.id
+        assert not session.is_revoked
+        assert not session.is_expired
+
+        # Test session revocation
+        revoke_result = auth.revoke_session(session.id)
+        assert revoke_result.success
+
+        # Test session cleanup
+        cleanup_result = auth.cleanup_expired_sessions()
+        assert cleanup_result.success
+        cleanup_count = cleanup_result.value
+        assert isinstance(cleanup_count, int)
+        assert cleanup_count >= 0
+
+    def test_configuration_management(self) -> None:
+        """Test configuration creation and management."""
+        # Test environment-specific config
+        config_result = create_auth_config("production")
+        assert config_result.success
+        prod_config = config_result.value
+        assert prod_config.bcrypt_rounds >= 12  # Production should be secure
+        assert prod_config.jwt_expiry_minutes <= 30  # Production should be short-lived
+
+        # Test development config
+        dev_config_result = create_auth_config("development")
+        assert dev_config_result.success
+        dev_config = dev_config_result.value
+        assert dev_config.enable_audit_logging
+
+        # Test custom overrides with valid session/jwt expiry relationship
+        custom_config_result = create_auth_config(
+            "test",
+            jwt_expiry_minutes=60,  # JWT: 1 hour
+            session_expiry_minutes=120,  # Session: 2 hours (must be > JWT)
+            bcrypt_rounds=10,
+            max_login_attempts=10,
+        )
+        assert custom_config_result.success
+        custom_config = custom_config_result.value
+        assert custom_config.jwt_expiry_minutes == 60
+        assert custom_config.session_expiry_minutes == 120
+        assert custom_config.bcrypt_rounds == 10
+        assert custom_config.max_login_attempts == 10
+
+    def test_error_handling_and_validation(self) -> None:
+        """Test comprehensive error handling with FlextResult pattern."""
+        auth = FlextAuth()
+
+        # Test duplicate username registration
+        first_register = auth.register_user(
+            "duplicate", "first@example.com", "Password123!"
+        )
+        assert first_register.success
+
+        second_register = auth.register_user(
+            "duplicate", "second@example.com", "Password123!"
+        )
+        assert second_register.failure
+        assert (
+            "duplicate" in second_register.error.lower()
+            or "exists" in second_register.error.lower()
+        )
+
+        # Test duplicate email registration
+        third_register = auth.register_user(
+            "different", "first@example.com", "Password123!"
+        )
+        assert third_register.failure
+        assert "email" in third_register.error.lower()
+
+        # Test invalid email format
+        invalid_email_register = auth.register_user(
+            "valid_user", "invalid-email", "Password123!"
+        )
+        assert invalid_email_register.failure
+
+        # Test weak password
+        weak_password_register = auth.register_user(
+            "weak_user", "weak@example.com", "123"
+        )
+        assert weak_password_register.failure
+
+        # Test authentication with non-existent user
+        nonexistent_auth = auth.authenticate_user("nonexistent", "password")
+        assert nonexistent_auth.failure
+        assert (
+            "invalid" in nonexistent_auth.error.lower()
+            or "credentials" in nonexistent_auth.error.lower()
+        )
+
+        # Test authentication with wrong password
+        wrong_password_auth = auth.authenticate_user("duplicate", "wrong_password")
+        assert wrong_password_auth.failure
+
+    def test_domain_models_validation(self) -> None:
+        """Test domain models with Pydantic validation."""
+        # Test User model creation with validation
+        user_result = FlextAuthModels.User.create_user(
+            username="model_user",
+            email="model@example.com",
+            password="ModelPassword123!",
+            full_name="Model User",
+        )
+        assert user_result.success
+        user = user_result.value
+        assert user.username == "model_user"
+        assert user.email.root == "model@example.com"
+        assert user.full_name == "Model User"
+        assert user.password_hash.startswith("$2b$")
+
+        # Test invalid username validation
+        invalid_user_result = FlextAuthModels.User.create_user(
+            username="",  # Empty username should fail
+            email="invalid@example.com",
+            password="Password123!",
+        )
+        assert invalid_user_result.failure
+
+        # Test Session model creation
+        session_result = FlextAuthModels.Session.create_session(
+            user_id=user.id, expires_in_minutes=30
+        )
+        assert session_result.success
+        session = session_result.value
+        assert session.user_id == user.id
+        assert not session.is_expired
+        assert session.is_valid
+
+    def test_jwt_token_operations(self) -> None:
+        """Test JWT token generation and validation with proper typing."""
+        auth = FlextAuth()
+
+        # Register user for token operations
+        register_result = auth.register_user(
+            "jwt_user", "jwt@example.com", "JwtPassword123!"
+        )
+        assert register_result.success
+        user = register_result.value
+
+        # Generate JWT token
+        token_result = auth.generate_jwt_token(user.id, expires_in_minutes=60)
+        assert token_result.success
+        jwt_token = token_result.value
+
+        # Basic JWT format validation
+        assert len(jwt_token.split(".")) == 3  # Header.Payload.Signature
+
+        # Validate the token
+        validation_result = auth.validate_token(jwt_token)
+        assert validation_result.success
+        payload = validation_result.value
+        assert payload["user_id"] == user.id
+
+        # Test invalid token validation
+        invalid_token_result = auth.validate_token("invalid.jwt.token")
+        assert invalid_token_result.failure
+
+    def test_comprehensive_error_scenarios(self) -> None:
+        """Test comprehensive error scenarios and edge cases."""
+        auth = FlextAuth()
+
+        # Test FlextAuth config error scenario (simulate failure)
+        from flext_auth.config import create_auth_config
+
+        # Test configuration with invalid parameters
+        invalid_config_result = create_auth_config(
+            "test",
+            jwt_expiry_minutes=180,  # JWT: 3 hours
+            session_expiry_minutes=60,  # Session: 1 hour (INVALID: session < JWT)
+        )
+        assert invalid_config_result.failure
+        assert (
+            "jwt expiry should not exceed session expiry"
+            in invalid_config_result.error.lower()
+        )
+
+        # Test weak password validation
+        weak_password_result = auth.hash_password("123")  # Too weak
+        assert weak_password_result.failure
+
+        # Test invalid email in user creation
+        invalid_user_result = FlextAuthModels.User.create_user(
+            username="invalid_user",
+            email="not-an-email",  # Invalid email format
+            password="ValidPassword123!",
+        )
+        assert invalid_user_result.failure
+
+        # Test username with invalid characters
+        invalid_username_result = FlextAuthModels.User.create_user(
+            username="user@#$%",  # Invalid characters
+            email="test@valid.com",
+            password="ValidPassword123!",
+        )
+        assert invalid_username_result.failure
+
+    def test_convenience_methods_and_properties(self) -> None:
+        """Test convenience methods and properties for full coverage."""
+        auth = FlextAuth()
+
+        # Create a user to test properties
+        user_result = FlextAuthModels.User.create_user(
+            username="prop_user", email="prop@example.com", password="PropPassword123!"
+        )
+        assert user_result.success
+        user = user_result.value
+
+        # Test user properties
+        assert user.is_active  # Should be active by default
+        assert not user.is_verified  # Should not be verified by default
+        assert not user.is_locked  # Should not be locked by default
+
+        # Test password hash validation
+        assert user.password_hash.startswith("$2b$")
+        assert len(user.password_hash) >= 60
+
+        # Test session properties
+        session_result = FlextAuthModels.Session.create_session(
+            user.id, expires_in_minutes=30
+        )
+        assert session_result.success
+        session = session_result.value
+
+        assert session.is_valid  # Should be valid when created
+        assert not session.is_expired  # Should not be expired when created
+        assert session.time_remaining_seconds > 0  # Should have time remaining
+
+        # Test session methods
+        session.update_activity()
+        session.extend_expiry(minutes=60)
+        assert (
+            session.time_remaining_seconds > 1800
+        )  # Should have more time after extension
+
+        session.revoke()
+        assert not session.is_valid  # Should be invalid after revocation
+
+        # Test auth configuration properties
+        auth.get_config()
+        security_settings = auth.get_security_settings()
+        jwt_settings = auth.get_jwt_settings()
+
+        assert isinstance(security_settings, dict)
+        assert isinstance(jwt_settings, dict)
+        assert "jwt_expiry_minutes" in jwt_settings
+        assert "jwt_algorithm" in jwt_settings
+
+    def test_advanced_authentication_scenarios(self) -> None:
+        """Test advanced authentication scenarios for full coverage."""
+        auth = FlextAuth()
+
+        # Create user for advanced testing
+        user_result = auth.register_user(
+            username="advanced_user",
+            email="advanced@example.com",
+            password="AdvancedPassword123!",
+            full_name="Advanced Test User",
+            roles=["REDACTED_LDAP_BIND_PASSWORD", "user"],
+        )
+        assert user_result.success
+        user = user_result.value
+
+        # Test role-based functionality
+        assert user.has_role("REDACTED_LDAP_BIND_PASSWORD")
+        assert user.has_role("user")
+        assert not user.has_role("nonexistent")
+
+        # Test permissions (if implemented)
+        # Add permission to test
+        user.permissions.append("read:users")
+        assert user.has_permission("read:users")
+        assert not user.has_permission("write:users")
+
+        # Test user lookup methods
+        user_by_id_result = auth.get_user_by_id(user.id)
+        assert user_by_id_result.success
+        found_user = user_by_id_result.value
+        assert found_user is not None
+        assert found_user.id == user.id
+
+        # Test case-insensitive username lookup
+        user_by_username_result = auth.get_user_by_username(
+            "ADVANCED_USER"
+        )  # Uppercase
+        assert user_by_username_result.success
+        found_user_case = user_by_username_result.value
+        assert found_user_case is not None
+        assert found_user_case.username == "advanced_user"  # Original case preserved
+
+        # Test authentication with different cases
+        auth_case_result = auth.authenticate_user(
+            "ADVANCED_USER", "AdvancedPassword123!"
+        )
+        assert auth_case_result.success
+
+    def test_jwt_advanced_operations(self) -> None:
+        """Test advanced JWT operations and edge cases."""
+        auth = FlextAuth()
+
+        # Create user for JWT testing
+        user_result = auth.register_user(
+            "jwt_advanced", "jwt_advanced@example.com", "JwtPassword123!"
+        )
+        assert user_result.success
+        user = user_result.value
+
+        # Test JWT generation with custom expiry
+        jwt_result = auth.generate_jwt_token(user.id, expires_in_minutes=120)
+        assert jwt_result.success
+        jwt_token = jwt_result.value
+
+        # Validate JWT structure
+        jwt_parts = jwt_token.split(".")
+        assert len(jwt_parts) == 3  # Header.Payload.Signature
+
+        # Test JWT validation
+        validation_result = auth.validate_token(jwt_token)
+        assert validation_result.success
+        payload = validation_result.value
+
+        # Test payload content
+        assert payload["user_id"] == user.id
+        assert payload["username"] == "jwt_advanced"
+        assert "exp" in payload
+        assert "iat" in payload
+        assert "iss" in payload
+        assert "aud" in payload
+
+        # Test expired/invalid tokens
+        invalid_tokens = [
+            "",  # Empty token
+            "invalid",  # Invalid format
+            "invalid.jwt",  # Invalid format
+            "invalid.jwt.token",  # Invalid signature
+        ]
+
+        for invalid_token in invalid_tokens:
+            invalid_result = auth.validate_token(invalid_token)
+            assert invalid_result.failure
+
+    def test_business_rules_validation(self) -> None:
+        """Test business rules validation for full coverage."""
+        # Test User business rules
+        user_result = FlextAuthModels.User.create_user(
+            username="business_user",
+            email="business@example.com",
+            password="BusinessPassword123!",
+        )
+        assert user_result.success
+        user = user_result.value
+
+        # Test business rules validation
+        validation_result = user.validate_business_rules()
+        assert validation_result.success
+
+        # Create session for business rules testing
+        session_result = FlextAuthModels.Session.create_session(
+            user.id, expires_in_minutes=30
+        )
+        assert session_result.success
+        session = session_result.value
+
+        # Test session business rules
+        session_validation = session.validate_business_rules()
+        assert session_validation.success
+
+        # Test credential business rules by creating credential
+        credential_result = FlextAuthModels.Credential.create_from_password(
+            username="credential_user", password="CredentialPassword123!"
+        )
+        assert credential_result.success
+        credential = credential_result.value
+
+        # Test credential validation
+        assert credential.verify_password("CredentialPassword123!")
+        assert not credential.verify_password("WrongPassword")
+
+        # Test credential business rules
+        credential_validation = credential.validate_business_rules()
+        assert credential_validation.success
+
+    def test_factory_methods_edge_cases(self) -> None:
+        """Test factory method edge cases and error paths."""
+        # Test empty username
+        empty_username_result = FlextAuthModels.User.create_user(
+            username="",  # Empty username
+            email="empty@example.com",
+            password="EmptyUserPassword123!",
+        )
+        assert empty_username_result.failure
+
+        # Test empty email
+        empty_email_result = FlextAuthModels.User.create_user(
+            username="empty_email_user",
+            email="",  # Empty email
+            password="EmptyEmailPassword123!",
+        )
+        assert empty_email_result.failure
+
+        # Test extremely short session expiry
+        user_result = FlextAuthModels.User.create_user(
+            "session_test_user", "session@test.com", "SessionTest123!"
+        )
+        assert user_result.success
+        user = user_result.value
+
+        # Session with very short expiry
+        short_session_result = FlextAuthModels.Session.create_session(
+            user.id, expires_in_minutes=1
+        )
+        assert short_session_result.success
+        short_session = short_session_result.value
+        assert short_session.time_remaining_seconds <= 60
+
+        # Test AuthToken creation with edge cases
+        token_result = FlextAuthModels.AuthToken.create_jwt_token(
+            user_id=user.id,
+            username="session_test_user",
+            secret="test-secret-for-jwt-tokens-must-be-long-enough",
+            expires_in_minutes=1,  # Very short expiry
+        )
+        assert token_result.success
+        auth_token = token_result.value
+        assert len(auth_token.token) > 20  # Should be a proper JWT token
+
+    def test_error_path_coverage(self) -> None:
+        """Test specific error paths for coverage completion."""
+        auth = FlextAuth()
+
+        # Test verify_password with invalid credential creation
+        # Create a scenario where Credential.create_from_password fails
+        invalid_hash = "invalid_hash_not_bcrypt"
+        result = auth.verify_password("somepassword", invalid_hash)
+        # This should return False because the verification will fail
+        assert result is False
+
+        # Test password hash validation error paths
+        with pytest.raises(ValueError, match="Password hash must be bcrypt format"):
+            # Force create a User with invalid password hash to trigger validation
+            FlextAuthModels.User(
+                id="test_invalid_hash",
+                username="test_user_invalid",
+                email="test@invalid.com",
+                password_hash="invalid_hash",  # Not bcrypt format
+            )
+
+        # Test username validation error paths
+        with pytest.raises(
+            ValueError,
+            match="Username can only contain letters, numbers, underscores, and hyphens",
+        ):
+            FlextAuthModels.User(
+                id="test_invalid_username",
+                username="user@#$%",  # Invalid characters
+                email="test@valid.com",
+                password_hash="$2b$12$valid.hash.format.goes.here.with.proper.length.and.format",
+            )
+
+    def test_configuration_edge_cases(self) -> None:
+        """Test configuration edge cases for full coverage."""
+        from flext_auth.config import create_auth_config
+
+        # Test configuration with minimal valid values
+        edge_config_result = create_auth_config(
+            "test",
+            jwt_expiry_minutes=5,  # Minimum valid value
+            session_expiry_minutes=5,  # Minimum valid value
+            bcrypt_rounds=10,  # Minimum valid value
+            max_login_attempts=3,  # Minimum valid value
+        )
+        assert edge_config_result.success
+        edge_config = edge_config_result.value
+        assert edge_config.jwt_expiry_minutes == 5
+        assert edge_config.session_expiry_minutes == 5
+
+        # Test configuration validation with invalid values (should fail)
+        invalid_config_result = create_auth_config(
+            "test",
+            jwt_expiry_minutes=1,  # Below minimum (5)
+            bcrypt_rounds=4,  # Below minimum (10)
+        )
+        assert invalid_config_result.is_failure
+        assert "validation error" in invalid_config_result.error.lower()
+
+        # Test configuration validation boundaries
+        boundary_config_result = create_auth_config(
+            "production",  # Different environment
+            jwt_secret="minimum-length-secret-for-jwt-token-generation-must-be-long",
+            enable_audit_logging=True,
+            enable_rate_limiting=True,
+        )
+        assert boundary_config_result.success
+        boundary_config = boundary_config_result.value
+        assert boundary_config.enable_audit_logging
+        assert boundary_config.enable_rate_limiting
+
+    def test_advanced_session_scenarios(self) -> None:
+        """Test advanced session scenarios for coverage."""
+        # Create user for session testing
+        user_result = FlextAuthModels.User.create_user(
+            username="session_advanced_user",
+            email="session_advanced@example.com",
+            password="SessionAdvanced123!",
+        )
+        assert user_result.success
+        user = user_result.value
+
+        # Test session with immediate expiration (past date)
+        from datetime import UTC, datetime, timedelta
+
+        # Create session and then manually set it to be expired
+        session_result = FlextAuthModels.Session.create_session(
+            user.id, expires_in_minutes=1
+        )
+        assert session_result.success
+        session = session_result.value
+
+        # Test session time remaining
+        initial_time = session.time_remaining_seconds
+        assert initial_time > 0
+        assert initial_time <= 60
+
+        # Test manual session expiry setting (simulate expired session)
+        session.expires_at = datetime.now(UTC) - timedelta(minutes=1)
+        assert session.is_expired  # Should be expired now
+        assert not session.is_valid  # Should be invalid when expired
+        assert session.time_remaining_seconds == 0  # Should be 0 when expired
+
+    def test_role_and_permission_advanced(self) -> None:
+        """Test role and permission advanced scenarios."""
+        # Create user with multiple roles and permissions
+        user_result = FlextAuthModels.User.create_user(
+            username="role_test_user",
+            email="role@test.com",
+            password="RoleTest123!",
+            roles=["REDACTED_LDAP_BIND_PASSWORD", "moderator", "user"],
+        )
+        assert user_result.success
+        user = user_result.value
+
+        # Test all role methods
+        assert user.has_role("REDACTED_LDAP_BIND_PASSWORD")
+        assert user.has_role("moderator")
+        assert user.has_role("user")
+        assert not user.has_role("superREDACTED_LDAP_BIND_PASSWORD")
+
+        # Add permissions and test
+        user.permissions.extend(["read:all", "write:users", "delete:posts"])
+        assert user.has_permission("read:all")
+        assert user.has_permission("write:users")
+        assert user.has_permission("delete:posts")
+        assert not user.has_permission("REDACTED_LDAP_BIND_PASSWORD:system")
+
+        # Test user activation/deactivation
+        assert user.is_active
+        user.is_active = False
+        assert not user.is_active
+
+        # Test user verification
+        assert not user.is_verified
+        user.is_verified = True
+        assert user.is_verified
+
+    def test_comprehensive_authentication_edge_cases(self) -> None:
+        """Test comprehensive authentication edge cases."""
+        auth = FlextAuth()
+
+        # Test authentication with very long passwords
+        long_password = "A" * 100 + "a1!"  # 103 chars with requirements
+        user_result = auth.register_user(
+            username="long_password_user",
+            email="long@password.com",
+            password=long_password,
+        )
+        assert user_result.success
+
+        # Test authentication with the long password
+        auth_long_result = auth.authenticate_user("long_password_user", long_password)
+        assert auth_long_result.success
+
+        # Test maximum length username
+        max_username = "a" * 50  # MAX_USERNAME_LENGTH
+        max_user_result = auth.register_user(
+            username=max_username, email="max@username.com", password="MaxUsername123!"
+        )
+        assert max_user_result.success
+
+        # Test lookup with maximum length username
+        max_lookup_result = auth.get_user_by_username(max_username)
+        assert max_lookup_result.success
+        assert max_lookup_result.value is not None
+
+        # Test minimum length username
+        min_username = "abc"  # MIN_USERNAME_LENGTH = 3
+        min_user_result = auth.register_user(
+            username=min_username, email="min@username.com", password="MinUsername123!"
+        )
+        assert min_user_result.success
+
+    def test_models_validation_edge_cases(self) -> None:
+        """Test edge cases in model validation for coverage."""
+        # Test invalid bcrypt hash format (covers lines 166-167 in models.py)
+        with pytest.raises(ValidationError, match="bcrypt format"):
+            FlextAuthModels.User(
+                id="test_id",
+                username="test_user",
+                email="test@example.com",
+                password_hash="not_bcrypt_format",  # Doesn't start with $2b$
+            )
+
+        # Test invalid bcrypt hash length (covers lines 169-171 in models.py)
+        with pytest.raises(ValidationError, match="hash length"):
+            FlextAuthModels.User(
+                id="test_id",
+                username="test_user",
+                email="test@example.com",
+                password_hash="$2b$12$short",  # Valid format but too short
+            )
+
+        # Test credential verification with wrong password
+        valid_credential_result = FlextAuthModels.Credential.create_from_password(
+            "test", "ValidPassword123!"
+        )
+        assert valid_credential_result.success
+        credential = valid_credential_result.value
+
+        # Test password verification - correct password
+        assert credential.verify_password("ValidPassword123!")
+
+        # Test password verification - wrong password
+        assert not credential.verify_password("WrongPassword123!")
+
+        # Test Session time remaining calculation edge cases
+        session_result = FlextAuthModels.Session.create_session(
+            "test_user_id", expires_in_minutes=1
+        )
+        assert session_result.success
+        session = session_result.value
+
+        # Test session time remaining
+        time_remaining = session.time_remaining_seconds
+        assert time_remaining > 0
+        assert time_remaining <= 60
+
+    def test_factory_method_edge_cases_coverage(self) -> None:
+        """Test factory method edge cases for coverage."""
+        from flext_auth import create_auth
+
+        # Test create_auth with valid parameters
+        create_auth(
+            jwt_secret="valid-jwt-secret-for-testing-purposes-must-be-long-enough",
+            token_expire_minutes=15,
+            environment="test",
+        )
+
+        # Test that the auth instance works properly
+        user_result = auth.register_user(
+            username="factory_test_user",
+            email="factory@test.com",
+            password="FactoryTest123!",
+        )
+        assert user_result.success
+
+        # Test create_auth with production environment
+        prod_auth_result = create_auth(
+            environment="production", token_expire_minutes=30
+        )
+        assert prod_auth_result.success
