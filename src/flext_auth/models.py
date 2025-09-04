@@ -815,6 +815,7 @@ def _verify_user_password(
     user = cast("User", auth_data["user"])
     password = str(auth_data["password"])
 
+    # Use bcrypt directly for efficiency (no temporary objects)
     password_valid = bcrypt.checkpw(
         password.encode("utf-8"), user.password_hash.encode("utf-8")
     )
@@ -943,6 +944,7 @@ __all__ = [
     "Role",
     "Session",
     "User",
+    "UserCreationRequest",
     "authenticate_user",
     "create_session",
     "create_user",

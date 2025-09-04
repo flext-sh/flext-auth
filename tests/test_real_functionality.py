@@ -8,6 +8,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from flext_core.models import FlextModels
 from pydantic import ValidationError
 
 from flext_auth import (
@@ -29,7 +30,7 @@ class TestRealAuthentication:
         # Create auth instance with modern factory pattern
         config_result = FlextAuthConfig.create_for_environment("test")
         assert config_result.success, f"Config creation failed: {config_result.error}"
-        auth = FlextAuth(config=config_result.value)
+        auth: FlextAuth[object] = FlextAuth(config=config_result.value)
 
         # Test user registration with strong typing
         register_result = auth.register_user(
@@ -58,6 +59,7 @@ class TestRealAuthentication:
 
         # Test JWT token validation
         jwt_token = auth_data["jwt_token"]
+        assert isinstance(jwt_token, str), "jwt_token must be string"
         token_result = auth.validate_token(jwt_token)
         assert token_result.success, f"Token validation failed: {token_result.error}"
         payload = token_result.value
@@ -65,12 +67,14 @@ class TestRealAuthentication:
         # Verify token payload structure (TypedDict)
         assert payload["user_id"] is not None
         assert payload["username"] == "john_doe"
+        assert isinstance(payload["exp"], (int, float))
         assert payload["exp"] > 0
+        assert isinstance(payload["iat"], (int, float))
         assert payload["iat"] > 0
 
     def test_password_strength_and_hashing(self) -> None:
         """Test password strength validation and bcrypt hashing."""
-        auth = FlextAuth()
+        auth: FlextAuth[object] = FlextAuth()
 
         # Test strong password hashing
         strong_password = "VerySecurePassword123!@#$%^&*()"
@@ -86,7 +90,7 @@ class TestRealAuthentication:
 
     def test_user_management_operations(self) -> None:
         """Test user lookup and management operations."""
-        auth = FlextAuth()
+        auth: FlextAuth[object] = FlextAuth()
 
         # Register test user
         register_result = auth.register_user(
@@ -120,7 +124,7 @@ class TestRealAuthentication:
 
     def test_session_management(self) -> None:
         """Test session creation, validation, and cleanup."""
-        auth = FlextAuth()
+        auth: FlextAuth[object] = FlextAuth()
 
         # Register and authenticate user
         register_result = auth.register_user(
@@ -186,7 +190,7 @@ class TestRealAuthentication:
 
     def test_error_handling_and_validation(self) -> None:
         """Test comprehensive error handling with FlextResult pattern."""
-        auth = FlextAuth()
+        auth: FlextAuth[object] = FlextAuth()
 
         # Test duplicate username registration
         first_register = auth.register_user(
@@ -268,7 +272,7 @@ class TestRealAuthentication:
 
     def test_jwt_token_operations(self) -> None:
         """Test JWT token generation and validation with proper typing."""
-        auth = FlextAuth()
+        auth: FlextAuth[object] = FlextAuth()
 
         # Register user for token operations
         register_result = auth.register_user(
@@ -297,7 +301,7 @@ class TestRealAuthentication:
 
     def test_comprehensive_error_scenarios(self) -> None:
         """Test comprehensive error scenarios and edge cases."""
-        auth = FlextAuth()
+        auth: FlextAuth[object] = FlextAuth()
 
         # Test configuration with invalid parameters
         invalid_config_result = FlextAuthConfig.create_for_environment(
@@ -333,8 +337,6 @@ class TestRealAuthentication:
 
     def test_convenience_methods_and_properties(self) -> None:
         """Test convenience methods and properties for full coverage."""
-        auth = FlextAuth()
-
         # Create a user to test properties
         user_result = create_user(
             username="prop_user", email="prop@example.com", password="PropPassword123!"
@@ -367,13 +369,18 @@ class TestRealAuthentication:
             session.time_remaining_seconds > 1800
         )  # Should have more time after extension
 
+        # Test revocation
         session.revoke()
+        assert session.is_revoked  # Should be revoked after revocation
         assert not session.is_valid  # Should be invalid after revocation
 
+    def test_auth_configuration_properties(self) -> None:
+        """Test auth configuration properties separately."""
+        auth: FlextAuth[object] = FlextAuth()
+
         # Test auth configuration properties
-        auth.get_config()
-        security_settings = auth.get_security_settings()
-        jwt_settings = auth.get_jwt_settings()
+        security_settings = auth.config.get_security_settings()
+        jwt_settings = auth.config.get_jwt_settings()
 
         assert isinstance(security_settings, dict)
         assert isinstance(jwt_settings, dict)
@@ -382,7 +389,7 @@ class TestRealAuthentication:
 
     def test_advanced_authentication_scenarios(self) -> None:
         """Test advanced authentication scenarios for full coverage."""
-        auth = FlextAuth()
+        auth: FlextAuth[object] = FlextAuth()
 
         # Create user for advanced testing
         user_result = auth.register_user(
@@ -430,7 +437,7 @@ class TestRealAuthentication:
 
     def test_jwt_advanced_operations(self) -> None:
         """Test advanced JWT operations and edge cases."""
-        auth = FlextAuth()
+        auth: FlextAuth[object] = FlextAuth()
 
         # Create user for JWT testing
         user_result = auth.register_user(
@@ -556,7 +563,7 @@ class TestRealAuthentication:
 
     def test_error_path_coverage(self) -> None:
         """Test specific error paths for coverage completion."""
-        auth = FlextAuth()
+        auth: FlextAuth[object] = FlextAuth()
 
         # Test verify_password with invalid credential creation
         # Create a scenario where bcrypt verification fails
@@ -573,7 +580,7 @@ class TestRealAuthentication:
             User(
                 id="test_invalid_hash",
                 username="test_user_invalid",
-                email="test@invalid.com",
+                email=FlextModels.EmailAddress("test@invalid.com"),
                 password_hash="invalid_hash",  # Not bcrypt format
             )
 
@@ -585,7 +592,7 @@ class TestRealAuthentication:
             User(
                 id="test_invalid_username",
                 username="user@#$%",  # Invalid characters
-                email="test@valid.com",
+                email=FlextModels.EmailAddress("test@valid.com"),
                 password_hash="$2b$12$valid.hash.format.goes.here.with.proper.length.and.format",
             )
 
@@ -690,7 +697,7 @@ class TestRealAuthentication:
 
     def test_comprehensive_authentication_edge_cases(self) -> None:
         """Test comprehensive authentication edge cases."""
-        auth = FlextAuth()
+        auth: FlextAuth[object] = FlextAuth()
 
         # Test authentication with very long passwords
         long_password = "A" * 100 + "a1!"  # 103 chars with requirements
@@ -731,7 +738,7 @@ class TestRealAuthentication:
             User(
                 id="test_id",
                 username="test_user",
-                email="test@example.com",
+                email=FlextModels.EmailAddress("test@example.com"),
                 password_hash="not_bcrypt_format",  # Doesn't start with $2b$
             )
 
@@ -740,7 +747,7 @@ class TestRealAuthentication:
             User(
                 id="test_id",
                 username="test_user",
-                email="test@example.com",
+                email=FlextModels.EmailAddress("test@example.com"),
                 password_hash="$2b$12$short",  # Valid format but too short
             )
 
@@ -776,7 +783,7 @@ class TestRealAuthentication:
             jwt_expiry_minutes=15,
         )
         assert config_result.success, f"Config creation failed: {config_result.error}"
-        test_auth = FlextAuth(config=config_result.value)
+        test_auth: FlextAuth[object] = FlextAuth(config=config_result.value)
 
         # Test that the auth instance works properly
         user_result = test_auth.register_user(

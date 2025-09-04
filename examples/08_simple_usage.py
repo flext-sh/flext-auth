@@ -13,14 +13,8 @@ import os
 import sys
 from typing import cast
 
-from flext_auth import (
-    FlextAuth,
-    FlextAuthConstants,
-    flext_auth_generate_jwt,
-    flext_auth_hash_password,
-    flext_auth_quick_start,
-    flext_auth_validate_jwt,
-)
+from flext_auth import FlextAuth, flext_auth_quick_start
+from flext_core import FlextConstants
 
 
 def main() -> None:
@@ -30,30 +24,22 @@ def main() -> None:
 
     # 1. Quick Start Authentication
     print("\n1. Quick Start")
-    auth: FlextAuth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    auth: FlextAuth[object] = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
     print("✅ FlextAuth instance created")
 
-    # 2. Utility Functions
-    print("\n2. Utility Functions")
+    # 2. Direct API Usage
+    print("\n2. Direct API Usage")
 
-    # Password hashing
-    password_hash = flext_auth_hash_password("TestPassword123!")
-    print(f"✅ Password hashed: {len(password_hash)} characters")
+    # Password hashing using FlextAuth directly
+    try:
+        password_hash = auth.hash_password("TestPassword123!")
+        print(f"✅ Password hashed: {len(password_hash)} characters")
 
-    # JWT generation and validation
-    jwt_result = flext_auth_generate_jwt({"user_id": "123", "role": "user"})
-    if jwt_result.success:
-        token = jwt_result.value
-        print(f"✅ JWT token generated: {len(token)} characters")
-
-        # Validate the JWT
-        validation_result = flext_auth_validate_jwt(token)
-        if validation_result.success:
-            print("✅ JWT token validated successfully")
-        else:
-            print(f"❌ JWT validation failed: {validation_result.error}")
-    else:
-        print(f"❌ JWT generation failed: {jwt_result.error}")
+        # Password verification
+        is_valid = auth.verify_password("TestPassword123!", password_hash)
+        print(f"✅ Password verification: {is_valid}")
+    except Exception as e:
+        print(f"❌ Password operation failed: {e}")
 
     # 3. Full Authentication Flow
     print("\n3. Authentication Flow")
@@ -63,28 +49,38 @@ def main() -> None:
         username="testuser",
         email="test@example.com",
         password=os.getenv("FLEXT_DEMO_USER_PASSWORD", "SecurePassword123!"),
-        role=FlextAuthConstants.ROLE_USER,
+        roles=["user"],
     )
 
-    if reg_result.success:
+    if reg_result.is_success:
         print("✅ User registered successfully")
+        user = reg_result.value
+        print(f"   Username: {user.username}")
+        print(f"   Email: {user.email_str}")
+        print(f"   Role: {user.role}")
 
         # Authenticate user
         auth_result = auth.authenticate_user("testuser", "SecurePassword123!")
 
-        if auth_result.success:
+        if auth_result.is_success:
             print("✅ User authenticated successfully")
 
-            # Extract token for validation (we know auth_result.value is dict[str, object])
+            # Extract authentication data
+            auth_data = auth_result.value
 
-            auth_data = cast("dict[str, object]", auth_result.value)
-            tokens_data = cast("dict[str, object]", auth_data["tokens"])
-            access_token = cast("str", tokens_data["access_token"])
+            # Get JWT token
+            jwt_token_str = str(auth_data.get("jwt_token", ""))
+            session_id = auth_data.get("session_id")
+
+            print(f"   Session ID: {session_id}")
+            print(f"   JWT Token: {jwt_token_str[:30]}...")
 
             # Validate token through service
-            token_validation = auth.validate_token(access_token)
-            if token_validation.success:
+            token_validation = auth.validate_token(jwt_token_str)
+            if token_validation.is_success:
+                payload = token_validation.value
                 print("✅ Token validation successful")
+                print(f"   User ID from token: {payload.get('user_id')}")
             else:
                 print(f"❌ Token validation failed: {token_validation.error}")
         else:
@@ -92,12 +88,23 @@ def main() -> None:
     else:
         print(f"❌ Registration failed: {reg_result.error}")
 
-    # 4. Constants Usage
-    print("\n4. Configuration Constants")
-    print(f"✅ Default JWT algorithm: {FlextAuthConstants.JWT_ALGORITHM}")
-    print(f"✅ Default bcrypt rounds: {FlextAuthConstants.DEFAULT_BCRYPT_ROUNDS}")
-    print(f"✅ User role constant: {FlextAuthConstants.ROLE_USER}")
-    print(f"✅ Admin role constant: {FlextAuthConstants.ROLE_ADMIN}")
+    # 4. Configuration Access
+    print("\n4. Configuration Access")
+    config = auth.get_config()
+    security_settings = auth.config.get_security_settings()
+    jwt_settings = auth.config.get_jwt_settings()
+
+    print(f"✅ JWT Expiry: {config.jwt_expiry_minutes} minutes")
+    print(f"✅ Bcrypt rounds: {security_settings.get('bcrypt_rounds')}")
+    print(f"✅ JWT Algorithm: {jwt_settings.get('jwt_algorithm')}")
+    print(f"✅ Max login attempts: {security_settings.get('max_login_attempts')}")
+
+    # 5. FlextCore Constants
+    print("\n5. FlextCore Constants Usage")
+    print(f"✅ Min password length: {FlextConstants.Auth.MIN_PASSWORD_LENGTH}")
+    print(f"✅ JWT default expiry: {FlextConstants.Auth.JWT_DEFAULT_EXPIRY_MINUTES}")
+    print(f"✅ Default bcrypt rounds: {FlextConstants.Auth.BCRYPT_ROUNDS}")
+    print(f"✅ Max login attempts: {FlextConstants.Auth.MAX_LOGIN_ATTEMPTS}")
 
     print("\n✅ Simple example completed successfully!")
     print("🎉 FLEXT Auth is working correctly!")

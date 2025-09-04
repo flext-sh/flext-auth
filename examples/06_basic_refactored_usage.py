@@ -14,16 +14,10 @@ import os
 import secrets
 import string
 import sys
-from datetime import UTC, datetime
+from typing import cast
 
-from flext_auth import (
-    FlextAuth,
-    FlextAuthConstants,
-    FlextJWTService,
-    FlextPasswordService,
-)
-from flext_auth.typings import FlextAuthTypes
-from flext_core import FlextResult
+from flext_auth import FlextAuth
+from flext_core import FlextConstants, FlextResult
 
 
 # Extract Method Pattern - reduce main() complexity from 42 to manageable chunks
@@ -32,66 +26,60 @@ class FlextAuthDemo:
 
     def __init__(self) -> None:
         """Initialize demo with FlextAuth instance."""
-        self.auth = FlextAuth()
+        self.auth: FlextAuth[object] = FlextAuth()
 
-    def demo_user_registration(self) -> FlextResult[dict[str, object]]:
+    def demo_user_registration(self) -> FlextResult[object]:
         """Extract Method: User registration demo."""
         print("\n2. User Registration")
         result = self.auth.register_user(
             username="demouser",
             email="demo@example.com",
             password=os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoPassword123!"),
-            role=FlextAuthConstants.ROLE_USER,
+            roles=["user"],
         )
 
-        match result:
-            case result if result.success:
-                print("✅ User registered successfully")
-                self._print_user_info(result.value)
-                return result
-            case _:
-                print(f"❌ Registration failed: {result.error}")
-                return result
+        if result.is_success:
+            print("✅ User registered successfully")
+            user = result.value
+            print(f"   Username: {user.username}")
+            print(f"   Email: {user.email_str}")
+            print(f"   Role: {user.role}")
+            print(f"   Active: {user.active}")
+        else:
+            print(f"❌ Registration failed: {result.error}")
+
+        return cast("FlextResult[object]", result)
 
     def demo_user_authentication(self) -> FlextResult[dict[str, object]]:
         """Extract Method: User authentication demo."""
         print("\n3. User Authentication")
         result = self.auth.authenticate_user("demouser", "DemoPassword123!")
 
-        match result:
-            case result if result.success:
-                print("✅ Authentication successful")
-                self._print_token_info(result.value)
-                return result
-            case _:
-                print(f"❌ Authentication failed: {result.error}")
-                return result
+        if result.is_success:
+            print("✅ Authentication successful")
+            auth_data = result.value
+            self._print_token_info(auth_data)
+        else:
+            print(f"❌ Authentication failed: {result.error}")
 
-    def _print_user_info(self, data: dict[str, object]) -> None:
-        """Helper: Print user information using pattern matching."""
-        match data.get("user"):
-            case dict() as user_data:
-                print(f"   Username: {user_data.get('username', 'N/A')}")
-                print(f"   Email: {user_data.get('email', 'N/A')}")
-                print(f"   Role: {user_data.get('role', 'N/A')}")
-                print(f"   Status: {user_data.get('status', 'N/A')}")
+        return result
 
-    def _print_token_info(self, data: dict[str, object]) -> None:
-        """Helper: Print token information using pattern matching."""
-        match data.get("tokens"):
-            case dict() as tokens:
-                token_len = len(str(tokens.get("access_token", "")))
-                print(f"   Access token length: {token_len} characters")
-                print(f"   Token type: {tokens.get('token_type', 'N/A')}")
-                print(f"   Expires in: {tokens.get('expires_in', 0)} seconds")
+    def _print_token_info(self, auth_data: dict[str, object]) -> None:
+        """Helper: Print token information."""
+        tokens_data = cast("dict[str, object]", auth_data.get("tokens", {}))
+
+        token_len = len(str(tokens_data.get("access_token", "")))
+        print(f"   Access token length: {token_len} characters")
+        print(f"   Token type: {tokens_data.get('token_type', 'N/A')}")
+        print(f"   Expires in: {tokens_data.get('expires_in', 0)} seconds")
 
 
 def main() -> None:
-    """Main function using Extract Method Pattern - reduced from 42 to ~8 complexity.
+    """Main function using Extract Method Pattern - reduced complexity.
 
-    Uses FlextDecorators and extracted methods to eliminate code smells:
-    - High complexity (42 → ~8)
-    - Many returns (6 → 2)
+    Uses extracted methods to eliminate code smells:
+    - High complexity reduced through method extraction
+    - Clear separation of concerns
     - Method extraction for maintainability
     """
     print("🚀 FLEXT Auth - Basic Usage Examples")
@@ -112,50 +100,43 @@ def main() -> None:
         return
 
     # Extract token for further demos
-    access_token = str(auth_result.value.get("tokens", {}).get("access_token", ""))
+    auth_data = auth_result.value
+    tokens_data = cast("dict[str, object]", auth_data.get("tokens", {}))
+    access_token = str(tokens_data.get("access_token", ""))
 
     # 4. Token Validation - continuing with existing pattern
     print("\n4. Token Validation")
-    validation_result = auth.validate_token(access_token)
+    validation_result = demo.auth.validate_token(access_token)
 
-    if validation_result.success:
+    if validation_result.is_success:
         print("✅ Token is valid")
         validation_data = validation_result.value
-        if isinstance(validation_data, dict):
-            print(f"   User ID: {validation_data.get('user_id', 'N/A')}")
-            print(f"   Username: {validation_data.get('username', 'N/A')}")
-            print(f"   Role: {validation_data.get('role', 'N/A')}")
+        print(f"   User ID: {validation_data.get('user_id', 'N/A')}")
+        print(f"   Username: {validation_data.get('username', 'N/A')}")
+        print(f"   Role: {validation_data.get('role', 'N/A')}")
     else:
         print(f"❌ Token validation failed: {validation_result.error}")
 
-    # 5. Password Utilities - Using FlextPasswordService directly
+    # 5. Password Utilities - Using FlextAuth directly
     print("\n5. Password Utilities")
 
-    # Create password service instance
-    password_service = FlextPasswordService()
-
-    # Password strength validation
+    # Password hashing and verification using FlextAuth
     test_password = os.getenv("FLEXT_DEMO_TEST_PASSWORD", "TestPassword123!")
-    strength_result = password_service.validate_password_strength(test_password)
-    print(
-        f"Password strength check: {'✅ Strong' if strength_result.success else '❌ Weak'}"
-    )
 
-    # Password hashing and verification
-    hash_result = password_service.hash_password(test_password)
-    if hash_result.success:
-        hashed_password = hash_result.value
-        print(f"Password hashed: {hashed_password[:20]}...")
+    try:
+        # Use FlextAuth for password operations
+        hashed_password = demo.auth.hash_password(test_password)
+        print(f"✅ Password hashed: {hashed_password[:20]}...")
 
-        verification_result = password_service.verify_password(
-            test_password, hashed_password
-        )
-        print(
-            f"Password verification: {'✅ Match' if verification_result.success and verification_result.value else '❌ No match'}"
-        )
+        # Verify password
+        is_valid = demo.auth.verify_password(test_password, hashed_password)
+        print(f"✅ Password verification: {'Match' if is_valid else 'No match'}")
 
-    # Generate secure password using manual implementation (not helpers)
+    except Exception as e:
+        print(f"❌ Password operation failed: {e}")
 
+    # Generate secure password using manual implementation
+    print("\n   Generating secure password...")
     length = 16
     lowercase = string.ascii_lowercase
     uppercase = string.ascii_uppercase
@@ -174,21 +155,13 @@ def main() -> None:
     secrets.SystemRandom().shuffle(secure_password)
     secure_password_str = "".join(secure_password)
 
-    print(f"Generated secure password: {secure_password_str}")
+    print(f"✅ Generated secure password: {secure_password_str}")
 
-    # Check if it's strong
-    strength_check_result = password_service.validate_password_strength(
-        secure_password_str
-    )
-    print(
-        f"Is strong password: {'✅ Yes' if strength_check_result.success else '❌ No'}"
-    )
-
-    # 6. Email Validation - Manual implementation (not helpers)
+    # 6. Email Validation - Manual implementation
     print("\n6. Email Validation")
     test_emails = ["valid@example.com", "invalid.email", "test@domain.co.uk"]
 
-    def validate_email_manual(email: FlextAuthTypes.Email) -> bool:
+    def validate_email_manual(email: str) -> bool:
         """Manual email validation without helpers."""
         if "@" not in email or "." not in email.rsplit("@", maxsplit=1)[-1]:
             return False
@@ -204,46 +177,55 @@ def main() -> None:
         status = "✅ Valid" if is_valid else "❌ Invalid"
         print(f"   {email}: {status}")
 
-    # 7. JWT Service Direct Usage
-    print("\n7. JWT Service Direct Usage")
-    jwt_secret = os.getenv("FLEXT_DEMO_JWT_SECRET", "my-secret-key")
+    # 7. JWT Token Operations using FlextAuth
+    print("\n7. JWT Token Operations")
 
-    # Create JWT service instance
-    jwt_service = FlextJWTService(jwt_secret)
+    # Register a test user for JWT operations
+    jwt_user_result = demo.auth.register_user(
+        username="jwtuser",
+        email="jwt@example.com",
+        password="JWTPassword123!"
+    )
 
-    claims = {
-        "sub": "user123",
-        "username": "testuser",
-        "role": "user",
-        "iat": datetime.now(UTC).timestamp(),
-    }
+    if jwt_user_result.is_success:
+        user = jwt_user_result.value
 
-    token_result = jwt_service.generate_token(claims)
-    if token_result.success:
-        print("✅ JWT token generated successfully")
+        # Generate JWT token
+        token_result = demo.auth.generate_jwt_token(user.id)
+        if token_result.is_success:
+            token = token_result.value
+            print("✅ JWT token generated successfully")
+            print(f"   Token: {token[:30]}...")
 
-        # Validate the token
-        token_validation = jwt_service.validate_token(token_result.value)
-        if token_validation.success:
-            print("✅ JWT token validation successful")
-            validation_claims = token_validation.value
-            if isinstance(validation_claims, dict):
-                print(f"   Subject: {validation_claims.get('sub', 'N/A')}")
+            # Validate the token
+            token_validation = demo.auth.validate_token(token)
+            if token_validation.is_success:
+                print("✅ JWT token validation successful")
+                validation_claims = token_validation.value
+                print(f"   User ID: {validation_claims.get('user_id', 'N/A')}")
                 print(f"   Username: {validation_claims.get('username', 'N/A')}")
+            else:
+                print(f"❌ JWT validation failed: {token_validation.error}")
         else:
-            print(f"❌ JWT validation failed: {token_validation.error}")
+            print(f"❌ JWT generation failed: {token_result.error}")
     else:
-        print(f"❌ JWT generation failed: {token_result.error}")
+        print(f"❌ JWT user registration failed: {jwt_user_result.error}")
 
     # 8. Constants and Configuration
     print("\n8. Constants and Configuration")
-    print(f"Default JWT Secret: {FlextAuthConstants.DEFAULT_JWT_SECRET[:20]}...")
-    print(f"Default Bcrypt Rounds: {FlextAuthConstants.DEFAULT_BCRYPT_ROUNDS}")
-    print(
-        f"Default Max Login Attempts: {FlextAuthConstants.DEFAULT_MAX_LOGIN_ATTEMPTS}"
-    )
-    print(f"User Status Active: {FlextAuthConstants.USER_STATUS_ACTIVE}")
-    print(f"Admin Role: {FlextAuthConstants.ROLE_ADMIN}")
+    config = demo.auth.get_config()
+    security_settings = demo.auth.config.get_security_settings()
+    jwt_settings = demo.auth.config.get_jwt_settings()
+
+    print(f"JWT Expiry Minutes: {config.jwt_expiry_minutes}")
+    print(f"Bcrypt Rounds: {security_settings.get('bcrypt_rounds')}")
+    print(f"Max Login Attempts: {security_settings.get('max_login_attempts')}")
+    print(f"JWT Algorithm: {jwt_settings.get('jwt_algorithm')}")
+
+    # FlextCore constants
+    print(f"Min Password Length: {FlextConstants.Auth.MIN_PASSWORD_LENGTH}")
+    print(f"Max Password Length: {FlextConstants.Auth.MAX_PASSWORD_LENGTH}")
+    print(f"Default Bcrypt Rounds: {FlextConstants.Auth.BCRYPT_ROUNDS}")
 
     print("\n✅ All examples completed successfully!")
     print("🎉 FLEXT Auth is working properly with the refactored API!")

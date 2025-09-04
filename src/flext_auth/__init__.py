@@ -68,6 +68,7 @@ from flext_auth.models import (
     Role,
     Session,
     User,
+    UserCreationRequest,
     authenticate_user,
     create_session,
     create_user,
@@ -77,13 +78,24 @@ from flext_auth.models import (
 # INFRASTRUCTURE LAYER - Depends on Application + Domain + Foundation
 # =============================================================================
 
-from flext_auth.config import FlextAuthConfig
+from flext_auth.config import (
+    EnvironmentConfigRequest,
+    FlextAuthConfig,
+    FlextAuthConfigParams,
+)
 
 # =============================================================================
 # SUPPORT LAYER - Main facade and convenience functions
 # =============================================================================
 
-from flext_auth.auth import FlextAuth
+from flext_auth.auth import (
+    AuthCommands,
+    AuthRequest,
+    AuthenticatorProtocol,
+    CommandHandlerProtocol,
+    FlextAuth,
+    QuickStartRequest,
+)
 
 # =============================================================================
 # FLEXT-CORE DIRECT USAGE - No wrappers, use patterns directly
@@ -155,6 +167,10 @@ __all__ = [
     # Core authentication
     "FlextAuth",
     "FlextAuthConfig",
+    # Auth layer protocols and commands
+    "AuthCommands",
+    "AuthenticatorProtocol",
+    "CommandHandlerProtocol",
     # Domain models
     "User",
     "Session",
@@ -166,6 +182,12 @@ __all__ = [
     "create_user",
     "authenticate_user",
     "create_session",
+    # Request/Parameter objects for type-safe API usage
+    "AuthRequest",
+    "QuickStartRequest",
+    "UserCreationRequest",
+    "EnvironmentConfigRequest",
+    "FlextAuthConfigParams",
     # Convenience functions (reduced from 11 to 1 - eliminating wrappers)
     "flext_auth_quick_start",
     # Foundation

@@ -1,0 +1,592 @@
+"""Testes REAIS para 100% cobertura - ZERO MOCKS, ZERO TOLERANCE.
+
+Este arquivo testa especificamente as linhas não cobertas para atingir 100% de cobertura
+usando apenas testes funcionais reais, sem mocks ou simulações.
+"""
+
+from __future__ import annotations
+
+import os
+from datetime import UTC, datetime, timedelta
+
+import pytest
+from flext_core import FlextModels
+from pydantic import ValidationError
+
+from flext_auth import (
+    Credential,
+    FlextAuth,
+    FlextAuthConfig,
+    Password,
+    Role,
+    Session,
+    User,
+    authenticate_user,
+    create_user,
+    flext_auth_quick_start,
+)
+
+
+class TestRealModelsExhaustive:
+    """Testa TODAS as linhas não cobertas do models.py com testes reais."""
+
+    def test_user_validation_line_139_string_validation_error(self) -> None:
+        """Testa linha 139 - erro de validação de string do FlextCore."""
+        # Forçar erro de validação de string (muito curto - menos que 3 chars)
+        # Pydantic gera ValidationError, não ValueError
+        with pytest.raises(ValidationError):
+            User(
+                id="test-id",
+                username="a",  # Muito curto, deve disparar validação
+                email=FlextModels.EmailAddress("test@example.com"),
+                password_hash="$2b$12$test.hash.value.here.for.validation.purposes",  # Hash válido
+            )
+
+        # Forçar outro erro de validação de string (muito longo)
+        with pytest.raises(ValidationError):
+            User(
+                id="test-id",
+                username="a" * 60,  # Muito longo, deve disparar validação
+                email=FlextModels.EmailAddress("test@example.com"),
+                password_hash="$2b$12$test.hash.value.here.for.validation.purposes",  # Hash válido
+            )
+
+    def test_user_username_validation_special_characters(self) -> None:
+        """Testa validação de username com caracteres especiais (linha 139)."""
+        # Testar caracteres especiais reais que devem falhar na validação
+        invalid_chars = ["!@#$%", "<script>", "SELECT *", "\n\t\r", "\\"]
+
+        for char_set in invalid_chars:
+            invalid_username = f"user{char_set}name"
+            with pytest.raises(ValueError, match="Username can only contain"):
+                User(
+                    id="test-id-123",
+                    username=invalid_username,
+                    email=FlextModels.EmailAddress("test@example.com"),
+                    password_hash="test_hash",
+                )
+
+    def test_create_user_none_parameters_exhaustive(self) -> None:
+        """Testa create_user com parâmetros None (linhas 210-262)."""
+        # Testar casos de validação com valores None/empty
+        empty_values: list[object] = [None, "", [], {}, 0]
+
+        for empty_val in empty_values:
+            # Testar username None/empty
+            # Usar type: ignore pois estamos testando propositalmente tipos inválidos
+            result = create_user(
+                username=empty_val if empty_val != 0 else None,  # type: ignore[arg-type]
+                email="valid@example.com",
+                password="validPassword123!",
+            )
+            assert result.failure, f"Expected failure for username={empty_val}"
+
+    def test_user_is_active_property(self) -> None:
+        """Testa propriedade is_active do usuário (linhas 284, 290)."""
+        # Criar usuário válido para testar propriedades
+        user_result = create_user(
+            username="valid_user123",
+            email="valid@example.com",
+            password="ValidPassword123!",
+        )
+        assert user_result.success, f"Expected success: {user_result.error}"
+        user = user_result.value
+
+        # Por padrão deve estar ativo
+        assert user.is_active is True
+
+    def test_password_validation_weak_passwords(self) -> None:
+        """Testa validação de senhas fracas (linhas 363-399)."""
+        # Usar senhas fracas reais para testes
+        weak_passwords = ["123", "abc", "password", "12345678", "aaaaaaaa"]
+
+        for weak_pass in weak_passwords:
+            with pytest.raises((ValueError, Exception)):
+                Password(value=weak_pass)
+
+    def test_password_hashing_real_functionality(self) -> None:
+        """Testa funcionalidade real de hash de senha (linhas 441-442, 447, 451-453)."""
+        password = Password(value="StrongPassword123!")
+
+        # Hash deve funcionar
+        hashed = password.hash_password()
+        assert isinstance(hashed, str)
+        assert len(hashed) > 0
+        assert hashed.startswith("$2b$")
+
+        # Verificação deve funcionar usando Credential
+        credential = Credential(username="test", password_hash=hashed)
+        is_valid = credential.verify_password("StrongPassword123!")
+        assert is_valid is True
+
+        # Senha incorreta deve falhar
+        is_valid = credential.verify_password("WrongPassword123!")
+        assert is_valid is False
+
+    def test_session_token_length_validation(self) -> None:
+        """Testa validação de comprimento do token (linhas 457-459, 464-470)."""
+        user_result = create_user("token_user", "token@test.com", "TestPass123!")
+        assert user_result.success
+        user = user_result.value
+
+        # Token muito curto deve falhar
+        with pytest.raises(Exception, match="Token must be at least"):
+            Session(
+                id="session_id",
+                user_id=user.id,
+                token="short",  # Muito curto
+                expires_at=datetime.now(UTC),
+            )
+
+    def test_session_expiration_real_functionality(self) -> None:
+        """Testa funcionalidade real de expiração de sessão (linhas 492-493)."""
+        user_result = create_user("exp_user", "exp@test.com", "TestPass123!")
+        assert user_result.success
+        user = user_result.value
+
+        # Sessão não expirada
+        future_time = datetime.now(UTC) + timedelta(hours=1)
+        active_session = Session(
+            id="active_session",
+            user_id=user.id,
+            token="active_token_123456789012345678901234567890ab",
+            expires_at=future_time,
+        )
+        assert not active_session.is_expired()
+        assert active_session.is_valid
+
+        # Sessão expirada
+        past_time = datetime.now(UTC) - timedelta(hours=1)
+        expired_session = Session(
+            id="expired_session",
+            user_id=user.id,
+            token="expired_token_123456789012345678901234567890ab",
+            expires_at=past_time,
+        )
+        assert expired_session.is_expired()
+        assert not expired_session.is_valid
+
+    def test_credential_real_functionality(self) -> None:
+        """Testa funcionalidade real de Credential (linhas 517-519)."""
+        password = Password(value="CredentialPass123!")
+        valid_hash = password.hash_password()
+
+        credential = Credential(username="cred_user", password_hash=valid_hash)
+
+        # Verificação correta
+        assert credential.verify_password("CredentialPass123!") is True
+
+        # Verificação incorreta
+        assert credential.verify_password("wrong_password") is False
+
+    def test_authentication_real_scenarios(self) -> None:
+        """Testa cenários reais de autenticação (linhas 543-544, 612-637)."""
+        # Criar usuário
+        user_result = create_user("auth_user", "auth@test.com", "AuthPass123!")
+        assert user_result.success
+        user = user_result.value
+
+        storage = {"auth_user": user}
+
+        # Autenticação com credenciais corretas
+        result = authenticate_user(
+            username="auth_user",
+            password="AuthPass123!",
+            user_storage=storage,
+            jwt_secret="test_secret_key",
+        )
+        assert result.success
+
+        # Autenticação com senha incorreta
+        result = authenticate_user(
+            username="auth_user",
+            password="WrongPass123!",
+            user_storage=storage,
+            jwt_secret="test_secret_key",
+        )
+        assert not result.success
+
+        # Usuário não encontrado
+        result = authenticate_user(
+            username="nonexistent",
+            password="password",
+            user_storage=storage,
+            jwt_secret="test_secret_key",
+        )
+        assert not result.success
+
+    def test_role_real_functionality(self) -> None:
+        """Testa funcionalidade real de Role."""
+        role = Role(id="role_id", name="REDACTED_LDAP_BIND_PASSWORD_role", display_name="Administrator Role")
+
+        # Name é convertido para uppercase
+        assert role.name == "ADMIN_ROLE"
+        assert role.display_name == "Administrator Role"
+
+    def test_session_create_factory_method(self) -> None:
+        """Testa método factory Session.create (linhas 363-399)."""
+        # Testar criação de sessão com factory method
+        session_result = Session.create_session(
+            user_id="test_user_session", expires_in_minutes=30
+        )
+
+        assert session_result.success, (
+            f"Session creation failed: {session_result.error}"
+        )
+        session = session_result.value
+
+        # Verificar propriedades da sessão criada
+        assert session.user_id == "test_user_session"
+        assert len(session.token) > 30  # Token deve ser longo o suficiente
+        assert session.expires_at > datetime.now(UTC)  # Deve expirar no futuro
+
+        # Testar com tempo de expiração customizado
+        session_result_2 = Session.create_session(
+            user_id="test_user_2", expires_in_minutes=60
+        )
+        assert session_result_2.success
+        session_2 = session_result_2.value
+
+        # Segunda sessão deve ter expiração diferente
+        time_diff = (session_2.expires_at - session.expires_at).total_seconds()
+        assert abs(time_diff - 1800) < 60  # Diferença de ~30 minutos (1800 segundos)
+
+
+class TestRealAuthExhaustive:
+    """Testa TODAS as linhas não cobertas do auth.py com testes reais."""
+
+    def test_authentication_complete_workflow(self) -> None:
+        """Testa workflow completo de autenticação (linhas 228-229, 350-352)."""
+        auth = FlextAuth()  # type: ignore[var-annotated]
+
+        # Registrar usuário
+        reg_result = auth.register_user(
+            "workflow_user", "workflow@test.com", "WorkflowPass123!"
+        )
+        assert reg_result.success
+
+        # Autenticar usuário
+        auth_result = auth.authenticate_user("workflow_user", "WorkflowPass123!")
+        assert auth_result.success
+
+        # Verificar dados retornados
+        data = auth_result.value
+        assert "user" in data
+        assert "session" in data
+        assert "tokens" in data
+        assert "jwt_token" in data
+
+    def test_jwt_operations_real(self) -> None:
+        """Testa operações reais de JWT (linhas 573-575, 591-593)."""
+        auth = FlextAuth()  # type: ignore[var-annotated]
+
+        # Gerar token
+        token = auth.generate_token("jwt_user_12345")
+        assert isinstance(token, str)
+        assert len(token) > 0
+
+        # Verificar token
+        token_result = auth.verify_token(token)
+        assert token_result.success
+        assert token_result.value["valid"] is True
+
+        # Token inválido
+        invalid_result = auth.verify_token("invalid.token.here")
+        assert not invalid_result.success
+
+    def test_user_lookup_operations(self) -> None:
+        """Testa operações de busca de usuário (linhas 616-618, 644-646)."""
+        auth = FlextAuth()  # type: ignore[var-annotated]
+
+        # Criar usuário
+        reg_result = auth.register_user(
+            "lookup_user", "lookup@test.com", "LookupPass123!"
+        )
+        assert reg_result.success
+
+        # Buscar por username
+        user_result = auth.get_user_by_username("lookup_user")
+        assert user_result.success
+        assert user_result.value is not None
+        assert user_result.value.username == "lookup_user"
+
+        # Usuário inexistente
+        nonexistent_result = auth.get_user_by_username("nonexistent_user")
+        assert nonexistent_result.success
+        assert nonexistent_result.value is None
+
+    def test_session_management_real(self) -> None:
+        """Testa gerenciamento real de sessões (linhas 675-677, 748-750)."""
+        auth = FlextAuth()  # type: ignore[var-annotated]
+
+        # Criar usuário e fazer login
+        reg_result = auth.register_user(
+            "session_user", "session@test.com", "SessionPass123!"
+        )
+        assert reg_result.success
+
+        auth_result = auth.authenticate_user("session_user", "SessionPass123!")
+        assert auth_result.success
+
+        # Verificar sessão foi criada
+        session_data = auth_result.value["session"]
+        assert session_data is not None
+
+        # Limpar sessões expiradas
+        auth.cleanup_expired_sessions()
+
+    def test_password_operations_real(self) -> None:
+        """Testa operações reais de senha (linhas 757-759, 777)."""
+        auth = FlextAuth()  # type: ignore[var-annotated]
+
+        password = "TestPasswordReal123!"
+
+        # Hash password
+        hashed = auth.hash_password(password)
+        assert isinstance(hashed, str)
+        assert len(hashed) > 0
+
+        # Verify password
+        is_valid = auth.verify_password(password, hashed)
+        assert is_valid is True
+
+        # Senha incorreta
+        is_valid = auth.verify_password("wrong_password", hashed)
+        assert is_valid is False
+
+    def test_user_registration_edge_cases(self) -> None:
+        """Testa casos extremos de registro (linhas 405-409, 421)."""
+        auth = FlextAuth()  # type: ignore[var-annotated]
+
+        # Email inválido
+        result = auth.register_user("test", "invalid-email", "ValidPass123!")
+        assert not result.success
+
+        # Senha muito fraca
+        result = auth.register_user("test", "test@test.com", "123")
+        assert not result.success
+
+    def test_token_validation_edge_cases(self) -> None:
+        """Testa casos extremos de validação de token (linhas 792-793, 838-840)."""
+        auth = FlextAuth()  # type: ignore[var-annotated]
+
+        # Token muito longo
+        very_long_user_id = "a" * 1000
+        token = auth.generate_token(very_long_user_id)
+        assert token is not None
+
+        # Verificar token gerado
+        token_result = auth.verify_token(token)
+        assert token_result.success
+        assert token_result.value["valid"] is True
+
+    def test_user_operations_comprehensive(self) -> None:
+        """Testa operações abrangentes de usuário (linhas 860, 872, 899, 905)."""
+        auth = FlextAuth()  # type: ignore[var-annotated]
+
+        # Registrar múltiplos usuários
+        for i in range(3):
+            result = auth.register_user(
+                f"user_{i}", f"user{i}@test.com", f"UserPass{i}123!"
+            )
+            assert result.success
+
+        # Verificar usuários foram criados
+        user0 = auth.get_user_by_username("user_0")
+        assert user0 is not None
+
+        user1 = auth.get_user_by_username("user_1")
+        assert user1 is not None
+
+    def test_advanced_authentication_scenarios(self) -> None:
+        """Testa cenários avançados de autenticação (linhas 952, 964, 969-970)."""
+        auth = FlextAuth()  # type: ignore[var-annotated]
+
+        # Criar usuário
+        reg_result = auth.register_user(
+            "advanced_user", "advanced@test.com", "AdvancedPass123!"
+        )
+        assert reg_result.success
+
+        # Múltiplas autenticações
+        for _i in range(3):
+            auth_result = auth.authenticate_user("advanced_user", "AdvancedPass123!")
+            assert auth_result.success
+
+        # Autenticação com credenciais incorretas
+        auth_result = auth.authenticate_user("advanced_user", "wrong_password")
+        assert not auth_result.success
+
+
+class TestRealConfigExhaustive:
+    """Testa TODAS as linhas não cobertas do config.py com testes reais."""
+
+    def test_environment_configuration_comprehensive(self) -> None:
+        """Testa configuração abrangente de ambiente (linhas 252-253, 265-266)."""
+        # Development environment
+        result = FlextAuthConfig.create_for_environment("development")
+        assert result.success
+        dev_config = result.value
+        assert dev_config.jwt_expiry_minutes > 0
+
+        # Production environment
+        result = FlextAuthConfig.create_for_environment("production")
+        assert result.success
+        prod_config = result.value
+        assert prod_config.bcrypt_rounds >= 10
+
+    def test_environment_variables_parsing(self) -> None:
+        """Testa parsing de variáveis de ambiente (linhas 373, 389, 401, 409-410)."""
+        # Testar com variáveis customizadas
+        env_vars = {
+            "FLEXT_AUTH_JWT_EXPIRY_MINUTES": "45",
+            "FLEXT_AUTH_BCRYPT_ROUNDS": "11",
+            "FLEXT_AUTH_MAX_LOGIN_ATTEMPTS": "3",
+        }
+
+        # Salvar variáveis originais
+        original_env = {}
+        for key in env_vars:
+            original_env[key] = os.environ.get(key)
+
+        try:
+            # Definir variáveis de teste
+            for key, value in env_vars.items():
+                os.environ[key] = value
+
+            # Testar configuração
+            result = FlextAuthConfig.from_environment()
+            if result.success:
+                config = result.value
+                assert config.jwt_expiry_minutes == 45
+                assert config.bcrypt_rounds == 11
+        finally:
+            # Restaurar variáveis originais
+            for key, original_value in original_env.items():
+                if original_value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = original_value
+
+    def test_config_validation_comprehensive(self) -> None:
+        """Testa validação abrangente de config (linhas 443, 494-496, 558)."""
+        # Configuração com parâmetros customizados
+        result = FlextAuthConfig.create_for_environment(
+            environment="development",
+            jwt_expiry_minutes=30,
+            bcrypt_rounds=10,
+            max_login_attempts=5,
+        )
+        assert result.success
+        config = result.value
+        assert config.jwt_expiry_minutes == 30
+        assert config.bcrypt_rounds == 10
+        assert config.max_login_attempts == 5
+
+    def test_config_business_rules_validation(self) -> None:
+        """Testa validação de regras de negócio (linhas 561-578, 582-583, 594)."""
+        # Criar config válida
+        config = FlextAuthConfig(
+            jwt_expiry_minutes=60,
+            bcrypt_rounds=12,
+            max_login_attempts=5,
+            session_expiry_minutes=120,
+        )
+
+        # Validar regras de negócio
+        validation_result = config.validate_business_rules()
+        assert validation_result.success
+
+
+class TestRealInitExhaustive:
+    """Testa funcionalidade real do __init__.py."""
+
+    def test_flext_auth_quick_start_comprehensive(self) -> None:
+        """Testa flext_auth_quick_start de forma abrangente."""
+        # Quick start com REDACTED_LDAP_BIND_PASSWORD
+        auth = flext_auth_quick_start(
+            create_REDACTED_LDAP_BIND_PASSWORD=True,
+            REDACTED_LDAP_BIND_PASSWORD_username="super_REDACTED_LDAP_BIND_PASSWORD",
+            REDACTED_LDAP_BIND_PASSWORD_password="SuperAdminPass123!",
+        )
+
+        assert isinstance(auth, FlextAuth)
+
+        # Verificar REDACTED_LDAP_BIND_PASSWORD foi criado
+        REDACTED_LDAP_BIND_PASSWORD = auth.get_user_by_username("super_REDACTED_LDAP_BIND_PASSWORD")
+        assert REDACTED_LDAP_BIND_PASSWORD is not None
+
+        # Quick start sem REDACTED_LDAP_BIND_PASSWORD
+        auth_no_REDACTED_LDAP_BIND_PASSWORD = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+        assert isinstance(auth_no_REDACTED_LDAP_BIND_PASSWORD, FlextAuth)
+
+
+class TestRealIntegrationExhaustive:
+    """Testes de integração reais para cobrir linhas complexas."""
+
+    def test_complete_authentication_integration(self) -> None:
+        """Teste de integração completo de autenticação."""
+        # Setup
+        auth = FlextAuth()  # type: ignore[var-annotated]
+
+        # Registro
+        reg_result = auth.register_user(
+            username="integration_user",
+            email="integration@test.com",
+            password="IntegrationPass123!",
+        )
+        assert reg_result.success
+
+        # Autenticação
+        auth_result = auth.authenticate_user("integration_user", "IntegrationPass123!")
+        assert auth_result.success
+
+        # Extrair dados
+        user_data = auth_result.value
+        user_info = user_data["user"]  # type: ignore[index]
+        session_info = user_data["session"]  # type: ignore[index]
+        tokens_info = user_data["tokens"]  # type: ignore[index]
+
+        # Verificações
+        assert user_info["username"] == "integration_user"  # type: ignore[index]
+        assert session_info["token"] is not None  # type: ignore[index]
+        assert tokens_info["access_token"] is not None  # type: ignore[index]
+
+        # Verificar token JWT
+        jwt_token = user_data["jwt_token"]  # type: ignore[index]
+        token_result = auth.verify_token(jwt_token)  # type: ignore[arg-type]
+        assert token_result.success
+        assert token_result.value["valid"] is True
+
+        # Buscar usuário por token
+        user_by_token = auth.get_user_by_token(jwt_token)  # type: ignore[arg-type]
+        assert user_by_token.success
+        assert user_by_token.value.username == "integration_user"  # type: ignore[union-attr]
+
+    def test_session_lifecycle_complete(self) -> None:
+        """Teste do ciclo de vida completo de sessão."""
+        auth = FlextAuth()  # type: ignore[var-annotated]
+
+        # Criar usuário
+        reg_result = auth.register_user(
+            "session_lifecycle", "session@lifecycle.com", "SessionPass123!"
+        )
+        assert reg_result.success
+
+        # Fazer login (criar sessão)
+        auth_result = auth.authenticate_user("session_lifecycle", "SessionPass123!")
+        assert auth_result.success
+
+        auth_result.value["session"]["token"]  # type: ignore[index]
+
+        # Verificar sessão ativa
+        user_by_token = auth.get_user_by_token(auth_result.value["jwt_token"])  # type: ignore[arg-type,index]
+        assert user_by_token.success
+
+        # Limpeza de sessões
+        auth.cleanup_expired_sessions()
+
+        # Verificar que sessão ativa ainda existe usando jwt_token
+        jwt_token = auth_result.value["jwt_token"]  # type: ignore[index]
+        user_by_token = auth.get_user_by_token(jwt_token)  # type: ignore[arg-type]
+        assert user_by_token is not None

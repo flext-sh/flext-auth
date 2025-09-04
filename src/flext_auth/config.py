@@ -16,9 +16,37 @@ Usage:
 from __future__ import annotations
 
 import os
+from typing import TypedDict
 
 from flext_core import FlextConfig, FlextConstants, FlextResult, FlextUtilities
 from pydantic import BaseModel, Field, TypeAdapter, ValidationInfo, field_validator
+
+
+# TypedDict for type-safe FlextAuthConfig parameter passing
+class FlextAuthConfigParams(TypedDict, total=False):
+    """Type-safe parameter dictionary for FlextAuthConfig construction."""
+
+    jwt_secret: str
+    jwt_expiry_minutes: int
+    jwt_algorithm: str
+    jwt_issuer: str
+    jwt_audience: str
+    bcrypt_rounds: int
+    max_login_attempts: int
+    lockout_duration_minutes: int
+    session_expiry_minutes: int
+    max_sessions_per_user: int
+    session_cleanup_interval_minutes: int
+    min_password_length: int
+    max_password_length: int
+    require_password_complexity: bool
+    min_password_score: int
+    max_requests_per_minute: int
+    max_requests_per_hour: int
+    enable_email_verification: bool
+    enable_password_history: bool
+    enable_audit_logging: bool
+    enable_rate_limiting: bool
 
 
 # Parameter Object Pattern for configuration creation
@@ -509,13 +537,65 @@ class FlextAuthConfig(FlextConfig):
         return FlextResult[dict[str, object]].ok(parameters)
 
     @classmethod
+    def _convert_parameters_to_typed(cls, parameters: dict[str, object]) -> FlextResult[FlextAuthConfigParams]:
+        """Convert generic parameters to properly typed parameters."""
+        try:
+            typed_params: FlextAuthConfigParams = {}
+
+            # Type conversion mapping with validation
+            for key, value in parameters.items():
+                if key in {"jwt_secret", "jwt_algorithm", "jwt_issuer", "jwt_audience"}:
+                    typed_params[key] = str(value) if value is not None else ""  # type: ignore[literal-required]
+                elif key in {
+                    "jwt_expiry_minutes", "bcrypt_rounds", "max_login_attempts",
+                    "lockout_duration_minutes", "session_expiry_minutes",
+                    "max_sessions_per_user", "session_cleanup_interval_minutes",
+                    "min_password_length", "max_password_length", "min_password_score",
+                    "max_requests_per_minute", "max_requests_per_hour"
+                }:
+                    # Type-safe conversion handling object type
+                    if value is None:
+                        typed_params[key] = 0  # type: ignore[literal-required]
+                    elif isinstance(value, int):
+                        typed_params[key] = value  # type: ignore[literal-required]
+                    elif isinstance(value, str) and value.isdigit():
+                        typed_params[key] = int(value)  # type: ignore[literal-required]
+                    else:
+                        msg = f"Cannot convert {key}={value} to int"
+                        raise ValueError(msg)
+                elif key in {
+                    "require_password_complexity", "enable_email_verification",
+                    "enable_password_history", "enable_audit_logging", "enable_rate_limiting"
+                }:
+                    # Type-safe conversion handling object type
+                    if value is None:
+                        typed_params[key] = False  # type: ignore[literal-required]
+                    elif isinstance(value, bool):
+                        typed_params[key] = value  # type: ignore[literal-required]
+                    elif isinstance(value, str):
+                        typed_params[key] = value.lower() in {"true", "1", "yes", "on"}  # type: ignore[literal-required]
+                    else:
+                        typed_params[key] = bool(value)  # type: ignore[literal-required]
+                # Skip unknown parameters to avoid errors
+
+            return FlextResult[FlextAuthConfigParams].ok(typed_params)
+        except Exception as e:
+            return FlextResult[FlextAuthConfigParams].fail(f"Parameter conversion failed: {e}")
+
+    @classmethod
     def _safe_create_config_instance(
         cls, config_class: type[FlextAuthConfig], parameters: dict[str, object]
     ) -> FlextResult[FlextAuthConfig]:
         """Safely create configuration instance with exception handling - extracted method."""
         try:
-            # Type ignore for parameter unpacking - eliminates 9 MyPy errors
-            config = config_class(**parameters)  # type: ignore[arg-type]
+            # Convert parameters to proper types
+            conversion_result = cls._convert_parameters_to_typed(parameters)
+            if not conversion_result.success:
+                return FlextResult[FlextAuthConfig].fail(conversion_result.error_message or "Parameter conversion failed")
+
+            # Create config with properly typed parameters
+            typed_params = conversion_result.value
+            config = config_class(**typed_params)
             return FlextResult[FlextAuthConfig].ok(config)
         except Exception as e:
             return FlextResult[FlextAuthConfig].fail(
@@ -537,5 +617,7 @@ class FlextAuthConfig(FlextConfig):
 
 # Module exports
 __all__ = [
+    "EnvironmentConfigRequest",
     "FlextAuthConfig",
+    "FlextAuthConfigParams",
 ]

@@ -255,6 +255,10 @@ markers = [
     "unit: marks tests as unit tests",
     "smoke: marks tests as smoke tests",
     "e2e: marks tests as end-to-end tests",
+    "concurrency: marks tests as concurrency tests",
+    "race_condition: marks tests as race condition tests",
+    "memory: marks tests as memory tests",
+    "performance: marks tests as performance tests",
 ]
 
 [tool.ruff]

@@ -14,7 +14,7 @@ class TestRealAuthenticationSimple:
     def test_basic_auth_workflow(self) -> None:
         """Test basic authentication workflow."""
         # Create auth instance directly
-        auth = FlextAuth()
+        auth: FlextAuth[object] = FlextAuth()
 
         # Register user
         register_result = auth.register_user(
@@ -36,7 +36,7 @@ class TestRealAuthenticationSimple:
 
     def test_jwt_operations(self) -> None:
         """Test JWT token operations."""
-        auth = FlextAuth()
+        auth: FlextAuth[object] = FlextAuth()
 
         # Register user
         register_result = auth.register_user(
@@ -58,7 +58,7 @@ class TestRealAuthenticationSimple:
 
     def test_password_operations(self) -> None:
         """Test password hashing and verification."""
-        auth = FlextAuth()
+        auth: FlextAuth[object] = FlextAuth()
 
         # Test password hashing
         password = "SecurePassword123!"
@@ -71,7 +71,7 @@ class TestRealAuthenticationSimple:
 
     def test_user_lookup(self) -> None:
         """Test user lookup operations."""
-        auth = FlextAuth()
+        auth: FlextAuth[object] = FlextAuth()
 
         # Register user
         register_result = auth.register_user(
@@ -96,7 +96,7 @@ class TestRealAuthenticationSimple:
 
     def test_session_management(self) -> None:
         """Test session management."""
-        auth = FlextAuth()
+        auth: FlextAuth[object] = FlextAuth()
 
         # Register and authenticate user
         register_result = auth.register_user(

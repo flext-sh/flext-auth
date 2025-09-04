@@ -8,86 +8,118 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import (
-    FlextJWTService,
-    FlextPasswordService,
-    flext_auth_generate_jwt,
-    flext_auth_hash_password,
-    flext_auth_validate_jwt,
-)
+from flext_auth import FlextAuth
 
 
-def debug_password_service() -> None:
-    """Debug password hashing issue."""
+def debug_password_operations() -> None:
+    """Debug password hashing using FlextAuth."""
     password = "TestPassword123!"
 
-    # Test direct service
-    service = FlextPasswordService()  # Fast for debugging
-    hash_result = service.hash_password(password, rounds=4)
+    # Use FlextAuth directly
+    auth: FlextAuth[object] = FlextAuth()
 
-    if hash_result.success and hash_result.value:
-        hashed = str(hash_result.value)
-
-        # Test verification
-        verify_result = service.verify_password(password, hashed)
-        if verify_result.success:
-            print(f"Password verification: {verify_result.value}")
-
-    # Test helper functions
-    helper_hash_result = flext_auth_hash_password(password, rounds=4)
-    if helper_hash_result.success and helper_hash_result.value:
-        helper_hash = helper_hash_result.value
-        helper_verify_result = service.verify_password(password, helper_hash)
-        if helper_verify_result.success:
-            print(f"Helper hash verification: {helper_verify_result.value}")
-
-
-def debug_jwt_service() -> None:
-    """Debug JWT user_id issue."""
-    payload: dict[str, object] = {
-        "user_id": "test123",
-        "username": "testuser",
-        "role": "REDACTED_LDAP_BIND_PASSWORD",
-    }
-    jwt_secret = "test-secret"
-
-    # Test direct service
-    service = FlextJWTService(secret=jwt_secret)
-
-    # Test token generation
-    token_result = service.generate_token(claims=payload, expires_minutes=30)
-
-    if token_result.success and token_result.value:
-        token = token_result.value
-        print(f"Generated token: {token[:20]}...")
+    # Test password hashing
+    try:
+        hashed = auth.hash_password(password)
+        print(f"Password hashed successfully: {len(hashed)} chars")
 
         # Test verification
-        verify_result = service.validate_token(token)
-        if verify_result.success and verify_result.value:
-            print(f"Token validation successful: {verify_result.value}")
+        is_valid = auth.verify_password(password, hashed)
+        print(f"Password verification: {is_valid}")
 
-    # Test helper functions
-    helper_token_result = flext_auth_generate_jwt(
-        user_id=str(payload["user_id"]),
-        username=str(payload["username"]),
-        role=str(payload["role"]),
-        session_id="session123",
-        jwt_secret=jwt_secret,
-        expiry_minutes=30,
+        # Test with wrong password
+        is_invalid = auth.verify_password("WrongPassword", hashed)
+        print(f"Wrong password verification: {is_invalid}")
+
+    except Exception as e:
+        print(f"Password operation failed: {e}")
+
+
+def debug_jwt_operations() -> None:
+    """Debug JWT token operations using FlextAuth."""
+    # Use FlextAuth directly
+    auth: FlextAuth[object] = FlextAuth()
+
+    # Register a test user first
+    user_result = auth.register_user(
+        username="testuser",
+        email="test@example.com",
+        password="TestPassword123!"
     )
-    if helper_token_result.success and helper_token_result.value:
-        helper_token = helper_token_result.value
-        print(f"Helper token: {helper_token[:20]}...")
 
-        helper_validate = flext_auth_validate_jwt(helper_token, jwt_secret)
-        if helper_validate.success and helper_validate.value:
-            print(f"Helper validation successful: {helper_validate.value}")
+    if user_result.is_failure:
+        print(f"User registration failed: {user_result.error}")
+        return
+
+    user = user_result.value
+    print(f"User registered: {user.username}")
+
+    # Test JWT token generation
+    token_result = auth.generate_jwt_token(user.id)
+    if token_result.is_failure:
+        print(f"Token generation failed: {token_result.error}")
+        return
+
+    token = token_result.value
+    print(f"Generated token: {token[:50]}...")
+
+    # Test token validation
+    validate_result = auth.validate_token(token)
+    if validate_result.is_success:
+        payload = validate_result.value
+        print(f"Token validation successful: user_id={payload.get('user_id')}")
+    else:
+        print(f"Token validation failed: {validate_result.error}")
+
+    # Test with Bearer prefix
+    bearer_token = f"Bearer {token}"
+    bearer_result = auth.validate_token(bearer_token)
+    if bearer_result.is_success:
+        print("Bearer token validation successful")
+    else:
+        print(f"Bearer token validation failed: {bearer_result.error}")
+
+
+def debug_authentication_workflow() -> None:
+    """Debug complete authentication workflow."""
+    auth: FlextAuth[object] = FlextAuth()
+
+    # Register user
+    reg_result = auth.register_user(
+        username="debuguser",
+        email="debug@example.com",
+        password="DebugPassword123!",
+        roles=["REDACTED_LDAP_BIND_PASSWORD"]
+    )
+
+    if reg_result.is_failure:
+        print(f"Registration failed: {reg_result.error}")
+        return
+
+    print("User registered successfully")
+
+    # Authenticate user
+    auth_result = auth.authenticate_user("debuguser", "DebugPassword123!")
+
+    if auth_result.is_success:
+        auth_data = auth_result.value
+        print("Authentication successful")
+        print(f"Session ID: {auth_data.get('session_id')}")
+        print(f"JWT Token: {str(auth_data.get('jwt_token', ''))[:30]}...")
+    else:
+        print(f"Authentication failed: {auth_result.error}")
 
 
 def main() -> None:
     """Run debug diagnostics."""
-    debug_password_service()
-    debug_jwt_service()
+    print("=== Password Operations Debug ===")
+    debug_password_operations()
+
+    print("\n=== JWT Operations Debug ===")
+    debug_jwt_operations()
+
+    print("\n=== Authentication Workflow Debug ===")
+    debug_authentication_workflow()
 
 
 if __name__ == "__main__":
