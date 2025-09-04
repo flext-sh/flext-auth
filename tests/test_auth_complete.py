@@ -9,6 +9,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 from flext_auth import FlextAuth, Session, User
+from flext_auth.config import FlextAuthConfig
 
 
 class TestFlextAuth:
@@ -42,8 +43,6 @@ class TestFlextAuth:
         )
 
         # Create config first, then pass to FlextAuth
-        from flext_auth.config import FlextAuthConfig
-
         config_result = FlextAuthConfig.create_for_environment(
             "development", jwt_secret=custom_secret, jwt_expiry_minutes=60
         )
@@ -110,7 +109,8 @@ class TestFlextAuth:
         # Try to register with same username
         result2 = auth.register_user("testuser", "test2@example.com", "Password456!")
         assert result2.success is False
-        assert "Username already exists" in result2.error
+        assert result2.is_failure
+        assert "Username already exists" in (result2.error or "")
 
         # Should still have only one user
         assert len(auth.users) == 1
@@ -126,7 +126,8 @@ class TestFlextAuth:
         # Try to register with same email
         result2 = auth.register_user("user2", "test@example.com", "Password456!")
         assert result2.success is False
-        assert "Email already exists" in result2.error
+        assert result2.is_failure
+        assert "Email already exists" in (result2.error or "")
 
         # Should still have only one user
         assert len(auth.users) == 1
@@ -156,7 +157,8 @@ class TestFlextAuth:
         # Test invalid token
         result = auth.verify_token("invalid_token")
         assert result.success is False
-        assert "Token validation failed" in result.error
+        assert result.is_failure
+        assert "Token validation failed" in (result.error or "")
 
         # Test expired token (create with different auth instance with past time)
         auth2 = FlextAuth(token_expire_minutes=-1)  # Negative minutes = expired
@@ -203,7 +205,8 @@ class TestFlextAuth:
 
         result = auth.authenticate_user("nonexistent", "Password123!")
         assert result.success is False
-        assert "Invalid credentials" in result.error
+        assert result.is_failure
+        assert "Invalid credentials" in (result.error or "")
 
     def test_user_authentication_invalid_password(self) -> None:
         """Test authentication with invalid password."""
@@ -215,7 +218,8 @@ class TestFlextAuth:
         # Try wrong password
         result = auth.authenticate_user("testuser", "wrongpassword")
         assert result.success is False
-        assert "Invalid credentials" in result.error
+        assert result.is_failure
+        assert "Invalid credentials" in (result.error or "")
 
     def test_user_authentication_inactive_user(self) -> None:
         """Test authentication with inactive user."""
@@ -233,7 +237,8 @@ class TestFlextAuth:
         # Try to authenticate
         result = auth.authenticate_user("testuser", "Password123!")
         assert result.success is False
-        assert "Account is disabled" in result.error
+        assert result.is_failure
+        assert "Account is disabled" in (result.error or "")
 
     def test_get_user_by_token(self) -> None:
         """Test getting user by token."""
@@ -247,7 +252,9 @@ class TestFlextAuth:
 
         # Authenticate to get token
         auth_result = auth.authenticate_user("testuser", "Password123!")
-        token = auth_result.value["session"]["token"]
+        token = auth_result.value["tokens"][
+            "access_token"
+        ]  # Use JWT token, not session token
 
         # Get user by token
         user_result = auth.get_user_by_token(token)
@@ -260,7 +267,8 @@ class TestFlextAuth:
 
         result = auth.get_user_by_token("invalid_token")
         assert result.success is False
-        assert "Token validation failed" in result.error
+        assert result.is_failure
+        assert "Token validation failed" in (result.error or "")
 
     def test_get_user_by_username(self) -> None:
         """Test getting user by username."""
@@ -343,7 +351,7 @@ class TestFlextAuth:
             id="test_id",
             username="testuser",
             email="test@example.com",
-            password_hash="hash123",
+            password_hash="$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LeELGj8/3eMQHtAMS",  # Valid bcrypt hash
         )
 
         assert user.role == "user"
@@ -369,16 +377,16 @@ class TestFlextAuth:
 
         # 1. Register user
         register_result = auth.register_user(
-            "workflow_user", "workflow@example.com", "secure_password"
+            "workflow_user", "workflow@example.com", "SecurePassword123!"
         )
         assert register_result.success is True
         user = register_result.value
 
         # 2. Authenticate user
-        auth_result = auth.authenticate_user("workflow_user", "secure_password")
+        auth_result = auth.authenticate_user("workflow_user", "SecurePassword123!")
         assert auth_result.success is True
         auth_data = auth_result.value
-        token = auth_data["session"]["token"]
+        token = auth_data["tokens"]["access_token"]  # Use JWT token, not session token
 
         # 3. Use token to get user
         user_result = auth.get_user_by_token(token)
@@ -419,12 +427,16 @@ class TestFlextAuth:
         assert auth_result.success is True
 
         # Should prevent duplicate registration with different case
-        dup_result = auth.register_user("testuser", "different@example.com", "Password!")
+        dup_result = auth.register_user(
+            "testuser", "different@example.com", "Password!"
+        )
         assert dup_result.success is False
-        assert "Username already exists" in dup_result.error
+        assert dup_result.is_failure
+        assert "Username already exists" in (dup_result.error or "")
 
         dup_email_result = auth.register_user(
             "different_user", "test@example.com", "password"
         )
         assert dup_email_result.success is False
-        assert "Email already exists" in dup_email_result.error
+        assert dup_email_result.is_failure
+        assert "Email already exists" in (dup_email_result.error or "")

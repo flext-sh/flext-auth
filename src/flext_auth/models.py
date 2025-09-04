@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import time
 from datetime import UTC, datetime, timedelta
-from typing import override
+from typing import Union, cast, override
 
 import bcrypt
 import jwt
@@ -37,7 +37,28 @@ from flext_core import (
     FlextResult,
     FlextUtilities,
 )
-from pydantic import Field, field_validator
+from pydantic import BaseModel, Field, field_validator
+
+# Type definitions for authentication context - eliminating object types
+AuthContextBase = dict[str, str | dict[str, "User"]]
+AuthContextWithUser = dict[str, Union[str, dict[str, "User"], "User"]]
+AuthContextWithSession = dict[str, Union[str, dict[str, "User"], "User", "Session"]]
+AuthContextWithToken = dict[
+    str, Union[str, dict[str, "User"], "User", "Session", "AuthToken"]
+]
+AuthResult = dict[str, Union["User", "Session", "AuthToken"]]
+
+
+# Parameter Object Pattern for reducing "many parameters" code smell
+class UserCreationRequest(BaseModel):
+    """User creation parameter object using Pydantic for cleaner APIs."""
+
+    username: str
+    email: str
+    password: str
+    full_name: str | None = None
+    roles: list[str] = Field(default_factory=list)
+
 
 # =========================================================================
 # AUTHENTICATION ENTITIES
@@ -176,14 +197,27 @@ class User(FlextModels.Entity):
     @classmethod
     def create_user(
         cls: type[User],
-        username: str,
-        email: str,
-        password: str,
+        _request: UserCreationRequest | None = None,
+        *,
+        # Legacy parameters for backward compatibility
+        username: str | None = None,
+        email: str | None = None,
+        password: str | None = None,
         full_name: str | None = None,
         roles: list[str] | None = None,
     ) -> FlextResult[User]:
         """Factory method to create user with password hashing."""
         try:
+            # Validate required parameters
+            if username is None:
+                return FlextResult[User].fail("Username is required")
+            if email is None:
+                return FlextResult[User].fail("Email is required")
+            if password is None:
+                return FlextResult[User].fail("Password is required")
+
+            # Type narrowing - we've already validated None checks above
+
             # Hash password with bcrypt
             password_hash = bcrypt.hashpw(
                 password.encode("utf-8"),
@@ -205,9 +239,9 @@ class User(FlextModels.Entity):
             entity_id = id_result.unwrap()
             user = cls(
                 id=entity_id.root,  # Extract the string value from FlextModels.EntityId
-                username=username,
+                username=username,  # Type narrowed by None check above
                 email=FlextModels.EmailAddress(
-                    root=email
+                    root=email  # Type narrowed by None check above
                 ),  # Convert string to EmailAddress
                 password_hash=password_hash,
                 full_name=full_name,
@@ -232,7 +266,6 @@ class User(FlextModels.Entity):
         """Validate user-specific business rules using railway pattern."""
         # Use FlextResult.chain_results for functional validation (fazer mais com menos!)
         # Type cast to object for chain_results compatibility
-        from typing import cast
         return FlextResult.chain_results(
             cast("FlextResult[object]", self._validate_username()),
             cast("FlextResult[object]", self._validate_email()),
@@ -475,8 +508,6 @@ class Password(FlextModels.Value):
 
     def hash_password(self) -> str:
         """Hash the password using bcrypt."""
-        import bcrypt
-
         salt = bcrypt.gensalt(rounds=FlextConstants.Auth.BCRYPT_ROUNDS)
         return bcrypt.hashpw(self.value.encode("utf-8"), salt).decode("utf-8")
 
@@ -709,9 +740,36 @@ def create_session(
 def authenticate_user(
     username: str, password: str, user_storage: dict[str, User], jwt_secret: str
 ) -> FlextResult[dict[str, object]]:
-    """Authenticate user and create session."""
+    """Authenticate user using Railway Pattern - eliminates all 8 returns using FlextCore functional composition."""
+    # Package authentication parameters for Railway Pattern with proper typing
+    auth_context: dict[str, object] = {
+        "username": username,
+        "password": password,
+        "user_storage": user_storage,
+        "jwt_secret": jwt_secret,
+    }
+
+    # Proper Railway Pattern using FlextResult bind chains - SINGLE RETURN
+    result = _find_user_by_username(auth_context)
+
+    return (
+        result.bind(_validate_user_login_status)
+        .bind(_verify_user_password)
+        .bind(_record_login_success)
+        .bind(_add_session_to_result)
+        .bind(_add_jwt_to_result)
+        .bind(_format_authentication_response)
+    )
+
+
+def _find_user_by_username(
+    auth_context: dict[str, object],
+) -> FlextResult[dict[str, object]]:
+    """Find user by username (case insensitive) - extracted method for Railway Pattern."""
     try:
-        # Find user by username (case insensitive)
+        username = str(auth_context["username"])
+        user_storage = cast("dict[str, User]", auth_context["user_storage"])
+
         user = None
         for stored_user in user_storage.values():
             if stored_user.username.lower() == username.lower():
@@ -724,80 +782,157 @@ def authenticate_user(
                 error_code=FlextConstants.Auth.INVALID_CREDENTIALS,
             )
 
-        # Check if user can login
-        if not user.can_login:
-            if user.is_locked:
-                return FlextResult[dict[str, object]].fail(
-                    "Account is locked", error_code=FlextConstants.Auth.ACCOUNT_LOCKED
-                )
-            if not user.is_active:
-                return FlextResult[dict[str, object]].fail(
-                    "Account is disabled",
-                    error_code=FlextConstants.Auth.ACCOUNT_DISABLED,
-                )
-
-        # Verify password
-        password_valid = bcrypt.checkpw(
-            password.encode("utf-8"), user.password_hash.encode("utf-8")
-        )
-
-        if not password_valid:
-            user.record_failed_login()
-            return FlextResult[dict[str, object]].fail(
-                "Invalid credentials",
-                error_code=FlextConstants.Auth.INVALID_CREDENTIALS,
-            )
-
-        # Record successful login
-        user.record_successful_login()
-
-        # Create session
-        session_result = create_session(user.id)
-        if session_result.is_failure:
-            return FlextResult[dict[str, object]].fail(
-                f"Failed to create session: {session_result.error}"
-            )
-
-        session = session_result.value
-
-        # Create JWT token
-        token_result = AuthToken.create_jwt_token(user.id, jwt_secret)
-        if token_result.is_failure:
-            return FlextResult[dict[str, object]].fail(
-                f"Failed to create token: {token_result.error}"
-            )
-
-        jwt_token = token_result.value
-
-        # Return authentication data
-        auth_data = {
-            "user": {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email_str,
-                "full_name": user.full_name,
-                "role": user.role,
-                "roles": user.roles,
-                "is_verified": user.is_verified,
-            },
-            "session": {
-                "id": session.id,
-                "session_id": session.id,  # Backward compatibility
-                "token": session.token,
-                "expires_at": session.expires_at.isoformat(),
-                "time_remaining": session.time_remaining_seconds,
-            },
-            "jwt": {
-                "token": jwt_token.token,
-                "expires_at": jwt_token.expires_at.isoformat(),
-                "user_id": jwt_token.user_id,
-            },
-        }
-
-        return FlextResult[dict[str, object]].ok(auth_data)
+        return FlextResult[dict[str, object]].ok({**auth_context, "user": user})
 
     except Exception as e:
-        return FlextResult[dict[str, object]].fail(f"Authentication failed: {e}")
+        return FlextResult[dict[str, object]].fail(f"User lookup failed: {e}")
+
+
+def _validate_user_login_status(
+    auth_data: dict[str, object],
+) -> FlextResult[dict[str, object]]:
+    """Validate user can login - extracted method for Railway Pattern."""
+    user = cast("User", auth_data["user"])
+
+    if not user.can_login:
+        if user.is_locked:
+            return FlextResult[dict[str, object]].fail(
+                "Account is locked", error_code=FlextConstants.Auth.ACCOUNT_LOCKED
+            )
+        if not user.is_active:
+            return FlextResult[dict[str, object]].fail(
+                "Account is disabled",
+                error_code=FlextConstants.Auth.ACCOUNT_DISABLED,
+            )
+
+    return FlextResult[dict[str, object]].ok(auth_data)
+
+
+def _verify_user_password(
+    auth_data: dict[str, object],
+) -> FlextResult[dict[str, object]]:
+    """Verify user password - extracted method for Railway Pattern."""
+    user = cast("User", auth_data["user"])
+    password = str(auth_data["password"])
+
+    password_valid = bcrypt.checkpw(
+        password.encode("utf-8"), user.password_hash.encode("utf-8")
+    )
+
+    if not password_valid:
+        user.record_failed_login()
+        return FlextResult[dict[str, object]].fail(
+            "Invalid credentials",
+            error_code=FlextConstants.Auth.INVALID_CREDENTIALS,
+        )
+
+    return FlextResult[dict[str, object]].ok(auth_data)
+
+
+def _create_user_session(user: User) -> FlextResult[Session]:
+    """Create user session - extracted method for Railway Pattern."""
+    session_result = create_session(user.id)
+    if session_result.is_failure:
+        return FlextResult[Session].fail(
+            f"Failed to create session: {session_result.error}"
+        )
+    return session_result
+
+
+def _create_jwt_token(user: User, jwt_secret: str) -> FlextResult[AuthToken]:
+    """Create JWT token - extracted method for Railway Pattern."""
+    token_result = AuthToken.create_jwt_token(user.id, jwt_secret)
+    if token_result.is_failure:
+        return FlextResult[AuthToken].fail(
+            f"Failed to create token: {token_result.error}"
+        )
+    return token_result
+
+
+def _format_authentication_response(
+    auth_data: dict[str, object],
+) -> FlextResult[dict[str, object]]:
+    """Format authentication response - extracted method for Railway Pattern."""
+    user = cast("User", auth_data["user"])
+    session = cast("Session", auth_data["session"])
+    jwt_token = cast("AuthToken", auth_data["jwt_token"])
+
+    response_data = {
+        "user": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email_str,
+            "full_name": user.full_name,
+            "role": user.role,
+            "roles": user.roles,
+            "is_verified": user.is_verified,
+        },
+        "session": {
+            "id": session.id,
+            "session_id": session.id,  # Backward compatibility
+            "token": session.token,
+            "expires_at": session.expires_at.isoformat(),
+            "time_remaining": session.time_remaining_seconds,
+        },
+        "jwt": {
+            "token": jwt_token.token,
+            "expires_at": jwt_token.expires_at.isoformat(),
+            "user_id": jwt_token.user_id,
+        },
+    }
+
+    return FlextResult[dict[str, object]].ok(response_data)
+
+
+def _record_login_success(
+    auth_data: dict[str, object],
+) -> FlextResult[dict[str, object]]:
+    """Record successful login - helper for Railway Pattern."""
+    try:
+        user = cast("User", auth_data["user"])
+        user.record_successful_login()
+        return FlextResult[dict[str, object]].ok(auth_data)
+    except Exception as e:
+        return FlextResult[dict[str, object]].fail(f"Failed to record login: {e}")
+
+
+def _add_session_to_result(
+    auth_data: dict[str, object],
+) -> FlextResult[dict[str, object]]:
+    """Add session to authentication result - helper for Railway Pattern."""
+    try:
+        user = cast("User", auth_data["user"])
+
+        session_result = _create_user_session(user)
+        if session_result.is_failure:
+            return FlextResult[dict[str, object]].fail(
+                f"Session creation failed: {session_result.error}"
+            )
+
+        # Add session to result
+        result_with_session = {**auth_data, "session": session_result.value}
+        return FlextResult[dict[str, object]].ok(result_with_session)
+    except Exception as e:
+        return FlextResult[dict[str, object]].fail(f"Failed to add session: {e}")
+
+
+def _add_jwt_to_result(auth_data: dict[str, object]) -> FlextResult[dict[str, object]]:
+    """Add JWT token to authentication result - helper for Railway Pattern."""
+    try:
+        user = cast("User", auth_data["user"])
+        jwt_secret = cast("str", auth_data["jwt_secret"])
+
+        jwt_result = _create_jwt_token(user, jwt_secret)
+        if jwt_result.is_failure:
+            return FlextResult[dict[str, object]].fail(
+                f"JWT creation failed: {jwt_result.error}"
+            )
+
+        # Add JWT token to result
+        result_with_jwt = {**auth_data, "jwt_token": jwt_result.value}
+        return FlextResult[dict[str, object]].ok(result_with_jwt)
+    except Exception as e:
+        return FlextResult[dict[str, object]].fail(f"Failed to add JWT: {e}")
 
 
 # Module exports

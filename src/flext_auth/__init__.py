@@ -55,6 +55,7 @@ from flext_auth.__version__ import *
 
 # Import FlextResult for convenience functions
 from flext_core import FlextResult
+from flext_core.models import FlextModels
 
 # =============================================================================
 # DOMAIN LAYER - Depends only on Foundation layer
@@ -88,12 +89,62 @@ from flext_auth.auth import FlextAuth
 # FLEXT-CORE DIRECT USAGE - No wrappers, use patterns directly
 # =============================================================================
 
-# Users should use FlextAuth directly or flext-core patterns:
-# - FlextAuth() for main functionality
-# - FlextAuthConfig.create_for_environment() for configuration
-# - Password(value="...").hash_password() for password hashing
-# - AuthToken.create_jwt_token() for JWT generation
-# - FlextModels.EmailAddress() for email validation
+# =============================================================================
+# CONVENIENCE FUNCTIONS - For backward compatibility and examples
+# =============================================================================
+
+
+def flext_auth_quick_start(
+    *,
+    create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
+    REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
+    REDACTED_LDAP_BIND_PASSWORD_password: str = "AdminPassword123!",  # noqa: S107
+) -> FlextAuth[object]:
+    """Quick start convenience function for examples and testing.
+
+    Args:
+        create_REDACTED_LDAP_BIND_PASSWORD: Whether to create REDACTED_LDAP_BIND_PASSWORD user
+        REDACTED_LDAP_BIND_PASSWORD_username: Admin username
+        REDACTED_LDAP_BIND_PASSWORD_password: Admin password
+
+    Returns:
+        FlextAuth instance with optional REDACTED_LDAP_BIND_PASSWORD user
+
+    """
+    return FlextAuth.quick_start(
+        create_REDACTED_LDAP_BIND_PASSWORD=create_REDACTED_LDAP_BIND_PASSWORD,
+        REDACTED_LDAP_BIND_PASSWORD_username=REDACTED_LDAP_BIND_PASSWORD_username,
+        REDACTED_LDAP_BIND_PASSWORD_password=REDACTED_LDAP_BIND_PASSWORD_password,
+    )
+
+
+# Wrapper functions removed - use FlextAuth directly for better performance and less complexity
+# Example: auth = FlextAuth(); auth.hash_password(password)
+# Example: auth = FlextAuth(); auth.verify_password(password, hashed)
+# Example: auth = FlextAuth(); auth.generate_token(user_id)
+# Example: auth = FlextAuth(); auth.verify_token(token)
+
+
+# Secure generation functions removed - use FlextUtilities from flext-core instead
+# Example: from flext_core import FlextUtilities; FlextUtilities.generate_secure_string(length)
+# Example: from flext_core import FlextUtilities; FlextUtilities.generate_uuid()
+
+
+# Additional compatibility aliases and classes
+# Factory function removed - use FlextAuth() directly
+
+
+# Placeholder decorators removed - use FlextDecorators from flext-core
+# Example: from flext_core import FlextDecorators; @FlextDecorators.require_auth
+
+
+# FlextPasswordService removed - use FlextAuth directly or FlextSecurity from flext-core
+# Example: auth = FlextAuth(); auth.hash_password(password)
+# Example: from flext_core import FlextSecurity; FlextSecurity.hash_password(password)
+
+
+# FlextAuthTypes removed - use FlextModels.EmailAddress and standard types directly
+# Example: from flext_core.models import FlextModels; email: FlextModels.EmailAddress
 
 
 # =============================================================================
@@ -103,19 +154,21 @@ from flext_auth.auth import FlextAuth
 __all__ = [
     # Core authentication
     "FlextAuth",
-    "FlextAuthConfig", 
+    "FlextAuthConfig",
     # Domain models
     "User",
-    "Session", 
+    "Session",
     "Role",
     "Password",
-    "Credential", 
+    "Credential",
     "AuthToken",
     # Domain functions
     "create_user",
     "authenticate_user",
     "create_session",
+    # Convenience functions (reduced from 11 to 1 - eliminating wrappers)
+    "flext_auth_quick_start",
     # Foundation
-    "__version__",
+    "__version__",  # noqa: F405
     "FlextResult",
 ]

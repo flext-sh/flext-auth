@@ -9,8 +9,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuth
 from flext_core import FlextConstants
+
+from flext_auth import FlextAuth
 
 
 class TestFlextAuth:
@@ -69,7 +70,8 @@ class TestFlextAuth:
             "testuser", "test2@example.com", "Password123!"
         )
         assert duplicate_result.is_failure
-        assert "already exists" in duplicate_result.error
+        assert duplicate_result.is_failure
+        assert "already exists" in (duplicate_result.error or "")
 
     def test_user_registration_duplicate_email(self) -> None:
         """Test user registration with duplicate email."""
@@ -83,7 +85,8 @@ class TestFlextAuth:
             "user2", "test@example.com", "Password123!"
         )
         assert duplicate_result.is_failure
-        assert "already exists" in duplicate_result.error
+        assert duplicate_result.is_failure
+        assert "already exists" in (duplicate_result.error or "")
 
     def test_user_authentication_success(self) -> None:
         """Test successful user authentication."""
@@ -109,7 +112,9 @@ class TestFlextAuth:
         tokens = auth_data["tokens"]
         assert "access_token" in tokens
         assert tokens["token_type"] == "Bearer"
-        assert tokens["expires_in"] == 480 * 60  # Development environment uses 480 minutes
+        assert (
+            tokens["expires_in"] == 480 * 60
+        )  # Development environment uses 480 minutes
 
     def test_user_authentication_invalid_credentials(self) -> None:
         """Test authentication with invalid credentials."""
@@ -122,7 +127,8 @@ class TestFlextAuth:
         # Test with wrong password
         failed_auth = auth.authenticate_user(username, "WrongPassword123!")
         assert failed_auth.is_failure
-        assert "Invalid credentials" in failed_auth.error
+        assert failed_auth.is_failure
+        assert "Invalid credentials" in (failed_auth.error or "")
 
     def test_token_validation_valid_token(self) -> None:
         """Test validation of valid token."""
@@ -152,7 +158,7 @@ class TestFlextAuth:
 
         invalid_result = auth.validate_token("invalid.token.here")
         assert invalid_result.is_failure
-        assert "token" in invalid_result.error.lower()
+        assert "token" in (invalid_result.error or "").lower()
 
     def test_token_validation_bearer_prefix(self) -> None:
         """Test token validation with Bearer prefix."""
@@ -207,12 +213,12 @@ class TestFlextAuth:
         auth_result = auth.authenticate_user(username, password)
         assert auth_result.success
 
-        # Extract session ID and user ID from authentication result
+        # Extract session ID from authentication result
         session_info = auth_result.value
-        assert isinstance(session_info, dict) and "session" in session_info
+        assert isinstance(session_info, dict)
+        assert "session" in session_info
         session_id = session_info["session"]["session_id"]
-        user_id = session_info["user"]["id"]
-        
+
         logout_result = auth.logout_user(session_id)
         assert logout_result.success
 
@@ -290,8 +296,8 @@ class TestFlextAuthSecurity:
         assert locked_auth.is_failure
         # Should fail even with correct password due to lockout
         assert (
-            "locked" in locked_auth.error.lower()
-            or "inactive" in locked_auth.error.lower()
+            "locked" in (locked_auth.error or "").lower()
+            or "inactive" in (locked_auth.error or "").lower()
         )
 
     def test_password_strength_enforcement(self) -> None:
@@ -344,7 +350,8 @@ class TestFlextAuthErrorHandling:
 
         auth_result = auth.authenticate_user("nonexistent", "password")
         assert auth_result.is_failure
-        assert "Invalid credentials" in auth_result.error
+        assert auth_result.is_failure
+        assert "Invalid credentials" in (auth_result.error or "")
 
     def test_invalid_session_logout(self) -> None:
         """Test logout with invalid session ID."""
@@ -352,4 +359,5 @@ class TestFlextAuthErrorHandling:
 
         logout_result = auth.logout_user("invalid_session_id")
         assert logout_result.is_failure
-        assert "Session not found" in logout_result.error
+        assert logout_result.is_failure
+        assert "Session not found" in (logout_result.error or "")
