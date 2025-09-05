@@ -47,20 +47,38 @@ Notes:
 
 from __future__ import annotations
 
+# Import FlextResult for convenience functions
+from flext_core import FlextConstants, FlextResult
+
 # =============================================================================
 # FOUNDATION LAYER - Import first, no dependencies on other auth modules
 # =============================================================================
+from flext_auth.__version__ import __version__
 
-from flext_auth.__version__ import *
+# =============================================================================
+# SUPPORT LAYER - Main facade and convenience functions
+# =============================================================================
+from flext_auth.auth import (
+    AuthCommands,
+    AuthenticatorProtocol,
+    AuthRequest,
+    CommandHandlerProtocol,
+    FlextAuth,
+    QuickStartRequest,
+)
 
-# Import FlextResult for convenience functions
-from flext_core import FlextResult
-from flext_core.models import FlextModels
+# =============================================================================
+# INFRASTRUCTURE LAYER - Depends on Application + Domain + Foundation
+# =============================================================================
+from flext_auth.config import (
+    EnvironmentConfigRequest,
+    FlextAuthConfig,
+    FlextAuthConfigParams,
+)
 
 # =============================================================================
 # DOMAIN LAYER - Depends only on Foundation layer
 # =============================================================================
-
 from flext_auth.models import (
     AuthToken,
     Credential,
@@ -72,29 +90,6 @@ from flext_auth.models import (
     authenticate_user,
     create_session,
     create_user,
-)
-
-# =============================================================================
-# INFRASTRUCTURE LAYER - Depends on Application + Domain + Foundation
-# =============================================================================
-
-from flext_auth.config import (
-    EnvironmentConfigRequest,
-    FlextAuthConfig,
-    FlextAuthConfigParams,
-)
-
-# =============================================================================
-# SUPPORT LAYER - Main facade and convenience functions
-# =============================================================================
-
-from flext_auth.auth import (
-    AuthCommands,
-    AuthRequest,
-    AuthenticatorProtocol,
-    CommandHandlerProtocol,
-    FlextAuth,
-    QuickStartRequest,
 )
 
 # =============================================================================
@@ -110,7 +105,11 @@ def flext_auth_quick_start(
     *,
     create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
     REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-    REDACTED_LDAP_BIND_PASSWORD_password: str = "AdminPassword123!",  # noqa: S107
+    REDACTED_LDAP_BIND_PASSWORD_password: str = getattr(
+        getattr(FlextConstants, "Auth", None),
+        "DEFAULT_ADMIN_PASSWORD",
+        "AdminPassword123!",  # noqa: S107
+    ),
 ) -> FlextAuth[object]:
     """Quick start convenience function for examples and testing.
 
@@ -164,33 +163,33 @@ def flext_auth_quick_start(
 # =============================================================================
 
 __all__ = [
+    # Auth layer protocols and commands
+    "AuthCommands",
+    # Request/Parameter objects for type-safe API usage
+    "AuthRequest",
+    "AuthToken",
+    "AuthenticatorProtocol",
+    "CommandHandlerProtocol",
+    "Credential",
+    "EnvironmentConfigRequest",
     # Core authentication
     "FlextAuth",
     "FlextAuthConfig",
-    # Auth layer protocols and commands
-    "AuthCommands",
-    "AuthenticatorProtocol",
-    "CommandHandlerProtocol",
+    "FlextAuthConfigParams",
+    "FlextResult",
+    "Password",
+    "QuickStartRequest",
+    "Role",
+    "Session",
     # Domain models
     "User",
-    "Session",
-    "Role",
-    "Password",
-    "Credential",
-    "AuthToken",
-    # Domain functions
-    "create_user",
+    "UserCreationRequest",
+    # Foundation
+    "__version__",
     "authenticate_user",
     "create_session",
-    # Request/Parameter objects for type-safe API usage
-    "AuthRequest",
-    "QuickStartRequest",
-    "UserCreationRequest",
-    "EnvironmentConfigRequest",
-    "FlextAuthConfigParams",
+    # Domain functions
+    "create_user",
     # Convenience functions (reduced from 11 to 1 - eliminating wrappers)
     "flext_auth_quick_start",
-    # Foundation
-    "__version__",  # noqa: F405
-    "FlextResult",
 ]

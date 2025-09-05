@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 from datetime import UTC, datetime, timedelta
+from typing import cast
 
 import pytest
 from flext_core import FlextModels
@@ -25,6 +26,10 @@ from flext_auth import (
     create_user,
     flext_auth_quick_start,
 )
+
+# Explicit type alias to satisfy mypy's disallow_any_generics for FlextAuth[T]
+# We don't use the generic parameter in tests, so bind it to object.
+AuthService = FlextAuth[object]
 
 
 class TestRealModelsExhaustive:
@@ -257,7 +262,7 @@ class TestRealAuthExhaustive:
 
     def test_authentication_complete_workflow(self) -> None:
         """Testa workflow completo de autenticação (linhas 228-229, 350-352)."""
-        auth = FlextAuth()  # type: ignore[var-annotated]
+        auth: AuthService = FlextAuth()
 
         # Registrar usuário
         reg_result = auth.register_user(
@@ -278,7 +283,7 @@ class TestRealAuthExhaustive:
 
     def test_jwt_operations_real(self) -> None:
         """Testa operações reais de JWT (linhas 573-575, 591-593)."""
-        auth = FlextAuth()  # type: ignore[var-annotated]
+        auth: AuthService = FlextAuth()
 
         # Gerar token
         token = auth.generate_token("jwt_user_12345")
@@ -296,7 +301,7 @@ class TestRealAuthExhaustive:
 
     def test_user_lookup_operations(self) -> None:
         """Testa operações de busca de usuário (linhas 616-618, 644-646)."""
-        auth = FlextAuth()  # type: ignore[var-annotated]
+        auth: AuthService = FlextAuth()
 
         # Criar usuário
         reg_result = auth.register_user(
@@ -317,7 +322,7 @@ class TestRealAuthExhaustive:
 
     def test_session_management_real(self) -> None:
         """Testa gerenciamento real de sessões (linhas 675-677, 748-750)."""
-        auth = FlextAuth()  # type: ignore[var-annotated]
+        auth: AuthService = FlextAuth()
 
         # Criar usuário e fazer login
         reg_result = auth.register_user(
@@ -337,7 +342,7 @@ class TestRealAuthExhaustive:
 
     def test_password_operations_real(self) -> None:
         """Testa operações reais de senha (linhas 757-759, 777)."""
-        auth = FlextAuth()  # type: ignore[var-annotated]
+        auth: AuthService = FlextAuth()
 
         password = "TestPasswordReal123!"
 
@@ -356,7 +361,7 @@ class TestRealAuthExhaustive:
 
     def test_user_registration_edge_cases(self) -> None:
         """Testa casos extremos de registro (linhas 405-409, 421)."""
-        auth = FlextAuth()  # type: ignore[var-annotated]
+        auth: AuthService = FlextAuth()
 
         # Email inválido
         result = auth.register_user("test", "invalid-email", "ValidPass123!")
@@ -368,7 +373,7 @@ class TestRealAuthExhaustive:
 
     def test_token_validation_edge_cases(self) -> None:
         """Testa casos extremos de validação de token (linhas 792-793, 838-840)."""
-        auth = FlextAuth()  # type: ignore[var-annotated]
+        auth: AuthService = FlextAuth()
 
         # Token muito longo
         very_long_user_id = "a" * 1000
@@ -382,7 +387,7 @@ class TestRealAuthExhaustive:
 
     def test_user_operations_comprehensive(self) -> None:
         """Testa operações abrangentes de usuário (linhas 860, 872, 899, 905)."""
-        auth = FlextAuth()  # type: ignore[var-annotated]
+        auth: AuthService = FlextAuth()
 
         # Registrar múltiplos usuários
         for i in range(3):
@@ -400,7 +405,7 @@ class TestRealAuthExhaustive:
 
     def test_advanced_authentication_scenarios(self) -> None:
         """Testa cenários avançados de autenticação (linhas 952, 964, 969-970)."""
-        auth = FlextAuth()  # type: ignore[var-annotated]
+        auth: AuthService = FlextAuth()
 
         # Criar usuário
         reg_result = auth.register_user(
@@ -504,7 +509,7 @@ class TestRealInitExhaustive:
     def test_flext_auth_quick_start_comprehensive(self) -> None:
         """Testa flext_auth_quick_start de forma abrangente."""
         # Quick start com REDACTED_LDAP_BIND_PASSWORD
-        auth = flext_auth_quick_start(
+        auth: AuthService = flext_auth_quick_start(
             create_REDACTED_LDAP_BIND_PASSWORD=True,
             REDACTED_LDAP_BIND_PASSWORD_username="super_REDACTED_LDAP_BIND_PASSWORD",
             REDACTED_LDAP_BIND_PASSWORD_password="SuperAdminPass123!",
@@ -527,7 +532,7 @@ class TestRealIntegrationExhaustive:
     def test_complete_authentication_integration(self) -> None:
         """Teste de integração completo de autenticação."""
         # Setup
-        auth = FlextAuth()  # type: ignore[var-annotated]
+        auth: AuthService = FlextAuth()
 
         # Registro
         reg_result = auth.register_user(
@@ -543,29 +548,30 @@ class TestRealIntegrationExhaustive:
 
         # Extrair dados
         user_data = auth_result.value
-        user_info = user_data["user"]  # type: ignore[index]
-        session_info = user_data["session"]  # type: ignore[index]
-        tokens_info = user_data["tokens"]  # type: ignore[index]
+        user_info = cast("dict[str, object]", user_data["user"])
+        session_info = cast("dict[str, object]", user_data["session"])
+        tokens_info = cast("dict[str, object]", user_data["tokens"])
 
         # Verificações
-        assert user_info["username"] == "integration_user"  # type: ignore[index]
-        assert session_info["token"] is not None  # type: ignore[index]
-        assert tokens_info["access_token"] is not None  # type: ignore[index]
+        assert user_info["username"] == "integration_user"
+        assert session_info["token"] is not None
+        assert tokens_info["access_token"] is not None
 
         # Verificar token JWT
-        jwt_token = user_data["jwt_token"]  # type: ignore[index]
-        token_result = auth.verify_token(jwt_token)  # type: ignore[arg-type]
+        jwt_token = cast("str", user_data["jwt_token"])
+        token_result = auth.verify_token(jwt_token)
         assert token_result.success
         assert token_result.value["valid"] is True
 
         # Buscar usuário por token
-        user_by_token = auth.get_user_by_token(jwt_token)  # type: ignore[arg-type]
+        user_by_token = auth.get_user_by_token(jwt_token)
         assert user_by_token.success
-        assert user_by_token.value.username == "integration_user"  # type: ignore[union-attr]
+        if user_by_token.value:
+            assert user_by_token.value.username == "integration_user"
 
     def test_session_lifecycle_complete(self) -> None:
         """Teste do ciclo de vida completo de sessão."""
-        auth = FlextAuth()  # type: ignore[var-annotated]
+        auth: AuthService = FlextAuth()
 
         # Criar usuário
         reg_result = auth.register_user(
@@ -577,16 +583,17 @@ class TestRealIntegrationExhaustive:
         auth_result = auth.authenticate_user("session_lifecycle", "SessionPass123!")
         assert auth_result.success
 
-        auth_result.value["session"]["token"]  # type: ignore[index]
+        session_data = cast("dict[str, object]", auth_result.value["session"])
+        session_token = cast("str", session_data["token"])
 
         # Verificar sessão ativa
-        user_by_token = auth.get_user_by_token(auth_result.value["jwt_token"])  # type: ignore[arg-type,index]
+        jwt_token = cast("str", auth_result.value["jwt_token"])
+        user_by_token = auth.get_user_by_token(jwt_token)
         assert user_by_token.success
 
         # Limpeza de sessões
         auth.cleanup_expired_sessions()
 
         # Verificar que sessão ativa ainda existe usando jwt_token
-        jwt_token = auth_result.value["jwt_token"]  # type: ignore[index]
-        user_by_token = auth.get_user_by_token(jwt_token)  # type: ignore[arg-type]
+        user_by_token = auth.get_user_by_token(jwt_token)
         assert user_by_token is not None

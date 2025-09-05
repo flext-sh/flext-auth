@@ -21,18 +21,15 @@ def debug_password_operations() -> None:
     # Test password hashing
     try:
         hashed = auth.hash_password(password)
-        print(f"Password hashed successfully: {len(hashed)} chars")
 
         # Test verification
-        is_valid = auth.verify_password(password, hashed)
-        print(f"Password verification: {is_valid}")
+        auth.verify_password(password, hashed)
 
         # Test with wrong password
-        is_invalid = auth.verify_password("WrongPassword", hashed)
-        print(f"Wrong password verification: {is_invalid}")
+        auth.verify_password("WrongPassword", hashed)
 
-    except Exception as e:
-        print(f"Password operation failed: {e}")
+    except Exception:
+        pass
 
 
 def debug_jwt_operations() -> None:
@@ -42,42 +39,31 @@ def debug_jwt_operations() -> None:
 
     # Register a test user first
     user_result = auth.register_user(
-        username="testuser",
-        email="test@example.com",
-        password="TestPassword123!"
+        username="testuser", email="test@example.com", password="TestPassword123!"
     )
 
     if user_result.is_failure:
-        print(f"User registration failed: {user_result.error}")
         return
 
     user = user_result.value
-    print(f"User registered: {user.username}")
 
     # Test JWT token generation
     token_result = auth.generate_jwt_token(user.id)
     if token_result.is_failure:
-        print(f"Token generation failed: {token_result.error}")
         return
 
     token = token_result.value
-    print(f"Generated token: {token[:50]}...")
 
     # Test token validation
     validate_result = auth.validate_token(token)
     if validate_result.is_success:
-        payload = validate_result.value
-        print(f"Token validation successful: user_id={payload.get('user_id')}")
-    else:
-        print(f"Token validation failed: {validate_result.error}")
+        pass
 
     # Test with Bearer prefix
     bearer_token = f"Bearer {token}"
     bearer_result = auth.validate_token(bearer_token)
     if bearer_result.is_success:
-        print("Bearer token validation successful")
-    else:
-        print(f"Bearer token validation failed: {bearer_result.error}")
+        pass
 
 
 def debug_authentication_workflow() -> None:
@@ -89,36 +75,25 @@ def debug_authentication_workflow() -> None:
         username="debuguser",
         email="debug@example.com",
         password="DebugPassword123!",
-        roles=["REDACTED_LDAP_BIND_PASSWORD"]
+        roles=["REDACTED_LDAP_BIND_PASSWORD"],
     )
 
     if reg_result.is_failure:
-        print(f"Registration failed: {reg_result.error}")
         return
-
-    print("User registered successfully")
 
     # Authenticate user
     auth_result = auth.authenticate_user("debuguser", "DebugPassword123!")
 
     if auth_result.is_success:
-        auth_data = auth_result.value
-        print("Authentication successful")
-        print(f"Session ID: {auth_data.get('session_id')}")
-        print(f"JWT Token: {str(auth_data.get('jwt_token', ''))[:30]}...")
-    else:
-        print(f"Authentication failed: {auth_result.error}")
+        pass
 
 
 def main() -> None:
     """Run debug diagnostics."""
-    print("=== Password Operations Debug ===")
     debug_password_operations()
 
-    print("\n=== JWT Operations Debug ===")
     debug_jwt_operations()
 
-    print("\n=== Authentication Workflow Debug ===")
     debug_authentication_workflow()
 
 

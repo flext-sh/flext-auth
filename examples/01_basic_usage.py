@@ -1,12 +1,13 @@
-#!/usr/bin/env python3
 """FLEXT Auth - Basic usage examples.
 
-This example demonstrates basic FLEXT Auth usage with real functionality.
-All methods used exist and work as expected.
+This example demonstrates basic FLEXT Auth usage with real functionality
+following FLEXT ecosystem patterns: no prints, structured logging,
+type-safe operations, and domain-driven design.
+
+All methods used exist and work as expected according to flext-core patterns.
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
@@ -16,34 +17,37 @@ import secrets
 import string
 from typing import cast
 
+from flext_core import FlextLogger
+
 from flext_auth import FlextAuth
 
-# Use inline constants instead of scattered globals
-# All passwords follow the same pattern: secure + examples
+# Get structured logger instance
+logger = FlextLogger(__name__)
 
 
 def example_basic_authentication() -> None:
     """Demonstrate basic authentication with FlextAuth."""
-    print("🔐 Basic Authentication Example")
-    print("=" * 40)
+    logger.info("Starting basic authentication example")
 
     # Create authentication instance
     auth: FlextAuth[object] = FlextAuth()
-    print("✅ FlextAuth instance created (in-memory storage)")
+    logger.info("FlextAuth instance created with in-memory storage")
 
     # Show current configuration
     config = auth.get_config()
     security_settings = auth.config.get_security_settings()
 
-    print(f"   JWT Expiry: {config.jwt_expiry_minutes} minutes")
-    print(f"   Bcrypt Rounds: {security_settings.get('bcrypt_rounds')}")
-    print(f"   Max Login Attempts: {security_settings.get('max_login_attempts')}")
+    logger.info(
+        "Authentication configuration loaded",
+        jwt_expiry_minutes=config.jwt_expiry_minutes,
+        bcrypt_rounds=security_settings.get("bcrypt_rounds"),
+        max_login_attempts=security_settings.get("max_login_attempts"),
+    )
 
 
 def example_password_operations() -> None:
     """Demonstrate password operations."""
-    print("\n🔑 Password Operations Example")
-    print("=" * 40)
+    logger.info("Starting password operations example")
 
     auth: FlextAuth[object] = FlextAuth()
 
@@ -51,24 +55,24 @@ def example_password_operations() -> None:
     password = os.getenv("FLEXT_DEMO_PASSWORD", "MySecurePassword123!")
     try:
         hashed = auth.hash_password(password)
-        print(f"✅ Password hashed successfully: {len(hashed)} chars")
+        logger.info("Password hashed successfully", hashed_length=len(hashed))
 
         # Verify correct password
         is_valid = auth.verify_password(password, hashed)
-        print(f"✅ Correct password verification: {is_valid}")
+        logger.info("Password verification with correct password", is_valid=is_valid)
 
         # Verify wrong password
         is_invalid = auth.verify_password("WrongPassword", hashed)
-        print(f"✅ Wrong password verification: {is_invalid}")
+        logger.info("Password verification with wrong password", is_valid=is_invalid)
 
     except Exception as e:
-        print(f"❌ Password operation failed: {e}")
+        logger.exception("Password operation failed", error=str(e))
+        raise
 
 
 def example_email_validation() -> None:
     """Demonstrate email validation patterns."""
-    print("\n📧 Email Validation Example")
-    print("=" * 40)
+    logger.info("Starting email validation example")
 
     test_emails = [
         "valid@example.com",
@@ -76,7 +80,7 @@ def example_email_validation() -> None:
         "invalid.email",
         "missing@domain",
         "double@@domain.com",
-        ""
+        "",
     ]
 
     def validate_email_manual(email: str) -> bool:
@@ -92,71 +96,86 @@ def example_email_validation() -> None:
             return False
         return ".." not in email
 
+    valid_count = 0
     for email in test_emails:
         is_valid = validate_email_manual(email)
-        status = "✅ Valid" if is_valid else "❌ Invalid"
-        print(f"   {email}: {status}")
+        if is_valid:
+            valid_count += 1
+        logger.info("Email validation result", email=email, is_valid=is_valid)
+
+    logger.info(
+        "Email validation completed",
+        valid_emails=valid_count,
+        total_emails=len(test_emails),
+    )
 
 
 def example_user_lifecycle() -> None:
     """Demonstrate complete user lifecycle."""
-    print("\n👤 User Lifecycle Example")
-    print("=" * 40)
+    logger.info("Starting user lifecycle example")
 
     auth: FlextAuth[object] = FlextAuth()
+    password = os.getenv("FLEXT_DEMO_USER_PASSWORD", "StrongPass123!")
 
     # Register user
-    print("1. Registering user...")
+    logger.info("Registering user lifecycle example")
     register_result = auth.register_user(
         username="lifecycleuser",
         email="lifecycle@example.com",
-        password=os.getenv("FLEXT_DEMO_USER_PASSWORD", "StrongPass123!"),
+        password=password,
         full_name="Lifecycle User",
-        roles=["user"]
+        roles=["user"],
     )
 
     if register_result.is_success:
         user_data = register_result.value
-        print(f"✅ User registered successfully: {user_data.username}")
-        print(f"   Email: {user_data.email_str}")
-        print(f"   Role: {user_data.role}")
-        print(f"   Active: {user_data.active}")
+        logger.info(
+            "User registered successfully",
+            username=user_data.username,
+            email=user_data.email_str,
+            role=user_data.role,
+            active=user_data.active,
+        )
 
         # Authenticate user
-        print("\n2. Authenticating user...")
-        auth_result = auth.authenticate_user("lifecycleuser", os.getenv("FLEXT_DEMO_USER_PASSWORD", "StrongPass123!"))
+        logger.info("Authenticating registered user")
+        auth_result = auth.authenticate_user("lifecycleuser", password)
 
         if auth_result.is_success:
-            print("✅ Authentication successful")
+            logger.info("User authentication successful")
             auth_data = auth_result.value
 
             # Extract token info
             jwt_token_str = str(auth_data.get("jwt_token", ""))
             session_id = auth_data.get("session_id")
 
-            print(f"   JWT Token: {jwt_token_str[:30]}...")
-            print(f"   Session ID: {session_id}")
+            logger.info(
+                "Authentication tokens generated",
+                jwt_token_preview=jwt_token_str[:30] + "..." if jwt_token_str else "",
+                session_id=session_id,
+            )
 
             # Validate token
-            print("\n3. Validating token...")
+            logger.info("Validating JWT token")
             token_result = auth.validate_token(jwt_token_str)
             if token_result.is_success:
                 claims = token_result.value
-                print("✅ Token validation successful")
-                print(f"   User ID: {claims.get('user_id')}")
-                print(f"   Username: {claims.get('username')}")
+                logger.info(
+                    "Token validation successful",
+                    user_id=claims.get("user_id"),
+                    username=claims.get("username"),
+                )
             else:
-                print(f"❌ Token validation failed: {token_result.error}")
+                logger.error("Token validation failed", error=token_result.error)
         else:
-            print(f"❌ Authentication failed: {auth_result.error}")
+            logger.error("Authentication failed", error=auth_result.error)
     else:
-        print(f"❌ Registration failed: {register_result.error}")
+        logger.error("User registration failed", error=register_result.error)
 
 
 def example_direct_auth() -> None:
     """Demonstrate direct authentication workflow."""
-    print("\n🚀 Direct Authentication Example")
-    print("=" * 40)
+    logger.info("Starting direct authentication example")
 
     auth: FlextAuth[object] = FlextAuth()
 
@@ -169,109 +188,114 @@ def example_direct_auth() -> None:
     reg_result = auth.register_user(username, email, password)
 
     if reg_result.is_success:
-        print(f"✅ User '{username}' registered")
+        logger.info("User registered successfully", username=username)
 
         # Step 2: Authenticate
         auth_result = auth.authenticate_user(username, password)
 
         if auth_result.is_success:
-            print(f"✅ User '{username}' authenticated successfully")
+            logger.info("User authenticated successfully", username=username)
 
             auth_data = auth_result.value
             tokens_data = cast("dict[str, object]", auth_data.get("tokens", {}))
 
             access_token = str(tokens_data.get("access_token", ""))
-            print(f"   Access token: {access_token[:20]}...")
+            logger.info(
+                "Access token generated",
+                token_preview=access_token[:20] + "..." if access_token else "",
+            )
 
         else:
-            print(f"❌ Authentication failed: {auth_result.error}")
+            logger.error("Authentication failed", error=auth_result.error)
     else:
-        print(f"❌ Registration failed: {reg_result.error}")
+        logger.error("User registration failed", error=reg_result.error)
 
 
 def example_advanced_registration() -> None:
     """Demonstrate advanced user registration with roles."""
-    print("\n⚡ Advanced Registration Example")
-    print("=" * 40)
+    logger.info("Starting advanced registration example")
 
     auth: FlextAuth[object] = FlextAuth()
+    password = os.getenv("FLEXT_DEMO_ADVANCED_PASSWORD", "AdvancedPass123!")
 
     # Register REDACTED_LDAP_BIND_PASSWORD user
     REDACTED_LDAP_BIND_PASSWORD_result = auth.register_user(
         username="REDACTED_LDAP_BIND_PASSWORD",
         email="REDACTED_LDAP_BIND_PASSWORD@company.com",
-        password=os.getenv("FLEXT_DEMO_ADVANCED_PASSWORD", "AdvancedPass123!"),
+        password=password,
         full_name="Administrator",
-        roles=["REDACTED_LDAP_BIND_PASSWORD", "user"]
+        roles=["REDACTED_LDAP_BIND_PASSWORD", "user"],
     )
 
     if REDACTED_LDAP_BIND_PASSWORD_result.is_success:
         user_data = REDACTED_LDAP_BIND_PASSWORD_result.value
-        print("✅ Admin user registered successfully")
-        print(f"   Username: {user_data.username}")
-        print(f"   Roles: {user_data.roles}")
-        print(f"   Has REDACTED_LDAP_BIND_PASSWORD role: {user_data.has_role('REDACTED_LDAP_BIND_PASSWORD')}")
-        print(f"   Is verified: {user_data.is_verified}")
-
+        logger.info(
+            "Admin user registered successfully",
+            username=user_data.username,
+            roles=user_data.roles,
+            has_REDACTED_LDAP_BIND_PASSWORD_role=user_data.has_role("REDACTED_LDAP_BIND_PASSWORD"),
+            is_verified=user_data.is_verified,
+        )
     else:
-        print(f"❌ Admin registration failed: {REDACTED_LDAP_BIND_PASSWORD_result.error}")
+        logger.error("Admin registration failed", error=REDACTED_LDAP_BIND_PASSWORD_result.error)
 
     # Register regular user
     user_result = auth.register_user(
         username="regularuser",
         email="user@company.com",
-        password=os.getenv("FLEXT_DEMO_ADVANCED_PASSWORD", "AdvancedPass123!"),
+        password=password,
         full_name="Regular User",
-        roles=["user"]
+        roles=["user"],
     )
 
     if user_result.is_success:
         user_data = user_result.value
-        print("✅ Regular user registered successfully")
-        print(f"   Username: {user_data.username}")
-        print(f"   Roles: {user_data.roles}")
-        print(f"   Has REDACTED_LDAP_BIND_PASSWORD role: {user_data.has_role('REDACTED_LDAP_BIND_PASSWORD')}")
-
+        logger.info(
+            "Regular user registered successfully",
+            username=user_data.username,
+            roles=user_data.roles,
+            has_REDACTED_LDAP_BIND_PASSWORD_role=user_data.has_role("REDACTED_LDAP_BIND_PASSWORD"),
+        )
     else:
-        print(f"❌ User registration failed: {user_result.error}")
+        logger.error("User registration failed", error=user_result.error)
 
 
 def example_complete_workflow() -> None:
     """Demonstrate complete authentication workflow."""
-    print("\n🔄 Complete Workflow Example")
-    print("=" * 40)
+    logger.info("Starting complete workflow example")
 
     auth: FlextAuth[object] = FlextAuth()
+    password = os.getenv("FLEXT_DEMO_WORKFLOW_PASSWORD", "WorkflowPass123!")
 
     # Step 1: Register user
-    print("1. User Registration")
+    logger.info("Step 1: User registration")
     reg_result = auth.register_user(
         username="workflowuser",
         email="workflow@example.com",
-        password=os.getenv("FLEXT_DEMO_WORKFLOW_PASSWORD", "WorkflowPass123!"),
-        full_name="Workflow User"
+        password=password,
+        full_name="Workflow User",
     )
 
     if reg_result.is_failure:
-        print(f"❌ Registration failed: {reg_result.error}")
+        logger.error("Registration failed", error=reg_result.error)
         return
 
     user = reg_result.value
-    print(f"✅ User registered: {user.username}")
+    logger.info("User registered successfully", username=user.username)
 
     # Step 2: Authentication
-    print("\n2. User Authentication")
-    auth_result = auth.authenticate_user("workflowuser", os.getenv("FLEXT_DEMO_WORKFLOW_PASSWORD", "WorkflowPass123!"))
+    logger.info("Step 2: User authentication")
+    auth_result = auth.authenticate_user("workflowuser", password)
 
     if auth_result.is_failure:
-        print(f"❌ Authentication failed: {auth_result.error}")
+        logger.error("Authentication failed", error=auth_result.error)
         return
 
     auth_data = auth_result.value
-    print("✅ Authentication successful")
+    logger.info("Authentication successful")
 
     # Step 3: Token operations
-    print("\n3. Token Operations")
+    logger.info("Step 3: Token operations")
     jwt_token_str = str(auth_data.get("jwt_token", ""))
     session_id = str(auth_data.get("session_id", ""))
 
@@ -279,24 +303,24 @@ def example_complete_workflow() -> None:
     token_validation = auth.validate_token(jwt_token_str)
     if token_validation.is_success:
         claims = token_validation.value
-        print(f"✅ Token valid for user: {claims.get('username')}")
+        logger.info("Token validation successful", username=claims.get("username"))
     else:
-        print(f"❌ Token validation failed: {token_validation.error}")
+        logger.error("Token validation failed", error=token_validation.error)
 
     # Step 4: Session management
-    print("\n4. Session Management")
+    logger.info("Step 4: Session management")
     user_sessions = auth.get_user_sessions(user.id)
     if user_sessions.is_success:
         sessions = user_sessions.value
-        print(f"✅ User has {len(sessions)} active sessions")
+        logger.info("User sessions retrieved", active_sessions=len(sessions))
 
     # Step 5: Logout
-    print("\n5. User Logout")
+    logger.info("Step 5: User logout")
     logout_result = auth.logout_user(session_id)
     if logout_result.is_success:
-        print("✅ User logged out successfully")
+        logger.info("User logged out successfully")
     else:
-        print(f"❌ Logout failed: {logout_result.error}")
+        logger.error("Logout failed", error=logout_result.error)
 
 
 def generate_secure_password(length: int = 16) -> str:
@@ -307,8 +331,7 @@ def generate_secure_password(length: int = 16) -> str:
 
 def main() -> None:
     """Run all examples."""
-    print("🚀 FLEXT Auth - Comprehensive Examples")
-    print("=" * 50)
+    logger.info("Starting FLEXT Auth comprehensive examples")
 
     try:
         example_basic_authentication()
@@ -319,11 +342,12 @@ def main() -> None:
         example_advanced_registration()
         example_complete_workflow()
 
-        print("\n🎉 All examples completed successfully!")
-        print("✅ FLEXT Auth is working correctly!")
+        logger.info(
+            "All examples completed successfully - FLEXT Auth is working correctly"
+        )
 
     except Exception as e:
-        print(f"\n❌ Example failed: {e}")
+        logger.exception("Example execution failed", error=str(e))
         raise
 
 
