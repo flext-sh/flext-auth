@@ -744,7 +744,7 @@ class FlextAuth[T]:
         REDACTED_LDAP_BIND_PASSWORD_password: str = getattr(
             getattr(FlextConstants, "Auth", None),
             "DEFAULT_ADMIN_PASSWORD",
-            "AdminPassword123!",  # noqa: S107
+            "AdminPassword123!",
         ),
     ) -> FlextAuth[object]:
         """Quick start using Parameter Object Pattern - reduces parameters from 6 to 1 internal.

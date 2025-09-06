@@ -193,8 +193,8 @@ class TestFlextAuthConfigCoverage:
         # Test with None values that should be handled gracefully (intentional type violations for error testing)
         try:
             config = FlextAuthConfig(
-                jwt_issuer=None,  # type: ignore[arg-type]
-                jwt_audience=None,  # type: ignore[arg-type]
+                jwt_issuer=None,
+                jwt_audience=None,
             )
             # Should handle None values appropriately
             assert config is not None
@@ -207,8 +207,8 @@ class TestFlextAuthConfigCoverage:
         # Test with invalid types that should trigger validation (intentional type violations for error testing)
         try:
             config = FlextAuthConfig(
-                jwt_expiry_minutes="not_an_integer",  # type: ignore[arg-type]  # Wrong type
-                bcrypt_rounds="not_an_integer",  # type: ignore[arg-type]  # Wrong type
+                jwt_expiry_minutes="not_an_integer",
+                bcrypt_rounds="not_an_integer",
             )
             # If validation passes, values should be converted
             assert isinstance(config.jwt_expiry_minutes, int)

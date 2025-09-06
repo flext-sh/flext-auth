@@ -80,7 +80,7 @@ class TestRealModelsExhaustive:
             # Testar username None/empty
             # Usar type: ignore pois estamos testando propositalmente tipos inválidos
             result = create_user(
-                username=empty_val if empty_val != 0 else None,  # type: ignore[arg-type]
+                username=empty_val if empty_val != 0 else None,
                 email="valid@example.com",
                 password="validPassword123!",
             )

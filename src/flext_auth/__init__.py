@@ -108,7 +108,7 @@ def flext_auth_quick_start(
     REDACTED_LDAP_BIND_PASSWORD_password: str = getattr(
         getattr(FlextConstants, "Auth", None),
         "DEFAULT_ADMIN_PASSWORD",
-        "AdminPassword123!",  # noqa: S107
+        "AdminPassword123!",
     ),
 ) -> FlextAuth[object]:
     """Quick start convenience function for examples and testing.

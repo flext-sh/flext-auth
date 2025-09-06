@@ -97,7 +97,7 @@ class TestFlextAuthErrorPaths:
         assert result.is_failure
 
         # Test with None token (intentional type violation for error testing)
-        result = auth.validate_token(None)  # type: ignore[arg-type]
+        result = auth.validate_token(None)
         assert result.is_failure
 
 
