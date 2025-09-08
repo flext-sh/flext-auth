@@ -1,25 +1,10 @@
 """FLEXT Auth Models - Authentication domain models using flext-core patterns directly.
 
-Authentication domain entities using FlextModels directly without wrapper classes,
-following the "fazer mais com menos" principle and eliminating unnecessary redeclarations.
+Authentication domain models providing User, Role, Password, and Credential entities
+with Pydantic validation, flext-core integration, and secure authentication patterns.
 
-Usage:
-    # User entity creation
-    user = User(id="user_123", username="john", email="john@example.com")
-
-    # Session entity creation
-    session = Session(id="session_456", user_id="user_123", token="jwt_token")
-
-    # Factory methods
-    user_result = create_user(username="john", email="john@example.com", password="secret")
-
-Features:
-    - Authentication domain entities using FlextModels directly
-    - Password hashing and verification
-    - JWT token generation and validation
-    - Session lifecycle management
-    - Type-safe domain modeling patterns
-
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
@@ -35,6 +20,7 @@ from flext_core import (
     FlextCore,
     FlextModels,
     FlextResult,
+    FlextTypes,
     FlextUtilities,
 )
 from pydantic import BaseModel, Field, field_validator
@@ -57,7 +43,7 @@ class UserCreationRequest(BaseModel):
     email: str
     password: str
     full_name: str | None = None
-    roles: list[str] = Field(default_factory=list)
+    roles: FlextTypes.Core.StringList = Field(default_factory=list)
 
 
 # =========================================================================
@@ -66,13 +52,7 @@ class UserCreationRequest(BaseModel):
 
 
 class User(FlextModels.Entity):
-    """User entity for authentication with credentials and profile information.
-
-    Represents an authenticated user in the system with secure credential storage,
-    profile information, and authentication state management. Inherits from
-    FlextModels.Entity to get identity, versioning, and domain events.
-
-    """
+    """User entity for authentication with credentials and profile information."""
 
     # Core user fields
     username: str = Field(
@@ -101,8 +81,10 @@ class User(FlextModels.Entity):
     )
 
     # Role-based access control
-    roles: list[str] = Field(default_factory=list, description="User roles for RBAC")
-    permissions: list[str] = Field(
+    roles: FlextTypes.Core.StringList = Field(
+        default_factory=list, description="User roles for RBAC"
+    )
+    permissions: FlextTypes.Core.StringList = Field(
         default_factory=list, description="Direct permissions"
     )
 
@@ -206,9 +188,9 @@ class User(FlextModels.Entity):
         email: str | None = None,
         password: str | None = None,
         full_name: str | None = None,
-        roles: list[str] | None = None,
+        roles: FlextTypes.Core.StringList | None = None,
     ) -> FlextResult[User]:
-        """Factory method to create user with password hashing."""
+        """Create user with password hashing."""
         try:
             # Validate required parameters
             if username is None:
@@ -303,12 +285,7 @@ class User(FlextModels.Entity):
 
 
 class Session(FlextModels.Entity):
-    """Session entity for authentication state management.
-
-    Represents an active authentication session with token validation,
-    expiration handling, and security tracking.
-
-    """
+    """Session entity for authentication state management."""
 
     # Core session fields
     user_id: str = Field(..., description="ID of authenticated user")
@@ -370,7 +347,7 @@ class Session(FlextModels.Entity):
     def create_session(
         cls: type[Session], user_id: str, expires_in_minutes: int = 30
     ) -> FlextResult[Session]:
-        """Factory method to create session with secure token."""
+        """Create session with secure token."""
         try:
             # Generate secure session token using flext-core (32+ chars required)
             token = FlextUtilities.generate_uuid()
@@ -429,11 +406,7 @@ class Session(FlextModels.Entity):
 
 
 class Role(FlextModels.Entity):
-    """Role entity for RBAC (Role-Based Access Control).
-
-    Represents a role with associated permissions for user authorization.
-
-    """
+    """Role entity for RBAC (Role-Based Access Control)."""
 
     # Role definition
     name: str = Field(..., description="Role name")
@@ -441,7 +414,9 @@ class Role(FlextModels.Entity):
     description: str | None = Field(default=None, description="Role description")
 
     # Permissions
-    permissions: list[str] = Field(default_factory=list, description="Role permissions")
+    permissions: FlextTypes.Core.StringList = Field(
+        default_factory=list, description="Role permissions"
+    )
 
     # Role metadata
     is_system_role: bool = Field(default=False, description="System role flag")
@@ -625,8 +600,11 @@ class AuthToken(FlextModels.Value):
                 payload, secret, algorithm=FlextConstants.Auth.JWT_DEFAULT_ALGORITHM
             )
 
+            # Convert bytes to str if necessary
+            token_str = token.decode("utf-8") if isinstance(token, bytes) else token
+
             auth_token = cls(
-                token=token, user_id=user_id, expires_at=expires_at, issued_at=now
+                token=token_str, user_id=user_id, expires_at=expires_at, issued_at=now
             )
 
             return FlextResult[AuthToken].ok(auth_token)
@@ -636,7 +614,7 @@ class AuthToken(FlextModels.Value):
                 f"Failed to create JWT token: {e}"
             )  # pragma: no cover
 
-    def verify_token(self, secret: str) -> FlextResult[dict[str, object]]:
+    def verify_token(self, secret: str) -> FlextResult[FlextTypes.Core.Dict]:
         """Verify JWT token and return payload with proper validation."""
         try:  # pragma: no cover
             # Use modern PyJWT with proper audience and issuer validation  # pragma: no cover
@@ -658,15 +636,15 @@ class AuthToken(FlextModels.Value):
                     "require_iss": True,  # pragma: no cover
                 },  # pragma: no cover
             )  # pragma: no cover
-            return FlextResult[dict[str, object]].ok(payload)  # pragma: no cover
+            return FlextResult[FlextTypes.Core.Dict].ok(payload)  # pragma: no cover
 
         except jwt.ExpiredSignatureError:  # pragma: no cover
-            return FlextResult[dict[str, object]].fail(  # pragma: no cover
+            return FlextResult[FlextTypes.Core.Dict].fail(  # pragma: no cover
                 "Token expired",
                 error_code=FlextConstants.Auth.TOKEN_EXPIRED,  # pragma: no cover
             )  # pragma: no cover
         except jwt.InvalidTokenError as e:  # pragma: no cover
-            return FlextResult[dict[str, object]].fail(  # pragma: no cover
+            return FlextResult[FlextTypes.Core.Dict].fail(  # pragma: no cover
                 f"Invalid token: {e}",
                 error_code=FlextConstants.Auth.INVALID_TOKEN,  # pragma: no cover
             )  # pragma: no cover
@@ -696,7 +674,7 @@ def create_user(
     email: str,
     password: str,
     full_name: str | None = None,
-    roles: list[str] | None = None,
+    roles: FlextTypes.Core.StringList | None = None,
 ) -> FlextResult[User]:
     """Create user with password hashing and validation using Pydantic field_validator."""
     try:
@@ -776,10 +754,10 @@ def create_session(
 
 def authenticate_user(
     username: str, password: str, user_storage: dict[str, User], jwt_secret: str
-) -> FlextResult[dict[str, object]]:
+) -> FlextResult[FlextTypes.Core.Dict]:
     """Authenticate user using Railway Pattern - eliminates all 8 returns using FlextCore functional composition."""
     # Package authentication parameters for Railway Pattern with proper typing
-    auth_context: dict[str, object] = {
+    auth_context: FlextTypes.Core.Dict = {
         "username": username,
         "password": password,
         "user_storage": user_storage,
@@ -800,8 +778,8 @@ def authenticate_user(
 
 
 def _find_user_by_username(
-    auth_context: dict[str, object],
-) -> FlextResult[dict[str, object]]:
+    auth_context: FlextTypes.Core.Dict,
+) -> FlextResult[FlextTypes.Core.Dict]:
     """Find user by username (case insensitive) - extracted method for Railway Pattern."""
     try:
         username = str(auth_context["username"])
@@ -814,42 +792,42 @@ def _find_user_by_username(
                 break
 
         if not user:
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[FlextTypes.Core.Dict].fail(
                 "Invalid credentials",
                 error_code=FlextConstants.Auth.INVALID_CREDENTIALS,
             )
 
-        return FlextResult[dict[str, object]].ok({**auth_context, "user": user})
+        return FlextResult[FlextTypes.Core.Dict].ok({**auth_context, "user": user})
 
     except Exception as e:  # pragma: no cover
-        return FlextResult[dict[str, object]].fail(
+        return FlextResult[FlextTypes.Core.Dict].fail(
             f"User lookup failed: {e}"
         )  # pragma: no cover
 
 
 def _validate_user_login_status(
-    auth_data: dict[str, object],
-) -> FlextResult[dict[str, object]]:
+    auth_data: FlextTypes.Core.Dict,
+) -> FlextResult[FlextTypes.Core.Dict]:
     """Validate user can login - extracted method for Railway Pattern."""
     user = cast("User", auth_data["user"])
 
     if not user.can_login:
         if user.is_locked:
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[FlextTypes.Core.Dict].fail(
                 "Account is locked", error_code=FlextConstants.Auth.ACCOUNT_LOCKED
             )
         if not user.is_active:
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[FlextTypes.Core.Dict].fail(
                 "Account is disabled",
                 error_code=FlextConstants.Auth.ACCOUNT_DISABLED,
             )
 
-    return FlextResult[dict[str, object]].ok(auth_data)
+    return FlextResult[FlextTypes.Core.Dict].ok(auth_data)
 
 
 def _verify_user_password(
-    auth_data: dict[str, object],
-) -> FlextResult[dict[str, object]]:
+    auth_data: FlextTypes.Core.Dict,
+) -> FlextResult[FlextTypes.Core.Dict]:
     """Verify user password - extracted method for Railway Pattern."""
     user = cast("User", auth_data["user"])
     password = str(auth_data["password"])
@@ -861,12 +839,12 @@ def _verify_user_password(
 
     if not password_valid:
         user.record_failed_login()
-        return FlextResult[dict[str, object]].fail(
+        return FlextResult[FlextTypes.Core.Dict].fail(
             "Invalid credentials",
             error_code=FlextConstants.Auth.INVALID_CREDENTIALS,
         )
 
-    return FlextResult[dict[str, object]].ok(auth_data)
+    return FlextResult[FlextTypes.Core.Dict].ok(auth_data)
 
 
 def _create_user_session(user: User) -> FlextResult[Session]:
@@ -890,8 +868,8 @@ def _create_jwt_token(user: User, jwt_secret: str) -> FlextResult[AuthToken]:
 
 
 def _format_authentication_response(
-    auth_data: dict[str, object],
-) -> FlextResult[dict[str, object]]:
+    auth_data: FlextTypes.Core.Dict,
+) -> FlextResult[FlextTypes.Core.Dict]:
     """Format authentication response - extracted method for Railway Pattern."""
     user = cast("User", auth_data["user"])
     session = cast("Session", auth_data["session"])
@@ -921,46 +899,48 @@ def _format_authentication_response(
         },
     }
 
-    return FlextResult[dict[str, object]].ok(response_data)
+    return FlextResult[FlextTypes.Core.Dict].ok(response_data)
 
 
 def _record_login_success(
-    auth_data: dict[str, object],
-) -> FlextResult[dict[str, object]]:
+    auth_data: FlextTypes.Core.Dict,
+) -> FlextResult[FlextTypes.Core.Dict]:
     """Record successful login - helper for Railway Pattern."""
     try:
         user = cast("User", auth_data["user"])
         user.record_successful_login()
-        return FlextResult[dict[str, object]].ok(auth_data)
+        return FlextResult[FlextTypes.Core.Dict].ok(auth_data)
     except Exception as e:  # pragma: no cover
-        return FlextResult[dict[str, object]].fail(
+        return FlextResult[FlextTypes.Core.Dict].fail(
             f"Failed to record login: {e}"
         )  # pragma: no cover
 
 
 def _add_session_to_result(
-    auth_data: dict[str, object],
-) -> FlextResult[dict[str, object]]:
+    auth_data: FlextTypes.Core.Dict,
+) -> FlextResult[FlextTypes.Core.Dict]:
     """Add session to authentication result - helper for Railway Pattern."""
     try:
         user = cast("User", auth_data["user"])
 
         session_result = _create_user_session(user)
         if session_result.is_failure:  # pragma: no cover
-            return FlextResult[dict[str, object]].fail(  # pragma: no cover
+            return FlextResult[FlextTypes.Core.Dict].fail(  # pragma: no cover
                 f"Session creation failed: {session_result.error}"  # pragma: no cover
             )  # pragma: no cover
 
         # Add session to result
         result_with_session = {**auth_data, "session": session_result.value}
-        return FlextResult[dict[str, object]].ok(result_with_session)
+        return FlextResult[FlextTypes.Core.Dict].ok(result_with_session)
     except Exception as e:  # pragma: no cover
-        return FlextResult[dict[str, object]].fail(
+        return FlextResult[FlextTypes.Core.Dict].fail(
             f"Failed to add session: {e}"
         )  # pragma: no cover
 
 
-def _add_jwt_to_result(auth_data: dict[str, object]) -> FlextResult[dict[str, object]]:
+def _add_jwt_to_result(
+    auth_data: FlextTypes.Core.Dict,
+) -> FlextResult[FlextTypes.Core.Dict]:
     """Add JWT token to authentication result - helper for Railway Pattern."""
     try:
         user = cast("User", auth_data["user"])
@@ -968,15 +948,15 @@ def _add_jwt_to_result(auth_data: dict[str, object]) -> FlextResult[dict[str, ob
 
         jwt_result = _create_jwt_token(user, jwt_secret)
         if jwt_result.is_failure:  # pragma: no cover
-            return FlextResult[dict[str, object]].fail(  # pragma: no cover
+            return FlextResult[FlextTypes.Core.Dict].fail(  # pragma: no cover
                 f"JWT creation failed: {jwt_result.error}"  # pragma: no cover
             )  # pragma: no cover
 
         # Add JWT token to result
         result_with_jwt = {**auth_data, "jwt_token": jwt_result.value}
-        return FlextResult[dict[str, object]].ok(result_with_jwt)
+        return FlextResult[FlextTypes.Core.Dict].ok(result_with_jwt)
     except Exception as e:  # pragma: no cover
-        return FlextResult[dict[str, object]].fail(
+        return FlextResult[FlextTypes.Core.Dict].fail(
             f"Failed to add JWT: {e}"
         )  # pragma: no cover
 

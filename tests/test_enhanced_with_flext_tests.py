@@ -9,6 +9,10 @@ Features demonstrated:
 - TestBuilders for complex object construction
 - PerformanceMatchers for benchmarking critical paths
 - Advanced test patterns with zero mocking
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
@@ -18,9 +22,12 @@ import uuid
 from collections.abc import Callable
 from typing import TypedDict, cast
 
+from flext_core import FlextTypes
+
 # Add flext-core to path for flext_tests
 sys.path.insert(0, "/home/marlonsc/flext/flext-core/src")
 
+from flext_core.typings import FlextTypes
 from flext_tests import FlextMatchers, UserDataFactory
 
 from flext_auth import FlextAuth, User, flext_auth_quick_start
@@ -38,10 +45,10 @@ class UserData(TypedDict):
 
 
 # Type aliases for better readability and mypy compatibility
-AuthUserDict = dict[str, str | int | bool | list[str]]
+AuthUserDict = dict[str, str | int | bool | FlextTypes.Core.StringList]
 AuthSessionDict = dict[str, str | int | bool]
 AuthDataDict = dict[
-    str, str | int | bool | AuthUserDict | AuthSessionDict | dict[str, str]
+    str, str | int | bool | AuthUserDict | AuthSessionDict | FlextTypes.Core.Headers
 ]
 
 
@@ -362,9 +369,9 @@ class TestEnhancedPerformanceValidation:
         """Test batch user registration performance characteristics."""
         auth: FlextAuth[object] = FlextAuth()
 
-        def register_batch_users() -> list[object]:
+        def register_batch_users() -> FlextTypes.Core.List:
             """Register multiple users and return results."""
-            results: list[object] = []
+            results: FlextTypes.Core.List = []
             users_data = cast("list[UserData]", UserDataFactory.batch(count=5))
 
             for i, user_data in enumerate(users_data):
@@ -392,7 +399,7 @@ class TestEnhancedPerformanceValidation:
 
         # Setup: Create multiple users
         users_data = cast("list[UserData]", UserDataFactory.batch(count=3))
-        user_sessions: list[str] = []
+        user_sessions: FlextTypes.Core.StringList = []
 
         for i, user_data in enumerate(users_data):
             username = f"session_perf_{i}"
@@ -404,9 +411,9 @@ class TestEnhancedPerformanceValidation:
             FlextMatchers.assert_result_success(register_result)
             user_sessions.append(username)
 
-        def session_operations_batch() -> list[object]:
+        def session_operations_batch() -> FlextTypes.Core.List:
             """Perform batch session operations."""
-            session_results: list[object] = []
+            session_results: FlextTypes.Core.List = []
             for username in user_sessions:
                 # Authenticate to create session
                 auth_result = auth.authenticate_user(username, "SessionPerfTest123!@#")

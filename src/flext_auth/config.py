@@ -1,16 +1,7 @@
-"""FLEXT Auth Configuration - Type-safe authentication configuration using flext-core patterns.
+"""FLEXT - Type-safe authentication configuration using flext-core patterns.
 
-Provides type-safe configuration for authentication services with environment variable
-support and validation using FlextConfig directly without wrapper classes, following
-the "fazer mais com menos" principle.
-
-Usage:
-    config = FlextConfig()
-    auth_service = FlextAuthService(
-        jwt_secret=config.jwt_secret,
-        token_expire_minutes=config.jwt_expiry_minutes
-    )
-
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
@@ -18,8 +9,19 @@ from __future__ import annotations
 import os
 from typing import TypedDict
 
-from flext_core import FlextConfig, FlextConstants, FlextResult, FlextUtilities
+from flext_core import (
+    FlextConfig,
+    FlextConstants,
+    FlextResult,
+    FlextTypes,
+    FlextUtilities,
+)
 from pydantic import BaseModel, Field, TypeAdapter, ValidationInfo, field_validator
+
+# Local constants for validation (not in FlextConstants)
+_MIN_JWT_EXPIRY_MINUTES: int = 5
+_MIN_SESSION_EXPIRY_MINUTES: int = 15
+_MAX_SESSION_EXPIRY_MINUTES: int = 10080  # 1 week in minutes
 
 
 # TypedDict for type-safe FlextAuthConfig parameter passing
@@ -54,7 +56,7 @@ class EnvironmentConfigRequest(BaseModel):
     """Environment configuration request parameter object using Pydantic."""
 
     environment: str
-    overrides: dict[str, object] = Field(default_factory=dict)
+    overrides: FlextTypes.Core.Dict = Field(default_factory=dict)
 
 
 class FlextAuthConfig(FlextConfig):
@@ -280,7 +282,7 @@ class FlextAuthConfig(FlextConfig):
         """
         try:
             # Read environment variables with defaults
-            env_config: dict[str, object] = {
+            env_config: FlextTypes.Core.Dict = {
                 "jwt_secret": os.getenv("FLEXT_AUTH_JWT_SECRET", ""),
                 "jwt_expiry_minutes": int(
                     os.getenv(
@@ -333,7 +335,7 @@ class FlextAuthConfig(FlextConfig):
                 f"Failed to load configuration from environment: {e}"  # pragma: no cover
             )
 
-    def get_security_settings(self) -> dict[str, object]:
+    def get_security_settings(self) -> FlextTypes.Core.Dict:
         """Get security-related configuration settings.
 
         Returns:
@@ -350,7 +352,7 @@ class FlextAuthConfig(FlextConfig):
             "min_password_score": self.min_password_score,
         }
 
-    def get_jwt_settings(self) -> dict[str, object]:
+    def get_jwt_settings(self) -> FlextTypes.Core.Dict:
         """Get JWT-related configuration settings.
 
         Returns:
@@ -365,7 +367,7 @@ class FlextAuthConfig(FlextConfig):
             "jwt_secret_length": len(self.jwt_secret),  # Length only for security
         }
 
-    def get_session_settings(self) -> dict[str, object]:
+    def get_session_settings(self) -> FlextTypes.Core.Dict:
         """Get session-related configuration settings.
 
         Returns:
@@ -460,7 +462,7 @@ class FlextAuthConfig(FlextConfig):
     @classmethod
     def _build_configuration_data(
         cls, request: EnvironmentConfigRequest
-    ) -> FlextResult[dict[str, object]]:
+    ) -> FlextResult[FlextTypes.Core.Dict]:
         """Build configuration data with environment defaults - extracted method."""
         env_defaults = {
             "development": {
@@ -491,12 +493,12 @@ class FlextAuthConfig(FlextConfig):
 
         # Merge defaults with overrides
         config_data = {**env_defaults[request.environment], **request.overrides}
-        return FlextResult[dict[str, object]].ok(config_data)
+        return FlextResult[FlextTypes.Core.Dict].ok(config_data)
 
     @classmethod
     def _extract_configuration_parameters(
-        cls, config_data: dict[str, object]
-    ) -> FlextResult[dict[str, object]]:
+        cls, config_data: FlextTypes.Core.Dict
+    ) -> FlextResult[FlextTypes.Core.Dict]:
         """Extract and safely convert configuration parameters - extracted method."""
 
         def safe_int_cast(value: object, default: int) -> int:  # pragma: no cover
@@ -546,15 +548,15 @@ class FlextAuthConfig(FlextConfig):
             ),
         }
 
-        return FlextResult[dict[str, object]].ok(parameters)
+        return FlextResult[FlextTypes.Core.Dict].ok(parameters)
 
     @classmethod
     def _convert_parameters_to_typed(
-        cls, parameters: dict[str, object]
+        cls, parameters: FlextTypes.Core.Dict
     ) -> FlextResult[FlextAuthConfigParams]:
         """Convert generic parameters to properly typed parameters."""
         try:
-            typed_params: dict[str, object] = {}
+            typed_params: FlextTypes.Core.Dict = {}
 
             # Type conversion mapping with validation
             for key, value in parameters.items():
@@ -658,7 +660,7 @@ class FlextAuthConfig(FlextConfig):
 
     @classmethod
     def _safe_create_config_instance(
-        cls, config_class: type[FlextAuthConfig], parameters: dict[str, object]
+        cls, config_class: type[FlextAuthConfig], parameters: FlextTypes.Core.Dict
     ) -> FlextResult[FlextAuthConfig]:
         """Safely create configuration instance with exception handling - extracted method."""
         try:
@@ -689,6 +691,55 @@ class FlextAuthConfig(FlextConfig):
                 validation_result.error or "Configuration validation failed"
             )
         return FlextResult[FlextAuthConfig].ok(config)
+
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate business rules for authentication configuration.
+
+        Returns:
+            FlextResult[None]: Success if all business rules pass.
+
+        """
+        try:
+            # Validate JWT expiry is reasonable (between 5 minutes and 24 hours)
+            if not (
+                _MIN_JWT_EXPIRY_MINUTES
+                <= self.jwt_expiry_minutes
+                <= FlextConstants.Auth.JWT_MAX_EXPIRY_MINUTES
+            ):
+                return FlextResult[None].fail(
+                    "JWT expiry must be between 5 minutes and 24 hours"
+                )
+
+            # Validate bcrypt rounds are secure (between 10 and 15)
+            if not (
+                FlextConstants.Auth.MIN_BCRYPT_ROUNDS
+                <= self.bcrypt_rounds
+                <= FlextConstants.Auth.MAX_BCRYPT_ROUNDS
+            ):
+                return FlextResult[None].fail(
+                    "Bcrypt rounds must be between 10 and 15 for security"
+                )
+
+            # Validate password length constraints
+            if self.min_password_length > self.max_password_length:
+                return FlextResult[None].fail(
+                    "Minimum password length cannot exceed maximum"
+                )
+
+            # Validate session expiry is reasonable
+            if not (
+                _MIN_SESSION_EXPIRY_MINUTES
+                <= self.session_expiry_minutes
+                <= _MAX_SESSION_EXPIRY_MINUTES
+            ):  # 15 min to 1 week
+                return FlextResult[None].fail(
+                    "Session expiry must be between 15 minutes and 1 week"
+                )
+
+            return FlextResult[None].ok(data=None)
+
+        except Exception as e:
+            return FlextResult[None].fail(f"Business rules validation failed: {e}")
 
 
 # Module exports

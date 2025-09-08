@@ -1,6 +1,10 @@
 """Simplified real functionality tests for FlextAuth - without mocks, real functionality only.
 
 Tests core authentication workflows using direct FlextAuth instances.
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations

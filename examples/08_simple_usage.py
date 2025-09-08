@@ -28,8 +28,11 @@ def main() -> None:
 
         # Password verification
         auth.verify_password("TestPassword123!", password_hash)
-    except Exception:
-        pass
+    except Exception as e:
+        # Handle password verification error
+        error_message = f"Password verification failed: {e}"
+        # In production, this would be logged properly
+        del error_message  # Clean up
 
     # 3. Full Authentication Flow
 

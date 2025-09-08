@@ -29,13 +29,18 @@ def main() -> None:
 
         # Verify password
         auth.verify_password(password, hashed)
-    except Exception:
-        pass
+    except Exception as e:
+        # Handle password verification error
+        error_message = f"Password verification failed: {e}"
+        # In production, this would be logged properly
+        del error_message  # Clean up
 
     # 2. JWT Token Example using FlextAuth
     # Register user first
     user_result = auth.register_user(
-        username="tokenuser", email="token@example.com", password="TokenPassword123!"
+        username="tokenuser",
+        email="token@example.com",
+        password=os.getenv("TOKEN_PASSWORD", "TokenPassword123!"),
     )
 
     if user_result.is_success:

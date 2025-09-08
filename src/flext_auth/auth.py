@@ -1,16 +1,11 @@
 """FLEXT Auth - Main authentication orchestrator following flext-core patterns.
 
-Provides FlextAuth class as the unified authentication interface, delegating to
-domain services while maintaining clean public API.
+Main authentication module providing FlextAuth class with JWT token management,
+password hashing, user authentication, and role-based access control (RBAC)
+following flext-core patterns and ServiceProcessor architecture.
 
-Usage:
-    # Simple authentication setup
-    auth = FlextAuth()
-
-    # Register and authenticate users
-    result = auth.register_user("john", "john@example.com", "password")
-    auth_result = auth.authenticate_user("john", "password")
-
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
@@ -26,6 +21,7 @@ from flext_core import (
     FlextLogger,
     FlextResult,
     FlextServices,
+    FlextTypes,
     FlextUtilities,
     get_flext_container,
 )
@@ -45,7 +41,7 @@ from flext_auth.models import (
 # Python 3.13+ Advanced Type System
 T = TypeVar("T")
 U = TypeVar("U")
-AuthResult = TypeVar("AuthResult", bound=dict[str, object])
+AuthResult = TypeVar("AuthResult", bound=FlextTypes.Core.Dict)
 CommandResult = TypeVar("CommandResult")
 
 
@@ -75,14 +71,21 @@ class QuickStartRequest(BaseModel):
 class AuthenticatorProtocol(Protocol):
     """Protocol for authentication strategies."""
 
-    def authenticate(self, credentials: object) -> FlextResult[dict[str, object]]: ...
-    def validate_credentials(self, credentials: object) -> bool: ...
+    def authenticate(self, credentials: object) -> FlextResult[FlextTypes.Core.Dict]:
+        """Authenticate user credentials."""
+        ...
+
+    def validate_credentials(self, credentials: object) -> bool:
+        """Validate user credentials."""
+        ...
 
 
 class CommandHandlerProtocol(Protocol):
     """Protocol for command handlers with generic input/output."""
 
-    def handle(self, command: object) -> FlextResult[object]: ...
+    def handle(self, command: object) -> FlextResult[object]:
+        """Handle command execution."""
+        ...
 
 
 # =============================================================================
@@ -109,7 +112,7 @@ class AuthCommands:
         email: str
         password: str
         full_name: str | None = None
-        roles: list[str] | None = None
+        roles: FlextTypes.Core.StringList | None = None
 
     class LogoutUser(FlextCommands.Models.Command):
         """Command to logout a user."""
@@ -247,9 +250,11 @@ class FlextAuth[T]:
         self.sessions: dict[str, Session] = {}
 
         # Indexes for efficient lookups
-        self.username_index: dict[str, str] = {}  # username -> user_id
-        self.email_index: dict[str, str] = {}  # email -> user_id
-        self.user_sessions_index: dict[str, list[str]] = {}  # user_id -> [session_ids]
+        self.username_index: FlextTypes.Core.Headers = {}  # username -> user_id
+        self.email_index: FlextTypes.Core.Headers = {}  # email -> user_id
+        self.user_sessions_index: dict[
+            str, FlextTypes.Core.StringList
+        ] = {}  # user_id -> [session_ids]
 
         # Logger for audit trails
         self.logger = FlextLogger(__name__)
@@ -279,7 +284,7 @@ class FlextAuth[T]:
         email: str,
         password: str,
         full_name: str | None = None,
-        roles: list[str] | None = None,
+        roles: FlextTypes.Core.StringList | None = None,
     ) -> FlextResult[User]:
         """Register new user using FlextCommands CQRS pattern.
 
@@ -298,6 +303,7 @@ class FlextAuth[T]:
         """
         # Create command using FlextCommands pattern
         command = AuthCommands.RegisterUser(
+            command_type="register_user",
             username=username,
             email=email,
             password=password,
@@ -359,7 +365,7 @@ class FlextAuth[T]:
         password: str,
         client_ip: str | None = None,
         user_agent: str | None = None,
-    ) -> FlextResult[dict[str, object]]:
+    ) -> FlextResult[FlextTypes.Core.Dict]:
         """Authenticate user using Railway Pattern with FlextCore functional composition.
 
         Eliminates all 6 return statements using monadic composition.
@@ -395,7 +401,7 @@ class FlextAuth[T]:
 
     def _safe_execute_domain_auth(
         self, request: AuthRequest
-    ) -> FlextResult[dict[str, object]]:
+    ) -> FlextResult[FlextTypes.Core.Dict]:
         """Execute domain authentication with exception safety - extracted method."""
         try:
             return authenticate_user(
@@ -408,13 +414,13 @@ class FlextAuth[T]:
             self.logger.exception(  # pragma: no cover
                 f"Authentication operation failed for user {request.username}"
             )
-            return FlextResult[dict[str, object]].fail(  # pragma: no cover
+            return FlextResult[FlextTypes.Core.Dict].fail(  # pragma: no cover
                 f"Authentication operation failed: {e}"
             )
 
     def _validate_auth_data_types(
-        self, auth_data: dict[str, object]
-    ) -> FlextResult[dict[str, object]]:
+        self, auth_data: FlextTypes.Core.Dict
+    ) -> FlextResult[FlextTypes.Core.Dict]:
         """Validate authentication data types - extracted method for Railway Pattern."""
         session_obj = auth_data.get("session")
         user_obj = auth_data.get("user")
@@ -422,18 +428,18 @@ class FlextAuth[T]:
         if not isinstance(session_obj, dict) or not isinstance(
             user_obj, dict
         ):  # pragma: no cover
-            return FlextResult[dict[str, object]].fail(  # pragma: no cover
+            return FlextResult[FlextTypes.Core.Dict].fail(  # pragma: no cover
                 "Invalid session or user data format"  # pragma: no cover
             )
 
-        return FlextResult[dict[str, object]].ok(auth_data)
+        return FlextResult[FlextTypes.Core.Dict].ok(auth_data)
 
     def _create_session_with_consistency(
-        self, auth_data: dict[str, object]
-    ) -> FlextResult[dict[str, object]]:
+        self, auth_data: FlextTypes.Core.Dict
+    ) -> FlextResult[FlextTypes.Core.Dict]:
         """Create session and ensure data consistency - extracted method."""
-        session_dict = cast("dict[str, object]", auth_data.get("session", {}))
-        user_dict = cast("dict[str, object]", auth_data.get("user", {}))
+        session_dict = cast("FlextTypes.Core.Dict", auth_data.get("session", {}))
+        user_dict = cast("FlextTypes.Core.Dict", auth_data.get("user", {}))
 
         session_result = self._create_and_store_session(
             user_id=str(user_dict.get("id", "")),
@@ -442,7 +448,7 @@ class FlextAuth[T]:
         )
 
         return session_result.bind(
-            lambda session: FlextResult[dict[str, object]].ok(
+            lambda session: FlextResult[FlextTypes.Core.Dict].ok(
                 {
                     **auth_data,
                     "session": {
@@ -456,11 +462,11 @@ class FlextAuth[T]:
         )
 
     def _generate_jwt_with_legacy_structure(
-        self, auth_data: dict[str, object]
-    ) -> FlextResult[dict[str, object]]:
+        self, auth_data: FlextTypes.Core.Dict
+    ) -> FlextResult[FlextTypes.Core.Dict]:
         """Generate JWT tokens and create legacy-compatible structure - extracted method."""
-        user_dict = cast("dict[str, object]", auth_data.get("user", {}))
-        session_dict = cast("dict[str, object]", auth_data.get("session", {}))
+        user_dict = cast("FlextTypes.Core.Dict", auth_data.get("user", {}))
+        session_dict = cast("FlextTypes.Core.Dict", auth_data.get("session", {}))
 
         # Generate JWT token using AuthToken
         jwt_result = AuthToken.create_jwt_token(
@@ -471,7 +477,7 @@ class FlextAuth[T]:
         )
 
         return jwt_result.bind(
-            lambda jwt_token_obj: FlextResult[dict[str, object]].ok(
+            lambda jwt_token_obj: FlextResult[FlextTypes.Core.Dict].ok(
                 {
                     # Legacy test expectations with modern structure
                     "success": True,
@@ -490,7 +496,7 @@ class FlextAuth[T]:
             )
         )
 
-    def validate_token(self, token: str) -> FlextResult[dict[str, object]]:
+    def validate_token(self, token: str) -> FlextResult[FlextTypes.Core.Dict]:
         """Validate JWT token and return payload.
 
         Args:
@@ -521,15 +527,15 @@ class FlextAuth[T]:
             payload["valid"] = True
 
             # Return the payload as dict
-            return FlextResult[dict[str, object]].ok(payload)
+            return FlextResult[FlextTypes.Core.Dict].ok(payload)
 
         except Exception as e:  # pragma: no cover
             self.logger.exception("JWT token validation failed")  # pragma: no cover
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[FlextTypes.Core.Dict].fail(
                 f"Token validation failed: {e}"
             )  # pragma: no cover
 
-    def verify_token(self, token: str) -> FlextResult[dict[str, object]]:
+    def verify_token(self, token: str) -> FlextResult[FlextTypes.Core.Dict]:
         """Verify JWT token and return payload (API compatibility alias).
 
         Args:
@@ -729,11 +735,11 @@ class FlextAuth[T]:
         return self.get_user_by_id(user_id)
 
     def _log_and_return_success(
-        self, auth_data: dict[str, object], username: str
-    ) -> FlextResult[dict[str, object]]:
+        self, auth_data: FlextTypes.Core.Dict, username: str
+    ) -> FlextResult[FlextTypes.Core.Dict]:
         """Log successful authentication and return result - helper for Railway Pattern."""
         self.logger.info(f"Authentication successful for username: {username}")
-        return FlextResult[dict[str, object]].ok(auth_data)
+        return FlextResult[FlextTypes.Core.Dict].ok(auth_data)
 
     @classmethod
     def quick_start(
@@ -924,13 +930,13 @@ class FlextAuth[T]:
         return self.token_expire_minutes
 
     @property
-    def sessions_data(self) -> dict[str, object]:
+    def sessions_data(self) -> FlextTypes.Core.Dict:
         """Get sessions manager for API compatibility."""
         # Return with proper type annotation for API compatibility
         return dict(self.sessions)  # pragma: no cover
 
     @property
-    def users_data(self) -> dict[str, object]:
+    def users_data(self) -> FlextTypes.Core.Dict:
         """Get users manager for API compatibility."""
         # Return with proper type annotation for API compatibility
         return dict(self.users)  # pragma: no cover

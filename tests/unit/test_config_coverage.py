@@ -2,6 +2,10 @@
 
 Tests specifically designed to cover uncovered lines in config.py
 using real functionality without mocks.
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations

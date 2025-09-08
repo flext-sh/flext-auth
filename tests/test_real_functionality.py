@@ -1,6 +1,10 @@
 """Real functionality tests for FlextAuth - Python 3.13 + Pydantic advanced features.
 
 Tests complete authentication workflows without mocks, using modern Python patterns.
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations

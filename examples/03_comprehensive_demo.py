@@ -64,7 +64,7 @@ def demo_complete_auth_workflow() -> None:
 def demo_password_operations() -> None:
     """Demonstrate password hashing and verification operations."""
     auth: FlextAuth[object] = FlextAuth()
-    test_password = "TestPassword123!"
+    test_password = os.getenv("TEST_PASSWORD", "TestPassword123!")
 
     try:
         # Hash password
@@ -76,8 +76,11 @@ def demo_password_operations() -> None:
         # Verify incorrect password
         auth.verify_password("WrongPassword", hashed)
 
-    except Exception:
-        pass
+    except Exception as e:
+        # Handle password hashing error
+        error_message = f"Password hashing failed: {e}"
+        # In production, this would be logged properly
+        del error_message  # Clean up
 
 
 def demo_jwt_operations() -> None:

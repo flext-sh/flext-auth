@@ -3,7 +3,9 @@
 Tests cover FlextAuth class functionality, authentication flows,
 session management, and user lifecycle operations.
 
-Copyright (c) 2025 Flext. All rights reserved.
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 

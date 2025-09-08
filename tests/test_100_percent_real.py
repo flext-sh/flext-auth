@@ -2,6 +2,10 @@
 
 Este arquivo testa especificamente as linhas não cobertas para atingir 100% de cobertura
 usando apenas testes funcionais reais, sem mocks ou simulações.
+
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
@@ -11,7 +15,8 @@ from datetime import UTC, datetime, timedelta
 from typing import cast
 
 import pytest
-from flext_core import FlextModels
+from flext_core import FlextModels, FlextTypes
+from flext_core.typings import FlextTypes
 from pydantic import ValidationError
 
 from flext_auth import (
@@ -74,7 +79,7 @@ class TestRealModelsExhaustive:
     def test_create_user_none_parameters_exhaustive(self) -> None:
         """Testa create_user com parâmetros None (linhas 210-262)."""
         # Testar casos de validação com valores None/empty
-        empty_values: list[object] = [None, "", [], {}, 0]
+        empty_values: FlextTypes.Core.List = [None, "", [], {}, 0]
 
         for empty_val in empty_values:
             # Testar username None/empty
@@ -548,9 +553,9 @@ class TestRealIntegrationExhaustive:
 
         # Extrair dados
         user_data = auth_result.value
-        user_info = cast("dict[str, object]", user_data["user"])
-        session_info = cast("dict[str, object]", user_data["session"])
-        tokens_info = cast("dict[str, object]", user_data["tokens"])
+        user_info = cast("FlextTypes.Core.Dict", user_data["user"])
+        session_info = cast("FlextTypes.Core.Dict", user_data["session"])
+        tokens_info = cast("FlextTypes.Core.Dict", user_data["tokens"])
 
         # Verificações
         assert user_info["username"] == "integration_user"
@@ -583,7 +588,7 @@ class TestRealIntegrationExhaustive:
         auth_result = auth.authenticate_user("session_lifecycle", "SessionPass123!")
         assert auth_result.success
 
-        session_data = cast("dict[str, object]", auth_result.value["session"])
+        session_data = cast("FlextTypes.Core.Dict", auth_result.value["session"])
         session_token = cast("str", session_data["token"])
 
         # Verificar sessão ativa

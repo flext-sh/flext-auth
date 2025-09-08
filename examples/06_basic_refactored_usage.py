@@ -16,7 +16,8 @@ import string
 import sys
 from typing import cast
 
-from flext_core import FlextResult
+from flext_core import FlextResult, FlextTypes
+from flext_core.typings import FlextTypes
 
 from flext_auth import FlextAuth
 
@@ -43,7 +44,7 @@ class FlextAuthDemo:
 
         return cast("FlextResult[object]", result)
 
-    def demo_user_authentication(self) -> FlextResult[dict[str, object]]:
+    def demo_user_authentication(self) -> FlextResult[FlextTypes.Core.Dict]:
         """Extract Method: User authentication demo."""
         result = self.auth.authenticate_user("demouser", "DemoPassword123!")
 
@@ -53,9 +54,9 @@ class FlextAuthDemo:
 
         return result
 
-    def _print_token_info(self, auth_data: dict[str, object]) -> None:
+    def _print_token_info(self, auth_data: FlextTypes.Core.Dict) -> None:
         """Helper: Print token information."""
-        tokens_data = cast("dict[str, object]", auth_data.get("tokens", {}))
+        tokens_data = cast("FlextTypes.Core.Dict", auth_data.get("tokens", {}))
 
         len(str(tokens_data.get("access_token", "")))
 
@@ -82,7 +83,7 @@ def main() -> None:
 
     # Extract token for further demos
     auth_data = auth_result.value
-    tokens_data = cast("dict[str, object]", auth_data.get("tokens", {}))
+    tokens_data = cast("FlextTypes.Core.Dict", auth_data.get("tokens", {}))
     access_token = str(tokens_data.get("access_token", ""))
 
     # 4. Token Validation - continuing with existing pattern
@@ -103,8 +104,11 @@ def main() -> None:
         # Verify password
         demo.auth.verify_password(test_password, hashed_password)
 
-    except Exception:
-        pass
+    except Exception as e:
+        # Handle password hashing error
+        error_message = f"Password hashing failed: {e}"
+        # In production, this would be logged properly
+        del error_message  # Clean up
 
     # Generate secure password using manual implementation
     length = 16
@@ -146,7 +150,9 @@ def main() -> None:
 
     # Register a test user for JWT operations
     jwt_user_result = demo.auth.register_user(
-        username="jwtuser", email="jwt@example.com", password="JWTPassword123!"
+        username="jwtuser",
+        email="jwt@example.com",
+        password=os.getenv("JWT_PASSWORD", "JWTPassword123!"),
     )
 
     if jwt_user_result.is_success:

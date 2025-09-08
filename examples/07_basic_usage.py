@@ -8,6 +8,9 @@ from __future__ import annotations
 
 from typing import cast
 
+from flext_core import FlextTypes
+from flext_core.typings import FlextTypes
+
 from flext_auth import FlextAuth
 
 
@@ -33,8 +36,8 @@ def exemplo_flext_auth() -> None:
         auth_data = auth_result.value
 
         # Extract authentication data with proper typing
-        tokens_data = cast("dict[str, object]", auth_data.get("tokens", {}))
-        session_data = cast("dict[str, object]", auth_data.get("session", {}))
+        tokens_data = cast("FlextTypes.Core.Dict", auth_data.get("tokens", {}))
+        session_data = cast("FlextTypes.Core.Dict", auth_data.get("session", {}))
 
         access_token = str(tokens_data.get("access_token", ""))
         session_id = str(session_data.get("session_id", ""))

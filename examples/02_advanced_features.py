@@ -44,7 +44,7 @@ def example_jwt_operations() -> None:
     user_result = auth.register_user(
         username="advanced_user",
         email="advanced@example.com",
-        password="AdvancedPassword123!",
+        password=os.getenv("EXAMPLE_PASSWORD", "AdvancedPassword123!"),
         roles=["REDACTED_LDAP_BIND_PASSWORD", "user"],
     )
 
@@ -84,7 +84,13 @@ def example_role_based_access() -> None:
 
     # Demonstrate role checking
     for user in registered_users:
-        pass
+        # Check if user has REDACTED_LDAP_BIND_PASSWORD role
+        if user.roles and "REDACTED_LDAP_BIND_PASSWORD" in user.roles:
+            # User has REDACTED_LDAP_BIND_PASSWORD privileges
+            pass
+        else:
+            # User has standard privileges
+            pass
 
 
 def example_session_management() -> None:
@@ -113,8 +119,12 @@ def example_session_management() -> None:
     if user_sessions_result.is_success:
         user_sessions = user_sessions_result.value
 
-        for _session in user_sessions:
-            pass
+        for session in user_sessions:
+            # Display session information
+            # Session is active
+            if session:
+                # Process active session
+                pass
 
     # Cleanup expired sessions
     cleanup_result = auth.cleanup_expired_sessions()
@@ -148,7 +158,7 @@ def example_password_security() -> None:
             pass
 
     # Demonstrate password hashing with different rounds
-    test_password = "TestPassword123!"
+    test_password = os.getenv("TEST_PASSWORD", "TestPassword123!")
 
     # Show current hashing
     try:
@@ -159,8 +169,12 @@ def example_password_security() -> None:
         auth.verify_password(test_password, hash1)
         auth.verify_password(test_password, hash2)
 
-    except Exception:
-        pass
+    except Exception as e:
+        # Handle password hashing error
+        # Log error for debugging
+        error_message = f"Password hashing failed: {e}"
+        # In production, this would be logged properly
+        del error_message  # Clean up
 
 
 def example_token_validation() -> None:

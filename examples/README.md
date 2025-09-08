@@ -334,7 +334,7 @@ This example demonstrates [specific features] and shows how to [use case].
 It includes [key features] and handles [error scenarios].
 
 Complexity: [Minimal/Intermediate/Advanced/Enterprise]
-Use Case: [Target scenario]
+Use Case: [Target scenario]:
 """
 
 from flext_auth import [required imports]

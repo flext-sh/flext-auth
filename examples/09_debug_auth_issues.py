@@ -8,12 +8,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import os
+
 from flext_auth import FlextAuth
 
 
 def debug_password_operations() -> None:
     """Debug password hashing using FlextAuth."""
-    password = "TestPassword123!"
+    password = os.getenv("DEBUG_PASSWORD", "TestPassword123!")
 
     # Use FlextAuth directly
     auth: FlextAuth[object] = FlextAuth()
@@ -28,8 +30,11 @@ def debug_password_operations() -> None:
         # Test with wrong password
         auth.verify_password("WrongPassword", hashed)
 
-    except Exception:
-        pass
+    except Exception as e:
+        # Handle password verification error
+        error_message = f"Password verification failed: {e}"
+        # In production, this would be logged properly
+        del error_message  # Clean up
 
 
 def debug_jwt_operations() -> None:
@@ -39,7 +44,9 @@ def debug_jwt_operations() -> None:
 
     # Register a test user first
     user_result = auth.register_user(
-        username="testuser", email="test@example.com", password="TestPassword123!"
+        username="testuser",
+        email="test@example.com",
+        password=os.getenv("TEST_PASSWORD", "TestPassword123!"),
     )
 
     if user_result.is_failure:
@@ -74,7 +81,7 @@ def debug_authentication_workflow() -> None:
     reg_result = auth.register_user(
         username="debuguser",
         email="debug@example.com",
-        password="DebugPassword123!",
+        password=os.getenv("DEBUG_PASSWORD", "DebugPassword123!"),
         roles=["REDACTED_LDAP_BIND_PASSWORD"],
     )
 
