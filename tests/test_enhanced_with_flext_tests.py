@@ -4,7 +4,7 @@ This file demonstrates the use of flext_tests library for creating cleaner,
 more comprehensive functional tests with realistic test data and advanced assertions.
 
 Features demonstrated:
-- FlextMatchers for cleaner assertions
+- FlextTestsMatchers for cleaner assertions
 - UserDataFactory for realistic test data
 - TestBuilders for complex object construction
 - PerformanceMatchers for benchmarking critical paths
@@ -28,7 +28,7 @@ from flext_core import FlextTypes
 sys.path.insert(0, "/home/marlonsc/flext/flext-core/src")
 
 from flext_core.typings import FlextTypes
-from flext_tests import FlextMatchers, UserDataFactory
+from flext_tests import FlextTestsMatchers, UserDataFactory
 
 from flext_auth import FlextAuth, User, flext_auth_quick_start
 
@@ -69,8 +69,8 @@ class TestEnhancedAuthentication:
             password="SecurePassword123!@#",
         )
 
-        # Use FlextMatchers for cleaner assertions
-        FlextMatchers.assert_result_success(result)
+        # Use FlextTestsMatchers for cleaner assertions
+        FlextTestsMatchers.assert_result_success(result)
 
         user = result.value
         assert isinstance(user, User)
@@ -94,8 +94,8 @@ class TestEnhancedAuthentication:
                 password="TestPassword123!@#",
             )
 
-            # Clean assertion using FlextMatchers
-            FlextMatchers.assert_result_success(result)
+            # Clean assertion using FlextTestsMatchers
+            FlextTestsMatchers.assert_result_success(result)
             registered_users.append((username, str(user_data["email"])))
 
         # Authenticate all users
@@ -103,7 +103,7 @@ class TestEnhancedAuthentication:
             auth_result = auth.authenticate_user(username, "TestPassword123!@#")
 
             # Verify successful authentication
-            FlextMatchers.assert_result_success(auth_result)
+            FlextTestsMatchers.assert_result_success(auth_result)
 
             auth_data = auth_result.value
             assert "user" in auth_data
@@ -115,7 +115,7 @@ class TestEnhancedAuthentication:
             assert user["email"] == email
 
     def test_authentication_failure_patterns_with_matchers(self) -> None:
-        """Test authentication failures using FlextMatchers for cleaner error assertions."""
+        """Test authentication failures using FlextTestsMatchers for cleaner error assertions."""
         auth: FlextAuth[object] = FlextAuth()
 
         # Create user using factory
@@ -128,17 +128,17 @@ class TestEnhancedAuthentication:
             email=str(user_data["email"]),
             password="CorrectPassword123!@#",
         )
-        FlextMatchers.assert_result_success(register_result)
+        FlextTestsMatchers.assert_result_success(register_result)
 
         # Test wrong password - clean failure assertion
         wrong_pass_result = auth.authenticate_user(username, "WrongPassword")
-        FlextMatchers.assert_result_failure(wrong_pass_result)
+        FlextTestsMatchers.assert_result_failure(wrong_pass_result)
         error_msg = wrong_pass_result.error or ""
         assert "invalid credentials" in error_msg.lower()
 
         # Test non-existent user - clean failure assertion
         nonexistent_result = auth.authenticate_user("nonexistent_user", "AnyPassword")
-        FlextMatchers.assert_result_failure(nonexistent_result)
+        FlextTestsMatchers.assert_result_failure(nonexistent_result)
         nonexistent_error_msg = nonexistent_result.error or ""
         assert "invalid credentials" in nonexistent_error_msg.lower()
 
@@ -160,7 +160,7 @@ class TestEnhancedAuthentication:
 
         # Verify REDACTED_LDAP_BIND_PASSWORD can authenticate
         auth_result = auth.authenticate_user(REDACTED_LDAP_BIND_PASSWORD_username, "AdminSecurePass123!@#")
-        FlextMatchers.assert_result_success(auth_result)
+        FlextTestsMatchers.assert_result_success(auth_result)
 
         REDACTED_LDAP_BIND_PASSWORD_user = cast("AuthUserDict", auth_result.value["user"])
         assert REDACTED_LDAP_BIND_PASSWORD_user["username"] == REDACTED_LDAP_BIND_PASSWORD_username
@@ -182,10 +182,10 @@ class TestEnhancedAuthentication:
                 email=str(user_data["email"]),
                 password="SessionTest123!@#",
             )
-            FlextMatchers.assert_result_success(register_result)
+            FlextTestsMatchers.assert_result_success(register_result)
 
             auth_result = auth.authenticate_user(username, "SessionTest123!@#")
-            FlextMatchers.assert_result_success(auth_result)
+            FlextTestsMatchers.assert_result_success(auth_result)
 
             session = cast("AuthSessionDict", auth_result.value["session"])
             user_sessions.append((username, str(session["id"])))
@@ -196,12 +196,12 @@ class TestEnhancedAuthentication:
             reauth_result = auth.authenticate_user(
                 f"session_user_{i}", "SessionTest123!@#"
             )
-            FlextMatchers.assert_result_success(reauth_result)
+            FlextTestsMatchers.assert_result_success(reauth_result)
 
             user_data_dict = cast("AuthUserDict", reauth_result.value["user"])
             user_id = str(user_data_dict["id"])
             sessions_result = auth.get_user_sessions(user_id)
-            FlextMatchers.assert_result_success(sessions_result)
+            FlextTestsMatchers.assert_result_success(sessions_result)
 
             sessions = sessions_result.value
             session_ids = [s.id for s in sessions]
@@ -210,7 +210,7 @@ class TestEnhancedAuthentication:
 
         # Test session cleanup
         cleanup_result = auth.cleanup_expired_sessions()
-        FlextMatchers.assert_result_success(cleanup_result)
+        FlextTestsMatchers.assert_result_success(cleanup_result)
 
         # Should return number of cleaned sessions (likely 0 since sessions are new)
         cleaned_count = cleanup_result.value
@@ -231,7 +231,7 @@ class TestEnhancedAuthentication:
             password="LifecycleTest123!@#",
             full_name=str(user_data["name"]),
         )
-        FlextMatchers.assert_result_success(register_result)
+        FlextTestsMatchers.assert_result_success(register_result)
 
         user = register_result.value
         user_id = user.id
@@ -239,21 +239,21 @@ class TestEnhancedAuthentication:
         # Phase 2: Retrieve user by different methods
         # By ID
         user_by_id_result = auth.get_user_by_id(user_id)
-        FlextMatchers.assert_result_success(user_by_id_result)
+        FlextTestsMatchers.assert_result_success(user_by_id_result)
         retrieved_user = user_by_id_result.value
         if retrieved_user:
             assert retrieved_user.username == username
 
         # By username
         user_by_username_result = auth.get_user_by_username(username)
-        FlextMatchers.assert_result_success(user_by_username_result)
+        FlextTestsMatchers.assert_result_success(user_by_username_result)
         retrieved_user2 = user_by_username_result.value
         if retrieved_user2:
             assert retrieved_user2.email.root == user_data["email"]
 
         # Phase 3: Authenticate and create session
         auth_result = auth.authenticate_user(username, "LifecycleTest123!@#")
-        FlextMatchers.assert_result_success(auth_result)
+        FlextTestsMatchers.assert_result_success(auth_result)
 
         auth_data = auth_result.value
         session = cast("AuthSessionDict", auth_data["session"])
@@ -262,15 +262,15 @@ class TestEnhancedAuthentication:
         # Phase 4: Token operations
         # Validate token
         validate_result = auth.validate_token(token)
-        FlextMatchers.assert_result_success(validate_result)
+        FlextTestsMatchers.assert_result_success(validate_result)
 
         # Verify token
         verify_result = auth.verify_token(token)
-        FlextMatchers.assert_result_success(verify_result)
+        FlextTestsMatchers.assert_result_success(verify_result)
 
         # Get user by token
         user_by_token_result = auth.get_user_by_token(token)
-        FlextMatchers.assert_result_success(user_by_token_result)
+        FlextTestsMatchers.assert_result_success(user_by_token_result)
         token_user = user_by_token_result.value
         if token_user:
             assert token_user.id == user_id
@@ -278,7 +278,7 @@ class TestEnhancedAuthentication:
         # Phase 5: Session management
         # Get user sessions
         sessions_result = auth.get_user_sessions(user_id)
-        FlextMatchers.assert_result_success(sessions_result)
+        FlextTestsMatchers.assert_result_success(sessions_result)
 
         sessions = sessions_result.value
         assert len(sessions) > 0
@@ -326,11 +326,11 @@ class TestEnhancedConfigurationTesting:
                 email=str(user_data["email"]),
                 password="ConfigTest123!@#",
             )
-            FlextMatchers.assert_result_success(register_result)
+            FlextTestsMatchers.assert_result_success(register_result)
 
             # Verify authentication works with different configurations
             auth_result = auth.authenticate_user(username, "ConfigTest123!@#")
-            FlextMatchers.assert_result_success(auth_result)
+            FlextTestsMatchers.assert_result_success(auth_result)
 
 
 class TestEnhancedPerformanceValidation:
@@ -349,17 +349,17 @@ class TestEnhancedPerformanceValidation:
         register_result = auth.register_user(
             username=username, email=str(user_data["email"]), password="PerfTest123!@#"
         )
-        FlextMatchers.assert_result_success(register_result)
+        FlextTestsMatchers.assert_result_success(register_result)
 
         # Performance test: Authentication should be fast
         def authenticate_user_perf() -> object:
             return auth.authenticate_user(username, "PerfTest123!@#")
 
-        # Use benchmark directly since FlextMatchers.assert_performance_within_limit signature is complex
+        # Use benchmark directly since FlextTestsMatchers.assert_performance_within_limit signature is complex
         result = benchmark(authenticate_user_perf)
 
         # Verify the result is still functional
-        FlextMatchers.assert_result_success(result)
+        FlextTestsMatchers.assert_result_success(result)
         user_result = cast("AuthUserDict", result.value["user"])
         assert user_result["username"] == username
 
@@ -389,7 +389,7 @@ class TestEnhancedPerformanceValidation:
 
         # Verify all registrations succeeded
         for result in results:
-            FlextMatchers.assert_result_success(result)
+            FlextTestsMatchers.assert_result_success(result)
 
     def test_session_management_performance(
         self, benchmark: Callable[[Callable[[], object]], object]
@@ -408,7 +408,7 @@ class TestEnhancedPerformanceValidation:
                 email=str(user_data["email"]),
                 password="SessionPerfTest123!@#",
             )
-            FlextMatchers.assert_result_success(register_result)
+            FlextTestsMatchers.assert_result_success(register_result)
             user_sessions.append(username)
 
         def session_operations_batch() -> FlextTypes.Core.List:
@@ -430,7 +430,7 @@ class TestEnhancedPerformanceValidation:
 
         # Verify all operations succeeded
         for result in results:
-            FlextMatchers.assert_result_success(result)
+            FlextTestsMatchers.assert_result_success(result)
 
 
 class TestEnhancedTestBuilders:
@@ -453,7 +453,7 @@ class TestEnhancedTestBuilders:
             password="AdminTest123!@#",
             roles=["REDACTED_LDAP_BIND_PASSWORD"],
         )
-        FlextMatchers.assert_result_success(REDACTED_LDAP_BIND_PASSWORD_result)
+        FlextTestsMatchers.assert_result_success(REDACTED_LDAP_BIND_PASSWORD_result)
 
         user_result = auth.register_user(
             username=f"user_{user_data['name'].replace(' ', '_').lower()}",
@@ -461,7 +461,7 @@ class TestEnhancedTestBuilders:
             password="UserTest123!@#",
             roles=["user"],
         )
-        FlextMatchers.assert_result_success(user_result)
+        FlextTestsMatchers.assert_result_success(user_result)
 
         guest_result = auth.register_user(
             username=f"guest_{guest_data['name'].replace(' ', '_').lower()}",
@@ -469,7 +469,7 @@ class TestEnhancedTestBuilders:
             password="GuestTest123!@#",
             roles=["guest"],
         )
-        FlextMatchers.assert_result_success(guest_result)
+        FlextTestsMatchers.assert_result_success(guest_result)
 
         # Verify role-based functionality
         REDACTED_LDAP_BIND_PASSWORD_user = REDACTED_LDAP_BIND_PASSWORD_result.value
@@ -493,7 +493,7 @@ class TestEnhancedTestBuilders:
             ),
         ]:
             auth_result = auth.authenticate_user(user_cred[0], user_cred[1])
-            FlextMatchers.assert_result_success(auth_result)
+            FlextTestsMatchers.assert_result_success(auth_result)
             user_auth_data = cast("AuthUserDict", auth_result.value["user"])
             assert user_auth_data["username"] == user_cred[0]
 
