@@ -115,8 +115,9 @@ class User(FlextModels.Entity):
         # Clean and normalize using flext-core
         v = FlextUtilities.TextProcessor.clean_text(v).strip().lower()
 
-        # Use flext-core string validation
-        string_validation = FlextCore.validate_string(v, min_length=3, max_length=50)
+        # Use flext-core string validation - direct access pattern
+        core = FlextCore.get_instance()
+        string_validation = core.validations.validate_string(v, min_length=3, max_length=50)
         if string_validation.is_failure:  # pragma: no cover
             raise ValueError(
                 string_validation.error or "Invalid username"
@@ -214,17 +215,18 @@ class User(FlextModels.Entity):
             # Generate the ID string first
             raw_id = FlextUtilities.Generators.generate_entity_id()
 
-            # Then validate it with FlextCore
-            id_result = core.create_entity_id(raw_id)
+            # Then validate it with FlextCore - direct access pattern
+            core = FlextCore.get_instance()
+            id_result = core.validate_entity_id(raw_id)
             if id_result.is_failure:  # pragma: no cover
                 return FlextResult[User].fail(
-                    "Failed to create validated user ID"
+                    "Failed to validate user ID"
                 )  # pragma: no cover
 
             # Create user with validated data and auto-generated ID
-            entity_id = id_result.unwrap()
+            # Validation passed, use raw_id directly
             user = cls(
-                id=entity_id.root,  # Extract the string value from FlextModels.EntityId
+                id=raw_id,  # Use the generated and validated ID directly
                 username=username,  # Type narrowed by None check above
                 email=FlextModels.EmailAddress(
                     root=email  # Type narrowed by None check above
@@ -358,11 +360,12 @@ class Session(FlextModels.Entity):
             # Generate the ID string first
             raw_id = FlextUtilities.Generators.generate_entity_id()
 
-            # Then validate it with FlextCore
-            id_result = core.create_entity_id(raw_id)
+            # Then validate it with FlextCore - direct access pattern
+            core = FlextCore.get_instance()
+            id_result = core.validate_entity_id(raw_id)
             if id_result.is_failure:  # pragma: no cover
                 return FlextResult[Session].fail(  # pragma: no cover
-                    "Failed to create validated session ID"  # pragma: no cover
+                    "Failed to validate session ID"  # pragma: no cover
                 )  # pragma: no cover
 
             # Calculate expiry
@@ -370,9 +373,9 @@ class Session(FlextModels.Entity):
             now = datetime.now(UTC)
 
             # Create session with auto-generated ID
-            entity_id = id_result.unwrap()
+            # Validation passed, use raw_id directly
             session = cls(
-                id=entity_id.root,  # Extract the string value from FlextModels.EntityId
+                id=raw_id,  # Use the generated and validated ID directly
                 user_id=user_id,
                 token=token,
                 expires_at=expires_at,

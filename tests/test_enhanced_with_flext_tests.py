@@ -5,7 +5,7 @@ more comprehensive functional tests with realistic test data and advanced assert
 
 Features demonstrated:
 - FlextTestsMatchers for cleaner assertions
-- UserDataFactory for realistic test data
+- FlextTestsFactories.UserFactory for realistic test data
 - TestBuilders for complex object construction
 - PerformanceMatchers for benchmarking critical paths
 - Advanced test patterns with zero mocking
@@ -28,13 +28,13 @@ from flext_core import FlextTypes
 sys.path.insert(0, "/home/marlonsc/flext/flext-core/src")
 
 from flext_core.typings import FlextTypes
-from flext_tests import FlextTestsMatchers, UserDataFactory
+from flext_tests import FlextTestsFactories, FlextTestsMatchers
 
 from flext_auth import FlextAuth, User, flext_auth_quick_start
 
 
 class UserData(TypedDict):
-    """Type definition for UserDataFactory.create() output."""
+    """Type definition for FlextTestsFactories.UserFactory.create() output."""
 
     id: str
     name: str
@@ -56,11 +56,11 @@ class TestEnhancedAuthentication:
     """Enhanced authentication tests using flext_tests utilities."""
 
     def test_user_registration_with_real_data_factory(self) -> None:
-        """Test user registration with UserDataFactory - cleaner and more realistic."""
+        """Test user registration with FlextTestsFactories.UserFactory - cleaner and more realistic."""
         auth: FlextAuth[object] = FlextAuth()
 
         # Create realistic user data using flext_tests factory
-        user_data = cast("UserData", UserDataFactory.create())
+        user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
 
         # Register user with realistic data
         result = auth.register_user(
@@ -82,7 +82,7 @@ class TestEnhancedAuthentication:
         auth: FlextAuth[object] = FlextAuth()
 
         # Create batch of realistic users using flext_tests
-        users_data = cast("list[UserData]", UserDataFactory.batch(count=5))
+        users_data = cast("list[UserData]", FlextTestsFactories.UserFactory.batch(count=5))
         registered_users: list[tuple[str, str]] = []
 
         # Register all users
@@ -119,7 +119,7 @@ class TestEnhancedAuthentication:
         auth: FlextAuth[object] = FlextAuth()
 
         # Create user using factory
-        user_data = cast("UserData", UserDataFactory.create())
+        user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
         username = user_data["name"].replace(" ", "_").lower()
 
         # Register user first
@@ -145,7 +145,7 @@ class TestEnhancedAuthentication:
     def test_quick_start_with_realistic_REDACTED_LDAP_BIND_PASSWORD(self) -> None:
         """Test quick_start functionality with realistic REDACTED_LDAP_BIND_PASSWORD data."""
         # Create realistic REDACTED_LDAP_BIND_PASSWORD data
-        REDACTED_LDAP_BIND_PASSWORD_data = cast("UserData", UserDataFactory.create())
+        REDACTED_LDAP_BIND_PASSWORD_data = cast("UserData", FlextTestsFactories.UserFactory.create())
         REDACTED_LDAP_BIND_PASSWORD_username = f"REDACTED_LDAP_BIND_PASSWORD_{REDACTED_LDAP_BIND_PASSWORD_data['name'].replace(' ', '_').lower()}"
 
         # Test quick_start with REDACTED_LDAP_BIND_PASSWORD creation
@@ -170,7 +170,7 @@ class TestEnhancedAuthentication:
         auth: FlextAuth[object] = FlextAuth()
 
         # Create multiple users for session testing
-        users_data = cast("list[UserData]", UserDataFactory.batch(count=3))
+        users_data = cast("list[UserData]", FlextTestsFactories.UserFactory.batch(count=3))
         user_sessions: list[tuple[str, str]] = []
 
         for i, user_data in enumerate(users_data):
@@ -222,7 +222,7 @@ class TestEnhancedAuthentication:
         auth: FlextAuth[object] = FlextAuth()
 
         # Phase 1: Create user with realistic data
-        user_data = cast("UserData", UserDataFactory.create())
+        user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
         username = f"lifecycle_{user_data['name'].replace(' ', '_').lower()}"
 
         register_result = auth.register_user(
@@ -318,7 +318,7 @@ class TestEnhancedConfigurationTesting:
             assert auth.password_rounds == config_overrides["password_rounds"]
 
             # Test functionality works with different configurations
-            user_data = cast("UserData", UserDataFactory.create())
+            user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
             username = f"{env}_user_{user_data['name'].replace(' ', '_').lower()}"
 
             register_result = auth.register_user(
@@ -343,7 +343,7 @@ class TestEnhancedPerformanceValidation:
         auth: FlextAuth[object] = FlextAuth()
 
         # Setup: Register user for performance testing
-        user_data = cast("UserData", UserDataFactory.create())
+        user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
         username = f"perf_{user_data['name'].replace(' ', '_').lower()}"
 
         register_result = auth.register_user(
@@ -372,7 +372,7 @@ class TestEnhancedPerformanceValidation:
         def register_batch_users() -> FlextTypes.Core.List:
             """Register multiple users and return results."""
             results: FlextTypes.Core.List = []
-            users_data = cast("list[UserData]", UserDataFactory.batch(count=5))
+            users_data = cast("list[UserData]", FlextTestsFactories.UserFactory.batch(count=5))
 
             for i, user_data in enumerate(users_data):
                 unique_id = str(uuid.uuid4())[:8]
@@ -398,7 +398,7 @@ class TestEnhancedPerformanceValidation:
         auth: FlextAuth[object] = FlextAuth()
 
         # Setup: Create multiple users
-        users_data = cast("list[UserData]", UserDataFactory.batch(count=3))
+        users_data = cast("list[UserData]", FlextTestsFactories.UserFactory.batch(count=3))
         user_sessions: FlextTypes.Core.StringList = []
 
         for i, user_data in enumerate(users_data):
@@ -442,9 +442,9 @@ class TestEnhancedTestBuilders:
         auth: FlextAuth[object] = FlextAuth()
 
         # Create multiple users with different roles using factory pattern
-        REDACTED_LDAP_BIND_PASSWORD_data = cast("UserData", UserDataFactory.create())
-        user_data = cast("UserData", UserDataFactory.create())
-        guest_data = cast("UserData", UserDataFactory.create())
+        REDACTED_LDAP_BIND_PASSWORD_data = cast("UserData", FlextTestsFactories.UserFactory.create())
+        user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
+        guest_data = cast("UserData", FlextTestsFactories.UserFactory.create())
 
         # Register users with different roles
         REDACTED_LDAP_BIND_PASSWORD_result = auth.register_user(

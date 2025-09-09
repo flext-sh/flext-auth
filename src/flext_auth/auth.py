@@ -23,7 +23,6 @@ from flext_core import (
     FlextServices,
     FlextTypes,
     FlextUtilities,
-    get_flext_container,
 )
 from pydantic import BaseModel
 
@@ -240,7 +239,7 @@ class FlextAuth[T]:
         self.bcrypt_rounds = password_rounds or config.bcrypt_rounds
 
         # Initialize DI container with flext-core
-        self.container = container or get_flext_container()
+        self.container = container or FlextContainer.get_global()
 
         # Register services in container
         self._register_auth_services()
