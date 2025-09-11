@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Protocol, TypeVar, cast
+from typing import Protocol, TypeVar
 
 import bcrypt
 import jwt
@@ -20,7 +20,6 @@ from flext_core import (
     FlextContainer,
     FlextLogger,
     FlextResult,
-    FlextServices,
     FlextTypes,
     FlextUtilities,
 )
@@ -42,81 +41,6 @@ T = TypeVar("T")
 U = TypeVar("U")
 AuthResult = TypeVar("AuthResult", bound=FlextTypes.Core.Dict)
 CommandResult = TypeVar("CommandResult")
-
-
-# Parameter Objects Pattern - reduce "many parameters" code smell
-class AuthRequest(BaseModel):
-    """Authentication request parameter object using Pydantic."""
-
-    username: str
-    password: str
-    client_ip: str | None = None
-    user_agent: str | None = None
-
-
-class QuickStartRequest(BaseModel):
-    """Quick start parameter object using Pydantic."""
-
-    create_REDACTED_LDAP_BIND_PASSWORD: bool = True
-    REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD"
-    REDACTED_LDAP_BIND_PASSWORD_password: str = getattr(
-        getattr(FlextConstants, "Auth", None),
-        "DEFAULT_ADMIN_PASSWORD",
-        "AdminPassword123!",
-    )
-
-
-# Structural protocols for type safety
-class AuthenticatorProtocol(Protocol):
-    """Protocol for authentication strategies."""
-
-    def authenticate(self, credentials: object) -> FlextResult[FlextTypes.Core.Dict]:
-        """Authenticate user credentials."""
-        ...
-
-    def validate_credentials(self, credentials: object) -> bool:
-        """Validate user credentials."""
-        ...
-
-
-class CommandHandlerProtocol(Protocol):
-    """Protocol for command handlers with generic input/output."""
-
-    def handle(self, command: object) -> FlextResult[object]:
-        """Handle command execution."""
-        ...
-
-
-# Legacy compatibility - keeping AuthCommands for tests (mantendo por compatibilidade)
-class AuthCommands:
-    """Authentication Commands using FlextCommands CQRS pattern."""
-
-    class AuthenticateUser(FlextCommands.Models.Command):
-        """Command to authenticate a user."""
-
-        username: str
-        password: str
-        client_ip: str | None = None
-        user_agent: str | None = None
-
-    class RegisterUser(FlextCommands.Models.Command):
-        """Command to register a new user."""
-
-        username: str
-        email: str
-        password: str
-        full_name: str | None = None
-        roles: FlextTypes.Core.StringList | None = None
-
-    class LogoutUser(FlextCommands.Models.Command):
-        """Command to logout a user."""
-
-        session_id: str
-        user_id: str | None = None
-
-
-# PRODUCTION-READY: Advanced patterns applied using Railway Pattern optimization
-# Full implementation with FlextResult monadic composition
 
 
 class FlextAuth[T]:
@@ -198,6 +122,69 @@ class FlextAuth[T]:
 
     """
 
+    class _AuthRequest(BaseModel):
+        """Authentication request parameter object using Pydantic."""
+
+        username: str
+        password: str
+        client_ip: str | None = None
+        user_agent: str | None = None
+
+    class _QuickStartRequest(BaseModel):
+        """Quick start parameter object using Pydantic."""
+
+        create_REDACTED_LDAP_BIND_PASSWORD: bool = True
+        REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD"
+        REDACTED_LDAP_BIND_PASSWORD_password: str = getattr(
+            getattr(FlextConstants, "Auth", None),
+            "DEFAULT_ADMIN_PASSWORD",
+            "AdminPassword123!",
+        )
+
+    class _AuthenticatorProtocol(Protocol):
+        """Protocol for authentication strategies."""
+
+        def authenticate(self, credentials: object) -> FlextResult[FlextTypes.Core.Dict]:
+            """Authenticate user credentials."""
+            ...
+
+        def validate_credentials(self, credentials: object) -> bool:
+            """Validate user credentials."""
+            ...
+
+    class _CommandHandlerProtocol(Protocol):
+        """Protocol for command handlers with generic input/output."""
+
+        def handle(self, command: object) -> FlextResult[object]:
+            """Handle command execution."""
+            ...
+
+    class _AuthCommands:
+        """Authentication Commands using FlextCommands CQRS pattern."""
+
+        class AuthenticateUser(FlextCommands.Models.Command):
+            """Command to authenticate a user."""
+
+            username: str
+            password: str
+            client_ip: str | None = None
+            user_agent: str | None = None
+
+        class RegisterUser(FlextCommands.Models.Command):
+            """Command to register a new user."""
+
+            username: str
+            email: str
+            password: str
+            full_name: str | None = None
+            roles: FlextTypes.Core.StringList | None = None
+
+        class LogoutUser(FlextCommands.Models.Command):
+            """Command to logout a user."""
+
+            session_id: str
+            user_id: str | None = None
+
     def __init__(
         self,
         config: FlextAuthConfig | None = None,
@@ -269,9 +256,6 @@ class FlextAuth[T]:
         self.container.register("authenticate_user", lambda: authenticate_user)
         self.container.register("create_session", lambda: create_session)
 
-        # Register service registry for discoverability
-        self.container.register("service_registry", FlextServices.ServiceRegistry)
-
     def register_user(
         self,
         username: str,
@@ -296,7 +280,7 @@ class FlextAuth[T]:
 
         """
         # Create command using FlextCommands pattern
-        command = AuthCommands.RegisterUser(
+        command = self._AuthCommands.RegisterUser(
             command_type="register_user",
             username=username,
             email=email,
@@ -366,7 +350,7 @@ class FlextAuth[T]:
         Uses FlextCore.pipe() for single-path authentication flow.
         """
         # Create Parameter Object for internal processing
-        auth_request = AuthRequest(
+        auth_request = self._AuthRequest(
             username=username,
             password=password,
             client_ip=client_ip,
@@ -394,7 +378,7 @@ class FlextAuth[T]:
         )
 
     def _safe_execute_domain_auth(
-        self, request: AuthRequest
+        self, request: _AuthRequest
     ) -> FlextResult[FlextTypes.Core.Dict]:
         """Execute domain authentication with exception safety - extracted method."""
         try:
@@ -752,7 +736,7 @@ class FlextAuth[T]:
         Uses QuickStartRequest Parameter Object internally while maintaining API compatibility.
         """
         # Create Parameter Object internally - eliminates "many parameters" code smell
-        quick_start_request = QuickStartRequest(
+        quick_start_request = cls._QuickStartRequest(
             create_REDACTED_LDAP_BIND_PASSWORD=create_REDACTED_LDAP_BIND_PASSWORD,
             REDACTED_LDAP_BIND_PASSWORD_username=REDACTED_LDAP_BIND_PASSWORD_username,
             REDACTED_LDAP_BIND_PASSWORD_password=REDACTED_LDAP_BIND_PASSWORD_password,
@@ -781,7 +765,7 @@ class FlextAuth[T]:
 
     @classmethod
     def _conditionally_create_REDACTED_LDAP_BIND_PASSWORD(
-        cls, auth: FlextAuth[object], request: QuickStartRequest
+        cls, auth: FlextAuth[object], request: _QuickStartRequest
     ) -> FlextAuth[object]:
         """Conditionally create REDACTED_LDAP_BIND_PASSWORD user - extracted method for Railway Pattern."""
         if not request.create_REDACTED_LDAP_BIND_PASSWORD:

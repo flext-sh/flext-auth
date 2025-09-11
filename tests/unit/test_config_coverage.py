@@ -243,3 +243,68 @@ class TestFlextAuthConfigCoverage:
         # Should use constants from FlextConstants.Auth
         # Verify that constants are being used appropriately
         assert hasattr(FlextConstants, "Auth") or config.jwt_algorithm is not None
+
+    def test_get_security_settings_method(self) -> None:
+        """Test get_security_settings method coverage."""
+        config = FlextAuthConfig()
+
+        security_settings = config.get_security_settings()
+
+        assert isinstance(security_settings, dict)
+        assert "bcrypt_rounds" in security_settings
+        assert "max_login_attempts" in security_settings
+        assert "lockout_duration_minutes" in security_settings
+        assert "min_password_length" in security_settings
+        assert "max_password_length" in security_settings
+        assert "require_password_complexity" in security_settings
+        assert "min_password_score" in security_settings
+
+        assert security_settings["bcrypt_rounds"] == config.bcrypt_rounds
+        assert security_settings["max_login_attempts"] == config.max_login_attempts
+        assert security_settings["lockout_duration_minutes"] == config.lockout_duration_minutes
+
+    def test_get_jwt_settings_method(self) -> None:
+        """Test get_jwt_settings method coverage."""
+        config = FlextAuthConfig()
+
+        jwt_settings = config.get_jwt_settings()
+
+        assert isinstance(jwt_settings, dict)
+        assert "jwt_expiry_minutes" in jwt_settings
+        assert "jwt_algorithm" in jwt_settings
+        assert "jwt_issuer" in jwt_settings
+        assert "jwt_audience" in jwt_settings
+        assert "jwt_secret_length" in jwt_settings
+
+        assert jwt_settings["jwt_expiry_minutes"] == config.jwt_expiry_minutes
+        assert jwt_settings["jwt_algorithm"] == config.jwt_algorithm
+        assert jwt_settings["jwt_issuer"] == config.jwt_issuer
+        assert jwt_settings["jwt_audience"] == config.jwt_audience
+        assert jwt_settings["jwt_secret_length"] == len(config.jwt_secret)
+
+    def test_create_from_environment_method(self) -> None:
+        """Test create_from_environment method coverage."""
+        # Test with environment variables
+        with patch.dict(os.environ, {
+            "FLEXT_AUTH_JWT_SECRET": "test_jwt_secret_minimum_32_characters_long",
+            "FLEXT_AUTH_JWT_EXPIRY_MINUTES": "120",
+            "FLEXT_AUTH_JWT_ALGORITHM": "HS256",
+            "FLEXT_AUTH_BCRYPT_ROUNDS": "12",
+            "FLEXT_AUTH_MAX_LOGIN_ATTEMPTS": "3",
+            "FLEXT_AUTH_SESSION_EXPIRY_MINUTES": "60",
+            "FLEXT_AUTH_ENABLE_AUDIT_LOGGING": "false",
+            "FLEXT_AUTH_ENABLE_RATE_LIMITING": "false",
+        }):
+            result = FlextAuthConfig.from_environment()
+
+            assert result.is_success
+            config = result.value
+
+            assert config.jwt_secret == "test_jwt_secret_minimum_32_characters_long"
+            assert config.jwt_expiry_minutes == 120
+            assert config.jwt_algorithm == "HS256"
+            assert config.bcrypt_rounds == 12
+            assert config.max_login_attempts == 3
+            assert config.session_expiry_minutes == 60
+            assert config.enable_audit_logging is False
+            assert config.enable_rate_limiting is False

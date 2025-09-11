@@ -49,6 +49,219 @@ class TestUserCreateUserMethod:
         assert user.full_name == "Test User"
         assert user.roles == ["user", "REDACTED_LDAP_BIND_PASSWORD"]
 
+    def test_user_active_property_alias(self) -> None:
+        """Test User.active property alias for backward compatibility."""
+        result = User.create_user(
+            username="activeuser",
+            email="active@example.com",
+            password="ValidPassword123!",
+        )
+
+        assert result.success
+        user = result.value
+
+        # Test active property getter
+        assert user.active == user.is_active
+        assert user.active is True  # Default is active
+
+        # Test active property setter
+        user.active = False
+        assert user.active is False
+        assert user.is_active is False
+
+        user.active = True
+        assert user.active is True
+        assert user.is_active is True
+
+    def test_user_username_validation_special_characters(self) -> None:
+        """Test User username validation with special characters - lines 130-131."""
+        # Since clean_text might be removing special chars, let's test the validator directly
+        # or use a username that has characters that won't be cleaned
+        from flext_auth.models import User
+
+        # Test the validator directly by creating a User instance with invalid username
+        try:
+            # This should trigger the field validator
+            user = User(
+                id="test-id",
+                username="user!@#",  # Contains special chars
+                email="test@example.com",
+                password_hash="$2b$12$test_hash",
+                is_active=True,
+                roles=["user"],
+                created_at=datetime.now(UTC),
+            )
+            # If we get here, the validation didn't work as expected
+            pytest.fail("Username validation should have failed")
+        except ValueError as e:
+            assert "Username can only contain letters, numbers, underscores, and hyphens" in str(e)
+
+    def test_user_password_hash_validation(self) -> None:
+        """Test User password hash validation - lines 139-140."""
+        from flext_auth.models import User
+
+        # Test with invalid password hash format
+        try:
+            user = User(
+                id="test-id",
+                username="testuser",
+                email="test@example.com",
+                password_hash="invalid_hash",  # Not bcrypt format
+                is_active=True,
+                roles=["user"],
+                created_at=datetime.now(UTC),
+            )
+            pytest.fail("Password hash validation should have failed")
+        except ValueError as e:
+            assert "Password hash must be bcrypt format" in str(e)
+
+        # Test with hash that's too short
+        try:
+            user = User(
+                id="test-id",
+                username="testuser",
+                email="test@example.com",
+                password_hash="$2b$12$short",  # Too short
+                is_active=True,
+                roles=["user"],
+                created_at=datetime.now(UTC),
+            )
+            pytest.fail("Password hash validation should have failed")
+        except ValueError as e:
+            assert "Invalid bcrypt hash length" in str(e)
+
+    def test_user_role_and_permission_methods(self) -> None:
+        """Test User role and permission methods - lines 178, 182."""
+        result = User.create_user(
+            username="roleuser",
+            email="role@example.com",
+            password="ValidPassword123!",
+            roles=["REDACTED_LDAP_BIND_PASSWORD", "user"],
+        )
+
+        assert result.success
+        user = result.value
+
+        # Test has_role method
+        assert user.has_role("REDACTED_LDAP_BIND_PASSWORD") is True
+        assert user.has_role("user") is True
+        assert user.has_role("guest") is False
+
+        # Set permissions manually and test has_permission method
+        user.permissions = ["read", "write"]
+        assert user.has_permission("read") is True
+        assert user.has_permission("write") is True
+        assert user.has_permission("delete") is False
+
+    def test_session_token_validation(self) -> None:
+        """Test Session token validation - lines 313-314."""
+        from flext_auth.models import Session
+
+        # Test with token that's too short
+        try:
+            session = Session(
+                id="test-session-id",
+                user_id="test-user-id",
+                token="short",  # Too short
+                expires_at=datetime.now(UTC) + timedelta(hours=1),
+                is_revoked=False,
+                created_at=datetime.now(UTC),
+            )
+            pytest.fail("Token validation should have failed")
+        except ValueError as e:
+            assert "Token must be at least" in str(e)
+
+    def test_session_time_remaining_and_extend_expiry(self) -> None:
+        """Test Session time_remaining_seconds and extend_expiry methods - lines 330, 335-337."""
+        from flext_auth.models import Session
+
+        # Create a session that expires in 1 hour
+        expires_at = datetime.now(UTC) + timedelta(hours=1)
+        session = Session(
+            id="test-session-id",
+            user_id="test-user-id",
+            token="valid_token_12345678901234567890",
+            expires_at=expires_at,
+            is_revoked=False,
+            created_at=datetime.now(UTC),
+        )
+
+        # Test time_remaining_seconds
+        remaining = session.time_remaining_seconds
+        assert remaining > 0
+        assert remaining <= 3600  # Should be less than or equal to 1 hour
+
+        # Test extend_expiry method
+        original_expires_at = session.expires_at
+        session.extend_expiry(minutes=60)
+
+        # The expiry should be extended
+        assert session.expires_at > original_expires_at
+        assert session.last_activity_at is not None
+
+        # Test time_remaining_seconds after extension
+        new_remaining = session.time_remaining_seconds
+        assert new_remaining > 0  # Should still have time remaining
+
+    def test_session_update_activity_method(self) -> None:
+        """Test Session update_activity method - lines 346-347."""
+        from flext_auth.models import Session
+
+        # Create a session
+        session = Session(
+            id="test-session-id",
+            user_id="test-user-id",
+            token="valid_token_12345678901234567890",
+            expires_at=datetime.now(UTC) + timedelta(hours=1),
+            is_revoked=False,
+            created_at=datetime.now(UTC),
+        )
+
+        # Test update_activity method
+        original_activity = session.last_activity_at
+        session.update_activity()
+
+        # The last_activity_at should be updated
+        assert session.last_activity_at is not None
+        assert session.last_activity_at != original_activity
+
+    def test_session_create_session_method(self) -> None:
+        """Test Session create_session method - lines 354-389."""
+        from flext_auth.models import Session
+
+        # Test create_session method
+        result = Session.create_session("test-user-id", expires_in_minutes=60)
+
+        assert result.success
+        session = result.value
+
+        # Verify session properties
+        assert session.user_id == "test-user-id"
+        assert session.token is not None
+        assert len(session.token) >= 32  # Should be a valid UUID
+        assert session.expires_at > datetime.now(UTC)
+        assert session.created_at is not None
+        assert session.last_activity_at is not None
+        assert session.is_revoked is False
+
+    def test_password_strength_validation(self) -> None:
+        """Test Password strength validation - lines 503-504."""
+        from flext_auth.models import Password
+
+        # Test with weak password that should fail validation (8+ chars but weak)
+        try:
+            password = Password(value="weakpass")  # 8 chars but only lowercase
+            pytest.fail("Password validation should have failed")
+        except ValueError as e:
+            assert "Password must contain uppercase, lowercase, numbers, and special characters" in str(e)
+
+        # Test with another weak password
+        try:
+            password = Password(value="12345678")  # 8 chars but only numbers
+            pytest.fail("Password validation should have failed")
+        except ValueError as e:
+            assert "Password must contain uppercase, lowercase, numbers, and special characters" in str(e)
+
     def test_create_user_none_username_failure(self) -> None:
         """Test user creation fails with None username - line 212-213."""
         result = User.create_user(

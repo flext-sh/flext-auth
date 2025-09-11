@@ -87,7 +87,7 @@ class TestEnhancedAuthentication:
         auth: FlextAuth[object] = FlextAuth()
 
         # Create realistic user data using flext_tests factory
-        user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
+        user_data = cast("UserData", FlextTestsFactories.UserFactory.create_dict())
 
         # Register user with realistic data
         username = sanitize_username(user_data["name"])
@@ -149,7 +149,7 @@ class TestEnhancedAuthentication:
         auth: FlextAuth[object] = FlextAuth()
 
         # Create user using factory
-        user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
+        user_data = cast("UserData", FlextTestsFactories.UserFactory.create_dict())
         username = sanitize_username(user_data["name"])
 
         # Register user first
@@ -175,7 +175,7 @@ class TestEnhancedAuthentication:
     def test_quick_start_with_realistic_REDACTED_LDAP_BIND_PASSWORD(self) -> None:
         """Test quick_start functionality with realistic REDACTED_LDAP_BIND_PASSWORD data."""
         # Create realistic REDACTED_LDAP_BIND_PASSWORD data
-        REDACTED_LDAP_BIND_PASSWORD_data = cast("UserData", FlextTestsFactories.UserFactory.create())
+        REDACTED_LDAP_BIND_PASSWORD_data = cast("UserData", FlextTestsFactories.UserFactory.create_dict())
         REDACTED_LDAP_BIND_PASSWORD_username = sanitize_username(REDACTED_LDAP_BIND_PASSWORD_data["name"], "REDACTED_LDAP_BIND_PASSWORD")
 
         # Test quick_start with REDACTED_LDAP_BIND_PASSWORD creation
@@ -254,7 +254,7 @@ class TestEnhancedAuthentication:
         auth: FlextAuth[object] = FlextAuth()
 
         # Phase 1: Create user with realistic data
-        user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
+        user_data = cast("UserData", FlextTestsFactories.UserFactory.create_dict())
         username = sanitize_username(user_data["name"], "lifecycle")
 
         register_result = auth.register_user(
@@ -350,7 +350,7 @@ class TestEnhancedConfigurationTesting:
             assert auth.password_rounds == config_overrides["password_rounds"]
 
             # Test functionality works with different configurations
-            user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
+            user_data = cast("UserData", FlextTestsFactories.UserFactory.create_dict())
             username = sanitize_username(user_data["name"], f"{env}_user")
 
             register_result = auth.register_user(
@@ -375,7 +375,7 @@ class TestEnhancedPerformanceValidation:
         auth: FlextAuth[object] = FlextAuth()
 
         # Setup: Register user for performance testing
-        user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
+        user_data = cast("UserData", FlextTestsFactories.UserFactory.create_dict())
         username = sanitize_username(user_data["name"], "perf")
 
         register_result = auth.register_user(
@@ -480,9 +480,9 @@ class TestEnhancedTestBuilders:
         auth: FlextAuth[object] = FlextAuth()
 
         # Create multiple users with different roles using factory pattern
-        REDACTED_LDAP_BIND_PASSWORD_data = cast("UserData", FlextTestsFactories.UserFactory.create())
-        user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
-        guest_data = cast("UserData", FlextTestsFactories.UserFactory.create())
+        REDACTED_LDAP_BIND_PASSWORD_data = cast("UserData", FlextTestsFactories.UserFactory.create_dict())
+        user_data = cast("UserData", FlextTestsFactories.UserFactory.create_dict())
+        guest_data = cast("UserData", FlextTestsFactories.UserFactory.create_dict())
 
         # Register users with different roles
         REDACTED_LDAP_BIND_PASSWORD_username = sanitize_username(REDACTED_LDAP_BIND_PASSWORD_data["name"], "REDACTED_LDAP_BIND_PASSWORD")

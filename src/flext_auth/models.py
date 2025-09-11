@@ -117,7 +117,7 @@ class User(FlextModels.Entity):
 
         # Use flext-core string validation - direct access pattern
         core = FlextCore.get_instance()
-        string_validation = core.validations.validate_string(
+        string_validation = core.Validations.validate_string(
             v, min_length=3, max_length=50
         )
         if string_validation.is_failure:  # pragma: no cover
@@ -217,7 +217,8 @@ class User(FlextModels.Entity):
 
             # Then validate it with FlextCore - direct access pattern
             core = FlextCore.get_instance()
-            id_result = core.validate_entity_id(raw_id)
+            validator = core.Validations.Domain.BaseValidator()
+            id_result = validator.validate_entity_id(raw_id)
             if id_result.is_failure:  # pragma: no cover
                 return FlextResult[User].fail(
                     "Failed to validate user ID"
@@ -362,7 +363,8 @@ class Session(FlextModels.Entity):
 
             # Then validate it with FlextCore - direct access pattern
             core = FlextCore.get_instance()
-            id_result = core.validate_entity_id(raw_id)
+            validator = core.Validations.Domain.BaseValidator()
+            id_result = validator.validate_entity_id(raw_id)
             if id_result.is_failure:  # pragma: no cover
                 return FlextResult[Session].fail(  # pragma: no cover
                     "Failed to validate session ID"  # pragma: no cover

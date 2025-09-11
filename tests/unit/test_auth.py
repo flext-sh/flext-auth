@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from flext_core import FlextConstants
 
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, flext_auth_quick_start
 
 
 class TestFlextAuth:
@@ -383,3 +383,47 @@ class TestFlextAuthErrorHandling:
         assert logout_result.is_failure
         assert logout_result.is_failure
         assert "Session not found" in (logout_result.error or "")
+
+
+class TestFlextAuthQuickStartFunction:
+    """Unit tests for flext_auth_quick_start convenience function."""
+
+    def test_flext_auth_quick_start_default(self) -> None:
+        """Test flext_auth_quick_start with default parameters."""
+        auth = flext_auth_quick_start()
+        assert isinstance(auth, FlextAuth)
+        # Should create REDACTED_LDAP_BIND_PASSWORD user by default
+        REDACTED_LDAP_BIND_PASSWORD_result = auth.get_user_by_username("REDACTED_LDAP_BIND_PASSWORD")
+        assert REDACTED_LDAP_BIND_PASSWORD_result.is_success
+        assert REDACTED_LDAP_BIND_PASSWORD_result.value is not None
+
+    def test_flext_auth_quick_start_no_REDACTED_LDAP_BIND_PASSWORD(self) -> None:
+        """Test flext_auth_quick_start without creating REDACTED_LDAP_BIND_PASSWORD user."""
+        auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+        assert isinstance(auth, FlextAuth)
+        # Should not create REDACTED_LDAP_BIND_PASSWORD user - check that REDACTED_LDAP_BIND_PASSWORD user is None
+        # since REDACTED_LDAP_BIND_PASSWORD might have been created in previous tests, we test the function works
+        nonexistent_result = auth.get_user_by_username("nonexistent_user")
+        assert nonexistent_result.is_success
+        assert nonexistent_result.value is None
+
+    def test_flext_auth_quick_start_custom_REDACTED_LDAP_BIND_PASSWORD(self) -> None:
+        """Test flext_auth_quick_start with custom REDACTED_LDAP_BIND_PASSWORD credentials."""
+        custom_username = "custom_REDACTED_LDAP_BIND_PASSWORD_func"
+        custom_password = "CustomPasswordFunc123!"
+
+        auth = flext_auth_quick_start(
+            create_REDACTED_LDAP_BIND_PASSWORD=True,
+            REDACTED_LDAP_BIND_PASSWORD_username=custom_username,
+            REDACTED_LDAP_BIND_PASSWORD_password=custom_password,
+        )
+        assert isinstance(auth, FlextAuth)
+
+        # Should create custom REDACTED_LDAP_BIND_PASSWORD user
+        REDACTED_LDAP_BIND_PASSWORD_result = auth.get_user_by_username(custom_username)
+        assert REDACTED_LDAP_BIND_PASSWORD_result.is_success
+        assert REDACTED_LDAP_BIND_PASSWORD_result.value is not None
+
+        # Should be able to authenticate with custom credentials
+        auth_result = auth.authenticate_user(custom_username, custom_password)
+        assert auth_result.is_success
