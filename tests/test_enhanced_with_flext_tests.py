@@ -17,6 +17,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import re
 import sys
 import uuid
 from collections.abc import Callable
@@ -26,8 +27,6 @@ from flext_core import FlextTypes
 
 # Add flext-core to path for flext_tests
 sys.path.insert(0, "/home/marlonsc/flext/flext-core/src")
-
-from flext_core.typings import FlextTypes
 from flext_tests import FlextTestsFactories, FlextTestsMatchers
 
 from flext_auth import FlextAuth, User, flext_auth_quick_start
@@ -52,6 +51,34 @@ AuthDataDict = dict[
 ]
 
 
+def sanitize_username(name: str, prefix: str = "") -> str:
+    """Sanitize a name to create a valid username that passes validation.
+
+    Removes all invalid characters and ensures the username contains only
+    letters, numbers, underscores, and hyphens as required by User model.
+    """
+    # Convert to lowercase and replace spaces with underscores
+    clean_name = name.lower().replace(" ", "_")
+
+    # Remove any characters that are not letters, numbers, underscores, or hyphens
+    clean_name = re.sub(r"[^a-z0-9_-]", "", clean_name)
+
+    # Remove multiple consecutive underscores
+    clean_name = re.sub(r"_+", "_", clean_name)
+
+    # Remove leading/trailing underscores
+    clean_name = clean_name.strip("_")
+
+    # Ensure the name is not empty
+    if not clean_name:
+        clean_name = "user"
+
+    # Add prefix if provided
+    if prefix:
+        return f"{prefix}_{clean_name}"
+    return clean_name
+
+
 class TestEnhancedAuthentication:
     """Enhanced authentication tests using flext_tests utilities."""
 
@@ -63,8 +90,9 @@ class TestEnhancedAuthentication:
         user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
 
         # Register user with realistic data
+        username = sanitize_username(user_data["name"])
         result = auth.register_user(
-            username=user_data["name"].replace(" ", "_").lower(),
+            username=username,
             email=str(user_data["email"]),
             password="SecurePassword123!@#",
         )
@@ -75,19 +103,21 @@ class TestEnhancedAuthentication:
         user = result.value
         assert isinstance(user, User)
         assert user.email.root == user_data["email"]
-        assert user.username == user_data["name"].replace(" ", "_").lower()
+        assert user.username == username
 
     def test_authentication_flow_with_batch_users(self) -> None:
         """Test authentication with batch user creation - demonstrates scalability."""
         auth: FlextAuth[object] = FlextAuth()
 
         # Create batch of realistic users using flext_tests
-        users_data = cast("list[UserData]", FlextTestsFactories.UserFactory.batch(count=5))
+        users_data = cast(
+            "list[UserData]", FlextTestsFactories.UserFactory.batch(count=5)
+        )
         registered_users: list[tuple[str, str]] = []
 
         # Register all users
         for i, user_data in enumerate(users_data):
-            username = f"user_{i}_{user_data['name'].replace(' ', '_').lower()}"
+            username = sanitize_username(user_data["name"], f"user_{i}")
             result = auth.register_user(
                 username=username,
                 email=str(user_data["email"]),
@@ -120,7 +150,7 @@ class TestEnhancedAuthentication:
 
         # Create user using factory
         user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
-        username = user_data["name"].replace(" ", "_").lower()
+        username = sanitize_username(user_data["name"])
 
         # Register user first
         register_result = auth.register_user(
@@ -146,7 +176,7 @@ class TestEnhancedAuthentication:
         """Test quick_start functionality with realistic REDACTED_LDAP_BIND_PASSWORD data."""
         # Create realistic REDACTED_LDAP_BIND_PASSWORD data
         REDACTED_LDAP_BIND_PASSWORD_data = cast("UserData", FlextTestsFactories.UserFactory.create())
-        REDACTED_LDAP_BIND_PASSWORD_username = f"REDACTED_LDAP_BIND_PASSWORD_{REDACTED_LDAP_BIND_PASSWORD_data['name'].replace(' ', '_').lower()}"
+        REDACTED_LDAP_BIND_PASSWORD_username = sanitize_username(REDACTED_LDAP_BIND_PASSWORD_data["name"], "REDACTED_LDAP_BIND_PASSWORD")
 
         # Test quick_start with REDACTED_LDAP_BIND_PASSWORD creation
         auth = flext_auth_quick_start(
@@ -170,7 +200,9 @@ class TestEnhancedAuthentication:
         auth: FlextAuth[object] = FlextAuth()
 
         # Create multiple users for session testing
-        users_data = cast("list[UserData]", FlextTestsFactories.UserFactory.batch(count=3))
+        users_data = cast(
+            "list[UserData]", FlextTestsFactories.UserFactory.batch(count=3)
+        )
         user_sessions: list[tuple[str, str]] = []
 
         for i, user_data in enumerate(users_data):
@@ -223,7 +255,7 @@ class TestEnhancedAuthentication:
 
         # Phase 1: Create user with realistic data
         user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
-        username = f"lifecycle_{user_data['name'].replace(' ', '_').lower()}"
+        username = sanitize_username(user_data["name"], "lifecycle")
 
         register_result = auth.register_user(
             username=username,
@@ -319,7 +351,7 @@ class TestEnhancedConfigurationTesting:
 
             # Test functionality works with different configurations
             user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
-            username = f"{env}_user_{user_data['name'].replace(' ', '_').lower()}"
+            username = sanitize_username(user_data["name"], f"{env}_user")
 
             register_result = auth.register_user(
                 username=username,
@@ -344,7 +376,7 @@ class TestEnhancedPerformanceValidation:
 
         # Setup: Register user for performance testing
         user_data = cast("UserData", FlextTestsFactories.UserFactory.create())
-        username = f"perf_{user_data['name'].replace(' ', '_').lower()}"
+        username = sanitize_username(user_data["name"], "perf")
 
         register_result = auth.register_user(
             username=username, email=str(user_data["email"]), password="PerfTest123!@#"
@@ -372,11 +404,15 @@ class TestEnhancedPerformanceValidation:
         def register_batch_users() -> FlextTypes.Core.List:
             """Register multiple users and return results."""
             results: FlextTypes.Core.List = []
-            users_data = cast("list[UserData]", FlextTestsFactories.UserFactory.batch(count=5))
+            users_data = cast(
+                "list[UserData]", FlextTestsFactories.UserFactory.batch(count=5)
+            )
 
             for i, user_data in enumerate(users_data):
                 unique_id = str(uuid.uuid4())[:8]
-                username = f"batch_5_{i}_{unique_id}_{user_data['name'].replace(' ', '_').lower()}"
+                username = sanitize_username(
+                    user_data["name"], f"batch_5_{i}_{unique_id}"
+                )
                 email = f"{unique_id}_{user_data['email']}"
                 result = auth.register_user(
                     username=username, email=email, password="BatchTest123!@#"
@@ -398,7 +434,9 @@ class TestEnhancedPerformanceValidation:
         auth: FlextAuth[object] = FlextAuth()
 
         # Setup: Create multiple users
-        users_data = cast("list[UserData]", FlextTestsFactories.UserFactory.batch(count=3))
+        users_data = cast(
+            "list[UserData]", FlextTestsFactories.UserFactory.batch(count=3)
+        )
         user_sessions: FlextTypes.Core.StringList = []
 
         for i, user_data in enumerate(users_data):
@@ -447,8 +485,12 @@ class TestEnhancedTestBuilders:
         guest_data = cast("UserData", FlextTestsFactories.UserFactory.create())
 
         # Register users with different roles
+        REDACTED_LDAP_BIND_PASSWORD_username = sanitize_username(REDACTED_LDAP_BIND_PASSWORD_data["name"], "REDACTED_LDAP_BIND_PASSWORD")
+        user_username = sanitize_username(user_data["name"], "user")
+        guest_username = sanitize_username(guest_data["name"], "guest")
+
         REDACTED_LDAP_BIND_PASSWORD_result = auth.register_user(
-            username=f"REDACTED_LDAP_BIND_PASSWORD_{REDACTED_LDAP_BIND_PASSWORD_data['name'].replace(' ', '_').lower()}",
+            username=REDACTED_LDAP_BIND_PASSWORD_username,
             email=str(REDACTED_LDAP_BIND_PASSWORD_data["email"]),
             password="AdminTest123!@#",
             roles=["REDACTED_LDAP_BIND_PASSWORD"],
@@ -456,7 +498,7 @@ class TestEnhancedTestBuilders:
         FlextTestsMatchers.assert_result_success(REDACTED_LDAP_BIND_PASSWORD_result)
 
         user_result = auth.register_user(
-            username=f"user_{user_data['name'].replace(' ', '_').lower()}",
+            username=user_username,
             email=str(user_data["email"]),
             password="UserTest123!@#",
             roles=["user"],
@@ -464,7 +506,7 @@ class TestEnhancedTestBuilders:
         FlextTestsMatchers.assert_result_success(user_result)
 
         guest_result = auth.register_user(
-            username=f"guest_{guest_data['name'].replace(' ', '_').lower()}",
+            username=guest_username,
             email=str(guest_data["email"]),
             password="GuestTest123!@#",
             roles=["guest"],
@@ -483,12 +525,12 @@ class TestEnhancedTestBuilders:
         # Test authentication for all users
         for user_cred in [
             (
-                f"REDACTED_LDAP_BIND_PASSWORD_{REDACTED_LDAP_BIND_PASSWORD_data['name'].replace(' ', '_').lower()}",
+                sanitize_username(REDACTED_LDAP_BIND_PASSWORD_data["name"], "REDACTED_LDAP_BIND_PASSWORD"),
                 "AdminTest123!@#",
             ),
-            (f"user_{user_data['name'].replace(' ', '_').lower()}", "UserTest123!@#"),
+            (sanitize_username(user_data["name"], "user"), "UserTest123!@#"),
             (
-                f"guest_{guest_data['name'].replace(' ', '_').lower()}",
+                sanitize_username(guest_data["name"], "guest"),
                 "GuestTest123!@#",
             ),
         ]:

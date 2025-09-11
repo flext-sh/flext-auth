@@ -18,7 +18,6 @@ import string
 from typing import cast
 
 from flext_core import FlextLogger, FlextTypes
-from flext_core.typings import FlextTypes
 
 from flext_auth import FlextAuth
 

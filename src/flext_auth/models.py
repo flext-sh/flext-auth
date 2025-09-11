@@ -117,7 +117,9 @@ class User(FlextModels.Entity):
 
         # Use flext-core string validation - direct access pattern
         core = FlextCore.get_instance()
-        string_validation = core.validations.validate_string(v, min_length=3, max_length=50)
+        string_validation = core.validations.validate_string(
+            v, min_length=3, max_length=50
+        )
         if string_validation.is_failure:  # pragma: no cover
             raise ValueError(
                 string_validation.error or "Invalid username"
@@ -201,8 +203,6 @@ class User(FlextModels.Entity):
             if password is None:
                 return FlextResult[User].fail("Password is required")
 
-            # Type narrowing - we've already validated None checks above
-
             # Hash password with bcrypt
             password_hash = bcrypt.hashpw(
                 password.encode("utf-8"),
@@ -227,9 +227,9 @@ class User(FlextModels.Entity):
             # Validation passed, use raw_id directly
             user = cls(
                 id=raw_id,  # Use the generated and validated ID directly
-                username=username,  # Type narrowed by None check above
+                username=username,
                 email=FlextModels.EmailAddress(
-                    root=email  # Type narrowed by None check above
+                    root=email
                 ),  # Convert string to EmailAddress
                 password_hash=password_hash,
                 full_name=full_name,
@@ -256,7 +256,7 @@ class User(FlextModels.Entity):
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate user-specific business rules using railway pattern."""
         # Use FlextResult.chain_results for functional validation (fazer mais com menos!)
-        # Type cast to object for chain_results compatibility
+
         return FlextResult.chain_results(
             cast("FlextResult[object]", self._validate_username()),
             cast("FlextResult[object]", self._validate_email()),

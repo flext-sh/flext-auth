@@ -9,7 +9,6 @@ from __future__ import annotations
 from typing import cast
 
 from flext_core import FlextTypes
-from flext_core.typings import FlextTypes
 
 from flext_auth import FlextAuth
 

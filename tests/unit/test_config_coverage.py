@@ -203,7 +203,6 @@ class TestFlextAuthConfigCoverage:
             # Should handle None values appropriately
             assert config is not None
         except Exception:
-            # Type errors are acceptable for None values
             pass
 
     def test_flext_auth_config_model_validation(self) -> None:

@@ -67,7 +67,6 @@ def demonstrate_system_architecture() -> None:
     # Clean separation of concerns
     auth: FlextAuth[object] = FlextAuth()
 
-    # Type safety with FlextResult - real examples
     auth.get_config()
 
     auth.config.get_security_settings()

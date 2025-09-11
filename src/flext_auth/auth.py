@@ -87,11 +87,6 @@ class CommandHandlerProtocol(Protocol):
         ...
 
 
-# =============================================================================
-# AUTHENTICATION COMMANDS - Using FlextCommands for CQRS pattern
-# =============================================================================
-
-
 # Legacy compatibility - keeping AuthCommands for tests (mantendo por compatibilidade)
 class AuthCommands:
     """Authentication Commands using FlextCommands CQRS pattern."""
@@ -153,7 +148,7 @@ class FlextAuth[T]:
     Usage Examples:
         Zero-configuration authentication::
 
-            # Simplest possible usage
+
             auth = FlextAuth()
 
             # Register user
@@ -553,7 +548,7 @@ class FlextAuth[T]:
         token_result = AuthToken.create_jwt_token(
             user_id=user_id,
             secret=self._jwt_secret,
-            expires_in_minutes=self.config.jwt_expiry_minutes,
+            expires_in_minutes=self.token_expire_minutes,
             username=user_id,  # Use user_id as username for test compatibility
         )
 
@@ -763,7 +758,6 @@ class FlextAuth[T]:
             REDACTED_LDAP_BIND_PASSWORD_password=REDACTED_LDAP_BIND_PASSWORD_password,
         )
 
-        # Simple functional composition for quick start operations
         try:
             # Step 1: Create FlextAuth instance
             auth = cls._create_auth_instance()

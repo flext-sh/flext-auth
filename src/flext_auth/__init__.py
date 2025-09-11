@@ -35,14 +35,6 @@ from flext_auth.models import (
     create_user,
 )
 
-# =============================================================================
-# FLEXT-CORE DIRECT USAGE - No wrappers, use patterns directly
-# =============================================================================
-
-# =============================================================================
-# CONVENIENCE FUNCTIONS - For backward compatibility and examples
-# =============================================================================
-
 
 def flext_auth_quick_start(
     *,
@@ -71,10 +63,6 @@ def flext_auth_quick_start(
         REDACTED_LDAP_BIND_PASSWORD_password=REDACTED_LDAP_BIND_PASSWORD_password,
     )
 
-
-# =============================================================================
-# EXPORTS - Direct from flext-core patterns, no complex aggregation
-# =============================================================================
 
 __all__ = [
     # Auth layer protocols and commands

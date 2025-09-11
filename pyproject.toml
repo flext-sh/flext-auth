@@ -278,7 +278,7 @@ lint.isort.known-first-party = ["flext_auth"]
     "PLR2004", # Magic values in comparisons (test constants)
     "F841",    # Unused variables in exception handling
     "S108",    # Hardcoded temp file paths (test fixtures)
-    "PGH003",  # Type ignore blanket statements
+    "PGH003",
     "ANN001",  # Missing type annotations for test functions
     "ANN202",  # Missing return type annotations for private test functions  
     "PLC0415", # Import outside top-level (acceptable in test fixtures)

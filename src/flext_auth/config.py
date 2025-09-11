@@ -558,7 +558,6 @@ class FlextAuthConfig(FlextConfig):
         try:
             typed_params: FlextTypes.Core.Dict = {}
 
-            # Type conversion mapping with validation
             for key, value in parameters.items():
                 if key in {"jwt_secret", "jwt_algorithm", "jwt_issuer", "jwt_audience"}:
                     typed_params[key] = str(value) if value is not None else ""
@@ -576,7 +575,6 @@ class FlextAuthConfig(FlextConfig):
                     "max_requests_per_minute",
                     "max_requests_per_hour",
                 }:
-                    # Type-safe conversion handling object type
                     if value is None:  # pragma: no cover
                         typed_params[key] = 0
                     elif isinstance(value, int):
@@ -593,7 +591,6 @@ class FlextAuthConfig(FlextConfig):
                     "enable_audit_logging",
                     "enable_rate_limiting",  # pragma: no cover
                 }:  # pragma: no cover
-                    # Type-safe conversion handling object type
                     if value is None:  # pragma: no cover
                         typed_params[key] = False
                     elif isinstance(value, bool):  # pragma: no cover

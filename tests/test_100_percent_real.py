@@ -16,7 +16,6 @@ from typing import cast
 
 import pytest
 from flext_core import FlextModels, FlextTypes
-from flext_core.typings import FlextTypes
 from pydantic import ValidationError
 
 from flext_auth import (
