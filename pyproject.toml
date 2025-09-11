@@ -260,6 +260,7 @@ markers = [
     "memory: marks tests as memory tests",
     "performance: marks tests as performance tests",
     "regression: marks tests as regression tests",
+    "timeout: marks tests as timeout tests",
 ]
 
 [tool.ruff]

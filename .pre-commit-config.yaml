@@ -47,7 +47,7 @@ repos:
         require_serial: true
         args: [--check-only, --diff, --profile=ruff]
 
-      # MyPy type checking
+    
       - id: mypy
         name: "🛡️ MyPy Strict"
         entry: poetry run mypy
