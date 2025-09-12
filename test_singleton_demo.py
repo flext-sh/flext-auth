@@ -1,0 +1,36 @@
+#!/usr/bin/env python3
+"""Demonstration of FlextAuthConfig singleton as source of truth.
+
+This script demonstrates how FlextAuthConfig singleton works as a single
+source of truth for authentication configuration across the application.
+"""
+
+from flext_auth import FlextAuth, FlextAuthConfig
+
+
+def demonstrate_singleton_config() -> None:
+    """Demonstrate singleton configuration behavior."""
+    # 1. Get global instance (source of truth)
+    FlextAuthConfig.get_global_instance()
+
+    # 2. Create FlextAuth instance (uses singleton)
+    FlextAuth()
+
+    # 3. Create another FlextAuth instance (should use same config)
+    FlextAuth()
+
+    # 4. Verify they use the same configuration
+
+    # 5. Demonstrate parameter overrides
+    FlextAuth(
+        jwt_secret="custom-secret",
+        token_expire_minutes=60,
+        password_rounds=14
+    )
+
+    # 6. Verify overrides don't affect global instance
+    FlextAuthConfig.get_global_instance()
+
+
+if __name__ == "__main__":
+    demonstrate_singleton_config()

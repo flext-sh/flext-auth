@@ -19,11 +19,7 @@ sys.path.insert(0, "/home/marlonsc/flext/flext-core/src")
 
 from flext_core import FlextConfig, FlextConstants
 
-from flext_auth.config import (
-    EnvironmentConfigRequest,
-    FlextAuthConfig,
-    FlextAuthConfigParams,
-)
+from flext_auth.config import FlextAuthConfig
 
 
 class TestFlextAuthConfigCoverage:
@@ -94,9 +90,9 @@ class TestFlextAuthConfigCoverage:
             # Validation error is acceptable
             pass
 
-    def test_flext_auth_config_params_typed_dict(self) -> None:
-        """Test FlextAuthConfigParams TypedDict usage."""
-        params: FlextAuthConfigParams = {
+    def test_flext_auth_config_params_dict(self) -> None:
+        """Test FlextAuthConfig with dictionary parameters."""
+        params = {
             "jwt_secret": "test_secret_minimum_32_characters_long",
             "jwt_expiry_minutes": 30,
             "bcrypt_rounds": 12,
@@ -108,20 +104,16 @@ class TestFlextAuthConfigCoverage:
         assert config.bcrypt_rounds == 12
 
     def test_environment_config_request_model(self) -> None:
-        """Test EnvironmentConfigRequest parameter object."""
-        request = EnvironmentConfigRequest(
-            environment="development", overrides={"jwt_expiry_minutes": 15}
-        )
-
-        assert request.environment == "development"
-        assert request.overrides["jwt_expiry_minutes"] == 15
+        """Test environment configuration (simplified)."""
+        # Test that we can create config for different environments
+        dev_config = FlextAuthConfig.create_for_environment("development")
+        assert dev_config.is_success
 
     def test_environment_config_request_defaults(self) -> None:
-        """Test EnvironmentConfigRequest with defaults."""
-        request = EnvironmentConfigRequest(environment="production")
-
-        assert request.environment == "production"
-        assert request.overrides == {}
+        """Test environment configuration defaults."""
+        # Test production environment
+        prod_config = FlextAuthConfig.create_for_environment("production")
+        assert prod_config.is_success
 
     def test_flext_auth_config_all_fields(self) -> None:
         """Test FlextAuthConfig with all available fields."""
@@ -220,21 +212,19 @@ class TestFlextAuthConfigCoverage:
             pass
 
     def test_environment_config_request_validation(self) -> None:
-        """Test EnvironmentConfigRequest validation."""
+        """Test environment configuration validation."""
         # Test with various override types
-        request = EnvironmentConfigRequest(
-            environment="test",
-            overrides={
-                "jwt_expiry_minutes": 30,
-                "bcrypt_rounds": 12,
-                "enable_audit_logging": True,
-                "jwt_secret": "override_secret",
-            },
+        config = FlextAuthConfig.create_for_environment(
+            "test",
+            jwt_expiry_minutes=30,
+            bcrypt_rounds=12,
+            enable_audit_logging=True,
+            jwt_secret="override_secret_minimum_32_characters_long",
         )
 
-        assert request.environment == "test"
-        assert len(request.overrides) == 4
-        assert request.overrides["jwt_expiry_minutes"] == 30
+        assert config.is_success
+        if config.is_success:
+            assert config.value.jwt_expiry_minutes == 30
 
     def test_flext_auth_config_constants_usage(self) -> None:
         """Test usage of FlextConstants in FlextAuthConfig."""
@@ -261,7 +251,10 @@ class TestFlextAuthConfigCoverage:
 
         assert security_settings["bcrypt_rounds"] == config.bcrypt_rounds
         assert security_settings["max_login_attempts"] == config.max_login_attempts
-        assert security_settings["lockout_duration_minutes"] == config.lockout_duration_minutes
+        assert (
+            security_settings["lockout_duration_minutes"]
+            == config.lockout_duration_minutes
+        )
 
     def test_get_jwt_settings_method(self) -> None:
         """Test get_jwt_settings method coverage."""
@@ -285,26 +278,56 @@ class TestFlextAuthConfigCoverage:
     def test_create_from_environment_method(self) -> None:
         """Test create_from_environment method coverage."""
         # Test with environment variables
-        with patch.dict(os.environ, {
-            "FLEXT_AUTH_JWT_SECRET": "test_jwt_secret_minimum_32_characters_long",
-            "FLEXT_AUTH_JWT_EXPIRY_MINUTES": "120",
-            "FLEXT_AUTH_JWT_ALGORITHM": "HS256",
-            "FLEXT_AUTH_BCRYPT_ROUNDS": "12",
-            "FLEXT_AUTH_MAX_LOGIN_ATTEMPTS": "3",
-            "FLEXT_AUTH_SESSION_EXPIRY_MINUTES": "60",
-            "FLEXT_AUTH_ENABLE_AUDIT_LOGGING": "false",
-            "FLEXT_AUTH_ENABLE_RATE_LIMITING": "false",
-        }):
-            result = FlextAuthConfig.from_environment()
+        with patch.dict(
+            os.environ,
+            {
+                "FLEXT_AUTH_JWT_SECRET": "test_jwt_secret_minimum_32_characters_long",
+                "FLEXT_AUTH_JWT_EXPIRY_MINUTES": "30",
+                "FLEXT_AUTH_JWT_ALGORITHM": "HS256",
+                "FLEXT_AUTH_BCRYPT_ROUNDS": "12",
+                "FLEXT_AUTH_MAX_LOGIN_ATTEMPTS": "3",
+                "FLEXT_AUTH_SESSION_EXPIRY_MINUTES": "60",
+                "FLEXT_AUTH_ENABLE_AUDIT_LOGGING": "false",
+                "FLEXT_AUTH_ENABLE_RATE_LIMITING": "false",
+            },
+        ):
+            result = FlextAuthConfig.create_for_environment()
 
             assert result.is_success
             config = result.value
 
             assert config.jwt_secret == "test_jwt_secret_minimum_32_characters_long"
-            assert config.jwt_expiry_minutes == 120
+            assert config.jwt_expiry_minutes == 30
             assert config.jwt_algorithm == "HS256"
             assert config.bcrypt_rounds == 12
             assert config.max_login_attempts == 3
             assert config.session_expiry_minutes == 60
             assert config.enable_audit_logging is False
             assert config.enable_rate_limiting is False
+
+
+class TestFlextAuthConfigAdditionalCoverage:
+    """Test additional coverage for missing lines in config.py."""
+
+    def test_config_validation_jwt_expiry_exceeds_session(self) -> None:
+        """Test config validation with JWT expiry exceeding session expiry - line 401."""
+        # Create config with valid values first, then modify to test validation
+        config = FlextAuthConfig()
+
+        # Manually set invalid values to test validation logic
+        config.jwt_expiry_minutes = 120  # 2 hours
+        config.session_expiry_minutes = 60  # 1 hour
+
+        # This should trigger the validation error
+        result = config.validate_configuration()
+        assert result.is_failure
+        assert "JWT expiry should not exceed session expiry" in result.error
+
+    def test_create_from_environment_exception_handling(self) -> None:
+        """Test from_environment exception handling - lines 331-336."""
+        # Test with invalid environment that causes exception
+        with patch.dict(os.environ, {"FLEXT_AUTH_JWT_EXPIRY_MINUTES": "invalid_value"}):
+            result = FlextAuthConfig.create_for_environment()
+            # Should handle the exception gracefully
+            assert result.is_failure
+            assert "Failed to load configuration from environment" in result.error

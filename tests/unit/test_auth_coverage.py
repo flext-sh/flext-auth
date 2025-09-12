@@ -19,6 +19,7 @@ sys.path.insert(0, "/home/marlonsc/flext/flext-core/src")
 from flext_auth import (
     FlextAuth,
 )
+from flext_auth.models import Password
 
 
 class TestFlextAuthInitializationCoverage:
@@ -113,7 +114,8 @@ class TestFlextAuthPasswordMethods:
         auth = FlextAuth()
 
         # Use strong password that meets validation requirements
-        result = auth.hash_password("StrongTestPass123!@#")
+        password_obj = Password(value="StrongTestPass123!@#")
+        result = password_obj.hash_password()
 
         # hash_password returns string directly, not FlextResult
         assert isinstance(result, str)
@@ -128,7 +130,8 @@ class TestFlextAuthPasswordMethods:
         strong_password = "StrongTestPass123!@#"
 
         # First hash a password - returns string directly
-        hashed_password = auth.hash_password(strong_password)
+        password_obj = Password(value=strong_password)
+        hashed_password = password_obj.hash_password()
         assert isinstance(hashed_password, str)
 
         # Test correct password verification - returns bool directly
@@ -383,3 +386,61 @@ class TestFlextAuthErrorHandlingPaths:
         # Logout invalid user - returns failure when user not found
         logout_result = auth.logout_user(invalid_user_id)
         assert logout_result.is_failure  # Session not found
+
+
+class TestFlextAuthAdditionalCoverage:
+    """Test additional coverage for missing lines in auth.py."""
+
+    def test_cleanup_expired_sessions_with_user_sessions_index(self) -> None:
+        """Test cleanup_expired_sessions method with user sessions index - lines 662-667."""
+        auth = FlextAuth()
+
+        # Register and authenticate user with complex password
+        auth.register_user("testuser", "test@example.com", "Password123!")
+        auth_result = auth.authenticate_user("testuser", "Password123!")
+        assert auth_result.is_success
+
+        # Manually add a session to the user sessions index to test the removal logic
+        user_id = auth_result.value["user"]["id"]
+        session_id = auth_result.value["session_id"]
+
+        # Ensure the session is in the user sessions index
+        if user_id not in auth.session_manager.user_sessions_index:
+            auth.session_manager.user_sessions_index[user_id] = []
+        auth.session_manager.user_sessions_index[user_id].append(session_id)
+
+        # Cleanup expired sessions - this should test the user sessions index removal
+        cleanup_result = auth.cleanup_expired_sessions()
+        assert cleanup_result.is_success
+
+    def test_get_user_by_token_invalid_token_error(self) -> None:
+        """Test get_user_by_token with invalid token - line 704."""
+        auth = FlextAuth()
+
+        # Test with invalid token
+        result = auth.get_user_by_token("invalid_token")
+        assert result.is_failure
+        assert (
+            "Invalid token" in result.error or "Token validation failed" in result.error
+        )
+
+    def test_verify_password_exception_handling(self) -> None:
+        """Test verify_password exception handling - line 820-821."""
+        auth = FlextAuth()
+
+        # Test with invalid password hash that causes bcrypt exception
+        result = auth.verify_password("password", "invalid_hash")
+        assert result is False  # Should return False on exception
+
+    def test_password_rounds_setter(self) -> None:
+        """Test password_rounds setter - line 902."""
+        auth = FlextAuth()
+
+        # Test setting password rounds
+        original_rounds = auth.password_rounds
+        auth.password_rounds = 10
+        assert auth.password_rounds == 10
+
+        # Reset to original value
+        auth.password_rounds = original_rounds
+        assert auth.password_rounds == original_rounds

@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextConstants, FlextResult
+from flext_core import FlextResult
 
 from flext_auth.__version__ import __version__
 from flext_auth.auth import (
@@ -17,11 +17,10 @@ from flext_auth.auth import (
     FlextAuth,
     QuickStartRequest,
 )
-from flext_auth.config import (
-    EnvironmentConfigRequest,
-    FlextAuthConfig,
-    FlextAuthConfigParams,
-)
+
+# CLI imports removed to avoid circular imports
+from flext_auth.config import FlextAuthConfig
+from flext_auth.constants import AuthConstants
 from flext_auth.models import (
     AuthToken,
     Credential,
@@ -40,11 +39,7 @@ def flext_auth_quick_start(
     *,
     create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
     REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-    REDACTED_LDAP_BIND_PASSWORD_password: str = getattr(
-        getattr(FlextConstants, "Auth", None),
-        "DEFAULT_ADMIN_PASSWORD",
-        "AdminPassword123!",
-    ),
+    REDACTED_LDAP_BIND_PASSWORD_password: str = AuthConstants.DEFAULT_ADMIN_PASSWORD,
 ) -> FlextAuth[object]:
     """Quick start convenience function for examples and testing.
 
@@ -73,11 +68,11 @@ __all__ = [
     "AuthenticatorProtocol",
     "CommandHandlerProtocol",
     "Credential",
-    "EnvironmentConfigRequest",
+    # CLI integration (available via direct import)
+    # "cli", "cli_main",
     # Core authentication
     "FlextAuth",
     "FlextAuthConfig",
-    "FlextAuthConfigParams",
     "FlextResult",
     "Password",
     "QuickStartRequest",

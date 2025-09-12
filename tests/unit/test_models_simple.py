@@ -22,7 +22,6 @@ from flext_auth import (
     Password,
     Role,
     Session,
-    User,
     authenticate_user,
     create_session,
     create_user,
@@ -34,7 +33,7 @@ class TestUserCreateUserMethod:
 
     def test_create_user_success_all_fields(self) -> None:
         """Test successful user creation with all parameters."""
-        result = User.create_user(
+        result = create_user(
             username="testuser",
             email="test@example.com",
             password="ValidPassword123!",
@@ -45,13 +44,13 @@ class TestUserCreateUserMethod:
         assert result.success
         user = result.value
         assert user.username == "testuser"
-        assert user.email.root == "test@example.com"
+        assert user.email == "test@example.com"
         assert user.full_name == "Test User"
         assert user.roles == ["user", "REDACTED_LDAP_BIND_PASSWORD"]
 
     def test_user_active_property_alias(self) -> None:
         """Test User.active property alias for backward compatibility."""
-        result = User.create_user(
+        result = create_user(
             username="activeuser",
             email="active@example.com",
             password="ValidPassword123!",
@@ -94,7 +93,10 @@ class TestUserCreateUserMethod:
             # If we get here, the validation didn't work as expected
             pytest.fail("Username validation should have failed")
         except ValueError as e:
-            assert "Username can only contain letters, numbers, underscores, and hyphens" in str(e)
+            assert (
+                "Username can only contain letters, numbers, underscores, and hyphens"
+                in str(e)
+            )
 
     def test_user_password_hash_validation(self) -> None:
         """Test User password hash validation - lines 139-140."""
@@ -132,7 +134,7 @@ class TestUserCreateUserMethod:
 
     def test_user_role_and_permission_methods(self) -> None:
         """Test User role and permission methods - lines 178, 182."""
-        result = User.create_user(
+        result = create_user(
             username="roleuser",
             email="role@example.com",
             password="ValidPassword123!",
@@ -227,10 +229,8 @@ class TestUserCreateUserMethod:
 
     def test_session_create_session_method(self) -> None:
         """Test Session create_session method - lines 354-389."""
-        from flext_auth.models import Session
-
         # Test create_session method
-        result = Session.create_session("test-user-id", expires_in_minutes=60)
+        result = create_session("test-user-id", expires_in_minutes=60)
 
         assert result.success
         session = result.value
@@ -253,38 +253,44 @@ class TestUserCreateUserMethod:
             password = Password(value="weakpass")  # 8 chars but only lowercase
             pytest.fail("Password validation should have failed")
         except ValueError as e:
-            assert "Password must contain uppercase, lowercase, numbers, and special characters" in str(e)
+            assert (
+                "Password must contain uppercase, lowercase, numbers, and special characters"
+                in str(e)
+            )
 
         # Test with another weak password
         try:
             password = Password(value="12345678")  # 8 chars but only numbers
             pytest.fail("Password validation should have failed")
         except ValueError as e:
-            assert "Password must contain uppercase, lowercase, numbers, and special characters" in str(e)
+            assert (
+                "Password must contain uppercase, lowercase, numbers, and special characters"
+                in str(e)
+            )
 
     def test_create_user_none_username_failure(self) -> None:
         """Test user creation fails with None username - line 212-213."""
-        result = User.create_user(
+        result = create_user(
             username=None, email="test@example.com", password="ValidPassword123!"
         )
 
         assert result.is_failure
         assert result.error is not None
-        assert "Username is required" in str(result.error)
+        assert "Input should be a valid string" in str(result.error)
 
     def test_create_user_none_email_failure(self) -> None:
         """Test user creation fails with None email - line 214-215."""
-        result = User.create_user(
+        result = create_user(
             username="testuser", email=None, password="ValidPassword123!"
         )
 
         assert result.is_failure
         assert result.error is not None
-        assert "Email is required" in str(result.error)
+        assert "Input should be a valid string" in str(result.error)
 
     def test_create_user_none_password_failure(self) -> None:
         """Test user creation fails with None password - line 216-217."""
-        result = User.create_user(
+        result = create_user(
             username="testuser", email="test@example.com", password=None
         )
 
@@ -294,7 +300,7 @@ class TestUserCreateUserMethod:
 
     def test_create_user_default_roles(self) -> None:
         """Test user creation with default roles - line 248."""
-        result = User.create_user(
+        result = create_user(
             username="minimaluser",
             email="minimal@example.com",
             password="ValidPassword123!",
@@ -307,7 +313,7 @@ class TestUserCreateUserMethod:
 
     def test_create_user_invalid_email_exception(self) -> None:
         """Test exception handling in user creation - line 261-262."""
-        result = User.create_user(
+        result = create_user(
             username="testuser",
             email="invalid-email-format",  # Should trigger validation error
             password="ValidPassword123!",

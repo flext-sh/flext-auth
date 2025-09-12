@@ -1,0 +1,65 @@
+"""FLEXT Auth Constants - Authentication-specific constants.
+
+This module provides authentication-specific constants that are not available
+in flext-core FlextConstants. These constants follow flext-core patterns and
+provide secure defaults for authentication operations.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
+from __future__ import annotations
+
+from typing import ClassVar
+
+
+class AuthConstants:
+    """Authentication-specific constants following flext-core patterns."""
+
+    # JWT Configuration
+    JWT_DEFAULT_ALGORITHM = "HS256"
+    JWT_DEFAULT_EXPIRY_MINUTES = 30
+    JWT_MAX_EXPIRY_MINUTES = 1440  # 24 hours
+    JWT_ISSUER_CLAIM = "flext-auth"
+    JWT_AUDIENCE_CLAIM = "flext-users"
+    JWT_ALLOWED_ALGORITHMS: ClassVar[list[str]] = ["HS256", "HS384", "HS512", "RS256", "RS384", "RS512"]
+    MIN_SECRET_KEY_LENGTH = 32
+
+    # Password Configuration
+    MIN_PASSWORD_LENGTH = 8
+    MAX_PASSWORD_LENGTH = 128
+    MIN_PASSWORD_SCORE = 3  # Require at least 3 of: upper, lower, digit, special
+    MIN_BCRYPT_HASH_LENGTH = 60
+    BCRYPT_ROUNDS = 12
+    MIN_BCRYPT_ROUNDS = 10
+    MAX_BCRYPT_ROUNDS = 15
+
+    # Session Configuration
+    DEFAULT_SESSION_EXPIRY_MINUTES = 120  # 2 hours
+    MAX_SESSION_EXPIRY_MINUTES = 1440  # 24 hours
+    MAX_SESSIONS_PER_USER = 5
+    SESSION_CLEANUP_INTERVAL_MINUTES = 30
+    MIN_TOKEN_LENGTH = 32
+
+    # Security Configuration
+    MAX_LOGIN_ATTEMPTS = 5
+    LOCKOUT_DURATION_MINUTES = 30
+    MAX_REQUESTS_PER_MINUTE = 60
+    MAX_REQUESTS_PER_HOUR = 1000
+
+    # Error Codes
+    INVALID_CREDENTIALS = "INVALID_CREDENTIALS"
+    ACCOUNT_LOCKED = "ACCOUNT_LOCKED"
+    ACCOUNT_DISABLED = "ACCOUNT_DISABLED"
+    TOKEN_EXPIRED = "TOKEN_EXPIRED"  # noqa: S105
+    INVALID_TOKEN = "INVALID_TOKEN"  # noqa: S105
+    USERNAME_TAKEN = "USERNAME_TAKEN"
+    EMAIL_TAKEN = "EMAIL_TAKEN"
+    SESSION_NOT_FOUND = "SESSION_NOT_FOUND"
+
+    # Default Admin Configuration
+    DEFAULT_ADMIN_PASSWORD = "AdminPassword123!"  # noqa: S105
+
+
+# Export constants for easy access
+__all__ = ["AuthConstants"]

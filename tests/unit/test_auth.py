@@ -11,9 +11,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextConstants
-
 from flext_auth import FlextAuth, flext_auth_quick_start
+from flext_auth.constants import AuthConstants
 
 
 class TestFlextAuth:
@@ -25,12 +24,12 @@ class TestFlextAuth:
         auth: FlextAuth[object] = FlextAuth()
         assert auth.jwt_secret is not None
         assert len(auth.jwt_secret) > 20
-        assert auth.password_rounds == 10  # Development environment uses 10 rounds
-        assert auth.token_expiry_minutes == 480  # Development environment uses 8 hours
+        assert auth.password_rounds == 12  # Default bcrypt rounds from flext-core
+        assert auth.token_expiry_minutes == 30  # Production-ready JWT expiry
 
         # Test custom initialization
-        custom_secret = "test-secret-key"
-        custom_rounds = 8
+        custom_secret = "test-secret-key-with-minimum-32-characters-length"
+        custom_rounds = 10
         custom_expiry = 60
 
         auth_custom: FlextAuth[object] = FlextAuth(
@@ -53,7 +52,7 @@ class TestFlextAuth:
             roles=["user"],
         )
 
-        assert result.success
+        assert result.is_success
         user = result.value
         assert user.username == "testuser"
         assert user.email_str == "test@example.com"
@@ -98,7 +97,7 @@ class TestFlextAuth:
 
         # Register user first
         reg_result = auth.register_user(username, "auth@example.com", password)
-        assert reg_result.success
+        assert reg_result.is_success
 
         # Test authentication
         auth_result = auth.authenticate_user(username, password)
@@ -117,7 +116,7 @@ class TestFlextAuth:
         assert tokens["token_type"] == "Bearer"
         expires_in = tokens["expires_in"]
         assert isinstance(expires_in, (int, float))
-        assert expires_in == 480 * 60
+        assert expires_in == 30 * 60  # 30 minutes * 60 seconds = 1800 seconds
 
     def test_user_authentication_invalid_credentials(self) -> None:
         """Test authentication with invalid credentials."""
@@ -309,7 +308,7 @@ class TestFlextAuthSecurity:
         auth.register_user(username, "lock@example.com", password)
 
         # Attempt multiple failed logins
-        for _ in range(FlextConstants.Auth.MAX_LOGIN_ATTEMPTS):
+        for _ in range(AuthConstants.MAX_LOGIN_ATTEMPTS):
             failed_auth = auth.authenticate_user(username, "wrong_password")
             assert failed_auth.is_failure
 

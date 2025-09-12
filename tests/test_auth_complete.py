@@ -31,11 +31,11 @@ class TestFlextAuth:
         config = auth.get_config()
         assert config.jwt_secret is not None
         assert len(config.jwt_secret) > 30  # Should be secure length
-        assert config.jwt_expiry_minutes == 480  # Development default
+        assert config.jwt_expiry_minutes == 30  # Production-ready default
 
         # Test that auth is properly initialized
         jwt_settings = auth.config.get_jwt_settings()
-        assert jwt_settings["jwt_expiry_minutes"] == 480  # Development default
+        assert jwt_settings["jwt_expiry_minutes"] == 30  # Production-ready default
         assert jwt_settings["jwt_algorithm"] == "HS256"
 
     def test_flext_auth_with_custom_params(self) -> None:

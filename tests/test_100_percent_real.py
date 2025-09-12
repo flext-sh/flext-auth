@@ -27,6 +27,7 @@ from flext_auth import (
     Session,
     User,
     authenticate_user,
+    create_session,
     create_user,
     flext_auth_quick_start,
 )
@@ -235,7 +236,7 @@ class TestRealModelsExhaustive:
     def test_session_create_factory_method(self) -> None:
         """Testa método factory Session.create (linhas 363-399)."""
         # Testar criação de sessão com factory method
-        session_result = Session.create_session(
+        session_result = create_session(
             user_id="test_user_session", expires_in_minutes=30
         )
 
@@ -250,7 +251,7 @@ class TestRealModelsExhaustive:
         assert session.expires_at > datetime.now(UTC)  # Deve expirar no futuro
 
         # Testar com tempo de expiração customizado
-        session_result_2 = Session.create_session(
+        session_result_2 = create_session(
             user_id="test_user_2", expires_in_minutes=60
         )
         assert session_result_2.success
@@ -464,8 +465,8 @@ class TestRealConfigExhaustive:
                 os.environ[key] = value
 
             # Testar configuração
-            result = FlextAuthConfig.from_environment()
-            if result.success:
+            result = FlextAuthConfig.create_for_environment("test")
+            if result.is_success:
                 config = result.value
                 assert config.jwt_expiry_minutes == 45
                 assert config.bcrypt_rounds == 11
