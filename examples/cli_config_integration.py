@@ -36,8 +36,8 @@ def demonstrate_cli_config_integration() -> None:
     # Simulate CLI parameters that would override configuration
     cli_params = {
         "jwt_expiry_minutes": 15,  # Shorter for security
-        "bcrypt_rounds": 12,       # Higher security
-        "max_login_attempts": 3,   # Stricter login
+        "bcrypt_rounds": 12,  # Higher security
+        "max_login_attempts": 3,  # Stricter login
         "session_expiry_minutes": 30,  # Shorter sessions
     }
 
@@ -46,8 +46,7 @@ def demonstrate_cli_config_integration() -> None:
 
     # Create new config with CLI overrides
     config_with_overrides_result = FlextAuthConfig.get_or_create_global(
-        environment="production",
-        **cli_params
+        environment="production", **cli_params
     )
 
     if config_with_overrides_result.is_success:
@@ -65,11 +64,10 @@ def demonstrate_cli_config_integration() -> None:
         register_result = auth.register_user(
             username="cli_test_user",
             email="cli_test@example.com",
-            password="CliTestPassword123!"
+            password="CliTestPassword123!",
         )
 
         if register_result.is_success:
-
             # Authenticate with CLI-configured settings
             auth_result = auth.authenticate_user("cli_test_user", "CliTestPassword123!")
 
@@ -90,8 +88,8 @@ def demonstrate_cli_config_integration() -> None:
                 "jwt_expiry_minutes": 120,
                 "bcrypt_rounds": 10,
                 "max_login_attempts": 10,
-                "environment": "development"
-            }
+                "environment": "development",
+            },
         },
         {
             "name": "Production Environment",
@@ -99,8 +97,8 @@ def demonstrate_cli_config_integration() -> None:
                 "jwt_expiry_minutes": 15,
                 "bcrypt_rounds": 12,
                 "max_login_attempts": 3,
-                "environment": "production"
-            }
+                "environment": "production",
+            },
         },
         {
             "name": "Testing Environment",
@@ -108,13 +106,12 @@ def demonstrate_cli_config_integration() -> None:
                 "jwt_expiry_minutes": 5,
                 "bcrypt_rounds": 8,
                 "max_login_attempts": 20,
-                "environment": "testing"
-            }
-        }
+                "environment": "testing",
+            },
+        },
     ]
 
     for scenario in cli_scenarios:
-
         # Create config for this scenario
         scenario_config_result = FlextAuthConfig.get_or_create_global(
             **scenario["params"]
@@ -138,8 +135,7 @@ def demonstrate_cli_config_integration() -> None:
 
     # Verify that overrides create new instances
     override_config_result = FlextAuthConfig.get_or_create_global(
-        jwt_expiry_minutes=999,
-        environment="override_test"
+        jwt_expiry_minutes=999, environment="override_test"
     )
 
     if override_config_result.is_success:
@@ -152,24 +148,22 @@ def demonstrate_cli_command_simulation() -> None:
     commands = [
         {
             "command": "flext-auth authenticate --username testuser --password testpass --jwt-expiry 30",
-            "params": {"jwt_expiry_minutes": 30}
+            "params": {"jwt_expiry_minutes": 30},
         },
         {
             "command": "flext-auth register --username newuser --email new@example.com --password newpass --bcrypt-rounds 14",
-            "params": {"bcrypt_rounds": 14}
+            "params": {"bcrypt_rounds": 14},
         },
         {
             "command": "flext-auth config --set-jwt-expiry 60 --set-max-attempts 5",
-            "params": {"jwt_expiry_minutes": 60, "max_login_attempts": 5}
-        }
+            "params": {"jwt_expiry_minutes": 60, "max_login_attempts": 5},
+        },
     ]
 
     for cmd_info in commands:
-
         # Create config with command parameters
         config_result = FlextAuthConfig.get_or_create_global(
-            environment="cli_simulation",
-            **cmd_info["params"]
+            environment="cli_simulation", **cmd_info["params"]
         )
 
         if config_result.is_success:

@@ -1,13 +1,3 @@
-"""Testes REAIS para 100% cobertura - ZERO MOCKS, ZERO TOLERANCE.
-
-Este arquivo testa especificamente as linhas não cobertas para atingir 100% de cobertura
-usando apenas testes funcionais reais, sem mocks ou simulações.
-
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
-
 from __future__ import annotations
 
 import os
@@ -15,14 +5,12 @@ from datetime import UTC, datetime, timedelta
 from typing import cast
 
 import pytest
-from flext_core import FlextModels, FlextTypes
+from flext_core import FlextTypes
 from pydantic import ValidationError
 
 from flext_auth import (
-    Credential,
     FlextAuth,
     FlextAuthConfig,
-    Password,
     Role,
     Session,
     User,
@@ -32,9 +20,8 @@ from flext_auth import (
     flext_auth_quick_start,
 )
 
-# Explicit type alias to satisfy mypy's disallow_any_generics for FlextAuth[T]
-# We don't use the generic parameter in tests, so bind it to object.
-AuthService = FlextAuth[object]
+# Type alias for FlextAuth service
+AuthService = FlextAuth
 
 
 class TestRealModelsExhaustive:
@@ -48,7 +35,7 @@ class TestRealModelsExhaustive:
             User(
                 id="test-id",
                 username="a",  # Muito curto, deve disparar validação
-                email=FlextModels.EmailAddress("test@example.com"),
+                email="test@example.com",
                 password_hash="$2b$12$test.hash.value.here.for.validation.purposes",  # Hash válido
             )
 
@@ -57,7 +44,7 @@ class TestRealModelsExhaustive:
             User(
                 id="test-id",
                 username="a" * 60,  # Muito longo, deve disparar validação
-                email=FlextModels.EmailAddress("test@example.com"),
+                email="test@example.com",
                 password_hash="$2b$12$test.hash.value.here.for.validation.purposes",  # Hash válido
             )
 
@@ -72,7 +59,7 @@ class TestRealModelsExhaustive:
                 User(
                     id="test-id-123",
                     username=invalid_username,
-                    email=FlextModels.EmailAddress("test@example.com"),
+                    email="test@example.com",
                     password_hash="test_hash",
                 )
 
@@ -85,7 +72,7 @@ class TestRealModelsExhaustive:
             # Testar username None/empty
             # Usar type: ignore pois estamos testando propositalmente tipos inválidos
             result = create_user(
-                username=empty_val if empty_val != 0 else None,
+                username=empty_val if empty_val != 0 else "",
                 email="valid@example.com",
                 password="validPassword123!",
             )
@@ -111,27 +98,34 @@ class TestRealModelsExhaustive:
         weak_passwords = ["123", "abc", "password", "12345678", "aaaaaaaa"]
 
         for weak_pass in weak_passwords:
-            with pytest.raises((ValueError, Exception)):
-                Password(value=weak_pass)
+            user = User(username="test", email="test@example.com")
+            result = user.set_password(weak_pass)
+            assert result.is_failure  # Should fail for weak passwords
 
     def test_password_hashing_real_functionality(self) -> None:
         """Testa funcionalidade real de hash de senha (linhas 441-442, 447, 451-453)."""
-        password = Password(value="StrongPassword123!")
+        user = User(username="test", email="test@example.com")
 
-        # Hash deve funcionar
-        hashed = password.hash_password()
-        assert isinstance(hashed, str)
-        assert len(hashed) > 0
-        assert hashed.startswith("$2b$")
+        # Set password should work
+        result = user.set_password("StrongPassword123!")
+        assert result.is_success
+        assert result.unwrap() is True
 
-        # Verificação deve funcionar usando Credential
-        credential = Credential(username="test", password_hash=hashed)
-        is_valid = credential.verify_password("StrongPassword123!")
-        assert is_valid is True
+        # Password hash should be properly set
+        assert user.password_hash is not None
+        assert isinstance(user.password_hash, str)
+        assert len(user.password_hash) > 0
+        assert user.password_hash.startswith("$2b$")
+
+        # Verification should work
+        verify_result = user.verify_password("StrongPassword123!")
+        assert verify_result.is_success
+        assert verify_result.unwrap() is True
 
         # Senha incorreta deve falhar
-        is_valid = credential.verify_password("WrongPassword123!")
-        assert is_valid is False
+        wrong_result = user.verify_password("WrongPassword123!")
+        assert wrong_result.is_success
+        assert wrong_result.unwrap() is False
 
     def test_session_token_length_validation(self) -> None:
         """Testa validação de comprimento do token (linhas 457-459, 464-470)."""
@@ -178,16 +172,21 @@ class TestRealModelsExhaustive:
 
     def test_credential_real_functionality(self) -> None:
         """Testa funcionalidade real de Credential (linhas 517-519)."""
-        password = Password(value="CredentialPass123!")
-        valid_hash = password.hash_password()
+        user = User(username="cred_user", email="cred@example.com")
 
-        credential = Credential(username="cred_user", password_hash=valid_hash)
+        # Set password to create hash
+        set_result = user.set_password("CredentialPass123!")
+        assert set_result.is_success
 
         # Verificação correta
-        assert credential.verify_password("CredentialPass123!") is True
+        verify_result = user.verify_password("CredentialPass123!")
+        assert verify_result.is_success
+        assert verify_result.unwrap() is True
 
         # Verificação incorreta
-        assert credential.verify_password("wrong_password") is False
+        wrong_result = user.verify_password("wrong_password")
+        assert wrong_result.is_success
+        assert wrong_result.unwrap() is False
 
     def test_authentication_real_scenarios(self) -> None:
         """Testa cenários reais de autenticação (linhas 543-544, 612-637)."""
@@ -251,9 +250,7 @@ class TestRealModelsExhaustive:
         assert session.expires_at > datetime.now(UTC)  # Deve expirar no futuro
 
         # Testar com tempo de expiração customizado
-        session_result_2 = create_session(
-            user_id="test_user_2", expires_in_minutes=60
-        )
+        session_result_2 = create_session(user_id="test_user_2", expires_in_minutes=60)
         assert session_result_2.success
         session_2 = session_result_2.value
 

@@ -11,8 +11,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuth, flext_auth_quick_start
-from flext_auth.constants import AuthConstants
+from flext_auth import (
+    FlextAuth,
+    FlextAuthConfig,
+    FlextAuthConstants,
+    flext_auth_quick_start,
+)
 
 
 class TestFlextAuth:
@@ -20,30 +24,34 @@ class TestFlextAuth:
 
     def test_flext_auth_initialization(self) -> None:
         """Test FlextAuth initialization with different parameters."""
+        # Clear singleton to ensure clean test
+        FlextAuthConfig.clear_global_instance()
+
         # Test default initialization
-        auth: FlextAuth[object] = FlextAuth()
-        assert auth.jwt_secret is not None
-        assert len(auth.jwt_secret) > 20
-        assert auth.password_rounds == 12  # Default bcrypt rounds from flext-core
-        assert auth.token_expiry_minutes == 30  # Production-ready JWT expiry
+        auth: FlextAuth = FlextAuth()
+        assert auth.config.jwt_secret is not None
+        assert len(auth.config.jwt_secret) > 20
+        assert auth.config.bcrypt_rounds == 12  # Default bcrypt rounds from flext-core
+        assert auth.config.jwt_expiry_minutes == 30  # Production-ready JWT expiry
 
         # Test custom initialization
         custom_secret = "test-secret-key-with-minimum-32-characters-length"
         custom_rounds = 10
         custom_expiry = 60
 
-        auth_custom: FlextAuth[object] = FlextAuth(
+        custom_config = FlextAuthConfig(
             jwt_secret=custom_secret,
-            password_rounds=custom_rounds,
-            token_expire_minutes=custom_expiry,
+            bcrypt_rounds=custom_rounds,
+            jwt_expiry_minutes=custom_expiry,
         )
-        assert auth_custom.jwt_secret == custom_secret
-        assert auth_custom.password_rounds == custom_rounds
-        assert auth_custom.token_expiry_minutes == custom_expiry
+        auth_custom: FlextAuth = FlextAuth(config=custom_config)
+        assert auth_custom.config.jwt_secret == custom_secret
+        assert auth_custom.config.bcrypt_rounds == custom_rounds
+        assert auth_custom.config.jwt_expiry_minutes == custom_expiry
 
     def test_user_registration_success(self) -> None:
         """Test successful user registration."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         result = auth.register_user(
             username="testuser",
@@ -61,7 +69,7 @@ class TestFlextAuth:
 
     def test_user_registration_duplicate_username(self) -> None:
         """Test user registration with duplicate username."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         # First registration
         auth.register_user("testuser", "test1@example.com", "Password123!")
@@ -76,7 +84,7 @@ class TestFlextAuth:
 
     def test_user_registration_duplicate_email(self) -> None:
         """Test user registration with duplicate email."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         # First registration
         auth.register_user("user1", "test@example.com", "Password123!")
@@ -91,7 +99,7 @@ class TestFlextAuth:
 
     def test_user_authentication_success(self) -> None:
         """Test successful user authentication."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
         username = "authtest"
         password = "AuthPassword123!"
 
@@ -120,7 +128,7 @@ class TestFlextAuth:
 
     def test_user_authentication_invalid_credentials(self) -> None:
         """Test authentication with invalid credentials."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
         username = "testuser"
 
         # Register user
@@ -134,7 +142,7 @@ class TestFlextAuth:
 
     def test_token_validation_valid_token(self) -> None:
         """Test validation of valid token."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
         username = "tokenuser"
         password = "TokenPassword123!"
 
@@ -161,7 +169,7 @@ class TestFlextAuth:
 
     def test_token_validation_invalid_token(self) -> None:
         """Test validation of invalid token."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         invalid_result = auth.validate_token("invalid.token.here")
         assert invalid_result.is_failure
@@ -169,7 +177,7 @@ class TestFlextAuth:
 
     def test_token_validation_bearer_prefix(self) -> None:
         """Test token validation with Bearer prefix."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
         username = "beareruser"
         password = "BearerPassword123!"
 
@@ -193,7 +201,7 @@ class TestFlextAuth:
 
     def test_session_management(self) -> None:
         """Test session management functionality."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
         username = "sessionuser"
         password = "SessionPassword123!"
 
@@ -223,7 +231,7 @@ class TestFlextAuth:
 
     def test_user_logout(self) -> None:
         """Test user logout functionality."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
         username = "logoutuser"
         password = "LogoutPassword123!"
 
@@ -245,7 +253,7 @@ class TestFlextAuth:
 
     def test_cleanup_expired_sessions(self) -> None:
         """Test cleanup of expired sessions."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         cleanup_result = auth.cleanup_expired_sessions()
         assert cleanup_result.success
@@ -254,7 +262,7 @@ class TestFlextAuth:
 
     def test_sync_api_methods(self) -> None:
         """Test synchronous API methods work as expected."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
         username = "syncuser"
         password = "SyncPassword123!"
 
@@ -300,7 +308,7 @@ class TestFlextAuthSecurity:
 
     def test_account_lockout_on_failed_attempts(self) -> None:
         """Test account lockout after multiple failed login attempts."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
         username = "locktest"
         password = "LockTestPassword123!"
 
@@ -308,7 +316,7 @@ class TestFlextAuthSecurity:
         auth.register_user(username, "lock@example.com", password)
 
         # Attempt multiple failed logins
-        for _ in range(AuthConstants.MAX_LOGIN_ATTEMPTS):
+        for _ in range(FlextAuthConstants.MAX_LOGIN_ATTEMPTS):
             failed_auth = auth.authenticate_user(username, "wrong_password")
             assert failed_auth.is_failure
 
@@ -323,7 +331,7 @@ class TestFlextAuthSecurity:
 
     def test_password_strength_enforcement(self) -> None:
         """Test password strength requirements."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         # Test with weak password
         weak_result = auth.register_user(
@@ -339,35 +347,35 @@ class TestFlextAuthErrorHandling:
 
     def test_empty_username_registration(self) -> None:
         """Test registration with empty username."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         result = auth.register_user("", "empty@example.com", "Password123!")
         assert result.is_failure
 
     def test_empty_email_registration(self) -> None:
         """Test registration with empty email."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         result = auth.register_user("user", "", "Password123!")
         assert result.is_failure
 
     def test_empty_password_registration(self) -> None:
         """Test registration with empty password."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         result = auth.register_user("user", "test@example.com", "")
         assert result.is_failure
 
     def test_invalid_email_registration(self) -> None:
         """Test registration with invalid email."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         result = auth.register_user("user", "invalid-email", "Password123!")
         assert result.is_failure
 
     def test_nonexistent_user_authentication(self) -> None:
         """Test authentication of non-existent user."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         auth_result = auth.authenticate_user("nonexistent", "password")
         assert auth_result.is_failure
@@ -376,7 +384,7 @@ class TestFlextAuthErrorHandling:
 
     def test_invalid_session_logout(self) -> None:
         """Test logout with invalid session ID."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         logout_result = auth.logout_user("invalid_session_id")
         assert logout_result.is_failure

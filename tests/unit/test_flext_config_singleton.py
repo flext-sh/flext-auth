@@ -42,9 +42,7 @@ class TestFlextConfigSingleton:
 
         # Create config with overrides
         override_config_result = FlextAuthConfig.get_or_create_global(
-            jwt_expiry_minutes=30,
-            session_expiry_minutes=60,
-            environment="development"
+            jwt_expiry_minutes=30, session_expiry_minutes=60, environment="development"
         )
 
         assert override_config_result.is_success
@@ -66,10 +64,7 @@ class TestFlextConfigSingleton:
 
         # Test CLI parameter creation
         cli_config_result = FlextAuthConfig.create_from_cli_params(
-            jwt_expiry=30,
-            bcrypt_rounds=12,
-            max_attempts=5,
-            environment="development"
+            jwt_expiry=30, bcrypt_rounds=12, max_attempts=5, environment="development"
         )
 
         assert cli_config_result.is_success
@@ -88,9 +83,7 @@ class TestFlextConfigSingleton:
 
         # Update global config from CLI
         update_result = FlextAuthConfig.update_global_from_cli(
-            jwt_expiry=60,
-            bcrypt_rounds=14,
-            environment="development"
+            jwt_expiry=60, bcrypt_rounds=14, environment="development"
         )
 
         assert update_result.is_success
@@ -130,7 +123,7 @@ class TestFlextConfigSingleton:
         FlextAuthConfig.clear_global_instance()
 
         # Create FlextAuth without explicit config
-        auth = FlextAuth()
+        auth: FlextAuth[object] = FlextAuth()
 
         # Verify it uses the global singleton
         global_config = FlextAuthConfig.get_global_instance()
@@ -146,7 +139,7 @@ class TestFlextConfigSingleton:
             jwt_expiry_minutes=45,
             bcrypt_rounds=13,
             max_login_attempts=7,
-            environment="development"
+            environment="development",
         )
 
         assert auth_result.is_success
@@ -164,11 +157,11 @@ class TestFlextConfigSingleton:
         FlextAuthConfig.clear_global_instance()
 
         # Create first FlextAuth
-        auth1 = FlextAuth()
+        auth1: FlextAuth[object] = FlextAuth()
         config1 = auth1.config
 
         # Create second FlextAuth
-        auth2 = FlextAuth()
+        auth2: FlextAuth[object] = FlextAuth()
         config2 = auth2.config
 
         # Both should use the same singleton
@@ -177,8 +170,6 @@ class TestFlextConfigSingleton:
 
     def test_environment_variable_override(self) -> None:
         """Test that environment variables override singleton behavior."""
-        import os
-
         # Clear any existing global instance
         FlextAuthConfig.clear_global_instance()
 
@@ -192,7 +183,7 @@ class TestFlextConfigSingleton:
             assert config.jwt_expiry_minutes == 120
 
             # Create FlextAuth - should use same config
-            auth = FlextAuth()
+            auth: FlextAuth[object] = FlextAuth()
             assert auth.token_expire_minutes == 120
 
         finally:
@@ -247,9 +238,7 @@ class TestFlextConfigSingleton:
 
         # Test with None values (should not override)
         config_result = FlextAuthConfig.create_from_cli_params(
-            jwt_expiry=None,
-            bcrypt_rounds=None,
-            environment="development"
+            jwt_expiry=None, bcrypt_rounds=None, environment="development"
         )
 
         assert config_result.is_success

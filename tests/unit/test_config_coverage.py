@@ -11,12 +11,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-import sys
 from unittest.mock import patch
 
-# Add flext-core to path
-sys.path.insert(0, "/home/marlonsc/flext/flext-core/src")
-
+import pytest
 from flext_core import FlextConfig, FlextConstants
 
 from flext_auth.config import FlextAuthConfig
@@ -302,12 +299,93 @@ class TestFlextAuthConfigCoverage:
             assert config.bcrypt_rounds == 12
             assert config.max_login_attempts == 3
             assert config.session_expiry_minutes == 60
-            assert config.enable_audit_logging is False
-            assert config.enable_rate_limiting is False
+        assert config.enable_audit_logging is False
+        assert config.enable_rate_limiting is False
+
+    def test_config_validation_jwt_expiry_exceeds_session(self) -> None:
+        """Test config validation when JWT expiry exceeds session expiry."""
+        # Test the specific validation logic for JWT expiry vs session expiry
+        config = FlextAuthConfig(
+            jwt_secret="test_jwt_secret_minimum_32_characters_long",
+            jwt_expiry_minutes=120,  # 2 hours
+            session_expiry_minutes=30,  # 30 minutes - JWT exceeds 2x session
+        )
+
+        validation_result = config.validate_configuration()
+        assert validation_result.is_failure
+        assert validation_result.error is not None
+        assert (
+            "JWT expiry should not exceed twice the session expiry"
+            in validation_result.error
+        )
+
+    def test_create_from_environment_exception_handling(self) -> None:
+        """Test exception handling in create_for_environment method."""
+        # Test the exception handling path in create_for_environment
+        with patch("flext_auth.config.FlextAuthConfig.__init__") as mock_init:
+            mock_init.side_effect = Exception("Test exception")
+
+            result = FlextAuthConfig.create_for_environment("test")
+            assert result.is_failure
+            assert result.error is not None
+            assert "Failed to create config with overrides" in result.error
 
 
 class TestFlextAuthConfigAdditionalCoverage:
     """Test additional coverage for missing lines in config.py."""
+
+    def test_create_with_overrides_method(self) -> None:
+        """Test create_with_overrides method to cover lines 450-462."""
+        result = FlextAuthConfig.create_with_overrides(
+            jwt_expiry_minutes=45,
+            bcrypt_rounds=14,
+            max_login_attempts=3,
+            session_expiry_minutes=90,
+            environment="test",
+        )
+
+        assert result.is_success
+        config = result.value
+        assert config.jwt_expiry_minutes == 45
+        assert config.bcrypt_rounds == 14
+        assert config.max_login_attempts == 3
+        assert config.session_expiry_minutes == 90
+
+    def test_set_global_instance_type_error(self) -> None:
+        """Test set_global_instance with invalid type to cover lines 510-511."""
+        with pytest.raises(
+            TypeError, match="config must be an instance of FlextAuthConfig"
+        ):
+            FlextAuthConfig.set_global_instance("invalid_config")
+
+    def test_get_or_create_global_with_overrides(self) -> None:
+        """Test get_or_create_global with overrides to cover lines 596."""
+        result = FlextAuthConfig.get_or_create_global(
+            environment="test",
+            jwt_expiry_minutes=60,
+            bcrypt_rounds=13,
+            max_login_attempts=4,
+            session_expiry_minutes=120,
+        )
+
+        assert result.is_success
+        config = result.value
+        assert config.jwt_expiry_minutes == 60
+        assert config.bcrypt_rounds == 13
+        assert config.max_login_attempts == 4
+        assert config.session_expiry_minutes == 120
+
+    def test_get_cli_summary_exception_handling(self) -> None:
+        """Test get_global_cli_summary exception handling to cover lines 677-678."""
+        with patch(
+            "flext_auth.config.FlextAuthConfig.get_global_instance"
+        ) as mock_get_global:
+            mock_get_global.side_effect = Exception("Test exception")
+
+            result = FlextAuthConfig.get_global_cli_summary()
+            assert result.is_failure
+            assert result.error is not None
+            assert "Failed to get CLI summary" in result.error
 
     def test_config_validation_jwt_expiry_exceeds_session(self) -> None:
         """Test config validation with JWT expiry exceeding session expiry - line 401."""
@@ -315,13 +393,14 @@ class TestFlextAuthConfigAdditionalCoverage:
         config = FlextAuthConfig()
 
         # Manually set invalid values to test validation logic
-        config.jwt_expiry_minutes = 120  # 2 hours
+        config.jwt_expiry_minutes = 180  # 3 hours
         config.session_expiry_minutes = 60  # 1 hour
 
         # This should trigger the validation error
         result = config.validate_configuration()
         assert result.is_failure
-        assert "JWT expiry should not exceed session expiry" in result.error
+        assert result.error is not None
+        assert "JWT expiry should not exceed twice the session expiry" in result.error
 
     def test_create_from_environment_exception_handling(self) -> None:
         """Test from_environment exception handling - lines 331-336."""
@@ -330,4 +409,5 @@ class TestFlextAuthConfigAdditionalCoverage:
             result = FlextAuthConfig.create_for_environment()
             # Should handle the exception gracefully
             assert result.is_failure
+            assert result.error is not None
             assert "Failed to load configuration from environment" in result.error

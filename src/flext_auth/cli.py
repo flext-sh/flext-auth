@@ -1,7 +1,4 @@
-"""FLEXT Auth CLI - Command-line interface using Click patterns.
-
-Demonstrates how CLI parameters can override FlextConfig singleton behavior,
-using FlextConfig as the single source of truth for configuration.
+"""FLEXT Auth CLI - Command line interface for authentication operations.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -31,7 +28,7 @@ def authenticate_user(
     password: str,
     jwt_expiry: int | None = None,
     bcrypt_rounds: int | None = None,
-    environment: str = "development"
+    environment: str = "development",
 ) -> None:
     """Authenticate user with configurable parameters.
 
@@ -40,9 +37,7 @@ def authenticate_user(
     """
     # Use FlextConfig singleton with CLI overrides
     config_result = FlextAuthConfig.create_from_cli_params(
-        jwt_expiry=jwt_expiry,
-        bcrypt_rounds=bcrypt_rounds,
-        environment=environment
+        jwt_expiry=jwt_expiry, bcrypt_rounds=bcrypt_rounds, environment=environment
     )
 
     if config_result.is_failure:
@@ -50,13 +45,7 @@ def authenticate_user(
         return
 
     # Create FlextAuth with the configured singleton
-    auth: FlextAuth[object] = FlextAuth(
-        jwt_secret=config_result.value.jwt_secret,
-        token_expire_minutes=config_result.value.jwt_expiry_minutes,
-        password_rounds=config_result.value.bcrypt_rounds,
-        max_login_attempts=config_result.value.max_login_attempts,
-        environment=environment
-    )
+    auth: FlextAuth = FlextAuth(config=config_result.value)
 
     # Perform authentication
     auth_result = auth.authenticate_user(username, password)
@@ -90,7 +79,7 @@ def register_user(
     password: str,
     max_attempts: int | None = None,
     session_expiry: int | None = None,
-    environment: str = "development"
+    environment: str = "development",
 ) -> None:
     """Register new user with configurable parameters.
 
@@ -100,7 +89,7 @@ def register_user(
     config_result = FlextAuthConfig.create_from_cli_params(
         max_attempts=max_attempts,
         session_expiry=session_expiry,
-        environment=environment
+        environment=environment,
     )
 
     if config_result.is_failure:
@@ -108,13 +97,7 @@ def register_user(
         return
 
     # Create FlextAuth with the configured singleton
-    auth: FlextAuth[object] = FlextAuth(
-        jwt_secret=config_result.value.jwt_secret,
-        token_expire_minutes=config_result.value.jwt_expiry_minutes,
-        password_rounds=config_result.value.bcrypt_rounds,
-        max_login_attempts=config_result.value.max_login_attempts,
-        environment=environment
-    )
+    auth: FlextAuth = FlextAuth(config=config_result.value)
 
     # Register user
     register_result = auth.register_user(username, email, password)
@@ -123,7 +106,9 @@ def register_user(
         user = register_result.value
         click.echo(f"✅ User registered successfully: {user.username} ({user.email})")
         click.echo(f"Max Login Attempts: {config_result.value.max_login_attempts}")
-        click.echo(f"Session Expiry: {config_result.value.session_expiry_minutes} minutes")
+        click.echo(
+            f"Session Expiry: {config_result.value.session_expiry_minutes} minutes"
+        )
     else:
         click.echo(f"❌ Registration failed: {register_result.error}", err=True)
 
@@ -140,7 +125,7 @@ def manage_config(
     set_jwt_expiry: int | None = None,
     set_bcrypt_rounds: int | None = None,
     set_max_attempts: int | None = None,
-    environment: str = "development"
+    environment: str = "development",
 ) -> None:
     """Manage FlextConfig singleton configuration.
 
@@ -151,7 +136,7 @@ def manage_config(
         jwt_expiry=set_jwt_expiry,
         bcrypt_rounds=set_bcrypt_rounds,
         max_attempts=set_max_attempts,
-        environment=environment
+        environment=environment,
     )
 
     if config_result.is_failure:
@@ -171,9 +156,13 @@ def manage_config(
             click.echo(f"  Bcrypt Rounds: {summary['bcrypt_rounds']}")
             click.echo(f"  Max Login Attempts: {summary['max_login_attempts']}")
             click.echo(f"  Session Expiry: {summary['session_expiry_minutes']} minutes")
-            click.echo(f"  Lockout Duration: {summary['lockout_duration_minutes']} minutes")
+            click.echo(
+                f"  Lockout Duration: {summary['lockout_duration_minutes']} minutes"
+            )
         else:
-            click.echo(f"❌ Failed to get config summary: {summary_result.error}", err=True)
+            click.echo(
+                f"❌ Failed to get config summary: {summary_result.error}", err=True
+            )
     else:
         # Configuration was updated
         click.echo("✅ Configuration updated successfully")
@@ -196,7 +185,9 @@ def validate_config() -> None:
         click.echo("All configuration parameters are valid")
         click.echo(f"Environment: {config.environment}")
     else:
-        click.echo(f"❌ Configuration validation failed: {validation_result.error}", err=True)
+        click.echo(
+            f"❌ Configuration validation failed: {validation_result.error}", err=True
+        )
 
 
 def main() -> None:

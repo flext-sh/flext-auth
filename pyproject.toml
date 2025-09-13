@@ -269,6 +269,9 @@ lint.isort.known-first-party = ["flext_auth"]
 
 # Ignore appropriate rules for authentication test files
 [tool.ruff.lint.per-file-ignores]
+"src/flext_auth/constants.py" = [
+    "S105",    # Hardcoded values (error codes, not passwords)
+]
 "tests/**/*.py" = [
     "S106",    # Hardcoded passwords (expected in auth tests)
     "S105",    # Hardcoded values (test fixtures and tokens)

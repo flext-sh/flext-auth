@@ -21,7 +21,6 @@ repos:
   # Poetry-managed tools via local repo
   - repo: local
     hooks:
-
       - id: ruff-format
         name: "⚡ Ruff Format"
         entry: poetry run ruff format
@@ -47,7 +46,6 @@ repos:
         require_serial: true
         args: [--check-only, --diff, --profile=ruff]
 
-    
       - id: mypy
         name: "🛡️ MyPy Strict"
         entry: poetry run mypy

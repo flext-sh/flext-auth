@@ -1,9 +1,20 @@
 """Test configuration for flext-auth."""
 
 import sys
+from collections.abc import Generator
 from pathlib import Path
 
-# Add src to Python path for imports
-src_path = Path(__file__).parent.parent / "src"
-if str(src_path) not in sys.path:
-    sys.path.insert(0, str(src_path))
+import pytest
+
+import flext_auth.config
+
+# Module setup
+sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+
+
+@pytest.fixture(autouse=True)
+def clear_auth_config_singleton() -> Generator[None]:
+    """Clear FlextAuthConfig singleton before each test to ensure clean state."""
+    flext_auth.config.FlextAuthConfig.clear_global_instance()
+    yield
+    flext_auth.config.FlextAuthConfig.clear_global_instance()

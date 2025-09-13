@@ -52,10 +52,10 @@ def main() -> None:
     # Update singleton configuration with specific parameter overrides for production
     production_config_result = FlextAuthConfig.get_or_create_global(
         jwt_expiry_minutes=15,  # Shorter JWT for security
-        bcrypt_rounds=12,       # Higher security
-        max_login_attempts=3,   # Strict login attempts
+        bcrypt_rounds=12,  # Higher security
+        max_login_attempts=3,  # Strict login attempts
         session_expiry_minutes=30,  # Shorter sessions
-        environment="production"
+        environment="production",
     )
 
     if production_config_result.is_success:
@@ -64,10 +64,10 @@ def main() -> None:
     # Update singleton configuration with different parameters for development
     dev_config_result = FlextAuthConfig.get_or_create_global(
         jwt_expiry_minutes=120,  # Longer JWT for development
-        bcrypt_rounds=10,        # Lower rounds for speed
-        max_login_attempts=10,   # More lenient for development
+        bcrypt_rounds=10,  # Lower rounds for speed
+        max_login_attempts=10,  # More lenient for development
         session_expiry_minutes=480,  # Longer sessions for development
-        environment="development"
+        environment="development",
     )
 
     if dev_config_result.is_success:

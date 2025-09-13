@@ -1,7 +1,4 @@
-"""FLEXT Auth Models - Authentication domain models using flext-core patterns directly.
-
-Authentication domain models providing User, Role, Password, and Credential entities
-with Pydantic validation, flext-core integration, and secure authentication patterns.
+"""FLEXT Auth Models - Authentication domain models.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -9,828 +6,451 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import time
 from datetime import UTC, datetime, timedelta
-from typing import Union, cast
 
 import bcrypt
 import jwt
 from flext_core import (
-    FlextCore,
     FlextModels,
     FlextResult,
     FlextTypes,
     FlextUtilities,
+    FlextValidations,
 )
 from pydantic import BaseModel, Field, field_validator
 
-from flext_auth.constants import AuthConstants
-
-# Type definitions for authentication context - eliminating object types
-AuthContextBase = dict[str, str | dict[str, "User"]]
-AuthContextWithUser = dict[str, Union[str, dict[str, "User"], "User"]]
-AuthContextWithSession = dict[str, Union[str, dict[str, "User"], "User", "Session"]]
-AuthContextWithToken = dict[
-    str, Union[str, dict[str, "User"], "User", "Session", "AuthToken"]
-]
-AuthResult = dict[str, Union["User", "Session", "AuthToken"]]
+from flext_auth.constants import FlextAuthConstants
 
 
-# Parameter Object Pattern for reducing "many parameters" code smell
-class UserCreationRequest(BaseModel):
-    """User creation parameter object using Pydantic for cleaner APIs."""
+class FlextAuthModels:
+    """Unified authentication models with nested helpers following single responsibility principle."""
 
-    username: str
-    email: str
-    password: str
-    full_name: str | None = None
-    roles: FlextTypes.Core.StringList = Field(default_factory=list)
+    # Type aliases for cleaner code
+    TokenDict = dict[str, str | datetime]
 
+    # Parameter Object Pattern for reducing "many parameters" code smell
+    class UserCreationRequest(BaseModel):
+        """User creation parameter object using Pydantic for cleaner APIs."""
 
-# =========================================================================
-# AUTHENTICATION ENTITIES
-# =========================================================================
+        username: str
+        email: str
+        password: str
+        full_name: str | None = None
+        roles: FlextTypes.Core.StringList = Field(default_factory=list)
 
+    # =========================================================================
+    # AUTHENTICATION ENTITIES
+    # =========================================================================
 
-class User(FlextModels.Entity):
-    """User entity for authentication with credentials and profile information."""
+    class User(FlextModels.Entity):
+        """User entity for authentication with credentials and profile information."""
 
-    # Pydantic fields definition
-    username: str = ""
-    email: str = ""
-    password_hash: str = ""
-    full_name: str | None = None
-    is_active: bool = True
-    is_verified: bool = False
-    last_login_at: datetime | None = None
-    failed_login_attempts: int = 0
-    locked_until: datetime | None = None
-    roles: list[str] = Field(default_factory=list)
-    permissions: list[str] = Field(default_factory=list)
+        # Pydantic fields definition
+        username: str = ""
+        email: str = ""
+        password_hash: str = ""
+        full_name: str | None = None
+        is_active: bool = True
+        roles: FlextTypes.Core.StringList = Field(default_factory=list)
+        created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+        updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+        last_login: datetime | None = None
 
-    @property
-    def email_str(self) -> str:
-        """Get email as a plain string for convenient access."""
-        return str(self.email)
+        @field_validator("email")
+        @classmethod
+        def validate_email(cls, v: str) -> str:
+            """Validate email format using flext-core validation."""
+            # Use flext-core email validation instead of duplicating code
+            validation_result = FlextValidations.FieldValidators.validate_email(v)
+            if validation_result.is_failure:
+                error_msg = validation_result.error or "Email validation failed"
+                raise ValueError(error_msg)
+            return v
 
-    @property
-    def role(self) -> str:
-        """Get primary role for backward compatibility with tests."""
-        return self.roles[0] if self.roles else "user"
+        @field_validator("username")
+        @classmethod
+        def validate_username(cls, v: str) -> str:
+            """Validate username format using flext-core validation."""
+            if not v or len(v.strip()) < FlextAuthConstants.MIN_USERNAME_LENGTH:
+                msg = "Username must be at least 3 characters"
+                raise ValueError(msg)
+            return v.strip()
 
-    @property
-    def active(self) -> bool:
-        """Alias for is_active for backward compatibility with tests."""
-        return self.is_active
+        def set_password(self, password: str) -> FlextResult[bool]:
+            """Set password with bcrypt hashing using flext-core pattern."""
+            if not password or len(password) < FlextAuthConstants.MIN_PASSWORD_LENGTH:
+                return FlextResult[bool].fail("Password must be at least 8 characters")
 
-    @active.setter
-    def active(self, value: bool) -> None:
-        """Set is_active through active property for backward compatibility."""
-        self.is_active = value
+            try:
+                # Use bcrypt for secure hashing
+                salt = bcrypt.gensalt()
+                password_hash = bcrypt.hashpw(password.encode(), salt)
+                self.password_hash = password_hash.decode()
+                return FlextResult[bool].ok(data=True)
+            except Exception as e:
+                return FlextResult[bool].fail(f"Password hashing failed: {e!s}")
 
-    @field_validator("username")
-    @classmethod
-    def validate_username(cls, v: str) -> str:
-        """Validate username format using flext-core utilities."""
-        v = FlextUtilities.TextProcessor.clean_text(v).strip().lower()
+        def verify_password(self, password: str) -> FlextResult[bool]:
+            """Verify password against stored hash using flext-core pattern."""
+            if not self.password_hash:
+                return FlextResult[bool].fail("No password hash stored")
 
-        core = FlextCore.get_instance()
-        string_validation = core.Validations.validate_string(
-            v, min_length=3, max_length=50
+            try:
+                is_valid = bcrypt.checkpw(
+                    password.encode(), self.password_hash.encode()
+                )
+                return FlextResult[bool].ok(is_valid)
+            except Exception as e:
+                return FlextResult[bool].fail(f"Password verification failed: {e!s}")
+
+    class Role(FlextModels.Entity):
+        """Role entity for role-based access control."""
+
+        name: str = ""
+        description: str = ""
+        permissions: FlextTypes.Core.StringList = Field(default_factory=list)
+        is_active: bool = True
+        created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+        @field_validator("name")
+        @classmethod
+        def validate_name(cls, v: str) -> str:
+            """Validate role name."""
+            if not v or len(v.strip()) < FlextAuthConstants.MIN_USERNAME_LENGTH - 1:
+                error_msg = "Role name must be at least 2 characters"
+                raise ValueError(error_msg)
+            return v.strip().upper()
+
+    class Session(FlextModels.Entity):
+        """Session entity for user session management."""
+
+        user_id: str = ""
+        session_token: str = ""
+        expires_at: datetime = Field(
+            default_factory=lambda: datetime.now(UTC)
+            + timedelta(hours=FlextAuthConstants.DEFAULT_SESSION_EXPIRY_MINUTES // 60)
         )
-        if string_validation.is_failure:  # pragma: no cover
-            raise ValueError(
-                string_validation.error or "Invalid username"
-            )  # pragma: no cover
+        created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+        last_accessed_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+        is_active: bool = True
+        ip_address: str | None = None
+        user_agent: str | None = None
 
-        if not v.replace("_", "").replace("-", "").isalnum():
-            msg = "Username can only contain letters, numbers, underscores, and hyphens"
-            raise ValueError(msg)
-        return v
+        def is_expired(self) -> bool:
+            """Check if session is expired."""
+            return datetime.now(UTC) > self.expires_at
 
-    @field_validator("email")
-    @classmethod
-    def validate_email(cls, v: str) -> str:
-        """Validate email format."""
-        if not v or "@" not in v or "." not in v.rsplit("@", maxsplit=1)[-1]:
-            msg = "Invalid email format"
-            raise ValueError(msg)
-        return v
+        def extend_session(self, hours: int = 24) -> FlextResult[bool]:
+            """Extend session expiration time."""
+            try:
+                self.expires_at = datetime.now(UTC) + timedelta(hours=hours)
+                self.last_accessed_at = datetime.now(UTC)
+                return FlextResult[bool].ok(data=True)
+            except Exception as e:
+                return FlextResult[bool].fail(f"Session extension failed: {e!s}")
 
-    @field_validator("password_hash")
-    @classmethod
-    def validate_password_hash(cls, v: str) -> str:
-        """Validate bcrypt hash format."""
-        if not v.startswith("$2b$"):
-            msg = "Password hash must be bcrypt format"
-            raise ValueError(msg)
-        if len(v) < AuthConstants.MIN_BCRYPT_HASH_LENGTH:
-            msg = "Invalid bcrypt hash length"
-            raise ValueError(msg)
-        return v
+        @property
+        def is_valid(self) -> bool:
+            """Check if session is valid (active and not expired)."""
+            return self.is_active and not self.is_expired()
 
-    @property
-    def is_locked(self) -> bool:
-        """Check if account is currently locked."""
-        if self.locked_until is None:
-            return False
-        return datetime.now(UTC) < self.locked_until
+        def revoke(self) -> FlextResult[bool]:
+            """Revoke this session."""
+            try:
+                self.is_active = False
+                return FlextResult[bool].ok(data=True)
+            except Exception as e:
+                error_msg = f"Session revocation failed: {e!s}"
+                return FlextResult[bool].fail(error_msg)
 
-    @property
-    def can_login(self) -> bool:
-        """Check if user can attempt login."""
-        return self.is_active and not self.is_locked
+        @property
+        def is_revoked(self) -> bool:
+            """Check if session is revoked."""
+            return not self.is_active
 
-    def record_successful_login(self) -> None:
-        """Record successful login and reset failed attempts."""
-        self.last_login_at = datetime.now(UTC)
-        self.failed_login_attempts = 0
-        self.locked_until = None
-        self.increment_version()
+    class AuthToken(FlextModels.Entity):
+        """JWT Authentication token entity."""
 
-    def record_failed_login(self) -> None:
-        """Record failed login attempt and apply lockout if needed."""
-        self.failed_login_attempts += 1
+        token: str = ""
+        user_id: str = ""
+        token_type: str = FlextAuthConstants.JWT_ISSUER_CLAIM
+        expires_at: datetime = Field(
+            default_factory=lambda: datetime.now(UTC)
+            + timedelta(hours=FlextAuthConstants.JWT_DEFAULT_EXPIRY_MINUTES // 60)
+        )
+        created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+        is_revoked: bool = False
 
-        if self.failed_login_attempts >= AuthConstants.MAX_LOGIN_ATTEMPTS:
-            self.locked_until = datetime.now(UTC) + timedelta(
-                minutes=AuthConstants.LOCKOUT_DURATION_MINUTES
+        def is_expired(self) -> bool:
+            """Check if token is expired."""
+            return datetime.now(UTC) > self.expires_at
+
+        @classmethod
+        def create_jwt_token(
+            cls, user_id: str, secret_key: str, expires_hours: int = 1
+        ) -> FlextResult[FlextAuthModels.AuthToken]:
+            """Create JWT token using flext-core pattern."""
+            try:
+                expires_at = datetime.now(UTC) + timedelta(hours=expires_hours)
+                payload = {
+                    "user_id": user_id,
+                    "exp": expires_at,
+                    "iat": datetime.now(UTC),
+                    "type": "access",
+                }
+
+                token = jwt.encode(
+                    payload,
+                    secret_key,
+                    algorithm=FlextAuthConstants.JWT_DEFAULT_ALGORITHM,
+                )
+
+                auth_token = cls(
+                    id=FlextUtilities.Generators.generate_uuid(),
+                    token=str(token),
+                    user_id=user_id,
+                    expires_at=expires_at,
+                )
+
+                return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)
+            except Exception as e:
+                return FlextResult[FlextAuthModels.AuthToken].fail(
+                    f"JWT token creation failed: {e!s}"
+                )
+
+        @classmethod
+        def verify_jwt_token(
+            cls, token: str, secret_key: str
+        ) -> FlextResult[dict[str, object]]:
+            """Verify JWT token and return payload."""
+            try:
+                payload = jwt.decode(token, secret_key, algorithms=["HS256"])
+                return FlextResult[dict[str, object]].ok(payload)
+            except jwt.ExpiredSignatureError:
+                return FlextResult[dict[str, object]].fail("Token has expired")
+            except jwt.InvalidTokenError:
+                return FlextResult[dict[str, object]].fail("Invalid token")
+            except Exception as e:
+                return FlextResult[dict[str, object]].fail(
+                    f"Token verification failed: {e!s}"
+                )
+
+    # =========================================================================
+    # SERVICE LAYER METHODS
+    # =========================================================================
+
+    class _AuthenticationService:
+        """Internal authentication service with business logic."""
+
+        @staticmethod
+        def authenticate_user(
+            username: str, password: str, users_data: list[dict[str, object]]
+        ) -> FlextResult[FlextAuthModels.User]:
+            """Authenticate user with username/password."""
+            if not username or not password:
+                return FlextResult[FlextAuthModels.User].fail(
+                    "Username and password required"
+                )
+
+            # Find user in data
+            user_data = next(
+                (u for u in users_data if u.get("username") == username), None
             )
+            if not user_data:
+                return FlextResult[FlextAuthModels.User].fail("User not found")
 
-        self.increment_version()
+            # Create user instance from user data
+            user = FlextAuthModels.User()
+            # Set user attributes from user_data, but only if they exist in User model
+            for key, value in user_data.items():
+                if hasattr(user, key):
+                    setattr(user, key, value)
 
-    def has_role(self, role: str) -> bool:
-        """Check if user has specific role."""
-        return role in self.roles
+            # Verify password
+            password_result = user.verify_password(password)
+            if password_result.is_failure:
+                return FlextResult[FlextAuthModels.User].fail("Invalid password")
 
-    def has_permission(self, permission: str) -> bool:
-        """Check if user has specific permission."""
-        return permission in self.permissions
+            if not password_result.data:
+                return FlextResult[FlextAuthModels.User].fail("Invalid credentials")
 
-    def validate_business_rules(self) -> FlextResult[None]:
-        """Validate user-specific business rules using railway pattern."""
-        # Use FlextResult.chain_results for functional validation (fazer mais com menos!)
+            return FlextResult[FlextAuthModels.User].ok(user)
 
-        return FlextResult.chain_results(
-            cast("FlextResult[object]", self._validate_username()),
-            cast("FlextResult[object]", self._validate_email()),
-            cast("FlextResult[object]", self._validate_password_hash()),
-        ).map(lambda _: None)
+        @staticmethod
+        def create_user_session(
+            user: FlextAuthModels.User,
+            ip_address: str | None = None,
+            user_agent: str | None = None,
+        ) -> FlextResult[FlextAuthModels.Session]:
+            """Create new user session."""
+            try:
+                session = FlextAuthModels.Session(
+                    id=FlextUtilities.Generators.generate_uuid(),
+                    user_id=user.id,
+                    session_token=FlextUtilities.Generators.generate_uuid(),
+                    ip_address=ip_address,
+                    user_agent=user_agent,
+                )
+                return FlextResult[FlextAuthModels.Session].ok(session)
+            except Exception as e:
+                return FlextResult[FlextAuthModels.Session].fail(
+                    f"Session creation failed: {e!s}"
+                )
 
-    def _validate_username(self) -> FlextResult[None]:
-        """Validate username business rules."""
-        if not self.username:  # pragma: no cover
-            return FlextResult[None].fail(
-                "Username cannot be empty"
-            )  # pragma: no cover
-        return FlextResult[None].ok(None)
-
-    def _validate_email(self) -> FlextResult[None]:
-        """Validate email business rules."""
-        if not self.email or not str(self.email):  # pragma: no cover
-            return FlextResult[None].fail("Email cannot be empty")  # pragma: no cover
-        return FlextResult[None].ok(None)
-
-    def _validate_password_hash(self) -> FlextResult[None]:
-        """Validate password hash business rules."""
-        if not self.password_hash:  # pragma: no cover
-            return FlextResult[None].fail(
-                "Password hash cannot be empty"
-            )  # pragma: no cover
-        return FlextResult[None].ok(None)
-
-
-class Session(FlextModels.Entity):
-    """Session entity for authentication state management."""
-
-    # Pydantic fields definition
-    user_id: str = ""
-    token: str = ""
-    expires_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
-    ip_address: str | None = None
-    user_agent: str | None = None
-    is_revoked: bool = False
-    last_activity_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
-    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
-
-    @field_validator("token")
-    @classmethod
-    def validate_token(cls, v: str) -> str:
-        """Validate token format and length."""
-        if len(v) < AuthConstants.MIN_TOKEN_LENGTH:
-            msg = f"Token must be at least {AuthConstants.MIN_TOKEN_LENGTH} characters"
-            raise ValueError(msg)
-        return v
-
-    def is_expired(self) -> bool:
-        """Check if session has expired."""
-        return datetime.now(UTC) >= self.expires_at
-
-    @property
-    def is_valid(self) -> bool:
-        """Check if session is valid and active."""
-        return not self.is_expired() and not self.is_revoked
-
-    @property
-    def time_remaining_seconds(self) -> int:
-        """Get remaining session time in seconds."""
-        if self.is_expired():
-            return 0
-        return int((self.expires_at - datetime.now(UTC)).total_seconds())
-
-    def extend_expiry(self, minutes: int = 30) -> None:
-        """Extend session expiry time."""
-        self.expires_at = datetime.now(UTC) + timedelta(minutes=minutes)
-        self.last_activity_at = datetime.now(UTC)
-        self.increment_version()
-
-    def revoke(self) -> None:
-        """Revoke the session."""
-        self.is_revoked = True
-        self.increment_version()
-
-    def update_activity(self) -> None:
-        """Update last activity timestamp."""
-        self.last_activity_at = datetime.now(UTC)
-        self.increment_version()
-
-    def validate_business_rules(self) -> FlextResult[None]:
-        """Validate session-specific business rules."""
-        if not self.user_id:  # pragma: no cover
-            return FlextResult[None].fail("User ID cannot be empty")  # pragma: no cover
-
-        if not self.token:  # pragma: no cover
-            return FlextResult[None].fail("Token cannot be empty")  # pragma: no cover
-
-        if self.expires_at <= datetime.now(UTC):  # pragma: no cover
-            return FlextResult[None].fail(
-                "Session cannot expire in the past"
-            )  # pragma: no cover
-
-        return FlextResult[None].ok(None)
-
-
-class Role(FlextModels.Entity):
-    """Role entity for RBAC (Role-Based Access Control)."""
-
-    # Pydantic fields definition
-    name: str = ""
-    display_name: str = ""
-    description: str | None = None
-    permissions: list[str] = Field(default_factory=list)
-    is_system_role: bool = False
-    priority: int = 100
-
-    @field_validator("name")
-    @classmethod
-    def validate_name(cls, v: str) -> str:
-        """Validate role name format."""
-        v = v.strip().upper()
-        if not v.replace("_", "").isalnum():  # pragma: no cover
-            msg = "Role name can only contain letters, numbers, and underscores"  # pragma: no cover
-            raise ValueError(msg)  # pragma: no cover
-        return v
-
-    def has_permission(self, permission: str) -> bool:
-        """Check if role has specific permission."""
-        return permission in self.permissions  # pragma: no cover
-
-    def add_permission(self, permission: str) -> None:
-        """Add permission to role."""
-        if permission not in self.permissions:  # pragma: no cover
-            self.permissions.append(permission)  # pragma: no cover
-            self.increment_version()  # pragma: no cover
-
-    def remove_permission(self, permission: str) -> None:
-        """Remove permission from role."""
-        if permission in self.permissions:  # pragma: no cover
-            self.permissions.remove(permission)  # pragma: no cover
-            self.increment_version()  # pragma: no cover
-
-    def validate_business_rules(self) -> FlextResult[None]:
-        """Validate role-specific business rules."""
-        if not self.name:  # pragma: no cover
-            return FlextResult[None].fail(
-                "Role name cannot be empty"
-            )  # pragma: no cover
-
-        if not self.display_name:  # pragma: no cover
-            return FlextResult[None].fail(
-                "Display name cannot be empty"
-            )  # pragma: no cover
-
-        return FlextResult[None].ok(None)  # pragma: no cover
-
-
-# =========================================================================
-# VALUE OBJECTS
-# =========================================================================
-
-
-class Password(FlextModels.Value):
-    """Password value object with validation using Pydantic field_validator."""
-
-    # Pydantic fields definition
-    value: str = ""
-
-    @field_validator("value")
-    @classmethod
-    def validate_password_strength(cls, v: str) -> str:
-        """Validate password meets security requirements using Pydantic field_validator."""
-        if len(v) < AuthConstants.MIN_PASSWORD_LENGTH:
-            msg = f"Password must be at least {AuthConstants.MIN_PASSWORD_LENGTH} characters"
-            raise ValueError(msg)
-
-        if len(v) > AuthConstants.MAX_PASSWORD_LENGTH:  # pragma: no cover
-            msg = f"Password cannot exceed {AuthConstants.MAX_PASSWORD_LENGTH} characters"  # pragma: no cover
-            raise ValueError(msg)  # pragma: no cover
-
-        # Basic strength checks
-        has_upper = any(c.isupper() for c in v)
-        has_lower = any(c.islower() for c in v)
-        has_digit = any(c.isdigit() for c in v)
-        has_special = any(c in "!@#$%^&*()_+-=[]{}|;:,.<>?" for c in v)
-
-        strength_score = sum([has_upper, has_lower, has_digit, has_special])
-
-        if strength_score < AuthConstants.MIN_PASSWORD_SCORE:
-            msg = "Password must contain uppercase, lowercase, numbers, and special characters"
-            raise ValueError(msg)
-
-        return v
-
-    def hash_password(self) -> str:
-        """Hash the password using bcrypt."""
-        salt = bcrypt.gensalt(rounds=AuthConstants.BCRYPT_ROUNDS)
-        return bcrypt.hashpw(self.value.encode("utf-8"), salt).decode("utf-8")
-
-    def validate_business_rules(self) -> FlextResult[None]:
-        """Validate password business rules."""
-        if not self.value:  # pragma: no cover
-            return FlextResult[None].fail(
-                "Password cannot be empty"
-            )  # pragma: no cover
-        return FlextResult[None].ok(None)  # pragma: no cover
-
-
-class Credential(FlextModels.Value):
-    """Immutable credential value object for secure storage."""
-
-    # Pydantic fields definition
-    username: str = ""
-    password_hash: str = ""
+    # =========================================================================
+    # PUBLIC API METHODS
+    # =========================================================================
 
     @classmethod
-    def create_from_password(
-        cls, username: str, password: str
-    ) -> FlextResult[Credential]:
-        """Create credential with password hashing."""
+    def create_user_from_request(
+        cls, request: UserCreationRequest
+    ) -> FlextResult[User]:
+        """Create user from parameter object - eliminates parameter passing smell."""
         try:
-            # Hash password with bcrypt
-            salt = bcrypt.gensalt(rounds=AuthConstants.BCRYPT_ROUNDS)
-            password_hash = bcrypt.hashpw(password.encode("utf-8"), salt).decode(
-                "utf-8"
+            user = cls.User(
+                id=FlextUtilities.Generators.generate_uuid(),
+                username=request.username,
+                email=request.email,
+                full_name=request.full_name,
+                roles=request.roles,
             )
 
-            credential = cls(username=username, password_hash=password_hash)
-            return FlextResult[Credential].ok(credential)
+            # Set password
+            password_result = user.set_password(request.password)
+            if password_result.is_failure:
+                return FlextResult[FlextAuthModels.User].fail(
+                    password_result.error or "Password verification failed"
+                )
 
-        except Exception as e:  # pragma: no cover
-            return FlextResult[Credential].fail(
-                f"Failed to create credential: {e}"
-            )  # pragma: no cover
-
-    def verify_password(self, password: str) -> bool:
-        """Verify password against stored hash."""
-        try:
-            return bcrypt.checkpw(
-                password.encode("utf-8"), self.password_hash.encode("utf-8")
+            return FlextResult[FlextAuthModels.User].ok(user)
+        except Exception as e:
+            return FlextResult[FlextAuthModels.User].fail(
+                f"User creation failed: {e!s}"
             )
-        except Exception:  # pragma: no cover
-            return False  # pragma: no cover
-
-    def validate_business_rules(self) -> FlextResult[None]:
-        """Validate credential business rules."""
-        if not self.username:  # pragma: no cover
-            return FlextResult[None].fail(
-                "Username cannot be empty"
-            )  # pragma: no cover
-        if not self.password_hash:  # pragma: no cover
-            return FlextResult[None].fail(
-                "Password hash cannot be empty"
-            )  # pragma: no cover
-        return FlextResult[None].ok(None)
-
-
-class AuthToken(FlextModels.Value):
-    """Immutable JWT token value object."""
-
-    # Pydantic fields definition
-    token: str = ""
-    user_id: str = ""
-    expires_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
-    issued_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @classmethod
-    def create_jwt_token(
+    def authenticate_and_create_session(
         cls,
-        user_id: str,
-        secret: str,
-        expires_in_minutes: int = AuthConstants.JWT_DEFAULT_EXPIRY_MINUTES,
-        username: str | None = None,
-    ) -> FlextResult[AuthToken]:
-        """Create JWT token for user with modern claims."""
-        try:
-            now = datetime.now(UTC)
-            expires_at = now + timedelta(minutes=expires_in_minutes)
-
-            # Modern JWT payload with all required claims
-            payload = {
-                "user_id": user_id,
-                "username": username or "",
-                "role": "user",  # Default role for token validation compatibility
-                "iat": int(now.timestamp()),
-                "exp": int(expires_at.timestamp()),
-                "iss": AuthConstants.JWT_ISSUER_CLAIM,
-                "aud": AuthConstants.JWT_AUDIENCE_CLAIM,
-            }
-
-            token = jwt.encode(
-                payload, secret, algorithm=AuthConstants.JWT_DEFAULT_ALGORITHM
-            )
-
-            # Convert bytes to str if necessary
-            token_str = token.decode("utf-8") if isinstance(token, bytes) else token
-
-            auth_token = cls(
-                token=token_str, user_id=user_id, expires_at=expires_at, issued_at=now
-            )
-
-            return FlextResult[AuthToken].ok(auth_token)
-
-        except Exception as e:  # pragma: no cover
-            return FlextResult[AuthToken].fail(
-                f"Failed to create JWT token: {e}"
-            )  # pragma: no cover
-
-    def verify_token(self, secret: str) -> FlextResult[FlextTypes.Core.Dict]:
-        """Verify JWT token and return payload with proper validation."""
-        try:  # pragma: no cover
-            # Use modern PyJWT with proper audience and issuer validation  # pragma: no cover
-            payload = jwt.decode(  # pragma: no cover
-                self.token,  # pragma: no cover
-                secret,  # pragma: no cover
-                algorithms=[
-                    AuthConstants.JWT_DEFAULT_ALGORITHM
-                ],  # pragma: no cover
-                audience=AuthConstants.JWT_AUDIENCE_CLAIM,  # pragma: no cover
-                issuer=AuthConstants.JWT_ISSUER_CLAIM,  # pragma: no cover
-                options={  # pragma: no cover
-                    "verify_signature": True,  # pragma: no cover
-                    "verify_exp": True,  # pragma: no cover
-                    "verify_aud": True,  # pragma: no cover
-                    "verify_iss": True,  # pragma: no cover
-                    "require_exp": True,  # pragma: no cover
-                    "require_aud": True,  # pragma: no cover
-                    "require_iss": True,  # pragma: no cover
-                },  # pragma: no cover
-            )  # pragma: no cover
-            return FlextResult[FlextTypes.Core.Dict].ok(payload)  # pragma: no cover
-
-        except jwt.ExpiredSignatureError:  # pragma: no cover
-            return FlextResult[FlextTypes.Core.Dict].fail(  # pragma: no cover
-                "Token expired",
-                error_code=AuthConstants.TOKEN_EXPIRED,  # pragma: no cover
-            )  # pragma: no cover
-        except jwt.InvalidTokenError as e:  # pragma: no cover
-            return FlextResult[FlextTypes.Core.Dict].fail(  # pragma: no cover
-                f"Invalid token: {e}",
-                error_code=AuthConstants.INVALID_TOKEN,  # pragma: no cover
-            )  # pragma: no cover
-
-    @property
-    def is_expired(self) -> bool:
-        """Check if token has expired."""
-        return datetime.now(UTC) >= self.expires_at  # pragma: no cover
-
-    def validate_business_rules(self) -> FlextResult[None]:
-        """Validate token business rules."""
-        if not self.token:  # pragma: no cover
-            return FlextResult[None].fail("Token cannot be empty")  # pragma: no cover
-        if not self.user_id:  # pragma: no cover
-            return FlextResult[None].fail("User ID cannot be empty")  # pragma: no cover
-        return FlextResult[None].ok(None)  # pragma: no cover
-
-
-# =========================================================================
-# FACTORY FUNCTIONS - Remove class-level factory methods, use module functions
-# =========================================================================
-
-
-def create_user(
-    username: str,
-    email: str,
-    password: str | None,
-    full_name: str | None = None,
-    roles: FlextTypes.Core.StringList | None = None,
-) -> FlextResult[User]:
-    """Create user with password hashing and validation using Pydantic field_validator."""
-    try:
-        # Validate required fields
-        if password is None:
-            return FlextResult[User].fail("Password is required")
-
-        # Generate user ID
-        user_id = f"user_{username}_{int(time.time_ns())}"
-
-        # Create Password value object - validation happens in Pydantic field_validator
-        password_obj = Password(value=password)
-        password_hash = password_obj.hash_password()
-
-        # Create user entity
-        user = User(
-            id=user_id,
-            username=username,
-            email=email,  # EmailStr will validate the email format
-            password_hash=password_hash,
-            full_name=full_name,
-            roles=roles or ["user"],
+        username: str,
+        password: str,
+        users_data: list[dict[str, object]],
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+    ) -> FlextResult[
+        tuple[FlextAuthModels.User, FlextAuthModels.Session, FlextAuthModels.AuthToken]
+    ]:
+        """Complete authentication flow - authenticate user, create session and token."""
+        # Authenticate user
+        auth_result = cls._AuthenticationService.authenticate_user(
+            username, password, users_data
         )
+        if auth_result.is_failure:
+            return FlextResult[
+                tuple[
+                    FlextAuthModels.User,
+                    FlextAuthModels.Session,
+                    FlextAuthModels.AuthToken,
+                ]
+            ].fail(auth_result.error or "Authentication failed")
 
-        # Validate business rules
-        validation_result = user.validate_business_rules()
-        if validation_result.is_failure:  # pragma: no cover
-            return FlextResult[User].fail(  # pragma: no cover
-                f"User validation failed: {validation_result.error}"  # pragma: no cover
-            )  # pragma: no cover
+        user = auth_result.data
+        if user is None:
+            return FlextResult[
+                tuple[
+                    FlextAuthModels.User,
+                    FlextAuthModels.Session,
+                    FlextAuthModels.AuthToken,
+                ]
+            ].fail("Authentication failed - user not found")
 
-        return FlextResult[User].ok(user)
+        # Create session
+        session_result = cls._AuthenticationService.create_user_session(
+            user, ip_address, user_agent
+        )
+        if session_result.is_failure:
+            return FlextResult[
+                tuple[
+                    FlextAuthModels.User,
+                    FlextAuthModels.Session,
+                    FlextAuthModels.AuthToken,
+                ]
+            ].fail(session_result.error or "Session creation failed")
 
-    except Exception as e:  # pragma: no cover
-        return FlextResult[User].fail(f"Failed to create user: {e}")  # pragma: no cover
+        session = session_result.data
+        if session is None:
+            return FlextResult[
+                tuple[
+                    FlextAuthModels.User,
+                    FlextAuthModels.Session,
+                    FlextAuthModels.AuthToken,
+                ]
+            ].fail("Session creation failed - session not created")
+
+        # Create JWT token
+        if not user.id:
+            return FlextResult[
+                tuple[
+                    FlextAuthModels.User,
+                    FlextAuthModels.Session,
+                    FlextAuthModels.AuthToken,
+                ]
+            ].fail("User ID is required for token creation")
+
+        token_result = cls.AuthToken.create_jwt_token(
+            user.id, FlextAuthConstants.JWT_SECRET_KEY
+        )
+        if token_result.is_failure:
+            return FlextResult[
+                tuple[
+                    FlextAuthModels.User,
+                    FlextAuthModels.Session,
+                    FlextAuthModels.AuthToken,
+                ]
+            ].fail(token_result.error or "Token creation failed")
+
+        token = token_result.data
+        if token is None:
+            return FlextResult[
+                tuple[
+                    FlextAuthModels.User,
+                    FlextAuthModels.Session,
+                    FlextAuthModels.AuthToken,
+                ]
+            ].fail("Token creation failed - token not created")
+
+        return FlextResult[
+            tuple[
+                FlextAuthModels.User, FlextAuthModels.Session, FlextAuthModels.AuthToken
+            ]
+        ].ok((user, session, token))
+
+
+# Module-level convenience functions for easier imports
+def authenticate_user(
+    username: str, password: str, users_data: list[dict[str, object]]
+) -> FlextResult[FlextAuthModels.User]:
+    """Authenticate user with username/password."""
+    return FlextAuthModels._AuthenticationService.authenticate_user(
+        username, password, users_data
+    )
 
 
 def create_session(
-    user_id: str,
-    expires_in_minutes: int = AuthConstants.DEFAULT_SESSION_EXPIRY_MINUTES,
-    ip_address: str | None = None,
-    user_agent: str | None = None,
-) -> FlextResult[Session]:
-    """Create authentication session with token."""
-    try:
-        # Generate session ID using flext-core utilities
-        session_id = f"session_{user_id}_{FlextUtilities.Generators.generate_iso_timestamp()}"
-        token = FlextUtilities.Generators.generate_uuid()
-
-        # Calculate expiration
-        expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
-
-        # Create session entity
-        session = Session(
-            id=session_id,
-            user_id=user_id,
-            token=token,
-            expires_at=expires_at,
-            ip_address=ip_address,
-            user_agent=user_agent,
-        )
-
-        # Validate business rules
-        validation_result = session.validate_business_rules()
-        if validation_result.is_failure:  # pragma: no cover
-            return FlextResult[
-                Session
-            ].fail(  # pragma: no cover
-                f"Session validation failed: {validation_result.error}"  # pragma: no cover
-            )  # pragma: no cover
-
-        return FlextResult[Session].ok(session)
-
-    except Exception as e:  # pragma: no cover
-        return FlextResult[Session].fail(
-            f"Failed to create session: {e}"
-        )  # pragma: no cover
-
-
-def authenticate_user(
-    username: str, password: str, user_storage: dict[str, User], jwt_secret: str
-) -> FlextResult[FlextTypes.Core.Dict]:
-    """Authenticate user using Railway Pattern - eliminates all 8 returns using FlextCore functional composition."""
-    # Package authentication parameters for Railway Pattern with proper typing
-    auth_context: FlextTypes.Core.Dict = {
-        "username": username,
-        "password": password,
-        "user_storage": user_storage,
-        "jwt_secret": jwt_secret,
-    }
-
-    # Proper Railway Pattern using FlextResult bind chains - SINGLE RETURN
-    result = _find_user_by_username(auth_context)
-
-    return (
-        result.bind(_validate_user_login_status)
-        .bind(_verify_user_password)
-        .bind(_record_login_success)
-        .bind(_add_session_to_result)
-        .bind(_add_jwt_to_result)
-        .bind(_format_authentication_response)
+    user_id: str, ip_address: str | None = None, user_agent: str | None = None
+) -> FlextResult[FlextAuthModels.Session]:
+    """Create new user session."""
+    # Create session directly using Session model
+    session = FlextAuthModels.Session(
+        id=FlextUtilities.Generators.generate_uuid(),
+        user_id=user_id,
+        ip_address=ip_address,
+        user_agent=user_agent,
     )
+    return FlextResult[FlextAuthModels.Session].ok(session)
 
 
-def _find_user_by_username(
-    auth_context: FlextTypes.Core.Dict,
-) -> FlextResult[FlextTypes.Core.Dict]:
-    """Find user by username (case insensitive) - extracted method for Railway Pattern."""
-    try:
-        username = str(auth_context["username"])
-        user_storage = cast("dict[str, User]", auth_context["user_storage"])
-
-        user = None
-        for stored_user in user_storage.values():
-            if stored_user.username.lower() == username.lower():
-                user = stored_user
-                break
-
-        if not user:
-            return FlextResult[FlextTypes.Core.Dict].fail(
-                "Invalid credentials",
-                error_code=AuthConstants.INVALID_CREDENTIALS,
-            )
-
-        return FlextResult[FlextTypes.Core.Dict].ok({**auth_context, "user": user})
-
-    except Exception as e:  # pragma: no cover
-        return FlextResult[FlextTypes.Core.Dict].fail(
-            f"User lookup failed: {e}"
-        )  # pragma: no cover
-
-
-def _validate_user_login_status(
-    auth_data: FlextTypes.Core.Dict,
-) -> FlextResult[FlextTypes.Core.Dict]:
-    """Validate user can login - extracted method for Railway Pattern."""
-    user = cast("User", auth_data["user"])
-
-    if not user.can_login:
-        if user.is_locked:
-            return FlextResult[FlextTypes.Core.Dict].fail(
-                "Account is locked", error_code=AuthConstants.ACCOUNT_LOCKED
-            )
-        if not user.is_active:
-            return FlextResult[FlextTypes.Core.Dict].fail(
-                "Account is disabled",
-                error_code=AuthConstants.ACCOUNT_DISABLED,
-            )
-
-    return FlextResult[FlextTypes.Core.Dict].ok(auth_data)
-
-
-def _verify_user_password(
-    auth_data: FlextTypes.Core.Dict,
-) -> FlextResult[FlextTypes.Core.Dict]:
-    """Verify user password - extracted method for Railway Pattern."""
-    user = cast("User", auth_data["user"])
-    password = str(auth_data["password"])
-
-    # Use bcrypt directly for efficiency (no temporary objects)
-    password_valid = bcrypt.checkpw(
-        password.encode("utf-8"), user.password_hash.encode("utf-8")
-    )
-
-    if not password_valid:
-        user.record_failed_login()
-        return FlextResult[FlextTypes.Core.Dict].fail(
-            "Invalid credentials",
-            error_code=AuthConstants.INVALID_CREDENTIALS,
-        )
-
-    return FlextResult[FlextTypes.Core.Dict].ok(auth_data)
-
-
-def _create_user_session(user: User) -> FlextResult[Session]:
-    """Create user session - extracted method for Railway Pattern."""
-    session_result = create_session(user.id)
-    if session_result.is_failure:  # pragma: no cover
-        return FlextResult[Session].fail(  # pragma: no cover
-            f"Failed to create session: {session_result.error}"  # pragma: no cover
-        )  # pragma: no cover
-    return session_result
-
-
-def _create_jwt_token(user: User, jwt_secret: str) -> FlextResult[AuthToken]:
-    """Create JWT token - extracted method for Railway Pattern."""
-    token_result = AuthToken.create_jwt_token(user.id, jwt_secret)
-    if token_result.is_failure:  # pragma: no cover
-        return FlextResult[AuthToken].fail(  # pragma: no cover
-            f"Failed to create token: {token_result.error}"  # pragma: no cover
-        )  # pragma: no cover
-    return token_result
-
-
-def _format_authentication_response(
-    auth_data: FlextTypes.Core.Dict,
-) -> FlextResult[FlextTypes.Core.Dict]:
-    """Format authentication response - extracted method for Railway Pattern."""
-    user = cast("User", auth_data["user"])
-    session = cast("Session", auth_data["session"])
-    jwt_token = cast("AuthToken", auth_data["jwt_token"])
-
-    response_data = {
-        "user": {
-            "id": user.id,
-            "username": user.username,
-            "email": user.email_str,
-            "full_name": user.full_name,
-            "role": user.role,
-            "roles": user.roles,
-            "is_verified": user.is_verified,
-        },
-        "session": {
-            "id": session.id,
-            "session_id": session.id,  # Backward compatibility
-            "token": session.token,
-            "expires_at": session.expires_at.isoformat(),
-            "time_remaining": session.time_remaining_seconds,
-        },
-        "jwt": {
-            "token": jwt_token.token,
-            "expires_at": jwt_token.expires_at.isoformat(),
-            "user_id": jwt_token.user_id,
-        },
-    }
-
-    return FlextResult[FlextTypes.Core.Dict].ok(response_data)
-
-
-def _record_login_success(
-    auth_data: FlextTypes.Core.Dict,
-) -> FlextResult[FlextTypes.Core.Dict]:
-    """Record successful login - helper for Railway Pattern."""
-    try:
-        user = cast("User", auth_data["user"])
-        user.record_successful_login()
-        return FlextResult[FlextTypes.Core.Dict].ok(auth_data)
-    except Exception as e:  # pragma: no cover
-        return FlextResult[FlextTypes.Core.Dict].fail(
-            f"Failed to record login: {e}"
-        )  # pragma: no cover
-
-
-def _add_session_to_result(
-    auth_data: FlextTypes.Core.Dict,
-) -> FlextResult[FlextTypes.Core.Dict]:
-    """Add session to authentication result - helper for Railway Pattern."""
-    try:
-        user = cast("User", auth_data["user"])
-
-        session_result = _create_user_session(user)
-        if session_result.is_failure:  # pragma: no cover
-            return FlextResult[FlextTypes.Core.Dict].fail(  # pragma: no cover
-                f"Session creation failed: {session_result.error}"  # pragma: no cover
-            )  # pragma: no cover
-
-        # Add session to result
-        result_with_session = {**auth_data, "session": session_result.value}
-        return FlextResult[FlextTypes.Core.Dict].ok(result_with_session)
-    except Exception as e:  # pragma: no cover
-        return FlextResult[FlextTypes.Core.Dict].fail(
-            f"Failed to add session: {e}"
-        )  # pragma: no cover
-
-
-def _add_jwt_to_result(
-    auth_data: FlextTypes.Core.Dict,
-) -> FlextResult[FlextTypes.Core.Dict]:
-    """Add JWT token to authentication result - helper for Railway Pattern."""
-    try:
-        user = cast("User", auth_data["user"])
-        jwt_secret = cast("str", auth_data["jwt_secret"])
-
-        jwt_result = _create_jwt_token(user, jwt_secret)
-        if jwt_result.is_failure:  # pragma: no cover
-            return FlextResult[FlextTypes.Core.Dict].fail(  # pragma: no cover
-                f"JWT creation failed: {jwt_result.error}"  # pragma: no cover
-            )  # pragma: no cover
-
-        # Add JWT token to result
-        result_with_jwt = {**auth_data, "jwt_token": jwt_result.value}
-        return FlextResult[FlextTypes.Core.Dict].ok(result_with_jwt)
-    except Exception as e:  # pragma: no cover
-        return FlextResult[FlextTypes.Core.Dict].fail(
-            f"Failed to add JWT: {e}"
-        )  # pragma: no cover
-
-
-# Module exports
-__all__ = [
-    "AuthToken",
-    "Credential",
-    "Password",
-    "Role",
-    "Session",
-    "User",
-    "UserCreationRequest",
-    "authenticate_user",
-    "create_session",
-    "create_user",
-]
+def create_user(
+    request: FlextAuthModels.UserCreationRequest,
+) -> FlextResult[FlextAuthModels.User]:
+    """Create new user from request."""
+    return FlextAuthModels.create_user_from_request(request)

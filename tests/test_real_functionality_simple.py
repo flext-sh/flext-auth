@@ -1,7 +1,7 @@
-"""Simplified real functionality tests for FlextAuth - without mocks, real functionality only.
+"""Simple real functionality tests for flext-auth module.
 
-Tests core authentication workflows using direct FlextAuth instances.
-
+This module contains basic tests that verify the core functionality
+of the flext-auth system.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT

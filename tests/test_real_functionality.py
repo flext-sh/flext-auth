@@ -1,10 +1,7 @@
-"""Real functionality tests for FlextAuth - Python 3.13 + Pydantic advanced features.
+"""Real functionality tests for flext-auth module.
 
-Tests complete authentication workflows without mocks, using modern Python patterns.
-
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
+This module contains comprehensive tests that verify the actual functionality
+of the flext-auth system without mocking.
 """
 
 from __future__ import annotations
@@ -12,7 +9,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from flext_core.models import FlextModels
+from flext_core import FlextModels
 from pydantic import ValidationError
 
 from flext_auth import (
@@ -30,7 +27,7 @@ class TestRealAuthentication:
     """Test real authentication workflows with modern Python 3.13 features."""
 
     def test_complete_authentication_workflow(self) -> None:
-        """Test complete user lifecycle: register → authenticate → session → token."""
+        """Test complete user lifecycle: register -> authenticate -> session -> token."""
         # Create auth instance with modern factory pattern
         config_result = FlextAuthConfig.create_for_environment("test")
         assert config_result.success, f"Config creation failed: {config_result.error}"

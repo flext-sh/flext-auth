@@ -1,7 +1,4 @@
-#!/usr/bin/env python3
-"""Demonstration of FlextAuthConfig singleton as source of truth.
-
-This script demonstrates how FlextAuthConfig singleton works as a single
+"""This script demonstrates how FlextAuthConfig singleton works as a single
 source of truth for authentication configuration across the application.
 """
 
@@ -22,11 +19,7 @@ def demonstrate_singleton_config() -> None:
     # 4. Verify they use the same configuration
 
     # 5. Demonstrate parameter overrides
-    FlextAuth(
-        jwt_secret="custom-secret",
-        token_expire_minutes=60,
-        password_rounds=14
-    )
+    FlextAuth(jwt_secret="custom-secret", token_expire_minutes=60, password_rounds=14)
 
     # 6. Verify overrides don't affect global instance
     FlextAuthConfig.get_global_instance()
