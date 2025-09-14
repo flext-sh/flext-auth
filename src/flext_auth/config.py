@@ -475,6 +475,7 @@ class FlextAuthConfig(FlextConfig):
         """
         if cls._auth_global_instance is None:
             cls._auth_global_instance = cls._load_from_sources()
+        # At this point, _auth_global_instance is guaranteed to be non-None
         return cls._auth_global_instance
 
     @classmethod
@@ -511,28 +512,28 @@ class FlextAuthConfig(FlextConfig):
         cls._auth_global_instance = None
 
     @classmethod
-    def get_or_create_global(
-        cls, environment: str = "development", **overrides: object
-    ) -> FlextResult[FlextAuthConfig]:
+    def get_or_create_global(cls, **kwargs: str | int) -> FlextResult[FlextAuthConfig]:
         """Get or create global authentication configuration with overrides.
 
         This method ensures a single source of truth for authentication configuration
         while allowing parameter overrides to change behavior.
 
         Args:
-            environment: Environment name for configuration
-            **overrides: Configuration parameter overrides
+            **kwargs: Configuration parameters including optional 'environment'
 
         Returns:
             FlextResult containing FlextAuthConfig instance
 
         """
+        # Extract environment from kwargs, default to development
+        environment = str(kwargs.pop("environment", "development"))
+
         # Try to get existing global instance only if no overrides
-        if cls._auth_global_instance is not None and not overrides:
+        if cls._auth_global_instance is not None and not kwargs:
             return FlextResult[FlextAuthConfig].ok(cls._auth_global_instance)
 
         # Create new instance with overrides
-        result = cls.create_for_environment(environment, **overrides)
+        result = cls.create_for_environment(environment, **kwargs)
         if result.is_success:
             # Set as global instance
             cls.set_global_instance(result.value)

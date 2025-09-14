@@ -152,7 +152,7 @@ def example_password_security() -> None:
         ("simple", "password"),
         ("medium", "Password123"),
         ("strong", "StrongPassword123!"),
-        ("very_strong", "VeryStr0ng!P@ssw0rd#2024$"),
+        ("very_strong", "VeryStr0ng!P@ssw0rd#2025$"),
     ]
 
     for level, password in passwords_to_test:

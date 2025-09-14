@@ -182,7 +182,11 @@ class FlextAuth:
         # Return success only if authentication succeeded
         if auth_result.is_success and auth_result.value is not None:
             # Include tokens at top level for compatibility
-            result_data = {"user": user_data, "session": session_data, "authenticated": True}
+            result_data = {
+                "user": user_data,
+                "session": session_data,
+                "authenticated": True,
+            }
             if "jwt_token" in session_data:
                 result_data["jwt_token"] = session_data["jwt_token"]
             if "tokens" in session_data:
@@ -503,7 +507,9 @@ class FlextAuth:
             config = FlextAuthConfig.get_global_instance()
             return FlextResult[FlextAuthConfig].ok(config)
         except Exception as e:
-            return FlextResult[FlextAuthConfig].fail(f"Failed to get global config: {e}")
+            return FlextResult[FlextAuthConfig].fail(
+                f"Failed to get global config: {e}"
+            )
 
     @classmethod
     def create_with_config_overrides(

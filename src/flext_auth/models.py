@@ -468,14 +468,16 @@ def create_session(
     user_id: str,
     ip_address: str | None = None,
     user_agent: str | None = None,
-    expires_in_minutes: int | None = None
+    expires_in_minutes: int | None = None,
 ) -> FlextResult[FlextAuthModels.Session]:
     """Create new user session."""
     # Calculate expiration time
     if expires_in_minutes:
         expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
     else:
-        expires_at = datetime.now(UTC) + timedelta(hours=FlextAuthConstants.DEFAULT_SESSION_EXPIRY_MINUTES // 60)
+        expires_at = datetime.now(UTC) + timedelta(
+            hours=FlextAuthConstants.DEFAULT_SESSION_EXPIRY_MINUTES // 60
+        )
 
     # Create session directly using Session model
     session = FlextAuthModels.Session(

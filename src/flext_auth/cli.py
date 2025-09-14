@@ -104,7 +104,9 @@ def _register_user(
         user = register_result.value
         logger.info(f"User registered successfully: {user.username} ({user.email})")
         logger.info(f"Max Login Attempts: {config_result.value.max_login_attempts}")
-        logger.info(f"Session Expiry: {config_result.value.session_expiry_minutes} minutes")
+        logger.info(
+            f"Session Expiry: {config_result.value.session_expiry_minutes} minutes"
+        )
     else:
         logger.error(f"Registration failed: {register_result.error}")
         return FlextResult[None].fail(register_result.error or "Registration failed")
@@ -147,8 +149,12 @@ def _manage_config(
             logger.info(f"  JWT Expiry: {summary['jwt_expiry_minutes']} minutes")
             logger.info(f"  Bcrypt Rounds: {summary['bcrypt_rounds']}")
             logger.info(f"  Max Login Attempts: {summary['max_login_attempts']}")
-            logger.info(f"  Session Expiry: {summary['session_expiry_minutes']} minutes")
-            logger.info(f"  Lockout Duration: {summary['lockout_duration_minutes']} minutes")
+            logger.info(
+                f"  Session Expiry: {summary['session_expiry_minutes']} minutes"
+            )
+            logger.info(
+                f"  Lockout Duration: {summary['lockout_duration_minutes']} minutes"
+            )
         else:
             logger.error(f"Failed to get config summary: {summary_result.error}")
             return FlextResult[None].fail(
@@ -199,12 +205,57 @@ def main() -> None:
     # This would need to be implemented in flext-cli foundation
     logger.info("FLEXT Auth CLI created successfully")
 
-# Public API aliases for testing
-authenticate_user = _authenticate_user
-register_user = _register_user
-manage_config = _manage_config
-validate_config = _validate_config
-cli = create_auth_cli
+
+# FlextResult-based command implementations for flext-cli integration
+def authenticate_user(
+    username: str,
+    password: str,
+    jwt_expiry: int | None = None,
+    bcrypt_rounds: int | None = None,
+    environment: str = "development",
+) -> FlextResult[None]:
+    """Public command interface for authentication using flext-cli patterns."""
+    return _authenticate_user(
+        username, password, jwt_expiry, bcrypt_rounds, environment
+    )
+
+
+def register_user(
+    username: str,
+    email: str,
+    password: str,
+    max_attempts: int | None = None,
+    session_expiry: int | None = None,
+    environment: str = "development",
+) -> FlextResult[None]:
+    """Public command interface for user registration using flext-cli patterns."""
+    return _register_user(
+        username, email, password, max_attempts, session_expiry, environment
+    )
+
+
+def manage_config(
+    *,
+    show: bool = False,
+    set_jwt_expiry: int | None = None,
+    set_bcrypt_rounds: int | None = None,
+    set_max_attempts: int | None = None,
+    environment: str = "development",
+) -> FlextResult[None]:
+    """Public command interface for config management using flext-cli patterns."""
+    return _manage_config(
+        show, set_jwt_expiry, set_bcrypt_rounds, set_max_attempts, environment
+    )
+
+
+def validate_config() -> FlextResult[None]:
+    """Public command interface for config validation using flext-cli patterns."""
+    return _validate_config()
+
+
+def cli() -> FlextResult[FlextCliMain]:
+    """Public command interface for CLI creation using flext-cli patterns."""
+    return create_auth_cli()
 
 
 if __name__ == "__main__":

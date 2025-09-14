@@ -2,10 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
-from click.testing import CliRunner
 from flext_core import FlextResult
 
-import flext_auth
 from flext_auth.cli import (
     authenticate_user,
     cli,
@@ -21,7 +19,6 @@ class TestCliCoverage:
 
     def setup_method(self) -> None:
         """Setup test environment."""
-        self.runner = CliRunner()
 
     def test_cli_group_command(self) -> None:
         """Test CLI group command."""
@@ -75,9 +72,7 @@ class TestCliCoverage:
         """Test authentication with config failure."""
         mock_config.return_value = FlextResult.fail("Config error")
 
-        result = authenticate_user(
-            username="testuser", password="testpass"
-        )
+        result = authenticate_user(username="testuser", password="testpass")
 
         assert result.is_failure
         assert result.error is not None
@@ -104,12 +99,12 @@ class TestCliCoverage:
             "Auth error"
         )
 
-        result = self.runner.invoke(
-            authenticate_user, ["--username", "testuser", "--password", "testpass"]
+        result = authenticate_user(
+            username="testuser", password="testpass", environment="development"
         )
 
-        assert result.exit_code == 0
-        assert "Authentication failed: Auth error" in result.output
+        assert result.is_failure
+        assert "Auth error" in str(result.error)
 
     @patch("flext_auth.cli.FlextAuthConfig.create_from_cli_params")
     @patch("flext_auth.cli.FlextAuth")
@@ -415,5 +410,5 @@ class TestCliCoverage:
         with patch("flext_auth.cli.cli") as mock_cli:
             # Simulate __main__ execution
 
-            flext_auth.cli.main()
+            main()
             mock_cli.assert_called_once()

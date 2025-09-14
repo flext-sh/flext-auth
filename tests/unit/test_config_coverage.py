@@ -200,7 +200,7 @@ class TestFlextAuthConfigCoverage:
         try:
             config = FlextAuthConfig(
                 jwt_expiry_minutes=0,  # Invalid value (should be > 0)
-                bcrypt_rounds=0,       # Invalid value (should be > 0)
+                bcrypt_rounds=0,  # Invalid value (should be > 0)
             )
             # If validation passes, values should be converted
             assert isinstance(config.jwt_expiry_minutes, int)
