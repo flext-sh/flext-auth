@@ -244,7 +244,11 @@ def manage_config(
 ) -> FlextResult[None]:
     """Public command interface for config management using flext-cli patterns."""
     return _manage_config(
-        show, set_jwt_expiry, set_bcrypt_rounds, set_max_attempts, environment
+        show=show,
+        set_jwt_expiry=set_jwt_expiry,
+        set_bcrypt_rounds=set_bcrypt_rounds,
+        set_max_attempts=set_max_attempts,
+        environment=environment,
     )
 
 

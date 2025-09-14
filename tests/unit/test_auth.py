@@ -109,7 +109,7 @@ class TestFlextAuth:
 
         # Test authentication
         auth_result = auth.authenticate_user(username, password)
-        assert auth_result.success
+        assert auth_result.is_success
 
         auth_data = auth_result.value
         assert auth_data["success"] is True
@@ -149,7 +149,7 @@ class TestFlextAuth:
         # Register and authenticate to get token
         auth.register_user(username, "token@example.com", password)
         auth_result = auth.authenticate_user(username, password)
-        assert auth_result.success
+        assert auth_result.is_success
 
         # Extract and validate token
         auth_data = auth_result.value
@@ -160,7 +160,7 @@ class TestFlextAuth:
         assert isinstance(access_token, str), "access_token must be string"
         validation_result = auth.validate_token(access_token)
 
-        assert validation_result.success
+        assert validation_result.is_success
         validation_data = validation_result.value
         assert validation_data["valid"] is True
         assert validation_data["username"] == username
@@ -184,7 +184,7 @@ class TestFlextAuth:
         # Register and authenticate
         auth.register_user(username, "bearer@example.com", password)
         auth_result = auth.authenticate_user(username, password)
-        assert auth_result.success
+        assert auth_result.is_success
 
         # Test with Bearer prefix
         auth_data = auth_result.value
@@ -194,7 +194,7 @@ class TestFlextAuth:
         access_token = tokens["access_token"]
         assert isinstance(access_token, str), "access_token must be string"
         bearer_result = auth.validate_token(f"Bearer {access_token}")
-        assert bearer_result.success
+        assert bearer_result.is_success
         bearer_data = bearer_result.value
         assert isinstance(bearer_data, dict), "bearer_data must be dict"
         assert bearer_data["username"] == username
