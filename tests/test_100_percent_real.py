@@ -1,3 +1,9 @@
+"""Test 100% real functionality with zero mocks.
+
+This module tests all authentication functionality with real implementations,
+ensuring complete coverage of the authentication system.
+"""
+
 from __future__ import annotations
 
 import os
@@ -11,6 +17,7 @@ from pydantic import ValidationError
 from flext_auth import (
     FlextAuth,
     FlextAuthConfig,
+    FlextAuthModels,
     Role,
     Session,
     User,
@@ -71,21 +78,23 @@ class TestRealModelsExhaustive:
         for empty_val in empty_values:
             # Testar username None/empty
             # Usar type: ignore pois estamos testando propositalmente tipos inválidos
-            result = create_user(
-                username=empty_val if empty_val != 0 else "",
+            user_request = FlextAuthModels.UserCreationRequest(
+                username=str(empty_val) if empty_val != 0 else "",
                 email="valid@example.com",
                 password="validPassword123!",
             )
+            result = create_user(user_request)
             assert result.failure, f"Expected failure for username={empty_val}"
 
     def test_user_is_active_property(self) -> None:
         """Testa propriedade is_active do usuário (linhas 284, 290)."""
         # Criar usuário válido para testar propriedades
-        user_result = create_user(
+        user_request = FlextAuthModels.UserCreationRequest(
             username="valid_user123",
             email="valid@example.com",
             password="ValidPassword123!",
         )
+        user_result = create_user(user_request)
         assert user_result.success, f"Expected success: {user_result.error}"
         user = user_result.value
 
@@ -129,7 +138,10 @@ class TestRealModelsExhaustive:
 
     def test_session_token_length_validation(self) -> None:
         """Testa validação de comprimento do token (linhas 457-459, 464-470)."""
-        user_result = create_user("token_user", "token@test.com", "TestPass123!")
+        user_request = FlextAuthModels.UserCreationRequest(
+            username="token_user", email="token@test.com", password="TestPass123!"
+        )
+        user_result = create_user(user_request)
         assert user_result.success
         user = user_result.value
 
@@ -138,13 +150,16 @@ class TestRealModelsExhaustive:
             Session(
                 id="session_id",
                 user_id=user.id,
-                token="short",  # Muito curto
+                session_token="short",  # Muito curto
                 expires_at=datetime.now(UTC),
             )
 
     def test_session_expiration_real_functionality(self) -> None:
         """Testa funcionalidade real de expiração de sessão (linhas 492-493)."""
-        user_result = create_user("exp_user", "exp@test.com", "TestPass123!")
+        user_request = FlextAuthModels.UserCreationRequest(
+            username="exp_user", email="exp@test.com", password="TestPass123!"
+        )
+        user_result = create_user(user_request)
         assert user_result.success
         user = user_result.value
 
@@ -153,7 +168,7 @@ class TestRealModelsExhaustive:
         active_session = Session(
             id="active_session",
             user_id=user.id,
-            token="active_token_123456789012345678901234567890ab",
+            session_token="active_token_123456789012345678901234567890ab",
             expires_at=future_time,
         )
         assert not active_session.is_expired()
@@ -164,7 +179,7 @@ class TestRealModelsExhaustive:
         expired_session = Session(
             id="expired_session",
             user_id=user.id,
-            token="expired_token_123456789012345678901234567890ab",
+            session_token="expired_token_123456789012345678901234567890ab",
             expires_at=past_time,
         )
         assert expired_session.is_expired()
@@ -191,7 +206,10 @@ class TestRealModelsExhaustive:
     def test_authentication_real_scenarios(self) -> None:
         """Testa cenários reais de autenticação (linhas 543-544, 612-637)."""
         # Criar usuário
-        user_result = create_user("auth_user", "auth@test.com", "AuthPass123!")
+        user_request = FlextAuthModels.UserCreationRequest(
+            username="auth_user", email="auth@test.com", password="AuthPass123!"
+        )
+        user_result = create_user(user_request)
         assert user_result.success
         user = user_result.value
 
@@ -201,8 +219,7 @@ class TestRealModelsExhaustive:
         result = authenticate_user(
             username="auth_user",
             password="AuthPass123!",
-            user_storage=storage,
-            jwt_secret="test_secret_key",
+            users_data=[{"username": "auth_user", "password_hash": user.password_hash}],
         )
         assert result.success
 
@@ -210,8 +227,7 @@ class TestRealModelsExhaustive:
         result = authenticate_user(
             username="auth_user",
             password="WrongPass123!",
-            user_storage=storage,
-            jwt_secret="test_secret_key",
+            users_data=[{"username": "auth_user", "password_hash": user.password_hash}],
         )
         assert not result.success
 
@@ -219,18 +235,17 @@ class TestRealModelsExhaustive:
         result = authenticate_user(
             username="nonexistent",
             password="password",
-            user_storage=storage,
-            jwt_secret="test_secret_key",
+            users_data=[{"username": "auth_user", "password_hash": user.password_hash}],
         )
         assert not result.success
 
     def test_role_real_functionality(self) -> None:
         """Testa funcionalidade real de Role."""
-        role = Role(id="role_id", name="REDACTED_LDAP_BIND_PASSWORD_role", display_name="Administrator Role")
+        role = Role(id="role_id", name="REDACTED_LDAP_BIND_PASSWORD_role", description="Administrator Role")
 
         # Name é convertido para uppercase
-        assert role.name == "ADMIN_ROLE"
-        assert role.display_name == "Administrator Role"
+        assert role.name == "REDACTED_LDAP_BIND_PASSWORD_role"
+        assert role.description == "Administrator Role"
 
     def test_session_create_factory_method(self) -> None:
         """Testa método factory Session.create (linhas 363-399)."""

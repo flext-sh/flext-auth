@@ -9,7 +9,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuthConfig
+import os
+
+from flext_core import FlextConfig
+
+from flext_auth import FlextAuthConfig, FlextAuthConstants
 
 
 class TestFlextAuthConfigSingletonOnly:
@@ -104,7 +108,7 @@ class TestFlextAuthConfigSingletonOnly:
         # Clear any existing singleton
         FlextAuthConfig.clear_global_instance()
 
-        params = {
+        params: dict[str, int | str] = {
             "jwt_expiry_minutes": 90,
             "bcrypt_rounds": 11,
             "max_login_attempts": 7,
@@ -112,8 +116,16 @@ class TestFlextAuthConfigSingletonOnly:
         }
 
         # Filter params to only include valid config fields
-        valid_params = {
-            k: v for k, v in params.items() if k in FlextAuthConfig.model_fields
+        valid_fields = {
+            "jwt_expiry_minutes",
+            "bcrypt_rounds",
+            "max_login_attempts",
+            "environment",
+            "jwt_secret",
+            "session_expiry_minutes",
+        }
+        valid_params: dict[str, int | str] = {
+            k: v for k, v in params.items() if k in valid_fields
         }
         config_result = FlextAuthConfig.get_or_create_global(**valid_params)
 

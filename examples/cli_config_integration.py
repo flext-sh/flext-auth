@@ -11,11 +11,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-import pathlib
-import sys
-
-# Add src to path for imports
-sys.path.insert(0, os.path.join(pathlib.Path(__file__).parent, "..", "src"))
 
 from flext_auth import FlextAuth, FlextAuthConfig
 
@@ -61,15 +56,17 @@ def demonstrate_cli_config_integration() -> None:
         auth = FlextAuth(config=config_with_overrides_result.value)
 
         # Register a test user with CLI-configured settings
+        # Note: This is a test password for demonstration purposes only
+        test_password = os.getenv("CLI_TEST_PASSWORD", "CliTestPassword123!")
         register_result = auth.register_user(
             username="cli_test_user",
             email="cli_test@example.com",
-            password="CliTestPassword123!",
+            password=test_password,
         )
 
         if register_result.is_success:
             # Authenticate with CLI-configured settings
-            auth_result = auth.authenticate_user("cli_test_user", "CliTestPassword123!")
+            auth_result = auth.authenticate_user("cli_test_user", test_password)
 
             if auth_result.is_success:
                 pass
@@ -81,7 +78,7 @@ def demonstrate_cli_config_integration() -> None:
     # CLI service simulation (would be created from flext-cli)
 
     # Simulate CLI command execution with different parameters
-    cli_scenarios = [
+    cli_scenarios: list[dict[str, str | dict[str, int | str]]] = [
         {
             "name": "Development Environment",
             "params": {
@@ -113,9 +110,17 @@ def demonstrate_cli_config_integration() -> None:
 
     for scenario in cli_scenarios:
         # Create config for this scenario
-        scenario_config_result = FlextAuthConfig.get_or_create_global(
-            **scenario["params"]
-        )
+        params = scenario["params"]
+        if isinstance(params, dict):
+            # Ensure environment is a string
+            if "environment" in params and isinstance(params["environment"], str):
+                scenario_config_result = FlextAuthConfig.get_or_create_global(**params)
+            else:
+                # Skip if environment is not a string
+                continue
+        else:
+            # Skip if params is not a dict
+            continue
 
         if scenario_config_result.is_success:
             scenario_config = scenario_config_result.value
@@ -145,7 +150,7 @@ def demonstrate_cli_config_integration() -> None:
 def demonstrate_cli_command_simulation() -> None:
     """Simulate CLI command execution with different parameter combinations."""
     # Simulate different CLI commands with various parameter combinations
-    commands = [
+    commands: list[dict[str, str | dict[str, int]]] = [
         {
             "command": "flext-auth authenticate --username testuser --password testpass --jwt-expiry 30",
             "params": {"jwt_expiry_minutes": 30},
@@ -162,9 +167,14 @@ def demonstrate_cli_command_simulation() -> None:
 
     for cmd_info in commands:
         # Create config with command parameters
-        config_result = FlextAuthConfig.get_or_create_global(
-            environment="cli_simulation", **cmd_info["params"]
-        )
+        params = cmd_info["params"]
+        if isinstance(params, dict):
+            config_result = FlextAuthConfig.get_or_create_global(
+                environment="cli_simulation", **params
+            )
+        else:
+            # Skip if params is not a dict
+            continue
 
         if config_result.is_success:
             pass

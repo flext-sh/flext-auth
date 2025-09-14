@@ -18,7 +18,7 @@ from flext_auth import FlextAuth, flext_auth_quick_start
 def demonstrate_refactoring_benefits() -> None:
     """Demonstrate the benefits of the refactored system."""
     # Modern FlextAuth API
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Create user with proper API (register_user not create_user)
     result = auth.register_user("modern_user", "modern@example.com", "ModernPass123!")
@@ -36,7 +36,7 @@ def demonstrate_refactoring_benefits() -> None:
 def demonstrate_legacy_compatibility() -> None:
     """Demonstrate backward compatibility with legacy code."""
     # Legacy quick start still works
-    legacy_service: FlextAuth[object] = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    legacy_service: FlextAuth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
     # Show it works the same way
     reg_result = legacy_service.register_user(
@@ -55,7 +55,7 @@ def demonstrate_flext_result_integration() -> None:
     FlextResult[str].fail("Example failure case")
 
     # Show real usage in auth operations
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
     token_result = auth.generate_jwt_token("test_user_id")
 
     if token_result.is_success:
@@ -65,7 +65,7 @@ def demonstrate_flext_result_integration() -> None:
 def demonstrate_system_architecture() -> None:
     """Demonstrate the clean system architecture."""
     # Clean separation of concerns
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     auth.get_config()
 
@@ -76,7 +76,7 @@ def demonstrate_system_architecture() -> None:
 
 def demonstrate_error_handling() -> None:
     """Demonstrate proper error handling patterns."""
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Try to register user with weak password
     weak_result = auth.register_user("weakuser", "weak@example.com", "123")

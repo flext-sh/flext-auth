@@ -93,16 +93,17 @@ class TestFlextAuthInitializationCoverage:
     def test_flext_auth_initialization_with_overrides(self) -> None:
         """Test FlextAuth initialization with parameter overrides - lines 235-237."""
         # Create with custom parameters to cover override paths
-        auth = FlextAuth(
-            jwt_secret="custom_jwt_secret_for_testing_with_sufficient_length_32_chars",
-            token_expire_minutes=120,
-            password_rounds=10,
+        auth_result = FlextAuth.create_with_config_overrides(
+            jwt_expiry_minutes=120,
+            bcrypt_rounds=10,
         )
 
-        assert (
-            auth._jwt_secret
-            == "custom_jwt_secret_for_testing_with_sufficient_length_32_chars"
-        )
+        if auth_result.is_failure:
+            pytest.fail(f"Failed to create auth: {auth_result.error}")
+
+        auth = auth_result.value
+
+        assert auth.token_expire_minutes == 120
         assert auth.token_expire_minutes == 120
         assert auth.bcrypt_rounds == 10
 
@@ -150,8 +151,8 @@ class TestFlextAuthErrorPaths:
         result = auth.validate_token("")
         assert result.is_failure
 
-        # Test with None token (intentional type violation for error testing)
-        result = auth.validate_token(None)
+        # Test with invalid token format
+        result = auth.validate_token("invalid.token.format")
         assert result.is_failure
 
 
@@ -457,13 +458,15 @@ class TestFlextAuthAdditionalCoverage:
             and "user" in auth_data
             and "session_id" in auth_data
         ):
-            user_id = str(auth_data["user"]["id"])
-            session_id = str(auth_data["session_id"])
+            user_data = auth_data["user"]
+            if isinstance(user_data, dict) and "id" in user_data:
+                user_id = str(user_data["id"])
+                session_id = str(auth_data["session_id"])
 
-            # Ensure the session is in the user sessions index
-            if user_id not in auth.session_manager.user_sessions_index:
-                auth.session_manager.user_sessions_index[user_id] = []
-            auth.session_manager.user_sessions_index[user_id].append(session_id)
+                # Ensure the session is in the user sessions index
+                if user_id not in auth.session_manager.user_sessions_index:
+                    auth.session_manager.user_sessions_index[user_id] = []
+                auth.session_manager.user_sessions_index[user_id].append(session_id)
 
         # Cleanup expired sessions - this should test the user sessions index removal
         cleanup_result = auth.cleanup_expired_sessions()

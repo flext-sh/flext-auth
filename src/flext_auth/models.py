@@ -103,6 +103,30 @@ class FlextAuthModels:
             except Exception as e:
                 return FlextResult[bool].fail(f"Password verification failed: {e!s}")
 
+        @property
+        def email_str(self) -> str:
+            """Get email as string (legacy compatibility)."""
+            return self.email
+
+        @property
+        def role(self) -> str:
+            """Get primary role (legacy compatibility)."""
+            return self.roles[0] if self.roles else "user"
+
+        @property
+        def active(self) -> bool:
+            """Get active status (legacy compatibility)."""
+            return self.is_active
+
+        def has_role(self, role_name: str) -> bool:
+            """Check if user has specific role (legacy compatibility)."""
+            return role_name.lower() in [role.lower() for role in self.roles]
+
+        @property
+        def is_verified(self) -> bool:
+            """Check if user is verified (legacy compatibility)."""
+            return self.is_active and self.last_login is not None
+
     class Role(FlextModels.Entity):
         """Role entity for role-based access control."""
 
@@ -167,6 +191,11 @@ class FlextAuthModels:
         def is_revoked(self) -> bool:
             """Check if session is revoked."""
             return not self.is_active
+
+        @property
+        def token(self) -> str:
+            """Get session token (legacy compatibility)."""
+            return self.session_token
 
     class AuthToken(FlextModels.Entity):
         """JWT Authentication token entity."""
@@ -436,15 +465,26 @@ def authenticate_user(
 
 
 def create_session(
-    user_id: str, ip_address: str | None = None, user_agent: str | None = None
+    user_id: str,
+    ip_address: str | None = None,
+    user_agent: str | None = None,
+    expires_in_minutes: int | None = None
 ) -> FlextResult[FlextAuthModels.Session]:
     """Create new user session."""
+    # Calculate expiration time
+    if expires_in_minutes:
+        expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
+    else:
+        expires_at = datetime.now(UTC) + timedelta(hours=FlextAuthConstants.DEFAULT_SESSION_EXPIRY_MINUTES // 60)
+
     # Create session directly using Session model
     session = FlextAuthModels.Session(
         id=FlextUtilities.Generators.generate_uuid(),
         user_id=user_id,
+        session_token=FlextUtilities.Generators.generate_uuid(),
         ip_address=ip_address,
         user_agent=user_agent,
+        expires_at=expires_at,
     )
     return FlextResult[FlextAuthModels.Session].ok(session)
 

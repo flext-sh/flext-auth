@@ -18,7 +18,7 @@ def debug_password_operations() -> None:
     password = os.getenv("DEBUG_PASSWORD", "TestPassword123!")
 
     # Use FlextAuth directly
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Test password hashing
     try:
@@ -40,7 +40,7 @@ def debug_password_operations() -> None:
 def debug_jwt_operations() -> None:
     """Debug JWT token operations using FlextAuth."""
     # Use FlextAuth directly
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Register a test user first
     user_result = auth.register_user(
@@ -75,7 +75,7 @@ def debug_jwt_operations() -> None:
 
 def debug_authentication_workflow() -> None:
     """Debug complete authentication workflow."""
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Register user
     reg_result = auth.register_user(

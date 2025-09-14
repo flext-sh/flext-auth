@@ -22,7 +22,7 @@ def main() -> None:
     """Run basic authentication example."""
     # 1. Password Hashing Example using FlextAuth directly
     password = os.getenv("FLEXT_DEMO_PASSWORD", "SecurePassword123!")
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     try:
         hashed = auth.hash_password(password)
@@ -60,7 +60,7 @@ def main() -> None:
     flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
     # 4. FlextAuth Class Example with proper error handling
-    demo_auth: FlextAuth[object] = FlextAuth()
+    demo_auth: FlextAuth = FlextAuth()
 
     # Register user
     user_reg_result = demo_auth.register_user(

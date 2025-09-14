@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import os
+
 from flext_auth import FlextAuth, FlextAuthConfig
 
 
@@ -123,7 +125,7 @@ class TestFlextConfigSingleton:
         FlextAuthConfig.clear_global_instance()
 
         # Create FlextAuth without explicit config
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         # Verify it uses the global singleton
         global_config = FlextAuthConfig.get_global_instance()
@@ -138,8 +140,6 @@ class TestFlextConfigSingleton:
         auth_result = FlextAuth.create_with_config_overrides(
             jwt_expiry_minutes=45,
             bcrypt_rounds=13,
-            max_login_attempts=7,
-            environment="development",
         )
 
         assert auth_result.is_success
@@ -157,11 +157,11 @@ class TestFlextConfigSingleton:
         FlextAuthConfig.clear_global_instance()
 
         # Create first FlextAuth
-        auth1: FlextAuth[object] = FlextAuth()
+        auth1: FlextAuth = FlextAuth()
         config1 = auth1.config
 
         # Create second FlextAuth
-        auth2: FlextAuth[object] = FlextAuth()
+        auth2: FlextAuth = FlextAuth()
         config2 = auth2.config
 
         # Both should use the same singleton
@@ -183,7 +183,7 @@ class TestFlextConfigSingleton:
             assert config.jwt_expiry_minutes == 120
 
             # Create FlextAuth - should use same config
-            auth: FlextAuth[object] = FlextAuth()
+            auth: FlextAuth = FlextAuth()
             assert auth.token_expire_minutes == 120
 
         finally:

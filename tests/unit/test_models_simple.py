@@ -14,6 +14,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from flext_auth import (
+    FlextAuthModels,
     Role,
     authenticate_user,
     create_session,

@@ -16,7 +16,7 @@ from flext_auth import FlextAuth
 def exemplo_flext_auth() -> None:
     """Exemplo de uso da API atual FlextAuth."""
     # Setup usando classe diretamente (sem helpers)
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Registrar um usuário novo
     register_result = auth.register_user(

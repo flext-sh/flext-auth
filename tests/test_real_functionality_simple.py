@@ -18,7 +18,7 @@ class TestRealAuthenticationSimple:
     def test_basic_auth_workflow(self) -> None:
         """Test basic authentication workflow."""
         # Create auth instance directly
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         # Register user
         register_result = auth.register_user(
@@ -40,7 +40,7 @@ class TestRealAuthenticationSimple:
 
     def test_jwt_operations(self) -> None:
         """Test JWT token operations."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         # Register user
         register_result = auth.register_user(
@@ -62,20 +62,33 @@ class TestRealAuthenticationSimple:
 
     def test_password_operations(self) -> None:
         """Test password hashing and verification."""
-        auth: FlextAuth[object] = FlextAuth()
+        from flext_auth import FlextAuthModels
 
-        # Test password hashing
+        # Test password hashing through User model
         password = "SecurePassword123!"
-        hashed = auth.hash_password(password)
-        assert hashed.startswith("$2b$")
+        user = FlextAuthModels.User(
+            id="test-id", username="testuser", email="test@example.com"
+        )
+
+        # Set password
+        password_result = user.set_password(password)
+        assert password_result.success, (
+            f"Password setting failed: {password_result.error}"
+        )
 
         # Test password verification
-        assert auth.verify_password(password, hashed)
-        assert not auth.verify_password("wrong_password", hashed)
+        verify_result = user.verify_password(password)
+        assert verify_result.success, (
+            f"Password verification failed: {verify_result.error}"
+        )
+
+        # Test wrong password
+        wrong_result = user.verify_password("wrong_password")
+        assert not wrong_result.success, "Wrong password should fail"
 
     def test_user_lookup(self) -> None:
         """Test user lookup operations."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         # Register user
         register_result = auth.register_user(
@@ -100,7 +113,7 @@ class TestRealAuthenticationSimple:
 
     def test_session_management(self) -> None:
         """Test session management."""
-        auth: FlextAuth[object] = FlextAuth()
+        auth: FlextAuth = FlextAuth()
 
         # Register and authenticate user
         register_result = auth.register_user(

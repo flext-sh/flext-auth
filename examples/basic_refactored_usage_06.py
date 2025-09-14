@@ -27,7 +27,7 @@ class FlextAuthDemo:
 
     def __init__(self) -> None:
         """Initialize demo with FlextAuth instance."""
-        self.auth: FlextAuth[object] = FlextAuth()
+        self.auth = FlextAuth()
 
     def demo_user_registration(self) -> FlextResult[object]:
         """Extract Method: User registration demo."""

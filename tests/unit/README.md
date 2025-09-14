@@ -1,6 +1,6 @@
 # FLEXT Auth Unit Tests
 
-**Fast, isolated unit tests for individual components with comprehensive coverage.**
+**Fast, isolated unit tests for individual components with coverage.**
 
 ## Overview
 

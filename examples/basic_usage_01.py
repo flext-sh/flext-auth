@@ -30,7 +30,7 @@ def example_basic_authentication() -> None:
     logger.info("Starting basic authentication example")
 
     # Create authentication instance
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
     logger.info("FlextAuth instance created with in-memory storage")
 
     # Show current configuration
@@ -49,7 +49,7 @@ def example_password_operations() -> None:
     """Demonstrate password operations."""
     logger.info("Starting password operations example")
 
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Hash a password
     password = os.getenv("FLEXT_DEMO_PASSWORD", "MySecurePassword123!")
@@ -114,7 +114,7 @@ def example_user_lifecycle() -> None:
     """Demonstrate complete user lifecycle."""
     logger.info("Starting user lifecycle example")
 
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
     password = os.getenv("FLEXT_DEMO_USER_PASSWORD", "StrongPass123!")
 
     # Register user
@@ -177,7 +177,7 @@ def example_direct_auth() -> None:
     """Demonstrate direct authentication workflow."""
     logger.info("Starting direct authentication example")
 
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Register and authenticate in sequence
     username = "directuser"
@@ -215,7 +215,7 @@ def example_advanced_registration() -> None:
     """Demonstrate advanced user registration with roles."""
     logger.info("Starting advanced registration example")
 
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
     password = os.getenv("FLEXT_DEMO_ADVANCED_PASSWORD", "AdvancedPass123!")
 
     # Register REDACTED_LDAP_BIND_PASSWORD user
@@ -264,7 +264,7 @@ def example_complete_workflow() -> None:
     """Demonstrate complete authentication workflow."""
     logger.info("Starting complete workflow example")
 
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
     password = os.getenv("FLEXT_DEMO_WORKFLOW_PASSWORD", "WorkflowPass123!")
 
     # Step 1: Register user

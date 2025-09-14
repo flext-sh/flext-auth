@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import logging
 import os
 import secrets
 import string
@@ -21,14 +22,16 @@ from flext_auth import FlextAuth
 def example_advanced_configuration() -> None:
     """Demonstrate advanced configuration options."""
     # Create auth with advanced configuration
-    auth: FlextAuth[object] = FlextAuth(
-        jwt_secret=os.getenv(
-            "FLEXT_DEMO_JWT_SECRET",
-            "my-super-secure-jwt-secret-key-256-bits-minimum-length-required",
-        ),
-        token_expire_minutes=60,
-        password_rounds=12,
+    auth_result = FlextAuth.create_with_config_overrides(
+        jwt_expiry_minutes=60,
+        bcrypt_rounds=12,
     )
+    if auth_result.is_failure:
+        # Use proper logging instead of print
+        logger = logging.getLogger(__name__)
+        logger.error(f"Failed to create auth: {auth_result.error}")
+        return
+    auth = auth_result.value
 
     # Show configuration details
     auth.get_config()
@@ -38,7 +41,7 @@ def example_advanced_configuration() -> None:
 
 def example_jwt_operations() -> None:
     """Advanced JWT operations example using REAL current API."""
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Register user for JWT operations
     user_result = auth.register_user(
@@ -66,7 +69,7 @@ def example_jwt_operations() -> None:
 
 def example_role_based_access() -> None:
     """Demonstrate role-based access control."""
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Create users with different roles
     users_data = [
@@ -95,7 +98,7 @@ def example_role_based_access() -> None:
 
 def example_session_management() -> None:
     """Demonstrate advanced session management."""
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Register user for session demo
     user_result = auth.register_user(
@@ -141,7 +144,7 @@ def example_session_management() -> None:
 
 def example_password_security() -> None:
     """Demonstrate password security features."""
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Test various password strengths
     passwords_to_test = [
@@ -179,7 +182,7 @@ def example_password_security() -> None:
 
 def example_token_validation() -> None:
     """Demonstrate advanced token validation."""
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Register user and create token
     user_result = auth.register_user("tokenuser", "token@example.com", "TokenPass123!")

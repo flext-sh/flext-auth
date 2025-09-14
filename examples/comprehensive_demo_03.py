@@ -21,7 +21,7 @@ from flext_auth import FlextAuth, flext_auth_quick_start
 def demo_complete_auth_workflow() -> None:
     """Demonstrate complete authentication workflow."""
     # 1. Initialize auth service
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # 2. Create user account (using register_user, not create_user)
     username = "demo_user"
@@ -63,7 +63,7 @@ def demo_complete_auth_workflow() -> None:
 
 def demo_password_operations() -> None:
     """Demonstrate password hashing and verification operations."""
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
     test_password = os.getenv("TEST_PASSWORD", "TestPassword123!")
 
     try:
@@ -85,7 +85,7 @@ def demo_password_operations() -> None:
 
 def demo_jwt_operations() -> None:
     """Demonstrate JWT token operations."""
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Register user for JWT operations
     user_result = auth.register_user("jwtuser", "jwt@example.com", "JWTPassword123!")
@@ -107,7 +107,7 @@ def demo_jwt_operations() -> None:
 
 def demo_user_management() -> None:
     """Demonstrate user management operations."""
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Register multiple users with different roles
     users_data = [
@@ -132,7 +132,7 @@ def demo_user_management() -> None:
 
 def demo_security_features() -> None:
     """Demonstrate security features."""
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Show configuration security settings
     auth.get_config()
@@ -148,7 +148,7 @@ def demo_security_features() -> None:
 
 def demo_error_handling() -> None:
     """Demonstrate comprehensive error handling."""
-    auth: FlextAuth[object] = FlextAuth()
+    auth: FlextAuth = FlextAuth()
 
     # Test duplicate registration
     auth.register_user("duplicate", "dup@example.com", "DupPass123!")

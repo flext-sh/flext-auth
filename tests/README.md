@@ -1,10 +1,10 @@
 # FLEXT Auth Test Suite
 
-**Enterprise-grade testing for authentication library with comprehensive coverage and quality assurance.**
+**Testing for authentication library with coverage and quality assurance.**
 
 ## Overview
 
-The FLEXT Auth test suite implements comprehensive testing strategies following enterprise standards and flext-core testing patterns. It ensures 95% minimum coverage with unit, integration, and end-to-end testing across all authentication workflows.
+The FLEXT Auth test suite implements testing strategies following standards and flext-core testing patterns. It ensures 95% minimum coverage with unit, integration, and end-to-end testing across all authentication workflows.
 
 ## Architecture
 

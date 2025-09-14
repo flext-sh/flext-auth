@@ -18,7 +18,7 @@ from flext_auth import FlextAuth, flext_auth_quick_start
 def main() -> None:
     """Demonstrate FLEXT Auth functionality with clean types."""
     # 1. Quick Start Authentication
-    auth: FlextAuth[object] = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    auth: FlextAuth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
     # 2. Direct API Usage
 

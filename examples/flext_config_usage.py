@@ -11,11 +11,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-import pathlib
-import sys
-
-# Add src to path for imports
-sys.path.insert(0, os.path.join(pathlib.Path(__file__).parent, "..", "src"))
 
 from flext_auth import FlextAuth, FlextAuthConfig
 
