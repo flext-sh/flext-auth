@@ -130,10 +130,7 @@ class TestCliCoverage:
             mock_user_data
         )
 
-        result = authenticate_user(
-            username="testuser",
-            password="testpass"
-        )
+        result = authenticate_user(username="testuser", password="testpass")
 
         assert result.is_success
 
@@ -161,10 +158,7 @@ class TestCliCoverage:
             mock_user_data
         )
 
-        result = authenticate_user(
-            username="testuser",
-            password="testpass"
-        )
+        result = authenticate_user(username="testuser", password="testpass")
 
         assert result.is_success
 
@@ -197,7 +191,7 @@ class TestCliCoverage:
             password="testpass",
             max_attempts=5,
             session_expiry=120,
-            environment="development"
+            environment="development",
         )
 
         assert result.is_success
@@ -208,9 +202,7 @@ class TestCliCoverage:
         mock_config.return_value = FlextResult.fail("Config error")
 
         result = register_user(
-            username="testuser",
-            email="test@example.com",
-            password="testpass"
+            username="testuser", email="test@example.com", password="testpass"
         )
 
         assert result.is_failure
@@ -240,9 +232,7 @@ class TestCliCoverage:
         )
 
         result = register_user(
-            username="testuser",
-            email="test@example.com",
-            password="testpass"
+            username="testuser", email="test@example.com", password="testpass"
         )
 
         assert result.is_failure
@@ -316,7 +306,7 @@ class TestCliCoverage:
             set_jwt_expiry=60,
             set_bcrypt_rounds=14,
             set_max_attempts=3,
-            environment="production"
+            environment="production",
         )
 
         assert result.is_success

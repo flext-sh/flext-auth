@@ -42,6 +42,7 @@ class FlextAuth:
 ```
 
 **Key Features**:
+
 - FlextContainer dependency injection integration
 - FlextResult railway pattern for error handling
 - bcrypt password hashing (12 rounds)
@@ -75,6 +76,7 @@ class FlextAuthModels:
 ```
 
 **Domain Integration**:
+
 - Extends FlextModels.Entity from flext-core
 - Pydantic validation with custom validators
 - Business logic methods returning FlextResult
@@ -103,6 +105,7 @@ class FlextAuthConfig(FlextConfig):
 ```
 
 **Configuration Features**:
+
 - Extends FlextConfig base class
 - Environment-aware settings
 - Security parameter management
@@ -125,6 +128,7 @@ graph TD
 ```
 
 **Implementation**:
+
 1. Input validation using Pydantic models
 2. Business rule validation (uniqueness checks)
 3. Password hashing with bcrypt (12 rounds)
@@ -144,6 +148,7 @@ graph TD
 ```
 
 **Security Implementation**:
+
 - Username lookup with case handling
 - bcrypt password verification
 - JWT token generation with HS256
@@ -169,12 +174,14 @@ graph TD
 ### Password Security
 
 **Hashing Strategy**:
+
 - bcrypt algorithm with 12 rounds (production setting)
 - Salt generation per password
 - Secure password verification
 - No plaintext password storage
 
 **Implementation**:
+
 ```python
 def set_password(self, password: str) -> FlextResult[bool]:
     """Secure password hashing with bcrypt."""
@@ -190,6 +197,7 @@ def set_password(self, password: str) -> FlextResult[bool]:
 ### JWT Token Security
 
 **Token Configuration**:
+
 - HS256 signing algorithm (symmetric key)
 - Configurable expiration (default 60 minutes)
 - Bearer token format support
@@ -198,12 +206,14 @@ def set_password(self, password: str) -> FlextResult[bool]:
 ### Session Management
 
 **Current Implementation**:
+
 - In-memory session storage (development)
 - Session expiration tracking
 - User-to-session mapping
 - Manual session cleanup
 
 **Production Considerations**:
+
 - Redis session storage planned
 - Distributed session management
 - Automatic cleanup processes
@@ -216,6 +226,7 @@ def set_password(self, password: str) -> FlextResult[bool]:
 ### FLEXT Core Integration
 
 **Authentication-Specific FlextResult Usage**:
+
 ```python
 def authenticate_user(username: str, password: str) -> FlextResult[dict]:
     """Authentication flow using FlextResult for error handling."""
@@ -228,6 +239,7 @@ def authenticate_user(username: str, password: str) -> FlextResult[dict]:
 ```
 
 **Dependency Injection**:
+
 ```python
 def __init__(self, config=None, container=None):
     self.container = container or FlextContainer.get_global()
@@ -235,6 +247,7 @@ def __init__(self, config=None, container=None):
 ```
 
 **Domain Modeling**:
+
 ```python
 class User(FlextModels.Entity):
     """User entity following FLEXT domain patterns."""
@@ -246,6 +259,7 @@ class User(FlextModels.Entity):
 ### CLI Integration (cli.py - 262 lines)
 
 **Click Integration**:
+
 ```python
 @click.group()
 @click.version_option()
@@ -268,12 +282,14 @@ def create_user(username: str, email: str, password: str) -> None:
 ### Test Coverage Issues
 
 **Failing Tests** (66 of 250):
+
 - CLI test runner setup problems
 - Configuration override functionality
 - Mock setup issues in authentication flows
 - Edge case validation failures
 
 **Root Causes**:
+
 - Test fixture management needs improvement
 - CLI testing infrastructure incomplete
 - Configuration test isolation issues
@@ -281,12 +297,14 @@ def create_user(username: str, email: str, password: str) -> None:
 ### Missing Features
 
 **Authentication Standards**:
+
 - Multi-factor authentication (MFA/2FA)
 - Single sign-on protocols (SAML, OAuth2/OIDC)
 - LDAP/Active Directory integration
 - WebAuthn passwordless authentication
 
 **Security Enhancements**:
+
 - Account lockout mechanisms
 - Rate limiting and abuse protection
 - Advanced audit logging
@@ -295,12 +313,14 @@ def create_user(username: str, email: str, password: str) -> None:
 ### Storage Limitations
 
 **Current State**:
+
 - In-memory user storage (development only)
 - Dictionary-based session management
 - No persistence between restarts
 - No distributed storage support
 
 **Production Requirements**:
+
 - Database user storage
 - Redis session management
 - Distributed cache integration
@@ -313,6 +333,7 @@ def create_user(username: str, email: str, password: str) -> None:
 ### Priority 1: Test Stabilization
 
 **Target**: Fix failing tests and improve pass rate (currently 73%)
+
 - Fix CLI test infrastructure
 - Improve configuration test isolation
 - Enhance mock management
@@ -321,6 +342,7 @@ def create_user(username: str, email: str, password: str) -> None:
 ### Priority 2: Security Enhancements
 
 **Modern Authentication Standards (2025)**:
+
 - OIDC provider implementation for modern applications
 - SAML service provider for enterprise SSO
 - MFA with TOTP/HOTP support (PyOTP integration)
@@ -329,6 +351,7 @@ def create_user(username: str, email: str, password: str) -> None:
 ### Priority 3: Production Storage
 
 **Storage Integration**:
+
 - SQLAlchemy user repository
 - Redis session storage
 - Connection pooling
@@ -337,6 +360,7 @@ def create_user(username: str, email: str, password: str) -> None:
 ### Priority 4: Advanced Security
 
 **Security Enhancements**:
+
 - Account lockout after failed attempts
 - Rate limiting with Redis backing
 - Comprehensive audit logging

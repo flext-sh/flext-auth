@@ -21,6 +21,7 @@ auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 ```
 
 **Parameters**:
+
 - `create_REDACTED_LDAP_BIND_PASSWORD` (bool): Create default REDACTED_LDAP_BIND_PASSWORD user (default: False)
 
 **Returns**: `FlextAuth` instance
@@ -52,6 +53,7 @@ def register_user(
 ```
 
 **Parameters**:
+
 - `username` (str): Unique username
 - `email` (str): Valid email address
 - `password` (str): User password (will be hashed with bcrypt)
@@ -59,6 +61,7 @@ def register_user(
 **Returns**: `FlextResult[User]` - Created user or error
 
 **Example**:
+
 ```python
 result = auth.register_user("demo", "demo@example.com", "secure123")
 if result.is_success:
@@ -79,12 +82,14 @@ def authenticate_user(
 ```
 
 **Parameters**:
+
 - `username` (str): Username to authenticate
 - `password` (str): User password
 
 **Returns**: `FlextResult[dict]` with session and token data
 
 **Example**:
+
 ```python
 auth_result = auth.authenticate_user("demo", "secure123")
 if auth_result.is_success:
@@ -102,11 +107,13 @@ def validate_token(self, token: str) -> FlextResult[dict]:
 ```
 
 **Parameters**:
+
 - `token` (str): JWT token (with or without Bearer prefix)
 
 **Returns**: `FlextResult[dict]` with token payload or error
 
 **Example**:
+
 ```python
 validation_result = auth.validate_token(token)
 if validation_result.is_success:
@@ -135,15 +142,19 @@ class User(FlextModels.Entity):
 **Methods**:
 
 #### set_password()
+
 ```python
 def set_password(self, password: str) -> FlextResult[bool]:
 ```
+
 Hash and set user password using bcrypt.
 
 #### verify_password()
+
 ```python
 def verify_password(self, password: str) -> FlextResult[bool]:
 ```
+
 Verify password against stored hash.
 
 ### Session
@@ -202,9 +213,11 @@ def create_for_environment(cls, env: str) -> FlextResult[FlextAuthConfig]:
 Create configuration for specific environment.
 
 **Parameters**:
+
 - `env` (str): Environment name ("development", "production", etc.)
 
 **Example**:
+
 ```python
 config_result = FlextAuthConfig.create_for_environment("production")
 if config_result.is_success:

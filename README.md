@@ -37,11 +37,11 @@ flext-auth provides authentication services for FLEXT ecosystem projects, implem
 
 ### **FLEXT-Core Integration Status**
 
-| Pattern             | Status | Description             |
-| ------------------- | ------ | ----------------------- |
-| **FlextResult<T>**  | 🟢 95% | All auth operations return FlextResult |
-| **FlextService**    | 🟡 75% | Main FlextAuth service with DI |
-| **FlextContainer**  | 🟢 90% | Dependency injection throughout |
+| Pattern             | Status | Description                                          |
+| ------------------- | ------ | ---------------------------------------------------- |
+| **FlextResult<T>**  | 🟢 95% | All auth operations return FlextResult               |
+| **FlextService**    | 🟡 75% | Main FlextAuth service with DI                       |
+| **FlextContainer**  | 🟢 90% | Dependency injection throughout                      |
 | **Domain Patterns** | 🟢 85% | User, Session, Role entities with FlextModels.Entity |
 
 > **Status**: 🔴 Critical | 🟡 Partial | 🟢 Complete

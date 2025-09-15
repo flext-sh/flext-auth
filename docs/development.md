@@ -138,12 +138,14 @@ class User:
 **Issue**: 66 out of 250 tests failing
 
 **Main Problem Areas**:
+
 - CLI test infrastructure setup
 - Configuration override functionality
 - Mock management in test fixtures
 - Edge case validation failures
 
 **How to Help**:
+
 ```bash
 # Run failing tests to see current issues
 pytest tests/ -v --tb=short
@@ -156,6 +158,7 @@ pytest tests/unit/test_config_coverage.py -v
 ### Priority 2: Security Enhancements
 
 **Missing Features**:
+
 - Account lockout mechanism
 - Rate limiting for authentication attempts
 - Advanced audit logging
@@ -164,6 +167,7 @@ pytest tests/unit/test_config_coverage.py -v
 ### Priority 3: Production Features
 
 **Storage Integration**:
+
 - Database user storage (currently in-memory)
 - Redis session management
 - Connection pooling

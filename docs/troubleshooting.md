@@ -19,6 +19,7 @@ ImportError: No module named 'flext_auth'
 ```
 
 **Solution**:
+
 ```bash
 # Ensure you're in the correct directory
 cd flext-auth
@@ -39,6 +40,7 @@ ImportError: No module named 'flext_core'
 ```
 
 **Solution**:
+
 ```bash
 # Check if flext-core is available
 cd ../flext-core
@@ -64,18 +66,21 @@ result = auth.register_user("user", "invalid-email", "weak")
 **Solutions**:
 
 1. **Email Validation**:
+
    ```python
    # Use valid email format
    result = auth.register_user("user", "user@example.com", "password123")
    ```
 
 2. **Password Requirements**:
+
    ```python
    # Use stronger password (current implementation has basic validation)
    result = auth.register_user("user", "user@example.com", "SecurePassword123!")
    ```
 
 3. **Username Uniqueness**:
+
    ```python
    # Check if user already exists
    existing_user = auth._find_user("username")  # Internal method
@@ -93,6 +98,7 @@ auth_result = auth.authenticate_user("user", "password")
 ```
 
 **Debugging**:
+
 ```python
 # Check if user exists
 user_result = auth._find_user("user")
@@ -106,6 +112,7 @@ else:
 ```
 
 **Common Causes**:
+
 1. **Case sensitivity**: Usernames are case-sensitive
 2. **Password hashing**: Ensure bcrypt is working correctly
 3. **User state**: Check if user is active
@@ -122,6 +129,7 @@ validation_result = auth.validate_token(token)
 **Solutions**:
 
 1. **Token Format**:
+
    ```python
    # Ensure proper Bearer format or clean token
    token = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
@@ -130,6 +138,7 @@ validation_result = auth.validate_token(token)
    ```
 
 2. **Token Expiration**:
+
    ```python
    import jwt
 
@@ -142,6 +151,7 @@ validation_result = auth.validate_token(token)
    ```
 
 3. **Secret Key Mismatch**:
+
    ```python
    # Ensure same secret key is used for generation and validation
    config = FlextAuthConfig()
@@ -165,12 +175,14 @@ if config.is_failure:
 **Solutions**:
 
 1. **Check Environment Variables**:
+
    ```bash
    env | grep AUTH_
    # Should show AUTH_* variables if set
    ```
 
 2. **Valid Environment Names**:
+
    ```python
    # Use valid environment names
    valid_envs = ["development", "testing", "staging", "production"]
@@ -178,6 +190,7 @@ if config.is_failure:
    ```
 
 3. **Manual Configuration**:
+
    ```python
    # Create configuration manually if environment fails
    config = FlextAuthConfig(
@@ -191,6 +204,7 @@ if config.is_failure:
 **Problem**: JWT tokens not working correctly
 
 **Check Configuration**:
+
 ```python
 config = FlextAuthConfig()
 print(f"JWT Algorithm: {config.jwt_algorithm}")
@@ -199,6 +213,7 @@ print(f"Secret Key Length: {len(config.jwt_secret_key)}")
 ```
 
 **Recommendations**:
+
 - Use HS256 algorithm (default)
 - Secret key should be at least 32 characters
 - Reasonable expiry time (15-60 minutes)
@@ -216,6 +231,7 @@ print(f"Secret Key Length: {len(config.jwt_secret_key)}")
 **Common Failing Areas**:
 
 1. **CLI Tests**:
+
    ```bash
    # Run CLI tests specifically
    pytest tests/unit/test_cli_coverage.py -v
@@ -225,6 +241,7 @@ print(f"Secret Key Length: {len(config.jwt_secret_key)}")
    ```
 
 2. **Configuration Tests**:
+
    ```bash
    # Run configuration tests
    pytest tests/unit/test_config_coverage.py -v
@@ -234,6 +251,7 @@ print(f"Secret Key Length: {len(config.jwt_secret_key)}")
    ```
 
 3. **Mock Issues**:
+
    ```python
    # In test fixtures
    @pytest.fixture(autouse=True)
@@ -248,6 +266,7 @@ print(f"Secret Key Length: {len(config.jwt_secret_key)}")
 **Problem**: Tests fail due to environment setup
 
 **Solution**:
+
 ```bash
 # Ensure test environment is clean
 poetry install --with test
@@ -268,6 +287,7 @@ pytest --cov=src/flext_auth tests/
 **Problem**: Authentication operations are slow
 
 **Investigation**:
+
 ```python
 import time
 
@@ -283,12 +303,15 @@ print(f"Bcrypt rounds: {config.bcrypt_rounds}")
 ```
 
 **Solutions**:
+
 1. **Reduce bcrypt rounds for development**:
+
    ```python
    dev_config = FlextAuthConfig(bcrypt_rounds=10)  # Faster for development
    ```
 
 2. **Use production rounds only in production**:
+
    ```python
    prod_config = FlextAuthConfig(bcrypt_rounds=14)  # High security
    ```
@@ -300,6 +323,7 @@ print(f"Bcrypt rounds: {config.bcrypt_rounds}")
 **Current Limitation**: In-memory session storage
 
 **Monitoring**:
+
 ```python
 import psutil
 
@@ -315,6 +339,7 @@ print(f"Active sessions: {session_count}")
 ```
 
 **Mitigation**:
+
 ```python
 # Implement session cleanup
 def cleanup_expired_sessions():
@@ -332,6 +357,7 @@ def cleanup_expired_sessions():
 **Problem**: Type checking errors with MyPy
 
 **Common Issues**:
+
 ```bash
 # Run type checking
 mypy src/flext_auth/
@@ -343,7 +369,9 @@ mypy src/flext_auth/
 ```
 
 **Solutions**:
+
 1. **Type Annotations**:
+
    ```python
    # Always use proper type hints
    from typing import Optional
@@ -353,6 +381,7 @@ mypy src/flext_auth/
    ```
 
 2. **FlextResult Types**:
+
    ```python
    # Specify generic type for FlextResult
    result: FlextResult[User] = auth.register_user(...)
@@ -363,6 +392,7 @@ mypy src/flext_auth/
 **Problem**: Circular imports or import errors
 
 **Solution**:
+
 ```python
 # Use late imports if needed
 from typing import TYPE_CHECKING
@@ -382,6 +412,7 @@ if TYPE_CHECKING:
 **Problem**: Security vulnerabilities in production
 
 **Security Checklist**:
+
 ```bash
 # Check for security issues
 bandit -r src/flext_auth/
@@ -403,7 +434,9 @@ print(f'Max attempts: {config.max_failed_attempts}')  # Should be <= 5
 **Current Limitation**: In-memory sessions don't persist
 
 **Workarounds**:
+
 1. **Session timeout management**:
+
    ```python
    # Implement session cleanup
    def cleanup_sessions():
@@ -413,6 +446,7 @@ print(f'Max attempts: {config.max_failed_attempts}')  # Should be <= 5
    ```
 
 2. **External session storage** (future):
+
    ```python
    # Future Redis integration
    class RedisSessionStorage:
@@ -428,6 +462,7 @@ print(f'Max attempts: {config.max_failed_attempts}')  # Should be <= 5
 ### Debug Mode
 
 Enable debug logging:
+
 ```python
 import logging
 
@@ -441,6 +476,7 @@ result = auth.register_user("debug", "debug@example.com", "password123")
 ### Error Information
 
 Extract detailed error information:
+
 ```python
 result = auth.authenticate_user("user", "wrong_password")
 if result.is_failure:

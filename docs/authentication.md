@@ -13,12 +13,14 @@ This guide covers authentication-specific implementation details for the FLEXT-A
 The main authentication orchestrator handles all authentication operations:
 
 **Core Authentication Methods**:
+
 - `register_user()` - User registration with validation and password hashing
 - `authenticate_user()` - Credential verification and session creation
 - `validate_token()` - JWT token validation and payload extraction
 - Session management with create/revoke/cleanup operations
 
 **Current Implementation Status**:
+
 - In-memory storage (development mode)
 - bcrypt password hashing with 12 rounds
 - JWT token generation with HS256 algorithm
@@ -27,12 +29,14 @@ The main authentication orchestrator handles all authentication operations:
 ### Authentication Models
 
 **Domain Entities**:
+
 - **User**: Core entity with username, email, password hash, roles
 - **Session**: Session lifecycle with user mapping and expiration
 - **AuthToken**: JWT token creation and validation
 - **UserCreationRequest**: Input validation for user registration
 
 **Security Features**:
+
 - Password strength validation
 - Email format validation
 - Role-based access control foundation
@@ -45,6 +49,7 @@ The main authentication orchestrator handles all authentication operations:
 ### Password Security
 
 **Current Implementation**:
+
 ```python
 # bcrypt hashing with configurable rounds
 def set_password(self, password: str):
@@ -54,6 +59,7 @@ def set_password(self, password: str):
 ```
 
 **Security Settings**:
+
 - bcrypt rounds: 12 (production setting)
 - Salt generation per password
 - No plaintext password storage
@@ -61,12 +67,14 @@ def set_password(self, password: str):
 ### JWT Token Management
 
 **Token Configuration**:
+
 - Algorithm: HS256 (symmetric key)
 - Default expiration: 30 minutes
 - Bearer token format support
 - Signature verification on validation
 
 **Token Lifecycle**:
+
 1. Generate token on successful authentication
 2. Include user claims and expiration
 3. Validate signature and expiration on requests
@@ -75,12 +83,14 @@ def set_password(self, password: str):
 ### Session Management
 
 **Current Approach**:
+
 - In-memory session storage
 - User-to-session mapping
 - Configurable expiration times
 - Manual session cleanup
 
 **Session Security**:
+
 - Random session token generation
 - Expiration time validation
 - Session revocation capabilities
@@ -131,6 +141,7 @@ def create_user(username: str, email: str, password: str):
 ```
 
 **Available Commands**:
+
 - User creation with validation
 - Configuration management
 - Authentication testing utilities
@@ -157,12 +168,14 @@ if auth_result.is_success:
 ### Storage Limitations
 
 **Development Mode**:
+
 - In-memory user storage
 - Dictionary-based session management
 - No persistence between restarts
 - Single-instance limitation
 
 **Production Requirements**:
+
 - Database user storage needed
 - Redis session management planned
 - Distributed cache integration required
@@ -171,12 +184,14 @@ if auth_result.is_success:
 ### Missing Authentication Features
 
 **Standard Authentication**:
+
 - Multi-factor authentication (MFA/2FA)
 - Single sign-on protocols (SAML, OAuth2/OIDC)
 - LDAP/Active Directory integration
 - WebAuthn passwordless authentication
 
 **Security Enhancements**:
+
 - Account lockout mechanisms
 - Rate limiting and abuse protection
 - Advanced audit logging
@@ -185,12 +200,14 @@ if auth_result.is_success:
 ### Test Infrastructure
 
 **Current Issues** (66 failing tests):
+
 - CLI test runner setup problems
 - Configuration override functionality
 - Mock setup issues in authentication flows
 - Edge case validation failures
 
 **Required Improvements**:
+
 - Test fixture management
 - CLI testing infrastructure
 - Configuration test isolation
@@ -203,12 +220,14 @@ if auth_result.is_success:
 ### Priority 1: Foundation Stabilization
 
 **Test Infrastructure**:
+
 - Fix 66 failing tests
 - Improve configuration test isolation
 - Enhance CLI test infrastructure
 - Add integration test coverage
 
 **Production Storage**:
+
 - Implement database user repository
 - Add Redis session storage
 - Connection pooling setup
@@ -217,12 +236,14 @@ if auth_result.is_success:
 ### Priority 2: Modern Authentication (2025 Standards)
 
 **Multi-Factor Authentication**:
+
 - TOTP/HOTP support using PyOTP
 - SMS/Email verification workflows
 - Authenticator app integration
 - MFA enforcement policies
 
 **OAuth2 & OpenID Connect**:
+
 - Authorization Code flow implementation
 - Client Credentials flow for services
 - OpenID Connect Provider capabilities
@@ -231,12 +252,14 @@ if auth_result.is_success:
 ### Priority 3: Advanced Security
 
 **Passwordless Authentication**:
+
 - WebAuthn/FIDO2 implementation
 - Passkey support
 - Magic link authentication
 - Biometric authentication preparation
 
 **Enterprise Features**:
+
 - SAML 2.0 Service Provider
 - LDAP/Active Directory integration
 - Advanced audit logging

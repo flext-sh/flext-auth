@@ -44,19 +44,19 @@ if prod_config.is_success:
 
 ### JWT Settings
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `jwt_secret_key` | str | "dev-secret-key" | Secret key for JWT signing |
-| `jwt_expiry_minutes` | int | 60 | Token expiration time in minutes |
-| `jwt_algorithm` | str | "HS256" | JWT signing algorithm |
+| Parameter            | Type | Default          | Description                      |
+| -------------------- | ---- | ---------------- | -------------------------------- |
+| `jwt_secret_key`     | str  | "dev-secret-key" | Secret key for JWT signing       |
+| `jwt_expiry_minutes` | int  | 60               | Token expiration time in minutes |
+| `jwt_algorithm`      | str  | "HS256"          | JWT signing algorithm            |
 
 ### Security Settings
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `bcrypt_rounds` | int | 12 | Bcrypt hashing rounds |
-| `max_failed_attempts` | int | 5 | Max failed login attempts |
-| `session_timeout_minutes` | int | 120 | Session timeout in minutes |
+| Parameter                 | Type | Default | Description                |
+| ------------------------- | ---- | ------- | -------------------------- |
+| `bcrypt_rounds`           | int  | 12      | Bcrypt hashing rounds      |
+| `max_failed_attempts`     | int  | 5       | Max failed login attempts  |
+| `session_timeout_minutes` | int  | 120     | Session timeout in minutes |
 
 ### Environment Variables
 
