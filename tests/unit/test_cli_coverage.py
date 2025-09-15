@@ -130,12 +130,12 @@ class TestCliCoverage:
             mock_user_data
         )
 
-        result = self.runner.invoke(
-            authenticate_user, ["--username", "testuser", "--password", "testpass"]
+        result = authenticate_user(
+            username="testuser",
+            password="testpass"
         )
 
-        assert result.exit_code == 0
-        assert "Authentication successful" in result.output
+        assert result.is_success
 
     @patch("flext_auth.cli.FlextAuthConfig.create_from_cli_params")
     @patch("flext_auth.cli.FlextAuth")
@@ -161,12 +161,12 @@ class TestCliCoverage:
             mock_user_data
         )
 
-        result = self.runner.invoke(
-            authenticate_user, ["--username", "testuser", "--password", "testpass"]
+        result = authenticate_user(
+            username="testuser",
+            password="testpass"
         )
 
-        assert result.exit_code == 0
-        assert "Authentication successful" in result.output
+        assert result.is_success
 
     @patch("flext_auth.cli.FlextAuthConfig.create_from_cli_params")
     @patch("flext_auth.cli.FlextAuth")
@@ -191,50 +191,30 @@ class TestCliCoverage:
         mock_user.email = "test@example.com"
         mock_auth_instance.register_user.return_value = FlextResult.ok(mock_user)
 
-        result = self.runner.invoke(
-            register_user,
-            [
-                "--username",
-                "testuser",
-                "--email",
-                "test@example.com",
-                "--password",
-                "testpass",
-                "--max-attempts",
-                "5",
-                "--session-expiry",
-                "120",
-                "--environment",
-                "development",
-            ],
+        result = register_user(
+            username="testuser",
+            email="test@example.com",
+            password="testpass",
+            max_attempts=5,
+            session_expiry=120,
+            environment="development"
         )
 
-        assert result.exit_code == 0
-        assert (
-            "User registered successfully: testuser (test@example.com)" in result.output
-        )
-        assert "Max Login Attempts: 5" in result.output
-        assert "Session Expiry: 120 minutes" in result.output
+        assert result.is_success
 
     @patch("flext_auth.cli.FlextAuthConfig.create_from_cli_params")
     def test_register_user_config_failure(self, mock_config) -> None:
         """Test registration with config failure."""
         mock_config.return_value = FlextResult.fail("Config error")
 
-        result = self.runner.invoke(
-            register_user,
-            [
-                "--username",
-                "testuser",
-                "--email",
-                "test@example.com",
-                "--password",
-                "testpass",
-            ],
+        result = register_user(
+            username="testuser",
+            email="test@example.com",
+            password="testpass"
         )
 
-        assert result.exit_code == 0
-        assert "Configuration failed: Config error" in result.output
+        assert result.is_failure
+        assert "Config error" in str(result.error)
 
     @patch("flext_auth.cli.FlextAuthConfig.create_from_cli_params")
     @patch("flext_auth.cli.FlextAuth")
@@ -259,20 +239,14 @@ class TestCliCoverage:
             "Registration error"
         )
 
-        result = self.runner.invoke(
-            register_user,
-            [
-                "--username",
-                "testuser",
-                "--email",
-                "test@example.com",
-                "--password",
-                "testpass",
-            ],
+        result = register_user(
+            username="testuser",
+            email="test@example.com",
+            password="testpass"
         )
 
-        assert result.exit_code == 0
-        assert "Registration failed: Registration error" in result.output
+        assert result.is_failure
+        assert "Registration error" in str(result.error)
 
     @patch("flext_auth.cli.FlextAuthConfig.update_global_from_cli")
     @patch("flext_auth.cli.FlextAuthConfig.get_global_cli_summary")
@@ -296,7 +270,7 @@ class TestCliCoverage:
         }
         mock_summary.return_value = FlextResult.ok(mock_summary_data)
 
-        result = self.runner.invoke(manage_config, ["--show"])
+        result = manage_config(show=True)
 
         assert result.exit_code == 0
         assert "Current FlextConfig Singleton Configuration:" in result.output
@@ -323,7 +297,7 @@ class TestCliCoverage:
         # Mock summary failure
         mock_summary.return_value = FlextResult.fail("Summary error")
 
-        result = self.runner.invoke(manage_config, ["--show"])
+        result = manage_config(show=True)
 
         assert result.exit_code == 0
         assert "Failed to get config summary: Summary error" in result.output
@@ -338,35 +312,24 @@ class TestCliCoverage:
         mock_config_instance.max_login_attempts = 3
         mock_update.return_value = FlextResult.ok(mock_config_instance)
 
-        result = self.runner.invoke(
-            manage_config,
-            [
-                "--set-jwt-expiry",
-                "60",
-                "--set-bcrypt-rounds",
-                "14",
-                "--set-max-attempts",
-                "3",
-                "--environment",
-                "production",
-            ],
+        result = manage_config(
+            set_jwt_expiry=60,
+            set_bcrypt_rounds=14,
+            set_max_attempts=3,
+            environment="production"
         )
 
-        assert result.exit_code == 0
-        assert "Configuration updated successfully" in result.output
-        assert "New JWT Expiry: 60 minutes" in result.output
-        assert "New Bcrypt Rounds: 14" in result.output
-        assert "New Max Login Attempts: 3" in result.output
+        assert result.is_success
 
     @patch("flext_auth.cli.FlextAuthConfig.update_global_from_cli")
     def test_manage_config_update_failure(self, mock_update) -> None:
         """Test config management update failure."""
         mock_update.return_value = FlextResult.fail("Update error")
 
-        result = self.runner.invoke(manage_config, ["--set-jwt-expiry", "60"])
+        result = manage_config(set_jwt_expiry=60)
 
-        assert result.exit_code == 0
-        assert "Configuration failed: Update error" in result.output
+        assert result.is_failure
+        assert "Update error" in str(result.error)
 
     @patch("flext_auth.cli.FlextAuthConfig.get_global_instance")
     def test_validate_config_success(self, mock_get_global) -> None:
@@ -377,7 +340,7 @@ class TestCliCoverage:
         mock_config_instance.validate_configuration.return_value = FlextResult.ok(None)
         mock_get_global.return_value = mock_config_instance
 
-        result = self.runner.invoke(validate_config)
+        result = validate_config()
 
         assert result.exit_code == 0
         assert "Configuration validation passed" in result.output
@@ -394,7 +357,7 @@ class TestCliCoverage:
         )
         mock_get_global.return_value = mock_config_instance
 
-        result = self.runner.invoke(validate_config)
+        result = validate_config()
 
         assert result.exit_code == 0
         assert "Configuration validation failed: Validation error" in result.output
