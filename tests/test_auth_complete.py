@@ -9,7 +9,16 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import cast
 
-from flext_auth import FlextAuth, FlextAuthConfig, Session, User
+from flext_auth import (
+    FlextAuth,
+    FlextAuthConfig,
+    FlextAuthModels,
+)
+
+# Use unified class structure
+AuthenticationResponseDict = FlextAuthModels.AuthenticationResponseDict
+Session = FlextAuthModels.Session
+User = FlextAuthModels.User
 
 
 class TestFlextAuth:
@@ -45,10 +54,6 @@ class TestFlextAuth:
         # Clear singleton to ensure clean test
         FlextAuthConfig.clear_global_instance()
 
-        custom_secret = (
-            "this-is-a-very-long-custom-secret-for-jwt-tokens-with-enough-entropy"
-        )
-
         # Create FlextAuth with default configuration
         auth: FlextAuth = FlextAuth()
         config = auth.config
@@ -59,8 +64,6 @@ class TestFlextAuth:
 
     def test_password_hashing_and_verification(self) -> None:
         """Test password hashing and verification."""
-        from flext_auth import FlextAuthModels
-
         password = "TestPassword123!"
         user = FlextAuthModels.User(
             id="test-id", username="testuser", email="test@example.com"
@@ -138,7 +141,13 @@ class TestFlextAuth:
     def test_jwt_token_generation_and_verification(self) -> None:
         """Test JWT token generation and verification."""
         auth: FlextAuth = FlextAuth()
-        user_id = "test_user_id"
+
+        # Create a user first
+        auth.register_user("testuser", "test@example.com", "TestPassword123!")
+        auth_result = auth.authenticate_user("testuser", "TestPassword123!")
+        assert auth_result.is_success
+        auth_data: AuthenticationResponseDict = auth_result.value
+        user_id = auth_data["user"]["id"]
 
         # Generate token
         token = auth.generate_token(user_id)
@@ -194,12 +203,12 @@ class TestFlextAuth:
         assert isinstance(user_data, dict), "user_data must be dict"
         assert user_data["username"] == "testuser"
         assert user_data["email"] == "test@example.com"
-        assert user_data["role"] == "user"
+        assert user_data["roles"] == ["user"]
 
         session_data = data["session"]
         assert isinstance(session_data, dict), "session_data must be dict"
         assert "id" in session_data
-        assert "token" in session_data
+        assert "session_id" in session_data
         assert "expires_at" in session_data
 
         # Check session is stored
@@ -244,7 +253,7 @@ class TestFlextAuth:
         result = auth.authenticate_user("testuser", "Password123!")
         assert result.success is False
         assert result.is_failure
-        assert "Account is disabled" in (result.error or "")
+        assert "Account is not active" in (result.error or "")
 
     def test_get_user_by_token(self) -> None:
         """Test getting user by token."""
@@ -260,7 +269,7 @@ class TestFlextAuth:
         auth_result = auth.authenticate_user("testuser", "Password123!")
         auth_data = auth_result.value
         assert isinstance(auth_data, dict), "auth_data must be dict"
-        tokens = auth_data["tokens"]
+        tokens = auth_data.get("tokens")
         assert isinstance(tokens, dict), "tokens must be dict"
         token = tokens["access_token"]  # Use JWT token, not session token
         assert isinstance(token, str), "token must be string"
@@ -369,7 +378,9 @@ class TestFlextAuth:
 
         assert "user" in user.roles
         assert user.is_active is True
-        assert user.is_active is True
+
+        # Test user activation/deactivation
+        user.is_active = False
         assert user.is_active is False
 
     def test_session_model_defaults(self) -> None:
@@ -400,7 +411,7 @@ class TestFlextAuth:
         assert auth_result.success is True
         auth_data = auth_result.value
         assert isinstance(auth_data, dict), "auth_data must be dict"
-        tokens = auth_data["tokens"]
+        tokens = auth_data.get("tokens")
         assert isinstance(tokens, dict), "tokens must be dict"
         token = tokens["access_token"]  # Use JWT token, not session token
         assert isinstance(token, str), "token must be string"

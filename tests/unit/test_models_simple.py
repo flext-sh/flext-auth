@@ -12,14 +12,17 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 import pytest
+from pydantic import ValidationError
 
 from flext_auth import (
     FlextAuthModels,
-    Role,
-    authenticate_user,
-    create_session,
-    create_user,
 )
+
+# Use unified class structure
+Role = FlextAuthModels.Role
+authenticate_user = FlextAuthModels.authenticate_user
+create_session = FlextAuthModels.create_session
+create_user = FlextAuthModels.create_user
 
 
 class TestUserCreateUserMethod:
@@ -74,9 +77,9 @@ class TestUserCreateUserMethod:
         # or use a username that has characters that won't be cleaned
 
         # Test the validator directly by creating a User instance with invalid username
-        try:
+        with pytest.raises(ValueError, match="Username must contain only letters, numbers, and underscores"):
             # This should trigger the field validator
-            user = FlextAuthModels.User(
+            _ = FlextAuthModels.User(
                 id="test-id",
                 username="user!@#",  # Contains special chars
                 email="test@example.com",
@@ -85,34 +88,24 @@ class TestUserCreateUserMethod:
                 roles=["user"],
                 created_at=datetime.now(UTC),
             )
-            # If we get here, the validation didn't work as expected
-            pytest.fail("Username validation should have failed")
-        except ValueError as e:
-            assert (
-                "Username can only contain letters, numbers, underscores, and hyphens"
-                in str(e)
-            )
 
     def test_user_password_hash_validation(self) -> None:
         """Test User password hash validation - lines 139-140."""
         # Test with invalid password hash format
-        try:
-            user = FlextAuthModels.User(
+        with pytest.raises(ValueError, match="Password hash must be bcrypt format"):
+            FlextAuthModels.User(
                 id="test-id",
                 username="testuser",
                 email="test@example.com",
-                password_hash="invalid_hash",  # Not bcrypt format
+                password_hash="not_bcrypt_hash",  # Not bcrypt format
                 is_active=True,
                 roles=["user"],
                 created_at=datetime.now(UTC),
             )
-            pytest.fail("Password hash validation should have failed")
-        except ValueError as e:
-            assert "Password hash must be bcrypt format" in str(e)
 
         # Test with hash that's too short
-        try:
-            user = FlextAuthModels.User(
+        with pytest.raises(ValueError, match="Password hash must be bcrypt format"):
+            _ = FlextAuthModels.User(
                 id="test-id",
                 username="testuser",
                 email="test@example.com",
@@ -121,9 +114,6 @@ class TestUserCreateUserMethod:
                 roles=["user"],
                 created_at=datetime.now(UTC),
             )
-            pytest.fail("Password hash validation should have failed")
-        except ValueError as e:
-            assert "Invalid bcrypt hash length" in str(e)
 
     def test_user_role_and_permission_methods(self) -> None:
         """Test User role and permission methods - lines 178, 182."""
@@ -149,17 +139,13 @@ class TestUserCreateUserMethod:
     def test_session_token_validation(self) -> None:
         """Test Session token validation - lines 313-314."""
         # Test with token that's too short
-        try:
-            session = FlextAuthModels.Session(
+        with pytest.raises(ValueError, match="String should have at least 32 characters"):
+            _ = FlextAuthModels.Session(
                 id="test-session-id",
                 user_id="test-user-id",
+                session_token="short",  # Set invalid token during creation
                 expires_at=datetime.now(UTC) + timedelta(hours=1),
             )
-            # Set token separately for validation test
-            session.session_token = "short"
-            pytest.fail("Token validation should have failed")
-        except ValueError as e:
-            assert "Token must be at least" in str(e)
 
     def test_session_time_remaining_and_extend_expiry(self) -> None:
         """Test Session time_remaining_seconds and extend_expiry methods - lines 330, 335-337."""
@@ -229,69 +215,49 @@ class TestUserCreateUserMethod:
     def test_password_strength_validation(self) -> None:
         """Test Password strength validation - lines 503-504."""
         # Test with weak password using create_user
-        try:
-            request = FlextAuthModels.UserCreationRequest(
-                username="weakuser2",
-                email="weak2@example.com",
-                password="weakpass",  # 8 chars but only lowercase
-            )
-            result = create_user(request)
-            if result.success:
-                pytest.fail("Password validation should have failed")
-        except Exception as e:
-            assert "password" in str(e).lower() or "must contain" in str(e).lower()
+        request = FlextAuthModels.UserCreationRequest(
+            username="weakuser2",
+            email="weak2@example.com",
+            password="weakpass",  # 8 chars but only lowercase
+        )
+        result = create_user(request)
+        assert result.is_failure  # Should fail due to weak password
 
         # Test with another weak password using create_user
-        try:
-            request = FlextAuthModels.UserCreationRequest(
-                username="weakuser",
-                email="weak@example.com",
-                password="12345678",  # 8 chars but only numbers
-            )
-            result = create_user(request)
-            if result.success:
-                pytest.fail("Password validation should have failed")
-        except Exception as e:
-            assert "password" in str(e).lower() or "must contain" in str(e).lower()
+        request = FlextAuthModels.UserCreationRequest(
+            username="weakuser",
+            email="weak@example.com",
+            password="12345678",  # 8 chars but only numbers
+        )
+        result = create_user(request)
+        assert result.is_failure  # Should fail due to weak password
 
     def test_create_user_none_username_failure(self) -> None:
         """Test user creation fails with None username - line 212-213."""
-        request = FlextAuthModels.UserCreationRequest(
-            username="testuser",  # Use valid username
-            email="test@example.com",
-            password="ValidPassword123!",
-        )
-        result = create_user(request)
-
-        assert result.is_failure
-        assert result.error is not None
-        assert "Input should be a valid string" in str(result.error)
+        with pytest.raises(ValidationError, match="Input should be a valid string"):
+            _ = FlextAuthModels.UserCreationRequest(
+                username=None,
+                email="test@example.com",
+                password="ValidPassword123!",
+            )
 
     def test_create_user_none_email_failure(self) -> None:
         """Test user creation fails with None email - line 214-215."""
-        request = FlextAuthModels.UserCreationRequest(
-            username="testuser",
-            email="test@example.com",  # Use valid email
-            password="ValidPassword123!",
-        )
-        result = create_user(request)
-
-        assert result.is_failure
-        assert result.error is not None
-        assert "Input should be a valid string" in str(result.error)
+        with pytest.raises(ValidationError, match="Input should be a valid string"):
+            _ = FlextAuthModels.UserCreationRequest(
+                username="testuser",
+                email=None,
+                password="ValidPassword123!",
+            )
 
     def test_create_user_none_password_failure(self) -> None:
         """Test user creation fails with None password - line 216-217."""
-        request = FlextAuthModels.UserCreationRequest(
-            username="testuser",
-            email="test@example.com",
-            password="ValidPassword123!",  # Use valid password
-        )
-        result = create_user(request)
-
-        assert result.is_failure
-        assert result.error is not None
-        assert "Password is required" in str(result.error)
+        with pytest.raises(ValidationError, match="Input should be a valid string"):
+            _ = FlextAuthModels.UserCreationRequest(
+                username="testuser",
+                email="test@example.com",
+                password=None,
+            )
 
     def test_create_user_default_roles(self) -> None:
         """Test user creation with default roles - line 248."""
@@ -299,7 +265,7 @@ class TestUserCreateUserMethod:
             username="minimaluser",
             email="minimal@example.com",
             password="ValidPassword123!",
-            roles=[],  # Empty roles list
+            # Don't specify roles to get default
         )
         result = create_user(request)
 
@@ -319,7 +285,7 @@ class TestUserCreateUserMethod:
 
         assert result.is_failure
         assert result.error is not None
-        assert "Failed to create user:" in str(result.error)
+        assert "User creation failed:" in str(result.error)
 
 
 # class TestPasswordModel:
@@ -406,9 +372,6 @@ class TestSessionModel:
 
     def test_session_model_creation(self) -> None:
         """Test Session model creation with required fields."""
-        # Token must be at least 32 characters
-        long_token = "jwt.session.token.with.at.least.32.characters.for.validation"
-
         session = FlextAuthModels.Session(
             id="session-id",
             user_id="user-id",

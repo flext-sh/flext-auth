@@ -35,7 +35,7 @@ def exemplo_flext_auth() -> None:
         auth_data = auth_result.value
 
         # Extract authentication data with proper typing
-        tokens_data = cast("FlextTypes.Core.Dict", auth_data.get("tokens", {}))
+        tokens_data = auth_data.get("tokens", {})
         session_data = cast("FlextTypes.Core.Dict", auth_data.get("session", {}))
 
         access_token = str(tokens_data.get("access_token", ""))

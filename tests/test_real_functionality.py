@@ -12,14 +12,15 @@ import pytest
 from pydantic import ValidationError
 
 from flext_auth import (
-    AuthToken,
     FlextAuth,
     FlextAuthConfig,
     FlextAuthModels,
-    User,
-    create_session,
-    create_user,
 )
+
+# Use unified class structure
+AuthenticationResponseDict = FlextAuthModels.AuthenticationResponseDict
+AuthToken = FlextAuthModels.AuthToken
+User = FlextAuthModels.User
 
 
 class TestRealAuthentication:
@@ -49,13 +50,14 @@ class TestRealAuthentication:
 
         # Test authentication with real password validation
         auth_result = auth.authenticate_user("john_doe", "SuperSecure123!@#")
-        auth_data = auth_result.value
+        assert auth_result.is_success
+        auth_data: AuthenticationResponseDict = auth_result.value
 
         # Verify auth data structure (TypedDict)
         assert "user" in auth_data
         assert "session" in auth_data
         assert "jwt_token" in auth_data
-        assert "expires_at" in auth_data
+        assert "expires_at" in auth_data["session"]
 
         # Test JWT token validation
         jwt_token = auth_data["jwt_token"]
@@ -74,8 +76,6 @@ class TestRealAuthentication:
 
     def test_password_strength_and_hashing(self) -> None:
         """Test password strength validation and bcrypt hashing."""
-        auth: FlextAuth = FlextAuth()
-
         # Test strong password hashing through User model
         strong_password = "VerySecurePassword123!@#$%^&*()"
         user = FlextAuthModels.User(
@@ -318,8 +318,6 @@ class TestRealAuthentication:
 
     def test_comprehensive_error_scenarios(self) -> None:
         """Test comprehensive error scenarios and edge cases."""
-        auth: FlextAuth = FlextAuth()
-
         # Test configuration with invalid parameters
         invalid_config_result = FlextAuthConfig.create_for_environment(
             "test",
@@ -328,7 +326,7 @@ class TestRealAuthentication:
         )
         assert invalid_config_result.is_failure
         assert (
-            "jwt expiry should not exceed session expiry"
+            "jwt expiry should not exceed twice the session expiry"
             in (invalid_config_result.error or "").lower()
         )
 
@@ -580,19 +578,15 @@ class TestRealAuthentication:
 
     def test_error_path_coverage(self) -> None:
         """Test specific error paths for coverage completion."""
-        auth: FlextAuth = FlextAuth()
-
         # Test verify_password with invalid credential creation
         # Create a scenario where bcrypt verification fails
-        user = FlextAuthModels.User(
-            id="test-id",
-            username="testuser",
-            email="test@example.com",
-            password_hash="invalid_hash_not_bcrypt",
-        )
-        result = user.verify_password("somepassword")
-        # This should fail because the hash is invalid
-        assert result.is_failure
+        with pytest.raises(ValidationError, match="bcrypt format"):
+            FlextAuthModels.User(
+                id="test-id",
+                username="testuser",
+                email="test@example.com",
+                password_hash="not_bcrypt_format",
+            )
 
         # Test password hash validation error paths
         with pytest.raises(
@@ -603,19 +597,19 @@ class TestRealAuthentication:
                 id="test_invalid_hash",
                 username="test_user_invalid",
                 email="test@invalid.com",
-                password_hash="invalid_hash",  # Not bcrypt format
+                password_hash="definitely_not_bcrypt",  # Not bcrypt format
             )
 
         # Test username validation error paths
         with pytest.raises(
-            ValueError,
-            match="Username can only contain letters, numbers, underscores, and hyphens",
+            ValidationError,
+            match="Username must contain only letters, numbers, and underscores",
         ):
             User(
                 id="test_invalid_username",
                 username="user@#$%",  # Invalid characters
                 email="test@valid.com",
-                password_hash="$2b$12$valid.hash.format.goes.here.with.proper.length.and.format",
+                password_hash="$2b$12$cLhrTf6WJ.otzSJ0UXjmiOTIEXh9E1OttEpE6QAQIQUUjaP43eNAO",
             )
 
     def test_configuration_edge_cases(self) -> None:
@@ -707,8 +701,8 @@ class TestRealAuthentication:
         user.is_active = False
         assert not user.is_active
 
-        # Test user verification
-        # Test user is active
+        # Re-activate user for further tests
+        user.is_active = True
         assert user.is_active
 
     def test_comprehensive_authentication_edge_cases(self) -> None:
@@ -759,7 +753,7 @@ class TestRealAuthentication:
             )
 
         # Test invalid bcrypt hash length (covers lines 169-171 in models.py)
-        with pytest.raises(ValidationError, match="hash length"):
+        with pytest.raises(ValidationError, match="bcrypt format"):
             User(
                 id="test_id",
                 username="test_user",

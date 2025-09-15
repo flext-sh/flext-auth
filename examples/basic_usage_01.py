@@ -15,9 +15,8 @@ from __future__ import annotations
 import os
 import secrets
 import string
-from typing import cast
 
-from flext_core import FlextLogger, FlextTypes
+from flext_core import FlextLogger
 
 from flext_auth import FlextAuth
 
@@ -197,7 +196,7 @@ def example_direct_auth() -> None:
             logger.info("User authenticated successfully", username=username)
 
             auth_data = auth_result.value
-            tokens_data = cast("FlextTypes.Core.Dict", auth_data.get("tokens", {}))
+            tokens_data = auth_data.get("tokens", {})
 
             access_token = str(tokens_data.get("access_token", ""))
             logger.info(

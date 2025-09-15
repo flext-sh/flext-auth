@@ -14,8 +14,11 @@ import pytest
 
 from flext_auth import (
     FlextAuth,
-    User,
+    FlextAuthModels,
 )
+
+# Use unified class structure
+User = FlextAuthModels.User
 
 
 class TestFlextAuthInitializationCoverage:
@@ -27,38 +30,33 @@ class TestFlextAuthInitializationCoverage:
         # but if it fails, it should be a RuntimeError with specific message
 
         # Most common case: successful initialization (covers default config creation)
+        # Test FlextAuth creation with proper error handling
         try:
             auth = FlextAuth()
             # If it succeeds, that's fine - we covered the default config creation path
             assert auth.config is not None
-        except RuntimeError:
+        except RuntimeError as e:
             # If it fails with RuntimeError, we expect a specific error message
-            # Use pytest.raises for the expected failure case
-            with pytest.raises(RuntimeError, match="Failed to create default config"):
-                FlextAuth()
-        except Exception:
-            # object other exception is also acceptable for coverage purposes
-            pass
+            pytest.fail(f"FlextAuth creation failed with RuntimeError: {e}")
+        except Exception as e:
+            # Other exceptions should be properly handled, not ignored
+            pytest.fail(f"Unexpected exception during FlextAuth creation: {e}")
 
     def test_quick_start_REDACTED_LDAP_BIND_PASSWORD_creation_failure(self) -> None:
         """Test quick_start when REDACTED_LDAP_BIND_PASSWORD creation fails - lines 423-424."""
         # This test covers the REDACTED_LDAP_BIND_PASSWORD creation failure path
-        # We'll mock a scenario where REDACTED_LDAP_BIND_PASSWORD creation fails
-        try:
-            # Try to create REDACTED_LDAP_BIND_PASSWORD with invalid data that should fail
-            auth = FlextAuth.quick_start(
+        # We expect a RuntimeError when REDACTED_LDAP_BIND_PASSWORD creation fails with invalid data
+        with pytest.raises(RuntimeError) as exc_info:
+            FlextAuth.quick_start(
                 create_REDACTED_LDAP_BIND_PASSWORD=True,
-                REDACTED_LDAP_BIND_PASSWORD_username="",  # Invalid username
-                REDACTED_LDAP_BIND_PASSWORD_password="weak",  # Invalid password
+                REDACTED_LDAP_BIND_PASSWORD_username="ab",  # Invalid username (too short, needs >= 3 chars)
+                REDACTED_LDAP_BIND_PASSWORD_password="weak",  # Invalid password (too weak)
             )
-            # If it succeeds, that's unexpected but acceptable
-            assert auth is not None
-        except RuntimeError as e:
-            # Expected failure with specific error message
-            assert "Failed to create REDACTED_LDAP_BIND_PASSWORD" in str(e)
-        except Exception:
-            # Other exceptions are also acceptable for coverage
-            pass
+
+        # Verify the error message contains expected information about the validation failure
+        error_message = str(exc_info.value)
+        assert "Quick start failed" in error_message
+        assert "Failed to create REDACTED_LDAP_BIND_PASSWORD" in error_message
 
     def test_quick_start_general_failure(self) -> None:
         """Test quick_start general failure path - lines 427-429."""
@@ -74,10 +72,10 @@ class TestFlextAuthInitializationCoverage:
             assert auth is not None
         except RuntimeError as e:
             # Expected failure with specific error message
-            assert "Quick start failed" in str(e)
-        except Exception:
-            # Other exceptions are also acceptable for coverage
-            pass
+            pytest.fail(f"Quick start failed with RuntimeError: {e}")
+        except Exception as e:
+            # Other exceptions should be properly handled, not ignored
+            pytest.fail(f"Unexpected exception during quick_start general: {e}")
 
     def test_get_global_config_exception_handling(self) -> None:
         """Test get_global_config exception handling - lines 541-543."""
@@ -86,9 +84,9 @@ class TestFlextAuthInitializationCoverage:
             result = FlextAuth.get_global_config()
             # If it succeeds, that's fine
             assert result.is_success
-        except Exception:
-            # If it fails, that's also acceptable for coverage
-            pass
+        except Exception as e:
+            # If it fails, that should be properly handled
+            pytest.fail(f"Unexpected exception during get_global_config: {e}")
 
     def test_flext_auth_initialization_with_overrides(self) -> None:
         """Test FlextAuth initialization with parameter overrides - lines 235-237."""
@@ -161,8 +159,6 @@ class TestFlextAuthPasswordMethods:
 
     def test_hash_password_method(self) -> None:
         """Test hash_password method functionality."""
-        auth = FlextAuth()
-
         # Create user to test password hashing
         user = User(username="testuser", email="test@example.com")
         result = user.set_password("StrongTestPass123!@#")
@@ -175,8 +171,6 @@ class TestFlextAuthPasswordMethods:
 
     def test_verify_password_method(self) -> None:
         """Test verify_password method functionality."""
-        auth = FlextAuth()
-
         # Use strong password that meets validation requirements
         strong_password = "StrongTestPass123!@#"
 
@@ -224,8 +218,14 @@ class TestFlextAuthTokenMethods:
         """Test generate_token alternative method."""
         auth = FlextAuth()
 
+        # Create a user first
+        auth.register_user("testuser", "test@example.com", "TestPassword123!")
+        auth_result = auth.authenticate_user("testuser", "TestPassword123!")
+        assert auth_result.is_success
+        user_id = auth_result.value["user"]["id"]
+
         # generate_token returns string directly, not FlextResult
-        token = auth.generate_token("test_user_id")
+        token = auth.generate_token(user_id)
 
         assert isinstance(token, str)
         assert len(token) > 10  # JWT should be substantial
@@ -234,8 +234,14 @@ class TestFlextAuthTokenMethods:
         """Test validate_token with valid token."""
         auth = FlextAuth()
 
+        # Create a user first
+        auth.register_user("testuser", "test@example.com", "TestPassword123!")
+        auth_result = auth.authenticate_user("testuser", "TestPassword123!")
+        assert auth_result.is_success
+        user_id = auth_result.value["user"]["id"]
+
         # Generate a token first - returns string directly
-        token = auth.generate_token("test_user_id")
+        token = auth.generate_token(user_id)
         assert isinstance(token, str)
 
         # Validate the generated token - use verify_token instead
@@ -409,8 +415,13 @@ class TestFlextAuthErrorHandlingPaths:
         """Test token generation and validation with edge case timing."""
         auth = FlextAuth()
 
+        # Register a user first for token generation
+        user_result = auth.register_user("test_user", "test@example.com", "TestPassword123!")
+        assert user_result.is_success
+        user = user_result.value
+
         # Generate token - returns string directly, no expires_in_minutes parameter
-        token = auth.generate_token("test_user")
+        token = auth.generate_token(user.id)
         assert isinstance(token, str)
 
         # Validate immediately (should work)

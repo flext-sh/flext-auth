@@ -15,6 +15,7 @@ from unittest.mock import patch
 
 import pytest
 from flext_core import FlextConfig, FlextConstants
+from pydantic import ValidationError
 
 from flext_auth.config import FlextAuthConfig
 
@@ -74,18 +75,31 @@ class TestFlextAuthConfigCoverage:
 
     def test_flext_auth_config_invalid_values(self) -> None:
         """Test FlextAuthConfig with invalid values."""
-        # These should either be corrected or raise validation errors
-        try:
-            config = FlextAuthConfig(
+        # Invalid values should raise validation errors
+        with pytest.raises(ValidationError) as exc_info:
+            FlextAuthConfig(
                 jwt_expiry_minutes=0,  # Should be >= 1
                 bcrypt_rounds=5,  # Should be >= 10
                 max_login_attempts=0,  # Should be >= 1
             )
-            # If creation succeeds, values should be corrected
-            assert config.jwt_expiry_minutes >= 1
-        except Exception:
-            # Validation error is acceptable
-            pass
+
+        # Verify the validation errors contain expected error types
+        errors = exc_info.value.errors()
+        error_types = {error["type"] for error in errors}
+        assert "greater_than_equal" in error_types
+
+        # Verify we get exactly 3 validation errors
+        assert len(errors) == 3
+
+        # Test with valid values to ensure validation passes
+        config = FlextAuthConfig(
+            jwt_expiry_minutes=30,  # Valid value
+            bcrypt_rounds=12,  # Valid value
+            max_login_attempts=5,  # Valid value
+        )
+        assert config.jwt_expiry_minutes == 30
+        assert config.bcrypt_rounds == 12
+        assert config.max_login_attempts == 5
 
     def test_flext_auth_config_params_dict(self) -> None:
         """Test FlextAuthConfig with dictionary parameters."""
@@ -156,14 +170,14 @@ class TestFlextAuthConfigCoverage:
 
     def test_flext_auth_config_field_validation(self) -> None:
         """Test field validation in FlextAuthConfig."""
-        # Test password length validation
-        try:
-            config = FlextAuthConfig(min_password_length=4, max_password_length=256)
-            assert config.min_password_length >= 4
-            assert config.max_password_length <= 256
-        except Exception:
-            # Validation errors are acceptable
-            pass
+        # Test password length validation - should fail with invalid values
+        with pytest.raises(ValidationError, match="Input should be greater than or equal to 6"):
+            FlextAuthConfig(min_password_length=4, max_password_length=256)
+
+        # Test with valid values
+        config = FlextAuthConfig(min_password_length=8, max_password_length=256)
+        assert config.min_password_length >= 8
+        assert config.max_password_length <= 256
 
     def test_flext_auth_config_jwt_secret_generation(self) -> None:
         """Test JWT secret generation when empty."""
@@ -191,22 +205,31 @@ class TestFlextAuthConfigCoverage:
             )
             # Should handle empty values appropriately
             assert config is not None
-        except Exception:
-            pass
+        except Exception as e:
+            pytest.fail(f"Unexpected exception during config creation: {e}")
 
     def test_flext_auth_config_model_validation(self) -> None:
         """Test Pydantic model validation in FlextAuthConfig."""
-        # Test with invalid types that should trigger validation (intentional type violations for error testing)
-        try:
-            config = FlextAuthConfig(
-                jwt_expiry_minutes=0,  # Invalid value (should be > 0)
-                bcrypt_rounds=0,  # Invalid value (should be > 0)
+        # Test with invalid values that should trigger validation errors
+        with pytest.raises(ValidationError) as exc_info:
+            FlextAuthConfig(
+                jwt_expiry_minutes=0,  # Invalid value (should be >= 1)
+                bcrypt_rounds=0,  # Invalid value (should be >= 10)
             )
-            # If validation passes, values should be converted
-            assert isinstance(config.jwt_expiry_minutes, int)
-        except Exception:
-            # Validation errors are expected and acceptable
-            pass
+
+        # Verify the validation errors contain expected error types
+        errors = exc_info.value.errors()
+        error_types = {error["type"] for error in errors}
+        assert "greater_than_equal" in error_types
+
+        # Test with valid values to ensure validation passes
+        config = FlextAuthConfig(
+            jwt_expiry_minutes=30,  # Valid value
+            bcrypt_rounds=12,  # Valid value
+        )
+        assert isinstance(config.jwt_expiry_minutes, int)
+        assert config.jwt_expiry_minutes == 30
+        assert config.bcrypt_rounds == 12
 
     def test_environment_config_request_validation(self) -> None:
         """Test environment configuration validation."""

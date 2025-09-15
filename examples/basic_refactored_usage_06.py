@@ -16,9 +16,15 @@ import string
 import sys
 from typing import cast
 
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextResult
 
-from flext_auth import FlextAuth
+from flext_auth import (
+    FlextAuth,
+    FlextAuthModels,
+)
+
+# Use unified class structure
+AuthenticationResponseDict = FlextAuthModels.AuthenticationResponseDict
 
 
 # Extract Method Pattern - reduce main() complexity from 42 to manageable chunks
@@ -43,7 +49,7 @@ class FlextAuthDemo:
 
         return cast("FlextResult[object]", result)
 
-    def demo_user_authentication(self) -> FlextResult[FlextTypes.Core.Dict]:
+    def demo_user_authentication(self) -> FlextResult[AuthenticationResponseDict]:
         """Extract Method: User authentication demo."""
         result = self.auth.authenticate_user("demouser", "DemoPassword123!")
 
@@ -53,9 +59,9 @@ class FlextAuthDemo:
 
         return result
 
-    def _print_token_info(self, auth_data: FlextTypes.Core.Dict) -> None:
+    def _print_token_info(self, auth_data: AuthenticationResponseDict) -> None:
         """Helper: Print token information."""
-        tokens_data = cast("FlextTypes.Core.Dict", auth_data.get("tokens", {}))
+        tokens_data = auth_data.get("tokens", {})
 
         len(str(tokens_data.get("access_token", "")))
 
@@ -82,7 +88,7 @@ def main() -> None:
 
     # Extract token for further demos
     auth_data = auth_result.value
-    tokens_data = cast("FlextTypes.Core.Dict", auth_data.get("tokens", {}))
+    tokens_data = auth_data.get("tokens", {})
     access_token = str(tokens_data.get("access_token", ""))
 
     # 4. Token Validation - continuing with existing pattern

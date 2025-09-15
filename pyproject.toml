@@ -267,28 +267,5 @@ markers = [
 extend = "../ruff-shared.toml"
 lint.isort.known-first-party = ["flext_auth"]
 
-# Ignore appropriate rules for authentication test files
-[tool.ruff.lint.per-file-ignores]
-"src/flext_auth/constants.py" = [
-    "S105",    # Hardcoded values (error codes, not passwords)
-]
-"tests/**/*.py" = [
-    "S106",    # Hardcoded passwords (expected in auth tests)
-    "S105",    # Hardcoded values (test fixtures and tokens)
-    "S101",    # Use of assert (standard in pytest)
-    "S110",    # try-except-pass (acceptable in test error handling)
-    "PT017",   # Assert in except blocks (valid testing pattern)  
-    "PT011",   # pytest.raises too broad (acceptable for coverage tests)
-    "PLR2004", # Magic values in comparisons (test constants)
-    "F841",    # Unused variables in exception handling
-    "S108",    # Hardcoded temp file paths (test fixtures)
-    "PGH003",
-    "ANN001",  # Missing type annotations for test functions
-    "ANN202",  # Missing return type annotations for private test functions  
-    "PLC0415", # Import outside top-level (acceptable in test fixtures)
-    "INP001",  # Missing __init__.py (not required in test directories)
-]
-
-
 [tool.vulture]
 extend = "../.vulture-shared.toml"

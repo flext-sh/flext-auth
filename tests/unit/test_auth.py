@@ -118,7 +118,7 @@ class TestFlextAuth:
         assert "session" in auth_data
 
         # Validate token data
-        tokens = auth_data["tokens"]
+        tokens = auth_data.get("tokens")
         assert isinstance(tokens, dict), "tokens must be dict"
         assert "access_token" in tokens
         assert tokens["token_type"] == "Bearer"
@@ -154,7 +154,7 @@ class TestFlextAuth:
         # Extract and validate token
         auth_data = auth_result.value
         assert isinstance(auth_data, dict), "auth_data must be dict"
-        tokens = auth_data["tokens"]
+        tokens = auth_data.get("tokens")
         assert isinstance(tokens, dict), "tokens must be dict"
         access_token = tokens["access_token"]
         assert isinstance(access_token, str), "access_token must be string"
@@ -165,7 +165,7 @@ class TestFlextAuth:
         assert validation_data["valid"] is True
         assert validation_data["username"] == username
         assert "user_id" in validation_data
-        assert "role" in validation_data
+        assert "roles" in validation_data
 
     def test_token_validation_invalid_token(self) -> None:
         """Test validation of invalid token."""
@@ -189,7 +189,7 @@ class TestFlextAuth:
         # Test with Bearer prefix
         auth_data = auth_result.value
         assert isinstance(auth_data, dict), "auth_data must be dict"
-        tokens = auth_data["tokens"]
+        tokens = auth_data.get("tokens")
         assert isinstance(tokens, dict), "tokens must be dict"
         access_token = tokens["access_token"]
         assert isinstance(access_token, str), "access_token must be string"
@@ -217,7 +217,7 @@ class TestFlextAuth:
         assert isinstance(auth_data, dict), "auth_data must be dict"
         session_info = auth_data["session"]
         assert isinstance(session_info, dict), "session_info must be dict"
-        session_id = session_info["session_id"]
+        session_id = session_info.get("session_id")
         user_info = auth_data["user"]
         assert isinstance(user_info, dict), "user_info must be dict"
         user_id = user_info["id"]
@@ -246,7 +246,8 @@ class TestFlextAuth:
         assert "session" in auth_data
         session_info = auth_data["session"]
         assert isinstance(session_info, dict), "session_info must be dict"
-        session_id = session_info["session_id"]
+        session_id = session_info.get("session_id")
+        assert session_id is not None
 
         logout_result = auth.logout_user(session_id)
         assert logout_result.success

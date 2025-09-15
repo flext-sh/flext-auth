@@ -18,7 +18,14 @@ from typing import TypedDict, cast
 
 from flext_core import FlextTypes
 
-from flext_auth import FlextAuth, User, flext_auth_quick_start
+from flext_auth import (
+    FlextAuth,
+    FlextAuthModels,
+    flext_auth_quick_start,
+)
+
+# Use unified class structure
+User = FlextAuthModels.User
 
 
 # Create simple test data factories
@@ -80,7 +87,7 @@ class UserData(TypedDict):
 
 
 # Type aliases for better readability and mypy compatibility
-AuthUserDict = dict[str, str | int | bool | FlextTypes.Core.StringList]
+AuthUserDict = dict[str, str | int | bool | list[str]]
 AuthSessionDict = dict[str, str | int | bool]
 AuthDataDict = dict[
     str, str | int | bool | AuthUserDict | AuthSessionDict | FlextTypes.Core.Headers
@@ -325,7 +332,7 @@ class TestEnhancedAuthentication:
 
         auth_data = auth_result.value
         session = cast("AuthSessionDict", auth_data["session"])
-        token = str(auth_data["jwt_token"])  # It's jwt_token, not token
+        token = str(auth_data.get("jwt_token"))  # It's jwt_token, not token
 
         # Phase 4: Token operations
         # Validate token
@@ -369,12 +376,6 @@ class TestEnhancedConfigurationTesting:
         environments = ["development", "production", "staging"]
 
         for env in environments:
-            # Create configuration data using factory patterns
-            config_overrides = {
-                "token_expire_minutes": 30 if env == "production" else 60,
-                "password_rounds": 12 if env == "production" else 10,
-            }
-
             # Create auth with environment-specific config (simplified approach)
             auth: FlextAuth = FlextAuth()
             # Configuration is read-only, test that it's accessible

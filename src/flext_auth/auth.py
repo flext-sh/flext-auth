@@ -17,7 +17,7 @@ from flext_core import (
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
-from flext_auth.models import FlextAuthModels, create_session
+from flext_auth.models import FlextAuthModels
 
 
 class FlextAuth:
@@ -53,6 +53,7 @@ class FlextAuth:
         self.email_index: dict[str, str] = {}
         self.user_sessions_index: dict[str, list[str]] = {}
 
+        # Log initialization info
         self._logger.info(
             f"FlextAuth initialized: token_expire_minutes={self.config.jwt_expiry_minutes}, "
             f"bcrypt_rounds={self.config.bcrypt_rounds}, jwt_secret_length={len(self.config.jwt_secret)}"
@@ -64,7 +65,7 @@ class FlextAuth:
         email: str,
         password: str,
         full_name: str | None = None,
-        roles: FlextTypes.Core.StringList | None = None,
+        roles: list[str] | None = None,
     ) -> FlextResult[FlextAuthModels.User]:
         """Register new user using domain function from models.py."""
         # Check for duplicates first
@@ -108,7 +109,7 @@ class FlextAuth:
         password: str,
         client_ip: str | None = None,
         user_agent: str | None = None,
-    ) -> FlextResult[FlextTypes.Core.Dict]:
+    ) -> FlextResult[FlextAuthModels.AuthenticationResponseDict]:
         """Authenticate user using domain function from models.py."""
         # Log authentication attempt
         self._logger.info(f"Authentication attempt for username: {username}")
@@ -131,69 +132,103 @@ class FlextAuth:
             username, password, users_data
         )
 
-        # Initialize default values
-        user_data: dict[str, object] = {}
-        session_data: dict[str, object] = {}
+        # Update stored user with lockout state changes (for both success and failure)
+        if auth_result.is_success and auth_result.value is not None:
+            # Update the stored user with new lockout state
+            authenticated_user = auth_result.value
+            stored_user_id = self.username_index.get(username.lower())
+            if stored_user_id and stored_user_id in self._users:
+                stored_user = self._users[stored_user_id]
+                # Copy lockout-related fields from authenticated user
+                stored_user.failed_login_attempts = authenticated_user.failed_login_attempts
+                stored_user.locked_until = authenticated_user.locked_until
+                stored_user.last_login = authenticated_user.last_login
+                stored_user.updated_at = authenticated_user.updated_at
+        else:
+            # Even on failure, we need to update the stored user's failed attempts
+            stored_user_id = self.username_index.get(username.lower())
+            if stored_user_id and stored_user_id in self._users:
+                # Directly update the stored user's failed attempts
+                stored_user = self._users[stored_user_id]
+                stored_user.record_failed_login()
 
-        # If authentication successful, store session
+        # If authentication successful, create proper response data
         if auth_result.is_success and auth_result.value is not None:
             user = auth_result.value
 
-            # Create session data
-            session_data = {}
-            user_data = {"id": user.id, "username": user.username}
-
-            if (
-                user_data
-                and isinstance(session_data, dict)
-                and isinstance(user_data, dict)
-            ):
-                # Create session using domain function
-                session_result = create_session(
-                    user_id=str(user_data.get("id", "")),
-                    ip_address=client_ip,
-                    user_agent=user_agent,
-                )
-
-                if session_result.is_success:
-                    session = session_result.value
-                    # Override token with provided token
-                    session.session_token = str(session_data.get("token", ""))
-
-                    # Store session and update indexes
-                    self._sessions[session.id] = session
-
-                    # Add to user sessions index
-                    user_id = str(user_data.get("id", ""))
-                    if user_id not in self.user_sessions_index:
-                        self.user_sessions_index[user_id] = []
-                    self.user_sessions_index[user_id].append(session.id)
-
-                    # Update session data with the stored session ID
-                    session_data["id"] = session.id
-                    session_data["session_id"] = session.id
-
-                    # Generate JWT token for the user
-                    token_result = self.generate_jwt_token(user_id)
-                    if token_result.is_success:
-                        session_data["jwt_token"] = token_result.value
-                        session_data["tokens"] = {"access_token": token_result.value}
-
-        # Return success only if authentication succeeded
-        if auth_result.is_success and auth_result.value is not None:
-            # Include tokens at top level for compatibility
-            result_data = {
-                "user": user_data,
-                "session": session_data,
-                "authenticated": True,
+            # Create UserDict with all required fields
+            user_data: FlextAuthModels.UserDict = {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "full_name": user.full_name,
+                "is_active": user.is_active,
+                "roles": user.roles,
+                "created_at": user.created_at,
+                "updated_at": user.updated_at,
+                "last_login": user.last_login,
             }
-            if "jwt_token" in session_data:
-                result_data["jwt_token"] = session_data["jwt_token"]
-            if "tokens" in session_data:
-                result_data["tokens"] = session_data["tokens"]
-            return FlextResult[FlextTypes.Core.Dict].ok(result_data)
+
+            # Create session using internal service
+            session_result = FlextAuthModels._AuthenticationService.create_user_session(
+                user=user,
+                ip_address=client_ip,
+                user_agent=user_agent,
+            )
+
+            if session_result.is_success:
+                session = session_result.value
+
+                # Store session and update indexes
+                self._sessions[session.id] = session
+
+                # Add to user sessions index
+                if user.id not in self.user_sessions_index:
+                    self.user_sessions_index[user.id] = []
+                self.user_sessions_index[user.id].append(session.id)
+
+                # Generate JWT token for the user
+                token_result = self.generate_jwt_token(user.id)
+                jwt_token = token_result.value if token_result.is_success else ""
+
+                # Create SessionDict with all required fields
+                session_data: FlextAuthModels.SessionDict = {
+                    "id": session.id,
+                    "user_id": session.user_id,
+                    "session_token": session.session_token,
+                    "expires_at": session.expires_at,
+                    "created_at": session.created_at,
+                    "last_accessed_at": session.last_accessed_at,
+                    "is_active": not session.is_revoked,
+                    "ip_address": session.ip_address,
+                    "user_agent": session.user_agent,
+                    "session_id": session.id,  # Backward compatibility alias
+                }
+
+                # Create properly typed authentication response
+                result_data: FlextAuthModels.AuthenticationResponseDict = {
+                    "user": user_data,
+                    "session": session_data,
+                    "jwt_token": jwt_token,
+                    "authenticated": True,
+                    "success": True,
+                }
+
+                # Add optional tokens field
+                if jwt_token:
+                    result_data["tokens"] = {
+                        "access_token": jwt_token,
+                        "token_type": "Bearer",
+                        "expires_in": self.config.jwt_expiry_minutes * 60,  # Convert to seconds
+                    }
+
+                return FlextResult[FlextAuthModels.AuthenticationResponseDict].ok(result_data)
+            return FlextResult[FlextAuthModels.AuthenticationResponseDict].fail(
+                f"Session creation failed: {session_result.error}"
+            )
+
         # Return failure if authentication failed
-        return FlextResult[FlextTypes.Core.Dict].fail(
+        return FlextResult[FlextAuthModels.AuthenticationResponseDict].fail(
             auth_result.error or "Authentication failed"
         )
 
@@ -238,6 +273,13 @@ class FlextAuth:
 
     def generate_token(self, user_id: str) -> str:
         """Generate JWT token for user ID using flext-core patterns."""
+        # Get user to include username in token
+        user_result = self.get_user_by_id(user_id)
+        if user_result.is_failure or user_result.value is None:  # pragma: no cover
+            msg = "User not found for token generation"  # pragma: no cover
+            raise RuntimeError(msg)  # pragma: no cover
+
+        user = user_result.value
         # Convert minutes to hours for JWT
         expires_hours = max(1, self.config.jwt_expiry_minutes // 60)
 
@@ -245,6 +287,7 @@ class FlextAuth:
             user_id=user_id,
             secret_key=self.config.jwt_secret,
             expires_hours=expires_hours,
+            username=user.username,
         )
 
         if token_result.is_failure:  # pragma: no cover
@@ -403,6 +446,7 @@ class FlextAuth:
                 "User not found for JWT generation"
             )  # pragma: no cover
 
+        user = user_result.value
         # Convert minutes to hours for JWT
         expires_hours = max(1, expiry // 60) if expiry else 1
 
@@ -410,6 +454,8 @@ class FlextAuth:
             user_id=user_id,
             secret_key=self.config.jwt_secret,
             expires_hours=expires_hours,
+            username=user.username,
+            roles=user.roles,
         )
 
         if token_result.is_failure:  # pragma: no cover

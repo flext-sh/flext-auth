@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, FlextAuthModels
 
 
 class TestRealAuthenticationSimple:
@@ -62,8 +62,6 @@ class TestRealAuthenticationSimple:
 
     def test_password_operations(self) -> None:
         """Test password hashing and verification."""
-        from flext_auth import FlextAuthModels
-
         # Test password hashing through User model
         password = "SecurePassword123!"
         user = FlextAuthModels.User(
@@ -84,7 +82,8 @@ class TestRealAuthenticationSimple:
 
         # Test wrong password
         wrong_result = user.verify_password("wrong_password")
-        assert not wrong_result.success, "Wrong password should fail"
+        assert wrong_result.success, "Password verification should succeed"
+        assert not wrong_result.value, "Wrong password should return False"
 
     def test_user_lookup(self) -> None:
         """Test user lookup operations."""
