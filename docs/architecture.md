@@ -2,7 +2,7 @@
 
 **Version**: 0.9.0 | **Updated**: September 17, 2025
 
-Authentication service architecture for FLEXT ecosystem using FLEXT patterns and modern authentication practices.
+Authentication service architecture for FLEXT ecosystem using **[flext-core](../../flext-core/README.md)** patterns and modern authentication practices.
 
 ---
 
@@ -11,8 +11,8 @@ Authentication service architecture for FLEXT ecosystem using FLEXT patterns and
 flext-auth implements authentication using FLEXT architectural patterns from [flext-core](../../flext-core/README.md). The implementation provides JWT token management, bcrypt password security, and session handling while integrating with flext-core foundation patterns.
 
 **Implementation Scale**: 2,169 lines across 8 modules
-**Test Status**: 184 passing, 66 failing (74% pass rate, 83% code coverage)
-**Integration**: 85% flext-core pattern compliance
+**Test Status**: 611 passing, 17 failing, 88 errors (85% pass rate, mixed coverage)
+**Integration**: Strong flext-core pattern compliance (FlextResult, FlextContainer)
 
 ---
 

@@ -16,27 +16,24 @@ flext-auth integrates with the FLEXT ecosystem through [flext-core](../../flext-
 
 ## FLEXT-Core Integration
 
-### FlextResult Pattern
+flext-auth follows **[flext-core](../../flext-core/README.md)** patterns. For complete FlextResult usage patterns, see the flext-core documentation.
 
-All authentication operations return FlextResult for type-safe error handling:
+### Authentication-Specific Integration
+
+Authentication operations return FlextResult for consistency with FLEXT ecosystem:
 
 ```python
-from flext_core import FlextResult
 from flext_auth import FlextAuth
 
 auth = FlextAuth()
 
-# Authentication with FlextResult
-def authenticate_user_safely(username: str, password: str) -> FlextResult[dict]:
-    return (
-        auth.authenticate_user(username, password)
-        .flat_map(lambda auth_data: auth.validate_token(auth_data['token']))
-        .map(lambda token_data: {
-            "user": token_data['username'],
-            "authenticated": True,
-            "session": auth_data['session']
-        })
-    )
+# Basic authentication pattern
+auth_result = auth.authenticate_user("username", "password")
+if auth_result.is_success:
+    session_data = auth_result.unwrap()
+    print(f"Authentication successful: {session_data['user']['username']}")
+else:
+    print(f"Authentication failed: {auth_result.error}")
 
 # Usage
 result = authenticate_user_safely("demo", "password123")

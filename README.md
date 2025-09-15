@@ -2,11 +2,11 @@
 
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![Development Status](https://img.shields.io/badge/status-v0.9.0--dev-yellow.svg)](#current-status)
-[![Test Coverage](https://img.shields.io/badge/coverage-83%25-green.svg)](#testing)
+[![Test Coverage](https://img.shields.io/badge/coverage-mixed-orange.svg)](#testing)
 
 **Authentication and authorization library** for the FLEXT ecosystem, providing **JWT tokens and session management** using **FLEXT architectural patterns**.
 
-> **⚠️ STATUS**: Development version (v0.9.0) - 184 tests passing, 66 tests failing. Not production-ready.
+> **⚠️ STATUS**: Development version (v0.9.0) - 611 tests passing, 17 failed, 88 errors. Significant work needed for production readiness.
 
 ---
 
@@ -29,7 +29,7 @@ flext-auth provides authentication services for FLEXT ecosystem projects, implem
 - **[flext-core](../flext-core/README.md)** → Foundation patterns (FlextResult, FlextContainer, FlextModels)
 - **[flext-api](../flext-api/README.md)** → Authentication middleware for REST APIs
 - **[flext-web](../flext-web/README.md)** → Web application authentication flows
-- **All 32+ FLEXT Projects** → Authentication service provider
+- **All FLEXT Projects** → Authentication service provider for ecosystem
 
 ---
 
@@ -145,23 +145,25 @@ pytest -m auth              # Authentication tests
 pytest --cov=src/flext_auth # Coverage report
 ```
 
-### **Current Test Status**
+### **Current Test Status** (September 17, 2025)
 
-- **Total Collected**: 250 tests
-- **Passing**: 184 tests (73%)
-- **Failing**: 66 tests (27%)
-- **Primary Issues**: CLI tests, configuration overrides, edge cases
+- **Total Collected**: 720 tests
+- **Passing**: 611 tests (85%)
+- **Failing**: 17 tests (2%)
+- **Errors**: 88 tests (12%)
+- **Skipped**: 4 tests (1%)
+- **Primary Issues**: Test infrastructure, CLI integration, and configuration management
 
 ---
 
 ## 📊 Status and Metrics
 
-### **Quality Standards**
+### **Quality Standards** (September 17, 2025)
 
-- **Coverage**: 83% current (targeting 85%+)
-- **Type Safety**: In progress (MyPy strict mode)
-- **Security**: bcrypt 12 rounds, JWT HS256
-- **FLEXT-Core Compliance**: 85%
+- **Test Pass Rate**: 85% passing (611/720), 12% errors need investigation
+- **Type Safety**: MyPy and PyRight mostly clean, some remaining issues
+- **Security**: bcrypt password hashing implemented, JWT token system functional
+- **FLEXT-Core Compliance**: Strong integration with flext-core patterns (FlextResult, FlextContainer)
 
 ### **Current Capabilities**
 
@@ -174,16 +176,17 @@ pytest --cov=src/flext_auth # Coverage report
 
 ### **Development Areas**
 
-- ⚠️ **Test Stabilization**: Fix 66 failing tests (26% failure rate)
-- ⚠️ **Modern Authentication (2025)**: WebAuthn/FIDO2 passwordless, OAuth2/OIDC
-- ⚠️ **Production Storage**: Database and Redis session storage
-- ⚠️ **Enterprise Security**: Account lockout, audit logging, MFA/2FA
+- ⚠️ **Test Infrastructure**: Address 88 test errors (12% error rate) affecting reliability
+- ⚠️ **Production Readiness**: Stabilize remaining 17 failing tests for production deployment
+- ⚠️ **Modern Authentication (2025)**: WebAuthn/FIDO2 passwordless, OAuth2/OIDC integration
+- ⚠️ **Enterprise Features**: Database persistence, Redis session storage, MFA/2FA
+- ⚠️ **Security Hardening**: Account lockout policies, comprehensive audit logging
 
 ### **Ecosystem Integration**
 
-- **Direct Dependencies**: flext-core (foundation patterns)
-- **Service Dependencies**: Future integration with flext-db-oracle, flext-ldap
-- **Integration Points**: Authentication provider for all FLEXT projects
+- **Direct Dependencies**: **[flext-core](../flext-core/README.md)** (foundation patterns)
+- **Service Dependencies**: Future integration with **[flext-db-oracle](../flext-db-oracle/README.md)**, **[flext-ldap](../flext-ldap/README.md)**
+- **Integration Points**: Authentication provider for FLEXT ecosystem
 
 ---
 
@@ -197,9 +200,10 @@ pytest --cov=src/flext_auth # Coverage report
 
 ### **Next Version (v1.0.0)**
 
-- Fix 66 failing tests to achieve production readiness
-- Stabilize 83% test coverage and improve to 90%+
-- Security hardening and production deployment readiness
+- Address 88 test errors and stabilize test infrastructure
+- Fix remaining 17 failing tests to achieve production readiness
+- Complete security hardening and production deployment preparation
+- Implement persistent storage for users and sessions
 
 ### **Future Enhancements (v1.1+) - Modern Authentication 2025**
 
@@ -218,7 +222,6 @@ pytest --cov=src/flext_auth # Coverage report
 - **[Configuration](docs/configuration.md)** - Settings and environment management
 - **[Development](docs/development.md)** - Contributing and workflows
 - **[Integration](docs/integration.md)** - FLEXT ecosystem integration patterns
-- **[Examples](docs/examples/)** - Working authentication examples
 - **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
 
 ---

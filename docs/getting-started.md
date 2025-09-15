@@ -1,8 +1,8 @@
 # Getting Started
 
-**flext-auth v0.9.0** - Authentication service for FLEXT ecosystem
+**Version**: 0.9.0 | **Updated**: September 17, 2025
 
-Quick start guide for implementing authentication in your FLEXT projects.
+Installation and first steps for implementing authentication in your FLEXT projects using flext-auth.
 
 ---
 
@@ -12,7 +12,7 @@ Quick start guide for implementing authentication in your FLEXT projects.
 
 - Python 3.13+
 - Poetry for dependency management
-- [flext-core](../../flext-core/README.md) foundation library
+- **[flext-core](../../flext-core/README.md)** foundation library
 
 ### Installation
 

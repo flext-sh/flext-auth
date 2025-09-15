@@ -4,6 +4,8 @@
 
 Complete API documentation for flext-auth authentication service.
 
+For general FLEXT patterns and FlextResult usage, see **[flext-core](../../flext-core/README.md)** documentation.
+
 ---
 
 ## Core API
