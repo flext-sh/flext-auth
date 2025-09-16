@@ -58,30 +58,7 @@ class FlextAuthQuickstart:
 flext_auth_quickstart = FlextAuthQuickstart()
 
 
-def flext_auth_quick_start(
-    *,
-    create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
-    REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-    REDACTED_LDAP_BIND_PASSWORD_password: str | None = None,
-) -> FlextAuth:
-    """Quick start convenience function for examples and testing.
-
-    Args:
-        create_REDACTED_LDAP_BIND_PASSWORD: Whether to create REDACTED_LDAP_BIND_PASSWORD user
-        REDACTED_LDAP_BIND_PASSWORD_username: Admin username
-        REDACTED_LDAP_BIND_PASSWORD_password: Admin password
-
-    Returns:
-        FlextAuth instance with optional REDACTED_LDAP_BIND_PASSWORD user
-
-    """
-    return flext_auth_quickstart.flext_auth_quick_start(
-        create_REDACTED_LDAP_BIND_PASSWORD=create_REDACTED_LDAP_BIND_PASSWORD,
-        REDACTED_LDAP_BIND_PASSWORD_username=REDACTED_LDAP_BIND_PASSWORD_username,
-        REDACTED_LDAP_BIND_PASSWORD_password=REDACTED_LDAP_BIND_PASSWORD_password,
-    )
-
-
 __all__: list[str] = [
-    "flext_auth_quick_start",
+    "FlextAuthQuickstart",
+    "flext_auth_quickstart",
 ]

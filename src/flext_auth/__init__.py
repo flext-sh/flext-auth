@@ -13,14 +13,14 @@ from flext_auth.auth import FlextAuth
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
-from flext_auth.quickstart import flext_auth_quick_start
+from flext_auth.quickstart import FlextAuthQuickstart
 
 __all__ = [
     "FlextAuth",
     "FlextAuthConfig",
     "FlextAuthConstants",
     "FlextAuthModels",
+    "FlextAuthQuickstart",
     "FlextResult",
     "__version__",
-    "flext_auth_quick_start",
 ]

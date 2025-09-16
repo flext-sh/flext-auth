@@ -41,7 +41,10 @@ class TestMissingCoverage:
         auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
         # Mock bcrypt to raise an exception
-        with patch("bcrypt.hashpw", side_effect=Exception("Bcrypt error")), pytest.raises(RuntimeError, match="Password hashing failed"):
+        with (
+            patch("bcrypt.hashpw", side_effect=Exception("Bcrypt error")),
+            pytest.raises(RuntimeError, match="Password hashing failed"),
+        ):
             auth.hash_password("testpassword")
 
     def test_auth_session_manager_property(self) -> None:
@@ -55,7 +58,10 @@ class TestMissingCoverage:
     def test_auth_get_global_config_failure(self) -> None:
         """Test auth.py lines 561-562 - get_global_config failure path."""
         # Mock FlextAuthConfig.get_global_instance to raise an exception
-        with patch("flext_auth.config.FlextAuthConfig.get_global_instance", side_effect=Exception("Config error")):
+        with patch(
+            "flext_auth.config.FlextAuthConfig.get_global_instance",
+            side_effect=Exception("Config error"),
+        ):
             result = FlextAuth.get_global_config()
             assert result.is_failure
             assert "Config error" in result.error
@@ -102,7 +108,7 @@ class TestMissingCoverage:
             id="test-id",
             username="testuser",
             email="test@example.com",
-            password_hash=VALID_BCRYPT_HASH
+            password_hash=VALID_BCRYPT_HASH,
         )
 
         # Test various user operations that might hit missing lines
@@ -114,7 +120,7 @@ class TestMissingCoverage:
         session = Session(
             id="test-session",
             user_id="test-user",
-            expires_at=datetime.fromtimestamp(1234567890, tz=UTC)
+            expires_at=datetime.fromtimestamp(1234567890, tz=UTC),
         )
 
         # Test session operations
@@ -128,7 +134,7 @@ class TestMissingCoverage:
             token="test-token",
             user_id="test-user",
             token_type="access",
-            expires_at=datetime.fromtimestamp(1234567890, tz=UTC)
+            expires_at=datetime.fromtimestamp(1234567890, tz=UTC),
         )
 
         # Test token operations
@@ -151,7 +157,7 @@ class TestMissingCoverage:
             id="test-id",
             username="testuser",
             email="test@example.com",
-            password_hash=VALID_BCRYPT_HASH
+            password_hash=VALID_BCRYPT_HASH,
         )
 
         # Test role operations
@@ -164,7 +170,7 @@ class TestMissingCoverage:
         session = Session(
             id="test-session",
             user_id="test-user",
-            expires_at=datetime.fromtimestamp(1234567890, tz=UTC)
+            expires_at=datetime.fromtimestamp(1234567890, tz=UTC),
         )
 
         # Test session validation
@@ -178,7 +184,7 @@ class TestMissingCoverage:
             token="test-token",
             user_id="test-user",
             token_type="access",
-            expires_at=datetime.fromtimestamp(1234567890, tz=UTC)
+            expires_at=datetime.fromtimestamp(1234567890, tz=UTC),
         )
 
         # Test token validation
@@ -203,7 +209,7 @@ class TestMissingCoverage:
             id="test-id",
             username="testuser",
             email="test@example.com",
-            password_hash=VALID_BCRYPT_HASH
+            password_hash=VALID_BCRYPT_HASH,
         )
 
         # Test user operations
@@ -216,7 +222,7 @@ class TestMissingCoverage:
         session = Session(
             id="test-session",
             user_id="test-user",
-            expires_at=datetime.fromtimestamp(1234567890, tz=UTC)
+            expires_at=datetime.fromtimestamp(1234567890, tz=UTC),
         )
 
         # Test session operations
@@ -231,7 +237,7 @@ class TestMissingCoverage:
             token="test-token",
             user_id="test-user",
             token_type="access",
-            expires_at=datetime.fromtimestamp(1234567890, tz=UTC)
+            expires_at=datetime.fromtimestamp(1234567890, tz=UTC),
         )
 
         # Test token operations

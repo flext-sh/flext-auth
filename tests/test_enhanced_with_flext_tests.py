@@ -21,7 +21,7 @@ from flext_core import FlextTypes
 from flext_auth import (
     FlextAuth,
     FlextAuthModels,
-    flext_auth_quick_start,
+    FlextAuthQuickstart,
 )
 
 # Use unified class structure
@@ -222,7 +222,8 @@ class TestEnhancedAuthentication:
         REDACTED_LDAP_BIND_PASSWORD_username = sanitize_username(REDACTED_LDAP_BIND_PASSWORD_data["name"], "REDACTED_LDAP_BIND_PASSWORD")
 
         # Test quick_start with REDACTED_LDAP_BIND_PASSWORD creation
-        auth = flext_auth_quick_start(
+        quickstart = FlextAuthQuickstart()
+        auth = quickstart.flext_auth_quick_start(
             create_REDACTED_LDAP_BIND_PASSWORD=True,
             REDACTED_LDAP_BIND_PASSWORD_username=REDACTED_LDAP_BIND_PASSWORD_username,
             REDACTED_LDAP_BIND_PASSWORD_password="AdminSecurePass123!@#",

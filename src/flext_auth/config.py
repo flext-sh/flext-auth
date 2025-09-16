@@ -446,7 +446,7 @@ class FlextAuthConfig(FlextConfig):
         try:
             # Create configuration with environment-specific settings and overrides
             # Build constructor arguments with only non-None values
-            constructor_kwargs: dict[str, str | int | bool | None] = {
+            constructor_kwargs: dict[str, str | int | bool] = {
                 "environment": environment
             }
 

@@ -244,8 +244,8 @@ class TestFlextAuthTokenMethods:
         token = auth.generate_token(user_id)
         assert isinstance(token, str)
 
-        # Validate the generated token - use verify_token instead
-        val_result = auth.verify_token(token)
+        # Validate the generated token - use validate_token instead
+        val_result = auth.validate_token(token)
         assert val_result.success
         token_data = val_result.value
         assert isinstance(token_data, dict)
@@ -380,10 +380,10 @@ class TestFlextAuthConfigurationMethods:
     """Test configuration and utility methods."""
 
     def test_get_config_method(self) -> None:
-        """Test get_config method functionality."""
+        """Test config property functionality."""
         auth = FlextAuth()
 
-        config = auth.get_config()
+        config = auth.config
 
         # Should return the configuration object
         assert config is not None
@@ -416,7 +416,9 @@ class TestFlextAuthErrorHandlingPaths:
         auth = FlextAuth()
 
         # Register a user first for token generation
-        user_result = auth.register_user("test_user", "test@example.com", "TestPassword123!")
+        user_result = auth.register_user(
+            "test_user", "test@example.com", "TestPassword123!"
+        )
         assert user_result.is_success
         user = user_result.value
 

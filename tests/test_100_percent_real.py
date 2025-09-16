@@ -18,7 +18,7 @@ from flext_auth import (
     FlextAuth,
     FlextAuthConfig,
     FlextAuthModels,
-    flext_auth_quick_start,
+    FlextAuthQuickstart,
 )
 
 # Use unified class structure - no aliases
@@ -26,6 +26,9 @@ AuthenticationResponseDict = FlextAuthModels.AuthenticationResponseDict
 Role = FlextAuthModels.Role
 Session = FlextAuthModels.Session
 User = FlextAuthModels.User
+
+# Factory method aliases
+create_session = FlextAuthModels.create_session
 
 # Type alias for FlextAuth service
 AuthService = FlextAuth
@@ -95,7 +98,9 @@ class TestRealModelsExhaustive:
                 result = FlextAuthModels.create_user_from_request(user_request)
                 if empty_val == "":
                     # Empty string should fail in user creation validation
-                    assert result.is_failure, f"Expected failure for username={empty_val}"
+                    assert result.is_failure, (
+                        f"Expected failure for username={empty_val}"
+                    )
                 else:
                     # Some empty values like "[]", "{}" might be valid usernames
                     pass  # Not all values are expected to fail
@@ -229,10 +234,14 @@ class TestRealModelsExhaustive:
 
         # Autenticação com credenciais corretas
         auth_service = FlextAuth()
+
+        # Register the user first before authenticating
+        auth_service.register_user(
+            username="auth_user", email="auth@test.com", password="AuthPass123!"
+        )
+
         result = auth_service.authenticate_user(
-            username="auth_user",
-            password="AuthPass123!",
-            users_data=[{"username": "auth_user", "password_hash": user.password_hash}],
+            username="auth_user", password="AuthPass123!"
         )
         assert result.success
 
@@ -385,18 +394,26 @@ class TestRealAuthExhaustive:
 
         password = "TestPasswordReal123!"
 
-        # Hash password
-        hashed = auth.hash_password(password)
-        assert isinstance(hashed, str)
-        assert len(hashed) > 0
+        # Create a user to test password operations
+        user_result = auth.register_user(
+            username="password_test_user",
+            email="password@test.com",
+            password=password,
+        )
+        assert user_result.success
 
-        # Verify password
-        is_valid = auth.verify_password(password, hashed)
-        assert is_valid is True
+        user = user_result.value
+        assert isinstance(user, FlextAuthModels.User)
 
-        # Senha incorreta
-        is_valid = auth.verify_password("wrong_password", hashed)
-        assert is_valid is False
+        # Verify password using the user's method
+        verify_result = user.verify_password(password)
+        assert verify_result.success
+        assert verify_result.value is True
+
+        # Test wrong password
+        wrong_verify_result = user.verify_password("wrong_password")
+        assert wrong_verify_result.success
+        assert wrong_verify_result.value is False
 
     def test_user_registration_edge_cases(self) -> None:
         """Testa casos extremos de registro (linhas 405-409, 421)."""
@@ -554,7 +571,8 @@ class TestRealInitExhaustive:
     def test_flext_auth_quick_start_comprehensive(self) -> None:
         """Testa flext_auth_quick_start de forma abrangente."""
         # Quick start com REDACTED_LDAP_BIND_PASSWORD
-        auth: AuthService = flext_auth_quick_start(
+        quickstart = FlextAuthQuickstart()
+        auth: AuthService = quickstart.flext_auth_quick_start(
             create_REDACTED_LDAP_BIND_PASSWORD=True,
             REDACTED_LDAP_BIND_PASSWORD_username="super_REDACTED_LDAP_BIND_PASSWORD",
             REDACTED_LDAP_BIND_PASSWORD_password="SuperAdminPass123!",
@@ -567,7 +585,7 @@ class TestRealInitExhaustive:
         assert REDACTED_LDAP_BIND_PASSWORD is not None
 
         # Quick start sem REDACTED_LDAP_BIND_PASSWORD
-        auth_no_REDACTED_LDAP_BIND_PASSWORD = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+        auth_no_REDACTED_LDAP_BIND_PASSWORD = quickstart.flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
         assert isinstance(auth_no_REDACTED_LDAP_BIND_PASSWORD, FlextAuth)
 
 
@@ -599,14 +617,14 @@ class TestRealIntegrationExhaustive:
 
         # Verificações
         assert user_info["username"] == "integration_user"
-        assert session_info["session_id"] is not None
+        assert session_info["id"] is not None
         assert tokens_info is not None
         assert tokens_info["access_token"] is not None
 
         # Verificar token JWT
         jwt_token = user_data.get("jwt_token")
         assert jwt_token is not None
-        token_result = auth.verify_token(jwt_token)
+        token_result = auth.validate_token(jwt_token)
         assert token_result.success
         assert token_result.value["valid"] is True
 

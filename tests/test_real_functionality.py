@@ -22,6 +22,10 @@ AuthenticationResponseDict = FlextAuthModels.AuthenticationResponseDict
 AuthToken = FlextAuthModels.AuthToken
 User = FlextAuthModels.User
 
+# Factory method aliases
+create_session = FlextAuthModels.create_session
+create_user = FlextAuthModels.create_user
+
 
 class TestRealAuthentication:
     """Test real authentication workflows with modern Python 3.13 features."""

@@ -14,13 +14,11 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from pydantic import ValidationError
 
-from flext_auth import (
-    FlextAuthModels,
-)
+from flext_auth import FlextAuthModels
 
 # Use unified class structure
 Role = FlextAuthModels.Role
-authenticate_user = FlextAuthModels.authenticate_user
+authenticate_user = FlextAuthModels._AuthenticationService.authenticate_user
 create_session = FlextAuthModels.create_session
 create_user = FlextAuthModels.create_user
 
@@ -77,7 +75,10 @@ class TestUserCreateUserMethod:
         # or use a username that has characters that won't be cleaned
 
         # Test the validator directly by creating a User instance with invalid username
-        with pytest.raises(ValueError, match="Username must contain only letters, numbers, and underscores"):
+        with pytest.raises(
+            ValueError,
+            match="Username must contain only letters, numbers, and underscores",
+        ):
             # This should trigger the field validator
             _ = FlextAuthModels.User(
                 id="test-id",
@@ -139,7 +140,9 @@ class TestUserCreateUserMethod:
     def test_session_token_validation(self) -> None:
         """Test Session token validation - lines 313-314."""
         # Test with token that's too short
-        with pytest.raises(ValueError, match="String should have at least 32 characters"):
+        with pytest.raises(
+            ValueError, match="String should have at least 32 characters"
+        ):
             _ = FlextAuthModels.Session(
                 id="test-session-id",
                 user_id="test-user-id",

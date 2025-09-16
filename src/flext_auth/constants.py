@@ -8,8 +8,10 @@ from __future__ import annotations
 
 from typing import ClassVar
 
+from flext_core import FlextConstants
 
-class FlextAuthConstants:
+
+class FlextAuthConstants(FlextConstants):
     """Authentication-specific constants following flext-core patterns."""
 
     # JWT Configuration

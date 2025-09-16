@@ -69,12 +69,16 @@ class FlextAuthCli:
             if isinstance(user_data, dict) and "user" in user_data:
                 user_info = user_data["user"]
                 if isinstance(user_info, dict) and "username" in user_info:
-                    self._logger.info(f"Authentication successful for {user_info['username']}")
+                    self._logger.info(
+                        f"Authentication successful for {user_info['username']}"
+                    )
                     username_logged = True
 
             if not username_logged:
                 self._logger.info("Authentication successful")
-            self._logger.info(f"JWT Expiry: {config_result.value.jwt_expiry_minutes} minutes")
+            self._logger.info(
+                f"JWT Expiry: {config_result.value.jwt_expiry_minutes} minutes"
+            )
             self._logger.info(f"Bcrypt Rounds: {config_result.value.bcrypt_rounds}")
         else:
             self._logger.error(f"Authentication failed: {auth_result.error}")
@@ -111,14 +115,20 @@ class FlextAuthCli:
 
         if register_result.is_success:
             user = register_result.value
-            self._logger.info(f"User registered successfully: {user.username} ({user.email})")
-            self._logger.info(f"Max Login Attempts: {config_result.value.max_login_attempts}")
+            self._logger.info(
+                f"User registered successfully: {user.username} ({user.email})"
+            )
+            self._logger.info(
+                f"Max Login Attempts: {config_result.value.max_login_attempts}"
+            )
             self._logger.info(
                 f"Session Expiry: {config_result.value.session_expiry_minutes} minutes"
             )
         else:
             self._logger.error(f"Registration failed: {register_result.error}")
-            return FlextResult[None].fail(register_result.error or "Registration failed")
+            return FlextResult[None].fail(
+                register_result.error or "Registration failed"
+            )
 
         return FlextResult[None].ok(None)
 
@@ -153,9 +163,13 @@ class FlextAuthCli:
                 summary = summary_result.value
                 self._logger.info("Current FlextConfig Singleton Configuration:")
                 self._logger.info(f"  Environment: {summary['environment']}")
-                self._logger.info(f"  JWT Expiry: {summary['jwt_expiry_minutes']} minutes")
+                self._logger.info(
+                    f"  JWT Expiry: {summary['jwt_expiry_minutes']} minutes"
+                )
                 self._logger.info(f"  Bcrypt Rounds: {summary['bcrypt_rounds']}")
-                self._logger.info(f"  Max Login Attempts: {summary['max_login_attempts']}")
+                self._logger.info(
+                    f"  Max Login Attempts: {summary['max_login_attempts']}"
+                )
                 self._logger.info(
                     f"  Session Expiry: {summary['session_expiry_minutes']} minutes"
                 )
@@ -163,7 +177,9 @@ class FlextAuthCli:
                     f"  Lockout Duration: {summary['lockout_duration_minutes']} minutes"
                 )
             else:
-                self._logger.error(f"Failed to get config summary: {summary_result.error}")
+                self._logger.error(
+                    f"Failed to get config summary: {summary_result.error}"
+                )
                 return FlextResult[None].fail(
                     summary_result.error or "Failed to get config summary"
                 )
@@ -189,7 +205,9 @@ class FlextAuthCli:
             self._logger.info("All configuration parameters are valid")
             self._logger.info(f"Environment: {config.environment}")
         else:
-            self._logger.error(f"Configuration validation failed: {validation_result.error}")
+            self._logger.error(
+                f"Configuration validation failed: {validation_result.error}"
+            )
             return FlextResult[None].fail(
                 validation_result.error or "Configuration validation failed"
             )
@@ -208,120 +226,20 @@ class FlextAuthCli:
         self._logger.info("FLEXT Auth CLI created successfully")
 
 
-# Create a global instance of FlextAuthCli for backward compatibility
-_auth_cli_instance = FlextAuthCli()
-
-
-def create_auth_cli() -> FlextResult[FlextCliMain]:
-    """Create FLEXT Auth CLI using flext-cli foundation."""
-    return _auth_cli_instance.create_auth_cli()
-
-
-def _authenticate_user(
-    username: str,
-    password: str,
-    jwt_expiry: int | None = None,
-    bcrypt_rounds: int | None = None,
-    environment: str = "development",
-) -> FlextResult[None]:
-    """Authenticate user with configurable parameters."""
-    return _auth_cli_instance.authenticate_user(username, password, jwt_expiry, bcrypt_rounds, environment)
-
-
-def _register_user(
-    username: str,
-    email: str,
-    password: str,
-    max_attempts: int | None = None,
-    session_expiry: int | None = None,
-    environment: str = "development",
-) -> FlextResult[None]:
-    """Register new user with configurable parameters."""
-    return _auth_cli_instance.register_user(username, email, password, max_attempts, session_expiry, environment)
-
-
-def _manage_config(
-    *,
-    show: bool = False,
-    set_jwt_expiry: int | None = None,
-    set_bcrypt_rounds: int | None = None,
-    set_max_attempts: int | None = None,
-    environment: str = "development",
-) -> FlextResult[None]:
-    """Manage FlextConfig singleton configuration."""
-    return _auth_cli_instance.manage_config(
-        show=show,
-        set_jwt_expiry=set_jwt_expiry,
-        set_bcrypt_rounds=set_bcrypt_rounds,
-        set_max_attempts=set_max_attempts,
-        environment=environment,
-    )
-
-
-def _validate_config() -> FlextResult[None]:
-    """Validate FlextConfig singleton configuration."""
-    return _auth_cli_instance.validate_config()
+# Global instance for direct access - no wrapper functions
+flext_auth_cli = FlextAuthCli()
 
 
 def main() -> None:
-    """Main CLI entry point."""
-    _auth_cli_instance.main()
+    """Standalone main function for CLI entry point."""
+    flext_auth_cli.main()
 
 
-# FlextResult-based command implementations for flext-cli integration
-def authenticate_user(
-    username: str,
-    password: str,
-    jwt_expiry: int | None = None,
-    bcrypt_rounds: int | None = None,
-    environment: str = "development",
-) -> FlextResult[None]:
-    """Public command interface for authentication using flext-cli patterns."""
-    return _authenticate_user(
-        username, password, jwt_expiry, bcrypt_rounds, environment
-    )
-
-
-def register_user(
-    username: str,
-    email: str,
-    password: str,
-    max_attempts: int | None = None,
-    session_expiry: int | None = None,
-    environment: str = "development",
-) -> FlextResult[None]:
-    """Public command interface for user registration using flext-cli patterns."""
-    return _register_user(
-        username, email, password, max_attempts, session_expiry, environment
-    )
-
-
-def manage_config(
-    *,
-    show: bool = False,
-    set_jwt_expiry: int | None = None,
-    set_bcrypt_rounds: int | None = None,
-    set_max_attempts: int | None = None,
-    environment: str = "development",
-) -> FlextResult[None]:
-    """Public command interface for config management using flext-cli patterns."""
-    return _manage_config(
-        show=show,
-        set_jwt_expiry=set_jwt_expiry,
-        set_bcrypt_rounds=set_bcrypt_rounds,
-        set_max_attempts=set_max_attempts,
-        environment=environment,
-    )
-
-
-def validate_config() -> FlextResult[None]:
-    """Public command interface for config validation using flext-cli patterns."""
-    return _validate_config()
-
-
-def cli() -> FlextResult[FlextCliMain]:
-    """Public command interface for CLI creation using flext-cli patterns."""
-    return create_auth_cli()
+__all__: list[str] = [
+    "FlextAuthCli",
+    "flext_auth_cli",
+    "main",
+]
 
 
 if __name__ == "__main__":

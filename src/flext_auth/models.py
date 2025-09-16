@@ -51,7 +51,6 @@ class FlextAuthModels:
         is_active: bool
         ip_address: str | None
         user_agent: str | None
-        session_id: NotRequired[str]  # Optional field for backward compatibility (alias for id)
 
     class AuthenticationResponseDict(TypedDict):
         """Type definition for authentication response."""
@@ -59,9 +58,9 @@ class FlextAuthModels:
         user: FlextAuthModels.UserDict
         session: FlextAuthModels.SessionDict
         jwt_token: NotRequired[str]  # Optional JWT token
+        tokens: NotRequired[dict[str, str | int]]  # Optional tokens dict
         authenticated: bool
         success: bool
-        tokens: NotRequired[dict[str, object]]  # Optional field for backward compatibility
 
     # Type aliases for cleaner code
     TokenDict = dict[str, str | datetime]
@@ -107,7 +106,6 @@ class FlextAuthModels:
                 raise ValueError(error_msg)
             return v
 
-
         @field_validator("username")
         @classmethod
         def validate_username(cls, v: str) -> str:
@@ -129,7 +127,14 @@ class FlextAuthModels:
         def validate_password_hash(cls, v: str) -> str:
             """Validate password hash is in bcrypt format."""
             # Allow empty password hash (for new users) but validate non-empty ones
-            if v and v != "" and (not v.startswith("$2b$") or len(v) != FlextAuthConstants.MIN_BCRYPT_HASH_LENGTH):
+            if (
+                v
+                and v != ""
+                and (
+                    not v.startswith("$2b$")
+                    or len(v) != FlextAuthConstants.MIN_BCRYPT_HASH_LENGTH
+                )
+            ):
                 # Special case: allow test invalid hashes for error testing
                 if v.startswith("invalid_hash"):
                     return v
@@ -144,7 +149,9 @@ class FlextAuthModels:
 
             # Validate password strength
             if not self._validate_password_strength(password):
-                return FlextResult[bool].fail("Password must contain uppercase, lowercase, number, and special character")
+                return FlextResult[bool].fail(
+                    "Password must contain uppercase, lowercase, number, and special character"
+                )
 
             try:
                 # Use bcrypt for secure hashing
@@ -178,25 +185,6 @@ class FlextAuthModels:
                 return FlextResult[bool].fail(f"Password verification failed: {e!s}")
 
         @property
-        def email_str(self) -> str:
-            """Get email as string (legacy compatibility)."""
-            return self.email
-
-        @property
-        def role(self) -> str:
-            """Get primary role (legacy compatibility)."""
-            return self.roles[0] if self.roles else "user"
-
-        @property
-        def active(self) -> bool:
-            """Get active status (legacy compatibility)."""
-            return self.is_active
-
-        def has_role(self, role_name: str) -> bool:
-            """Check if user has specific role (legacy compatibility)."""
-            return role_name.lower() in [role.lower() for role in self.roles]
-
-        @property
         def is_locked(self) -> bool:
             """Check if account is currently locked."""
             if self.locked_until is None:
@@ -225,10 +213,33 @@ class FlextAuthModels:
                     minutes=FlextAuthConstants.LOCKOUT_DURATION_MINUTES
                 )
 
-        @property
-        def is_verified(self) -> bool:
-            """Check if user is verified (legacy compatibility)."""
-            return self.is_active and self.last_login is not None
+        @classmethod
+        def create_user_from_request(
+            cls, request: FlextAuthModels.UserCreationRequest
+        ) -> FlextResult[FlextAuthModels.User]:
+            """Create user from parameter object - eliminates parameter passing smell."""
+            try:
+                user = cls(
+                    id=FlextUtilities.Generators.generate_uuid(),
+                    username=request.username,
+                    email=request.email,
+                    password_hash="",  # Will be set by set_password
+                    full_name=request.full_name,
+                    roles=request.roles,
+                )
+
+                # Set password
+                password_result = user.set_password(request.password)
+                if password_result.is_failure:
+                    return FlextResult[FlextAuthModels.User].fail(
+                        password_result.error or "Password verification failed"
+                    )
+
+                return FlextResult[FlextAuthModels.User].ok(user)
+            except Exception as e:
+                return FlextResult[FlextAuthModels.User].fail(
+                    f"User creation failed: {e!s}"
+                )
 
     class Role(FlextModels.Entity):
         """Role entity for role-based access control."""
@@ -252,7 +263,9 @@ class FlextAuthModels:
         """Session entity for user session management."""
 
         user_id: str = ""
-        session_token: str = Field(default="", min_length=32, description="Session token")
+        session_token: str = Field(
+            default="", min_length=32, description="Session token"
+        )
         expires_at: datetime = Field(
             default_factory=lambda: datetime.now(UTC)
             + timedelta(hours=FlextAuthConstants.DEFAULT_SESSION_EXPIRY_MINUTES // 60)
@@ -295,11 +308,6 @@ class FlextAuthModels:
             """Check if session is revoked."""
             return not self.is_active
 
-        @property
-        def token(self) -> str:
-            """Get session token (legacy compatibility)."""
-            return self.session_token
-
     class AuthToken(FlextModels.Entity):
         """JWT Authentication token entity."""
 
@@ -319,7 +327,12 @@ class FlextAuthModels:
 
         @classmethod
         def create_jwt_token(
-            cls, user_id: str, secret_key: str, expires_hours: int = 1, username: str | None = None, roles: list[str] | None = None
+            cls,
+            user_id: str,
+            secret_key: str,
+            expires_hours: int = 1,
+            username: str | None = None,
+            roles: list[str] | None = None,
         ) -> FlextResult[FlextAuthModels.AuthToken]:
             """Create JWT token using flext-core pattern."""
             try:
@@ -330,7 +343,7 @@ class FlextAuthModels:
                     "iat": datetime.now(UTC),
                     "type": "access",
                     "iss": "flext-auth",  # Issuer
-                    "aud": "flext-api",   # Audience
+                    "aud": "flext-api",  # Audience
                 }
 
                 # Add username to payload if provided
@@ -405,7 +418,8 @@ class FlextAuthModels:
             )
             if not user_data:
                 return FlextResult[FlextAuthModels.User].fail(
-                    "Invalid credentials", error_code=FlextAuthConstants.INVALID_CREDENTIALS
+                    "Invalid credentials",
+                    error_code=FlextAuthConstants.INVALID_CREDENTIALS,
                 )
 
             # Create user instance from user data
@@ -435,7 +449,8 @@ class FlextAuthModels:
                 # Record failed login attempt
                 user.record_failed_login()
                 return FlextResult[FlextAuthModels.User].fail(
-                    "Invalid credentials", error_code=FlextAuthConstants.INVALID_CREDENTIALS
+                    "Invalid credentials",
+                    error_code=FlextAuthConstants.INVALID_CREDENTIALS,
                 )
 
             # Password verification successful - record successful login
@@ -463,36 +478,175 @@ class FlextAuthModels:
                     f"Session creation failed: {e!s}"
                 )
 
-    # =========================================================================
-    # PUBLIC API METHODS
-    # =========================================================================
-
-    @classmethod
-    def create_user_from_request(
-        cls, request: UserCreationRequest
-    ) -> FlextResult[User]:
-        """Create user from parameter object - eliminates parameter passing smell."""
-        try:
-            user = cls.User(
-                id=FlextUtilities.Generators.generate_uuid(),
-                username=request.username,
-                email=request.email,
-                full_name=request.full_name,
-                roles=request.roles,
-            )
-
-            # Set password
-            password_result = user.set_password(request.password)
-            if password_result.is_failure:
-                return FlextResult[FlextAuthModels.User].fail(
-                    password_result.error or "Password verification failed"
+        @classmethod
+        def create_user_from_request(
+            cls, request: FlextAuthModels.UserCreationRequest
+        ) -> FlextResult[FlextAuthModels.User]:
+            """Create user from parameter object - eliminates parameter passing smell."""
+            try:
+                user = FlextAuthModels.User(
+                    id=FlextUtilities.Generators.generate_uuid(),
+                    username=request.username,
+                    email=request.email,
+                    full_name=request.full_name,
+                    roles=request.roles,
                 )
 
-            return FlextResult[FlextAuthModels.User].ok(user)
-        except Exception as e:
-            return FlextResult[FlextAuthModels.User].fail(
-                f"User creation failed: {e!s}"
+                # Set password
+                password_result = user.set_password(request.password)
+                if password_result.is_failure:
+                    return FlextResult[FlextAuthModels.User].fail(
+                        password_result.error or "Password verification failed"
+                    )
+
+                return FlextResult[FlextAuthModels.User].ok(user)
+            except Exception as e:
+                return FlextResult[FlextAuthModels.User].fail(
+                    f"User creation failed: {e!s}"
+                )
+
+        @classmethod
+        def authenticate_and_create_session(
+            cls,
+            username: str,
+            password: str,
+            users_data: list[dict[str, object]],
+            ip_address: str | None = None,
+            user_agent: str | None = None,
+        ) -> FlextResult[
+            tuple[
+                FlextAuthModels.User, FlextAuthModels.Session, FlextAuthModels.AuthToken
+            ]
+        ]:
+            """Complete authentication flow - authenticate user, create session and token."""
+            # Authenticate user
+            auth_result = cls.authenticate_user(username, password, users_data)
+            if auth_result.is_failure:
+                return FlextResult[
+                    tuple[
+                        FlextAuthModels.User,
+                        FlextAuthModels.Session,
+                        FlextAuthModels.AuthToken,
+                    ]
+                ].fail(auth_result.error or "Authentication failed")
+
+            user = auth_result.data
+            if user is None:
+                return FlextResult[
+                    tuple[
+                        FlextAuthModels.User,
+                        FlextAuthModels.Session,
+                        FlextAuthModels.AuthToken,
+                    ]
+                ].fail("Authentication failed - user not found")
+
+            # Create session
+            session_result = cls.create_user_session(user, ip_address, user_agent)
+            if session_result.is_failure:
+                return FlextResult[
+                    tuple[
+                        FlextAuthModels.User,
+                        FlextAuthModels.Session,
+                        FlextAuthModels.AuthToken,
+                    ]
+                ].fail(session_result.error or "Session creation failed")
+
+            session = session_result.data
+            if session is None:
+                return FlextResult[
+                    tuple[
+                        FlextAuthModels.User,
+                        FlextAuthModels.Session,
+                        FlextAuthModels.AuthToken,
+                    ]
+                ].fail("Session creation failed - session not created")
+
+            # Create JWT token
+            if not user.id:
+                return FlextResult[
+                    tuple[
+                        FlextAuthModels.User,
+                        FlextAuthModels.Session,
+                        FlextAuthModels.AuthToken,
+                    ]
+                ].fail("User ID is required for token creation")
+
+            token_result = FlextAuthModels.AuthToken.create_jwt_token(
+                user.id, FlextAuthConstants.JWT_SECRET_KEY
             )
+            if token_result.is_failure:
+                return FlextResult[
+                    tuple[
+                        FlextAuthModels.User,
+                        FlextAuthModels.Session,
+                        FlextAuthModels.AuthToken,
+                    ]
+                ].fail(token_result.error or "Token creation failed")
+
+            token = token_result.data
+            if token is None:
+                return FlextResult[
+                    tuple[
+                        FlextAuthModels.User,
+                        FlextAuthModels.Session,
+                        FlextAuthModels.AuthToken,
+                    ]
+                ].fail("Token creation failed - token not created")
+
+            return FlextResult[
+                tuple[
+                    FlextAuthModels.User,
+                    FlextAuthModels.Session,
+                    FlextAuthModels.AuthToken,
+                ]
+            ].ok((user, session, token))
+
+        @classmethod
+        def create_session(
+            cls,
+            user_id: str,
+            expires_in_minutes: int = 30,
+            ip_address: str | None = None,
+            user_agent: str | None = None,
+        ) -> FlextResult[FlextAuthModels.Session]:
+            """Factory method to create a session for a user."""
+            # Create a temporary user object for session creation with proper password hash
+            try:
+                # Use bcrypt to create a valid dummy hash for session creation
+                salt = bcrypt.gensalt()
+                dummy_password = f"TempPassword{user_id[:8]}!"
+                password_hash = bcrypt.hashpw(
+                    dummy_password.encode("utf-8"), salt
+                ).decode("utf-8")
+
+                temp_user = FlextAuthModels.User(
+                    id=user_id,
+                    username="temp",
+                    email="temp@example.com",
+                    password_hash=password_hash,  # Valid bcrypt hash for session creation only
+                    full_name="Temp User",
+                )
+
+                # Create session using the existing method
+                session_result = cls.create_user_session(
+                    temp_user, ip_address, user_agent
+                )
+
+                if session_result.is_failure:
+                    return session_result
+
+                session = session_result.unwrap()
+
+                # Set custom expiration time
+                session.expires_at = datetime.now(UTC) + timedelta(
+                    minutes=expires_in_minutes
+                )
+
+                return FlextResult[FlextAuthModels.Session].ok(session)
+            except Exception as e:
+                return FlextResult[FlextAuthModels.Session].fail(
+                    f"Session creation failed: {e!s}"
+                )
 
     @classmethod
     def authenticate_and_create_session(
@@ -505,94 +659,44 @@ class FlextAuthModels:
     ) -> FlextResult[
         tuple[FlextAuthModels.User, FlextAuthModels.Session, FlextAuthModels.AuthToken]
     ]:
-        """Complete authentication flow - authenticate user, create session and token."""
-        # Authenticate user
-        auth_result = cls._AuthenticationService.authenticate_user(
-            username, password, users_data
+        """Complete authentication flow - authenticate user, create session and token. Delegated to _AuthenticationService."""
+        return cls._AuthenticationService.authenticate_and_create_session(
+            username, password, users_data, ip_address, user_agent
         )
-        if auth_result.is_failure:
-            return FlextResult[
-                tuple[
-                    FlextAuthModels.User,
-                    FlextAuthModels.Session,
-                    FlextAuthModels.AuthToken,
-                ]
-            ].fail(auth_result.error or "Authentication failed")
 
-        user = auth_result.data
-        if user is None:
-            return FlextResult[
-                tuple[
-                    FlextAuthModels.User,
-                    FlextAuthModels.Session,
-                    FlextAuthModels.AuthToken,
-                ]
-            ].fail("Authentication failed - user not found")
+    # =========================================================================
+    # FACTORY METHODS - FLEXT UNIFIED PATTERN COMPLIANCE
+    # =========================================================================
 
-        # Create session
-        session_result = cls._AuthenticationService.create_user_session(
-            user, ip_address, user_agent
+    @classmethod
+    def create_user_from_request(
+        cls, request: FlextAuthModels.UserCreationRequest
+    ) -> FlextResult[FlextAuthModels.User]:
+        """Create user from parameter object - eliminates parameter passing smell. Delegated to _AuthenticationService."""
+        return cls._AuthenticationService.create_user_from_request(request)
+
+    @classmethod
+    def create_user(
+        cls, request: FlextAuthModels.UserCreationRequest
+    ) -> FlextResult[FlextAuthModels.User]:
+        """Factory method to create a user from a request. Delegated to _AuthenticationService."""
+        return cls._AuthenticationService.create_user_from_request(request)
+
+    @classmethod
+    def create_session(
+        cls,
+        user_id: str,
+        expires_in_minutes: int = 30,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
+    ) -> FlextResult[FlextAuthModels.Session]:
+        """Factory method to create a session for a user. Delegated to _AuthenticationService."""
+        return cls._AuthenticationService.create_session(
+            user_id, expires_in_minutes, ip_address, user_agent
         )
-        if session_result.is_failure:
-            return FlextResult[
-                tuple[
-                    FlextAuthModels.User,
-                    FlextAuthModels.Session,
-                    FlextAuthModels.AuthToken,
-                ]
-            ].fail(session_result.error or "Session creation failed")
-
-        session = session_result.data
-        if session is None:
-            return FlextResult[
-                tuple[
-                    FlextAuthModels.User,
-                    FlextAuthModels.Session,
-                    FlextAuthModels.AuthToken,
-                ]
-            ].fail("Session creation failed - session not created")
-
-        # Create JWT token
-        if not user.id:
-            return FlextResult[
-                tuple[
-                    FlextAuthModels.User,
-                    FlextAuthModels.Session,
-                    FlextAuthModels.AuthToken,
-                ]
-            ].fail("User ID is required for token creation")
-
-        token_result = cls.AuthToken.create_jwt_token(
-            user.id, FlextAuthConstants.JWT_SECRET_KEY
-        )
-        if token_result.is_failure:
-            return FlextResult[
-                tuple[
-                    FlextAuthModels.User,
-                    FlextAuthModels.Session,
-                    FlextAuthModels.AuthToken,
-                ]
-            ].fail(token_result.error or "Token creation failed")
-
-        token = token_result.data
-        if token is None:
-            return FlextResult[
-                tuple[
-                    FlextAuthModels.User,
-                    FlextAuthModels.Session,
-                    FlextAuthModels.AuthToken,
-                ]
-            ].fail("Token creation failed - token not created")
-
-        return FlextResult[
-            tuple[
-                FlextAuthModels.User, FlextAuthModels.Session, FlextAuthModels.AuthToken
-            ]
-        ].ok((user, session, token))
 
 
-
-# Export all public types and functions
+# Export unified class following FLEXT patterns
 __all__ = [
     "FlextAuthModels",
 ]

@@ -7,13 +7,12 @@ from unittest.mock import MagicMock, patch
 from flext_core import FlextResult
 
 from flext_auth.cli import (
-    authenticate_user,
-    cli,
+    FlextAuthCli,
     main,
-    manage_config,
-    register_user,
-    validate_config,
 )
+
+# Create CLI instance for testing
+cli_instance = FlextAuthCli()
 
 
 class TestCliCoverage:
@@ -25,20 +24,24 @@ class TestCliCoverage:
     def test_cli_group_command(self) -> None:
         """Test CLI group command."""
         # Test the CLI creation function directly
-        result = cli()
+        cli_instance = FlextAuthCli()
+        result = cli_instance.create_auth_cli()
         assert result.is_success
         assert result.value is not None
 
     def test_cli_version_option(self) -> None:
         """Test CLI version option."""
         # Test the CLI creation function directly
-        result = cli()
+        cli_instance = FlextAuthCli()
+        result = cli_instance.create_auth_cli()
         assert result.is_success
         assert result.value is not None
 
     @patch("flext_auth.cli.FlextAuthConfig.create_from_cli_params")
     @patch("flext_auth.cli.FlextAuth")
-    def test_authenticate_user_success(self, mock_auth_class: MagicMock, mock_config: MagicMock) -> None:
+    def test_authenticate_user_success(
+        self, mock_auth_class: MagicMock, mock_config: MagicMock
+    ) -> None:
         """Test successful user authentication via CLI."""
         # Mock config result
         mock_config_instance = MagicMock()
@@ -58,7 +61,8 @@ class TestCliCoverage:
             mock_user_data
         )
 
-        result = authenticate_user(
+        cli_instance = FlextAuthCli()
+        result = cli_instance.authenticate_user(
             username="testuser",
             password="testpass",
             jwt_expiry=30,
@@ -74,7 +78,10 @@ class TestCliCoverage:
         """Test authentication with config failure."""
         mock_config.return_value = FlextResult.fail("Config error")
 
-        result = authenticate_user(username="testuser", password="testpass")
+        cli_instance = FlextAuthCli()
+        result = cli_instance.authenticate_user(
+            username="testuser", password="testpass"
+        )
 
         assert result.is_failure
         assert result.error is not None
@@ -82,7 +89,9 @@ class TestCliCoverage:
 
     @patch("flext_auth.cli.FlextAuthConfig.create_from_cli_params")
     @patch("flext_auth.cli.FlextAuth")
-    def test_authenticate_user_auth_failure(self, mock_auth_class: MagicMock, mock_config: MagicMock) -> None:
+    def test_authenticate_user_auth_failure(
+        self, mock_auth_class: MagicMock, mock_config: MagicMock
+    ) -> None:
         """Test authentication failure."""
         # Mock config result
         mock_config_instance = MagicMock()
@@ -101,7 +110,8 @@ class TestCliCoverage:
             "Auth error"
         )
 
-        result = authenticate_user(
+        cli_instance = FlextAuthCli()
+        result = cli_instance.authenticate_user(
             username="testuser", password="testpass", environment="development"
         )
 
@@ -132,7 +142,10 @@ class TestCliCoverage:
             mock_user_data
         )
 
-        result = authenticate_user(username="testuser", password="testpass")
+        cli_instance = FlextAuthCli()
+        result = cli_instance.authenticate_user(
+            username="testuser", password="testpass"
+        )
 
         assert result.is_success
 
@@ -160,13 +173,18 @@ class TestCliCoverage:
             mock_user_data
         )
 
-        result = authenticate_user(username="testuser", password="testpass")
+        cli_instance = FlextAuthCli()
+        result = cli_instance.authenticate_user(
+            username="testuser", password="testpass"
+        )
 
         assert result.is_success
 
     @patch("flext_auth.cli.FlextAuthConfig.create_from_cli_params")
     @patch("flext_auth.cli.FlextAuth")
-    def test_register_user_success(self, mock_auth_class: MagicMock, mock_config: MagicMock) -> None:
+    def test_register_user_success(
+        self, mock_auth_class: MagicMock, mock_config: MagicMock
+    ) -> None:
         """Test successful user registration via CLI."""
         # Mock config result
         mock_config_instance = MagicMock()
@@ -187,7 +205,8 @@ class TestCliCoverage:
         mock_user.email = "test@example.com"
         mock_auth_instance.register_user.return_value = FlextResult.ok(mock_user)
 
-        result = register_user(
+        cli_instance = FlextAuthCli()
+        result = cli_instance.register_user(
             username="testuser",
             email="test@example.com",
             password="testpass",
@@ -203,7 +222,8 @@ class TestCliCoverage:
         """Test registration with config failure."""
         mock_config.return_value = FlextResult.fail("Config error")
 
-        result = register_user(
+        cli_instance = FlextAuthCli()
+        result = cli_instance.register_user(
             username="testuser", email="test@example.com", password="testpass"
         )
 
@@ -233,7 +253,8 @@ class TestCliCoverage:
             "Registration error"
         )
 
-        result = register_user(
+        cli_instance = FlextAuthCli()
+        result = cli_instance.register_user(
             username="testuser", email="test@example.com", password="testpass"
         )
 
@@ -242,7 +263,9 @@ class TestCliCoverage:
 
     @patch("flext_auth.cli.FlextAuthConfig.get_global_cli_summary")
     @patch("flext_auth.cli.FlextAuthConfig.update_global_from_cli")
-    def test_manage_config_show(self, mock_update: MagicMock, mock_summary: MagicMock) -> None:
+    def test_manage_config_show(
+        self, mock_update: MagicMock, mock_summary: MagicMock
+    ) -> None:
         """Test config management show command."""
         # Mock config update
         mock_config_instance = MagicMock()
@@ -262,7 +285,8 @@ class TestCliCoverage:
         }
         mock_summary.return_value = FlextResult.ok(mock_summary_data)
 
-        result = manage_config(show=True)
+        cli_instance = FlextAuthCli()
+        result = cli_instance.manage_config(show=True)
 
         # The function returns FlextResult[None] on success
         assert result.is_success
@@ -283,7 +307,8 @@ class TestCliCoverage:
         # Mock summary failure
         mock_summary.return_value = FlextResult.fail("Summary error")
 
-        result = manage_config(show=True)
+        cli_instance = FlextAuthCli()
+        result = cli_instance.manage_config(show=True)
 
         # The function should return failure when summary fails
         assert result.is_failure
@@ -299,7 +324,8 @@ class TestCliCoverage:
         mock_config_instance.max_login_attempts = 3
         mock_update.return_value = FlextResult.ok(mock_config_instance)
 
-        result = manage_config(
+        cli_instance = FlextAuthCli()
+        result = cli_instance.manage_config(
             set_jwt_expiry=60,
             set_bcrypt_rounds=14,
             set_max_attempts=3,
@@ -313,7 +339,8 @@ class TestCliCoverage:
         """Test config management update failure."""
         mock_update.return_value = FlextResult.fail("Update error")
 
-        result = manage_config(set_jwt_expiry=60)
+        cli_instance = FlextAuthCli()
+        result = cli_instance.manage_config(set_jwt_expiry=60)
 
         assert result.is_failure
         assert "Update error" in str(result.error)
@@ -327,7 +354,8 @@ class TestCliCoverage:
         mock_config_instance.validate_configuration.return_value = FlextResult.ok(None)
         mock_get_global.return_value = mock_config_instance
 
-        result = validate_config()
+        cli_instance = FlextAuthCli()
+        result = cli_instance.validate_config()
 
         # The function returns FlextResult[None] on success
         assert result.is_success
@@ -342,7 +370,8 @@ class TestCliCoverage:
         )
         mock_get_global.return_value = mock_config_instance
 
-        result = validate_config()
+        cli_instance = FlextAuthCli()
+        result = cli_instance.validate_config()
 
         # The function should return failure when validation fails
         assert result.is_failure

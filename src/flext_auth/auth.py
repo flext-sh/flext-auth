@@ -6,7 +6,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import bcrypt
 import jwt
 from flext_core import (
     FlextContainer,
@@ -87,7 +86,9 @@ class FlextAuth:
             full_name=full_name,
             roles=roles or ["user"],
         )
-        user_result = FlextAuthModels.create_user_from_request(request)
+        user_result = FlextAuthModels._AuthenticationService.create_user_from_request(
+            request
+        )
 
         if user_result.is_failure:
             self._logger.error(f"User creation failed: {user_result.error}")
@@ -140,7 +141,9 @@ class FlextAuth:
             if stored_user_id and stored_user_id in self._users:
                 stored_user = self._users[stored_user_id]
                 # Copy lockout-related fields from authenticated user
-                stored_user.failed_login_attempts = authenticated_user.failed_login_attempts
+                stored_user.failed_login_attempts = (
+                    authenticated_user.failed_login_attempts
+                )
                 stored_user.locked_until = authenticated_user.locked_until
                 stored_user.last_login = authenticated_user.last_login
                 stored_user.updated_at = authenticated_user.updated_at
@@ -202,7 +205,6 @@ class FlextAuth:
                     "is_active": not session.is_revoked,
                     "ip_address": session.ip_address,
                     "user_agent": session.user_agent,
-                    "session_id": session.id,  # Backward compatibility alias
                 }
 
                 # Create properly typed authentication response
@@ -219,10 +221,13 @@ class FlextAuth:
                     result_data["tokens"] = {
                         "access_token": jwt_token,
                         "token_type": "Bearer",
-                        "expires_in": self.config.jwt_expiry_minutes * 60,  # Convert to seconds
+                        "expires_in": self.config.jwt_expiry_minutes
+                        * 60,  # Convert to seconds
                     }
 
-                return FlextResult[FlextAuthModels.AuthenticationResponseDict].ok(result_data)
+                return FlextResult[FlextAuthModels.AuthenticationResponseDict].ok(
+                    result_data
+                )
             return FlextResult[FlextAuthModels.AuthenticationResponseDict].fail(
                 f"Session creation failed: {session_result.error}"
             )
@@ -464,135 +469,6 @@ class FlextAuth:
             )  # pragma: no cover
 
         return FlextResult[str].ok(token_result.value.token)
-
-    def hash_password(self, password: str) -> str:
-        """Hash password using bcrypt (legacy compatibility method).
-
-        Args:
-            password: Plain text password
-
-        Returns:
-            Hashed password string
-
-        """
-        try:
-            salt = bcrypt.gensalt()
-            password_hash = bcrypt.hashpw(password.encode(), salt)
-            return password_hash.decode()
-        except Exception as e:
-            error_msg = f"Password hashing failed: {e}"
-            raise RuntimeError(error_msg) from e
-
-    def verify_password(self, password: str, password_hash: str) -> bool:
-        """Verify password against hash (legacy compatibility method).
-
-        Args:
-            password: Plain text password
-            password_hash: Stored password hash
-
-        Returns:
-            True if password matches hash
-
-        """
-        try:
-            return bcrypt.checkpw(password.encode(), password_hash.encode())
-        except Exception:
-            self._logger.exception("Password verification failed")
-            return False
-
-    def verify_token(self, token: str) -> FlextResult[FlextTypes.Core.Dict]:
-        """Verify JWT token (legacy compatibility method).
-
-        Args:
-            token: JWT token string
-
-        Returns:
-            FlextResult containing token payload or error
-
-        """
-        return self.validate_token(token)
-
-    def get_config(self) -> FlextAuthConfig:
-        """Get current configuration (legacy compatibility method).
-
-        Returns:
-            Current authentication configuration
-
-        """
-        return self.config
-
-    @property
-    def token_expire_minutes(self) -> int:
-        """Get token expiration in minutes (legacy compatibility)."""
-        return self.config.jwt_expiry_minutes
-
-    @property
-    def bcrypt_rounds(self) -> int:
-        """Get bcrypt rounds (legacy compatibility)."""
-        return self.config.bcrypt_rounds
-
-    @property
-    def password_rounds(self) -> int:
-        """Get password rounds (legacy compatibility)."""
-        return self.config.bcrypt_rounds
-
-    @password_rounds.setter
-    def password_rounds(self, value: int) -> None:
-        """Set password rounds (legacy compatibility)."""
-        self.config.bcrypt_rounds = value
-
-    @property
-    def session_manager(self) -> FlextAuth:
-        """Get session manager (legacy compatibility)."""
-        return self
-
-    @classmethod
-    def get_global_config(cls) -> FlextResult[FlextAuthConfig]:
-        """Get global configuration (legacy compatibility)."""
-        try:
-            config = FlextAuthConfig.get_global_instance()
-            return FlextResult[FlextAuthConfig].ok(config)
-        except Exception as e:
-            return FlextResult[FlextAuthConfig].fail(
-                f"Failed to get global config: {e}"
-            )
-
-    @classmethod
-    def create_with_config_overrides(
-        cls,
-        jwt_expiry_minutes: int | None = None,
-        bcrypt_rounds: int | None = None,
-    ) -> FlextResult[FlextAuth]:
-        """Create FlextAuth with configuration overrides (legacy compatibility).
-
-        Args:
-            jwt_expiry_minutes: JWT token expiry in minutes
-            bcrypt_rounds: Bcrypt hashing rounds
-            **kwargs: Additional configuration parameters
-
-        Returns:
-            FlextAuth instance with overridden configuration
-
-        """
-        # Create config with overrides
-        config_overrides: dict[str, int] = {}
-        if jwt_expiry_minutes is not None:
-            config_overrides["jwt_expiry_minutes"] = jwt_expiry_minutes
-        if bcrypt_rounds is not None:
-            config_overrides["bcrypt_rounds"] = bcrypt_rounds
-
-        # Create config with overrides
-        config_result = FlextAuthConfig.get_or_create_global(
-            environment="development", **config_overrides
-        )
-        if config_result.is_failure:
-            return FlextResult[FlextAuth].fail(
-                f"Config creation failed: {config_result.error}"
-            )
-
-        # Create FlextAuth with custom config
-        auth_instance = cls(config=config_result.value)
-        return FlextResult[FlextAuth].ok(auth_instance)
 
 
 # Module exports

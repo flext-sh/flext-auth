@@ -171,7 +171,9 @@ class TestFlextAuthConfigCoverage:
     def test_flext_auth_config_field_validation(self) -> None:
         """Test field validation in FlextAuthConfig."""
         # Test password length validation - should fail with invalid values
-        with pytest.raises(ValidationError, match="Input should be greater than or equal to 6"):
+        with pytest.raises(
+            ValidationError, match="Input should be greater than or equal to 6"
+        ):
             FlextAuthConfig(min_password_length=4, max_password_length=256)
 
         # Test with valid values
