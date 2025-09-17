@@ -4,12 +4,11 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock, patch
 
-from flext_core import FlextResult
-
 from flext_auth.cli import (
     FlextAuthCli,
     main,
 )
+from flext_core import FlextResult
 
 # Create CLI instance for testing
 cli_instance = FlextAuthCli()

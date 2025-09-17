@@ -16,9 +16,8 @@ import os
 import secrets
 import string
 
-from flext_core import FlextLogger
-
 from flext_auth import FlextAuth
+from flext_core import FlextLogger
 
 # Get structured logger instance
 logger = FlextLogger(__name__)

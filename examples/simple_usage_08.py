@@ -12,22 +12,32 @@ from __future__ import annotations
 import os
 import sys
 
-from flext_auth import FlextAuth, flext_auth_quick_start
+from flext_auth import FlextAuth, FlextAuthModels
 
 
 def main() -> None:
     """Demonstrate FLEXT Auth functionality with clean types."""
-    # 1. Quick Start Authentication
-    auth: FlextAuth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    # 1. Initialize Authentication
+    auth: FlextAuth = FlextAuth()
 
     # 2. Direct API Usage
 
     # Password hashing using FlextAuth directly
     try:
-        password_hash = auth.hash_password("TestPassword123!")
+        # Create user with password hashing
+        FlextAuthModels.UserCreationRequest(
+            username="testuser", email="test@example.com", password="TestPassword123!"
+        )
 
-        # Password verification
-        auth.verify_password("TestPassword123!", password_hash)
+        # Register user (includes password hashing)
+        user_result = auth.register_user(
+            "testuser", "test@example.com", "TestPassword123!"
+        )
+        if user_result.is_success:
+            user = user_result.value
+            # Password verification through user model
+            verify_result = user.verify_password("TestPassword123!")
+            print(f"Password verification: {verify_result.value}")
     except Exception as e:
         # Handle password verification error
         error_message = f"Password verification failed: {e}"
@@ -53,18 +63,15 @@ def main() -> None:
             auth_data = auth_result.value
 
             # Get JWT token
-            jwt_token_str = str(auth_data.get("jwt_token", ""))
+            str(auth_data.get("jwt_token", ""))
             auth_data.get("session_id")
 
-            # Validate token through service
-            token_validation = auth.validate_token(jwt_token_str)
-            if token_validation.is_success:
-                pass
+            # Note: token validation would be done through AuthToken.verify_jwt_token
+            # if needed for a specific use case
 
     # 4. Configuration Access
-    auth.get_config()
-    auth.config.get_security_settings()
-    auth.config.get_jwt_settings()
+    # Note: config access methods don't exist in current FlextAuth API
+    # Configuration would be accessed through FlextAuthConfig if needed
 
     # 5. FlextCore Constants
 

@@ -16,13 +16,12 @@ import uuid
 from collections.abc import Callable
 from typing import TypedDict, cast
 
-from flext_core import FlextTypes
-
 from flext_auth import (
     FlextAuth,
     FlextAuthModels,
     FlextAuthQuickstart,
 )
+from flext_core import FlextTypes
 
 # Use unified class structure
 User = FlextAuthModels.User

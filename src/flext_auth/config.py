@@ -7,18 +7,18 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-from typing import ClassVar, cast
+from typing import ClassVar, Literal, cast
 
+from pydantic import Field, ValidationInfo, field_validator, model_validator
+from pydantic_settings import SettingsConfigDict
+
+from flext_auth.constants import FlextAuthConstants
 from flext_core import (
     FlextConfig,
     FlextResult,
     FlextTypes,
     FlextUtilities,
 )
-from pydantic import Field, ValidationInfo, field_validator, model_validator
-from pydantic_settings import SettingsConfigDict
-
-from flext_auth.constants import FlextAuthConstants
 
 
 class FlextAuthConfig(FlextConfig):
@@ -445,63 +445,34 @@ class FlextAuthConfig(FlextConfig):
         # Create instance with overrides including environment
         try:
             # Create configuration with environment-specific settings and overrides
-            # Build constructor arguments with only non-None values
-            constructor_kwargs: dict[str, str | int | bool] = {
-                "environment": environment
-            }
-
-            if jwt_secret is not None:
-                constructor_kwargs["jwt_secret"] = jwt_secret
-            if jwt_expiry_minutes is not None:
-                constructor_kwargs["jwt_expiry_minutes"] = jwt_expiry_minutes
-            if jwt_algorithm is not None:
-                constructor_kwargs["jwt_algorithm"] = jwt_algorithm
-            if jwt_issuer is not None:
-                constructor_kwargs["jwt_issuer"] = jwt_issuer
-            if jwt_audience is not None:
-                constructor_kwargs["jwt_audience"] = jwt_audience
-            if bcrypt_rounds is not None:
-                constructor_kwargs["bcrypt_rounds"] = bcrypt_rounds
-            if max_login_attempts is not None:
-                constructor_kwargs["max_login_attempts"] = max_login_attempts
-            if lockout_duration_minutes is not None:
-                constructor_kwargs["lockout_duration_minutes"] = (
-                    lockout_duration_minutes
-                )
-            if session_expiry_minutes is not None:
-                constructor_kwargs["session_expiry_minutes"] = session_expiry_minutes
-            if max_sessions_per_user is not None:
-                constructor_kwargs["max_sessions_per_user"] = max_sessions_per_user
-            if session_cleanup_interval_minutes is not None:
-                constructor_kwargs["session_cleanup_interval_minutes"] = (
-                    session_cleanup_interval_minutes
-                )
-            if min_password_length is not None:
-                constructor_kwargs["min_password_length"] = min_password_length
-            if max_password_length is not None:
-                constructor_kwargs["max_password_length"] = max_password_length
-            if require_password_complexity is not None:
-                constructor_kwargs["require_password_complexity"] = (
-                    require_password_complexity
-                )
-            if min_password_score is not None:
-                constructor_kwargs["min_password_score"] = min_password_score
-            if max_requests_per_minute is not None:
-                constructor_kwargs["max_requests_per_minute"] = max_requests_per_minute
-            if max_requests_per_hour is not None:
-                constructor_kwargs["max_requests_per_hour"] = max_requests_per_hour
-            if enable_email_verification is not None:
-                constructor_kwargs["enable_email_verification"] = (
-                    enable_email_verification
-                )
-            if enable_password_history is not None:
-                constructor_kwargs["enable_password_history"] = enable_password_history
-            if enable_audit_logging is not None:
-                constructor_kwargs["enable_audit_logging"] = enable_audit_logging
-            if enable_rate_limiting is not None:
-                constructor_kwargs["enable_rate_limiting"] = enable_rate_limiting
-
-            config = cls(**constructor_kwargs)
+            # Use direct constructor call with explicit parameters for type safety
+            config = cls(
+                environment=cast(
+                    "Literal['development', 'production', 'staging', 'test', 'local']",
+                    environment,
+                ),
+                jwt_secret=jwt_secret or "",
+                jwt_expiry_minutes=jwt_expiry_minutes or 30,
+                jwt_algorithm=jwt_algorithm or "HS256",
+                jwt_issuer=jwt_issuer or "flext-auth",
+                jwt_audience=jwt_audience or "flext-api",
+                bcrypt_rounds=bcrypt_rounds or 12,
+                max_login_attempts=max_login_attempts or 5,
+                lockout_duration_minutes=lockout_duration_minutes or 30,
+                session_expiry_minutes=session_expiry_minutes or 120,
+                max_sessions_per_user=max_sessions_per_user or 10,
+                session_cleanup_interval_minutes=session_cleanup_interval_minutes or 60,
+                min_password_length=min_password_length or 8,
+                max_password_length=max_password_length or 128,
+                require_password_complexity=require_password_complexity or True,
+                min_password_score=min_password_score or 3,
+                max_requests_per_minute=max_requests_per_minute or 60,
+                max_requests_per_hour=max_requests_per_hour or 1000,
+                enable_email_verification=enable_email_verification or False,
+                enable_password_history=enable_password_history or True,
+                enable_audit_logging=enable_audit_logging or True,
+                enable_rate_limiting=enable_rate_limiting or True,
+            )
 
             # Validate configuration after creation
             validation_result = config.validate_configuration()

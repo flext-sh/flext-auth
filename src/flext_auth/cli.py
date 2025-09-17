@@ -8,10 +8,9 @@ from __future__ import annotations
 
 import sys
 
+from flext_auth import FlextAuth, FlextAuthConfig
 from flext_cli import FlextCliMain
 from flext_core import FlextContainer, FlextLogger, FlextResult
-
-from flext_auth import FlextAuth, FlextAuthConfig
 
 
 class FlextAuthCli:

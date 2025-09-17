@@ -63,7 +63,7 @@ class TestFlextAuth:
         assert result.is_success
         user = result.value
         assert user.username == "testuser"
-        assert user.email_str == "test@example.com"
+        assert user.email == "test@example.com"
         assert "user" in user.roles
         assert user.is_active
 

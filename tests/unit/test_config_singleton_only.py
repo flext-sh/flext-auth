@@ -11,9 +11,8 @@ from __future__ import annotations
 
 import os
 
-from flext_core import FlextConfig
-
 from flext_auth import FlextAuthConfig, FlextAuthConstants
+from flext_core import FlextConfig
 
 
 class TestFlextAuthConfigSingletonOnly:

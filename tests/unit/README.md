@@ -33,7 +33,6 @@ unit/
 │   ├── test_jwt_service.py       # JWT service tests
 │   └── test_repositories.py      # Repository implementation tests
 └── test_utilities/                # Utility and helper tests
-    ├── test_decorators.py        # Authentication decorator tests
     ├── test_mixins.py            # Mixin functionality tests
     └── test_validators.py        # Validation function tests
 ```

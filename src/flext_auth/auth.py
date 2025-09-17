@@ -7,16 +7,17 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import jwt
+
+from flext_auth.config import FlextAuthConfig
+from flext_auth.constants import FlextAuthConstants
+from flext_auth.container import FlextAuthContainer
+from flext_auth.models import FlextAuthModels
 from flext_core import (
     FlextContainer,
     FlextLogger,
     FlextResult,
     FlextTypes,
 )
-
-from flext_auth.config import FlextAuthConfig
-from flext_auth.constants import FlextAuthConstants
-from flext_auth.models import FlextAuthModels
 
 
 class FlextAuth:
@@ -86,9 +87,7 @@ class FlextAuth:
             full_name=full_name,
             roles=roles or ["user"],
         )
-        user_result = FlextAuthModels._AuthenticationService.create_user_from_request(
-            request
-        )
+        user_result = FlextAuthContainer.create_user_from_request(request)
 
         if user_result.is_failure:
             self._logger.error(f"User creation failed: {user_result.error}")
@@ -129,9 +128,8 @@ class FlextAuth:
             else {"username": str(user)}
             for user in self._users.values()
         ]
-        auth_result = FlextAuthModels._AuthenticationService.authenticate_user(
-            username, password, users_data
-        )
+        # Authenticate user using internal method (moved from _AuthenticationService)
+        auth_result = self._authenticate_user_internal(username, password, users_data)
 
         # Update stored user with lockout state changes (for both success and failure)
         if auth_result.is_success and auth_result.value is not None:
@@ -172,9 +170,9 @@ class FlextAuth:
                 "last_login": user.last_login,
             }
 
-            # Create session using internal service
-            session_result = FlextAuthModels._AuthenticationService.create_user_session(
-                user=user,
+            # Create session using factory method
+            session_result = FlextAuthContainer.create_session(
+                user_id=user.id,
                 ip_address=client_ip,
                 user_agent=user_agent,
             )
@@ -469,6 +467,65 @@ class FlextAuth:
             )  # pragma: no cover
 
         return FlextResult[str].ok(token_result.value.token)
+
+    def _authenticate_user_internal(
+        self, username: str, password: str, users_data: list[dict[str, object]]
+    ) -> FlextResult[FlextAuthModels.User]:
+        """Internal authentication logic moved from _AuthenticationService."""
+        if not username or not password:
+            return FlextResult[FlextAuthModels.User].fail(
+                "Username and password required"
+            )
+
+        # Find user in data (case-insensitive username comparison)
+        user_data = next(
+            (
+                u
+                for u in users_data
+                if str(u.get("username", "")).lower() == username.lower()
+            ),
+            None,
+        )
+        if not user_data:
+            return FlextResult[FlextAuthModels.User].fail(
+                "Invalid credentials",
+                error_code=FlextAuthConstants.INVALID_CREDENTIALS,
+            )
+
+        # Create user instance from user data
+        user = FlextAuthModels.User()
+        # Set user attributes from user_data, but only if they exist in User model
+        for key, value in user_data.items():
+            if hasattr(user, key):
+                setattr(user, key, value)
+
+        # Check if account is locked
+        if user.is_locked:
+            return FlextResult[FlextAuthModels.User].fail(
+                "Account is locked due to too many failed attempts",
+                error_code=FlextAuthConstants.ACCOUNT_LOCKED,
+            )
+
+        # Check if account is active
+        if not user.can_login:
+            return FlextResult[FlextAuthModels.User].fail(
+                "Account is not active",
+                error_code=FlextAuthConstants.ACCOUNT_DISABLED,
+            )
+
+        # Verify password
+        password_result = user.verify_password(password)
+        if password_result.is_failure or not password_result.data:
+            # Record failed login attempt
+            user.record_failed_login()
+            return FlextResult[FlextAuthModels.User].fail(
+                "Invalid credentials",
+                error_code=FlextAuthConstants.INVALID_CREDENTIALS,
+            )
+
+        # Password verification successful - record successful login
+        user.record_successful_login()
+        return FlextResult[FlextAuthModels.User].ok(user)
 
 
 # Module exports

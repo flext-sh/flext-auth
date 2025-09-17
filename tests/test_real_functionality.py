@@ -16,6 +16,7 @@ from flext_auth import (
     FlextAuthConfig,
     FlextAuthModels,
 )
+from flext_auth.container import FlextAuthContainer
 
 # Use unified class structure
 AuthenticationResponseDict = FlextAuthModels.AuthenticationResponseDict
@@ -23,8 +24,8 @@ AuthToken = FlextAuthModels.AuthToken
 User = FlextAuthModels.User
 
 # Factory method aliases
-create_session = FlextAuthModels.create_session
-create_user = FlextAuthModels.create_user
+create_session = FlextAuthContainer.create_session
+create_user = FlextAuthContainer.create_user
 
 
 class TestRealAuthentication:

@@ -16,12 +16,11 @@ import string
 import sys
 from typing import cast
 
-from flext_core import FlextResult
-
 from flext_auth import (
     FlextAuth,
     FlextAuthModels,
 )
+from flext_core import FlextResult
 
 # Use unified class structure
 AuthenticationResponseDict = FlextAuthModels.AuthenticationResponseDict
