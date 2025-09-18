@@ -26,7 +26,7 @@ class FlextAuthContainer:
     def create_user(
         cls, request: FlextAuthModels.UserCreationRequest
     ) -> FlextResult[FlextAuthModels.User]:
-        """Factory method to create a user from a request."""
+        """Create a user from a request."""
         return FlextAuthModels.User.create_user_from_request(request)
 
     @classmethod
@@ -37,7 +37,7 @@ class FlextAuthContainer:
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> FlextResult[FlextAuthModels.Session]:
-        """Factory method to create a session for a user."""
+        """Create a session for a user."""
         try:
             session = FlextAuthModels.Session(
                 id=FlextUtilities.Generators.generate_uuid(),
@@ -62,7 +62,7 @@ class FlextAuthContainer:
         username: str | None = None,
         roles: list[str] | None = None,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
-        """Factory method to create JWT token."""
+        """Create JWT token."""
         return FlextAuthModels.AuthToken.create_jwt_token(
             user_id=user_id,
             secret_key=secret_key,

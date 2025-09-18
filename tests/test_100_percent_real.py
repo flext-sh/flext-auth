@@ -98,7 +98,7 @@ class TestRealModelsExhaustive:
                     password="validPassword123!",
                 )
                 result = create_user_from_request(user_request)
-                if empty_val == "":
+                if empty_val:
                     # Empty string should fail in user creation validation
                     assert result.is_failure, (
                         f"Expected failure for username={empty_val}"

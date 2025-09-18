@@ -1,6 +1,6 @@
 # Getting Started
 
-**Version**: 0.9.0 | **Updated**: September 17, 2025
+**Version**: 0.9.9 RC | **Updated**: September 17, 2025
 
 Installation and first steps for implementing authentication in your FLEXT projects using flext-auth.
 

@@ -42,6 +42,7 @@ class FlextAuthModels:
         """Type definition for session data in authentication responses."""
 
         id: str
+        session_id: str  # Alias for id field for API compatibility
         user_id: str
         session_token: str
         expires_at: datetime
@@ -126,13 +127,9 @@ class FlextAuthModels:
         def validate_password_hash(cls, v: str) -> str:
             """Validate password hash is in bcrypt format."""
             # Allow empty password hash (for new users) but validate non-empty ones
-            if (
-                v
-                and v != ""
-                and (
-                    not v.startswith("$2b$")
-                    or len(v) != FlextAuthConstants.MIN_BCRYPT_HASH_LENGTH
-                )
+            if v and (
+                not v.startswith("$2b$")
+                or len(v) != FlextAuthConstants.MIN_BCRYPT_HASH_LENGTH
             ):
                 # Special case: allow test invalid hashes for error testing
                 if v.startswith("invalid_hash"):
@@ -142,7 +139,29 @@ class FlextAuthModels:
             return v
 
         def set_password(self, password: str) -> FlextResult[bool]:
-            """Set password with bcrypt hashing using flext-core pattern."""
+            """Set user password with secure bcrypt hashing and validation.
+
+            Validates password strength requirements and securely hashes the
+            password using bcrypt with configurable rounds. Updates the
+            password_hash field with the generated hash.
+
+            Args:
+                password: Plain text password to hash and store
+
+            Returns:
+                FlextResult containing True if password was set successfully,
+                or error information if validation or hashing fails
+
+            Raises:
+                ValueError: If password doesn't meet strength requirements
+                RuntimeError: If bcrypt hashing fails
+
+            Example:
+                >>> user = FlextAuthModels.User()
+                >>> result = user.set_password("SecurePass123!")
+                >>> assert result.is_success
+
+            """
             if not password or len(password) < FlextAuthConstants.MIN_PASSWORD_LENGTH:
                 return FlextResult[bool].fail("Password must be at least 8 characters")
 
@@ -171,7 +190,28 @@ class FlextAuthModels:
             return has_upper and has_lower and has_digit and has_special
 
         def verify_password(self, password: str) -> FlextResult[bool]:
-            """Verify password against stored hash using flext-core pattern."""
+            """Verify password against stored bcrypt hash.
+
+            Compares the provided plain text password against the stored
+            bcrypt hash to determine if the password is correct.
+
+            Args:
+                password: Plain text password to verify
+
+            Returns:
+                FlextResult containing True if password matches the hash,
+                False if it doesn't match, or error information if verification fails
+
+            Raises:
+                RuntimeError: If bcrypt verification fails
+
+            Example:
+                >>> user = FlextAuthModels.User()
+                >>> user.set_password("SecurePass123!")
+                >>> result = user.verify_password("SecurePass123!")
+                >>> assert result.is_success and result.value
+
+            """
             if not self.password_hash:
                 return FlextResult[bool].fail("No password hash stored")
 
@@ -222,7 +262,7 @@ class FlextAuthModels:
                     id=FlextUtilities.Generators.generate_uuid(),
                     username=request.username,
                     email=request.email,
-                    password_hash="",  # Will be set by set_password
+                    password_hash="",  # nosec B106 - Will be set by set_password
                     full_name=request.full_name,
                     roles=request.roles,
                 )

@@ -214,7 +214,7 @@ class FlextAuthCli:
         return FlextResult[None].ok(None)
 
     def main(self) -> None:
-        """Main CLI entry point."""
+        """Run the main CLI entry point."""
         cli_result = self.create_auth_cli()
         if cli_result.is_failure:
             self._logger.error(f"Failed to create CLI: {cli_result.error}")

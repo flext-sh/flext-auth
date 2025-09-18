@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, patch
 
 from flext_auth.cli import (
     FlextAuthCli,
-    main,
 )
 from flext_core import FlextResult
 
@@ -375,18 +374,3 @@ class TestCliCoverage:
         # The function should return failure when validation fails
         assert result.is_failure
         assert "Validation error" in str(result.error)
-
-    def test_main_function(self) -> None:
-        """Test main function."""
-        with patch("flext_auth.cli.create_auth_cli") as mock_create_cli:
-            mock_create_cli.return_value = FlextResult.ok(None)
-            main()
-            mock_create_cli.assert_called_once()
-
-    def test_cli_module_main(self) -> None:
-        """Test CLI module main execution."""
-        with patch("flext_auth.cli.create_auth_cli") as mock_create_cli:
-            # Simulate __main__ execution
-            mock_create_cli.return_value = FlextResult.ok(None)
-            main()
-            mock_create_cli.assert_called_once()

@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-from typing import ClassVar, Literal, cast
+from typing import ClassVar
 
 from pydantic import Field, ValidationInfo, field_validator, model_validator
 from pydantic_settings import SettingsConfigDict
@@ -425,7 +425,9 @@ class FlextAuthConfig(FlextConfig):
             FlextResult containing FlextAuthConfig instance
 
         """
-        # Validate environment name
+        # Import Environment type for proper casting
+
+        # Validate environment name with proper type checking
         valid_environments = ["development", "production", "staging", "test", "local"]
         if environment not in valid_environments:
             return FlextResult[FlextAuthConfig].fail(
@@ -442,37 +444,76 @@ class FlextAuthConfig(FlextConfig):
                 "Failed to load configuration from environment: invalid FLEXT_AUTH_JWT_EXPIRY_MINUTES value"
             )
 
+        # Normalize environment value to ensure type safety - create mapping to literal values
+        environment_mapping: dict[str, FlextTypes.Config.Environment] = {
+            "dev": "development",
+            "development": "development",
+            "prod": "production",
+            "production": "production",
+            "staging": "staging",
+            "test": "test",
+            "local": "local",
+        }
+
+        normalized_env = environment.lower()
+        env_value = environment_mapping.get(normalized_env, "development")
+
         # Create instance with overrides including environment
         try:
             # Create configuration with environment-specific settings and overrides
             # Use direct constructor call with explicit parameters for type safety
-            config = cls(
-                environment=cast(
-                    "Literal['development', 'production', 'staging', 'test', 'local']",
-                    environment,
-                ),
-                jwt_secret=jwt_secret or "",
-                jwt_expiry_minutes=jwt_expiry_minutes or 30,
-                jwt_algorithm=jwt_algorithm or "HS256",
-                jwt_issuer=jwt_issuer or "flext-auth",
-                jwt_audience=jwt_audience or "flext-api",
-                bcrypt_rounds=bcrypt_rounds or 12,
-                max_login_attempts=max_login_attempts or 5,
-                lockout_duration_minutes=lockout_duration_minutes or 30,
-                session_expiry_minutes=session_expiry_minutes or 120,
-                max_sessions_per_user=max_sessions_per_user or 10,
-                session_cleanup_interval_minutes=session_cleanup_interval_minutes or 60,
-                min_password_length=min_password_length or 8,
-                max_password_length=max_password_length or 128,
-                require_password_complexity=require_password_complexity or True,
-                min_password_score=min_password_score or 3,
-                max_requests_per_minute=max_requests_per_minute or 60,
-                max_requests_per_hour=max_requests_per_hour or 1000,
-                enable_email_verification=enable_email_verification or False,
-                enable_password_history=enable_password_history or True,
-                enable_audit_logging=enable_audit_logging or True,
-                enable_rate_limiting=enable_rate_limiting or True,
-            )
+            # Environment validation ensures this is safe
+            # Build kwargs with only non-None values to allow environment variables to be read
+            kwargs: dict[str, object] = {"environment": env_value}
+
+            if jwt_secret is not None:
+                kwargs["jwt_secret"] = jwt_secret
+            if jwt_expiry_minutes is not None:
+                kwargs["jwt_expiry_minutes"] = jwt_expiry_minutes
+            if jwt_algorithm is not None:
+                kwargs["jwt_algorithm"] = jwt_algorithm
+            if jwt_issuer is not None:
+                kwargs["jwt_issuer"] = jwt_issuer
+            if jwt_audience is not None:
+                kwargs["jwt_audience"] = jwt_audience
+            if bcrypt_rounds is not None:
+                kwargs["bcrypt_rounds"] = bcrypt_rounds
+            if max_login_attempts is not None:
+                kwargs["max_login_attempts"] = max_login_attempts
+            if lockout_duration_minutes is not None:
+                kwargs["lockout_duration_minutes"] = lockout_duration_minutes
+            if session_expiry_minutes is not None:
+                kwargs["session_expiry_minutes"] = session_expiry_minutes
+            if max_sessions_per_user is not None:
+                kwargs["max_sessions_per_user"] = max_sessions_per_user
+            if session_cleanup_interval_minutes is not None:
+                kwargs["session_cleanup_interval_minutes"] = (
+                    session_cleanup_interval_minutes
+                )
+            if min_password_length is not None:
+                kwargs["min_password_length"] = min_password_length
+            if max_password_length is not None:
+                kwargs["max_password_length"] = max_password_length
+            if require_password_complexity is not None:
+                kwargs["require_password_complexity"] = require_password_complexity
+            if min_password_score is not None:
+                kwargs["min_password_score"] = min_password_score
+            if max_requests_per_minute is not None:
+                kwargs["max_requests_per_minute"] = max_requests_per_minute
+            if max_requests_per_hour is not None:
+                kwargs["max_requests_per_hour"] = max_requests_per_hour
+            if enable_email_verification is not None:
+                kwargs["enable_email_verification"] = enable_email_verification
+            if enable_password_history is not None:
+                kwargs["enable_password_history"] = enable_password_history
+            if enable_audit_logging is not None:
+                kwargs["enable_audit_logging"] = enable_audit_logging
+            if enable_rate_limiting is not None:
+                kwargs["enable_rate_limiting"] = enable_rate_limiting
+
+            # Cast kwargs to proper types for constructor
+            typed_kwargs: dict[str, object] = dict(kwargs.items())
+            config = cls(**typed_kwargs)
 
             # Validate configuration after creation
             validation_result = config.validate_configuration()
@@ -594,90 +635,59 @@ class FlextAuthConfig(FlextConfig):
         if cls._auth_global_instance is not None and not kwargs:
             return FlextResult[FlextAuthConfig].ok(cls._auth_global_instance)
 
-        # Create new instance with overrides
+        # Helper function to safely extract and cast values
+        def safe_str_cast(key: str) -> str | None:
+            value = kwargs.get(key)
+            return (
+                str(value)
+                if value is not None and isinstance(value, (str, int))
+                else None
+            )
+
+        def safe_int_cast(key: str) -> int | None:
+            value = kwargs.get(key)
+            if isinstance(value, int):
+                return value
+            if isinstance(value, str) and value.isdigit():
+                return int(value)
+            return None
+
+        def safe_bool_cast(key: str) -> bool | None:
+            value = kwargs.get(key)
+            if isinstance(value, bool):
+                return value
+            if isinstance(value, str):
+                return value.lower() in {"true", "1", "yes", "on"}
+            if isinstance(value, int):
+                return bool(value)
+            return None
+
+        # Create new instance with overrides using safe type casting
         result = cls.create_for_environment(
             environment=environment,
-            jwt_secret=cast("str | None", kwargs.get("jwt_secret"))
-            if isinstance(kwargs.get("jwt_secret"), str)
-            else None,
-            jwt_expiry_minutes=cast("int | None", kwargs.get("jwt_expiry_minutes"))
-            if isinstance(kwargs.get("jwt_expiry_minutes"), int)
-            else None,
-            jwt_algorithm=cast("str | None", kwargs.get("jwt_algorithm"))
-            if isinstance(kwargs.get("jwt_algorithm"), str)
-            else None,
-            jwt_issuer=cast("str | None", kwargs.get("jwt_issuer"))
-            if isinstance(kwargs.get("jwt_issuer"), str)
-            else None,
-            jwt_audience=cast("str | None", kwargs.get("jwt_audience"))
-            if isinstance(kwargs.get("jwt_audience"), str)
-            else None,
-            bcrypt_rounds=cast("int | None", kwargs.get("bcrypt_rounds"))
-            if isinstance(kwargs.get("bcrypt_rounds"), int)
-            else None,
-            max_login_attempts=cast("int | None", kwargs.get("max_login_attempts"))
-            if isinstance(kwargs.get("max_login_attempts"), int)
-            else None,
-            lockout_duration_minutes=cast(
-                "int | None", kwargs.get("lockout_duration_minutes")
-            )
-            if isinstance(kwargs.get("lockout_duration_minutes"), int)
-            else None,
-            session_expiry_minutes=cast(
-                "int | None", kwargs.get("session_expiry_minutes")
-            )
-            if isinstance(kwargs.get("session_expiry_minutes"), int)
-            else None,
-            max_sessions_per_user=cast(
-                "int | None", kwargs.get("max_sessions_per_user")
-            )
-            if isinstance(kwargs.get("max_sessions_per_user"), int)
-            else None,
-            session_cleanup_interval_minutes=cast(
-                "int | None", kwargs.get("session_cleanup_interval_minutes")
-            )
-            if isinstance(kwargs.get("session_cleanup_interval_minutes"), int)
-            else None,
-            min_password_length=cast("int | None", kwargs.get("min_password_length"))
-            if isinstance(kwargs.get("min_password_length"), int)
-            else None,
-            max_password_length=cast("int | None", kwargs.get("max_password_length"))
-            if isinstance(kwargs.get("max_password_length"), int)
-            else None,
-            require_password_complexity=cast(
-                "bool | None", kwargs.get("require_password_complexity")
-            )
-            if isinstance(kwargs.get("require_password_complexity"), bool)
-            else None,
-            min_password_score=cast("int | None", kwargs.get("min_password_score"))
-            if isinstance(kwargs.get("min_password_score"), int)
-            else None,
-            max_requests_per_minute=cast(
-                "int | None", kwargs.get("max_requests_per_minute")
-            )
-            if isinstance(kwargs.get("max_requests_per_minute"), int)
-            else None,
-            max_requests_per_hour=cast(
-                "int | None", kwargs.get("max_requests_per_hour")
-            )
-            if isinstance(kwargs.get("max_requests_per_hour"), int)
-            else None,
-            enable_email_verification=cast(
-                "bool | None", kwargs.get("enable_email_verification")
-            )
-            if isinstance(kwargs.get("enable_email_verification"), bool)
-            else None,
-            enable_password_history=cast(
-                "bool | None", kwargs.get("enable_password_history")
-            )
-            if isinstance(kwargs.get("enable_password_history"), bool)
-            else None,
-            enable_audit_logging=cast("bool | None", kwargs.get("enable_audit_logging"))
-            if isinstance(kwargs.get("enable_audit_logging"), bool)
-            else None,
-            enable_rate_limiting=cast("bool | None", kwargs.get("enable_rate_limiting"))
-            if isinstance(kwargs.get("enable_rate_limiting"), bool)
-            else None,
+            jwt_secret=safe_str_cast("jwt_secret"),
+            jwt_expiry_minutes=safe_int_cast("jwt_expiry_minutes"),
+            jwt_algorithm=safe_str_cast("jwt_algorithm"),
+            jwt_issuer=safe_str_cast("jwt_issuer"),
+            jwt_audience=safe_str_cast("jwt_audience"),
+            bcrypt_rounds=safe_int_cast("bcrypt_rounds"),
+            max_login_attempts=safe_int_cast("max_login_attempts"),
+            lockout_duration_minutes=safe_int_cast("lockout_duration_minutes"),
+            session_expiry_minutes=safe_int_cast("session_expiry_minutes"),
+            max_sessions_per_user=safe_int_cast("max_sessions_per_user"),
+            session_cleanup_interval_minutes=safe_int_cast(
+                "session_cleanup_interval_minutes"
+            ),
+            min_password_length=safe_int_cast("min_password_length"),
+            max_password_length=safe_int_cast("max_password_length"),
+            require_password_complexity=safe_bool_cast("require_password_complexity"),
+            min_password_score=safe_int_cast("min_password_score"),
+            max_requests_per_minute=safe_int_cast("max_requests_per_minute"),
+            max_requests_per_hour=safe_int_cast("max_requests_per_hour"),
+            enable_email_verification=safe_bool_cast("enable_email_verification"),
+            enable_password_history=safe_bool_cast("enable_password_history"),
+            enable_audit_logging=safe_bool_cast("enable_audit_logging"),
+            enable_rate_limiting=safe_bool_cast("enable_rate_limiting"),
         )
         if result.is_success:
             # Set as global instance

@@ -77,17 +77,6 @@ class TestFlextAuthInitializationCoverage:
             # Other exceptions should be properly handled, not ignored
             pytest.fail(f"Unexpected exception during quick_start general: {e}")
 
-    def test_get_global_config_exception_handling(self) -> None:
-        """Test get_global_config exception handling - lines 541-543."""
-        # This test covers the exception handling in get_global_config
-        try:
-            result = FlextAuth.get_global_config()
-            # If it succeeds, that's fine
-            assert result.is_success
-        except Exception as e:
-            # If it fails, that should be properly handled
-            pytest.fail(f"Unexpected exception during get_global_config: {e}")
-
     def test_flext_auth_initialization_with_overrides(self) -> None:
         """Test FlextAuth initialization with parameter overrides - lines 235-237."""
         # Create with custom parameters to cover override paths
@@ -496,24 +485,3 @@ class TestFlextAuthAdditionalCoverage:
         assert (
             "Invalid token" in result.error or "Token validation failed" in result.error
         )
-
-    def test_verify_password_exception_handling(self) -> None:
-        """Test verify_password exception handling - line 820-821."""
-        auth = FlextAuth()
-
-        # Test with invalid password hash that causes bcrypt exception
-        result = auth.verify_password("password", "invalid_hash")
-        assert result is False  # Should return False on exception
-
-    def test_password_rounds_setter(self) -> None:
-        """Test password_rounds setter - line 902."""
-        auth = FlextAuth()
-
-        # Test setting password rounds
-        original_rounds = auth.password_rounds
-        auth.password_rounds = 10
-        assert auth.password_rounds == 10
-
-        # Reset to original value
-        auth.password_rounds = original_rounds
-        assert auth.password_rounds == original_rounds

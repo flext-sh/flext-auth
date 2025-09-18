@@ -270,7 +270,7 @@ class TestFlextAuthConfigSingletonOnly:
         config = config_result.value
 
         # Secret should be generated
-        assert config.jwt_secret != ""
+        assert config.jwt_secret
         assert len(config.jwt_secret) >= 32
 
     def test_singleton_security_defaults(self) -> None:

@@ -1,6 +1,6 @@
 # Authentication Implementation Guide
 
-**Version**: 0.9.0 | **Updated**: September 17, 2025
+**Version**: 0.9.9 RC | **Updated**: September 17, 2025
 
 This guide covers authentication-specific implementation details for the FLEXT-AUTH library, focusing on security practices and integration patterns specific to authentication workflows.
 

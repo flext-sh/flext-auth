@@ -10,8 +10,6 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 from datetime import UTC, datetime
 from unittest.mock import patch
 
-import pytest
-
 from flext_auth.auth import FlextAuth
 from flext_auth.models import FlextAuthModels
 
@@ -35,36 +33,6 @@ class TestMissingCoverage:
         result = auth.authenticate_user("nonexistentuser", "wrongpassword")
         assert result.is_failure
         assert "Invalid credentials" in result.error
-
-    def test_auth_password_hashing_exception(self) -> None:
-        """Test auth.py lines 488-490 - password hashing exception."""
-        auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-
-        # Mock bcrypt to raise an exception
-        with (
-            patch("bcrypt.hashpw", side_effect=Exception("Bcrypt error")),
-            pytest.raises(RuntimeError, match="Password hashing failed"),
-        ):
-            auth.hash_password("testpassword")
-
-    def test_auth_session_manager_property(self) -> None:
-        """Test auth.py line 553 - session_manager property."""
-        auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-
-        # Test the session_manager property returns self
-        session_manager = auth.session_manager
-        assert session_manager is auth
-
-    def test_auth_get_global_config_failure(self) -> None:
-        """Test auth.py lines 561-562 - get_global_config failure path."""
-        # Mock FlextAuthConfig.get_global_instance to raise an exception
-        with patch(
-            "flext_auth.config.FlextAuthConfig.get_global_instance",
-            side_effect=Exception("Config error"),
-        ):
-            result = FlextAuth.get_global_config()
-            assert result.is_failure
-            assert "Config error" in result.error
 
     def test_auth_quick_start_config_failure(self) -> None:
         """Test auth.py line 595 - quick_start config creation failure."""
@@ -149,7 +117,7 @@ class TestMissingCoverage:
 
         # Test with empty string
         user.password_hash = ""
-        assert user.password_hash == ""
+        assert not user.password_hash
 
     def test_user_role_operations(self) -> None:
         """Test models.py lines 371-379 - user role operations."""

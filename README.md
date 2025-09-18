@@ -1,12 +1,12 @@
 # flext-auth
 
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
-[![Development Status](https://img.shields.io/badge/status-v0.9.0--dev-yellow.svg)](#current-status)
+[![Development Status](https://img.shields.io/badge/status-v0.9.9--dev-yellow.svg)](#current-status)
 [![Test Coverage](https://img.shields.io/badge/coverage-mixed-orange.svg)](#testing)
 
 **Authentication and authorization library** for the FLEXT ecosystem, providing **JWT tokens and session management** using **FLEXT architectural patterns**.
 
-> **⚠️ STATUS**: Development version (v0.9.0) - 611 tests passing, 17 failed, 88 errors. Significant work needed for production readiness.
+> **⚠️ STATUS**: Development version (v0.9.9) - 611 tests passing, 17 failed, 88 errors. Significant work needed for production readiness.
 
 ---
 
@@ -44,7 +44,7 @@ flext-auth provides authentication services for FLEXT ecosystem projects, implem
 | **FlextContainer**  | 🟢 90% | Dependency injection throughout                      |
 | **Domain Patterns** | 🟢 85% | User, Session, Role entities with FlextModels.Entity |
 
-> **Status**: 🔴 Critical | 🟡 Partial | 🟢 Complete
+> **Status**: 🔴 Critical · 1.0.0 Release Preparation | 🟡 Partial | 🟢 Complete
 
 ### **Implementation Scale**
 
@@ -192,7 +192,7 @@ pytest --cov=src/flext_auth # Coverage report
 
 ## 🗺️ Roadmap
 
-### **Current Version (v0.9.0)**
+### **Current Version (v0.9.9)**
 
 - Development version with core authentication working
 - Test stabilization and quality improvements needed
@@ -259,6 +259,6 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-**flext-auth v0.9.0** - Authentication service enabling secure access management across the FLEXT ecosystem.
+**flext-auth v0.9.9** - Authentication service enabling secure access management across the FLEXT ecosystem.
 
 **Mission**: Provide authentication services that integrate with FLEXT ecosystem patterns while implementing secure authentication methods for enterprise applications.

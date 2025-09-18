@@ -67,7 +67,34 @@ class FlextAuth:
         full_name: str | None = None,
         roles: list[str] | None = None,
     ) -> FlextResult[FlextAuthModels.User]:
-        """Register new user using domain function from models.py."""
+        """Register a new user with secure password hashing and validation.
+
+        Creates a new user account with bcrypt password hashing, email validation,
+        and role assignment. Checks for duplicate usernames and emails before
+        creating the account.
+
+        Args:
+            username: Unique username (minimum 3 characters, alphanumeric + underscore)
+            email: Valid email address for the user
+            password: Plain text password (will be hashed with bcrypt)
+            full_name: Optional full name for the user
+            roles: Optional list of roles (defaults to ["user"])
+
+        Returns:
+            FlextResult containing the created User entity or error information
+
+        Raises:
+            ValueError: If username or email validation fails
+            RuntimeError: If password hashing fails
+
+        Example:
+            >>> auth = FlextAuth()
+            >>> result = auth.register_user(
+            ...     "john_doe", "john@example.com", "SecurePass123!"
+            ... )
+            >>> assert result.is_success
+
+        """
         # Check for duplicates first
         if username.lower() in self.username_index:
             return FlextResult[FlextAuthModels.User].fail(
@@ -110,7 +137,35 @@ class FlextAuth:
         client_ip: str | None = None,
         user_agent: str | None = None,
     ) -> FlextResult[FlextAuthModels.AuthenticationResponseDict]:
-        """Authenticate user using domain function from models.py."""
+        """Authenticate user credentials and create session with JWT token.
+
+        Validates user credentials against stored password hash, checks account
+        status (active/locked), and creates a new session with JWT token if
+        authentication succeeds. Tracks failed login attempts and applies
+        account lockout after maximum attempts.
+
+        Args:
+            username: Username to authenticate (case insensitive)
+            password: Plain text password to verify
+            client_ip: Optional client IP address for session tracking
+            user_agent: Optional user agent string for session tracking
+
+        Returns:
+            FlextResult containing AuthenticationResponseDict with user data,
+            session information, and JWT token, or error information
+
+        Raises:
+            ValueError: If credentials are invalid or account is locked
+            RuntimeError: If session creation or token generation fails
+
+        Example:
+            >>> auth = FlextAuth()
+            >>> result = auth.authenticate_user("john_doe", "SecurePass123!")
+            >>> if result.is_success:
+            ...     response = result.value
+            ...     print(f"Authenticated user: {response['user']['username']}")
+
+        """
         # Log authentication attempt
         self._logger.info(f"Authentication attempt for username: {username}")
         if client_ip or user_agent:
@@ -195,6 +250,7 @@ class FlextAuth:
                 # Create SessionDict with all required fields
                 session_data: FlextAuthModels.SessionDict = {
                     "id": session.id,
+                    "session_id": session.id,  # Alias for API compatibility
                     "user_id": session.user_id,
                     "session_token": session.session_token,
                     "expires_at": session.expires_at,
@@ -471,7 +527,7 @@ class FlextAuth:
     def _authenticate_user_internal(
         self, username: str, password: str, users_data: list[dict[str, object]]
     ) -> FlextResult[FlextAuthModels.User]:
-        """Internal authentication logic moved from _AuthenticationService."""
+        """Authenticate user internally."""
         if not username or not password:
             return FlextResult[FlextAuthModels.User].fail(
                 "Username and password required"
