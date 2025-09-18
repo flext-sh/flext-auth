@@ -6,6 +6,8 @@
 
 **References**: See [../CLAUDE.md](../CLAUDE.md) for FLEXT ecosystem standards and [README.md](README.md) for project overview.
 
+**Hierarchy**: This document provides project-specific standards based on workspace-level patterns defined in [../CLAUDE.md](../CLAUDE.md). For architectural principles, quality gates, and MCP server usage, reference the main workspace standards.
+
 **Copyright (c) 2025 FLEXT Team. All rights reserved.**
 **License**: MIT
 
@@ -373,7 +375,7 @@ class EnterpriseAuthenticationService(FlextDomainService[UserCreationRequest, di
 from flext_core import FlextResult, get_logger
 from flext_auth import FlextAuthConfig, FlextAuthConfigParams
 from pydantic import BaseSettings, SecretStr
-from typing import Dict, Any
+from typing import Dict, object
 
 class EnterpriseAuthenticationConfiguration(BaseSettings):
     """Enterprise authentication configuration using FLEXT patterns."""
@@ -995,6 +997,20 @@ echo "✅ Authentication Foundation achievement validation COMPLETED"
 - **Enterprise Security Standards**: Sets bar for production-ready FLEXT security applications
 - **Service Architecture Patterns**: Demonstrates advanced patterns usage at scale
 - **Testing Excellence**: Real authentication environment testing with production security validation
+
+## 🔗 MCP SERVER INTEGRATION
+
+### Mandatory MCP Server Usage (AUTHENTICATION COMPLIANCE)
+As defined in [../CLAUDE.md](../CLAUDE.md), all FLEXT development MUST use:
+- **serena**: All semantic code operations, symbol analysis, and refactoring
+- **sequential-thinking**: Complex problem decomposition and planning
+- **context7**: Third-party library documentation and API references
+- **github**: Repository operations and pull request management
+- **puppeteer**: Web automation and testing interfaces
+
+Authentication development must leverage MCP servers for secure, maintainable code patterns.
+
+---
 
 ## FLEXT-AUTH FOUNDATION DEVELOPMENT SUMMARY
 
