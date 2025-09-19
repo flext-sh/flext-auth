@@ -84,7 +84,9 @@ class TestRealAuthentication:
         # Test strong password hashing through User model
         strong_password = "VerySecurePassword123!@#$%^&*()"
         user = FlextAuthModels.User(
-            id="test-id", username="testuser", email="test@example.com",
+            id="test-id",
+            username="testuser",
+            email="test@example.com",
         )
 
         # Set password
@@ -114,7 +116,9 @@ class TestRealAuthentication:
 
         # Register test user
         register_result = auth.register_user(
-            username="test_user", email="test@example.com", password="TestPassword123!",
+            username="test_user",
+            email="test@example.com",
+            password="TestPassword123!",
         )
         assert register_result.success
         user = register_result.value
@@ -148,7 +152,9 @@ class TestRealAuthentication:
 
         # Register and authenticate user
         register_result = auth.register_user(
-            "session_user", "session@example.com", "SessionPass123!",
+            "session_user",
+            "session@example.com",
+            "SessionPass123!",
         )
         assert register_result.success
         user = register_result.value
@@ -214,12 +220,16 @@ class TestRealAuthentication:
 
         # Test duplicate username registration
         first_register = auth.register_user(
-            "duplicate", "first@example.com", "Password123!",
+            "duplicate",
+            "first@example.com",
+            "Password123!",
         )
         assert first_register.success
 
         second_register = auth.register_user(
-            "duplicate", "second@example.com", "Password123!",
+            "duplicate",
+            "second@example.com",
+            "Password123!",
         )
         assert second_register.is_failure
         assert (
@@ -229,20 +239,26 @@ class TestRealAuthentication:
 
         # Test duplicate email registration
         third_register = auth.register_user(
-            "different", "first@example.com", "Password123!",
+            "different",
+            "first@example.com",
+            "Password123!",
         )
         assert third_register.is_failure
         assert "email" in (third_register.error or "").lower()
 
         # Test invalid email format
         invalid_email_register = auth.register_user(
-            "valid_user", "invalid-email", "Password123!",
+            "valid_user",
+            "invalid-email",
+            "Password123!",
         )
         assert invalid_email_register.is_failure
 
         # Test weak password
         weak_password_register = auth.register_user(
-            "weak_user", "weak@example.com", "123",
+            "weak_user",
+            "weak@example.com",
+            "123",
         )
         assert weak_password_register.is_failure
 
@@ -298,7 +314,9 @@ class TestRealAuthentication:
 
         # Register user for token operations
         register_result = auth.register_user(
-            "jwt_user", "jwt@example.com", "JwtPassword123!",
+            "jwt_user",
+            "jwt@example.com",
+            "JwtPassword123!",
         )
         assert register_result.success
         user = register_result.value
@@ -337,7 +355,9 @@ class TestRealAuthentication:
 
         # Test weak password validation through User model
         weak_user = FlextAuthModels.User(
-            id="test-id", username="testuser", email="test@example.com",
+            id="test-id",
+            username="testuser",
+            email="test@example.com",
         )
         weak_password_result = weak_user.set_password("123")  # Too weak
         assert weak_password_result.is_failure
@@ -364,7 +384,9 @@ class TestRealAuthentication:
         """Test convenience methods and properties for full coverage."""
         # Create a user to test properties
         user_request = FlextAuthModels.UserCreationRequest(
-            username="prop_user", email="prop@example.com", password="PropPassword123!",
+            username="prop_user",
+            email="prop@example.com",
+            password="PropPassword123!",
         )
         user_result = create_user(user_request)
         assert user_result.success
@@ -443,7 +465,8 @@ class TestRealAuthentication:
 
         # Test authentication with different cases
         auth_case_result = auth.authenticate_user(
-            "ADVANCED_USER", "AdvancedPassword123!",
+            "ADVANCED_USER",
+            "AdvancedPassword123!",
         )
         assert auth_case_result.success
 
@@ -453,7 +476,9 @@ class TestRealAuthentication:
 
         # Create user for JWT testing
         user_result = auth.register_user(
-            "jwt_advanced", "jwt_advanced@example.com", "JwtPassword123!",
+            "jwt_advanced",
+            "jwt_advanced@example.com",
+            "JwtPassword123!",
         )
         assert user_result.success
         user = user_result.value
@@ -595,7 +620,8 @@ class TestRealAuthentication:
 
         # Test password hash validation error paths
         with pytest.raises(
-            ValidationError, match="Password hash must be bcrypt format",
+            ValidationError,
+            match="Password hash must be bcrypt format",
         ):
             # Force create a User with invalid password hash to trigger validation
             User(
@@ -730,7 +756,9 @@ class TestRealAuthentication:
         # Test maximum length username
         max_username = "a" * 50  # MAX_USERNAME_LENGTH
         max_user_result = auth.register_user(
-            username=max_username, email="max@username.com", password="MaxUsername123!",
+            username=max_username,
+            email="max@username.com",
+            password="MaxUsername123!",
         )
         assert max_user_result.success
 
@@ -742,7 +770,9 @@ class TestRealAuthentication:
         # Test minimum length username
         min_username = "abc"  # MIN_USERNAME_LENGTH = 3
         min_user_result = auth.register_user(
-            username=min_username, email="min@username.com", password="MinUsername123!",
+            username=min_username,
+            email="min@username.com",
+            password="MinUsername123!",
         )
         assert min_user_result.success
 
@@ -768,7 +798,9 @@ class TestRealAuthentication:
 
         # Test user password verification
         user_request = FlextAuthModels.UserCreationRequest(
-            username="test", email="test@example.com", password="ValidPassword123!",
+            username="test",
+            email="test@example.com",
+            password="ValidPassword123!",
         )
         valid_user_result = create_user(user_request)
         assert valid_user_result.success
@@ -813,7 +845,8 @@ class TestRealAuthentication:
 
         # Test FlextAuth with production environment
         prod_config_result = FlextAuthConfig.create_for_environment(
-            "production", jwt_expiry_minutes=30,
+            "production",
+            jwt_expiry_minutes=30,
         )
         assert prod_config_result.success, (
             f"Production config failed: {prod_config_result.error}"

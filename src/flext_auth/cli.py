@@ -48,7 +48,9 @@ class FlextAuthCli:
         """Authenticate user with configurable parameters."""
         # Use FlextConfig singleton with CLI overrides
         config_result = FlextAuthConfig.create_from_cli_params(
-            jwt_expiry=jwt_expiry, bcrypt_rounds=bcrypt_rounds, environment=environment,
+            jwt_expiry=jwt_expiry,
+            bcrypt_rounds=bcrypt_rounds,
+            environment=environment,
         )
 
         if config_result.is_failure:

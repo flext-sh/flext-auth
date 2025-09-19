@@ -22,7 +22,9 @@ class TestRealAuthenticationSimple:
 
         # Register user
         register_result = auth.register_user(
-            username="test_user", email="test@example.com", password="TestPassword123!",
+            username="test_user",
+            email="test@example.com",
+            password="TestPassword123!",
         )
         assert register_result.success, f"Registration failed: {register_result.error}"
         user = register_result.value
@@ -44,7 +46,9 @@ class TestRealAuthenticationSimple:
 
         # Register user
         register_result = auth.register_user(
-            "jwt_user", "jwt@example.com", "JwtPassword123!",
+            "jwt_user",
+            "jwt@example.com",
+            "JwtPassword123!",
         )
         assert register_result.success
         user = register_result.value
@@ -65,7 +69,9 @@ class TestRealAuthenticationSimple:
         # Test password hashing through User model
         password = "SecurePassword123!"
         user = FlextAuthModels.User(
-            id="test-id", username="testuser", email="test@example.com",
+            id="test-id",
+            username="testuser",
+            email="test@example.com",
         )
 
         # Set password
@@ -91,7 +97,9 @@ class TestRealAuthenticationSimple:
 
         # Register user
         register_result = auth.register_user(
-            "lookup_user", "lookup@example.com", "LookupPassword123!",
+            "lookup_user",
+            "lookup@example.com",
+            "LookupPassword123!",
         )
         assert register_result.success
         user = register_result.value
@@ -116,7 +124,9 @@ class TestRealAuthenticationSimple:
 
         # Register and authenticate user
         register_result = auth.register_user(
-            "session_user", "session@example.com", "SessionPassword123!",
+            "session_user",
+            "session@example.com",
+            "SessionPassword123!",
         )
         assert register_result.success
         user = register_result.value

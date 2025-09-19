@@ -121,7 +121,8 @@ class FlextAuthProtocols:
             ...
 
         def get_user_by_token(
-            self, token: str,
+            self,
+            token: str,
         ) -> FlextResult[FlextAuthProtocols.FlextAuthUserProtocol | None]:
             """Get user by JWT token."""
             ...

@@ -160,7 +160,9 @@ class TestRealModelsExhaustive:
     def test_session_token_length_validation(self) -> None:
         """Testa validação de comprimento do token (linhas 457-459, 464-470)."""
         user_request = FlextAuthModels.UserCreationRequest(
-            username="token_user", email="token@test.com", password="TestPass123!",
+            username="token_user",
+            email="token@test.com",
+            password="TestPass123!",
         )
         user_result = create_user_from_request(user_request)
         assert user_result.success
@@ -178,7 +180,9 @@ class TestRealModelsExhaustive:
     def test_session_expiration_real_functionality(self) -> None:
         """Testa funcionalidade real de expiração de sessão (linhas 492-493)."""
         user_request = FlextAuthModels.UserCreationRequest(
-            username="exp_user", email="exp@test.com", password="TestPass123!",
+            username="exp_user",
+            email="exp@test.com",
+            password="TestPass123!",
         )
         user_result = create_user_from_request(user_request)
         assert user_result.success
@@ -228,7 +232,9 @@ class TestRealModelsExhaustive:
         """Testa cenários reais de autenticação (linhas 543-544, 612-637)."""
         # Criar usuário
         user_request = FlextAuthModels.UserCreationRequest(
-            username="auth_user", email="auth@test.com", password="AuthPass123!",
+            username="auth_user",
+            email="auth@test.com",
+            password="AuthPass123!",
         )
         user_result = create_user_from_request(user_request)
         assert user_result.success
@@ -238,25 +244,30 @@ class TestRealModelsExhaustive:
 
         # Register the user first before authenticating
         auth_service.register_user(
-            username="auth_user", email="auth@test.com", password="AuthPass123!",
+            username="auth_user",
+            email="auth@test.com",
+            password="AuthPass123!",
         )
 
         result = auth_service.authenticate_user(
-            username="auth_user", password="AuthPass123!",
+            username="auth_user",
+            password="AuthPass123!",
         )
         assert result.success
 
         # Autenticação com senha incorreta
         auth_service = FlextAuth()
         result = auth_service.authenticate_user(
-            username="auth_user", password="WrongPass123!",
+            username="auth_user",
+            password="WrongPass123!",
         )
         assert not result.success
 
         # Usuário não encontrado
         auth_service = FlextAuth()
         result = auth_service.authenticate_user(
-            username="nonexistent", password="password",
+            username="nonexistent",
+            password="password",
         )
         assert not result.success
 
@@ -272,7 +283,8 @@ class TestRealModelsExhaustive:
         """Testa método factory Session.create (linhas 363-399)."""
         # Testar criação de sessão com factory method
         session_result = create_session(
-            user_id="test_user_session", expires_in_minutes=30,
+            user_id="test_user_session",
+            expires_in_minutes=30,
         )
 
         assert session_result.success, (
@@ -304,7 +316,9 @@ class TestRealAuthExhaustive:
 
         # Registrar usuário
         reg_result = auth.register_user(
-            "workflow_user", "workflow@test.com", "WorkflowPass123!",
+            "workflow_user",
+            "workflow@test.com",
+            "WorkflowPass123!",
         )
         assert reg_result.success
 
@@ -344,7 +358,9 @@ class TestRealAuthExhaustive:
 
         # Criar usuário
         reg_result = auth.register_user(
-            "lookup_user", "lookup@test.com", "LookupPass123!",
+            "lookup_user",
+            "lookup@test.com",
+            "LookupPass123!",
         )
         assert reg_result.success
 
@@ -365,7 +381,9 @@ class TestRealAuthExhaustive:
 
         # Criar usuário e fazer login
         reg_result = auth.register_user(
-            "session_user", "session@test.com", "SessionPass123!",
+            "session_user",
+            "session@test.com",
+            "SessionPass123!",
         )
         assert reg_result.success
 
@@ -443,7 +461,9 @@ class TestRealAuthExhaustive:
         # Registrar múltiplos usuários
         for i in range(3):
             result = auth.register_user(
-                f"user_{i}", f"user{i}@test.com", f"UserPass{i}123!",
+                f"user_{i}",
+                f"user{i}@test.com",
+                f"UserPass{i}123!",
             )
             assert result.success
 
@@ -460,7 +480,9 @@ class TestRealAuthExhaustive:
 
         # Criar usuário
         reg_result = auth.register_user(
-            "advanced_user", "advanced@test.com", "AdvancedPass123!",
+            "advanced_user",
+            "advanced@test.com",
+            "AdvancedPass123!",
         )
         assert reg_result.success
 
@@ -629,7 +651,9 @@ class TestRealIntegrationExhaustive:
 
         # Criar usuário
         reg_result = auth.register_user(
-            "session_lifecycle", "session@lifecycle.com", "SessionPass123!",
+            "session_lifecycle",
+            "session@lifecycle.com",
+            "SessionPass123!",
         )
         assert reg_result.success
 

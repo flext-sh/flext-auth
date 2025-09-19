@@ -26,12 +26,16 @@ def main() -> None:
     try:
         # Create user with password hashing
         FlextAuthModels.UserCreationRequest(
-            username="testuser", email="test@example.com", password="TestPassword123!",
+            username="testuser",
+            email="test@example.com",
+            password="TestPassword123!",
         )
 
         # Register user (includes password hashing)
         user_result = auth.register_user(
-            "testuser", "test@example.com", "TestPassword123!",
+            "testuser",
+            "test@example.com",
+            "TestPassword123!",
         )
         if user_result.is_success:
             user = user_result.value

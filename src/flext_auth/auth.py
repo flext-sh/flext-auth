@@ -104,7 +104,8 @@ class FlextAuth:
 
         if email.lower() in self.email_index:
             return FlextResult[FlextAuthModels.User].fail(
-                "Email already exists", error_code=FlextAuthConstants.EMAIL_TAKEN,
+                "Email already exists",
+                error_code=FlextAuthConstants.EMAIL_TAKEN,
             )
 
         request = FlextAuthModels.UserCreationRequest(
@@ -357,7 +358,8 @@ class FlextAuth:
         return token_result.value.token
 
     def get_user_by_username(
-        self, username: str,
+        self,
+        username: str,
     ) -> FlextResult[FlextAuthModels.User | None]:
         """Get user by username (case insensitive)."""
         user_id = self.username_index.get(username.lower())
@@ -373,7 +375,8 @@ class FlextAuth:
         return FlextResult[FlextAuthModels.User | None].ok(user)
 
     def get_user_sessions(
-        self, user_id: str,
+        self,
+        user_id: str,
     ) -> FlextResult[list[FlextAuthModels.Session]]:
         """Get all active sessions for user."""
         session_ids = self.user_sessions_index.get(user_id, [])
@@ -485,7 +488,9 @@ class FlextAuth:
             raise RuntimeError(error_msg) from e
 
     def generate_jwt_token(
-        self, user_id: str, expires_in_minutes: int | None = None,
+        self,
+        user_id: str,
+        expires_in_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate JWT token for user.
 
@@ -525,7 +530,10 @@ class FlextAuth:
         return FlextResult[str].ok(token_result.value.token)
 
     def _authenticate_user_internal(
-        self, username: str, password: str, users_data: list[dict[str, object]],
+        self,
+        username: str,
+        password: str,
+        users_data: list[dict[str, object]],
     ) -> FlextResult[FlextAuthModels.User]:
         """Authenticate user internally."""
         if not username or not password:

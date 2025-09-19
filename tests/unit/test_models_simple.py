@@ -141,7 +141,8 @@ class TestUserCreateUserMethod:
         """Test Session token validation - lines 313-314."""
         # Test with token that's too short
         with pytest.raises(
-            ValueError, match="String should have at least 32 characters",
+            ValueError,
+            match="String should have at least 32 characters",
         ):
             _ = FlextAuthModels.Session(
                 id="test-session-id",
@@ -200,7 +201,9 @@ class TestUserCreateUserMethod:
         """Test Session create_session method - lines 354-389."""
         # Test create_session method
         result = create_session(
-            "test-user-id", ip_address="127.0.0.1", user_agent="test-agent",
+            "test-user-id",
+            ip_address="127.0.0.1",
+            user_agent="test-agent",
         )
 
         assert result.success

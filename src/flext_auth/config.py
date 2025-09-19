@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
-from typing import ClassVar
+from typing import ClassVar, cast
 
 from pydantic import Field, ValidationInfo, field_validator, model_validator
 from pydantic_settings import SettingsConfigDict
@@ -104,11 +104,13 @@ class FlextAuthConfig(FlextConfig):
     )
 
     jwt_issuer: str = Field(
-        default=FlextAuthConstants.JWT_ISSUER_CLAIM, description="JWT issuer claim",
+        default=FlextAuthConstants.JWT_ISSUER_CLAIM,
+        description="JWT issuer claim",
     )
 
     jwt_audience: str = Field(
-        default=FlextAuthConstants.JWT_AUDIENCE_CLAIM, description="JWT audience claim",
+        default=FlextAuthConstants.JWT_AUDIENCE_CLAIM,
+        description="JWT audience claim",
     )
 
     # =========================================================================
@@ -214,19 +216,23 @@ class FlextAuthConfig(FlextConfig):
     # =========================================================================
 
     enable_email_verification: bool = Field(
-        default=False, description="Enable email verification for new accounts",
+        default=False,
+        description="Enable email verification for new accounts",
     )
 
     enable_password_history: bool = Field(
-        default=False, description="Prevent password reuse (password history)",
+        default=False,
+        description="Prevent password reuse (password history)",
     )
 
     enable_audit_logging: bool = Field(
-        default=True, description="Enable detailed audit logging",
+        default=True,
+        description="Enable detailed audit logging",
     )
 
     enable_rate_limiting: bool = Field(
-        default=True, description="Enable rate limiting for authentication endpoints",
+        default=True,
+        description="Enable rate limiting for authentication endpoints",
     )
 
     # =========================================================================
@@ -460,10 +466,7 @@ class FlextAuthConfig(FlextConfig):
         try:
             # Create base configuration with environment
             # Cast environment to proper literal type
-            from typing import cast
-
-            from flext_core.constants import FlextConstants
-            env_literal = cast("FlextConstants.Config.Environment", env_value)
+            env_literal = cast("FlextTypes.Config.Environment", env_value)
             config = cls(environment=env_literal)
 
             # Apply parameter overrides using attribute assignment (Pydantic supports this)

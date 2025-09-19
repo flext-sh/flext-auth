@@ -76,7 +76,9 @@ class TestFlextAuth:
 
         # Second registration with same username
         duplicate_result = auth.register_user(
-            "testuser", "test2@example.com", "Password123!",
+            "testuser",
+            "test2@example.com",
+            "Password123!",
         )
         assert duplicate_result.is_failure
         assert duplicate_result.is_failure
@@ -91,7 +93,9 @@ class TestFlextAuth:
 
         # Second registration with same email
         duplicate_result = auth.register_user(
-            "user2", "test@example.com", "Password123!",
+            "user2",
+            "test@example.com",
+            "Password123!",
         )
         assert duplicate_result.is_failure
         assert duplicate_result.is_failure
@@ -208,7 +212,10 @@ class TestFlextAuth:
         # Register and authenticate with session data
         auth.register_user(username, "session@example.com", password)
         auth_result = auth.authenticate_user(
-            username, password, "127.0.0.1", "test-user-agent",
+            username,
+            password,
+            "127.0.0.1",
+            "test-user-agent",
         )
         assert auth_result.success
 

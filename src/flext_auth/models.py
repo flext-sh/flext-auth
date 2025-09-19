@@ -217,7 +217,8 @@ class FlextAuthModels:
 
             try:
                 is_valid = bcrypt.checkpw(
-                    password.encode(), self.password_hash.encode(),
+                    password.encode(),
+                    self.password_hash.encode(),
                 )
                 return FlextResult[bool].ok(is_valid)
             except Exception as e:
@@ -254,7 +255,8 @@ class FlextAuthModels:
 
         @classmethod
         def create_user_from_request(
-            cls, request: FlextAuthModels.UserCreationRequest,
+            cls,
+            request: FlextAuthModels.UserCreationRequest,
         ) -> FlextResult[FlextAuthModels.User]:
             """Create user from parameter object - eliminates parameter passing smell."""
             try:
@@ -303,7 +305,9 @@ class FlextAuthModels:
 
         user_id: str = ""
         session_token: str = Field(
-            default="", min_length=32, description="Session token",
+            default="",
+            min_length=32,
+            description="Session token",
         )
         expires_at: datetime = Field(
             default_factory=lambda: datetime.now(UTC)
@@ -414,7 +418,9 @@ class FlextAuthModels:
 
         @classmethod
         def verify_jwt_token(
-            cls, token: str, secret_key: str,
+            cls,
+            token: str,
+            secret_key: str,
         ) -> FlextResult[dict[str, object]]:
             """Verify JWT token and return payload."""
             try:

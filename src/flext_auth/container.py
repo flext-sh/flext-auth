@@ -17,14 +17,16 @@ class FlextAuthContainer:
 
     @classmethod
     def create_user_from_request(
-        cls, request: FlextAuthModels.UserCreationRequest,
+        cls,
+        request: FlextAuthModels.UserCreationRequest,
     ) -> FlextResult[FlextAuthModels.User]:
         """Create user from parameter object - eliminates parameter passing smell."""
         return FlextAuthModels.User.create_user_from_request(request)
 
     @classmethod
     def create_user(
-        cls, request: FlextAuthModels.UserCreationRequest,
+        cls,
+        request: FlextAuthModels.UserCreationRequest,
     ) -> FlextResult[FlextAuthModels.User]:
         """Create a user from a request."""
         return FlextAuthModels.User.create_user_from_request(request)

@@ -39,7 +39,9 @@ def demonstrate_legacy_compatibility() -> None:
 
     # Show it works the same way
     reg_result = legacy_service.register_user(
-        "legacy_user", "legacy@example.com", "LegacyPassword123!",
+        "legacy_user",
+        "legacy@example.com",
+        "LegacyPassword123!",
     )
 
     if reg_result.is_success:
