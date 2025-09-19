@@ -172,7 +172,7 @@ class TestFlextAuthConfigCoverage:
         """Test field validation in FlextAuthConfig."""
         # Test password length validation - should fail with invalid values
         with pytest.raises(
-            ValidationError, match="Input should be greater than or equal to 6"
+            ValidationError, match="Input should be greater than or equal to 6",
         ):
             FlextAuthConfig(min_password_length=4, max_password_length=256)
 
@@ -379,7 +379,7 @@ class TestFlextAuthConfigAdditionalCoverage:
     def test_set_global_instance_type_error(self) -> None:
         """Test set_global_instance with invalid type to cover lines 510-511."""
         with pytest.raises(
-            TypeError, match="config must be an instance of FlextAuthConfig"
+            TypeError, match="config must be an instance of FlextAuthConfig",
         ):
             # Type ignore needed for intentional type violation in test
             FlextAuthConfig.set_global_instance("invalid_config")
@@ -404,7 +404,7 @@ class TestFlextAuthConfigAdditionalCoverage:
     def test_get_cli_summary_exception_handling(self) -> None:
         """Test get_global_cli_summary exception handling to cover lines 677-678."""
         with patch(
-            "flext_auth.config.FlextAuthConfig.get_global_instance"
+            "flext_auth.config.FlextAuthConfig.get_global_instance",
         ) as mock_get_global:
             mock_get_global.side_effect = Exception("Test exception")
 

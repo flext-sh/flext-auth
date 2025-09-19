@@ -89,7 +89,7 @@ class UserData(TypedDict):
 AuthUserDict = dict[str, str | int | bool | list[str]]
 AuthSessionDict = dict[str, str | int | bool]
 AuthDataDict = dict[
-    str, str | int | bool | AuthUserDict | AuthSessionDict | FlextTypes.Core.Headers
+    str, str | int | bool | AuthUserDict | AuthSessionDict | FlextTypes.Core.Headers,
 ]
 
 
@@ -153,7 +153,7 @@ class TestEnhancedAuthentication:
 
         # Create batch of realistic users using flext_tests
         users_data = cast(
-            "list[UserData]", FlextTestsFactories.UserFactory.batch(count=5)
+            "list[UserData]", FlextTestsFactories.UserFactory.batch(count=5),
         )
         registered_users: list[tuple[str, str]] = []
 
@@ -244,7 +244,7 @@ class TestEnhancedAuthentication:
 
         # Create multiple users for session testing
         users_data = cast(
-            "list[UserData]", FlextTestsFactories.UserFactory.batch(count=3)
+            "list[UserData]", FlextTestsFactories.UserFactory.batch(count=3),
         )
         user_sessions: list[tuple[str, str]] = []
 
@@ -269,7 +269,7 @@ class TestEnhancedAuthentication:
         for i in range(len(user_sessions)):
             # Re-authenticate to get the correct user context
             reauth_result = auth.authenticate_user(
-                f"session_user_{i}", "SessionTest123!@#"
+                f"session_user_{i}", "SessionTest123!@#",
             )
             FlextTestsMatchers.assert_result_success(reauth_result)
 
@@ -401,7 +401,7 @@ class TestEnhancedPerformanceValidation:
     """Performance testing using flext_tests advanced capabilities."""
 
     def test_authentication_performance_benchmark(
-        self, benchmark: Callable[[Callable[[], object]], object]
+        self, benchmark: Callable[[Callable[[], object]], object],
     ) -> None:
         """Test authentication performance using pytest-benchmark."""
         auth: FlextAuth = FlextAuth()
@@ -411,7 +411,7 @@ class TestEnhancedPerformanceValidation:
         username = sanitize_username(user_data["name"], "perf")
 
         register_result = auth.register_user(
-            username=username, email=str(user_data["email"]), password="PerfTest123!@#"
+            username=username, email=str(user_data["email"]), password="PerfTest123!@#",
         )
         FlextTestsMatchers.assert_result_success(register_result)
 
@@ -425,13 +425,13 @@ class TestEnhancedPerformanceValidation:
         # Verify the result is still functional
         FlextTestsMatchers.assert_result_success(result)
         if hasattr(result, "value"):
-            result_value = getattr(result, "value")
+            result_value = result.value
             if isinstance(result_value, dict) and "user" in result_value:
                 user_result = cast("AuthUserDict", result_value["user"])
                 assert user_result["username"] == username
 
     def test_batch_user_registration_complexity(
-        self, benchmark: Callable[[Callable[[], object]], object]
+        self, benchmark: Callable[[Callable[[], object]], object],
     ) -> None:
         """Test batch user registration performance characteristics."""
         auth: FlextAuth = FlextAuth()
@@ -440,17 +440,17 @@ class TestEnhancedPerformanceValidation:
             """Register multiple users and return results."""
             results: FlextTypes.Core.List = []
             users_data = cast(
-                "list[UserData]", FlextTestsFactories.UserFactory.batch(count=5)
+                "list[UserData]", FlextTestsFactories.UserFactory.batch(count=5),
             )
 
             for i, user_data in enumerate(users_data):
                 unique_id = str(uuid.uuid4())[:8]
                 username = sanitize_username(
-                    user_data["name"], f"batch_5_{i}_{unique_id}"
+                    user_data["name"], f"batch_5_{i}_{unique_id}",
                 )
                 email = f"{unique_id}_{user_data['email']}"
                 result = auth.register_user(
-                    username=username, email=email, password="BatchTest123!@#"
+                    username=username, email=email, password="BatchTest123!@#",
                 )
                 results.append(result)
             return results
@@ -464,14 +464,14 @@ class TestEnhancedPerformanceValidation:
                 FlextTestsMatchers.assert_result_success(result)
 
     def test_session_management_performance(
-        self, benchmark: Callable[[Callable[[], object]], object]
+        self, benchmark: Callable[[Callable[[], object]], object],
     ) -> None:
         """Test session management performance with realistic load."""
         auth: FlextAuth = FlextAuth()
 
         # Setup: Create multiple users
         users_data = cast(
-            "list[UserData]", FlextTestsFactories.UserFactory.batch(count=3)
+            "list[UserData]", FlextTestsFactories.UserFactory.batch(count=3),
         )
         user_sessions: FlextTypes.Core.StringList = []
 

@@ -38,7 +38,7 @@ class TestCliCoverage:
     @patch("flext_auth.cli.FlextAuthConfig.create_from_cli_params")
     @patch("flext_auth.cli.FlextAuth")
     def test_authenticate_user_success(
-        self, mock_auth_class: MagicMock, mock_config: MagicMock
+        self, mock_auth_class: MagicMock, mock_config: MagicMock,
     ) -> None:
         """Test successful user authentication via CLI."""
         # Mock config result
@@ -56,7 +56,7 @@ class TestCliCoverage:
         # Mock successful authentication
         mock_user_data = {"user": {"username": "testuser", "email": "test@example.com"}}
         mock_auth_instance.authenticate_user.return_value = FlextResult.ok(
-            mock_user_data
+            mock_user_data,
         )
 
         cli_instance = FlextAuthCli()
@@ -78,7 +78,7 @@ class TestCliCoverage:
 
         cli_instance = FlextAuthCli()
         result = cli_instance.authenticate_user(
-            username="testuser", password="testpass"
+            username="testuser", password="testpass",
         )
 
         assert result.is_failure
@@ -88,7 +88,7 @@ class TestCliCoverage:
     @patch("flext_auth.cli.FlextAuthConfig.create_from_cli_params")
     @patch("flext_auth.cli.FlextAuth")
     def test_authenticate_user_auth_failure(
-        self, mock_auth_class: MagicMock, mock_config: MagicMock
+        self, mock_auth_class: MagicMock, mock_config: MagicMock,
     ) -> None:
         """Test authentication failure."""
         # Mock config result
@@ -105,12 +105,12 @@ class TestCliCoverage:
 
         # Mock authentication failure
         mock_auth_instance.authenticate_user.return_value = FlextResult.fail(
-            "Auth error"
+            "Auth error",
         )
 
         cli_instance = FlextAuthCli()
         result = cli_instance.authenticate_user(
-            username="testuser", password="testpass", environment="development"
+            username="testuser", password="testpass", environment="development",
         )
 
         assert result.is_failure
@@ -119,7 +119,7 @@ class TestCliCoverage:
     @patch("flext_auth.cli.FlextAuthConfig.create_from_cli_params")
     @patch("flext_auth.cli.FlextAuth")
     def test_authenticate_user_success_no_username(
-        self, mock_auth_class: MagicMock, mock_config: MagicMock
+        self, mock_auth_class: MagicMock, mock_config: MagicMock,
     ) -> None:
         """Test authentication success without username in response."""
         # Mock config result
@@ -137,12 +137,12 @@ class TestCliCoverage:
         # Mock successful authentication without username
         mock_user_data = {"user": {"email": "test@example.com"}}
         mock_auth_instance.authenticate_user.return_value = FlextResult.ok(
-            mock_user_data
+            mock_user_data,
         )
 
         cli_instance = FlextAuthCli()
         result = cli_instance.authenticate_user(
-            username="testuser", password="testpass"
+            username="testuser", password="testpass",
         )
 
         assert result.is_success
@@ -150,7 +150,7 @@ class TestCliCoverage:
     @patch("flext_auth.cli.FlextAuthConfig.create_from_cli_params")
     @patch("flext_auth.cli.FlextAuth")
     def test_authenticate_user_success_no_user_key(
-        self, mock_auth_class: MagicMock, mock_config: MagicMock
+        self, mock_auth_class: MagicMock, mock_config: MagicMock,
     ) -> None:
         """Test authentication success without user key in response."""
         # Mock config result
@@ -168,12 +168,12 @@ class TestCliCoverage:
         # Mock successful authentication without user key
         mock_user_data = {"token": "test_token"}
         mock_auth_instance.authenticate_user.return_value = FlextResult.ok(
-            mock_user_data
+            mock_user_data,
         )
 
         cli_instance = FlextAuthCli()
         result = cli_instance.authenticate_user(
-            username="testuser", password="testpass"
+            username="testuser", password="testpass",
         )
 
         assert result.is_success
@@ -181,7 +181,7 @@ class TestCliCoverage:
     @patch("flext_auth.cli.FlextAuthConfig.create_from_cli_params")
     @patch("flext_auth.cli.FlextAuth")
     def test_register_user_success(
-        self, mock_auth_class: MagicMock, mock_config: MagicMock
+        self, mock_auth_class: MagicMock, mock_config: MagicMock,
     ) -> None:
         """Test successful user registration via CLI."""
         # Mock config result
@@ -222,7 +222,7 @@ class TestCliCoverage:
 
         cli_instance = FlextAuthCli()
         result = cli_instance.register_user(
-            username="testuser", email="test@example.com", password="testpass"
+            username="testuser", email="test@example.com", password="testpass",
         )
 
         assert result.is_failure
@@ -231,7 +231,7 @@ class TestCliCoverage:
     @patch("flext_auth.cli.FlextAuthConfig.create_from_cli_params")
     @patch("flext_auth.cli.FlextAuth")
     def test_register_user_registration_failure(
-        self, mock_auth_class: MagicMock, mock_config: MagicMock
+        self, mock_auth_class: MagicMock, mock_config: MagicMock,
     ) -> None:
         """Test registration failure."""
         # Mock config result
@@ -248,12 +248,12 @@ class TestCliCoverage:
 
         # Mock registration failure
         mock_auth_instance.register_user.return_value = FlextResult.fail(
-            "Registration error"
+            "Registration error",
         )
 
         cli_instance = FlextAuthCli()
         result = cli_instance.register_user(
-            username="testuser", email="test@example.com", password="testpass"
+            username="testuser", email="test@example.com", password="testpass",
         )
 
         assert result.is_failure
@@ -262,7 +262,7 @@ class TestCliCoverage:
     @patch("flext_auth.cli.FlextAuthConfig.get_global_cli_summary")
     @patch("flext_auth.cli.FlextAuthConfig.update_global_from_cli")
     def test_manage_config_show(
-        self, mock_update: MagicMock, mock_summary: MagicMock
+        self, mock_update: MagicMock, mock_summary: MagicMock,
     ) -> None:
         """Test config management show command."""
         # Mock config update
@@ -292,7 +292,7 @@ class TestCliCoverage:
     @patch("flext_auth.cli.FlextAuthConfig.get_global_cli_summary")
     @patch("flext_auth.cli.FlextAuthConfig.update_global_from_cli")
     def test_manage_config_show_summary_failure(
-        self, mock_update: MagicMock, mock_summary: MagicMock
+        self, mock_update: MagicMock, mock_summary: MagicMock,
     ) -> None:
         """Test config management show with summary failure."""
         # Mock config update
@@ -364,7 +364,7 @@ class TestCliCoverage:
         # Mock config instance
         mock_config_instance = MagicMock()
         mock_config_instance.validate_configuration.return_value = FlextResult.fail(
-            "Validation error"
+            "Validation error",
         )
         mock_get_global.return_value = mock_config_instance
 

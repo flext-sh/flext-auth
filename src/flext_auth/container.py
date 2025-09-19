@@ -17,14 +17,14 @@ class FlextAuthContainer:
 
     @classmethod
     def create_user_from_request(
-        cls, request: FlextAuthModels.UserCreationRequest
+        cls, request: FlextAuthModels.UserCreationRequest,
     ) -> FlextResult[FlextAuthModels.User]:
         """Create user from parameter object - eliminates parameter passing smell."""
         return FlextAuthModels.User.create_user_from_request(request)
 
     @classmethod
     def create_user(
-        cls, request: FlextAuthModels.UserCreationRequest
+        cls, request: FlextAuthModels.UserCreationRequest,
     ) -> FlextResult[FlextAuthModels.User]:
         """Create a user from a request."""
         return FlextAuthModels.User.create_user_from_request(request)
@@ -50,7 +50,7 @@ class FlextAuthContainer:
             return FlextResult[FlextAuthModels.Session].ok(session)
         except Exception as e:
             return FlextResult[FlextAuthModels.Session].fail(
-                f"Session creation failed: {e!s}"
+                f"Session creation failed: {e!s}",
             )
 
     @classmethod

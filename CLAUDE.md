@@ -472,7 +472,7 @@ def create_enterprise_auth_config() -> FlextResult[EnterpriseAuthenticationConfi
 ```python
 # ✅ CORRECT - Authentication CLI using flext-cli integration (when available)
 from flext_core import FlextResult, get_logger
-from flext_cli import FlextCliApi, FlextCliConfig
+from flext_cli import FlextCliApi, FlextCliConfigs
 from flext_auth import FlextAuth, UserCreationRequest
 from flext_auth.models import User
 import click

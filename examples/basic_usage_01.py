@@ -341,7 +341,7 @@ def main() -> None:
         example_complete_workflow()
 
         logger.info(
-            "All examples completed successfully - FLEXT Auth is working correctly"
+            "All examples completed successfully - FLEXT Auth is working correctly",
         )
 
     except Exception as e:

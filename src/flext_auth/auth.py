@@ -56,7 +56,7 @@ class FlextAuth:
         # Log initialization info
         self._logger.info(
             f"FlextAuth initialized: token_expire_minutes={self.config.jwt_expiry_minutes}, "
-            f"bcrypt_rounds={self.config.bcrypt_rounds}, jwt_secret_length={len(self.config.jwt_secret)}"
+            f"bcrypt_rounds={self.config.bcrypt_rounds}, jwt_secret_length={len(self.config.jwt_secret)}",
         )
 
     def register_user(
@@ -104,7 +104,7 @@ class FlextAuth:
 
         if email.lower() in self.email_index:
             return FlextResult[FlextAuthModels.User].fail(
-                "Email already exists", error_code=FlextAuthConstants.EMAIL_TAKEN
+                "Email already exists", error_code=FlextAuthConstants.EMAIL_TAKEN,
             )
 
         request = FlextAuthModels.UserCreationRequest(
@@ -170,7 +170,7 @@ class FlextAuth:
         self._logger.info(f"Authentication attempt for username: {username}")
         if client_ip or user_agent:
             self._logger.info(
-                f"Authentication attempt from {client_ip or 'unknown'} with agent {user_agent or 'unknown'}"
+                f"Authentication attempt from {client_ip or 'unknown'} with agent {user_agent or 'unknown'}",
             )
 
         # Use domain function from models.py - no duplication
@@ -280,15 +280,15 @@ class FlextAuth:
                     }
 
                 return FlextResult[FlextAuthModels.AuthenticationResponseDict].ok(
-                    result_data
+                    result_data,
                 )
             return FlextResult[FlextAuthModels.AuthenticationResponseDict].fail(
-                f"Session creation failed: {session_result.error}"
+                f"Session creation failed: {session_result.error}",
             )
 
         # Return failure if authentication failed
         return FlextResult[FlextAuthModels.AuthenticationResponseDict].fail(
-            auth_result.error or "Authentication failed"
+            auth_result.error or "Authentication failed",
         )
 
     def validate_token(self, token: str) -> FlextResult[FlextTypes.Core.Dict]:
@@ -327,7 +327,7 @@ class FlextAuth:
         except Exception as e:  # pragma: no cover
             self._logger.exception("JWT token validation failed")  # pragma: no cover
             return FlextResult[FlextTypes.Core.Dict].fail(
-                f"Token validation failed: {e}"
+                f"Token validation failed: {e}",
             )  # pragma: no cover
 
     def generate_token(self, user_id: str) -> str:
@@ -357,7 +357,7 @@ class FlextAuth:
         return token_result.value.token
 
     def get_user_by_username(
-        self, username: str
+        self, username: str,
     ) -> FlextResult[FlextAuthModels.User | None]:
         """Get user by username (case insensitive)."""
         user_id = self.username_index.get(username.lower())
@@ -373,7 +373,7 @@ class FlextAuth:
         return FlextResult[FlextAuthModels.User | None].ok(user)
 
     def get_user_sessions(
-        self, user_id: str
+        self, user_id: str,
     ) -> FlextResult[list[FlextAuthModels.Session]]:
         """Get all active sessions for user."""
         session_ids = self.user_sessions_index.get(user_id, [])
@@ -437,14 +437,14 @@ class FlextAuth:
         token_result = self.validate_token(token)
         if token_result.is_failure:
             return FlextResult[FlextAuthModels.User | None].fail(
-                token_result.error or "Invalid token"
+                token_result.error or "Invalid token",
             )
 
         # Extract user_id from token payload
         user_id = token_result.value.get("user_id")
         if not user_id or not isinstance(user_id, str):  # pragma: no cover
             return FlextResult[FlextAuthModels.User | None].fail(
-                "Token missing user_id"
+                "Token missing user_id",
             )  # pragma: no cover
 
         return self.get_user_by_id(user_id)
@@ -485,7 +485,7 @@ class FlextAuth:
             raise RuntimeError(error_msg) from e
 
     def generate_jwt_token(
-        self, user_id: str, expires_in_minutes: int | None = None
+        self, user_id: str, expires_in_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate JWT token for user.
 
@@ -502,7 +502,7 @@ class FlextAuth:
         user_result = self.get_user_by_id(user_id)
         if user_result.is_failure or user_result.value is None:  # pragma: no cover
             return FlextResult[str].fail(
-                "User not found for JWT generation"
+                "User not found for JWT generation",
             )  # pragma: no cover
 
         user = user_result.value
@@ -519,18 +519,18 @@ class FlextAuth:
 
         if token_result.is_failure:  # pragma: no cover
             return FlextResult[str].fail(
-                token_result.error or "Token creation failed"
+                token_result.error or "Token creation failed",
             )  # pragma: no cover
 
         return FlextResult[str].ok(token_result.value.token)
 
     def _authenticate_user_internal(
-        self, username: str, password: str, users_data: list[dict[str, object]]
+        self, username: str, password: str, users_data: list[dict[str, object]],
     ) -> FlextResult[FlextAuthModels.User]:
         """Authenticate user internally."""
         if not username or not password:
             return FlextResult[FlextAuthModels.User].fail(
-                "Username and password required"
+                "Username and password required",
             )
 
         # Find user in data (case-insensitive username comparison)

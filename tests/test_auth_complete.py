@@ -66,7 +66,7 @@ class TestFlextAuth:
         """Test password hashing and verification."""
         password = "TestPassword123!"
         user = FlextAuthModels.User(
-            id="test-id", username="testuser", email="test@example.com"
+            id="test-id", username="testuser", email="test@example.com",
         )
 
         # Hash password
@@ -185,7 +185,7 @@ class TestFlextAuth:
 
         # Register user
         register_result = auth.register_user(
-            "testuser", "test@example.com", "Password123!"
+            "testuser", "test@example.com", "Password123!",
         )
         assert register_result.success is True
 
@@ -242,7 +242,7 @@ class TestFlextAuth:
 
         # Register user
         register_result = auth.register_user(
-            "testuser", "test@example.com", "Password123!"
+            "testuser", "test@example.com", "Password123!",
         )
         user = register_result.value
 
@@ -261,7 +261,7 @@ class TestFlextAuth:
 
         # Register user
         register_result = auth.register_user(
-            "testuser", "test@example.com", "Password123!"
+            "testuser", "test@example.com", "Password123!",
         )
         assert register_result.success is True
 
@@ -401,7 +401,7 @@ class TestFlextAuth:
 
         # 1. Register user
         register_result = auth.register_user(
-            "workflow_user", "workflow@example.com", "SecurePassword123!"
+            "workflow_user", "workflow@example.com", "SecurePassword123!",
         )
         assert register_result.success is True
         user = register_result.value
@@ -460,14 +460,14 @@ class TestFlextAuth:
 
         # Should prevent duplicate registration with different case
         dup_result = auth.register_user(
-            "testuser", "different@example.com", "Password!"
+            "testuser", "different@example.com", "Password!",
         )
         assert dup_result.success is False
         assert dup_result.is_failure
         assert "Username already exists" in (dup_result.error or "")
 
         dup_email_result = auth.register_user(
-            "different_user", "test@example.com", "password"
+            "different_user", "test@example.com", "password",
         )
         assert dup_email_result.success is False
         assert dup_email_result.is_failure

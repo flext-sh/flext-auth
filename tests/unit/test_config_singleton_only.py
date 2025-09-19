@@ -75,7 +75,7 @@ class TestFlextAuthConfigSingletonOnly:
 
         # Test with valid configuration
         config_result = FlextAuthConfig.get_or_create_global(
-            jwt_expiry_minutes=30, session_expiry_minutes=60, environment="development"
+            jwt_expiry_minutes=30, session_expiry_minutes=60, environment="development",
         )
 
         assert config_result.is_success
@@ -263,7 +263,7 @@ class TestFlextAuthConfigSingletonOnly:
 
         # Test with empty secret (should be generated)
         config_result = FlextAuthConfig.get_or_create_global(
-            jwt_secret="", environment="development"
+            jwt_secret="", environment="development",
         )
 
         assert config_result.is_success
@@ -307,7 +307,7 @@ class TestFlextAuthConfigSingletonOnly:
         FlextAuthConfig.clear_global_instance()
 
         config_result = FlextAuthConfig.get_or_create_global(
-            jwt_expiry_minutes=30, bcrypt_rounds=12, environment="development"
+            jwt_expiry_minutes=30, bcrypt_rounds=12, environment="development",
         )
 
         assert config_result.is_success

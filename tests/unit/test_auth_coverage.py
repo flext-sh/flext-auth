@@ -120,7 +120,7 @@ class TestFlextAuthErrorPaths:
 
         # Test authentication with non-existent user
         result = auth.authenticate_user(
-            username="nonexistent_user", password="any_password"
+            username="nonexistent_user", password="any_password",
         )
 
         assert result.is_failure
@@ -396,7 +396,7 @@ class TestFlextAuthErrorHandlingPaths:
         # Try multiple failed authentications to potentially trigger lockout
         for _ in range(6):  # Attempt to exceed max failed attempts
             failed_result = auth.authenticate_user(
-                username="lockable_user", password="wrong_password"
+                username="lockable_user", password="wrong_password",
             )
             assert failed_result.is_failure
 
@@ -406,7 +406,7 @@ class TestFlextAuthErrorHandlingPaths:
 
         # Register a user first for token generation
         user_result = auth.register_user(
-            "test_user", "test@example.com", "TestPassword123!"
+            "test_user", "test@example.com", "TestPassword123!",
         )
         assert user_result.is_success
         user = user_result.value

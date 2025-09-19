@@ -168,7 +168,7 @@ class FlextAuthModels:
             # Validate password strength
             if not self._validate_password_strength(password):
                 return FlextResult[bool].fail(
-                    "Password must contain uppercase, lowercase, number, and special character"
+                    "Password must contain uppercase, lowercase, number, and special character",
                 )
 
             try:
@@ -217,7 +217,7 @@ class FlextAuthModels:
 
             try:
                 is_valid = bcrypt.checkpw(
-                    password.encode(), self.password_hash.encode()
+                    password.encode(), self.password_hash.encode(),
                 )
                 return FlextResult[bool].ok(is_valid)
             except Exception as e:
@@ -249,12 +249,12 @@ class FlextAuthModels:
 
             if self.failed_login_attempts >= FlextAuthConstants.MAX_LOGIN_ATTEMPTS:
                 self.locked_until = datetime.now(UTC) + timedelta(
-                    minutes=FlextAuthConstants.LOCKOUT_DURATION_MINUTES
+                    minutes=FlextAuthConstants.LOCKOUT_DURATION_MINUTES,
                 )
 
         @classmethod
         def create_user_from_request(
-            cls, request: FlextAuthModels.UserCreationRequest
+            cls, request: FlextAuthModels.UserCreationRequest,
         ) -> FlextResult[FlextAuthModels.User]:
             """Create user from parameter object - eliminates parameter passing smell."""
             try:
@@ -271,13 +271,13 @@ class FlextAuthModels:
                 password_result = user.set_password(request.password)
                 if password_result.is_failure:
                     return FlextResult[FlextAuthModels.User].fail(
-                        password_result.error or "Password verification failed"
+                        password_result.error or "Password verification failed",
                     )
 
                 return FlextResult[FlextAuthModels.User].ok(user)
             except Exception as e:
                 return FlextResult[FlextAuthModels.User].fail(
-                    f"User creation failed: {e!s}"
+                    f"User creation failed: {e!s}",
                 )
 
     class Role(FlextModels.Entity):
@@ -303,11 +303,11 @@ class FlextAuthModels:
 
         user_id: str = ""
         session_token: str = Field(
-            default="", min_length=32, description="Session token"
+            default="", min_length=32, description="Session token",
         )
         expires_at: datetime = Field(
             default_factory=lambda: datetime.now(UTC)
-            + timedelta(hours=FlextAuthConstants.DEFAULT_SESSION_EXPIRY_MINUTES // 60)
+            + timedelta(hours=FlextAuthConstants.DEFAULT_SESSION_EXPIRY_MINUTES // 60),
         )
         created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
         last_accessed_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
@@ -355,7 +355,7 @@ class FlextAuthModels:
         token_type: str = FlextAuthConstants.JWT_ISSUER_CLAIM
         expires_at: datetime = Field(
             default_factory=lambda: datetime.now(UTC)
-            + timedelta(hours=FlextAuthConstants.JWT_DEFAULT_EXPIRY_MINUTES // 60)
+            + timedelta(hours=FlextAuthConstants.JWT_DEFAULT_EXPIRY_MINUTES // 60),
         )
         created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
         is_revoked: bool = False
@@ -409,12 +409,12 @@ class FlextAuthModels:
                 return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)
             except Exception as e:
                 return FlextResult[FlextAuthModels.AuthToken].fail(
-                    f"JWT token creation failed: {e!s}"
+                    f"JWT token creation failed: {e!s}",
                 )
 
         @classmethod
         def verify_jwt_token(
-            cls, token: str, secret_key: str
+            cls, token: str, secret_key: str,
         ) -> FlextResult[dict[str, object]]:
             """Verify JWT token and return payload."""
             try:
@@ -426,7 +426,7 @@ class FlextAuthModels:
                 return FlextResult[dict[str, object]].fail("Invalid token")
             except Exception as e:
                 return FlextResult[dict[str, object]].fail(
-                    f"Token verification failed: {e!s}"
+                    f"Token verification failed: {e!s}",
                 )
 
 

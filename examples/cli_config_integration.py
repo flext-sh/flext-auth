@@ -41,7 +41,7 @@ def demonstrate_cli_config_integration() -> None:
 
     # Create new config with CLI overrides
     config_with_overrides_result = FlextAuthConfig.get_or_create_global(
-        environment="production", **cli_params
+        environment="production", **cli_params,
     )
 
     if config_with_overrides_result.is_success:
@@ -140,7 +140,7 @@ def demonstrate_cli_config_integration() -> None:
 
     # Verify that overrides create new instances
     override_config_result = FlextAuthConfig.get_or_create_global(
-        jwt_expiry_minutes=999, environment="override_test"
+        jwt_expiry_minutes=999, environment="override_test",
     )
 
     if override_config_result.is_success:
@@ -170,7 +170,7 @@ def demonstrate_cli_command_simulation() -> None:
         params = cmd_info["params"]
         if isinstance(params, dict):
             config_result = FlextAuthConfig.get_or_create_global(
-                environment="cli_simulation", **params
+                environment="cli_simulation", **params,
             )
         else:
             # Skip if params is not a dict

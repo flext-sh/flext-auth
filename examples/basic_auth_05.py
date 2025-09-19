@@ -72,7 +72,7 @@ def main() -> None:
     if user_reg_result.is_success:
         # Try to authenticate
         auth_result = demo_auth.authenticate_user(
-            "demouser", os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoPassword123!")
+            "demouser", os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoPassword123!"),
         )
 
         if auth_result.is_success:

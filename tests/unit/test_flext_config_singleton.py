@@ -43,7 +43,7 @@ class TestFlextConfigSingleton:
 
         # Create config with overrides
         override_config_result = FlextAuthConfig.get_or_create_global(
-            jwt_expiry_minutes=30, session_expiry_minutes=60, environment="development"
+            jwt_expiry_minutes=30, session_expiry_minutes=60, environment="development",
         )
 
         assert override_config_result.is_success
@@ -65,7 +65,7 @@ class TestFlextConfigSingleton:
 
         # Test CLI parameter creation
         cli_config_result = FlextAuthConfig.create_from_cli_params(
-            jwt_expiry=30, bcrypt_rounds=12, max_attempts=5, environment="development"
+            jwt_expiry=30, bcrypt_rounds=12, max_attempts=5, environment="development",
         )
 
         assert cli_config_result.is_success
@@ -84,7 +84,7 @@ class TestFlextConfigSingleton:
 
         # Update global config from CLI
         update_result = FlextAuthConfig.update_global_from_cli(
-            jwt_expiry=60, bcrypt_rounds=14, environment="development"
+            jwt_expiry=60, bcrypt_rounds=14, environment="development",
         )
 
         assert update_result.is_success
@@ -231,7 +231,7 @@ class TestFlextConfigSingleton:
 
         # Test with None values (should not override)
         config_result = FlextAuthConfig.create_from_cli_params(
-            jwt_expiry=None, bcrypt_rounds=None, environment="development"
+            jwt_expiry=None, bcrypt_rounds=None, environment="development",
         )
 
         assert config_result.is_success
