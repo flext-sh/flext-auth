@@ -425,8 +425,6 @@ class FlextAuthConfig(FlextConfig):
             FlextResult containing FlextAuthConfig instance
 
         """
-        # Import Environment type for proper casting
-
         # Validate environment name with proper type checking
         valid_environments = ["development", "production", "staging", "test", "local"]
         if environment not in valid_environments:
@@ -458,71 +456,65 @@ class FlextAuthConfig(FlextConfig):
         normalized_env = environment.lower()
         env_value = environment_mapping.get(normalized_env, "development")
 
-        # Create instance with overrides including environment
+        # Create instance with overrides using FLEXT-compliant approach
         try:
-            # Create configuration with environment-specific settings and overrides
-            # Use direct constructor call with explicit parameters for type safety
-            # Environment validation ensures this is safe
-            # Build kwargs with only non-None values to allow environment variables to be read
-            kwargs: dict[str, object] = {"environment": env_value}
+            # Create base configuration with environment
+            config = cls(environment=env_value)
 
+            # Apply parameter overrides using attribute assignment (Pydantic supports this)
             if jwt_secret is not None:
-                kwargs["jwt_secret"] = jwt_secret
+                config.jwt_secret = jwt_secret
             if jwt_expiry_minutes is not None:
-                kwargs["jwt_expiry_minutes"] = jwt_expiry_minutes
+                config.jwt_expiry_minutes = jwt_expiry_minutes
             if jwt_algorithm is not None:
-                kwargs["jwt_algorithm"] = jwt_algorithm
+                config.jwt_algorithm = jwt_algorithm
             if jwt_issuer is not None:
-                kwargs["jwt_issuer"] = jwt_issuer
+                config.jwt_issuer = jwt_issuer
             if jwt_audience is not None:
-                kwargs["jwt_audience"] = jwt_audience
+                config.jwt_audience = jwt_audience
             if bcrypt_rounds is not None:
-                kwargs["bcrypt_rounds"] = bcrypt_rounds
+                config.bcrypt_rounds = bcrypt_rounds
             if max_login_attempts is not None:
-                kwargs["max_login_attempts"] = max_login_attempts
+                config.max_login_attempts = max_login_attempts
             if lockout_duration_minutes is not None:
-                kwargs["lockout_duration_minutes"] = lockout_duration_minutes
+                config.lockout_duration_minutes = lockout_duration_minutes
             if session_expiry_minutes is not None:
-                kwargs["session_expiry_minutes"] = session_expiry_minutes
+                config.session_expiry_minutes = session_expiry_minutes
             if max_sessions_per_user is not None:
-                kwargs["max_sessions_per_user"] = max_sessions_per_user
+                config.max_sessions_per_user = max_sessions_per_user
             if session_cleanup_interval_minutes is not None:
-                kwargs["session_cleanup_interval_minutes"] = (
+                config.session_cleanup_interval_minutes = (
                     session_cleanup_interval_minutes
                 )
             if min_password_length is not None:
-                kwargs["min_password_length"] = min_password_length
+                config.min_password_length = min_password_length
             if max_password_length is not None:
-                kwargs["max_password_length"] = max_password_length
+                config.max_password_length = max_password_length
             if require_password_complexity is not None:
-                kwargs["require_password_complexity"] = require_password_complexity
+                config.require_password_complexity = require_password_complexity
             if min_password_score is not None:
-                kwargs["min_password_score"] = min_password_score
+                config.min_password_score = min_password_score
             if max_requests_per_minute is not None:
-                kwargs["max_requests_per_minute"] = max_requests_per_minute
+                config.max_requests_per_minute = max_requests_per_minute
             if max_requests_per_hour is not None:
-                kwargs["max_requests_per_hour"] = max_requests_per_hour
+                config.max_requests_per_hour = max_requests_per_hour
             if enable_email_verification is not None:
-                kwargs["enable_email_verification"] = enable_email_verification
+                config.enable_email_verification = enable_email_verification
             if enable_password_history is not None:
-                kwargs["enable_password_history"] = enable_password_history
+                config.enable_password_history = enable_password_history
             if enable_audit_logging is not None:
-                kwargs["enable_audit_logging"] = enable_audit_logging
+                config.enable_audit_logging = enable_audit_logging
             if enable_rate_limiting is not None:
-                kwargs["enable_rate_limiting"] = enable_rate_limiting
+                config.enable_rate_limiting = enable_rate_limiting
 
-            # Cast kwargs to proper types for constructor
-            typed_kwargs: dict[str, object] = dict(kwargs.items())
-            config = cls(**typed_kwargs)
-
-            # Validate configuration after creation
+            # Validate configuration after creation and modification
             validation_result = config.validate_configuration()
             if validation_result.is_failure:
-                return FlextResult.fail(
+                return FlextResult[FlextAuthConfig].fail(
                     f"Configuration validation error: {validation_result.error}"
                 )
 
-            return FlextResult.ok(config)
+            return FlextResult[FlextAuthConfig].ok(config)
         except Exception as e:
             return FlextResult[FlextAuthConfig].fail(
                 f"Failed to create config with overrides: {e}"

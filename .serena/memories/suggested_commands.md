@@ -1,6 +1,7 @@
 # Suggested Commands for FLEXT Auth Development
 
 ## Quality Gates (Mandatory)
+
 ```bash
 # Complete validation pipeline
 make validate
@@ -16,6 +17,7 @@ make security      # Bandit security scanning
 ```
 
 ## Development Workflow
+
 ```bash
 # Install dependencies
 poetry install
@@ -35,6 +37,7 @@ poetry run bandit -r src
 ```
 
 ## Build and Distribution
+
 ```bash
 # Build package
 poetry build
@@ -47,6 +50,7 @@ poetry update
 ```
 
 ## Testing Specific Features
+
 ```bash
 # Test authentication functionality
 poetry run pytest tests/test_real_functionality.py::TestRealAuthentication -v
@@ -59,6 +63,7 @@ poetry run pytest tests/unit/test_models_simple.py -v
 ```
 
 ## Debugging
+
 ```bash
 # Run with verbose output
 poetry run pytest -v -s
