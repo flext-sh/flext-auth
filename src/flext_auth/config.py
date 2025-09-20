@@ -326,58 +326,134 @@ class FlextAuthConfig(FlextConfig):
         }  # pragma: no cover
 
     def validate_configuration(self) -> FlextResult[None]:
-        """Validate complete configuration for consistency.
+        """Validate complete configuration for consistency using railway pattern.
 
         Returns:
             FlextResult indicating validation success or failure
 
         """
         try:
-            # Validate password length consistency
-            if self.min_password_length >= self.max_password_length:  # pragma: no cover
-                return FlextResult[
-                    None
-                ].fail(  # pragma: no cover
-                    "Minimum password length must be less than maximum",  # pragma: no cover
-                )  # pragma: no cover
+            # Railway pattern for validation: Early return on failure
+            validation_result = self._validate_password_length_consistency()
+            if validation_result.is_failure:
+                return validation_result
 
-            # Validate JWT expiry is reasonable (allow some flexibility)
-            # JWT can be longer than session for stateless authentication
-            if self.jwt_expiry_minutes > FlextAuthConstants.JWT_MAX_EXPIRY_MINUTES:
-                return FlextResult[None].fail(
-                    f"JWT expiry cannot exceed {FlextAuthConstants.JWT_MAX_EXPIRY_MINUTES} minutes",
-                )
+            validation_result = self._validate_jwt_expiry_limits()
+            if validation_result.is_failure:
+                return validation_result
 
-            # Validate bcrypt rounds are in safe range
-            if (
-                self.bcrypt_rounds < FlextAuthConstants.MIN_BCRYPT_ROUNDS
-            ):  # pragma: no cover
-                return FlextResult[
-                    None
-                ].fail(  # pragma: no cover
-                    "Bcrypt rounds should be at least 10 for security",  # pragma: no cover
-                )  # pragma: no cover
+            validation_result = self._validate_bcrypt_security()
+            if validation_result.is_failure:
+                return validation_result
 
-            # Validate JWT expiry is reasonable compared to session expiry
-            # JWT can be shorter than session for token refresh patterns
-            if self.jwt_expiry_minutes > self.session_expiry_minutes * 2:
-                return FlextResult[None].fail(
-                    "JWT expiry should not exceed twice the session expiry",
-                )
-
-            # Skip rate limiting validation for now - different models (burst vs sustained)
+            validation_result = self._validate_jwt_session_ratio()
+            if validation_result.is_failure:
+                return validation_result
 
             return FlextResult[None].ok(None)
 
         except Exception as e:  # pragma: no cover
             return FlextResult[None].fail(
                 f"Configuration validation failed: {e}",
+            )  # pragma: no cover  # pragma: no cover
+
+    def _validate_password_length_consistency(self) -> FlextResult[None]:
+        """Validate password length consistency - first step in config validation railway."""
+        if self.min_password_length >= self.max_password_length:  # pragma: no cover
+            return FlextResult[None].fail(
+                "Minimum password length must be less than maximum",
             )  # pragma: no cover
+        return FlextResult[None].ok(None)
+
+    def _validate_jwt_expiry_limits(self) -> FlextResult[None]:
+        """Validate JWT expiry limits - second step in config validation railway."""
+        if self.jwt_expiry_minutes > FlextAuthConstants.JWT_MAX_EXPIRY_MINUTES:
+            return FlextResult[None].fail(
+                f"JWT expiry cannot exceed {FlextAuthConstants.JWT_MAX_EXPIRY_MINUTES} minutes",
+            )
+        return FlextResult[None].ok(None)
+
+    def _validate_bcrypt_security(self) -> FlextResult[None]:
+        """Validate bcrypt security settings - third step in config validation railway."""
+        if (
+            self.bcrypt_rounds < FlextAuthConstants.MIN_BCRYPT_ROUNDS
+        ):  # pragma: no cover
+            return FlextResult[None].fail(
+                "Bcrypt rounds should be at least 10 for security",
+            )  # pragma: no cover
+        return FlextResult[None].ok(None)
+
+    def _validate_jwt_session_ratio(self) -> FlextResult[None]:
+        """Validate JWT to session expiry ratio - final step in config validation railway."""
+        if self.jwt_expiry_minutes > self.session_expiry_minutes * 2:
+            return FlextResult[None].fail(
+                "JWT expiry should not exceed twice the session expiry",
+            )
+        return FlextResult[None].ok(None)
+
+    @classmethod
+    def _validate_environment_parameter(cls, environment: str) -> FlextResult[None]:
+        """Validate environment parameter value."""
+        valid_environments = ["development", "production", "staging", "test", "local"]
+        if environment not in valid_environments:
+            return FlextResult[None].fail(
+                "Input should be 'development', 'production', 'staging', 'test' or 'local'",
+            )
+        return FlextResult[None].ok(None)
+
+    @classmethod
+    def _validate_environment_variables(cls) -> FlextResult[None]:
+        """Validate auth-specific environment variables."""
+        try:
+            env_jwt_expiry = os.environ.get("FLEXT_AUTH_JWT_EXPIRY_MINUTES")
+            if env_jwt_expiry:
+                int(env_jwt_expiry)  # Validate it's a valid int
+        except ValueError:
+            return FlextResult[None].fail(
+                "Failed to load configuration from environment: invalid FLEXT_AUTH_JWT_EXPIRY_MINUTES value",
+            )
+        return FlextResult[None].ok(None)
+
+    @classmethod
+    def _normalize_environment_value(cls, environment: str) -> FlextResult[FlextTypes.Config.Environment]:
+        """Normalize environment value to ensure type safety."""
+        environment_mapping: dict[str, FlextTypes.Config.Environment] = {
+            "dev": "development",
+            "development": "development",
+            "prod": "production",
+            "production": "production",
+            "staging": "staging",
+            "test": "test",
+            "local": "local",
+        }
+
+        normalized_env = environment.lower()
+        env_value: str = environment_mapping.get(normalized_env, "development")
+        env_literal = cast("FlextTypes.Config.Environment", env_value)
+        return FlextResult[FlextTypes.Config.Environment].ok(env_literal)
+
+    @classmethod
+    def _apply_parameter_overrides(cls, config: FlextAuthConfig, params: dict[str, object]) -> FlextResult[None]:
+        """Apply parameter overrides to configuration instance."""
+        # Extract parameters from locals() dict, excluding non-parameter keys
+        exclude_keys = {"cls", "environment", "config", "params"}
+
+        # Apply parameter overrides using attribute assignment (Pydantic supports this)
+        for key, value in params.items():
+            if key in exclude_keys or value is None:
+                continue
+
+            # Map parameter names to config attributes
+            if hasattr(config, key):
+                setattr(config, key, value)
+
+        return FlextResult[None].ok(None)
 
     @classmethod
     def create_for_environment(
         cls,
         environment: str = "development",
+        *,
         jwt_secret: str | None = None,
         jwt_expiry_minutes: int | None = None,
         jwt_algorithm: str | None = None,
@@ -391,7 +467,6 @@ class FlextAuthConfig(FlextConfig):
         session_cleanup_interval_minutes: int | None = None,
         min_password_length: int | None = None,
         max_password_length: int | None = None,
-        *,
         require_password_complexity: bool | None = None,
         min_password_score: int | None = None,
         max_requests_per_minute: int | None = None,
@@ -431,95 +506,33 @@ class FlextAuthConfig(FlextConfig):
             FlextResult containing FlextAuthConfig instance
 
         """
-        # Validate environment name with proper type checking
-        valid_environments = ["development", "production", "staging", "test", "local"]
-        if environment not in valid_environments:
-            return FlextResult[FlextAuthConfig].fail(
-                "Input should be 'development', 'production', 'staging', 'test' or 'local'",
-            )
+        # Validate environment - reduced complexity by extracting helper
+        env_validation_result = cls._validate_environment_parameter(environment)
+        if env_validation_result.is_failure:
+            return FlextResult[FlextAuthConfig].fail(env_validation_result.error or "Environment validation failed")
 
-        # Validate environment variables for auth-specific fields
+        # Validate environment variables - reduced complexity by extracting helper
+        env_vars_validation_result = cls._validate_environment_variables()
+        if env_vars_validation_result.is_failure:
+            return FlextResult[FlextAuthConfig].fail(env_vars_validation_result.error or "Environment variables validation failed")
+
+        # Normalize environment value - reduced complexity by extracting helper
+        env_literal_result = cls._normalize_environment_value(environment)
+        if env_literal_result.is_failure:
+            return FlextResult[FlextAuthConfig].fail(env_literal_result.error or "Environment normalization failed")
+
+        # Create instance with overrides - reduced complexity by extracting helper
         try:
-            env_jwt_expiry = os.environ.get("FLEXT_AUTH_JWT_EXPIRY_MINUTES")
-            if env_jwt_expiry:
-                int(env_jwt_expiry)  # Validate it's a valid int
-        except ValueError:
-            return FlextResult[FlextAuthConfig].fail(
-                "Failed to load configuration from environment: invalid FLEXT_AUTH_JWT_EXPIRY_MINUTES value",
-            )
-
-        # Normalize environment value to ensure type safety - create mapping to literal values
-        environment_mapping: dict[str, FlextTypes.Config.Environment] = {
-            "dev": "development",
-            "development": "development",
-            "prod": "production",
-            "production": "production",
-            "staging": "staging",
-            "test": "test",
-            "local": "local",
-        }
-
-        normalized_env = environment.lower()
-        env_value: str = environment_mapping.get(normalized_env, "development")
-
-        # Create instance with overrides using FLEXT-compliant approach
-        try:
-            # Create base configuration with environment
-            # Cast environment to proper literal type
-            env_literal = cast("FlextTypes.Config.Environment", env_value)
-            config = cls(environment=env_literal)
-
-            # Apply parameter overrides using attribute assignment (Pydantic supports this)
-            if jwt_secret is not None:
-                config.jwt_secret = jwt_secret
-            if jwt_expiry_minutes is not None:
-                config.jwt_expiry_minutes = jwt_expiry_minutes
-            if jwt_algorithm is not None:
-                config.jwt_algorithm = jwt_algorithm
-            if jwt_issuer is not None:
-                config.jwt_issuer = jwt_issuer
-            if jwt_audience is not None:
-                config.jwt_audience = jwt_audience
-            if bcrypt_rounds is not None:
-                config.bcrypt_rounds = bcrypt_rounds
-            if max_login_attempts is not None:
-                config.max_login_attempts = max_login_attempts
-            if lockout_duration_minutes is not None:
-                config.lockout_duration_minutes = lockout_duration_minutes
-            if session_expiry_minutes is not None:
-                config.session_expiry_minutes = session_expiry_minutes
-            if max_sessions_per_user is not None:
-                config.max_sessions_per_user = max_sessions_per_user
-            if session_cleanup_interval_minutes is not None:
-                config.session_cleanup_interval_minutes = (
-                    session_cleanup_interval_minutes
-                )
-            if min_password_length is not None:
-                config.min_password_length = min_password_length
-            if max_password_length is not None:
-                config.max_password_length = max_password_length
-            if require_password_complexity is not None:
-                config.require_password_complexity = require_password_complexity
-            if min_password_score is not None:
-                config.min_password_score = min_password_score
-            if max_requests_per_minute is not None:
-                config.max_requests_per_minute = max_requests_per_minute
-            if max_requests_per_hour is not None:
-                config.max_requests_per_hour = max_requests_per_hour
-            if enable_email_verification is not None:
-                config.enable_email_verification = enable_email_verification
-            if enable_password_history is not None:
-                config.enable_password_history = enable_password_history
-            if enable_audit_logging is not None:
-                config.enable_audit_logging = enable_audit_logging
-            if enable_rate_limiting is not None:
-                config.enable_rate_limiting = enable_rate_limiting
+            config = cls(environment=env_literal_result.value)
+            override_result = cls._apply_parameter_overrides(config, locals())
+            if override_result.is_failure:
+                return FlextResult[FlextAuthConfig].fail(override_result.error or "Parameter override failed")
 
             # Validate configuration after creation and modification
             validation_result = config.validate_configuration()
             if validation_result.is_failure:
                 return FlextResult[FlextAuthConfig].fail(
-                    f"Configuration validation error: {validation_result.error}",
+                    f"Configuration validation error: {validation_result.error or 'Unknown validation error'}",
                 )
 
             return FlextResult[FlextAuthConfig].ok(config)
@@ -615,6 +628,66 @@ class FlextAuthConfig(FlextConfig):
         cls._auth_global_instance = None
 
     @classmethod
+    def _safe_str_cast(cls, kwargs: dict[str, str | int], key: str) -> str | None:
+        """Safely cast value to string."""
+        value = kwargs.get(key)
+        return str(value) if value is not None else None
+
+    @classmethod
+    def _safe_int_cast(cls, kwargs: dict[str, str | int], key: str) -> int | None:
+        """Safely cast value to integer."""
+        value = kwargs.get(key)
+        if isinstance(value, int):
+            return value
+        if isinstance(value, str) and value.isdigit():
+            return int(value)
+        return None
+
+    @classmethod
+    def _safe_bool_cast(cls, kwargs: dict[str, str | int], key: str) -> bool | None:
+        """Safely cast value to boolean."""
+        value = kwargs.get(key)
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            return value.lower() in {"true", "1", "yes", "on"}
+        if isinstance(value, int):
+            return bool(value)
+        return None
+
+    @classmethod
+    def _create_instance_with_typed_overrides(
+        cls, environment: str, kwargs: dict[str, str | int]
+    ) -> FlextResult[FlextAuthConfig]:
+        """Create new instance with properly typed parameter overrides."""
+        return cls.create_for_environment(
+            environment=environment,
+            jwt_secret=cls._safe_str_cast(kwargs, "jwt_secret"),
+            jwt_expiry_minutes=cls._safe_int_cast(kwargs, "jwt_expiry_minutes"),
+            jwt_algorithm=cls._safe_str_cast(kwargs, "jwt_algorithm"),
+            jwt_issuer=cls._safe_str_cast(kwargs, "jwt_issuer"),
+            jwt_audience=cls._safe_str_cast(kwargs, "jwt_audience"),
+            bcrypt_rounds=cls._safe_int_cast(kwargs, "bcrypt_rounds"),
+            max_login_attempts=cls._safe_int_cast(kwargs, "max_login_attempts"),
+            lockout_duration_minutes=cls._safe_int_cast(kwargs, "lockout_duration_minutes"),
+            session_expiry_minutes=cls._safe_int_cast(kwargs, "session_expiry_minutes"),
+            max_sessions_per_user=cls._safe_int_cast(kwargs, "max_sessions_per_user"),
+            session_cleanup_interval_minutes=cls._safe_int_cast(
+                kwargs, "session_cleanup_interval_minutes",
+            ),
+            min_password_length=cls._safe_int_cast(kwargs, "min_password_length"),
+            max_password_length=cls._safe_int_cast(kwargs, "max_password_length"),
+            require_password_complexity=cls._safe_bool_cast(kwargs, "require_password_complexity"),
+            min_password_score=cls._safe_int_cast(kwargs, "min_password_score"),
+            max_requests_per_minute=cls._safe_int_cast(kwargs, "max_requests_per_minute"),
+            max_requests_per_hour=cls._safe_int_cast(kwargs, "max_requests_per_hour"),
+            enable_email_verification=cls._safe_bool_cast(kwargs, "enable_email_verification"),
+            enable_password_history=cls._safe_bool_cast(kwargs, "enable_password_history"),
+            enable_audit_logging=cls._safe_bool_cast(kwargs, "enable_audit_logging"),
+            enable_rate_limiting=cls._safe_bool_cast(kwargs, "enable_rate_limiting"),
+        )
+
+    @classmethod
     def get_or_create_global(cls, **kwargs: str | int) -> FlextResult[FlextAuthConfig]:
         """Get or create global authentication configuration with overrides.
 
@@ -635,60 +708,8 @@ class FlextAuthConfig(FlextConfig):
         if cls._auth_global_instance is not None and not kwargs:
             return FlextResult[FlextAuthConfig].ok(cls._auth_global_instance)
 
-        # Helper function to safely extract and cast values
-        def safe_str_cast(key: str) -> str | None:
-            value = kwargs.get(key)
-            return (
-                str(value)
-                if value is not None and isinstance(value, (str, int))
-                else None
-            )
-
-        def safe_int_cast(key: str) -> int | None:
-            value = kwargs.get(key)
-            if isinstance(value, int):
-                return value
-            if isinstance(value, str) and value.isdigit():
-                return int(value)
-            return None
-
-        def safe_bool_cast(key: str) -> bool | None:
-            value = kwargs.get(key)
-            if isinstance(value, bool):
-                return value
-            if isinstance(value, str):
-                return value.lower() in {"true", "1", "yes", "on"}
-            if isinstance(value, int):
-                return bool(value)
-            return None
-
-        # Create new instance with overrides using safe type casting
-        result = cls.create_for_environment(
-            environment=environment,
-            jwt_secret=safe_str_cast("jwt_secret"),
-            jwt_expiry_minutes=safe_int_cast("jwt_expiry_minutes"),
-            jwt_algorithm=safe_str_cast("jwt_algorithm"),
-            jwt_issuer=safe_str_cast("jwt_issuer"),
-            jwt_audience=safe_str_cast("jwt_audience"),
-            bcrypt_rounds=safe_int_cast("bcrypt_rounds"),
-            max_login_attempts=safe_int_cast("max_login_attempts"),
-            lockout_duration_minutes=safe_int_cast("lockout_duration_minutes"),
-            session_expiry_minutes=safe_int_cast("session_expiry_minutes"),
-            max_sessions_per_user=safe_int_cast("max_sessions_per_user"),
-            session_cleanup_interval_minutes=safe_int_cast(
-                "session_cleanup_interval_minutes",
-            ),
-            min_password_length=safe_int_cast("min_password_length"),
-            max_password_length=safe_int_cast("max_password_length"),
-            require_password_complexity=safe_bool_cast("require_password_complexity"),
-            min_password_score=safe_int_cast("min_password_score"),
-            max_requests_per_minute=safe_int_cast("max_requests_per_minute"),
-            max_requests_per_hour=safe_int_cast("max_requests_per_hour"),
-            enable_email_verification=safe_bool_cast("enable_email_verification"),
-            enable_password_history=safe_bool_cast("enable_password_history"),
-            enable_audit_logging=safe_bool_cast("enable_audit_logging"),
-            enable_rate_limiting=safe_bool_cast("enable_rate_limiting"),
-        )
+        # Create new instance with overrides using safe type casting - reduced complexity
+        result = cls._create_instance_with_typed_overrides(environment, kwargs)
         if result.is_success:
             # Set as global instance
             cls.set_global_instance(result.value)

@@ -92,6 +92,7 @@ class FlextAuthCli:
         username: str,
         email: str,
         password: str,
+        *,
         max_attempts: int | None = None,
         session_expiry: int | None = None,
         environment: str = "development",
@@ -108,30 +109,16 @@ class FlextAuthCli:
             self._logger.error(f"Configuration failed: {config_result.error}")
             return FlextResult[None].fail(config_result.error or "Configuration failed")
 
-        # Create FlextAuth with the configured singleton
-        auth: FlextAuth = FlextAuth(config=config_result.value)
+        # Use auth service to register user with FlextResult railway pattern
+        auth = FlextAuth(config=config_result.unwrap())
+        auth_result = auth.register_user(username, email, password)
 
-        # Register user
-        register_result = auth.register_user(username, email, password)
+        if auth_result.is_success:
+            self._logger.info(f"User registered successfully: {username}")
+            return FlextResult[None].ok(None)
 
-        if register_result.is_success:
-            user = register_result.value
-            self._logger.info(
-                f"User registered successfully: {user.username} ({user.email})",
-            )
-            self._logger.info(
-                f"Max Login Attempts: {config_result.value.max_login_attempts}",
-            )
-            self._logger.info(
-                f"Session Expiry: {config_result.value.session_expiry_minutes} minutes",
-            )
-        else:
-            self._logger.error(f"Registration failed: {register_result.error}")
-            return FlextResult[None].fail(
-                register_result.error or "Registration failed",
-            )
-
-        return FlextResult[None].ok(None)
+        self._logger.error(f"User registration failed: {auth_result.error}")
+        return FlextResult[None].fail(auth_result.error or "User registration failed")
 
     def manage_config(
         self,

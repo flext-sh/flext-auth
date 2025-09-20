@@ -2,6 +2,9 @@
 
 This script demonstrates how FlextAuthConfig singleton works as a single
 source of truth for authentication configuration across the application.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from flext_auth import FlextAuth, FlextAuthConfig

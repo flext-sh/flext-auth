@@ -75,6 +75,33 @@ class FlextAuthModels:
         full_name: str | None = None
         roles: list[str] = Field(default_factory=lambda: ["user"])
 
+        @field_validator("username")
+        @classmethod
+        def validate_username_not_empty(cls, v: str) -> str:
+            """Validate username is not empty."""
+            if not v or not v.strip():
+                msg = "Input should be a valid string"
+                raise ValueError(msg)
+            return v
+
+        @field_validator("email")
+        @classmethod
+        def validate_email_not_empty(cls, v: str) -> str:
+            """Validate email is not empty."""
+            if not v or not v.strip():
+                msg = "Input should be a valid string"
+                raise ValueError(msg)
+            return v
+
+        @field_validator("password")
+        @classmethod
+        def validate_password_not_empty(cls, v: str) -> str:
+            """Validate password is not empty."""
+            if not v or not v.strip():
+                msg = "Input should be a valid string"
+                raise ValueError(msg)
+            return v
+
     # =========================================================================
     # AUTHENTICATION ENTITIES
     # =========================================================================
@@ -139,11 +166,11 @@ class FlextAuthModels:
             return v
 
         def set_password(self, password: str) -> FlextResult[bool]:
-            """Set user password with secure bcrypt hashing and validation.
+            """Set user password with secure bcrypt hashing and validation using railway pattern.
 
             Validates password strength requirements and securely hashes the
-            password using bcrypt with configurable rounds. Updates the
-            password_hash field with the generated hash.
+            password using bcrypt with configurable rounds. Uses monadic composition
+            for clean validation and hashing flow.
 
             Args:
                 password: Plain text password to hash and store
@@ -152,25 +179,41 @@ class FlextAuthModels:
                 FlextResult containing True if password was set successfully,
                 or error information if validation or hashing fails
 
-            Raises:
-                ValueError: If password doesn't meet strength requirements
-                RuntimeError: If bcrypt hashing fails
-
             Example:
                 >>> user = FlextAuthModels.User()
                 >>> result = user.set_password("SecurePass123!")
                 >>> assert result.is_success
 
             """
-            if not password or len(password) < FlextAuthConstants.MIN_PASSWORD_LENGTH:
-                return FlextResult[bool].fail("Password must be at least 8 characters")
+            # Railway pattern for password setting: Early return on failure
+            validation_result = self._validate_password_length(password)
+            if validation_result.is_failure:
+                return FlextResult[bool].fail(validation_result.error or "Password length validation failed")
 
-            # Validate password strength
+            validation_result = self._validate_password_strength_requirement(password)
+            if validation_result.is_failure:
+                return FlextResult[bool].fail(validation_result.error or "Password strength validation failed")
+
+            return self._hash_and_store_password(password)
+
+        def _validate_password_length(self, password: str) -> FlextResult[None]:
+            """Validate password length requirement - first step in password setting railway."""
+            if not password or len(password) < FlextAuthConstants.MIN_PASSWORD_LENGTH:
+                return FlextResult[None].fail("Password must be at least 8 characters")
+            return FlextResult[None].ok(None)
+
+        def _validate_password_strength_requirement(
+            self, password: str
+        ) -> FlextResult[None]:
+            """Validate password strength - second step in password setting railway."""
             if not self._validate_password_strength(password):
-                return FlextResult[bool].fail(
+                return FlextResult[None].fail(
                     "Password must contain uppercase, lowercase, number, and special character",
                 )
+            return FlextResult[None].ok(None)
 
+        def _hash_and_store_password(self, password: str) -> FlextResult[bool]:
+            """Hash and store password - final step in password setting railway."""
             try:
                 # Use bcrypt for secure hashing
                 salt = bcrypt.gensalt()
@@ -201,9 +244,6 @@ class FlextAuthModels:
             Returns:
                 FlextResult containing True if password matches the hash,
                 False if it doesn't match, or error information if verification fails
-
-            Raises:
-                RuntimeError: If bcrypt verification fails
 
             Example:
                 >>> user = FlextAuthModels.User()
@@ -377,9 +417,30 @@ class FlextAuthModels:
             username: str | None = None,
             roles: list[str] | None = None,
         ) -> FlextResult[FlextAuthModels.AuthToken]:
-            """Create JWT token using flext-core pattern."""
+            """Create JWT token using railway pattern for clean token creation flow."""
+            # Railway pattern: Chain token creation operations
+            expires_at = datetime.now(UTC) + timedelta(hours=expires_hours)
+
+            return (
+                cls._build_jwt_payload(user_id, expires_at, username, roles)
+                .flat_map(lambda payload: cls._encode_jwt_token(payload, secret_key))
+                .map(
+                    lambda token: cls._create_auth_token_entity(
+                        token, user_id, expires_at
+                    )
+                )
+            )
+
+        @classmethod
+        def _build_jwt_payload(
+            cls,
+            user_id: str,
+            expires_at: datetime,
+            username: str | None,
+            roles: list[str] | None,
+        ) -> FlextResult[dict[str, object]]:
+            """Build JWT payload - first step in token creation railway."""
             try:
-                expires_at = datetime.now(UTC) + timedelta(hours=expires_hours)
                 payload = {
                     "user_id": user_id,
                     "exp": expires_at,
@@ -397,24 +458,43 @@ class FlextAuthModels:
                 if roles is not None:
                     payload["roles"] = roles
 
+                return FlextResult[dict[str, object]].ok(payload)
+            except Exception as e:
+                return FlextResult[dict[str, object]].fail(
+                    f"Payload creation failed: {e!s}"
+                )
+
+        @classmethod
+        def _encode_jwt_token(
+            cls,
+            payload: dict[str, object],
+            secret_key: str,
+        ) -> FlextResult[str]:
+            """Encode JWT token - second step in token creation railway."""
+            try:
                 token = jwt.encode(
                     payload,
                     secret_key,
                     algorithm=FlextAuthConstants.JWT_DEFAULT_ALGORITHM,
                 )
-
-                auth_token = cls(
-                    id=FlextUtilities.Generators.generate_uuid(),
-                    token=str(token),
-                    user_id=user_id,
-                    expires_at=expires_at,
-                )
-
-                return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)
+                return FlextResult[str].ok(str(token))
             except Exception as e:
-                return FlextResult[FlextAuthModels.AuthToken].fail(
-                    f"JWT token creation failed: {e!s}",
-                )
+                return FlextResult[str].fail(f"JWT encoding failed: {e!s}")
+
+        @classmethod
+        def _create_auth_token_entity(
+            cls,
+            token: str,
+            user_id: str,
+            expires_at: datetime,
+        ) -> FlextAuthModels.AuthToken:
+            """Create AuthToken entity - final step in token creation railway."""
+            return cls(
+                id=FlextUtilities.Generators.generate_uuid(),
+                token=token,
+                user_id=user_id,
+                expires_at=expires_at,
+            )
 
         @classmethod
         def verify_jwt_token(

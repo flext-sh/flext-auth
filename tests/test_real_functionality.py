@@ -1,5 +1,8 @@
 """Real functionality tests for flext-auth module.
 
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+
 This module contains comprehensive tests that verify the actual functionality
 of the flext-auth system without mocking.
 """
@@ -291,14 +294,22 @@ class TestRealAuthentication:
         assert user.full_name == "Model User"
         assert user.password_hash.startswith("$2b$")
 
-        # Test invalid username validation
-        invalid_user_request = FlextAuthModels.UserCreationRequest(
-            username="",  # Empty username should fail
-            email="invalid@example.com",
-            password="Password123!",
-        )
-        invalid_user_result = create_user(invalid_user_request)
-        assert invalid_user_result.is_failure
+        # Test invalid username validation - should fail at Pydantic level
+        from pydantic import ValidationError
+
+        try:
+            FlextAuthModels.UserCreationRequest(
+                username="",  # Empty username should fail
+                email="invalid@example.com",
+                password="Password123!",
+            )
+            # If we get here, the validation failed to catch the empty username
+            msg = "Expected ValidationError for empty username"
+            raise AssertionError(msg)
+        except ValidationError as e:
+            # This is expected - empty username should be caught by field validator
+            assert "username" in str(e)
+            assert "Input should be a valid string" in str(e)
 
         # Test Session model creation
         session_result = create_session(user_id=user.id)
@@ -562,23 +573,33 @@ class TestRealAuthentication:
 
     def test_factory_methods_edge_cases(self) -> None:
         """Test factory method edge cases and error paths."""
-        # Test empty username
-        empty_username_request = FlextAuthModels.UserCreationRequest(
-            username="",  # Empty username
-            email="empty@example.com",
-            password="EmptyUserPassword123!",
-        )
-        empty_username_result = create_user(empty_username_request)
-        assert empty_username_result.is_failure
+        from pydantic import ValidationError
 
-        # Test empty email
-        empty_email_request = FlextAuthModels.UserCreationRequest(
-            username="empty_email_user",
-            email="",  # Empty email
-            password="EmptyEmailPassword123!",
-        )
-        empty_email_result = create_user(empty_email_request)
-        assert empty_email_result.is_failure
+        # Test empty username - should fail at Pydantic validation level
+        try:
+            FlextAuthModels.UserCreationRequest(
+                username="",  # Empty username
+                email="empty@example.com",
+                password="EmptyUserPassword123!",
+            )
+            msg = "Expected ValidationError for empty username"
+            raise AssertionError(msg)
+        except ValidationError as e:
+            assert "username" in str(e)
+            assert "Input should be a valid string" in str(e)
+
+        # Test empty email - should fail at Pydantic validation level
+        try:
+            FlextAuthModels.UserCreationRequest(
+                username="empty_email_user",
+                email="",  # Empty email
+                password="EmptyEmailPassword123!",
+            )
+            msg = "Expected ValidationError for empty email"
+            raise AssertionError(msg)
+        except ValidationError as e:
+            assert "email" in str(e)
+            assert "Input should be a valid string" in str(e)
 
         # Test extremely short session expiry
         user_request = FlextAuthModels.UserCreationRequest(

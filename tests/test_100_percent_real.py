@@ -2,6 +2,9 @@
 
 This module tests all authentication functionality with real implementations,
 ensuring complete coverage of the authentication system.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
@@ -90,22 +93,36 @@ class TestRealModelsExhaustive:
                         email="valid@example.com",
                         password="validPassword123!",
                     )
-            else:
-                # Other empty values should be converted to string and fail validation
-                user_request = FlextAuthModels.UserCreationRequest(
-                    username=str(empty_val) if empty_val != 0 else "",
-                    email="valid@example.com",
-                    password="validPassword123!",
-                )
-                result = create_user_from_request(user_request)
-                if empty_val:
-                    # Empty string should fail in user creation validation
-                    assert result.is_failure, (
-                        f"Expected failure for username={empty_val}"
+            elif empty_val == "":
+                # Empty string should trigger ValidationError at Pydantic level
+                with pytest.raises(ValidationError):
+                    user_request = FlextAuthModels.UserCreationRequest(
+                        username="",  # Empty string should fail validation
+                        email="valid@example.com",
+                        password="validPassword123!",
                     )
+            else:
+                # Other empty values should be converted to string and tested
+                username_str = str(empty_val) if empty_val != 0 else ""
+                if username_str == "":
+                    # Empty string from conversion should also fail at Pydantic level
+                    with pytest.raises(ValidationError):
+                        user_request = FlextAuthModels.UserCreationRequest(
+                            username=username_str,
+                            email="valid@example.com",
+                            password="validPassword123!",
+                        )
                 else:
-                    # Some empty values like "[]", "{}" might be valid usernames
-                    pass  # Not all values are expected to fail
+                    # Non-empty string values like "[]", "{}" should create successfully
+                    # but may fail at business logic level
+                    user_request = FlextAuthModels.UserCreationRequest(
+                        username=username_str,
+                        email="valid@example.com",
+                        password="validPassword123!",
+                    )
+                    create_user_from_request(user_request)
+                    # These converted values like "[]", "{}" might be valid usernames
+                    # so we don't assert failure
 
     def test_user_is_active_property(self) -> None:
         """Testa propriedade is_active do usuário (linhas 284, 290)."""

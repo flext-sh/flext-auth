@@ -1,4 +1,8 @@
-"""Test configuration for flext-auth."""
+"""Test configuration for flext-auth.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 import sys
 from collections.abc import Generator

@@ -67,11 +67,10 @@ class FlextAuth:
         full_name: str | None = None,
         roles: list[str] | None = None,
     ) -> FlextResult[FlextAuthModels.User]:
-        """Register a new user with secure password hashing and validation.
+        """Register a new user with secure password hashing and validation using railway pattern.
 
         Creates a new user account with bcrypt password hashing, email validation,
-        and role assignment. Checks for duplicate usernames and emails before
-        creating the account.
+        and role assignment. Uses monadic composition for clean validation flow.
 
         Args:
             username: Unique username (minimum 3 characters, alphanumeric + underscore)
@@ -83,10 +82,6 @@ class FlextAuth:
         Returns:
             FlextResult containing the created User entity or error information
 
-        Raises:
-            ValueError: If username or email validation fails
-            RuntimeError: If password hashing fails
-
         Example:
             >>> auth = FlextAuth()
             >>> result = auth.register_user(
@@ -95,41 +90,86 @@ class FlextAuth:
             >>> assert result.is_success
 
         """
-        # Check for duplicates first
+        # Railway pattern for registration: Early return on failure
+        validation_result = self._validate_username_availability(username)
+        if validation_result.is_failure:
+            return FlextResult[FlextAuthModels.User].fail(validation_result.error or "Username validation failed")
+
+        validation_result = self._validate_email_availability(email)
+        if validation_result.is_failure:
+            return FlextResult[FlextAuthModels.User].fail(validation_result.error or "Email validation failed")
+
+        # Create user request object - catch ValidationError and convert to FlextResult
+        try:
+            user_request = FlextAuthModels.UserCreationRequest(
+                username=username,
+                email=email,
+                password=password,
+                full_name=full_name,
+                roles=roles or ["user"],
+            )
+        except Exception as e:
+            # Convert validation errors to FlextResult failures
+            if "username" in str(e) and "Input should be a valid string" in str(e):
+                return FlextResult[FlextAuthModels.User].fail(
+                    "Username cannot be empty"
+                )
+            if "email" in str(e) and "Input should be a valid string" in str(e):
+                return FlextResult[FlextAuthModels.User].fail("Email cannot be empty")
+            if "password" in str(e) and "Input should be a valid string" in str(e):
+                return FlextResult[FlextAuthModels.User].fail(
+                    "Password cannot be empty"
+                )
+            return FlextResult[FlextAuthModels.User].fail(f"Validation failed: {e}")
+
+        # Create and store user (these return non-None types so can use map)
+        user_result = self._create_user_from_request(user_request)
+        if user_result.is_failure:
+            return user_result
+
+        # Store user and update indexes
+        return user_result.map(
+            lambda user: self._store_user_and_update_indexes(user, username, email)
+        )
+
+    def _validate_username_availability(self, username: str) -> FlextResult[None]:
+        """Validate username is available - first step in registration railway."""
         if username.lower() in self.username_index:
-            return FlextResult[FlextAuthModels.User].fail(
+            return FlextResult[None].fail(
                 "Username already exists",
                 error_code=FlextAuthConstants.USERNAME_TAKEN,
             )
+        return FlextResult[None].ok(None)
 
+    def _validate_email_availability(self, email: str) -> FlextResult[None]:
+        """Validate email is available - second step in registration railway."""
         if email.lower() in self.email_index:
-            return FlextResult[FlextAuthModels.User].fail(
+            return FlextResult[None].fail(
                 "Email already exists",
                 error_code=FlextAuthConstants.EMAIL_TAKEN,
             )
+        return FlextResult[None].ok(None)
 
-        request = FlextAuthModels.UserCreationRequest(
-            username=username,
-            email=email,
-            password=password,
-            full_name=full_name,
-            roles=roles or ["user"],
-        )
+    def _create_user_from_request(
+        self, request: FlextAuthModels.UserCreationRequest
+    ) -> FlextResult[FlextAuthModels.User]:
+        """Create user from request - third step in registration railway."""
         user_result = FlextAuthContainer.create_user_from_request(request)
-
         if user_result.is_failure:
             self._logger.error(f"User creation failed: {user_result.error}")
-            return user_result
+        return user_result
 
-        user = user_result.value
-
+    def _store_user_and_update_indexes(
+        self, user: FlextAuthModels.User, username: str, email: str
+    ) -> FlextAuthModels.User:
+        """Store user and update indexes - final step in registration railway."""
         # Store user and update indexes
         self._users[user.id] = user
         self.username_index[username.lower()] = user.id
         self.email_index[email.lower()] = user.id
 
         self._logger.info(f"User registered successfully: {username} (ID: {user.id})")
-        return FlextResult[FlextAuthModels.User].ok(user)
+        return user
 
     def authenticate_user(
         self,
@@ -138,12 +178,11 @@ class FlextAuth:
         client_ip: str | None = None,
         user_agent: str | None = None,
     ) -> FlextResult[FlextAuthModels.AuthenticationResponseDict]:
-        """Authenticate user credentials and create session with JWT token.
+        """Authenticate user credentials and create session with JWT token using railway pattern.
 
         Validates user credentials against stored password hash, checks account
         status (active/locked), and creates a new session with JWT token if
-        authentication succeeds. Tracks failed login attempts and applies
-        account lockout after maximum attempts.
+        authentication succeeds. Uses monadic composition for clean error propagation.
 
         Args:
             username: Username to authenticate (case insensitive)
@@ -154,10 +193,6 @@ class FlextAuth:
         Returns:
             FlextResult containing AuthenticationResponseDict with user data,
             session information, and JWT token, or error information
-
-        Raises:
-            ValueError: If credentials are invalid or account is locked
-            RuntimeError: If session creation or token generation fails
 
         Example:
             >>> auth = FlextAuth()
@@ -174,123 +209,198 @@ class FlextAuth:
                 f"Authentication attempt from {client_ip or 'unknown'} with agent {user_agent or 'unknown'}",
             )
 
-        # Use domain function from models.py - no duplication
-        # Convert users dict to list format expected by authenticate_user
-        users_data: list[dict[str, object]] = [
-            user.__dict__
-            if hasattr(user, "__dict__")
-            else dict(user)
-            if hasattr(user, "__iter__")
-            else {"username": str(user)}
-            for user in self._users.values()
-        ]
-        # Authenticate user using internal method (moved from _AuthenticationService)
-        auth_result = self._authenticate_user_internal(username, password, users_data)
+        # Railway pattern: Chain authentication operations with monadic composition
+        return (
+            self._find_user_for_auth(username)
+            .flat_map(lambda user: self._validate_user_credentials(user, password))
+            .flat_map(
+                lambda user: self._create_user_session(user, client_ip, user_agent)
+            )
+            .flat_map(self._generate_auth_token)
+            .map(self._build_auth_response)
+        )
 
-        # Update stored user with lockout state changes (for both success and failure)
-        if auth_result.is_success and auth_result.value is not None:
-            # Update the stored user with new lockout state
-            authenticated_user = auth_result.value
-            stored_user_id = self.username_index.get(username.lower())
+    def _find_user_for_auth(self, username: str) -> FlextResult[FlextAuthModels.User]:
+        """Find and validate user for authentication - first step in auth railway."""
+        if not username or not username.strip():
+            return FlextResult[FlextAuthModels.User].fail(
+                "Username cannot be empty",
+                error_code=FlextAuthConstants.INVALID_CREDENTIALS,
+            )
+
+        user_id = self.username_index.get(username.lower())
+        if not user_id:
+            return FlextResult[FlextAuthModels.User].fail(
+                "Invalid credentials",
+                error_code=FlextAuthConstants.INVALID_CREDENTIALS,
+            )
+
+        user = self._users.get(user_id)
+        if not user:
+            return FlextResult[FlextAuthModels.User].fail(
+                "Invalid credentials",
+                error_code=FlextAuthConstants.INVALID_CREDENTIALS,
+            )
+
+        return FlextResult[FlextAuthModels.User].ok(user)
+
+    def _validate_user_credentials(
+        self, user: FlextAuthModels.User, password: str
+    ) -> FlextResult[FlextAuthModels.User]:
+        """Validate user credentials and account status - second step in auth railway."""
+        if not password or not password.strip():
+            return FlextResult[FlextAuthModels.User].fail(
+                "Password cannot be empty",
+                error_code=FlextAuthConstants.INVALID_CREDENTIALS,
+            )
+
+        # Check if account is locked
+        if user.is_locked:
+            return FlextResult[FlextAuthModels.User].fail(
+                "Account is locked due to too many failed attempts",
+                error_code=FlextAuthConstants.ACCOUNT_LOCKED,
+            )
+
+        # Check if account is active
+        if not user.can_login:
+            return FlextResult[FlextAuthModels.User].fail(
+                "Account is not active",
+                error_code=FlextAuthConstants.ACCOUNT_DISABLED,
+            )
+
+        # Verify password using monadic composition
+        return user.verify_password(password).flat_map(
+            lambda is_valid: self._handle_password_verification(user, is_valid=is_valid)
+        )
+
+    def _handle_password_verification(
+        self, user: FlextAuthModels.User, *, is_valid: bool
+    ) -> FlextResult[FlextAuthModels.User]:
+        """Handle password verification result with proper user state updates."""
+        if not is_valid:
+            # Record failed login attempt and update stored user
+            user.record_failed_login()
+            stored_user_id = self.username_index.get(user.username.lower())
             if stored_user_id and stored_user_id in self._users:
                 stored_user = self._users[stored_user_id]
-                # Copy lockout-related fields from authenticated user
-                stored_user.failed_login_attempts = (
-                    authenticated_user.failed_login_attempts
-                )
-                stored_user.locked_until = authenticated_user.locked_until
-                stored_user.last_login = authenticated_user.last_login
-                stored_user.updated_at = authenticated_user.updated_at
-        else:
-            # Even on failure, we need to update the stored user's failed attempts
-            stored_user_id = self.username_index.get(username.lower())
-            if stored_user_id and stored_user_id in self._users:
-                # Directly update the stored user's failed attempts
-                stored_user = self._users[stored_user_id]
-                stored_user.record_failed_login()
+                stored_user.failed_login_attempts = user.failed_login_attempts
+                stored_user.locked_until = user.locked_until
+                stored_user.updated_at = user.updated_at
 
-        # If authentication successful, create proper response data
-        if auth_result.is_success and auth_result.value is not None:
-            user = auth_result.value
+            return FlextResult[FlextAuthModels.User].fail(
+                "Invalid password" if user.failed_login_attempts < self.config.max_login_attempts
+                else "Account locked due to too many failed attempts"
+            )
 
-            # Create UserDict with all required fields
-            user_data: FlextAuthModels.UserDict = {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "full_name": user.full_name,
-                "is_active": user.is_active,
-                "roles": user.roles,
-                "created_at": user.created_at,
-                "updated_at": user.updated_at,
-                "last_login": user.last_login,
+        # Successful authentication - record and update stored user
+        user.record_successful_login()
+        stored_user_id = self.username_index.get(user.username.lower())
+        if stored_user_id and stored_user_id in self._users:
+            stored_user = self._users[stored_user_id]
+            stored_user.last_login = user.last_login
+            stored_user.failed_login_attempts = user.failed_login_attempts
+            stored_user.locked_until = user.locked_until
+            stored_user.updated_at = user.updated_at
+
+        return FlextResult[FlextAuthModels.User].ok(user)
+
+    def _create_user_session(
+        self, user: FlextAuthModels.User, client_ip: str | None, user_agent: str | None
+    ) -> FlextResult[dict[str, object]]:
+        """Create session for authenticated user - third step in auth railway."""
+        return FlextAuthContainer.create_session(
+            user_id=user.id,
+            ip_address=client_ip,
+            user_agent=user_agent,
+        ).map(lambda session: self._store_session_and_build_data(user, session))
+
+    def _store_session_and_build_data(
+        self, user: FlextAuthModels.User, session: FlextAuthModels.Session
+    ) -> dict[str, object]:
+        """Store session and prepare session data for next step."""
+        # Store session and update indexes
+        self._sessions[session.id] = session
+
+        # Add to user sessions index
+        if user.id not in self.user_sessions_index:
+            self.user_sessions_index[user.id] = []
+        self.user_sessions_index[user.id].append(session.id)
+
+        return {"user": user, "session": session}
+
+    def _generate_auth_token(
+        self, session_data: dict[str, object]
+    ) -> FlextResult[dict[str, object]]:
+        """Generate JWT token for authenticated session - fourth step in auth railway."""
+        user = session_data["user"]
+        session_data["session"]
+
+        if not isinstance(user, FlextAuthModels.User):
+            return FlextResult[dict[str, object]].fail("Invalid user data in session")
+
+        return self.generate_jwt_token(user.id).map(
+            lambda jwt_token: {**session_data, "jwt_token": jwt_token}
+        )
+
+    def _build_auth_response(
+        self, auth_data: dict[str, object]
+    ) -> FlextAuthModels.AuthenticationResponseDict:
+        """Build final authentication response - final step in auth railway."""
+        user = auth_data["user"]
+        session = auth_data["session"]
+        jwt_token = auth_data["jwt_token"]
+
+        if not isinstance(user, FlextAuthModels.User) or not isinstance(
+            session, FlextAuthModels.Session
+        ):
+            msg = "Invalid auth data structure"
+            raise TypeError(msg)
+
+        # Create UserDict with all required fields
+        user_data: FlextAuthModels.UserDict = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "full_name": user.full_name,
+            "is_active": user.is_active,
+            "roles": user.roles,
+            "created_at": user.created_at,
+            "updated_at": user.updated_at,
+            "last_login": user.last_login,
+        }
+
+        # Create SessionDict with all required fields
+        session_data: FlextAuthModels.SessionDict = {
+            "id": session.id,
+            "session_id": session.id,  # Alias for API compatibility
+            "user_id": session.user_id,
+            "session_token": session.session_token,
+            "expires_at": session.expires_at,
+            "created_at": session.created_at,
+            "last_accessed_at": session.last_accessed_at,
+            "is_active": not session.is_revoked,
+            "ip_address": session.ip_address,
+            "user_agent": session.user_agent,
+        }
+
+        # Create properly typed authentication response
+        result_data: FlextAuthModels.AuthenticationResponseDict = {
+            "user": user_data,
+            "session": session_data,
+            "jwt_token": str(jwt_token) if jwt_token else "",
+            "authenticated": True,
+            "success": True,
+        }
+
+        # Add optional tokens field
+        if jwt_token:
+            result_data["tokens"] = {
+                "access_token": str(jwt_token),
+                "token_type": "Bearer",
+                "expires_in": self.config.jwt_expiry_minutes * 60,  # Convert to seconds
             }
 
-            # Create session using factory method
-            session_result = FlextAuthContainer.create_session(
-                user_id=user.id,
-                ip_address=client_ip,
-                user_agent=user_agent,
-            )
-
-            if session_result.is_success:
-                session = session_result.value
-
-                # Store session and update indexes
-                self._sessions[session.id] = session
-
-                # Add to user sessions index
-                if user.id not in self.user_sessions_index:
-                    self.user_sessions_index[user.id] = []
-                self.user_sessions_index[user.id].append(session.id)
-
-                # Generate JWT token for the user
-                token_result = self.generate_jwt_token(user.id)
-                jwt_token = token_result.value if token_result.is_success else ""
-
-                # Create SessionDict with all required fields
-                session_data: FlextAuthModels.SessionDict = {
-                    "id": session.id,
-                    "session_id": session.id,  # Alias for API compatibility
-                    "user_id": session.user_id,
-                    "session_token": session.session_token,
-                    "expires_at": session.expires_at,
-                    "created_at": session.created_at,
-                    "last_accessed_at": session.last_accessed_at,
-                    "is_active": not session.is_revoked,
-                    "ip_address": session.ip_address,
-                    "user_agent": session.user_agent,
-                }
-
-                # Create properly typed authentication response
-                result_data: FlextAuthModels.AuthenticationResponseDict = {
-                    "user": user_data,
-                    "session": session_data,
-                    "jwt_token": jwt_token,
-                    "authenticated": True,
-                    "success": True,
-                }
-
-                # Add optional tokens field
-                if jwt_token:
-                    result_data["tokens"] = {
-                        "access_token": jwt_token,
-                        "token_type": "Bearer",
-                        "expires_in": self.config.jwt_expiry_minutes
-                        * 60,  # Convert to seconds
-                    }
-
-                return FlextResult[FlextAuthModels.AuthenticationResponseDict].ok(
-                    result_data,
-                )
-            return FlextResult[FlextAuthModels.AuthenticationResponseDict].fail(
-                f"Session creation failed: {session_result.error}",
-            )
-
-        # Return failure if authentication failed
-        return FlextResult[FlextAuthModels.AuthenticationResponseDict].fail(
-            auth_result.error or "Authentication failed",
-        )
+        return result_data
 
     def validate_token(self, token: str) -> FlextResult[FlextTypes.Core.Dict]:
         """Validate JWT token and return payload.
@@ -487,6 +597,52 @@ class FlextAuth:
             error_msg = f"Quick start failed: {e}"
             raise RuntimeError(error_msg) from e
 
+    @classmethod
+    def create_with_config_overrides(
+        cls,
+        *,
+        jwt_expiry_minutes: int | None = None,
+        bcrypt_rounds: int | None = None,
+        max_failed_attempts: int | None = None,
+        lockout_duration_minutes: int | None = None,
+    ) -> FlextResult[FlextAuth]:
+        """Create FlextAuth instance with configuration overrides using railway pattern.
+
+        Args:
+            jwt_expiry_minutes: JWT token expiry time in minutes
+            bcrypt_rounds: Number of bcrypt rounds for password hashing
+            max_failed_attempts: Maximum failed login attempts before lockout
+            lockout_duration_minutes: Account lockout duration in minutes
+
+        Returns:
+            FlextResult containing FlextAuth instance or error information
+
+        """
+        try:
+            # Create config with overrides using proper parameter passing
+            config_result = FlextAuthConfig.create_for_environment(
+                environment="development",
+                jwt_expiry_minutes=jwt_expiry_minutes,
+                bcrypt_rounds=bcrypt_rounds,
+                max_login_attempts=max_failed_attempts,
+                lockout_duration_minutes=lockout_duration_minutes,
+            )
+
+            if config_result.is_failure:
+                return FlextResult[FlextAuth].fail(
+                    f"Config creation failed: {config_result.error}"
+                )
+
+            # Create FlextAuth instance with custom config
+            auth = cls(config=config_result.unwrap())
+
+            return FlextResult[FlextAuth].ok(auth)
+
+        except Exception as e:
+            return FlextResult[FlextAuth].fail(
+                f"FlextAuth creation with overrides failed: {e}"
+            )
+
     def generate_jwt_token(
         self,
         user_id: str,
@@ -529,67 +685,15 @@ class FlextAuth:
 
         return FlextResult[str].ok(token_result.value.token)
 
-    def _authenticate_user_internal(
-        self,
-        username: str,
-        password: str,
-        users_data: list[dict[str, object]],
-    ) -> FlextResult[FlextAuthModels.User]:
-        """Authenticate user internally."""
-        if not username or not password:
-            return FlextResult[FlextAuthModels.User].fail(
-                "Username and password required",
-            )
+    @property
+    def token_expire_minutes(self) -> int:
+        """Get JWT token expiry minutes from configuration."""
+        return self.config.jwt_expiry_minutes
 
-        # Find user in data (case-insensitive username comparison)
-        user_data = next(
-            (
-                u
-                for u in users_data
-                if str(u.get("username", "")).lower() == username.lower()
-            ),
-            None,
-        )
-        if not user_data:
-            return FlextResult[FlextAuthModels.User].fail(
-                "Invalid credentials",
-                error_code=FlextAuthConstants.INVALID_CREDENTIALS,
-            )
-
-        # Create user instance from user data
-        user = FlextAuthModels.User()
-        # Set user attributes from user_data, but only if they exist in User model
-        for key, value in user_data.items():
-            if hasattr(user, key):
-                setattr(user, key, value)
-
-        # Check if account is locked
-        if user.is_locked:
-            return FlextResult[FlextAuthModels.User].fail(
-                "Account is locked due to too many failed attempts",
-                error_code=FlextAuthConstants.ACCOUNT_LOCKED,
-            )
-
-        # Check if account is active
-        if not user.can_login:
-            return FlextResult[FlextAuthModels.User].fail(
-                "Account is not active",
-                error_code=FlextAuthConstants.ACCOUNT_DISABLED,
-            )
-
-        # Verify password
-        password_result = user.verify_password(password)
-        if password_result.is_failure or not password_result.data:
-            # Record failed login attempt
-            user.record_failed_login()
-            return FlextResult[FlextAuthModels.User].fail(
-                "Invalid credentials",
-                error_code=FlextAuthConstants.INVALID_CREDENTIALS,
-            )
-
-        # Password verification successful - record successful login
-        user.record_successful_login()
-        return FlextResult[FlextAuthModels.User].ok(user)
+    @property
+    def bcrypt_rounds(self) -> int:
+        """Get bcrypt rounds from configuration."""
+        return self.config.bcrypt_rounds
 
 
 # Module exports
