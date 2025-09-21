@@ -216,7 +216,12 @@ def example_token_validation() -> None:
 
 
 def generate_secure_password(length: int = 16) -> str:
-    """Generate a secure password with mixed characters."""
+    """Generate a secure password with mixed characters.
+
+    Returns:
+        str: Generated secure password string
+
+    """
     chars = string.ascii_letters + string.digits + "!@#$%^&*()"
     return "".join(secrets.choice(chars) for _ in range(length))
 

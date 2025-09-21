@@ -22,7 +22,12 @@ class FlextAuthQuickstart:
         self._logger = FlextLogger(__name__)
 
     def get_default_REDACTED_LDAP_BIND_PASSWORD_password(self) -> str:
-        """Get default REDACTED_LDAP_BIND_PASSWORD password for testing/examples."""
+        """Get default REDACTED_LDAP_BIND_PASSWORD password for testing/examples.
+
+        Returns:
+            str: Default REDACTED_LDAP_BIND_PASSWORD password string
+
+        """
         return "AdminPassword123!"
 
     def flext_auth_quick_start(

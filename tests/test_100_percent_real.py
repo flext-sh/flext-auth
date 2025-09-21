@@ -93,7 +93,7 @@ class TestRealModelsExhaustive:
                         email="valid@example.com",
                         password="validPassword123!",
                     )
-            elif empty_val == "":
+            elif not empty_val:
                 # Empty string should trigger ValidationError at Pydantic level
                 with pytest.raises(ValidationError):
                     user_request = FlextAuthModels.UserCreationRequest(
@@ -104,7 +104,7 @@ class TestRealModelsExhaustive:
             else:
                 # Other empty values should be converted to string and tested
                 username_str = str(empty_val) if empty_val != 0 else ""
-                if username_str == "":
+                if not username_str:
                     # Empty string from conversion should also fail at Pydantic level
                     with pytest.raises(ValidationError):
                         user_request = FlextAuthModels.UserCreationRequest(

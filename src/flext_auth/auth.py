@@ -17,6 +17,7 @@ from flext_core import (
     FlextLogger,
     FlextResult,
     FlextTypes,
+    FlextUtilities,
 )
 
 
@@ -67,73 +68,111 @@ class FlextAuth:
         full_name: str | None = None,
         roles: list[str] | None = None,
     ) -> FlextResult[FlextAuthModels.User]:
-        """Register a new user with secure password hashing and validation using railway pattern.
+        """Register new user with FlextResult railway pattern - eliminates try/except fallbacks.
 
-        Creates a new user account with bcrypt password hashing, email validation,
-        and role assignment. Uses monadic composition for clean validation flow.
+        Creates a new user account with the provided credentials and information.
+        Validates username and email availability, creates secure password hash,
+        and stores the user with proper indexing for fast lookups.
 
         Args:
-            username: Unique username (minimum 3 characters, alphanumeric + underscore)
-            email: Valid email address for the user
-            password: Plain text password (will be hashed with bcrypt)
-            full_name: Optional full name for the user
+            username: Unique username (case insensitive, will be indexed)
+            email: Unique email address (case insensitive, will be indexed)
+            password: Plain text password (will be securely hashed with bcrypt)
+            full_name: Optional full display name for the user
             roles: Optional list of roles (defaults to ["user"])
 
         Returns:
-            FlextResult containing the created User entity or error information
-
-        Example:
-            >>> auth = FlextAuth()
-            >>> result = auth.register_user(
-            ...     "john_doe", "john@example.com", "SecurePass123!"
-            ... )
-            >>> assert result.is_success
+            FlextResult containing the created User entity with all fields populated,
+            or error information if registration fails
 
         """
-        # Railway pattern for registration: Early return on failure
-        validation_result = self._validate_username_availability(username)
+        # Use FlextUtilities for input validation - following SOLID principles
+        validation_result = self._validate_registration_inputs(
+            username, email, password
+        )
         if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.User].fail(validation_result.error or "Username validation failed")
-
-        validation_result = self._validate_email_availability(email)
-        if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.User].fail(validation_result.error or "Email validation failed")
-
-        # Create user request object - catch ValidationError and convert to FlextResult
-        try:
-            user_request = FlextAuthModels.UserCreationRequest(
-                username=username,
-                email=email,
-                password=password,
-                full_name=full_name,
-                roles=roles or ["user"],
+            return FlextResult[FlextAuthModels.User].fail(
+                validation_result.error or "Validation failed"
             )
-        except Exception as e:
-            # Convert validation errors to FlextResult failures
-            if "username" in str(e) and "Input should be a valid string" in str(e):
-                return FlextResult[FlextAuthModels.User].fail(
-                    "Username cannot be empty"
-                )
-            if "email" in str(e) and "Input should be a valid string" in str(e):
-                return FlextResult[FlextAuthModels.User].fail("Email cannot be empty")
-            if "password" in str(e) and "Input should be a valid string" in str(e):
-                return FlextResult[FlextAuthModels.User].fail(
-                    "Password cannot be empty"
-                )
-            return FlextResult[FlextAuthModels.User].fail(f"Validation failed: {e}")
 
-        # Create and store user (these return non-None types so can use map)
-        user_result = self._create_user_from_request(user_request)
-        if user_result.is_failure:
-            return user_result
-
-        # Store user and update indexes
-        return user_result.map(
-            lambda user: self._store_user_and_update_indexes(user, username, email)
+        # Railway pattern: Chain validation and creation operations
+        return (
+            self._validate_username_availability(username)
+            .flat_map(lambda _: self._validate_email_availability(email))
+            .flat_map(
+                lambda _: self._create_user_request(
+                    username, email, password, full_name, roles
+                )
+            )
+            .flat_map(self._create_user_from_request)
+            .map(
+                lambda user: self._store_user_and_update_indexes(user, username, email)
+            )
         )
 
+    def _validate_registration_inputs(
+        self, username: str, email: str, password: str
+    ) -> FlextResult[None]:
+        """Validate registration inputs using FlextUtilities - SOLID principle.
+
+        Returns:
+            FlextResult[None]: Success if validation passes, error if validation fails
+
+        """
+        username_validation = FlextUtilities.Validation.validate_string(
+            username, field_name="username"
+        )
+        if username_validation.is_failure:
+            return FlextResult[None].fail(
+                username_validation.error or "Username validation failed"
+            )
+
+        email_validation = FlextUtilities.Validation.validate_email(email)
+        if email_validation.is_failure:
+            return FlextResult[None].fail(
+                email_validation.error or "Email validation failed"
+            )
+
+        password_validation = FlextUtilities.Validation.validate_string(
+            password, field_name="password"
+        )
+        if password_validation.is_failure:
+            return FlextResult[None].fail(
+                password_validation.error or "Password validation failed"
+            )
+
+        return FlextResult[None].ok(None)
+
+    def _create_user_request(
+        self,
+        username: str,
+        email: str,
+        password: str,
+        full_name: str | None,
+        roles: list[str] | None,
+    ) -> FlextResult[FlextAuthModels.UserCreationRequest]:
+        """Create user request using FlextModels - no try/except needed.
+
+        Returns:
+            FlextResult[FlextAuthModels.UserCreationRequest]: Success with user creation request
+
+        """
+        user_request = FlextAuthModels.UserCreationRequest(
+            username=username,
+            email=email,
+            password=password,
+            full_name=full_name,
+            roles=roles or ["user"],
+        )
+        return FlextResult[FlextAuthModels.UserCreationRequest].ok(user_request)
+
     def _validate_username_availability(self, username: str) -> FlextResult[None]:
-        """Validate username is available - first step in registration railway."""
+        """Validate username is available - first step in registration railway.
+
+        Returns:
+            FlextResult[None]: Success if username is available, error if taken
+
+        """
         if username.lower() in self.username_index:
             return FlextResult[None].fail(
                 "Username already exists",
@@ -142,7 +181,12 @@ class FlextAuth:
         return FlextResult[None].ok(None)
 
     def _validate_email_availability(self, email: str) -> FlextResult[None]:
-        """Validate email is available - second step in registration railway."""
+        """Validate email is available - second step in registration railway.
+
+        Returns:
+            FlextResult[None]: Success if email is available, error if taken
+
+        """
         if email.lower() in self.email_index:
             return FlextResult[None].fail(
                 "Email already exists",
@@ -153,7 +197,12 @@ class FlextAuth:
     def _create_user_from_request(
         self, request: FlextAuthModels.UserCreationRequest
     ) -> FlextResult[FlextAuthModels.User]:
-        """Create user from request - third step in registration railway."""
+        """Create user from request - third step in registration railway.
+
+        Returns:
+            FlextResult[FlextAuthModels.User]: Success with created user, error if creation fails
+
+        """
         user_result = FlextAuthContainer.create_user_from_request(request)
         if user_result.is_failure:
             self._logger.error(f"User creation failed: {user_result.error}")
@@ -162,7 +211,12 @@ class FlextAuth:
     def _store_user_and_update_indexes(
         self, user: FlextAuthModels.User, username: str, email: str
     ) -> FlextAuthModels.User:
-        """Store user and update indexes - final step in registration railway."""
+        """Store user and update indexes - final step in registration railway.
+
+        Returns:
+            FlextAuthModels.User: The stored user entity
+
+        """
         # Store user and update indexes
         self._users[user.id] = user
         self.username_index[username.lower()] = user.id
@@ -221,7 +275,12 @@ class FlextAuth:
         )
 
     def _find_user_for_auth(self, username: str) -> FlextResult[FlextAuthModels.User]:
-        """Find and validate user for authentication - first step in auth railway."""
+        """Find and validate user for authentication - first step in auth railway.
+
+        Returns:
+            FlextResult[FlextAuthModels.User]: Success with user if found, error if not found
+
+        """
         if not username or not username.strip():
             return FlextResult[FlextAuthModels.User].fail(
                 "Username cannot be empty",
@@ -247,7 +306,12 @@ class FlextAuth:
     def _validate_user_credentials(
         self, user: FlextAuthModels.User, password: str
     ) -> FlextResult[FlextAuthModels.User]:
-        """Validate user credentials and account status - second step in auth railway."""
+        """Validate user credentials and account status - second step in auth railway.
+
+        Returns:
+            FlextResult[FlextAuthModels.User]: Success with user if credentials valid, error if invalid
+
+        """
         if not password or not password.strip():
             return FlextResult[FlextAuthModels.User].fail(
                 "Password cannot be empty",
@@ -276,7 +340,12 @@ class FlextAuth:
     def _handle_password_verification(
         self, user: FlextAuthModels.User, *, is_valid: bool
     ) -> FlextResult[FlextAuthModels.User]:
-        """Handle password verification result with proper user state updates."""
+        """Handle password verification result with proper user state updates.
+
+        Returns:
+            FlextResult[FlextAuthModels.User]: Success with updated user, error if password invalid
+
+        """
         if not is_valid:
             # Record failed login attempt and update stored user
             user.record_failed_login()
@@ -288,7 +357,8 @@ class FlextAuth:
                 stored_user.updated_at = user.updated_at
 
             return FlextResult[FlextAuthModels.User].fail(
-                "Invalid password" if user.failed_login_attempts < self.config.max_login_attempts
+                "Invalid password"
+                if user.failed_login_attempts < self.config.max_login_attempts
                 else "Account locked due to too many failed attempts"
             )
 
@@ -307,7 +377,12 @@ class FlextAuth:
     def _create_user_session(
         self, user: FlextAuthModels.User, client_ip: str | None, user_agent: str | None
     ) -> FlextResult[dict[str, object]]:
-        """Create session for authenticated user - third step in auth railway."""
+        """Create session for authenticated user - third step in auth railway.
+
+        Returns:
+            FlextResult[dict[str, object]]: Success with session data, error if session creation fails
+
+        """
         return FlextAuthContainer.create_session(
             user_id=user.id,
             ip_address=client_ip,
@@ -317,7 +392,12 @@ class FlextAuth:
     def _store_session_and_build_data(
         self, user: FlextAuthModels.User, session: FlextAuthModels.Session
     ) -> dict[str, object]:
-        """Store session and prepare session data for next step."""
+        """Store session and prepare session data for next step.
+
+        Returns:
+            dict[str, object]: Session data dictionary with user and session
+
+        """
         # Store session and update indexes
         self._sessions[session.id] = session
 
@@ -331,7 +411,12 @@ class FlextAuth:
     def _generate_auth_token(
         self, session_data: dict[str, object]
     ) -> FlextResult[dict[str, object]]:
-        """Generate JWT token for authenticated session - fourth step in auth railway."""
+        """Generate JWT token for authenticated session - fourth step in auth railway.
+
+        Returns:
+            FlextResult[dict[str, object]]: Success with auth data including JWT token, error if token generation fails
+
+        """
         user = session_data["user"]
         session_data["session"]
 
@@ -345,7 +430,15 @@ class FlextAuth:
     def _build_auth_response(
         self, auth_data: dict[str, object]
     ) -> FlextAuthModels.AuthenticationResponseDict:
-        """Build final authentication response - final step in auth railway."""
+        """Build final authentication response - final step in auth railway.
+
+        Returns:
+            FlextAuthModels.AuthenticationResponseDict: Complete authentication response
+
+        Raises:
+            TypeError: If auth_data structure is invalid
+
+        """
         user = auth_data["user"]
         session = auth_data["session"]
         jwt_token = auth_data["jwt_token"]
@@ -403,7 +496,7 @@ class FlextAuth:
         return result_data
 
     def validate_token(self, token: str) -> FlextResult[FlextTypes.Core.Dict]:
-        """Validate JWT token and return payload.
+        """Validate JWT token and return payload using railway pattern.
 
         Args:
             token: JWT token string
@@ -412,37 +505,54 @@ class FlextAuth:
             FlextResult containing token payload or error
 
         """
-        try:
-            # Remove Bearer prefix if present
-            clean_token = token
-            if token.startswith("Bearer "):
-                clean_token = token[7:]  # Remove "Bearer " prefix
+        # Use FlextUtilities for input validation
+        token_validation = FlextUtilities.Validation.validate_string(
+            token, field_name="token"
+        )
+        if token_validation.is_failure:
+            return FlextResult[FlextTypes.Core.Dict].fail("Token cannot be empty")
 
-            # Decode JWT token with proper options (don't verify audience for now)
+        # Clean token (remove Bearer prefix if present)
+        clean_token = token.removeprefix("Bearer ")
+
+        # Basic token format validation
+        jwt_dot_count = 2  # JWT should have exactly 2 dots
+        if clean_token.count(".") != jwt_dot_count:
+            return FlextResult[FlextTypes.Core.Dict].fail("Invalid token format")
+
+        # JWT verification with specific error handling - minimal try/except for JWT library
+        try:
             payload = jwt.decode(
                 clean_token,
                 self.config.jwt_secret,
                 algorithms=[FlextAuthConstants.JWT_DEFAULT_ALGORITHM],
                 options={"verify_aud": False},
             )
+        except jwt.ExpiredSignatureError:
+            return FlextResult[FlextTypes.Core.Dict].fail("Token has expired")
+        except jwt.InvalidTokenError:
+            return FlextResult[FlextTypes.Core.Dict].fail("Invalid token")
+        except Exception:
+            return FlextResult[FlextTypes.Core.Dict].fail("Token validation failed")
 
-            # Log successful validation
-            self._logger.info(f"JWT token validated for user: {payload.get('user_id')}")
+        # Log successful validation
+        self._logger.info(f"JWT token validated for user: {payload.get('user_id')}")
 
-            # Add 'valid' flag expected by tests
-            payload["valid"] = True
+        # Add 'valid' flag expected by tests
+        payload["valid"] = True
 
-            # Return the payload as dict
-            return FlextResult[FlextTypes.Core.Dict].ok(payload)
-
-        except Exception as e:  # pragma: no cover
-            self._logger.exception("JWT token validation failed")  # pragma: no cover
-            return FlextResult[FlextTypes.Core.Dict].fail(
-                f"Token validation failed: {e}",
-            )  # pragma: no cover
+        return FlextResult[FlextTypes.Core.Dict].ok(payload)  # pragma: no cover
 
     def generate_token(self, user_id: str) -> str:
-        """Generate JWT token for user ID using flext-core patterns."""
+        """Generate JWT token for user ID using flext-core patterns.
+
+        Returns:
+            str: JWT token string
+
+        Raises:
+            RuntimeError: If user not found or token generation fails
+
+        """
         # Get user to include username in token
         user_result = self.get_user_by_id(user_id)
         if user_result.is_failure or user_result.value is None:  # pragma: no cover
@@ -471,7 +581,12 @@ class FlextAuth:
         self,
         username: str,
     ) -> FlextResult[FlextAuthModels.User | None]:
-        """Get user by username (case insensitive)."""
+        """Get user by username (case insensitive).
+
+        Returns:
+            FlextResult[FlextAuthModels.User | None]: Success with user if found, None if not found
+
+        """
         user_id = self.username_index.get(username.lower())
         if not user_id:
             return FlextResult[FlextAuthModels.User | None].ok(None)
@@ -480,7 +595,12 @@ class FlextAuth:
         return FlextResult[FlextAuthModels.User | None].ok(user)
 
     def get_user_by_id(self, user_id: str) -> FlextResult[FlextAuthModels.User | None]:
-        """Get user by ID."""
+        """Get user by ID.
+
+        Returns:
+            FlextResult[FlextAuthModels.User | None]: Success with user if found, None if not found
+
+        """
         user = self._users.get(user_id)
         return FlextResult[FlextAuthModels.User | None].ok(user)
 
@@ -488,7 +608,12 @@ class FlextAuth:
         self,
         user_id: str,
     ) -> FlextResult[list[FlextAuthModels.Session]]:
-        """Get all active sessions for user."""
+        """Get all active sessions for user.
+
+        Returns:
+            FlextResult[list[FlextAuthModels.Session]]: Success with list of active sessions
+
+        """
         session_ids = self.user_sessions_index.get(user_id, [])
         sessions = []
 
@@ -500,7 +625,12 @@ class FlextAuth:
         return FlextResult[list[FlextAuthModels.Session]].ok(sessions)
 
     def revoke_session(self, session_id: str) -> FlextResult[None]:
-        """Revoke specific session."""
+        """Revoke specific session.
+
+        Returns:
+            FlextResult[None]: Success if session revoked, error if session not found
+
+        """
         session = self._sessions.get(session_id)
         if not session:
             return FlextResult[None].fail(
@@ -513,7 +643,12 @@ class FlextAuth:
         return FlextResult[None].ok(None)
 
     def cleanup_expired_sessions(self) -> FlextResult[int]:
-        """Remove expired sessions and return count."""
+        """Remove expired sessions and return count.
+
+        Returns:
+            FlextResult[int]: Success with count of cleaned up sessions
+
+        """
         expired_sessions = [
             session_id
             for session_id, session in self._sessions.items()
@@ -533,7 +668,12 @@ class FlextAuth:
         return FlextResult[int].ok(len(expired_sessions))
 
     def logout_user(self, session_id: str) -> FlextResult[None]:
-        """Logout user by revoking session."""
+        """Logout user by revoking session.
+
+        Returns:
+            FlextResult[None]: Success if session revoked, error if session not found
+
+        """
         return self.revoke_session(session_id)
 
     def get_user_by_token(self, token: str) -> FlextResult[FlextAuthModels.User | None]:
@@ -574,28 +714,32 @@ class FlextAuth:
             "AdminPassword123!",
         ),
     ) -> FlextAuth:
-        """Quick start with simplified implementation."""
-        try:
-            # Create FlextAuth instance
-            auth = cls()
+        """Quick start with simplified implementation using railway pattern.
 
-            # Conditionally create REDACTED_LDAP_BIND_PASSWORD user
-            if create_REDACTED_LDAP_BIND_PASSWORD:
-                REDACTED_LDAP_BIND_PASSWORD_result = auth.register_user(
-                    username=REDACTED_LDAP_BIND_PASSWORD_username,
-                    email=f"{REDACTED_LDAP_BIND_PASSWORD_username}@example.com",
-                    password=REDACTED_LDAP_BIND_PASSWORD_password,
-                    roles=["REDACTED_LDAP_BIND_PASSWORD"],
-                )
+        Returns:
+            FlextAuth: Configured authentication service instance
 
-                if REDACTED_LDAP_BIND_PASSWORD_result.is_failure:
-                    error_msg = f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {REDACTED_LDAP_BIND_PASSWORD_result.error}"
-                    raise RuntimeError(error_msg)
+        Raises:
+            RuntimeError: If REDACTED_LDAP_BIND_PASSWORD user creation fails
 
-            return auth
-        except Exception as e:
-            error_msg = f"Quick start failed: {e}"
-            raise RuntimeError(error_msg) from e
+        """
+        # Create FlextAuth instance
+        auth = cls()
+
+        # Conditionally create REDACTED_LDAP_BIND_PASSWORD user using railway pattern
+        if create_REDACTED_LDAP_BIND_PASSWORD:
+            REDACTED_LDAP_BIND_PASSWORD_result = auth.register_user(
+                username=REDACTED_LDAP_BIND_PASSWORD_username,
+                email=f"{REDACTED_LDAP_BIND_PASSWORD_username}@example.com",
+                password=REDACTED_LDAP_BIND_PASSWORD_password,
+                roles=["REDACTED_LDAP_BIND_PASSWORD"],
+            )
+
+            if REDACTED_LDAP_BIND_PASSWORD_result.is_failure:
+                error_msg = f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {REDACTED_LDAP_BIND_PASSWORD_result.error}"
+                raise RuntimeError(error_msg)
+
+        return auth
 
     @classmethod
     def create_with_config_overrides(
@@ -618,30 +762,24 @@ class FlextAuth:
             FlextResult containing FlextAuth instance or error information
 
         """
-        try:
-            # Create config with overrides using proper parameter passing
-            config_result = FlextAuthConfig.create_for_environment(
-                environment="development",
-                jwt_expiry_minutes=jwt_expiry_minutes,
-                bcrypt_rounds=bcrypt_rounds,
-                max_login_attempts=max_failed_attempts,
-                lockout_duration_minutes=lockout_duration_minutes,
-            )
+        # Create config with overrides using proper parameter passing
+        config_result = FlextAuthConfig.create_for_environment(
+            environment="development",
+            jwt_expiry_minutes=jwt_expiry_minutes,
+            bcrypt_rounds=bcrypt_rounds,
+            max_login_attempts=max_failed_attempts,
+            lockout_duration_minutes=lockout_duration_minutes,
+        )
 
-            if config_result.is_failure:
-                return FlextResult[FlextAuth].fail(
-                    f"Config creation failed: {config_result.error}"
-                )
-
-            # Create FlextAuth instance with custom config
-            auth = cls(config=config_result.unwrap())
-
-            return FlextResult[FlextAuth].ok(auth)
-
-        except Exception as e:
+        if config_result.is_failure:
             return FlextResult[FlextAuth].fail(
-                f"FlextAuth creation with overrides failed: {e}"
+                f"Config creation failed: {config_result.error}"
             )
+
+        # Create FlextAuth instance with custom config
+        auth = cls(config=config_result.unwrap())
+
+        return FlextResult[FlextAuth].ok(auth)
 
     def generate_jwt_token(
         self,

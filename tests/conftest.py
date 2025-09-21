@@ -27,17 +27,32 @@ def clear_auth_config_singleton() -> Generator[None]:
 
 @pytest.fixture
 def mock_summary() -> MagicMock:
-    """Mock for FlextAuthConfig.get_global_cli_summary."""
+    """Mock for FlextAuthConfig.get_global_cli_summary.
+
+    Returns:
+        MagicMock: Mock object for CLI summary
+
+    """
     return MagicMock()
 
 
 @pytest.fixture
 def mock_update() -> MagicMock:
-    """Mock for FlextAuthConfig.update_global_from_cli."""
+    """Mock for FlextAuthConfig.update_global_from_cli.
+
+    Returns:
+        MagicMock: Mock object for CLI update
+
+    """
     return MagicMock()
 
 
 @pytest.fixture
 def mock_get_global() -> MagicMock:
-    """Mock for FlextAuthConfig.get_global_instance."""
+    """Mock for FlextAuthConfig.get_global_instance.
+
+    Returns:
+        MagicMock: Mock object for global instance
+
+    """
     return MagicMock()

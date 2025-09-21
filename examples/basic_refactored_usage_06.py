@@ -35,7 +35,12 @@ class FlextAuthDemo:
         self.auth = FlextAuth()
 
     def demo_user_registration(self) -> FlextResult[object]:
-        """Extract Method: User registration demo."""
+        """Extract Method: User registration demo.
+
+        Returns:
+            FlextResult[object]: Registration result
+
+        """
         result = self.auth.register_user(
             username="demouser",
             email="demo@example.com",
@@ -49,7 +54,12 @@ class FlextAuthDemo:
         return cast("FlextResult[object]", result)
 
     def demo_user_authentication(self) -> FlextResult[AuthenticationResponseDict]:
-        """Extract Method: User authentication demo."""
+        """Extract Method: User authentication demo.
+
+        Returns:
+            FlextResult[AuthenticationResponseDict]: Authentication result
+
+        """
         result = self.auth.authenticate_user("demouser", "DemoPassword123!")
 
         if result.is_success:
@@ -63,6 +73,81 @@ class FlextAuthDemo:
         tokens_data = auth_data.get("tokens", {})
 
         len(str(tokens_data.get("access_token", "")))
+
+
+def _demo_password_utilities(demo: FlextAuthDemo) -> None:
+    """Demo password utilities and validation."""
+    test_password = os.getenv("FLEXT_DEMO_TEST_PASSWORD", "TestPassword123!")
+
+    try:
+        hashed_password = demo.auth.hash_password(test_password)
+        demo.auth.verify_password(test_password, hashed_password)
+    except Exception as e:
+        error_message = f"Password hashing failed: {e}"
+        del error_message  # Clean up
+
+
+def _demo_secure_password_generation() -> None:
+    """Demo secure password generation."""
+    length = 16
+    lowercase = string.ascii_lowercase
+    uppercase = string.ascii_uppercase
+    digits = string.digits
+    special = '!@#$%^&*(),.?":{}|<>'
+
+    secure_password = [
+        secrets.choice(lowercase),
+        secrets.choice(uppercase),
+        secrets.choice(digits),
+        secrets.choice(special),
+    ]
+
+    all_chars = lowercase + uppercase + digits + special
+    secure_password.extend(secrets.choice(all_chars) for _ in range(length - 4))
+    secrets.SystemRandom().shuffle(secure_password)
+    "".join(secure_password)
+
+
+def _demo_email_validation() -> None:
+    """Demo email validation."""
+    test_emails = ["valid@example.com", "invalid.email", "test@domain.co.uk"]
+
+    def validate_email_manual(email: str) -> bool:
+        """Manual email validation without helpers.
+
+        Returns:
+            bool: True if email is valid, False otherwise
+
+        """
+        if "@" not in email or "." not in email.rsplit("@", maxsplit=1)[-1]:
+            return False
+        if email.count("@") != 1:
+            return False
+        local, domain = email.split("@")
+        if not local or not domain:
+            return False
+        return ".." not in email
+
+    for email in test_emails:
+        validate_email_manual(email)
+
+
+def _demo_jwt_operations(demo: FlextAuthDemo) -> None:
+    """Demo JWT token operations."""
+    jwt_user_result = demo.auth.register_user(
+        username="jwtuser",
+        email="jwt@example.com",
+        password=os.getenv("JWT_PASSWORD", "JWTPassword123!"),
+    )
+
+    if jwt_user_result.is_success:
+        user = jwt_user_result.value
+        token_result = demo.auth.generate_jwt_token(user.id)
+        if token_result.is_success:
+            token = token_result.value
+            token_validation = demo.auth.validate_token(token)
+            if token_validation.is_success:
+                pass
 
 
 def main() -> None:
@@ -90,94 +175,21 @@ def main() -> None:
     tokens_data = auth_data.get("tokens", {})
     access_token = str(tokens_data.get("access_token", ""))
 
-    # 4. Token Validation - continuing with existing pattern
+    # Token Validation
     validation_result = demo.auth.validate_token(access_token)
-
     if validation_result.is_success:
         pass
 
-    # 5. Password Utilities - Using FlextAuth directly
+    # Demo various utilities
+    _demo_password_utilities(demo)
+    _demo_secure_password_generation()
+    _demo_email_validation()
+    _demo_jwt_operations(demo)
 
-    # Password hashing and verification using FlextAuth
-    test_password = os.getenv("FLEXT_DEMO_TEST_PASSWORD", "TestPassword123!")
-
-    try:
-        # Use FlextAuth for password operations
-        hashed_password = demo.auth.hash_password(test_password)
-
-        # Verify password
-        demo.auth.verify_password(test_password, hashed_password)
-
-    except Exception as e:
-        # Handle password hashing error
-        error_message = f"Password hashing failed: {e}"
-        # In production, this would be logged properly
-        del error_message  # Clean up
-
-    # Generate secure password using manual implementation
-    length = 16
-    lowercase = string.ascii_lowercase
-    uppercase = string.ascii_uppercase
-    digits = string.digits
-    special = '!@#$%^&*(),.?":{}|<>'
-
-    secure_password = [
-        secrets.choice(lowercase),
-        secrets.choice(uppercase),
-        secrets.choice(digits),
-        secrets.choice(special),
-    ]
-
-    all_chars = lowercase + uppercase + digits + special
-    secure_password.extend(secrets.choice(all_chars) for _ in range(length - 4))
-    secrets.SystemRandom().shuffle(secure_password)
-    "".join(secure_password)
-
-    # 6. Email Validation - Manual implementation
-    test_emails = ["valid@example.com", "invalid.email", "test@domain.co.uk"]
-
-    def validate_email_manual(email: str) -> bool:
-        """Manual email validation without helpers."""
-        if "@" not in email or "." not in email.rsplit("@", maxsplit=1)[-1]:
-            return False
-        if email.count("@") != 1:
-            return False
-        local, domain = email.split("@")
-        if not local or not domain:
-            return False
-        return ".." not in email
-
-    for email in test_emails:
-        validate_email_manual(email)
-
-    # 7. JWT Token Operations using FlextAuth
-
-    # Register a test user for JWT operations
-    jwt_user_result = demo.auth.register_user(
-        username="jwtuser",
-        email="jwt@example.com",
-        password=os.getenv("JWT_PASSWORD", "JWTPassword123!"),
-    )
-
-    if jwt_user_result.is_success:
-        user = jwt_user_result.value
-
-        # Generate JWT token
-        token_result = demo.auth.generate_jwt_token(user.id)
-        if token_result.is_success:
-            token = token_result.value
-
-            # Validate the token
-            token_validation = demo.auth.validate_token(token)
-            if token_validation.is_success:
-                pass
-
-    # 8. Constants and Configuration
+    # Constants and Configuration
     demo.auth.get_config()
     demo.auth.config.get_security_settings()
     demo.auth.config.get_jwt_settings()
-
-    # FlextCore constants
 
 
 if __name__ == "__main__":

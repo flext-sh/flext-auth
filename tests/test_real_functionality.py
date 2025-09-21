@@ -295,21 +295,16 @@ class TestRealAuthentication:
         assert user.password_hash.startswith("$2b$")
 
         # Test invalid username validation - should fail at Pydantic level
-        from pydantic import ValidationError
 
-        try:
+        with pytest.raises(ValidationError) as exc_info:
             FlextAuthModels.UserCreationRequest(
                 username="",  # Empty username should fail
                 email="invalid@example.com",
                 password="Password123!",
             )
-            # If we get here, the validation failed to catch the empty username
-            msg = "Expected ValidationError for empty username"
-            raise AssertionError(msg)
-        except ValidationError as e:
-            # This is expected - empty username should be caught by field validator
-            assert "username" in str(e)
-            assert "Input should be a valid string" in str(e)
+        # This is expected - empty username should be caught by field validator
+        assert "username" in str(exc_info.value)
+        assert "Input should be a valid string" in str(exc_info.value)
 
         # Test Session model creation
         session_result = create_session(user_id=user.id)
@@ -573,33 +568,25 @@ class TestRealAuthentication:
 
     def test_factory_methods_edge_cases(self) -> None:
         """Test factory method edge cases and error paths."""
-        from pydantic import ValidationError
-
         # Test empty username - should fail at Pydantic validation level
-        try:
+        with pytest.raises(ValidationError) as exc_info:
             FlextAuthModels.UserCreationRequest(
                 username="",  # Empty username
                 email="empty@example.com",
                 password="EmptyUserPassword123!",
             )
-            msg = "Expected ValidationError for empty username"
-            raise AssertionError(msg)
-        except ValidationError as e:
-            assert "username" in str(e)
-            assert "Input should be a valid string" in str(e)
+        assert "username" in str(exc_info.value)
+        assert "Input should be a valid string" in str(exc_info.value)
 
         # Test empty email - should fail at Pydantic validation level
-        try:
+        with pytest.raises(ValidationError) as exc_info:
             FlextAuthModels.UserCreationRequest(
                 username="empty_email_user",
                 email="",  # Empty email
                 password="EmptyEmailPassword123!",
             )
-            msg = "Expected ValidationError for empty email"
-            raise AssertionError(msg)
-        except ValidationError as e:
-            assert "email" in str(e)
-            assert "Input should be a valid string" in str(e)
+        assert "email" in str(exc_info.value)
+        assert "Input should be a valid string" in str(exc_info.value)
 
         # Test extremely short session expiry
         user_request = FlextAuthModels.UserCreationRequest(

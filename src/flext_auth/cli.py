@@ -10,7 +10,7 @@ import sys
 
 from flext_auth import FlextAuth, FlextAuthConfig
 from flext_cli import FlextCliMain
-from flext_core import FlextContainer, FlextLogger, FlextResult
+from flext_core import FlextContainer, FlextLogger, FlextResult, FlextUtilities
 
 
 class FlextAuthCli:
@@ -24,18 +24,20 @@ class FlextAuthCli:
         """Initialize FlextAuthCli with FLEXT foundation dependencies."""
         self._container = FlextContainer.get_global()
         self._logger = FlextLogger(__name__)
+        self._cli_api = (
+            FlextCliMain()
+        )  # Use FlextCliMain directly following SOLID principles
 
     def create_auth_cli(self) -> FlextResult[FlextCliMain]:
-        """Create FLEXT Auth CLI using flext-cli foundation."""
-        main_cli = FlextCliMain()
+        """Create FLEXT Auth CLI using flext-cli foundation - simplified using SOLID principles.
 
+        Returns:
+            FlextResult[FlextCliMain]: Success with CLI instance
+
+        """
+        # Return existing CLI instance - eliminate duplication
         self._logger.info("FLEXT Auth CLI initialized using flext-cli foundation")
-
-        # Note: FlextCliMain and FlextCliApi don't currently support command registration
-        # This would need to be implemented in flext-cli foundation first
-        # For now, return the basic CLI main instance
-
-        return FlextResult[FlextCliMain].ok(main_cli)
+        return FlextResult[FlextCliMain].ok(self._cli_api)
 
     def authenticate_user(
         self,
@@ -45,8 +47,30 @@ class FlextAuthCli:
         bcrypt_rounds: int | None = None,
         environment: str = "development",
     ) -> FlextResult[None]:
-        """Authenticate user with configurable parameters."""
-        # Use FlextConfig singleton with CLI overrides
+        """Authenticate user with configurable parameters - simplified using SOLID principles.
+
+        Returns:
+            FlextResult[None]: Success if authentication succeeds, error if fails
+
+        """
+        # Use FlextUtilities for validation
+        username_validation = FlextUtilities.Validation.validate_string(
+            username, field_name="username"
+        )
+        if username_validation.is_failure:
+            return FlextResult[None].fail(
+                username_validation.error or "Username validation failed"
+            )
+
+        password_validation = FlextUtilities.Validation.validate_string(
+            password, field_name="password"
+        )
+        if password_validation.is_failure:
+            return FlextResult[None].fail(
+                password_validation.error or "Password validation failed"
+            )
+
+        # Create configuration using railway pattern
         config_result = FlextAuthConfig.create_from_cli_params(
             jwt_expiry=jwt_expiry,
             bcrypt_rounds=bcrypt_rounds,
@@ -57,28 +81,14 @@ class FlextAuthCli:
             self._logger.error("Configuration failed", error=config_result.error)
             return FlextResult[None].fail(config_result.error or "Configuration failed")
 
-        # Create FlextAuth with the configured singleton
-        auth: FlextAuth = FlextAuth(config=config_result.value)
-
-        # Perform authentication
+        # Create FlextAuth and authenticate
+        auth = FlextAuth(config=config_result.value)
         auth_result = auth.authenticate_user(username, password)
 
         if auth_result.is_success:
-            user_data = auth_result.value
-            # Log authentication success with user info if available
-            username_logged = False
-            if isinstance(user_data, dict) and "user" in user_data:
-                user_info = user_data["user"]
-                if isinstance(user_info, dict) and "username" in user_info:
-                    self._logger.info(
-                        f"Authentication successful for {user_info['username']}",
-                    )
-                    username_logged = True
-
-            if not username_logged:
-                self._logger.info("Authentication successful")
+            self._logger.info(f"Authentication successful for {username}")
             self._logger.info(
-                f"JWT Expiry: {config_result.value.jwt_expiry_minutes} minutes",
+                f"JWT Expiry: {config_result.value.jwt_expiry_minutes} minutes"
             )
             self._logger.info(f"Bcrypt Rounds: {config_result.value.bcrypt_rounds}")
         else:
@@ -97,8 +107,36 @@ class FlextAuthCli:
         session_expiry: int | None = None,
         environment: str = "development",
     ) -> FlextResult[None]:
-        """Register new user with configurable parameters."""
-        # Use FlextConfig singleton with CLI overrides
+        """Register new user with configurable parameters - simplified using SOLID principles.
+
+        Returns:
+            FlextResult[None]: Success if registration succeeds, error if fails
+
+        """
+        # Use FlextUtilities for validation
+        username_validation = FlextUtilities.Validation.validate_string(
+            username, field_name="username"
+        )
+        if username_validation.is_failure:
+            return FlextResult[None].fail(
+                username_validation.error or "Username validation failed"
+            )
+
+        email_validation = FlextUtilities.Validation.validate_email(email)
+        if email_validation.is_failure:
+            return FlextResult[None].fail(
+                email_validation.error or "Email validation failed"
+            )
+
+        password_validation = FlextUtilities.Validation.validate_string(
+            password, field_name="password"
+        )
+        if password_validation.is_failure:
+            return FlextResult[None].fail(
+                password_validation.error or "Password validation failed"
+            )
+
+        # Create configuration using railway pattern
         config_result = FlextAuthConfig.create_from_cli_params(
             max_attempts=max_attempts,
             session_expiry=session_expiry,
@@ -106,11 +144,11 @@ class FlextAuthCli:
         )
 
         if config_result.is_failure:
-            self._logger.error(f"Configuration failed: {config_result.error}")
+            self._logger.error("Configuration failed", error=config_result.error)
             return FlextResult[None].fail(config_result.error or "Configuration failed")
 
-        # Use auth service to register user with FlextResult railway pattern
-        auth = FlextAuth(config=config_result.unwrap())
+        # Create FlextAuth and register user
+        auth = FlextAuth(config=config_result.value)
         auth_result = auth.register_user(username, email, password)
 
         if auth_result.is_success:
@@ -129,7 +167,12 @@ class FlextAuthCli:
         set_max_attempts: int | None = None,
         environment: str = "development",
     ) -> FlextResult[None]:
-        """Manage FlextConfig singleton configuration."""
+        """Manage FlextConfig singleton configuration.
+
+        Returns:
+            FlextResult[None]: Success if configuration updated, error if fails
+
+        """
         # Update global config with CLI parameters
         config_result = FlextAuthConfig.update_global_from_cli(
             jwt_expiry=set_jwt_expiry,
@@ -181,7 +224,12 @@ class FlextAuthCli:
         return FlextResult[None].ok(None)
 
     def validate_config(self) -> FlextResult[None]:
-        """Validate FlextConfig singleton configuration."""
+        """Validate FlextConfig singleton configuration.
+
+        Returns:
+            FlextResult[None]: Success if configuration is valid, error if invalid
+
+        """
         # Get global config
         config = FlextAuthConfig.get_global_instance()
 

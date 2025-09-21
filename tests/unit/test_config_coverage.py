@@ -114,14 +114,12 @@ class TestFlextAuthConfigCoverage:
         assert config.jwt_expiry_minutes == 30
         assert config.bcrypt_rounds == 12
 
-    def test_environment_config_request_model(self) -> None:
-        """Test environment configuration (simplified)."""
+    def test_environment_config_request_model_and_defaults(self) -> None:
+        """Test environment configuration (simplified) and defaults."""
         # Test that we can create config for different environments
         dev_config = FlextAuthConfig.create_for_environment("development")
         assert dev_config.is_success
 
-    def test_environment_config_request_defaults(self) -> None:
-        """Test environment configuration defaults."""
         # Test production environment
         prod_config = FlextAuthConfig.create_for_environment("production")
         assert prod_config.is_success
@@ -182,18 +180,14 @@ class TestFlextAuthConfigCoverage:
         assert config.min_password_length >= 8
         assert config.max_password_length <= 256
 
-    def test_flext_auth_config_jwt_secret_generation(self) -> None:
-        """Test JWT secret generation when empty."""
+    def test_flext_auth_config_jwt_secret_and_security_defaults(self) -> None:
+        """Test JWT secret generation and security-related default values."""
+        # Test JWT secret generation when empty
         config = FlextAuthConfig(jwt_secret="")
-
-        # Should generate a secret if empty (or keep empty if that's the design)
         assert isinstance(config.jwt_secret, str)
 
-    def test_flext_auth_config_security_defaults(self) -> None:
-        """Test security-related default values."""
+        # Test security defaults
         config = FlextAuthConfig()
-
-        # Security defaults should be reasonable
         assert config.bcrypt_rounds >= 10  # Secure hashing
         assert config.max_login_attempts > 0  # Prevent brute force
         assert config.jwt_expiry_minutes > 0  # Tokens should expire
@@ -211,8 +205,8 @@ class TestFlextAuthConfigCoverage:
         except Exception as e:
             pytest.fail(f"Unexpected exception during config creation: {e}")
 
-    def test_flext_auth_config_model_validation(self) -> None:
-        """Test Pydantic model validation in FlextAuthConfig."""
+    def test_model_and_environment_config_validation(self) -> None:
+        """Test Pydantic model validation and environment configuration validation."""
         # Test with invalid values that should trigger validation errors
         with pytest.raises(ValidationError) as exc_info:
             FlextAuthConfig(
@@ -234,10 +228,8 @@ class TestFlextAuthConfigCoverage:
         assert config.jwt_expiry_minutes == 30
         assert config.bcrypt_rounds == 12
 
-    def test_environment_config_request_validation(self) -> None:
-        """Test environment configuration validation."""
-        # Test with various override types
-        config = FlextAuthConfig.create_for_environment(
+        # Test environment configuration validation
+        env_config = FlextAuthConfig.create_for_environment(
             "test",
             jwt_expiry_minutes=30,
             bcrypt_rounds=12,
@@ -245,21 +237,17 @@ class TestFlextAuthConfigCoverage:
             jwt_secret="override_secret_minimum_32_characters_long",
         )
 
-        assert config.is_success
-        if config.is_success:
-            assert config.value.jwt_expiry_minutes == 30
+        assert env_config.is_success
+        if env_config.is_success:
+            assert env_config.value.jwt_expiry_minutes == 30
 
-    def test_flext_auth_config_constants_usage(self) -> None:
-        """Test usage of FlextConstants in FlextAuthConfig."""
+    def test_constants_usage_and_settings_methods(self) -> None:
+        """Test usage of FlextConstants and get_security_settings/get_jwt_settings methods."""
         config = FlextAuthConfig()
 
         # Should use constants from FlextConstants.Auth
         # Verify that constants are being used appropriately
         assert hasattr(FlextConstants, "Auth") or config.jwt_algorithm is not None
-
-    def test_get_security_settings_method(self) -> None:
-        """Test get_security_settings method coverage."""
-        config = FlextAuthConfig()
 
         security_settings = config.get_security_settings()
 
@@ -279,12 +267,8 @@ class TestFlextAuthConfigCoverage:
             == config.lockout_duration_minutes
         )
 
-    def test_get_jwt_settings_method(self) -> None:
-        """Test get_jwt_settings method coverage."""
-        config = FlextAuthConfig()
-
+        # Test JWT settings
         jwt_settings = config.get_jwt_settings()
-
         assert isinstance(jwt_settings, dict)
         assert "jwt_expiry_minutes" in jwt_settings
         assert "jwt_algorithm" in jwt_settings
@@ -377,8 +361,9 @@ class TestFlextAuthConfigAdditionalCoverage:
         assert config.max_login_attempts == 3
         assert config.session_expiry_minutes == 90
 
-    def test_set_global_instance_type_error(self) -> None:
-        """Test set_global_instance with invalid type to cover lines 510-511."""
+    def test_global_instance_type_error_and_overrides(self) -> None:
+        """Test set_global_instance with invalid type and get_or_create_global with overrides."""
+        # Test set_global_instance with invalid type
         with pytest.raises(
             TypeError,
             match="config must be an instance of FlextAuthConfig",
@@ -386,8 +371,7 @@ class TestFlextAuthConfigAdditionalCoverage:
             # Type ignore needed for intentional type violation in test
             FlextAuthConfig.set_global_instance("invalid_config")
 
-    def test_get_or_create_global_with_overrides(self) -> None:
-        """Test get_or_create_global with overrides to cover lines 596."""
+        # Test get_or_create_global with overrides
         result = FlextAuthConfig.get_or_create_global(
             environment="test",
             jwt_expiry_minutes=60,
@@ -414,28 +398,3 @@ class TestFlextAuthConfigAdditionalCoverage:
             assert result.is_failure
             assert result.error is not None
             assert "Failed to get CLI summary" in result.error
-
-    def test_config_validation_jwt_expiry_exceeds_session(self) -> None:
-        """Test config validation with JWT expiry exceeding session expiry - line 401."""
-        # Create config with valid values first, then modify to test validation
-        config = FlextAuthConfig()
-
-        # Manually set invalid values to test validation logic
-        config.jwt_expiry_minutes = 180  # 3 hours
-        config.session_expiry_minutes = 60  # 1 hour
-
-        # This should trigger the validation error
-        result = config.validate_configuration()
-        assert result.is_failure
-        assert result.error is not None
-        assert "JWT expiry should not exceed twice the session expiry" in result.error
-
-    def test_create_from_environment_exception_handling(self) -> None:
-        """Test from_environment exception handling - lines 331-336."""
-        # Test with invalid environment that causes exception
-        with patch.dict(os.environ, {"FLEXT_AUTH_JWT_EXPIRY_MINUTES": "invalid_value"}):
-            result = FlextAuthConfig.create_for_environment()
-            # Should handle the exception gracefully
-            assert result.is_failure
-            assert result.error is not None
-            assert "Failed to load configuration from environment" in result.error

@@ -154,11 +154,17 @@ def demonstrate_cli_command_simulation() -> None:
     # Simulate different CLI commands with various parameter combinations
     commands: list[dict[str, str | dict[str, int]]] = [
         {
-            "command": "flext-auth authenticate --username testuser --password testpass --jwt-expiry 30",
+            "command": (
+                "flext-auth authenticate --username testuser --password testpass "
+                "--jwt-expiry 30"
+            ),
             "params": {"jwt_expiry_minutes": 30},
         },
         {
-            "command": "flext-auth register --username newuser --email new@example.com --password newpass --bcrypt-rounds 14",
+            "command": (
+                "flext-auth register --username newuser --email new@example.com "
+                "--password newpass --bcrypt-rounds 14"
+            ),
             "params": {"bcrypt_rounds": 14},
         },
         {

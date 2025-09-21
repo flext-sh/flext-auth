@@ -168,7 +168,12 @@ def demo_error_handling() -> None:
 
 
 def generate_secure_password(length: int = 16) -> str:
-    """Generate a secure password."""
+    """Generate a secure password.
+
+    Returns:
+        str: Generated secure password string
+
+    """
     chars = string.ascii_letters + string.digits + "!@#$%^&*()"
     return "".join(secrets.choice(chars) for _ in range(length))
 

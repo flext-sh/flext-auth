@@ -33,7 +33,12 @@ class UserFactory:
 
     @staticmethod
     def create_dict() -> dict[str, str]:
-        """Create a simple user data dictionary."""
+        """Create a simple user data dictionary.
+
+        Returns:
+            dict[str, str]: User data dictionary
+
+        """
         return {
             "name": f"test_user_{uuid.uuid4().hex[:8]}",
             "email": f"test_{uuid.uuid4().hex[:8]}@example.com",
@@ -42,7 +47,12 @@ class UserFactory:
 
     @staticmethod
     def batch(count: int) -> list[dict[str, str]]:
-        """Create a batch of user data dictionaries."""
+        """Create a batch of user data dictionaries.
+
+        Returns:
+            list[dict[str, str]]: List of user data dictionaries
+
+        """
         return [UserFactory.create_dict() for _ in range(count)]
 
 
@@ -99,6 +109,10 @@ def sanitize_username(name: str, prefix: str = "") -> str:
 
     Removes all invalid characters and ensures the username contains only
     letters, numbers, underscores, and hyphens as required by User model.
+
+    Returns:
+        str: Sanitized username
+
     """
     # Convert to lowercase and replace spaces with underscores
     clean_name = name.lower().replace(" ", "_")
@@ -300,7 +314,7 @@ class TestEnhancedAuthentication:
         """Test complete user management lifecycle with factory-generated data."""
         auth: FlextAuth = FlextAuth()
 
-        # Phase 1: Create user with realistic data
+        # Create user and get basic info
         user_data = cast("UserData", FlextTestsFactories.UserFactory.create_dict())
         username = sanitize_username(user_data["name"], "lifecycle")
 
@@ -311,61 +325,74 @@ class TestEnhancedAuthentication:
             full_name=str(user_data["name"]),
         )
         FlextTestsMatchers.assert_result_success(register_result)
-
         user = register_result.value
-        user_id = user.id
 
-        # Phase 2: Retrieve user by different methods
+        # Test user retrieval methods
+        self._test_user_retrieval_methods(auth, user.id, username, user_data["email"])
+
+        # Test authentication and token operations
+        auth_data = self._test_authentication_and_tokens(auth, username, user.id)
+
+        # Test session management
+        self._test_session_management(auth, user.id, auth_data["session"])
+
+    def _test_user_retrieval_methods(
+        self, auth: FlextAuth, user_id: str, username: str, email: str
+    ) -> None:
+        """Test user retrieval by different methods."""
         # By ID
         user_by_id_result = auth.get_user_by_id(user_id)
         FlextTestsMatchers.assert_result_success(user_by_id_result)
-        retrieved_user = user_by_id_result.value
-        if retrieved_user:
-            assert retrieved_user.username == username
+        if user_by_id_result.value:
+            assert user_by_id_result.value.username == username
 
         # By username
         user_by_username_result = auth.get_user_by_username(username)
         FlextTestsMatchers.assert_result_success(user_by_username_result)
-        retrieved_user2 = user_by_username_result.value
-        if retrieved_user2:
-            assert retrieved_user2.email == user_data["email"]
+        if user_by_username_result.value:
+            assert user_by_username_result.value.email == email
 
-        # Phase 3: Authenticate and create session
+    def _test_authentication_and_tokens(
+        self, auth: FlextAuth, username: str, user_id: str
+    ) -> dict:
+        """Test authentication and token operations.
+
+        Returns:
+            dict: Authentication data including session and token information.
+
+        """
         auth_result = auth.authenticate_user(username, "LifecycleTest123!@#")
         FlextTestsMatchers.assert_result_success(auth_result)
-
         auth_data = auth_result.value
-        session = cast("AuthSessionDict", auth_data["session"])
-        token = str(auth_data.get("jwt_token"))  # It's jwt_token, not token
 
-        # Phase 4: Token operations
+        token = str(auth_data.get("jwt_token"))
+
         # Validate token
         validate_result = auth.validate_token(token)
         FlextTestsMatchers.assert_result_success(validate_result)
 
-        # Verify token
-        verify_result = auth.validate_token(token)
-        FlextTestsMatchers.assert_result_success(verify_result)
-
         # Get user by token
         user_by_token_result = auth.get_user_by_token(token)
         FlextTestsMatchers.assert_result_success(user_by_token_result)
-        token_user = user_by_token_result.value
-        if token_user:
-            assert token_user.id == user_id
+        if user_by_token_result.value:
+            assert user_by_token_result.value.id == user_id
 
-        # Phase 5: Session management
+        return auth_data
+
+    def _test_session_management(
+        self, auth: FlextAuth, user_id: str, session_data: dict
+    ) -> None:
+        """Test session management operations."""
         # Get user sessions
         sessions_result = auth.get_user_sessions(user_id)
         FlextTestsMatchers.assert_result_success(sessions_result)
 
         sessions = sessions_result.value
         assert len(sessions) > 0
-        assert any(s.id == str(session["id"]) for s in sessions)
+        assert any(s.id == str(session_data["id"]) for s in sessions)
 
-        # Phase 6: Logout (optional - may fail if session already expired)
+        # Logout (optional - may fail if session already expired)
         logout_result = auth.logout_user(user_id)
-        # Logout can succeed or fail (session might be expired), both are valid outcomes
         assert (
             logout_result.is_success or "not found" in str(logout_result.error).lower()
         )
@@ -445,7 +472,12 @@ class TestEnhancedPerformanceValidation:
         auth: FlextAuth = FlextAuth()
 
         def register_batch_users() -> FlextTypes.Core.List:
-            """Register multiple users and return results."""
+            """Register multiple users and return results.
+
+            Returns:
+                FlextTypes.Core.List: List of registration results
+
+            """
             results: FlextTypes.Core.List = []
             users_data = cast(
                 "list[UserData]",
@@ -500,7 +532,12 @@ class TestEnhancedPerformanceValidation:
             user_sessions.append(username)
 
         def session_operations_batch() -> FlextTypes.Core.List:
-            """Perform batch session operations."""
+            """Perform batch session operations.
+
+            Returns:
+                FlextTypes.Core.List: List of session operation results
+
+            """
             session_results: FlextTypes.Core.List = []
             for username in user_sessions:
                 # Authenticate to create session

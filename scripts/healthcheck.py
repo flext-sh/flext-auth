@@ -17,7 +17,12 @@ HTTP_OK = 200
 
 
 def main() -> int:
-    """Perform health check."""
+    """Perform health check.
+
+    Returns:
+        int: Exit code (0 for success, 1 for failure)
+
+    """
     try:
         with urllib.request.urlopen(
             "http://localhost:8000/auth/health",
