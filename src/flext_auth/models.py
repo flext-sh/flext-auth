@@ -11,6 +11,7 @@ from typing import NotRequired, TypedDict
 
 import bcrypt
 import jwt
+from flext_core.constants import FlextConstants
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
 from flext_auth.constants import FlextAuthConstants
@@ -243,7 +244,7 @@ class FlextAuthModels:
             salt = bcrypt.gensalt()
             password_hash = bcrypt.hashpw(password.encode(), salt)
             self.password_hash = password_hash.decode()
-            return FlextResult[bool].ok(value=True)
+            return FlextResult[bool].ok(True)
 
         def _generate_bcrypt_salt(self) -> FlextResult[bytes]:
             """Generate bcrypt salt using railway pattern.
@@ -392,7 +393,7 @@ class FlextAuthModels:
                 return FlextResult[bool].fail("No password hash stored for validation")
 
             # Basic bcrypt hash format validation
-            min_bcrypt_hash_length = 32
+            min_bcrypt_hash_length = FlextConstants.Security.MIN_BCRYPT_HASH_LENGTH
             if len(self.password_hash) < min_bcrypt_hash_length:
                 return FlextResult[bool].fail("Stored password hash appears invalid")
 
@@ -402,7 +403,7 @@ class FlextAuthModels:
                     "Stored hash does not appear to be bcrypt format"
                 )
 
-            return FlextResult[bool].ok(value=True)
+            return FlextResult[bool].ok(True)
 
         def _perform_bcrypt_verification(self, password: str) -> FlextResult[bool]:
             """Perform bcrypt password verification using railway pattern.
@@ -651,7 +652,9 @@ class FlextAuthModels:
 
             """
             # Input validation using simple checks
-            max_session_extension_hours = 168  # Max 7 days
+            max_session_extension_hours = (
+                FlextConstants.Security.MAX_SESSION_EXTENSION_HOURS
+            )
             if hours <= 0 or hours > max_session_extension_hours:
                 return FlextResult[bool].fail(
                     "Session extension hours must be between 1 and 168"
@@ -661,7 +664,7 @@ class FlextAuthModels:
             self.expires_at = datetime.now(UTC) + timedelta(hours=hours)
             self.last_accessed_at = datetime.now(UTC)
 
-            return FlextResult[bool].ok(value=True)
+            return FlextResult[bool].ok(True)
 
         def _calculate_new_expiration(self, hours: int) -> FlextResult[datetime]:
             """Calculate new session expiration time.
@@ -726,7 +729,7 @@ class FlextAuthModels:
             # Direct revocation - simplified
             self.is_active = False
 
-            return FlextResult[bool].ok(value=True)
+            return FlextResult[bool].ok(True)
 
         def _validate_session_revocation(self) -> FlextResult[bool]:
             """Validate that session can be revoked.
@@ -741,7 +744,7 @@ class FlextAuthModels:
             if not hasattr(self, "session_token"):
                 return FlextResult[bool].fail("Session missing session_token attribute")
 
-            return FlextResult[bool].ok(value=True)
+            return FlextResult[bool].ok(True)
 
         def _perform_session_revocation(self) -> FlextResult[bool]:
             """Perform the actual session revocation.
@@ -759,7 +762,7 @@ class FlextAuthModels:
                     "Session revocation failed - is_active flag not set"
                 )
 
-            return FlextResult[bool].ok(value=True)
+            return FlextResult[bool].ok(True)
 
         @property
         def is_revoked(self) -> bool:
@@ -882,7 +885,9 @@ class FlextAuthModels:
                 )
 
             # Check for reasonable expiration (not more than 30 days)
-            max_day_for_month_addition = 28
+            max_day_for_month_addition = (
+                FlextConstants.Security.MAX_DAYS_FOR_MONTH_ADDITION
+            )
             max_expiration = (
                 current_time.replace(day=current_time.day + 30)
                 if current_time.day <= max_day_for_month_addition
@@ -960,9 +965,6 @@ class FlextAuthModels:
 
             # Add roles if provided
             if roles is not None:
-                # Validate roles list
-                if not isinstance(roles, list):
-                    return FlextResult[dict[str, object]].fail("Roles must be a list")
                 enhanced_payload["roles"] = roles
 
             return FlextResult[dict[str, object]].ok(enhanced_payload)

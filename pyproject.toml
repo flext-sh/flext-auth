@@ -266,6 +266,40 @@ markers = [
 [tool.ruff]
 extend = "../ruff-shared.toml"
 lint.isort.known-first-party = ["flext_auth"]
+lint.per-file-ignores."**/config.py" = [
+    "S105", # hardcoded-password-string - false positives in log message templates
+]
+lint.per-file-ignores."**/constants.py" = [
+    "S105", # hardcoded-password-string - false positives in error messages and descriptions
+]
+lint.per-file-ignores."**/*tests*/**" = [
+    "D102",    # Missing docstring in public method - test methods don't need docstrings
+    "EM102",
+    "FBT001",  # Boolean positional argument - acceptable in tests
+    "FBT003",
+    "INP001",
+    "PLR0912",
+    "PLR0915",
+    "PLR2004",
+    "PT011",
+    "PT018",   # Assertion should be broken down - acceptable in tests for clarity
+    "PT019",   # Fixture without value - fixtures are used in function body
+    "S101",
+    "S103",
+    "S104",
+    "S105",
+    "S106",
+    "S107",
+    "S112",
+    "S311",
+    "S603",
+    "S608",
+    "SIM105",  # Use contextlib.suppress - tests may prefer explicit try/except
+    "SLF001",  # private-member-access
+    "TID252",
+    "TRY003",
+    "TRY004",  # Prefer TypeError - test flexibility over strict exception types
+]
 
 [tool.vulture]
 extend = "../.vulture-shared.toml"

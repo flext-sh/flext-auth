@@ -86,29 +86,68 @@ class FlextAuth:
             or error information if registration fails
 
         """
+        self._logger.info(
+            f"Starting user registration for username: {username}, email: {email}"
+        )
+
         # Use FlextUtilities for input validation - following SOLID principles
         validation_result = self._validate_registration_inputs(
             username, email, password
         )
         if validation_result.is_failure:
+            self._logger.error(f"Input validation failed: {validation_result.error}")
             return FlextResult[FlextAuthModels.User].fail(
                 validation_result.error or "Validation failed"
             )
 
-        # Railway pattern: Chain validation and creation operations
-        return (
-            self._validate_username_availability(username)
-            .flat_map(lambda _: self._validate_email_availability(email))
-            .flat_map(
-                lambda _: self._create_user_request(
-                    username, email, password, full_name, roles
-                )
-            )
-            .flat_map(self._create_user_from_request)
-            .map(
-                lambda user: self._store_user_and_update_indexes(user, username, email)
-            )
+        self._logger.info("Input validation passed")
+
+        # Step 1: Check username availability
+        username_check = self._validate_username_availability(username)
+        if username_check.is_failure:
+            error_msg = username_check.error or "Username availability check failed"
+            self._logger.error(f"Username availability check failed: {error_msg}")
+            return FlextResult[FlextAuthModels.User].fail(error_msg)
+
+        self._logger.info("Username availability check passed")
+
+        # Step 2: Check email availability
+        email_check = self._validate_email_availability(email)
+        if email_check.is_failure:
+            error_msg = email_check.error or "Email availability check failed"
+            self._logger.error(f"Email availability check failed: {error_msg}")
+            return FlextResult[FlextAuthModels.User].fail(error_msg)
+
+        self._logger.info("Email availability check passed")
+
+        # Step 3: Create user request
+        request_result = self._create_user_request(
+            username, email, password, full_name, roles
         )
+        if request_result.is_failure:
+            error_msg = request_result.error or "User request creation failed"
+            self._logger.error(f"User request creation failed: {error_msg}")
+            return FlextResult[FlextAuthModels.User].fail(error_msg)
+
+        self._logger.info(f"User request created: {request_result.value}")
+
+        # Step 4: Create user from request
+        user_result = self._create_user_from_request(request_result.value)
+        if user_result.is_failure:
+            error_msg = user_result.error or "User creation failed"
+            self._logger.error(f"User creation failed: {error_msg}")
+            return FlextResult[FlextAuthModels.User].fail(error_msg)
+
+        self._logger.info(f"User created successfully: {user_result.value}")
+
+        # Step 5: Store user and update indexes
+        stored_user = self._store_user_and_update_indexes(
+            user_result.value, username, email
+        )
+
+        self._logger.info(f"User registration completed successfully: {stored_user}")
+
+        return FlextResult[FlextAuthModels.User].ok(stored_user)
 
     def _validate_registration_inputs(
         self, username: str, email: str, password: str
@@ -203,9 +242,19 @@ class FlextAuth:
             FlextResult[FlextAuthModels.User]: Success with created user, error if creation fails
 
         """
+        self._logger.info(f"_create_user_from_request called with request: {request}")
+
         user_result = FlextAuthContainer.create_user_from_request(request)
+
+        self._logger.info(
+            f"FlextAuthContainer.create_user_from_request returned: success={user_result.is_success}, value={user_result.value}"
+        )
+
         if user_result.is_failure:
             self._logger.error(f"User creation failed: {user_result.error}")
+        else:
+            self._logger.info(f"User creation succeeded: {user_result.value}")
+
         return user_result
 
     def _store_user_and_update_indexes(
@@ -217,13 +266,22 @@ class FlextAuth:
             FlextAuthModels.User: The stored user entity
 
         """
+        # Debug logging to identify None data issue
+        self._logger.info(
+            f"_store_user_and_update_indexes called with user={user}, username={username}, email={email}"
+        )
+
         # Store user and update indexes
         self._users[user.id] = user
         self.username_index[username.lower()] = user.id
         self.email_index[email.lower()] = user.id
 
         self._logger.info(f"User registered successfully: {username} (ID: {user.id})")
-        return user
+
+        # Ensure we're returning the user
+        result_user = user
+        self._logger.info(f"Returning user: {result_user}")
+        return result_user
 
     def authenticate_user(
         self,
@@ -763,21 +821,19 @@ class FlextAuth:
 
         """
         # Create config with overrides using proper parameter passing
-        config_result = FlextAuthConfig.create_for_environment(
-            environment="development",
-            jwt_expiry_minutes=jwt_expiry_minutes,
-            bcrypt_rounds=bcrypt_rounds,
-            max_login_attempts=max_failed_attempts,
-            lockout_duration_minutes=lockout_duration_minutes,
-        )
-
-        if config_result.is_failure:
-            return FlextResult[FlextAuth].fail(
-                f"Config creation failed: {config_result.error}"
+        try:
+            config = FlextAuthConfig.create_for_environment(
+                environment="development",
+                jwt_expiry_minutes=jwt_expiry_minutes,
+                bcrypt_rounds=bcrypt_rounds,
+                max_login_attempts=max_failed_attempts,
+                lockout_duration_minutes=lockout_duration_minutes,
             )
+        except ValueError as e:
+            return FlextResult[FlextAuth].fail(f"Config creation failed: {e}")
 
         # Create FlextAuth instance with custom config
-        auth = cls(config=config_result.unwrap())
+        auth = cls(config=config)
 
         return FlextResult[FlextAuth].ok(auth)
 

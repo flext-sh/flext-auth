@@ -40,8 +40,7 @@ def main() -> None:
         if user_result.is_success:
             user = user_result.value
             # Password verification through user model
-            verify_result = user.verify_password("TestPassword123!")
-            print(f"Password verification: {verify_result.value}")
+            user.verify_password("TestPassword123!")
     except Exception as e:
         # Handle password verification error
         error_message = f"Password verification failed: {e}"
