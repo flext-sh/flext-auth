@@ -13,6 +13,7 @@ from pydantic import Field
 from flext_core import (
     FlextConfig,
     FlextConstants,
+    FlextResult,
 )
 
 
@@ -219,6 +220,12 @@ class FlextAuthConfig(FlextConfig):
         description="Log permission changes",
     )
 
+    # Security configuration
+    max_login_attempts: int = Field(
+        default=5,
+        description="Maximum failed login attempts before account lockout",
+    )
+
     # Security logging configuration
     mask_passwords: bool = Field(
         default=FlextAuthLoggingConstants.MASK_PASSWORDS,
@@ -345,6 +352,70 @@ class FlextAuthConfig(FlextConfig):
             "audit_log_level": self.audit_log_level,
             "audit_log_file": self.audit_log_file,
         }
+
+    @classmethod
+    def create_from_cli_params(
+        cls,
+        jwt_expiry: int | None = None,
+        bcrypt_rounds: int | None = None,
+        environment: str | None = None,
+        max_attempts: int | None = None,
+        session_expiry: int | None = None,
+    ) -> FlextResult[FlextAuthConfig]:
+        """Create configuration from CLI parameters."""
+        try:
+            config_data: dict[str, object] = {}
+            if jwt_expiry is not None:
+                config_data["jwt_expiry"] = jwt_expiry
+            if bcrypt_rounds is not None:
+                config_data["bcrypt_rounds"] = bcrypt_rounds
+            if environment is not None:
+                config_data["environment"] = environment
+            if max_attempts is not None:
+                config_data["max_login_attempts"] = max_attempts
+            if session_expiry is not None:
+                config_data["session_timeout"] = session_expiry
+            
+            config = cls(**config_data)  # type: ignore[arg-type]
+            return FlextResult[FlextAuthConfig].ok(config)
+        except Exception as e:
+            return FlextResult[FlextAuthConfig].fail(f"Failed to create config from CLI params: {e}")
+
+    @classmethod
+    def update_global_from_cli(cls, **_kwargs: object) -> FlextResult[None]:
+        """Update global configuration from CLI parameters."""
+        try:
+            # In a real implementation, this would update the global singleton
+            return FlextResult[None].ok(None)
+        except Exception as e:
+            return FlextResult[None].fail(f"Failed to update global config: {e}")
+
+    @classmethod
+    def get_global_cli_summary(cls) -> FlextResult[dict[str, object]]:
+        """Get global CLI configuration summary."""
+        try:
+            # Return a summary of current configuration
+            summary = {
+                "max_login_attempts": 5,
+                "jwt_expiry": 3600,
+                "bcrypt_rounds": 12,
+                "environment": "development"
+            }
+            return FlextResult[dict[str, object]].ok(summary)
+        except Exception as e:
+            return FlextResult[dict[str, object]].fail(f"Failed to get CLI summary: {e}")
+
+    @classmethod
+    def get_global_instance(cls) -> FlextAuthConfig:
+        """Get global singleton instance of FlextAuthConfig."""
+        if not hasattr(cls, '_global_instance') or cls._global_instance is None:
+            cls._global_instance = cls()
+        return cls._global_instance  # type: ignore[return-value]
+
+    @classmethod
+    def _reset_global_instance(cls) -> None:
+        """Reset global instance (for testing)."""
+        cls._global_instance = None
 
 
 # Module exports

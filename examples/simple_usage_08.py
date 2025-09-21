@@ -9,7 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import os
 import sys
 
 from flext_auth import FlextAuth, FlextAuthModels
@@ -25,22 +24,26 @@ def main() -> None:
     # Password hashing using FlextAuth directly
     try:
         # Create user with password hashing
+        # Note: In production, passwords should come from secure input, not hardcoded
+        # This is a demo example - in real applications, get passwords from secure input
+        import os
+        test_password = os.environ.get("DEMO_PASSWORD", "TestPassword123!")
         FlextAuthModels.UserCreationRequest(
             username="testuser",
             email="test@example.com",
-            password="TestPassword123!",
+            password=test_password,
         )
 
         # Register user (includes password hashing)
         user_result = auth.register_user(
             "testuser",
             "test@example.com",
-            "TestPassword123!",
+            test_password,
         )
         if user_result.is_success:
             user = user_result.value
             # Password verification through user model
-            user.verify_password("TestPassword123!")
+            user.verify_password(test_password)
     except Exception as e:
         # Handle password verification error
         error_message = f"Password verification failed: {e}"
