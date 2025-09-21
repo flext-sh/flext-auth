@@ -27,6 +27,7 @@ def main() -> None:
         # Note: In production, passwords should come from secure input, not hardcoded
         # This is a demo example - in real applications, get passwords from secure input
         import os
+
         test_password = os.environ.get("DEMO_PASSWORD", "TestPassword123!")
         FlextAuthModels.UserCreationRequest(
             username="testuser",

@@ -186,7 +186,9 @@ class FlextAuthCli:
             return FlextResult[None].fail(config_result.error or "Configuration failed")
 
         # Get the updated config after successful update
-        config = FlextAuthConfig.get_global_instance() if config_result.is_success else None
+        config = (
+            FlextAuthConfig.get_global_instance() if config_result.is_success else None
+        )
 
         if show or not any([set_jwt_expiry, set_bcrypt_rounds, set_max_attempts]):
             # Show current configuration using CLI summary
@@ -219,9 +221,13 @@ class FlextAuthCli:
             # Configuration was updated
             self._logger.info("Configuration updated successfully")
             if config is not None:
-                self._logger.info(f"New JWT Expiry: {config.jwt_expiry_minutes} minutes")
+                self._logger.info(
+                    f"New JWT Expiry: {config.jwt_expiry_minutes} minutes"
+                )
                 self._logger.info(f"New Bcrypt Rounds: {config.bcrypt_rounds}")
-                self._logger.info(f"New Max Login Attempts: {config.max_login_attempts}")
+                self._logger.info(
+                    f"New Max Login Attempts: {config.max_login_attempts}"
+                )
             else:
                 self._logger.info("Configuration updated but details not available")
 

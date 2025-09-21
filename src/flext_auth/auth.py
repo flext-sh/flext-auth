@@ -806,7 +806,7 @@ class FlextAuth:
         jwt_expiry_minutes: int | None = None,
         bcrypt_rounds: int | None = None,
         max_failed_attempts: int | None = None,
-        lockout_duration_minutes: int | None = None,  # noqa: ARG003
+        lockout_duration_minutes: int | None = None,
     ) -> FlextResult[FlextAuth]:
         """Create FlextAuth instance with configuration overrides using railway pattern.
 
@@ -824,13 +824,15 @@ class FlextAuth:
         try:
             config_data = {}
             if jwt_expiry_minutes is not None:
-                config_data["jwt_expiry"] = jwt_expiry_minutes * 60  # Convert to seconds
+                config_data["jwt_expiry"] = (
+                    jwt_expiry_minutes * 60
+                )  # Convert to seconds
             if bcrypt_rounds is not None:
                 config_data["bcrypt_rounds"] = bcrypt_rounds
             if max_failed_attempts is not None:
                 config_data["max_login_attempts"] = max_failed_attempts
-            
-            config = FlextAuthConfig(**config_data)  # type: ignore[arg-type]
+
+            config = FlextAuthConfig(**config_data)
         except ValueError as e:
             return FlextResult[FlextAuth].fail(f"Config creation failed: {e}")
 

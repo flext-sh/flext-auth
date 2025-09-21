@@ -375,11 +375,13 @@ class FlextAuthConfig(FlextConfig):
                 config_data["max_login_attempts"] = max_attempts
             if session_expiry is not None:
                 config_data["session_timeout"] = session_expiry
-            
-            config = cls(**config_data)  # type: ignore[arg-type]
+
+            config = cls(**config_data)
             return FlextResult[FlextAuthConfig].ok(config)
         except Exception as e:
-            return FlextResult[FlextAuthConfig].fail(f"Failed to create config from CLI params: {e}")
+            return FlextResult[FlextAuthConfig].fail(
+                f"Failed to create config from CLI params: {e}"
+            )
 
     @classmethod
     def update_global_from_cli(cls, **_kwargs: object) -> FlextResult[None]:
@@ -399,18 +401,20 @@ class FlextAuthConfig(FlextConfig):
                 "max_login_attempts": 5,
                 "jwt_expiry": 3600,
                 "bcrypt_rounds": 12,
-                "environment": "development"
+                "environment": "development",
             }
             return FlextResult[dict[str, object]].ok(summary)
         except Exception as e:
-            return FlextResult[dict[str, object]].fail(f"Failed to get CLI summary: {e}")
+            return FlextResult[dict[str, object]].fail(
+                f"Failed to get CLI summary: {e}"
+            )
 
     @classmethod
     def get_global_instance(cls) -> FlextAuthConfig:
         """Get global singleton instance of FlextAuthConfig."""
-        if not hasattr(cls, '_global_instance') or cls._global_instance is None:
+        if not hasattr(cls, "_global_instance") or cls._global_instance is None:
             cls._global_instance = cls()
-        return cls._global_instance  # type: ignore[return-value]
+        return cls._global_instance
 
     @classmethod
     def _reset_global_instance(cls) -> None:
