@@ -77,7 +77,7 @@ class TestCliCoverage:
         assert result.is_success
         # The function returns FlextResult[None] on success
 
-    @patch("flext_auth.cli.FlextAuthConfig.create_from_cli_params")
+    @patch("flext_auth.cli.FlextAuthConfig.create_for_environment")
     def test_authenticate_user_config_failure(self, mock_config: MagicMock) -> None:
         """Test authentication with config failure."""
         mock_config.return_value = FlextResult.fail("Config error")
@@ -234,7 +234,7 @@ class TestCliCoverage:
 
         assert result.is_success
 
-    @patch("flext_auth.cli.FlextAuthConfig.create_from_cli_params")
+    @patch("flext_auth.cli.FlextAuthConfig.create_for_environment")
     def test_register_user_config_failure(self, mock_config: MagicMock) -> None:
         """Test registration with config failure."""
         mock_config.return_value = FlextResult.fail("Config error")

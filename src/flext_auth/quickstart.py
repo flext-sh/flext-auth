@@ -58,11 +58,6 @@ class FlextAuthQuickstart:
         )
 
 
-# Global instance for direct access - no wrapper functions
-flext_auth_quickstart = FlextAuthQuickstart()
-
-
 __all__: list[str] = [
     "FlextAuthQuickstart",
-    "flext_auth_quickstart",
 ]

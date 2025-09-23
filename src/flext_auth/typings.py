@@ -9,10 +9,6 @@ from typing import NotRequired, TypedDict
 
 from flext_core import FlextTypes
 
-__all__ = [
-    "FlextAuthTypes",
-]
-
 
 class FlextAuthTypes:
     """FLEXT Auth Types - Authentication domain type definitions unified class.
@@ -67,3 +63,8 @@ class FlextAuthTypes:
     SessionId = FlextTypes.Identifiers.Id
     TokenId = FlextTypes.Identifiers.Id
     RoleId = FlextTypes.Identifiers.Id
+
+
+__all__ = [
+    "FlextAuthTypes",
+]

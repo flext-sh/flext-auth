@@ -15,20 +15,29 @@ from __future__ import annotations
 
 import os
 
-from flext_auth import FlextAuth, flext_auth_quick_start
+from flext_auth import FlextAuth, FlextAuthQuickstart
 
 
 def main() -> None:
     """Run basic authentication example."""
-    # 1. Password Hashing Example using FlextAuth directly
+    # 1. Password Hashing Example using User model
+    from flext_auth import FlextAuthModels
+
     password = os.getenv("FLEXT_DEMO_PASSWORD", "SecurePassword123!")
-    auth: FlextAuth = FlextAuth()
+
+    # Create a user with password
+    user = FlextAuthModels.User(
+        id="demo-user-id", username="demo_user", email="demo@example.com"
+    )
 
     try:
-        hashed = auth.hash_password(password)
-
-        # Verify password
-        auth.verify_password(password, hashed)
+        # Set password (this will hash it)
+        set_result = user.set_password(password)
+        if set_result.is_success:
+            # Verify password
+            verify_result = user.verify_password(password)
+            if verify_result.is_success and verify_result.value:
+                pass
     except Exception as e:
         # Handle password verification error
         error_message = f"Password verification failed: {e}"
@@ -36,6 +45,8 @@ def main() -> None:
         del error_message  # Clean up
 
     # 2. JWT Token Example using FlextAuth
+    auth: FlextAuth = FlextAuth()
+
     # Register user first
     user_result = auth.register_user(
         username="tokenuser",
@@ -57,7 +68,8 @@ def main() -> None:
                 pass
 
     # 3. Quick Start Example
-    flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    quickstart = FlextAuthQuickstart()
+    quickstart.flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
     # 4. FlextAuth Class Example with proper error handling
     demo_auth: FlextAuth = FlextAuth()

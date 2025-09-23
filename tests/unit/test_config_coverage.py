@@ -298,8 +298,7 @@ class TestFlextAuthConfigCoverage:
                 "FLEXT_AUTH_ENABLE_RATE_LIMITING": "false",
             },
         ):
-            result = FlextAuthConfig.create_for_environment()
-
+            result = FlextAuthConfig.create_for_environment("test")
             assert result.is_success
             config = result.value
 

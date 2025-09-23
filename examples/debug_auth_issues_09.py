@@ -18,17 +18,24 @@ def debug_password_operations() -> None:
     password = os.getenv("DEBUG_PASSWORD", "TestPassword123!")
 
     # Use FlextAuth directly
-    auth: FlextAuth = FlextAuth()
+    FlextAuth()
 
-    # Test password hashing
+    # Test password hashing using User model
     try:
-        hashed = auth.hash_password(password)
+        from flext_auth import FlextAuthModels
 
-        # Test verification
-        auth.verify_password(password, hashed)
+        debug_user = FlextAuthModels.User(  # type: ignore[call-arg]
+            id="debug-user", username="debug_user", email="debug@example.com"
+        )
 
-        # Test with wrong password
-        auth.verify_password("WrongPassword", hashed)
+        # Set password (this will hash it)
+        set_result = debug_user.set_password(password)
+        if set_result.is_success:
+            # Test verification
+            debug_user.verify_password(password)
+
+            # Test with wrong password
+            debug_user.verify_password("WrongPassword")
 
     except Exception as e:
         # Handle password verification error

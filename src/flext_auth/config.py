@@ -8,8 +8,10 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from pydantic import Field
+from pydantic import Field, field_validator
+from pydantic_settings import SettingsConfigDict
 
+from flext_auth.constants import FlextAuthConstants
 from flext_core import (
     FlextConfig,
     FlextConstants,
@@ -223,7 +225,69 @@ class FlextAuthConfig(FlextConfig):
     # Security configuration
     max_login_attempts: int = Field(
         default=5,
+        ge=1,
         description="Maximum failed login attempts before account lockout",
+    )
+
+    # JWT Configuration from FlextAuthConstants (jwt_secret inherited from FlextConfig)
+
+    jwt_algorithm: str = Field(
+        default="HS256",
+        description="JWT signing algorithm",
+    )
+
+    jwt_expiry_minutes: int = Field(
+        default=30,
+        ge=1,
+        description="JWT token expiry time in minutes",
+    )
+
+    jwt_issuer: str = Field(
+        default="",
+        description="JWT token issuer",
+    )
+
+    jwt_audience: str = Field(
+        default="",
+        description="JWT token audience",
+    )
+
+    # Password & Session Configuration
+    bcrypt_rounds: int = Field(
+        default=12,
+        ge=10,
+        description="Bcrypt rounds for password hashing",
+    )
+
+    lockout_duration_minutes: int = Field(
+        default=30,
+        description="Account lockout duration in minutes",
+    )
+
+    session_expiry_hours: int = Field(
+        default=2,
+        description="Session expiry time in hours",
+    )
+
+    session_expiry_minutes: int = Field(
+        default=120,
+        description="Session expiry time in minutes (alternative to hours)",
+    )
+
+    enable_rate_limiting: bool = Field(
+        default=False,
+        description="Enable rate limiting for authentication endpoints",
+    )
+
+    min_password_length: int = Field(
+        default=8,
+        ge=6,
+        description="Minimum password length",
+    )
+
+    max_password_length: int = Field(
+        default=256,
+        description="Maximum password length",
     )
 
     # Security logging configuration
@@ -321,6 +385,61 @@ class FlextAuthConfig(FlextConfig):
         description="Audit log file path",
     )
 
+    model_config = SettingsConfigDict(
+        env_prefix="FLEXT_AUTH_",
+        case_sensitive=False,
+        validate_default=True,
+        arbitrary_types_allowed=True,
+        populate_by_name=True,
+    )
+
+    @field_validator("min_password_length")
+    @classmethod
+    def validate_min_password_length(cls, v: int) -> int:
+        """Validate minimum password length."""
+        if v < FlextAuthConstants.MIN_PASSWORD_LENGTH:
+            msg = "Input should be greater than or equal to 6"
+            raise ValueError(msg)
+        return v
+
+    @field_validator("jwt_expiry_minutes", "session_expiry_hours")
+    @classmethod
+    def validate_positive(cls, v: int) -> int:
+        """Validate positive values for time-based fields."""
+        if v <= 0:
+            msg = "Value must be greater than 0"
+            raise ValueError(msg)
+        return v
+
+    @field_validator("bcrypt_rounds")
+    @classmethod
+    def validate_bcrypt_rounds(cls, v: int) -> int:
+        """Validate bcrypt rounds for security."""
+        if v < FlextAuthConstants.MIN_BCRYPT_ROUNDS:
+            msg = "Bcrypt rounds must be at least 10"
+            raise ValueError(msg)
+        return v
+
+    @field_validator("jwt_secret")
+    @classmethod
+    def validate_jwt_secret(cls, v: str) -> str:
+        """Validate and generate JWT secret if empty."""
+        if not v or not v.strip():
+            # Generate a secure JWT secret
+            import secrets
+
+            return secrets.token_urlsafe(32)
+        return v
+
+    @field_validator("max_login_attempts")
+    @classmethod
+    def validate_max_login_attempts(cls, v: int) -> int:
+        """Validate maximum login attempts."""
+        if v < 1:
+            msg = "Max login attempts must be at least 1"
+            raise ValueError(msg)
+        return v
+
     def get_auth_logging_config(self) -> dict[str, object]:
         """Get authentication-specific logging configuration dictionary."""
         return {
@@ -364,19 +483,20 @@ class FlextAuthConfig(FlextConfig):
     ) -> FlextResult[FlextAuthConfig]:
         """Create configuration from CLI parameters."""
         try:
-            config_data: dict[str, object] = {}
-            if jwt_expiry is not None:
-                config_data["jwt_expiry"] = jwt_expiry
-            if bcrypt_rounds is not None:
-                config_data["bcrypt_rounds"] = bcrypt_rounds
-            if environment is not None:
-                config_data["environment"] = environment
-            if max_attempts is not None:
-                config_data["max_login_attempts"] = max_attempts
-            if session_expiry is not None:
-                config_data["session_timeout"] = session_expiry
+            # Create base config and then update specific fields
+            config = cls()
 
-            config = cls(**config_data)
+            if jwt_expiry is not None:
+                config.jwt_expiry_minutes = jwt_expiry
+            if bcrypt_rounds is not None:
+                config.bcrypt_rounds = bcrypt_rounds
+            if environment is not None:
+                config.environment = environment
+            if max_attempts is not None:
+                config.max_login_attempts = max_attempts
+            if session_expiry is not None:
+                config.session_expiry_minutes = session_expiry
+
             return FlextResult[FlextAuthConfig].ok(config)
         except Exception as e:
             return FlextResult[FlextAuthConfig].fail(
@@ -384,10 +504,34 @@ class FlextAuthConfig(FlextConfig):
             )
 
     @classmethod
-    def update_global_from_cli(cls, **_kwargs: object) -> FlextResult[None]:
+    def update_global_from_cli(
+        cls,
+        jwt_expiry: int | None = None,
+        bcrypt_rounds: int | None = None,
+        environment: str | None = None,
+        max_attempts: int | None = None,
+        session_expiry: int | None = None,
+    ) -> FlextResult[None]:
         """Update global configuration from CLI parameters."""
         try:
-            # In a real implementation, this would update the global singleton
+            # Get current global instance
+            config = cls.get_global_instance()
+
+            # Update fields if provided
+            if jwt_expiry is not None:
+                config.jwt_expiry_minutes = jwt_expiry
+            if bcrypt_rounds is not None:
+                config.bcrypt_rounds = bcrypt_rounds
+            if environment is not None:
+                config.environment = environment
+            if max_attempts is not None:
+                config.max_login_attempts = max_attempts
+            if session_expiry is not None:
+                config.session_expiry_hours = session_expiry
+
+            # Set the updated config as global instance
+            cls.set_global_instance(config)
+
             return FlextResult[None].ok(None)
         except Exception as e:
             return FlextResult[None].fail(f"Failed to update global config: {e}")
@@ -396,11 +540,11 @@ class FlextAuthConfig(FlextConfig):
     def get_global_cli_summary(cls) -> FlextResult[dict[str, object]]:
         """Get global CLI configuration summary."""
         try:
-            # Return a summary of current configuration
-            summary = {
-                "max_login_attempts": 5,
-                "jwt_expiry": 3600,
-                "bcrypt_rounds": 12,
+            config = cls.get_global_instance()
+            summary: dict[str, object] = {
+                "max_login_attempts": config.max_login_attempts,
+                "jwt_expiry": config.jwt_expiry_minutes,
+                "bcrypt_rounds": config.bcrypt_rounds,
                 "environment": "development",
             }
             return FlextResult[dict[str, object]].ok(summary)
@@ -414,7 +558,122 @@ class FlextAuthConfig(FlextConfig):
         """Get global singleton instance of FlextAuthConfig."""
         if not hasattr(cls, "_global_instance") or cls._global_instance is None:
             cls._global_instance = cls()
+        if not isinstance(cls._global_instance, FlextAuthConfig):
+            msg = "Global instance is not of correct type"
+            raise TypeError(msg)
         return cls._global_instance
+
+    @classmethod
+    def create_for_environment(
+        cls, environment: str, **overrides: object
+    ) -> FlextAuthConfig:
+        """Create configuration for specific environment with overrides."""
+        # Create config with environment and overrides - Pydantic will validate environment
+        config_data: dict[str, object] = {"environment": environment, **overrides}
+        return cls.model_validate(config_data)
+
+    @classmethod
+    def create_with_overrides(cls, **overrides: object) -> FlextResult[FlextAuthConfig]:
+        """Create configuration with specific overrides."""
+        try:
+            # Create base config and apply overrides using model_copy with update
+            config = cls()
+            if overrides:
+                config = config.model_copy(update=overrides)
+            return FlextResult[FlextAuthConfig].ok(config)
+        except Exception as e:
+            return FlextResult[FlextAuthConfig].fail(
+                f"Failed to create config with overrides: {e}"
+            )
+
+    @classmethod
+    def get_or_create_global(cls, **overrides: object) -> FlextResult[FlextAuthConfig]:
+        """Get or create global instance with optional overrides."""
+        try:
+            if overrides:
+                # Handle JWT secret generation if empty
+                if "jwt_secret" in overrides and (
+                    not overrides["jwt_secret"]
+                    or not str(overrides["jwt_secret"]).strip()
+                ):
+                    import secrets
+
+                    overrides["jwt_secret"] = secrets.token_urlsafe(32)
+
+                # Create base config and apply overrides using model_copy with update
+                config = cls()
+                config = config.model_copy(update=overrides)
+                cls._global_instance = config
+                return FlextResult[FlextAuthConfig].ok(config)
+            return FlextResult[FlextAuthConfig].ok(cls.get_global_instance())
+        except Exception as e:
+            return FlextResult[FlextAuthConfig].fail(
+                f"Failed to get or create global instance: {e}"
+            )
+
+    @classmethod
+    def set_global_instance(cls, instance: FlextConfig) -> None:
+        """Set global instance with type validation."""
+        if not isinstance(instance, FlextAuthConfig):
+            msg = "config must be an instance of FlextAuthConfig"
+            raise TypeError(msg)
+        cls._global_instance = instance
+
+    def validate_configuration(self) -> FlextResult[None]:
+        """Validate configuration settings."""
+        session_minutes = (
+            self.session_expiry_minutes
+            if hasattr(self, "session_expiry_minutes") and self.session_expiry_minutes
+            else self.session_expiry_hours * 60
+        )
+
+        if self.jwt_expiry_minutes > (session_minutes * 2):
+            return FlextResult[None].fail(
+                "JWT expiry should not exceed twice the session expiry"
+            )
+        return FlextResult[None].ok(None)
+
+    def get_security_settings(self) -> dict[str, object]:
+        """Get security-related settings."""
+        return {
+            "bcrypt_rounds": self.bcrypt_rounds,
+            "max_login_attempts": self.max_login_attempts,
+            "lockout_duration_minutes": self.lockout_duration_minutes,
+            "min_password_length": self.min_password_length,
+            "max_password_length": getattr(self, "max_password_length", 256),
+            "require_password_complexity": getattr(
+                self, "require_password_complexity", True
+            ),
+            "min_password_score": getattr(self, "min_password_score", 3),
+        }
+
+    def get_jwt_settings(self) -> dict[str, object]:
+        """Get JWT-related settings."""
+        return {
+            "jwt_expiry_minutes": self.jwt_expiry_minutes,
+            "jwt_algorithm": self.jwt_algorithm,
+            "jwt_issuer": self.jwt_issuer,
+            "jwt_audience": self.jwt_audience,
+            "jwt_secret_length": len(self.jwt_secret),
+        }
+
+    def validate_business_rules(self) -> FlextResult[None]:
+        """Validate business rules for authentication configuration."""
+        if self.min_password_length < FlextAuthConstants.MIN_PASSWORD_LENGTH:
+            return FlextResult[None].fail("Password minimum length must be at least 8")
+
+        if self.max_login_attempts > FlextAuthConstants.MAX_LOGIN_ATTEMPTS:
+            return FlextResult[None].fail("Max login attempts cannot exceed 10")
+
+        if self.bcrypt_rounds < FlextAuthConstants.MIN_BCRYPT_ROUNDS:
+            return FlextResult[None].fail(
+                "Bcrypt rounds must be at least 10 for security"
+            )
+
+        if self.jwt_expiry_minutes > FlextAuthConstants.JWT_MAX_EXPIRY_MINUTES:
+            return FlextResult[None].fail("JWT expiry cannot exceed 24 hours")
+
+        return FlextResult[None].ok(None)
 
     @classmethod
     def _reset_global_instance(cls) -> None:
@@ -422,7 +681,6 @@ class FlextAuthConfig(FlextConfig):
         cls._global_instance = None
 
 
-# Module exports
 __all__ = [
     "FlextAuthConfig",
 ]

@@ -3,7 +3,6 @@
 Tests specifically designed to cover the 47 uncovered lines in auth.py
 using real functionality without mocks.
 
-
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
@@ -55,8 +54,8 @@ class TestFlextAuthInitializationCoverage:
 
         # Verify the error message contains expected information about the validation failure
         error_message = str(exc_info.value)
-        assert "Quick start failed" in error_message
         assert "Failed to create REDACTED_LDAP_BIND_PASSWORD" in error_message
+        assert "User validation failed" in error_message
 
     def test_quick_start_general_failure(self) -> None:
         """Test quick_start general failure path - lines 427-429."""

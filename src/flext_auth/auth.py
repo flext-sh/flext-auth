@@ -8,8 +8,10 @@ from __future__ import annotations
 
 import jwt
 
+from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
+from flext_auth.typings import FlextAuthTypes
 from flext_core import (
     FlextContainer,
     FlextLogger,
@@ -28,7 +30,7 @@ class FlextAuth:
 
     def __init__(
         self,
-        config: FlextAuthModels.FlextAuthConfig | None = None,
+        config: FlextAuthConfig | None = None,
         container: FlextContainer | None = None,
     ) -> None:
         """Initialize authentication service with configuration.
@@ -39,7 +41,7 @@ class FlextAuth:
 
         """
         # Use provided config or get global singleton
-        self.config = config or FlextAuthModels.FlextAuthConfig.get_global_instance()
+        self.config = config or FlextAuthConfig.get_global_instance()
 
         # Initialize dependencies
         self.container = container or FlextContainer.get_global()
@@ -234,19 +236,9 @@ class FlextAuth:
     def _create_user_from_request(
         self, request: FlextAuthModels.UserCreationRequest
     ) -> FlextResult[FlextAuthModels.User]:
-        """Create user from request - third step in registration railway.
-
-        Returns:
-            FlextResult[FlextAuthModels.User]: Success with created user, error if creation fails
-
-        """
         self._logger.info(f"_create_user_from_request called with request: {request}")
 
         user_result = FlextAuthModels.User.create_user(request)
-
-        self._logger.info(
-            f"User.create_user returned: success={user_result.is_success}, value={user_result.value}"
-        )
 
         if user_result.is_failure:
             self._logger.error(f"User creation failed: {user_result.error}")
@@ -287,7 +279,7 @@ class FlextAuth:
         password: str,
         client_ip: str | None = None,
         user_agent: str | None = None,
-    ) -> FlextResult[FlextAuthModels.AuthenticationResponseDict]:
+    ) -> FlextResult[FlextAuthTypes.AuthenticationResponseDict]:
         """Authenticate user credentials and create session with JWT token using railway pattern.
 
         Validates user credentials against stored password hash, checks account
@@ -413,7 +405,7 @@ class FlextAuth:
                 stored_user.updated_at = user.updated_at
 
             return FlextResult[FlextAuthModels.User].fail(
-                "Invalid password"
+                "Invalid credentials"
                 if user.failed_login_attempts < self.config.max_login_attempts
                 else "Account locked due to too many failed attempts"
             )
@@ -485,11 +477,11 @@ class FlextAuth:
 
     def _build_auth_response(
         self, auth_data: dict[str, object]
-    ) -> FlextAuthModels.AuthenticationResponseDict:
+    ) -> FlextAuthTypes.AuthenticationResponseDict:
         """Build final authentication response - final step in auth railway.
 
         Returns:
-            FlextAuthModels.AuthenticationResponseDict: Complete authentication response
+            FlextAuthTypes.AuthenticationResponseDict: Complete authentication response
 
         Raises:
             TypeError: If auth_data structure is invalid
@@ -506,7 +498,9 @@ class FlextAuth:
             raise TypeError(msg)
 
         # Create UserDict with all required fields
-        user_data: FlextAuthModels.UserDict = {
+        from datetime import UTC, datetime
+
+        user_data: FlextAuthTypes.UserDict = {
             "id": user.id,
             "username": user.username,
             "email": user.email,
@@ -514,12 +508,12 @@ class FlextAuth:
             "is_active": user.is_active,
             "roles": user.roles,
             "created_at": user.created_at,
-            "updated_at": user.updated_at,
+            "updated_at": user.updated_at or datetime.now(UTC),
             "last_login": user.last_login,
         }
 
         # Create SessionDict with all required fields
-        session_data: FlextAuthModels.SessionDict = {
+        session_data: FlextAuthTypes.SessionDict = {
             "id": session.id,
             "session_id": session.id,  # Alias for API compatibility
             "user_id": session.user_id,
@@ -527,13 +521,13 @@ class FlextAuth:
             "expires_at": session.expires_at,
             "created_at": session.created_at,
             "last_accessed_at": session.last_accessed_at,
-            "is_active": not session.is_revoked,
+            "is_active": session.is_active,
             "ip_address": session.ip_address,
             "user_agent": session.user_agent,
         }
 
         # Create properly typed authentication response
-        result_data: FlextAuthModels.AuthenticationResponseDict = {
+        result_data: FlextAuthTypes.AuthenticationResponseDict = {
             "user": user_data,
             "session": session_data,
             "jwt_token": str(jwt_token) if jwt_token else "",
@@ -615,15 +609,13 @@ class FlextAuth:
             msg = "User not found for token generation"  # pragma: no cover
             raise RuntimeError(msg)  # pragma: no cover
 
-        user = user_result.value
+        _user = user_result.value
         # Convert minutes to hours for JWT
-        expires_hours = max(1, self.config.jwt_expiry_minutes // 60)
-
         token_result = FlextAuthModels.AuthToken.create_jwt_token(
             user_id=user_id,
-            secret_key=self.config.jwt_secret,
-            expires_hours=expires_hours,
-            username=user.username,
+            expiry_minutes=self.config.jwt_expiry_minutes,
+            token_type=FlextAuthConstants.JWT_DEFAULT_TOKEN_TYPE,
+            jwt_secret=self.config.jwt_secret,
         )
 
         if token_result.is_failure:  # pragma: no cover
@@ -708,7 +700,7 @@ class FlextAuth:
         expired_sessions = [
             session_id
             for session_id, session in self._sessions.items()
-            if session.is_expired() or session.is_revoked
+            if session.is_expired() or not session.is_active
         ]
 
         # Remove expired sessions
@@ -820,19 +812,17 @@ class FlextAuth:
         """
         # Create config with overrides using proper parameter passing
         try:
-            config_data = {}
-            if jwt_expiry_minutes is not None:
-                config_data["jwt_expiry"] = (
-                    jwt_expiry_minutes * 60
-                )  # Convert to seconds
-            if bcrypt_rounds is not None:
-                config_data["bcrypt_rounds"] = bcrypt_rounds
-            if max_failed_attempts is not None:
-                config_data["max_login_attempts"] = max_failed_attempts
+            config = FlextAuthConfig.create_for_environment("production")
+        except Exception as e:
+            return FlextResult[FlextAuth].fail(f"Failed to create config: {e}")
 
-            config = FlextAuthModels.FlextAuthConfig(**config_data)
-        except ValueError as e:
-            return FlextResult[FlextAuth].fail(f"Config creation failed: {e}")
+        # Apply overrides if provided
+        if jwt_expiry_minutes is not None:
+            config.jwt_expiry_minutes = jwt_expiry_minutes
+        if bcrypt_rounds is not None:
+            config.bcrypt_rounds = bcrypt_rounds
+        if max_failed_attempts is not None:
+            config.max_login_attempts = max_failed_attempts
 
         # Create FlextAuth instance with custom config
         auth = cls(config=config)
@@ -857,27 +847,24 @@ class FlextAuth:
         expiry = expires_in_minutes or self.config.jwt_expiry_minutes
 
         user_result = self.get_user_by_id(user_id)
-        if user_result.is_failure or user_result.value is None:  # pragma: no cover
+        if user_result.is_failure or user_result.value is None:
             return FlextResult[str].fail(
                 "User not found for JWT generation",
-            )  # pragma: no cover
+            )
 
-        user = user_result.value
-        # Convert minutes to hours for JWT
-        expires_hours = max(1, expiry // 60) if expiry else 1
+        _user = user_result.value
 
         token_result = FlextAuthModels.AuthToken.create_jwt_token(
             user_id=user_id,
-            secret_key=self.config.jwt_secret,
-            expires_hours=expires_hours,
-            username=user.username,
-            roles=user.roles,
+            expiry_minutes=expiry or self.config.jwt_expiry_minutes,
+            token_type=FlextAuthConstants.JWT_DEFAULT_TOKEN_TYPE,
+            jwt_secret=self.config.jwt_secret,
         )
 
-        if token_result.is_failure:  # pragma: no cover
+        if token_result.is_failure:
             return FlextResult[str].fail(
                 token_result.error or "Token creation failed",
-            )  # pragma: no cover
+            )
 
         return FlextResult[str].ok(token_result.value.token)
 

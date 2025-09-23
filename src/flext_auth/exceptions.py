@@ -6,10 +6,6 @@ following flext-core standardization and extending FlextException.
 
 from flext_core import FlextExceptions
 
-__all__ = [
-    "FlextAuthExceptions",
-]
-
 
 class FlextAuthExceptions:
     """FLEXT Auth Exceptions - Authentication domain exception unified class.
@@ -150,3 +146,8 @@ class FlextAuthExceptions:
             super().__init__(message, username)
             # Override parent code for specific account disabled
             self.code = "ACCOUNT_DISABLED"
+
+
+__all__ = [
+    "FlextAuthExceptions",
+]

@@ -108,13 +108,15 @@ class TestFlextConfigSingleton:
         FlextAuthConfig.clear_global_instance()
 
         # Get global config
-        config = FlextAuthConfig.get_global_instance()
+        FlextAuthConfig.get_global_instance()
 
         # Test instance summary
-        summary = config.get_cli_summary()
+        summary_result = FlextAuthConfig.get_global_cli_summary()
+        assert summary_result.is_success
+        summary = summary_result.value
         assert isinstance(summary, dict)
         assert "environment" in summary
-        assert "jwt_expiry_minutes" in summary
+        assert "jwt_expiry" in summary
         assert "bcrypt_rounds" in summary
         assert "max_login_attempts" in summary
 

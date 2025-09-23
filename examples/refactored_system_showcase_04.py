@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuth, flext_auth_quick_start
+from flext_auth import FlextAuth, FlextAuthQuickstart
 from flext_core import FlextResult
 
 
@@ -35,7 +35,8 @@ def demonstrate_refactoring_benefits() -> None:
 def demonstrate_legacy_compatibility() -> None:
     """Demonstrate backward compatibility with legacy code."""
     # Legacy quick start still works
-    legacy_service: FlextAuth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    quickstart = FlextAuthQuickstart()
+    legacy_service: FlextAuth = quickstart.flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
     # Show it works the same way
     reg_result = legacy_service.register_user(
@@ -66,13 +67,13 @@ def demonstrate_flext_result_integration() -> None:
 def demonstrate_system_architecture() -> None:
     """Demonstrate the clean system architecture."""
     # Clean separation of concerns
-    auth: FlextAuth = FlextAuth()
+    FlextAuth()
 
-    auth.get_config()
+    # Note: FlextAuth doesn't have a get_config() method
+    # Configuration is passed during initialization
+    from flext_auth import FlextAuthConfig
 
-    auth.config.get_security_settings()
-
-    auth.config.get_jwt_settings()
+    FlextAuthConfig()
 
 
 def demonstrate_error_handling() -> None:

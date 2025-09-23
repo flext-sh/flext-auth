@@ -4,17 +4,12 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
-import sys
 from collections.abc import Generator
-from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
 
 import flext_auth.config
-
-# Module setup
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 
 @pytest.fixture(autouse=True)

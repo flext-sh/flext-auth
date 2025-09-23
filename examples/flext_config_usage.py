@@ -104,17 +104,31 @@ def main() -> None:
     singleton_config = FlextAuthConfig.get_global_instance()
 
     # Export security settings
-    security_settings = singleton_config.get_security_settings()
+    # Note: get_security_settings() doesn't exist, use direct attributes
+    security_settings = {
+        "max_login_attempts": singleton_config.max_login_attempts,
+        "bcrypt_rounds": singleton_config.bcrypt_rounds,
+        "min_password_length": singleton_config.min_password_length,
+    }
     for _key, _value in security_settings.items():
         pass
 
     # Export JWT settings (secret excluded for security)
-    jwt_settings = singleton_config.get_jwt_settings()
+    # Note: get_jwt_settings() doesn't exist, use direct attributes
+    jwt_settings = {
+        "jwt_algorithm": singleton_config.jwt_algorithm,
+        "jwt_expiry_minutes": singleton_config.jwt_expiry_minutes,
+        "jwt_issuer": singleton_config.jwt_issuer,
+    }
     for _key, _value in jwt_settings.items():
         pass
 
     # Export session settings
-    session_settings = singleton_config.get_session_settings()
+    # Note: get_session_settings() doesn't exist, use direct attributes
+    session_settings = {
+        "session_expiry_minutes": singleton_config.session_expiry_minutes,
+        "jwt_expiry_minutes": singleton_config.jwt_expiry_minutes,
+    }
     for _key, _value in session_settings.items():
         pass
 

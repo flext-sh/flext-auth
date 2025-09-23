@@ -354,7 +354,7 @@ class TestEnhancedAuthentication:
 
     def _test_authentication_and_tokens(
         self, auth: FlextAuth, username: str, user_id: str
-    ) -> dict:
+    ) -> dict[str, object]:
         """Test authentication and token operations.
 
         Returns:
@@ -380,7 +380,7 @@ class TestEnhancedAuthentication:
         return auth_data
 
     def _test_session_management(
-        self, auth: FlextAuth, user_id: str, session_data: dict
+        self, auth: FlextAuth, user_id: str, session_data: dict[str, object]
     ) -> None:
         """Test session management operations."""
         # Get user sessions

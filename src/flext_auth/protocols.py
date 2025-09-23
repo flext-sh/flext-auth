@@ -128,7 +128,6 @@ class FlextAuthProtocols:
             ...
 
 
-# Export unified protocols following FLEXT patterns
 __all__ = [
     "FlextAuthProtocols",
 ]

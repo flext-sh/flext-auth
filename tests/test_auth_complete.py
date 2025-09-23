@@ -12,10 +12,11 @@ from flext_auth import (
     FlextAuth,
     FlextAuthConfig,
     FlextAuthModels,
+    FlextAuthTypes,
 )
 
 # Use unified class structure
-AuthenticationResponseDict = FlextAuthModels.AuthenticationResponseDict
+AuthenticationResponseDict = FlextAuthTypes.AuthenticationResponseDict
 Session = FlextAuthModels.Session
 User = FlextAuthModels.User
 
@@ -181,7 +182,7 @@ class TestFlextAuthTokens:
         result = auth.validate_token("invalid_token")
         assert result.success is False
         assert result.is_failure
-        assert "Token validation failed" in (result.error or "")
+        assert "Invalid token format" in (result.error or "")
 
         # Test malformed token
         result = auth.validate_token("not.a.valid.token")
@@ -311,7 +312,7 @@ class TestFlextAuthUserRetrieval:
         result = auth.get_user_by_token("invalid_token")
         assert result.success is False
         assert result.is_failure
-        assert "Token validation failed" in (result.error or "")
+        assert "Invalid token format" in (result.error or "")
 
     def test_get_user_by_username(self) -> None:
         """Test getting user by username."""
@@ -346,8 +347,11 @@ class TestFlextAuthSessions:
         auth_result = auth.authenticate_user("testuser", "Password123!")
         assert auth_result.success is True
 
+        # Get user ID from auth result
+        user_id = auth_result.value["user"]["id"]
+
         # Get sessions
-        sessions_result = auth.get_user_sessions("testuser")
+        sessions_result = auth.get_user_sessions(user_id)
         assert sessions_result.success is True
         sessions = sessions_result.value
         assert len(sessions) > 0
@@ -368,8 +372,11 @@ class TestFlextAuthSessions:
         auth_result = auth.authenticate_user("testuser", "Password123!")
         assert auth_result.success is True
 
+        # Get user ID from auth result
+        user_id = auth_result.value["user"]["id"]
+
         # Get sessions
-        sessions_result = auth.get_user_sessions("testuser")
+        sessions_result = auth.get_user_sessions(user_id)
         assert sessions_result.success is True
         sessions = sessions_result.value
         assert len(sessions) > 0
@@ -395,21 +402,24 @@ class TestFlextAuthModels:
         assert user.username == "testuser"
         assert user.email == "test@example.com"
         assert user.is_active is True
-        assert user.roles == ["user"]
+        assert user.roles == []
         assert user.created_at is not None
         assert user.updated_at is not None
 
     def test_session_model_defaults(self) -> None:
         """Test Session model default values."""
+        from datetime import UTC, datetime, timedelta
+
         session = FlextAuthModels.Session(
             id="session-id",
             user_id="user-id",
-            session_id="session-token",
+            session_token="session-token-minimum-32-characters-long",
+            expires_at=datetime.now(UTC) + timedelta(hours=2),
         )
 
         assert session.id == "session-id"
         assert session.user_id == "user-id"
-        assert session.session_id == "session-token"
+        assert session.session_token == "session-token-minimum-32-characters-long"
         assert session.is_active is True
         assert session.created_at is not None
         assert session.expires_at is not None

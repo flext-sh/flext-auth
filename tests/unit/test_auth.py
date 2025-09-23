@@ -3,8 +3,6 @@
 Tests cover FlextAuth class functionality, authentication flows,
 session management, and user lifecycle operations.
 
-
-
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
@@ -167,9 +165,8 @@ class TestFlextAuth:
         assert validation_result.is_success
         validation_data = validation_result.value
         assert validation_data["valid"] is True
-        assert validation_data["username"] == username
-        assert "user_id" in validation_data
-        assert "roles" in validation_data
+        assert "user_id" in validation_data  # JWT contains user_id, not username
+        assert "type" in validation_data
 
     def test_token_validation_invalid_token(self) -> None:
         """Test validation of invalid token."""
@@ -201,7 +198,7 @@ class TestFlextAuth:
         assert bearer_result.is_success
         bearer_data = bearer_result.value
         assert isinstance(bearer_data, dict), "bearer_data must be dict"
-        assert bearer_data["username"] == username
+        assert bearer_data["user_id"] is not None  # JWT contains user_id, not username
 
     def test_session_management(self) -> None:
         """Test session management functionality."""

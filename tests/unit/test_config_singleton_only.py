@@ -420,7 +420,4 @@ class TestFlextAuthConfigSingletonAdditionalCoverage:
         result = FlextAuthConfig.create_for_environment("invalid_environment")
         assert result.is_failure
         assert result.error is not None
-        assert (
-            "Input should be 'development', 'production', 'staging', 'test' or 'local'"
-            in result.error
-        )
+        assert "Environment must be one of" in result.error

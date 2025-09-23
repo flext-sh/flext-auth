@@ -15,12 +15,7 @@ from pydantic import BaseModel, Field, ValidationError, field_validator
 from pydantic_settings import BaseSettings
 
 from flext_auth.constants import FlextAuthConstants
-from flext_auth.exceptions import FlextAuthExceptions
-from flext_core import FlextModels, FlextResult
-
-__all__ = [
-    "FlextAuthModels",
-]
+from flext_core import FlextModels, FlextResult, FlextUtilities
 
 
 class FlextAuthModels:
@@ -46,9 +41,7 @@ class FlextAuthModels:
             """Validate username is not empty."""
             if not v or not v.strip():
                 msg = "Username cannot be empty"
-                raise FlextAuthExceptions.FlextAuthValidationError(
-                    msg, field="username"
-                )
+                raise ValueError(msg)
             return v
 
         @field_validator("email")
@@ -57,7 +50,7 @@ class FlextAuthModels:
             """Validate email is not empty."""
             if not v or not v.strip():
                 msg = "Email cannot be empty"
-                raise FlextAuthExceptions.FlextAuthValidationError(msg, field="email")
+                raise ValueError(msg)
             return v
 
         @field_validator("password")
@@ -66,9 +59,7 @@ class FlextAuthModels:
             """Validate password is not empty."""
             if not v or not v.strip():
                 msg = "Password cannot be empty"
-                raise FlextAuthExceptions.FlextAuthValidationError(
-                    msg, field="password"
-                )
+                raise ValueError(msg)
             return v
 
     class User(FlextModels.Entity):
@@ -76,7 +67,7 @@ class FlextAuthModels:
 
         username: str = Field(..., description="Unique username")
         email: str = Field(..., description="User email address")
-        password_hash: str = Field(..., description="Hashed password")
+        password_hash: str = Field(default="", description="Hashed password")
         full_name: str | None = Field(None, description="User's full name")
         is_active: bool = Field(True, description="Whether user account is active")
         roles: list[str] = Field(default_factory=list, description="User roles")
@@ -92,7 +83,7 @@ class FlextAuthModels:
             """Validate email format."""
             if "@" not in v:
                 msg = "Invalid email format"
-                raise FlextAuthExceptions.FlextAuthValidationError(msg, field="email")
+                raise ValueError(msg)
             return v
 
         @field_validator("username")
@@ -101,25 +92,28 @@ class FlextAuthModels:
             """Validate username length."""
             if len(v) < FlextAuthConstants.MIN_USERNAME_LENGTH:
                 msg = f"Username must be at least {FlextAuthConstants.MIN_USERNAME_LENGTH} characters"
-                raise FlextAuthExceptions.FlextAuthValidationError(
-                    msg, field="username"
-                )
+                raise ValueError(msg)
             if len(v) > FlextAuthConstants.MAX_USERNAME_LENGTH:
                 msg = f"Username cannot exceed {FlextAuthConstants.MAX_USERNAME_LENGTH} characters"
-                raise FlextAuthExceptions.FlextAuthValidationError(
-                    msg, field="username"
-                )
+                raise ValueError(msg)
+            return v
+
+        @field_validator("username")
+        @classmethod
+        def validate_username_characters(cls, v: str) -> str:
+            """Validate username character restrictions."""
+            if not v.replace("_", "").replace("-", "").isalnum():
+                msg = "Username must contain only alphanumeric characters, underscores, and hyphens"
+                raise ValueError(msg)
             return v
 
         @field_validator("password_hash")
         @classmethod
         def validate_password_hash(cls, v: str) -> str:
             """Validate password hash format."""
-            if len(v) < FlextAuthConstants.MIN_BCRYPT_HASH_LENGTH:
+            if v and len(v) < FlextAuthConstants.MIN_BCRYPT_HASH_LENGTH:
                 msg = "Invalid password hash format"
-                raise FlextAuthExceptions.FlextAuthValidationError(
-                    msg, field="password_hash"
-                )
+                raise ValueError(msg)
             return v
 
         @property
@@ -145,12 +139,30 @@ class FlextAuthModels:
                 return FlextResult[bool].fail(f"Password verification failed: {e}")
 
         def set_password(self, password: str) -> FlextResult[bool]:
-            """Set password with secure hashing."""
+            """Set password with validation and hashing."""
             try:
-                # Validate password strength
                 if len(password) < FlextAuthConstants.MIN_PASSWORD_LENGTH:
                     return FlextResult[bool].fail(
                         f"Password must be at least {FlextAuthConstants.MIN_PASSWORD_LENGTH} characters"
+                    )
+
+                # Check for weak passwords
+                weak_passwords = ["123", "abc", "password", "12345678", "aaaaaaaa"]
+                if password.lower() in weak_passwords:
+                    return FlextResult[bool].fail("Password is too weak")
+
+                # Check for at least one uppercase, one lowercase, one digit
+                if not any(c.isupper() for c in password):
+                    return FlextResult[bool].fail(
+                        "Password must contain at least one uppercase letter"
+                    )
+                if not any(c.islower() for c in password):
+                    return FlextResult[bool].fail(
+                        "Password must contain at least one lowercase letter"
+                    )
+                if not any(c.isdigit() for c in password):
+                    return FlextResult[bool].fail(
+                        "Password must contain at least one digit"
                     )
 
                 # Hash password with bcrypt
@@ -182,15 +194,21 @@ class FlextAuthModels:
             """Create new user from creation request."""
             try:
                 user = cls(
+                    id=FlextUtilities.Generators.generate_id(),
                     username=request.username,
                     email=request.email,
-                    password_hash="",  # Will be set by set_password
+                    password_hash="",
                     full_name=request.full_name,
-                    roles=request.roles,
-                    domain_events=[],  # Required by FlextModels.Entity
+                    is_active=True,
+                    roles=request.roles or [],
+                    failed_login_attempts=0,
+                    locked_until=None,
+                    last_login=None,
+                    created_at=datetime.now(UTC),
+                    updated_at=datetime.now(UTC),
+                    domain_events=[],
                 )
 
-                # Set password with validation and hashing
                 password_result = user.set_password(request.password)
                 if password_result.is_failure:
                     return FlextResult[FlextAuthModels.User].fail(
@@ -201,10 +219,6 @@ class FlextAuthModels:
             except ValidationError as e:
                 return FlextResult[FlextAuthModels.User].fail(
                     f"User validation failed: {e}"
-                )
-            except Exception as e:
-                return FlextResult[FlextAuthModels.User].fail(
-                    f"User creation failed: {e}"
                 )
 
     class Role(FlextModels.Entity):
@@ -222,8 +236,8 @@ class FlextAuthModels:
             """Validate role name is not empty."""
             if not v or not v.strip():
                 msg = "Role name cannot be empty"
-                raise FlextAuthExceptions.FlextAuthValidationError(msg, field="name")
-            return v
+                raise ValueError(msg)
+            return v.upper()
 
     class Session(FlextModels.Entity):
         """Session domain model extending FlextModels.Entity."""
@@ -236,15 +250,28 @@ class FlextAuthModels:
         user_agent: str | None = Field(None, description="Client user agent")
         last_accessed_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
-        @property
+        @field_validator("session_token")
+        @classmethod
+        def validate_session_token_length(cls, v: str) -> str:
+            """Validate session token length."""
+            if len(v) < FlextAuthConstants.MIN_TOKEN_LENGTH:
+                msg = "String should have at least 32 characters"
+                raise ValueError(msg)
+            return v
+
         def is_expired(self) -> bool:
             """Check if session is expired."""
             return datetime.now(UTC) > self.expires_at
 
         @property
         def is_valid(self) -> bool:
-            """Check if session is valid (active and not expired)."""
-            return self.is_active and not self.is_expired
+            """Check if session is valid."""
+            return self.is_active and not self.is_expired()
+
+        @property
+        def is_revoked(self) -> bool:
+            """Check if session has been revoked."""
+            return not self.is_active
 
         def extend_session(self, hours: int = 2) -> FlextResult[bool]:
             """Extend session expiration time."""
@@ -282,9 +309,10 @@ class FlextAuthModels:
                     user_id=user_id,
                     session_token=session_token,
                     expires_at=expires_at,
+                    is_active=True,
                     ip_address=ip_address,
                     user_agent=user_agent,
-                    domain_events=[],  # Required by FlextModels.Entity
+                    domain_events=[],
                 )
 
                 return FlextResult[FlextAuthModels.Session].ok(session)
@@ -329,12 +357,12 @@ class FlextAuthModels:
             user_id: str,
             expiry_minutes: int = FlextAuthConstants.JWT_DEFAULT_EXPIRY_MINUTES,
             token_type: str = FlextAuthConstants.JWT_DEFAULT_TOKEN_TYPE,
+            jwt_secret: str | None = None,
         ) -> FlextResult[FlextAuthModels.AuthToken]:
-            """Create new JWT token for user."""
+            """Create new JWT token for user with configurable secret."""
             try:
                 expires_at = datetime.now(UTC) + timedelta(minutes=expiry_minutes)
 
-                # Create JWT payload
                 payload = {
                     "user_id": user_id,
                     "exp": expires_at,
@@ -344,26 +372,27 @@ class FlextAuthModels:
                     "type": token_type,
                 }
 
-                # Generate JWT token
-                jwt_token = jwt.encode(
+                secret_key = jwt_secret or FlextAuthConstants.JWT_SECRET_KEY
+                jwt_token_raw: str | bytes = jwt.encode(
                     payload,
-                    FlextAuthConstants.JWT_SECRET_KEY,
+                    secret_key,
                     algorithm=FlextAuthConstants.JWT_DEFAULT_ALGORITHM,
                 )
 
-                # Ensure token is string (jwt.encode returns str in newer versions)
+                # jwt.encode can return str or bytes depending on PyJWT version
                 jwt_token_str = (
-                    jwt_token.decode("utf-8")
-                    if isinstance(jwt_token, bytes)
-                    else jwt_token
+                    jwt_token_raw.decode("utf-8")
+                    if isinstance(jwt_token_raw, bytes)
+                    else str(jwt_token_raw)
                 )
 
                 auth_token = cls(
                     user_id=user_id,
                     token=jwt_token_str,
                     expires_at=expires_at,
+                    is_revoked=False,
                     token_type=token_type,
-                    domain_events=[],  # Required by FlextModels.Entity
+                    domain_events=[],
                 )
 
                 return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)
@@ -530,3 +559,8 @@ class FlextAuthModels:
         def _reset_global_instance(cls) -> None:
             """Reset global instance (for testing)."""
             cls._global_instance = None
+
+
+__all__ = [
+    "FlextAuthModels",
+]

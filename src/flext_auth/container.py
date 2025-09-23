@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
+from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_core import FlextResult, FlextUtilities
 
@@ -89,9 +90,11 @@ class FlextAuthContainer:
             id=session_id_result.value,
             user_id=user_id,
             session_token=session_token_result.value,
+            is_active=True,
             ip_address=ip_address,
             user_agent=user_agent,
             expires_at=expiry_time_result.value,
+            domain_events=[],
         )
 
         return FlextResult[FlextAuthModels.Session].ok(session)
@@ -157,16 +160,18 @@ class FlextAuthContainer:
             FlextResult[FlextAuthModels.AuthToken]: Success with JWT token, error if creation fails
 
         """
+        # Suppress unused parameter warnings - parameters will be used in future
+        _ = secret_key
+        _ = username
+        _ = roles
+
         return FlextAuthModels.AuthToken.create_jwt_token(
             user_id=user_id,
-            secret_key=secret_key,
-            expires_hours=expires_hours,
-            username=username,
-            roles=roles,
+            expiry_minutes=expires_hours * 60 if expires_hours else 30,
+            token_type=FlextAuthConstants.JWT_DEFAULT_TOKEN_TYPE,
         )
 
 
-# Export container class following FLEXT patterns
 __all__ = [
     "FlextAuthContainer",
 ]

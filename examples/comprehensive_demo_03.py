@@ -15,7 +15,7 @@ import os
 import secrets
 import string
 
-from flext_auth import FlextAuth, flext_auth_quick_start
+from flext_auth import FlextAuth, FlextAuthQuickstart
 
 
 def demo_complete_auth_workflow() -> None:
@@ -63,18 +63,25 @@ def demo_complete_auth_workflow() -> None:
 
 def demo_password_operations() -> None:
     """Demonstrate password hashing and verification operations."""
-    auth: FlextAuth = FlextAuth()
+    FlextAuth()
     test_password = os.getenv("TEST_PASSWORD", "TestPassword123!")
 
     try:
-        # Hash password
-        hashed = auth.hash_password(test_password)
+        from flext_auth import FlextAuthModels
 
-        # Verify correct password
-        auth.verify_password(test_password, hashed)
+        # Create a user to demonstrate password operations
+        demo_user = FlextAuthModels.User(
+            id="demo-password-user", username="password_demo", email="password@demo.com"
+        )
 
-        # Verify incorrect password
-        auth.verify_password("WrongPassword", hashed)
+        # Set password (this will hash it)
+        set_result = demo_user.set_password(test_password)
+        if set_result.is_success:
+            # Verify correct password
+            demo_user.verify_password(test_password)
+
+            # Verify incorrect password
+            demo_user.verify_password("WrongPassword")
 
     except Exception as e:
         # Handle password hashing error
@@ -135,8 +142,12 @@ def demo_security_features() -> None:
     auth: FlextAuth = FlextAuth()
 
     # Show configuration security settings
-    auth.get_config()
-    auth.config.get_security_settings()
+    # Note: FlextAuth doesn't have a get_config() method
+    # Configuration is passed during initialization
+    from flext_auth import FlextAuthConfig
+
+    FlextAuthConfig()
+    # Note: auth.config.get_security_settings() doesn't exist
 
     # Demonstrate password strength validation by attempting weak passwords
     weak_passwords = ["123", "password", "abc"]
@@ -196,7 +207,8 @@ def main() -> None:
     demo_error_handling()
 
     # Quick start demo
-    flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    quickstart = FlextAuthQuickstart()
+    quickstart.flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
 
 if __name__ == "__main__":

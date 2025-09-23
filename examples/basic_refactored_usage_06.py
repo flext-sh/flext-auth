@@ -75,13 +75,21 @@ class FlextAuthDemo:
         len(str(tokens_data.get("access_token", "")))
 
 
-def _demo_password_utilities(demo: FlextAuthDemo) -> None:
+def _demo_password_utilities() -> None:
     """Demo password utilities and validation."""
     test_password = os.getenv("FLEXT_DEMO_TEST_PASSWORD", "TestPassword123!")
 
     try:
-        hashed_password = demo.auth.hash_password(test_password)
-        demo.auth.verify_password(test_password, hashed_password)
+        from flext_auth import FlextAuthModels
+
+        demo_user = FlextAuthModels.User(
+            id="password-util-demo", username="util_demo", email="util@demo.com"
+        )
+
+        # Set and verify password using User model
+        set_result = demo_user.set_password(test_password)
+        if set_result.is_success:
+            demo_user.verify_password(test_password)
     except Exception as e:
         error_message = f"Password hashing failed: {e}"
         del error_message  # Clean up
@@ -187,9 +195,10 @@ def main() -> None:
     _demo_jwt_operations(demo)
 
     # Constants and Configuration
-    demo.auth.get_config()
-    demo.auth.config.get_security_settings()
-    demo.auth.config.get_jwt_settings()
+    # Note: FlextAuth doesn't have a get_config() method
+    from flext_auth import FlextAuthConfig
+
+    FlextAuthConfig()
 
 
 if __name__ == "__main__":

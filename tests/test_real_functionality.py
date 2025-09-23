@@ -18,11 +18,12 @@ from flext_auth import (
     FlextAuth,
     FlextAuthConfig,
     FlextAuthModels,
+    FlextAuthTypes,
 )
 from flext_auth.container import FlextAuthContainer
 
 # Use unified class structure
-AuthenticationResponseDict = FlextAuthModels.AuthenticationResponseDict
+AuthenticationResponseDict = FlextAuthTypes.AuthenticationResponseDict
 AuthToken = FlextAuthModels.AuthToken
 User = FlextAuthModels.User
 
@@ -37,9 +38,8 @@ class TestRealAuthentication:
     def test_complete_authentication_workflow(self) -> None:
         """Test complete user lifecycle: register -> authenticate -> session -> token."""
         # Create auth instance with modern factory pattern
-        config_result = FlextAuthConfig.create_for_environment("test")
-        assert config_result.success, f"Config creation failed: {config_result.error}"
-        auth: FlextAuth = FlextAuth(config=config_result.value)
+        config = FlextAuthConfig.create_for_environment("test")
+        auth: FlextAuth = FlextAuth(config=config)
 
         # Test user registration with strong typing
         register_result = auth.register_user(
@@ -59,7 +59,7 @@ class TestRealAuthentication:
         # Test authentication with real password validation
         auth_result = auth.authenticate_user("john_doe", "SuperSecure123!@#")
         assert auth_result.is_success
-        auth_data: AuthenticationResponseDict = auth_result.value
+        auth_data = auth_result.value
 
         # Verify auth data structure (TypedDict)
         assert "user" in auth_data
@@ -190,28 +190,22 @@ class TestRealAuthentication:
     def test_configuration_management(self) -> None:
         """Test configuration creation and management."""
         # Test environment-specific config
-        config_result = FlextAuthConfig.create_for_environment("production")
-        assert config_result.success
-        prod_config = config_result.value
+        prod_config = FlextAuthConfig.create_for_environment("production")
         assert prod_config.bcrypt_rounds >= 12  # Production should be secure
         assert prod_config.jwt_expiry_minutes <= 30  # Production should be short-lived
 
         # Test development config
-        dev_config_result = FlextAuthConfig.create_for_environment("development")
-        assert dev_config_result.success
-        dev_config = dev_config_result.value
+        dev_config = FlextAuthConfig.create_for_environment("development")
         assert dev_config.enable_audit_logging
 
         # Test custom overrides with valid session/jwt expiry relationship
-        custom_config_result = FlextAuthConfig.create_for_environment(
+        custom_config = FlextAuthConfig.create_for_environment(
             "test",
             jwt_expiry_minutes=60,  # JWT: 1 hour
             session_expiry_minutes=120,  # Session: 2 hours (must be > JWT)
             bcrypt_rounds=10,
             max_login_attempts=10,
         )
-        assert custom_config_result.success
-        custom_config = custom_config_result.value
         assert custom_config.jwt_expiry_minutes == 60
         assert custom_config.session_expiry_minutes == 120
         assert custom_config.bcrypt_rounds == 10
@@ -348,16 +342,16 @@ class TestRealAuthentication:
     def test_comprehensive_error_scenarios(self) -> None:
         """Test comprehensive error scenarios and edge cases."""
         # Test configuration with invalid parameters
-        invalid_config_result = FlextAuthConfig.create_for_environment(
-            "test",
-            jwt_expiry_minutes=180,  # JWT: 3 hours
-            session_expiry_minutes=60,  # Session: 1 hour (INVALID: session < JWT)
-        )
-        assert invalid_config_result.is_failure
-        assert (
-            "jwt expiry should not exceed twice the session expiry"
-            in (invalid_config_result.error or "").lower()
-        )
+        # Test invalid configuration - this should raise an exception
+        with pytest.raises(
+            Exception,
+            match="jwt expiry should not exceed twice the session expiry",
+        ):
+            FlextAuthConfig.create_for_environment(
+                "test",
+                jwt_expiry_minutes=180,  # JWT: 3 hours
+                session_expiry_minutes=60,  # Session: 1 hour (INVALID: session < JWT)
+            )
 
         # Test weak password validation through User model
         weak_user = FlextAuthModels.User(
@@ -607,8 +601,8 @@ class TestRealAuthentication:
         # Test AuthToken creation with edge cases
         token_result = AuthToken.create_jwt_token(
             user_id=user.id,
-            secret_key="test-secret-for-jwt-tokens-must-be-long-enough",
-            expires_hours=1,  # Very short expiry
+            jwt_secret="test-secret-for-jwt-tokens-must-be-long-enough",
+            expiry_minutes=60,  # 1 hour in minutes
         )
         assert token_result.success
         auth_token = token_result.value
@@ -661,19 +655,18 @@ class TestRealAuthentication:
             bcrypt_rounds=10,  # Minimum valid value
             max_login_attempts=3,  # Minimum valid value
         )
-        assert edge_config_result.success
-        edge_config = edge_config_result.value
+        edge_config = edge_config_result
         assert edge_config.jwt_expiry_minutes == 5
         assert edge_config.session_expiry_minutes == 5
 
         # Test configuration validation with invalid values (should fail)
-        invalid_config_result = FlextAuthConfig.create_for_environment(
-            "test",
-            jwt_expiry_minutes=1,  # Below minimum (5)
-            bcrypt_rounds=4,  # Below minimum (10)
-        )
-        assert invalid_config_result.is_failure
-        assert "validation error" in (invalid_config_result.error or "").lower()
+        # Test invalid configuration - this should raise an exception
+        with pytest.raises(Exception, match="validation error"):
+            FlextAuthConfig.create_for_environment(
+                "test",
+                jwt_expiry_minutes=1,  # Below minimum (5)
+                bcrypt_rounds=4,  # Below minimum (10)
+            )
 
         # Test configuration validation boundaries
         boundary_config_result = FlextAuthConfig.create_for_environment(
@@ -682,8 +675,7 @@ class TestRealAuthentication:
             enable_audit_logging=True,
             enable_rate_limiting=True,
         )
-        assert boundary_config_result.success
-        boundary_config = boundary_config_result.value
+        boundary_config = boundary_config_result
         assert boundary_config.enable_audit_logging
         assert boundary_config.enable_rate_limiting
 
@@ -840,8 +832,7 @@ class TestRealAuthentication:
             jwt_secret="valid-jwt-secret-for-testing-purposes-must-be-long-enough",
             jwt_expiry_minutes=15,
         )
-        assert config_result.success, f"Config creation failed: {config_result.error}"
-        test_auth: FlextAuth = FlextAuth(config=config_result.value)
+        test_auth: FlextAuth = FlextAuth(config=config_result)
 
         # Test that the auth instance works properly
         user_result = test_auth.register_user(
@@ -856,7 +847,4 @@ class TestRealAuthentication:
             "production",
             jwt_expiry_minutes=30,
         )
-        assert prod_config_result.success, (
-            f"Production config failed: {prod_config_result.error}"
-        )
-        FlextAuth(config=prod_config_result.value)  # Test production config creation
+        FlextAuth(config=prod_config_result)  # Test production config creation

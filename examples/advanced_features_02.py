@@ -31,12 +31,15 @@ def example_advanced_configuration() -> None:
         logger = logging.getLogger(__name__)
         logger.error(f"Failed to create auth: {auth_result.error}")
         return
-    auth = auth_result.value
 
     # Show configuration details
-    auth.get_config()
-    auth.config.get_security_settings()
-    auth.config.get_jwt_settings()
+    # Note: FlextAuth doesn't have a get_config() method
+    # Configuration is passed during initialization
+    from flext_auth import FlextAuthConfig
+
+    FlextAuthConfig()
+
+    # Display some configuration settings
 
 
 def example_jwt_operations() -> None:
@@ -165,14 +168,29 @@ def example_password_security() -> None:
     # Demonstrate password hashing with different rounds
     test_password = os.getenv("TEST_PASSWORD", "TestPassword123!")
 
-    # Show current hashing
+    # Show current hashing using User model
     try:
-        hash1 = auth.hash_password(test_password)
-        hash2 = auth.hash_password(test_password)
+        from flext_auth import FlextAuthModels
 
-        # Verify both hashes work
-        auth.verify_password(test_password, hash1)
-        auth.verify_password(test_password, hash2)
+        # Create users to demonstrate password hashing
+        user1 = FlextAuthModels.User(
+            id="security-demo-user1",
+            username="security_demo1",
+            email="security1@demo.com",
+        )
+        user2 = FlextAuthModels.User(
+            id="security-demo-user2",
+            username="security_demo2",
+            email="security2@demo.com",
+        )
+
+        # Set same password for both users (will create different hashes)
+        user1.set_password(test_password)
+        user2.set_password(test_password)
+
+        # Verify both passwords work
+        user1.verify_password(test_password)
+        user2.verify_password(test_password)
 
     except Exception as e:
         # Handle password hashing error

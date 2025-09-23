@@ -21,12 +21,13 @@ from flext_auth import (
     FlextAuthConfig,
     FlextAuthModels,
     FlextAuthQuickstart,
+    FlextAuthTypes,
 )
 from flext_auth.container import FlextAuthContainer
 from flext_core import FlextTypes
 
 # Use unified class structure - no aliases
-AuthenticationResponseDict = FlextAuthModels.AuthenticationResponseDict
+AuthenticationResponseDict = FlextAuthTypes.AuthenticationResponseDict
 Role = FlextAuthModels.Role
 Session = FlextAuthModels.Session
 User = FlextAuthModels.User
@@ -52,6 +53,12 @@ class TestRealModelsExhaustive:
                 username="a",  # Muito curto, deve disparar validação
                 email="test@example.com",
                 password_hash="$2b$12$test.hash.value.here.for.validation.purposes",  # Hash válido
+                domain_events=[],
+                full_name="Test User",
+                is_active=True,
+                failed_login_attempts=0,
+                locked_until=None,
+                last_login=None,
             )
 
         # Forçar outro erro de validação de string (muito longo)
@@ -61,6 +68,12 @@ class TestRealModelsExhaustive:
                 username="a" * 60,  # Muito longo, deve disparar validação
                 email="test@example.com",
                 password_hash="$2b$12$test.hash.value.here.for.validation.purposes",  # Hash válido
+                domain_events=[],
+                full_name="Test User",
+                is_active=True,
+                failed_login_attempts=0,
+                locked_until=None,
+                last_login=None,
             )
 
     def test_user_username_validation_special_characters(self) -> None:
@@ -76,6 +89,12 @@ class TestRealModelsExhaustive:
                     username=invalid_username,
                     email="test@example.com",
                     password_hash="test_hash",
+                    domain_events=[],
+                    full_name="Test User",
+                    is_active=True,
+                    failed_login_attempts=0,
+                    locked_until=None,
+                    last_login=None,
                 )
 
     def test_create_user_none_parameters_exhaustive(self) -> None:
@@ -145,13 +164,33 @@ class TestRealModelsExhaustive:
         weak_passwords = ["123", "abc", "password", "12345678", "aaaaaaaa"]
 
         for weak_pass in weak_passwords:
-            user = User(username="test", email="test@example.com")
+            user = User(
+                username="test",
+                email="test@example.com",
+                password_hash="",
+                domain_events=[],
+                full_name="Test User",
+                is_active=True,
+                failed_login_attempts=0,
+                locked_until=None,
+                last_login=None,
+            )
             result = user.set_password(weak_pass)
             assert result.is_failure  # Should fail for weak passwords
 
     def test_password_hashing_real_functionality(self) -> None:
         """Testa funcionalidade real de hash de senha (linhas 441-442, 447, 451-453)."""
-        user = User(username="test", email="test@example.com")
+        user = User(
+            username="test",
+            email="test@example.com",
+            password_hash="",
+            domain_events=[],
+            full_name="Test User",
+            is_active=True,
+            failed_login_attempts=0,
+            locked_until=None,
+            last_login=None,
+        )
 
         # Set password should work
         result = user.set_password("StrongPassword123!")
@@ -192,6 +231,10 @@ class TestRealModelsExhaustive:
                 user_id=user.id,
                 session_token="short",  # Muito curto
                 expires_at=datetime.now(UTC),
+                domain_events=[],
+                is_active=True,
+                ip_address=None,
+                user_agent=None,
             )
 
     def test_session_expiration_real_functionality(self) -> None:
@@ -212,6 +255,10 @@ class TestRealModelsExhaustive:
             user_id=user.id,
             session_token="active_token_123456789012345678901234567890ab",
             expires_at=future_time,
+            domain_events=[],
+            is_active=True,
+            ip_address=None,
+            user_agent=None,
         )
         assert not active_session.is_expired()
         assert active_session.is_valid
@@ -223,13 +270,27 @@ class TestRealModelsExhaustive:
             user_id=user.id,
             session_token="expired_token_123456789012345678901234567890ab",
             expires_at=past_time,
+            domain_events=[],
+            is_active=True,
+            ip_address=None,
+            user_agent=None,
         )
         assert expired_session.is_expired()
         assert not expired_session.is_valid
 
     def test_credential_real_functionality(self) -> None:
         """Testa funcionalidade real de Credential (linhas 517-519)."""
-        user = User(username="cred_user", email="cred@example.com")
+        user = User(
+            username="cred_user",
+            email="cred@example.com",
+            password_hash="",
+            domain_events=[],
+            full_name="Test User",
+            is_active=True,
+            failed_login_attempts=0,
+            locked_until=None,
+            last_login=None,
+        )
 
         # Set password to create hash
         set_result = user.set_password("CredentialPass123!")
@@ -290,7 +351,12 @@ class TestRealModelsExhaustive:
 
     def test_role_real_functionality(self) -> None:
         """Testa funcionalidade real de Role."""
-        role = Role(id="role_id", name="REDACTED_LDAP_BIND_PASSWORD_role", description="Administrator Role")
+        role = Role(
+            id="role_id",
+            name="REDACTED_LDAP_BIND_PASSWORD_role",
+            description="Administrator Role",
+            domain_events=[],
+        )
 
         # Name é convertido para uppercase
         assert role.name == "ADMIN_ROLE"
@@ -519,15 +585,11 @@ class TestRealConfigExhaustive:
     def test_environment_configuration_comprehensive(self) -> None:
         """Testa configuração abrangente de ambiente (linhas 252-253, 265-266)."""
         # Development environment
-        result = FlextAuthConfig.create_for_environment("development")
-        assert result.success
-        dev_config = result.value
+        dev_config = FlextAuthConfig.create_for_environment("development")
         assert dev_config.jwt_expiry_minutes > 0
 
         # Production environment
-        result = FlextAuthConfig.create_for_environment("production")
-        assert result.success
-        prod_config = result.value
+        prod_config = FlextAuthConfig.create_for_environment("production")
         assert prod_config.bcrypt_rounds >= 10
 
     def test_environment_variables_parsing(self) -> None:
@@ -540,7 +602,7 @@ class TestRealConfigExhaustive:
         }
 
         # Salvar variáveis originais
-        original_env = {}
+        original_env: dict[str, str | None] = {}
         for key in env_vars:
             original_env[key] = os.environ.get(key)
 
@@ -550,11 +612,9 @@ class TestRealConfigExhaustive:
                 os.environ[key] = value
 
             # Testar configuração
-            result = FlextAuthConfig.create_for_environment("test")
-            if result.is_success:
-                config = result.value
-                assert config.jwt_expiry_minutes == 45
-                assert config.bcrypt_rounds == 11
+            config = FlextAuthConfig.create_for_environment("test")
+            assert config.jwt_expiry_minutes == 45
+            assert config.bcrypt_rounds == 11
         finally:
             # Restaurar variáveis originais
             for key, original_value in original_env.items():
@@ -566,14 +626,12 @@ class TestRealConfigExhaustive:
     def test_config_validation_comprehensive(self) -> None:
         """Testa validação abrangente de config (linhas 443, 494-496, 558)."""
         # Configuração com parâmetros customizados
-        result = FlextAuthConfig.create_for_environment(
+        config = FlextAuthConfig.create_for_environment(
             environment="development",
             jwt_expiry_minutes=30,
             bcrypt_rounds=10,
             max_login_attempts=5,
         )
-        assert result.success
-        config = result.value
         assert config.jwt_expiry_minutes == 30
         assert config.bcrypt_rounds == 10
         assert config.max_login_attempts == 5

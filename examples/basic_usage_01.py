@@ -28,18 +28,20 @@ def example_basic_authentication() -> None:
     logger.info("Starting basic authentication example")
 
     # Create authentication instance
-    auth: FlextAuth = FlextAuth()
+    FlextAuth()
     logger.info("FlextAuth instance created with in-memory storage")
 
     # Show current configuration
-    config = auth.get_config()
-    security_settings = auth.config.get_security_settings()
+    # Note: FlextAuth doesn't have a get_config() method
+    from flext_auth import FlextAuthConfig
+
+    config = FlextAuthConfig()
 
     logger.info(
         "Authentication configuration loaded",
         jwt_expiry_minutes=config.jwt_expiry_minutes,
-        bcrypt_rounds=security_settings.get("bcrypt_rounds"),
-        max_login_attempts=security_settings.get("max_login_attempts"),
+        bcrypt_rounds=config.bcrypt_rounds,
+        max_login_attempts=config.max_login_attempts,
     )
 
 
@@ -47,21 +49,37 @@ def example_password_operations() -> None:
     """Demonstrate password operations."""
     logger.info("Starting password operations example")
 
-    auth: FlextAuth = FlextAuth()
+    FlextAuth()
 
-    # Hash a password
+    # Hash a password using User model
     password = os.getenv("FLEXT_DEMO_PASSWORD", "MySecurePassword123!")
     try:
-        hashed = auth.hash_password(password)
-        logger.info("Password hashed successfully", hashed_length=len(hashed))
+        from flext_auth import FlextAuthModels
 
-        # Verify correct password
-        is_valid = auth.verify_password(password, hashed)
-        logger.info("Password verification with correct password", is_valid=is_valid)
+        demo_user = FlextAuthModels.User(
+            id="password-demo-user", username="password_demo", email="password@demo.com"
+        )
 
-        # Verify wrong password
-        is_invalid = auth.verify_password("WrongPassword", hashed)
-        logger.info("Password verification with wrong password", is_valid=is_invalid)
+        # Set password (this will hash it)
+        set_result = demo_user.set_password(password)
+        if set_result.is_success:
+            logger.info("Password hashed successfully")
+
+            # Verify correct password
+            verify_result = demo_user.verify_password(password)
+            is_valid = verify_result.value if verify_result.is_success else False
+            logger.info(
+                "Password verification with correct password", is_valid=is_valid
+            )
+
+            # Verify wrong password
+            wrong_verify_result = demo_user.verify_password("WrongPassword")
+            is_invalid = (
+                wrong_verify_result.value if wrong_verify_result.is_success else False
+            )
+            logger.info(
+                "Password verification with wrong password", is_valid=is_invalid
+            )
 
     except Exception as e:
         logger.exception("Password operation failed", error=str(e))
@@ -135,9 +153,9 @@ def example_user_lifecycle() -> None:
         logger.info(
             "User registered successfully",
             username=user_data.username,
-            email=user_data.email_str,
-            role=user_data.role,
-            active=user_data.active,
+            email=user_data.email,
+            roles=user_data.roles,
+            active=user_data.is_active,
         )
 
         # Authenticate user
@@ -236,8 +254,8 @@ def example_advanced_registration() -> None:
             "Admin user registered successfully",
             username=user_data.username,
             roles=user_data.roles,
-            has_REDACTED_LDAP_BIND_PASSWORD_role=user_data.has_role("REDACTED_LDAP_BIND_PASSWORD"),
-            is_verified=user_data.is_verified,
+            has_REDACTED_LDAP_BIND_PASSWORD_role="REDACTED_LDAP_BIND_PASSWORD" in user_data.roles,
+            is_active=user_data.is_active,
         )
     else:
         logger.error("Admin registration failed", error=REDACTED_LDAP_BIND_PASSWORD_result.error)
@@ -257,7 +275,7 @@ def example_advanced_registration() -> None:
             "Regular user registered successfully",
             username=user_data.username,
             roles=user_data.roles,
-            has_REDACTED_LDAP_BIND_PASSWORD_role=user_data.has_role("REDACTED_LDAP_BIND_PASSWORD"),
+            has_REDACTED_LDAP_BIND_PASSWORD_role="REDACTED_LDAP_BIND_PASSWORD" in user_data.roles,
         )
     else:
         logger.error("User registration failed", error=user_result.error)

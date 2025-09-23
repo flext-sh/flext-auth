@@ -70,5 +70,4 @@ class FlextAuthConstants(FlextConstants):
     SESSION_NOT_FOUND = "SESSION_NOT_FOUND"
 
 
-# Export constants for easy access
 __all__ = ["FlextAuthConstants"]

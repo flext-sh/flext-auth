@@ -77,14 +77,14 @@ class TestUserCreateUserMethod:
         # Test the validator directly by creating a User instance with invalid username
         with pytest.raises(
             ValueError,
-            match="Username must contain only letters, numbers, and underscores",
+            match="Username must contain only alphanumeric characters, underscores, and hyphens",
         ):
             # This should trigger the field validator
             _ = FlextAuthModels.User(
                 id="test-id",
                 username="user!@#",  # Contains special chars
                 email="test@example.com",
-                password_hash="$2b$12$test_hash",
+                password_hash="$2b$12$test_hash_that_is_long_enough_to_pass_validation_requirements",
                 is_active=True,
                 roles=["user"],
                 created_at=datetime.now(UTC),
@@ -158,6 +158,7 @@ class TestUserCreateUserMethod:
         session = FlextAuthModels.Session(
             id="test-session-id",
             user_id="test-user-id",
+            session_token="valid_token_12345678901234567890",
             expires_at=expires_at,
         )
 
@@ -184,10 +185,9 @@ class TestUserCreateUserMethod:
         session = FlextAuthModels.Session(
             id="test-session-id",
             user_id="test-user-id",
+            session_token="valid_token_12345678901234567890",
             expires_at=datetime.now(UTC) + timedelta(hours=1),
         )
-        # Set token separately
-        session.session_token = "valid_token_12345678901234567890"
 
         # Test updating last_accessed_at
         original_activity = session.last_accessed_at
@@ -240,7 +240,7 @@ class TestUserCreateUserMethod:
 
     def test_create_user_none_username_failure(self) -> None:
         """Test user creation fails with None username - line 212-213."""
-        with pytest.raises(ValidationError, match="Input should be a valid string"):
+        with pytest.raises(ValidationError, match="Username cannot be empty"):
             _ = FlextAuthModels.UserCreationRequest(
                 username="",  # Changed from None to empty string for MyPy
                 email="test@example.com",
@@ -249,7 +249,7 @@ class TestUserCreateUserMethod:
 
     def test_create_user_none_email_failure(self) -> None:
         """Test user creation fails with None email - line 214-215."""
-        with pytest.raises(ValidationError, match="Input should be a valid string"):
+        with pytest.raises(ValidationError, match="Email cannot be empty"):
             _ = FlextAuthModels.UserCreationRequest(
                 username="testuser",
                 email="",  # Changed from None to empty string for MyPy
@@ -258,7 +258,7 @@ class TestUserCreateUserMethod:
 
     def test_create_user_none_password_failure(self) -> None:
         """Test user creation fails with None password - line 216-217."""
-        with pytest.raises(ValidationError, match="Input should be a valid string"):
+        with pytest.raises(ValidationError, match="Password cannot be empty"):
             _ = FlextAuthModels.UserCreationRequest(
                 username="testuser",
                 email="test@example.com",
@@ -291,7 +291,7 @@ class TestUserCreateUserMethod:
 
         assert result.is_failure
         assert result.error is not None
-        assert "User creation failed:" in str(result.error)
+        assert "User validation failed:" in str(result.error)
 
 
 # class TestPasswordModel:
@@ -381,6 +381,7 @@ class TestSessionModel:
         session = FlextAuthModels.Session(
             id="session-id",
             user_id="user-id",
+            session_token="valid_token_12345678901234567890",
             expires_at=datetime.now(UTC) + timedelta(hours=24),
             ip_address="192.168.1.1",
             user_agent="Mozilla/5.0 Test Browser",
