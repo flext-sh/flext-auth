@@ -50,7 +50,7 @@ FlextAuthError = FlextExceptions.Base.create_exception_type(
 - `FlextAuthenticationService` (163+ lines) - auth orchestration
 - `FlextAuthorizationService` (200+ lines) - authorization logic
 
-**✅ FLEXT-CORE ALTERNATIVE**: `FlextDomainService[TDomainResult]`
+**✅ FLEXT-CORE ALTERNATIVE**: `FlextService[TDomainResult]`
 
 - Abstract base class with validation and serialization
 - Standard error handling with FlextResult patterns
@@ -69,7 +69,7 @@ class FlextPasswordService:
         # Custom implementation...
 
 # NEW: Domain service pattern (much cleaner)
-class FlextPasswordService(FlextDomainService[str]):
+class FlextPasswordService(FlextService[str]):
     def execute(self) -> FlextResult[str]:
         return self.hash_password_operation()
 
@@ -193,9 +193,9 @@ UserRepositoryType = FlextProtocols.Domain.Repository[FlextUser]
 
 ### Phase 2: Service Migration (WEEK 2 - HIGH IMPACT)
 
-1. 🔄 Migrate FlextPasswordService to FlextDomainService base
-2. 🔄 Migrate FlextJWTService to FlextDomainService base
-3. 🔄 Migrate FlextAuthenticationService to FlextDomainService base
+1. 🔄 Migrate FlextPasswordService to FlextService base
+2. 🔄 Migrate FlextJWTService to FlextService base
+3. 🔄 Migrate FlextAuthenticationService to FlextService base
 4. 🔄 Update container registration to use new service patterns
 5. 🔄 Validate all authentication workflows still work
 

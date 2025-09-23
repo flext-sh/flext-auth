@@ -29,6 +29,7 @@ class FlextAuthConstants(FlextConstants):
         "RS384",
         "RS512",
     ]
+    JWT_DEFAULT_TOKEN_TYPE = "access"
     MIN_SECRET_KEY_LENGTH = 32
 
     # Username Configuration

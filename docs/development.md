@@ -274,9 +274,9 @@ class TestNewFeature:
 Follow FLEXT service patterns:
 
 ```python
-from flext_core import FlextDomainService, FlextResult
+from flext_core import FlextService, FlextResult
 
-class AuthenticationService(FlextDomainService):
+class AuthenticationService(FlextService):
     def __init__(self):
         super().__init__()
         self._container = FlextContainer.get_global()

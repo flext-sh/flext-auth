@@ -26,7 +26,7 @@ class FlextAuthContainer:
             FlextResult[FlextAuthModels.User]: Success with created user, error if creation fails
 
         """
-        return FlextAuthModels.User.create_user_from_request(request)
+        return FlextAuthModels.User.create_user(request)
 
     @classmethod
     def create_user(
@@ -39,7 +39,7 @@ class FlextAuthContainer:
             FlextResult[FlextAuthModels.User]: Success with created user, error if creation fails
 
         """
-        return FlextAuthModels.User.create_user_from_request(request)
+        return FlextAuthModels.User.create_user(request)
 
     @classmethod
     def create_session(

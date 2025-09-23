@@ -14,7 +14,7 @@ class FlextAuthQuickstart:
     """FLEXT Auth Quickstart - Convenience functions unified class following FLEXT architecture patterns.
 
     This class consolidates all quickstart-related functionality following FLEXT architecture patterns.
-    Note: Not extending FlextDomainService as this is a utility class, not a service.
+    Note: Not extending FlextService as this is a utility class, not a service.
     """
 
     def __init__(self) -> None:

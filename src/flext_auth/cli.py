@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import sys
 
-from flext_auth import FlextAuth, FlextAuthConfig
+from flext_auth import FlextAuth, FlextAuthModels
 from flext_cli import FlextCliMain
 from flext_core import FlextContainer, FlextLogger, FlextResult, FlextUtilities
 
@@ -17,7 +17,7 @@ class FlextAuthCli:
     """FLEXT Auth CLI - Command line interface unified class following FLEXT architecture patterns.
 
     This class consolidates all CLI-related functionality following FLEXT architecture patterns.
-    Note: Not extending FlextDomainService as this is a CLI utility class, not a domain service.
+    Note: Not extending FlextService as this is a CLI utility class, not a domain service.
     """
 
     def __init__(self) -> None:
@@ -71,10 +71,8 @@ class FlextAuthCli:
             )
 
         # Create configuration using railway pattern
-        config_result = FlextAuthConfig.create_from_cli_params(
-            jwt_expiry=jwt_expiry,
-            bcrypt_rounds=bcrypt_rounds,
-            environment=environment,
+        config_result = FlextAuthModels.FlextAuthConfig.create_for_environment(
+            environment
         )
 
         if config_result.is_failure:
@@ -137,7 +135,7 @@ class FlextAuthCli:
             )
 
         # Create configuration using railway pattern
-        config_result = FlextAuthConfig.create_from_cli_params(
+        config_result = FlextAuthModels.FlextAuthConfig.create_from_cli_params(
             max_attempts=max_attempts,
             session_expiry=session_expiry,
             environment=environment,
@@ -174,11 +172,8 @@ class FlextAuthCli:
 
         """
         # Update global config with CLI parameters
-        config_result = FlextAuthConfig.update_global_from_cli(
-            jwt_expiry=set_jwt_expiry,
-            bcrypt_rounds=set_bcrypt_rounds,
-            max_attempts=set_max_attempts,
-            environment=environment,
+        config_result = FlextAuthModels.FlextAuthConfig.create_for_environment(
+            environment
         )
 
         if config_result.is_failure:
@@ -187,12 +182,14 @@ class FlextAuthCli:
 
         # Get the updated config after successful update
         config = (
-            FlextAuthConfig.get_global_instance() if config_result.is_success else None
+            FlextAuthModels.FlextAuthConfig.get_global_instance()
+            if config_result.is_success
+            else None
         )
 
         if show or not any([set_jwt_expiry, set_bcrypt_rounds, set_max_attempts]):
             # Show current configuration using CLI summary
-            summary_result = FlextAuthConfig.get_global_cli_summary()
+            summary_result = FlextAuthModels.FlextAuthConfig.get_global_cli_summary()
             if summary_result.is_success:
                 summary = summary_result.value
                 self._logger.info("Current FlextConfig Singleton Configuration:")
@@ -241,7 +238,7 @@ class FlextAuthCli:
 
         """
         # Get global config
-        config = FlextAuthConfig.get_global_instance()
+        config = FlextAuthModels.FlextAuthConfig.get_global_instance()
 
         # Validate configuration
         # Simple validation - check if config is valid

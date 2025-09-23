@@ -8,9 +8,7 @@ from __future__ import annotations
 
 import jwt
 
-from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
-from flext_auth.container import FlextAuthContainer
 from flext_auth.models import FlextAuthModels
 from flext_core import (
     FlextContainer,
@@ -30,7 +28,7 @@ class FlextAuth:
 
     def __init__(
         self,
-        config: FlextAuthConfig | None = None,
+        config: FlextAuthModels.FlextAuthConfig | None = None,
         container: FlextContainer | None = None,
     ) -> None:
         """Initialize authentication service with configuration.
@@ -41,7 +39,7 @@ class FlextAuth:
 
         """
         # Use provided config or get global singleton
-        self.config = config or FlextAuthConfig.get_global_instance()
+        self.config = config or FlextAuthModels.FlextAuthConfig.get_global_instance()
 
         # Initialize dependencies
         self.container = container or FlextContainer.get_global()
@@ -244,10 +242,10 @@ class FlextAuth:
         """
         self._logger.info(f"_create_user_from_request called with request: {request}")
 
-        user_result = FlextAuthContainer.create_user_from_request(request)
+        user_result = FlextAuthModels.User.create_user(request)
 
         self._logger.info(
-            f"FlextAuthContainer.create_user_from_request returned: success={user_result.is_success}, value={user_result.value}"
+            f"User.create_user returned: success={user_result.is_success}, value={user_result.value}"
         )
 
         if user_result.is_failure:
@@ -441,7 +439,7 @@ class FlextAuth:
             FlextResult[dict[str, object]]: Success with session data, error if session creation fails
 
         """
-        return FlextAuthContainer.create_session(
+        return FlextAuthModels.Session.create_session(
             user_id=user.id,
             ip_address=client_ip,
             user_agent=user_agent,
@@ -806,7 +804,7 @@ class FlextAuth:
         jwt_expiry_minutes: int | None = None,
         bcrypt_rounds: int | None = None,
         max_failed_attempts: int | None = None,
-        lockout_duration_minutes: int | None = None,
+        _lockout_duration_minutes: int | None = None,
     ) -> FlextResult[FlextAuth]:
         """Create FlextAuth instance with configuration overrides using railway pattern.
 
@@ -832,7 +830,7 @@ class FlextAuth:
             if max_failed_attempts is not None:
                 config_data["max_login_attempts"] = max_failed_attempts
 
-            config = FlextAuthConfig(**config_data)
+            config = FlextAuthModels.FlextAuthConfig(**config_data)
         except ValueError as e:
             return FlextResult[FlextAuth].fail(f"Config creation failed: {e}")
 

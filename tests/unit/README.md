@@ -24,7 +24,7 @@ unit/
 ├── test_domain/                   # Domain layer unit tests
 │   ├── test_entities.py          # Entity business logic tests
 │   ├── test_value_objects.py     # Value object validation tests
-│   └── test_domain_services.py   # Domain service tests
+│   └── test_service.py   # Domain service tests
 ├── test_application/              # Application layer unit tests
 │   ├── test_auth_service.py      # Authentication service tests
 │   └── test_use_cases.py         # Use case orchestration tests
