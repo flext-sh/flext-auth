@@ -22,8 +22,9 @@ from flext_auth import (
 )
 from flext_core import FlextResult
 
-# Use unified class structure
-AuthenticationResponseDict = FlextAuthModels.AuthenticationResponseDict
+from flext_auth.typings import FlextAuthTypes
+
+AuthenticationResponseDict = FlextAuthTypes.AuthenticationResponseDict
 
 
 # Extract Method Pattern - reduce main() complexity from 42 to manageable chunks
@@ -51,7 +52,7 @@ class FlextAuthDemo:
         if result.is_success:
             pass
 
-        return cast(FlextResult[object], result)
+        return result
 
     def demo_user_authentication(self) -> FlextResult[AuthenticationResponseDict]:
         """Extract Method: User authentication demo.
