@@ -515,7 +515,6 @@ class FlextAuth:
         # Create SessionDict with all required fields
         session_data: FlextAuthTypes.SessionDict = {
             "id": session.id,
-            "session_id": session.id,  # Alias for API compatibility
             "user_id": session.user_id,
             "session_token": session.session_token,
             "expires_at": session.expires_at,

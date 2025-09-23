@@ -26,13 +26,13 @@ class TestRealAuthenticationSimple:
             email="test@example.com",
             password="TestPassword123!",
         )
-        assert register_result.success, f"Registration failed: {register_result.error}"
+        assert register_result.is_success, f"Registration failed: {register_result.error}"
         user = register_result.value
         assert user.username == "test_user"
 
         # Authenticate user
         auth_result = auth.authenticate_user("test_user", "TestPassword123!")
-        assert auth_result.success, f"Authentication failed: {auth_result.error}"
+        assert auth_result.is_success, f"Authentication failed: {auth_result.error}"
         auth_data = auth_result.value
 
         # Verify auth data structure
@@ -50,17 +50,17 @@ class TestRealAuthenticationSimple:
             "jwt@example.com",
             "JwtPassword123!",
         )
-        assert register_result.success
+        assert register_result.is_success
         user = register_result.value
 
         # Generate JWT token
         token_result = auth.generate_jwt_token(user.id, expires_in_minutes=60)
-        assert token_result.success
+        assert token_result.is_success
         jwt_token = token_result.value
 
         # Validate token
         validation_result = auth.validate_token(jwt_token)
-        assert validation_result.success
+        assert validation_result.is_success
         payload = validation_result.value
         assert payload["user_id"] == user.id
 
@@ -76,19 +76,19 @@ class TestRealAuthenticationSimple:
 
         # Set password
         password_result = user.set_password(password)
-        assert password_result.success, (
+        assert password_result.is_success, (
             f"Password setting failed: {password_result.error}"
         )
 
         # Test password verification
         verify_result = user.verify_password(password)
-        assert verify_result.success, (
+        assert verify_result.is_success, (
             f"Password verification failed: {verify_result.error}"
         )
 
         # Test wrong password
         wrong_result = user.verify_password("wrong_password")
-        assert wrong_result.success, "Password verification should succeed"
+        assert wrong_result.is_success, "Password verification should succeed"
         assert not wrong_result.value, "Wrong password should return False"
 
     def test_user_lookup(self) -> None:
@@ -101,19 +101,19 @@ class TestRealAuthenticationSimple:
             "lookup@example.com",
             "LookupPassword123!",
         )
-        assert register_result.success
+        assert register_result.is_success
         user = register_result.value
 
         # Lookup by username
         user_result = auth.get_user_by_username("lookup_user")
-        assert user_result.success
+        assert user_result.is_success
         found_user = user_result.value
         assert found_user is not None
         assert found_user.username == "lookup_user"
 
         # Lookup by ID
         user_by_id_result = auth.get_user_by_id(user.id)
-        assert user_by_id_result.success
+        assert user_by_id_result.is_success
         found_by_id = user_by_id_result.value
         assert found_by_id is not None
         assert found_by_id.id == user.id
@@ -128,19 +128,19 @@ class TestRealAuthenticationSimple:
             "session@example.com",
             "SessionPassword123!",
         )
-        assert register_result.success
+        assert register_result.is_success
         user = register_result.value
 
         auth_result = auth.authenticate_user("session_user", "SessionPassword123!")
-        assert auth_result.success
+        assert auth_result.is_success
 
         # Get user sessions
         sessions_result = auth.get_user_sessions(user.id)
-        assert sessions_result.success
+        assert sessions_result.is_success
         sessions = sessions_result.value
         assert len(sessions) >= 1
 
         # Test session cleanup
         cleanup_result = auth.cleanup_expired_sessions()
-        assert cleanup_result.success
+        assert cleanup_result.is_success
         assert isinstance(cleanup_result.value, int)

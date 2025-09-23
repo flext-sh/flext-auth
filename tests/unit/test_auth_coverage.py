@@ -192,13 +192,13 @@ class TestFlextAuthTokenMethods:
             email="jwt@example.com",
             password="JWTTestPass123!@#",
         )
-        assert user_result.success
+        assert user_result.is_success
         user = user_result.value
 
         # Use the correct method name from the inspection
         result = auth.generate_jwt_token(user_id=user.id)
 
-        assert result.success
+        assert result.is_success
         token = result.value
         assert isinstance(token, str)
         assert len(token) > 50  # JWT tokens are typically longer
@@ -235,7 +235,7 @@ class TestFlextAuthTokenMethods:
 
         # Validate the generated token - use validate_token instead
         val_result = auth.validate_token(token)
-        assert val_result.success
+        assert val_result.is_success
         token_data = val_result.value
         assert isinstance(token_data, dict)
 
@@ -253,12 +253,12 @@ class TestFlextAuthUserMethods:
             email="getuser@example.com",
             password="GetUserPass123!@",
         )
-        assert user_result.success
+        assert user_result.is_success
         user = user_result.value
 
         # Get user by ID
         get_result = auth.get_user_by_id(user.id)
-        assert isinstance(get_result.success, bool)
+        assert isinstance(get_result.is_success, bool)
 
     def test_get_user_by_username_method(self) -> None:
         """Test get_user_by_username method functionality."""
@@ -270,11 +270,11 @@ class TestFlextAuthUserMethods:
             email="lookup@example.com",
             password="LookupPass123!@",
         )
-        assert user_result.success
+        assert user_result.is_success
 
         # Get user by username
         get_result = auth.get_user_by_username("test_username_lookup")
-        assert isinstance(get_result.success, bool)
+        assert isinstance(get_result.is_success, bool)
 
     def test_get_user_by_token_method(self) -> None:
         """Test get_user_by_token method functionality."""
@@ -286,7 +286,7 @@ class TestFlextAuthUserMethods:
             email="tokenuser@example.com",
             password="TokenUserPass123!@",
         )
-        assert user_result.success
+        assert user_result.is_success
         user = user_result.value
 
         # Generate token for user - returns string directly
@@ -295,7 +295,7 @@ class TestFlextAuthUserMethods:
 
         # Get user by token
         get_result = auth.get_user_by_token(token)
-        assert isinstance(get_result.success, bool)
+        assert isinstance(get_result.is_success, bool)
 
     def test_logout_user_method(self) -> None:
         """Test logout_user method functionality."""
@@ -307,12 +307,12 @@ class TestFlextAuthUserMethods:
             email="logout@example.com",
             password="LogoutPass123!@",
         )
-        assert user_result.success
+        assert user_result.is_success
         user = user_result.value
 
         # Logout user
         logout_result = auth.logout_user(user.id)
-        assert isinstance(logout_result.success, bool)
+        assert isinstance(logout_result.is_success, bool)
 
 
 class TestFlextAuthSessionMethods:
@@ -324,7 +324,7 @@ class TestFlextAuthSessionMethods:
 
         # Revoke session with test ID
         revoke_result = auth.revoke_session("test_session_id")
-        assert isinstance(revoke_result.success, bool)
+        assert isinstance(revoke_result.is_success, bool)
 
     def test_get_user_sessions_method(self) -> None:
         """Test get_user_sessions method functionality."""
@@ -332,7 +332,7 @@ class TestFlextAuthSessionMethods:
 
         # Get sessions for test user
         sessions_result = auth.get_user_sessions("test_user_id")
-        assert isinstance(sessions_result.success, bool)
+        assert isinstance(sessions_result.is_success, bool)
 
     def test_cleanup_expired_sessions_method(self) -> None:
         """Test cleanup_expired_sessions method functionality."""
@@ -340,7 +340,7 @@ class TestFlextAuthSessionMethods:
 
         # Cleanup expired sessions
         cleanup_result = auth.cleanup_expired_sessions()
-        assert isinstance(cleanup_result.success, bool)
+        assert isinstance(cleanup_result.is_success, bool)
 
 
 class TestFlextAuthQuickStartMethod:
@@ -391,7 +391,7 @@ class TestFlextAuthErrorHandlingPaths:
             email="lockable@example.com",
             password="LockablePass123!",
         )
-        assert user_result.success
+        assert user_result.is_success
 
         # Try multiple failed authentications to potentially trigger lockout
         for _ in range(6):  # Attempt to exceed max failed attempts
@@ -420,7 +420,7 @@ class TestFlextAuthErrorHandlingPaths:
 
         # Validate immediately (should work)
         validate_result = auth.validate_token(token)
-        assert validate_result.success
+        assert validate_result.is_success
 
     def test_invalid_user_operations(self) -> None:
         """Test operations with invalid user IDs."""
@@ -431,12 +431,12 @@ class TestFlextAuthErrorHandlingPaths:
 
         # Get user by invalid ID - should return success with None value
         get_result = auth.get_user_by_id(invalid_user_id)
-        assert get_result.success  # Returns success with None when user not found
+        assert get_result.is_success  # Returns success with None when user not found
         assert get_result.value is None
 
         # Get user by invalid username - likely returns success with None too
         username_result = auth.get_user_by_username("nonexistent_username")
-        assert username_result.success
+        assert username_result.is_success
         assert username_result.value is None
 
         # Logout invalid user - returns failure when user not found
@@ -461,12 +461,13 @@ class TestFlextAuthAdditionalCoverage:
         if (
             isinstance(auth_data, dict)
             and "user" in auth_data
-            and "session_id" in auth_data
+            and "session" in auth_data
         ):
             user_data = auth_data["user"]
-            if isinstance(user_data, dict) and "id" in user_data:
+            session_data = auth_data["session"]
+            if isinstance(user_data, dict) and "id" in user_data and isinstance(session_data, dict) and "id" in session_data:
                 user_id = str(user_data["id"])
-                session_id = str(auth_data["session_id"])
+                session_id = str(session_data["id"])
 
                 # Ensure the session is in the user sessions index
                 if user_id not in auth.session_manager.user_sessions_index:

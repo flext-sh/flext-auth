@@ -11,6 +11,9 @@ from __future__ import annotations
 
 import os
 
+import pytest
+from pydantic import ValidationError
+
 from flext_auth import FlextAuthConfig, FlextAuthConstants
 from flext_core import FlextConfig
 
@@ -383,10 +386,7 @@ class TestFlextAuthConfigSingletonOnly:
         FlextAuthConfig.clear_global_instance()
 
         # Test creating from environment
-        result = FlextAuthConfig.create_for_environment("development")
-        assert result.is_success
-
-        config = result.value
+        config = FlextAuthConfig.create_for_environment("development")
         assert config.environment == "development"
         assert config.validate_configuration().is_success
 
@@ -412,12 +412,10 @@ class TestFlextAuthConfigSingletonAdditionalCoverage:
         assert config.session_expiry_minutes == 60
 
     def test_singleton_create_from_environment_exception_handling(self) -> None:
-        """Test singleton create_from_environment exception handling."""
+        """Test singleton create_for_environment exception handling."""
         # Clear any existing singleton
         FlextAuthConfig.clear_global_instance()
 
-        # Test with invalid environment
-        result = FlextAuthConfig.create_for_environment("invalid_environment")
-        assert result.is_failure
-        assert result.error is not None
-        assert "Environment must be one of" in result.error
+        # Test with invalid environment - raises ValidationError
+        with pytest.raises(ValidationError, match="Environment must be one of"):
+            FlextAuthConfig.create_for_environment("invalid_environment")

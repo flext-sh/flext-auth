@@ -35,7 +35,6 @@ class FlextAuthTypes:
         """Type definition for session data in authentication responses."""
 
         id: str
-        session_id: str  # Alias for id field for API compatibility
         user_id: str
         session_token: str
         expires_at: datetime

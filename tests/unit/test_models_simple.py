@@ -37,7 +37,7 @@ class TestUserCreateUserMethod:
         )
         result = create_user(request)
 
-        assert result.success
+        assert result.is_success
         user = result.value
         assert user.username == "testuser"
         assert user.email == "test@example.com"
@@ -54,7 +54,7 @@ class TestUserCreateUserMethod:
         )
         result = create_user(request)
 
-        assert result.success
+        assert result.is_success
         user = result.value
 
         # Test active property - default should be True
@@ -93,7 +93,7 @@ class TestUserCreateUserMethod:
     def test_user_password_hash_validation(self) -> None:
         """Test User password hash validation - lines 139-140."""
         # Test with invalid password hash format
-        with pytest.raises(ValueError, match="Password hash must be bcrypt format"):
+        with pytest.raises(ValueError, match="Invalid password hash format"):
             FlextAuthModels.User(
                 id="test-id",
                 username="testuser",
@@ -105,7 +105,7 @@ class TestUserCreateUserMethod:
             )
 
         # Test with hash that's too short
-        with pytest.raises(ValueError, match="Password hash must be bcrypt format"):
+        with pytest.raises(ValueError, match="Invalid password hash format"):
             _ = FlextAuthModels.User(
                 id="test-id",
                 username="testuser",
@@ -126,7 +126,7 @@ class TestUserCreateUserMethod:
         )
         result = create_user(request)
 
-        assert result.success
+        assert result.is_success
         user = result.value
 
         # Test roles directly (no has_role method)
@@ -206,7 +206,7 @@ class TestUserCreateUserMethod:
             user_agent="test-agent",
         )
 
-        assert result.success
+        assert result.is_success
         session = result.value
 
         # Verify session properties
@@ -275,7 +275,7 @@ class TestUserCreateUserMethod:
         )
         result = create_user(request)
 
-        assert result.success
+        assert result.is_success
         user = result.value
         assert user.roles == ["user"]  # Default role applied
 
@@ -409,7 +409,7 @@ class TestDomainFunctions:
         )
         result = create_user(request)
 
-        assert result.success
+        assert result.is_success
         user = result.value
         assert user.username == "domain_user"
 
@@ -421,7 +421,7 @@ class TestDomainFunctions:
             user_agent="Test Agent",
         )
 
-        assert result.success
+        assert result.is_success
         session = result.value
         assert session.user_id == "test-user-id"
         assert session.ip_address == "127.0.0.1"

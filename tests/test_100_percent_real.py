@@ -152,7 +152,7 @@ class TestRealModelsExhaustive:
             password="ValidPassword123!",
         )
         user_result = create_user_from_request(user_request)
-        assert user_result.success, f"Expected success: {user_result.error}"
+        assert user_result.is_success, f"Expected success: {user_result.error}"
         user = user_result.value
 
         # Por padrão deve estar ativo
@@ -221,7 +221,7 @@ class TestRealModelsExhaustive:
             password="TestPass123!",
         )
         user_result = create_user_from_request(user_request)
-        assert user_result.success
+        assert user_result.is_success
         user = user_result.value
 
         # Token muito curto deve falhar
@@ -245,7 +245,7 @@ class TestRealModelsExhaustive:
             password="TestPass123!",
         )
         user_result = create_user_from_request(user_request)
-        assert user_result.success
+        assert user_result.is_success
         user = user_result.value
 
         # Sessão não expirada
@@ -315,7 +315,7 @@ class TestRealModelsExhaustive:
             password="AuthPass123!",
         )
         user_result = create_user_from_request(user_request)
-        assert user_result.success
+        assert user_result.is_success
 
         # Autenticação com credenciais corretas
         auth_service = FlextAuth()
@@ -331,7 +331,7 @@ class TestRealModelsExhaustive:
             username="auth_user",
             password="AuthPass123!",
         )
-        assert result.success
+        assert result.is_success
 
         # Autenticação com senha incorreta
         auth_service = FlextAuth()
@@ -339,7 +339,7 @@ class TestRealModelsExhaustive:
             username="auth_user",
             password="WrongPass123!",
         )
-        assert not result.success
+        assert not result.is_success
 
         # Usuário não encontrado
         auth_service = FlextAuth()
@@ -347,7 +347,7 @@ class TestRealModelsExhaustive:
             username="nonexistent",
             password="password",
         )
-        assert not result.success
+        assert not result.is_success
 
     def test_role_real_functionality(self) -> None:
         """Testa funcionalidade real de Role."""
@@ -370,7 +370,7 @@ class TestRealModelsExhaustive:
             expires_in_minutes=30,
         )
 
-        assert session_result.success, (
+        assert session_result.is_success, (
             f"Session creation failed: {session_result.error}"
         )
         session = session_result.value
@@ -382,7 +382,7 @@ class TestRealModelsExhaustive:
 
         # Testar com tempo de expiração customizado
         session_result_2 = create_session(user_id="test_user_2", expires_in_minutes=60)
-        assert session_result_2.success
+        assert session_result_2.is_success
         session_2 = session_result_2.value
 
         # Segunda sessão deve ter expiração diferente
@@ -403,11 +403,11 @@ class TestRealAuthExhaustive:
             "workflow@test.com",
             "WorkflowPass123!",
         )
-        assert reg_result.success
+        assert reg_result.is_success
 
         # Autenticar usuário
         auth_result = auth.authenticate_user("workflow_user", "WorkflowPass123!")
-        assert auth_result.success
+        assert auth_result.is_success
 
         # Verificar dados retornados
         data = auth_result.value
@@ -445,17 +445,17 @@ class TestRealAuthExhaustive:
             "lookup@test.com",
             "LookupPass123!",
         )
-        assert reg_result.success
+        assert reg_result.is_success
 
         # Buscar por username
         user_result = auth.get_user_by_username("lookup_user")
-        assert user_result.success
+        assert user_result.is_success
         assert user_result.value is not None
         assert user_result.value.username == "lookup_user"
 
         # Usuário inexistente
         nonexistent_result = auth.get_user_by_username("nonexistent_user")
-        assert nonexistent_result.success
+        assert nonexistent_result.is_success
         assert nonexistent_result.value is None
 
     def test_session_management_real(self) -> None:
@@ -468,10 +468,10 @@ class TestRealAuthExhaustive:
             "session@test.com",
             "SessionPass123!",
         )
-        assert reg_result.success
+        assert reg_result.is_success
 
         auth_result = auth.authenticate_user("session_user", "SessionPass123!")
-        assert auth_result.success
+        assert auth_result.is_success
 
         # Verificar sessão foi criada
         session_data = auth_result.value["session"]
@@ -492,19 +492,19 @@ class TestRealAuthExhaustive:
             email="password@test.com",
             password=password,
         )
-        assert user_result.success
+        assert user_result.is_success
 
         user = user_result.value
         assert isinstance(user, FlextAuthModels.User)
 
         # Verify password using the user's method
         verify_result = user.verify_password(password)
-        assert verify_result.success
+        assert verify_result.is_success
         assert verify_result.value is True
 
         # Test wrong password
         wrong_verify_result = user.verify_password("wrong_password")
-        assert wrong_verify_result.success
+        assert wrong_verify_result.is_success
         assert wrong_verify_result.value is False
 
     def test_user_registration_edge_cases(self) -> None:
@@ -513,11 +513,11 @@ class TestRealAuthExhaustive:
 
         # Email inválido
         result = auth.register_user("test", "invalid-email", "ValidPass123!")
-        assert not result.success
+        assert not result.is_success
 
         # Senha muito fraca
         result = auth.register_user("test", "test@test.com", "123")
-        assert not result.success
+        assert not result.is_success
 
     def test_token_validation_edge_cases(self) -> None:
         """Testa casos extremos de validação de token (linhas 792-793, 838-840)."""
@@ -548,7 +548,7 @@ class TestRealAuthExhaustive:
                 f"user{i}@test.com",
                 f"UserPass{i}123!",
             )
-            assert result.success
+            assert result.is_success
 
         # Verificar usuários foram criados
         user0 = auth.get_user_by_username("user_0")
@@ -567,16 +567,16 @@ class TestRealAuthExhaustive:
             "advanced@test.com",
             "AdvancedPass123!",
         )
-        assert reg_result.success
+        assert reg_result.is_success
 
         # Múltiplas autenticações
         for _i in range(3):
             auth_result = auth.authenticate_user("advanced_user", "AdvancedPass123!")
-            assert auth_result.success
+            assert auth_result.is_success
 
         # Autenticação com credenciais incorretas
         auth_result = auth.authenticate_user("advanced_user", "wrong_password")
-        assert not auth_result.success
+        assert not auth_result.is_success
 
 
 class TestRealConfigExhaustive:
@@ -648,7 +648,7 @@ class TestRealConfigExhaustive:
 
         # Validar regras de negócio
         validation_result = config.validate_business_rules()
-        assert validation_result.success
+        assert validation_result.is_success
 
 
 class TestRealInitExhaustive:
@@ -689,11 +689,11 @@ class TestRealIntegrationExhaustive:
             email="integration@test.com",
             password="IntegrationPass123!",
         )
-        assert reg_result.success
+        assert reg_result.is_success
 
         # Autenticação
         auth_result = auth.authenticate_user("integration_user", "IntegrationPass123!")
-        assert auth_result.success
+        assert auth_result.is_success
 
         # Extrair dados
         user_data = auth_result.value
@@ -711,12 +711,12 @@ class TestRealIntegrationExhaustive:
         jwt_token = user_data.get("jwt_token")
         assert jwt_token is not None
         token_result = auth.validate_token(jwt_token)
-        assert token_result.success
+        assert token_result.is_success
         assert token_result.value["valid"] is True
 
         # Buscar usuário por token
         user_by_token = auth.get_user_by_token(jwt_token)
-        assert user_by_token.success
+        assert user_by_token.is_success
         if user_by_token.value:
             assert user_by_token.value.username == "integration_user"
 
@@ -730,17 +730,17 @@ class TestRealIntegrationExhaustive:
             "session@lifecycle.com",
             "SessionPass123!",
         )
-        assert reg_result.success
+        assert reg_result.is_success
 
         # Fazer login (criar sessão)
         auth_result = auth.authenticate_user("session_lifecycle", "SessionPass123!")
-        assert auth_result.success
+        assert auth_result.is_success
 
         # Verificar sessão ativa
         jwt_token = auth_result.value.get("jwt_token")
         assert jwt_token is not None
         user_by_token = auth.get_user_by_token(jwt_token)
-        assert user_by_token.success
+        assert user_by_token.is_success
 
         # Limpeza de sessões
         auth.cleanup_expired_sessions()

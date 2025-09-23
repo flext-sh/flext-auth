@@ -77,18 +77,18 @@ class TestFlextAuthRegistration:
 
         # Hash password
         hash_result = user.set_password(password)
-        assert hash_result.success
+        assert hash_result.is_success
         assert user.password_hash.startswith("$2b$")
         assert len(user.password_hash) > 50  # bcrypt hashes are long
 
         # Verify correct password
         verify_result = user.verify_password(password)
-        assert verify_result.success
+        assert verify_result.is_success
         assert verify_result.value is True
 
         # Verify incorrect password
         wrong_result = user.verify_password("wrong_password")
-        assert wrong_result.success
+        assert wrong_result.is_success
         assert wrong_result.value is False
 
     def test_user_registration_success(self) -> None:
@@ -97,7 +97,7 @@ class TestFlextAuthRegistration:
 
         result = auth.register_user("testuser", "test@example.com", "Password123!")
 
-        assert result.success is True
+        assert result.is_success is True
         assert result.value is not None
 
         user = result.value
@@ -116,11 +116,11 @@ class TestFlextAuthRegistration:
 
         # Register first user
         result1 = auth.register_user("testuser", "test1@example.com", "Password123!")
-        assert result1.success is True
+        assert result1.is_success is True
 
         # Try to register with same username
         result2 = auth.register_user("testuser", "test2@example.com", "Password456!")
-        assert result2.success is False
+        assert result2.is_success is False
         assert result2.is_failure
         assert "Username already exists" in (result2.error or "")
 
@@ -133,11 +133,11 @@ class TestFlextAuthRegistration:
 
         # Register first user
         result1 = auth.register_user("user1", "test@example.com", "Password123!")
-        assert result1.success is True
+        assert result1.is_success is True
 
         # Try to register with same email
         result2 = auth.register_user("user2", "test@example.com", "Password456!")
-        assert result2.success is False
+        assert result2.is_success is False
         assert result2.is_failure
         assert "Email already exists" in (result2.error or "")
 
@@ -167,7 +167,7 @@ class TestFlextAuthTokens:
 
         # Verify token
         result = auth.validate_token(token)
-        assert result.success is True
+        assert result.is_success is True
         token_data = result.value
         assert isinstance(token_data, dict), "token_data must be dict"
         assert token_data["user_id"] == user_id
@@ -180,13 +180,13 @@ class TestFlextAuthTokens:
 
         # Test invalid token
         result = auth.validate_token("invalid_token")
-        assert result.success is False
+        assert result.is_success is False
         assert result.is_failure
         assert "Invalid token format" in (result.error or "")
 
         # Test malformed token
         result = auth.validate_token("not.a.valid.token")
-        assert result.success is False
+        assert result.is_success is False
         assert result.is_failure
 
 
@@ -203,11 +203,11 @@ class TestFlextAuthAuthentication:
             "test@example.com",
             "Password123!",
         )
-        assert register_result.success is True
+        assert register_result.is_success is True
 
         # Authenticate user
         auth_result = auth.authenticate_user("testuser", "Password123!")
-        assert auth_result.success is True
+        assert auth_result.is_success is True
         assert auth_result.value is not None
 
         data = auth_result.value
@@ -235,7 +235,7 @@ class TestFlextAuthAuthentication:
         auth: FlextAuth = FlextAuth()
 
         result = auth.authenticate_user("nonexistent", "Password123!")
-        assert result.success is False
+        assert result.is_success is False
         assert result.is_failure
         assert "Invalid credentials" in (result.error or "")
 
@@ -248,7 +248,7 @@ class TestFlextAuthAuthentication:
 
         # Try wrong password
         result = auth.authenticate_user("testuser", "wrongpassword")
-        assert result.success is False
+        assert result.is_success is False
         assert result.is_failure
         assert "Invalid credentials" in (result.error or "")
 
@@ -269,7 +269,7 @@ class TestFlextAuthAuthentication:
 
         # Try to authenticate
         result = auth.authenticate_user("testuser", "Password123!")
-        assert result.success is False
+        assert result.is_success is False
         assert result.is_failure
         assert "Account is not active" in (result.error or "")
 
@@ -287,7 +287,7 @@ class TestFlextAuthUserRetrieval:
             "test@example.com",
             "Password123!",
         )
-        assert register_result.success is True
+        assert register_result.is_success is True
 
         # Authenticate to get token
         auth_result = auth.authenticate_user("testuser", "Password123!")
@@ -300,7 +300,7 @@ class TestFlextAuthUserRetrieval:
 
         # Get user by token
         user_result = auth.get_user_by_token(token)
-        assert user_result.success is True
+        assert user_result.is_success is True
         user = user_result.value
         assert user is not None, "user should not be None"
         assert user.username == "testuser"
@@ -310,7 +310,7 @@ class TestFlextAuthUserRetrieval:
         auth: FlextAuth = FlextAuth()
 
         result = auth.get_user_by_token("invalid_token")
-        assert result.success is False
+        assert result.is_success is False
         assert result.is_failure
         assert "Invalid token format" in (result.error or "")
 
@@ -324,11 +324,11 @@ class TestFlextAuthUserRetrieval:
             "test@example.com",
             "Password123!",
         )
-        assert register_result.success is True
+        assert register_result.is_success is True
 
         # Get user by username
         user_result = auth.get_user_by_username("testuser")
-        assert user_result.success is True
+        assert user_result.is_success is True
         user = user_result.value
         assert user is not None
         assert user.username == "testuser"
@@ -345,20 +345,20 @@ class TestFlextAuthSessions:
         # Register and authenticate user
         auth.register_user("testuser", "test@example.com", "Password123!")
         auth_result = auth.authenticate_user("testuser", "Password123!")
-        assert auth_result.success is True
+        assert auth_result.is_success is True
 
         # Get user ID from auth result
         user_id = auth_result.value["user"]["id"]
 
         # Get sessions
         sessions_result = auth.get_user_sessions(user_id)
-        assert sessions_result.success is True
+        assert sessions_result.is_success is True
         sessions = sessions_result.value
         assert len(sessions) > 0
 
         # Test cleanup
         cleanup_result = auth.cleanup_expired_sessions()
-        assert cleanup_result.success is True
+        assert cleanup_result.is_success is True
         cleaned_count = cleanup_result.value
         assert isinstance(cleaned_count, int)
         assert cleaned_count >= 0
@@ -370,14 +370,14 @@ class TestFlextAuthSessions:
         # Register and authenticate user
         auth.register_user("testuser", "test@example.com", "Password123!")
         auth_result = auth.authenticate_user("testuser", "Password123!")
-        assert auth_result.success is True
+        assert auth_result.is_success is True
 
         # Get user ID from auth result
         user_id = auth_result.value["user"]["id"]
 
         # Get sessions
         sessions_result = auth.get_user_sessions(user_id)
-        assert sessions_result.success is True
+        assert sessions_result.is_success is True
         sessions = sessions_result.value
         assert len(sessions) > 0
 
@@ -438,12 +438,12 @@ class TestFlextAuthIntegration:
             "workflow@example.com",
             "WorkflowPassword123!",
         )
-        assert register_result.success is True
+        assert register_result.is_success is True
         user = register_result.value
 
         # Step 2: Authenticate user
         auth_result = auth.authenticate_user("workflow_user", "WorkflowPassword123!")
-        assert auth_result.success is True
+        assert auth_result.is_success is True
         auth_data = auth_result.value
 
         # Step 3: Get user by token
@@ -451,20 +451,20 @@ class TestFlextAuthIntegration:
         token = tokens.get("access_token")
         if token:
             user_by_token_result = auth.get_user_by_token(token)
-            assert user_by_token_result.success is True
+            assert user_by_token_result.is_success is True
             token_user = user_by_token_result.value
             assert token_user is not None
             assert token_user.username == "workflow_user"
 
         # Step 4: Get user sessions
         sessions_result = auth.get_user_sessions(user.id)
-        assert sessions_result.success is True
+        assert sessions_result.is_success is True
         sessions = sessions_result.value
         assert len(sessions) > 0
 
         # Step 5: Cleanup
         cleanup_result = auth.cleanup_expired_sessions()
-        assert cleanup_result.success is True
+        assert cleanup_result.is_success is True
 
     def test_case_insensitive_operations(self) -> None:
         """Test case insensitive username operations."""
@@ -474,15 +474,15 @@ class TestFlextAuthIntegration:
         register_result = auth.register_user(
             "testuser", "test@example.com", "Password123!"
         )
-        assert register_result.success is True
+        assert register_result.is_success is True
 
         # Try to authenticate with uppercase
         auth_result = auth.authenticate_user("TESTUSER", "Password123!")
-        assert auth_result.success is True
+        assert auth_result.is_success is True
 
         # Try to get user by username with different case
         user_result = auth.get_user_by_username("TestUser")
-        assert user_result.success is True
+        assert user_result.is_success is True
         user = user_result.value
         assert user is not None
         assert user.username == "testuser"  # Should be normalized to lowercase

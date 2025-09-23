@@ -51,7 +51,7 @@ class FlextAuthDemo:
         if result.is_success:
             pass
 
-        return cast("FlextResult[object]", result)
+        return cast(FlextResult[object], result)
 
     def demo_user_authentication(self) -> FlextResult[AuthenticationResponseDict]:
         """Extract Method: User authentication demo.

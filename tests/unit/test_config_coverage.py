@@ -118,11 +118,11 @@ class TestFlextAuthConfigCoverage:
         """Test environment configuration (simplified) and defaults."""
         # Test that we can create config for different environments
         dev_config = FlextAuthConfig.create_for_environment("development")
-        assert dev_config.is_success
+        assert dev_config.environment == "development"
 
         # Test production environment
         prod_config = FlextAuthConfig.create_for_environment("production")
-        assert prod_config.is_success
+        assert prod_config.environment == "production"
 
     def test_flext_auth_config_all_fields(self) -> None:
         """Test FlextAuthConfig with all available fields."""
@@ -237,9 +237,7 @@ class TestFlextAuthConfigCoverage:
             jwt_secret="override_secret_minimum_32_characters_long",
         )
 
-        assert env_config.is_success
-        if env_config.is_success:
-            assert env_config.value.jwt_expiry_minutes == 30
+        assert env_config.jwt_expiry_minutes == 30
 
     def test_constants_usage_and_settings_methods(self) -> None:
         """Test usage of FlextConstants and get_security_settings/get_jwt_settings methods."""
@@ -298,9 +296,7 @@ class TestFlextAuthConfigCoverage:
                 "FLEXT_AUTH_ENABLE_RATE_LIMITING": "false",
             },
         ):
-            result = FlextAuthConfig.create_for_environment("test")
-            assert result.is_success
-            config = result.value
+            config = FlextAuthConfig.create_for_environment("test")
 
             assert config.jwt_secret == "test_jwt_secret_minimum_32_characters_long"
             assert config.jwt_expiry_minutes == 30
@@ -330,14 +326,11 @@ class TestFlextAuthConfigCoverage:
 
     def test_create_from_environment_exception_handling(self) -> None:
         """Test exception handling in create_for_environment method."""
-        # Test the exception handling path in create_for_environment
-        with patch("flext_auth.config.FlextAuthConfig.__init__") as mock_init:
-            mock_init.side_effect = Exception("Test exception")
-
-            result = FlextAuthConfig.create_for_environment("test")
-            assert result.is_failure
-            assert result.error is not None
-            assert "Failed to create config with overrides" in result.error
+        # create_for_environment raises exceptions directly, not FlextResult
+        with pytest.raises(Exception, match="Test exception"):
+            with patch("flext_auth.config.FlextAuthConfig.model_validate") as mock_validate:
+                mock_validate.side_effect = Exception("Test exception")
+                FlextAuthConfig.create_for_environment("test")
 
 
 class TestFlextAuthConfigAdditionalCoverage:

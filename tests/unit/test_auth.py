@@ -214,21 +214,21 @@ class TestFlextAuth:
             "127.0.0.1",
             "test-user-agent",
         )
-        assert auth_result.success
+        assert auth_result.is_success
 
         # Extract session information
         auth_data = auth_result.value
         assert isinstance(auth_data, dict), "auth_data must be dict"
         session_info = auth_data["session"]
         assert isinstance(session_info, dict), "session_info must be dict"
-        session_id = session_info.get("session_id")
+        session_id = session_info.get("id")
         user_info = auth_data["user"]
         assert isinstance(user_info, dict), "user_info must be dict"
         user_id = user_info["id"]
 
         # Test get user sessions
         sessions_result = auth.get_user_sessions(user_id)
-        assert sessions_result.success
+        assert sessions_result.is_success
         sessions = sessions_result.value
         assert len(sessions) >= 1
         assert any(s.id == session_id for s in sessions)
@@ -242,7 +242,7 @@ class TestFlextAuth:
         # Register and authenticate
         auth.register_user(username, "logout@example.com", password)
         auth_result = auth.authenticate_user(username, password)
-        assert auth_result.success
+        assert auth_result.is_success
 
         # Extract session ID from authentication result
         auth_data = auth_result.value
@@ -254,14 +254,14 @@ class TestFlextAuth:
         assert session_id is not None
 
         logout_result = auth.logout_user(session_id)
-        assert logout_result.success
+        assert logout_result.is_success
 
     def test_cleanup_expired_sessions(self) -> None:
         """Test cleanup of expired sessions."""
         auth: FlextAuth = FlextAuth()
 
         cleanup_result = auth.cleanup_expired_sessions()
-        assert cleanup_result.success
+        assert cleanup_result.is_success
         assert isinstance(cleanup_result.value, int)
         assert cleanup_result.value >= 0
 
@@ -273,11 +273,11 @@ class TestFlextAuth:
 
         # Test user creation with current API
         create_result = auth.register_user(username, "sync@example.com", password)
-        assert create_result.success
+        assert create_result.is_success
 
         # Test authentication with current API
         auth_result = auth.authenticate_user(username, password)
-        assert auth_result.success
+        assert auth_result.is_success
 
 
 class TestFlextAuthQuickStart:
