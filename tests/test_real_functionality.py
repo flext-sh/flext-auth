@@ -17,10 +17,10 @@ from pydantic import ValidationError
 from flext_auth import (
     FlextAuth,
     FlextAuthConfig,
+    FlextAuthContainer,
     FlextAuthModels,
     FlextAuthTypes,
 )
-from flext_auth.container import FlextAuthContainer
 
 # Use unified class structure
 AuthenticationResponseDict = FlextAuthTypes.AuthenticationResponseDict

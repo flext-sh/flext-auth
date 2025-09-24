@@ -10,7 +10,7 @@ import sys
 
 from flext_auth import FlextAuth
 from flext_auth.config import FlextAuthConfig
-from flext_cli import FlextCliMain
+from flext_cli import FlextCliCommands
 from flext_core import FlextContainer, FlextLogger, FlextResult, FlextUtilities
 
 
@@ -25,17 +25,17 @@ class FlextAuthCli:
         """Initialize FlextAuthCli with FLEXT foundation dependencies."""
         self._container = FlextContainer.get_global()
         self._logger = FlextLogger(__name__)
-        self._cli_api = FlextCliMain()
+        self._cli_api = FlextCliCommands()
 
-    def create_auth_cli(self) -> FlextResult[FlextCliMain]:
+    def create_auth_cli(self) -> FlextResult[FlextCliCommands]:
         """Create FLEXT Auth CLI using flext-cli foundation - simplified using SOLID principles.
 
         Returns:
-            FlextResult[FlextCliMain]: Success with CLI instance
+            FlextResult[FlextCliCommands]: Success with CLI instance
 
         """
         self._logger.info("FLEXT Auth CLI initialized using flext-cli foundation")
-        return FlextResult[FlextCliMain].ok(self._cli_api)
+        return FlextResult[FlextCliCommands].ok(self._cli_api)
 
     def authenticate_user(
         self,
@@ -212,8 +212,8 @@ class FlextAuthCli:
             FlextResult[None]: Success if configuration is valid, error if invalid
 
         """
-        config = FlextAuthConfig.get_global_instance()
-        validation_result = config.validate_configuration()
+        config: dict[str, object] = FlextAuthConfig.get_global_instance()
+        validation_result: FlextResult[object] = config.validate_configuration()
 
         if validation_result.is_success:
             self._logger.info("Configuration validation passed")
@@ -231,7 +231,7 @@ class FlextAuthCli:
 
     def main(self) -> None:
         """Run the main CLI entry point."""
-        cli_result = self.create_auth_cli()
+        cli_result: FlextResult[object] = self.create_auth_cli()
         if cli_result.is_failure:
             self._logger.error(f"Failed to create CLI: {cli_result.error}")
             sys.exit(1)

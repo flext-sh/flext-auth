@@ -10,12 +10,10 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import re
-from typing import TypeVar
+from collections.abc import Callable
 
 from flext_auth.constants import FlextAuthConstants
-from flext_core import FlextMixins, FlextResult
-
-T = TypeVar("T")
+from flext_core import FlextMixins, FlextResult, T
 
 
 class FlextAuthMixins(FlextMixins):
@@ -203,7 +201,7 @@ class FlextAuthMixins(FlextMixins):
 
         @staticmethod
         def create_with_validation(
-            validation_func: callable[[], T],
+            validation_func: Callable[[], T],
             error_context: str = "validation",
         ) -> FlextResult[T]:
             """Generic factory method with validation.
@@ -376,6 +374,14 @@ class FlextAuthMixins(FlextMixins):
             return FlextResult[None].ok(None)
 
 
+# Aliases for nested mixins to match import expectations
+FlextAuthValidationMixin = FlextAuthMixins.ValidationMixin
+FlextAuthFactoryMixin = FlextAuthMixins.FactoryMixin
+FlextAuthBusinessRulesMixin = FlextAuthMixins.BusinessRulesMixin
+
 __all__ = [
+    "FlextAuthBusinessRulesMixin",
+    "FlextAuthFactoryMixin",
     "FlextAuthMixins",
+    "FlextAuthValidationMixin",
 ]

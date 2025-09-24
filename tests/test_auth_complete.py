@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
 from typing import cast
 
 from flext_auth import (
@@ -408,8 +409,6 @@ class TestFlextAuthModels:
 
     def test_session_model_defaults(self) -> None:
         """Test Session model default values."""
-        from datetime import UTC, datetime, timedelta
-
         session = FlextAuthModels.Session(
             id="session-id",
             user_id="user-id",

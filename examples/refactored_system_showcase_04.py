@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuth, FlextAuthQuickstart
+from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthQuickstart
 from flext_core import FlextResult
 
 
@@ -71,8 +71,6 @@ def demonstrate_system_architecture() -> None:
 
     # Note: FlextAuth doesn't have a get_config() method
     # Configuration is passed during initialization
-    from flext_auth import FlextAuthConfig
-
     FlextAuthConfig()
 
 

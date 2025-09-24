@@ -225,7 +225,9 @@ class TestEnhancedAuthentication:
         assert "invalid credentials" in error_msg.lower()
 
         # Test non-existent user - clean failure assertion
-        nonexistent_result = auth.authenticate_user("nonexistent_user", "AnyPassword")
+        nonexistent_result = auth.authenticate_user(
+            "nonexistent_user", "objectPassword"
+        )
         FlextTestsMatchers.assert_result_failure(nonexistent_result)
         nonexistent_error_msg = nonexistent_result.error or ""
         assert "invalid credentials" in nonexistent_error_msg.lower()

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import os
 
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, FlextAuthModels
 
 
 def debug_password_operations() -> None:
@@ -22,9 +22,7 @@ def debug_password_operations() -> None:
 
     # Test password hashing using User model
     try:
-        from flext_auth import FlextAuthModels
-
-        debug_user = FlextAuthModels.User(  # type: ignore[call-arg]
+        debug_user = FlextAuthModels.User(
             id="debug-user", username="debug_user", email="debug@example.com"
         )
 

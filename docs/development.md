@@ -315,7 +315,6 @@ def complete_auth_flow(username: str, password: str) -> FlextResult[dict]:
 ### Debug Mode
 
 ```python
-import logging
 
 # Enable debug logging
 logging.basicConfig(level=logging.DEBUG)

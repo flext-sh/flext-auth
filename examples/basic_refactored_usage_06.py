@@ -17,8 +17,10 @@ import sys
 
 from flext_auth import (
     FlextAuth,
+    FlextAuthConfig,
+    FlextAuthModels,
+    FlextAuthTypes,
 )
-from flext_auth.typings import FlextAuthTypes
 from flext_core import FlextResult
 
 AuthenticationResponseDict = FlextAuthTypes.AuthenticationResponseDict
@@ -78,8 +80,6 @@ def _demo_password_utilities() -> None:
     test_password = os.getenv("FLEXT_DEMO_TEST_PASSWORD", "TestPassword123!")
 
     try:
-        from flext_auth import FlextAuthModels
-
         demo_user = FlextAuthModels.User(
             id="password-util-demo", username="util_demo", email="util@demo.com"
         )
@@ -194,8 +194,6 @@ def main() -> None:
 
     # Constants and Configuration
     # Note: FlextAuth doesn't have a get_config() method
-    from flext_auth import FlextAuthConfig
-
     FlextAuthConfig()
 
 

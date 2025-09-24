@@ -35,20 +35,20 @@ class FlextAuthProtocols(FlextProtocols):
             ...
 
         @property
-        def can_login(self) -> bool:
+        def can_login(self: object) -> bool:
             """Check if user can attempt login."""
             ...
 
         @property
-        def is_locked(self) -> bool:
+        def is_locked(self: object) -> bool:
             """Check if account is currently locked."""
             ...
 
-        def record_successful_login(self) -> None:
+        def record_successful_login(self: object) -> None:
             """Record successful login and reset failed attempts."""
             ...
 
-        def record_failed_login(self) -> None:
+        def record_failed_login(self: object) -> None:
             """Record failed login attempt and apply lockout if needed."""
             ...
 
@@ -63,7 +63,7 @@ class FlextAuthProtocols(FlextProtocols):
         ip_address: str | None
         user_agent: str | None
 
-        def is_expired(self) -> bool:
+        def is_expired(self: object) -> bool:
             """Check if session is expired."""
             ...
 
@@ -72,11 +72,11 @@ class FlextAuthProtocols(FlextProtocols):
             ...
 
         @property
-        def is_valid(self) -> bool:
+        def is_valid(self: object) -> bool:
             """Check if session is valid (active and not expired)."""
             ...
 
-        def revoke(self) -> FlextResult[bool]:
+        def revoke(self: object) -> FlextResult[bool]:
             """Revoke this session."""
             ...
 
@@ -88,7 +88,7 @@ class FlextAuthProtocols(FlextProtocols):
         expires_at: datetime
         is_revoked: bool
 
-        def is_expired(self) -> bool:
+        def is_expired(self: object) -> bool:
             """Check if token is expired."""
             ...
 

@@ -15,7 +15,7 @@ import os
 import secrets
 import string
 
-from flext_auth import FlextAuth, FlextAuthQuickstart
+from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthModels, FlextAuthQuickstart
 
 
 def demo_complete_auth_workflow() -> None:
@@ -67,8 +67,6 @@ def demo_password_operations() -> None:
     test_password = os.getenv("TEST_PASSWORD", "TestPassword123!")
 
     try:
-        from flext_auth import FlextAuthModels
-
         # Create a user to demonstrate password operations
         demo_user = FlextAuthModels.User(
             id="demo-password-user", username="password_demo", email="password@demo.com"
@@ -144,8 +142,6 @@ def demo_security_features() -> None:
     # Show configuration security settings
     # Note: FlextAuth doesn't have a get_config() method
     # Configuration is passed during initialization
-    from flext_auth import FlextAuthConfig
-
     FlextAuthConfig()
     # Note: auth.config.get_security_settings() doesn't exist
 

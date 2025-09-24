@@ -16,7 +16,7 @@ import os
 import secrets
 import string
 
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthModels
 from flext_core import FlextLogger
 
 # Get structured logger instance
@@ -33,8 +33,6 @@ def example_basic_authentication() -> None:
 
     # Show current configuration
     # Note: FlextAuth doesn't have a get_config() method
-    from flext_auth import FlextAuthConfig
-
     config = FlextAuthConfig()
 
     logger.info(
@@ -54,8 +52,6 @@ def example_password_operations() -> None:
     # Hash a password using User model
     password = os.getenv("FLEXT_DEMO_PASSWORD", "MySecurePassword123!")
     try:
-        from flext_auth import FlextAuthModels
-
         demo_user = FlextAuthModels.User(
             id="password-demo-user", username="password_demo", email="password@demo.com"
         )

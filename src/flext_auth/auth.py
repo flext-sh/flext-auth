@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 import jwt
 
 from flext_auth.config import FlextAuthConfig
@@ -298,7 +300,9 @@ class FlextAuth:
 
         Example:
             >>> auth = FlextAuth()
-            >>> result = auth.authenticate_user("john_doe", "SecurePass123!")
+            >>> result: FlextResult[object] = auth.authenticate_user(
+            ...     "john_doe", "SecurePass123!"
+            ... )
             >>> if result.is_success:
             ...     response = result.value
             ...     print(f"Authenticated user: {response['user']['username']}")
@@ -498,8 +502,6 @@ class FlextAuth:
             raise TypeError(msg)
 
         # Create UserDict with all required fields
-        from datetime import UTC, datetime
-
         user_data: FlextAuthTypes.UserDict = {
             "id": user.id,
             "username": user.username,

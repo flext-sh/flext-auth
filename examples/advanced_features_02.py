@@ -11,12 +11,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import logging
 import os
 import secrets
 import string
 
-from flext_auth import FlextAuth
+from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthModels
+from flext_core import FlextLogger
 
 
 def example_advanced_configuration() -> None:
@@ -28,15 +28,13 @@ def example_advanced_configuration() -> None:
     )
     if auth_result.is_failure:
         # Use proper logging instead of print
-        logger = logging.getLogger(__name__)
+        logger = FlextLogger(__name__)
         logger.error(f"Failed to create auth: {auth_result.error}")
         return
 
     # Show configuration details
     # Note: FlextAuth doesn't have a get_config() method
     # Configuration is passed during initialization
-    from flext_auth import FlextAuthConfig
-
     FlextAuthConfig()
 
     # Display some configuration settings
@@ -170,8 +168,6 @@ def example_password_security() -> None:
 
     # Show current hashing using User model
     try:
-        from flext_auth import FlextAuthModels
-
         # Create users to demonstrate password hashing
         user1 = FlextAuthModels.User(
             id="security-demo-user1",

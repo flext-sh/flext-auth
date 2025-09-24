@@ -7,23 +7,28 @@ All type definitions are in typings.py, exceptions in exceptions.py.
 
 from __future__ import annotations
 
+import secrets
 from datetime import UTC, datetime, timedelta
 
 import bcrypt
 import jwt
 from pydantic import BaseModel, Field, ValidationError, field_validator
-from pydantic_settings import BaseSettings
 
 from flext_auth.constants import FlextAuthConstants
-from flext_auth.mixins import FlextAuthMixins
+from flext_auth.mixins import (
+    FlextAuthBusinessRulesMixin,
+    FlextAuthFactoryMixin,
+    FlextAuthMixins,
+    FlextAuthValidationMixin,
+)
 from flext_core import FlextModels, FlextResult, FlextUtilities
 
 
-class FlextAuthModels:
-    """FLEXT Auth Models - Authentication domain Pydantic models unified class.
+class FlextAuthModels(FlextModels):
+    """Single unified auth models class following FLEXT standards.
 
-    Contains all Pydantic BaseModel classes and Settings for the authentication domain,
-    extending flext-core models without wrappers or aliases.
+    Contains all Pydantic models for authentication domain operations.
+    Follows FLEXT pattern: one class per module with nested subclasses.
     """
 
     # Parameter Object Pattern for reducing "many parameters" code smell
@@ -96,12 +101,11 @@ class FlextAuthModels:
 
         @field_validator("email")
         @classmethod
-        def validate_email_format(cls, v: str) -> str:
+        def validate_email_format(cls, v: str) -> FlextResult[str]:
             """Validate email format."""
             if "@" not in v:
-                msg = "Invalid email format"
-                raise ValueError(msg)
-            return v
+                return FlextResult[str].fail("Invalid email format")
+            return FlextResult[str].ok(v)
 
         @field_validator("username")
         @classmethod
@@ -317,8 +321,6 @@ class FlextAuthModels:
         ) -> FlextResult[FlextAuthModels.Session]:
             """Create new session for user."""
             try:
-                import secrets
-
                 session_token = secrets.token_urlsafe(32)
                 expires_at = datetime.now(UTC) + timedelta(hours=expiry_hours)
 
@@ -436,146 +438,6 @@ class FlextAuthModels:
                 return FlextResult[dict[str, str]].fail(
                     f"Token verification failed: {e}"
                 )
-
-    # Pydantic Settings for configuration
-    class FlextAuthConfig(BaseSettings):
-        """Authentication configuration as Pydantic Settings."""
-
-        _global_instance: FlextAuthModels.FlextAuthConfig | None = None
-
-        # Authentication-specific logging configuration
-        enable_audit_logging: bool = Field(
-            default=True, description="Enable detailed audit logging"
-        )
-        log_auth_attempts: bool = Field(
-            default=True, description="Log authentication attempts"
-        )
-        log_auth_failures: bool = Field(
-            default=True, description="Log authentication failures"
-        )
-        log_auth_success: bool = Field(
-            default=False, description="Log successful authentications"
-        )
-        log_token_creation: bool = Field(
-            default=True, description="Log token creation events"
-        )
-        log_token_validation: bool = Field(
-            default=False, description="Log token validation events"
-        )
-        log_user_creation: bool = Field(
-            default=True, description="Log user creation events"
-        )
-        log_user_deletion: bool = Field(
-            default=True, description="Log user deletion events"
-        )
-        log_permission_changes: bool = Field(
-            default=True, description="Log permission changes"
-        )
-
-        # Security configuration
-        max_login_attempts: int = Field(
-            default=FlextAuthConstants.MAX_LOGIN_ATTEMPTS,
-            description="Maximum failed login attempts before account lockout",
-        )
-        lockout_duration_minutes: int = Field(
-            default=FlextAuthConstants.LOCKOUT_DURATION_MINUTES,
-            description="Account lockout duration in minutes",
-        )
-
-        # JWT configuration
-        jwt_secret_key: str = Field(
-            default=FlextAuthConstants.JWT_SECRET_KEY,
-            description="JWT secret key",
-        )
-        jwt_expiry_minutes: int = Field(
-            default=FlextAuthConstants.JWT_DEFAULT_EXPIRY_MINUTES,
-            description="JWT token expiry in minutes",
-        )
-        jwt_algorithm: str = Field(
-            default=FlextAuthConstants.JWT_DEFAULT_ALGORITHM,
-            description="JWT algorithm",
-        )
-
-        # Password configuration
-        bcrypt_rounds: int = Field(
-            default=FlextAuthConstants.BCRYPT_ROUNDS,
-            description="Bcrypt rounds for password hashing",
-        )
-        min_password_length: int = Field(
-            default=FlextAuthConstants.MIN_PASSWORD_LENGTH,
-            description="Minimum password length",
-        )
-
-        # Session configuration
-        session_expiry_hours: int = Field(
-            default=2,
-            description="Session expiry in hours",
-        )
-
-        # Security logging configuration
-        mask_passwords: bool = Field(
-            default=True, description="Mask passwords in log messages"
-        )
-        mask_tokens: bool = Field(
-            default=True, description="Mask tokens in log messages"
-        )
-        mask_session_ids: bool = Field(
-            default=True, description="Mask session IDs in log messages"
-        )
-
-        # Performance tracking
-        track_auth_performance: bool = Field(
-            default=True, description="Track authentication performance"
-        )
-
-        class Config:
-            """Pydantic configuration for FlextAuthConfig."""
-
-            env_prefix = "AUTH_"
-            case_sensitive = False
-
-        def get_auth_logging_config(self) -> dict[str, object]:
-            """Get authentication-specific logging configuration dictionary."""
-            return {
-                "enable_audit_logging": self.enable_audit_logging,
-                "log_auth_attempts": self.log_auth_attempts,
-                "log_auth_failures": self.log_auth_failures,
-                "log_auth_success": self.log_auth_success,
-                "log_token_creation": self.log_token_creation,
-                "log_token_validation": self.log_token_validation,
-                "log_user_creation": self.log_user_creation,
-                "log_user_deletion": self.log_user_deletion,
-                "log_permission_changes": self.log_permission_changes,
-                "mask_passwords": self.mask_passwords,
-                "mask_tokens": self.mask_tokens,
-                "mask_session_ids": self.mask_session_ids,
-                "track_auth_performance": self.track_auth_performance,
-            }
-
-        @classmethod
-        def create_for_environment(
-            cls, environment: str = "development"
-        ) -> FlextResult[FlextAuthModels.FlextAuthConfig]:
-            """Create configuration for specific environment."""
-            try:
-                config = cls()
-                return FlextResult[FlextAuthModels.FlextAuthConfig].ok(config)
-            except Exception as e:
-                return FlextResult[FlextAuthModels.FlextAuthConfig].fail(
-                    f"Failed to create config for environment {environment}: {e}"
-                )
-
-        @classmethod
-        def get_global_instance(cls) -> FlextAuthModels.FlextAuthConfig:
-            """Get global singleton instance of FlextAuthConfig."""
-            if not hasattr(cls, "_global_instance") or cls._global_instance is None:
-                cls._global_instance = cls()
-            return cls._global_instance
-
-        @classmethod
-        def _reset_global_instance(cls) -> None:
-            """Reset global instance (for testing)."""
-            cls._global_instance = None
 
 
 __all__ = [

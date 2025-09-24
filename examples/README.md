@@ -404,7 +404,6 @@ if __name__ == "__main__":
 
 ```python
 # Enable debug logging
-import logging
 logging.basicConfig(level=logging.DEBUG)
 
 # Use debug authentication service

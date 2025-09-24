@@ -100,7 +100,7 @@ class FlextAuthContainer:
         return FlextResult[FlextAuthModels.Session].ok(session)
 
     @classmethod
-    def _generate_session_id(cls) -> FlextResult[str]:
+    def _generate_session_id(cls: object) -> FlextResult[str]:
         """Generate session ID using FlextUtilities - railway pattern step.
 
         Returns:
@@ -113,7 +113,7 @@ class FlextAuthContainer:
         return FlextResult[str].ok(session_id)
 
     @classmethod
-    def _generate_session_token(cls) -> FlextResult[str]:
+    def _generate_session_token(cls: object) -> FlextResult[str]:
         """Generate session token using FlextUtilities - railway pattern step.
 
         Returns:

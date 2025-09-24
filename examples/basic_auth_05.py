@@ -15,14 +15,12 @@ from __future__ import annotations
 
 import os
 
-from flext_auth import FlextAuth, FlextAuthQuickstart
+from flext_auth import FlextAuth, FlextAuthModels, FlextAuthQuickstart
 
 
 def main() -> None:
     """Run basic authentication example."""
     # 1. Password Hashing Example using User model
-    from flext_auth import FlextAuthModels
-
     password = os.getenv("FLEXT_DEMO_PASSWORD", "SecurePassword123!")
 
     # Create a user with password

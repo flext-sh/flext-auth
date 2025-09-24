@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import secrets
 from typing import ClassVar
 
 from pydantic import Field, field_validator
@@ -19,7 +20,7 @@ from flext_core import (
 )
 
 
-class FlextAuthLoggingConstants:
+class FlextAuthLoggingConstants(FlextConstants):
     """Authentication-specific logging constants for FLEXT Auth module.
 
     Provides domain-specific logging defaults, levels, and configuration
@@ -174,6 +175,9 @@ class FlextAuthConfig(FlextConfig):
     It uses the singleton pattern to ensure a single source of truth for authentication
     configuration across the entire application.
     """
+
+    # Class variable for singleton pattern
+    _global_instance: ClassVar[FlextAuthConfig | None] = None
 
     # Authentication-specific logging configuration using FlextAuthLoggingConstants
     enable_audit_logging: bool = Field(
@@ -426,8 +430,6 @@ class FlextAuthConfig(FlextConfig):
         """Validate and generate JWT secret if empty."""
         if not v or not v.strip():
             # Generate a secure JWT secret
-            import secrets
-
             return secrets.token_urlsafe(32)
         return v
 
@@ -558,9 +560,6 @@ class FlextAuthConfig(FlextConfig):
         """Get global singleton instance of FlextAuthConfig."""
         if not hasattr(cls, "_global_instance") or cls._global_instance is None:
             cls._global_instance = cls()
-        if not isinstance(cls._global_instance, FlextAuthConfig):
-            msg = "Global instance is not of correct type"
-            raise TypeError(msg)
         return cls._global_instance
 
     @classmethod
@@ -596,8 +595,6 @@ class FlextAuthConfig(FlextConfig):
                     not overrides["jwt_secret"]
                     or not str(overrides["jwt_secret"]).strip()
                 ):
-                    import secrets
-
                     overrides["jwt_secret"] = secrets.token_urlsafe(32)
 
                 # Create base config and apply overrides using model_copy with update

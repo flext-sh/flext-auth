@@ -14,8 +14,7 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from pydantic import ValidationError
 
-from flext_auth import FlextAuthModels
-from flext_auth.container import FlextAuthContainer
+from flext_auth import FlextAuthContainer, FlextAuthModels
 
 # Use unified class structure
 Role = FlextAuthModels.Role

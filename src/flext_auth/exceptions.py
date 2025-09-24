@@ -7,11 +7,11 @@ following flext-core standardization and extending FlextException.
 from flext_core import FlextExceptions
 
 
-class FlextAuthExceptions:
-    """FLEXT Auth Exceptions - Authentication domain exception unified class.
+class FlextAuthExceptions(FlextExceptions):
+    """Single unified auth exceptions class following FLEXT standards.
 
-    Contains all domain-specific exceptions extending flext-core exceptions
-    without wrappers or aliases, providing direct access to authentication errors.
+    Contains all exception definitions for authentication domain operations.
+    Follows FLEXT pattern: one class per module with nested subclasses.
     """
 
     class FlextAuthError(FlextExceptions.BaseError):

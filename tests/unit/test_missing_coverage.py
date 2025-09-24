@@ -10,8 +10,7 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 from datetime import UTC, datetime
 from unittest.mock import patch
 
-from flext_auth.auth import FlextAuth
-from flext_auth.models import FlextAuthModels
+from flext_auth import FlextAuth, FlextAuthModels
 
 # Valid bcrypt hash for testing
 VALID_BCRYPT_HASH = "$2b$12$pq/txsMKRutFH9PT.UbS/uwmFIcj0oTF.xjSeciUjw6rF.62z.fpe"

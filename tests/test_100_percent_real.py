@@ -19,11 +19,11 @@ from pydantic import ValidationError
 from flext_auth import (
     FlextAuth,
     FlextAuthConfig,
+    FlextAuthContainer,
     FlextAuthModels,
     FlextAuthQuickstart,
     FlextAuthTypes,
 )
-from flext_auth.container import FlextAuthContainer
 from flext_core import FlextTypes
 
 # Use unified class structure - no aliases

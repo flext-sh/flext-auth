@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from flext_auth.cli import (
+from flext_auth import (
     FlextAuthCli,
 )
 from flext_core import FlextResult

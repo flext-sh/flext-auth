@@ -464,7 +464,6 @@ print(f'Max attempts: {config.max_failed_attempts}')  # Should be <= 5
 Enable debug logging:
 
 ```python
-import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
