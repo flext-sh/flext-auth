@@ -10,7 +10,7 @@ from typing import NotRequired, TypedDict
 from flext_core import FlextTypes
 
 
-class FlextAuthTypes:
+class FlextAuthTypes(FlextTypes):
     """FLEXT Auth Types - Authentication domain type definitions unified class.
 
     Contains all type definitions used in the authentication domain,

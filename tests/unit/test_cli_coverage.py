@@ -79,7 +79,9 @@ class TestCliCoverage:
         assert result.is_success
         # The function returns FlextResult[None] on success
 
-    @pytest.mark.skip(reason="Test mocks incorrect behavior - create_for_environment raises exceptions, not FlextResult")
+    @pytest.mark.skip(
+        reason="Test mocks incorrect behavior - create_for_environment raises exceptions, not FlextResult"
+    )
     @patch("flext_auth.cli.FlextAuthConfig.create_for_environment")
     def test_authenticate_user_config_failure(self, mock_config: MagicMock) -> None:
         """Test authentication with config failure."""
@@ -237,7 +239,9 @@ class TestCliCoverage:
 
         assert result.is_success
 
-    @pytest.mark.skip(reason="Test mocks incorrect behavior - create_for_environment raises exceptions, not FlextResult")
+    @pytest.mark.skip(
+        reason="Test mocks incorrect behavior - create_for_environment raises exceptions, not FlextResult"
+    )
     @patch("flext_auth.cli.FlextAuthConfig.create_for_environment")
     def test_register_user_config_failure(self, mock_config: MagicMock) -> None:
         """Test registration with config failure."""

@@ -26,7 +26,9 @@ class TestRealAuthenticationSimple:
             email="test@example.com",
             password="TestPassword123!",
         )
-        assert register_result.is_success, f"Registration failed: {register_result.error}"
+        assert register_result.is_success, (
+            f"Registration failed: {register_result.error}"
+        )
         user = register_result.value
         assert user.username == "test_user"
 

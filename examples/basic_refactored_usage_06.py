@@ -14,15 +14,12 @@ import os
 import secrets
 import string
 import sys
-from typing import cast
 
 from flext_auth import (
     FlextAuth,
-    FlextAuthModels,
 )
-from flext_core import FlextResult
-
 from flext_auth.typings import FlextAuthTypes
+from flext_core import FlextResult
 
 AuthenticationResponseDict = FlextAuthTypes.AuthenticationResponseDict
 

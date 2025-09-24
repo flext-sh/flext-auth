@@ -465,7 +465,12 @@ class TestFlextAuthAdditionalCoverage:
         ):
             user_data = auth_data["user"]
             session_data = auth_data["session"]
-            if isinstance(user_data, dict) and "id" in user_data and isinstance(session_data, dict) and "id" in session_data:
+            if (
+                isinstance(user_data, dict)
+                and "id" in user_data
+                and isinstance(session_data, dict)
+                and "id" in session_data
+            ):
                 user_id = str(user_data["id"])
                 session_id = str(session_data["id"])
 

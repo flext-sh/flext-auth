@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field, ValidationError, field_validator
 from pydantic_settings import BaseSettings
 
 from flext_auth.constants import FlextAuthConstants
+from flext_auth.mixins import FlextAuthMixins
 from flext_core import FlextModels, FlextResult, FlextUtilities
 
 
@@ -26,7 +27,12 @@ class FlextAuthModels:
     """
 
     # Parameter Object Pattern for reducing "many parameters" code smell
-    class UserCreationRequest(BaseModel):
+    class UserCreationRequest(
+        BaseModel,
+        FlextAuthMixins.ValidationMixin,
+        FlextAuthMixins.FactoryMixin,
+        FlextAuthMixins.BusinessRulesMixin,
+    ):
         """User creation parameter object using Pydantic for cleaner APIs."""
 
         username: str
@@ -39,30 +45,41 @@ class FlextAuthModels:
         @classmethod
         def validate_username_not_empty(cls, v: str) -> str:
             """Validate username is not empty."""
-            if not v or not v.strip():
-                msg = "Username cannot be empty"
-                raise ValueError(msg)
-            return v
+            validation_result = (
+                FlextAuthMixins.ValidationMixin.validate_username_format(v)
+            )
+            if validation_result.is_failure:
+                raise ValueError(
+                    validation_result.error or "Username validation failed"
+                )
+            return validation_result.value
 
         @field_validator("email")
         @classmethod
         def validate_email_not_empty(cls, v: str) -> str:
             """Validate email is not empty."""
-            if not v or not v.strip():
-                msg = "Email cannot be empty"
-                raise ValueError(msg)
-            return v
+            validation_result = FlextAuthMixins.ValidationMixin.validate_email_format(v)
+            if validation_result.is_failure:
+                raise ValueError(validation_result.error or "Email validation failed")
+            return validation_result.value
 
         @field_validator("password")
         @classmethod
         def validate_password_not_empty(cls, v: str) -> str:
             """Validate password is not empty."""
-            if not v or not v.strip():
-                msg = "Password cannot be empty"
-                raise ValueError(msg)
-            return v
+            validation_result = FlextAuthValidationMixin.validate_password_strength(v)
+            if validation_result.is_failure:
+                raise ValueError(
+                    validation_result.error or "Password validation failed"
+                )
+            return validation_result.value
 
-    class User(FlextModels.Entity):
+    class User(
+        FlextModels.Entity,
+        FlextAuthValidationMixin,
+        FlextAuthFactoryMixin,
+        FlextAuthBusinessRulesMixin,
+    ):
         """User domain model extending FlextModels.Entity."""
 
         username: str = Field(..., description="Unique username")

@@ -9,10 +9,10 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Protocol
 
-from flext_core import FlextResult
+from flext_core import FlextProtocols, FlextResult
 
 
-class FlextAuthProtocols:
+class FlextAuthProtocols(FlextProtocols):
     """Unified authentication protocols following FLEXT patterns."""
 
     class FlextAuthUserProtocol(Protocol):

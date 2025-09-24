@@ -48,7 +48,9 @@ class TestRealAuthentication:
             password="SuperSecure123!@#",
             full_name="John Doe",
         )
-        assert register_result.is_success, f"Registration failed: {register_result.error}"
+        assert register_result.is_success, (
+            f"Registration failed: {register_result.error}"
+        )
         user = register_result.value
         assert user.username == "john_doe"
         assert user.email == "john@example.com"
@@ -351,7 +353,10 @@ class TestRealAuthentication:
         )
         validation_result = config.validate_configuration()
         assert validation_result.is_failure
-        assert "jwt expiry should not exceed twice the session expiry" in validation_result.error.lower()
+        assert (
+            "jwt expiry should not exceed twice the session expiry"
+            in validation_result.error.lower()
+        )
 
         # Test weak password validation through User model
         weak_user = FlextAuthModels.User(

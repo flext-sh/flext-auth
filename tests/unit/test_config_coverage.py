@@ -327,10 +327,12 @@ class TestFlextAuthConfigCoverage:
     def test_create_from_environment_exception_handling(self) -> None:
         """Test exception handling in create_for_environment method."""
         # create_for_environment raises exceptions directly, not FlextResult
-        with pytest.raises(Exception, match="Test exception"):
-            with patch("flext_auth.config.FlextAuthConfig.model_validate") as mock_validate:
-                mock_validate.side_effect = Exception("Test exception")
-                FlextAuthConfig.create_for_environment("test")
+        with (
+            pytest.raises(Exception, match="Test exception"),
+            patch("flext_auth.config.FlextAuthConfig.model_validate") as mock_validate,
+        ):
+            mock_validate.side_effect = Exception("Test exception")
+            FlextAuthConfig.create_for_environment("test")
 
 
 class TestFlextAuthConfigAdditionalCoverage:
