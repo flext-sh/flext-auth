@@ -42,8 +42,8 @@ class FlextAuth:
             container: DI container (uses global if None)
 
         """
-        # Use provided config or get global singleton
-        self.config = config or FlextAuthConfig.get_global_instance()
+        # Use provided config or get global singleton - ensure correct type
+        self.config: FlextAuthConfig = config or FlextAuthConfig.get_global_instance()
 
         # Initialize dependencies
         self.container = container or FlextContainer.get_global()
@@ -59,7 +59,7 @@ class FlextAuth:
         # Log initialization info
         self._logger.info(
             f"FlextAuth initialized: token_expire_minutes={self.config.jwt_expiry_minutes}, "
-            f"bcrypt_rounds={self.config.bcrypt_rounds}, jwt_secret_length={len(self.config.jwt_secret)}",
+            f"bcrypt_rounds={self.config.bcrypt_rounds}, jwt_secret_length={len(str(self.config.jwt_auth_secret.get_secret_value()))}",
         )
 
     def register_user(
@@ -575,7 +575,7 @@ class FlextAuth:
         try:
             payload = jwt.decode(
                 clean_token,
-                self.config.jwt_secret,
+                str(self.config.jwt_auth_secret.get_secret_value()),
                 algorithms=[FlextAuthConstants.JWT_DEFAULT_ALGORITHM],
                 options={"verify_aud": False},
             )
@@ -616,7 +616,7 @@ class FlextAuth:
             user_id=user_id,
             expiry_minutes=self.config.jwt_expiry_minutes,
             token_type=FlextAuthConstants.JWT_DEFAULT_TOKEN_TYPE,
-            jwt_secret=self.config.jwt_secret,
+            jwt_secret=str(self.config.jwt_auth_secret.get_secret_value()),
         )
 
         if token_result.is_failure:  # pragma: no cover
@@ -664,7 +664,7 @@ class FlextAuth:
 
         """
         session_ids = self.user_sessions_index.get(user_id, [])
-        sessions = []
+        sessions: list[FlextAuthModels.Session] = []
 
         for session_id in session_ids:
             session = self._sessions.get(session_id)
@@ -859,7 +859,7 @@ class FlextAuth:
             user_id=user_id,
             expiry_minutes=expiry or self.config.jwt_expiry_minutes,
             token_type=FlextAuthConstants.JWT_DEFAULT_TOKEN_TYPE,
-            jwt_secret=self.config.jwt_secret,
+            jwt_secret=str(self.config.jwt_auth_secret.get_secret_value()),
         )
 
         if token_result.is_failure:

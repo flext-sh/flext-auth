@@ -25,7 +25,15 @@ def main() -> None:
 
     # Create a user with password
     user = FlextAuthModels.User(
-        id="demo-user-id", username="demo_user", email="demo@example.com"
+        id="demo-user-id",
+        username="demo_user",
+        email="demo@example.com",
+        full_name="Demo User",
+        is_active=True,
+        failed_login_attempts=0,
+        locked_until=None,
+        last_login=None,
+        domain_events=[],
     )
 
     try:

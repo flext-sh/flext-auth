@@ -81,7 +81,15 @@ def _demo_password_utilities() -> None:
 
     try:
         demo_user = FlextAuthModels.User(
-            id="password-util-demo", username="util_demo", email="util@demo.com"
+            id="password-util-demo",
+            username="util_demo",
+            email="util@demo.com",
+            full_name="Util Demo User",
+            is_active=True,
+            failed_login_attempts=0,
+            locked_until=None,
+            last_login=None,
+            domain_events=[],
         )
 
         # Set and verify password using User model

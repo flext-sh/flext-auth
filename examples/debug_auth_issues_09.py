@@ -23,7 +23,15 @@ def debug_password_operations() -> None:
     # Test password hashing using User model
     try:
         debug_user = FlextAuthModels.User(
-            id="debug-user", username="debug_user", email="debug@example.com"
+            id="debug-user",
+            username="debug_user",
+            email="debug@example.com",
+            full_name="Debug User",
+            is_active=True,
+            failed_login_attempts=0,
+            locked_until=None,
+            last_login=None,
+            domain_events=[],
         )
 
         # Set password (this will hash it)

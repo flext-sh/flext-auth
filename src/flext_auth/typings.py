@@ -1,23 +1,161 @@
-"""FLEXT Auth Typings - Type definitions for authentication domain.
+"""FLEXT Auth Types - Domain-specific authentication type definitions.
 
-This module contains all type definitions, TypedDicts, TypeVars, and type aliases
-used throughout the authentication domain, following flext-core standardization.
+This module provides authentication-specific type definitions extending FlextTypes.
+Follows FLEXT standards:
+- Domain-specific complex types only
+- No simple aliases to primitive types
+- Python 3.13+ syntax
+- Extends FlextTypes properly
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
+from __future__ import annotations
+
 from datetime import datetime
-from typing import NotRequired, TypedDict
+from typing import NotRequired, TypedDict, TypeVar
 
 from flext_core import FlextTypes
 
+# =============================================================================
+# AUTH-SPECIFIC TYPE VARIABLES - Domain-specific TypeVars for authentication operations
+# =============================================================================
+
+# Authentication domain TypeVars
+TAuthUser = TypeVar("TAuthUser")
+TAuthSession = TypeVar("TAuthSession")
+TAuthToken = TypeVar("TAuthToken")
+TAuthProvider = TypeVar("TAuthProvider")
+TAuthCredential = TypeVar("TAuthCredential")
+TAuthPolicy = TypeVar("TAuthPolicy")
+TAuthRole = TypeVar("TAuthRole")
+TAuthPermission = TypeVar("TAuthPermission")
+
 
 class FlextAuthTypes(FlextTypes):
-    """FLEXT Auth Types - Authentication domain type definitions unified class.
+    """Authentication-specific type definitions extending FlextTypes.
 
-    Contains all type definitions used in the authentication domain,
-    extending flext-core types without wrappers or aliases.
+    Domain-specific type system for authentication/authorization operations.
+    Contains ONLY complex authentication-specific types, no simple aliases.
+    Uses Python 3.13+ type syntax and patterns.
     """
 
-    # TypedDict definitions for API responses and data structures
+    # =========================================================================
+    # AUTHENTICATION DOMAIN TYPES - Complex authentication types
+    # =========================================================================
+
+    class Authentication:
+        """Authentication domain complex types."""
+
+        type AuthConfiguration = dict[
+            str, FlextTypes.Core.ConfigValue | dict[str, object]
+        ]
+        type AuthCredentials = dict[str, str | dict[str, FlextTypes.Core.JsonValue]]
+        type AuthProvider = dict[
+            str, FlextTypes.Core.ConfigValue | list[str] | dict[str, object]
+        ]
+        type AuthenticationFlow = list[dict[str, str | bool | dict[str, object]]]
+        type AuthValidation = dict[str, bool | str | list[str] | dict[str, object]]
+        type LoginAttempt = dict[str, str | datetime | int | bool]
+
+    # =========================================================================
+    # USER MANAGEMENT TYPES - Complex user entity types
+    # =========================================================================
+
+    class UserManagement:
+        """User management complex types."""
+
+        type UserProfile = dict[
+            str, FlextTypes.Core.JsonValue | datetime | dict[str, object]
+        ]
+        type UserCreation = dict[
+            str, str | bool | list[str] | dict[str, FlextTypes.Core.JsonValue]
+        ]
+        type UserUpdate = dict[str, FlextTypes.Core.JsonValue | datetime | bool]
+        type UserPreferences = dict[str, FlextTypes.Core.JsonValue | dict[str, object]]
+        type AccountStatus = dict[str, bool | datetime | int | str]
+        type UserActivity = dict[str, datetime | str | int | dict[str, object]]
+
+    # =========================================================================
+    # SESSION MANAGEMENT TYPES - Complex session handling types
+    # =========================================================================
+
+    class SessionManagement:
+        """Session management complex types."""
+
+        type SessionConfiguration = dict[
+            str, int | bool | str | dict[str, FlextTypes.Core.ConfigValue]
+        ]
+        type SessionData = dict[
+            str, FlextTypes.Core.JsonValue | datetime | dict[str, object]
+        ]
+        type SessionStorage = dict[str, FlextTypes.Core.JsonValue | datetime]
+        type SessionLifecycle = dict[str, datetime | bool | int]
+        type SessionValidation = dict[str, bool | datetime | str | dict[str, object]]
+        type ConcurrentSessions = list[dict[str, FlextTypes.Core.JsonValue | datetime]]
+
+    # =========================================================================
+    # TOKEN MANAGEMENT TYPES - Complex token handling types
+    # =========================================================================
+
+    class TokenManagement:
+        """Token management complex types."""
+
+        type TokenConfiguration = dict[
+            str, int | str | bool | dict[str, FlextTypes.Core.ConfigValue]
+        ]
+        type TokenPayload = dict[str, FlextTypes.Core.JsonValue | datetime | list[str]]
+        type TokenValidation = dict[str, bool | datetime | str | dict[str, object]]
+        type RefreshToken = dict[str, str | datetime | bool | dict[str, object]]
+        type AccessToken = dict[str, str | datetime | int | list[str]]
+        type TokenRevocation = dict[str, datetime | str | bool]
+
+    # =========================================================================
+    # AUTHORIZATION TYPES - Complex authorization and RBAC types
+    # =========================================================================
+
+    class Authorization:
+        """Authorization and RBAC complex types."""
+
+        type RoleDefinition = dict[
+            str, str | list[str] | dict[str, FlextTypes.Core.JsonValue]
+        ]
+        type PermissionSet = dict[str, bool | list[str] | dict[str, object]]
+        type AccessPolicy = dict[
+            str, FlextTypes.Core.JsonValue | list[dict[str, object]]
+        ]
+        type AuthorityMapping = dict[
+            str, list[str] | dict[str, FlextTypes.Core.JsonValue]
+        ]
+        type ResourceAccess = dict[
+            str, bool | list[str] | dict[str, FlextTypes.Core.JsonValue]
+        ]
+        type PolicyValidation = dict[str, bool | str | list[str] | dict[str, object]]
+
+    # =========================================================================
+    # SECURITY TYPES - Complex security and password types
+    # =========================================================================
+
+    class Security:
+        """Security and password complex types."""
+
+        type PasswordPolicy = dict[str, int | bool | list[str] | dict[str, object]]
+        type PasswordValidation = dict[str, bool | str | list[str]]
+        type SecurityConfiguration = dict[
+            str, FlextTypes.Core.ConfigValue | dict[str, object]
+        ]
+        type ThreatDetection = dict[str, bool | int | list[str] | dict[str, datetime]]
+        type AuditLog = dict[str, datetime | str | dict[str, FlextTypes.Core.JsonValue]]
+        type SecurityEvent = dict[
+            str, str | datetime | dict[str, FlextTypes.Core.JsonValue]
+        ]
+
+    # =========================================================================
+    # AUTHENTICATION RESPONSE TYPES - Complex response structures
+    # =========================================================================
+
+    # TypedDict definitions for structured responses
     class UserDict(TypedDict):
         """Type definition for user data in authentication responses."""
 
@@ -47,23 +185,28 @@ class FlextAuthTypes(FlextTypes):
     class AuthenticationResponseDict(TypedDict):
         """Type definition for authentication response."""
 
-        user: "FlextAuthTypes.UserDict"
-        session: "FlextAuthTypes.SessionDict"
+        user: FlextAuthTypes.UserDict
+        session: FlextAuthTypes.SessionDict
         jwt_token: NotRequired[str]  # Optional JWT token
         tokens: NotRequired[dict[str, str | int]]  # Optional tokens dict
         authenticated: bool
         success: bool
 
-    # Type aliases for common patterns
-    TokenDict = dict[str, str | datetime]
 
-    # Extend flext-core types for authentication domain
-    UserId = FlextTypes.Identifiers.Id
-    SessionId = FlextTypes.Identifiers.Id
-    TokenId = FlextTypes.Identifiers.Id
-    RoleId = FlextTypes.Identifiers.Id
+# =============================================================================
+# PUBLIC API EXPORTS - Auth TypeVars and types
+# =============================================================================
 
-
-__all__ = [
+__all__: list[str] = [
+    # Auth Types class
     "FlextAuthTypes",
+    # Auth-specific TypeVars
+    "TAuthCredential",
+    "TAuthPermission",
+    "TAuthPolicy",
+    "TAuthProvider",
+    "TAuthRole",
+    "TAuthSession",
+    "TAuthToken",
+    "TAuthUser",
 ]

@@ -69,5 +69,42 @@ class FlextAuthConstants(FlextConstants):
     EMAIL_TAKEN = "EMAIL_TAKEN"
     SESSION_NOT_FOUND = "SESSION_NOT_FOUND"
 
+    # Logging Configuration (consolidated from FlextAuthLoggingConstants)
+    ENABLE_AUDIT_LOGGING = True
+    LOG_AUTH_ATTEMPTS = True
+    LOG_AUTH_FAILURES = True
+    LOG_AUTH_SUCCESS = False  # Privacy consideration
+    LOG_TOKEN_CREATION = True
+    LOG_TOKEN_VALIDATION = False  # Privacy consideration
+    LOG_USER_CREATION = True
+    LOG_USER_DELETION = True
+    LOG_PERMISSION_CHANGES = True
+
+    # Performance tracking
+    TRACK_AUTH_PERFORMANCE = True
+    AUTH_PERFORMANCE_THRESHOLD_WARNING = 1000.0  # milliseconds
+    AUTH_PERFORMANCE_THRESHOLD_CRITICAL = 3000.0  # milliseconds
+
+    # Context information
+    INCLUDE_USER_ID = True
+    INCLUDE_SESSION_ID = True
+    INCLUDE_IP_ADDRESS = True
+    INCLUDE_USER_AGENT = False  # Privacy consideration
+    INCLUDE_REQUEST_ID = True
+
+    # Security logging
+    MASK_PASSWORDS = True
+    MASK_TOKENS = True
+    MASK_SESSION_IDS = True
+    LOG_VALIDATION_ERRORS = True
+    LOG_AUTHENTICATION_ERRORS = True
+    LOG_AUTHORIZATION_ERRORS = True
+    LOG_TOKEN_EXPIRY = True
+    LOG_SESSION_TIMEOUT = True
+
+    # Audit logging
+    AUDIT_LOG_LEVEL = "INFO"
+    AUDIT_LOG_FILE = "flext_auth_audit.log"
+
 
 __all__ = ["FlextAuthConstants"]

@@ -69,7 +69,15 @@ def demo_password_operations() -> None:
     try:
         # Create a user to demonstrate password operations
         demo_user = FlextAuthModels.User(
-            id="demo-password-user", username="password_demo", email="password@demo.com"
+            id="demo-password-user",
+            username="password_demo",
+            email="password@demo.com",
+            full_name="Password Demo User",
+            is_active=True,
+            failed_login_attempts=0,
+            locked_until=None,
+            last_login=None,
+            domain_events=[],
         )
 
         # Set password (this will hash it)

@@ -74,6 +74,12 @@ class TestFlextAuthRegistration:
             id="test-id",
             username="testuser",
             email="test@example.com",
+            full_name="Test User",
+            is_active=True,
+            failed_login_attempts=0,
+            locked_until=None,
+            last_login=None,
+            domain_events=[],
         )
 
         # Hash password
@@ -397,6 +403,12 @@ class TestFlextAuthModels:
             id="test-id",
             username="testuser",
             email="test@example.com",
+            full_name="Test User",
+            is_active=True,
+            failed_login_attempts=0,
+            locked_until=None,
+            last_login=None,
+            domain_events=[],
         )
 
         assert user.id == "test-id"
@@ -414,6 +426,10 @@ class TestFlextAuthModels:
             user_id="user-id",
             session_token="session-token-minimum-32-characters-long",
             expires_at=datetime.now(UTC) + timedelta(hours=2),
+            is_active=True,
+            ip_address="127.0.0.1",
+            user_agent="test-agent",
+            domain_events=[],
         )
 
         assert session.id == "session-id"

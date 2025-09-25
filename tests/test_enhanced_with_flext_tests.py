@@ -96,12 +96,14 @@ class UserData(TypedDict):
 
 
 # Type aliases for better readability and mypy compatibility
-AuthUserDict = dict[str, str | int | bool | list[str]]
+AuthUserDict = dict[str, str | int | bool] | list[str]
 AuthSessionDict = dict[str, str | int | bool]
-AuthDataDict = dict[
-    str,
-    str | int | bool | AuthUserDict | AuthSessionDict | FlextTypes.Core.Headers,
-]
+AuthDataDict = (
+    dict[str, str | int | bool]
+    | AuthUserDict
+    | AuthSessionDict
+    | FlextTypes.Core.Headers
+)
 
 
 def sanitize_username(name: str, prefix: str = "") -> str:

@@ -83,7 +83,7 @@ class TestCliCoverage:
         reason="Test mocks incorrect behavior - create_for_environment raises exceptions, not FlextResult"
     )
     @patch("flext_auth.cli.FlextAuthConfig.create_for_environment")
-    def test_authenticate_user_config_failure(self, mock_config: MagicMock) -> None:
+    def test_authenticate_with_config_failure(self, mock_config: MagicMock) -> None:
         """Test authentication with config failure."""
         mock_config.return_value = FlextResult.fail("Config error")
 
@@ -243,7 +243,7 @@ class TestCliCoverage:
         reason="Test mocks incorrect behavior - create_for_environment raises exceptions, not FlextResult"
     )
     @patch("flext_auth.cli.FlextAuthConfig.create_for_environment")
-    def test_register_user_config_failure(self, mock_config: MagicMock) -> None:
+    def test_register_with_config_failure(self, mock_config: MagicMock) -> None:
         """Test registration with config failure."""
         mock_config.return_value = FlextResult.fail("Config error")
 
@@ -351,7 +351,7 @@ class TestCliCoverage:
         assert "Summary error" in str(result.error)
 
     @patch("flext_auth.cli.FlextAuthConfig.update_global_from_cli")
-    def test_manage_config_update(self, mock_update: MagicMock) -> None:
+    def test_config_update_success(self, mock_update: MagicMock) -> None:
         """Test config management update."""
         # Mock config update
         mock_config_instance = MagicMock()
@@ -372,7 +372,7 @@ class TestCliCoverage:
 
     @pytest.mark.skip(reason="Test mocks obsolete methods - CLI implementation changed")
     @patch("flext_auth.cli.FlextAuthConfig.update_global_from_cli")
-    def test_manage_config_update_failure(self, mock_update: MagicMock) -> None:
+    def test_config_update_failure(self, mock_update: MagicMock) -> None:
         """Test config management update failure."""
         mock_update.return_value = FlextResult.fail("Update error")
 

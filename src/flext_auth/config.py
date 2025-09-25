@@ -1,4 +1,8 @@
-"""FLEXT - Type-safe authentication configuration using flext-core patterns.
+"""FLEXT Auth Configuration - Single unified class following FLEXT standards.
+
+Provides unified configuration management for the FLEXT Auth ecosystem
+using Pydantic Settings for environment variable support.
+Single FlextAuthConfig class extending FlextConfig with all defaults from FlextAuthConstants.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -7,628 +11,228 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import secrets
+from datetime import UTC, datetime
 from typing import ClassVar
 
-from pydantic import Field, field_validator
-from pydantic_settings import SettingsConfigDict
+from pydantic import (
+    Field,
+    SecretStr,
+    field_validator,
+    model_validator,
+)
 
 from flext_auth.constants import FlextAuthConstants
 from flext_core import (
     FlextConfig,
-    FlextConstants,
     FlextResult,
+    FlextService,
 )
 
 
-class FlextAuthLoggingConstants(FlextConstants):
-    """Authentication-specific logging constants for FLEXT Auth module.
-
-    Provides domain-specific logging defaults, levels, and configuration
-    options tailored for authentication operations and security logging.
-    """
-
-    # Authentication-specific log levels
-    DEFAULT_LEVEL = FlextConstants.Config.LogLevel.INFO
-    AUTH_OPERATIONS_LEVEL = FlextConstants.Config.LogLevel.INFO
-    SECURITY_EVENTS_LEVEL = FlextConstants.Config.LogLevel.WARNING
-    TOKEN_OPERATIONS_LEVEL = FlextConstants.Config.LogLevel.DEBUG
-    USER_OPERATIONS_LEVEL = FlextConstants.Config.LogLevel.INFO
-
-    # Security-specific logging configuration
-    MASK_PASSWORDS = True
-    MASK_TOKENS = True
-    MASK_SESSION_IDS = True
-    LOG_AUTH_ATTEMPTS = True
-    LOG_AUTH_FAILURES = True
-    LOG_AUTH_SUCCESS = False  # Don't log successful auth by default for privacy
-    LOG_TOKEN_CREATION = True
-    LOG_TOKEN_VALIDATION = False  # Don't log token validation by default
-    LOG_USER_CREATION = True
-    LOG_USER_DELETION = True
-    LOG_PERMISSION_CHANGES = True
-
-    # Performance tracking for auth operations
-    TRACK_AUTH_PERFORMANCE = True
-    AUTH_PERFORMANCE_THRESHOLD_WARNING = (
-        FlextConstants.Performance.AUTH_PERFORMANCE_WARNING_MS
-    )
-    AUTH_PERFORMANCE_THRESHOLD_CRITICAL = (
-        FlextConstants.Performance.AUTH_PERFORMANCE_CRITICAL_MS
-    )
-
-    # Context information to include
-    INCLUDE_USER_ID = True
-    INCLUDE_SESSION_ID = True
-    INCLUDE_IP_ADDRESS = True
-    INCLUDE_USER_AGENT = False  # Privacy consideration
-    INCLUDE_REQUEST_ID = True
-
-    # Error logging specifics
-    LOG_VALIDATION_ERRORS = True
-    LOG_AUTHENTICATION_ERRORS = True
-    LOG_AUTHORIZATION_ERRORS = True
-    LOG_TOKEN_EXPIRY = True
-    LOG_SESSION_TIMEOUT = True
-
-    # Audit logging
-    ENABLE_AUDIT_LOGGING = True
-    AUDIT_LOG_LEVEL = FlextConstants.Config.LogLevel.INFO
-    AUDIT_LOG_FILE = "flext_auth_audit.log"
-
-    # Message templates for auth operations
-    class Messages:
-        """Authentication-specific log message templates."""
-
-        # Authentication messages
-        AUTH_ATTEMPT = "Authentication attempt for user {user_id} from {ip_address}"
-        AUTH_SUCCESS = "Authentication successful for user {user_id}"
-        AUTH_FAILED = (
-            "Authentication failed for user {user_id} from {ip_address}: {reason}"
-        )
-        AUTH_BLOCKED = (
-            "Authentication blocked for user {user_id} from {ip_address}: {reason}"
-        )
-
-        # Token messages
-        TOKEN_CREATED = "Token created for user {user_id}, type: {token_type}"
-        TOKEN_VALIDATED = "Token validated for user {user_id}"
-        TOKEN_EXPIRED = "Token expired for user {user_id}"
-        TOKEN_REVOKED = "Token revoked for user {user_id}"
-        TOKEN_REFRESH = "Token refreshed for user {user_id}"
-
-        # User management messages
-        USER_CREATED = "User created: {user_id}"
-        USER_UPDATED = "User updated: {user_id}"
-        USER_DELETED = "User deleted: {user_id}"
-        USER_LOCKED = "User locked: {user_id}"
-        USER_UNLOCKED = "User unlocked: {user_id}"
-
-        # Permission messages
-        PERMISSION_GRANTED = "Permission granted: {permission} to user {user_id}"
-        PERMISSION_REVOKED = "Permission revoked: {permission} from user {user_id}"
-        ROLE_ASSIGNED = "Role assigned: {role} to user {user_id}"
-        ROLE_REMOVED = "Role removed: {role} from user {user_id}"
-
-        # Session messages
-        SESSION_CREATED = "Session created for user {user_id}"
-        SESSION_DESTROYED = "Session destroyed for user {user_id}"
-        SESSION_EXPIRED = "Session expired for user {user_id}"
-        SESSION_EXTENDED = "Session extended for user {user_id}"
-
-        # Security messages
-        SECURITY_VIOLATION = "Security violation: {violation_type} for user {user_id}"
-        SUSPICIOUS_ACTIVITY = (
-            "Suspicious activity detected for user {user_id}: {activity}"
-        )
-        BRUTE_FORCE_ATTEMPT = "Brute force attempt detected from {ip_address}"
-
-        # Performance messages
-        AUTH_SLOW = "Authentication operation slow: {operation} took {duration}ms for user {user_id}"
-        TOKEN_SLOW = (
-            "Token operation slow: {operation} took {duration}ms for user {user_id}"
-        )
-
-        # Error messages
-        AUTH_ERROR = "Authentication error: {error} for user {user_id}"
-        TOKEN_ERROR = "Token error: {error} for user {user_id}"
-        USER_ERROR = "User management error: {error} for user {user_id}"
-        PERMISSION_ERROR = "Permission error: {error} for user {user_id}"
-
-    # Environment-specific overrides for auth logging
-    class Environment:
-        """Environment-specific authentication logging configuration."""
-
-        DEVELOPMENT: ClassVar[dict[str, object]] = {
-            "log_auth_success": True,  # Log successful auth in dev
-            "log_token_validation": True,  # Log token validation in dev
-            "include_user_agent": True,  # Include user agent in dev
-            "audit_log_level": FlextConstants.Config.LogLevel.DEBUG,
-        }
-
-        STAGING: ClassVar[dict[str, object]] = {
-            "log_auth_success": False,
-            "log_token_validation": False,
-            "include_user_agent": False,
-            "audit_log_level": FlextConstants.Config.LogLevel.INFO,
-        }
-
-        PRODUCTION: ClassVar[dict[str, object]] = {
-            "log_auth_success": False,
-            "log_token_validation": False,
-            "include_user_agent": False,
-            "audit_log_level": FlextConstants.Config.LogLevel.WARNING,
-        }
-
-        TESTING: ClassVar[dict[str, object]] = {
-            "log_auth_success": True,
-            "log_token_validation": True,
-            "include_user_agent": True,
-            "audit_log_level": FlextConstants.Config.LogLevel.DEBUG,
-        }
-
-
 class FlextAuthConfig(FlextConfig):
-    """Authentication configuration class extending FlextConfig with singleton pattern.
+    """Single Pydantic 2 Settings class for flext-auth extending FlextConfig.
 
-    This class provides authentication-specific configuration management,
-    extending the base FlextConfig with authentication-specific fields and validation rules.
-    It uses the singleton pattern to ensure a single source of truth for authentication
-    configuration across the entire application.
+    Follows standardized pattern:
+    - Extends FlextConfig from flext-core
+    - No nested classes within Config
+    - All defaults from FlextAuthConstants
+    - Dependency injection integration with flext-core container
+    - Uses Pydantic 2.11+ features (SecretStr for secrets)
     """
 
-    # Class variable for singleton pattern
+    # Singleton pattern attributes
     _global_instance: ClassVar[FlextAuthConfig | None] = None
+    _lock = FlextConfig._lock  # Reuse the lock from parent class
 
-    # Authentication-specific logging configuration using FlextAuthLoggingConstants
-    enable_audit_logging: bool = Field(
-        default=FlextAuthLoggingConstants.ENABLE_AUDIT_LOGGING,
-        description="Enable detailed audit logging",
+    # JWT Configuration using FlextAuthConstants for defaults
+    jwt_auth_secret: SecretStr = Field(
+        default_factory=lambda: SecretStr(FlextAuthConstants.JWT_SECRET_KEY),
+        description="JWT secret key for token signing (sensitive)",
     )
-
-    # Additional authentication logging fields using FlextAuthLoggingConstants
-    log_auth_attempts: bool = Field(
-        default=FlextAuthLoggingConstants.LOG_AUTH_ATTEMPTS,
-        description="Log authentication attempts",
-    )
-
-    log_auth_failures: bool = Field(
-        default=FlextAuthLoggingConstants.LOG_AUTH_FAILURES,
-        description="Log authentication failures",
-    )
-
-    log_auth_success: bool = Field(
-        default=FlextAuthLoggingConstants.LOG_AUTH_SUCCESS,
-        description="Log successful authentications",
-    )
-
-    log_token_creation: bool = Field(
-        default=FlextAuthLoggingConstants.LOG_TOKEN_CREATION,
-        description="Log token creation events",
-    )
-
-    log_token_validation: bool = Field(
-        default=FlextAuthLoggingConstants.LOG_TOKEN_VALIDATION,
-        description="Log token validation events",
-    )
-
-    log_user_creation: bool = Field(
-        default=FlextAuthLoggingConstants.LOG_USER_CREATION,
-        description="Log user creation events",
-    )
-
-    log_user_deletion: bool = Field(
-        default=FlextAuthLoggingConstants.LOG_USER_DELETION,
-        description="Log user deletion events",
-    )
-
-    log_permission_changes: bool = Field(
-        default=FlextAuthLoggingConstants.LOG_PERMISSION_CHANGES,
-        description="Log permission changes",
-    )
-
-    # Security configuration
-    max_login_attempts: int = Field(
-        default=5,
-        ge=1,
-        description="Maximum failed login attempts before account lockout",
-    )
-
-    # JWT Configuration from FlextAuthConstants (jwt_secret inherited from FlextConfig)
 
     jwt_algorithm: str = Field(
-        default="HS256",
+        default=FlextAuthConstants.JWT_DEFAULT_ALGORITHM,
         description="JWT signing algorithm",
     )
 
     jwt_expiry_minutes: int = Field(
-        default=30,
+        default=FlextAuthConstants.JWT_DEFAULT_EXPIRY_MINUTES,
         ge=1,
+        le=FlextAuthConstants.JWT_MAX_EXPIRY_MINUTES,
         description="JWT token expiry time in minutes",
     )
 
     jwt_issuer: str = Field(
-        default="",
-        description="JWT token issuer",
+        default=FlextAuthConstants.JWT_ISSUER_CLAIM, description="JWT token issuer"
     )
 
     jwt_audience: str = Field(
-        default="",
-        description="JWT token audience",
+        default=FlextAuthConstants.JWT_AUDIENCE_CLAIM, description="JWT token audience"
     )
 
-    # Password & Session Configuration
+    # Password Configuration using FlextAuthConstants for defaults
     bcrypt_rounds: int = Field(
-        default=12,
-        ge=10,
+        default=FlextAuthConstants.BCRYPT_ROUNDS,
+        ge=FlextAuthConstants.MIN_BCRYPT_ROUNDS,
+        le=FlextAuthConstants.MAX_BCRYPT_ROUNDS,
         description="Bcrypt rounds for password hashing",
     )
 
-    lockout_duration_minutes: int = Field(
-        default=30,
-        description="Account lockout duration in minutes",
-    )
-
-    session_expiry_hours: int = Field(
-        default=2,
-        description="Session expiry time in hours",
-    )
-
-    session_expiry_minutes: int = Field(
-        default=120,
-        description="Session expiry time in minutes (alternative to hours)",
-    )
-
-    enable_rate_limiting: bool = Field(
-        default=False,
-        description="Enable rate limiting for authentication endpoints",
-    )
-
     min_password_length: int = Field(
-        default=8,
+        default=FlextAuthConstants.MIN_PASSWORD_LENGTH,
         ge=6,
         description="Minimum password length",
     )
 
     max_password_length: int = Field(
-        default=256,
+        default=FlextAuthConstants.MAX_PASSWORD_LENGTH,
         description="Maximum password length",
     )
 
-    # Security logging configuration
+    # Security Configuration using FlextAuthConstants for defaults
+    max_login_attempts: int = Field(
+        default=FlextAuthConstants.MAX_LOGIN_ATTEMPTS,
+        ge=1,
+        le=10,
+        description="Maximum failed login attempts before account lockout",
+    )
+
+    lockout_duration_minutes: int = Field(
+        default=FlextAuthConstants.LOCKOUT_DURATION_MINUTES,
+        ge=1,
+        description="Account lockout duration in minutes",
+    )
+
+    # Session Configuration using FlextAuthConstants for defaults
+    session_expiry_minutes: int = Field(
+        default=FlextAuthConstants.DEFAULT_SESSION_EXPIRY_MINUTES,
+        ge=1,
+        le=FlextAuthConstants.MAX_SESSION_EXPIRY_MINUTES,
+        description="Session expiry time in minutes",
+    )
+
+    max_sessions_per_user: int = Field(
+        default=FlextAuthConstants.MAX_SESSIONS_PER_USER,
+        ge=1,
+        description="Maximum sessions per user",
+    )
+
+    # Logging Configuration using FlextAuthConstants for defaults
+    enable_audit_logging: bool = Field(
+        default=FlextAuthConstants.ENABLE_AUDIT_LOGGING,
+        description="Enable detailed audit logging",
+    )
+
+    log_auth_attempts: bool = Field(
+        default=FlextAuthConstants.LOG_AUTH_ATTEMPTS,
+        description="Log authentication attempts",
+    )
+
+    log_auth_failures: bool = Field(
+        default=FlextAuthConstants.LOG_AUTH_FAILURES,
+        description="Log authentication failures",
+    )
+
+    log_auth_success: bool = Field(
+        default=FlextAuthConstants.LOG_AUTH_SUCCESS,
+        description="Log successful authentications",
+    )
+
     mask_passwords: bool = Field(
-        default=FlextAuthLoggingConstants.MASK_PASSWORDS,
+        default=FlextAuthConstants.MASK_PASSWORDS,
         description="Mask passwords in log messages",
     )
 
     mask_tokens: bool = Field(
-        default=FlextAuthLoggingConstants.MASK_TOKENS,
+        default=FlextAuthConstants.MASK_TOKENS,
         description="Mask tokens in log messages",
     )
 
-    mask_session_ids: bool = Field(
-        default=FlextAuthLoggingConstants.MASK_SESSION_IDS,
-        description="Mask session IDs in log messages",
-    )
-
-    # Performance tracking for auth operations
+    # Performance Configuration using FlextAuthConstants for defaults
     track_auth_performance: bool = Field(
-        default=FlextAuthLoggingConstants.TRACK_AUTH_PERFORMANCE,
+        default=FlextAuthConstants.TRACK_AUTH_PERFORMANCE,
         description="Track authentication performance",
     )
 
     auth_performance_threshold_warning: float = Field(
-        default=FlextAuthLoggingConstants.AUTH_PERFORMANCE_THRESHOLD_WARNING,
+        default=FlextAuthConstants.AUTH_PERFORMANCE_THRESHOLD_WARNING,
+        ge=0.0,
         description="Authentication performance warning threshold in milliseconds",
     )
 
-    auth_performance_threshold_critical: float = Field(
-        default=FlextAuthLoggingConstants.AUTH_PERFORMANCE_THRESHOLD_CRITICAL,
-        description="Authentication performance critical threshold in milliseconds",
-    )
+    @property
+    def session_expiry_hours(self) -> float:
+        """Get session expiry time in hours (calculated from minutes)."""
+        return self.session_expiry_minutes / 60.0
 
-    # Context information to include in logs
-    include_user_id: bool = Field(
-        default=FlextAuthLoggingConstants.INCLUDE_USER_ID,
-        description="Include user ID in log messages",
-    )
+    @session_expiry_hours.setter
+    def session_expiry_hours(self, value: float) -> None:
+        """Set session expiry time from hours (converts to minutes)."""
+        self.session_expiry_minutes = int(value * 60)
 
-    include_session_id: bool = Field(
-        default=FlextAuthLoggingConstants.INCLUDE_SESSION_ID,
-        description="Include session ID in log messages",
-    )
+    # Pydantic 2.11 field validators
+    @field_validator("jwt_algorithm")
+    @classmethod
+    def validate_jwt_algorithm(cls, v: str) -> str:
+        """Validate JWT algorithm is allowed."""
+        if v not in FlextAuthConstants.JWT_ALLOWED_ALGORITHMS:
+            valid_algorithms = ", ".join(FlextAuthConstants.JWT_ALLOWED_ALGORITHMS)
+            msg = f"Invalid JWT algorithm: {v}. Must be one of: {valid_algorithms}"
+            raise ValueError(msg)
+        return v
 
-    include_ip_address: bool = Field(
-        default=FlextAuthLoggingConstants.INCLUDE_IP_ADDRESS,
-        description="Include IP address in log messages",
-    )
+    @field_validator("jwt_auth_secret")
+    @classmethod
+    def validate_jwt_secret(cls, v: SecretStr) -> SecretStr:
+        """Validate and generate JWT secret if empty."""
+        secret_value = v.get_secret_value()
+        if not secret_value or not secret_value.strip():
+            # Generate a secure JWT secret
+            return SecretStr(secrets.token_urlsafe(32))
 
-    include_user_agent: bool = Field(
-        default=FlextAuthLoggingConstants.INCLUDE_USER_AGENT,
-        description="Include user agent in log messages",
-    )
+        if len(secret_value) < FlextAuthConstants.MIN_SECRET_KEY_LENGTH:
+            msg = f"JWT secret must be at least {FlextAuthConstants.MIN_SECRET_KEY_LENGTH} characters"
+            raise ValueError(msg)
 
-    include_request_id: bool = Field(
-        default=FlextAuthLoggingConstants.INCLUDE_REQUEST_ID,
-        description="Include request ID in log messages",
-    )
-
-    # Error logging configuration
-    log_validation_errors: bool = Field(
-        default=FlextAuthLoggingConstants.LOG_VALIDATION_ERRORS,
-        description="Log validation errors",
-    )
-
-    log_authentication_errors: bool = Field(
-        default=FlextAuthLoggingConstants.LOG_AUTHENTICATION_ERRORS,
-        description="Log authentication errors",
-    )
-
-    log_authorization_errors: bool = Field(
-        default=FlextAuthLoggingConstants.LOG_AUTHORIZATION_ERRORS,
-        description="Log authorization errors",
-    )
-
-    log_token_expiry: bool = Field(
-        default=FlextAuthLoggingConstants.LOG_TOKEN_EXPIRY,
-        description="Log token expiry events",
-    )
-
-    log_session_timeout: bool = Field(
-        default=FlextAuthLoggingConstants.LOG_SESSION_TIMEOUT,
-        description="Log session timeout events",
-    )
-
-    # Audit logging configuration
-    audit_log_level: str = Field(
-        default=FlextAuthLoggingConstants.AUDIT_LOG_LEVEL,
-        description="Audit log level",
-    )
-
-    audit_log_file: str = Field(
-        default=FlextAuthLoggingConstants.AUDIT_LOG_FILE,
-        description="Audit log file path",
-    )
-
-    model_config = SettingsConfigDict(
-        env_prefix="FLEXT_AUTH_",
-        case_sensitive=False,
-        validate_default=True,
-        arbitrary_types_allowed=True,
-        populate_by_name=True,
-    )
+        return v
 
     @field_validator("min_password_length")
     @classmethod
     def validate_min_password_length(cls, v: int) -> int:
         """Validate minimum password length."""
         if v < FlextAuthConstants.MIN_PASSWORD_LENGTH:
-            msg = "Input should be greater than or equal to 6"
+            msg = f"Password minimum length must be at least {FlextAuthConstants.MIN_PASSWORD_LENGTH}"
             raise ValueError(msg)
         return v
 
-    @field_validator("jwt_expiry_minutes", "session_expiry_hours")
-    @classmethod
-    def validate_positive(cls, v: int) -> int:
-        """Validate positive values for time-based fields."""
-        if v <= 0:
-            msg = "Value must be greater than 0"
+    @model_validator(mode="after")
+    def validate_password_length_consistency(self) -> FlextAuthConfig:
+        """Validate password length consistency."""
+        if self.min_password_length > self.max_password_length:
+            msg = (
+                "Minimum password length cannot be greater than maximum password length"
+            )
             raise ValueError(msg)
-        return v
+        return self
 
-    @field_validator("bcrypt_rounds")
-    @classmethod
-    def validate_bcrypt_rounds(cls, v: int) -> int:
-        """Validate bcrypt rounds for security."""
-        if v < FlextAuthConstants.MIN_BCRYPT_ROUNDS:
-            msg = "Bcrypt rounds must be at least 10"
+    @model_validator(mode="after")
+    def validate_jwt_expiry_reasonable(self) -> FlextAuthConfig:
+        """Validate JWT expiry is reasonable compared to session expiry."""
+        if self.jwt_expiry_minutes > self.session_expiry_minutes:
+            msg = "JWT expiry should not exceed session expiry"
             raise ValueError(msg)
-        return v
+        return self
 
-    @field_validator("jwt_secret")
-    @classmethod
-    def validate_jwt_secret(cls, v: str) -> str:
-        """Validate and generate JWT secret if empty."""
-        if not v or not v.strip():
-            # Generate a secure JWT secret
-            return secrets.token_urlsafe(32)
-        return v
-
-    @field_validator("max_login_attempts")
-    @classmethod
-    def validate_max_login_attempts(cls, v: int) -> int:
-        """Validate maximum login attempts."""
-        if v < 1:
-            msg = "Max login attempts must be at least 1"
-            raise ValueError(msg)
-        return v
-
-    def get_auth_logging_config(self) -> dict[str, object]:
-        """Get authentication-specific logging configuration dictionary."""
+    # Auth-specific methods
+    def get_jwt_settings(self) -> dict[str, object]:
+        """Get JWT-related settings (without exposing secrets)."""
         return {
-            "enable_audit_logging": self.enable_audit_logging,
-            "log_auth_attempts": self.log_auth_attempts,
-            "log_auth_failures": self.log_auth_failures,
-            "log_auth_success": self.log_auth_success,
-            "log_token_creation": self.log_token_creation,
-            "log_token_validation": self.log_token_validation,
-            "log_user_creation": self.log_user_creation,
-            "log_user_deletion": self.log_user_deletion,
-            "log_permission_changes": self.log_permission_changes,
-            "mask_passwords": self.mask_passwords,
-            "mask_tokens": self.mask_tokens,
-            "mask_session_ids": self.mask_session_ids,
-            "track_auth_performance": self.track_auth_performance,
-            "auth_performance_threshold_warning": self.auth_performance_threshold_warning,
-            "auth_performance_threshold_critical": self.auth_performance_threshold_critical,
-            "include_user_id": self.include_user_id,
-            "include_session_id": self.include_session_id,
-            "include_ip_address": self.include_ip_address,
-            "include_user_agent": self.include_user_agent,
-            "include_request_id": self.include_request_id,
-            "log_validation_errors": self.log_validation_errors,
-            "log_authentication_errors": self.log_authentication_errors,
-            "log_authorization_errors": self.log_authorization_errors,
-            "log_token_expiry": self.log_token_expiry,
-            "log_session_timeout": self.log_session_timeout,
-            "audit_log_level": self.audit_log_level,
-            "audit_log_file": self.audit_log_file,
+            "algorithm": self.jwt_algorithm,
+            "expiry_minutes": self.jwt_expiry_minutes,
+            "issuer": self.jwt_issuer,
+            "audience": self.jwt_audience,
+            "secret_configured": self.jwt_auth_secret is not None,
         }
-
-    @classmethod
-    def create_from_cli_params(
-        cls,
-        jwt_expiry: int | None = None,
-        bcrypt_rounds: int | None = None,
-        environment: str | None = None,
-        max_attempts: int | None = None,
-        session_expiry: int | None = None,
-    ) -> FlextResult[FlextAuthConfig]:
-        """Create configuration from CLI parameters."""
-        try:
-            # Create base config and then update specific fields
-            config = cls()
-
-            if jwt_expiry is not None:
-                config.jwt_expiry_minutes = jwt_expiry
-            if bcrypt_rounds is not None:
-                config.bcrypt_rounds = bcrypt_rounds
-            if environment is not None:
-                config.environment = environment
-            if max_attempts is not None:
-                config.max_login_attempts = max_attempts
-            if session_expiry is not None:
-                config.session_expiry_minutes = session_expiry
-
-            return FlextResult[FlextAuthConfig].ok(config)
-        except Exception as e:
-            return FlextResult[FlextAuthConfig].fail(
-                f"Failed to create config from CLI params: {e}"
-            )
-
-    @classmethod
-    def update_global_from_cli(
-        cls,
-        jwt_expiry: int | None = None,
-        bcrypt_rounds: int | None = None,
-        environment: str | None = None,
-        max_attempts: int | None = None,
-        session_expiry: int | None = None,
-    ) -> FlextResult[None]:
-        """Update global configuration from CLI parameters."""
-        try:
-            # Get current global instance
-            config = cls.get_global_instance()
-
-            # Update fields if provided
-            if jwt_expiry is not None:
-                config.jwt_expiry_minutes = jwt_expiry
-            if bcrypt_rounds is not None:
-                config.bcrypt_rounds = bcrypt_rounds
-            if environment is not None:
-                config.environment = environment
-            if max_attempts is not None:
-                config.max_login_attempts = max_attempts
-            if session_expiry is not None:
-                config.session_expiry_hours = session_expiry
-
-            # Set the updated config as global instance
-            cls.set_global_instance(config)
-
-            return FlextResult[None].ok(None)
-        except Exception as e:
-            return FlextResult[None].fail(f"Failed to update global config: {e}")
-
-    @classmethod
-    def get_global_cli_summary(cls) -> FlextResult[dict[str, object]]:
-        """Get global CLI configuration summary."""
-        try:
-            config = cls.get_global_instance()
-            summary: dict[str, object] = {
-                "max_login_attempts": config.max_login_attempts,
-                "jwt_expiry": config.jwt_expiry_minutes,
-                "bcrypt_rounds": config.bcrypt_rounds,
-                "environment": "development",
-            }
-            return FlextResult[dict[str, object]].ok(summary)
-        except Exception as e:
-            return FlextResult[dict[str, object]].fail(
-                f"Failed to get CLI summary: {e}"
-            )
-
-    @classmethod
-    def get_global_instance(cls) -> FlextAuthConfig:
-        """Get global singleton instance of FlextAuthConfig."""
-        if not hasattr(cls, "_global_instance") or cls._global_instance is None:
-            cls._global_instance = cls()
-        return cls._global_instance
-
-    @classmethod
-    def create_for_environment(
-        cls, environment: str, **overrides: object
-    ) -> FlextAuthConfig:
-        """Create configuration for specific environment with overrides."""
-        # Create config with environment and overrides - Pydantic will validate environment
-        config_data: dict[str, object] = {"environment": environment, **overrides}
-        return cls.model_validate(config_data)
-
-    @classmethod
-    def create_with_overrides(cls, **overrides: object) -> FlextResult[FlextAuthConfig]:
-        """Create configuration with specific overrides."""
-        try:
-            # Create base config and apply overrides using model_copy with update
-            config = cls()
-            if overrides:
-                config = config.model_copy(update=overrides)
-            return FlextResult[FlextAuthConfig].ok(config)
-        except Exception as e:
-            return FlextResult[FlextAuthConfig].fail(
-                f"Failed to create config with overrides: {e}"
-            )
-
-    @classmethod
-    def get_or_create_global(cls, **overrides: object) -> FlextResult[FlextAuthConfig]:
-        """Get or create global instance with optional overrides."""
-        try:
-            if overrides:
-                # Handle JWT secret generation if empty
-                if "jwt_secret" in overrides and (
-                    not overrides["jwt_secret"]
-                    or not str(overrides["jwt_secret"]).strip()
-                ):
-                    overrides["jwt_secret"] = secrets.token_urlsafe(32)
-
-                # Create base config and apply overrides using model_copy with update
-                config = cls()
-                config = config.model_copy(update=overrides)
-                cls._global_instance = config
-                return FlextResult[FlextAuthConfig].ok(config)
-            return FlextResult[FlextAuthConfig].ok(cls.get_global_instance())
-        except Exception as e:
-            return FlextResult[FlextAuthConfig].fail(
-                f"Failed to get or create global instance: {e}"
-            )
-
-    @classmethod
-    def set_global_instance(cls, instance: FlextConfig) -> None:
-        """Set global instance with type validation."""
-        if not isinstance(instance, FlextAuthConfig):
-            msg = "config must be an instance of FlextAuthConfig"
-            raise TypeError(msg)
-        cls._global_instance = instance
-
-    def validate_configuration(self) -> FlextResult[None]:
-        """Validate configuration settings."""
-        session_minutes = (
-            self.session_expiry_minutes
-            if hasattr(self, "session_expiry_minutes") and self.session_expiry_minutes
-            else self.session_expiry_hours * 60
-        )
-
-        if self.jwt_expiry_minutes > (session_minutes * 2):
-            return FlextResult[None].fail(
-                "JWT expiry should not exceed twice the session expiry"
-            )
-        return FlextResult[None].ok(None)
 
     def get_security_settings(self) -> dict[str, object]:
         """Get security-related settings."""
@@ -637,22 +241,33 @@ class FlextAuthConfig(FlextConfig):
             "max_login_attempts": self.max_login_attempts,
             "lockout_duration_minutes": self.lockout_duration_minutes,
             "min_password_length": self.min_password_length,
-            "max_password_length": getattr(self, "max_password_length", 256),
-            "require_password_complexity": getattr(
-                self, "require_password_complexity", True
-            ),
-            "min_password_score": getattr(self, "min_password_score", 3),
+            "max_password_length": self.max_password_length,
         }
 
-    def get_jwt_settings(self) -> dict[str, object]:
-        """Get JWT-related settings."""
+    def get_auth_logging_config(self) -> dict[str, object]:
+        """Get authentication-specific logging configuration."""
         return {
-            "jwt_expiry_minutes": self.jwt_expiry_minutes,
-            "jwt_algorithm": self.jwt_algorithm,
-            "jwt_issuer": self.jwt_issuer,
-            "jwt_audience": self.jwt_audience,
-            "jwt_secret_length": len(self.jwt_secret),
+            "enable_audit_logging": self.enable_audit_logging,
+            "log_auth_attempts": self.log_auth_attempts,
+            "log_auth_failures": self.log_auth_failures,
+            "log_auth_success": self.log_auth_success,
+            "mask_passwords": self.mask_passwords,
+            "mask_tokens": self.mask_tokens,
+            "track_auth_performance": self.track_auth_performance,
+            "auth_performance_threshold_warning": self.auth_performance_threshold_warning,
         }
+
+    @classmethod
+    def create_for_environment(
+        cls, environment: str, **overrides: object
+    ) -> FlextAuthConfig:
+        """Create configuration for specific environment."""
+        return cls(environment=environment, **overrides)
+
+    @classmethod
+    def create_default(cls) -> FlextAuthConfig:
+        """Create default configuration instance."""
+        return cls()
 
     def validate_business_rules(self) -> FlextResult[None]:
         """Validate business rules for authentication configuration."""
@@ -660,7 +275,7 @@ class FlextAuthConfig(FlextConfig):
             return FlextResult[None].fail("Password minimum length must be at least 8")
 
         if self.max_login_attempts > FlextAuthConstants.MAX_LOGIN_ATTEMPTS:
-            return FlextResult[None].fail("Max login attempts cannot exceed 10")
+            return FlextResult[None].fail("Max login attempts cannot exceed 5")
 
         if self.bcrypt_rounds < FlextAuthConstants.MIN_BCRYPT_ROUNDS:
             return FlextResult[None].fail(
@@ -672,12 +287,67 @@ class FlextAuthConfig(FlextConfig):
 
         return FlextResult[None].ok(None)
 
+    # Singleton pattern override for proper typing
     @classmethod
-    def _reset_global_instance(cls) -> None:
-        """Reset global instance (for testing)."""
-        cls._global_instance = None
+    def get_global_instance(cls) -> FlextAuthConfig:
+        """Get the global singleton instance of FlextAuthConfig."""
+        if cls._global_instance is None:
+            with cls._lock:
+                if cls._global_instance is None:
+                    cls._global_instance = cls()
+        return cls._global_instance  # type: ignore[return-value]  # type: ignore[return-value]
+
+    @classmethod
+    def get_or_create_global(cls, **kwargs: object) -> FlextResult[FlextAuthConfig]:
+        """Get or create the global singleton instance with optional parameters."""
+        try:
+            if cls._global_instance is None:
+                with cls._lock:
+                    if cls._global_instance is None:
+                        cls._global_instance = cls(**kwargs)
+            return FlextResult[FlextAuthConfig].ok(cls._global_instance)
+        except Exception as e:
+            return FlextResult[FlextAuthConfig].fail(f"Failed to create FlextAuthConfig: {e}")
+
+    def validate_configuration(self) -> FlextResult[None]:
+        """Validate the current configuration instance."""
+        return self.validate_business_rules()
+
+
+class FlextAuthConfigService(FlextService):
+    """Service class for FlextAuthConfig operations."""
+
+    def __init__(self) -> None:
+        """Initialize auth config service."""
+        super().__init__()
+        self._config = FlextAuthConfig.create_default()
+
+    def execute(self) -> FlextResult[dict[str, object]]:
+        """Execute auth config service operation."""
+        return FlextResult[dict[str, object]].ok({
+            "status": "operational",
+            "service": "flext-auth-config",
+            "timestamp": datetime.now(UTC).isoformat(),
+            "version": "2.0.0",
+            "config": self._config.model_dump(
+                exclude={"jwt_secret"}
+            ),  # Exclude secrets
+        })
+
+    async def execute_async(self) -> FlextResult[dict[str, object]]:
+        """Execute auth config service operation asynchronously."""
+        return FlextResult[dict[str, object]].ok({
+            "status": "operational",
+            "service": "flext-auth-config",
+            "timestamp": datetime.now(UTC).isoformat(),
+            "version": "2.0.0",
+            "config": self._config.model_dump(
+                exclude={"jwt_secret"}
+            ),  # Exclude secrets
+        })
 
 
 __all__ = [
     "FlextAuthConfig",
+    "FlextAuthConfigService",
 ]

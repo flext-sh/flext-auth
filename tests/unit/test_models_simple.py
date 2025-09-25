@@ -148,6 +148,10 @@ class TestUserCreateUserMethod:
                 user_id="test-user-id",
                 session_token="short",  # Set invalid token during creation
                 expires_at=datetime.now(UTC) + timedelta(hours=1),
+                is_active=True,
+                ip_address="127.0.0.1",
+                user_agent="test-agent",
+                domain_events=[],
             )
 
     def test_session_time_remaining_and_extend_expiry(self) -> None:
@@ -159,6 +163,10 @@ class TestUserCreateUserMethod:
             user_id="test-user-id",
             session_token="valid_token_12345678901234567890",
             expires_at=expires_at,
+            is_active=True,
+            ip_address="127.0.0.1",
+            user_agent="test-agent",
+            domain_events=[],
         )
 
         # Test time calculation manually
@@ -186,6 +194,10 @@ class TestUserCreateUserMethod:
             user_id="test-user-id",
             session_token="valid_token_12345678901234567890",
             expires_at=datetime.now(UTC) + timedelta(hours=1),
+            is_active=True,
+            ip_address="127.0.0.1",
+            user_agent="test-agent",
+            domain_events=[],
         )
 
         # Test updating last_accessed_at
@@ -333,7 +345,7 @@ class TestRoleModel:
 
     def test_role_model_creation(self) -> None:
         """Test Role model creation and behavior."""
-        role = Role(id="role-id", name="editor", description="Editor Role")
+        role = Role(id="role-id", name="editor", description="Editor Role", domain_events=[])
 
         # Role name gets uppercased by validator
         assert role.name == "EDITOR"
@@ -364,6 +376,9 @@ class TestAuthTokenModel:
             token="jwt.token.here",
             user_id="user-id",
             expires_at=datetime.now(UTC) + timedelta(minutes=30),
+            is_revoked=False,
+            token_type="access",
+            domain_events=[],
         )
 
         assert auth_token.token == "jwt.token.here"
@@ -384,6 +399,8 @@ class TestSessionModel:
             expires_at=datetime.now(UTC) + timedelta(hours=24),
             ip_address="192.168.1.1",
             user_agent="Mozilla/5.0 Test Browser",
+            is_active=True,
+            domain_events=[],
         )
 
         assert session.id == "session-id"

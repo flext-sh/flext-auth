@@ -212,8 +212,8 @@ class FlextAuthCli:
             FlextResult[None]: Success if configuration is valid, error if invalid
 
         """
-        config: dict[str, object] = FlextAuthConfig.get_global_instance()
-        validation_result: FlextResult[object] = config.validate_configuration()
+        config: FlextAuthConfig = FlextAuthConfig.get_global_instance()
+        validation_result: FlextResult[None] = config.validate_business_rules()
 
         if validation_result.is_success:
             self._logger.info("Configuration validation passed")
@@ -231,7 +231,7 @@ class FlextAuthCli:
 
     def main(self) -> None:
         """Run the main CLI entry point."""
-        cli_result: FlextResult[object] = self.create_auth_cli()
+        cli_result: FlextResult[FlextCliCommands] = self.create_auth_cli()
         if cli_result.is_failure:
             self._logger.error(f"Failed to create CLI: {cli_result.error}")
             sys.exit(1)

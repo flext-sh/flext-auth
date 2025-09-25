@@ -24,7 +24,7 @@ from flext_auth.mixins import (
 from flext_core import FlextModels, FlextResult, FlextUtilities
 
 
-class FlextAuthModels(FlextModels):
+class FlextAuthModels:
     """Single unified auth models class following FLEXT standards.
 
     Contains all Pydantic models for authentication domain operations.
@@ -101,11 +101,11 @@ class FlextAuthModels(FlextModels):
 
         @field_validator("email")
         @classmethod
-        def validate_email_format(cls, v: str) -> FlextResult[str]:
+        def validate_email_format(cls, email: str) -> FlextResult[str]:
             """Validate email format."""
-            if "@" not in v:
+            if "@" not in email:
                 return FlextResult[str].fail("Invalid email format")
-            return FlextResult[str].ok(v)
+            return FlextResult[str].ok(email)
 
         @field_validator("username")
         @classmethod

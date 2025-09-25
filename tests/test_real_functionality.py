@@ -93,6 +93,12 @@ class TestRealAuthentication:
             id="test-id",
             username="testuser",
             email="test@example.com",
+            full_name="Test User",
+            is_active=True,
+            failed_login_attempts=0,
+            locked_until=None,
+            last_login=None,
+            domain_events=[],
         )
 
         # Set password
@@ -363,6 +369,12 @@ class TestRealAuthentication:
             id="test-id",
             username="testuser",
             email="test@example.com",
+            full_name="Test User",
+            is_active=True,
+            failed_login_attempts=0,
+            locked_until=None,
+            last_login=None,
+            domain_events=[],
         )
         weak_password_result = weak_user.set_password("123")  # Too weak
         assert weak_password_result.is_failure
@@ -622,6 +634,12 @@ class TestRealAuthentication:
                 id="test-id",
                 username="testuser",
                 email="test@example.com",
+                full_name="Test User",
+                is_active=True,
+                failed_login_attempts=0,
+                locked_until=None,
+                last_login=None,
+                domain_events=[],
                 password_hash="not_bcrypt_format",
             )
 

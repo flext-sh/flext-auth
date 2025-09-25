@@ -17,11 +17,11 @@ class FlextAuthQuickstart:
     Note: Not extending FlextService as this is a utility class, not a service.
     """
 
-    def __init__(self: object) -> None:
+    def __init__(self) -> None:
         """Initialize FlextAuthQuickstart with FLEXT foundation dependencies."""
         self._logger = FlextLogger(__name__)
 
-    def get_default_REDACTED_LDAP_BIND_PASSWORD_password(self: object) -> str:
+    def get_default_REDACTED_LDAP_BIND_PASSWORD_password(self) -> str:
         """Get default REDACTED_LDAP_BIND_PASSWORD password for testing/examples.
 
         Returns:
