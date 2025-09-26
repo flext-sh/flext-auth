@@ -12,8 +12,7 @@ import sys
 import urllib.error
 import urllib.request
 
-# Constants
-HTTP_OK = 200
+from flext_auth.constants import FlextAuthConstants
 
 
 def main() -> int:
@@ -24,11 +23,12 @@ def main() -> int:
 
     """
     try:
+        health_url = f"http://{FlextAuthConstants.Platform.DEFAULT_HOST}:{FlextAuthConstants.Platform.FLEXT_API_PORT}/auth/health"
         with urllib.request.urlopen(
-            "http://localhost:8000/auth/health",
-            timeout=10,
+            health_url,
+            timeout=FlextAuthConstants.Network.DEFAULT_TIMEOUT,
         ) as response:
-            if response.status == HTTP_OK:
+            if response.status == FlextAuthConstants.Platform.HTTP_STATUS_OK:
                 return 0
             return 1
     except urllib.error.URLError:

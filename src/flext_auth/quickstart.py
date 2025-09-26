@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import override
+
 from flext_auth.auth import FlextAuth
 from flext_core import FlextLogger
 
@@ -17,6 +19,7 @@ class FlextAuthQuickstart:
     Note: Not extending FlextService as this is a utility class, not a service.
     """
 
+    @override
     def __init__(self) -> None:
         """Initialize FlextAuthQuickstart with FLEXT foundation dependencies."""
         self._logger = FlextLogger(__name__)

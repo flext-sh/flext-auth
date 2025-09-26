@@ -345,7 +345,9 @@ class TestRoleModel:
 
     def test_role_model_creation(self) -> None:
         """Test Role model creation and behavior."""
-        role = Role(id="role-id", name="editor", description="Editor Role", domain_events=[])
+        role = Role(
+            id="role-id", name="editor", description="Editor Role", domain_events=[]
+        )
 
         # Role name gets uppercased by validator
         assert role.name == "EDITOR"

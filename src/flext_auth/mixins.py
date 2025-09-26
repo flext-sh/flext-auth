@@ -85,14 +85,14 @@ class FlextAuthMixins(FlextMixins):
             if not password:
                 return FlextResult[str].fail("Password cannot be empty")
 
-            if len(password) < FlextAuthConstants.MIN_PASSWORD_LENGTH:
+            if len(password) < FlextAuthConstants.Credentials.Password.MIN_LENGTH:
                 return FlextResult[str].fail(
-                    f"Password must be at least {FlextAuthConstants.MIN_PASSWORD_LENGTH} characters"
+                    f"Password must be at least {FlextAuthConstants.Credentials.Password.MIN_LENGTH} characters"
                 )
 
-            if len(password) > FlextAuthConstants.MAX_PASSWORD_LENGTH:
+            if len(password) > FlextAuthConstants.Credentials.Password.MAX_LENGTH:
                 return FlextResult[str].fail(
-                    f"Password must be no more than {FlextAuthConstants.MAX_PASSWORD_LENGTH} characters"
+                    f"Password must be no more than {FlextAuthConstants.Credentials.Password.MAX_LENGTH} characters"
                 )
 
             # Check for at least one uppercase, lowercase, digit, and special character
@@ -124,14 +124,14 @@ class FlextAuthMixins(FlextMixins):
 
             username = username.strip()
 
-            if len(username) < FlextAuthConstants.MIN_USERNAME_LENGTH:
+            if len(username) < FlextAuthConstants.Credentials.Username.MIN_LENGTH:
                 return FlextResult[str].fail(
-                    f"Username must be at least {FlextAuthConstants.MIN_USERNAME_LENGTH} characters"
+                    f"Username must be at least {FlextAuthConstants.Credentials.Username.MIN_LENGTH} characters"
                 )
 
-            if len(username) > FlextAuthConstants.MAX_USERNAME_LENGTH:
+            if len(username) > FlextAuthConstants.Credentials.Username.MAX_LENGTH:
                 return FlextResult[str].fail(
-                    f"Username must be no more than {FlextAuthConstants.MAX_USERNAME_LENGTH} characters"
+                    f"Username must be no more than {FlextAuthConstants.Credentials.Username.MAX_LENGTH} characters"
                 )
 
             # Check for valid characters (alphanumeric, underscore, hyphen)
@@ -158,9 +158,9 @@ class FlextAuthMixins(FlextMixins):
 
             token = token.strip()
 
-            if len(token) < FlextAuthConstants.MIN_TOKEN_LENGTH:
+            if len(token) < FlextAuthConstants.Session.MIN_TOKEN_LENGTH:
                 return FlextResult[str].fail(
-                    f"Token must be at least {FlextAuthConstants.MIN_TOKEN_LENGTH} characters"
+                    f"Token must be at least {FlextAuthConstants.Session.MIN_TOKEN_LENGTH} characters"
                 )
 
             return FlextResult[str].ok(token)

@@ -22,8 +22,8 @@ from flext_auth import (
     FlextAuthContainer,
     FlextAuthModels,
     FlextAuthQuickstart,
-    FlextAuthTypes,
 )
+from flext_auth.typings import FlextAuthTypes
 from flext_core import FlextTypes
 
 # Use unified class structure - no aliases

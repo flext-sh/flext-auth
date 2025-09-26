@@ -4,6 +4,10 @@ This module contains all exception classes for the authentication domain,
 following flext-core standardization and extending FlextException.
 """
 
+from __future__ import annotations
+
+from typing import override
+
 from flext_core import FlextExceptions
 
 
@@ -17,6 +21,7 @@ class FlextAuthExceptions(FlextExceptions):
     class FlextAuthError(FlextExceptions.BaseError):
         """Base authentication error extending FlextExceptions.BaseError."""
 
+        @override
         def __init__(self, message: str, error_code: str | None = None) -> None:
             """Initialize authentication error with proper code handling."""
             super().__init__(message, code=error_code)
@@ -24,6 +29,7 @@ class FlextAuthExceptions(FlextExceptions):
     class FlextAuthValidationError(FlextAuthError):
         """Authentication validation error for invalid input data."""
 
+        @override
         def __init__(self, message: str, field: str | None = None) -> None:
             """Initialize validation error with field context."""
             super().__init__(message, "VALIDATION_ERROR")
@@ -32,6 +38,7 @@ class FlextAuthExceptions(FlextExceptions):
     class FlextAuthenticationError(FlextAuthError):
         """Authentication failure error for login/credential issues."""
 
+        @override
         def __init__(self, message: str, username: str | None = None) -> None:
             """Initialize authentication error with username context."""
             super().__init__(message, "AUTHENTICATION_FAILED")
@@ -40,6 +47,7 @@ class FlextAuthExceptions(FlextExceptions):
     class FlextAuthorizationError(FlextAuthError):
         """Authorization error for insufficient permissions."""
 
+        @override
         def __init__(self, message: str, required_role: str | None = None) -> None:
             """Initialize authorization error with role context."""
             super().__init__(message, "AUTHORIZATION_DENIED")
@@ -48,6 +56,7 @@ class FlextAuthExceptions(FlextExceptions):
     class FlextTokenError(FlextAuthError):
         """Token-related errors for JWT and session tokens."""
 
+        @override
         def __init__(self, message: str, token_type: str | None = None) -> None:
             """Initialize token error with token type context."""
             super().__init__(message, "TOKEN_ERROR")
@@ -56,6 +65,7 @@ class FlextAuthExceptions(FlextExceptions):
     class FlextTokenExpiredError(FlextTokenError):
         """Specific error for expired tokens."""
 
+        @override
         def __init__(
             self, message: str = "Token has expired", token_type: str | None = None
         ) -> None:
@@ -67,6 +77,7 @@ class FlextAuthExceptions(FlextExceptions):
     class FlextTokenInvalidError(FlextTokenError):
         """Specific error for invalid tokens."""
 
+        @override
         def __init__(
             self, message: str = "Token is invalid", token_type: str | None = None
         ) -> None:
@@ -78,6 +89,7 @@ class FlextAuthExceptions(FlextExceptions):
     class FlextSessionError(FlextAuthError):
         """Session-related errors for session management."""
 
+        @override
         def __init__(self, message: str, session_id: str | None = None) -> None:
             """Initialize session error with session ID context."""
             super().__init__(message, "SESSION_ERROR")
@@ -86,6 +98,7 @@ class FlextAuthExceptions(FlextExceptions):
     class FlextSessionNotFoundError(FlextSessionError):
         """Specific error for session not found."""
 
+        @override
         def __init__(
             self, message: str = "Session not found", session_id: str | None = None
         ) -> None:
@@ -97,6 +110,7 @@ class FlextAuthExceptions(FlextExceptions):
     class FlextUserError(FlextAuthError):
         """User-related errors for user management."""
 
+        @override
         def __init__(self, message: str, user_id: str | None = None) -> None:
             """Initialize user error with user ID context."""
             super().__init__(message, "USER_ERROR")
@@ -105,6 +119,7 @@ class FlextAuthExceptions(FlextExceptions):
     class FlextUserNotFoundError(FlextUserError):
         """Specific error for user not found."""
 
+        @override
         def __init__(
             self, message: str = "User not found", user_id: str | None = None
         ) -> None:
@@ -116,6 +131,7 @@ class FlextAuthExceptions(FlextExceptions):
     class FlextUserExistsError(FlextUserError):
         """Specific error for user already exists."""
 
+        @override
         def __init__(
             self, message: str = "User already exists", identifier: str | None = None
         ) -> None:
@@ -128,6 +144,7 @@ class FlextAuthExceptions(FlextExceptions):
     class FlextAccountLockedError(FlextAuthenticationError):
         """Specific error for locked user accounts."""
 
+        @override
         def __init__(
             self, message: str = "Account is locked", username: str | None = None
         ) -> None:
@@ -139,6 +156,7 @@ class FlextAuthExceptions(FlextExceptions):
     class FlextAccountDisabledError(FlextAuthenticationError):
         """Specific error for disabled user accounts."""
 
+        @override
         def __init__(
             self, message: str = "Account is disabled", username: str | None = None
         ) -> None:

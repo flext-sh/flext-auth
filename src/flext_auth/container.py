@@ -168,7 +168,7 @@ class FlextAuthContainer:
         return FlextAuthModels.AuthToken.create_jwt_token(
             user_id=user_id,
             expiry_minutes=expires_hours * 60 if expires_hours else 30,
-            token_type=FlextAuthConstants.JWT_DEFAULT_TOKEN_TYPE,
+            token_type=FlextAuthConstants.Jwt.DEFAULT_TOKEN_TYPE,
         )
 
 

@@ -21,7 +21,6 @@ from flext_auth import (
     FlextAuthModels,
     FlextAuthQuickstart,
 )
-from flext_core import FlextTypes
 
 # Use unified class structure
 User = FlextAuthModels.User
@@ -99,10 +98,7 @@ class UserData(TypedDict):
 AuthUserDict = dict[str, str | int | bool] | list[str]
 AuthSessionDict = dict[str, str | int | bool]
 AuthDataDict = (
-    dict[str, str | int | bool]
-    | AuthUserDict
-    | AuthSessionDict
-    | FlextTypes.Core.Headers
+    dict[str, str | int | bool] | AuthUserDict | AuthSessionDict | dict[str, str]
 )
 
 
@@ -475,14 +471,14 @@ class TestEnhancedPerformanceValidation:
         """Test batch user registration performance characteristics."""
         auth: FlextAuth = FlextAuth()
 
-        def register_batch_users() -> FlextTypes.Core.List:
+        def register_batch_users() -> list[object]:
             """Register multiple users and return results.
 
             Returns:
-                FlextTypes.Core.List: List of registration results
+                list[object]: List of registration results
 
             """
-            results: FlextTypes.Core.List = []
+            results: list[object] = []
             users_data = cast(
                 "list[UserData]",
                 FlextTestsFactories.UserFactory.batch(count=5),
@@ -523,7 +519,7 @@ class TestEnhancedPerformanceValidation:
             "list[UserData]",
             FlextTestsFactories.UserFactory.batch(count=3),
         )
-        user_sessions: FlextTypes.Core.StringList = []
+        user_sessions: list[str] = []
 
         for i, user_data in enumerate(users_data):
             username = f"session_perf_{i}"
@@ -535,14 +531,14 @@ class TestEnhancedPerformanceValidation:
             FlextTestsMatchers.assert_result_success(register_result)
             user_sessions.append(username)
 
-        def session_operations_batch() -> FlextTypes.Core.List:
+        def session_operations_batch() -> list[object]:
             """Perform batch session operations.
 
             Returns:
-                FlextTypes.Core.List: List of session operation results
+                list[object]: List of session operation results
 
             """
-            session_results: FlextTypes.Core.List = []
+            session_results: list[object] = []
             for username in user_sessions:
                 # Authenticate to create session
                 auth_result = auth.authenticate_user(username, "SessionPerfTest123!@#")

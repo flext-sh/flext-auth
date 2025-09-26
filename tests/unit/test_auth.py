@@ -321,7 +321,7 @@ class TestFlextAuthSecurity:
         auth.register_user(username, "lock@example.com", password)
 
         # Attempt multiple failed logins
-        for _ in range(FlextAuthConstants.MAX_LOGIN_ATTEMPTS):
+        for _ in range(FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS):
             failed_auth = auth.authenticate_user(username, "wrong_password")
             assert failed_auth.is_failure
 

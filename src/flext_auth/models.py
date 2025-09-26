@@ -24,11 +24,12 @@ from flext_auth.mixins import (
 from flext_core import FlextModels, FlextResult, FlextUtilities
 
 
-class FlextAuthModels:
+class FlextAuthModels(FlextModels):
     """Single unified auth models class following FLEXT standards.
 
     Contains all Pydantic models for authentication domain operations.
     Follows FLEXT pattern: one class per module with nested subclasses.
+    Extends FlextModels to avoid duplication and ensure consistency.
     """
 
     # Parameter Object Pattern for reducing "many parameters" code smell
@@ -111,11 +112,11 @@ class FlextAuthModels:
         @classmethod
         def validate_username_length(cls, v: str) -> str:
             """Validate username length."""
-            if len(v) < FlextAuthConstants.MIN_USERNAME_LENGTH:
-                msg = f"Username must be at least {FlextAuthConstants.MIN_USERNAME_LENGTH} characters"
+            if len(v) < FlextAuthConstants.Credentials.Username.MIN_LENGTH:
+                msg = f"Username must be at least {FlextAuthConstants.Credentials.Username.MIN_LENGTH} characters"
                 raise ValueError(msg)
-            if len(v) > FlextAuthConstants.MAX_USERNAME_LENGTH:
-                msg = f"Username cannot exceed {FlextAuthConstants.MAX_USERNAME_LENGTH} characters"
+            if len(v) > FlextAuthConstants.Credentials.Username.MAX_LENGTH:
+                msg = f"Username cannot exceed {FlextAuthConstants.Credentials.Username.MAX_LENGTH} characters"
                 raise ValueError(msg)
             return v
 
@@ -132,7 +133,11 @@ class FlextAuthModels:
         @classmethod
         def validate_password_hash(cls, v: str) -> str:
             """Validate password hash format."""
-            if v and len(v) < FlextAuthConstants.MIN_BCRYPT_HASH_LENGTH:
+            if (
+                v
+                and len(v)
+                < FlextAuthConstants.Credentials.Password.MIN_BCRYPT_HASH_LENGTH
+            ):
                 msg = "Invalid password hash format"
                 raise ValueError(msg)
             return v
@@ -162,9 +167,9 @@ class FlextAuthModels:
         def set_password(self, password: str) -> FlextResult[bool]:
             """Set password with validation and hashing."""
             try:
-                if len(password) < FlextAuthConstants.MIN_PASSWORD_LENGTH:
+                if len(password) < FlextAuthConstants.Credentials.Password.MIN_LENGTH:
                     return FlextResult[bool].fail(
-                        f"Password must be at least {FlextAuthConstants.MIN_PASSWORD_LENGTH} characters"
+                        f"Password must be at least {FlextAuthConstants.Credentials.Password.MIN_LENGTH} characters"
                     )
 
                 # Check for weak passwords
@@ -187,7 +192,9 @@ class FlextAuthModels:
                     )
 
                 # Hash password with bcrypt
-                salt = bcrypt.gensalt(rounds=FlextAuthConstants.BCRYPT_ROUNDS)
+                salt = bcrypt.gensalt(
+                    rounds=FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS
+                )
                 hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
                 self.password_hash = hashed.decode("utf-8")
                 return FlextResult[bool].ok(True)
@@ -203,9 +210,12 @@ class FlextAuthModels:
         def record_failed_login(self) -> None:
             """Record failed login attempt and apply lockout if needed."""
             self.failed_login_attempts += 1
-            if self.failed_login_attempts >= FlextAuthConstants.MAX_LOGIN_ATTEMPTS:
+            if (
+                self.failed_login_attempts
+                >= FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS
+            ):
                 self.locked_until = datetime.now(UTC) + timedelta(
-                    minutes=FlextAuthConstants.LOCKOUT_DURATION_MINUTES
+                    minutes=FlextAuthConstants.Security.LOCKOUT_DURATION_MINUTES
                 )
 
         @classmethod
@@ -275,7 +285,7 @@ class FlextAuthModels:
         @classmethod
         def validate_session_token_length(cls, v: str) -> str:
             """Validate session token length."""
-            if len(v) < FlextAuthConstants.MIN_TOKEN_LENGTH:
+            if len(v) < FlextAuthConstants.Session.MIN_TOKEN_LENGTH:
                 msg = "String should have at least 32 characters"
                 raise ValueError(msg)
             return v
@@ -348,7 +358,7 @@ class FlextAuthModels:
         expires_at: datetime = Field(..., description="Token expiration time")
         is_revoked: bool = Field(False, description="Whether token is revoked")
         token_type: str = Field(
-            FlextAuthConstants.JWT_DEFAULT_TOKEN_TYPE,
+            FlextAuthConstants.Jwt.DEFAULT_TOKEN_TYPE,
             description="Type of token (access, refresh)",
         )
 
@@ -374,8 +384,8 @@ class FlextAuthModels:
         def create_jwt_token(
             cls,
             user_id: str,
-            expiry_minutes: int = FlextAuthConstants.JWT_DEFAULT_EXPIRY_MINUTES,
-            token_type: str = FlextAuthConstants.JWT_DEFAULT_TOKEN_TYPE,
+            expiry_minutes: int = FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES,
+            token_type: str = FlextAuthConstants.Jwt.DEFAULT_TOKEN_TYPE,
             jwt_secret: str | None = None,
         ) -> FlextResult[FlextAuthModels.AuthToken]:
             """Create new JWT token for user with configurable secret."""
@@ -386,16 +396,16 @@ class FlextAuthModels:
                     "user_id": user_id,
                     "exp": expires_at,
                     "iat": datetime.now(UTC),
-                    "iss": FlextAuthConstants.JWT_ISSUER_CLAIM,
-                    "aud": FlextAuthConstants.JWT_AUDIENCE_CLAIM,
+                    "iss": FlextAuthConstants.Jwt.ISSUER_CLAIM,
+                    "aud": FlextAuthConstants.Jwt.AUDIENCE_CLAIM,
                     "type": token_type,
                 }
 
-                secret_key = jwt_secret or FlextAuthConstants.JWT_SECRET_KEY
+                secret_key = jwt_secret or FlextAuthConstants.Jwt.SECRET_KEY
                 jwt_token_raw: str | bytes = jwt.encode(
                     payload,
                     secret_key,
-                    algorithm=FlextAuthConstants.JWT_DEFAULT_ALGORITHM,
+                    algorithm=FlextAuthConstants.Jwt.DEFAULT_ALGORITHM,
                 )
 
                 # jwt.encode can return str or bytes depending on PyJWT version
@@ -426,8 +436,8 @@ class FlextAuthModels:
             try:
                 payload = jwt.decode(
                     token,
-                    FlextAuthConstants.JWT_SECRET_KEY,
-                    algorithms=[FlextAuthConstants.JWT_DEFAULT_ALGORITHM],
+                    FlextAuthConstants.Jwt.SECRET_KEY,
+                    algorithms=[FlextAuthConstants.Jwt.DEFAULT_ALGORITHM],
                 )
                 return FlextResult[dict[str, str]].ok(payload)
             except jwt.ExpiredSignatureError:

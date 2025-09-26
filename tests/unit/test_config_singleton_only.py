@@ -349,8 +349,11 @@ class TestFlextAuthConfigSingletonOnly:
 
         # Should use constants from flext-core
 
-        assert config.jwt_algorithm == FlextAuthConstants.JWT_DEFAULT_ALGORITHM
-        assert config.bcrypt_rounds == FlextAuthConstants.BCRYPT_ROUNDS
+        assert config.jwt_algorithm == FlextAuthConstants.Jwt.DEFAULT_ALGORITHM
+        assert (
+            config.bcrypt_rounds
+            == FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS
+        )
 
     def test_get_security_settings_method(self) -> None:
         """Test FlextAuthConfig singleton get_security_settings method."""

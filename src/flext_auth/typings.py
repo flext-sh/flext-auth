@@ -14,7 +14,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import datetime
-from typing import NotRequired, TypedDict, TypeVar
+from typing import Literal, NotRequired, TypedDict
 
 from flext_core import FlextTypes
 
@@ -22,17 +22,8 @@ from flext_core import FlextTypes
 # AUTH-SPECIFIC TYPE VARIABLES - Domain-specific TypeVars for authentication operations
 # =============================================================================
 
+
 # Authentication domain TypeVars
-TAuthUser = TypeVar("TAuthUser")
-TAuthSession = TypeVar("TAuthSession")
-TAuthToken = TypeVar("TAuthToken")
-TAuthProvider = TypeVar("TAuthProvider")
-TAuthCredential = TypeVar("TAuthCredential")
-TAuthPolicy = TypeVar("TAuthPolicy")
-TAuthRole = TypeVar("TAuthRole")
-TAuthPermission = TypeVar("TAuthPermission")
-
-
 class FlextAuthTypes(FlextTypes):
     """Authentication-specific type definitions extending FlextTypes.
 
@@ -192,21 +183,50 @@ class FlextAuthTypes(FlextTypes):
         authenticated: bool
         success: bool
 
+    # =========================================================================
+    # AUTH PROJECT TYPES - Domain-specific project types extending FlextTypes
+    # =========================================================================
+
+    class Project(FlextTypes.Project):
+        """Auth-specific project types extending FlextTypes.Project.
+
+        Adds authentication/authorization-specific project types while inheriting
+        generic types from FlextTypes. Follows domain separation principle:
+        Auth domain owns auth-specific types.
+        """
+
+        # Auth-specific project types extending the generic ones
+        type ProjectType = Literal[
+            # Generic types inherited from FlextTypes.Project
+            "library",
+            "application",
+            "service",
+            # Auth-specific types
+            "auth-service",
+            "identity-provider",
+            "sso-service",
+            "oauth-provider",
+            "auth-gateway",
+            "session-manager",
+            "jwt-service",
+            "rbac-system",
+            "auth-api",
+            "identity-api",
+            "credential-manager",
+            "security-service",
+        ]
+
+        # Auth-specific project configurations
+        type AuthProjectConfig = dict[str, FlextTypes.Core.ConfigValue | object]
+        type IdentityConfig = dict[str, str | int | bool | list[str]]
+        type SecurityConfig = dict[str, bool | str | dict[str, object]]
+        type SessionConfig = dict[str, FlextTypes.Core.ConfigValue | object]
+
 
 # =============================================================================
 # PUBLIC API EXPORTS - Auth TypeVars and types
 # =============================================================================
 
 __all__: list[str] = [
-    # Auth Types class
     "FlextAuthTypes",
-    # Auth-specific TypeVars
-    "TAuthCredential",
-    "TAuthPermission",
-    "TAuthPolicy",
-    "TAuthProvider",
-    "TAuthRole",
-    "TAuthSession",
-    "TAuthToken",
-    "TAuthUser",
 ]

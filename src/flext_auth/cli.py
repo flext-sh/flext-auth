@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import sys
+from typing import override
 
 from flext_auth import FlextAuth
 from flext_auth.config import FlextAuthConfig
@@ -21,6 +22,7 @@ class FlextAuthCli:
     Note: Not extending FlextService as this is a CLI utility class, not a domain service.
     """
 
+    @override
     def __init__(self) -> None:
         """Initialize FlextAuthCli with FLEXT foundation dependencies."""
         self._container = FlextContainer.get_global()

@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import override
 
 import jwt
 
@@ -30,6 +31,7 @@ class FlextAuth:
     session management, and role-based access control following flext-core patterns.
     """
 
+    @override
     def __init__(
         self,
         config: FlextAuthConfig | None = None,
@@ -217,7 +219,7 @@ class FlextAuth:
         if username.lower() in self.username_index:
             return FlextResult[None].fail(
                 "Username already exists",
-                error_code=FlextAuthConstants.USERNAME_TAKEN,
+                error_code=FlextAuthConstants.ErrorCodes.USERNAME_TAKEN,
             )
         return FlextResult[None].ok(None)
 
@@ -231,7 +233,7 @@ class FlextAuth:
         if email.lower() in self.email_index:
             return FlextResult[None].fail(
                 "Email already exists",
-                error_code=FlextAuthConstants.EMAIL_TAKEN,
+                error_code=FlextAuthConstants.ErrorCodes.EMAIL_TAKEN,
             )
         return FlextResult[None].ok(None)
 
@@ -336,21 +338,21 @@ class FlextAuth:
         if not username or not username.strip():
             return FlextResult[FlextAuthModels.User].fail(
                 "Username cannot be empty",
-                error_code=FlextAuthConstants.INVALID_CREDENTIALS,
+                error_code=FlextAuthConstants.ErrorCodes.INVALID_CREDENTIALS,
             )
 
         user_id = self.username_index.get(username.lower())
         if not user_id:
             return FlextResult[FlextAuthModels.User].fail(
                 "Invalid credentials",
-                error_code=FlextAuthConstants.INVALID_CREDENTIALS,
+                error_code=FlextAuthConstants.ErrorCodes.INVALID_CREDENTIALS,
             )
 
         user = self._users.get(user_id)
         if not user:
             return FlextResult[FlextAuthModels.User].fail(
                 "Invalid credentials",
-                error_code=FlextAuthConstants.INVALID_CREDENTIALS,
+                error_code=FlextAuthConstants.ErrorCodes.INVALID_CREDENTIALS,
             )
 
         return FlextResult[FlextAuthModels.User].ok(user)
@@ -367,21 +369,21 @@ class FlextAuth:
         if not password or not password.strip():
             return FlextResult[FlextAuthModels.User].fail(
                 "Password cannot be empty",
-                error_code=FlextAuthConstants.INVALID_CREDENTIALS,
+                error_code=FlextAuthConstants.ErrorCodes.INVALID_CREDENTIALS,
             )
 
         # Check if account is locked
         if user.is_locked:
             return FlextResult[FlextAuthModels.User].fail(
                 "Account is locked due to too many failed attempts",
-                error_code=FlextAuthConstants.ACCOUNT_LOCKED,
+                error_code=FlextAuthConstants.ErrorCodes.ACCOUNT_LOCKED,
             )
 
         # Check if account is active
         if not user.can_login:
             return FlextResult[FlextAuthModels.User].fail(
                 "Account is not active",
-                error_code=FlextAuthConstants.ACCOUNT_DISABLED,
+                error_code=FlextAuthConstants.ErrorCodes.ACCOUNT_DISABLED,
             )
 
         # Verify password using monadic composition
@@ -576,7 +578,7 @@ class FlextAuth:
             payload = jwt.decode(
                 clean_token,
                 str(self.config.jwt_auth_secret.get_secret_value()),
-                algorithms=[FlextAuthConstants.JWT_DEFAULT_ALGORITHM],
+                algorithms=[FlextAuthConstants.Jwt.DEFAULT_ALGORITHM],
                 options={"verify_aud": False},
             )
         except jwt.ExpiredSignatureError:
@@ -615,7 +617,7 @@ class FlextAuth:
         token_result = FlextAuthModels.AuthToken.create_jwt_token(
             user_id=user_id,
             expiry_minutes=self.config.jwt_expiry_minutes,
-            token_type=FlextAuthConstants.JWT_DEFAULT_TOKEN_TYPE,
+            token_type=FlextAuthConstants.Jwt.DEFAULT_TOKEN_TYPE,
             jwt_secret=str(self.config.jwt_auth_secret.get_secret_value()),
         )
 
@@ -684,7 +686,7 @@ class FlextAuth:
         if not session:
             return FlextResult[None].fail(
                 "Session not found",
-                error_code=FlextAuthConstants.SESSION_NOT_FOUND,
+                error_code=FlextAuthConstants.ErrorCodes.SESSION_NOT_FOUND,
             )
 
         session.revoke()
@@ -858,7 +860,7 @@ class FlextAuth:
         token_result = FlextAuthModels.AuthToken.create_jwt_token(
             user_id=user_id,
             expiry_minutes=expiry or self.config.jwt_expiry_minutes,
-            token_type=FlextAuthConstants.JWT_DEFAULT_TOKEN_TYPE,
+            token_type=FlextAuthConstants.Jwt.DEFAULT_TOKEN_TYPE,
             jwt_secret=str(self.config.jwt_auth_secret.get_secret_value()),
         )
 
