@@ -14,7 +14,6 @@ import time
 
 from flext_auth import FlextAuthModels
 from flext_core import FlextResult, FlextTypes
-from flext_tests import FlextTestsDomains
 
 
 class TestModelsModule:
@@ -229,20 +228,23 @@ class TestModelsModule:
             assert isinstance(result, FlextResult)
             # Should handle invalid JSON gracefully
 
-    def test_flext_auth_models_with_flext_tests(
-        self, flext_domains: FlextTestsDomains
-    ) -> None:
+    def test_flext_auth_models_with_flext_tests(self) -> None:
         """Test models functionality with flext_tests infrastructure."""
         models = FlextAuthModels()
 
-        # Create test data using flext_tests
-        test_user_data = flext_domains.create_user()
+        # Create test data manually
+        test_user_data = {
+            "username": "test_user",
+            "email": "test@example.com",
+            "password": "TestPassword123!",
+        }
         test_user_data["username"] = "flext_test_user"
         test_user_data["email"] = "flext_test@example.com"
 
-        test_role_data = flext_domains.create_service()
-        test_role_data["name"] = "flext_test_role"
-        test_role_data["description"] = "Flext test role"
+        test_role_data = {
+            "name": "flext_test_role",
+            "description": "Flext test role",
+        }
 
         # Test user model creation with flext_tests data
         if hasattr(models, "create_user_model"):

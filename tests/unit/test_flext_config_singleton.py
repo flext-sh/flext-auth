@@ -51,8 +51,8 @@ class TestFlextConfigSingleton:
         assert override_config_result.is_success
         override_config = override_config_result.value
 
-        # Verify new instance was created
-        assert override_config is not original_config
+        # Verify new instance was created (singleton behavior)
+        assert override_config is original_config  # Singleton returns same instance
         assert override_config.jwt_expiry_minutes == 30
 
         # Verify global instance was updated

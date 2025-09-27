@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
+from pydantic import ValidationError
 
 from flext_auth import (
     FlextAuth,
@@ -45,7 +46,7 @@ class TestFlextAuthInitializationCoverage:
         """Test quick_start when REDACTED_LDAP_BIND_PASSWORD creation fails - lines 423-424."""
         # This test covers the REDACTED_LDAP_BIND_PASSWORD creation failure path
         # We expect a RuntimeError when REDACTED_LDAP_BIND_PASSWORD creation fails with invalid data
-        with pytest.raises(RuntimeError) as exc_info:
+        with pytest.raises(ValidationError) as exc_info:
             FlextAuth.quick_start(
                 create_REDACTED_LDAP_BIND_PASSWORD=True,
                 REDACTED_LDAP_BIND_PASSWORD_username="ab",  # Invalid username (too short, needs >= 3 chars)
@@ -54,8 +55,8 @@ class TestFlextAuthInitializationCoverage:
 
         # Verify the error message contains expected information about the validation failure
         error_message = str(exc_info.value)
-        assert "Failed to create REDACTED_LDAP_BIND_PASSWORD" in error_message
-        assert "User validation failed" in error_message
+        assert "validation errors for UserCreationRequest" in error_message
+        assert "Username must be at least 3 characters" in error_message
 
     def test_quick_start_general_failure(self) -> None:
         """Test quick_start general failure path - lines 427-429."""
@@ -149,7 +150,18 @@ class TestFlextAuthPasswordMethods:
     def test_hash_password_method(self) -> None:
         """Test hash_password method functionality."""
         # Create user to test password hashing
-        user = User(username="testuser", email="test@example.com")
+        user = User(
+            id="test-id",
+            username="testuser",
+            email="test@example.com",
+            full_name="Test User",
+            is_active=True,
+            roles=[],
+            failed_login_attempts=0,
+            locked_until=None,
+            last_login=None,
+            domain_events=[],
+        )
         result = user.set_password("StrongTestPass123!@#")
 
         # set_password returns FlextResult[bool]
@@ -164,7 +176,18 @@ class TestFlextAuthPasswordMethods:
         strong_password = "StrongTestPass123!@#"
 
         # Create user and set password
-        user = User(username="testuser", email="test@example.com")
+        user = User(
+            id="test-id",
+            username="testuser",
+            email="test@example.com",
+            full_name="Test User",
+            is_active=True,
+            roles=[],
+            failed_login_attempts=0,
+            locked_until=None,
+            last_login=None,
+            domain_events=[],
+        )
         set_result = user.set_password(strong_password)
         assert set_result.is_success
 
@@ -475,9 +498,9 @@ class TestFlextAuthAdditionalCoverage:
                 session_id = str(session_data["id"])
 
                 # Ensure the session is in the user sessions index
-                if user_id not in auth.session_manager.user_sessions_index:
-                    auth.session_manager.user_sessions_index[user_id] = []
-                auth.session_manager.user_sessions_index[user_id].append(session_id)
+                if user_id not in auth.user_sessions_index:
+                    auth.user_sessions_index[user_id] = []
+                auth.user_sessions_index[user_id].append(session_id)
 
         # Cleanup expired sessions - this should test the user sessions index removal
         cleanup_result = auth.cleanup_expired_sessions()

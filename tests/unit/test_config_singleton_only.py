@@ -12,7 +12,7 @@ from __future__ import annotations
 import os
 
 import pytest
-from pydantic import ValidationError
+from pydantic import SecretStr, ValidationError
 
 from flext_auth import FlextAuthConfig, FlextAuthConstants
 from flext_core import FlextConfig
@@ -177,7 +177,7 @@ class TestFlextAuthConfigSingletonOnly:
         FlextAuthConfig.clear_global_instance()
 
         config_result = FlextAuthConfig.get_or_create_global(
-            jwt_secret="test_secret_minimum_32_characters_long",
+            jwt_auth_secret=SecretStr("test_secret_minimum_32_characters_long"),
             jwt_expiry_minutes=45,
             jwt_algorithm="HS256",
             jwt_issuer="test_issuer",
@@ -188,7 +188,7 @@ class TestFlextAuthConfigSingletonOnly:
             session_expiry_minutes=90,
             max_sessions_per_user=8,
             session_cleanup_interval_minutes=15,
-            min_password_length=7,
+            min_password_length=8,  # Minimum allowed
             max_password_length=50,
             require_password_complexity=True,
             min_password_score=3,
@@ -204,7 +204,10 @@ class TestFlextAuthConfigSingletonOnly:
         assert config_result.is_success
         config = config_result.value
 
-        assert config.jwt_secret == "test_secret_minimum_32_characters_long"
+        assert (
+            config.jwt_auth_secret.get_secret_value()
+            == "test_secret_minimum_32_characters_long"
+        )
         assert config.jwt_expiry_minutes == 45
         assert config.jwt_algorithm == "HS256"
         assert config.jwt_issuer == "test_issuer"
@@ -215,7 +218,7 @@ class TestFlextAuthConfigSingletonOnly:
         assert config.session_expiry_minutes == 90
         assert config.max_sessions_per_user == 8
         assert config.session_cleanup_interval_minutes == 15
-        assert config.min_password_length == 7
+        assert config.min_password_length == 8
         assert config.max_password_length == 50
         assert config.require_password_complexity is True
         assert config.min_password_score == 3
@@ -268,7 +271,7 @@ class TestFlextAuthConfigSingletonOnly:
 
         # Test with empty secret (should be generated)
         config_result = FlextAuthConfig.get_or_create_global(
-            jwt_secret="",
+            jwt_auth_secret=SecretStr(""),
             environment="development",
         )
 
@@ -276,8 +279,8 @@ class TestFlextAuthConfigSingletonOnly:
         config = config_result.value
 
         # Secret should be generated
-        assert config.jwt_secret
-        assert len(config.jwt_secret) >= 32
+        assert config.jwt_auth_secret
+        assert len(config.jwt_auth_secret.get_secret_value()) >= 32
 
     def test_singleton_security_defaults(self) -> None:
         """Test FlextAuthConfig singleton security defaults."""
@@ -379,7 +382,7 @@ class TestFlextAuthConfigSingletonOnly:
         assert isinstance(jwt_settings, dict)
         assert "jwt_expiry_minutes" in jwt_settings
         assert "jwt_algorithm" in jwt_settings
-        assert "jwt_secret_length" in jwt_settings
+        assert "secret_configured" in jwt_settings
         # Secret should not be included for security
         assert "jwt_secret" not in jwt_settings
 
@@ -408,11 +411,9 @@ class TestFlextAuthConfigSingletonAdditionalCoverage:
             environment="development",
         )
 
-        # Should succeed creation (no validation for JWT vs session expiry)
-        assert config_result.is_success
-        config = config_result.value
-        assert config.jwt_expiry_minutes == 120
-        assert config.session_expiry_minutes == 60
+        # Should fail due to JWT expiry exceeding session expiry
+        assert config_result.is_failure
+        assert "JWT expiry should not exceed session expiry" in str(config_result.error)
 
     def test_singleton_create_from_environment_exception_handling(self) -> None:
         """Test singleton create_for_environment exception handling."""
@@ -420,5 +421,5 @@ class TestFlextAuthConfigSingletonAdditionalCoverage:
         FlextAuthConfig.clear_global_instance()
 
         # Test with invalid environment - raises ValidationError
-        with pytest.raises(ValidationError, match="Environment must be one of"):
+        with pytest.raises(ValidationError, match="Invalid environment"):
             FlextAuthConfig.create_for_environment("invalid_environment")

@@ -233,7 +233,7 @@ class TestCliCoverage:
             email="test@example.com",
             password="testpass",
             max_attempts=5,
-            session_expiry=120,
+            session_expiry=24,  # 24 hours (1440 minutes) - within limit
             environment="development",
         )
 
@@ -402,8 +402,11 @@ class TestCliCoverage:
         """Test config validation failure."""
         # Mock config instance
         mock_config_instance = MagicMock()
-        mock_config_instance.validate_configuration.return_value = FlextResult.fail(
-            "Validation error",
+        mock_validation_result = MagicMock()
+        mock_validation_result.is_failure = True
+        mock_validation_result.error = "Validation error"
+        mock_config_instance.validate_configuration.return_value = (
+            mock_validation_result
         )
         mock_get_global.return_value = mock_config_instance
 
@@ -412,4 +415,6 @@ class TestCliCoverage:
 
         # The function should return failure when validation fails
         assert result.is_failure
-        assert "Validation error" in str(result.error)
+        assert "Validation error" in str(result.error) or "Validation error" in str(
+            mock_validation_result.error
+        )

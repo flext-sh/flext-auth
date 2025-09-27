@@ -20,6 +20,7 @@ from flext_auth import (
     FlextAuth,
     FlextAuthModels,
     FlextAuthQuickstart,
+    FlextAuthTypes,
 )
 
 # Use unified class structure
@@ -95,7 +96,7 @@ class UserData(TypedDict):
 
 
 # Type aliases for better readability and mypy compatibility
-AuthUserDict = dict[str, str | int | bool] | list[str]
+AuthUserDict = dict[str, str | int | bool]
 AuthSessionDict = dict[str, str | int | bool]
 AuthDataDict = (
     dict[str, str | int | bool] | AuthUserDict | AuthSessionDict | dict[str, str]
@@ -334,7 +335,9 @@ class TestEnhancedAuthentication:
         auth_data = self._test_authentication_and_tokens(auth, username, user.id)
 
         # Test session management
-        self._test_session_management(auth, user.id, auth_data["session"])
+        self._test_session_management(
+            auth, user.id, cast("dict[str, object]", auth_data["session"])
+        )
 
     def _test_user_retrieval_methods(
         self, auth: FlextAuth, user_id: str, username: str, email: str
@@ -354,7 +357,7 @@ class TestEnhancedAuthentication:
 
     def _test_authentication_and_tokens(
         self, auth: FlextAuth, username: str, user_id: str
-    ) -> dict[str, object]:
+    ) -> FlextAuthTypes.AuthenticationResponseDict:
         """Test authentication and token operations.
 
         Returns:

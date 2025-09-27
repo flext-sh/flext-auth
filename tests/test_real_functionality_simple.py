@@ -74,6 +74,13 @@ class TestRealAuthenticationSimple:
             id="test-id",
             username="testuser",
             email="test@example.com",
+            full_name="Test User",
+            is_active=True,
+            roles=[],
+            failed_login_attempts=0,
+            locked_until=None,
+            last_login=None,
+            domain_events=[],
         )
 
         # Set password

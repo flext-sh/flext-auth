@@ -13,7 +13,7 @@ from __future__ import annotations
 import secrets
 import threading
 from datetime import UTC, datetime
-from typing import ClassVar, override
+from typing import ClassVar, cast
 
 from pydantic import (
     Field,
@@ -21,12 +21,12 @@ from pydantic import (
     field_validator,
     model_validator,
 )
+from pydantic_settings import SettingsConfigDict
 
 from flext_auth.constants import FlextAuthConstants
 from flext_core import (
     FlextConfig,
     FlextResult,
-    FlextService,
 )
 
 
@@ -37,13 +37,22 @@ class FlextAuthConfig(FlextConfig):
     - Extends FlextConfig from flext-core
     - No nested classes within Config
     - All defaults from FlextAuthConstants
-    - Dependency injection integration with flext-core container
+    - Uses enhanced singleton pattern with inverse dependency injection
     - Uses Pydantic 2.11+ features (SecretStr for secrets)
     """
 
-    # Singleton pattern attributes
-    _global_instance: ClassVar[FlextAuthConfig | None] = None
-    _lock = threading.Lock()  # Thread-safe singleton pattern
+    model_config = SettingsConfigDict(
+        env_prefix="FLEXT_AUTH_",
+        case_sensitive=False,
+        extra="allow",
+        # Inherit enhanced Pydantic 2.11+ features from FlextConfig
+        validate_assignment=True,
+        str_strip_whitespace=True,
+        json_schema_extra={
+            "title": "FLEXT Auth Configuration",
+            "description": "Enterprise authentication configuration extending FlextConfig",
+        },
+    )
 
     # JWT Configuration using FlextAuthConstants for defaults
     jwt_auth_secret: SecretStr = Field(
@@ -161,6 +170,47 @@ class FlextAuthConfig(FlextConfig):
         description="Authentication performance warning threshold in milliseconds",
     )
 
+    # Additional configuration fields expected by tests
+    enable_rate_limiting: bool = Field(
+        default=True,
+        description="Enable rate limiting for authentication requests",
+    )
+
+    session_cleanup_interval_minutes: int = Field(
+        default=15,
+        description="Interval for cleaning up expired sessions in minutes",
+    )
+
+    require_password_complexity: bool = Field(
+        default=True,
+        description="Require complex passwords with multiple character types",
+    )
+
+    min_password_score: int = Field(
+        default=3,
+        description="Minimum password complexity score",
+    )
+
+    max_requests_per_minute: int = Field(
+        default=150,
+        description="Maximum authentication requests per minute",
+    )
+
+    max_requests_per_hour: int = Field(
+        default=2000,
+        description="Maximum authentication requests per hour",
+    )
+
+    enable_email_verification: bool = Field(
+        default=True,
+        description="Enable email verification for user registration",
+    )
+
+    enable_password_history: bool = Field(
+        default=True,
+        description="Enable password history tracking",
+    )
+
     @property
     def session_expiry_hours(self) -> float:
         """Get session expiry time in hours (calculated from minutes)."""
@@ -188,7 +238,8 @@ class FlextAuthConfig(FlextConfig):
         """Validate and generate JWT secret if empty."""
         secret_value = v.get_secret_value()
         if not secret_value or not secret_value.strip():
-            # Generate a secure JWT secret
+            # Generate a secure JWT secret using secrets module
+            # Note: Using secrets directly to avoid circular import
             return SecretStr(secrets.token_urlsafe(32))
 
         if len(secret_value) < FlextAuthConstants.Jwt.MIN_SECRET_KEY_LENGTH:
@@ -229,6 +280,8 @@ class FlextAuthConfig(FlextConfig):
         """Get JWT-related settings (without exposing secrets)."""
         return {
             "algorithm": self.jwt_algorithm,
+            "jwt_algorithm": self.jwt_algorithm,  # Add the expected key
+            "jwt_expiry_minutes": self.jwt_expiry_minutes,  # Add the expected key
             "expiry_minutes": self.jwt_expiry_minutes,
             "issuer": self.jwt_issuer,
             "audience": self.jwt_audience,
@@ -262,12 +315,17 @@ class FlextAuthConfig(FlextConfig):
     def create_for_environment(
         cls, environment: str, **overrides: object
     ) -> FlextAuthConfig:
-        """Create configuration for specific environment."""
-        return cls(environment=environment, **overrides)
+        """Create configuration for specific environment using enhanced singleton pattern."""
+        # Cast to FlextAuthConfig since we know it's our instance
+        # Use proper casting since we know this returns our instance
+        instance = cls.get_or_create_shared_instance(
+            project_name="flext-auth", environment=environment, **overrides
+        )
+        return cast("FlextAuthConfig", instance)
 
     @classmethod
     def create_default(cls) -> FlextAuthConfig:
-        """Create default configuration instance."""
+        """Create default configuration instance using enhanced singleton pattern."""
         return cls()
 
     def validate_business_rules(self) -> FlextResult[None]:
@@ -294,10 +352,13 @@ class FlextAuthConfig(FlextConfig):
 
         return FlextResult[None].ok(None)
 
-    # Singleton pattern override for proper typing
+    # Singleton pattern implementation
+    _global_instance: ClassVar[FlextAuthConfig | None] = None
+    _lock: ClassVar[threading.Lock] = threading.Lock()
+
     @classmethod
     def get_global_instance(cls) -> FlextAuthConfig:
-        """Get the global singleton instance of FlextAuthConfig."""
+        """Get the global singleton instance using enhanced FlextConfig pattern."""
         if cls._global_instance is None:
             with cls._lock:
                 if cls._global_instance is None:
@@ -305,14 +366,29 @@ class FlextAuthConfig(FlextConfig):
         return cls._global_instance
 
     @classmethod
+    def set_global_instance(cls, instance: FlextConfig) -> None:
+        """Set the global singleton instance of FlextAuthConfig."""
+        if isinstance(instance, FlextAuthConfig):
+            cls._global_instance = instance
+        else:
+            msg = "Instance must be of type FlextAuthConfig"
+            raise TypeError(msg)
+
+    @classmethod
+    def reset_global_instance(cls) -> None:
+        """Reset the global FlextAuthConfig instance (mainly for testing)."""
+        cls._global_instance = None
+
+    @classmethod
     def get_or_create_global(cls, **kwargs: object) -> FlextResult[FlextAuthConfig]:
-        """Get or create the global singleton instance with optional parameters."""
+        """Get or create the global singleton instance with optional parameters using enhanced pattern."""
         try:
-            if cls._global_instance is None:
-                with cls._lock:
-                    if cls._global_instance is None:
-                        cls._global_instance = cls(**kwargs)
-            return FlextResult[FlextAuthConfig].ok(cls._global_instance)
+            instance = cls.get_or_create_shared_instance(
+                project_name="flext-auth", **kwargs
+            )
+            # Use proper casting since we know this is our instance
+            auth_instance = cast("FlextAuthConfig", instance)
+            return FlextResult[FlextAuthConfig].ok(auth_instance)
         except Exception as e:
             return FlextResult[FlextAuthConfig].fail(
                 f"Failed to create FlextAuthConfig: {e}"
@@ -322,43 +398,149 @@ class FlextAuthConfig(FlextConfig):
         """Validate the current configuration instance."""
         return self.validate_business_rules()
 
+    # Service operations (previously FlextAuthConfigService) - unified pattern
+    class _ConfigServiceHelper:
+        """Nested helper class for auth config service operations."""
 
-class FlextAuthConfigService(FlextService):
-    """Service class for FlextAuthConfig operations."""
+        @staticmethod
+        def execute_service_operation(
+            config: FlextAuthConfig,
+        ) -> FlextResult[dict[str, object]]:
+            """Execute auth config service operation."""
+            return FlextResult[dict[str, object]].ok({
+                "status": "operational",
+                "service": "flext-auth-config",
+                "timestamp": datetime.now(UTC).isoformat(),
+                "version": "2.0.0",
+                "config": config.model_dump(exclude={"jwt_secret"}),  # Exclude secrets
+            })
 
-    @override
-    def __init__(self) -> None:
-        """Initialize auth config service."""
-        super().__init__()
-        self._config = FlextAuthConfig.create_default()
+        @staticmethod
+        async def execute_service_operation_async(
+            config: FlextAuthConfig,
+        ) -> FlextResult[dict[str, object]]:
+            """Execute auth config service operation asynchronously."""
+            return FlextResult[dict[str, object]].ok({
+                "status": "operational",
+                "service": "flext-auth-config",
+                "timestamp": datetime.now(UTC).isoformat(),
+                "version": "2.0.0",
+                "config": config.model_dump(exclude={"jwt_secret"}),  # Exclude secrets
+            })
 
-    @override
-    def execute(self) -> FlextResult[dict[str, object]]:
-        """Execute auth config service operation."""
-        return FlextResult[dict[str, object]].ok({
-            "status": "operational",
-            "service": "flext-auth-config",
-            "timestamp": datetime.now(UTC).isoformat(),
-            "version": "2.0.0",
-            "config": self._config.model_dump(
-                exclude={"jwt_secret"}
-            ),  # Exclude secrets
-        })
+    def execute_as_service(self) -> FlextResult[dict[str, object]]:
+        """Execute config as service operation using nested helper."""
+        return self._ConfigServiceHelper.execute_service_operation(self)
 
-    async def execute_async(self) -> FlextResult[dict[str, object]]:
-        """Execute auth config service operation asynchronously."""
-        return FlextResult[dict[str, object]].ok({
-            "status": "operational",
-            "service": "flext-auth-config",
-            "timestamp": datetime.now(UTC).isoformat(),
-            "version": "2.0.0",
-            "config": self._config.model_dump(
-                exclude={"jwt_secret"}
-            ),  # Exclude secrets
-        })
+    async def execute_as_service_async(self) -> FlextResult[dict[str, object]]:
+        """Execute config as service operation asynchronously using nested helper."""
+        return await self._ConfigServiceHelper.execute_service_operation_async(self)
+
+    @classmethod
+    def create_with_overrides(
+        cls,
+        jwt_expiry_minutes: int | None = None,
+        bcrypt_rounds: int | None = None,
+        max_login_attempts: int | None = None,
+        session_expiry_minutes: int | None = None,
+        environment: str = "development",
+        **kwargs: object,
+    ) -> FlextAuthConfig:
+        """Create configuration instance with specific overrides."""
+        overrides: dict[str, object] = {}
+        if jwt_expiry_minutes is not None:
+            overrides["jwt_expiry_minutes"] = jwt_expiry_minutes
+        if bcrypt_rounds is not None:
+            overrides["bcrypt_rounds"] = bcrypt_rounds
+        if max_login_attempts is not None:
+            overrides["max_login_attempts"] = max_login_attempts
+        if session_expiry_minutes is not None:
+            overrides["session_expiry_minutes"] = session_expiry_minutes
+
+        overrides.update(kwargs)
+
+        return cls.create_for_environment(environment=environment, **overrides)
+
+    @classmethod
+    def get_global_cli_summary(cls) -> FlextResult[dict[str, object]]:
+        """Get global CLI summary for authentication configuration."""
+        try:
+            config = cls.get_global_instance()
+            summary = {
+                "environment": getattr(config, "environment", "development"),
+                "jwt_expiry": config.jwt_expiry_minutes,
+                "bcrypt_rounds": config.bcrypt_rounds,
+                "max_login_attempts": config.max_login_attempts,
+                "session_expiry": config.session_expiry_minutes,
+                "lockout_duration": config.lockout_duration_minutes,
+                "min_password_length": config.min_password_length,
+                "max_password_length": config.max_password_length,
+            }
+            return FlextResult[dict[str, object]].ok(summary)
+        except Exception as e:
+            return FlextResult[dict[str, object]].fail(
+                f"Failed to get CLI summary: {e}"
+            )
+
+    @classmethod
+    def create_from_cli_params(
+        cls,
+        environment: str = "development",
+        jwt_expiry: int | None = None,
+        bcrypt_rounds: int | None = None,
+        max_attempts: int | None = None,
+        **kwargs: object,
+    ) -> FlextResult[FlextAuthConfig]:
+        """Create configuration from CLI parameters."""
+        try:
+            overrides: dict[str, object] = {}
+            if jwt_expiry is not None:
+                overrides["jwt_expiry_minutes"] = jwt_expiry
+            if bcrypt_rounds is not None:
+                overrides["bcrypt_rounds"] = bcrypt_rounds
+            if max_attempts is not None:
+                overrides["max_login_attempts"] = max_attempts
+
+            overrides.update(kwargs)
+
+            config = cls.create_for_environment(environment=environment, **overrides)
+            return FlextResult[FlextAuthConfig].ok(config)
+        except Exception as e:
+            return FlextResult[FlextAuthConfig].fail(
+                f"Failed to create config from CLI params: {e}"
+            )
+
+    @classmethod
+    def update_global_from_cli(
+        cls,
+        environment: str = "development",
+        jwt_expiry: int | None = None,
+        bcrypt_rounds: int | None = None,
+        max_attempts: int | None = None,
+        **kwargs: object,
+    ) -> FlextResult[None]:
+        """Update global configuration from CLI parameters."""
+        try:
+            config_result = cls.create_from_cli_params(
+                environment=environment,
+                jwt_expiry=jwt_expiry,
+                bcrypt_rounds=bcrypt_rounds,
+                max_attempts=max_attempts,
+                **kwargs,
+            )
+            if config_result.is_failure:
+                return FlextResult[None].fail(
+                    config_result.error or "Failed to create config"
+                )
+
+            cls.set_global_instance(config_result.value)
+            return FlextResult[None].ok(None)
+        except Exception as e:
+            return FlextResult[None].fail(
+                f"Failed to update global config from CLI: {e}"
+            )
 
 
 __all__ = [
     "FlextAuthConfig",
-    "FlextAuthConfigService",
 ]

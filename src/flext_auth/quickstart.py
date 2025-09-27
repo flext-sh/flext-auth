@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import override
 
 from flext_auth.auth import FlextAuth
+from flext_auth.constants import FlextAuthConstants
 from flext_core import FlextLogger
 
 
@@ -31,13 +32,13 @@ class FlextAuthQuickstart:
             str: Default REDACTED_LDAP_BIND_PASSWORD password string
 
         """
-        return "AdminPassword123!"
+        return FlextAuthConstants.DEFAULT_ADMIN_PASSWORD
 
     def flext_auth_quick_start(
         self,
         *,
         create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
-        REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
+        REDACTED_LDAP_BIND_PASSWORD_username: str = FlextAuthConstants.Roles.ADMIN,
         REDACTED_LDAP_BIND_PASSWORD_password: str | None = None,
     ) -> FlextAuth:
         """Quick start convenience function for examples and testing.

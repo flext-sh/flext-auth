@@ -22,6 +22,7 @@ from flext_auth.models import FlextAuthModels
 from flext_auth.protocols import FlextAuthProtocols
 from flext_auth.quickstart import FlextAuthQuickstart
 from flext_auth.typings import FlextAuthTypes
+from flext_auth.utilities import FlextAuthUtilities
 from flext_core import FlextResult
 
 __all__ = [
@@ -37,6 +38,7 @@ __all__ = [
     "FlextAuthProtocols",
     "FlextAuthQuickstart",
     "FlextAuthTypes",
+    "FlextAuthUtilities",
     "FlextAuthValidationMixin",
     "FlextResult",
     "__version__",

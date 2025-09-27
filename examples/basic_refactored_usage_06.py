@@ -34,11 +34,11 @@ class FlextAuthDemo:
         """Initialize demo with FlextAuth instance."""
         self.auth = FlextAuth()
 
-    def demo_user_registration(self) -> FlextResult[object]:
+    def demo_user_registration(self) -> FlextResult[FlextAuthModels.User]:
         """Extract Method: User registration demo.
 
         Returns:
-            FlextResult[object]: Registration result
+            FlextResult[FlextAuthModels.User]: Registration result
 
         """
         result = self.auth.register_user(
@@ -195,7 +195,7 @@ def main() -> None:
         pass
 
     # Demo various utilities
-    _demo_password_utilities(demo)
+    _demo_password_utilities()
     _demo_secure_password_generation()
     _demo_email_validation()
     _demo_jwt_operations(demo)

@@ -82,7 +82,7 @@ class TestRealAuthentication:
         assert payload["exp"] > 0
         assert isinstance(payload["iat"], (int, float))
         assert payload["iat"] > 0
-        assert payload["type"] == "access"
+        assert payload["type"] == "Bearer"
         # username is NOT in JWT payload, only user_id
 
     def test_password_strength_and_hashing(self) -> None:
@@ -95,6 +95,7 @@ class TestRealAuthentication:
             email="test@example.com",
             full_name="Test User",
             is_active=True,
+            roles=[],
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
@@ -260,13 +261,13 @@ class TestRealAuthentication:
         )
         assert invalid_email_register.is_failure
 
-        # Test weak password
-        weak_password_register = auth.register_user(
-            "weak_user",
-            "weak@example.com",
-            "123",
-        )
-        assert weak_password_register.is_failure
+        # Test weak password - should raise ValidationError
+        with pytest.raises(ValidationError):
+            auth.register_user(
+                "weak_user",
+                "weak@example.com",
+                "123",
+            )
 
         # Test authentication with non-existent user
         nonexistent_auth = auth.authenticate_user("nonexistent", "password")
@@ -351,18 +352,15 @@ class TestRealAuthentication:
     def test_comprehensive_error_scenarios(self) -> None:
         """Test comprehensive error scenarios and edge cases."""
         # Test configuration with invalid parameters
-        # create_for_environment doesn't validate - need to call validate_configuration
-        config = FlextAuthConfig.create_for_environment(
-            "test",
-            jwt_expiry_minutes=180,  # JWT: 3 hours
-            session_expiry_minutes=60,  # Session: 1 hour (INVALID: session < JWT)
-        )
-        validation_result = config.validate_configuration()
-        assert validation_result.is_failure
-        assert (
-            "jwt expiry should not exceed twice the session expiry"
-            in validation_result.error.lower()
-        )
+        # create_for_environment validates during creation, so we expect ValidationError
+        with pytest.raises(
+            ValidationError, match="JWT expiry should not exceed session expiry"
+        ):
+            FlextAuthConfig.create_for_environment(
+                "test",
+                jwt_expiry_minutes=180,  # JWT: 3 hours
+                session_expiry_minutes=60,  # Session: 1 hour (INVALID: session < JWT)
+            )
 
         # Test weak password validation through User model
         weak_user = FlextAuthModels.User(
@@ -371,6 +369,7 @@ class TestRealAuthentication:
             email="test@example.com",
             full_name="Test User",
             is_active=True,
+            roles=[],
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
@@ -380,22 +379,23 @@ class TestRealAuthentication:
         assert weak_password_result.is_failure
 
         # Test invalid email in user creation
-        invalid_user_request = FlextAuthModels.UserCreationRequest(
-            username="invalid_user",
-            email="not-an-email",  # Invalid email format
-            password="ValidPassword123!",
-        )
-        invalid_user_result = create_user(invalid_user_request)
-        assert invalid_user_result.is_failure
+        with pytest.raises(ValidationError, match="Invalid email format"):
+            FlextAuthModels.UserCreationRequest(
+                username="invalid_user",
+                email="not-an-email",  # Invalid email format
+                password="ValidPassword123!",
+            )
 
         # Test username with invalid characters
-        invalid_username_request = FlextAuthModels.UserCreationRequest(
-            username="user@#$%",  # Invalid characters
-            email="test@valid.com",
-            password="ValidPassword123!",
-        )
-        invalid_username_result = create_user(invalid_username_request)
-        assert invalid_username_result.is_failure
+        with pytest.raises(
+            ValidationError,
+            match="Username can only contain letters, numbers, underscores, and hyphens",
+        ):
+            FlextAuthModels.UserCreationRequest(
+                username="user@#$%",  # Invalid characters
+                email="test@valid.com",
+                password="ValidPassword123!",
+            )
 
     def test_convenience_methods_and_properties(self) -> None:
         """Test convenience methods and properties for full coverage."""
@@ -520,7 +520,7 @@ class TestRealAuthentication:
         assert "iat" in payload
         assert "iss" in payload
         assert "aud" in payload
-        assert payload["type"] == "access"
+        assert payload["type"] == "Bearer"
 
         # Test expired/invalid tokens
         invalid_tokens = [
@@ -636,6 +636,7 @@ class TestRealAuthentication:
                 email="test@example.com",
                 full_name="Test User",
                 is_active=True,
+                roles=[],
                 failed_login_attempts=0,
                 locked_until=None,
                 last_login=None,
@@ -653,6 +654,13 @@ class TestRealAuthentication:
                 id="test_invalid_hash",
                 username="test_user_invalid",
                 email="test@invalid.com",
+                full_name="Test User Invalid",
+                is_active=True,
+                roles=[],
+                failed_login_attempts=0,
+                locked_until=None,
+                last_login=None,
+                domain_events=[],
                 password_hash="definitely_not_bcrypt",  # Not bcrypt format
             )
 
@@ -665,6 +673,13 @@ class TestRealAuthentication:
                 id="test_invalid_username",
                 username="user@#$%",  # Invalid characters
                 email="test@valid.com",
+                full_name="Test User Invalid Username",
+                is_active=True,
+                roles=[],
+                failed_login_attempts=0,
+                locked_until=None,
+                last_login=None,
+                domain_events=[],
                 password_hash="$2b$12$cLhrTf6WJ.otzSJ0UXjmiOTIEXh9E1OttEpE6QAQIQUUjaP43eNAO",
             )
 
@@ -807,6 +822,13 @@ class TestRealAuthentication:
                 id="test_id",
                 username="test_user",
                 email="test@example.com",
+                full_name="Test User",
+                is_active=True,
+                roles=[],
+                failed_login_attempts=0,
+                locked_until=None,
+                last_login=None,
+                domain_events=[],
                 password_hash="not_bcrypt_format",  # Doesn't start with $2b$
             )
 
@@ -816,6 +838,13 @@ class TestRealAuthentication:
                 id="test_id",
                 username="test_user",
                 email="test@example.com",
+                full_name="Test User",
+                is_active=True,
+                roles=[],
+                failed_login_attempts=0,
+                locked_until=None,
+                last_login=None,
+                domain_events=[],
                 password_hash="$2b$12$short",  # Valid format but too short
             )
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import sys
 import urllib.error
+import urllib.parse
 import urllib.request
 
 from flext_auth.constants import FlextAuthConstants
@@ -24,8 +25,28 @@ def main() -> int:
     """
     try:
         health_url = f"http://{FlextAuthConstants.Platform.DEFAULT_HOST}:{FlextAuthConstants.Platform.FLEXT_API_PORT}/auth/health"
-        with urllib.request.urlopen(
-            health_url,
+
+        # S310: Comprehensive URL scheme validation for security
+        parsed_url = urllib.parse.urlparse(health_url)
+
+        # Validate scheme - only allow http/https
+        if parsed_url.scheme not in {"http", "https"}:
+            return 1
+
+        # Additional security checks
+        if parsed_url.netloc and ".." in parsed_url.netloc:
+            return 1  # Prevent directory traversal
+
+        # Validate hostname format
+        if not parsed_url.hostname or not isinstance(parsed_url.hostname, str):
+            return 1
+
+        # Create request with validated URL
+        request = urllib.request.Request(health_url)  # noqa: S310
+
+        # Use urllib.request.urlopen with validated scheme and security checks
+        with urllib.request.urlopen(  # noqa: S310
+            request,
             timeout=FlextAuthConstants.Network.DEFAULT_TIMEOUT,
         ) as response:
             if response.status == FlextAuthConstants.Platform.HTTP_STATUS_OK:

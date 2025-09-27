@@ -7,19 +7,16 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import override
-
-import jwt
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.typings import FlextAuthTypes
+from flext_auth.utilities import FlextAuthUtilities
 from flext_core import (
     FlextContainer,
     FlextLogger,
     FlextResult,
-    FlextTypes,
     FlextUtilities,
 )
 
@@ -31,7 +28,6 @@ class FlextAuth:
     session management, and role-based access control following flext-core patterns.
     """
 
-    @override
     def __init__(
         self,
         config: FlextAuthConfig | None = None,
@@ -83,7 +79,7 @@ class FlextAuth:
             email: Unique email address (case insensitive, will be indexed)
             password: Plain text password (will be securely hashed with bcrypt)
             full_name: Optional full display name for the user
-            roles: Optional list of roles (defaults to ["user"])
+            roles: Optional list of roles (defaults to [FlextAuthConstants.Roles.USER])
 
         Returns:
             FlextResult containing the created User entity with all fields populated,
@@ -205,7 +201,7 @@ class FlextAuth:
             email=email,
             password=password,
             full_name=full_name,
-            roles=roles or ["user"],
+            roles=roles or [FlextAuthConstants.Roles.USER],
         )
         return FlextResult[FlextAuthModels.UserCreationRequest].ok(user_request)
 
@@ -542,13 +538,15 @@ class FlextAuth:
         if jwt_token:
             result_data["tokens"] = {
                 "access_token": str(jwt_token),
-                "token_type": "Bearer",
+                "token_type": FlextAuthConstants.Jwt.DEFAULT_TOKEN_TYPE,
                 "expires_in": self.config.jwt_expiry_minutes * 60,  # Convert to seconds
             }
 
         return result_data
 
-    def validate_token(self, token: str) -> FlextResult[FlextTypes.Core.Dict]:
+    def validate_token(
+        self, token: str
+    ) -> FlextResult[FlextAuthTypes.TokenManagement.TokenPayload]:
         """Validate JWT token and return payload using railway pattern.
 
         Args:
@@ -563,30 +561,30 @@ class FlextAuth:
             token, field_name="token"
         )
         if token_validation.is_failure:
-            return FlextResult[FlextTypes.Core.Dict].fail("Token cannot be empty")
+            return FlextResult[FlextAuthTypes.TokenManagement.TokenPayload].fail(
+                "Token cannot be empty"
+            )
 
         # Clean token (remove Bearer prefix if present)
-        clean_token = token.removeprefix("Bearer ")
+        clean_token = token.removeprefix(FlextAuthConstants.Jwt.BEARER_PREFIX)
 
         # Basic token format validation
         jwt_dot_count = 2  # JWT should have exactly 2 dots
         if clean_token.count(".") != jwt_dot_count:
-            return FlextResult[FlextTypes.Core.Dict].fail("Invalid token format")
-
-        # JWT verification with specific error handling - minimal try/except for JWT library
-        try:
-            payload = jwt.decode(
-                clean_token,
-                str(self.config.jwt_auth_secret.get_secret_value()),
-                algorithms=[FlextAuthConstants.Jwt.DEFAULT_ALGORITHM],
-                options={"verify_aud": False},
+            return FlextResult[FlextAuthTypes.TokenManagement.TokenPayload].fail(
+                "Invalid token format"
             )
-        except jwt.ExpiredSignatureError:
-            return FlextResult[FlextTypes.Core.Dict].fail("Token has expired")
-        except jwt.InvalidTokenError:
-            return FlextResult[FlextTypes.Core.Dict].fail("Invalid token")
-        except Exception:
-            return FlextResult[FlextTypes.Core.Dict].fail("Token validation failed")
+
+        # JWT verification using FlextAuthUtilities - following Flext standards
+        jwt_result = FlextAuthUtilities.JWTProcessing.extract_claims(
+            clean_token, self.config.jwt_auth_secret
+        )
+        if jwt_result.is_failure:
+            return FlextResult[FlextAuthTypes.TokenManagement.TokenPayload].fail(
+                jwt_result.error or "Token validation failed"
+            )
+
+        payload = jwt_result.value
 
         # Log successful validation
         self._logger.info(f"JWT token validated for user: {payload.get('user_id')}")
@@ -594,7 +592,9 @@ class FlextAuth:
         # Add 'valid' flag expected by tests
         payload["valid"] = True
 
-        return FlextResult[FlextTypes.Core.Dict].ok(payload)  # pragma: no cover
+        return FlextResult[FlextAuthTypes.TokenManagement.TokenPayload].ok(
+            payload
+        )  # pragma: no cover  # pragma: no cover
 
     def generate_token(self, user_id: str) -> str:
         """Generate JWT token for user ID using flext-core patterns.
@@ -758,12 +758,8 @@ class FlextAuth:
         cls,
         *,
         create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
-        REDACTED_LDAP_BIND_PASSWORD_username: str = "REDACTED_LDAP_BIND_PASSWORD",
-        REDACTED_LDAP_BIND_PASSWORD_password: str = getattr(
-            FlextAuthConstants,
-            "DEFAULT_ADMIN_PASSWORD",
-            "AdminPassword123!",
-        ),
+        REDACTED_LDAP_BIND_PASSWORD_username: str = FlextAuthConstants.Roles.ADMIN,
+        REDACTED_LDAP_BIND_PASSWORD_password: str = FlextAuthConstants.DEFAULT_ADMIN_PASSWORD,
     ) -> FlextAuth:
         """Quick start with simplified implementation using railway pattern.
 
@@ -783,7 +779,7 @@ class FlextAuth:
                 username=REDACTED_LDAP_BIND_PASSWORD_username,
                 email=f"{REDACTED_LDAP_BIND_PASSWORD_username}@example.com",
                 password=REDACTED_LDAP_BIND_PASSWORD_password,
-                roles=["REDACTED_LDAP_BIND_PASSWORD"],
+                roles=[FlextAuthConstants.Roles.ADMIN],
             )
 
             if REDACTED_LDAP_BIND_PASSWORD_result.is_failure:

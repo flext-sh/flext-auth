@@ -165,6 +165,60 @@ class FlextAuthExceptions(FlextExceptions):
             # Override parent code for specific account disabled
             self.code = "ACCOUNT_DISABLED"
 
+    class FlextPasswordValidationError(FlextAuthValidationError):
+        """Error for password validation failures."""
+
+        @override
+        def __init__(self, message: str = "Password validation failed") -> None:
+            """Initialize password validation error."""
+            super().__init__(message)
+            self.code = "PASSWORD_VALIDATION_ERROR"
+
+    class FlextRateLimitExceededError(FlextAuthError):
+        """Error for rate limit exceeded."""
+
+        @override
+        def __init__(self, message: str = "Rate limit exceeded") -> None:
+            """Initialize rate limit error."""
+            super().__init__(message)
+            self.code = "RATE_LIMIT_EXCEEDED"
+
+    class FlextConfigurationError(FlextAuthError):
+        """Error for configuration issues."""
+
+        @override
+        def __init__(self, message: str = "Configuration error") -> None:
+            """Initialize configuration error."""
+            super().__init__(message)
+            self.code = "CONFIGURATION_ERROR"
+
+    class FlextSessionExpiredError(FlextSessionError):
+        """Error for expired sessions."""
+
+        @override
+        def __init__(self, message: str = "Session has expired") -> None:
+            """Initialize session expired error."""
+            super().__init__(message)
+            self.code = "SESSION_EXPIRED"
+
+    class FlextSessionInvalidError(FlextSessionError):
+        """Error for invalid sessions."""
+
+        @override
+        def __init__(self, message: str = "Session is invalid") -> None:
+            """Initialize session invalid error."""
+            super().__init__(message)
+            self.code = "SESSION_INVALID"
+
+    class FlextUserAlreadyExistsError(FlextUserExistsError):
+        """Error for when user already exists."""
+
+        @override
+        def __init__(self, message: str = "User already exists") -> None:
+            """Initialize user already exists error."""
+            super().__init__(message)
+            self.code = "USER_ALREADY_EXISTS"
+
 
 __all__ = [
     "FlextAuthExceptions",

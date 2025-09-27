@@ -9,6 +9,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import pytest
+from pydantic import ValidationError
+
 from flext_auth import (
     FlextAuth,
     FlextAuthConfig,
@@ -338,13 +341,13 @@ class TestFlextAuthSecurity:
         """Test password strength requirements."""
         auth: FlextAuth = FlextAuth()
 
-        # Test with weak password
-        weak_result = auth.register_user(
-            "weakuser",
-            "weak@example.com",
-            "weak",  # Too weak
-        )
-        assert weak_result.is_failure
+        # Test with weak password - should raise ValidationError
+        with pytest.raises(ValidationError):
+            auth.register_user(
+                "weakuser",
+                "weak@example.com",
+                "weak",  # Too weak
+            )
 
 
 class TestFlextAuthErrorHandling:

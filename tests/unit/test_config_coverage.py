@@ -255,8 +255,8 @@ class TestFlextAuthConfigCoverage:
         assert "lockout_duration_minutes" in security_settings
         assert "min_password_length" in security_settings
         assert "max_password_length" in security_settings
-        assert "require_password_complexity" in security_settings
-        assert "min_password_score" in security_settings
+        # Note: require_password_complexity and min_password_score are not in get_security_settings
+        # They are validation rules, not configuration settings
 
         assert security_settings["bcrypt_rounds"] == config.bcrypt_rounds
         assert security_settings["max_login_attempts"] == config.max_login_attempts
@@ -270,15 +270,15 @@ class TestFlextAuthConfigCoverage:
         assert isinstance(jwt_settings, dict)
         assert "jwt_expiry_minutes" in jwt_settings
         assert "jwt_algorithm" in jwt_settings
-        assert "jwt_issuer" in jwt_settings
-        assert "jwt_audience" in jwt_settings
-        assert "jwt_secret_length" in jwt_settings
+        assert "issuer" in jwt_settings
+        assert "audience" in jwt_settings
+        assert "secret_configured" in jwt_settings
 
         assert jwt_settings["jwt_expiry_minutes"] == config.jwt_expiry_minutes
-        assert jwt_settings["jwt_algorithm"] == config.jwt_algorithm
-        assert jwt_settings["jwt_issuer"] == config.jwt_issuer
-        assert jwt_settings["jwt_audience"] == config.jwt_audience
-        assert jwt_settings["jwt_secret_length"] == len(config.jwt_secret)
+        assert jwt_settings["algorithm"] == config.jwt_algorithm
+        assert jwt_settings["issuer"] == config.jwt_issuer
+        assert jwt_settings["audience"] == config.jwt_audience
+        assert jwt_settings["secret_configured"] == (config.jwt_secret is not None)
 
     def test_create_from_environment_method(self) -> None:
         """Test create_from_environment method coverage."""
@@ -310,25 +310,21 @@ class TestFlextAuthConfigCoverage:
     def test_config_validation_jwt_expiry_exceeds_session(self) -> None:
         """Test config validation when JWT expiry exceeds session expiry."""
         # Test the specific validation logic for JWT expiry vs session expiry
-        config = FlextAuthConfig(
-            jwt_secret="test_jwt_secret_minimum_32_characters_long",
-            jwt_expiry_minutes=120,  # 2 hours
-            session_expiry_minutes=30,  # 30 minutes - JWT exceeds 2x session
-        )
-
-        validation_result = config.validate_configuration()
-        assert validation_result.is_failure
-        assert validation_result.error is not None
-        assert (
-            "JWT expiry should not exceed twice the session expiry"
-            in validation_result.error
-        )
+        with pytest.raises(ValidationError):
+            FlextAuthConfig(
+                jwt_secret="test_jwt_secret_minimum_32_characters_long",
+                jwt_expiry_minutes=120,  # 2 hours
+                session_expiry_minutes=30,  # 30 minutes - JWT exceeds 2x session
+            )
 
     def test_create_from_environment_exception_handling(self) -> None:
         """Test exception handling in create_for_environment method."""
-        # create_for_environment raises exceptions directly, not FlextResult
-        with patch("flext_auth.config.FlextAuthConfig.model_validate") as mock_validate:
-            mock_validate.side_effect = Exception("Test exception")
+        # create_for_environment calls get_or_create_shared_instance which can raise ValidationError
+        with patch(
+            "flext_auth.config.FlextAuthConfig.get_or_create_shared_instance"
+        ) as mock_get_or_create:
+            mock_get_or_create.side_effect = Exception("Test exception")
+            # The method should raise the exception
             with pytest.raises(Exception, match="Test exception"):
                 FlextAuthConfig.create_for_environment("test")
 
@@ -338,16 +334,13 @@ class TestFlextAuthConfigAdditionalCoverage:
 
     def test_create_with_overrides_method(self) -> None:
         """Test create_with_overrides method to cover lines 450-462."""
-        result = FlextAuthConfig.create_with_overrides(
+        config = FlextAuthConfig.create_with_overrides(
             jwt_expiry_minutes=45,
             bcrypt_rounds=14,
             max_login_attempts=3,
             session_expiry_minutes=90,
             environment="test",
         )
-
-        assert result.is_success
-        config = result.value
         assert config.jwt_expiry_minutes == 45
         assert config.bcrypt_rounds == 14
         assert config.max_login_attempts == 3
@@ -358,10 +351,10 @@ class TestFlextAuthConfigAdditionalCoverage:
         # Test set_global_instance with invalid type
         with pytest.raises(
             TypeError,
-            match="config must be an instance of FlextAuthConfig",
+            match="Instance must be of type FlextAuthConfig",
         ):
             # Type ignore needed for intentional type violation in test
-            FlextAuthConfig.set_global_instance("invalid_config")
+            FlextAuthConfig.set_global_instance("invalid_config")  # type: ignore[arg-type]
 
         # Test get_or_create_global with overrides
         result = FlextAuthConfig.get_or_create_global(

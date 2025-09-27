@@ -8,11 +8,16 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from flext_core import FlextConstants
 
+class FlextAuthConstants:
+    """Authentication-specific constants following FLEXT unified pattern with nested domains.
 
-class FlextAuthConstants(FlextConstants):
-    """Authentication-specific constants following FLEXT unified pattern with nested domains."""
+    This class provides authentication-specific constants without inheriting from FlextConstants
+    to avoid naming conflicts with nested classes like Security and Logging.
+    """
+
+    # Default credentials
+    DEFAULT_ADMIN_PASSWORD = "AdminPassword123!"
 
     class Jwt:
         """JWT Token management constants."""
@@ -31,7 +36,8 @@ class FlextAuthConstants(FlextConstants):
             "RS384",
             "RS512",
         ]
-        DEFAULT_TOKEN_TYPE = "access"
+        DEFAULT_TOKEN_TYPE = "Bearer"
+        BEARER_PREFIX = "Bearer "
         MIN_SECRET_KEY_LENGTH = 32
 
     class Credentials:
@@ -53,6 +59,13 @@ class FlextAuthConstants(FlextConstants):
             BCRYPT_ROUNDS = 12
             MIN_BCRYPT_ROUNDS = 10
             MAX_BCRYPT_ROUNDS = 15
+            WEAK_PASSWORDS: ClassVar[list[str]] = [
+                "123",
+                "abc",
+                "password",
+                "12345678",
+                "aaaaaaaa",
+            ]
 
     class Session:
         """Session management constants."""
@@ -133,6 +146,48 @@ class FlextAuthConstants(FlextConstants):
 
             AUDIT_LOG_LEVEL = "INFO"
             AUDIT_LOG_FILE = "flext_auth_audit.log"
+
+    class Permissions:
+        """Permission constants for role-based access control."""
+
+        # Basic permissions
+        READ = "read"
+        WRITE = "write"
+        DELETE = "delete"
+        ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
+
+        # Permission sets
+        BASIC_USER_PERMISSIONS: ClassVar[list[str]] = [READ, WRITE]
+        ADMIN_PERMISSIONS: ClassVar[list[str]] = [READ, WRITE, DELETE, ADMIN]
+
+    class Roles:
+        """Role constants for role-based access control."""
+
+        # Standard roles
+        ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
+        USER = "user"
+        MODERATOR = "moderator"
+        GUEST = "guest"
+
+        # Role sets
+        DEFAULT_ROLES: ClassVar[list[str]] = [USER]
+        VALID_ROLES: ClassVar[list[str]] = [ADMIN, USER, MODERATOR, GUEST]
+
+    class Platform:
+        """Platform defaults for authentication services."""
+
+        FLEXT_API_PORT = 8000
+        DEFAULT_HOST = "localhost"
+        LOOPBACK_IP = "127.0.0.1"
+        HTTP_STATUS_OK = 200
+
+    class Network:
+        """Network defaults for authentication services."""
+
+        MIN_PORT = 1
+        MAX_PORT = 65535
+        TOTAL_TIMEOUT = 60
+        DEFAULT_TIMEOUT = 30
 
 
 __all__ = ["FlextAuthConstants"]

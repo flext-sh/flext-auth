@@ -181,7 +181,7 @@ class FlextAuthMixins(FlextMixins):
 
             role = role.strip()
 
-            valid_roles = ["REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"]
+            valid_roles = FlextAuthConstants.Roles.VALID_ROLES
             if role not in valid_roles:
                 return FlextResult[str].fail(
                     f"Invalid role. Valid roles: {valid_roles}"

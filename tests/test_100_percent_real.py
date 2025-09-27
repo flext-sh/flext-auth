@@ -515,9 +515,9 @@ class TestRealAuthExhaustive:
         result = auth.register_user("test", "invalid-email", "ValidPass123!")
         assert not result.is_success
 
-        # Senha muito fraca
-        result = auth.register_user("test", "test@test.com", "123")
-        assert not result.is_success
+        # Senha muito fraca - should raise ValidationError
+        with pytest.raises(ValidationError):
+            auth.register_user("test", "test@test.com", "123")
 
     def test_token_validation_edge_cases(self) -> None:
         """Testa casos extremos de validação de token (linhas 792-793, 838-840)."""

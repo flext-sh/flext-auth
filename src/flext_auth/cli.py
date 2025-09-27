@@ -241,13 +241,31 @@ class FlextAuthCli:
         self._logger.info("FLEXT Auth CLI created successfully")
 
 
-# Global instance for direct access - no wrapper functions
-flext_auth_cli = FlextAuthCli()
+class FlextAuthCliSingleton:
+    """Singleton holder for FlextAuthCli."""
+
+    _instance: FlextAuthCli | None = None
+
+    @classmethod
+    def get_instance(cls) -> FlextAuthCli:
+        """Get the singleton CLI instance."""
+        if cls._instance is None:
+            cls._instance = FlextAuthCli()
+        return cls._instance
+
+
+def get_cli() -> FlextAuthCli:
+    """Get the global CLI instance with lazy initialization."""
+    return FlextAuthCliSingleton.get_instance()
+
+
+# For backward compatibility
+flext_auth_cli = get_cli
 
 
 def main() -> None:
     """Standalone main function for CLI entry point."""
-    flext_auth_cli.main()
+    get_cli().main()
 
 
 __all__: list[str] = [

@@ -46,7 +46,7 @@ class FlextAuthContainer:
     def create_session(
         cls,
         user_id: str,
-        expires_in_minutes: int = 30,
+        expires_in_minutes: int = FlextAuthConstants.Session.DEFAULT_EXPIRY_MINUTES,
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> FlextResult[FlextAuthModels.Session]:
@@ -167,7 +167,9 @@ class FlextAuthContainer:
 
         return FlextAuthModels.AuthToken.create_jwt_token(
             user_id=user_id,
-            expiry_minutes=expires_hours * 60 if expires_hours else 30,
+            expiry_minutes=expires_hours * 60
+            if expires_hours
+            else FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES,
             token_type=FlextAuthConstants.Jwt.DEFAULT_TOKEN_TYPE,
         )
 

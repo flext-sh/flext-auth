@@ -84,8 +84,13 @@ class TestUserCreateUserMethod:
                 username="user!@#",  # Contains special chars
                 email="test@example.com",
                 password_hash="$2b$12$test_hash_that_is_long_enough_to_pass_validation_requirements",
+                full_name="Test User",
                 is_active=True,
                 roles=["user"],
+                failed_login_attempts=0,
+                locked_until=None,
+                last_login=None,
+                domain_events=[],
                 created_at=datetime.now(UTC),
             )
 
@@ -98,8 +103,13 @@ class TestUserCreateUserMethod:
                 username="testuser",
                 email="test@example.com",
                 password_hash="not_bcrypt_hash",  # Not bcrypt format
+                full_name="Test User",
                 is_active=True,
                 roles=["user"],
+                failed_login_attempts=0,
+                locked_until=None,
+                last_login=None,
+                domain_events=[],
                 created_at=datetime.now(UTC),
             )
 
@@ -110,7 +120,12 @@ class TestUserCreateUserMethod:
                 username="testuser",
                 email="test@example.com",
                 password_hash="$2b$12$short",  # Too short
+                full_name="Test User",
                 is_active=True,
+                failed_login_attempts=0,
+                locked_until=None,
+                last_login=None,
+                domain_events=[],
                 roles=["user"],
                 created_at=datetime.now(UTC),
             )
@@ -232,22 +247,20 @@ class TestUserCreateUserMethod:
     def test_password_strength_validation(self) -> None:
         """Test Password strength validation - lines 503-504."""
         # Test with weak password using create_user
-        request = FlextAuthModels.UserCreationRequest(
-            username="weakuser2",
-            email="weak2@example.com",
-            password="weakpass",  # 8 chars but only lowercase
-        )
-        result = create_user(request)
-        assert result.is_failure  # Should fail due to weak password
+        with pytest.raises(ValidationError):
+            FlextAuthModels.UserCreationRequest(
+                username="weakuser2",
+                email="weak2@example.com",
+                password="weakpass",  # 8 chars but only lowercase
+            )
 
         # Test with another weak password using create_user
-        request = FlextAuthModels.UserCreationRequest(
-            username="weakuser",
-            email="weak@example.com",
-            password="12345678",  # 8 chars but only numbers
-        )
-        result = create_user(request)
-        assert result.is_failure  # Should fail due to weak password
+        with pytest.raises(ValidationError):
+            FlextAuthModels.UserCreationRequest(
+                username="weakuser",
+                email="weak@example.com",
+                password="12345678",  # 8 chars but only numbers
+            )
 
     def test_create_user_none_username_failure(self) -> None:
         """Test user creation fails with None username - line 212-213."""
@@ -292,17 +305,13 @@ class TestUserCreateUserMethod:
 
     def test_create_user_invalid_email_exception(self) -> None:
         """Test exception handling in user creation - line 261-262."""
-        request = FlextAuthModels.UserCreationRequest(
-            username="testuser",
-            email="invalid-email-format",  # Should trigger validation error
-            password="ValidPassword123!",
-            roles=["user"],
-        )
-        result = create_user(request)
-
-        assert result.is_failure
-        assert result.error is not None
-        assert "User validation failed:" in str(result.error)
+        with pytest.raises(ValidationError):
+            FlextAuthModels.UserCreationRequest(
+                username="testuser",
+                email="invalid-email-format",  # Should trigger validation error
+                password="ValidPassword123!",
+                roles=["user"],
+            )
 
 
 # class TestPasswordModel:

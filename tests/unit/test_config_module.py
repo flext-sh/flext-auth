@@ -14,7 +14,6 @@ import time
 
 from flext_auth import FlextAuthConfig
 from flext_core import FlextResult, FlextTypes
-from flext_tests import FlextTestsDomains
 
 
 class TestConfigModule:
@@ -197,16 +196,15 @@ class TestConfigModule:
             assert isinstance(result, FlextResult)
             # Should handle empty config gracefully
 
-    def test_flext_auth_config_with_flext_tests(
-        self, flext_domains: FlextTestsDomains
-    ) -> None:
+    def test_flext_auth_config_with_flext_tests(self) -> None:
         """Test config functionality with flext_tests infrastructure."""
         config = FlextAuthConfig()
 
-        # Create test data using flext_tests
-        test_config_data = flext_domains.create_configuration()
-        test_config_data["auth_secret_key"] = "flext_test_secret"
-        test_config_data["token_expiry"] = 1800
+        # Create test data manually
+        test_config_data = {
+            "auth_secret_key": "flext_test_secret",
+            "token_expiry": 1800,
+        }
 
         # Test config loading with flext_tests data
         if hasattr(config, "load_config"):
