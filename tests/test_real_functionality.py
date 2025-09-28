@@ -183,7 +183,7 @@ class TestRealAuthentication:
         session = sessions[0]
         assert session.user_id == user.id
         assert not session.is_revoked
-        assert not session.is_expired()
+        assert not session.is_expired
 
         # Test session revocation
         revoke_result = auth.revoke_session(session.id)
@@ -314,7 +314,7 @@ class TestRealAuthentication:
         assert session_result.is_success
         session = session_result.value
         assert session.user_id == user.id
-        assert not session.is_expired()
+        assert not session.is_expired
         assert session.is_valid
 
     def test_jwt_token_operations(self) -> None:
@@ -419,7 +419,7 @@ class TestRealAuthentication:
         assert session_result.is_success
         session = session_result.value
 
-        assert not session.is_expired()  # Should not be expired when created
+        assert not session.is_expired  # Should not be expired when created
 
         # Test session methods
         session.extend_session(hours=1)
@@ -735,7 +735,7 @@ class TestRealAuthentication:
 
         # Test manual session expiry setting (simulate expired session)
         session.expires_at = datetime.now(UTC) - timedelta(minutes=1)
-        assert session.is_expired()  # Should be expired now
+        assert session.is_expired  # Should be expired now
         assert not session.is_valid  # Should be invalid when expired
         # Session is expired
 

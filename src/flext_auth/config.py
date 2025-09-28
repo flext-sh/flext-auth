@@ -353,7 +353,7 @@ class FlextAuthConfig(FlextConfig):
         return FlextResult[None].ok(None)
 
     # Singleton pattern implementation
-    _global_instance: ClassVar[FlextAuthConfig | None] = None
+    _global_instance: ClassVar[FlextConfig | None] = None
     _lock: ClassVar[threading.Lock] = threading.Lock()
 
     @classmethod
@@ -363,7 +363,7 @@ class FlextAuthConfig(FlextConfig):
             with cls._lock:
                 if cls._global_instance is None:
                     cls._global_instance = cls()
-        return cls._global_instance
+        return cast("FlextAuthConfig", cls._global_instance)
 
     @classmethod
     def set_global_instance(cls, instance: FlextConfig) -> None:

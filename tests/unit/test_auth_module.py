@@ -118,7 +118,7 @@ class TestAuthModule:
         user_id = user.id
 
         # Test user retrieval by ID
-        result = auth.get_user_by_id(user_id)
+        result = auth.get_user_by_id(str(user_id))
         assert isinstance(result, FlextResult)
 
     def test_flext_auth_validate_token(self) -> None:
@@ -200,7 +200,7 @@ class TestAuthModule:
         assert token_result.is_success
         user_id = token_result.value.get("user_id")
         assert user_id is not None
-        result = auth.get_user_by_id(user_id)
+        result = auth.get_user_by_id(str(user_id))
         assert isinstance(result, FlextResult)
 
     def test_flext_auth_revoke_session(self) -> None:

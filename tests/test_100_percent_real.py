@@ -222,7 +222,7 @@ class TestRealModelsExhaustive:
         # Token muito curto deve falhar
         with pytest.raises(Exception, match="String should have at least"):
             Session(
-                id="session_id",
+                session_id="session_id",
                 user_id=user.id,
                 session_token="short",  # Muito curto
                 expires_at=datetime.now(UTC),
@@ -245,7 +245,7 @@ class TestRealModelsExhaustive:
         # Sessão não expirada
         future_time = datetime.now(UTC) + timedelta(hours=1)
         active_session = Session(
-            id="active_session",
+            session_id="active_session",
             user_id=user.id,
             session_token="active_token_123456789012345678901234567890ab",
             expires_at=future_time,
@@ -253,13 +253,13 @@ class TestRealModelsExhaustive:
             ip_address=None,
             user_agent=None,
         )
-        assert not active_session.is_expired()
+        assert not active_session.is_expired
         assert active_session.is_valid
 
         # Sessão expirada
         past_time = datetime.now(UTC) - timedelta(hours=1)
         expired_session = Session(
-            id="expired_session",
+            session_id="expired_session",
             user_id=user.id,
             session_token="expired_token_123456789012345678901234567890ab",
             expires_at=past_time,
@@ -267,7 +267,7 @@ class TestRealModelsExhaustive:
             ip_address=None,
             user_agent=None,
         )
-        assert expired_session.is_expired()
+        assert expired_session.is_expired
         assert not expired_session.is_valid
 
     def test_credential_real_functionality(self) -> None:
@@ -707,7 +707,7 @@ class TestRealIntegrationExhaustive:
         # Buscar usuário por token usando API direta (validate_token + get_user_by_id)
         user_id = token_result.value.get("user_id")
         assert user_id is not None
-        user_by_token = auth.get_user_by_id(user_id)
+        user_by_token = auth.get_user_by_id(str(user_id))
         assert user_by_token.is_success
         if user_by_token.value:
             assert user_by_token.value.username == "integration_user"
@@ -735,7 +735,7 @@ class TestRealIntegrationExhaustive:
         assert token_result.is_success
         user_id = token_result.value.get("user_id")
         assert user_id is not None
-        user_by_token = auth.get_user_by_id(user_id)
+        user_by_token = auth.get_user_by_id(str(user_id))
         assert user_by_token.is_success
 
         # Limpeza de sessões
@@ -746,5 +746,5 @@ class TestRealIntegrationExhaustive:
         assert token_result.is_success
         user_id = token_result.value.get("user_id")
         assert user_id is not None
-        user_by_token = auth.get_user_by_id(user_id)
+        user_by_token = auth.get_user_by_id(str(user_id))
         assert user_by_token is not None

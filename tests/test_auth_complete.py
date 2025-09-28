@@ -308,7 +308,7 @@ class TestFlextAuthUserRetrieval:
         assert token_result.is_success is True
         user_id = token_result.value.get("user_id")
         assert user_id is not None
-        user_result = auth.get_user_by_id(user_id)
+        user_result = auth.get_user_by_id(str(user_id))
         assert user_result.is_success is True
         user = user_result.value
         assert user is not None, "user should not be None"
@@ -393,7 +393,7 @@ class TestFlextAuthSessions:
 
         # Check session expiration
         session = sessions[0]
-        assert not session.is_expired()
+        assert not session.is_expired
         assert session.is_valid
 
 
@@ -424,7 +424,7 @@ class TestFlextAuthModels:
     def test_session_model_defaults(self) -> None:
         """Test Session model default values."""
         session = FlextAuthModels.Session(
-            id="session-id",
+            session_id="session-id",
             user_id="user-id",
             session_token="session-token-minimum-32-characters-long",
             expires_at=datetime.now(UTC) + timedelta(hours=2),
@@ -470,7 +470,7 @@ class TestFlextAuthIntegration:
             assert token_result.is_success is True
             user_id = token_result.value.get("user_id")
             assert user_id is not None
-            user_by_token_result = auth.get_user_by_id(user_id)
+            user_by_token_result = auth.get_user_by_id(str(user_id))
             assert user_by_token_result.is_success is True
             token_user = user_by_token_result.value
             assert token_user is not None

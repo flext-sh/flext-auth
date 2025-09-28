@@ -7,15 +7,18 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Protocol
+from typing import Protocol, runtime_checkable
 
+from flext_auth.models import FlextAuthModels
+from flext_auth.typings import FlextAuthTypes
 from flext_core import FlextProtocols, FlextResult
 
 
 class FlextAuthProtocols(FlextProtocols):
     """Unified authentication protocols following FLEXT patterns."""
 
-    class FlextAuthUserProtocol(Protocol):
+    @runtime_checkable
+    class FlextAuthUserProtocol(FlextProtocols.Domain.Service, Protocol):
         """Protocol for user-like objects in authentication."""
 
         id: str
@@ -35,24 +38,25 @@ class FlextAuthProtocols(FlextProtocols):
             ...
 
         @property
-        def can_login(self: object) -> bool:
+        def can_login(self) -> bool:
             """Check if user can attempt login."""
             ...
 
         @property
-        def is_locked(self: object) -> bool:
+        def is_locked(self) -> bool:
             """Check if account is currently locked."""
             ...
 
-        def record_successful_login(self: object) -> None:
+        def record_successful_login(self) -> None:
             """Record successful login and reset failed attempts."""
             ...
 
-        def record_failed_login(self: object) -> None:
+        def record_failed_login(self) -> None:
             """Record failed login attempt and apply lockout if needed."""
             ...
 
-    class FlextAuthSessionProtocol(Protocol):
+    @runtime_checkable
+    class FlextAuthSessionProtocol(FlextProtocols.Domain.Service, Protocol):
         """Protocol for session-like objects in authentication."""
 
         id: str
@@ -63,7 +67,7 @@ class FlextAuthProtocols(FlextProtocols):
         ip_address: str | None
         user_agent: str | None
 
-        def is_expired(self: object) -> bool:
+        def is_expired(self) -> bool:
             """Check if session is expired."""
             ...
 
@@ -71,16 +75,16 @@ class FlextAuthProtocols(FlextProtocols):
             """Extend session expiration time."""
             ...
 
-        @property
-        def is_valid(self: object) -> bool:
+        def is_valid(self) -> bool:
             """Check if session is valid (active and not expired)."""
             ...
 
-        def revoke(self: object) -> FlextResult[bool]:
+        def revoke(self) -> FlextResult[bool]:
             """Revoke this session."""
             ...
 
-    class FlextAuthTokenProtocol(Protocol):
+    @runtime_checkable
+    class FlextAuthTokenProtocol(FlextProtocols.Domain.Service, Protocol):
         """Protocol for token-like objects in authentication."""
 
         token: str
@@ -88,11 +92,12 @@ class FlextAuthProtocols(FlextProtocols):
         expires_at: datetime
         is_revoked: bool
 
-        def is_expired(self: object) -> bool:
+        def is_expired(self) -> bool:
             """Check if token is expired."""
             ...
 
-    class FlextAuthServiceProtocol(Protocol):
+    @runtime_checkable
+    class FlextAuthServiceProtocol(FlextProtocols.Domain.Service, Protocol):
         """Protocol for authentication service-like objects."""
 
         def register_user(
@@ -102,7 +107,7 @@ class FlextAuthProtocols(FlextProtocols):
             password: str,
             full_name: str | None = None,
             roles: list[str] | None = None,
-        ) -> FlextResult[FlextAuthProtocols.FlextAuthUserProtocol]:
+        ) -> FlextResult[FlextAuthModels.User]:
             """Register new user."""
             ...
 
@@ -112,7 +117,7 @@ class FlextAuthProtocols(FlextProtocols):
             password: str,
             client_ip: str | None = None,
             user_agent: str | None = None,
-        ) -> FlextResult[dict[str, object]]:
+        ) -> FlextResult[FlextAuthTypes.AuthenticationResponseDict]:
             """Authenticate user and create session."""
             ...
 

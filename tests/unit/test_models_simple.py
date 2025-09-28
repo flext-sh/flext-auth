@@ -156,7 +156,7 @@ class TestUserCreateUserMethod:
             match="String should have at least 32 characters",
         ):
             _ = FlextAuthModels.Session(
-                id="test-session-id",
+                session_id="test-session-id",
                 user_id="test-user-id",
                 session_token="short",  # Set invalid token during creation
                 expires_at=datetime.now(UTC) + timedelta(hours=1),
@@ -170,7 +170,7 @@ class TestUserCreateUserMethod:
         # Create a session that expires in 1 hour
         expires_at = datetime.now(UTC) + timedelta(hours=1)
         session = FlextAuthModels.Session(
-            id="test-session-id",
+            session_id="test-session-id",
             user_id="test-user-id",
             session_token="valid_token_12345678901234567890",
             expires_at=expires_at,
@@ -200,7 +200,7 @@ class TestUserCreateUserMethod:
         """Test Session update_activity method - lines 346-347."""
         # Create a session
         session = FlextAuthModels.Session(
-            id="test-session-id",
+            session_id="test-session-id",
             user_id="test-user-id",
             session_token="valid_token_12345678901234567890",
             expires_at=datetime.now(UTC) + timedelta(hours=1),
@@ -397,7 +397,7 @@ class TestSessionModel:
     def test_session_model_creation(self) -> None:
         """Test Session model creation with required fields."""
         session = FlextAuthModels.Session(
-            id="session-id",
+            session_id="session-id",
             user_id="user-id",
             session_token="valid_token_12345678901234567890",
             expires_at=datetime.now(UTC) + timedelta(hours=24),

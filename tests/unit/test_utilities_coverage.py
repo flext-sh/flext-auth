@@ -78,6 +78,7 @@ class TestFlextAuthUtilitiesCoverage:
         """Test session validation with valid session."""
         session_store = {}
         session = FlextAuthModels.Session(
+            session_id="test_session_id",
             session_token="test_token_that_is_long_enough_for_validation_32_chars",
             user_id="test_user",
             expires_at=datetime.now(UTC) + timedelta(hours=1),
@@ -100,6 +101,7 @@ class TestFlextAuthUtilitiesCoverage:
         """Test session validation with expired session."""
         session_store = {}
         session = FlextAuthModels.Session(
+            session_id="expired_session_id",
             session_token="expired_token_that_is_long_enough_for_validation_32_chars",
             user_id="test_user",
             expires_at=datetime.now(UTC) - timedelta(hours=1),  # Expired
@@ -424,6 +426,7 @@ class TestFlextAuthUtilitiesCoverage:
     def test_session_refresh_success(self) -> None:
         """Test session refresh success."""
         session = FlextAuthModels.Session(
+            session_id="test_session_id",
             session_token="test_token_that_is_long_enough_for_validation_32_chars",
             user_id="test_user",
             expires_at=datetime.now(UTC) + timedelta(hours=1),

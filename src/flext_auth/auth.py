@@ -26,6 +26,11 @@ class FlextAuth:
 
     Provides secure authentication with bcrypt password hashing, JWT tokens,
     session management, and role-based access control following flext-core patterns.
+
+    Implements FlextAuthProtocols.FlextAuthServiceProtocol through structural subtyping:
+    - register_user: User registration with validation and secure password hashing
+    - authenticate_user: User authentication with session creation and JWT tokens
+    - logout_user: Session termination by session ID
     """
 
     def __init__(
@@ -57,7 +62,7 @@ class FlextAuth:
         # Log initialization info
         self._logger.info(
             f"FlextAuth initialized: token_expire_minutes={self.config.jwt_expiry_minutes}, "
-            f"bcrypt_rounds={self.config.bcrypt_rounds}, jwt_secret_length={len(str(self.config.jwt_auth_secret.get_secret_value()))}",
+            f"bcrypt_rounds={self.config.bcrypt_rounds}, jwt_secret_length={len(str(self.config.jwt_auth_secret.get_secret_value()))}"
         )
 
     def register_user(
@@ -68,7 +73,7 @@ class FlextAuth:
         full_name: str | None = None,
         roles: list[str] | None = None,
     ) -> FlextResult[FlextAuthModels.User]:
-        """Register new user with FlextResult railway pattern - eliminates try/except fallbacks.
+        """Register new user with FlextResult railway pattern - implements FlextAuthServiceProtocol.
 
         Creates a new user account with the provided credentials and information.
         Validates username and email availability, creates secure password hash,
@@ -280,7 +285,7 @@ class FlextAuth:
         client_ip: str | None = None,
         user_agent: str | None = None,
     ) -> FlextResult[FlextAuthTypes.AuthenticationResponseDict]:
-        """Authenticate user credentials and create session with JWT token using railway pattern.
+        """Authenticate user credentials and create session - implements FlextAuthServiceProtocol.
 
         Validates user credentials against stored password hash, checks account
         status (active/locked), and creates a new session with JWT token if
@@ -310,7 +315,7 @@ class FlextAuth:
         self._logger.info(f"Authentication attempt for username: {username}")
         if client_ip or user_agent:
             self._logger.info(
-                f"Authentication attempt from {client_ip or 'unknown'} with agent {user_agent or 'unknown'}",
+                f"Authentication attempt from {client_ip or 'unknown'} with agent {user_agent or 'unknown'}"
             )
 
         # Railway pattern: Chain authentication operations with monadic composition
@@ -544,9 +549,18 @@ class FlextAuth:
 
         return result_data
 
+    def logout_user(self, session_id: str) -> FlextResult[None]:
+        """Logout user by revoking session - implements FlextAuthServiceProtocol.
+
+        Returns:
+            FlextResult[None]: Success if session revoked, error if session not found
+
+        """
+        return self.revoke_session(session_id)
+
     def validate_token(
         self, token: str
-    ) -> FlextResult[FlextAuthTypes.TokenManagement.TokenPayload]:
+    ) -> FlextResult[FlextAuthTypes.TokenManagement.JwtTokenPayload]:
         """Validate JWT token and return payload using railway pattern.
 
         Args:
@@ -561,7 +575,7 @@ class FlextAuth:
             token, field_name="token"
         )
         if token_validation.is_failure:
-            return FlextResult[FlextAuthTypes.TokenManagement.TokenPayload].fail(
+            return FlextResult[FlextAuthTypes.TokenManagement.JwtTokenPayload].fail(
                 "Token cannot be empty"
             )
 
@@ -571,7 +585,7 @@ class FlextAuth:
         # Basic token format validation
         jwt_dot_count = 2  # JWT should have exactly 2 dots
         if clean_token.count(".") != jwt_dot_count:
-            return FlextResult[FlextAuthTypes.TokenManagement.TokenPayload].fail(
+            return FlextResult[FlextAuthTypes.TokenManagement.JwtTokenPayload].fail(
                 "Invalid token format"
             )
 
@@ -580,7 +594,7 @@ class FlextAuth:
             clean_token, self.config.jwt_auth_secret
         )
         if jwt_result.is_failure:
-            return FlextResult[FlextAuthTypes.TokenManagement.TokenPayload].fail(
+            return FlextResult[FlextAuthTypes.TokenManagement.JwtTokenPayload].fail(
                 jwt_result.error or "Token validation failed"
             )
 
@@ -592,8 +606,22 @@ class FlextAuth:
         # Add 'valid' flag expected by tests
         payload["valid"] = True
 
-        return FlextResult[FlextAuthTypes.TokenManagement.TokenPayload].ok(
-            payload
+        # Cast to specific JWT token payload type
+        jwt_payload: FlextAuthTypes.TokenManagement.JwtTokenPayload = {
+            "user_id": str(payload["user_id"]),
+            "exp": int(payload["exp"]),
+            "iat": int(payload["iat"]),
+            "valid": True,
+        }
+
+        # Add optional fields if present
+        if "username" in payload:
+            jwt_payload["username"] = str(payload["username"])
+        if "type" in payload:
+            jwt_payload["type"] = str(payload["type"])
+
+        return FlextResult[FlextAuthTypes.TokenManagement.JwtTokenPayload].ok(
+            jwt_payload
         )  # pragma: no cover  # pragma: no cover
 
     def generate_token(self, user_id: str) -> str:
@@ -703,7 +731,7 @@ class FlextAuth:
         expired_sessions = [
             session_id
             for session_id, session in self._sessions.items()
-            if session.is_expired() or not session.is_active
+            if session.is_expired or not session.is_active
         ]
 
         # Remove expired sessions
@@ -717,15 +745,6 @@ class FlextAuth:
 
         self._logger.info(f"Cleaned up {len(expired_sessions)} expired sessions")
         return FlextResult[int].ok(len(expired_sessions))
-
-    def logout_user(self, session_id: str) -> FlextResult[None]:
-        """Logout user by revoking session.
-
-        Returns:
-            FlextResult[None]: Success if session revoked, error if session not found
-
-        """
-        return self.revoke_session(session_id)
 
     @classmethod
     def quick_start(

@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import os
+from typing import cast
 from unittest.mock import patch
 
 import pytest
@@ -353,8 +354,8 @@ class TestFlextAuthConfigAdditionalCoverage:
             TypeError,
             match="Instance must be of type FlextAuthConfig",
         ):
-            # Type ignore needed for intentional type violation in test
-            FlextAuthConfig.set_global_instance("invalid_config")
+            # Cast needed for intentional type violation in test
+            FlextAuthConfig.set_global_instance(cast("FlextConfig", "invalid_config"))
 
         # Test get_or_create_global with overrides
         result = FlextAuthConfig.get_or_create_global(

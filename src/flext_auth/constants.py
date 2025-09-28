@@ -17,7 +17,7 @@ class FlextAuthConstants:
     """
 
     # Default credentials
-    DEFAULT_ADMIN_PASSWORD = "AdminPassword123!"
+    DEFAULT_ADMIN_PASSWORD = "AdminPassword123!"  # nosec B105 - Default REDACTED_LDAP_BIND_PASSWORD password for testing
 
     class Jwt:
         """JWT Token management constants."""
@@ -36,7 +36,7 @@ class FlextAuthConstants:
             "RS384",
             "RS512",
         ]
-        DEFAULT_TOKEN_TYPE = "Bearer"
+        DEFAULT_TOKEN_TYPE = "Bearer"  # nosec B105 - Token type, not a password
         BEARER_PREFIX = "Bearer "
         MIN_SECRET_KEY_LENGTH = 32
 

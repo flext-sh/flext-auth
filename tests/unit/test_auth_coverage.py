@@ -320,7 +320,7 @@ class TestFlextAuthUserMethods:
         if token_result.is_success:
             user_id = token_result.value.get("user_id")
             if user_id:
-                get_result = auth.get_user_by_id(user_id)
+                get_result = auth.get_user_by_id(str(user_id))
                 assert isinstance(get_result.is_success, bool)
 
     def test_logout_user_method(self) -> None:

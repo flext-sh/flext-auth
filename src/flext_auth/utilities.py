@@ -585,7 +585,9 @@ class FlextAuthUtilities(FlextUtilities):
                         token_result.error or "Token creation failed"
                     )
 
+                session_id = f"session_{secrets.token_hex(8)}"
                 session = FlextAuthModels.Session(
+                    session_id=session_id,
                     session_token=token_result.value,
                     user_id=user_id,
                     expires_at=datetime.now(UTC)

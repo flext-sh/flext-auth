@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import pickle  # noqa: S403
+
 import pytest
 
 from flext_auth.exceptions import FlextAuthExceptions
@@ -399,45 +401,48 @@ class TestFlextAuthExceptionsInheritance:
     def test_exception_raising_and_catching(self) -> None:
         """Test raising and catching exceptions."""
         # Test raising base auth error
+        msg = "Test error"
         with pytest.raises(FlextAuthExceptions.FlextAuthError) as exc_info:
-            msg = "Test error"
             raise FlextAuthExceptions.FlextAuthError(msg)
 
         assert exc_info.value.message == "Test error"
 
         # Test raising specific error
+        msg = "Token expired"
         with pytest.raises(FlextAuthExceptions.FlextTokenExpiredError) as exc_info:
-            msg = "Token expired"
             raise FlextAuthExceptions.FlextTokenExpiredError(msg)
 
         assert exc_info.value.message == "Token expired"
         assert exc_info.value.code == "TOKEN_EXPIRED"
 
         # Test catching specific error
-        try:
-            msg = "User not found"
+        msg = "User not found"
+        with pytest.raises(FlextAuthExceptions.FlextUserNotFoundError) as exc_info:
             raise FlextAuthExceptions.FlextUserNotFoundError(msg, "user123")
-        except FlextAuthExceptions.FlextUserNotFoundError as e:
-            assert e.message == "User not found"
-            assert e.user_id == "user123"
-            assert e.code == "USER_NOT_FOUND"
-        except Exception:
-            pytest.fail("Should have caught FlextUserNotFoundError")
+
+        assert exc_info.value.message == "User not found"
+        assert exc_info.value.user_id == "user123"
+        assert exc_info.value.code == "USER_NOT_FOUND"
 
     def test_exception_chaining(self) -> None:
         """Test exception chaining."""
-        try:
+        msg_original = "Original error"
+        msg_wrapped = "Wrapped error"
+
+        def chained_exception_raiser() -> None:
             try:
-                msg = "Original error"
-                raise ValueError(msg)
+                raise ValueError(msg_original)
             except ValueError as e:
-                msg = "Wrapped error"
-                raise FlextAuthExceptions.FlextAuthError(msg) from e
-        except FlextAuthExceptions.FlextAuthError as e:
-            assert e.message == "Wrapped error"
-            assert e.__cause__ is not None
-            assert isinstance(e.__cause__, ValueError)
-            assert str(e.__cause__) == "Original error"
+                raise FlextAuthExceptions.FlextAuthError(msg_wrapped) from e
+
+        with pytest.raises(FlextAuthExceptions.FlextAuthError) as exc_info:
+            chained_exception_raiser()
+
+        e = exc_info.value
+        assert e.message == "Wrapped error"
+        assert e.__cause__ is not None
+        assert isinstance(e.__cause__, ValueError)
+        assert str(e.__cause__) == "Original error"
 
 
 class TestFlextAuthExceptionsEdgeCases:
@@ -446,8 +451,8 @@ class TestFlextAuthExceptionsEdgeCases:
     def test_empty_error_messages(self) -> None:
         """Test exceptions with empty messages."""
         error = FlextAuthExceptions.FlextAuthError("")
-        assert error.message == ""
-        assert str(error) == ""
+        assert not error.message
+        assert not str(error)
 
     def test_none_error_codes(self) -> None:
         """Test exceptions with None error codes."""
@@ -456,7 +461,7 @@ class TestFlextAuthExceptionsEdgeCases:
 
     def test_unicode_error_messages(self) -> None:
         """Test exceptions with unicode messages."""
-        unicode_message = "错误消息：认证失败"
+        unicode_message = "错误消息: 认证失败"
         error = FlextAuthExceptions.FlextAuthError(unicode_message)
         assert error.message == unicode_message
         assert str(error) == unicode_message
@@ -490,7 +495,9 @@ class TestFlextAuthExceptionsEdgeCases:
         assert str_repr == "Test error"
 
         # Test that string representation is consistent
-        assert str(error) == str(error)
+        str_repr1 = str(error)
+        str_repr2 = str(error)
+        assert str_repr1 == str_repr2
 
     def test_exception_equality(self) -> None:
         """Test exception equality."""
@@ -514,15 +521,13 @@ class TestFlextAuthExceptionsEdgeCases:
 
     def test_exception_pickling(self) -> None:
         """Test exception pickling/unpickling."""
-        import pickle
-
         original_error = FlextAuthExceptions.FlextTokenExpiredError(
             "Token expired", "JWT"
         )
 
         # Pickle and unpickle
         pickled = pickle.dumps(original_error)
-        unpickled_error = pickle.loads(pickled)
+        unpickled_error = pickle.loads(pickled)  # noqa: S301
 
         assert unpickled_error.message == original_error.message
         assert unpickled_error.code == original_error.code

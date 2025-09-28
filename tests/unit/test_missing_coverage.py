@@ -140,7 +140,7 @@ class TestMissingCoverage:
     def test_session_edge_cases(self) -> None:
         """Test models.py lines 234, 250-251 - session edge cases."""
         session = Session(
-            id="test-session",
+            session_id="test-session",
             user_id="test-user",
             session_token="test-token-that-is-at-least-32-characters-long",
             expires_at=datetime.fromtimestamp(1234567890, tz=UTC),
@@ -209,7 +209,7 @@ class TestMissingCoverage:
     def test_session_validation_edge_cases(self) -> None:
         """Test models.py lines 396, 455-465 - session validation edge cases."""
         session = Session(
-            id="test-session",
+            session_id="test-session",
             user_id="test-user",
             session_token="test-token-that-is-at-least-32-characters-long",
             expires_at=datetime.fromtimestamp(1234567890, tz=UTC),
@@ -283,7 +283,7 @@ class TestMissingCoverage:
     def test_session_model_edge_cases(self) -> None:
         """Test additional session model edge cases."""
         session = Session(
-            id="test-session",
+            session_id="test-session",
             user_id="test-user",
             session_token="test-token-that-is-at-least-32-characters-long",
             expires_at=datetime.fromtimestamp(1234567890, tz=UTC),

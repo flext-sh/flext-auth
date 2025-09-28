@@ -377,7 +377,7 @@ class TestEnhancedAuthentication:
         # Get user by token using direct API (validate_token + get_user_by_id)
         user_id_from_token = validate_result.value.get("user_id")
         assert user_id_from_token is not None
-        user_by_token_result = auth.get_user_by_id(user_id_from_token)
+        user_by_token_result = auth.get_user_by_id(str(user_id_from_token))
         FlextTestsMatchers.assert_result_success(user_by_token_result)
         if user_by_token_result.value:
             assert user_by_token_result.value.id == user_id
@@ -463,7 +463,8 @@ class TestEnhancedPerformanceValidation:
 
         # Verify the result is still functional
         FlextTestsMatchers.assert_result_success(result)
-        if hasattr(result, "value"):
+        result = cast("FlextResult", result)
+        if result.is_success:
             result_value = result.value
             if isinstance(result_value, dict) and "user" in result_value:
                 user_result = cast("AuthUserDict", result_value["user"])

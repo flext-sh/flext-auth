@@ -178,8 +178,6 @@
         "test",
         "typings",
     ]
-[tool.pyrefly]
-    python_version = "3.13"
 
 [tool.pytest.ini_options]
     addopts = "-v --tb=short --strict-markers --strict-config --color=yes"
@@ -204,10 +202,17 @@
 
 [tool.ruff]
     extend = "../ruff-shared.toml"
+
 [tool.ruff.lint.isort]
     known-first-party = [
         "flext_auth",
     ]
 
-[tool.vulture]
-    extend = "../.vulture-shared.toml"
+[tool.pyrefly]
+    python-version = "3.13"
+    search-path = [
+        "examples",
+        "scripts",
+        "src",
+        "tests",
+    ]

@@ -64,8 +64,9 @@ class TestConfigModule:
         test_data = self._TestDataHelper.create_test_config_data()
 
         # Test config loading if method exists
-        if hasattr(config, "load_config"):
-            result = config.load_config(test_data)
+        load_config_method = getattr(config, "load_config", None)
+        if load_config_method:
+            result = load_config_method(test_data)
             assert isinstance(result, FlextResult)
 
     def test_flext_auth_config_get_config(self) -> None:

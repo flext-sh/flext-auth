@@ -104,6 +104,18 @@ class FlextAuthTypes:
         type TokenPayload = dict[
             str, str | int | float | bool | datetime | list[str] | None
         ]
+
+        # More specific token payload type for JWT tokens
+        class JwtTokenPayload(TypedDict):
+            """Specific type for JWT token payload with known fields."""
+
+            user_id: str
+            username: NotRequired[str]
+            exp: int
+            iat: int
+            type: str
+            valid: bool
+
         type TokenValidation = dict[str, bool | datetime | str | dict[str, object]]
         type RefreshToken = dict[str, str | datetime | bool | dict[str, object]]
         type AccessToken = dict[str, str | datetime | int | list[str]]
@@ -187,7 +199,7 @@ class FlextAuthTypes:
 
         user: FlextAuthTypes.UserDict
         session: FlextAuthTypes.SessionDict
-        jwt_token: NotRequired[str]  # Optional JWT token
+        jwt_token: str  # JWT token
         tokens: NotRequired[dict[str, str | int]]  # Optional tokens dict
         authenticated: bool
         success: bool

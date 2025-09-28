@@ -87,13 +87,14 @@ class FlextAuthContainer:
 
         # Create session instance with validated components
         session = FlextAuthModels.Session(
-            id=session_id_result.value,
+            session_id=session_id_result.value,
             user_id=user_id,
             session_token=session_token_result.value,
             is_active=True,
             ip_address=ip_address,
             user_agent=user_agent,
             expires_at=expiry_time_result.value,
+            started_at=datetime.now(UTC),
         )
 
         return FlextResult[FlextAuthModels.Session].ok(session)
