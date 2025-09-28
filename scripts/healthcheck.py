@@ -42,10 +42,10 @@ def main() -> int:
             return 1
 
         # Create request with validated URL
-        request = urllib.request.Request(health_url)  # noqa: S310
+        request = urllib.request.Request(health_url)
 
         # Use urllib.request.urlopen with validated scheme and security checks
-        with urllib.request.urlopen(  # noqa: S310
+        with urllib.request.urlopen(
             request,
             timeout=FlextAuthConstants.Network.DEFAULT_TIMEOUT,
         ) as response:

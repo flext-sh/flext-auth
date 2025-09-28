@@ -374,8 +374,10 @@ class TestEnhancedAuthentication:
         validate_result = auth.validate_token(token)
         FlextTestsMatchers.assert_result_success(validate_result)
 
-        # Get user by token
-        user_by_token_result = auth.get_user_by_token(token)
+        # Get user by token using direct API (validate_token + get_user_by_id)
+        user_id_from_token = validate_result.value.get("user_id")
+        assert user_id_from_token is not None
+        user_by_token_result = auth.get_user_by_id(user_id_from_token)
         FlextTestsMatchers.assert_result_success(user_by_token_result)
         if user_by_token_result.value:
             assert user_by_token_result.value.id == user_id

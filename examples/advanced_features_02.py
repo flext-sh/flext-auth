@@ -178,7 +178,6 @@ def example_password_security() -> None:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
         user2 = FlextAuthModels.User(
             id="security-demo-user2",
@@ -189,7 +188,6 @@ def example_password_security() -> None:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
 
         # Set same password for both users (will create different hashes)

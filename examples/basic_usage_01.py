@@ -61,7 +61,6 @@ def example_password_operations() -> None:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
 
         # Set password (this will hash it)

@@ -259,10 +259,6 @@ def get_cli() -> FlextAuthCli:
     return FlextAuthCliSingleton.get_instance()
 
 
-# For backward compatibility
-flext_auth_cli = get_cli
-
-
 def main() -> None:
     """Standalone main function for CLI entry point."""
     get_cli().main()
@@ -270,7 +266,6 @@ def main() -> None:
 
 __all__: list[str] = [
     "FlextAuthCli",
-    "flext_auth_cli",
     "main",
 ]
 

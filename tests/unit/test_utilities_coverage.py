@@ -84,7 +84,6 @@ class TestFlextAuthUtilitiesCoverage:
             is_active=True,
             ip_address=None,
             user_agent=None,
-            domain_events=[],
         )
         session_store["test_token_that_is_long_enough_for_validation_32_chars"] = (
             session
@@ -107,7 +106,6 @@ class TestFlextAuthUtilitiesCoverage:
             is_active=True,
             ip_address=None,
             user_agent=None,
-            domain_events=[],
         )
         session_store["expired_token_that_is_long_enough_for_validation_32_chars"] = (
             session
@@ -432,7 +430,6 @@ class TestFlextAuthUtilitiesCoverage:
             is_active=True,
             ip_address=None,
             user_agent=None,
-            domain_events=[],
         )
 
         result = FlextAuthUtilities.SessionManagement.refresh_session(session, 7200)
@@ -453,7 +450,6 @@ class TestFlextAuthUtilitiesCoverage:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
 
         result = FlextAuthUtilities.RoleValidation.validate_user_role(user, "REDACTED_LDAP_BIND_PASSWORD")
@@ -473,7 +469,6 @@ class TestFlextAuthUtilitiesCoverage:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
 
         result = FlextAuthUtilities.RoleValidation.validate_user_role(user, "REDACTED_LDAP_BIND_PASSWORD")
@@ -493,7 +488,6 @@ class TestFlextAuthUtilitiesCoverage:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
 
         result = FlextAuthUtilities.RoleValidation.validate_user_role(user, "REDACTED_LDAP_BIND_PASSWORD")
@@ -513,7 +507,6 @@ class TestFlextAuthUtilitiesCoverage:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
 
         result = FlextAuthUtilities.RoleValidation.validate_user_permissions(
@@ -535,7 +528,6 @@ class TestFlextAuthUtilitiesCoverage:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
 
         result = FlextAuthUtilities.RoleValidation.validate_user_permissions(
@@ -557,7 +549,6 @@ class TestFlextAuthUtilitiesCoverage:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
 
         result = FlextAuthUtilities.RoleValidation.validate_user_permissions(
@@ -579,7 +570,6 @@ class TestFlextAuthUtilitiesCoverage:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
 
         result = FlextAuthUtilities.RoleValidation.get_user_permissions(user)
@@ -600,7 +590,6 @@ class TestFlextAuthUtilitiesCoverage:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
 
         result = FlextAuthUtilities.RoleValidation.get_user_permissions(user)
@@ -621,7 +610,6 @@ class TestFlextAuthUtilitiesCoverage:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
 
         result = FlextAuthUtilities.RoleValidation.get_user_permissions(user)

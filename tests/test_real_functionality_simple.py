@@ -80,7 +80,6 @@ class TestRealAuthenticationSimple:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
 
         # Set password

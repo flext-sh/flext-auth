@@ -43,8 +43,8 @@ class TestUserCreateUserMethod:
         assert user.full_name == "Test User"
         assert user.roles == ["user", "REDACTED_LDAP_BIND_PASSWORD"]
 
-    def test_user_active_property_alias(self) -> None:
-        """Test User.active property alias for backward compatibility."""
+    def test_user_is_active_property(self) -> None:
+        """Test User.is_active property functionality."""
         request = FlextAuthModels.UserCreationRequest(
             username="activeuser",
             email="active@example.com",
@@ -90,7 +90,6 @@ class TestUserCreateUserMethod:
                 failed_login_attempts=0,
                 locked_until=None,
                 last_login=None,
-                domain_events=[],
                 created_at=datetime.now(UTC),
             )
 
@@ -109,7 +108,6 @@ class TestUserCreateUserMethod:
                 failed_login_attempts=0,
                 locked_until=None,
                 last_login=None,
-                domain_events=[],
                 created_at=datetime.now(UTC),
             )
 
@@ -125,7 +123,6 @@ class TestUserCreateUserMethod:
                 failed_login_attempts=0,
                 locked_until=None,
                 last_login=None,
-                domain_events=[],
                 roles=["user"],
                 created_at=datetime.now(UTC),
             )
@@ -166,7 +163,6 @@ class TestUserCreateUserMethod:
                 is_active=True,
                 ip_address="127.0.0.1",
                 user_agent="test-agent",
-                domain_events=[],
             )
 
     def test_session_time_remaining_and_extend_expiry(self) -> None:
@@ -181,7 +177,6 @@ class TestUserCreateUserMethod:
             is_active=True,
             ip_address="127.0.0.1",
             user_agent="test-agent",
-            domain_events=[],
         )
 
         # Test time calculation manually
@@ -212,7 +207,6 @@ class TestUserCreateUserMethod:
             is_active=True,
             ip_address="127.0.0.1",
             user_agent="test-agent",
-            domain_events=[],
         )
 
         # Test updating last_accessed_at
@@ -389,7 +383,6 @@ class TestAuthTokenModel:
             expires_at=datetime.now(UTC) + timedelta(minutes=30),
             is_revoked=False,
             token_type="access",
-            domain_events=[],
         )
 
         assert auth_token.token == "jwt.token.here"
@@ -411,7 +404,6 @@ class TestSessionModel:
             ip_address="192.168.1.1",
             user_agent="Mozilla/5.0 Test Browser",
             is_active=True,
-            domain_events=[],
         )
 
         assert session.id == "session-id"

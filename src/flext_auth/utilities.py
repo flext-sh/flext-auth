@@ -593,7 +593,6 @@ class FlextAuthUtilities(FlextUtilities):
                     is_active=True,
                     ip_address=None,
                     user_agent=None,
-                    domain_events=[],
                 )
                 return FlextResult[FlextAuthModels.Session].ok(session)
             except Exception as e:

@@ -89,7 +89,6 @@ def _demo_password_utilities() -> None:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
 
         # Set and verify password using User model

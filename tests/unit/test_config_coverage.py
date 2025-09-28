@@ -354,7 +354,7 @@ class TestFlextAuthConfigAdditionalCoverage:
             match="Instance must be of type FlextAuthConfig",
         ):
             # Type ignore needed for intentional type violation in test
-            FlextAuthConfig.set_global_instance("invalid_config")  # type: ignore[arg-type]
+            FlextAuthConfig.set_global_instance("invalid_config")
 
         # Test get_or_create_global with overrides
         result = FlextAuthConfig.get_or_create_global(

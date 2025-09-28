@@ -173,8 +173,8 @@ class TestAuthModule:
         result = auth.get_user_sessions(user_id)
         assert isinstance(result, FlextResult)
 
-    def test_flext_auth_get_user_by_token(self) -> None:
-        """Test FlextAuth get_user_by_token functionality."""
+    def test_flext_auth_get_user_by_token_direct_api(self) -> None:
+        """Test FlextAuth get user by token using direct API (validate_token + get_user_by_id)."""
         auth = FlextAuth()
         test_data = self._TestDataHelper.create_test_auth_data()
 
@@ -195,8 +195,12 @@ class TestAuthModule:
         auth_data = auth_result.unwrap()
         token = auth_data["jwt_token"]
 
-        # Test getting user by token
-        result = auth.get_user_by_token(token)
+        # Test getting user by token using direct API (validate_token + get_user_by_id)
+        token_result = auth.validate_token(token)
+        assert token_result.is_success
+        user_id = token_result.value.get("user_id")
+        assert user_id is not None
+        result = auth.get_user_by_id(user_id)
         assert isinstance(result, FlextResult)
 
     def test_flext_auth_revoke_session(self) -> None:
@@ -330,7 +334,6 @@ class TestAuthModule:
             "authenticate_user",
             "get_user_by_username",
             "get_user_by_id",
-            "get_user_by_token",
             "get_user_sessions",
             "validate_token",
             "revoke_session",

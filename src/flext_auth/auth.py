@@ -727,32 +727,6 @@ class FlextAuth:
         """
         return self.revoke_session(session_id)
 
-    def get_user_by_token(self, token: str) -> FlextResult[FlextAuthModels.User | None]:
-        """Get user by JWT token (API compatibility method).
-
-        Args:
-            token: JWT token string
-
-        Returns:
-            FlextResult containing User entity or None if not found
-
-        """
-        # Validate token first
-        token_result = self.validate_token(token)
-        if token_result.is_failure:
-            return FlextResult[FlextAuthModels.User | None].fail(
-                token_result.error or "Invalid token",
-            )
-
-        # Extract user_id from token payload
-        user_id = token_result.value.get("user_id")
-        if not user_id or not isinstance(user_id, str):  # pragma: no cover
-            return FlextResult[FlextAuthModels.User | None].fail(
-                "Token missing user_id",
-            )  # pragma: no cover
-
-        return self.get_user_by_id(user_id)
-
     @classmethod
     def quick_start(
         cls,

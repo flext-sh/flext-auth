@@ -53,7 +53,6 @@ class TestRealModelsExhaustive:
                 username="a",  # Muito curto, deve disparar validação
                 email="test@example.com",
                 password_hash="$2b$12$test.hash.value.here.for.validation.purposes",  # Hash válido
-                domain_events=[],
                 full_name="Test User",
                 is_active=True,
                 failed_login_attempts=0,
@@ -68,7 +67,6 @@ class TestRealModelsExhaustive:
                 username="a" * 60,  # Muito longo, deve disparar validação
                 email="test@example.com",
                 password_hash="$2b$12$test.hash.value.here.for.validation.purposes",  # Hash válido
-                domain_events=[],
                 full_name="Test User",
                 is_active=True,
                 failed_login_attempts=0,
@@ -89,7 +87,6 @@ class TestRealModelsExhaustive:
                     username=invalid_username,
                     email="test@example.com",
                     password_hash="test_hash",
-                    domain_events=[],
                     full_name="Test User",
                     is_active=True,
                     failed_login_attempts=0,
@@ -168,7 +165,6 @@ class TestRealModelsExhaustive:
                 username="test",
                 email="test@example.com",
                 password_hash="",
-                domain_events=[],
                 full_name="Test User",
                 is_active=True,
                 failed_login_attempts=0,
@@ -184,7 +180,6 @@ class TestRealModelsExhaustive:
             username="test",
             email="test@example.com",
             password_hash="",
-            domain_events=[],
             full_name="Test User",
             is_active=True,
             failed_login_attempts=0,
@@ -231,7 +226,6 @@ class TestRealModelsExhaustive:
                 user_id=user.id,
                 session_token="short",  # Muito curto
                 expires_at=datetime.now(UTC),
-                domain_events=[],
                 is_active=True,
                 ip_address=None,
                 user_agent=None,
@@ -255,7 +249,6 @@ class TestRealModelsExhaustive:
             user_id=user.id,
             session_token="active_token_123456789012345678901234567890ab",
             expires_at=future_time,
-            domain_events=[],
             is_active=True,
             ip_address=None,
             user_agent=None,
@@ -270,7 +263,6 @@ class TestRealModelsExhaustive:
             user_id=user.id,
             session_token="expired_token_123456789012345678901234567890ab",
             expires_at=past_time,
-            domain_events=[],
             is_active=True,
             ip_address=None,
             user_agent=None,
@@ -284,7 +276,6 @@ class TestRealModelsExhaustive:
             username="cred_user",
             email="cred@example.com",
             password_hash="",
-            domain_events=[],
             full_name="Test User",
             is_active=True,
             failed_login_attempts=0,
@@ -355,7 +346,6 @@ class TestRealModelsExhaustive:
             id="role_id",
             name="REDACTED_LDAP_BIND_PASSWORD_role",
             description="Administrator Role",
-            domain_events=[],
         )
 
         # Name é convertido para uppercase
@@ -714,8 +704,10 @@ class TestRealIntegrationExhaustive:
         assert token_result.is_success
         assert token_result.value["valid"] is True
 
-        # Buscar usuário por token
-        user_by_token = auth.get_user_by_token(jwt_token)
+        # Buscar usuário por token usando API direta (validate_token + get_user_by_id)
+        user_id = token_result.value.get("user_id")
+        assert user_id is not None
+        user_by_token = auth.get_user_by_id(user_id)
         assert user_by_token.is_success
         if user_by_token.value:
             assert user_by_token.value.username == "integration_user"
@@ -736,15 +728,23 @@ class TestRealIntegrationExhaustive:
         auth_result = auth.authenticate_user("session_lifecycle", "SessionPass123!")
         assert auth_result.is_success
 
-        # Verificar sessão ativa
+        # Verificar sessão ativa usando API direta
         jwt_token = auth_result.value.get("jwt_token")
         assert jwt_token is not None
-        user_by_token = auth.get_user_by_token(jwt_token)
+        token_result = auth.validate_token(jwt_token)
+        assert token_result.is_success
+        user_id = token_result.value.get("user_id")
+        assert user_id is not None
+        user_by_token = auth.get_user_by_id(user_id)
         assert user_by_token.is_success
 
         # Limpeza de sessões
         auth.cleanup_expired_sessions()
 
-        # Verificar que sessão ativa ainda existe usando jwt_token
-        user_by_token = auth.get_user_by_token(jwt_token)
+        # Verificar que sessão ativa ainda existe usando jwt_token e API direta
+        token_result = auth.validate_token(jwt_token)
+        assert token_result.is_success
+        user_id = token_result.value.get("user_id")
+        assert user_id is not None
+        user_by_token = auth.get_user_by_id(user_id)
         assert user_by_token is not None

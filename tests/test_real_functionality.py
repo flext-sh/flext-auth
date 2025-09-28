@@ -99,7 +99,6 @@ class TestRealAuthentication:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
 
         # Set password
@@ -373,7 +372,6 @@ class TestRealAuthentication:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
         weak_password_result = weak_user.set_password("123")  # Too weak
         assert weak_password_result.is_failure
@@ -640,7 +638,6 @@ class TestRealAuthentication:
                 failed_login_attempts=0,
                 locked_until=None,
                 last_login=None,
-                domain_events=[],
                 password_hash="not_bcrypt_format",
             )
 
@@ -660,7 +657,6 @@ class TestRealAuthentication:
                 failed_login_attempts=0,
                 locked_until=None,
                 last_login=None,
-                domain_events=[],
                 password_hash="definitely_not_bcrypt",  # Not bcrypt format
             )
 
@@ -679,7 +675,6 @@ class TestRealAuthentication:
                 failed_login_attempts=0,
                 locked_until=None,
                 last_login=None,
-                domain_events=[],
                 password_hash="$2b$12$cLhrTf6WJ.otzSJ0UXjmiOTIEXh9E1OttEpE6QAQIQUUjaP43eNAO",
             )
 
@@ -828,7 +823,6 @@ class TestRealAuthentication:
                 failed_login_attempts=0,
                 locked_until=None,
                 last_login=None,
-                domain_events=[],
                 password_hash="not_bcrypt_format",  # Doesn't start with $2b$
             )
 
@@ -844,7 +838,6 @@ class TestRealAuthentication:
                 failed_login_attempts=0,
                 locked_until=None,
                 last_login=None,
-                domain_events=[],
                 password_hash="$2b$12$short",  # Valid format but too short
             )
 

@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 from pydantic import SecretStr
 
@@ -286,7 +288,6 @@ class TestFlextAuthUtilitiesFinal:
             username="testuser",
             email="test@example.com",
             roles=["user"],
-            domain_events=[],
             full_name="Test User",
             is_active=True,
             failed_login_attempts=0,
@@ -311,7 +312,6 @@ class TestFlextAuthUtilitiesFinal:
             username="testuser",
             email="test@example.com",
             roles=["REDACTED_LDAP_BIND_PASSWORD", "user"],
-            domain_events=[],
             full_name="Test User",
             is_active=True,
             failed_login_attempts=0,
@@ -333,7 +333,6 @@ class TestFlextAuthUtilitiesFinal:
             username="testuser",
             email="test@example.com",
             roles=["REDACTED_LDAP_BIND_PASSWORD"],
-            domain_events=[],
             full_name="Test User",
             is_active=True,
             failed_login_attempts=0,
@@ -354,7 +353,6 @@ class TestFlextAuthUtilitiesFinal:
             username="testuser",
             email="test@example.com",
             roles=["REDACTED_LDAP_BIND_PASSWORD", "user"],
-            domain_events=[],
             full_name="Test User",
             is_active=True,
             failed_login_attempts=0,
@@ -490,7 +488,7 @@ class TestFlextAuthUtilitiesFinal:
     def test_jwt_processing_edge_cases(self) -> None:
         """Test JWT processing edge cases."""
         # Test with empty payload
-        empty_payload = {}
+        empty_payload: dict[str, Any] = {}
         secret = SecretStr("secret_key")
 
         result = FlextAuthUtilities.JWTProcessing.create_jwt_token(

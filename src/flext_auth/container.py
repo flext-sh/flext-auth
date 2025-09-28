@@ -94,7 +94,6 @@ class FlextAuthContainer:
             ip_address=ip_address,
             user_agent=user_agent,
             expires_at=expiry_time_result.value,
-            domain_events=[],
         )
 
         return FlextResult[FlextAuthModels.Session].ok(session)

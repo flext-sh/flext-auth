@@ -32,17 +32,17 @@ def demonstrate_refactoring_benefits() -> None:
         user_data.get("username", "Unknown") if isinstance(user_data, dict) else "User"
 
 
-def demonstrate_legacy_compatibility() -> None:
-    """Demonstrate backward compatibility with legacy code."""
-    # Legacy quick start still works
+def demonstrate_quickstart_functionality() -> None:
+    """Demonstrate FlextAuthQuickstart convenience functionality."""
+    # Quickstart utility for rapid setup
     quickstart = FlextAuthQuickstart()
-    legacy_service: FlextAuth = quickstart.flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    auth_service: FlextAuth = quickstart.flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
-    # Show it works the same way
-    reg_result = legacy_service.register_user(
-        "legacy_user",
-        "legacy@example.com",
-        "LegacyPassword123!",
+    # Standard user registration
+    reg_result = auth_service.register_user(
+        "quickstart_user",
+        "quickstart@example.com",
+        "QuickstartPassword123!",
     )
 
     if reg_result.is_success:
@@ -92,7 +92,7 @@ def demonstrate_error_handling() -> None:
 def main() -> None:
     """Execute refactored system showcase."""
     demonstrate_refactoring_benefits()
-    demonstrate_legacy_compatibility()
+    demonstrate_quickstart_functionality()
     demonstrate_flext_result_integration()
     demonstrate_system_architecture()
     demonstrate_error_handling()

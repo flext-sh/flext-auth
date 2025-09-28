@@ -160,7 +160,6 @@ class TestFlextAuthPasswordMethods:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
         result = user.set_password("StrongTestPass123!@#")
 
@@ -186,7 +185,6 @@ class TestFlextAuthPasswordMethods:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
         set_result = user.set_password(strong_password)
         assert set_result.is_success
@@ -299,8 +297,8 @@ class TestFlextAuthUserMethods:
         get_result = auth.get_user_by_username("test_username_lookup")
         assert isinstance(get_result.is_success, bool)
 
-    def test_get_user_by_token_method(self) -> None:
-        """Test get_user_by_token method functionality."""
+    def test_get_user_by_token_direct_api_method(self) -> None:
+        """Test get user by token using direct API (validate_token + get_user_by_id)."""
         auth = FlextAuth()
 
         # First register a user
@@ -316,9 +314,14 @@ class TestFlextAuthUserMethods:
         token = auth.generate_token(user.id)
         assert isinstance(token, str)
 
-        # Get user by token
-        get_result = auth.get_user_by_token(token)
-        assert isinstance(get_result.is_success, bool)
+        # Get user by token using direct API (validate_token + get_user_by_id)
+        token_result = auth.validate_token(token)
+        assert isinstance(token_result.is_success, bool)
+        if token_result.is_success:
+            user_id = token_result.value.get("user_id")
+            if user_id:
+                get_result = auth.get_user_by_id(user_id)
+                assert isinstance(get_result.is_success, bool)
 
     def test_logout_user_method(self) -> None:
         """Test logout_user method functionality."""
@@ -506,12 +509,12 @@ class TestFlextAuthAdditionalCoverage:
         cleanup_result = auth.cleanup_expired_sessions()
         assert cleanup_result.is_success
 
-    def test_get_user_by_token_invalid_token_error(self) -> None:
-        """Test get_user_by_token with invalid token - line 704."""
+    def test_get_user_by_token_invalid_token_error_direct_api(self) -> None:
+        """Test get user by invalid token using direct API (validate_token)."""
         auth = FlextAuth()
 
-        # Test with invalid token
-        result = auth.get_user_by_token("invalid_token")
+        # Test with invalid token - should fail at validate_token step
+        result = auth.validate_token("invalid_token")
         assert result.is_failure
         assert result.error is not None
         assert (

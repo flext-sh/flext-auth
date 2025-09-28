@@ -229,7 +229,6 @@ class FlextAuthModels:
                     failed_login_attempts=0,
                     locked_until=None,
                     last_login=None,
-                    domain_events=[],
                 )
 
                 password_result = user.set_password(request.password)
@@ -334,7 +333,6 @@ class FlextAuthModels:
                     ip_address=ip_address,
                     user_agent=user_agent,
                     last_accessed_at=datetime.now(UTC),
-                    domain_events=[],
                 )
 
                 return FlextResult[FlextAuthModels.Session].ok(session)
@@ -413,7 +411,6 @@ class FlextAuthModels:
                     expires_at=expires_at,
                     is_revoked=False,
                     token_type=token_type,
-                    domain_events=[],
                 )
 
                 return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)

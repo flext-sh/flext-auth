@@ -79,7 +79,6 @@ class TestFlextAuthRegistration:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
 
         # Hash password
@@ -283,8 +282,8 @@ class TestFlextAuthAuthentication:
 class TestFlextAuthUserRetrieval:
     """Test FlextAuth user retrieval functionality."""
 
-    def test_get_user_by_token(self) -> None:
-        """Test getting user by token."""
+    def test_get_user_by_token_direct_api(self) -> None:
+        """Test getting user by token using direct API (validate_token + get_user_by_id)."""
         auth: FlextAuth = FlextAuth()
 
         # Register user
@@ -304,18 +303,23 @@ class TestFlextAuthUserRetrieval:
         token = tokens["access_token"]  # Use JWT token, not session token
         assert isinstance(token, str), "token must be string"
 
-        # Get user by token
-        user_result = auth.get_user_by_token(token)
+        # Get user by token using direct API (validate_token + get_user_by_id)
+        token_result = auth.validate_token(token)
+        assert token_result.is_success is True
+        user_id = token_result.value.get("user_id")
+        assert user_id is not None
+        user_result = auth.get_user_by_id(user_id)
         assert user_result.is_success is True
         user = user_result.value
         assert user is not None, "user should not be None"
         assert user.username == "testuser"
 
-    def test_get_user_by_token_invalid(self) -> None:
-        """Test getting user by invalid token."""
+    def test_get_user_by_token_invalid_direct_api(self) -> None:
+        """Test getting user by invalid token using direct API."""
         auth: FlextAuth = FlextAuth()
 
-        result = auth.get_user_by_token("invalid_token")
+        # Invalid token validation should fail
+        result = auth.validate_token("invalid_token")
         assert result.is_success is False
         assert result.is_failure
         assert "Invalid token format" in (result.error or "")
@@ -407,7 +411,6 @@ class TestFlextAuthModels:
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
-            domain_events=[],
         )
 
         assert user.id == "test-id"
@@ -428,7 +431,6 @@ class TestFlextAuthModels:
             is_active=True,
             ip_address="127.0.0.1",
             user_agent="test-agent",
-            domain_events=[],
         )
 
         assert session.id == "session-id"
@@ -460,11 +462,15 @@ class TestFlextAuthIntegration:
         assert auth_result.is_success is True
         auth_data = auth_result.value
 
-        # Step 3: Get user by token
+        # Step 3: Get user by token using direct API (validate_token + get_user_by_id)
         tokens = auth_data.get("tokens", {})
         token = tokens.get("access_token")
         if token and isinstance(token, str):
-            user_by_token_result = auth.get_user_by_token(token)
+            token_result = auth.validate_token(token)
+            assert token_result.is_success is True
+            user_id = token_result.value.get("user_id")
+            assert user_id is not None
+            user_by_token_result = auth.get_user_by_id(user_id)
             assert user_by_token_result.is_success is True
             token_user = user_by_token_result.value
             assert token_user is not None
