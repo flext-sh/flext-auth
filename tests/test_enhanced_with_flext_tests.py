@@ -22,6 +22,7 @@ from flext_auth import (
     FlextAuthQuickstart,
     FlextAuthTypes,
 )
+from flext_core import FlextResult
 
 # Use unified class structure
 User = FlextAuthModels.User

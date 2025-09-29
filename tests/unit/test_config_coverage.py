@@ -355,7 +355,7 @@ class TestFlextAuthConfigAdditionalCoverage:
             match="Instance must be of type FlextAuthConfig",
         ):
             # Cast needed for intentional type violation in test
-            FlextAuthConfig.set_global_instance(cast("FlextConfig", "invalid_config"))
+            FlextAuthConfig.set_global_instance(cast("FlextConfig", object()))
 
         # Test get_or_create_global with overrides
         result = FlextAuthConfig.get_or_create_global(

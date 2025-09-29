@@ -214,7 +214,7 @@ class TestFlextAuthContainer:
         self, mock_generate_id: Mock
     ) -> None:
         """Test successful session creation with generated ID."""
-        mock_generate_id.return_value = "generated_id_123"
+        mock_generate_id.side_effect = ["generated_id_123", "a" * 32]  # id, then token
 
         result = FlextAuthContainer.create_session("user123")
 
@@ -240,12 +240,15 @@ class TestFlextAuthContainer:
         self, mock_generate_id: Mock
     ) -> None:
         """Test successful session creation with generated token."""
-        mock_generate_id.return_value = "generated_token_123"
+        mock_generate_id.side_effect = [
+            "some_id",
+            "generated_token_12345678901234567890",
+        ]  # id, then token
 
         result = FlextAuthContainer.create_session("user123")
 
         assert result.is_success
-        assert result.value.session_token == "generated_token_123"
+        assert result.value.session_token == "generated_token_12345678901234567890"
         assert result.value.user_id == "user123"
 
     @patch("flext_auth.container.FlextUtilities.Generators.generate_id")
@@ -253,7 +256,7 @@ class TestFlextAuthContainer:
         self, mock_generate_id: Mock
     ) -> None:
         """Test session creation failure when token generation fails."""
-        mock_generate_id.return_value = None
+        mock_generate_id.side_effect = ["some_id", None]  # id succeeds, token fails
 
         result = FlextAuthContainer.create_session("user123")
 

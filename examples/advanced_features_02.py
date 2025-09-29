@@ -16,6 +16,7 @@ import secrets
 import string
 
 from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthModels
+from flext_auth.constants import FlextAuthConstants
 from flext_core import FlextLogger
 
 
@@ -23,8 +24,8 @@ def example_advanced_configuration() -> None:
     """Demonstrate advanced configuration options."""
     # Create auth with advanced configuration
     auth_result = FlextAuth.create_with_config_overrides(
-        jwt_expiry_minutes=60,
-        bcrypt_rounds=12,
+        jwt_expiry_minutes=FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES * 2,
+        bcrypt_rounds=FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS,
     )
     if auth_result.is_failure:
         # Use proper logging instead of print
@@ -58,7 +59,9 @@ def example_jwt_operations() -> None:
     user = user_result.value
 
     # Generate JWT with custom expiry
-    token_result = auth.generate_jwt_token(user.id, expires_in_minutes=120)
+    token_result = auth.generate_jwt_token(
+        user.id, expires_in_minutes=FlextAuthConstants.Session.DEFAULT_EXPIRY_MINUTES
+    )
     if token_result.is_success:
         token = token_result.value
 

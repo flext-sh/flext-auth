@@ -46,7 +46,7 @@ def main() -> int:
 
         # Use urllib.request.urlopen with validated scheme and security checks
         # S310: URL scheme is validated above to only allow http/https
-        with urllib.request.urlopen(  # noqa: S310
+        with urllib.request.urlopen(  # nosec S310  # noqa: S310
             request,
             timeout=FlextAuthConstants.Network.DEFAULT_TIMEOUT,
         ) as response:

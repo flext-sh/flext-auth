@@ -627,7 +627,7 @@ class TestRealAuthentication:
         """Test specific error paths for coverage completion."""
         # Test verify_password with invalid credential creation
         # Create a scenario where bcrypt verification fails
-        with pytest.raises(ValidationError, match="Invalid password hash format"):
+        with pytest.raises(ValidationError, match=r".*Invalid password hash format.*"):
             FlextAuthModels.User(
                 id="test-id",
                 username="testuser",
@@ -644,7 +644,7 @@ class TestRealAuthentication:
         # Test password hash validation error paths
         with pytest.raises(
             ValidationError,
-            match="Invalid password hash format",
+            match=r".*Invalid password hash format.*",
         ):
             # Force create a User with invalid password hash to trigger validation
             User(
@@ -663,7 +663,7 @@ class TestRealAuthentication:
         # Test username validation error paths
         with pytest.raises(
             ValidationError,
-            match="Username must contain only alphanumeric characters, underscores, and hyphens",
+            match="Username can only contain letters, numbers, underscores, and hyphens",
         ):
             User(
                 id="test_invalid_username",

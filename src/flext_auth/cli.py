@@ -140,7 +140,7 @@ class FlextAuthCli:
         if max_attempts is not None:
             config.max_login_attempts = max_attempts
         if session_expiry is not None:
-            config.session_expiry_hours = session_expiry
+            config.session_expiry_minutes = session_expiry * 60
 
         auth = FlextAuth(config=config)
         auth_result = auth.register_user(username, email, password)

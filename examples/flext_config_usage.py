@@ -13,6 +13,7 @@ from __future__ import annotations
 import os
 
 from flext_auth import FlextAuth, FlextAuthConfig
+from flext_auth.constants import FlextAuthConstants
 
 
 def main() -> None:
@@ -29,10 +30,18 @@ def main() -> None:
     # =========================================================================
 
     # Set environment variables to override configuration
-    os.environ["FLEXT_AUTH_JWT_EXPIRY_MINUTES"] = "60"
-    os.environ["FLEXT_AUTH_BCRYPT_ROUNDS"] = "14"
-    os.environ["FLEXT_AUTH_MAX_LOGIN_ATTEMPTS"] = "3"
-    os.environ["FLEXT_AUTH_SESSION_EXPIRY_MINUTES"] = "120"
+    os.environ["FLEXT_AUTH_JWT_EXPIRY_MINUTES"] = str(
+        FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES * 2
+    )
+    os.environ["FLEXT_AUTH_BCRYPT_ROUNDS"] = str(
+        FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS + 2
+    )
+    os.environ["FLEXT_AUTH_MAX_LOGIN_ATTEMPTS"] = str(
+        FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS
+    )
+    os.environ["FLEXT_AUTH_SESSION_EXPIRY_MINUTES"] = str(
+        FlextAuthConstants.Session.DEFAULT_EXPIRY_MINUTES
+    )
 
     # Clear global instance to force reload from environment
     FlextAuthConfig.clear_global_instance()
@@ -46,10 +55,11 @@ def main() -> None:
 
     # Update singleton configuration with specific parameter overrides for production
     production_config_result = FlextAuthConfig.get_or_create_global(
-        jwt_expiry_minutes=15,  # Shorter JWT for security
-        bcrypt_rounds=12,  # Higher security
-        max_login_attempts=3,  # Strict login attempts
-        session_expiry_minutes=30,  # Shorter sessions
+        jwt_expiry_minutes=FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES
+        // 2,  # Shorter JWT for security
+        bcrypt_rounds=FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS,  # Higher security
+        max_login_attempts=FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS,  # Strict login attempts
+        session_expiry_minutes=FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES,  # Shorter sessions
         environment="production",
     )
 
@@ -58,10 +68,12 @@ def main() -> None:
 
     # Update singleton configuration with different parameters for development
     dev_config_result = FlextAuthConfig.get_or_create_global(
-        jwt_expiry_minutes=120,  # Longer JWT for development
-        bcrypt_rounds=10,  # Lower rounds for speed
-        max_login_attempts=10,  # More lenient for development
-        session_expiry_minutes=480,  # Longer sessions for development
+        jwt_expiry_minutes=FlextAuthConstants.Session.DEFAULT_EXPIRY_MINUTES,  # Longer JWT for development
+        bcrypt_rounds=FlextAuthConstants.Credentials.Password.MIN_BCRYPT_ROUNDS,  # Lower rounds for speed
+        max_login_attempts=FlextAuthConstants.Session.MAX_SESSIONS_PER_USER
+        * 2,  # More lenient for development
+        session_expiry_minutes=FlextAuthConstants.Session.MAX_EXPIRY_MINUTES
+        // 3,  # Longer sessions for development
         environment="development",
     )
 

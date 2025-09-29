@@ -611,6 +611,7 @@ class FlextAuth:
             "user_id": str(payload["user_id"]),
             "exp": int(payload["exp"]),
             "iat": int(payload["iat"]),
+            "type": "access",
             "valid": True,
         }
 

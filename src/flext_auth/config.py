@@ -18,6 +18,7 @@ from typing import ClassVar, cast
 from pydantic import (
     Field,
     SecretStr,
+    computed_field,
     field_validator,
     model_validator,
 )
@@ -177,7 +178,7 @@ class FlextAuthConfig(FlextConfig):
     )
 
     session_cleanup_interval_minutes: int = Field(
-        default=15,
+        default=FlextAuthConstants.Session.CLEANUP_INTERVAL_MINUTES,
         description="Interval for cleaning up expired sessions in minutes",
     )
 
@@ -187,17 +188,17 @@ class FlextAuthConfig(FlextConfig):
     )
 
     min_password_score: int = Field(
-        default=3,
+        default=FlextAuthConstants.Credentials.Password.MIN_SCORE,
         description="Minimum password complexity score",
     )
 
     max_requests_per_minute: int = Field(
-        default=150,
+        default=FlextAuthConstants.Security.MAX_REQUESTS_PER_MINUTE,
         description="Maximum authentication requests per minute",
     )
 
     max_requests_per_hour: int = Field(
-        default=2000,
+        default=FlextAuthConstants.Security.MAX_REQUESTS_PER_HOUR,
         description="Maximum authentication requests per hour",
     )
 
@@ -211,15 +212,11 @@ class FlextAuthConfig(FlextConfig):
         description="Enable password history tracking",
     )
 
+    @computed_field
     @property
     def session_expiry_hours(self) -> float:
         """Get session expiry time in hours (calculated from minutes)."""
         return self.session_expiry_minutes / 60.0
-
-    @session_expiry_hours.setter
-    def session_expiry_hours(self, value: float) -> None:
-        """Set session expiry time from hours (converts to minutes)."""
-        self.session_expiry_minutes = int(value * 60)
 
     # Pydantic 2.11 field validators
     @field_validator("jwt_algorithm")
@@ -316,12 +313,12 @@ class FlextAuthConfig(FlextConfig):
         cls, environment: str, **overrides: object
     ) -> FlextAuthConfig:
         """Create configuration for specific environment using enhanced singleton pattern."""
-        # Cast to FlextAuthConfig since we know it's our instance
-        # Use proper casting since we know this returns our instance
-        instance = cls.get_or_create_shared_instance(
-            project_name="flext-auth", environment=environment, **overrides
+        return cast(
+            "FlextAuthConfig",
+            cls.get_or_create_shared_instance(
+                project_name="flext-auth", environment=environment, **overrides
+            ),
         )
-        return cast("FlextAuthConfig", instance)
 
     @classmethod
     def create_default(cls) -> FlextAuthConfig:
@@ -353,17 +350,17 @@ class FlextAuthConfig(FlextConfig):
         return FlextResult[None].ok(None)
 
     # Singleton pattern implementation
-    _global_instance: ClassVar[FlextConfig | None] = None
+    _global_instance: ClassVar[FlextAuthConfig | None] = None
     _lock: ClassVar[threading.Lock] = threading.Lock()
 
     @classmethod
     def get_global_instance(cls) -> FlextAuthConfig:
-        """Get the global singleton instance using enhanced FlextConfig pattern."""
+        """Get the global singleton instance."""
         if cls._global_instance is None:
             with cls._lock:
                 if cls._global_instance is None:
                     cls._global_instance = cls()
-        return cast("FlextAuthConfig", cls._global_instance)
+        return cls._global_instance
 
     @classmethod
     def set_global_instance(cls, instance: FlextConfig) -> None:
@@ -383,12 +380,11 @@ class FlextAuthConfig(FlextConfig):
     def get_or_create_global(cls, **kwargs: object) -> FlextResult[FlextAuthConfig]:
         """Get or create the global singleton instance with optional parameters using enhanced pattern."""
         try:
-            instance = cls.get_or_create_shared_instance(
-                project_name="flext-auth", **kwargs
+            instance = cast(
+                "FlextAuthConfig",
+                cls.get_or_create_shared_instance(project_name="flext-auth", **kwargs),
             )
-            # Use proper casting since we know this is our instance
-            auth_instance = cast("FlextAuthConfig", instance)
-            return FlextResult[FlextAuthConfig].ok(auth_instance)
+            return FlextResult[FlextAuthConfig].ok(instance)
         except Exception as e:
             return FlextResult[FlextAuthConfig].fail(
                 f"Failed to create FlextAuthConfig: {e}"

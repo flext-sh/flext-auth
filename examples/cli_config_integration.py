@@ -13,6 +13,7 @@ from __future__ import annotations
 import os
 
 from flext_auth import FlextAuth, FlextAuthConfig
+from flext_auth.constants import FlextAuthConstants
 
 
 def demonstrate_cli_config_integration() -> None:
@@ -30,10 +31,11 @@ def demonstrate_cli_config_integration() -> None:
 
     # Simulate CLI parameters that would override configuration
     cli_params = {
-        "jwt_expiry_minutes": 15,  # Shorter for security
-        "bcrypt_rounds": 12,  # Higher security
-        "max_login_attempts": 3,  # Stricter login
-        "session_expiry_minutes": 30,  # Shorter sessions
+        "jwt_expiry_minutes": FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES
+        // 2,  # Shorter for security
+        "bcrypt_rounds": FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS,  # Higher security
+        "max_login_attempts": FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS,  # Stricter login
+        "session_expiry_minutes": FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES,  # Shorter sessions
     }
 
     for _key, _value in cli_params.items():
@@ -83,27 +85,32 @@ def demonstrate_cli_config_integration() -> None:
         {
             "name": "Development Environment",
             "params": {
-                "jwt_expiry_minutes": 120,
-                "bcrypt_rounds": 10,
-                "max_login_attempts": 10,
+                "jwt_expiry_minutes": FlextAuthConstants.Session.DEFAULT_EXPIRY_MINUTES,
+                "bcrypt_rounds": FlextAuthConstants.Credentials.Password.MIN_BCRYPT_ROUNDS,
+                "max_login_attempts": FlextAuthConstants.Session.MAX_SESSIONS_PER_USER
+                * 2,
                 "environment": "development",
             },
         },
         {
             "name": "Production Environment",
             "params": {
-                "jwt_expiry_minutes": 15,
-                "bcrypt_rounds": 12,
-                "max_login_attempts": 3,
+                "jwt_expiry_minutes": FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES
+                // 2,
+                "bcrypt_rounds": FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS,
+                "max_login_attempts": FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS,
                 "environment": "production",
             },
         },
         {
             "name": "Testing Environment",
             "params": {
-                "jwt_expiry_minutes": 5,
-                "bcrypt_rounds": 8,
-                "max_login_attempts": 20,
+                "jwt_expiry_minutes": FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES
+                // 6,
+                "bcrypt_rounds": FlextAuthConstants.Credentials.Password.MIN_BCRYPT_ROUNDS
+                - 2,
+                "max_login_attempts": FlextAuthConstants.Session.MAX_SESSIONS_PER_USER
+                * 4,
                 "environment": "testing",
             },
         },
@@ -141,7 +148,7 @@ def demonstrate_cli_config_integration() -> None:
 
     # Verify that overrides create new instances
     override_config_result = FlextAuthConfig.get_or_create_global(
-        jwt_expiry_minutes=999,
+        jwt_expiry_minutes=FlextAuthConstants.Jwt.MAX_EXPIRY_MINUTES,
         environment="override_test",
     )
 
@@ -158,18 +165,26 @@ def demonstrate_cli_command_simulation() -> None:
                 "flext-auth authenticate --username testuser --password testpass "
                 "--jwt-expiry 30"
             ),
-            "params": {"jwt_expiry_minutes": 30},
+            "params": {
+                "jwt_expiry_minutes": FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES
+            },
         },
         {
             "command": (
                 "flext-auth register --username newuser --email new@example.com "
                 "--password newpass --bcrypt-rounds 14"
             ),
-            "params": {"bcrypt_rounds": 14},
+            "params": {
+                "bcrypt_rounds": FlextAuthConstants.Credentials.Password.MAX_BCRYPT_ROUNDS
+                - 1
+            },
         },
         {
             "command": "flext-auth config --set-jwt-expiry 60 --set-max-attempts 5",
-            "params": {"jwt_expiry_minutes": 60, "max_login_attempts": 5},
+            "params": {
+                "jwt_expiry_minutes": FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES * 2,
+                "max_login_attempts": FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS,
+            },
         },
     ]
 
