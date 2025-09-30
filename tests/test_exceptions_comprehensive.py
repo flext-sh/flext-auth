@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pickle  # noqa: S403
+import pickle
 
 import pytest
 
@@ -527,7 +527,7 @@ class TestFlextAuthExceptionsEdgeCases:
 
         # Pickle and unpickle
         pickled = pickle.dumps(original_error)
-        unpickled_error = pickle.loads(pickled)  # noqa: S301
+        unpickled_error = pickle.loads(pickled)
 
         assert unpickled_error.message == original_error.message
         assert unpickled_error.code == original_error.code

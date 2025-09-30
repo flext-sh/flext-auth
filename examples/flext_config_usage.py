@@ -44,7 +44,7 @@ def main() -> None:
     )
 
     # Clear global instance to force reload from environment
-    FlextAuthConfig.clear_global_instance()
+    FlextAuthConfig.reset_global_instance()
 
     # Get new instance with environment overrides
     FlextAuthConfig.get_global_instance()
@@ -154,7 +154,7 @@ def main() -> None:
     FlextAuthConfig.get_global_instance()
 
     # Clear singleton instance
-    FlextAuthConfig.clear_global_instance()
+    FlextAuthConfig.reset_global_instance()
 
     # Get new singleton instance (will be recreated)
     FlextAuthConfig.get_global_instance()
