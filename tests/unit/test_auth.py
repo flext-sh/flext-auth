@@ -16,7 +16,6 @@ from flext_auth import (
     FlextAuth,
     FlextAuthConfig,
     FlextAuthConstants,
-    FlextAuthQuickstart,
 )
 
 
@@ -26,7 +25,7 @@ class TestFlextAuth:
     def test_flext_auth_initialization(self) -> None:
         """Test FlextAuth initialization with different parameters."""
         # Clear singleton to ensure clean test
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Test default initialization
         auth: FlextAuth = FlextAuth()
@@ -401,12 +400,11 @@ class TestFlextAuthErrorHandling:
 
 
 class TestFlextAuthQuickStartFunction:
-    """Unit tests for FlextAuthQuickstart unified class."""
+    """Unit tests for FlextAuth.quick_start() classmethod."""
 
     def test_flext_auth_quick_start_default(self) -> None:
-        """Test FlextAuthQuickstart with default parameters."""
-        quickstart = FlextAuthQuickstart()
-        auth = quickstart.flext_auth_quick_start()
+        """Test FlextAuth.quick_start() with default parameters."""
+        auth = FlextAuth.quick_start()
         assert isinstance(auth, FlextAuth)
         # Should create REDACTED_LDAP_BIND_PASSWORD user by default
         REDACTED_LDAP_BIND_PASSWORD_result = auth.get_user_by_username("REDACTED_LDAP_BIND_PASSWORD")
@@ -414,9 +412,8 @@ class TestFlextAuthQuickStartFunction:
         assert REDACTED_LDAP_BIND_PASSWORD_result.value is not None
 
     def test_flext_auth_quick_start_no_REDACTED_LDAP_BIND_PASSWORD(self) -> None:
-        """Test FlextAuthQuickstart without creating REDACTED_LDAP_BIND_PASSWORD user."""
-        quickstart = FlextAuthQuickstart()
-        auth = quickstart.flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+        """Test FlextAuth.quick_start() without creating REDACTED_LDAP_BIND_PASSWORD user."""
+        auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
         assert isinstance(auth, FlextAuth)
         # Should not create REDACTED_LDAP_BIND_PASSWORD user - check that REDACTED_LDAP_BIND_PASSWORD user is None
         # since REDACTED_LDAP_BIND_PASSWORD might have been created in previous tests, we test the function works
@@ -425,12 +422,11 @@ class TestFlextAuthQuickStartFunction:
         assert nonexistent_result.value is None
 
     def test_flext_auth_quick_start_custom_REDACTED_LDAP_BIND_PASSWORD(self) -> None:
-        """Test FlextAuthQuickstart with custom REDACTED_LDAP_BIND_PASSWORD credentials."""
+        """Test FlextAuth.quick_start() with custom REDACTED_LDAP_BIND_PASSWORD credentials."""
         custom_username = "custom_REDACTED_LDAP_BIND_PASSWORD_func"
         custom_password = "CustomPasswordFunc123!"
 
-        quickstart = FlextAuthQuickstart()
-        auth = quickstart.flext_auth_quick_start(
+        auth = FlextAuth.quick_start(
             create_REDACTED_LDAP_BIND_PASSWORD=True,
             REDACTED_LDAP_BIND_PASSWORD_username=custom_username,
             REDACTED_LDAP_BIND_PASSWORD_password=custom_password,

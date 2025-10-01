@@ -19,9 +19,7 @@ from pydantic import ValidationError
 from flext_auth import (
     FlextAuth,
     FlextAuthConfig,
-    FlextAuthContainer,
     FlextAuthModels,
-    FlextAuthQuickstart,
 )
 from flext_auth.typings import FlextAuthTypes
 from flext_core import FlextTypes
@@ -32,9 +30,9 @@ Role = FlextAuthModels.Role
 Session = FlextAuthModels.Session
 User = FlextAuthModels.User
 
-# Factory method aliases
-create_session = FlextAuthContainer.create_session
-create_user_from_request = FlextAuthContainer.create_user_from_request
+# Factory method aliases - use methods from models
+create_session = FlextAuthModels.Session.create_session
+create_user_from_request = FlextAuthModels.User.create_user
 
 # Type alias for FlextAuth service
 AuthService = FlextAuth
@@ -646,9 +644,8 @@ class TestRealInitExhaustive:
 
     def test_flext_auth_quick_start_comprehensive(self) -> None:
         """Testa flext_auth_quick_start de forma abrangente."""
-        # Quick start com REDACTED_LDAP_BIND_PASSWORD
-        quickstart = FlextAuthQuickstart()
-        auth: AuthService = quickstart.flext_auth_quick_start(
+        # Quick start com REDACTED_LDAP_BIND_PASSWORD - use FlextAuth.quick_start classmethod
+        auth: AuthService = FlextAuth.quick_start(
             create_REDACTED_LDAP_BIND_PASSWORD=True,
             REDACTED_LDAP_BIND_PASSWORD_username="super_REDACTED_LDAP_BIND_PASSWORD",
             REDACTED_LDAP_BIND_PASSWORD_password="SuperAdminPass123!",
@@ -661,7 +658,7 @@ class TestRealInitExhaustive:
         assert REDACTED_LDAP_BIND_PASSWORD is not None
 
         # Quick start sem REDACTED_LDAP_BIND_PASSWORD
-        auth_no_REDACTED_LDAP_BIND_PASSWORD = quickstart.flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+        auth_no_REDACTED_LDAP_BIND_PASSWORD = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
         assert isinstance(auth_no_REDACTED_LDAP_BIND_PASSWORD, FlextAuth)
 
 

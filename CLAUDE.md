@@ -4,6 +4,20 @@
 **Version**: 1.0.0 | **Authority**: AUTHENTICATION/AUTHORIZATION FOUNDATION | **Updated**: 2025-01-08
 **Status**: Production-ready with 73/73 tests passing, Zero errors across all quality gates · 1.0.0 Release Preparation
 
+## 📋 DOCUMENT STRUCTURE & REFERENCES
+
+**Quick Links**:
+- **[~/.claude/commands/flext.md](~/.claude/commands/flext.md)**: Optimization command for module refactoring (USE with `/flext` command)
+- **[../CLAUDE.md](../CLAUDE.md)**: FLEXT ecosystem standards and domain library rules
+- **[README.md](README.md)**: Project overview and authentication usage documentation
+
+**Document Purpose**:
+- **This file (CLAUDE.md)**: Project-specific flext-auth standards, AUTHENTICATION FOUNDATION patterns, and enterprise security operations
+- **flext.md command**: Practical refactoring workflows and MCP tool usage patterns (HOW-TO)
+- **Workspace CLAUDE.md**: Domain library standards and ecosystem architectural principles (WHAT and WHY)
+
+**DO NOT DUPLICATE**: This file focuses on flext-auth authentication authority specifics (73/73 tests PROOF). The `/flext` command provides workflows. The workspace CLAUDE.md provides ecosystem-wide authentication domain library rules.
+
 **References**: See [../CLAUDE.md](../CLAUDE.md) for FLEXT ecosystem standards and [README.md](README.md) for project overview.
 
 **Hierarchy**: This document provides project-specific standards based on workspace-level patterns defined in [../CLAUDE.md](../CLAUDE.md). For architectural principles, quality gates, and MCP server usage, reference the main workspace standards.
@@ -998,19 +1012,18 @@ echo "✅ Authentication Foundation achievement validation COMPLETED"
 - **Service Architecture Patterns**: Demonstrates advanced patterns usage at scale
 - **Testing Excellence**: Real authentication environment testing with production security validation
 
-## 🔗 MCP SERVER INTEGRATION
-
-### Mandatory MCP Server Usage (AUTHENTICATION COMPLIANCE)
+## 🔗 MCP SERVER INTEGRATION (MANDATORY)
 
 As defined in [../CLAUDE.md](../CLAUDE.md), all FLEXT development MUST use:
 
-- **serena**: All semantic code operations, symbol analysis, and refactoring
-- **sequential-thinking**: Complex problem decomposition and planning
-- **context7**: Third-party library documentation and API references
-- **github**: Repository operations and pull request management
-- **puppeteer**: Web automation and testing interfaces
+| MCP Server              | Purpose                                                  | Status          |
+| ----------------------- | -------------------------------------------------------- | --------------- |
+| **serena-flext**        | Semantic code analysis, symbol manipulation, refactoring | **MANDATORY**   |
+| **sequential-thinking** | Authentication architecture and security decomposition   | **RECOMMENDED** |
+| **context7**            | Third-party library documentation (bcrypt, JWT, Redis)   | **RECOMMENDED** |
+| **github**              | Repository operations and authentication ecosystem PRs   | **ACTIVE**      |
 
-Authentication development must leverage MCP servers for secure, maintainable code patterns.
+**Usage**: Reference [~/.claude/commands/flext.md](~/.claude/commands/flext.md) for MCP workflows. Use `/flext` command for authentication module optimization and security pattern refactoring.
 
 ---
 

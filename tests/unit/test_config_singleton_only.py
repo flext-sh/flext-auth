@@ -24,7 +24,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_default_creation(self) -> None:
         """Test FlextAuthConfig singleton creation with defaults."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         config = FlextAuthConfig.get_global_instance()
 
@@ -36,7 +36,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_with_parameter_overrides(self) -> None:
         """Test FlextAuthConfig singleton with custom parameter overrides."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         config_result = FlextAuthConfig.get_or_create_global(
             jwt_secret="custom_secret_for_testing_minimum_32_chars",
@@ -55,7 +55,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_environment_variables(self) -> None:
         """Test FlextAuthConfig singleton with environment variables."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Set environment variables
         original_value = os.environ.get("FLEXT_AUTH_JWT_EXPIRY_MINUTES")
@@ -74,7 +74,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_validation_edge_cases(self) -> None:
         """Test FlextAuthConfig singleton validation edge cases."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Test with valid configuration
         config_result = FlextAuthConfig.get_or_create_global(
@@ -92,7 +92,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_invalid_values(self) -> None:
         """Test FlextAuthConfig singleton with invalid values."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Test with valid configuration (JWT <= 2 * session expiry)
         config_result = FlextAuthConfig.get_or_create_global(
@@ -110,7 +110,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_params_dict(self) -> None:
         """Test FlextAuthConfig singleton with params dict."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         params: dict[str, int | str] = {
             "jwt_expiry_minutes": 90,
@@ -143,7 +143,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_environment_config_request_model(self) -> None:
         """Test FlextAuthConfig singleton environment configuration."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Test development environment
         dev_config = FlextAuthConfig.get_or_create_global(environment="development")
@@ -160,7 +160,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_environment_config_request_defaults(self) -> None:
         """Test FlextAuthConfig singleton environment defaults."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Test default environment
         config = FlextAuthConfig.get_global_instance()
@@ -174,7 +174,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_all_fields(self) -> None:
         """Test FlextAuthConfig singleton with all fields."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         config_result = FlextAuthConfig.get_or_create_global(
             jwt_auth_secret=SecretStr("test_secret_minimum_32_characters_long"),
@@ -232,7 +232,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_inheritance(self) -> None:
         """Test FlextAuthConfig singleton inheritance from FlextConfig."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         config = FlextAuthConfig.get_global_instance()
 
@@ -246,7 +246,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_field_validation(self) -> None:
         """Test FlextAuthConfig singleton field validation."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Test with valid values
         config_result = FlextAuthConfig.get_or_create_global(
@@ -267,7 +267,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_jwt_secret_generation(self) -> None:
         """Test FlextAuthConfig singleton JWT secret generation."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Test with empty secret (should be generated)
         config_result = FlextAuthConfig.get_or_create_global(
@@ -285,7 +285,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_security_defaults(self) -> None:
         """Test FlextAuthConfig singleton security defaults."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         config = FlextAuthConfig.get_global_instance()
 
@@ -298,7 +298,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_with_none_values(self) -> None:
         """Test FlextAuthConfig singleton with None values."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Test with None values (should use defaults)
         config_result = FlextAuthConfig.get_or_create_global(environment="development")
@@ -313,7 +313,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_model_validation(self) -> None:
         """Test FlextAuthConfig singleton model validation."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         config_result = FlextAuthConfig.get_or_create_global(
             jwt_expiry_minutes=30,
@@ -331,14 +331,14 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_environment_config_request_validation(self) -> None:
         """Test FlextAuthConfig singleton environment validation."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Test valid environments
         valid_environments = ["development", "staging", "production", "test"]
 
         for env in valid_environments:
             # Clear singleton before each test to ensure fresh instance
-            FlextAuthConfig.clear_global_instance()
+            FlextAuthConfig.reset_global_instance()
             config_result = FlextAuthConfig.get_or_create_global(environment=env)
             assert config_result.is_success
             assert config_result.value.environment == env
@@ -346,7 +346,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_singleton_constants_usage(self) -> None:
         """Test FlextAuthConfig singleton constants usage."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         config = FlextAuthConfig.get_global_instance()
 
@@ -361,7 +361,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_get_security_settings_method(self) -> None:
         """Test FlextAuthConfig singleton get_security_settings method."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         config = FlextAuthConfig.get_global_instance()
         security_settings = config.get_security_settings()
@@ -374,7 +374,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_get_jwt_settings_method(self) -> None:
         """Test FlextAuthConfig singleton get_jwt_settings method."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         config = FlextAuthConfig.get_global_instance()
         jwt_settings = config.get_jwt_settings()
@@ -389,7 +389,7 @@ class TestFlextAuthConfigSingletonOnly:
     def test_create_from_environment_method(self) -> None:
         """Test FlextAuthConfig singleton create_from_environment method."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Test creating from environment
         config = FlextAuthConfig.create_for_environment("development")
@@ -403,7 +403,7 @@ class TestFlextAuthConfigSingletonAdditionalCoverage:
     def test_singleton_config_validation_jwt_expiry_exceeds_session(self) -> None:
         """Test singleton configuration validation when JWT expiry exceeds session."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         config_result = FlextAuthConfig.get_or_create_global(
             jwt_expiry_minutes=120,
@@ -418,7 +418,7 @@ class TestFlextAuthConfigSingletonAdditionalCoverage:
     def test_singleton_create_from_environment_exception_handling(self) -> None:
         """Test singleton create_for_environment exception handling."""
         # Clear any existing singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Test with invalid environment - raises ValidationError
         with pytest.raises(ValidationError, match="Invalid environment"):

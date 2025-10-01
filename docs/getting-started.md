@@ -1,8 +1,8 @@
 # Getting Started
 
-**Version**: 0.9.9 RC | **Updated**: September 17, 2025
+**Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
 
-Installation and first steps for implementing authentication in your FLEXT projects using flext-auth.
+Installation and first steps for implementing enterprise authentication in your FLEXT projects using flext-auth with complete FlextService and FlextHandlers integration.
 
 ---
 

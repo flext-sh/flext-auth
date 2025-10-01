@@ -14,12 +14,12 @@ from datetime import UTC, datetime, timedelta
 import pytest
 from pydantic import ValidationError
 
-from flext_auth import FlextAuthContainer, FlextAuthModels
+from flext_auth import FlextAuthModels
 
 # Use unified class structure
 Role = FlextAuthModels.Role
-create_session = FlextAuthContainer.create_session
-create_user = FlextAuthContainer.create_user
+create_session = FlextAuthModels.Session.create_session
+create_user = FlextAuthModels.User.create_user
 
 
 class TestUserCreateUserMethod:

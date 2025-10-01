@@ -1,10 +1,12 @@
 # API Reference
 
-**Version**: 0.9.9 RC | **Updated**: September 17, 2025
+**Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
 
-Complete API documentation for flext-auth authentication service.
+Complete API documentation for flext-auth enterprise authentication service with FlextService and FlextHandlers architecture.
 
 For general FLEXT patterns and FlextResult usage, see **[flext-core](../../flext-core/README.md)** documentation.
+
+**Note**: This API is 100% backward compatible. All existing code continues to work unchanged after the FlextHandlers refactoring.
 
 ---
 

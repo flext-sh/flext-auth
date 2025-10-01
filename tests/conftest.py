@@ -15,9 +15,9 @@ import flext_auth.config
 @pytest.fixture(autouse=True)
 def clear_auth_config_singleton() -> Generator[None]:
     """Clear FlextAuthConfig singleton before each test to ensure clean state."""
-    flext_auth.config.FlextAuthConfig.clear_global_instance()
+    flext_auth.config.FlextAuthConfig.reset_global_instance()
     yield
-    flext_auth.config.FlextAuthConfig.clear_global_instance()
+    flext_auth.config.FlextAuthConfig.reset_global_instance()
 
 
 @pytest.fixture

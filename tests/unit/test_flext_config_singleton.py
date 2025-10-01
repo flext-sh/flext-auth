@@ -21,7 +21,7 @@ class TestFlextConfigSingleton:
     def test_singleton_consistency(self) -> None:
         """Test that FlextConfig maintains singleton consistency."""
         # Clear any existing global instance
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Get first instance
         config1 = FlextAuthConfig.get_global_instance()
@@ -36,7 +36,7 @@ class TestFlextConfigSingleton:
     def test_singleton_with_overrides(self) -> None:
         """Test that overrides create new instances but maintain singleton pattern."""
         # Clear any existing global instance
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Get original instance
         original_config = FlextAuthConfig.get_global_instance()
@@ -63,7 +63,7 @@ class TestFlextConfigSingleton:
     def test_cli_parameter_integration(self) -> None:
         """Test CLI parameter integration with singleton."""
         # Clear any existing global instance
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Test CLI parameter creation
         cli_config_result = FlextAuthConfig.create_from_cli_params(
@@ -85,7 +85,7 @@ class TestFlextConfigSingleton:
     def test_cli_global_update(self) -> None:
         """Test updating global singleton from CLI parameters."""
         # Clear any existing global instance
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Update global config from CLI
         update_result = FlextAuthConfig.update_global_from_cli(
@@ -105,7 +105,7 @@ class TestFlextConfigSingleton:
     def test_cli_summary(self) -> None:
         """Test CLI summary functionality."""
         # Clear any existing global instance
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Get global config
         FlextAuthConfig.get_global_instance()
@@ -130,7 +130,7 @@ class TestFlextConfigSingleton:
     def test_flext_auth_uses_singleton(self) -> None:
         """Test that FlextAuth uses FlextConfig singleton."""
         # Clear any existing global instance
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Create FlextAuth without explicit config
         auth: FlextAuth = FlextAuth()
@@ -142,7 +142,7 @@ class TestFlextConfigSingleton:
     def test_flext_auth_with_cli_overrides(self) -> None:
         """Test FlextAuth with CLI parameter overrides."""
         # Clear any existing global instance
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Create FlextAuth with standard initialization
         auth = FlextAuth()
@@ -155,7 +155,7 @@ class TestFlextConfigSingleton:
     def test_singleton_across_multiple_instances(self) -> None:
         """Test singleton behavior across multiple FlextAuth instances."""
         # Clear any existing global instance
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Create first FlextAuth
         auth1: FlextAuth = FlextAuth()
@@ -172,7 +172,7 @@ class TestFlextConfigSingleton:
     def test_environment_variable_override(self) -> None:
         """Test that environment variables override singleton behavior."""
         # Clear any existing global instance
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Set environment variable
         original_value = os.environ.get("FLEXT_AUTH_JWT_EXPIRY_MINUTES")
@@ -198,7 +198,7 @@ class TestFlextConfigSingleton:
     def test_configuration_validation_with_singleton(self) -> None:
         """Test configuration validation works with singleton."""
         # Clear any existing global instance
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Get global config
         config = FlextAuthConfig.get_global_instance()
@@ -210,7 +210,7 @@ class TestFlextConfigSingleton:
     def test_business_rules_validation(self) -> None:
         """Test business rules validation with singleton."""
         # Clear any existing global instance
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Get global config
         config = FlextAuthConfig.get_global_instance()
@@ -222,7 +222,7 @@ class TestFlextConfigSingleton:
     def test_singleton_thread_safety(self) -> None:
         """Test singleton behavior is consistent across operations."""
         # Clear any existing global instance
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Perform multiple operations
         config1 = FlextAuthConfig.get_global_instance()
@@ -236,7 +236,7 @@ class TestFlextConfigSingleton:
     def test_cli_parameter_edge_cases(self) -> None:
         """Test CLI parameter handling edge cases."""
         # Clear any existing global instance
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Test with None values (should not override)
         config_result = FlextAuthConfig.create_from_cli_params(
@@ -256,13 +256,13 @@ class TestFlextConfigSingleton:
     def test_singleton_clear_and_recreate(self) -> None:
         """Test clearing and recreating singleton."""
         # Clear any existing global instance
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Get first instance
         config1 = FlextAuthConfig.get_global_instance()
 
         # Clear singleton
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Get new instance
         config2 = FlextAuthConfig.get_global_instance()

@@ -7,39 +7,36 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_auth.__version__ import __version__
-from flext_auth.auth import FlextAuth
-from flext_auth.cli import FlextAuthCli
+from flext_auth.api import FlextAuth
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
-from flext_auth.container import FlextAuthContainer
 from flext_auth.exceptions import FlextAuthExceptions
-from flext_auth.mixins import (
-    FlextAuthBusinessRulesMixin,
-    FlextAuthFactoryMixin,
-    FlextAuthValidationMixin,
-)
 from flext_auth.models import FlextAuthModels
 from flext_auth.protocols import FlextAuthProtocols
-from flext_auth.quickstart import FlextAuthQuickstart
+
+# Provider system (v2.0.0 API)
+from flext_auth.providers import (
+    BaseAuthProvider,
+    BaseAuthProviderMixin,
+    JwtAuthProvider,
+)
+from flext_auth.registry import FlextAuthRegistry
 from flext_auth.typings import FlextAuthTypes
-from flext_auth.utilities import FlextAuthUtilities
-from flext_core import FlextResult
+
+# Note: FlextAuthUtilities and FlextAuthMixins are INTERNAL ONLY - not exported
 
 __all__ = [
+    # Core API (v1.0.0)
+    "__version__",
+    "BaseAuthProvider",
+    "BaseAuthProviderMixin",
     "FlextAuth",
-    "FlextAuthBusinessRulesMixin",
-    "FlextAuthCli",
     "FlextAuthConfig",
     "FlextAuthConstants",
-    "FlextAuthContainer",
     "FlextAuthExceptions",
-    "FlextAuthFactoryMixin",
     "FlextAuthModels",
     "FlextAuthProtocols",
-    "FlextAuthQuickstart",
+    "FlextAuthRegistry",
     "FlextAuthTypes",
-    "FlextAuthUtilities",
-    "FlextAuthValidationMixin",
-    "FlextResult",
-    "__version__",
+    "JwtAuthProvider",
 ]

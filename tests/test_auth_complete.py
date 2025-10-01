@@ -13,8 +13,8 @@ from flext_auth import (
     FlextAuth,
     FlextAuthConfig,
     FlextAuthModels,
-    FlextAuthTypes,
 )
+from flext_auth.typings import FlextAuthTypes
 
 # Use unified class structure
 AuthenticationResponseDict = FlextAuthTypes.AuthenticationResponseDict
@@ -53,7 +53,7 @@ class TestFlextAuthBasic:
     def test_flext_auth_with_custom_params(self) -> None:
         """Test FlextAuth with custom parameters."""
         # Clear singleton to ensure clean test
-        FlextAuthConfig.clear_global_instance()
+        FlextAuthConfig.reset_global_instance()
 
         # Create FlextAuth with default configuration
         auth: FlextAuth = FlextAuth()
