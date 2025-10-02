@@ -494,7 +494,7 @@ class TestFlextAuthExceptionsEdgeCases:
         """Test string representation of exceptions."""
         error = FlextAuthExceptions.FlextAuthError("Test error", "TEST_CODE")
         str_repr = str(error)
-        assert str_repr == "Test error"
+        assert str_repr == "[TEST_CODE] Test error"
 
         # Test that string representation is consistent
         str_repr1 = str(error)
