@@ -188,13 +188,13 @@ auth_result = flext_auth_quick_start()
 auth = auth_result.value
 
 @app.post("/login")
-async def login(username: str, password: str):
-    result = await auth.authenticate_user(username, password)
+def login(username: str, password: str):
+    result = auth.authenticate_user(username, password)
     return {"success": result.success}
 
 @app.get("/protected")
 @flext_auth_required(auth_service=auth)
-async def protected_endpoint(current_user: dict = Depends()):
+def protected_endpoint(current_user: dict = Depends()):
     return {"user": current_user}
 ```
 
@@ -380,7 +380,7 @@ if __name__ == "__main__":
 - Efficient configuration choices
 - Caching strategies
 - Connection pooling
-- Async/await patterns
+- /patterns
 - Resource management
 
 ### Integration Best Practices

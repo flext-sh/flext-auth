@@ -10,20 +10,31 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_auth.providers.apikey import ApiKeyAuthProvider
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
+from flext_auth.providers.basic import BasicAuthProvider
+from flext_auth.providers.certificate import CertificateAuthProvider
 from flext_auth.providers.jwt import JwtAuthProvider
+from flext_auth.providers.kerberos import KerberosAuthProvider
+from flext_auth.providers.ldap import LdapAuthProvider
+from flext_auth.providers.oauth2 import OAuth2AuthProvider
+from flext_auth.providers.oidc import OidcAuthProvider
+from flext_auth.providers.saml import SamlAuthProvider
 
 __all__: list[str] = [
+    # Phase 3 Providers (v2.0.0)
+    "ApiKeyAuthProvider",
+    # Base provider protocol
     "BaseAuthProvider",
     "BaseAuthProviderMixin",
+    "BasicAuthProvider",
+    "CertificateAuthProvider",
+    # Phase 1 Provider (v1.0.0)
     "JwtAuthProvider",
-    # Will be populated as more providers are implemented
-    # "OAuth2AuthProvider",
-    # "OidcAuthProvider",
-    # "SamlAuthProvider",
-    # "ApiKeyAuthProvider",
-    # "BasicAuthProvider",
-    # "CertificateAuthProvider",
-    # "LdapAuthProvider",
-    # "KerberosAuthProvider",
+    "KerberosAuthProvider",
+    "LdapAuthProvider",
+    # Phase 2 Providers (v2.0.0)
+    "OAuth2AuthProvider",
+    "OidcAuthProvider",
+    "SamlAuthProvider",
 ]

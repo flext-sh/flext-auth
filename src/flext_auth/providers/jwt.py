@@ -49,13 +49,13 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         >>> config = {
         ...     "secret_key": "your-secret-key",
         ...     "algorithm": "HS256",
-        ...     "access_token_expiry_minutes": 30
+        ...     "access_token_expiry_minutes": 30,
         ... }
         >>> provider = JwtAuthProvider(config)
-        >>> result = await provider.authenticate({
+        >>> result = provider.authenticate({
         ...     "username": "user",
         ...     "password": "password",
-        ...     "user_id": "user-123"
+        ...     "user_id": "user-123",
         ... })
 
     """
@@ -88,20 +88,16 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             raise ValueError(error_msg)
 
         self._algorithm = self._config.get(
-            "algorithm",
-            FlextAuthConstants.Jwt.DEFAULT_ALGORITHM
+            "algorithm", FlextAuthConstants.Jwt.DEFAULT_ALGORITHM
         )
         self._access_token_expiry_minutes = self._config.get(
-            "access_token_expiry_minutes",
-            30
+            "access_token_expiry_minutes", 30
         )
         self._refresh_token_expiry_days = self._config.get(
-            "refresh_token_expiry_days",
-            7
+            "refresh_token_expiry_days", 7
         )
         self._bcrypt_rounds = self._config.get(
-            "bcrypt_rounds",
-            FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS
+            "bcrypt_rounds", FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS
         )
         self._issuer = self._config.get("issuer")
         self._audience = self._config.get("audience")
@@ -111,11 +107,11 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             extra={
                 "algorithm": self._algorithm,
                 "access_expiry_minutes": self._access_token_expiry_minutes,
-                "refresh_expiry_days": self._refresh_token_expiry_days
-            }
+                "refresh_expiry_days": self._refresh_token_expiry_days,
+            },
         )
 
-    async def authenticate(
+    def authenticate(
         self,
         credentials: dict[str, Any],
     ) -> FlextResult[FlextAuthModels.AuthToken]:
@@ -135,30 +131,26 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             FlextResult[AuthToken]: JWT token or authentication error
 
         Example:
-            >>> result = await provider.authenticate({
+            >>> result = provider.authenticate({
             ...     "username": "john_doe",
             ...     "password": "secure_password",
             ...     "user_id": "user-123",
             ...     "email": "john@example.com",
-            ...     "roles": ["user", "REDACTED_LDAP_BIND_PASSWORD"]
+            ...     "roles": ["user", "REDACTED_LDAP_BIND_PASSWORD"],
             ... })
 
         """
         # Validate required fields
         validation_result = self._validate_credentials_dict(
-            credentials,
-            ["username", "user_id"]
+            credentials, ["username", "user_id"]
         )
         if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(
-                validation_result.error
-            )
+            return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
 
         # Password verification if password provided
         if "password" in credentials and "password_hash" in credentials:
             password_result = FlextAuthUtilities.PasswordProcessing.verify_password(
-                credentials["password"],
-                credentials["password_hash"]
+                credentials["password"], credentials["password_hash"]
             )
             if password_result.is_failure:
                 return FlextResult[FlextAuthModels.AuthToken].fail(
@@ -168,7 +160,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             if not password_result.unwrap():
                 self._logger.warning(
                     "Authentication failed: invalid password",
-                    extra={"username": credentials.get("username")}
+                    extra={"username": credentials.get("username")},
                 )
                 return FlextResult[FlextAuthModels.AuthToken].fail(
                     "Invalid credentials"
@@ -198,30 +190,30 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         access_token_data = access_token_result.unwrap()
 
         # Create AuthToken model
+        # AuthToken uses 'token' field, not 'access_token'
         auth_token = FlextAuthModels.AuthToken(
-            access_token=access_token_data["token"],
+            token=access_token_data["token"],
             token_type="Bearer",
-            expires_in=self._access_token_expiry_minutes * 60,  # Convert to seconds
             expires_at=access_token_data["expires_at"],
             refresh_token=refresh_token,
             refresh_expires_at=refresh_expires_at,
             user_id=credentials["user_id"],
             username=credentials.get("username"),
             email=credentials.get("email"),
-            roles=credentials.get("roles", [])
+            roles=credentials.get("roles", []),
         )
 
         self._logger.info(
             "Authentication successful",
             extra={
                 "username": credentials.get("username"),
-                "user_id": credentials["user_id"]
-            }
+                "user_id": credentials["user_id"],
+            },
         )
 
         return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)
 
-    async def validate(
+    def validate(
         self,
         token: str | FlextAuthModels.AuthToken,
     ) -> FlextResult[bool]:
@@ -234,7 +226,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             FlextResult[bool]: True if valid, False if invalid, or error
 
         Example:
-            >>> result = await provider.validate(token_string)
+            >>> result = provider.validate(token_string)
             >>> if result.is_success and result.unwrap():
             ...     print("Token is valid")
 
@@ -254,7 +246,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
                     "verify_exp": True,
                     "verify_aud": False,  # Optional audience verification
                     "verify_iss": False,  # Optional issuer verification
-                }
+                },
             )
 
             # Additional validation checks
@@ -270,8 +262,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
                 return FlextResult[bool].fail("Token expired")
 
             self._logger.debug(
-                "Token validated successfully",
-                extra={"sub": payload.get("sub")}
+                "Token validated successfully", extra={"sub": payload.get("sub")}
             )
 
             return FlextResult[bool].ok(True)
@@ -283,7 +274,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         except Exception as e:
             return FlextResult[bool].fail(f"Token validation failed: {e}")
 
-    async def refresh(
+    def refresh(
         self,
         token: str | FlextAuthModels.AuthToken,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
@@ -296,7 +287,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             FlextResult[AuthToken]: New token or error
 
         Example:
-            >>> result = await provider.refresh(old_token)
+            >>> result = provider.refresh(old_token)
             >>> if result.is_success:
             ...     new_token = result.unwrap()
 
@@ -304,9 +295,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         # Check capability
         capability_check = self._check_capability_supported("refresh")
         if capability_check.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(
-                capability_check.error
-            )
+            return FlextResult[FlextAuthModels.AuthToken].fail(capability_check.error)
 
         try:
             token_string = self._extract_token_string(token)
@@ -319,7 +308,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
                 token_string,
                 self._secret_key,
                 algorithms=[self._algorithm],
-                options={"verify_exp": False}  # Don't verify expiration for refresh
+                options={"verify_exp": False},  # Don't verify expiration for refresh
             )
 
             # Extract user information from payload
@@ -334,11 +323,11 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
                 "user_id": user_id,
                 "username": payload.get("username"),
                 "email": payload.get("email"),
-                "roles": payload.get("roles", [])
+                "roles": payload.get("roles", []),
             }
 
             # Generate new tokens
-            return await self.authenticate(credentials)
+            return self.authenticate(credentials)
 
         except jwt.InvalidTokenError as e:
             return FlextResult[FlextAuthModels.AuthToken].fail(
@@ -349,7 +338,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
                 f"Token refresh failed: {e}"
             )
 
-    async def revoke(
+    def revoke(
         self,
         token: str | FlextAuthModels.AuthToken,
     ) -> FlextResult[None]:
@@ -366,7 +355,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             FlextResult[None]: Success or error
 
         Example:
-            >>> result = await provider.revoke(token)
+            >>> result = provider.revoke(token)
             >>> if result.is_success:
             ...     print("Token revoked (logged)")
 
@@ -382,7 +371,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
                 token_string,
                 self._secret_key,
                 algorithms=[self._algorithm],
-                options={"verify_exp": False}
+                options={"verify_exp": False},
             )
 
             self._logger.info(
@@ -390,8 +379,8 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
                 extra={
                     "sub": payload.get("sub"),
                     "jti": payload.get("jti"),
-                    "exp": payload.get("exp")
-                }
+                    "exp": payload.get("exp"),
+                },
             )
 
             return FlextResult[None].ok(None)
@@ -413,13 +402,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             - jwt: JWT standard support
 
         """
-        return {
-            "token",
-            "validate",
-            "refresh",
-            "password_hash",
-            "jwt"
-        }
+        return {"token", "validate", "refresh", "password_hash", "jwt"}
 
     def get_metadata(self) -> dict[str, Any]:
         """Return JWT provider metadata.
@@ -442,8 +425,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         }
 
     def _generate_access_token(
-        self,
-        credentials: dict[str, Any]
+        self, credentials: dict[str, Any]
     ) -> FlextResult[dict[str, Any]]:
         """Generate JWT access token.
 
@@ -478,9 +460,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         # Encode token
         token_result = FlextAuthUtilities.JWTProcessing.encode_token(
-            payload,
-            self._secret_key,
-            self._algorithm
+            payload, self._secret_key, self._algorithm
         )
 
         if token_result.is_failure:
@@ -488,12 +468,11 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         return FlextResult[dict[str, Any]].ok({
             "token": token_result.unwrap(),
-            "expires_at": expires_at
+            "expires_at": expires_at,
         })
 
     def _generate_refresh_token(
-        self,
-        credentials: dict[str, Any]
+        self, credentials: dict[str, Any]
     ) -> FlextResult[dict[str, Any]]:
         """Generate JWT refresh token.
 
@@ -512,7 +491,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             "exp": int(expires_at.timestamp()),
             "iat": int(now.timestamp()),
             "jti": str(uuid4()),
-            "type": "refresh"  # Mark as refresh token
+            "type": "refresh",  # Mark as refresh token
         }
 
         # Add minimal claims for refresh token
@@ -521,9 +500,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         # Encode token
         token_result = FlextAuthUtilities.JWTProcessing.encode_token(
-            payload,
-            self._secret_key,
-            self._algorithm
+            payload, self._secret_key, self._algorithm
         )
 
         if token_result.is_failure:
@@ -531,7 +508,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         return FlextResult[dict[str, Any]].ok({
             "token": token_result.unwrap(),
-            "expires_at": expires_at
+            "expires_at": expires_at,
         })
 
 

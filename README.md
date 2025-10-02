@@ -177,7 +177,7 @@ auth = FlextAuth.with_jwt(
 )
 
 # Use authentication normally
-result = await auth.authenticate(
+result = auth.authenticate(
     credentials={
         "username": "john_doe",
         "password": "secure_password",
@@ -212,7 +212,7 @@ auth = FlextAuth.with_provider(
 )
 
 # Authenticate
-result = await auth.authenticate(credentials)
+result = auth.authenticate(credentials)
 ```
 
 #### **3. Multi-Provider Registry**
@@ -256,7 +256,7 @@ from flext_core import FlextResult
 class CustomAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
     """Custom authentication provider example."""
 
-    async def authenticate(
+    def authenticate(
         self,
         credentials: dict[str, Any]
     ) -> FlextResult[FlextAuthModels.AuthToken]:
@@ -275,7 +275,7 @@ class CustomAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)
 
-    async def validate(
+    def validate(
         self,
         token: str | FlextAuthModels.AuthToken
     ) -> FlextResult[bool]:

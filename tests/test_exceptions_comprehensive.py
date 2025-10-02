@@ -21,8 +21,8 @@ class TestFlextAuthExceptions:
         error = FlextAuthExceptions.FlextAuthError("Test error message")
 
         assert error.message == "Test error message"
-        assert error.code is None
-        assert str(error) == "Test error message"
+        assert error.code == "GENERIC_ERROR"  # Default code from BaseError
+        assert str(error) == "[GENERIC_ERROR] Test error message"  # str includes code
 
     def test_flext_auth_error_with_code(self) -> None:
         """Test FlextAuthError initialization with error code."""

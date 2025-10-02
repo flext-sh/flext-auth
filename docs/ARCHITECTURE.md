@@ -156,13 +156,13 @@ class FlextAuth(FlextService[AuthenticationResponseDict]):
     def with_provider(cls, provider: BaseAuthProvider, **kwargs) -> FlextAuth
 
     # Core operations
-    async def authenticate(
+    def authenticate(
         self,
         credentials: dict,
         provider: str | None = None
     ) -> FlextResult[AuthToken]
 
-    async def validate_token(
+    def validate_token(
         self,
         token: str,
         provider: str | None = None
@@ -223,28 +223,28 @@ class FlextAuthRegistry:
 class BaseAuthProvider(Protocol):
     """Base protocol for all authentication providers."""
 
-    async def authenticate(
+    def authenticate(
         self,
         credentials: dict
     ) -> FlextResult[AuthToken]:
         """Authenticate user with provided credentials."""
         ...
 
-    async def validate(
+    def validate(
         self,
         token: str | AuthToken
     ) -> FlextResult[bool]:
         """Validate authentication token."""
         ...
 
-    async def refresh(
+    def refresh(
         self,
         token: str | AuthToken
     ) -> FlextResult[AuthToken]:
         """Refresh authentication token."""
         ...
 
-    async def revoke(
+    def revoke(
         self,
         token: str | AuthToken
     ) -> FlextResult[None]:
@@ -347,7 +347,7 @@ class ExampleAuthProvider(BaseAuthProvider):
         self._config = config
         self._logger = FlextLogger(__name__)
 
-    async def authenticate(
+    def authenticate(
         self,
         credentials: dict
     ) -> FlextResult[FlextAuthModels.AuthToken]:
@@ -368,7 +368,7 @@ class ExampleAuthProvider(BaseAuthProvider):
                 f"Authentication failed: {e}"
             )
 
-    async def validate(
+    def validate(
         self,
         token: str | FlextAuthModels.AuthToken
     ) -> FlextResult[bool]:
@@ -376,7 +376,7 @@ class ExampleAuthProvider(BaseAuthProvider):
         # Implementation
         ...
 
-    async def refresh(
+    def refresh(
         self,
         token: str | FlextAuthModels.AuthToken
     ) -> FlextResult[FlextAuthModels.AuthToken]:
@@ -388,7 +388,7 @@ class ExampleAuthProvider(BaseAuthProvider):
         # Implementation
         ...
 
-    async def revoke(
+    def revoke(
         self,
         token: str | FlextAuthModels.AuthToken
     ) -> FlextResult[None]:
@@ -420,7 +420,7 @@ class ExampleAuthProvider(BaseAuthProvider):
 class BaseTransportAdapter(Protocol):
     """Base protocol for transport adapters."""
 
-    async def send_auth_request(
+    def send_auth_request(
         self,
         endpoint: str,
         credentials: dict,
@@ -429,7 +429,7 @@ class BaseTransportAdapter(Protocol):
         """Send authentication request over transport."""
         ...
 
-    async def send_validate_request(
+    def send_validate_request(
         self,
         endpoint: str,
         token: str,
@@ -458,14 +458,14 @@ class HttpTransportAdapter(BaseTransportAdapter):
         self._api = FlextApi(config=config)  # MANDATORY: Use flext-api
         self._logger = FlextLogger(__name__)
 
-    async def send_auth_request(
+    def send_auth_request(
         self,
         endpoint: str,
         credentials: dict,
         metadata: dict | None = None
     ) -> FlextResult[dict]:
         """Send authentication request via HTTP using flext-api."""
-        result = await self._api.post(
+        result = self._api.post(
             url=endpoint,
             json=credentials,
             headers=metadata
@@ -494,14 +494,14 @@ class GrpcTransportAdapter(BaseTransportAdapter):
         self._grpc = FlextGrpc(config=config)  # MANDATORY: Use flext-grpc
         self._logger = FlextLogger(__name__)
 
-    async def send_auth_request(
+    def send_auth_request(
         self,
         endpoint: str,
         credentials: dict,
         metadata: dict | None = None
     ) -> FlextResult[dict]:
         """Send authentication request via gRPC using flext-grpc."""
-        result = await self._grpc.call(
+        result = self._grpc.call(
             service="AuthService",
             method="Authenticate",
             request=credentials,
@@ -526,7 +526,7 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
         self._config = config
         self._logger = FlextLogger(__name__)
 
-    async def send_auth_request(
+    def send_auth_request(
         self,
         endpoint: str,
         credentials: dict,
@@ -648,7 +648,7 @@ class TokenManager:
         self._retry = retry_policy or RetryPolicy()
         self._logger = FlextLogger(__name__)
 
-    async def get_token(
+    def get_token(
         self,
         credentials: dict,
         use_cache: bool = True
@@ -659,14 +659,14 @@ class TokenManager:
             if cached:
                 return FlextResult[AuthToken].ok(cached)
 
-        result = await self._provider.authenticate(credentials)
+        result = self._provider.authenticate(credentials)
 
         if result.is_success and use_cache:
             self._cache.set(credentials, result.unwrap())
 
         return result
 
-    async def get_with_retry(
+    def get_with_retry(
         self,
         credentials: dict,
         max_retries: int = 3,
@@ -674,7 +674,7 @@ class TokenManager:
         retry_on: list[type[Exception]] | None = None
     ) -> FlextResult[AuthToken]:
         """Get token with automatic retry on failure."""
-        return await self._retry.execute(
+        return self._retry.execute(
             func=self._provider.authenticate,
             credentials=credentials,
             max_retries=max_retries,
@@ -682,7 +682,7 @@ class TokenManager:
             retry_on=retry_on or []
         )
 
-    async def refresh_token(
+    def refresh_token(
         self,
         token: AuthToken
     ) -> FlextResult[AuthToken]:
@@ -692,14 +692,14 @@ class TokenManager:
                 "Provider does not support token refresh"
             )
 
-        return await self._provider.refresh(token)
+        return self._provider.refresh(token)
 
-    async def validate_token(
+    def validate_token(
         self,
         token: AuthToken
     ) -> FlextResult[bool]:
         """Validate token."""
-        return await self._provider.validate(token)
+        return self._provider.validate(token)
 ```
 
 ### Token Retry Logic (`tokens/retry.py`)
@@ -708,7 +708,7 @@ class TokenManager:
 class RetryPolicy:
     """Token retry policy with exponential backoff."""
 
-    async def execute(
+    def execute(
         self,
         func: Callable,
         max_retries: int = 3,
@@ -721,7 +721,7 @@ class RetryPolicy:
 
         for attempt in range(max_retries + 1):
             try:
-                result = await func(**kwargs)
+                result = func(**kwargs)
                 return result
             except Exception as e:
                 if attempt == max_retries:
@@ -733,7 +733,7 @@ class RetryPolicy:
                     return FlextResult[T].fail(f"Non-retryable error: {e}")
 
                 wait_time = backoff_factor ** attempt
-                await asyncio.sleep(wait_time)
+                sleep(wait_time)
 ```
 
 ### Token Cache (`tokens/cache.py`)
@@ -799,7 +799,7 @@ class CredentialManager:
         self._cipher = self._init_cipher(encryption_key)
         self._logger = FlextLogger(__name__)
 
-    async def store_credential(
+    def store_credential(
         self,
         identifier: str,
         credential: dict,
@@ -807,14 +807,14 @@ class CredentialManager:
     ) -> FlextResult[None]:
         """Store credential with encryption."""
         encrypted = self._cipher.encrypt(credential)
-        return await self._storage.save(identifier, encrypted, metadata)
+        return self._storage.save(identifier, encrypted, metadata)
 
-    async def retrieve_credential(
+    def retrieve_credential(
         self,
         identifier: str
     ) -> FlextResult[dict]:
         """Retrieve and decrypt credential."""
-        result = await self._storage.load(identifier)
+        result = self._storage.load(identifier)
         if result.is_failure:
             return FlextResult[dict].fail(result.error)
 
@@ -822,19 +822,19 @@ class CredentialManager:
         decrypted = self._cipher.decrypt(encrypted)
         return FlextResult[dict].ok(decrypted)
 
-    async def rotate_credential(
+    def rotate_credential(
         self,
         identifier: str,
         new_credential: dict
     ) -> FlextResult[None]:
         """Rotate credential with old credential backup."""
         # Archive old credential
-        old_result = await self.retrieve_credential(identifier)
+        old_result = self.retrieve_credential(identifier)
         if old_result.is_success:
-            await self._storage.archive(identifier, old_result.unwrap())
+            self._storage.archive(identifier, old_result.unwrap())
 
         # Store new credential
-        return await self.store_credential(identifier, new_credential)
+        return self.store_credential(identifier, new_credential)
 ```
 
 ### Security Validations
@@ -905,15 +905,15 @@ class HttpTransportAdapter:
     def __init__(self) -> None:
         self._api = FlextApi()  # MANDATORY: Use flext-api
 
-    async def send_request(self, url: str, data: dict) -> FlextResult[dict]:
-        return await self._api.post(url=url, json=data)
+    def send_request(self, url: str, data: dict) -> FlextResult[dict]:
+        return self._api.post(url=url, json=data)
 
 class LdapAuthProvider:
     def __init__(self, config: dict) -> None:
         self._ldap = FlextLdap(config)  # MANDATORY: Use flext-ldap
 
-    async def authenticate(self, credentials: dict) -> FlextResult[AuthToken]:
-        return await self._ldap.bind(
+    def authenticate(self, credentials: dict) -> FlextResult[AuthToken]:
+        return self._ldap.bind(
             username=credentials["username"],
             password=credentials["password"]
         )
@@ -973,12 +973,12 @@ registry.register("saml", SamlAuthProvider(saml_config))
 auth = FlextAuth(registry=registry)
 
 # Authenticate with specific provider
-jwt_result = await auth.authenticate(
+jwt_result = auth.authenticate(
     credentials={"username": "user", "password": "pass"},
     provider="jwt"
 )
 
-oauth_result = await auth.authenticate(
+oauth_result = auth.authenticate(
     credentials={"authorization_code": "code"},
     provider="oauth2"
 )
@@ -1003,7 +1003,7 @@ provider = OAuth2AuthProvider(
 # Create auth service
 auth = FlextAuth.with_provider(provider)
 
-result = await auth.authenticate(credentials)
+result = auth.authenticate(credentials)
 ```
 
 #### Pattern 4: Token Retry
@@ -1020,7 +1020,7 @@ auth = FlextAuth.with_oauth2(
 token_mgr = auth.get_token_manager()
 
 # Get token with retry
-token = await token_mgr.get_with_retry(
+token = token_mgr.get_with_retry(
     credentials={"username": "user", "password": "pass"},
     max_retries=3,
     backoff_factor=2.0
@@ -1126,7 +1126,7 @@ token = await token_mgr.get_with_retry(
 
 ```bash
 make validate          # Complete pipeline
-make lint             # Ruff: ZERO violations in src/
+make lint           
 make type-check       # MyPy/PyRight: ZERO errors in src/
 make security         # Bandit: ZERO critical issues
 make test             # Tests: 100% pass rate

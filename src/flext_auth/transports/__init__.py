@@ -11,13 +11,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-# Base transport protocol will be imported once created
-# from flext_auth.transports.base import BaseTransportAdapter
+from flext_auth.transports.base import BaseTransportAdapter
+from flext_auth.transports.http import HttpTransportAdapter
 
 __all__: list[str] = [
-    # Will be populated as transports are implemented
-    # "BaseTransportAdapter",
-    # "HttpTransportAdapter",
-    # "GrpcTransportAdapter",
-    # etc.
+    "BaseTransportAdapter",
+    "HttpTransportAdapter",
 ]

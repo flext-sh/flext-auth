@@ -268,7 +268,7 @@ Test-specific environment variables:
 
 1. **Import Errors**: Verify all dependencies are installed
 2. **Database Issues**: Ensure test database is properly configured
-3. **Async Issues**: Use proper async test patterns
+3. **Issues**: Use proper test patterns
 4. **Mock Issues**: Verify mock configurations match actual interfaces
 
 ### Debug Tools

@@ -74,17 +74,19 @@ class TestRealModelsExhaustive:
 
     def test_user_username_validation_special_characters(self) -> None:
         """Testa validação de username com caracteres especiais (linha 139)."""
+        from pydantic import ValidationError
+
         # Testar caracteres especiais reais que devem falhar na validação
         invalid_chars = ["!@#$%", "<script>", "SELECT *", "\n\t\r", "\\"]
 
         for char_set in invalid_chars:
             invalid_username = f"user{char_set}name"
-            with pytest.raises(ValueError, match="Username must contain only"):
+            with pytest.raises(ValidationError, match="String should match pattern"):
                 User(
                     id="test-id-123",
                     username=invalid_username,
                     email="test@example.com",
-                    password_hash="test_hash",
+                    password_hash="$2b$12$" + "A" * 50,  # Valid bcrypt hash format
                     full_name="Test User",
                     is_active=True,
                     failed_login_attempts=0,
@@ -254,13 +256,15 @@ class TestRealModelsExhaustive:
         assert not active_session.is_expired
         assert active_session.is_valid
 
-        # Sessão expirada
-        past_time = datetime.now(UTC) - timedelta(hours=1)
+        # Sessão expirada - created_at 2 hours ago, expires_at 1 hour ago
+        created_in_past = datetime.now(UTC) - timedelta(hours=2)
+        expired_in_past = datetime.now(UTC) - timedelta(hours=1)
         expired_session = Session(
             session_id="expired_session",
             user_id=user.id,
             session_token="expired_token_123456789012345678901234567890ab",
-            expires_at=past_time,
+            created_at=created_in_past,
+            expires_at=expired_in_past,
             is_active=True,
             ip_address=None,
             user_agent=None,
@@ -355,7 +359,7 @@ class TestRealModelsExhaustive:
         # Testar criação de sessão com factory method
         session_result = create_session(
             user_id="test_user_session",
-            expires_in_minutes=30,
+            expiry_hours=2,  # Changed from expires_in_minutes to match actual API
         )
 
         assert session_result.is_success, (
@@ -369,13 +373,15 @@ class TestRealModelsExhaustive:
         assert session.expires_at > datetime.now(UTC)  # Deve expirar no futuro
 
         # Testar com tempo de expiração customizado
-        session_result_2 = create_session(user_id="test_user_2", expires_in_minutes=60)
+        session_result_2 = create_session(
+            user_id="test_user_2", expiry_hours=1
+        )  # Changed to expiry_hours
         assert session_result_2.is_success
         session_2 = session_result_2.value
 
-        # Segunda sessão deve ter expiração diferente
-        time_diff = (session_2.expires_at - session.expires_at).total_seconds()
-        assert abs(time_diff - 1800) < 60  # Diferença de ~30 minutos (1800 segundos)
+        # Segunda sessão deve ter expiração diferente (1 hour vs 2 hours default)
+        time_diff = (session.expires_at - session_2.expires_at).total_seconds()
+        assert abs(time_diff - 3600) < 60  # Diferença de ~1 hora (3600 segundos)
 
 
 class TestRealAuthExhaustive:

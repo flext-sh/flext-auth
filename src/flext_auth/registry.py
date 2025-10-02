@@ -74,15 +74,11 @@ class FlextAuthRegistry:
 
         # Check if provider already registered
         if name in self._providers:
-            return FlextResult[None].fail(
-                f"Provider '{name}' is already registered"
-            )
+            return FlextResult[None].fail(f"Provider '{name}' is already registered")
 
         # Validate configuration if provided
         if config:
-            validation_result = self._validate_provider_config(
-                name, provider, config
-            )
+            validation_result = self._validate_provider_config(name, provider, config)
             if validation_result.is_failure:
                 return FlextResult[None].fail(
                     f"Configuration validation failed: {validation_result.error}"
@@ -126,9 +122,7 @@ class FlextAuthRegistry:
 
         """
         if name not in self._providers:
-            return FlextResult[None].fail(
-                f"Provider '{name}' is not registered"
-            )
+            return FlextResult[None].fail(f"Provider '{name}' is not registered")
 
         # Remove provider and associated data
         del self._providers[name]
@@ -155,7 +149,7 @@ class FlextAuthRegistry:
             >>> result = registry.get("jwt")
             >>> if result.is_success:
             ...     provider = result.unwrap()
-            ...     auth_result = await provider.authenticate(credentials)
+            ...     auth_result = provider.authenticate(credentials)
 
         """
         if name not in self._providers:
@@ -214,18 +208,14 @@ class FlextAuthRegistry:
 
         """
         if name not in self._providers:
-            return FlextResult[set[str]].fail(
-                f"Provider '{name}' is not registered"
-            )
+            return FlextResult[set[str]].fail(f"Provider '{name}' is not registered")
 
         provider = self._providers[name]
         try:
             capabilities = provider.supports()
             return FlextResult[set[str]].ok(capabilities)
         except Exception as e:
-            return FlextResult[set[str]].fail(
-                f"Failed to retrieve capabilities: {e}"
-            )
+            return FlextResult[set[str]].fail(f"Failed to retrieve capabilities: {e}")
 
     def get_metadata(self, name: str) -> FlextResult[dict[str, Any]]:
         """Get metadata for a registered provider.
@@ -293,9 +283,7 @@ class FlextAuthRegistry:
 
         """
         if name not in self._providers:
-            return FlextResult[None].fail(
-                f"Provider '{name}' is not registered"
-            )
+            return FlextResult[None].fail(f"Provider '{name}' is not registered")
 
         provider = self._providers[name]
         return self._validate_provider_config(name, provider, config)
@@ -319,9 +307,7 @@ class FlextAuthRegistry:
         """
         # Basic validation
         if not isinstance(config, dict):
-            return FlextResult[None].fail(
-                "Configuration must be a dictionary"
-            )
+            return FlextResult[None].fail("Configuration must be a dictionary")
 
         # Provider-specific validation would be added here
         # For now, we accept any dict configuration
@@ -348,18 +334,12 @@ class FlextAuthRegistry:
         self._configs.clear()
         self._metadata.clear()
 
-        self._logger.warning(
-            f"Registry cleared: {provider_count} providers removed"
-        )
+        self._logger.warning(f"Registry cleared: {provider_count} providers removed")
 
     def __repr__(self) -> str:
         """String representation of the registry."""
         providers = self.list_providers()
-        return (
-            f"FlextAuthRegistry("
-            f"providers={len(providers)}, "
-            f"registered={providers})"
-        )
+        return f"FlextAuthRegistry(providers={len(providers)}, registered={providers})"
 
     def __len__(self) -> int:
         """Return number of registered providers."""

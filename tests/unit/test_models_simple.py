@@ -75,8 +75,8 @@ class TestUserCreateUserMethod:
 
         # Test the validator directly by creating a User instance with invalid username
         with pytest.raises(
-            ValueError,
-            match="Username must contain only alphanumeric characters, underscores, and hyphens",
+            ValidationError,
+            match="String should match pattern",
         ):
             # This should trigger the field validator
             _ = FlextAuthModels.User(
@@ -258,7 +258,9 @@ class TestUserCreateUserMethod:
 
     def test_create_user_none_username_failure(self) -> None:
         """Test user creation fails with None username - line 212-213."""
-        with pytest.raises(ValidationError, match="Username cannot be empty"):
+        with pytest.raises(
+            ValidationError, match="String should have at least 3 characters"
+        ):
             _ = FlextAuthModels.UserCreationRequest(
                 username="",  # Changed from None to empty string for MyPy
                 email="test@example.com",
@@ -267,7 +269,7 @@ class TestUserCreateUserMethod:
 
     def test_create_user_none_email_failure(self) -> None:
         """Test user creation fails with None email - line 214-215."""
-        with pytest.raises(ValidationError, match="Email cannot be empty"):
+        with pytest.raises(ValidationError, match="email cannot be empty"):
             _ = FlextAuthModels.UserCreationRequest(
                 username="testuser",
                 email="",  # Changed from None to empty string for MyPy
@@ -276,7 +278,7 @@ class TestUserCreateUserMethod:
 
     def test_create_user_none_password_failure(self) -> None:
         """Test user creation fails with None password - line 216-217."""
-        with pytest.raises(ValidationError, match="Password cannot be empty"):
+        with pytest.raises(ValidationError, match="String should have at least"):
             _ = FlextAuthModels.UserCreationRequest(
                 username="testuser",
                 email="test@example.com",

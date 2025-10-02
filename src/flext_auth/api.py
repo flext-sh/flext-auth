@@ -56,7 +56,10 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
     """
 
     # Pydantic model configuration
-    model_config: ClassVar[dict[str, bool]] = {"arbitrary_types_allowed": True, "validate_assignment": False}
+    model_config: ClassVar[dict[str, bool]] = {
+        "arbitrary_types_allowed": True,
+        "validate_assignment": False,
+    }
 
     def __init__(
         self,
@@ -78,7 +81,9 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         super().__init__(**data)
 
         # Use provided config or get global singleton (set as object attribute, not Pydantic field)
-        object.__setattr__(self, "config", config or FlextAuthConfig.get_global_instance())
+        object.__setattr__(
+            self, "config", config or FlextAuthConfig.get_global_instance()
+        )
 
         # Initialize dependencies (set as object attributes, not Pydantic fields)
         object.__setattr__(self, "container", container or FlextContainer.get_global())
@@ -93,8 +98,12 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         object.__setattr__(self, "_cqrs", FlextCqrs())
 
         # Initialize provider registry (v2.0.0 feature - optional for backward compatibility)
-        object.__setattr__(self, "_provider_registry", provider_registry or FlextAuthRegistry())
-        object.__setattr__(self, "_default_provider_name", "jwt")  # Default to JWT provider
+        object.__setattr__(
+            self, "_provider_registry", provider_registry or FlextAuthRegistry()
+        )
+        object.__setattr__(
+            self, "_default_provider_name", "jwt"
+        )  # Default to JWT provider
 
         # Initialize storage (set as object attributes)
         object.__setattr__(self, "_users", {})
@@ -134,14 +143,22 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         enabling advanced FlextBus integration and handler registration.
         """
         # Create command handler instances
-        register_handler = self._bus.create_simple_handler(self._execute_register_user_command)
-        authenticate_handler = self._bus.create_simple_handler(self._execute_authenticate_command)
+        register_handler = self._bus.create_simple_handler(
+            self._execute_register_user_command
+        )
+        authenticate_handler = self._bus.create_simple_handler(
+            self._execute_authenticate_command
+        )
         logout_handler = self._bus.create_simple_handler(self._execute_logout_command)
 
         # Create query handler instances
         get_user_handler = self._bus.create_query_handler(self._execute_get_user_query)
-        get_user_by_id_handler = self._bus.create_query_handler(self._execute_get_user_by_id_query)
-        get_sessions_handler = self._bus.create_query_handler(self._execute_get_sessions_query)
+        get_user_by_id_handler = self._bus.create_query_handler(
+            self._execute_get_user_by_id_query
+        )
+        get_sessions_handler = self._bus.create_query_handler(
+            self._execute_get_sessions_query
+        )
 
         # Register handlers with FlextBus
         self._bus.register_handler("auth.command.register_user", register_handler)
@@ -156,7 +173,9 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         self._registry.register_handler(authenticate_handler)
         self._registry.register_handler(get_user_handler)
 
-        self._logger.info("Authentication command/query handlers registered with FlextBus and FlextCqrs")
+        self._logger.info(
+            "Authentication command/query handlers registered with FlextBus and FlextCqrs"
+        )
 
     def _register_authentication_processors(self) -> None:
         """Register validation and transformation processors for authentication workflows.
@@ -181,7 +200,9 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         def validate_username(data: object) -> FlextResult[object]:
             """Validate username constraints."""
             if not isinstance(data, dict):
-                return FlextResult[object].fail("Invalid data format for username validation")
+                return FlextResult[object].fail(
+                    "Invalid data format for username validation"
+                )
 
             username = data.get("username", "")
             if not isinstance(username, str):
@@ -191,10 +212,14 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
                 return FlextResult[object].fail("Username cannot be empty")
 
             if len(username) < min_username_length:
-                return FlextResult[object].fail(f"Username must be at least {min_username_length} characters")
+                return FlextResult[object].fail(
+                    f"Username must be at least {min_username_length} characters"
+                )
 
             if len(username) > max_username_length:
-                return FlextResult[object].fail(f"Username cannot exceed {max_username_length} characters")
+                return FlextResult[object].fail(
+                    f"Username cannot exceed {max_username_length} characters"
+                )
 
             return FlextResult[object].ok(data)
 
@@ -202,7 +227,9 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         def normalize_email(data: object) -> FlextResult[object]:
             """Normalize email to lowercase."""
             if not isinstance(data, dict):
-                return FlextResult[object].fail("Invalid data format for email normalization")
+                return FlextResult[object].fail(
+                    "Invalid data format for email normalization"
+                )
 
             email = data.get("email", "")
             if not isinstance(email, str):
@@ -223,17 +250,23 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         def validate_password_strength(data: object) -> FlextResult[object]:
             """Validate password strength requirements."""
             if not isinstance(data, dict):
-                return FlextResult[object].fail("Invalid data format for password validation")
+                return FlextResult[object].fail(
+                    "Invalid data format for password validation"
+                )
 
             password = data.get("password", "")
             if not isinstance(password, str):
                 return FlextResult[object].fail("Password must be a string")
 
             if len(password) < min_password_length:
-                return FlextResult[object].fail(f"Password must be at least {min_password_length} characters")
+                return FlextResult[object].fail(
+                    f"Password must be at least {min_password_length} characters"
+                )
 
             if len(password) > max_password_length:
-                return FlextResult[object].fail(f"Password cannot exceed {max_password_length} characters")
+                return FlextResult[object].fail(
+                    f"Password cannot exceed {max_password_length} characters"
+                )
 
             # Check for at least one digit, one uppercase, one lowercase
             has_digit = any(c.isdigit() for c in password)
@@ -251,36 +284,54 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         # Register processors
         self._processors.register("username_validator", validate_username)
         self._processors.register("email_normalizer", normalize_email)
-        self._processors.register("password_strength_validator", validate_password_strength)
+        self._processors.register(
+            "password_strength_validator", validate_password_strength
+        )
 
-        self._logger.info("Authentication validation/transformation processors registered")
+        self._logger.info(
+            "Authentication validation/transformation processors registered"
+        )
 
-    def _execute_register_user_command(self, command: object) -> FlextResult[FlextAuthModels.User]:
+    def _execute_register_user_command(
+        self, command: object
+    ) -> FlextResult[FlextAuthModels.User]:
         """Execute register user command via FlextBus integration."""
         if not isinstance(command, dict):
             return FlextResult[FlextAuthModels.User].fail("Invalid command format")
 
         roles_value = command.get("roles", [])
-        roles_list = list(roles_value) if isinstance(roles_value, (list, tuple)) else None
+        roles_list = (
+            list(roles_value) if isinstance(roles_value, (list, tuple)) else None
+        )
 
         return self.register_user(
             username=str(command.get("username", "")),
             email=str(command.get("email", "")),
             password=str(command.get("password", "")),
-            full_name=str(command.get("full_name")) if command.get("full_name") else None,
+            full_name=str(command.get("full_name"))
+            if command.get("full_name")
+            else None,
             roles=roles_list,
         )
 
-    def _execute_authenticate_command(self, command: object) -> FlextResult[FlextAuthTypes.AuthenticationResponseDict]:
+    def _execute_authenticate_command(
+        self, command: object
+    ) -> FlextResult[FlextAuthTypes.AuthenticationResponseDict]:
         """Execute authenticate command via FlextBus integration."""
         if not isinstance(command, dict):
-            return FlextResult[FlextAuthTypes.AuthenticationResponseDict].fail("Invalid command format")
+            return FlextResult[FlextAuthTypes.AuthenticationResponseDict].fail(
+                "Invalid command format"
+            )
 
         return self.authenticate_user(
             username=str(command.get("username", "")),
             password=str(command.get("password", "")),
-            client_ip=str(command.get("client_ip")) if command.get("client_ip") else None,
-            user_agent=str(command.get("user_agent")) if command.get("user_agent") else None,
+            client_ip=str(command.get("client_ip"))
+            if command.get("client_ip")
+            else None,
+            user_agent=str(command.get("user_agent"))
+            if command.get("user_agent")
+            else None,
         )
 
     def _execute_logout_command(self, command: object) -> FlextResult[None]:
@@ -290,24 +341,32 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
 
         return self.logout_user(session_id=str(command.get("session_id", "")))
 
-    def _execute_get_user_query(self, query: object) -> FlextResult[FlextAuthModels.User | None]:
+    def _execute_get_user_query(
+        self, query: object
+    ) -> FlextResult[FlextAuthModels.User | None]:
         """Execute get user by username query via FlextBus integration."""
         if not isinstance(query, dict):
             return FlextResult[FlextAuthModels.User | None].fail("Invalid query format")
 
         return self.get_user_by_username(username=str(query.get("username", "")))
 
-    def _execute_get_user_by_id_query(self, query: object) -> FlextResult[FlextAuthModels.User | None]:
+    def _execute_get_user_by_id_query(
+        self, query: object
+    ) -> FlextResult[FlextAuthModels.User | None]:
         """Execute get user by ID query via FlextBus integration."""
         if not isinstance(query, dict):
             return FlextResult[FlextAuthModels.User | None].fail("Invalid query format")
 
         return self.get_user_by_id(user_id=str(query.get("user_id", "")))
 
-    def _execute_get_sessions_query(self, query: object) -> FlextResult[list[FlextAuthModels.Session]]:
+    def _execute_get_sessions_query(
+        self, query: object
+    ) -> FlextResult[list[FlextAuthModels.Session]]:
         """Execute get user sessions query via FlextBus integration."""
         if not isinstance(query, dict):
-            return FlextResult[list[FlextAuthModels.Session]].fail("Invalid query format")
+            return FlextResult[list[FlextAuthModels.Session]].fail(
+                "Invalid query format"
+            )
 
         return self.get_user_sessions(user_id=str(query.get("user_id", "")))
 
@@ -421,14 +480,17 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         context.set("status", "success")
 
         # Emit user registration event via dispatcher with context
-        self._dispatcher.dispatch("user.registered", {
-            "user_id": stored_user.id,
-            "username": stored_user.username,
-            "email": stored_user.email,
-            "roles": stored_user.roles,
-            "timestamp": stored_user.created_at.isoformat(),
-            "context_id": context.get("id", "unknown"),
-        })
+        self._dispatcher.dispatch(
+            "user.registered",
+            {
+                "user_id": stored_user.id,
+                "username": stored_user.username,
+                "email": stored_user.email,
+                "roles": stored_user.roles,
+                "timestamp": stored_user.created_at.isoformat(),
+                "context_id": context.get("id", "unknown"),
+            },
+        )
 
         return FlextResult[FlextAuthModels.User].ok(stored_user)
 
@@ -483,7 +545,11 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             )
             .flat_map(
                 lambda user: self._session_handler.create_user_session(
-                    user, client_ip, user_agent, self._sessions, self.user_sessions_index
+                    user,
+                    client_ip,
+                    user_agent,
+                    self._sessions,
+                    self.user_sessions_index,
                 )
             )
             .flat_map(
@@ -503,14 +569,17 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             context.set("user_id", auth_result.value["user"]["id"])
             context.set("status", "success")
 
-            self._dispatcher.dispatch("user.authenticated", {
-                "user_id": auth_result.value["user"]["id"],
-                "username": auth_result.value["user"]["username"],
-                "client_ip": client_ip,
-                "user_agent": user_agent,
-                "timestamp": datetime.now(UTC).isoformat(),
-                "context_id": context.get("id", "unknown"),
-            })
+            self._dispatcher.dispatch(
+                "user.authenticated",
+                {
+                    "user_id": auth_result.value["user"]["id"],
+                    "username": auth_result.value["user"]["username"],
+                    "client_ip": client_ip,
+                    "user_agent": user_agent,
+                    "timestamp": datetime.now(UTC).isoformat(),
+                    "context_id": context.get("id", "unknown"),
+                },
+            )
         else:
             context.set("status", "failed")
             context.set("error", auth_result.error or "Unknown error")
@@ -538,7 +607,9 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             FlextResult containing token payload or error
 
         """
-        return self._token_handler.validate_token_complete(token, self.config, self._logger)
+        return self._token_handler.validate_token_complete(
+            token, self.config, self._logger
+        )
 
     def generate_token(self, user_id: str) -> str:
         """Generate JWT token for user ID.
@@ -648,20 +719,26 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         context.set("status", "success")
 
         # Emit session revoked event via dispatcher with context
-        self._dispatcher.dispatch("session.revoked", {
-            "session_id": session_id,
-            "user_id": user_id,
-            "timestamp": datetime.now(UTC).isoformat(),
-            "context_id": context.get("id", "unknown"),
-        })
+        self._dispatcher.dispatch(
+            "session.revoked",
+            {
+                "session_id": session_id,
+                "user_id": user_id,
+                "timestamp": datetime.now(UTC).isoformat(),
+                "context_id": context.get("id", "unknown"),
+            },
+        )
 
         # Emit user logged out event via dispatcher with context
-        self._dispatcher.dispatch("user.logged_out", {
-            "session_id": session_id,
-            "user_id": user_id,
-            "timestamp": datetime.now(UTC).isoformat(),
-            "context_id": context.get("id", "unknown"),
-        })
+        self._dispatcher.dispatch(
+            "user.logged_out",
+            {
+                "session_id": session_id,
+                "user_id": user_id,
+                "timestamp": datetime.now(UTC).isoformat(),
+                "context_id": context.get("id", "unknown"),
+            },
+        )
 
         return FlextResult[None].ok(None)
 
@@ -846,7 +923,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             >>> from flext_auth.providers import OAuth2AuthProvider
             >>> oauth_provider = OAuth2AuthProvider(oauth_config)
             >>> auth = FlextAuth.with_provider(oauth_provider, provider_name="oauth2")
-            >>> result = await auth.authenticate(credentials, provider="oauth2")
+            >>> result = auth.authenticate(credentials, provider="oauth2")
 
         """
         # Create provider registry
@@ -892,8 +969,8 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             >>> registry.register("saml", SamlAuthProvider(saml_config))
             >>>
             >>> auth = FlextAuth.with_registry(registry, default_provider="jwt")
-            >>> jwt_result = await auth.authenticate(creds, provider="jwt")
-            >>> oauth_result = await auth.authenticate(creds, provider="oauth2")
+            >>> jwt_result = auth.authenticate(creds, provider="jwt")
+            >>> oauth_result = auth.authenticate(creds, provider="oauth2")
 
         """
         # Use provided config or create default
@@ -986,9 +1063,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         )
 
         if token_result.is_failure:
-            return FlextResult[str].fail(
-                token_result.error or "Token creation failed"
-            )
+            return FlextResult[str].fail(token_result.error or "Token creation failed")
 
         return FlextResult[str].ok(token_result.value.token)
 
@@ -1022,7 +1097,9 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         """Access FlextProcessors for validation and transformation pipelines."""
         return self._processors
 
-    def validate_registration_data(self, username: str, email: str, password: str) -> FlextResult[dict[str, str]]:
+    def validate_registration_data(
+        self, username: str, email: str, password: str
+    ) -> FlextResult[dict[str, str]]:
         """Validate and normalize registration data using processor pipeline.
 
         This method runs the registration data through validation and transformation processors:
@@ -1049,22 +1126,34 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         # Run through processor pipeline: email normalization -> username validation -> password strength
         email_result = self._processors.process("email_normalizer", data)
         if email_result.is_failure:
-            return FlextResult[dict[str, str]].fail(f"Email validation failed: {email_result.error}")
+            return FlextResult[dict[str, str]].fail(
+                f"Email validation failed: {email_result.error}"
+            )
 
-        username_result = self._processors.process("username_validator", email_result.value)
+        username_result = self._processors.process(
+            "username_validator", email_result.value
+        )
         if username_result.is_failure:
-            return FlextResult[dict[str, str]].fail(f"Username validation failed: {username_result.error}")
+            return FlextResult[dict[str, str]].fail(
+                f"Username validation failed: {username_result.error}"
+            )
 
-        password_result = self._processors.process("password_strength_validator", username_result.value)
+        password_result = self._processors.process(
+            "password_strength_validator", username_result.value
+        )
         if password_result.is_failure:
-            return FlextResult[dict[str, str]].fail(f"Password validation failed: {password_result.error}")
+            return FlextResult[dict[str, str]].fail(
+                f"Password validation failed: {password_result.error}"
+            )
 
         # All validations passed, return normalized data
         validated_data = password_result.value
         if isinstance(validated_data, dict):
             return FlextResult[dict[str, str]].ok(validated_data)
 
-        return FlextResult[dict[str, str]].fail("Processor pipeline returned invalid data format")
+        return FlextResult[dict[str, str]].fail(
+            "Processor pipeline returned invalid data format"
+        )
 
     def execute_command(self, command: object) -> FlextResult[object]:
         """Execute authentication command via FlextBus.
@@ -1246,20 +1335,21 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
                     return self.validate_registration_inputs(
                         str(data.get("username", "")),
                         str(data.get("email", "")),
-                        str(data.get("password", ""))
+                        str(data.get("password", "")),
                     )
                 case "username_availability":
                     return self.validate_username_availability(
                         str(data.get("username", "")),
-                        dict(data.get("username_index", {}))
+                        dict(data.get("username_index", {})),
                     )
                 case "email_availability":
                     return self.validate_email_availability(
-                        str(data.get("email", "")),
-                        dict(data.get("email_index", {}))
+                        str(data.get("email", "")), dict(data.get("email_index", {}))
                     )
                 case _:
-                    return FlextResult[None].fail(f"Unknown validation operation: {operation}")
+                    return FlextResult[None].fail(
+                        f"Unknown validation operation: {operation}"
+                    )
 
         def validate_registration_inputs(
             self, username: str, email: str, password: str
@@ -1274,7 +1364,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             log_config = FlextModels.LogOperation(
                 message="Validating registration inputs",
                 operation="validate_registration_inputs",
-                context={"username": username, "email": email}
+                context={"username": username, "email": email},
             )
             self.log_operation(log_config)
 
@@ -1314,7 +1404,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             log_config = FlextModels.LogOperation(
                 message="Validating username availability",
                 operation="validate_username_availability",
-                context={"username": username}
+                context={"username": username},
             )
             self.log_operation(log_config)
 
@@ -1337,7 +1427,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             log_config = FlextModels.LogOperation(
                 message="Validating email availability",
                 operation="validate_email_availability",
-                context={"email": email}
+                context={"email": email},
             )
             self.log_operation(log_config)
 
@@ -1382,7 +1472,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
                         str(data.get("email", "")),
                         str(data.get("password", "")),
                         str(data.get("full_name")) if data.get("full_name") else None,
-                        list(data.get("roles", [])) if data.get("roles") else None
+                        list(data.get("roles", [])) if data.get("roles") else None,
                     )
                 case "create_user":
                     request = data.get("request")
@@ -1390,7 +1480,9 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
                         return FlextResult[object].fail("Invalid user creation request")
                     return self.create_user_from_request(request)
                 case _:
-                    return FlextResult[object].fail(f"Unknown factory operation: {operation}")
+                    return FlextResult[object].fail(
+                        f"Unknown factory operation: {operation}"
+                    )
 
         def create_user_request(
             self,
@@ -1409,7 +1501,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             log_config = FlextModels.LogOperation(
                 message="Creating user request",
                 operation="create_user_request",
-                context={"username": username, "email": email}
+                context={"username": username, "email": email},
             )
             self.log_operation(log_config)
 
@@ -1435,7 +1527,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             log_config = FlextModels.LogOperation(
                 message="Creating user from request",
                 operation="create_user_from_request",
-                context={"username": request.username, "email": request.email}
+                context={"username": request.username, "email": request.email},
             )
             self.log_operation(log_config)
 
@@ -1481,11 +1573,13 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
                             dict(data.get("users", {})),
                             dict(data.get("username_index", {})),
                             dict(data.get("email_index", {})),
-                            data.get("logger") or FlextLogger(__name__)
+                            data.get("logger") or FlextLogger(__name__),
                         )
                     )
                 case _:
-                    return FlextResult[object].fail(f"Unknown storage operation: {operation}")
+                    return FlextResult[object].fail(
+                        f"Unknown storage operation: {operation}"
+                    )
 
         def store_user_and_update_indexes(
             self,
@@ -1506,7 +1600,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             log_config = FlextModels.LogOperation(
                 message="Storing user and updating indexes",
                 operation="store_user_and_update_indexes",
-                context={"user_id": user.id, "username": username, "email": email}
+                context={"user_id": user.id, "username": username, "email": email},
             )
             self.log_operation(log_config)
 
@@ -1555,7 +1649,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
                     return self.find_user_for_auth(
                         str(data.get("username", "")),
                         dict(data.get("username_index", {})),
-                        dict(data.get("users", {}))
+                        dict(data.get("users", {})),
                     )
                 case "validate_credentials":
                     user = data.get("user")
@@ -1568,10 +1662,12 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
                         user,
                         str(data.get("password", "")),
                         config,
-                        dict(data.get("users", {}))
+                        dict(data.get("users", {})),
                     )
                 case _:
-                    return FlextResult[object].fail(f"Unknown processing operation: {operation}")
+                    return FlextResult[object].fail(
+                        f"Unknown processing operation: {operation}"
+                    )
 
         def find_user_for_auth(
             self,
@@ -1588,7 +1684,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             log_config = FlextModels.LogOperation(
                 message="Finding user for authentication",
                 operation="find_user_for_auth",
-                context={"username": username}
+                context={"username": username},
             )
             self.log_operation(log_config)
 
@@ -1630,7 +1726,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             log_config = FlextModels.LogOperation(
                 message="Validating user credentials",
                 operation="validate_user_credentials",
-                context={"user_id": user.id, "username": user.username}
+                context={"user_id": user.id, "username": user.username},
             )
             self.log_operation(log_config)
 
@@ -1731,10 +1827,12 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
                         str(data.get("client_ip")) if data.get("client_ip") else None,
                         str(data.get("user_agent")) if data.get("user_agent") else None,
                         dict(data.get("sessions", {})),
-                        dict(data.get("user_sessions_index", {}))
+                        dict(data.get("user_sessions_index", {})),
                     )
                 case _:
-                    return FlextResult[object].fail(f"Unknown session operation: {operation}")
+                    return FlextResult[object].fail(
+                        f"Unknown session operation: {operation}"
+                    )
 
         def create_user_session(
             self,
@@ -1753,7 +1851,11 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             log_config = FlextModels.LogOperation(
                 message="Creating user session",
                 operation="create_user_session",
-                context={"user_id": user.id, "username": user.username, "client_ip": client_ip or "unknown"}
+                context={
+                    "user_id": user.id,
+                    "username": user.username,
+                    "client_ip": client_ip or "unknown",
+                },
             )
             self.log_operation(log_config)
 
@@ -1839,7 +1941,9 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
                         return FlextResult[object].fail("Invalid logger")
                     return self.validate_token_complete(token, config, logger)
                 case _:
-                    return FlextResult[object].fail(f"Unknown token operation: {operation}")
+                    return FlextResult[object].fail(
+                        f"Unknown token operation: {operation}"
+                    )
 
         def generate_auth_token(
             self, session_data: dict[str, object], auth_instance: FlextAuth
@@ -1860,7 +1964,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             log_config = FlextModels.LogOperation(
                 message="Generating authentication token",
                 operation="generate_auth_token",
-                context={"user_id": user.id, "username": user.username}
+                context={"user_id": user.id, "username": user.username},
             )
             self.log_operation(log_config)
 
@@ -1881,7 +1985,11 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             log_config = FlextModels.LogOperation(
                 message="Validating JWT token",
                 operation="validate_token_complete",
-                context={"token_prefix": token[:token_prefix_length] if len(token) > token_prefix_length else token}
+                context={
+                    "token_prefix": token[:token_prefix_length]
+                    if len(token) > token_prefix_length
+                    else token
+                },
             )
             self.log_operation(log_config)
 
@@ -1890,9 +1998,9 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
                 token, field_name="token"
             )
             if token_validation.is_failure:
-                return FlextResult[
-                    FlextAuthTypes.TokenManagement.JwtTokenPayload
-                ].fail("Token cannot be empty")
+                return FlextResult[FlextAuthTypes.TokenManagement.JwtTokenPayload].fail(
+                    "Token cannot be empty"
+                )
 
             # Clean token
             clean_token = token.removeprefix(FlextAuthConstants.Jwt.BEARER_PREFIX)
@@ -1900,18 +2008,18 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             # Basic format validation
             jwt_dot_count = 2
             if clean_token.count(".") != jwt_dot_count:
-                return FlextResult[
-                    FlextAuthTypes.TokenManagement.JwtTokenPayload
-                ].fail("Invalid token format")
+                return FlextResult[FlextAuthTypes.TokenManagement.JwtTokenPayload].fail(
+                    "Invalid token format"
+                )
 
             # JWT verification using utilities
             jwt_result = FlextAuthUtilities.JWTProcessing.extract_claims(
                 clean_token, config.jwt_auth_secret
             )
             if jwt_result.is_failure:
-                return FlextResult[
-                    FlextAuthTypes.TokenManagement.JwtTokenPayload
-                ].fail(jwt_result.error or "Token validation failed")
+                return FlextResult[FlextAuthTypes.TokenManagement.JwtTokenPayload].fail(
+                    jwt_result.error or "Token validation failed"
+                )
 
             payload = jwt_result.value
 
@@ -1923,8 +2031,12 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             iat_value = payload.get("iat", 0)
             jwt_payload: FlextAuthTypes.TokenManagement.JwtTokenPayload = {
                 "user_id": str(payload["user_id"]),
-                "exp": int(exp_value) if isinstance(exp_value, (int, float, str)) else 0,
-                "iat": int(iat_value) if isinstance(iat_value, (int, float, str)) else 0,
+                "exp": int(exp_value)
+                if isinstance(exp_value, (int, float, str))
+                else 0,
+                "iat": int(iat_value)
+                if isinstance(iat_value, (int, float, str))
+                else 0,
                 "type": "access",
                 "valid": True,
             }
@@ -1978,7 +2090,9 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
                         self.build_auth_response(auth_data, config)
                     )
                 case _:
-                    return FlextResult[object].fail(f"Unknown response operation: {operation}")
+                    return FlextResult[object].fail(
+                        f"Unknown response operation: {operation}"
+                    )
 
         def build_auth_response(
             self, auth_data: dict[str, object], config: FlextAuthConfig
@@ -2005,7 +2119,11 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             log_config = FlextModels.LogOperation(
                 message="Building authentication response",
                 operation="build_auth_response",
-                context={"user_id": user.id, "username": user.username, "session_id": session.id}
+                context={
+                    "user_id": user.id,
+                    "username": user.username,
+                    "session_id": session.id,
+                },
             )
             self.log_operation(log_config)
 

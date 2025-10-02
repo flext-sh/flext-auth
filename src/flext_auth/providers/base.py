@@ -32,7 +32,7 @@ class BaseAuthProvider(ABC):
 
     Example:
         >>> class MyAuthProvider(BaseAuthProvider):
-        ...     async def authenticate(
+        ...     def authenticate(
         ...         self, credentials: dict
         ...     ) -> FlextResult[FlextAuthModels.AuthToken]:
         ...         # Implementation
@@ -44,7 +44,7 @@ class BaseAuthProvider(ABC):
     """
 
     @abstractmethod
-    async def authenticate(
+    def authenticate(
         self,
         credentials: dict[str, Any],
     ) -> FlextResult[FlextAuthModels.AuthToken]:
@@ -68,9 +68,9 @@ class BaseAuthProvider(ABC):
                                     error message on failure
 
         Example:
-            >>> result = await provider.authenticate({
+            >>> result = provider.authenticate({
             ...     "username": "user",
-            ...     "password": "secure_password"
+            ...     "password": "secure_password",
             ... })
             >>> if result.is_success:
             ...     token = result.unwrap()
@@ -80,7 +80,7 @@ class BaseAuthProvider(ABC):
         ...
 
     @abstractmethod
-    async def validate(
+    def validate(
         self,
         token: str | FlextAuthModels.AuthToken,
     ) -> FlextResult[bool]:
@@ -97,7 +97,7 @@ class BaseAuthProvider(ABC):
                               or error message on validation failure
 
         Example:
-            >>> result = await provider.validate(token_string)
+            >>> result = provider.validate(token_string)
             >>> if result.is_success and result.unwrap():
             ...     print("Token is valid")
 
@@ -105,7 +105,7 @@ class BaseAuthProvider(ABC):
         ...
 
     @abstractmethod
-    async def refresh(
+    def refresh(
         self,
         token: str | FlextAuthModels.AuthToken,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
@@ -124,7 +124,7 @@ class BaseAuthProvider(ABC):
 
         Example:
             >>> if "refresh" in provider.supports():
-            ...     result = await provider.refresh(old_token)
+            ...     result = provider.refresh(old_token)
             ...     if result.is_success:
             ...         new_token = result.unwrap()
 
@@ -132,7 +132,7 @@ class BaseAuthProvider(ABC):
         ...
 
     @abstractmethod
-    async def revoke(
+    def revoke(
         self,
         token: str | FlextAuthModels.AuthToken,
     ) -> FlextResult[None]:
@@ -151,7 +151,7 @@ class BaseAuthProvider(ABC):
 
         Example:
             >>> if "revoke" in provider.supports():
-            ...     result = await provider.revoke(token)
+            ...     result = provider.revoke(token)
             ...     if result.is_success:
             ...         print("Token revoked successfully")
 
@@ -277,20 +277,18 @@ class BaseAuthProviderMixin:
 
         Example:
             >>> result = self._validate_credentials_dict(
-            ...     credentials,
-            ...     ["username", "password"]
+            ...     credentials, ["username", "password"]
             ... )
             >>> if result.is_failure:
             ...     return result
 
         """
         if not isinstance(credentials, dict):
-            return FlextResult[None].fail(
-                "Credentials must be a dictionary"
-            )
+            return FlextResult[None].fail("Credentials must be a dictionary")
 
         missing_fields = [
-            field for field in required_fields
+            field
+            for field in required_fields
             if field not in credentials or not credentials[field]
         ]
 
@@ -316,15 +314,13 @@ class BaseAuthProviderMixin:
         Example:
             >>> result = self._check_capability_supported("refresh")
             >>> if result.is_failure:
-            ...     return FlextResult[AuthToken].fail(
-            ...         "Refresh not supported"
-            ...     )
+            ...     return FlextResult[AuthToken].fail("Refresh not supported")
 
         """
-        if capability not in self.supports():  # type: ignore[attr-defined]
+        if capability not in self.supports():
             return FlextResult[None].fail(
                 f"Provider does not support '{capability}' capability. "
-                f"Supported capabilities: {', '.join(sorted(self.supports()))}"  # type: ignore[attr-defined]
+                f"Supported capabilities: {', '.join(sorted(self.supports()))}"
             )
 
         return FlextResult[None].ok(None)

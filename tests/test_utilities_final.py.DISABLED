@@ -34,14 +34,14 @@ class TestFlextAuthUtilitiesFinal:
         assert "capabilities" in result.data
         assert "status" in result.data
 
-    @pytest.mark.asyncio
-    async def test_utilities_execute_async(self) -> None:
-        """Test utilities async execute method."""
+    @pytest.mark.io
+    def test_utilities_execute(self) -> None:
+        """Test utilities execute method."""
         utilities = FlextAuthUtilities()
-        result = await utilities.execute_async()
+        result = utilities.execute()
 
         assert result.is_success
-        # The async version returns different data structure
+        # The version returns different data structure
         assert "status" in result.data
         assert "service" in result.data
 

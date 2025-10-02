@@ -60,73 +60,6 @@ class TestFlextConfigSingleton:
         assert global_config is override_config
         assert global_config.jwt_expiry_minutes == 30
 
-    def test_cli_parameter_integration(self) -> None:
-        """Test CLI parameter integration with singleton."""
-        # Clear any existing global instance
-        FlextAuthConfig.reset_global_instance()
-
-        # Test CLI parameter creation
-        cli_config_result = FlextAuthConfig.create_from_cli_params(
-            jwt_expiry=30,
-            bcrypt_rounds=12,
-            max_attempts=5,
-            environment="development",
-        )
-
-        assert cli_config_result.is_success
-        cli_config = cli_config_result.value
-
-        # Verify CLI parameters were applied
-        assert cli_config.jwt_expiry_minutes == 30
-        assert cli_config.bcrypt_rounds == 12
-        assert cli_config.max_login_attempts == 5
-        assert cli_config.environment == "development"
-
-    def test_cli_global_update(self) -> None:
-        """Test updating global singleton from CLI parameters."""
-        # Clear any existing global instance
-        FlextAuthConfig.reset_global_instance()
-
-        # Update global config from CLI
-        update_result = FlextAuthConfig.update_global_from_cli(
-            jwt_expiry=60,
-            bcrypt_rounds=14,
-            environment="development",
-        )
-
-        assert update_result.is_success
-
-        # Verify global instance was updated
-        global_config = FlextAuthConfig.get_global_instance()
-        assert global_config.jwt_expiry_minutes == 60
-        assert global_config.bcrypt_rounds == 14
-        assert global_config.environment == "development"
-
-    def test_cli_summary(self) -> None:
-        """Test CLI summary functionality."""
-        # Clear any existing global instance
-        FlextAuthConfig.reset_global_instance()
-
-        # Get global config
-        FlextAuthConfig.get_global_instance()
-
-        # Test instance summary
-        summary_result = FlextAuthConfig.get_global_cli_summary()
-        assert summary_result.is_success
-        summary = summary_result.value
-        assert isinstance(summary, dict)
-        assert "environment" in summary
-        assert "jwt_expiry" in summary
-        assert "bcrypt_rounds" in summary
-        assert "max_login_attempts" in summary
-
-        # Test global summary
-        global_summary_result = FlextAuthConfig.get_global_cli_summary()
-        assert global_summary_result.is_success
-        global_summary = global_summary_result.value
-        assert isinstance(global_summary, dict)
-        assert global_summary == summary
-
     def test_flext_auth_uses_singleton(self) -> None:
         """Test that FlextAuth uses FlextConfig singleton."""
         # Clear any existing global instance
@@ -232,26 +165,6 @@ class TestFlextConfigSingleton:
         # All should be the same instance
         assert config1 is config2 is config3
         assert id(config1) == id(config2) == id(config3)
-
-    def test_cli_parameter_edge_cases(self) -> None:
-        """Test CLI parameter handling edge cases."""
-        # Clear any existing global instance
-        FlextAuthConfig.reset_global_instance()
-
-        # Test with None values (should not override)
-        config_result = FlextAuthConfig.create_from_cli_params(
-            jwt_expiry=None,
-            bcrypt_rounds=None,
-            environment="development",
-        )
-
-        assert config_result.is_success
-        config = config_result.value
-
-        # Should use default values
-        assert config.jwt_expiry_minutes > 0
-        assert config.bcrypt_rounds > 0
-        assert config.environment == "development"
 
     def test_singleton_clear_and_recreate(self) -> None:
         """Test clearing and recreating singleton."""

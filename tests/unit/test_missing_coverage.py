@@ -139,11 +139,16 @@ class TestMissingCoverage:
 
     def test_session_edge_cases(self) -> None:
         """Test models.py lines 234, 250-251 - session edge cases."""
+        # Use explicit created_at before expires_at to avoid validation error
+        created_time = datetime.fromtimestamp(1234567800, tz=UTC)
+        expires_time = datetime.fromtimestamp(1234567890, tz=UTC)
+
         session = Session(
             session_id="test-session",
             user_id="test-user",
             session_token="test-token-that-is-at-least-32-characters-long",
-            expires_at=datetime.fromtimestamp(1234567890, tz=UTC),
+            expires_at=expires_time,
+            created_at=created_time,
             is_active=True,
             ip_address="127.0.0.1",
             user_agent="test-agent",
@@ -155,12 +160,17 @@ class TestMissingCoverage:
 
     def test_auth_token_edge_cases(self) -> None:
         """Test models.py lines 279-280, 292-294 - auth token edge cases."""
+        # Use explicit created_at before expires_at to avoid validation error
+        created_time = datetime.fromtimestamp(1234567800, tz=UTC)
+        expires_time = datetime.fromtimestamp(1234567890, tz=UTC)
+
         token = AuthToken(
             id="test-token",
             token="test-token",
             user_id="test-user",
             token_type="access",
-            expires_at=datetime.fromtimestamp(1234567890, tz=UTC),
+            expires_at=expires_time,
+            created_at=created_time,
             is_revoked=False,
         )
 
@@ -208,11 +218,16 @@ class TestMissingCoverage:
 
     def test_session_validation_edge_cases(self) -> None:
         """Test models.py lines 396, 455-465 - session validation edge cases."""
+        # Use explicit created_at before expires_at to avoid validation error
+        created_time = datetime.fromtimestamp(1234567800, tz=UTC)
+        expires_time = datetime.fromtimestamp(1234567890, tz=UTC)
+
         session = Session(
             session_id="test-session",
             user_id="test-user",
             session_token="test-token-that-is-at-least-32-characters-long",
-            expires_at=datetime.fromtimestamp(1234567890, tz=UTC),
+            expires_at=expires_time,
+            created_at=created_time,
             is_active=True,
             ip_address="127.0.0.1",
             user_agent="test-agent",
@@ -224,12 +239,17 @@ class TestMissingCoverage:
 
     def test_auth_token_validation_edge_cases(self) -> None:
         """Test models.py lines 513-590 - auth token validation edge cases."""
+        # Use explicit created_at before expires_at to avoid validation error
+        created_time = datetime.fromtimestamp(1234567800, tz=UTC)
+        expires_time = datetime.fromtimestamp(1234567890, tz=UTC)
+
         token = AuthToken(
             id="test-token",
             token="test-token",
             user_id="test-user",
             token_type="access",
-            expires_at=datetime.fromtimestamp(1234567890, tz=UTC),
+            expires_at=expires_time,
+            created_at=created_time,
             is_revoked=False,
         )
 
@@ -238,7 +258,7 @@ class TestMissingCoverage:
         assert token.token == "test-token"
         assert token.user_id == "test-user"
         assert token.token_type == "access"
-        assert token.expires_at == datetime.fromtimestamp(1234567890, tz=UTC)
+        assert token.expires_at == expires_time
 
     def test_user_password_model_edge_cases(self) -> None:
         """Test additional user password model edge cases."""
@@ -282,11 +302,16 @@ class TestMissingCoverage:
 
     def test_session_model_edge_cases(self) -> None:
         """Test additional session model edge cases."""
+        # Use explicit created_at before expires_at to avoid validation error
+        created_time = datetime.fromtimestamp(1234567800, tz=UTC)
+        expires_time = datetime.fromtimestamp(1234567890, tz=UTC)
+
         session = Session(
             session_id="test-session",
             user_id="test-user",
             session_token="test-token-that-is-at-least-32-characters-long",
-            expires_at=datetime.fromtimestamp(1234567890, tz=UTC),
+            expires_at=expires_time,
+            created_at=created_time,
             is_active=True,
             ip_address="127.0.0.1",
             user_agent="test-agent",
@@ -295,16 +320,21 @@ class TestMissingCoverage:
         # Test session operations
         assert session.id == "test-session"
         assert session.user_id == "test-user"
-        assert session.expires_at == datetime.fromtimestamp(1234567890, tz=UTC)
+        assert session.expires_at == expires_time
 
     def test_auth_token_model_edge_cases(self) -> None:
         """Test additional auth token model edge cases."""
+        # Use explicit created_at before expires_at to avoid validation error
+        created_time = datetime.fromtimestamp(1234567800, tz=UTC)
+        expires_time = datetime.fromtimestamp(1234567890, tz=UTC)
+
         token = AuthToken(
             id="test-token",
             token="test-token",
             user_id="test-user",
             token_type="access",
-            expires_at=datetime.fromtimestamp(1234567890, tz=UTC),
+            expires_at=expires_time,
+            created_at=created_time,
             is_revoked=False,
         )
 
@@ -312,4 +342,4 @@ class TestMissingCoverage:
         assert token.id == "test-token"
         assert token.user_id == "test-user"
         assert token.token_type == "access"
-        assert token.expires_at == datetime.fromtimestamp(1234567890, tz=UTC)
+        assert token.expires_at == expires_time

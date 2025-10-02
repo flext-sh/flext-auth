@@ -372,15 +372,3 @@ class TestFlextAuthConfigAdditionalCoverage:
         assert config.bcrypt_rounds == 13
         assert config.max_login_attempts == 4
         assert config.session_expiry_minutes == 120
-
-    def test_get_cli_summary_exception_handling(self) -> None:
-        """Test get_global_cli_summary exception handling to cover lines 677-678."""
-        with patch(
-            "flext_auth.config.FlextAuthConfig.get_global_instance",
-        ) as mock_get_global:
-            mock_get_global.side_effect = Exception("Test exception")
-
-            result = FlextAuthConfig.get_global_cli_summary()
-            assert result.is_failure
-            assert result.error is not None
-            assert "Failed to get CLI summary" in result.error

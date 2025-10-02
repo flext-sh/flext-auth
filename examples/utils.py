@@ -10,14 +10,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import asyncio
 import contextlib
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 
 
 def basic_example_runner(
     sync_examples: list[Callable[[], None]],
-    async_examples: list[Callable[[], Awaitable[None]]],
+    examples: list[Callable[[], None]],
 ) -> None:
     """Run all examples using the shared runner (DRY principle)."""
     # Run sync examples
@@ -25,11 +24,11 @@ def basic_example_runner(
         with contextlib.suppress(Exception):
             example()
 
-    # Run async examples
-    async def run_async_examples() -> None:
-        for example in async_examples:
+    # Run examples
+    def run_examples() -> None:
+        for example in examples:
             with contextlib.suppress(Exception):
-                await example()
+                example()
 
-    # Run async examples in event loop
-    asyncio.run(run_async_examples())
+    # Run examples directly
+    run_examples()

@@ -23,7 +23,7 @@
     ]
     dependencies = [
         "argon2-cffi>=25.1.0",
-        "asyncpg>=0.30.0",
+        "pg>=0.30.0",
         "bcrypt>=4.3.0",
         "cryptography>=45.0.5",
         "email-validator>=2.2.0",
@@ -34,11 +34,11 @@
         "pyjwt>=2.9.0",
         "python-jose[cryptography]>=3.3.0",
         "redis>=5.3.0",
-        "sqlalchemy[asyncio]>=2.0.41",
+        "sqlalchemy>=2.0.41",
         "structlog>=25.4.0",
     ]
     keywords = [
-        "async",
+        "",
         "authentication",
         "authorization",
         "enterprise",
@@ -82,13 +82,11 @@
         "faker>=37.4.0",
         "hypothesis>=6.125.0",
         "pytest>=8.4.0",
-        "pytest-asyncio>=1.0.0",
         "pytest-benchmark>=5.1.0",
         "pytest-clarity>=1.0.1",
         "pytest-cov>=6.2.0",
         "pytest-deadfixtures>=2.2.1",
         "pytest-env>=1.1.5",
-        "pytest-httpx>=0.35.0",
         "pytest-mock>=3.14.0",
         "pytest-randomly>=3.16.0",
         "pytest-sugar>=1.0.0",
@@ -180,7 +178,6 @@
 
 [tool.pytest.ini_options]
     addopts = "-v --tb=short --strict-markers --strict-config --color=yes"
-    asyncio_mode = "auto"
     testpaths = [
         "tests",
     ]

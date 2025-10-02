@@ -179,7 +179,9 @@ class FlextAuthModels(FlextModels):
                 msg = "Username cannot be empty"
                 raise ValueError(msg)
 
-            validation_result = FlextAuthMixins.ValidationMixin.validate_username_format(v)
+            validation_result = (
+                FlextAuthMixins.ValidationMixin.validate_username_format(v)
+            )
             if validation_result.is_failure:
                 raise ValueError(
                     validation_result.error or "Username validation failed"
@@ -199,7 +201,9 @@ class FlextAuthModels(FlextModels):
         @classmethod
         def validate_password_strength(cls, v: str) -> str:
             """Validate password strength with enhanced patterns."""
-            validation_result = FlextAuthMixins.ValidationMixin.validate_password_strength(v)
+            validation_result = (
+                FlextAuthMixins.ValidationMixin.validate_password_strength(v)
+            )
             if validation_result.is_failure:
                 raise ValueError(
                     validation_result.error or "Password validation failed"
@@ -325,13 +329,11 @@ class FlextAuthModels(FlextModels):
             return self
 
         @computed_field
-        @property
         def can_login(self) -> bool:
             """Computed field: Check if user can attempt login (implements FlextAuthUserProtocol)."""
             return self.is_active and not self.is_locked
 
         @computed_field
-        @property
         def is_locked(self) -> bool:
             """Computed field: Check if account is currently locked (implements FlextAuthUserProtocol)."""
             if self.locked_until is None:
@@ -339,13 +341,11 @@ class FlextAuthModels(FlextModels):
             return datetime.now(UTC) < self.locked_until
 
         @computed_field
-        @property
         def display_name(self) -> str:
             """Computed field: Get user's display name."""
             return self.full_name or self.username.title()
 
         @computed_field
-        @property
         def security_status(self) -> str:
             """Computed field: Get user's security status."""
             if self.is_locked:
@@ -574,25 +574,21 @@ class FlextAuthModels(FlextModels):
             return v
 
         @computed_field
-        @property
         def is_expired(self) -> bool:
             """Computed field: Check if session is expired (implements FlextAuthSessionProtocol)."""
             return datetime.now(UTC) > self.expires_at
 
         @computed_field
-        @property
         def is_valid(self) -> bool:
             """Computed field: Check if session is valid (implements FlextAuthSessionProtocol)."""
             return self.is_active and not self.is_expired
 
         @computed_field
-        @property
         def is_revoked(self) -> bool:
             """Computed field: Check if session has been revoked."""
             return not self.is_active
 
         @computed_field
-        @property
         def time_remaining(self) -> int:
             """Computed field: Minutes remaining until expiration."""
             if self.is_expired:
@@ -700,13 +696,11 @@ class FlextAuthModels(FlextModels):
             return datetime.now(UTC) > self.expires_at
 
         @computed_field
-        @property
         def is_valid(self) -> bool:
             """Computed field: Check if token is valid (not expired and not revoked)."""
             return not self.is_expired() and not self.is_revoked
 
         @computed_field
-        @property
         def time_remaining(self) -> int:
             """Computed field: Minutes remaining until expiration."""
             if self.is_expired():

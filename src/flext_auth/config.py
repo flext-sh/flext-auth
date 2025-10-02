@@ -213,7 +213,6 @@ class FlextAuthConfig(FlextConfig):
     )
 
     @computed_field
-    @property
     def session_expiry_hours(self) -> float:
         """Get session expiry time in hours (calculated from minutes)."""
         return self.session_expiry_minutes / 60.0
@@ -411,26 +410,9 @@ class FlextAuthConfig(FlextConfig):
                 "config": config.model_dump(exclude={"jwt_secret"}),  # Exclude secrets
             })
 
-        @staticmethod
-        async def execute_service_operation_async(
-            config: FlextAuthConfig,
-        ) -> FlextResult[dict[str, object]]:
-            """Execute auth config service operation asynchronously."""
-            return FlextResult[dict[str, object]].ok({
-                "status": "operational",
-                "service": "flext-auth-config",
-                "timestamp": datetime.now(UTC).isoformat(),
-                "version": "2.0.0",
-                "config": config.model_dump(exclude={"jwt_secret"}),  # Exclude secrets
-            })
-
     def execute_as_service(self) -> FlextResult[dict[str, object]]:
         """Execute config as service operation using nested helper."""
         return self._ConfigServiceHelper.execute_service_operation(self)
-
-    async def execute_as_service_async(self) -> FlextResult[dict[str, object]]:
-        """Execute config as service operation asynchronously using nested helper."""
-        return await self._ConfigServiceHelper.execute_service_operation_async(self)
 
     @classmethod
     def create_with_overrides(
@@ -456,85 +438,6 @@ class FlextAuthConfig(FlextConfig):
         overrides.update(kwargs)
 
         return cls.create_for_environment(environment=environment, **overrides)
-
-    @classmethod
-    def get_global_cli_summary(cls) -> FlextResult[dict[str, object]]:
-        """Get global CLI summary for authentication configuration."""
-        try:
-            config = cls.get_global_instance()
-            summary = {
-                "environment": getattr(config, "environment", "development"),
-                "jwt_expiry": config.jwt_expiry_minutes,
-                "bcrypt_rounds": config.bcrypt_rounds,
-                "max_login_attempts": config.max_login_attempts,
-                "session_expiry": config.session_expiry_minutes,
-                "lockout_duration": config.lockout_duration_minutes,
-                "min_password_length": config.min_password_length,
-                "max_password_length": config.max_password_length,
-            }
-            return FlextResult[dict[str, object]].ok(summary)
-        except Exception as e:
-            return FlextResult[dict[str, object]].fail(
-                f"Failed to get CLI summary: {e}"
-            )
-
-    @classmethod
-    def create_from_cli_params(
-        cls,
-        environment: str = "development",
-        jwt_expiry: int | None = None,
-        bcrypt_rounds: int | None = None,
-        max_attempts: int | None = None,
-        **kwargs: object,
-    ) -> FlextResult[FlextAuthConfig]:
-        """Create configuration from CLI parameters."""
-        try:
-            overrides: dict[str, object] = {}
-            if jwt_expiry is not None:
-                overrides["jwt_expiry_minutes"] = jwt_expiry
-            if bcrypt_rounds is not None:
-                overrides["bcrypt_rounds"] = bcrypt_rounds
-            if max_attempts is not None:
-                overrides["max_login_attempts"] = max_attempts
-
-            overrides.update(kwargs)
-
-            config = cls.create_for_environment(environment=environment, **overrides)
-            return FlextResult[FlextAuthConfig].ok(config)
-        except Exception as e:
-            return FlextResult[FlextAuthConfig].fail(
-                f"Failed to create config from CLI params: {e}"
-            )
-
-    @classmethod
-    def update_global_from_cli(
-        cls,
-        environment: str = "development",
-        jwt_expiry: int | None = None,
-        bcrypt_rounds: int | None = None,
-        max_attempts: int | None = None,
-        **kwargs: object,
-    ) -> FlextResult[None]:
-        """Update global configuration from CLI parameters."""
-        try:
-            config_result = cls.create_from_cli_params(
-                environment=environment,
-                jwt_expiry=jwt_expiry,
-                bcrypt_rounds=bcrypt_rounds,
-                max_attempts=max_attempts,
-                **kwargs,
-            )
-            if config_result.is_failure:
-                return FlextResult[None].fail(
-                    config_result.error or "Failed to create config"
-                )
-
-            cls.set_global_instance(config_result.value)
-            return FlextResult[None].ok(None)
-        except Exception as e:
-            return FlextResult[None].fail(
-                f"Failed to update global config from CLI: {e}"
-            )
 
 
 __all__ = [

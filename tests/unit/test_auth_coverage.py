@@ -55,8 +55,8 @@ class TestFlextAuthInitializationCoverage:
 
         # Verify the error message contains expected information about the validation failure
         error_message = str(exc_info.value)
-        assert "validation errors for UserCreationRequest" in error_message
-        assert "Username must be at least 3 characters" in error_message
+        assert "validation error" in error_message.lower()
+        assert "String should have at least 3 characters" in error_message
 
     def test_quick_start_general_failure(self) -> None:
         """Test quick_start general failure path - lines 427-429."""
