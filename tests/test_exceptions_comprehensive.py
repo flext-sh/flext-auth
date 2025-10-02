@@ -452,26 +452,28 @@ class TestFlextAuthExceptionsEdgeCases:
         """Test exceptions with empty messages."""
         error = FlextAuthExceptions.FlextAuthError("")
         assert not error.message
-        assert not str(error)
+        assert str(error) == "[GENERIC_ERROR] "
 
     def test_none_error_codes(self) -> None:
         """Test exceptions with None error codes."""
         error = FlextAuthExceptions.FlextAuthError("Test", None)
-        assert error.code is None
+        assert (
+            error.code == "GENERIC_ERROR"
+        )  # BaseError defaults to GENERIC_ERROR when None
 
     def test_unicode_error_messages(self) -> None:
         """Test exceptions with unicode messages."""
         unicode_message = "错误消息: 认证失败"
         error = FlextAuthExceptions.FlextAuthError(unicode_message)
         assert error.message == unicode_message
-        assert str(error) == unicode_message
+        assert str(error) == "[GENERIC_ERROR] " + unicode_message
 
     def test_long_error_messages(self) -> None:
         """Test exceptions with very long messages."""
         long_message = "A" * 1000
         error = FlextAuthExceptions.FlextAuthError(long_message)
         assert error.message == long_message
-        assert len(str(error)) == 1000
+        assert len(str(error)) == 1016  # [GENERIC_ERROR] (16 chars) + 1000 message
 
     def test_special_characters_in_context(self) -> None:
         """Test exceptions with special characters in context fields."""

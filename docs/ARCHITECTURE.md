@@ -1157,7 +1157,7 @@ make test             # Tests: 100% pass rate
 | OAuth2/OIDC | authlib>=1.3.0 | Phase 2 |
 | SAML | python3-saml>=1.16.0, xmlsec>=1.3.0 | Phase 3 |
 | Kerberos | gssapi>=1.8.0 | Phase 3 (stub) |
-| Caching | aiomemcache>=0.8.0 | Phase 5 |
+| Caching | memcache>=0.8.0 | Phase 5 |
 | WebSocket | websockets>=14.0 | Phase 4 |
 | GraphQL | graphql-core>=3.2.0 | Phase 4 (stub) |
 | FLEXT Libraries | flext-core, flext-api, flext-grpc, flext-ldap | All phases |

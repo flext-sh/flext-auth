@@ -91,14 +91,17 @@ class TestFlextAuthProcessorRegistration:
         auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
         # Test with valid username
-        result_valid = auth.register_user("validuser", "test@example.com", "ValidPass123!")
+        result_valid = auth.register_user(
+            "validuser", "test@example.com", "ValidPass123!"
+        )
         assert result_valid.is_success
 
         # Test with too short username - Pydantic validates before processor
         # This will raise ValidationError, which is expected behavior
         try:
             auth.register_user("ab", "test2@example.com", "ValidPass123!")
-            assert False, "Should have raised validation error"
+            msg = "Should have raised validation error"
+            raise AssertionError(msg)
         except Exception as e:
             assert "at least 3 characters" in str(e).lower()
 
@@ -123,7 +126,8 @@ class TestFlextAuthProcessorRegistration:
         # Test with weak password (too short) - Pydantic validates before processor
         try:
             auth.register_user("user1", "user1@example.com", "weak")
-            assert False, "Should have raised validation error"
+            msg = "Should have raised validation error"
+            raise AssertionError(msg)
         except Exception as e:
             assert "at least 8 characters" in str(e).lower()
 
