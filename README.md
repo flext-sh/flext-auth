@@ -258,7 +258,7 @@ class CustomAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: dict[str, Any]
+        credentials: dict[str, object]
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Custom authentication logic."""
         # Validate credentials
@@ -287,7 +287,7 @@ class CustomAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         """Declare provider capabilities."""
         return {"token", "validate", "api_key"}
 
-    def get_metadata(self) -> dict[str, Any]:
+    def get_metadata(self) -> dict[str, object]:
         """Provider metadata."""
         return {
             "name": "custom",

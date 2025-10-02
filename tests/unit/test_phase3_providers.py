@@ -106,7 +106,7 @@ class TestApiKeyAuthProvider:
         result = provider.authenticate({"api_key": "sk_invalid_key"})
 
         assert result.is_failure
-        assert "Invalid API key" in result.error
+        assert result.error is not None and "Invalid API key" in result.error
 
     def test_apikey_revocation(self) -> None:
         """Test API key revocation."""
@@ -211,7 +211,7 @@ class TestBasicAuthProvider:
         result = provider.authenticate({"authorization": auth_header})
 
         assert result.is_failure
-        assert "Invalid credentials" in result.error
+        assert result.error is not None and "Invalid credentials" in result.error
 
     def test_basic_https_requirement(self) -> None:
         """Test Basic auth HTTPS requirement."""
@@ -230,7 +230,7 @@ class TestBasicAuthProvider:
         })
 
         assert result.is_failure
-        assert "requires HTTPS" in result.error
+        assert result.error is not None and "requires HTTPS" in result.error
 
     def test_basic_anonymous_access(self) -> None:
         """Test Basic auth anonymous access."""
@@ -403,7 +403,7 @@ class TestLdapAuthProvider:
         })
 
         assert result.is_failure
-        assert "flext-ldap" in result.error
+        assert result.error is not None and "flext-ldap" in result.error
 
 
 # ===== KerberosAuthProvider Tests =====
@@ -481,7 +481,7 @@ class TestKerberosAuthProvider:
         result = provider.authenticate({"gssapi_token": "base64-token"})
 
         assert result.is_failure
-        assert "gssapi" in result.error.lower()
+        assert result.error is not None and "gssapi" in result.error.lower()
 
     def test_kerberos_password_authentication_requires_kerberos_lib(self) -> None:
         """Test Kerberos password authentication requires kerberos library."""
@@ -499,7 +499,7 @@ class TestKerberosAuthProvider:
         })
 
         assert result.is_failure
-        assert "kerberos" in result.error.lower()
+        assert result.error is not None and "kerberos" in result.error.lower()
 
     def test_kerberos_principal_parsing(self) -> None:
         """Test Kerberos principal name parsing."""

@@ -9,7 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
 from unittest.mock import MagicMock
 
 from flext_auth import WebAuthMiddleware
@@ -23,15 +22,17 @@ class MockAuthProvider(BaseAuthProvider):
 
     def __init__(
         self,
+        *,
         validate_success: bool = True,
         validate_result: bool = True,
     ) -> None:
+        """Initialize mock authentication provider."""
         self._validate_success = validate_success
         self._validate_result = validate_result
         self._validate_calls = 0
 
     def authenticate(
-        self, credentials: dict[str, Any]
+        self, credentials: dict[str, object]
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         from datetime import UTC, datetime, timedelta
 
@@ -40,6 +41,7 @@ class MockAuthProvider(BaseAuthProvider):
             token="mock-token",
             token_type="Bearer",
             expires_at=datetime.now(UTC) + timedelta(seconds=3600),
+            is_revoked=False,
         )
         return FlextResult[FlextAuthModels.AuthToken].ok(token)
 
@@ -60,7 +62,7 @@ class MockAuthProvider(BaseAuthProvider):
     def supports(self) -> set[str]:
         return {"token", "validate"}
 
-    def get_metadata(self) -> dict[str, Any]:
+    def get_metadata(self) -> dict[str, object]:
         return {
             "name": "mock-web",
             "version": "1.0.0",
@@ -77,6 +79,7 @@ class MockWebRequest:
         headers: dict[str, str] | None = None,
         cookies: dict[str, str] | None = None,
     ) -> None:
+        """Initialize mock web request."""
         self.path = path
         self.url = path
         self.headers = headers or {}
@@ -129,8 +132,8 @@ class TestWebAuthMiddleware:
         result = middleware.process_request(request)
 
         assert result.is_failure
-        assert "Authentication required" in result.error
-        assert "No token found" in result.error
+        assert "Authentication required" in (result.error or "")
+        assert "No token found" in (result.error or "")
 
     def test_process_request_invalid_token(self) -> None:
         """Test request processing fails with invalid token."""
@@ -144,7 +147,7 @@ class TestWebAuthMiddleware:
         result = middleware.process_request(request)
 
         assert result.is_failure
-        assert "Invalid or expired token" in result.error
+        assert "Invalid or expired token" in (result.error or "")
 
     def test_process_request_validation_error(self) -> None:
         """Test request processing fails when validation errors."""
@@ -157,7 +160,7 @@ class TestWebAuthMiddleware:
         result = middleware.process_request(request)
 
         assert result.is_failure
-        assert "Token validation failed" in result.error
+        assert "Token validation failed" in (result.error or "")
 
     def test_process_request_excluded_path(self) -> None:
         """Test middleware skips authentication for excluded paths."""
@@ -357,7 +360,7 @@ class TestWebAuthMiddleware:
         """Test multiple middleware instances with different providers."""
 
         class JwtMockProvider(MockAuthProvider):
-            def get_metadata(self) -> dict[str, Any]:
+            def get_metadata(self) -> dict[str, object]:
                 return {
                     "name": "jwt",
                     "version": "1.0.0",
@@ -365,7 +368,7 @@ class TestWebAuthMiddleware:
                 }
 
         class OAuth2MockProvider(MockAuthProvider):
-            def get_metadata(self) -> dict[str, Any]:
+            def get_metadata(self) -> dict[str, object]:
                 return {
                     "name": "oauth2",
                     "version": "1.0.0",

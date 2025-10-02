@@ -5,38 +5,33 @@
     ]
 
 [project]
-    description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
-    name = "flext-auth"
-    readme = "README.md"
-    requires-python = ">=3.13,<3.14"
-    version = "0.9.0"
     classifiers = [
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3.13",
         "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3.13",
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: System :: Systems Administration :: Authentication/Directory",
         "Typing :: Typed",
     ]
     dependencies = [
         "argon2-cffi>=25.1.0",
-        "pg>=0.30.0",
         "bcrypt>=4.3.0",
         "cryptography>=45.0.5",
         "email-validator>=2.2.0",
         "fastapi>=0.116.1",
         "passlib>=1.7.4",
-        "pydantic>=2.11.7",
         "pydantic-settings>=2.10.1",
+        "pydantic>=2.11.7",
         "pyjwt>=2.9.0",
         "python-jose[cryptography]>=3.3.0",
         "redis>=5.3.0",
         "sqlalchemy>=2.0.41",
         "structlog>=25.4.0",
     ]
+    description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
     keywords = [
         "",
         "authentication",
@@ -47,99 +42,103 @@
         "security",
         "typed",
     ]
-[[project.authors]]
-    name  = "FLEXT Team"
-    email = "team@flext.sh"
+    name = "flext-auth"
+    readme = "README.md"
+    requires-python = ">=3.13,<3.14"
+    version = "0.9.0"
+    [[project.authors]]
+        email = "team@flext.sh"
+        name  = "FLEXT Team"
 
-[[project.maintainers]]
-    name  = "FLEXT Team"
-    email = "team@flext.sh"
+    [[project.maintainers]]
+        email = "team@flext.sh"
+        name  = "FLEXT Team"
 
-[project.license]
-    text = "MIT"
+    [project.license]
+        text = "MIT"
 
-[project.urls]
-    Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
-    Homepage      = "https://github.com/flext-sh/flext"
-    Repository    = "https://github.com/flext-sh/flext"
+    [project.urls]
+        Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
+        Homepage      = "https://github.com/flext-sh/flext"
+        Repository    = "https://github.com/flext-sh/flext"
 
-[project.optional-dependencies]
-    dev = [
-        "autoflake>=2.3.1",
-        "black>=25.1.0",
-        "codespell>=2.3.0",
-        "deptry>=0.23.0",
-        "isort>=6.0.1",
-        "pre-commit>=4.0.1",
-        "pylint>=3.3.0",
-        "pyupgrade>=3.19.0",
-        "radon>=6.0.1",
-        "ruff>=0.12.3",
-        "vulture>=2.13",
-    ]
-    test = [
-        "factory-boy>=3.3.1",
-        "faker>=37.4.0",
-        "hypothesis>=6.125.0",
-        "pytest>=8.4.0",
-        "pytest-benchmark>=5.1.0",
-        "pytest-clarity>=1.0.1",
-        "pytest-cov>=6.2.0",
-        "pytest-deadfixtures>=2.2.1",
-        "pytest-env>=1.1.5",
-        "pytest-mock>=3.14.0",
-        "pytest-randomly>=3.16.0",
-        "pytest-sugar>=1.0.0",
-        "pytest-timeout>=2.4.0",
-        "pytest-xdist>=3.8.0",
-    ]
-    typings = [
-        "django-stubs>=5.2.2",
-        "types-ldap3>=2.9.13.20250622",
-        "types-passlib>=1.7.7",
-        "types-protobuf>=6.30.2.20250703",
-        "types-psutil>=7.0.0",
-        "types-psycopg2>=2.9.21.20250718",
-        "types-pyjwt>=1.7.1",
-        "types-python-dateutil>=2.9.0",
-        "types-pyyaml>=6.0.12",
-        "types-redis>=4.6.0",
-        "types-requests>=2.32.4",
-        "types-setuptools>=80.9.0",
-        "types-toml>=0.10.8.20240310",
-    ]
-    security = [
-        "bandit>=1.8.0",
-        "pip-audit>=2.7.3",
-    ]
+    [project.optional-dependencies]
+        dev = [
+            "autoflake>=2.3.1",
+            "black>=25.1.0",
+            "codespell>=2.3.0",
+            "deptry>=0.23.0",
+            "isort>=6.0.1",
+            "pre-commit>=4.0.1",
+            "pylint>=3.3.0",
+            "pyupgrade>=3.19.0",
+            "radon>=6.0.1",
+            "ruff>=0.12.3",
+            "vulture>=2.13",
+        ]
+        security = [
+            "bandit>=1.8.0",
+            "pip-audit>=2.7.3",
+        ]
+        test = [
+            "factory-boy>=3.3.1",
+            "faker>=37.4.0",
+            "hypothesis>=6.125.0",
+            "pytest-benchmark>=5.1.0",
+            "pytest-clarity>=1.0.1",
+            "pytest-cov>=6.2.0",
+            "pytest-deadfixtures>=2.2.1",
+            "pytest-env>=1.1.5",
+            "pytest-mock>=3.14.0",
+            "pytest-randomly>=3.16.0",
+            "pytest-sugar>=1.0.0",
+            "pytest-timeout>=2.4.0",
+            "pytest-xdist>=3.8.0",
+            "pytest>=8.4.0",
+        ]
+        typings = [
+            "django-stubs>=5.2.2",
+            "types-ldap3>=2.9.13.20250622",
+            "types-passlib>=1.7.7",
+            "types-protobuf>=6.30.2.20250703",
+            "types-psutil>=7.0.0",
+            "types-psycopg2>=2.9.21.20250718",
+            "types-pyjwt>=1.7.1",
+            "types-python-dateutil>=2.9.0",
+            "types-pyyaml>=6.0.12",
+            "types-redis>=4.6.0",
+            "types-requests>=2.32.4",
+            "types-setuptools>=80.9.0",
+            "types-toml>=0.10.8.20240310",
+        ]
 
-[project.scripts]
-    flext-auth        = "flext_auth.cli_new:cli"
-    flext-auth-legacy = "flext_auth.cli:main"
+    [project.scripts]
+        flext-auth        = "flext_auth.cli_new:cli"
+        flext-auth-legacy = "flext_auth.cli:main"
 
 [tool.poetry]
-    name = "flext-auth"
-    version = "0.9.0"
-    description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
     authors = [
         "FLEXT Team <team@flext.sh>",
     ]
-[[tool.poetry.packages]]
-    include = "flext_auth"
-    from    = "src"
+    description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
+    name = "flext-auth"
+    version = "0.9.0"
+    [[tool.poetry.packages]]
+        from    = "src"
+        include = "flext_auth"
 
-[tool.poetry.dependencies.flext-core]
-    path    = "../flext-core"
-    develop = true
+    [tool.poetry.dependencies.flext-core]
+        develop = true
+        path    = "../flext-core"
 
-[tool.poetry.dependencies.flext-observability]
-    path    = "../flext-observability"
-    develop = true
+    [tool.poetry.dependencies.flext-observability]
+        develop = true
+        path    = "../flext-observability"
 
-[tool.poetry.group.dev.dependencies]
-    commitizen     = ">=4.8.3"
-    detect-secrets = ">=1.5.0"
-    pyrefly        = "^0.34.0"
+    [tool.poetry.group.dev.dependencies]
+        commitizen     = ">=4.8.3"
+        detect-secrets = ">=1.5.0"
+        pyrefly        = "^0.34.0"
 
 [tool.bandit]
     extend = "../.bandit-shared.toml"
@@ -149,7 +148,6 @@
 
 [tool.deptry]
     exclude = [
-        "__pycache__",
         ".archive",
         ".git",
         ".meltano",
@@ -158,12 +156,13 @@
         ".pytest_cache",
         ".ruff_cache",
         ".venv",
+        "__pycache__",
         "build",
         "dist",
         "htmlcov",
-        "vendor",
         "node_modules",
         "reports",
+        "vendor",
         "venv",
     ]
     known_first_party = [
@@ -178,31 +177,30 @@
 
 [tool.pytest.ini_options]
     addopts = "-v --tb=short --strict-markers --strict-config --color=yes"
+    markers = [
+        "concurrency: marks tests as concurrency tests",
+        "e2e: marks tests as end-to-end tests",
+        "integration: marks tests as integration tests",
+        "memory: marks tests as memory tests",
+        "performance: marks tests as performance tests",
+        "race_condition: marks tests as race condition tests",
+        "regression: marks tests as regression tests",
+        "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+        "smoke: marks tests as smoke tests",
+        "timeout: marks tests as timeout tests",
+        "unit: marks tests as unit tests",
+    ]
     testpaths = [
         "tests",
     ]
-    markers = [
-        "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-        "integration: marks tests as integration tests",
-        "unit: marks tests as unit tests",
-        "smoke: marks tests as smoke tests",
-        "e2e: marks tests as end-to-end tests",
-        "concurrency: marks tests as concurrency tests",
-        "race_condition: marks tests as race condition tests",
-        "memory: marks tests as memory tests",
-        "performance: marks tests as performance tests",
-        "regression: marks tests as regression tests",
-        "timeout: marks tests as timeout tests",
-    ]
-
 
 [tool.ruff]
     extend = "../ruff-shared.toml"
 
-[tool.ruff.lint.isort]
-    known-first-party = [
-        "flext_auth",
-    ]
+    [tool.ruff.lint.isort]
+        known-first-party = [
+            "flext_auth",
+        ]
 
 [tool.pyrefly]
     python-version = "3.13"

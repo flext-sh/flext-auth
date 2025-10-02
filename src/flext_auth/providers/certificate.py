@@ -17,11 +17,11 @@ from __future__ import annotations
 
 import secrets
 from datetime import UTC, datetime, timedelta
-from typing import Any
+
+from flext_core import FlextLogger, FlextResult
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
-from flext_core import FlextLogger, FlextResult
 
 
 class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -56,7 +56,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     """
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: dict[str, object]) -> None:
         """Initialize Certificate authentication provider.
 
         Args:
@@ -89,7 +89,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         # In-memory storage for certificate mappings (for development)
         # In production, integrate with certificate store or directory service
         self._cert_mappings: dict[
-            str, dict[str, Any]
+            str, dict[str, object]
         ] = {}  # cert_fingerprint -> user data
 
         self._logger.info(
@@ -104,7 +104,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: dict[str, Any],
+        credentials: dict[str, object],
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         r"""Authenticate using X.509 client certificate.
 
@@ -222,15 +222,18 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         # - Validate certificate chain
 
         # Check expiration if we have AuthToken object
-        if isinstance(token, FlextAuthModels.AuthToken):
-            if token.expires_at and datetime.now(UTC) > token.expires_at:
-                return FlextResult[bool].fail("Certificate expired")
+        if (
+            isinstance(token, FlextAuthModels.AuthToken)
+            and token.expires_at
+            and datetime.now(UTC) > token.expires_at
+        ):
+            return FlextResult[bool].fail("Certificate expired")
 
         return FlextResult[bool].ok(True)
 
     def refresh(
         self,
-        token: str | FlextAuthModels.AuthToken,
+        _token: str | FlextAuthModels.AuthToken,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Refresh certificate token.
 
@@ -312,11 +315,11 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         return capabilities
 
-    def get_metadata(self) -> dict[str, Any]:
+    def get_metadata(self) -> dict[str, object]:
         """Return Certificate provider metadata.
 
         Returns:
-            dict[str, Any]: Provider metadata
+            dict[str, object]: Provider metadata
 
         """
         return {
@@ -332,7 +335,9 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     # Helper methods
 
-    def _extract_certificate_info(self, cert_pem: str) -> FlextResult[dict[str, Any]]:
+    def _extract_certificate_info(
+        self, cert_pem: str
+    ) -> FlextResult[dict[str, object]]:
         """Extract information from PEM certificate using cryptography library.
 
         Args:
@@ -343,7 +348,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         """
         if not cert_pem.startswith("-----BEGIN CERTIFICATE-----"):
-            return FlextResult[dict[str, Any]].fail("Invalid PEM certificate format")
+            return FlextResult[dict[str, object]].fail("Invalid PEM certificate format")
 
         try:
             # Import cryptography library for X.509 parsing
@@ -397,15 +402,19 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
                 extra={"fingerprint": fingerprint, "subject": subject_dn},
             )
 
-            return FlextResult[dict[str, Any]].ok(cert_info)
+            return FlextResult[dict[str, object]].ok(cert_info)
 
         except ValueError as e:
-            return FlextResult[dict[str, Any]].fail(f"Invalid certificate format: {e}")
+            return FlextResult[dict[str, object]].fail(
+                f"Invalid certificate format: {e}"
+            )
         except Exception as e:
-            return FlextResult[dict[str, Any]].fail(f"Certificate parsing failed: {e}")
+            return FlextResult[dict[str, object]].fail(
+                f"Certificate parsing failed: {e}"
+            )
 
     def _validate_certificate(
-        self, cert_pem: str, cert_info: dict[str, Any]
+        self, cert_pem: str, cert_info: dict[str, object]
     ) -> FlextResult[None]:
         """Validate certificate using cryptography library.
 
@@ -454,7 +463,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         except Exception as e:
             return FlextResult[None].fail(f"Certificate validation failed: {e}")
 
-    def _validate_against_ca(self, cert: Any, ca_cert_pem: str) -> FlextResult[None]:
+    def _validate_against_ca(self, cert: object, ca_cert_pem: str) -> FlextResult[None]:
         """Validate certificate against CA certificate.
 
         Args:
@@ -496,8 +505,8 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             return FlextResult[None].fail(f"CA validation failed: {e}")
 
     def _auto_provision_user(
-        self, cert_info: dict[str, Any]
-    ) -> FlextResult[dict[str, Any]]:
+        self, cert_info: dict[str, object]
+    ) -> FlextResult[dict[str, object]]:
         """Auto-provision user from certificate information.
 
         Args:
@@ -512,7 +521,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         username = self._extract_cn_from_subject(subject)
 
         if not username:
-            return FlextResult[dict[str, Any]].fail(
+            return FlextResult[dict[str, object]].fail(
                 "Cannot extract username from certificate subject"
             )
 
@@ -537,7 +546,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             extra={"user_id": user_id, "username": username},
         )
 
-        return FlextResult[dict[str, Any]].ok(user_data)
+        return FlextResult[dict[str, object]].ok(user_data)
 
     def _extract_cn_from_subject(self, subject: str) -> str:
         """Extract Common Name (CN) from certificate subject.

@@ -9,10 +9,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
+from flext_core import FlextLogger, FlextResult
 
 from flext_auth.providers.base import BaseAuthProvider
-from flext_core import FlextLogger, FlextResult
 
 
 class FlextAuthRegistry:
@@ -40,8 +39,8 @@ class FlextAuthRegistry:
     def __init__(self) -> None:
         """Initialize the authentication provider registry."""
         self._providers: dict[str, BaseAuthProvider] = {}
-        self._configs: dict[str, dict[str, Any]] = {}
-        self._metadata: dict[str, dict[str, Any]] = {}
+        self._configs: dict[str, dict[str, object]] = {}
+        self._metadata: dict[str, dict[str, object]] = {}
         self._logger = FlextLogger(__name__)
 
         self._logger.info("FlextAuthRegistry initialized")
@@ -50,7 +49,7 @@ class FlextAuthRegistry:
         self,
         name: str,
         provider: BaseAuthProvider,
-        config: dict[str, Any] | None = None,
+        config: dict[str, object] | None = None,
     ) -> FlextResult[None]:
         """Register an authentication provider.
 
@@ -217,7 +216,7 @@ class FlextAuthRegistry:
         except Exception as e:
             return FlextResult[set[str]].fail(f"Failed to retrieve capabilities: {e}")
 
-    def get_metadata(self, name: str) -> FlextResult[dict[str, Any]]:
+    def get_metadata(self, name: str) -> FlextResult[dict[str, object]]:
         """Get metadata for a registered provider.
 
         Args:
@@ -234,12 +233,12 @@ class FlextAuthRegistry:
 
         """
         if name not in self._providers:
-            return FlextResult[dict[str, Any]].fail(
+            return FlextResult[dict[str, object]].fail(
                 f"Provider '{name}' is not registered"
             )
 
         metadata = self._metadata.get(name, {})
-        return FlextResult[dict[str, Any]].ok(metadata)
+        return FlextResult[dict[str, object]].ok(metadata)
 
     def discover_providers(self) -> dict[str, type[BaseAuthProvider]]:
         """Discover available provider classes.
@@ -264,7 +263,7 @@ class FlextAuthRegistry:
     def validate_config(
         self,
         name: str,
-        config: dict[str, Any],
+        config: dict[str, object],
     ) -> FlextResult[None]:
         """Validate configuration for a provider.
 
@@ -292,7 +291,7 @@ class FlextAuthRegistry:
         self,
         name: str,
         provider: BaseAuthProvider,
-        config: dict[str, Any],
+        config: dict[str, object],
     ) -> FlextResult[None]:
         """Internal validation of provider configuration.
 

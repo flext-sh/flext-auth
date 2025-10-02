@@ -376,7 +376,7 @@ class TestRealAuthentication:
         assert weak_password_result.is_failure
 
         # Test invalid email in user creation
-        with pytest.raises(ValidationError, match="Invalid email format"):
+        with pytest.raises(ValueError, match="email does not match required pattern"):
             FlextAuthModels.UserCreationRequest(
                 username="invalid_user",
                 email="not-an-email",  # Invalid email format

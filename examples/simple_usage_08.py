@@ -27,7 +27,8 @@ def main() -> None:
         # Create user with password hashing
         # Note: In production, passwords should come from secure input, not hardcoded
         # This is a demo example - in real applications, get passwords from secure input
-        test_password = os.environ.get("DEMO_PASSWORD", "TestPassword123!")
+        # Use a secure demo password for the example
+        test_password = "SecureDemoPassword123!"
         FlextAuthModels.UserCreationRequest(
             username="testuser",
             email="test@example.com",

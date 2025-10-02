@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any, Protocol
+from typing import Protocol
 
 from flext_core import FlextResult
 
@@ -29,9 +29,9 @@ class BaseTransportAdapter(Protocol):
         ...         self,
         ...         url: str,
         ...         method: str = "POST",
-        ...         data: dict[str, Any] | None = None,
+        ...         data: dict[str, object] | None = None,
         ...         headers: dict[str, str] | None = None,
-        ...     ) -> FlextResult[dict[str, Any]]:
+        ...     ) -> FlextResult[dict[str, object]]:
         ...         # HTTP-specific implementation
         ...         pass
 
@@ -41,10 +41,10 @@ class BaseTransportAdapter(Protocol):
         self,
         url: str,
         method: str = "POST",
-        data: dict[str, Any] | None = None,
+        data: dict[str, object] | None = None,
         headers: dict[str, str] | None = None,
         **kwargs: object,
-    ) -> FlextResult[dict[str, Any]]:
+    ) -> FlextResult[dict[str, object]]:
         """Send a request using this transport.
 
         Args:
@@ -58,7 +58,6 @@ class BaseTransportAdapter(Protocol):
             FlextResult containing response data or error
 
         """
-        ...
 
     def get_transport_type(self) -> str:
         """Get the transport type identifier.
@@ -67,7 +66,6 @@ class BaseTransportAdapter(Protocol):
             str: Transport type (e.g., "http", "grpc", "websocket")
 
         """
-        ...
 
 
 __all__ = [

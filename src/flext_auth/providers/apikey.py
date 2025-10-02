@@ -20,7 +20,6 @@ from __future__ import annotations
 import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
-from typing import Any
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
@@ -60,7 +59,7 @@ class ApiKeyAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     """
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: dict[str, object]) -> None:
         """Initialize API Key authentication provider.
 
         Args:
@@ -84,7 +83,7 @@ class ApiKeyAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         # In-memory storage (for development/testing)
         # In production, use database or external key management service
-        self._api_keys: dict[str, dict[str, Any]] = {}  # key_hash -> metadata
+        self._api_keys: dict[str, dict[str, object]] = {}  # key_hash -> metadata
         self._rate_limits: dict[
             str, list[datetime]
         ] = {}  # key_hash -> request timestamps
@@ -101,7 +100,7 @@ class ApiKeyAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: dict[str, Any],
+        credentials: dict[str, object],
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using API key.
 
@@ -169,7 +168,7 @@ class ApiKeyAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         auth_token = FlextAuthModels.AuthToken(
             token=api_key,  # API key serves as the token
-            token_type="api",  # Must match pattern: access|refresh|api|bearer
+            token_type="api",  # noqa: S106  # Must match pattern: access|refresh|api|bearer
             expires_at=token_expires_at,
             user_id=key_metadata["user_id"],
             # Additional metadata stored as extra fields
@@ -228,7 +227,7 @@ class ApiKeyAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     def refresh(
         self,
-        token: str | FlextAuthModels.AuthToken,
+        _token: str | FlextAuthModels.AuthToken,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Refresh API key.
 
@@ -301,11 +300,11 @@ class ApiKeyAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         return capabilities
 
-    def get_metadata(self) -> dict[str, Any]:
+    def get_metadata(self) -> dict[str, object]:
         """Return API Key provider metadata.
 
         Returns:
-            dict[str, Any]: Provider metadata
+            dict[str, object]: Provider metadata
 
         """
         return {
@@ -420,7 +419,7 @@ class ApiKeyAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             extra={
                 "key_id": key_id,
                 "user_id": user_id,
-                "name": name,
+                "key_name": name,
                 "expires_at": expires_at.isoformat() if expires_at else "never",
             },
         )

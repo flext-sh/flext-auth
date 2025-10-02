@@ -8,50 +8,6 @@ For general FLEXT troubleshooting, see **[flext-core](../../flext-core/README.md
 
 ---
 
-## Installation Issues
-
-### Import Errors
-
-**Problem**: Cannot import flext_auth modules
-
-```python
-ImportError: No module named 'flext_auth'
-```
-
-**Solution**:
-
-```bash
-# Ensure you're in the correct directory
-cd flext-auth
-
-# Install dependencies
-poetry install
-
-# Verify installation
-python -c "from flext_auth import flext_auth_quick_start; print('OK')"
-```
-
-### flext-core Dependency Issues
-
-**Problem**: Missing flext-core dependency
-
-```python
-ImportError: No module named 'flext_core'
-```
-
-**Solution**:
-
-```bash
-# Check if flext-core is available
-cd ../flext-core
-poetry install
-
-# Or install from flext-auth directory
-poetry add ../flext-core
-```
-
----
-
 ## Authentication Issues
 
 ### User Registration Failures

@@ -22,18 +22,14 @@ from flext_auth.providers.oidc import OidcAuthProvider
 from flext_auth.providers.saml import SamlAuthProvider
 
 __all__: list[str] = [
-    # Phase 3 Providers (v2.0.0)
     "ApiKeyAuthProvider",
-    # Base provider protocol
     "BaseAuthProvider",
     "BaseAuthProviderMixin",
     "BasicAuthProvider",
     "CertificateAuthProvider",
-    # Phase 1 Provider (v1.0.0)
     "JwtAuthProvider",
     "KerberosAuthProvider",
     "LdapAuthProvider",
-    # Phase 2 Providers (v2.0.0)
     "OAuth2AuthProvider",
     "OidcAuthProvider",
     "SamlAuthProvider",

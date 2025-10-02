@@ -17,11 +17,11 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from typing import Any
+
+from flext_core import FlextLogger, FlextResult
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
-from flext_core import FlextLogger, FlextResult
 
 
 class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -60,7 +60,7 @@ class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     """
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: dict[str, object]) -> None:
         """Initialize LDAP authentication provider.
 
         Args:
@@ -112,7 +112,7 @@ class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: dict[str, Any],
+        credentials: dict[str, object],
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using LDAP credentials.
 
@@ -249,11 +249,11 @@ class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         """
         return {"token", "validate", "ldap", "directory", "groups"}
 
-    def get_metadata(self) -> dict[str, Any]:
+    def get_metadata(self) -> dict[str, object]:
         """Return LDAP provider metadata.
 
         Returns:
-            dict[str, Any]: Provider metadata
+            dict[str, object]: Provider metadata
 
         """
         return {
@@ -281,7 +281,9 @@ class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         # Replace {username} placeholder in filter template
         return self._user_search_filter.format(username=username)
 
-    def _extract_groups_from_attributes(self, attributes: dict[str, Any]) -> list[str]:
+    def _extract_groups_from_attributes(
+        self, attributes: dict[str, object]
+    ) -> list[str]:
         """Extract group memberships from LDAP attributes.
 
         Args:

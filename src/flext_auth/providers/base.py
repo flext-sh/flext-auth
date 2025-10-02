@@ -10,7 +10,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any
 
 from flext_auth.models import FlextAuthModels
 from flext_core import FlextResult
@@ -46,7 +45,7 @@ class BaseAuthProvider(ABC):
     @abstractmethod
     def authenticate(
         self,
-        credentials: dict[str, Any],
+        credentials: dict[str, object],
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate user with provided credentials.
 
@@ -193,7 +192,7 @@ class BaseAuthProvider(ABC):
         ...
 
     @abstractmethod
-    def get_metadata(self) -> dict[str, Any]:
+    def get_metadata(self) -> dict[str, object]:
         """Return provider metadata.
 
         Metadata provides information about the provider for introspection,
@@ -212,7 +211,7 @@ class BaseAuthProvider(ABC):
             - endpoints: dict - API endpoints (for OAuth2/OIDC/SAML)
 
         Returns:
-            dict[str, Any]: Provider metadata
+            dict[str, object]: Provider metadata
 
         Example:
             >>> metadata = provider.get_metadata()
@@ -263,7 +262,7 @@ class BaseAuthProviderMixin:
 
     def _validate_credentials_dict(
         self,
-        credentials: dict[str, Any],
+        credentials: dict[str, object],
         required_fields: list[str],
     ) -> FlextResult[None]:
         """Validate that credentials contain required fields.

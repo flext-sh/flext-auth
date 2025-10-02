@@ -1,11 +1,17 @@
-"""FLEXT AUTH - Version information following flext-core patterns.
-
-Copyright (c) 2025 FLEXT Team. All rights reserved.
-SPDX-License-Identifier: MIT
-"""
+"""Version metadata for flext auth."""
 
 from __future__ import annotations
 
-__version__ = "0.9.0"
+from typing import Final, cast
 
-__all__ = ["__version__"]
+from flext_core.metadata import build_metadata_exports
+
+_metadata = build_metadata_exports(__file__)
+
+__version__: Final[str] = cast("str", _metadata["__version__"])
+__version_info__: Final[tuple[int | str, ...]] = cast(
+    "tuple[int | str, ...]",
+    _metadata["__version_info__"],
+)
+
+__all__ = ["__version__", "__version_info__"]

@@ -8,12 +8,14 @@ from __future__ import annotations
 
 from typing import ClassVar
 
+from flext_core import FlextConstants
 
-class FlextAuthConstants:
+
+class FlextAuthConstants(FlextConstants):
     """Authentication-specific constants following FLEXT unified pattern with nested domains.
 
-    This class provides authentication-specific constants without inheriting from FlextConstants
-    to avoid naming conflicts with nested classes like Security and Logging.
+    Inherits from FlextConstants for universal constants, defines only
+    auth-specific constants using nested namespace classes.
     """
 
     # Default credentials
@@ -77,8 +79,8 @@ class FlextAuthConstants:
         EXTEND_MINUTES = 30
         MIN_TOKEN_LENGTH = 32
 
-    class Security:
-        """Security enforcement constants."""
+    class AuthSecurity:
+        """Authentication-specific security enforcement constants."""
 
         MAX_LOGIN_ATTEMPTS = 5
         LOCKOUT_DURATION_MINUTES = 30
@@ -97,8 +99,8 @@ class FlextAuthConstants:
         EMAIL_TAKEN = "EMAIL_TAKEN"
         SESSION_NOT_FOUND = "SESSION_NOT_FOUND"
 
-    class Logging:
-        """Audit and security logging configuration."""
+    class AuthLogging:
+        """Authentication-specific audit and security logging configuration."""
 
         class Audit:
             """Audit logging controls."""

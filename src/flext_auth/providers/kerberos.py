@@ -18,11 +18,11 @@ from __future__ import annotations
 
 import secrets
 from datetime import UTC, datetime
-from typing import Any
+
+from flext_core import FlextLogger, FlextResult
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
-from flext_core import FlextLogger, FlextResult
 
 
 class KerberosAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -58,7 +58,7 @@ class KerberosAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     """
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: dict[str, object]) -> None:
         """Initialize Kerberos authentication provider.
 
         Args:
@@ -98,7 +98,9 @@ class KerberosAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         self._proxiable = self._config.get("proxiable", False)
 
         # Runtime state for ticket management
-        self._active_tickets: dict[str, dict[str, Any]] = {}  # ticket_id -> ticket data
+        self._active_tickets: dict[
+            str, dict[str, object]
+        ] = {}  # ticket_id -> ticket data
 
         self._logger.info(
             "Kerberos authentication provider initialized",
@@ -111,7 +113,7 @@ class KerberosAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: dict[str, Any],
+        credentials: dict[str, object],
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using Kerberos ticket.
 
@@ -149,7 +151,7 @@ class KerberosAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         )
 
     def _authenticate_with_gssapi(
-        self, credentials: dict[str, Any]
+        self, credentials: dict[str, object]
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using GSSAPI token.
 
@@ -177,7 +179,7 @@ class KerberosAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         )
 
     def _authenticate_with_password(
-        self, credentials: dict[str, Any]
+        self, credentials: dict[str, object]
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate with username/password to obtain TGT.
 
@@ -345,11 +347,11 @@ class KerberosAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             "mutual_auth",
         }
 
-    def get_metadata(self) -> dict[str, Any]:
+    def get_metadata(self) -> dict[str, object]:
         """Return Kerberos provider metadata.
 
         Returns:
-            dict[str, Any]: Provider metadata
+            dict[str, object]: Provider metadata
 
         """
         return {

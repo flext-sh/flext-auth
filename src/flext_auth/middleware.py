@@ -26,8 +26,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
-
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider
 from flext_core import FlextLogger, FlextResult
@@ -69,7 +67,7 @@ class HttpAuthMiddleware:
     def __init__(
         self,
         provider: BaseAuthProvider,
-        credentials: dict[str, Any] | None = None,
+        credentials: dict[str, object] | None = None,
         header_name: str = "Authorization",
         token_prefix: str = "Bearer",
         auto_refresh: bool = True,
@@ -98,8 +96,8 @@ class HttpAuthMiddleware:
 
     def process_request(
         self,
-        request: Any,  # FlextApiModels.HttpRequest - avoid import
-    ) -> FlextResult[Any]:
+        request: object,  # FlextApiModels.HttpRequest - avoid import
+    ) -> FlextResult[object]:
         """Process HTTP request by adding authentication headers.
 
         This method is called by the HTTP client before sending a request.
@@ -117,13 +115,13 @@ class HttpAuthMiddleware:
 
         """
         if not self._enabled:
-            return FlextResult[Any].ok(request)
+            return FlextResult[object].ok(request)
 
         try:
             # Ensure we have a valid token
             token_result = self._ensure_valid_token()
             if token_result.is_failure:
-                return FlextResult[Any].fail(
+                return FlextResult[object].fail(
                     f"Authentication failed: {token_result.error}"
                 )
 
@@ -151,7 +149,7 @@ class HttpAuthMiddleware:
                 provider=self._provider.get_metadata()["name"],
             )
 
-            return FlextResult[Any].ok(request)
+            return FlextResult[object].ok(request)
 
         except Exception as e:
             self._logger.exception(
@@ -159,12 +157,12 @@ class HttpAuthMiddleware:
                 error=str(e),
                 provider=self._provider.get_metadata()["name"],
             )
-            return FlextResult[Any].fail(f"HTTP authentication failed: {e}")
+            return FlextResult[object].fail(f"HTTP authentication failed: {e}")
 
     def process_response(
         self,
-        response: Any,  # FlextApiModels.HttpResponse - avoid import
-    ) -> FlextResult[Any]:
+        response: object,  # FlextApiModels.HttpResponse - avoid import
+    ) -> FlextResult[object]:
         """Process HTTP response (pass-through for HTTP auth).
 
         HTTP auth middleware doesn't need to process responses,
@@ -177,7 +175,7 @@ class HttpAuthMiddleware:
             FlextResult with unchanged response
 
         """
-        return FlextResult[Any].ok(response)
+        return FlextResult[object].ok(response)
 
     def _ensure_valid_token(self) -> FlextResult[FlextAuthModels.AuthToken]:
         """Ensure we have a valid authentication token.
@@ -333,8 +331,8 @@ class WebAuthMiddleware:
 
     def process_request(
         self,
-        request: Any,  # FlextWebModels.WebRequest - avoid import
-    ) -> FlextResult[Any]:
+        request: object,  # FlextWebModels.WebRequest - avoid import
+    ) -> FlextResult[object]:
         """Process web request by validating authentication.
 
         This method is called by the web application for each incoming request.
@@ -352,7 +350,7 @@ class WebAuthMiddleware:
 
         """
         if not self._enabled:
-            return FlextResult[Any].ok(request)
+            return FlextResult[object].ok(request)
 
         try:
             # Check if path is excluded from authentication
@@ -364,26 +362,26 @@ class WebAuthMiddleware:
                     "Request path excluded from authentication",
                     path=request_path,
                 )
-                return FlextResult[Any].ok(request)
+                return FlextResult[object].ok(request)
 
             # Extract token from request
             token = self._extract_token(request)
             if not token:
                 if self._require_auth:
-                    return FlextResult[Any].fail(
+                    return FlextResult[object].fail(
                         f"Authentication required: No token found in {self._header_name} header or cookies"
                     )
-                return FlextResult[Any].ok(request)
+                return FlextResult[object].ok(request)
 
             # Validate token
             validation_result = self._provider.validate(token)
             if validation_result.is_failure:
-                return FlextResult[Any].fail(
+                return FlextResult[object].fail(
                     f"Token validation failed: {validation_result.error}"
                 )
 
             if not validation_result.unwrap():
-                return FlextResult[Any].fail(
+                return FlextResult[object].fail(
                     "Authentication failed: Invalid or expired token"
                 )
 
@@ -404,7 +402,7 @@ class WebAuthMiddleware:
                 path=request_path,
             )
 
-            return FlextResult[Any].ok(request)
+            return FlextResult[object].ok(request)
 
         except Exception as e:
             self._logger.exception(
@@ -412,12 +410,12 @@ class WebAuthMiddleware:
                 error=str(e),
                 provider=self._provider.get_metadata()["name"],
             )
-            return FlextResult[Any].fail(f"Web authentication failed: {e}")
+            return FlextResult[object].fail(f"Web authentication failed: {e}")
 
     def process_response(
         self,
-        response: Any,  # FlextWebModels.WebResponse - avoid import
-    ) -> FlextResult[Any]:
+        response: object,  # FlextWebModels.WebResponse - avoid import
+    ) -> FlextResult[object]:
         """Process web response (pass-through for web auth).
 
         Web auth middleware doesn't need to process responses,
@@ -430,9 +428,9 @@ class WebAuthMiddleware:
             FlextResult with unchanged response
 
         """
-        return FlextResult[Any].ok(response)
+        return FlextResult[object].ok(response)
 
-    def _extract_token(self, request: Any) -> str | None:
+    def _extract_token(self, request: object) -> str | None:
         """Extract authentication token from request.
 
         Checks in order:

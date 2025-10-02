@@ -223,8 +223,8 @@ class TestOAuth2TokenEndpoint:
         })
 
         assert result.is_failure
-        assert "invalid_grant" in result.error
-        assert "Authorization code expired" in result.error
+        assert result.error is not None and "invalid_grant" in result.error
+        assert result.error is not None and "Authorization code expired" in result.error
 
     def test_http_connection_error(self, httpx_mock: HTTPXMock) -> None:
         """Test HTTP connection error handling."""
@@ -246,7 +246,9 @@ class TestOAuth2TokenEndpoint:
         result = provider.authenticate({})
 
         assert result.is_failure
-        assert "error" in result.error.lower() or "connection" in result.error.lower()
+        assert (
+            result.error is not None and "error" in result.error.lower()
+        ) or "connection" in result.error.lower()
 
     def test_http_500_error(self, httpx_mock: HTTPXMock) -> None:
         """Test HTTP 500 server error handling with retry logic."""
@@ -350,7 +352,7 @@ class TestOidcUserInfoEndpoint:
         result = provider.get_userinfo("test_access_token")
 
         assert result.is_failure
-        assert "sub" in result.error
+        assert result.error is not None and "sub" in result.error
 
     def test_userinfo_401_unauthorized(self, httpx_mock: HTTPXMock) -> None:
         """Test UserInfo endpoint 401 Unauthorized error."""
@@ -375,7 +377,9 @@ class TestOidcUserInfoEndpoint:
         result = provider.get_userinfo("invalid_token")
 
         assert result.is_failure
-        assert "401" in result.error or "failed" in result.error.lower()
+        assert (
+            result.error is not None and "401" in result.error
+        ) or "failed" in result.error.lower()
 
     def test_userinfo_no_endpoint_configured(self) -> None:
         """Test UserInfo request when endpoint not configured."""
@@ -392,4 +396,4 @@ class TestOidcUserInfoEndpoint:
         result = provider.get_userinfo("test_access_token")
 
         assert result.is_failure
-        assert "not configured" in result.error
+        assert result.error is not None and "not configured" in result.error

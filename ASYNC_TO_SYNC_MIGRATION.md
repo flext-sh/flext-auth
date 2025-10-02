@@ -59,7 +59,7 @@ Successfully converted **ALL methods to synchronous** in flext-auth and the enti
 # Provider methods
 def authenticate(
     self,
-    credentials: dict[str, Any],
+    credentials: dict[str, object],
 ) -> FlextResult[FlextAuthModels.AuthToken]:
     """authentication."""
     result = self._process_auth(credentials)
@@ -74,7 +74,7 @@ result = provider.authenticate({"username": "test", "password": "pass"})
 # Provider methods
 def authenticate(
     self,
-    credentials: dict[str, Any],
+    credentials: dict[str, object],
 ) -> FlextResult[FlextAuthModels.AuthToken]:
     """Synchronous authentication."""
     result = self._process_auth(credentials)
@@ -204,9 +204,9 @@ Mock providers updated and working
 2. **flext-api** - No flext-auth usage (already compatible)
 
 #### Projects Requiring Updates:
-- Any project directly calling flext-auth provider methods with `await`
-- Any project using middleware integration
-- Any custom auth implementations extending base providers
+- object project directly calling flext-auth provider methods with `await`
+- object project using middleware integration
+- object custom auth implementations extending base providers
 
 ## Breaking Changes
 

@@ -9,13 +9,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
 from unittest.mock import MagicMock
+
+from flext_core import FlextResult
 
 from flext_auth import HttpAuthMiddleware
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider
-from flext_core import FlextResult
 
 
 class MockAuthProvider(BaseAuthProvider):
@@ -39,7 +39,7 @@ class MockAuthProvider(BaseAuthProvider):
         self._refresh_calls = 0
 
     def authenticate(
-        self, credentials: dict[str, Any]
+        self, credentials: dict[str, object]
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         from datetime import UTC, datetime, timedelta
 
@@ -93,7 +93,7 @@ class MockAuthProvider(BaseAuthProvider):
             capabilities.add("refresh")
         return capabilities
 
-    def get_metadata(self) -> dict[str, Any]:
+    def get_metadata(self) -> dict[str, object]:
         return {
             "name": "mock",
             "version": "1.0.0",
@@ -164,7 +164,10 @@ class TestHttpAuthMiddleware:
         result = middleware.process_request(request)
 
         assert result.is_failure
-        assert "No authentication token and no credentials provided" in result.error
+        assert (
+            result.error is not None
+            and "No authentication token and no credentials provided" in result.error
+        )
 
     def test_process_request_reuses_token(self) -> None:
         """Test middleware reuses valid token for subsequent requests."""
@@ -325,7 +328,7 @@ class TestHttpAuthMiddleware:
         result = middleware.process_request(request)
 
         assert result.is_failure
-        assert "Authentication failed" in result.error
+        assert result.error is not None and "Authentication failed" in result.error
 
     def test_enable_disable_toggle(self) -> None:
         """Test enabling and disabling middleware."""

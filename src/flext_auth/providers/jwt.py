@@ -11,16 +11,15 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from typing import Any
 from uuid import uuid4
 
 import jwt
+from flext_core import FlextLogger, FlextResult
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
 from flext_auth.utilities import FlextAuthUtilities
-from flext_core import FlextLogger, FlextResult
 
 
 class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -60,7 +59,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     """
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: dict[str, object]) -> None:
         """Initialize JWT authentication provider.
 
         Args:
@@ -113,7 +112,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: dict[str, Any],
+        credentials: dict[str, object],
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate user and generate JWT token.
 
@@ -125,7 +124,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
                 - user_id: str (required)
                 - email: str (optional)
                 - roles: list[str] (optional)
-                - additional claims: Any additional JWT claims
+                - additional claims: object additional JWT claims
 
         Returns:
             FlextResult[AuthToken]: JWT token or authentication error
@@ -404,11 +403,11 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         """
         return {"token", "validate", "refresh", "password_hash", "jwt"}
 
-    def get_metadata(self) -> dict[str, Any]:
+    def get_metadata(self) -> dict[str, object]:
         """Return JWT provider metadata.
 
         Returns:
-            dict[str, Any]: Provider metadata
+            dict[str, object]: Provider metadata
 
         """
         return {
@@ -425,8 +424,8 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         }
 
     def _generate_access_token(
-        self, credentials: dict[str, Any]
-    ) -> FlextResult[dict[str, Any]]:
+        self, credentials: dict[str, object]
+    ) -> FlextResult[dict[str, object]]:
         """Generate JWT access token.
 
         Args:
@@ -439,7 +438,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         now = datetime.now(UTC)
         expires_at = now + timedelta(minutes=self._access_token_expiry_minutes)
 
-        payload: dict[str, Any] = {
+        payload: dict[str, object] = {
             "sub": credentials["user_id"],
             "exp": int(expires_at.timestamp()),
             "iat": int(now.timestamp()),
@@ -464,16 +463,16 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         )
 
         if token_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(token_result.error)
+            return FlextResult[dict[str, object]].fail(token_result.error)
 
-        return FlextResult[dict[str, Any]].ok({
+        return FlextResult[dict[str, object]].ok({
             "token": token_result.unwrap(),
             "expires_at": expires_at,
         })
 
     def _generate_refresh_token(
-        self, credentials: dict[str, Any]
-    ) -> FlextResult[dict[str, Any]]:
+        self, credentials: dict[str, object]
+    ) -> FlextResult[dict[str, object]]:
         """Generate JWT refresh token.
 
         Args:
@@ -486,7 +485,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         now = datetime.now(UTC)
         expires_at = now + timedelta(days=self._refresh_token_expiry_days)
 
-        payload: dict[str, Any] = {
+        payload: dict[str, object] = {
             "sub": credentials["user_id"],
             "exp": int(expires_at.timestamp()),
             "iat": int(now.timestamp()),
@@ -504,9 +503,9 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         )
 
         if token_result.is_failure:
-            return FlextResult[dict[str, Any]].fail(token_result.error)
+            return FlextResult[dict[str, object]].fail(token_result.error)
 
-        return FlextResult[dict[str, Any]].ok({
+        return FlextResult[dict[str, object]].ok({
             "token": token_result.unwrap(),
             "expires_at": expires_at,
         })

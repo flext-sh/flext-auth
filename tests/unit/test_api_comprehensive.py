@@ -348,7 +348,7 @@ class TestFlextAuthErrorHandling:
         # Try to register again
         result = auth.register_user("dupuser", "dup2@example.com", "DupPass123!")
         assert result.is_failure
-        assert "already exists" in result.error.lower()
+        assert result.error is not None and "already exists" in result.error.lower()
 
     def test_authentication_with_invalid_credentials(self) -> None:
         """Test authentication with wrong password."""

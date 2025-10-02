@@ -31,29 +31,23 @@ class FlextAuthProtocols(FlextProtocols):
 
         def verify_password(self, password: str) -> FlextResult[bool]:
             """Verify password against stored hash."""
-            ...
 
         def set_password(self, password: str) -> FlextResult[bool]:
             """Set password with secure hashing."""
-            ...
 
         @property
         def can_login(self) -> bool:
             """Check if user can attempt login."""
-            ...
 
         @property
         def is_locked(self) -> bool:
             """Check if account is currently locked."""
-            ...
 
         def record_successful_login(self) -> None:
             """Record successful login and reset failed attempts."""
-            ...
 
         def record_failed_login(self) -> None:
             """Record failed login attempt and apply lockout if needed."""
-            ...
 
     @runtime_checkable
     class FlextAuthSessionProtocol(FlextProtocols.Domain.Service, Protocol):
@@ -69,19 +63,15 @@ class FlextAuthProtocols(FlextProtocols):
 
         def is_expired(self) -> bool:
             """Check if session is expired."""
-            ...
 
         def extend_session(self, hours: int = 24) -> FlextResult[bool]:
             """Extend session expiration time."""
-            ...
 
         def is_valid(self) -> bool:
             """Check if session is valid (active and not expired)."""
-            ...
 
         def revoke(self) -> FlextResult[bool]:
             """Revoke this session."""
-            ...
 
     @runtime_checkable
     class FlextAuthTokenProtocol(FlextProtocols.Domain.Service, Protocol):
@@ -94,7 +84,6 @@ class FlextAuthProtocols(FlextProtocols):
 
         def is_expired(self) -> bool:
             """Check if token is expired."""
-            ...
 
     @runtime_checkable
     class FlextAuthServiceProtocol(FlextProtocols.Domain.Service, Protocol):
@@ -109,7 +98,6 @@ class FlextAuthProtocols(FlextProtocols):
             roles: list[str] | None = None,
         ) -> FlextResult[FlextAuthModels.User]:
             """Register new user."""
-            ...
 
         def authenticate_user(
             self,
@@ -119,11 +107,9 @@ class FlextAuthProtocols(FlextProtocols):
             user_agent: str | None = None,
         ) -> FlextResult[FlextAuthTypes.AuthenticationResponseDict]:
             """Authenticate user and create session."""
-            ...
 
         def logout_user(self, session_id: str) -> FlextResult[None]:
             """Logout user by session ID."""
-            ...
 
 
 __all__ = [

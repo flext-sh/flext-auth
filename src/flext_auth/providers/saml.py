@@ -20,12 +20,12 @@ from __future__ import annotations
 
 import secrets
 from datetime import UTC, datetime
-from typing import Any
 from urllib.parse import urlencode
+
+from flext_core import FlextLogger, FlextResult
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
-from flext_core import FlextLogger, FlextResult
 
 
 class SamlAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -70,7 +70,7 @@ class SamlAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
     NS_SAMLP = "urn:oasis:names:tc:SAML:2.0:protocol"
     NS_DS = "http://www.w3.org/2000/09/xmldsig#"
 
-    def __init__(self, config: dict[str, Any]) -> None:
+    def __init__(self, config: dict[str, object]) -> None:
         """Initialize SAML authentication provider.
 
         Args:
@@ -119,7 +119,7 @@ class SamlAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         self._encrypt_assertions = self._config.get("encrypt_assertions", False)
 
         # Runtime state for request tracking
-        self._pending_requests: dict[str, dict[str, Any]] = {}
+        self._pending_requests: dict[str, dict[str, object]] = {}
 
         self._logger.info(
             "SAML provider initialized",
@@ -133,7 +133,7 @@ class SamlAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: dict[str, Any],
+        credentials: dict[str, object],
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using SAML assertion.
 
@@ -295,11 +295,11 @@ class SamlAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         return capabilities
 
-    def get_metadata(self) -> dict[str, Any]:
+    def get_metadata(self) -> dict[str, object]:
         """Return SAML provider metadata.
 
         Returns:
-            dict[str, Any]: Provider metadata
+            dict[str, object]: Provider metadata
 
         """
         return {
