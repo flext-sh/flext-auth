@@ -40,7 +40,6 @@ from flext_core import (
     FlextBus,
     FlextContainer,
     FlextContext,
-    FlextCqrs,
     FlextDispatcher,
     FlextLogger,
     FlextProcessors,
@@ -83,8 +82,7 @@ class FlextAuthUserService(FlextService):
             **extra_fields,
         )
 
-        if result.is_success:
-            self._audit_logger.log_user_creation(username, email)
+        # Note: Audit logging for user creation could be added to FlextAuthAuditLogger if needed
 
         return result
 
@@ -107,8 +105,7 @@ class FlextAuthUserService(FlextService):
     def delete_user(self, user_id: str) -> FlextResult[None]:
         """Delete a user account."""
         result = self._user_manager.delete_user(user_id)
-        if result.is_success:
-            self._audit_logger.log_user_deletion(user_id)
+        # Note: Audit logging for user deletion could be added to FlextAuthAuditLogger if needed
         return result
 
     def change_password(
@@ -203,17 +200,17 @@ class FlextAuthUserService(FlextService):
         """Get all permissions for a user."""
         user_result = self._user_manager.get_user(user_id)
         if user_result.is_failure:
-            return user_result
+            return FlextResult[FlextTypes.StringList].fail(user_result.error)
 
-        return FlextResult.ok(user_result.value.permissions)
+        return FlextResult[FlextTypes.StringList].ok(user_result.value.permissions)
 
     def get_user_roles(self, user_id: str) -> FlextResult[FlextTypes.StringList]:
         """Get all roles for a user."""
         user_result = self._user_manager.get_user(user_id)
         if user_result.is_failure:
-            return user_result
+            return FlextResult[FlextTypes.StringList].fail(user_result.error)
 
-        return FlextResult.ok(user_result.value.roles)
+        return FlextResult[FlextTypes.StringList].ok(user_result.value.roles)
 
     def add_user_role(self, user_id: str, role: str) -> FlextResult[None]:
         """Add a role to a user."""
@@ -237,7 +234,7 @@ class FlextAuthUserService(FlextService):
 class FlextAuthTokenService(FlextService):
     """Focused service for token operations with complete flext-core integration."""
 
-    def __init__(self, config: FlextAuthConfig) -> None:
+    def __init__(self, config: FlextAuthConfig, provider_service: FlextAuthProviderService) -> None:
         """Initialize token service with flext-core integration."""
         super().__init__()
         self._config = config
@@ -245,6 +242,7 @@ class FlextAuthTokenService(FlextService):
         self._audit_logger = FlextAuthAuditLogger(config)
         self._utils = FlextAuthUtilities()
         self._logger = FlextLogger(__name__)
+        self._provider_service = provider_service
 
     def validate_token(self, token: str) -> FlextResult[FlextAuthModels.User]:
         """Validate an authentication token and return user."""
@@ -277,7 +275,7 @@ class FlextAuthTokenService(FlextService):
 
         params = params_result.value
         decode_result = FlextAuthUtilities.JWTProcessing.decode_token(
-            token, params["secret_key"], params["algorithm"]
+            token, str(params["secret_key"]), str(params["algorithm"])
         )
 
         if decode_result.is_failure:
@@ -376,14 +374,16 @@ class FlextAuthTokenService(FlextService):
         return token_result
 
     def _get_jwt_provider(self) -> FlextResult[JwtAuthProvider]:
-        """Get the JWT provider from the global registry."""
-        # This is a simplified implementation - in practice would use dependency injection
-        container = FlextContainer.get_global()
-        registry = container.get(FlextAuthRegistry)
-        if not registry:
-            return FlextResult[JwtAuthProvider].fail("Auth registry not available")
+        """Get the JWT provider from the provider service."""
+        result = self._provider_service.get_provider("jwt")
+        if result.is_failure:
+            return FlextResult[JwtAuthProvider].fail(result.error)
 
-        return registry.get("jwt")
+        provider = result.value
+        if not isinstance(provider, JwtAuthProvider):
+            return FlextResult[JwtAuthProvider].fail("Provider is not a JWT provider")
+
+        return FlextResult[JwtAuthProvider].ok(provider)
 
 
 class FlextAuthSessionService(FlextService):
@@ -591,14 +591,13 @@ class FlextAuth(FlextService):
         self._dispatcher = FlextDispatcher()
         self._processors = FlextProcessors()
         self._registry = FlextRegistry(dispatcher=self._dispatcher)
-        self._cqrs = FlextCqrs()
         self._logger = FlextLogger(__name__)
 
         # Initialize focused services
-        self._user_service = FlextAuthUserService(self.config)
-        self._token_service = FlextAuthTokenService(self.config)
-        self._session_service = FlextAuthSessionService(self.config)
         self._provider_service = FlextAuthProviderService(self.config)
+        self._user_service = FlextAuthUserService(self.config)
+        self._token_service = FlextAuthTokenService(self.config, self._provider_service)
+        self._session_service = FlextAuthSessionService(self.config)
 
         # Initialize additional managers for facade operations
         self._rate_limiter = FlextAuthRateLimiter(self.config)
@@ -805,7 +804,9 @@ class FlextAuth(FlextService):
             FlextResult containing AuthToken or error
 
         """
-        return self._token_service.generate_jwt_token(user_id, expires_in_minutes, token_type)
+        return self._token_service.generate_jwt_token(
+            user_id, expires_in_minutes, token_type
+        )
 
     def logout_user(self, token: str) -> FlextResult[None]:
         """Logout a user by invalidating their session.
@@ -854,7 +855,9 @@ class FlextAuth(FlextService):
             FlextResult indicating success or error
 
         """
-        return self._user_service.change_password(user_id, current_password, new_password)
+        return self._user_service.change_password(
+            user_id, current_password, new_password
+        )
 
     def reset_password(self, user_id: str, new_password: str) -> FlextResult[None]:
         """Reset a user's password (REDACTED_LDAP_BIND_PASSWORD operation).
@@ -951,7 +954,9 @@ class FlextAuth(FlextService):
         """
         return self._user_service.add_user_permission(user_id, permission)
 
-    def remove_user_permission(self, user_id: str, permission: str) -> FlextResult[None]:
+    def remove_user_permission(
+        self, user_id: str, permission: str
+    ) -> FlextResult[None]:
         """Remove a permission from a user.
 
         Args:
@@ -1177,6 +1182,7 @@ class FlextAuth(FlextService):
 
         Returns:
             FlextResult containing list of audit logs
+
         """
         return self._audit_logger.get_logs(
             user_id=user_id,
@@ -1191,6 +1197,7 @@ class FlextAuth(FlextService):
 
         Returns:
             FlextResult containing security statistics
+
         """
         # Note: This would need to be implemented in the managers
         # For now, return basic stats
@@ -1199,126 +1206,6 @@ class FlextAuth(FlextService):
             "failed_login_attempts": 0,  # Would come from rate limiter
             "audit_log_entries": 0,  # Would come from audit logger
         })
-
-    # Synchronous Methods (async removed)
-    def authenticate_user_async(
-        self,
-        username: str,
-        password: str,
-        provider: str = "basic",
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
-        """Synchronous version of authenticate_user."""
-        # Delegated to sync version
-        return self.authenticate_user(username, password, provider)
-
-    def validate_token_async(self, token: str) -> FlextResult[FlextAuthModels.User]:
-        """Synchronous version of validate_token."""
-        return self.validate_token(token)
-
-    def refresh_token_async(self, token: str) -> FlextResult[FlextAuthModels.AuthToken]:
-        """Synchronous version of refresh_token."""
-        return self.refresh_token(token)
-
-    # Message-based API for advanced integrations
-    def handle_message(self, message: FlextTypes.Dict) -> FlextResult:
-        """Handle a message-based authentication request.
-
-        Args:
-            message: Message dictionary with operation and params
-
-        Returns:
-            FlextResult containing operation result
-
-        """
-        operation = message.get("operation", "")
-
-        match operation:
-            case "authenticate":
-                username = message.get("username", "")
-                password = message.get("password", "")
-                provider = message.get("provider", "basic")
-                return self.authenticate_user(
-                    str(username), str(password), str(provider)
-                )
-
-            case "validate_token":
-                token = message.get("token", "")
-                return self.validate_token(str(token))
-
-            case "refresh_token":
-                token = message.get("token", "")
-                return self.refresh_token(str(token))
-
-            case "create_user":
-                username = message.get("username", "")
-                email = message.get("email", "")
-                password = message.get("password", "")
-                return self.create_user(str(username), str(email), str(password))
-
-            case "get_user":
-                user_id = message.get("user_id", "")
-                return self.get_user(str(user_id))
-
-            case "logout":
-                token = message.get("token", "")
-                return self.logout_user(str(token))
-
-            case "change_password":
-                user_id = message.get("user_id", "")
-                current_password = message.get("current_password", "")
-                new_password = message.get("new_password", "")
-                return self.change_password(
-                    str(user_id), str(current_password), str(new_password)
-                )
-
-            case _:
-                return FlextResult.fail(f"Unknown operation: {operation}")
-
-    def handle_message_async(self, message: FlextTypes.Dict) -> FlextResult:
-        """Synchronous version of handle_message."""
-        operation = message.get("operation", "")
-
-        match operation:
-            case "authenticate":
-                username = message.get("username", "")
-                password = message.get("password", "")
-                provider = message.get("provider", "basic")
-                return self.authenticate_user_async(
-                    str(username), str(password), str(provider)
-                )
-
-            case "validate_token":
-                token = message.get("token", "")
-                return self.validate_token_async(str(token))
-
-            case "refresh_token":
-                token = message.get("token", "")
-                return self.refresh_token_async(str(token))
-
-            case "create_user":
-                username = message.get("username", "")
-                email = message.get("email", "")
-                password = message.get("password", "")
-                return self.create_user(str(username), str(email), str(password))
-
-            case "get_user":
-                user_id = message.get("user_id", "")
-                return self.get_user(str(user_id))
-
-            case "logout":
-                token = message.get("token", "")
-                return self.logout_user(str(token))
-
-            case "change_password":
-                user_id = message.get("user_id", "")
-                current_password = message.get("current_password", "")
-                new_password = message.get("new_password", "")
-                return self.change_password(
-                    str(user_id), str(current_password), str(new_password)
-                )
-
-            case _:
-                return FlextResult.fail(f"Unknown operation: {operation}")
 
 
 class FlextAuthQuickstart(FlextService):
