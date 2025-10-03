@@ -15,6 +15,7 @@ from uuid import uuid4
 
 import jwt
 
+from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
@@ -79,6 +80,8 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         """
         self._config = config
         self._logger = FlextLogger(__name__)
+        self._context = FlextContext()
+        self._bus = FlextBus()
 
         # Extract configuration with defaults
         self._secret_key = self._config.get("secret_key")
@@ -192,7 +195,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         # AuthToken uses 'token' field, not 'access_token'
         auth_token = FlextAuthModels.AuthToken(
             token=access_token_data["token"],
-            token_type="Bearer",
+            token_type=FlextAuthConstants.Jwt.DEFAULT_TOKEN_TYPE,
             expires_at=access_token_data["expires_at"],
             refresh_token=refresh_token,
             refresh_expires_at=refresh_expires_at,
