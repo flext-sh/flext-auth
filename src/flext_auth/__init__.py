@@ -8,13 +8,14 @@ from __future__ import annotations
 
 from typing import Final
 
-from flext_auth.api import FlextAuth, FlextAuthQuickstart
+from flext_auth.api import FlextAuth
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.exceptions import FlextAuthExceptions
 from flext_auth.middleware import HttpAuthMiddleware, WebAuthMiddleware
 from flext_auth.models import FlextAuthModels
 from flext_auth.protocols import FlextAuthProtocols
+from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers import (
     ApiKeyAuthProvider,
     BaseAuthProvider,
@@ -28,8 +29,12 @@ from flext_auth.providers import (
     OidcAuthProvider,
     SamlAuthProvider,
 )
+from flext_auth.quickstart import FlextAuthQuickstart
 from flext_auth.registry import FlextAuthRegistry
+from flext_auth.session_service import FlextAuthSessionService
+from flext_auth.token_service import FlextAuthTokenService
 from flext_auth.typings import FlextAuthTypes
+from flext_auth.user_service import FlextAuthUserService
 from flext_auth.version import VERSION, FlextAuthVersion
 
 PROJECT_VERSION: Final[FlextAuthVersion] = VERSION
@@ -51,9 +56,13 @@ __all__ = [
     "FlextAuthExceptions",
     "FlextAuthModels",
     "FlextAuthProtocols",
+    "FlextAuthProviderService",
     "FlextAuthQuickstart",
     "FlextAuthRegistry",
+    "FlextAuthSessionService",
+    "FlextAuthTokenService",
     "FlextAuthTypes",
+    "FlextAuthUserService",
     "FlextAuthVersion",
     "HttpAuthMiddleware",
     "JwtAuthProvider",
