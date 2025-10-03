@@ -20,7 +20,7 @@ from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
 from flext_auth.utilities import FlextAuthUtilities
-from flext_core import FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextBus, FlextContext, FlextLogger, FlextResult, FlextTypes
 
 
 class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):

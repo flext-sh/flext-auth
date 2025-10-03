@@ -20,6 +20,7 @@ from base64 import urlsafe_b64encode
 from datetime import UTC, datetime
 from urllib.parse import urlencode
 
+from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
 from flext_auth.transports.http import HttpTransportAdapter
@@ -248,10 +249,10 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         # Add client authentication based on method
         auth: tuple[str, str] | None = None
-        if self._token_endpoint_auth_method == "FlextAuthConstants.OAuth2.CLIENT_SECRET_POST":
+        if self._token_endpoint_auth_method == FlextAuthConstants.OAuth2.CLIENT_SECRET_POST:
             if self._client_secret:
                 token_data["client_secret"] = self._client_secret
-        elif self._token_endpoint_auth_method == "FlextAuthConstants.OAuth2.CLIENT_SECRET_BASIC":
+        elif self._token_endpoint_auth_method == FlextAuthConstants.OAuth2.CLIENT_SECRET_BASIC:
             if self._client_secret:
                 auth = (self._client_id, self._client_secret)
 

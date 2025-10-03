@@ -201,6 +201,7 @@ class FlextAuthConstants(FlextConstants):
 
     class OAuth2:
         """OAuth2 authentication constants."""
+
         CLIENT_SECRET_POST = "client_secret_post"
         CLIENT_SECRET_BASIC = "client_secret_basic"
 

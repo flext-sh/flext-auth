@@ -18,9 +18,14 @@ from __future__ import annotations
 import secrets
 from datetime import UTC, datetime, timedelta
 
+from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
 from flext_core import FlextLogger, FlextResult, FlextTypes
+
+# Third-party imports for certificate processing
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes
 
 
 class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -162,7 +167,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         auth_token = FlextAuthModels.AuthToken(
             token=cert_fingerprint,  # Use certificate fingerprint as token
-            token_type="bearer",  # Must match pattern: access|refresh|api|bearer
+            token_type=FlextAuthConstants.Jwt.BASIC_TOKEN_TYPE,  # Must match pattern: access|refresh|api|bearer
             expires_at=token_expires_at,
             user_id=user_data["user_id"],
             # Additional metadata
@@ -348,10 +353,6 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             return FlextResult[FlextTypes.Dict].fail("Invalid PEM certificate format")
 
         try:
-            # Import cryptography library for X.509 parsing
-            from cryptography import x509
-            from cryptography.hazmat.primitives import hashes
-
             # Parse PEM certificate
             cert = x509.load_pem_x509_certificate(cert_pem.encode("utf-8"))
 
@@ -359,11 +360,11 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             fingerprint = cert.fingerprint(hashes.SHA256()).hex()
 
             # Extract subject DN
-            subject_parts = [f"{attr.oid._name}={attr.value}" for attr in cert.subject]
+            subject_parts = [f"{attr.oid._name}={attr.value}" for attr in cert.subject]  # type: ignore[attr-defined]
             subject_dn = ",".join(subject_parts)
 
             # Extract issuer DN
-            issuer_parts = [f"{attr.oid._name}={attr.value}" for attr in cert.issuer]
+            issuer_parts = [f"{attr.oid._name}={attr.value}" for attr in cert.issuer]  # type: ignore[attr-defined]
             issuer_dn = ",".join(issuer_parts)
 
             # Get validity dates
@@ -380,7 +381,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             )
 
             # Get signature algorithm
-            signature_algorithm = cert.signature_algorithm_oid._name
+            signature_algorithm = cert.signature_algorithm_oid._name  # type: ignore[attr-defined]
 
             cert_info = {
                 "subject": subject_dn,
@@ -420,8 +421,6 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         """
         try:
-            from cryptography import x509
-
             # Parse certificate
             cert = x509.load_pem_x509_certificate(cert_pem.encode("utf-8"))
 
@@ -468,8 +467,6 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         """
         try:
-            from cryptography import x509
-
             # Parse CA certificate
             ca_cert = x509.load_pem_x509_certificate(ca_cert_pem.encode("utf-8"))
 
@@ -554,12 +551,12 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         # Parse subject string - handles both formats:
         # Old: "CN=example.com,O=Example Corp"
         # New (cryptography): "commonName=example.com,organizationName=Example Corp"
-        for component in subject.split(","):
-            component = component.strip()
-            if component.startswith("CN="):
-                return component[3:]  # Remove "CN=" prefix
-            if component.startswith("commonName="):
-                return component[11:]  # Remove "commonName=" prefix
+        for comp in subject.split(","):
+            comp = comp.strip()
+            if comp.startswith("CN="):
+                return comp[3:]  # Remove "CN=" prefix
+            if comp.startswith("commonName="):
+                return comp[11:]  # Remove "commonName=" prefix
 
         return ""
 
