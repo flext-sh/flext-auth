@@ -331,11 +331,11 @@ class OidcAuthProvider(OAuth2AuthProvider):
             # Decode payload (add padding if needed)
             payload_part = parts[1]
             # Add padding
-            BASE64_PADDING_SIZE = 4
-            padding_needed = BASE64_PADDING_SIZE - (
-                len(payload_part) % BASE64_PADDING_SIZE
+            base64_padding_size = 4
+            padding_needed = base64_padding_size - (
+                len(payload_part) % base64_padding_size
             )
-            if padding_needed != BASE64_PADDING_SIZE:
+            if padding_needed != base64_padding_size:
                 payload_part += "=" * padding_needed
 
             payload_bytes = base64.urlsafe_b64decode(payload_part)

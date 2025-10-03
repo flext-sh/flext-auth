@@ -890,13 +890,13 @@ class SecurityValidator:
 
 #### Integration Matrix
 
-| Domain | FLEXT Library | Status | Usage in flext-auth |
-|--------|---------------|--------|---------------------|
-| HTTP Operations | **flext-api** | MANDATORY | HTTP transport adapter |
-| gRPC Operations | **flext-grpc** | MANDATORY | gRPC transport adapter |
-| LDAP Authentication | **flext-ldap** | MANDATORY | LDAP provider |
-| Database (if needed) | **flext-db-oracle** | MANDATORY | User/session persistence |
-| Foundation Patterns | **flext-core** | MANDATORY | FlextResult, FlextService, FlextRegistry |
+| Domain               | FLEXT Library       | Status    | Usage in flext-auth                      |
+| -------------------- | ------------------- | --------- | ---------------------------------------- |
+| HTTP Operations      | **flext-api**       | MANDATORY | HTTP transport adapter                   |
+| gRPC Operations      | **flext-grpc**      | MANDATORY | gRPC transport adapter                   |
+| LDAP Authentication  | **flext-ldap**      | MANDATORY | LDAP provider                            |
+| Database (if needed) | **flext-db-oracle** | MANDATORY | User/session persistence                 |
+| Foundation Patterns  | **flext-core**      | MANDATORY | FlextResult, FlextService, FlextRegistry |
 
 #### FORBIDDEN Direct Imports
 
@@ -1150,7 +1150,7 @@ token = token_mgr.get_with_retry(
 
 ```bash
 make validate          # Complete pipeline
-make lint           
+make lint
 make type-check       # MyPy/PyRight: ZERO errors in src/
 make security         # Bandit: ZERO critical issues
 make test             # Tests: 100% pass rate
@@ -1176,15 +1176,15 @@ make test             # Tests: 100% pass rate
 
 ### Technology Stack Summary
 
-| Category | Libraries | Status |
-|----------|-----------|--------|
-| OAuth2/OIDC | authlib>=1.3.0 | Phase 2 |
-| SAML | python3-saml>=1.16.0, xmlsec>=1.3.0 | Phase 3 |
-| Kerberos | gssapi>=1.8.0 | Phase 3 (stub) |
-| Caching | memcache>=0.8.0 | Phase 5 |
-| WebSocket | websockets>=14.0 | Phase 4 |
-| GraphQL | graphql-core>=3.2.0 | Phase 4 (stub) |
-| FLEXT Libraries | flext-core, flext-api, flext-grpc, flext-ldap | All phases |
+| Category        | Libraries                                     | Status         |
+| --------------- | --------------------------------------------- | -------------- |
+| OAuth2/OIDC     | authlib>=1.3.0                                | Phase 2        |
+| SAML            | python3-saml>=1.16.0, xmlsec>=1.3.0           | Phase 3        |
+| Kerberos        | gssapi>=1.8.0                                 | Phase 3 (stub) |
+| Caching         | memcache>=0.8.0                               | Phase 5        |
+| WebSocket       | websockets>=14.0                              | Phase 4        |
+| GraphQL         | graphql-core>=3.2.0                           | Phase 4 (stub) |
+| FLEXT Libraries | flext-core, flext-api, flext-grpc, flext-ldap | All phases     |
 
 ### Backward Compatibility Timeline
 

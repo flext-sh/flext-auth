@@ -180,7 +180,11 @@ class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         # - Check user account status
         # - Verify group memberships haven't changed
 
-        if isinstance(token, FlextAuthModels.AuthToken) and token.expires_at and datetime.now(UTC) > token.expires_at:
+        if (
+            isinstance(token, FlextAuthModels.AuthToken)
+            and token.expires_at
+            and datetime.now(UTC) > token.expires_at
+        ):
             return FlextResult[bool].fail("Session expired")
 
         self._logger.debug("LDAP token validated (basic validation)")

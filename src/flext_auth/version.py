@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from importlib.metadata import metadata
 from typing import Final
 
@@ -17,9 +18,6 @@ __author__ = _metadata.get("Author")
 __author_email__ = _metadata.get("Author-Email")
 __license__ = _metadata.get("License")
 __url__ = _metadata.get("Home-Page")
-
-
-from dataclasses import dataclass
 
 
 @dataclass

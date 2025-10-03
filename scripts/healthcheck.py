@@ -26,7 +26,7 @@ def main() -> int:
     try:
         health_url = f"http://{FlextAuthConstants.Platform.DEFAULT_HOST}:{FlextAuthConstants.Platform.FLEXT_API_PORT}/auth/health"
 
-        # S310: Comprehensive URL scheme validation for security
+        # Comprehensive URL scheme validation for security
         parsed_url = urllib.parse.urlparse(health_url)
 
         # Validate scheme - only allow http/https
@@ -42,11 +42,11 @@ def main() -> int:
             return 1
 
         # Create request with validated URL
-        # S310: URL scheme is validated above to only allow http/https
+        # URL scheme has been validated above to only allow http/https
         request = urllib.request.Request(health_url)
 
         # Use urllib.request.urlopen with validated scheme and security checks
-        # S310: URL scheme is validated above to only allow http/https
+        # URL scheme has been validated above to only allow http/https
         with urllib.request.urlopen(
             request,
             timeout=FlextAuthConstants.Network.DEFAULT_TIMEOUT,

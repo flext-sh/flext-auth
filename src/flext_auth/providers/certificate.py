@@ -18,14 +18,14 @@ from __future__ import annotations
 import secrets
 from datetime import UTC, datetime, timedelta
 
+# Third-party imports for certificate processing
+from cryptography import x509
+from cryptography.hazmat.primitives import hashes
+
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
 from flext_core import FlextLogger, FlextResult, FlextTypes
-
-# Third-party imports for certificate processing
-from cryptography import x509
-from cryptography.hazmat.primitives import hashes
 
 
 class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -360,11 +360,15 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             fingerprint = cert.fingerprint(hashes.SHA256()).hex()
 
             # Extract subject DN
-            subject_parts = [f"{attr.oid._name}={attr.value}" for attr in cert.subject]  # type: ignore[attr-defined]
+            subject_parts = [
+                f"{attr.oid.dotted_string}={attr.value}" for attr in cert.subject
+            ]
             subject_dn = ",".join(subject_parts)
 
             # Extract issuer DN
-            issuer_parts = [f"{attr.oid._name}={attr.value}" for attr in cert.issuer]  # type: ignore[attr-defined]
+            issuer_parts = [
+                f"{attr.oid.dotted_string}={attr.value}" for attr in cert.issuer
+            ]
             issuer_dn = ",".join(issuer_parts)
 
             # Get validity dates
@@ -381,7 +385,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             )
 
             # Get signature algorithm
-            signature_algorithm = cert.signature_algorithm_oid._name  # type: ignore[attr-defined]
+            signature_algorithm = cert.signature_algorithm_oid.dotted_string
 
             cert_info = {
                 "subject": subject_dn,
@@ -552,11 +556,11 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         # Old: "CN=example.com,O=Example Corp"
         # New (cryptography): "commonName=example.com,organizationName=Example Corp"
         for comp in subject.split(","):
-            comp = comp.strip()
-            if comp.startswith("CN="):
-                return comp[3:]  # Remove "CN=" prefix
-            if comp.startswith("commonName="):
-                return comp[11:]  # Remove "commonName=" prefix
+            stripped_comp = comp.strip()
+            if stripped_comp.startswith("CN="):
+                return stripped_comp[3:]  # Remove "CN=" prefix
+            if stripped_comp.startswith("commonName="):
+                return stripped_comp[11:]  # Remove "commonName=" prefix
 
         return ""
 

@@ -99,7 +99,7 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         self._flow = self._config.get("flow", "authorization_code")
         self._use_pkce = self._config.get("use_pkce", True)
         self._token_endpoint_auth_method = self._config.get(
-            "token_endpoint_auth_method", "FlextAuthConstants.OAuth2.CLIENT_SECRET_POST"
+            "token_endpoint_auth_method", FlextAuthConstants.OAuth2.CLIENT_SECRET_POST
         )
 
         # Runtime state storage (in production, use proper storage)
@@ -204,7 +204,11 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         # 4. Validate token signature
 
         # For now, basic validation
-        if isinstance(token, FlextAuthModels.AuthToken) and token.expires_at and datetime.now(UTC) > token.expires_at:
+        if (
+            isinstance(token, FlextAuthModels.AuthToken)
+            and token.expires_at
+            and datetime.now(UTC) > token.expires_at
+        ):
             return FlextResult[bool].fail("Token expired")
 
         self._logger.debug("Token validated (basic validation only)")
@@ -249,12 +253,18 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         # Add client authentication based on method
         auth: tuple[str, str] | None = None
-        if self._token_endpoint_auth_method == FlextAuthConstants.OAuth2.CLIENT_SECRET_POST:
-            if self._client_secret:
-                token_data["client_secret"] = self._client_secret
-        elif self._token_endpoint_auth_method == FlextAuthConstants.OAuth2.CLIENT_SECRET_BASIC:
-            if self._client_secret:
-                auth = (self._client_id, self._client_secret)
+        if (
+            self._token_endpoint_auth_method
+            == FlextAuthConstants.OAuth2.CLIENT_SECRET_POST
+            and self._client_secret
+        ):
+            token_data["client_secret"] = self._client_secret
+        elif (
+            self._token_endpoint_auth_method
+            == FlextAuthConstants.OAuth2.CLIENT_SECRET_BASIC
+            and self._client_secret
+        ):
+            auth = (self._client_id, self._client_secret)
 
         # Request new access token
         token_response = self._http_client.post_token_request(
@@ -386,13 +396,19 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         # Add client authentication based on method
         auth: tuple[str, str] | None = None
-        if self._token_endpoint_auth_method == "FlextAuthConstants.OAuth2.CLIENT_SECRET_POST":
-            if self._client_secret:
-                token_data["client_secret"] = self._client_secret
-        elif self._token_endpoint_auth_method == "FlextAuthConstants.OAuth2.CLIENT_SECRET_BASIC":
+        if (
+            self._token_endpoint_auth_method
+            == FlextAuthConstants.OAuth2.CLIENT_SECRET_POST
+            and self._client_secret
+        ):
+            token_data["client_secret"] = self._client_secret
+        elif (
+            self._token_endpoint_auth_method
+            == FlextAuthConstants.OAuth2.CLIENT_SECRET_BASIC
+            and self._client_secret
+        ):
             # HTTP Basic Authentication
-            if self._client_secret:
-                auth = (self._client_id, self._client_secret)
+            auth = (self._client_id, self._client_secret)
 
         # Exchange authorization code for access token
         token_response = self._http_client.post_token_request(
@@ -436,9 +452,15 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         # Add client authentication based on method
         auth: tuple[str, str] | None = None
-        if self._token_endpoint_auth_method == FlextAuthConstants.OAuth2.CLIENT_SECRET_POST:
+        if (
+            self._token_endpoint_auth_method
+            == FlextAuthConstants.OAuth2.CLIENT_SECRET_POST
+        ):
             token_data["client_secret"] = client_secret
-        elif self._token_endpoint_auth_method == FlextAuthConstants.OAuth2.CLIENT_SECRET_BASIC:
+        elif (
+            self._token_endpoint_auth_method
+            == FlextAuthConstants.OAuth2.CLIENT_SECRET_BASIC
+        ):
             auth = (client_id, client_secret)
 
         # Request access token
@@ -482,12 +504,18 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         # Add client authentication based on method
         auth: tuple[str, str] | None = None
-        if self._token_endpoint_auth_method == "FlextAuthConstants.OAuth2.CLIENT_SECRET_POST":
-            if self._client_secret:
-                token_data["client_secret"] = self._client_secret
-        elif self._token_endpoint_auth_method == "FlextAuthConstants.OAuth2.CLIENT_SECRET_BASIC":
-            if self._client_secret:
-                auth = (self._client_id, self._client_secret)
+        if (
+            self._token_endpoint_auth_method
+            == FlextAuthConstants.OAuth2.CLIENT_SECRET_POST
+            and self._client_secret
+        ):
+            token_data["client_secret"] = self._client_secret
+        elif (
+            self._token_endpoint_auth_method
+            == FlextAuthConstants.OAuth2.CLIENT_SECRET_BASIC
+            and self._client_secret
+        ):
+            auth = (self._client_id, self._client_secret)
 
         # Request access token
         token_response = self._http_client.post_token_request(

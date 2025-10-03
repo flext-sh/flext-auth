@@ -9,6 +9,7 @@
 ### All Authentication Methods Are Now Synchronous
 
 **Before (v1.x - )**:
+
 ```python
 from flext_auth import FlextAuth
 
@@ -21,6 +22,7 @@ result = await auth.generate_access_token(session_id)
 ```
 
 **After (v2.0.0 - sync)**:
+
 ```python
 from flext_auth import FlextAuth
 
@@ -35,6 +37,7 @@ result = auth.generate_access_token(session_id)
 ### Provider Interface Changes
 
 **Before (v1.x)**:
+
 ```python
 from flext_auth.providers.base import BaseAuthProvider
 
@@ -49,6 +52,7 @@ class CustomProvider(BaseAuthProvider):
 ```
 
 **After (v2.0.0)**:
+
 ```python
 from flext_auth.providers.base import BaseAuthProvider
 
@@ -77,6 +81,7 @@ flext-auth = "^2.0.0"  # Update from ^1.x
 #### flext-web Integration
 
 **Before**:
+
 ```python
 # flext-web/src/flext_web/middleware.py
 def authenticate_request(request):
@@ -86,6 +91,7 @@ def authenticate_request(request):
 ```
 
 **After**:
+
 ```python
 # flext-web/src/flext_web/middleware.py
 def authenticate_request(request):
@@ -97,6 +103,7 @@ def authenticate_request(request):
 #### flext-api Integration
 
 **Before**:
+
 ```python
 # flext-api/src/flext_api/auth.py
 def validate_token(token: str):
@@ -106,6 +113,7 @@ def validate_token(token: str):
 ```
 
 **After**:
+
 ```python
 # flext-api/src/flext_api/auth.py
 def validate_token(token: str):
@@ -117,6 +125,7 @@ def validate_token(token: str):
 ### 3. Update Test Suites
 
 **Before**:
+
 ```python
 import pytest
 
@@ -128,6 +137,7 @@ def test_authentication():
 ```
 
 **After**:
+
 ```python
 def test_authentication():
     auth = FlextAuth.quick_start()
@@ -224,6 +234,7 @@ pytest tests/ -v
 **Cause**: Still using `await` with sync methods
 
 **Fix**: Remove `await`:
+
 ```python
 # Wrong
 result = await auth.authenticate_user(...)
@@ -237,6 +248,7 @@ result = auth.authenticate_user(...)
 **Cause**: Trying to await a sync function
 
 **Fix**: Remove `await` and ``:
+
 ```python
 # Wrong
 def my_auth():
@@ -252,6 +264,7 @@ def my_auth():
 **Cause**: Test decorated with `@pytest.mark.io` but function is now sync
 
 **Fix**: Remove decorator and ``:
+
 ```python
 # Wrong
 @pytest.mark.io
@@ -266,6 +279,7 @@ def test_auth():
 ## Performance Impact
 
 **Positive**: Sync operations have lower overhead than :
+
 - No event loop management
 - No /await overhead
 - Simpler stack traces
@@ -276,20 +290,24 @@ def test_auth():
 ## Rollout Strategy
 
 ### Phase 1: Update Dependencies
+
 ```bash
 poetry update flext-auth
 ```
 
 ### Phase 2: Update Code
+
 - Remove ``/`await` from auth calls
 - Update middleware
 - Update custom providers
 
 ### Phase 3: Update Tests
+
 - Remove `@pytest.mark.io`
 - Remove ``/`await` from test functions
 
 ### Phase 4: Validate
+
 ```bash
 make lint
 make type-check
@@ -309,6 +327,7 @@ make test
 - **Python**: >=3.13 (unchanged)
 
 ---
+
 **Migration Status**: ✅ READY
 **Estimated Migration Time**: 15-30 minutes per project
 **Risk Level**: LOW (straightforward pattern replacement)

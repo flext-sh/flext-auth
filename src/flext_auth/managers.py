@@ -301,7 +301,9 @@ class FlextAuthAuditLogger:
         """Log successful password change."""
         self._log_event("password_change_success", username=username, **extra)
 
-    def log_password_change_failure(self, username: str, reason: str, **extra: object) -> None:
+    def log_password_change_failure(
+        self, username: str, reason: str, **extra: object
+    ) -> None:
         """Log failed password change."""
         self._log_event(
             "password_change_failure", username=username, reason=reason, **extra
@@ -312,7 +314,13 @@ class FlextAuthAuditLogger:
         self._log_event("password_reset", username=username, **extra)
 
     def log_authorization_check(
-        self, username: str, resource: str, action: str, *, allowed: bool, **extra: object
+        self,
+        username: str,
+        resource: str,
+        action: str,
+        *,
+        allowed: bool,
+        **extra: object,
     ) -> None:
         """Log authorization check."""
         event_type = "authorization_granted" if allowed else "authorization_denied"

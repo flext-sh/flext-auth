@@ -107,13 +107,13 @@ src/flext_auth/
 
 ### **FLEXT-Core Integration Status**
 
-| Pattern              | Status   | Description                                                |
-| -------------------- | -------- | ---------------------------------------------------------- |
-| **FlextResult<T>**   | 🟢 100%  | All operations return FlextResult with railway pattern     |
-| **FlextService**     | 🟢 100%  | FlextAuth extends FlextService patterns                    |
-| **FlextContainer**   | 🟢 100%  | Dependency injection throughout                            |
-| **Domain Patterns**  | 🟢 100%  | Provider protocol with capability detection                |
-| **Registry Pattern** | 🟢 100%  | Dynamic provider registration and discovery                |
+| Pattern              | Status  | Description                                            |
+| -------------------- | ------- | ------------------------------------------------------ |
+| **FlextResult<T>**   | 🟢 100% | All operations return FlextResult with railway pattern |
+| **FlextService**     | 🟢 100% | FlextAuth extends FlextService patterns                |
+| **FlextContainer**   | 🟢 100% | Dependency injection throughout                        |
+| **Domain Patterns**  | 🟢 100% | Provider protocol with capability detection            |
+| **Registry Pattern** | 🟢 100% | Dynamic provider registration and discovery            |
 
 > **Status**: 🟢 v2.0.0 Foundation Complete | Provider architecture ready for ecosystem expansion
 
@@ -379,6 +379,7 @@ pytest --cov=src/flext_auth # Coverage report
 ### **Production Capabilities (v2.0.0)**
 
 **Current (Production-Ready)**
+
 - ✅ **JWT Authentication**: Complete JWT provider with token lifecycle
 - ✅ **Provider Registry**: Dynamic provider registration and discovery
 - ✅ **Multi-Provider API**: v2.0.0 API with `with_jwt()`, `with_provider()`, `with_registry()`
@@ -386,6 +387,7 @@ pytest --cov=src/flext_auth # Coverage report
 - ✅ **Custom Providers**: Extensible BaseAuthProvider for custom implementations
 
 **Coming in Phase 2-7**
+
 - 🚧 **OAuth2/OIDC**: Enterprise SSO and modern authentication
 - 📅 **SAML**: Enterprise identity federation
 - 📅 **API Keys/Certificates**: Programmatic authentication
@@ -419,18 +421,21 @@ pytest --cov=src/flext_auth # Coverage report
 ### **Phase 2: Core Authentication Providers** 🚧 Next
 
 **OAuth2 Authentication Provider**
+
 - OAuth 2.0 authorization code flow
 - Client credentials flow
 - Token refresh and management
 - Integration with flext-api for HTTP transport
 
 **OIDC Authentication Provider**
+
 - OpenID Connect authentication layer
 - ID token validation and userinfo endpoint
 - Discovery and dynamic configuration
 - Integration with OAuth2 provider
 
 **SAML Authentication Provider**
+
 - SAML 2.0 SP-initiated and IdP-initiated flows
 - XML signature validation
 - Metadata management
@@ -447,11 +452,13 @@ pytest --cov=src/flext_auth # Coverage report
 ### **Phase 4: Transport & Protocol Layers** 📅 Future
 
 **Transport Support**
+
 - HTTP transport (flext-api integration - MANDATORY)
 - gRPC transport (flext-grpc integration - MANDATORY)
 - WebSocket transport for real-time authentication
 
 **Protocol Handlers**
+
 - REST API protocol handler
 - SOAP protocol handler
 - GraphQL protocol handler
