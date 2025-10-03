@@ -312,7 +312,7 @@ class FlextAuthAuditLogger:
         self._log_event("password_reset", username=username, **extra)
 
     def log_authorization_check(
-        self, username: str, resource: str, action: str, allowed: bool, **extra
+        self, username: str, resource: str, action: str, allowed: bool, **extra: object
     ) -> None:
         """Log authorization check."""
         event_type = "authorization_granted" if allowed else "authorization_denied"
