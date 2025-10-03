@@ -23,7 +23,7 @@ class TestModelsModule:
         """Nested helper class for test data creation."""
 
         @staticmethod
-        def create_test_user_model_data() -> FlextTypes.Core.Dict:
+        def create_test_user_model_data() -> FlextTypes.Dict:
             """Create test user model data."""
             return {
                 "username": "test_user",
@@ -34,7 +34,7 @@ class TestModelsModule:
             }
 
         @staticmethod
-        def create_test_role_model_data() -> FlextTypes.Core.Dict:
+        def create_test_role_model_data() -> FlextTypes.Dict:
             """Create test role model data."""
             return {
                 "name": "REDACTED_LDAP_BIND_PASSWORD",
@@ -44,7 +44,7 @@ class TestModelsModule:
             }
 
         @staticmethod
-        def create_test_session_model_data() -> FlextTypes.Core.Dict:
+        def create_test_session_model_data() -> FlextTypes.Dict:
             """Create test session model data."""
             return {
                 "user_id": "user_123",

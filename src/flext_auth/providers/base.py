@@ -12,7 +12,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 from flext_auth.models import FlextAuthModels
-from flext_core import FlextResult
+from flext_core import FlextResult, FlextTypes
 
 
 class BaseAuthProvider(ABC):
@@ -45,7 +45,7 @@ class BaseAuthProvider(ABC):
     @abstractmethod
     def authenticate(
         self,
-        credentials: dict[str, object],
+        credentials: FlextTypes.Dict,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate user with provided credentials.
 
@@ -192,7 +192,7 @@ class BaseAuthProvider(ABC):
         ...
 
     @abstractmethod
-    def get_metadata(self) -> dict[str, object]:
+    def get_metadata(self) -> FlextTypes.Dict:
         """Return provider metadata.
 
         Metadata provides information about the provider for introspection,
@@ -201,7 +201,7 @@ class BaseAuthProvider(ABC):
         Required metadata fields:
             - name: str - Provider name (e.g., "jwt", "oauth2")
             - version: str - Provider version
-            - capabilities: list[str] - List of capabilities (from supports())
+            - capabilities: FlextTypes.StringList - List of capabilities (from supports())
 
         Optional metadata fields:
             - description: str - Human-readable description
@@ -211,7 +211,7 @@ class BaseAuthProvider(ABC):
             - endpoints: dict - API endpoints (for OAuth2/OIDC/SAML)
 
         Returns:
-            dict[str, object]: Provider metadata
+            FlextTypes.Dict: Provider metadata
 
         Example:
             >>> metadata = provider.get_metadata()
@@ -262,8 +262,8 @@ class BaseAuthProviderMixin:
 
     def _validate_credentials_dict(
         self,
-        credentials: dict[str, object],
-        required_fields: list[str],
+        credentials: FlextTypes.Dict,
+        required_fields: FlextTypes.StringList,
     ) -> FlextResult[None]:
         """Validate that credentials contain required fields.
 

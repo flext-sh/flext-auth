@@ -11,11 +11,10 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from flext_core import FlextResult
-
 from flext_auth import HttpAuthMiddleware
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider
+from flext_core import FlextResult, FlextTypes
 
 
 class MockAuthProvider(BaseAuthProvider):
@@ -39,7 +38,7 @@ class MockAuthProvider(BaseAuthProvider):
         self._refresh_calls = 0
 
     def authenticate(
-        self, credentials: dict[str, object]
+        self, credentials: FlextTypes.Dict
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         from datetime import UTC, datetime, timedelta
 
@@ -93,7 +92,7 @@ class MockAuthProvider(BaseAuthProvider):
             capabilities.add("refresh")
         return capabilities
 
-    def get_metadata(self) -> dict[str, object]:
+    def get_metadata(self) -> FlextTypes.Dict:
         return {
             "name": "mock",
             "version": "1.0.0",
@@ -108,7 +107,7 @@ class MockHttpRequest:
         self,
         url: str = "https://api.example.com/test",
         method: str = "GET",
-        headers: dict[str, str] | None = None,
+        headers: FlextTypes.StringDict | None = None,
     ) -> None:
         self.url = url
         self.method = method

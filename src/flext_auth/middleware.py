@@ -28,7 +28,7 @@ from __future__ import annotations
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider
-from flext_core import FlextLogger, FlextResult
+from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class HttpAuthMiddleware:
@@ -67,7 +67,7 @@ class HttpAuthMiddleware:
     def __init__(
         self,
         provider: BaseAuthProvider,
-        credentials: dict[str, object] | None = None,
+        credentials: FlextTypes.Dict | None = None,
         header_name: str = "Authorization",
         token_prefix: str = "Bearer",
         auto_refresh: bool = True,
@@ -303,7 +303,7 @@ class WebAuthMiddleware:
         header_name: str = "Authorization",
         token_prefix: str = "Bearer",
         cookie_name: str | None = None,
-        exclude_paths: list[str] | None = None,
+        exclude_paths: FlextTypes.StringList | None = None,
         require_auth: bool = True,
     ) -> None:
         """Initialize web authentication middleware.

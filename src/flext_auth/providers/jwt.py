@@ -14,12 +14,12 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import jwt
-from flext_core import FlextLogger, FlextResult
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
 from flext_auth.utilities import FlextAuthUtilities
+from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -59,7 +59,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     """
 
-    def __init__(self, config: dict[str, object]) -> None:
+    def __init__(self, config: FlextAuthConfig) -> None:
         """Initialize JWT authentication provider.
 
         Args:
@@ -112,7 +112,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: dict[str, object],
+        credentials: FlextTypes.Dict,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate user and generate JWT token.
 
@@ -123,7 +123,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
                 - password_hash: str (optional, for pre-hashed passwords)
                 - user_id: str (required)
                 - email: str (optional)
-                - roles: list[str] (optional)
+                - roles: FlextTypes.StringList (optional)
                 - additional claims: object additional JWT claims
 
         Returns:
@@ -403,11 +403,11 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         """
         return {"token", "validate", "refresh", "password_hash", "jwt"}
 
-    def get_metadata(self) -> dict[str, object]:
+    def get_metadata(self) -> FlextTypes.Dict:
         """Return JWT provider metadata.
 
         Returns:
-            dict[str, object]: Provider metadata
+            FlextTypes.Dict: Provider metadata
 
         """
         return {
@@ -423,9 +423,21 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             "audience": self._audience,
         }
 
+    def get_decoding_params(self) -> FlextResult[FlextTypes.Dict]:
+        """Get parameters needed for token decoding.
+
+        Returns:
+            FlextResult[dict]: Decoding parameters with secret_key and algorithm
+
+        """
+        return FlextResult.ok({
+            "secret_key": self._secret_key,
+            "algorithm": self._algorithm,
+        })
+
     def _generate_access_token(
-        self, credentials: dict[str, object]
-    ) -> FlextResult[dict[str, object]]:
+        self, credentials: FlextTypes.Dict
+    ) -> FlextResult[FlextTypes.Dict]:
         """Generate JWT access token.
 
         Args:
@@ -438,7 +450,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         now = datetime.now(UTC)
         expires_at = now + timedelta(minutes=self._access_token_expiry_minutes)
 
-        payload: dict[str, object] = {
+        payload: FlextTypes.Dict = {
             "sub": credentials["user_id"],
             "exp": int(expires_at.timestamp()),
             "iat": int(now.timestamp()),
@@ -463,16 +475,16 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         )
 
         if token_result.is_failure:
-            return FlextResult[dict[str, object]].fail(token_result.error)
+            return FlextResult[FlextTypes.Dict].fail(token_result.error)
 
-        return FlextResult[dict[str, object]].ok({
+        return FlextResult[FlextTypes.Dict].ok({
             "token": token_result.unwrap(),
             "expires_at": expires_at,
         })
 
     def _generate_refresh_token(
-        self, credentials: dict[str, object]
-    ) -> FlextResult[dict[str, object]]:
+        self, credentials: FlextTypes.Dict
+    ) -> FlextResult[FlextTypes.Dict]:
         """Generate JWT refresh token.
 
         Args:
@@ -485,7 +497,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         now = datetime.now(UTC)
         expires_at = now + timedelta(days=self._refresh_token_expiry_days)
 
-        payload: dict[str, object] = {
+        payload: FlextTypes.Dict = {
             "sub": credentials["user_id"],
             "exp": int(expires_at.timestamp()),
             "iat": int(now.timestamp()),
@@ -503,9 +515,9 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         )
 
         if token_result.is_failure:
-            return FlextResult[dict[str, object]].fail(token_result.error)
+            return FlextResult[FlextTypes.Dict].fail(token_result.error)
 
-        return FlextResult[dict[str, object]].ok({
+        return FlextResult[FlextTypes.Dict].ok({
             "token": token_result.unwrap(),
             "expires_at": expires_at,
         })

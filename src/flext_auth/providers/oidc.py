@@ -14,13 +14,13 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 
 from __future__ import annotations
 
+import base64
 import json
 from datetime import UTC, datetime
 
-from flext_core import FlextResult
-
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.oauth2 import OAuth2AuthProvider
+from flext_core import FlextResult, FlextTypes
 
 
 class OidcAuthProvider(OAuth2AuthProvider):
@@ -63,7 +63,7 @@ class OidcAuthProvider(OAuth2AuthProvider):
 
     """
 
-    def __init__(self, config: dict[str, object]) -> None:
+    def __init__(self, config: FlextTypes.Dict) -> None:
         """Initialize OIDC authentication provider.
 
         Args:
@@ -92,7 +92,7 @@ class OidcAuthProvider(OAuth2AuthProvider):
             self._scope = f"openid {self._scope}"
 
         # Runtime state for nonce validation
-        self._nonces: dict[str, str] = {}  # state -> nonce mapping
+        self._nonces: FlextTypes.StringDict = {}  # state -> nonce mapping
 
         self._logger.info(
             "OIDC provider initialized",
@@ -105,7 +105,7 @@ class OidcAuthProvider(OAuth2AuthProvider):
 
     def authenticate(
         self,
-        credentials: dict[str, object],
+        credentials: FlextTypes.Dict,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using OIDC flow.
 
@@ -209,11 +209,11 @@ class OidcAuthProvider(OAuth2AuthProvider):
 
         return capabilities
 
-    def get_metadata(self) -> dict[str, object]:
+    def get_metadata(self) -> FlextTypes.Dict:
         """Return OIDC provider metadata.
 
         Returns:
-            dict[str, object]: Provider metadata
+            FlextTypes.Dict: Provider metadata
 
         """
         metadata = super().get_metadata()
@@ -267,7 +267,7 @@ class OidcAuthProvider(OAuth2AuthProvider):
 
         return FlextResult[str].ok(auth_url)
 
-    def get_userinfo(self, access_token: str) -> FlextResult[dict[str, object]]:
+    def get_userinfo(self, access_token: str) -> FlextResult[FlextTypes.Dict]:
         """Fetch user information from UserInfo endpoint.
 
         Args:
@@ -278,7 +278,7 @@ class OidcAuthProvider(OAuth2AuthProvider):
 
         """
         if not self._userinfo_endpoint:
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 "UserInfo endpoint not configured for this provider"
             )
 
@@ -289,7 +289,7 @@ class OidcAuthProvider(OAuth2AuthProvider):
         )
 
         if userinfo_result.is_failure:
-            return FlextResult[dict[str, object]].fail(userinfo_result.error)
+            return FlextResult[FlextTypes.Dict].fail(userinfo_result.error)
 
         userinfo = userinfo_result.unwrap()
 
@@ -301,9 +301,9 @@ class OidcAuthProvider(OAuth2AuthProvider):
             },
         )
 
-        return FlextResult[dict[str, object]].ok(userinfo)
+        return FlextResult[FlextTypes.Dict].ok(userinfo)
 
-    def parse_id_token(self, id_token: str) -> FlextResult[dict[str, object]]:
+    def parse_id_token(self, id_token: str) -> FlextResult[FlextTypes.Dict]:
         """Parse and validate ID token JWT.
 
         Args:
@@ -317,7 +317,7 @@ class OidcAuthProvider(OAuth2AuthProvider):
         parts = id_token.split(".")
         jwt_parts_count = 3
         if len(parts) != jwt_parts_count:
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 "Invalid ID token format (not a valid JWT)"
             )
 
@@ -328,13 +328,14 @@ class OidcAuthProvider(OAuth2AuthProvider):
             # For now, basic parsing without signature verification
             # NOTE: This is NOT secure for production use!
 
-            import base64
-
             # Decode payload (add padding if needed)
             payload_part = parts[1]
             # Add padding
-            padding_needed = 4 - (len(payload_part) % 4)
-            if padding_needed != 4:
+            BASE64_PADDING_SIZE = 4
+            padding_needed = BASE64_PADDING_SIZE - (
+                len(payload_part) % BASE64_PADDING_SIZE
+            )
+            if padding_needed != BASE64_PADDING_SIZE:
                 payload_part += "=" * padding_needed
 
             payload_bytes = base64.urlsafe_b64decode(payload_part)
@@ -342,28 +343,20 @@ class OidcAuthProvider(OAuth2AuthProvider):
 
             # Basic validation
             if "iss" not in payload:
-                return FlextResult[dict[str, object]].fail(
-                    "ID token missing 'iss' claim"
-                )
+                return FlextResult[FlextTypes.Dict].fail("ID token missing 'iss' claim")
 
             if "sub" not in payload:
-                return FlextResult[dict[str, object]].fail(
-                    "ID token missing 'sub' claim"
-                )
+                return FlextResult[FlextTypes.Dict].fail("ID token missing 'sub' claim")
 
             if "aud" not in payload:
-                return FlextResult[dict[str, object]].fail(
-                    "ID token missing 'aud' claim"
-                )
+                return FlextResult[FlextTypes.Dict].fail("ID token missing 'aud' claim")
 
             if "exp" not in payload:
-                return FlextResult[dict[str, object]].fail(
-                    "ID token missing 'exp' claim"
-                )
+                return FlextResult[FlextTypes.Dict].fail("ID token missing 'exp' claim")
 
             # Validate issuer
             if payload["iss"] != self._issuer:
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     f"ID token issuer mismatch: expected {self._issuer}, "
                     f"got {payload['iss']}"
                 )
@@ -372,28 +365,28 @@ class OidcAuthProvider(OAuth2AuthProvider):
             audience = payload["aud"]
             if isinstance(audience, list):
                 if self._client_id not in audience:
-                    return FlextResult[dict[str, object]].fail(
+                    return FlextResult[FlextTypes.Dict].fail(
                         "ID token audience does not include client_id"
                     )
             elif audience != self._client_id:
-                return FlextResult[dict[str, object]].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     "ID token audience does not match client_id"
                 )
 
             # Validate expiration
             exp_timestamp = payload["exp"]
             if datetime.fromtimestamp(exp_timestamp, tz=UTC) < datetime.now(UTC):
-                return FlextResult[dict[str, object]].fail("ID token expired")
+                return FlextResult[FlextTypes.Dict].fail("ID token expired")
 
             self._logger.info(
                 "ID token parsed and validated",
                 extra={"sub": payload.get("sub"), "iss": payload.get("iss")},
             )
 
-            return FlextResult[dict[str, object]].ok(payload)
+            return FlextResult[FlextTypes.Dict].ok(payload)
 
         except Exception as e:
-            return FlextResult[dict[str, object]].fail(f"ID token parsing failed: {e}")
+            return FlextResult[FlextTypes.Dict].fail(f"ID token parsing failed: {e}")
 
 
 __all__ = ["OidcAuthProvider"]

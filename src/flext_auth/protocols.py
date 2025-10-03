@@ -11,105 +11,158 @@ from typing import Protocol, runtime_checkable
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.typings import FlextAuthTypes
-from flext_core import FlextProtocols, FlextResult
+from flext_core import FlextProtocols, FlextResult, FlextTypes
 
 
-class FlextAuthProtocols(FlextProtocols):
-    """Unified authentication protocols following FLEXT patterns."""
+class FlextAuthProtocols:
+    """Unified authentication protocols following FLEXT domain extension pattern.
 
-    @runtime_checkable
-    class FlextAuthUserProtocol(FlextProtocols.Domain.Service, Protocol):
-        """Protocol for user-like objects in authentication."""
+    This class consolidates authentication-specific protocols while explicitly
+    re-exporting foundation protocols for backward compatibility and clean access.
 
-        id: str
-        username: str
-        email: str
-        is_active: bool
-        roles: list[str]
-        failed_login_attempts: int
-        locked_until: datetime | None
+    Architecture:
+        - RE-EXPORTS: Foundation protocols from flext-core for unified access
+        - EXTENDS: Authentication-specific protocols in Auth namespace
+        - MAINTAINS: Zero breaking changes through explicit re-export pattern
 
-        def verify_password(self, password: str) -> FlextResult[bool]:
-            """Verify password against stored hash."""
+    Usage:
+        from flext_auth.protocols import FlextAuthProtocols
 
-        def set_password(self, password: str) -> FlextResult[bool]:
-            """Set password with secure hashing."""
+        # Foundation access (re-exported)
+        FlextAuthProtocols.Foundation.ResultProtocol
 
-        @property
-        def can_login(self) -> bool:
-            """Check if user can attempt login."""
+        # Authentication-specific access
+        FlextAuthProtocols.Auth.UserProtocol
+    """
 
-        @property
-        def is_locked(self) -> bool:
-            """Check if account is currently locked."""
+    # =========================================================================
+    # FOUNDATION PROTOCOL RE-EXPORTS (from flext-core)
+    # =========================================================================
+    # Explicitly re-export foundation protocols for unified access.
+    # This maintains backward compatibility while providing clean namespace access.
 
-        def record_successful_login(self) -> None:
-            """Record successful login and reset failed attempts."""
+    Foundation = FlextProtocols.Foundation
+    Domain = FlextProtocols.Domain
+    Application = FlextProtocols.Application
+    Infrastructure = FlextProtocols.Infrastructure
+    Extensions = FlextProtocols.Extensions
+    Commands = FlextProtocols.Commands
 
-        def record_failed_login(self) -> None:
-            """Record failed login attempt and apply lockout if needed."""
+    # =========================================================================
+    # AUTHENTICATION-SPECIFIC PROTOCOLS
+    # =========================================================================
+    # Domain-specific protocols for authentication and authorization operations.
 
-    @runtime_checkable
-    class FlextAuthSessionProtocol(FlextProtocols.Domain.Service, Protocol):
-        """Protocol for session-like objects in authentication."""
+    class Auth:
+        """Authentication domain-specific protocols.
 
-        id: str
-        user_id: str
-        session_token: str
-        expires_at: datetime
-        is_active: bool
-        ip_address: str | None
-        user_agent: str | None
+        Provides protocols for user authentication, session management,
+        token operations, and authentication services.
+        """
 
-        def is_expired(self) -> bool:
-            """Check if session is expired."""
+        @runtime_checkable
+        class UserProtocol(FlextProtocols.Domain.Service, Protocol):
+            """Protocol for user-like objects in authentication."""
 
-        def extend_session(self, hours: int = 24) -> FlextResult[bool]:
-            """Extend session expiration time."""
+            id: str
+            username: str
+            email: str
+            is_active: bool
+            roles: FlextTypes.StringList
+            failed_login_attempts: int
+            locked_until: datetime | None
 
-        def is_valid(self) -> bool:
-            """Check if session is valid (active and not expired)."""
+            def verify_password(self, password: str) -> FlextResult[bool]:
+                """Verify password against stored hash."""
 
-        def revoke(self) -> FlextResult[bool]:
-            """Revoke this session."""
+            def set_password(self, password: str) -> FlextResult[bool]:
+                """Set password with secure hashing."""
 
-    @runtime_checkable
-    class FlextAuthTokenProtocol(FlextProtocols.Domain.Service, Protocol):
-        """Protocol for token-like objects in authentication."""
+            @property
+            def can_login(self) -> bool:
+                """Check if user can attempt login."""
 
-        token: str
-        user_id: str
-        expires_at: datetime
-        is_revoked: bool
+            @property
+            def is_locked(self) -> bool:
+                """Check if account is currently locked."""
 
-        def is_expired(self) -> bool:
-            """Check if token is expired."""
+            def record_successful_login(self) -> None:
+                """Record successful login and reset failed attempts."""
 
-    @runtime_checkable
-    class FlextAuthServiceProtocol(FlextProtocols.Domain.Service, Protocol):
-        """Protocol for authentication service-like objects."""
+            def record_failed_login(self) -> None:
+                """Record failed login attempt and apply lockout if needed."""
 
-        def register_user(
-            self,
-            username: str,
-            email: str,
-            password: str,
-            full_name: str | None = None,
-            roles: list[str] | None = None,
-        ) -> FlextResult[FlextAuthModels.User]:
-            """Register new user."""
+        @runtime_checkable
+        class SessionProtocol(FlextProtocols.Domain.Service, Protocol):
+            """Protocol for session-like objects in authentication."""
 
-        def authenticate_user(
-            self,
-            username: str,
-            password: str,
-            client_ip: str | None = None,
-            user_agent: str | None = None,
-        ) -> FlextResult[FlextAuthTypes.AuthenticationResponseDict]:
-            """Authenticate user and create session."""
+            id: str
+            user_id: str
+            session_token: str
+            expires_at: datetime
+            is_active: bool
+            ip_address: str | None
+            user_agent: str | None
 
-        def logout_user(self, session_id: str) -> FlextResult[None]:
-            """Logout user by session ID."""
+            def is_expired(self) -> bool:
+                """Check if session is expired."""
+
+            def extend_session(self, hours: int = 24) -> FlextResult[bool]:
+                """Extend session expiration time."""
+
+            def is_valid(self) -> bool:
+                """Check if session is valid (active and not expired)."""
+
+            def revoke(self) -> FlextResult[bool]:
+                """Revoke this session."""
+
+        @runtime_checkable
+        class TokenProtocol(FlextProtocols.Domain.Service, Protocol):
+            """Protocol for token-like objects in authentication."""
+
+            token: str
+            user_id: str
+            expires_at: datetime
+            is_revoked: bool
+
+            def is_expired(self) -> bool:
+                """Check if token is expired."""
+
+        @runtime_checkable
+        class ServiceProtocol(FlextProtocols.Domain.Service, Protocol):
+            """Protocol for authentication service-like objects."""
+
+            def register_user(
+                self,
+                username: str,
+                email: str,
+                password: str,
+                full_name: str | None = None,
+                roles: FlextTypes.StringList | None = None,
+            ) -> FlextResult[FlextAuthModels.User]:
+                """Register new user."""
+
+            def authenticate_user(
+                self,
+                username: str,
+                password: str,
+                client_ip: str | None = None,
+                user_agent: str | None = None,
+            ) -> FlextResult[FlextAuthTypes.AuthenticationResponseDict]:
+                """Authenticate user and create session."""
+
+            def logout_user(self, session_id: str) -> FlextResult[None]:
+                """Logout user by session ID."""
+
+    # =========================================================================
+    # BACKWARD COMPATIBILITY ALIASES
+    # =========================================================================
+    # Maintain existing attribute names for zero breaking changes.
+
+    FlextAuthUserProtocol = Auth.UserProtocol
+    FlextAuthSessionProtocol = Auth.SessionProtocol
+    FlextAuthTokenProtocol = Auth.TokenProtocol
+    FlextAuthServiceProtocol = Auth.ServiceProtocol
 
 
 __all__ = [

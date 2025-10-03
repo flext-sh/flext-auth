@@ -1,4 +1,5 @@
 # FLEXT-AUTH ARCHITECTURE v2.0.0
+
 ## Generic Authentication API Framework
 
 **Version**: 2.0.0-dev
@@ -133,6 +134,7 @@ Transform flext-auth from a specific JWT/bcrypt authentication implementation in
 ### 1. FlextAuth Facade (`api.py`)
 
 **Responsibilities**:
+
 - Single entry point for all authentication operations
 - Provider delegation through registry
 - Backward compatibility with v1.0.0 API
@@ -140,6 +142,7 @@ Transform flext-auth from a specific JWT/bcrypt authentication implementation in
 - Factory methods for common scenarios
 
 **Public API**:
+
 ```python
 class FlextAuth(FlextService[AuthenticationResponseDict]):
     # Factory methods
@@ -169,7 +172,7 @@ class FlextAuth(FlextService[AuthenticationResponseDict]):
     ) -> FlextResult[bool]
 
     # Registry operations
-    def list_providers(self) -> list[str]
+    def list_providers(self) -> FlextTypes.StringList
     def get_provider(self, name: str) -> FlextResult[BaseAuthProvider]
     def get_provider_capabilities(self, name: str) -> FlextResult[set[str]]
 
@@ -182,12 +185,14 @@ class FlextAuth(FlextService[AuthenticationResponseDict]):
 ### 2. FlextAuthRegistry (`registry.py`)
 
 **Responsibilities**:
+
 - Provider registration and lifecycle
 - Provider discovery and lookup
 - Capability detection
 - Configuration validation per provider
 
 **Interface**:
+
 ```python
 class FlextAuthRegistry:
     """Registry for managing authentication providers."""
@@ -203,7 +208,7 @@ class FlextAuthRegistry:
 
     def get(self, name: str) -> FlextResult[BaseAuthProvider]
 
-    def list_providers(self) -> list[str]
+    def list_providers(self) -> FlextTypes.StringList
 
     def discover_providers(self) -> dict[str, type[BaseAuthProvider]]
 
@@ -219,6 +224,7 @@ class FlextAuthRegistry:
 ### 3. Base Provider Protocol (`providers/base.py`)
 
 **Protocol Definition**:
+
 ```python
 class BaseAuthProvider(Protocol):
     """Base protocol for all authentication providers."""
@@ -269,12 +275,14 @@ class BaseAuthProvider(Protocol):
 #### 1. Token-Based Providers
 
 **JWT Provider** (`providers/jwt.py`)
+
 - **Technology**: PyJWT
 - **Capabilities**: `{"token", "refresh", "expiration", "claims"}`
 - **Configuration**: secret_key, algorithm, expiration
 - **Status**: ✅ Extracted from v1.0.0 (Phase 1)
 
 **API Key Provider** (`providers/apikey.py`)
+
 - **Technology**: Custom + cryptography
 - **Capabilities**: `{"token", "rotation", "scopes"}`
 - **Configuration**: key_length, hash_algorithm, rotation_policy
@@ -283,12 +291,14 @@ class BaseAuthProvider(Protocol):
 #### 2. OAuth/OIDC Providers
 
 **OAuth2 Provider** (`providers/oauth2.py`)
+
 - **Technology**: authlib
 - **Capabilities**: `{"oauth2", "authorization_code", "client_credentials", "password_grant", "refresh"}`
 - **Configuration**: client_id, client_secret, authorization_url, token_url
 - **Status**: 🔄 Implementation (Phase 2)
 
 **OIDC Provider** (`providers/oidc.py`)
+
 - **Technology**: authlib (extends OAuth2)
 - **Capabilities**: `{"oidc", "id_token", "userinfo", "discovery"}`
 - **Configuration**: extends OAuth2 + discovery_url
@@ -297,12 +307,14 @@ class BaseAuthProvider(Protocol):
 #### 3. Enterprise SSO Providers
 
 **SAML Provider** (`providers/saml.py`)
+
 - **Technology**: python3-saml
 - **Capabilities**: `{"saml", "sso", "slo", "metadata", "sp_initiated", "idp_initiated"}`
 - **Configuration**: idp_metadata, sp_entity_id, assertion_consumer_service
 - **Status**: 🔄 Implementation (Phase 3)
 
 **LDAP Provider** (`providers/ldap.py`)
+
 - **Technology**: **flext-ldap** (MANDATORY)
 - **Capabilities**: `{"ldap", "bind", "attribute_mapping", "group_sync"}`
 - **Configuration**: ldap_uri, base_dn, bind_dn, bind_password
@@ -312,12 +324,14 @@ class BaseAuthProvider(Protocol):
 #### 4. Credential-Based Providers
 
 **Basic Auth Provider** (`providers/basic.py`)
+
 - **Technology**: bcrypt (existing utilities)
 - **Capabilities**: `{"basic_auth", "password_hash"}`
 - **Configuration**: hash_rounds, pepper
 - **Status**: 🔄 Implementation (Phase 2)
 
 **Certificate Provider** (`providers/certificate.py`)
+
 - **Technology**: cryptography + pyOpenSSL
 - **Capabilities**: `{"certificate", "x509", "mtls", "ocsp", "crl"}`
 - **Configuration**: ca_cert, crl_url, ocsp_url
@@ -326,6 +340,7 @@ class BaseAuthProvider(Protocol):
 #### 5. Kerberos Provider (Stub)
 
 **Kerberos Provider** (`providers/kerberos.py`)
+
 - **Technology**: gssapi
 - **Capabilities**: `{"kerberos", "gssapi", "spnego"}`
 - **Configuration**: realm, kdc, keytab
@@ -626,6 +641,7 @@ class SoapProtocolHandler(BaseProtocolHandler):
 ### Token Manager (`tokens/manager.py`)
 
 **Responsibilities**:
+
 - Unified token interface across providers
 - Token lifecycle management
 - Token caching
@@ -633,6 +649,7 @@ class SoapProtocolHandler(BaseProtocolHandler):
 - Token retry logic
 
 **Interface**:
+
 ```python
 class TokenManager:
     """Unified token management across providers."""
@@ -1034,6 +1051,7 @@ token = token_mgr.get_with_retry(
 ### Phase 1: Foundation & Registry (Week 1) ✅ IN PROGRESS
 
 **Deliverables**:
+
 - ✅ Create `docs/ARCHITECTURE.md` (this document)
 - [ ] Implement FlextAuthRegistry in `registry.py`
 - [ ] Define base provider protocol in `providers/base.py`
@@ -1049,6 +1067,7 @@ token = token_mgr.get_with_retry(
 ### Phase 2: Core Providers (Week 2)
 
 **Deliverables**:
+
 - [ ] Implement OAuth2AuthProvider (authlib)
 - [ ] Implement OidcAuthProvider (extends OAuth2)
 - [ ] Implement ApiKeyAuthProvider
@@ -1062,6 +1081,7 @@ token = token_mgr.get_with_retry(
 ### Phase 3: Advanced Providers (Week 3)
 
 **Deliverables**:
+
 - [ ] Implement SamlAuthProvider (python3-saml)
 - [ ] Implement LdapAuthProvider (flext-ldap MANDATORY)
 - [ ] Implement CertificateAuthProvider (cryptography)
@@ -1074,6 +1094,7 @@ token = token_mgr.get_with_retry(
 ### Phase 4: Transport & Protocol (Week 4)
 
 **Deliverables**:
+
 - [ ] Transport base protocol
 - [ ] HttpTransportAdapter (flext-api MANDATORY)
 - [ ] GrpcTransportAdapter (flext-grpc MANDATORY)
@@ -1087,6 +1108,7 @@ token = token_mgr.get_with_retry(
 ### Phase 5: Token & Credential Management (Week 5)
 
 **Deliverables**:
+
 - [ ] Token manager with retry logic
 - [ ] Token caching (Redis/Memcached)
 - [ ] Credential manager with encryption
@@ -1098,6 +1120,7 @@ token = token_mgr.get_with_retry(
 ### Phase 6: Documentation (Week 6)
 
 **Deliverables**:
+
 - [ ] `docs/MIGRATION.md` (v1 to v2 guide)
 - [ ] Provider documentation (`docs/providers/*.md`)
 - [ ] Transport documentation (`docs/transports/*.md`)
@@ -1110,6 +1133,7 @@ token = token_mgr.get_with_retry(
 ### Phase 7: QA & Release (Week 7)
 
 **Deliverables**:
+
 - [ ] 100% test coverage for all providers
 - [ ] Security audit for all providers
 - [ ] Performance benchmarks
@@ -1177,4 +1201,4 @@ make test             # Tests: 100% pass rate
 
 ---
 
-*This architecture document is the authoritative reference for the flext-auth v2.0.0 transformation. All implementation must follow these patterns and principles.*
+_This architecture document is the authoritative reference for the flext-auth v2.0.0 transformation. All implementation must follow these patterns and principles._

@@ -18,10 +18,9 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from flext_core import FlextLogger, FlextResult
-
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
+from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -60,7 +59,7 @@ class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     """
 
-    def __init__(self, config: dict[str, object]) -> None:
+    def __init__(self, config: FlextTypes.Dict) -> None:
         """Initialize LDAP authentication provider.
 
         Args:
@@ -112,7 +111,7 @@ class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: dict[str, object],
+        credentials: FlextTypes.Dict,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using LDAP credentials.
 
@@ -249,11 +248,11 @@ class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         """
         return {"token", "validate", "ldap", "directory", "groups"}
 
-    def get_metadata(self) -> dict[str, object]:
+    def get_metadata(self) -> FlextTypes.Dict:
         """Return LDAP provider metadata.
 
         Returns:
-            dict[str, object]: Provider metadata
+            FlextTypes.Dict: Provider metadata
 
         """
         return {
@@ -282,15 +281,15 @@ class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         return self._user_search_filter.format(username=username)
 
     def _extract_groups_from_attributes(
-        self, attributes: dict[str, object]
-    ) -> list[str]:
+        self, attributes: FlextTypes.Dict
+    ) -> FlextTypes.StringList:
         """Extract group memberships from LDAP attributes.
 
         Args:
             attributes: LDAP user attributes
 
         Returns:
-            list[str]: List of group DNs or names
+            FlextTypes.StringList: List of group DNs or names
 
         """
         # Extract groups from memberOf attribute

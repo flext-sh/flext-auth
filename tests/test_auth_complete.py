@@ -15,6 +15,7 @@ from flext_auth import (
     FlextAuthModels,
 )
 from flext_auth.typings import FlextAuthTypes
+from flext_core import FlextTypes
 
 # Use unified class structure
 AuthenticationResponseDict = FlextAuthTypes.AuthenticationResponseDict
@@ -44,7 +45,7 @@ class TestFlextAuthBasic:
         )  # Production-ready default (at least 30 minutes)
 
         # Test that auth is properly initialized
-        jwt_settings: dict[str, object] = auth.config.get_jwt_settings()
+        jwt_settings: FlextTypes.Dict = auth.config.get_jwt_settings()
         assert (
             cast("int", jwt_settings["jwt_expiry_minutes"]) >= 30
         )  # Production-ready default (at least 30 minutes)

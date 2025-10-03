@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Final
 
-from flext_auth.api import FlextAuth
+from flext_auth.api import FlextAuth, FlextAuthQuickstart
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.exceptions import FlextAuthExceptions
@@ -51,6 +51,7 @@ __all__ = [
     "FlextAuthExceptions",
     "FlextAuthModels",
     "FlextAuthProtocols",
+    "FlextAuthQuickstart",
     "FlextAuthRegistry",
     "FlextAuthTypes",
     "FlextAuthVersion",

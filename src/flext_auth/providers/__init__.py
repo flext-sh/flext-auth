@@ -20,8 +20,9 @@ from flext_auth.providers.ldap import LdapAuthProvider
 from flext_auth.providers.oauth2 import OAuth2AuthProvider
 from flext_auth.providers.oidc import OidcAuthProvider
 from flext_auth.providers.saml import SamlAuthProvider
+from flext_core import FlextTypes
 
-__all__: list[str] = [
+__all__: FlextTypes.StringList = [
     "ApiKeyAuthProvider",
     "BaseAuthProvider",
     "BaseAuthProviderMixin",

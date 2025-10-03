@@ -20,11 +20,10 @@ from base64 import urlsafe_b64encode
 from datetime import UTC, datetime
 from urllib.parse import urlencode
 
-from flext_core import FlextLogger, FlextResult
-
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
 from flext_auth.transports.http import HttpTransportAdapter
+from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -66,7 +65,7 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     """
 
-    def __init__(self, config: dict[str, object]) -> None:
+    def __init__(self, config: FlextTypes.Dict) -> None:
         """Initialize OAuth2 authentication provider.
 
         Args:
@@ -103,7 +102,7 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         )
 
         # Runtime state storage (in production, use proper storage)
-        self._pkce_verifiers: dict[str, str] = {}  # state -> code_verifier mapping
+        self._pkce_verifiers: FlextTypes.StringDict = {}  # state -> code_verifier mapping
 
         # HTTP client for token endpoint requests (MANDATORY: uses flext-api)
         self._http_client = HttpTransportAdapter(timeout=30.0)
@@ -120,7 +119,7 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: dict[str, object],
+        credentials: FlextTypes.Dict,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using OAuth2 flow.
 
@@ -324,11 +323,11 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         return capabilities
 
-    def get_metadata(self) -> dict[str, object]:
+    def get_metadata(self) -> FlextTypes.Dict:
         """Return OAuth2 provider metadata.
 
         Returns:
-            dict[str, object]: Provider metadata
+            FlextTypes.Dict: Provider metadata
 
         """
         return {
@@ -346,7 +345,7 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
     # Flow-specific implementations
 
     def _handle_authorization_code_flow(
-        self, credentials: dict[str, object]
+        self, credentials: FlextTypes.Dict
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Handle OAuth2 authorization code flow.
 
@@ -368,7 +367,7 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         state = credentials["state"]
 
         # Prepare token request
-        token_data: dict[str, object] = {
+        token_data: FlextTypes.Dict = {
             "grant_type": "authorization_code",
             "code": code,
             "redirect_uri": self._redirect_uri,
@@ -410,7 +409,7 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         return self._create_auth_token_from_response(token_response.unwrap())
 
     def _handle_client_credentials_flow(
-        self, credentials: dict[str, object]
+        self, credentials: FlextTypes.Dict
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Handle OAuth2 client credentials flow.
 
@@ -457,7 +456,7 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         return self._create_auth_token_from_response(token_response.unwrap())
 
     def _handle_password_flow(
-        self, credentials: dict[str, object]
+        self, credentials: FlextTypes.Dict
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Handle OAuth2 resource owner password credentials flow.
 
@@ -505,7 +504,7 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         return self._create_auth_token_from_response(token_response.unwrap())
 
     def _handle_device_flow(
-        self, credentials: dict[str, object]
+        self, _credentials: FlextTypes.Dict
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Handle OAuth2 device authorization flow.
 
@@ -523,7 +522,7 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
     # Helper methods
 
     def _create_auth_token_from_response(
-        self, token_response: dict[str, object]
+        self, token_response: FlextTypes.Dict
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Create AuthToken from OAuth2 token response.
 
@@ -626,7 +625,7 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             state = secrets.token_urlsafe(32)
 
         # Build authorization URL parameters
-        params: dict[str, str] = {
+        params: FlextTypes.StringDict = {
             "response_type": "code",
             "client_id": self._client_id,
             "redirect_uri": self._redirect_uri or "",

@@ -19,9 +19,10 @@ import base64
 import secrets
 from datetime import UTC, datetime, timedelta
 
+from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
-from flext_core import FlextLogger, FlextResult
+from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class BasicAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -60,7 +61,7 @@ class BasicAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     """
 
-    def __init__(self, config: dict[str, object]) -> None:
+    def __init__(self, config: FlextTypes.Dict) -> None:
         """Initialize HTTP Basic authentication provider.
 
         Args:
@@ -79,7 +80,7 @@ class BasicAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         # In-memory user storage (for development/testing)
         # In production, integrate with user database or directory service
-        self._users: dict[str, dict[str, object]] = {}  # username -> user data
+        self._users: FlextTypes.NestedDict = {}  # username -> user data
 
         self._logger.info(
             "Basic Auth provider initialized",
@@ -93,7 +94,7 @@ class BasicAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: dict[str, object],
+        credentials: FlextTypes.Dict,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using HTTP Basic credentials.
 
@@ -161,7 +162,7 @@ class BasicAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             token=self._encode_credentials(
                 username, password
             ),  # Basic token is the credentials
-            token_type="bearer",  # noqa: S106  # Must match pattern: access|refresh|api|bearer
+            token_type=FlextAuthConstants.Jwt.BASIC_TOKEN_TYPE,
             expires_at=token_expires_at,
             user_id=user_data["user_id"],
             # Additional metadata stored as extra fields
@@ -295,11 +296,11 @@ class BasicAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         return capabilities
 
-    def get_metadata(self) -> dict[str, object]:
+    def get_metadata(self) -> FlextTypes.Dict:
         """Return Basic auth provider metadata.
 
         Returns:
-            dict[str, object]: Provider metadata
+            FlextTypes.Dict: Provider metadata
 
         """
         return {
@@ -375,7 +376,7 @@ class BasicAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     def _validate_user_credentials(
         self, username: str, password: str
-    ) -> FlextResult[dict[str, object]]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Validate user credentials.
 
         Args:
@@ -390,20 +391,20 @@ class BasicAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         lookup_username = username if self._case_sensitive else username.lower()
 
         if lookup_username not in self._users:
-            return FlextResult[dict[str, object]].fail("User not found")
+            return FlextResult[FlextTypes.Dict].fail("User not found")
 
         user_data = self._users[lookup_username]
 
         # Check if user is active
         if not user_data.get("active", True):
-            return FlextResult[dict[str, object]].fail("User account is disabled")
+            return FlextResult[FlextTypes.Dict].fail("User account is disabled")
 
         # Validate password
         stored_password = user_data["password"]
         if password != stored_password:
-            return FlextResult[dict[str, object]].fail("Invalid password")
+            return FlextResult[FlextTypes.Dict].fail("Invalid password")
 
-        return FlextResult[dict[str, object]].ok(user_data)
+        return FlextResult[FlextTypes.Dict].ok(user_data)
 
     def _encode_credentials(self, username: str, password: str) -> str:
         """Encode credentials as Basic auth token.
@@ -434,7 +435,7 @@ class BasicAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         auth_token = FlextAuthModels.AuthToken(
             token="",  # No credentials for anonymous
-            token_type="bearer",  # noqa: S106  # Must match pattern
+            token_type=FlextAuthConstants.Jwt.BASIC_TOKEN_TYPE,
             expires_at=token_expires_at,
             user_id=anonymous_id,
             # Additional metadata
@@ -457,8 +458,8 @@ class BasicAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         username: str,
         password: str,
         user_id: str | None = None,
-        roles: list[str] | None = None,
-        permissions: list[str] | None = None,
+        roles: FlextTypes.StringList | None = None,
+        permissions: FlextTypes.StringList | None = None,
     ) -> FlextResult[None]:
         """Add user to in-memory storage.
 

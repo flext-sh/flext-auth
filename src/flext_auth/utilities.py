@@ -65,6 +65,41 @@ class FlextAuthUtilities:
             except Exception as e:
                 return FlextResult[bool].fail(f"Password verification failed: {e}")
 
+        @staticmethod
+        def validate_password(password: str) -> FlextResult[None]:
+            """Validate password strength.
+
+            Args:
+                password: Password to validate
+
+            Returns:
+                FlextResult containing validation result or error
+
+            """
+            if len(password) < FlextAuthConstants.Credentials.Password.MIN_LENGTH:
+                return FlextResult[None].fail(
+                    f"Password must be at least {FlextAuthConstants.Credentials.Password.MIN_LENGTH} characters"
+                )
+
+            # Check for required character types
+            has_upper = any(c.isupper() for c in password)
+            has_lower = any(c.islower() for c in password)
+            has_digit = any(c.isdigit() for c in password)
+
+            if not (has_upper and has_lower and has_digit):
+                return FlextResult[None].fail(
+                    "Password must contain at least one uppercase letter, one lowercase letter, and one digit"
+                )
+
+            # Check for weak passwords
+            if (
+                password.lower()
+                in FlextAuthConstants.Credentials.Password.WEAK_PASSWORDS
+            ):
+                return FlextResult[None].fail("Password is too weak")
+
+            return FlextResult[None].ok(None)
+
     class JWTProcessing:
         """JWT token processing utilities."""
 

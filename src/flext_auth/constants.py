@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from flext_core import FlextConstants
+from flext_core import FlextConstants, FlextTypes
 
 
 class FlextAuthConstants(FlextConstants):
@@ -30,7 +30,7 @@ class FlextAuthConstants(FlextConstants):
         ISSUER_CLAIM = "flext-auth"
         AUDIENCE_CLAIM = "flext-users"
         SECRET_KEY = "your-super-secure-jwt-secret-key-change-in-production"  # nosec B105
-        ALLOWED_ALGORITHMS: ClassVar[list[str]] = [
+        ALLOWED_ALGORITHMS: ClassVar[FlextTypes.StringList] = [
             "HS256",
             "HS384",
             "HS512",
@@ -39,6 +39,9 @@ class FlextAuthConstants(FlextConstants):
             "RS512",
         ]
         DEFAULT_TOKEN_TYPE = "Bearer"  # nosec B105 - Token type, not a password
+        DEFAULT_ACCESS_TOKEN_TYPE = "access"  # Token type for generate_jwt_token
+        API_TOKEN_TYPE = "api"  # Token type for API keys
+        BASIC_TOKEN_TYPE = "bearer"  # Token type for basic auth
         BEARER_PREFIX = "Bearer "
         MIN_SECRET_KEY_LENGTH = 32
 
@@ -61,7 +64,7 @@ class FlextAuthConstants(FlextConstants):
             BCRYPT_ROUNDS = 12
             MIN_BCRYPT_ROUNDS = 10
             MAX_BCRYPT_ROUNDS = 15
-            WEAK_PASSWORDS: ClassVar[list[str]] = [
+            WEAK_PASSWORDS: ClassVar[FlextTypes.StringList] = [
                 "123",
                 "abc",
                 "password",
@@ -159,8 +162,13 @@ class FlextAuthConstants(FlextConstants):
         ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
 
         # Permission sets
-        BASIC_USER_PERMISSIONS: ClassVar[list[str]] = [READ, WRITE]
-        ADMIN_PERMISSIONS: ClassVar[list[str]] = [READ, WRITE, DELETE, ADMIN]
+        BASIC_USER_PERMISSIONS: ClassVar[FlextTypes.StringList] = [READ, WRITE]
+        ADMIN_PERMISSIONS: ClassVar[FlextTypes.StringList] = [
+            READ,
+            WRITE,
+            DELETE,
+            ADMIN,
+        ]
 
     class Roles:
         """Role constants for role-based access control."""
@@ -172,8 +180,8 @@ class FlextAuthConstants(FlextConstants):
         GUEST = "guest"
 
         # Role sets
-        DEFAULT_ROLES: ClassVar[list[str]] = [USER]
-        VALID_ROLES: ClassVar[list[str]] = [ADMIN, USER, MODERATOR, GUEST]
+        DEFAULT_ROLES: ClassVar[FlextTypes.StringList] = [USER]
+        VALID_ROLES: ClassVar[FlextTypes.StringList] = [ADMIN, USER, MODERATOR, GUEST]
 
     class Platform:
         """Platform defaults for authentication services."""

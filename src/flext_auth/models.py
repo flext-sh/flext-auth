@@ -21,7 +21,7 @@ from pydantic import (
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.mixins import FlextAuthMixins
-from flext_core import FlextModels, FlextResult
+from flext_core import FlextModels, FlextResult, FlextTypes
 
 
 class FlextAuthModels(FlextModels):
@@ -108,7 +108,7 @@ class FlextAuthModels(FlextModels):
             description="Name of the service reporting status",
             min_length=1,
         )
-        capabilities: list[str] = Field(
+        capabilities: FlextTypes.StringList = Field(
             default_factory=list,
             description="List of capabilities provided by this service",
         )
@@ -120,10 +120,6 @@ class FlextAuthModels(FlextModels):
             default_factory=lambda: datetime.now(UTC),
             description="Status report timestamp",
         )
-
-    # =========================================================================
-    # DOMAIN EVENT AND PERMISSION MODELS - Use parent FlextModels types
-    # =========================================================================
 
     # =========================================================================
     # USER CREATION AND AUTHENTICATION MODELS
@@ -164,7 +160,7 @@ class FlextAuthModels(FlextModels):
             description="User's full name",
             examples=["John Doe", "Jane Smith"],
         )
-        roles: list[str] = Field(
+        roles: FlextTypes.StringList = Field(
             default_factory=lambda: [FlextAuthConstants.Roles.USER],
             description="User roles",
             examples=[["USER"], ["ADMIN", "USER"]],
@@ -226,7 +222,11 @@ class FlextAuthModels(FlextModels):
                 datetime: lambda v: v.isoformat() if v else None,
             },
         )
-
+        user_id: str | None = Field(
+            default=None,
+            description="Unique user identifier",
+            min_length=1,
+        )
         username: str = Field(
             ...,
             min_length=FlextAuthConstants.Credentials.Username.MIN_LENGTH,
@@ -253,9 +253,14 @@ class FlextAuthModels(FlextModels):
         is_active: bool = Field(
             default=True, description="Whether user account is active"
         )
-        roles: list[str] = Field(
+        roles: FlextTypes.StringList = Field(
             default_factory=list,
             description="User roles",
+            min_length=0,
+        )
+        permissions: FlextTypes.StringList = Field(
+            default_factory=list,
+            description="User permissions",
             min_length=0,
         )
         failed_login_attempts: int = Field(
@@ -433,6 +438,53 @@ class FlextAuthModels(FlextModels):
             self.failed_login_attempts += 1
             self.update_timestamp()
 
+        def get(self, key: str, default: object = None) -> object:
+            """Dictionary-like access to user fields for compatibility."""
+            return getattr(self, key, default)
+
+        @classmethod
+        def create(
+            cls,
+            username: str,
+            email: str,
+            password: str,
+            **extra_fields: object,
+        ) -> FlextResult[FlextAuthModels.User]:
+            """Create new user with direct parameters (convenience method)."""
+            try:
+                user = cls(
+                    username=username,
+                    email=email,
+                    password_hash="",  # Will be set by set_password
+                    full_name=extra_fields.get("full_name"),
+                    is_active=extra_fields.get("is_active", True),
+                    roles=extra_fields.get("roles", ["user"]),
+                    failed_login_attempts=0,
+                    locked_until=None,
+                    last_login=None,
+                )
+
+                password_result = user.set_password(password)
+                if password_result.is_failure:
+                    return FlextResult[FlextAuthModels.User].fail(
+                        password_result.error or "Password validation failed"
+                    )
+
+                return FlextResult[FlextAuthModels.User].ok(user)
+            except ValidationError as e:
+                return FlextResult[FlextAuthModels.User].fail(
+                    f"User validation failed: {e}"
+                )
+
+        @classmethod
+        def get_by_username(cls, _username: str) -> FlextResult[FlextAuthModels.User]:
+            """Get user by username (mock implementation for examples)."""
+            # This would normally query a database
+            # For examples, we'll return a failure since we don't have a real user store
+            return FlextResult[FlextAuthModels.User].fail(
+                "User not found - this is a mock implementation"
+            )
+
         @classmethod
         def create_user(
             cls, request: FlextAuthModels.UserCreationRequest
@@ -558,7 +610,7 @@ class FlextAuthModels(FlextModels):
 
         @model_validator(mode="before")
         @classmethod
-        def map_session_id_to_id(cls, data: dict[str, object]) -> dict[str, object]:
+        def map_session_id_to_id(cls, data: FlextTypes.Dict) -> FlextTypes.Dict:
             """Map session_id to id for backward compatibility."""
             if isinstance(data, dict) and "session_id" in data and "id" not in data:
                 data["id"] = data.pop("session_id")
@@ -690,6 +742,19 @@ class FlextAuthModels(FlextModels):
             description="Type of token (access, refresh, api, bearer)",
             pattern=r"^(?i)(access|refresh|api|bearer)$",  # Case-insensitive pattern
         )
+        session_id: str | None = Field(
+            default=None,
+            description="Session ID associated with this token",
+        )
+        refresh_token: str | None = Field(
+            default=None,
+            description="Refresh token for token renewal",
+            exclude=True,  # Never serialize refresh tokens
+        )
+        metadata: dict[str, object] | None = Field(
+            default_factory=dict,
+            description="Additional token metadata",
+        )
 
         def is_expired(self) -> bool:
             """Check if token is expired (implements FlextAuthTokenProtocol)."""
@@ -724,6 +789,10 @@ class FlextAuthModels(FlextModels):
                 return FlextResult[bool].ok(True)
             except Exception as e:
                 return FlextResult[bool].fail(f"Token revocation failed: {e}")
+
+        def get(self, key: str, default: object = None) -> object:
+            """Dictionary-like access to token fields for compatibility."""
+            return getattr(self, key, default)
 
         @classmethod
         def create_jwt_token(

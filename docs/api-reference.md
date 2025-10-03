@@ -136,7 +136,7 @@ class User(FlextModels.Entity):
     username: str
     email: str
     password_hash: str
-    roles: list[str]
+    roles: FlextTypes.StringList
     created_at: datetime
     is_active: bool = True
 ```
@@ -181,7 +181,7 @@ class UserCreationRequest(BaseModel):
     email: str
     password: str
     full_name: str | None = None
-    roles: list[str] = Field(default_factory=list)
+    roles: FlextTypes.StringList = Field(default_factory=list)
 ```
 
 ---

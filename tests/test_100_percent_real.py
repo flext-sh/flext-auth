@@ -97,7 +97,7 @@ class TestRealModelsExhaustive:
     def test_create_user_none_parameters_exhaustive(self) -> None:
         """Testa create_user com parâmetros None (linhas 210-262)."""
         # Testar casos de validação com valores None/empty
-        empty_values: FlextTypes.Core.List = [None, "", [], {}, 0]
+        empty_values: FlextTypes.List = [None, "", [], {}, 0]
 
         for empty_val in empty_values:
             # Testar username None/empty
@@ -690,8 +690,8 @@ class TestRealIntegrationExhaustive:
 
         # Extrair dados
         user_data = auth_result.value
-        user_info = cast("FlextTypes.Core.Dict", user_data["user"])
-        session_info = cast("FlextTypes.Core.Dict", user_data["session"])
+        user_info = cast("FlextTypes.Dict", user_data["user"])
+        session_info = cast("FlextTypes.Dict", user_data["session"])
         tokens_info = user_data.get("tokens")
 
         # Verificações

@@ -18,10 +18,9 @@ from __future__ import annotations
 import secrets
 from datetime import UTC, datetime, timedelta
 
-from flext_core import FlextLogger, FlextResult
-
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
+from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -56,7 +55,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     """
 
-    def __init__(self, config: dict[str, object]) -> None:
+    def __init__(self, config: FlextTypes.Dict) -> None:
         """Initialize Certificate authentication provider.
 
         Args:
@@ -89,7 +88,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         # In-memory storage for certificate mappings (for development)
         # In production, integrate with certificate store or directory service
         self._cert_mappings: dict[
-            str, dict[str, object]
+            str, FlextTypes.Dict
         ] = {}  # cert_fingerprint -> user data
 
         self._logger.info(
@@ -104,7 +103,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: dict[str, object],
+        credentials: FlextTypes.Dict,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         r"""Authenticate using X.509 client certificate.
 
@@ -315,11 +314,11 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         return capabilities
 
-    def get_metadata(self) -> dict[str, object]:
+    def get_metadata(self) -> FlextTypes.Dict:
         """Return Certificate provider metadata.
 
         Returns:
-            dict[str, object]: Provider metadata
+            FlextTypes.Dict: Provider metadata
 
         """
         return {
@@ -335,9 +334,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     # Helper methods
 
-    def _extract_certificate_info(
-        self, cert_pem: str
-    ) -> FlextResult[dict[str, object]]:
+    def _extract_certificate_info(self, cert_pem: str) -> FlextResult[FlextTypes.Dict]:
         """Extract information from PEM certificate using cryptography library.
 
         Args:
@@ -348,7 +345,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         """
         if not cert_pem.startswith("-----BEGIN CERTIFICATE-----"):
-            return FlextResult[dict[str, object]].fail("Invalid PEM certificate format")
+            return FlextResult[FlextTypes.Dict].fail("Invalid PEM certificate format")
 
         try:
             # Import cryptography library for X.509 parsing
@@ -402,19 +399,15 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
                 extra={"fingerprint": fingerprint, "subject": subject_dn},
             )
 
-            return FlextResult[dict[str, object]].ok(cert_info)
+            return FlextResult[FlextTypes.Dict].ok(cert_info)
 
         except ValueError as e:
-            return FlextResult[dict[str, object]].fail(
-                f"Invalid certificate format: {e}"
-            )
+            return FlextResult[FlextTypes.Dict].fail(f"Invalid certificate format: {e}")
         except Exception as e:
-            return FlextResult[dict[str, object]].fail(
-                f"Certificate parsing failed: {e}"
-            )
+            return FlextResult[FlextTypes.Dict].fail(f"Certificate parsing failed: {e}")
 
     def _validate_certificate(
-        self, cert_pem: str, cert_info: dict[str, object]
+        self, cert_pem: str, cert_info: FlextTypes.Dict
     ) -> FlextResult[None]:
         """Validate certificate using cryptography library.
 
@@ -505,8 +498,8 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             return FlextResult[None].fail(f"CA validation failed: {e}")
 
     def _auto_provision_user(
-        self, cert_info: dict[str, object]
-    ) -> FlextResult[dict[str, object]]:
+        self, cert_info: FlextTypes.Dict
+    ) -> FlextResult[FlextTypes.Dict]:
         """Auto-provision user from certificate information.
 
         Args:
@@ -521,7 +514,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         username = self._extract_cn_from_subject(subject)
 
         if not username:
-            return FlextResult[dict[str, object]].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 "Cannot extract username from certificate subject"
             )
 
@@ -546,7 +539,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             extra={"user_id": user_id, "username": username},
         )
 
-        return FlextResult[dict[str, object]].ok(user_data)
+        return FlextResult[FlextTypes.Dict].ok(user_data)
 
     def _extract_cn_from_subject(self, subject: str) -> str:
         """Extract Common Name (CN) from certificate subject.
@@ -577,8 +570,8 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         cert_fingerprint: str,
         user_id: str,
         username: str | None = None,
-        roles: list[str] | None = None,
-        permissions: list[str] | None = None,
+        roles: FlextTypes.StringList | None = None,
+        permissions: FlextTypes.StringList | None = None,
     ) -> FlextResult[None]:
         """Register certificate mapping to user.
 

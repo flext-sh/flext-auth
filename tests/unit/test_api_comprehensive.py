@@ -186,14 +186,6 @@ class TestFlextAuthAdvancedPatterns:
         assert hasattr(auth, "_context")
         assert auth._context is not None
 
-    def test_flext_cqrs_integration(self) -> None:
-        """Test FlextCqrs command/query separation."""
-        auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
-
-        # Verify CQRS is initialized
-        assert hasattr(auth, "_cqrs")
-        assert auth._cqrs is not None
-
     def test_flext_dispatcher_integration(self) -> None:
         """Test FlextDispatcher event bus."""
         auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)

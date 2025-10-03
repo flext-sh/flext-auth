@@ -14,7 +14,7 @@ from unittest.mock import MagicMock
 from flext_auth import WebAuthMiddleware
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider
-from flext_core import FlextResult
+from flext_core import FlextResult, FlextTypes
 
 
 class MockAuthProvider(BaseAuthProvider):
@@ -32,7 +32,7 @@ class MockAuthProvider(BaseAuthProvider):
         self._validate_calls = 0
 
     def authenticate(
-        self, credentials: dict[str, object]
+        self, credentials: FlextTypes.Dict
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         from datetime import UTC, datetime, timedelta
 
@@ -62,7 +62,7 @@ class MockAuthProvider(BaseAuthProvider):
     def supports(self) -> set[str]:
         return {"token", "validate"}
 
-    def get_metadata(self) -> dict[str, object]:
+    def get_metadata(self) -> FlextTypes.Dict:
         return {
             "name": "mock-web",
             "version": "1.0.0",
@@ -76,8 +76,8 @@ class MockWebRequest:
     def __init__(
         self,
         path: str = "/api/test",
-        headers: dict[str, str] | None = None,
-        cookies: dict[str, str] | None = None,
+        headers: FlextTypes.StringDict | None = None,
+        cookies: FlextTypes.StringDict | None = None,
     ) -> None:
         """Initialize mock web request."""
         self.path = path
@@ -360,7 +360,7 @@ class TestWebAuthMiddleware:
         """Test multiple middleware instances with different providers."""
 
         class JwtMockProvider(MockAuthProvider):
-            def get_metadata(self) -> dict[str, object]:
+            def get_metadata(self) -> FlextTypes.Dict:
                 return {
                     "name": "jwt",
                     "version": "1.0.0",
@@ -368,7 +368,7 @@ class TestWebAuthMiddleware:
                 }
 
         class OAuth2MockProvider(MockAuthProvider):
-            def get_metadata(self) -> dict[str, object]:
+            def get_metadata(self) -> FlextTypes.Dict:
                 return {
                     "name": "oauth2",
                     "version": "1.0.0",

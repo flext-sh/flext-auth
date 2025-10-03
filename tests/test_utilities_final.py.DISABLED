@@ -85,7 +85,7 @@ class TestFlextAuthUtilitiesFinal:
 
     def test_jwt_processing_create_jwt_token(self) -> None:
         """Test JWT token creation."""
-        payload: dict[str, str] = {"sub": "1234567890", "name": "John Doe"}
+        payload: FlextTypes.StringDict = {"sub": "1234567890", "name": "John Doe"}
         secret = SecretStr("secret_key")
 
         result = FlextAuthUtilities.JWTProcessing.create_jwt_token(payload, secret)
@@ -388,7 +388,7 @@ class TestFlextAuthUtilitiesFinal:
         assert verify_result.data is True
 
         # 4. Create a JWT token
-        payload: dict[str, str] = {"sub": "user123", "role": "REDACTED_LDAP_BIND_PASSWORD"}
+        payload: FlextTypes.StringDict = {"sub": "user123", "role": "REDACTED_LDAP_BIND_PASSWORD"}
         secret = SecretStr("test_secret")
 
         jwt_result = FlextAuthUtilities.JWTProcessing.create_jwt_token(payload, secret)
@@ -488,7 +488,7 @@ class TestFlextAuthUtilitiesFinal:
     def test_jwt_processing_edge_cases(self) -> None:
         """Test JWT processing edge cases."""
         # Test with empty payload
-        empty_payload: dict[str, object] = {}
+        empty_payload: FlextTypes.Dict = {}
         secret = SecretStr("secret_key")
 
         result = FlextAuthUtilities.JWTProcessing.create_jwt_token(

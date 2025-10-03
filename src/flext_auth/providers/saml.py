@@ -22,10 +22,9 @@ import secrets
 from datetime import UTC, datetime
 from urllib.parse import urlencode
 
-from flext_core import FlextLogger, FlextResult
-
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
+from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class SamlAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -70,7 +69,7 @@ class SamlAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
     NS_SAMLP = "urn:oasis:names:tc:SAML:2.0:protocol"
     NS_DS = "http://www.w3.org/2000/09/xmldsig#"
 
-    def __init__(self, config: dict[str, object]) -> None:
+    def __init__(self, config: FlextTypes.Dict) -> None:
         """Initialize SAML authentication provider.
 
         Args:
@@ -119,7 +118,7 @@ class SamlAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         self._encrypt_assertions = self._config.get("encrypt_assertions", False)
 
         # Runtime state for request tracking
-        self._pending_requests: dict[str, dict[str, object]] = {}
+        self._pending_requests: FlextTypes.NestedDict = {}
 
         self._logger.info(
             "SAML provider initialized",
@@ -133,7 +132,7 @@ class SamlAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: dict[str, object],
+        credentials: FlextTypes.Dict,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using SAML assertion.
 
@@ -207,16 +206,19 @@ class SamlAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         # 3. Validate NameID
         # 4. Check if session was logged out (SLO tracking)
 
-        if isinstance(token, FlextAuthModels.AuthToken) and token.expires_at:
-            if datetime.now(UTC) > token.expires_at:
-                return FlextResult[bool].fail("SAML session expired")
+        if (
+            isinstance(token, FlextAuthModels.AuthToken)
+            and token.expires_at
+            and datetime.now(UTC) > token.expires_at
+        ):
+            return FlextResult[bool].fail("SAML session expired")
 
         self._logger.debug("SAML token validated (basic validation)")
         return FlextResult[bool].ok(True)
 
     def refresh(
         self,
-        token: str | FlextAuthModels.AuthToken,
+        _token: str | FlextAuthModels.AuthToken,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Refresh SAML session.
 
@@ -295,11 +297,11 @@ class SamlAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         return capabilities
 
-    def get_metadata(self) -> dict[str, object]:
+    def get_metadata(self) -> FlextTypes.Dict:
         """Return SAML provider metadata.
 
         Returns:
-            dict[str, object]: Provider metadata
+            FlextTypes.Dict: Provider metadata
 
         """
         return {
@@ -351,7 +353,7 @@ class SamlAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         # 5. Build redirect URL
 
         # For now, build basic redirect URL structure
-        params: dict[str, str] = {
+        params: FlextTypes.StringDict = {
             "SAMLRequest": "base64-encoded-request-placeholder",
         }
 

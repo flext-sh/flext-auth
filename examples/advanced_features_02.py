@@ -63,10 +63,10 @@ def example_jwt_operations() -> None:
         user.id, expires_in_minutes=FlextAuthConstants.Session.DEFAULT_EXPIRY_MINUTES
     )
     if token_result.is_success:
-        token = token_result.value
+        auth_token = token_result.value
 
         # Validate JWT and show payload
-        validation_result = auth.validate_token(token)
+        validation_result = auth.validate_token(auth_token.token)
         if validation_result.is_success:
             pass
 
@@ -225,12 +225,12 @@ def example_token_validation() -> None:
     if token_result.is_failure:
         return
 
-    token = token_result.value
+    auth_token = token_result.value
 
     # Test various token formats
     test_tokens = [
-        ("Valid token", token),
-        ("Bearer token", f"Bearer {token}"),
+        ("Valid token", auth_token.token),
+        ("Bearer token", f"Bearer {auth_token.token}"),
         ("Invalid format", "invalid.token.format"),
         ("Empty token", ""),
         ("Malformed JWT", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.invalid"),

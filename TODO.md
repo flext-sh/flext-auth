@@ -56,7 +56,7 @@ src/flext_auth/ (ACTUAL LINE COUNTS - VERIFIED)
 - Configuration follows FlextConfig singleton pattern with overrides
 - Dependency injection uses FlextContainer.get_global() appropriately
 - Structured logging with FlextLogger throughout the codebase
-- Type safety with FlextTypes.Core namespace usage
+- Type safety with FlextTypes namespace usage
 
 **⚠️ ACTUAL GAPS IDENTIFIED (EVIDENCE-BASED):**
 

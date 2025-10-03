@@ -59,7 +59,7 @@ Successfully converted **ALL methods to synchronous** in flext-auth and the enti
 # Provider methods
 def authenticate(
     self,
-    credentials: dict[str, object],
+    credentials: FlextTypes.Dict,
 ) -> FlextResult[FlextAuthModels.AuthToken]:
     """authentication."""
     result = self._process_auth(credentials)
@@ -74,7 +74,7 @@ result = provider.authenticate({"username": "test", "password": "pass"})
 # Provider methods
 def authenticate(
     self,
-    credentials: dict[str, object],
+    credentials: FlextTypes.Dict,
 ) -> FlextResult[FlextAuthModels.AuthToken]:
     """Synchronous authentication."""
     result = self._process_auth(credentials)
