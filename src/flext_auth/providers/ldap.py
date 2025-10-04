@@ -200,12 +200,18 @@ class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         LDAP sessions typically don't support refresh. User must re-authenticate.
 
         Args:
-            token: Current session token
+            token: Current session token (validated for presence)
 
         Returns:
             FlextResult[AuthToken]: Error indicating refresh not supported
 
         """
+        # Validate token is provided (even though LDAP doesn't support refresh)
+        if not token:
+            return FlextResult[FlextAuthModels.AuthToken].fail(
+                "Token is required for refresh attempt"
+            )
+
         return FlextResult[FlextAuthModels.AuthToken].fail(
             "LDAP authentication does not support token refresh. "
             "User must re-authenticate with credentials."

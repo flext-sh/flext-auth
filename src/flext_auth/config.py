@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from flext_core import (
     FlextConfig,
+    FlextTypes,
 )
 from pydantic import (
     Field,

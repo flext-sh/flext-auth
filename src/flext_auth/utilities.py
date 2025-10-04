@@ -11,7 +11,7 @@ from datetime import datetime
 
 import bcrypt
 import jwt
-from flext_core import FlextResult
+from flext_core import FlextResult, FlextTypes
 from pydantic import SecretStr
 
 from flext_auth.constants import FlextAuthConstants
