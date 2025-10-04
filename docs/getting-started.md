@@ -162,7 +162,7 @@ flext-auth manage-config show
 ```python
 from flext_core import FlextResult
 
-def process_authentication_workflow(username: str, password: str) -> FlextResult[dict]:
+def process_authentication_workflow(username: str, password: str) -> FlextResult[FlextTypes.Dict]:
     """Authentication workflow using FlextResult error handling."""
 
     auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)

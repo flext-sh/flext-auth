@@ -43,11 +43,11 @@ def main() -> int:
 
         # Create request with validated URL
         # URL scheme has been validated above to only allow http/https
-        request = urllib.request.Request(health_url)
+        request = urllib.request.Request(health_url)  # nosec B310 - URL validated above
 
         # Use urllib.request.urlopen with validated scheme and security checks
         # URL scheme has been validated above to only allow http/https
-        with urllib.request.urlopen(
+        with urllib.request.urlopen(  # nosec B310 - URL validated above
             request,
             timeout=FlextAuthConstants.Network.DEFAULT_TIMEOUT,
         ) as response:

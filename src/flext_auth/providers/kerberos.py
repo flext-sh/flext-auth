@@ -19,9 +19,10 @@ from __future__ import annotations
 import secrets
 from datetime import UTC, datetime
 
+from flext_core import FlextLogger, FlextResult, FlextTypes
+
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
-from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class KerberosAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):

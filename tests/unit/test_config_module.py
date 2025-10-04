@@ -12,8 +12,9 @@ from __future__ import annotations
 import threading
 import time
 
-from flext_auth import FlextAuthConfig
 from flext_core import FlextResult, FlextTypes
+
+from flext_auth import FlextAuthConfig
 
 
 class TestConfigModule:

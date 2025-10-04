@@ -82,7 +82,7 @@ class FlextAuthConstants(FlextConstants):
         EXTEND_MINUTES = 30
         MIN_TOKEN_LENGTH = 32
 
-    class AuthSecurity:
+    class Security:
         """Authentication-specific security enforcement constants."""
 
         MAX_LOGIN_ATTEMPTS = 5

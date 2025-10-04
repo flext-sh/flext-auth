@@ -14,6 +14,7 @@ from datetime import UTC, datetime, timedelta
 from typing import cast
 
 import pytest
+from flext_core import FlextTypes
 from pydantic import ValidationError
 
 from flext_auth import (
@@ -22,7 +23,6 @@ from flext_auth import (
     FlextAuthModels,
 )
 from flext_auth.typings import FlextAuthTypes
-from flext_core import FlextTypes
 
 # Use unified class structure - no aliases
 AuthenticationResponseDict = FlextAuthTypes.AuthenticationResponseDict

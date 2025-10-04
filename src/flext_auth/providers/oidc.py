@@ -18,9 +18,10 @@ import base64
 import json
 from datetime import UTC, datetime
 
+from flext_core import FlextResult, FlextTypes
+
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.oauth2 import OAuth2AuthProvider
-from flext_core import FlextResult, FlextTypes
 
 
 class OidcAuthProvider(OAuth2AuthProvider):
@@ -274,7 +275,7 @@ class OidcAuthProvider(OAuth2AuthProvider):
             access_token: Access token for UserInfo request
 
         Returns:
-            FlextResult[dict]: UserInfo claims or error
+            FlextResult[FlextTypes.Dict]: UserInfo claims or error
 
         """
         if not self._userinfo_endpoint:
@@ -310,7 +311,7 @@ class OidcAuthProvider(OAuth2AuthProvider):
             id_token: ID token JWT string
 
         Returns:
-            FlextResult[dict]: ID token claims or validation error
+            FlextResult[FlextTypes.Dict]: ID token claims or validation error
 
         """
         # Basic JWT structure validation

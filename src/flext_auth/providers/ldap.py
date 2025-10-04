@@ -18,9 +18,10 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
+from flext_core import FlextLogger, FlextResult, FlextTypes
+
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
-from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -192,7 +193,7 @@ class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     def refresh(
         self,
-        token: str | FlextAuthModels.AuthToken,  # noqa: ARG002
+        token: str | FlextAuthModels.AuthToken,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Refresh LDAP session.
 

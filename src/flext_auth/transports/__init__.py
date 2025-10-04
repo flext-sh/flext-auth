@@ -11,9 +11,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_core import FlextTypes
+
 from flext_auth.transports.base import BaseTransportAdapter
 from flext_auth.transports.http import HttpTransportAdapter
-from flext_core import FlextTypes
 
 __all__: FlextTypes.StringList = [
     "BaseTransportAdapter",

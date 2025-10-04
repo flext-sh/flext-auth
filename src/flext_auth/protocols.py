@@ -9,9 +9,10 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Protocol, runtime_checkable
 
+from flext_core import FlextProtocols, FlextResult, FlextTypes
+
 from flext_auth.models import FlextAuthModels
 from flext_auth.typings import FlextAuthTypes
-from flext_core import FlextProtocols, FlextResult, FlextTypes
 
 
 class FlextAuthProtocols:

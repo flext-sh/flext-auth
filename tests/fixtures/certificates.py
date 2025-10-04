@@ -8,6 +8,7 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import NamedTuple
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization

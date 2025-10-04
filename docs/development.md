@@ -97,12 +97,12 @@ All code must follow FLEXT patterns:
 
 ```python
 # ✅ Correct - Use FlextResult for error handling
-def authenticate_user(username: str, password: str) -> FlextResult[dict]:
+def authenticate_user(username: str, password: str) -> FlextResult[FlextTypes.Dict]:
     if not username:
-        return FlextResult[dict].fail("Username required")
+        return FlextResult[FlextTypes.Dict].fail("Username required")
 
     # Authentication logic
-    return FlextResult[dict].ok(result)
+    return FlextResult[FlextTypes.Dict].ok(result)
 
 # ❌ Incorrect - Don't use exceptions for business logic
 def authenticate_user(username: str, password: str) -> dict:
@@ -297,7 +297,7 @@ Use FlextResult exclusively:
 
 ```python
 # Chain operations with FlextResult
-def complete_auth_flow(username: str, password: str) -> FlextResult[dict]:
+def complete_auth_flow(username: str, password: str) -> FlextResult[FlextTypes.Dict]:
     return (
         self._validate_input(username, password)
         .flat_map(lambda _: self._authenticate_user(username, password))

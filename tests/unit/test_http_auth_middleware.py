@@ -11,10 +11,11 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
+from flext_core import FlextResult, FlextTypes
+
 from flext_auth import HttpAuthMiddleware
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider
-from flext_core import FlextResult, FlextTypes
 
 
 class MockAuthProvider(BaseAuthProvider):
@@ -28,6 +29,7 @@ class MockAuthProvider(BaseAuthProvider):
         refresh_success: bool = True,
         supports_refresh: bool = True,
     ) -> None:
+        """Initialize mock authentication provider."""
         self._auth_token = auth_token
         self._auth_success = auth_success
         self._validate_success = validate_success
@@ -109,6 +111,7 @@ class MockHttpRequest:
         method: str = "GET",
         headers: FlextTypes.StringDict | None = None,
     ) -> None:
+        """Initialize mock HTTP request."""
         self.url = url
         self.method = method
         self.headers = headers or {}

@@ -26,9 +26,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_core import FlextLogger, FlextResult, FlextTypes
+
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider
-from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class HttpAuthMiddleware:

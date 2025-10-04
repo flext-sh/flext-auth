@@ -14,13 +14,12 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 import jwt
+from flext_core import FlextBus, FlextContext, FlextLogger, FlextResult, FlextTypes
 
-from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
 from flext_auth.utilities import FlextAuthUtilities
-from flext_core import FlextBus, FlextContext, FlextLogger, FlextResult, FlextTypes
 
 
 class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -60,7 +59,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     """
 
-    def __init__(self, config: FlextAuthConfig) -> None:
+    def __init__(self, config: FlextTypes.Dict) -> None:
         """Initialize JWT authentication provider.
 
         Args:
@@ -430,7 +429,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         """Get parameters needed for token decoding.
 
         Returns:
-            FlextResult[dict]: Decoding parameters with secret_key and algorithm
+            FlextResult[FlextTypes.Dict]: Decoding parameters with secret_key and algorithm
 
         """
         return FlextResult.ok({
@@ -447,7 +446,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             credentials: User credentials and claims
 
         Returns:
-            FlextResult[dict]: Token data with "token" and "expires_at" keys
+            FlextResult[FlextTypes.Dict]: Token data with "token" and "expires_at" keys
 
         """
         now = datetime.now(UTC)
@@ -494,7 +493,7 @@ class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             credentials: User credentials
 
         Returns:
-            FlextResult[dict]: Token data with "token" and "expires_at" keys
+            FlextResult[FlextTypes.Dict]: Token data with "token" and "expires_at" keys
 
         """
         now = datetime.now(UTC)

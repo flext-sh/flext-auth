@@ -12,10 +12,10 @@ from __future__ import annotations
 import os
 
 import pytest
+from flext_core import FlextConfig
 from pydantic import SecretStr, ValidationError
 
 from flext_auth import FlextAuthConfig, FlextAuthConstants
-from flext_core import FlextConfig
 
 
 class TestFlextAuthConfigSingletonOnly:

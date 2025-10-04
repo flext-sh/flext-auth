@@ -9,8 +9,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.providers.base import BaseAuthProvider
 from flext_core import FlextLogger, FlextResult, FlextTypes
+
+from flext_auth.providers.base import BaseAuthProvider
 
 
 class FlextAuthRegistry:
@@ -222,7 +223,7 @@ class FlextAuthRegistry:
             name: Provider identifier
 
         Returns:
-            FlextResult[dict]: Provider metadata or error
+            FlextResult[FlextTypes.Dict]: Provider metadata or error
 
         Example:
             >>> result = registry.get_metadata("saml")
@@ -370,7 +371,7 @@ class FlextAuthRegistry:
             provider_name: Name of the provider
 
         Returns:
-            FlextResult[dict]: Provider configuration
+            FlextResult[FlextTypes.Dict]: Provider configuration
 
         """
         if provider_name not in self._providers:
@@ -413,7 +414,7 @@ class FlextAuthRegistry:
         """Get metadata for all registered providers.
 
         Returns:
-            FlextResult[dict]: Dictionary mapping provider names to metadata
+            FlextResult[FlextTypes.Dict]: Dictionary mapping provider names to metadata
 
         """
         return FlextResult[FlextTypes.Dict].ok(self._metadata.copy())

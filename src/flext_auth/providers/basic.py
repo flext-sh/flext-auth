@@ -19,10 +19,11 @@ import base64
 import secrets
 from datetime import UTC, datetime, timedelta
 
+from flext_core import FlextLogger, FlextResult, FlextTypes
+
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
-from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class BasicAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -384,7 +385,7 @@ class BasicAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             password: Password
 
         Returns:
-            FlextResult[dict]: User data or error
+            FlextResult[FlextTypes.Dict]: User data or error
 
         """
         # Normalize username for lookup

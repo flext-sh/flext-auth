@@ -10,8 +10,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthQuickstart
 from flext_core import FlextResult
+
+from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthQuickstart
 
 
 def demonstrate_refactoring_benefits() -> None:

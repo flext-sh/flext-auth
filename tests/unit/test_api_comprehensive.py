@@ -9,6 +9,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import pytest
+
 from flext_auth.api import FlextAuth
 from flext_auth.config import FlextAuthConfig
 
@@ -98,12 +100,9 @@ class TestFlextAuthProcessorRegistration:
 
         # Test with too short username - Pydantic validates before processor
         # This will raise ValidationError, which is expected behavior
-        try:
+        with pytest.raises(Exception) as exc_info:
             auth.register_user("ab", "test2@example.com", "ValidPass123!")
-            msg = "Should have raised validation error"
-            raise AssertionError(msg)
-        except Exception as e:
-            assert "at least 3 characters" in str(e).lower()
+        assert "at least 3 characters" in str(exc_info.value).lower()
 
     def test_email_normalization_processor(self) -> None:
         """Test email normalization to lowercase."""
@@ -124,12 +123,9 @@ class TestFlextAuthProcessorRegistration:
         auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
         # Test with weak password (too short) - Pydantic validates before processor
-        try:
+        with pytest.raises(Exception) as exc_info:
             auth.register_user("user1", "user1@example.com", "weak")
-            msg = "Should have raised validation error"
-            raise AssertionError(msg)
-        except Exception as e:
-            assert "at least 8 characters" in str(e).lower()
+        assert "at least 8 characters" in str(exc_info.value).lower()
 
 
 class TestFlextAuthHandlerRegistration:

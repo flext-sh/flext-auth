@@ -10,6 +10,7 @@ from __future__ import annotations
 import secrets
 from datetime import UTC, datetime, timedelta
 
+from flext_core import FlextModels, FlextResult, FlextTypes
 from pydantic import (
     ConfigDict,
     Field,
@@ -21,7 +22,6 @@ from pydantic import (
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.mixins import FlextAuthMixins
-from flext_core import FlextModels, FlextResult, FlextTypes
 
 
 class FlextAuthModels(FlextModels):
@@ -751,7 +751,7 @@ class FlextAuthModels(FlextModels):
             description="Refresh token for token renewal",
             exclude=True,  # Never serialize refresh tokens
         )
-        metadata: dict[str, object] | None = Field(
+        metadata: FlextTypes.Dict | None = Field(
             default_factory=dict,
             description="Additional token metadata",
         )

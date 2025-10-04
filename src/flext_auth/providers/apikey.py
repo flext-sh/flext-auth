@@ -21,10 +21,11 @@ import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
 
+from flext_core import FlextLogger, FlextResult, FlextTypes
+
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
-from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class ApiKeyAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -386,7 +387,7 @@ class ApiKeyAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             expires_in_days: Number of days until expiration (None = never expires)
 
         Returns:
-            FlextResult[dict]: Dictionary with 'key_id', 'api_key', and 'key_hash'
+            FlextResult[FlextTypes.Dict]: Dictionary with 'key_id', 'api_key', and 'key_hash'
 
         """
         # Generate key ID

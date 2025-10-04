@@ -8,15 +8,17 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
+from flext_core import FlextResult, FlextTypes
+
 from flext_auth.providers.base import BaseAuthProvider
 from flext_auth.registry import FlextAuthRegistry
-from flext_core import FlextResult, FlextTypes
 
 
 class MockAuthProvider(BaseAuthProvider):
     """Mock authentication provider for testing."""
 
     def __init__(self, name: str = "mock") -> None:
+        """Initialize mock authentication provider."""
         self._name = name
         self._capabilities = {"authenticate", "authorize"}
 

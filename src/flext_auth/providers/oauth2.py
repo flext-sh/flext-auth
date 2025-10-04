@@ -20,11 +20,12 @@ from base64 import urlsafe_b64encode
 from datetime import UTC, datetime
 from urllib.parse import urlencode
 
+from flext_core import FlextLogger, FlextResult, FlextTypes
+
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
 from flext_auth.transports.http import HttpTransportAdapter
-from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):

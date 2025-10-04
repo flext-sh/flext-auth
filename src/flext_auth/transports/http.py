@@ -13,7 +13,6 @@ import base64
 import json
 
 from flext_api import FlextApiClient, FlextApiExceptions
-
 from flext_core import FlextLogger, FlextResult, FlextTypes
 
 

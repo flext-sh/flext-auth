@@ -9,13 +9,14 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import cast
 
+from flext_core import FlextTypes
+
 from flext_auth import (
     FlextAuth,
     FlextAuthConfig,
     FlextAuthModels,
 )
 from flext_auth.typings import FlextAuthTypes
-from flext_core import FlextTypes
 
 # Use unified class structure
 AuthenticationResponseDict = FlextAuthTypes.AuthenticationResponseDict

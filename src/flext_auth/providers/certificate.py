@@ -21,11 +21,11 @@ from datetime import UTC, datetime, timedelta
 # Third-party imports for certificate processing
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
+from flext_core import FlextLogger, FlextResult, FlextTypes
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
-from flext_core import FlextLogger, FlextResult, FlextTypes
 
 
 class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
@@ -346,7 +346,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             cert_pem: PEM-encoded certificate
 
         Returns:
-            FlextResult[dict]: Certificate information or error
+            FlextResult[FlextTypes.Dict]: Certificate information or error
 
         """
         if not cert_pem.startswith("-----BEGIN CERTIFICATE-----"):
@@ -507,7 +507,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             cert_info: Certificate information
 
         Returns:
-            FlextResult[dict]: User data or error
+            FlextResult[FlextTypes.Dict]: User data or error
 
         """
         # Extract username from certificate subject (CN field)

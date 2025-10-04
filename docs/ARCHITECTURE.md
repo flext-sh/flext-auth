@@ -440,7 +440,7 @@ class BaseTransportAdapter(Protocol):
         endpoint: str,
         credentials: dict,
         metadata: dict | None = None
-    ) -> FlextResult[dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Send authentication request over transport."""
         ...
 
@@ -449,7 +449,7 @@ class BaseTransportAdapter(Protocol):
         endpoint: str,
         token: str,
         metadata: dict | None = None
-    ) -> FlextResult[dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Send token validation request over transport."""
         ...
 
@@ -478,7 +478,7 @@ class HttpTransportAdapter(BaseTransportAdapter):
         endpoint: str,
         credentials: dict,
         metadata: dict | None = None
-    ) -> FlextResult[dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Send authentication request via HTTP using flext-api."""
         result = self._api.post(
             url=endpoint,
@@ -487,11 +487,11 @@ class HttpTransportAdapter(BaseTransportAdapter):
         )
 
         if result.is_failure:
-            return FlextResult[dict].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 f"HTTP transport failed: {result.error}"
             )
 
-        return FlextResult[dict].ok(result.unwrap())
+        return FlextResult[FlextTypes.Dict].ok(result.unwrap())
 ```
 
 ### gRPC Transport (`transports/grpc.py`)
@@ -514,7 +514,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
         endpoint: str,
         credentials: dict,
         metadata: dict | None = None
-    ) -> FlextResult[dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Send authentication request via gRPC using flext-grpc."""
         result = self._grpc.call(
             service="AuthService",
@@ -524,11 +524,11 @@ class GrpcTransportAdapter(BaseTransportAdapter):
         )
 
         if result.is_failure:
-            return FlextResult[dict].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 f"gRPC transport failed: {result.error}"
             )
 
-        return FlextResult[dict].ok(result.unwrap())
+        return FlextResult[FlextTypes.Dict].ok(result.unwrap())
 ```
 
 ### WebSocket Transport (`transports/websocket.py`)
@@ -546,7 +546,7 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
         endpoint: str,
         credentials: dict,
         metadata: dict | None = None
-    ) -> FlextResult[dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Send authentication request via WebSocket."""
         # Implementation using websockets library
         ...
@@ -573,7 +573,7 @@ class BaseProtocolHandler(Protocol):
     def parse_auth_response(
         self,
         response: bytes | str
-    ) -> FlextResult[dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Parse authentication response from protocol."""
         ...
 ```
@@ -600,14 +600,14 @@ class RestProtocolHandler(BaseProtocolHandler):
     def parse_auth_response(
         self,
         response: str
-    ) -> FlextResult[dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Parse JSON REST response."""
         import json
         try:
             parsed = json.loads(response)
-            return FlextResult[dict].ok(parsed)
+            return FlextResult[FlextTypes.Dict].ok(parsed)
         except Exception as e:
-            return FlextResult[dict].fail(f"JSON parsing failed: {e}")
+            return FlextResult[FlextTypes.Dict].fail(f"JSON parsing failed: {e}")
 ```
 
 ### SOAP Protocol Handler (`protocol_handlers/soap.py`)
@@ -628,7 +628,7 @@ class SoapProtocolHandler(BaseProtocolHandler):
     def parse_auth_response(
         self,
         response: str
-    ) -> FlextResult[dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Parse SOAP XML response."""
         # Implementation for SOAP envelope parsing
         ...
@@ -829,15 +829,15 @@ class CredentialManager:
     def retrieve_credential(
         self,
         identifier: str
-    ) -> FlextResult[dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Retrieve and decrypt credential."""
         result = self._storage.load(identifier)
         if result.is_failure:
-            return FlextResult[dict].fail(result.error)
+            return FlextResult[FlextTypes.Dict].fail(result.error)
 
         encrypted = result.unwrap()
         decrypted = self._cipher.decrypt(encrypted)
-        return FlextResult[dict].ok(decrypted)
+        return FlextResult[FlextTypes.Dict].ok(decrypted)
 
     def rotate_credential(
         self,
@@ -922,7 +922,7 @@ class HttpTransportAdapter:
     def __init__(self) -> None:
         self._api = FlextApi()  # MANDATORY: Use flext-api
 
-    def send_request(self, url: str, data: dict) -> FlextResult[dict]:
+    def send_request(self, url: str, data: dict) -> FlextResult[FlextTypes.Dict]:
         return self._api.post(url=url, json=data)
 
 class LdapAuthProvider:

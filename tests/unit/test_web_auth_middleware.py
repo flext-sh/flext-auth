@@ -11,10 +11,11 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
+from flext_core import FlextResult, FlextTypes
+
 from flext_auth import WebAuthMiddleware
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import BaseAuthProvider
-from flext_core import FlextResult, FlextTypes
 
 
 class MockAuthProvider(BaseAuthProvider):

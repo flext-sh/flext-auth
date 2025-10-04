@@ -8,8 +8,9 @@ from __future__ import annotations
 
 import re
 
-from flext_auth.constants import FlextAuthConstants
 from flext_core import FlextMixins, FlextResult, FlextUtilities
+
+from flext_auth.constants import FlextAuthConstants
 
 
 class FlextAuthMixins(FlextMixins):

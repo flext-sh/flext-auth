@@ -80,7 +80,7 @@ def authenticate_user(
     self,
     username: str,
     password: str
-) -> FlextResult[dict]:
+) -> FlextResult[FlextTypes.Dict]:
 ```
 
 **Parameters**:
@@ -88,7 +88,7 @@ def authenticate_user(
 - `username` (str): Username to authenticate
 - `password` (str): User password
 
-**Returns**: `FlextResult[dict]` with session and token data
+**Returns**: `FlextResult[FlextTypes.Dict]` with session and token data
 
 **Example**:
 
@@ -105,14 +105,14 @@ if auth_result.is_success:
 Validate JWT token and extract user information.
 
 ```python
-def validate_token(self, token: str) -> FlextResult[dict]:
+def validate_token(self, token: str) -> FlextResult[FlextTypes.Dict]:
 ```
 
 **Parameters**:
 
 - `token` (str): JWT token (with or without Bearer prefix)
 
-**Returns**: `FlextResult[dict]` with token payload or error
+**Returns**: `FlextResult[FlextTypes.Dict]` with token payload or error
 
 **Example**:
 
@@ -281,7 +281,7 @@ else:
 ```python
 from flext_core import FlextResult
 
-def complete_auth_flow(username: str, password: str) -> FlextResult[dict]:
+def complete_auth_flow(username: str, password: str) -> FlextResult[FlextTypes.Dict]:
     return (
         auth.authenticate_user(username, password)
         .flat_map(lambda auth_data: auth.validate_token(auth_data['token']))

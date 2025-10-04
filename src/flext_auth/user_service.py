@@ -6,23 +6,17 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from datetime import datetime
-
-from flext_auth.config import FlextAuthConfig
-from flext_auth.constants import FlextAuthConstants
-from flext_auth.managers import (
-    FlextAuthAuditLogger,
-    FlextAuthRateLimiter,
-    FlextAuthUserManager,
-)
-from flext_auth.models import FlextAuthModels
-from flext_auth.utilities import FlextAuthUtilities
 from flext_core import (
     FlextLogger,
     FlextResult,
     FlextService,
     FlextTypes,
 )
+
+from flext_auth.config import FlextAuthConfig
+from flext_auth.managers import FlextAuthManagers
+from flext_auth.models import FlextAuthModels
+from flext_auth.utilities import FlextAuthUtilities
 
 
 class FlextAuthUserService(FlextService):
@@ -32,10 +26,20 @@ class FlextAuthUserService(FlextService):
         """Initialize user service with flext-core integration."""
         super().__init__()
         self._config = config
-        self._user_manager = FlextAuthUserManager(config)
-        self._audit_logger = FlextAuthAuditLogger(config)
+        self._user_manager = FlextAuthManagers.FlextAuthUserManager(config)
+        self._audit_logger = FlextAuthManagers.FlextAuthAuditLogger(config)
         self._utils = FlextAuthUtilities()
         self._logger = FlextLogger(__name__)
+
+    def execute(self, _request: object) -> FlextResult[object]:
+        """Execute method for FlextService interface.
+
+        User service doesn't use generic execute pattern.
+        Use specific user management methods instead.
+        """
+        return FlextResult[object].fail(
+            "FlextAuthUserService is focused - use specific user methods like create_user()"
+        )
 
     def create_user(
         self,

@@ -6,14 +6,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import secrets
 from datetime import datetime
 
 import bcrypt
 import jwt
+from flext_core import FlextResult
 from pydantic import SecretStr
 
 from flext_auth.constants import FlextAuthConstants
-from flext_core import FlextResult
 
 
 class FlextAuthUtilities:
@@ -66,39 +67,55 @@ class FlextAuthUtilities:
                 return FlextResult[bool].fail(f"Password verification failed: {e}")
 
         @staticmethod
-        def validate_password(password: str) -> FlextResult[None]:
-            """Validate password strength.
+        def validate_password(password: str) -> FlextResult[FlextTypes.Dict]:
+            """Validate password strength and return detailed results.
 
             Args:
                 password: Password to validate
 
             Returns:
-                FlextResult containing validation result or error
+                FlextResult containing validation results dict
 
             """
+            results = {
+                "length": len(password),
+                "min_length": FlextAuthConstants.Credentials.Password.MIN_LENGTH,
+                "has_upper": any(c.isupper() for c in password),
+                "has_lower": any(c.islower() for c in password),
+                "has_digit": any(c.isdigit() for c in password),
+                "is_weak": password.lower()
+                in FlextAuthConstants.Credentials.Password.WEAK_PASSWORDS,
+                "is_valid": True,
+                "errors": [],
+            }
+
             if len(password) < FlextAuthConstants.Credentials.Password.MIN_LENGTH:
-                return FlextResult[None].fail(
+                results["is_valid"] = False
+                results["errors"].append(
                     f"Password must be at least {FlextAuthConstants.Credentials.Password.MIN_LENGTH} characters"
                 )
 
-            # Check for required character types
-            has_upper = any(c.isupper() for c in password)
-            has_lower = any(c.islower() for c in password)
-            has_digit = any(c.isdigit() for c in password)
-
-            if not (has_upper and has_lower and has_digit):
-                return FlextResult[None].fail(
-                    "Password must contain at least one uppercase letter, one lowercase letter, and one digit"
+            if not results["has_upper"]:
+                results["is_valid"] = False
+                results["errors"].append(
+                    "Password must contain at least one uppercase letter"
                 )
 
-            # Check for weak passwords
-            if (
-                password.lower()
-                in FlextAuthConstants.Credentials.Password.WEAK_PASSWORDS
-            ):
-                return FlextResult[None].fail("Password is too weak")
+            if not results["has_lower"]:
+                results["is_valid"] = False
+                results["errors"].append(
+                    "Password must contain at least one lowercase letter"
+                )
 
-            return FlextResult[None].ok(None)
+            if not results["has_digit"]:
+                results["is_valid"] = False
+                results["errors"].append("Password must contain at least one digit")
+
+            if results["is_weak"]:
+                results["is_valid"] = False
+                results["errors"].append("Password is too weak")
+
+            return FlextResult[FlextTypes.Dict].ok(results)
 
     class JWTProcessing:
         """JWT token processing utilities."""
@@ -200,6 +217,22 @@ class FlextAuthUtilities:
                 return FlextResult[dict[str, str | int | float | bool | None]].fail(
                     f"JWT verification failed: {e}"
                 )
+
+    class TokenProcessing:
+        """Token generation and processing utilities."""
+
+        @staticmethod
+        def generate_secure_token(length: int = 32) -> str:
+            """Generate a secure random token.
+
+            Args:
+                length: Token length in bytes
+
+            Returns:
+                Secure random token string (hex encoded)
+
+            """
+            return secrets.token_hex(length)
 
 
 __all__ = ["FlextAuthUtilities"]

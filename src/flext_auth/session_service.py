@@ -6,10 +6,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.config import FlextAuthConfig
-from flext_auth.managers import FlextAuthAuditLogger, FlextAuthSessionManager
-from flext_auth.models import FlextAuthModels
 from flext_core import FlextLogger, FlextResult, FlextService
+
+from flext_auth.config import FlextAuthConfig
+from flext_auth.managers import FlextAuthManagers
+from flext_auth.models import FlextAuthModels
 
 
 class FlextAuthSessionService(FlextService):
@@ -19,9 +20,19 @@ class FlextAuthSessionService(FlextService):
         """Initialize session service with flext-core integration."""
         super().__init__()
         self._config = config
-        self._session_manager = FlextAuthSessionManager(config)
-        self._audit_logger = FlextAuthAuditLogger(config)
+        self._session_manager = FlextAuthManagers.FlextAuthSessionManager(config)
+        self._audit_logger = FlextAuthManagers.FlextAuthAuditLogger(config)
         self._logger = FlextLogger(__name__)
+
+    def execute(self, _request: object) -> FlextResult[object]:
+        """Execute method for FlextService interface.
+
+        Session service doesn't use generic execute pattern.
+        Use specific session methods instead.
+        """
+        return FlextResult[object].fail(
+            "FlextAuthSessionService is focused - use specific session methods like create_session()"
+        )
 
     def create_session(
         self,

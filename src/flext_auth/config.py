@@ -10,8 +10,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
-
+from flext_core import (
+    FlextConfig,
+)
 from pydantic import (
     Field,
     SecretStr,
@@ -19,9 +20,6 @@ from pydantic import (
 )
 
 from flext_auth.constants import FlextAuthConstants
-from flext_core import (
-    FlextConfig,
-)
 
 
 class FlextAuthConfig(FlextConfig):
@@ -33,65 +31,55 @@ class FlextAuthConfig(FlextConfig):
 
     # JWT Configuration
     jwt_auth_secret: SecretStr = Field(
-        default_factory=lambda: SecretStr(FlextAuthConstants.Jwt.SECRET_KEY),
+        default=SecretStr(FlextAuthConstants.Jwt.SECRET_KEY),
         description="JWT secret key for token signing and validation",
-        env="FLEXT_AUTH_JWT_SECRET",
     )
     jwt_algorithm: str = Field(
         default=FlextAuthConstants.Jwt.DEFAULT_ALGORITHM,
         description="JWT algorithm for token signing",
-        env="FLEXT_AUTH_JWT_ALGORITHM",
     )
     jwt_expiry_minutes: int = Field(
         default=FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES,
         description="Default JWT token expiry in minutes",
-        env="FLEXT_AUTH_JWT_EXPIRY_MINUTES",
         ge=1,
         le=FlextAuthConstants.Jwt.MAX_EXPIRY_MINUTES,
     )
     jwt_issuer: str = Field(
         default=FlextAuthConstants.Jwt.ISSUER_CLAIM,
         description="JWT issuer claim",
-        env="FLEXT_AUTH_JWT_ISSUER",
     )
     jwt_audience: str = Field(
         default=FlextAuthConstants.Jwt.AUDIENCE_CLAIM,
         description="JWT audience claim",
-        env="FLEXT_AUTH_JWT_AUDIENCE",
     )
 
     # Password Security
     bcrypt_rounds: int = Field(
         default=FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS,
         description="BCrypt rounds for password hashing",
-        env="FLEXT_AUTH_BCRYPT_ROUNDS",
         ge=FlextAuthConstants.Credentials.Password.MIN_BCRYPT_ROUNDS,
         le=FlextAuthConstants.Credentials.Password.MAX_BCRYPT_ROUNDS,
     )
     min_password_length: int = Field(
         default=FlextAuthConstants.Credentials.Password.MIN_LENGTH,
         description="Minimum password length",
-        env="FLEXT_AUTH_MIN_PASSWORD_LENGTH",
         ge=1,
     )
     max_password_length: int = Field(
         default=FlextAuthConstants.Credentials.Password.MAX_LENGTH,
         description="Maximum password length",
-        env="FLEXT_AUTH_MAX_PASSWORD_LENGTH",
         ge=1,
     )
 
     # Login Security
     max_login_attempts: int = Field(
-        default=FlextAuthConstants.AuthSecurity.MAX_LOGIN_ATTEMPTS,
+        default=FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS,
         description="Maximum login attempts before account lockout",
-        env="FLEXT_AUTH_MAX_LOGIN_ATTEMPTS",
         ge=1,
     )
     lockout_duration_minutes: int = Field(
-        default=FlextAuthConstants.AuthSecurity.LOCKOUT_DURATION_MINUTES,
+        default=FlextAuthConstants.Security.LOCKOUT_DURATION_MINUTES,
         description="Account lockout duration in minutes",
-        env="FLEXT_AUTH_LOCKOUT_DURATION_MINUTES",
         ge=1,
     )
 
@@ -99,14 +87,12 @@ class FlextAuthConfig(FlextConfig):
     session_expiry_minutes: int = Field(
         default=FlextAuthConstants.Session.DEFAULT_EXPIRY_MINUTES,
         description="Default session expiry in minutes",
-        env="FLEXT_AUTH_SESSION_EXPIRY_MINUTES",
         ge=1,
         le=FlextAuthConstants.Session.MAX_EXPIRY_MINUTES,
     )
     max_sessions_per_user: int = Field(
         default=FlextAuthConstants.Session.MAX_SESSIONS_PER_USER,
         description="Maximum concurrent sessions per user",
-        env="FLEXT_AUTH_MAX_SESSIONS_PER_USER",
         ge=1,
     )
 
@@ -114,46 +100,38 @@ class FlextAuthConfig(FlextConfig):
     enable_audit_logging: bool = Field(
         default=FlextAuthConstants.AuthLogging.Audit.ENABLE_AUDIT_LOGGING,
         description="Enable authentication audit logging",
-        env="FLEXT_AUTH_ENABLE_AUDIT_LOGGING",
     )
     log_auth_attempts: bool = Field(
         default=FlextAuthConstants.AuthLogging.Audit.LOG_AUTH_ATTEMPTS,
         description="Log authentication attempts",
-        env="FLEXT_AUTH_LOG_AUTH_ATTEMPTS",
     )
     log_auth_failures: bool = Field(
         default=FlextAuthConstants.AuthLogging.Audit.LOG_AUTH_FAILURES,
         description="Log authentication failures",
-        env="FLEXT_AUTH_LOG_AUTH_FAILURES",
     )
     log_auth_success: bool = Field(
         default=FlextAuthConstants.AuthLogging.Audit.LOG_AUTH_SUCCESS,
         description="Log successful authentications",
-        env="FLEXT_AUTH_LOG_AUTH_SUCCESS",
     )
 
     # Security Logging
     mask_passwords: bool = Field(
         default=FlextAuthConstants.AuthLogging.Security.MASK_PASSWORDS,
         description="Mask passwords in logs",
-        env="FLEXT_AUTH_MASK_PASSWORDS",
     )
     mask_tokens: bool = Field(
         default=FlextAuthConstants.AuthLogging.Security.MASK_TOKENS,
         description="Mask tokens in logs",
-        env="FLEXT_AUTH_MASK_TOKENS",
     )
 
     # Performance Monitoring
     track_auth_performance: bool = Field(
         default=FlextAuthConstants.AuthLogging.Performance.TRACK_AUTH_PERFORMANCE,
         description="Track authentication performance",
-        env="FLEXT_AUTH_TRACK_PERFORMANCE",
     )
     auth_performance_threshold_warning: float = Field(
         default=FlextAuthConstants.AuthLogging.Performance.THRESHOLD_WARNING,
         description="Performance warning threshold in milliseconds",
-        env="FLEXT_AUTH_PERFORMANCE_THRESHOLD_WARNING",
         ge=0.0,
     )
 
@@ -161,12 +139,10 @@ class FlextAuthConfig(FlextConfig):
     enable_rate_limiting: bool = Field(
         default=True,
         description="Enable rate limiting for authentication endpoints",
-        env="FLEXT_AUTH_ENABLE_RATE_LIMITING",
     )
     session_cleanup_interval_minutes: int = Field(
         default=FlextAuthConstants.Session.CLEANUP_INTERVAL_MINUTES,
         description="Session cleanup interval in minutes",
-        env="FLEXT_AUTH_SESSION_CLEANUP_INTERVAL",
         ge=1,
     )
 
@@ -174,27 +150,23 @@ class FlextAuthConfig(FlextConfig):
     require_password_complexity: bool = Field(
         default=True,
         description="Require password complexity validation",
-        env="FLEXT_AUTH_REQUIRE_PASSWORD_COMPLEXITY",
     )
     min_password_score: int = Field(
         default=FlextAuthConstants.Credentials.Password.MIN_SCORE,
         description="Minimum password complexity score",
-        env="FLEXT_AUTH_MIN_PASSWORD_SCORE",
         ge=0,
         le=4,
     )
 
     # Request Limits
     max_requests_per_minute: int = Field(
-        default=FlextAuthConstants.AuthSecurity.MAX_REQUESTS_PER_MINUTE,
+        default=FlextAuthConstants.Security.MAX_REQUESTS_PER_MINUTE,
         description="Maximum requests per minute per IP",
-        env="FLEXT_AUTH_MAX_REQUESTS_PER_MINUTE",
         ge=1,
     )
     max_requests_per_hour: int = Field(
-        default=FlextAuthConstants.AuthSecurity.MAX_REQUESTS_PER_HOUR,
+        default=FlextAuthConstants.Security.MAX_REQUESTS_PER_HOUR,
         description="Maximum requests per hour per IP",
-        env="FLEXT_AUTH_MAX_REQUESTS_PER_HOUR",
         ge=1,
     )
 
@@ -202,12 +174,10 @@ class FlextAuthConfig(FlextConfig):
     enable_email_verification: bool = Field(
         default=False,
         description="Enable email verification for new accounts",
-        env="FLEXT_AUTH_ENABLE_EMAIL_VERIFICATION",
     )
     enable_password_history: bool = Field(
         default=False,
         description="Enable password history to prevent reuse",
-        env="FLEXT_AUTH_ENABLE_PASSWORD_HISTORY",
     )
 
     class Config:
@@ -217,7 +187,7 @@ class FlextAuthConfig(FlextConfig):
         case_sensitive = False
         validate_assignment = True
 
-    def to_dict(self) -> dict[str, Any]:
+    def to_dict(self) -> FlextTypes.Dict:
         """Convert configuration to dictionary for serialization."""
         return {
             "jwt_auth_secret": "***masked***" if self.jwt_auth_secret else None,
@@ -272,23 +242,23 @@ class FlextAuthConfig(FlextConfig):
             raise ValueError(msg)
 
         # Validate login attempts
-        if self.max_login_attempts > FlextAuthConstants.AuthSecurity.MAX_LOGIN_ATTEMPTS:
-            msg = f"Maximum login attempts cannot exceed {FlextAuthConstants.AuthSecurity.MAX_LOGIN_ATTEMPTS}"
+        if self.max_login_attempts > FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS:
+            msg = f"Maximum login attempts cannot exceed {FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS}"
             raise ValueError(msg)
 
         # Validate request limits
         if (
             self.max_requests_per_minute
-            > FlextAuthConstants.AuthSecurity.MAX_REQUESTS_PER_MINUTE
+            > FlextAuthConstants.Security.MAX_REQUESTS_PER_MINUTE
         ):
-            msg = f"Maximum requests per minute cannot exceed {FlextAuthConstants.AuthSecurity.MAX_REQUESTS_PER_MINUTE}"
+            msg = f"Maximum requests per minute cannot exceed {FlextAuthConstants.Security.MAX_REQUESTS_PER_MINUTE}"
             raise ValueError(msg)
 
         if (
             self.max_requests_per_hour
-            > FlextAuthConstants.AuthSecurity.MAX_REQUESTS_PER_HOUR
+            > FlextAuthConstants.Security.MAX_REQUESTS_PER_HOUR
         ):
-            msg = f"Maximum requests per hour cannot exceed {FlextAuthConstants.AuthSecurity.MAX_REQUESTS_PER_HOUR}"
+            msg = f"Maximum requests per hour cannot exceed {FlextAuthConstants.Security.MAX_REQUESTS_PER_HOUR}"
             raise ValueError(msg)
 
         return self
@@ -326,7 +296,7 @@ class FlextAuthConfig(FlextConfig):
         enable_password_history: bool | None = None,
     ) -> FlextAuthConfig:
         """Create a FlextAuthConfig instance with optional overrides."""
-        overrides = {}
+        overrides: FlextTypes.Dict = {}
 
         if jwt_auth_secret is not None:
             overrides["jwt_auth_secret"] = SecretStr(jwt_auth_secret)

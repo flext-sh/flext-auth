@@ -6,27 +6,41 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_core import FlextLogger, FlextResult, FlextService
+
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
-from flext_auth.managers import FlextAuthAuditLogger, FlextAuthUserManager
+from flext_auth.managers import FlextAuthManagers
 from flext_auth.models import FlextAuthModels
+from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers import JwtAuthProvider
 from flext_auth.utilities import FlextAuthUtilities
-from flext_core import FlextLogger, FlextResult, FlextService
 
 
 class FlextAuthTokenService(FlextService):
     """Focused service for token operations with complete flext-core integration."""
 
-    def __init__(self, config: FlextAuthConfig, provider_service) -> None:
+    def __init__(
+        self, config: FlextAuthConfig, provider_service: FlextAuthProviderService
+    ) -> None:
         """Initialize token service with flext-core integration."""
         super().__init__()
         self._config = config
-        self._user_manager = FlextAuthUserManager(config)
-        self._audit_logger = FlextAuthAuditLogger(config)
+        self._user_manager = FlextAuthManagers.FlextAuthUserManager(config)
+        self._audit_logger = FlextAuthManagers.FlextAuthAuditLogger(config)
         self._utils = FlextAuthUtilities()
         self._logger = FlextLogger(__name__)
         self._provider_service = provider_service
+
+    def execute(self, _request: object) -> FlextResult[object]:
+        """Execute method for FlextService interface.
+
+        Token service doesn't use generic execute pattern.
+        Use specific token methods instead.
+        """
+        return FlextResult[object].fail(
+            "FlextAuthTokenService is focused - use specific token methods like validate_token()"
+        )
 
     def validate_token(self, token: str) -> FlextResult[FlextAuthModels.User]:
         """Validate an authentication token and return user."""
@@ -157,7 +171,7 @@ class FlextAuthTokenService(FlextService):
 
         return token_result
 
-    def _get_jwt_provider(self):
+    def _get_jwt_provider(self) -> FlextResult[JwtAuthProvider]:
         """Get the JWT provider from the provider service."""
         result = self._provider_service.get_provider("jwt")
         if result.is_failure:

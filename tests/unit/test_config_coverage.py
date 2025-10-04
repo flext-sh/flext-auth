@@ -15,10 +15,10 @@ from typing import cast
 from unittest.mock import patch
 
 import pytest
+from flext_core import FlextConfig, FlextConstants
 from pydantic import ValidationError
 
 from flext_auth import FlextAuthConfig
-from flext_core import FlextConfig, FlextConstants
 
 
 class TestFlextAuthConfigCoverage:
