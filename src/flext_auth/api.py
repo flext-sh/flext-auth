@@ -78,9 +78,9 @@ class FlextAuth:
 
             # Apply specific overrides
             if jwt_secret is not None:
-                config_overrides["jwt_secret"] = jwt_secret
+                config_overrides["jwt_auth_secret"] = jwt_secret
             if session_timeout is not None:
-                config_overrides["session_timeout_minutes"] = session_timeout
+                config_overrides["session_expiry_minutes"] = session_timeout
 
             # Apply any additional overrides
             for key, value in config_overrides.items():

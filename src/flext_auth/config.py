@@ -194,6 +194,7 @@ class FlextAuthConfig(FlextConfig):
 
         Returns:
             The global FlextAuthConfig instance
+
         """
         if not hasattr(cls, "_global_instance") or cls._global_instance is None:
             cls._global_instance = cls()
