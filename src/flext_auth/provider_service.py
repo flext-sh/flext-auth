@@ -47,50 +47,84 @@ class FlextAuthProviderService(FlextService):
         )
 
     def _register_builtin_providers(self) -> None:
-        """Register all built-in authentication providers."""
+        """Register all built-in authentication providers that have required configuration."""
         config_dict = self._config.model_dump()
 
         # Map flext-auth config fields to provider-expected fields
         provider_config = dict(config_dict)
-        if hasattr(self._config, "jwt_secret") and self._config.jwt_secret:
-            provider_config["secret_key"] = self._config.jwt_secret.get_secret_value()
+        if hasattr(self._config, "jwt_auth_secret") and self._config.jwt_auth_secret:
+            provider_config["secret_key"] = (
+                self._config.jwt_auth_secret.get_secret_value()
+            )
 
-        # Basic authentication
-        basic_provider = BasicAuthProvider(provider_config)
-        self._providers.register("basic", basic_provider)
+        # Basic authentication (always available)
+        try:
+            basic_provider = BasicAuthProvider(provider_config)
+            self._providers.register("basic", basic_provider)
+        except (ValueError, TypeError) as e:
+            self._logger.warning(f"Failed to register basic provider: {e}")
 
-        # JWT authentication
-        jwt_provider = JwtAuthProvider(provider_config)
-        self._providers.register("jwt", jwt_provider)
+        # JWT authentication (requires secret_key)
+        if provider_config.get("secret_key"):
+            try:
+                jwt_provider = JwtAuthProvider(provider_config)
+                self._providers.register("jwt", jwt_provider)
+            except (ValueError, TypeError) as e:
+                self._logger.warning(f"Failed to register JWT provider: {e}")
 
-        # LDAP authentication (if configured)
-        if hasattr(self._config, "ldap_enabled") and self._config.ldap_enabled:
-            ldap_provider = LdapAuthProvider(config_dict)
-            self._providers.register("ldap", ldap_provider)
+        # LDAP authentication (requires server and base_dn)
+        if config_dict.get("server") and config_dict.get("base_dn"):
+            try:
+                ldap_provider = LdapAuthProvider(config_dict)
+                self._providers.register("ldap", ldap_provider)
+            except (ValueError, TypeError) as e:
+                self._logger.warning(f"Failed to register LDAP provider: {e}")
 
-        # OAuth2 authentication
-        oauth2_provider = OAuth2AuthProvider(config_dict)
-        self._providers.register("oauth2", oauth2_provider)
+        # OAuth2 authentication (requires client_id and token_endpoint)
+        if config_dict.get("client_id") and config_dict.get("token_endpoint"):
+            try:
+                oauth2_provider = OAuth2AuthProvider(config_dict)
+                self._providers.register("oauth2", oauth2_provider)
+            except (ValueError, TypeError) as e:
+                self._logger.warning(f"Failed to register OAuth2 provider: {e}")
 
-        # OIDC authentication
-        oidc_provider = OidcAuthProvider(config_dict)
-        self._providers.register("oidc", oidc_provider)
+        # OIDC authentication (requires issuer)
+        if config_dict.get("issuer"):
+            try:
+                oidc_provider = OidcAuthProvider(config_dict)
+                self._providers.register("oidc", oidc_provider)
+            except (ValueError, TypeError) as e:
+                self._logger.warning(f"Failed to register OIDC provider: {e}")
 
-        # SAML authentication
-        saml_provider = SamlAuthProvider(config_dict)
-        self._providers.register("saml", saml_provider)
+        # SAML authentication (requires entity_id and sso_url)
+        if config_dict.get("entity_id") and config_dict.get("sso_url"):
+            try:
+                saml_provider = SamlAuthProvider(config_dict)
+                self._providers.register("saml", saml_provider)
+            except (ValueError, TypeError) as e:
+                self._logger.warning(f"Failed to register SAML provider: {e}")
 
-        # Kerberos authentication
-        kerberos_provider = KerberosAuthProvider(config_dict)
-        self._providers.register("kerberos", kerberos_provider)
+        # Kerberos authentication (requires realm and kdc)
+        if config_dict.get("realm") and config_dict.get("kdc"):
+            try:
+                kerberos_provider = KerberosAuthProvider(config_dict)
+                self._providers.register("kerberos", kerberos_provider)
+            except (ValueError, TypeError) as e:
+                self._logger.warning(f"Failed to register Kerberos provider: {e}")
 
-        # Certificate authentication
-        cert_provider = CertificateAuthProvider(config_dict)
-        self._providers.register("certificate", cert_provider)
+        # Certificate authentication (no specific config required beyond base)
+        try:
+            cert_provider = CertificateAuthProvider(config_dict)
+            self._providers.register("certificate", cert_provider)
+        except (ValueError, TypeError) as e:
+            self._logger.warning(f"Failed to register certificate provider: {e}")
 
-        # API Key authentication
-        apikey_provider = ApiKeyAuthProvider(config_dict)
-        self._providers.register("apikey", apikey_provider)
+        # API Key authentication (no specific config required beyond base)
+        try:
+            apikey_provider = ApiKeyAuthProvider(config_dict)
+            self._providers.register("apikey", apikey_provider)
+        except (ValueError, TypeError) as e:
+            self._logger.warning(f"Failed to register API key provider: {e}")
 
     def get_provider(self, name: str) -> FlextResult[BaseAuthProvider]:
         """Get a registered authentication provider."""

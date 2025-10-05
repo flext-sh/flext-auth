@@ -24,6 +24,7 @@ class MockAuthProvider(BaseAuthProvider):
     def __init__(
         self,
         auth_token: str = "mock-access-token",
+        *,
         auth_success: bool = True,
         validate_success: bool = True,
         refresh_success: bool = True,

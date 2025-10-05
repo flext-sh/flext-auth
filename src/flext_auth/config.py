@@ -30,6 +30,13 @@ class FlextAuthConfig(FlextConfig):
     All settings are environment-configurable for production deployment flexibility.
     """
 
+    class Config:
+        """Pydantic configuration for FlextAuthConfig."""
+
+        env_prefix = "FLEXT_AUTH_"
+        case_sensitive = False
+        validate_assignment = True
+
     # JWT Configuration
     jwt_auth_secret: SecretStr = Field(
         default=SecretStr(FlextAuthConstants.Jwt.SECRET_KEY),
@@ -181,12 +188,16 @@ class FlextAuthConfig(FlextConfig):
         description="Enable password history to prevent reuse",
     )
 
-    class Config:
-        """Pydantic configuration for FlextAuthConfig."""
+    @classmethod
+    def get_global_instance(cls) -> FlextAuthConfig:
+        """Get or create the global FlextAuthConfig instance.
 
-        env_prefix = "FLEXT_AUTH_"
-        case_sensitive = False
-        validate_assignment = True
+        Returns:
+            The global FlextAuthConfig instance
+        """
+        if not hasattr(cls, "_global_instance") or cls._global_instance is None:
+            cls._global_instance = cls()
+        return cls._global_instance
 
     def to_dict(self) -> FlextTypes.Dict:
         """Convert configuration to dictionary for serialization."""
@@ -263,104 +274,6 @@ class FlextAuthConfig(FlextConfig):
             raise ValueError(msg)
 
         return self
-
-    @classmethod
-    def create(
-        cls,
-        jwt_auth_secret: str | None = None,
-        jwt_algorithm: str | None = None,
-        jwt_expiry_minutes: int | None = None,
-        jwt_issuer: str | None = None,
-        jwt_audience: str | None = None,
-        bcrypt_rounds: int | None = None,
-        min_password_length: int | None = None,
-        max_password_length: int | None = None,
-        max_login_attempts: int | None = None,
-        lockout_duration_minutes: int | None = None,
-        session_expiry_minutes: int | None = None,
-        max_sessions_per_user: int | None = None,
-        enable_audit_logging: bool | None = None,
-        log_auth_attempts: bool | None = None,
-        log_auth_failures: bool | None = None,
-        log_auth_success: bool | None = None,
-        mask_passwords: bool | None = None,
-        mask_tokens: bool | None = None,
-        track_auth_performance: bool | None = None,
-        auth_performance_threshold_warning: float | None = None,
-        enable_rate_limiting: bool | None = None,
-        session_cleanup_interval_minutes: int | None = None,
-        require_password_complexity: bool | None = None,
-        min_password_score: int | None = None,
-        max_requests_per_minute: int | None = None,
-        max_requests_per_hour: int | None = None,
-        enable_email_verification: bool | None = None,
-        enable_password_history: bool | None = None,
-    ) -> FlextAuthConfig:
-        """Create a FlextAuthConfig instance with optional overrides."""
-        overrides: FlextTypes.Dict = {}
-
-        if jwt_auth_secret is not None:
-            overrides["jwt_auth_secret"] = SecretStr(jwt_auth_secret)
-        if jwt_algorithm is not None:
-            overrides["jwt_algorithm"] = jwt_algorithm
-        if jwt_expiry_minutes is not None:
-            overrides["jwt_expiry_minutes"] = jwt_expiry_minutes
-        if jwt_issuer is not None:
-            overrides["jwt_issuer"] = jwt_issuer
-        if jwt_audience is not None:
-            overrides["jwt_audience"] = jwt_audience
-        if bcrypt_rounds is not None:
-            overrides["bcrypt_rounds"] = bcrypt_rounds
-        if min_password_length is not None:
-            overrides["min_password_length"] = min_password_length
-        if max_password_length is not None:
-            overrides["max_password_length"] = max_password_length
-        if max_login_attempts is not None:
-            overrides["max_login_attempts"] = max_login_attempts
-        if lockout_duration_minutes is not None:
-            overrides["lockout_duration_minutes"] = lockout_duration_minutes
-        if session_expiry_minutes is not None:
-            overrides["session_expiry_minutes"] = session_expiry_minutes
-        if max_sessions_per_user is not None:
-            overrides["max_sessions_per_user"] = max_sessions_per_user
-        if enable_audit_logging is not None:
-            overrides["enable_audit_logging"] = enable_audit_logging
-        if log_auth_attempts is not None:
-            overrides["log_auth_attempts"] = log_auth_attempts
-        if log_auth_failures is not None:
-            overrides["log_auth_failures"] = log_auth_failures
-        if log_auth_success is not None:
-            overrides["log_auth_success"] = log_auth_success
-        if mask_passwords is not None:
-            overrides["mask_passwords"] = mask_passwords
-        if mask_tokens is not None:
-            overrides["mask_tokens"] = mask_tokens
-        if track_auth_performance is not None:
-            overrides["track_auth_performance"] = track_auth_performance
-        if auth_performance_threshold_warning is not None:
-            overrides["auth_performance_threshold_warning"] = (
-                auth_performance_threshold_warning
-            )
-        if enable_rate_limiting is not None:
-            overrides["enable_rate_limiting"] = enable_rate_limiting
-        if session_cleanup_interval_minutes is not None:
-            overrides["session_cleanup_interval_minutes"] = (
-                session_cleanup_interval_minutes
-            )
-        if require_password_complexity is not None:
-            overrides["require_password_complexity"] = require_password_complexity
-        if min_password_score is not None:
-            overrides["min_password_score"] = min_password_score
-        if max_requests_per_minute is not None:
-            overrides["max_requests_per_minute"] = max_requests_per_minute
-        if max_requests_per_hour is not None:
-            overrides["max_requests_per_hour"] = max_requests_per_hour
-        if enable_email_verification is not None:
-            overrides["enable_email_verification"] = enable_email_verification
-        if enable_password_history is not None:
-            overrides["enable_password_history"] = enable_password_history
-
-        return cls(**overrides)
 
 
 __all__ = [

@@ -17,9 +17,6 @@ from flext_auth import (
     FlextAuthModels,
 )
 
-# Use unified class structure
-User = FlextAuthModels.User
-
 
 class TestFlextAuthInitializationCoverage:
     """Test FlextAuth initialization edge cases - covering lines 228-229."""
@@ -150,7 +147,7 @@ class TestFlextAuthPasswordMethods:
     def test_hash_password_method(self) -> None:
         """Test hash_password method functionality."""
         # Create user to test password hashing
-        user = User(
+        user = FlextAuthModels.User(
             id="test-id",
             username="testuser",
             email="test@example.com",
@@ -175,7 +172,7 @@ class TestFlextAuthPasswordMethods:
         strong_password = "StrongTestPass123!@#"
 
         # Create user and set password
-        user = User(
+        user = FlextAuthModels.User(
             id="test-id",
             username="testuser",
             email="test@example.com",

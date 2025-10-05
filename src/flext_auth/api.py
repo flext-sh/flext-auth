@@ -74,7 +74,7 @@ class FlextAuth:
 
         """
         try:
-            config = FlextAuthConfig()
+            config: FlextAuthConfig = FlextAuthConfig()
 
             # Apply specific overrides
             if jwt_secret is not None:
@@ -115,13 +115,19 @@ class FlextAuth:
 
         # Initialize focused services
         self._provider_service = FlextAuthProviderService(self.config)
-        self._user_service = FlextAuthUserService(self.config)
-        self._token_service = FlextAuthTokenService(self.config, self._provider_service)
+        self._user_service = FlextAuthUserService(self.config, self._dispatcher)
+        self._token_service = FlextAuthTokenService(
+            self.config, self._provider_service, self._dispatcher
+        )
         self._session_service = FlextAuthSessionService(self.config)
 
         # Initialize additional managers for facade operations
-        self._rate_limiter = FlextAuthManagers.FlextAuthRateLimiter(self.config)
-        self._audit_logger = FlextAuthManagers.FlextAuthAuditLogger(self.config)
+        self._rate_limiter = FlextAuthManagers.FlextAuthRateLimiter(
+            self.config, self._dispatcher
+        )
+        self._audit_logger = FlextAuthManagers.FlextAuthAuditLogger(
+            self.config, self._dispatcher
+        )
 
     # User Management Methods
     def create_user(
@@ -357,7 +363,7 @@ class FlextAuth:
         # Log logout
         self._audit_logger.log_user_logout(user.username)
 
-        return FlextResult.ok(None)
+        return FlextResult[None].ok(None)
 
     def change_password(
         self,
@@ -556,7 +562,11 @@ class FlextAuth:
     def get_http_middleware(
         self,
         provider: str | BaseAuthProvider,
+        *,
         credentials: FlextTypes.Dict | None = None,
+        header_name: str = "Authorization",
+        token_prefix: str = FlextAuthConstants.Jwt.BEARER_PREFIX.strip(),
+        auto_refresh: bool = True,
         **kwargs: object,
     ) -> HttpAuthMiddleware:
         """Get HTTP middleware for web frameworks.
@@ -577,10 +587,25 @@ class FlextAuth:
                 raise ValueError(msg)
             provider = provider_result.unwrap()
 
-        return HttpAuthMiddleware(provider, credentials=credentials, **kwargs)
+        return HttpAuthMiddleware(
+            provider,
+            credentials=credentials,
+            header_name=header_name,
+            token_prefix=token_prefix,
+            auto_refresh=auto_refresh,
+            **kwargs,
+        )
 
     def get_web_middleware(
-        self, provider: str | BaseAuthProvider, **kwargs: object
+        self,
+        provider: str | BaseAuthProvider,
+        *,
+        header_name: str = "Authorization",
+        token_prefix: str = FlextAuthConstants.Jwt.BEARER_PREFIX.strip(),
+        cookie_name: str | None = None,
+        exclude_paths: list[str] | None = None,
+        require_auth: bool = True,
+        **kwargs: object,
     ) -> WebAuthMiddleware:
         """Get web middleware for web frameworks.
 
@@ -599,7 +624,15 @@ class FlextAuth:
                 raise ValueError(msg)
             provider = provider_result.unwrap()
 
-        return WebAuthMiddleware(provider, **kwargs)
+        return WebAuthMiddleware(
+            provider,
+            header_name=header_name,
+            token_prefix=token_prefix,
+            cookie_name=cookie_name,
+            exclude_paths=exclude_paths,
+            require_auth=require_auth,
+            **kwargs,
+        )
 
     # Provider Management Methods
     def register_provider(

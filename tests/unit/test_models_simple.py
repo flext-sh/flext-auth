@@ -16,14 +16,9 @@ from pydantic import ValidationError
 
 from flext_auth import FlextAuthModels
 
-# Use unified class structure
-Role = FlextAuthModels.Role
-create_session = FlextAuthModels.Session.create_session
-create_user = FlextAuthModels.User.create_user
-
 
 class TestUserCreateUserMethod:
-    """Test User.create_user factory method - covering lines 210-262."""
+    """Test User.FlextAuthModels.User.create_user factory method - covering lines 210-262."""
 
     def test_create_user_success_all_fields(self) -> None:
         """Test successful user creation with all parameters."""
@@ -34,7 +29,7 @@ class TestUserCreateUserMethod:
             full_name="Test User",
             roles=["user", "REDACTED_LDAP_BIND_PASSWORD"],
         )
-        result = create_user(request)
+        result = FlextAuthModels.User.create_user(request)
 
         assert result.is_success
         user = result.value
@@ -51,7 +46,7 @@ class TestUserCreateUserMethod:
             password="ValidPassword123!",
             roles=["user"],
         )
-        result = create_user(request)
+        result = FlextAuthModels.User.create_user(request)
 
         assert result.is_success
         user = result.value
@@ -128,14 +123,14 @@ class TestUserCreateUserMethod:
             )
 
     def test_user_role_and_permission_methods(self) -> None:
-        """Test User role and permission methods - lines 178, 182."""
+        """Test User FlextAuthModels.Role and permission methods - lines 178, 182."""
         request = FlextAuthModels.UserCreationRequest(
             username="roleuser",
-            email="role@example.com",
+            email="FlextAuthModels.Role@example.com",
             password="ValidPassword123!",
             roles=["REDACTED_LDAP_BIND_PASSWORD", "user"],
         )
-        result = create_user(request)
+        result = FlextAuthModels.User.create_user(request)
 
         assert result.is_success
         user = result.value
@@ -200,7 +195,7 @@ class TestUserCreateUserMethod:
         """Test Session update_activity method - lines 346-347."""
         # Create a session
         session = FlextAuthModels.Session(
-            session_id="test-session-id",
+            id="test-session-id",
             user_id="test-user-id",
             session_token="valid_token_12345678901234567890",
             expires_at=datetime.now(UTC) + timedelta(hours=1),
@@ -218,9 +213,9 @@ class TestUserCreateUserMethod:
         assert session.last_accessed_at != original_activity
 
     def test_session_create_session_method(self) -> None:
-        """Test Session create_session method - lines 354-389."""
-        # Test create_session method
-        result = create_session(
+        """Test Session FlextAuthModels.Session.create_session method - lines 354-389."""
+        # Test FlextAuthModels.Session.create_session method
+        result = FlextAuthModels.Session.create_session(
             "test-user-id",
             ip_address="127.0.0.1",
             user_agent="test-agent",
@@ -240,7 +235,7 @@ class TestUserCreateUserMethod:
 
     def test_password_strength_validation(self) -> None:
         """Test Password strength validation - lines 503-504."""
-        # Test with weak password using create_user
+        # Test with weak password using FlextAuthModels.User.create_user
         with pytest.raises(ValidationError):
             FlextAuthModels.UserCreationRequest(
                 username="weakuser2",
@@ -248,7 +243,7 @@ class TestUserCreateUserMethod:
                 password="weakpass",  # 8 chars but only lowercase
             )
 
-        # Test with another weak password using create_user
+        # Test with another weak password using FlextAuthModels.User.create_user
         with pytest.raises(ValidationError):
             FlextAuthModels.UserCreationRequest(
                 username="weakuser",
@@ -293,11 +288,11 @@ class TestUserCreateUserMethod:
             password="ValidPassword123!",
             # Don't specify roles to get default
         )
-        result = create_user(request)
+        result = FlextAuthModels.User.create_user(request)
 
         assert result.is_success
         user = result.value
-        assert user.roles == ["user"]  # Default role applied
+        assert user.roles == ["user"]  # Default FlextAuthModels.Role applied
 
     def test_create_user_invalid_email_exception(self) -> None:
         """Test exception handling in user creation - line 261-262."""
@@ -346,17 +341,20 @@ class TestUserCreateUserMethod:
 
 
 class TestRoleModel:
-    """Test Role model functionality."""
+    """Test FlextAuthModels.Role model functionality."""
 
     def test_role_model_creation(self) -> None:
-        """Test Role model creation and behavior."""
-        role = Role(
-            id="role-id", name="editor", description="Editor Role", domain_events=[]
+        """Test FlextAuthModels.Role model creation and behavior."""
+        role = FlextAuthModels.Role(
+            id="role-id",
+            name="editor",
+            description="Editor role",
+            domain_events=[],
         )
 
-        # Role name gets uppercased by validator
+        # FlextAuthModels.Role name gets uppercased by validator
         assert role.name == "EDITOR"
-        assert role.description == "Editor Role"
+        assert role.description == "Editor role"
 
 
 # class TestCredentialModel:
@@ -399,7 +397,7 @@ class TestSessionModel:
     def test_session_model_creation(self) -> None:
         """Test Session model creation with required fields."""
         session = FlextAuthModels.Session(
-            session_id="session-id",
+            id="session-id",
             user_id="user-id",
             session_token="valid_token_12345678901234567890",
             expires_at=datetime.now(UTC) + timedelta(hours=24),
@@ -410,17 +408,15 @@ class TestSessionModel:
 
         assert session.id == "session-id"
         assert session.user_id == "user-id"
-        # Token can be set separately if needed
-        # assert session.session_token == long_token
         assert session.ip_address == "192.168.1.1"
         assert session.user_agent == "Mozilla/5.0 Test Browser"
 
 
 class TestDomainFunctions:
-    """Test domain functions: create_user, authenticate_user, create_session."""
+    """Test domain functions: FlextAuthModels.User.create_user, authenticate_user, FlextAuthModels.Session.create_session."""
 
     def test_create_user_function(self) -> None:
-        """Test create_user domain function."""
+        """Test FlextAuthModels.User.create_user domain function."""
         request = FlextAuthModels.UserCreationRequest(
             username="domain_user",
             email="domain@example.com",
@@ -428,15 +424,15 @@ class TestDomainFunctions:
             full_name="Domain User",
             roles=["user"],
         )
-        result = create_user(request)
+        result = FlextAuthModels.User.create_user(request)
 
         assert result.is_success
         user = result.value
         assert user.username == "domain_user"
 
     def test_create_session_function(self) -> None:
-        """Test create_session domain function."""
-        result = create_session(
+        """Test FlextAuthModels.Session.create_session domain function."""
+        result = FlextAuthModels.Session.create_session(
             user_id="test-user-id",
             ip_address="127.0.0.1",
             user_agent="Test Agent",

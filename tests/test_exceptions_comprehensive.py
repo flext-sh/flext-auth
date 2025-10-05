@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pickle  # nosec B403 - Required for testing exception serialization
+import pickle
 
 import pytest
 
@@ -529,7 +529,7 @@ class TestFlextAuthExceptionsEdgeCases:
 
         # Pickle and unpickle
         pickled = pickle.dumps(original_error)
-        unpickled_error = pickle.loads(pickled)  # nosec B301 - Controlled test environment
+        unpickled_error = pickle.loads(pickled)
 
         assert unpickled_error.message == original_error.message
         assert unpickled_error.code == original_error.code

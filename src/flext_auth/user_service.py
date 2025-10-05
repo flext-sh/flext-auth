@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_core import (
+    FlextDispatcher,
     FlextLogger,
     FlextResult,
     FlextService,
@@ -22,12 +23,13 @@ from flext_auth.utilities import FlextAuthUtilities
 class FlextAuthUserService(FlextService):
     """Focused service for user management operations with complete flext-core integration."""
 
-    def __init__(self, config: FlextAuthConfig) -> None:
+    def __init__(self, config: FlextAuthConfig, dispatcher: FlextDispatcher) -> None:
         """Initialize user service with flext-core integration."""
         super().__init__()
         self._config = config
+        self._dispatcher = dispatcher
         self._user_manager = FlextAuthManagers.FlextAuthUserManager(config)
-        self._audit_logger = FlextAuthManagers.FlextAuthAuditLogger(config)
+        self._audit_logger = FlextAuthManagers.FlextAuthAuditLogger(config, dispatcher)
         self._utils = FlextAuthUtilities()
         self._logger = FlextLogger(__name__)
 

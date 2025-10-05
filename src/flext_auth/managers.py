@@ -258,9 +258,12 @@ class FlextAuthManagers:
         Uses newer FlextConfig features for complete integration.
         """
 
-        def __init__(self, config: FlextAuthConfig) -> None:
+        def __init__(
+            self, config: FlextAuthConfig, dispatcher: FlextDispatcher
+        ) -> None:
             """Initialize audit logger with configuration."""
             self._config = config
+            self._dispatcher = dispatcher
             self._logger = FlextLogger(__name__)
             self._context = FlextContext()
             self._bus = FlextBus()
@@ -415,13 +418,16 @@ class FlextAuthManagers:
         Uses newer FlextConfig features for complete integration.
         """
 
-        def __init__(self, config: FlextAuthConfig) -> None:
+        def __init__(
+            self, config: FlextAuthConfig, dispatcher: FlextDispatcher
+        ) -> None:
             """Initialize rate limiter with configuration."""
             self._config = config
+            self._dispatcher = dispatcher
             self._logger = FlextLogger(__name__)
             self._context = FlextContext()
             self._bus = FlextBus()
-            self._registry = FlextRegistry()
+            self._registry = FlextRegistry(dispatcher)
             self._attempts: FlextTypes.NestedDict = {}  # username -> list of timestamps
             self._max_attempts = 5  # Configurable
             self._window_minutes = 15  # Configurable
