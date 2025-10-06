@@ -32,7 +32,7 @@ class FlextAuth(FlextService):
 
         """
         self.config: FlextAuthConfig = config or FlextAuthConfig()
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
         self._provider_service = FlextAuthProviderService(self.config)
 
     def execute(self) -> FlextResult[object]:

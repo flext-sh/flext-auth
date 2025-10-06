@@ -77,7 +77,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         self._audience = config.get("audience", FlextAuthConstants.Jwt.AUDIENCE_CLAIM)
 
         # Initialize flext-core components
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
         self._context = FlextContext()
         self._bus = FlextBus()
 
@@ -124,7 +124,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # Generate refresh token
         refresh_token_result = self._generate_refresh_token(credentials)
         if refresh_token_result.is_failure:
-            self._logger.warning(
+            self.logger.warning(
                 f"Refresh token generation failed: {refresh_token_result.error}"
             )
             # Continue with access token only
@@ -145,7 +145,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             is_revoked=False,
         )
 
-        self._logger.info(
+        self.logger.info(
             "Authentication successful",
             extra={
                 "username": username,
@@ -271,7 +271,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # JWT tokens are stateless, so revocation requires external tracking
         # This is a placeholder implementation
         _ = token  # Mark as used to avoid linting error
-        self._logger.info("Token revocation requested (stateless JWT)")
+        self.logger.info("Token revocation requested (stateless JWT)")
         return FlextResult[None].ok(None)
 
     def supports(self) -> set[str]:

@@ -41,9 +41,9 @@ class FlextAuthRegistry(FlextRegistry):
         self._providers: dict[str, BaseAuthProvider] = {}
         self._configs: dict[str, FlextTypes.Dict] = {}
         self._metadata: FlextTypes.NestedDict = {}
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
-        self._logger.info("FlextAuthRegistry initialized")
+        self.logger.info("FlextAuthRegistry initialized")
 
     def register(
         self,
@@ -93,12 +93,12 @@ class FlextAuthRegistry(FlextRegistry):
             metadata = provider.get_metadata()
             self._metadata[name] = metadata
         except Exception as e:
-            self._logger.warning(
+            self.logger.warning(
                 f"Failed to retrieve metadata for provider '{name}': {e}"
             )
             self._metadata[name] = {"name": name, "error": str(e)}
 
-        self._logger.info(
+        self.logger.info(
             f"Provider '{name}' registered successfully",
             extra={"provider": name, "capabilities": list(provider.supports())},
         )
@@ -128,7 +128,7 @@ class FlextAuthRegistry(FlextRegistry):
         self._configs.pop(name, None)
         self._metadata.pop(name, None)
 
-        self._logger.info(
+        self.logger.info(
             f"Provider '{name}' unregistered successfully",
             extra={"provider": name},
         )
@@ -257,7 +257,7 @@ class FlextAuthRegistry(FlextRegistry):
         # NOTE: Provider discovery via entry points will be implemented in Phase 7
         # This will allow third-party providers to be automatically discovered
         # See docs/ARCHITECTURE.md Phase 7: Quality Assurance & Documentation
-        self._logger.debug("Provider discovery called (not yet implemented)")
+        self.logger.debug("Provider discovery called (not yet implemented)")
         return {}
 
     def validate_config(
@@ -308,7 +308,7 @@ class FlextAuthRegistry(FlextRegistry):
 
         # Provider-specific validation would be added here
         # For now, we accept any dict configuration
-        self._logger.debug(
+        self.logger.debug(
             f"Configuration validated for provider '{name}'",
             extra={"provider": name, "config_keys": list(config.keys())},
         )
@@ -331,7 +331,7 @@ class FlextAuthRegistry(FlextRegistry):
         self._configs.clear()
         self._metadata.clear()
 
-        self._logger.warning(f"Registry cleared: {provider_count} providers removed")
+        self.logger.warning(f"Registry cleared: {provider_count} providers removed")
 
     def __repr__(self) -> str:
         """String representation of the registry."""
@@ -407,7 +407,7 @@ class FlextAuthRegistry(FlextRegistry):
             return validation_result
 
         self._configs[provider_name] = new_config
-        self._logger.info(f"Configuration updated for provider '{provider_name}'")
+        self.logger.info(f"Configuration updated for provider '{provider_name}'")
         return FlextResult[None].ok(None)
 
     def get_all_metadata(self) -> FlextResult[FlextTypes.Dict]:

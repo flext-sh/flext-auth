@@ -70,7 +70,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         """
         self._config = config
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
         # Configuration with defaults
         self._key_prefix = self._config.get("key_prefix", "")
@@ -91,7 +91,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             str, list[datetime]
         ] = {}  # key_hash -> request timestamps
 
-        self._logger.info(
+        self.logger.info(
             "API Key provider initialized",
             extra={
                 "key_prefix": self._key_prefix or "none",
@@ -143,7 +143,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         # Check if key exists
         if key_hash not in self._api_keys:
-            self._logger.warning("Authentication failed: API key not found")
+            self.logger.warning("Authentication failed: API key not found")
             return FlextResult[FlextAuthModels.AuthToken].fail("Invalid API key")
 
         key_metadata = self._api_keys[key_hash]
@@ -177,7 +177,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             is_revoked=False,
         )
 
-        self._logger.info(
+        self.logger.info(
             "API key authentication successful",
             extra={
                 "user_id": key_metadata["user_id"],
@@ -271,7 +271,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         self._api_keys[key_hash]["active"] = False
         self._api_keys[key_hash]["revoked_at"] = datetime.now(UTC)
 
-        self._logger.info(
+        self.logger.info(
             "API key revoked",
             extra={"key_id": self._api_keys[key_hash].get("key_id")},
         )
@@ -413,7 +413,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             "expires_at": expires_at,
         }
 
-        self._logger.info(
+        self.logger.info(
             "API key generated",
             extra={
                 "key_id": key_id,

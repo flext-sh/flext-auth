@@ -79,7 +79,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         """
         self._config = config
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
         # Validate required configuration
         self._entity_id = self._config.get("entity_id")
@@ -119,7 +119,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # Runtime state for request tracking
         self._pending_requests: FlextTypes.NestedDict = {}
 
-        self._logger.info(
+        self.logger.info(
             "SAML provider initialized",
             extra={
                 "entity_id": self._entity_id,
@@ -212,7 +212,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         ):
             return FlextResult[bool].fail("SAML session expired")
 
-        self._logger.debug("SAML token validated (basic validation)")
+        self.logger.debug("SAML token validated (basic validation)")
         return FlextResult[bool].ok(True)
 
     def refresh(
@@ -265,7 +265,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # 3. Send to IdP SLO endpoint
         # 4. Process LogoutResponse
 
-        self._logger.info(
+        self.logger.info(
             "SAML Single Logout requires implementation with XML signing support"
         )
 
@@ -365,7 +365,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         auth_url = f"{self._sso_url}?{urlencode(params)}"
 
-        self._logger.info(
+        self.logger.info(
             "Generated SAML AuthnRequest URL",
             extra={
                 "request_id": request_id,
@@ -400,7 +400,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
   </SPSSODescriptor>
 </EntityDescriptor>"""
 
-        self._logger.info("Generated SP metadata")
+        self.logger.info("Generated SP metadata")
         return FlextResult[str].ok(metadata_template)
 
 

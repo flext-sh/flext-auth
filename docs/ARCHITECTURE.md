@@ -360,7 +360,7 @@ class ExampleAuthProvider(BaseAuthProvider):
 
     def __init__(self, config: dict) -> None:
         self._config = config
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def authenticate(
         self,
@@ -471,7 +471,7 @@ class HttpTransportAdapter(BaseTransportAdapter):
 
     def __init__(self, config: dict | None = None) -> None:
         self._api = FlextApi(config=config)  # MANDATORY: Use flext-api
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def send_auth_request(
         self,
@@ -507,7 +507,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
 
     def __init__(self, config: dict | None = None) -> None:
         self._grpc = FlextGrpcApi(config=config)  # MANDATORY: Use flext-grpc
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def send_auth_request(
         self,
@@ -539,7 +539,7 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
 
     def __init__(self, config: dict | None = None) -> None:
         self._config = config
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def send_auth_request(
         self,
@@ -663,7 +663,7 @@ class TokenManager:
         self._provider = provider
         self._cache = cache or TokenCache()
         self._retry = retry_policy or RetryPolicy()
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def get_token(
         self,
@@ -765,7 +765,7 @@ class TokenCache:
         config: dict | None = None
     ) -> None:
         self._backend = self._create_backend(backend, config)
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def get(self, key: dict) -> AuthToken | None:
         """Get token from cache."""
@@ -814,7 +814,7 @@ class CredentialManager:
     ) -> None:
         self._storage = storage
         self._cipher = self._init_cipher(encryption_key)
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def store_credential(
         self,
@@ -949,7 +949,7 @@ class JwtAuthProvider(FlextService[AuthToken]):
     def __init__(self, config: dict) -> None:
         super().__init__()
         self._config = config
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 ```
 
 ---

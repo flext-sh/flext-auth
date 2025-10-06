@@ -33,7 +33,7 @@ class FlextAuthProviderService(FlextService):
         super().__init__()
         self._config = config
         self._providers = FlextAuthRegistry()
-        self._logger: FlextLogger = FlextLogger(__name__)
+        self.logger: FlextLogger = FlextLogger(__name__)
         self._register_builtin_providers()
 
     def execute(self) -> FlextResult[object]:
@@ -49,7 +49,7 @@ class FlextAuthProviderService(FlextService):
     def _register_builtin_providers(self) -> None:
         """Register all built-in authentication providers that have required configuration."""
         if self._config is None:
-            self._logger.warning(
+            self.logger.warning(
                 "No configuration provided, skipping provider registration"
             )
             return
@@ -68,7 +68,7 @@ class FlextAuthProviderService(FlextService):
             basic_provider = FlextAuthBasicProvider(provider_config)
             self._providers.register("basic", basic_provider)
         except (ValueError, TypeError) as e:
-            self._logger.warning(f"Failed to register basic provider: {e}")
+            self.logger.warning(f"Failed to register basic provider: {e}")
 
         # JWT authentication (requires secret_key)
         if provider_config.get("secret_key"):
@@ -76,7 +76,7 @@ class FlextAuthProviderService(FlextService):
                 jwt_provider = FlextAuthJwtProvider(provider_config)
                 self._providers.register("jwt", jwt_provider)
             except (ValueError, TypeError) as e:
-                self._logger.warning(f"Failed to register JWT provider: {e}")
+                self.logger.warning(f"Failed to register JWT provider: {e}")
 
         # LDAP authentication (requires server and base_dn)
         if config_dict.get("server") and config_dict.get("base_dn"):
@@ -84,7 +84,7 @@ class FlextAuthProviderService(FlextService):
                 ldap_provider = FlextAuthLdapProvider(config_dict)
                 self._providers.register("ldap", ldap_provider)
             except (ValueError, TypeError) as e:
-                self._logger.warning(f"Failed to register LDAP provider: {e}")
+                self.logger.warning(f"Failed to register LDAP provider: {e}")
 
         # OAuth2 authentication (requires client_id and token_endpoint)
         if config_dict.get("client_id") and config_dict.get("token_endpoint"):
@@ -92,7 +92,7 @@ class FlextAuthProviderService(FlextService):
                 oauth2_provider = FlextAuthOAuth2Provider(config_dict)
                 self._providers.register("oauth2", oauth2_provider)
             except (ValueError, TypeError) as e:
-                self._logger.warning(f"Failed to register OAuth2 provider: {e}")
+                self.logger.warning(f"Failed to register OAuth2 provider: {e}")
 
         # OIDC authentication (requires issuer)
         if config_dict.get("issuer"):
@@ -100,7 +100,7 @@ class FlextAuthProviderService(FlextService):
                 oidc_provider = FlextAuthOidcProvider(config_dict)
                 self._providers.register("oidc", oidc_provider)
             except (ValueError, TypeError) as e:
-                self._logger.warning(f"Failed to register OIDC provider: {e}")
+                self.logger.warning(f"Failed to register OIDC provider: {e}")
 
         # SAML authentication (requires entity_id and sso_url)
         if config_dict.get("entity_id") and config_dict.get("sso_url"):
@@ -108,7 +108,7 @@ class FlextAuthProviderService(FlextService):
                 saml_provider = FlextAuthSamlProvider(config_dict)
                 self._providers.register("saml", saml_provider)
             except (ValueError, TypeError) as e:
-                self._logger.warning(f"Failed to register SAML provider: {e}")
+                self.logger.warning(f"Failed to register SAML provider: {e}")
 
         # Kerberos authentication (requires realm and kdc)
         if config_dict.get("realm") and config_dict.get("kdc"):
@@ -116,21 +116,21 @@ class FlextAuthProviderService(FlextService):
                 kerberos_provider = FlextAuthKerberosProvider(config_dict)
                 self._providers.register("kerberos", kerberos_provider)
             except (ValueError, TypeError) as e:
-                self._logger.warning(f"Failed to register Kerberos provider: {e}")
+                self.logger.warning(f"Failed to register Kerberos provider: {e}")
 
         # Certificate authentication (no specific config required beyond base)
         try:
             cert_provider = FlextAuthCertificateProvider(config_dict)
             self._providers.register("certificate", cert_provider)
         except (ValueError, TypeError) as e:
-            self._logger.warning(f"Failed to register certificate provider: {e}")
+            self.logger.warning(f"Failed to register certificate provider: {e}")
 
         # API Key authentication (no specific config required beyond base)
         try:
             apikey_provider = FlextAuthApiKeyProvider(config_dict)
             self._providers.register("apikey", apikey_provider)
         except (ValueError, TypeError) as e:
-            self._logger.warning(f"Failed to register API key provider: {e}")
+            self.logger.warning(f"Failed to register API key provider: {e}")
 
     def get_provider(self, name: str) -> FlextResult[FlextAuthBaseProvider]:
         """Get a registered authentication provider."""

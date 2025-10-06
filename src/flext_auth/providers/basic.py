@@ -71,7 +71,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         """
         self._config = config
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
         # Configuration with defaults
         self._realm = self._config.get("realm", "Restricted")
@@ -84,7 +84,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # In production, integrate with user database or directory service
         self._users: FlextTypes.NestedDict = {}  # username -> user data
 
-        self._logger.info(
+        self.logger.info(
             "Basic Auth provider initialized",
             extra={
                 "realm": self._realm,
@@ -148,7 +148,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # Validate credentials
         validation_result = self._validate_user_credentials(username, password)
         if validation_result.is_failure:
-            self._logger.warning(
+            self.logger.warning(
                 "Authentication failed",
                 extra={"username": username, "reason": validation_result.error},
             )
@@ -170,7 +170,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             is_revoked=False,
         )
 
-        self._logger.info(
+        self.logger.info(
             "Basic authentication successful",
             extra={"username": username, "user_id": user_data["user_id"]},
         )
@@ -266,9 +266,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # Mark user as inactive
         self._users[lookup_username]["active"] = False
 
-        self._logger.info(
-            "Basic auth credentials revoked", extra={"username": username}
-        )
+        self.logger.info("Basic auth credentials revoked", extra={"username": username})
 
         return FlextResult[None].ok(None)
 
@@ -438,7 +436,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             is_revoked=False,
         )
 
-        self._logger.info("Anonymous access granted", extra={"user_id": anonymous_id})
+        self.logger.info("Anonymous access granted", extra={"user_id": anonymous_id})
 
         return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)
 
@@ -479,7 +477,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             "active": True,
         }
 
-        self._logger.info("User added", extra={"username": username})
+        self.logger.info("User added", extra={"username": username})
 
         return FlextResult[None].ok(None)
 
@@ -500,7 +498,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         del self._users[lookup_username]
 
-        self._logger.info("User removed", extra={"username": username})
+        self.logger.info("User removed", extra={"username": username})
 
         return FlextResult[None].ok(None)
 

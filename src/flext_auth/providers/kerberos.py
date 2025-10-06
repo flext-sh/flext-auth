@@ -70,7 +70,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         """
         self._config = config
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
         # Validate required configuration
         self._realm = self._config.get("realm")
@@ -103,7 +103,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             str, FlextTypes.Dict
         ] = {}  # ticket_id -> ticket data
 
-        self._logger.info(
+        self.logger.info(
             "Kerberos authentication provider initialized",
             extra={
                 "realm": self._realm,
@@ -321,7 +321,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # - Clear ticket cache
         # - Notify KDC of revocation if supported
 
-        self._logger.info("Kerberos ticket revoked", extra={"ticket_id": token_string})
+        self.logger.info("Kerberos ticket revoked", extra={"ticket_id": token_string})
 
         return FlextResult[None].ok(None)
 

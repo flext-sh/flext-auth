@@ -374,8 +374,8 @@ class TestFlextAuthLogging:
         auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
         # Verify logger is initialized
-        assert hasattr(auth, "_logger")
-        assert auth._logger is not None
+        assert hasattr(auth, "logger")
+        assert auth.logger is not None
 
     def test_handler_registration_logging(self) -> None:
         """Test that handler registration is logged."""

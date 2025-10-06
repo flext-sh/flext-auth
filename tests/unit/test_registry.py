@@ -60,14 +60,14 @@ class TestFlextAuthRegistryInitialization:
         assert registry._providers == {}
         assert registry._configs == {}
         assert registry._metadata == {}
-        assert registry._logger is not None
+        assert registry.logger is not None
 
     def test_registry_initialization_creates_logger(self) -> None:
         """Test registry creates logger during initialization."""
         registry = FlextAuthRegistry()
 
-        assert hasattr(registry, "_logger")
-        assert registry._logger is not None
+        assert hasattr(registry, "logger")
+        assert registry.logger is not None
 
 
 class TestFlextAuthRegistryRegistration:

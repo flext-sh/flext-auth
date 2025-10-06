@@ -79,7 +79,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         """
         self._config = config
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
         # Validate required configuration
         self._client_id = self._config.get("client_id")
@@ -110,7 +110,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # HTTP client for token endpoint requests (MANDATORY: uses flext-api)
         self._http_client = HttpTransportAdapter(timeout=30.0)
 
-        self._logger.info(
+        self.logger.info(
             "OAuth2 provider initialized",
             extra={
                 "client_id": self._client_id,
@@ -213,7 +213,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         ):
             return FlextResult[bool].fail("Token expired")
 
-        self._logger.debug("Token validated (basic validation only)")
+        self.logger.debug("Token validated (basic validation only)")
         return FlextResult[bool].ok(True)
 
     def refresh(
@@ -302,7 +302,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # In production, implement RFC 7009 (Token Revocation)
         # POST to revocation endpoint with token
 
-        self._logger.info(
+        self.logger.info(
             "Token revocation requires implementation with flext-api HTTP client"
         )
 
@@ -593,7 +593,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
                 },
             )
 
-            self._logger.info(
+            self.logger.info(
                 "AuthToken created from OAuth2 response",
                 extra={
                     "token_type": token_type,
@@ -675,7 +675,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # Build URL
         auth_url = f"{self._authorization_endpoint}?{urlencode(params)}"
 
-        self._logger.info(
+        self.logger.info(
             "Generated authorization URL",
             extra={"state": state, "use_pkce": self._use_pkce},
         )

@@ -33,7 +33,7 @@ class FlextAuthTokenService(FlextService):
         self._user_manager = FlextAuthManagers.FlextAuthUserManager(config)
         self._audit_logger = FlextAuthManagers.FlextAuthAuditLogger(config, dispatcher)
         self._utils = FlextAuthUtilities()
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
         self._provider_service = provider_service
 
     def execute(self, _request: object) -> FlextResult[object]:

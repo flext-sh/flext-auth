@@ -109,7 +109,7 @@ class FlextAuthMiddleware(FlextService):
             self._header_name = header_name
             self._token_prefix = token_prefix
             self._auto_refresh = auto_refresh
-            self._logger = FlextLogger(
+            self.logger = FlextLogger(
                 f"flext_auth.middleware.http.{provider.get_metadata()['name']}"
             )
             self._current_token: FlextAuthModels.AuthToken | None = None
@@ -164,7 +164,7 @@ class FlextAuthMiddleware(FlextService):
 
                 object.__setattr__(request, "headers", current_headers)
 
-                self._logger.debug(
+                self.logger.debug(
                     "Added authentication to HTTP request",
                     header=self._header_name,
                     provider=self._provider.get_metadata()["name"],
@@ -173,7 +173,7 @@ class FlextAuthMiddleware(FlextService):
                 return FlextResult[object].ok(request)
 
             except Exception as e:
-                self._logger.exception(
+                self.logger.exception(
                     "HTTP authentication middleware failed",
                     error=str(e),
                     provider=self._provider.get_metadata()["name"],
@@ -223,7 +223,7 @@ class FlextAuthMiddleware(FlextService):
                     return auth_result
 
                 self._current_token = auth_result.unwrap()
-                self._logger.info(
+                self.logger.info(
                     "Initial authentication successful",
                     provider=self._provider.get_metadata()["name"],
                 )
@@ -237,7 +237,7 @@ class FlextAuthMiddleware(FlextService):
 
             # Token is invalid/expired - try to refresh
             if self._auto_refresh and "refresh" in self._provider.supports():
-                self._logger.debug(
+                self.logger.debug(
                     "Token expired, attempting refresh",
                     provider=self._provider.get_metadata()["name"],
                 )
@@ -245,7 +245,7 @@ class FlextAuthMiddleware(FlextService):
                 refresh_result = self._provider.refresh(self._current_token)
                 if refresh_result.is_success:
                     self._current_token = refresh_result.unwrap()
-                    self._logger.info(
+                    self.logger.info(
                         "Token refresh successful",
                         provider=self._provider.get_metadata()["name"],
                     )
@@ -255,7 +255,7 @@ class FlextAuthMiddleware(FlextService):
 
             # Refresh failed or not supported - re-authenticate
             if self._credentials:
-                self._logger.debug(
+                self.logger.debug(
                     "Token refresh failed, re-authenticating",
                     provider=self._provider.get_metadata()["name"],
                 )
@@ -348,7 +348,7 @@ class FlextAuthMiddleware(FlextService):
             self._cookie_name = cookie_name
             self._exclude_paths = exclude_paths or []
             self._require_auth = require_auth
-            self._logger = FlextLogger(
+            self.logger = FlextLogger(
                 f"flext_auth.middleware.web.{provider.get_metadata()['name']}"
             )
             self._enabled = True
@@ -383,7 +383,7 @@ class FlextAuthMiddleware(FlextService):
                     request_path.startswith(excluded)
                     for excluded in self._exclude_paths
                 ):
-                    self._logger.debug(
+                    self.logger.debug(
                         "Request path excluded from authentication",
                         path=request_path,
                     )
@@ -421,7 +421,7 @@ class FlextAuthMiddleware(FlextService):
 
                 object.__setattr__(request, "user_context", user_context)
 
-                self._logger.debug(
+                self.logger.debug(
                     "Web request authenticated",
                     provider=self._provider.get_metadata()["name"],
                     path=request_path,
@@ -430,7 +430,7 @@ class FlextAuthMiddleware(FlextService):
                 return FlextResult[object].ok(request)
 
             except Exception as e:
-                self._logger.exception(
+                self.logger.exception(
                     "Web authentication middleware failed",
                     error=str(e),
                     provider=self._provider.get_metadata()["name"],

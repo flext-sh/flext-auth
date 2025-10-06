@@ -96,7 +96,7 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
         # Runtime state for nonce validation
         self._nonces: FlextTypes.StringDict = {}  # state -> nonce mapping
 
-        self._logger.info(
+        self.logger.info(
             "OIDC provider initialized",
             extra={
                 "issuer": self._issuer,
@@ -143,7 +143,7 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
         auth_token.metadata["oidc_provider"] = True
         auth_token.metadata["issuer"] = self._issuer
 
-        self._logger.info(
+        self.logger.info(
             "OIDC authentication successful",
             extra={
                 "issuer": self._issuer,
@@ -180,7 +180,7 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
         # 5. Validate issued-at time
         # 6. Validate nonce if present
 
-        self._logger.debug("OIDC token validated (basic validation)")
+        self.logger.debug("OIDC token validated (basic validation)")
         return FlextResult[bool].ok(True)
 
     def supports(self) -> set[str]:
@@ -295,7 +295,7 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
 
         userinfo = userinfo_result.unwrap()
 
-        self._logger.info(
+        self.logger.info(
             "UserInfo retrieved",
             extra={
                 "sub": userinfo.get("sub"),
@@ -380,7 +380,7 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
             if datetime.fromtimestamp(exp_timestamp, tz=UTC) < datetime.now(UTC):
                 return FlextResult[FlextTypes.Dict].fail("ID token expired")
 
-            self._logger.info(
+            self.logger.info(
                 "ID token parsed and validated",
                 extra={"sub": payload.get("sub"), "iss": payload.get("iss")},
             )

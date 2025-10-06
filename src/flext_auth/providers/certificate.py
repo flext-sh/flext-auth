@@ -72,7 +72,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
         """
         self._config = config
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
         # Validate required configuration
         self._ca_cert = self._config.get("ca_cert")
@@ -97,7 +97,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             str, FlextTypes.Dict
         ] = {}  # cert_fingerprint -> user data
 
-        self._logger.info(
+        self.logger.info(
             "Certificate authentication provider initialized",
             extra={
                 "verify_mode": self._verify_mode,
@@ -174,7 +174,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             is_revoked=False,
         )
 
-        self._logger.info(
+        self.logger.info(
             "Certificate authentication successful",
             extra={
                 "user_id": user_data["user_id"],
@@ -279,7 +279,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
         # In production: Add to CRL or update OCSP responder
 
-        self._logger.info(
+        self.logger.info(
             "Certificate revoked",
             extra={"fingerprint": token_string[:16] + "..."},
         )
@@ -392,7 +392,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
                 "signature_algorithm": signature_algorithm,
             }
 
-            self._logger.debug(
+            self.logger.debug(
                 "Certificate parsed successfully",
                 extra={"fingerprint": fingerprint, "subject": subject_dn},
             )
@@ -442,7 +442,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
                 if ca_validation_result.is_failure:
                     return ca_validation_result
 
-            self._logger.debug(
+            self.logger.debug(
                 "Certificate validation passed",
                 extra={"fingerprint": cert_info.get("fingerprint")},
             )
@@ -484,7 +484,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             # 3. Build and verify full certificate chain
             # For now, we consider issuer match as basic validation
 
-            self._logger.debug("Certificate CA validation passed")
+            self.logger.debug("Certificate CA validation passed")
 
             return FlextResult[None].ok(None)
 
@@ -528,7 +528,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
         # Store certificate mapping
         self._cert_mappings[fingerprint] = user_data
 
-        self._logger.info(
+        self.logger.info(
             "User auto-provisioned from certificate",
             extra={"user_id": user_id, "username": username},
         )
@@ -593,7 +593,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             "active": True,
         }
 
-        self._logger.info(
+        self.logger.info(
             "Certificate registered",
             extra={"fingerprint": cert_fingerprint[:16] + "...", "user_id": user_id},
         )
@@ -615,7 +615,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
         del self._cert_mappings[cert_fingerprint]
 
-        self._logger.info(
+        self.logger.info(
             "Certificate unregistered",
             extra={"fingerprint": cert_fingerprint[:16] + "..."},
         )

@@ -62,7 +62,7 @@ class FlextAuthManagers(FlextService):
         def __init__(self, config: FlextAuthConfig) -> None:
             """Initialize user manager with configuration."""
             self._config = config
-            self._logger = FlextLogger(__name__)
+            self.logger = FlextLogger(__name__)
             self._context = FlextContext()
             self._bus = FlextBus()
             self._users: dict[str, UserData] = {}  # In production, use database
@@ -196,7 +196,7 @@ class FlextAuthManagers(FlextService):
         def __init__(self, config: FlextAuthConfig) -> None:
             """Initialize session manager with configuration."""
             self._config = config
-            self._logger = FlextLogger(__name__)
+            self.logger = FlextLogger(__name__)
             self._context = FlextContext()
             self._bus = FlextBus()
             self._dispatcher = FlextDispatcher()
@@ -287,7 +287,7 @@ class FlextAuthManagers(FlextService):
             """Initialize audit logger with configuration."""
             self._config = config
             self._dispatcher = dispatcher
-            self._logger = FlextLogger(__name__)
+            self.logger = FlextLogger(__name__)
             self._context = FlextContext()
             self._bus = FlextBus()
             self._processors = FlextProcessors()
@@ -391,7 +391,7 @@ class FlextAuthManagers(FlextService):
                 **data,
             }
             self._logs.append(log_entry)
-            self._logger.info(f"Audit event: {event_type}", extra=log_entry)
+            self.logger.info(f"Audit event: {event_type}", extra=log_entry)
 
         def get_logs(
             self,
@@ -451,7 +451,7 @@ class FlextAuthManagers(FlextService):
             """Initialize rate limiter with configuration."""
             self._config = config
             self._dispatcher = dispatcher
-            self._logger = FlextLogger(__name__)
+            self.logger = FlextLogger(__name__)
             self._context = FlextContext()
             self._bus = FlextBus()
             self._registry = FlextRegistry(dispatcher)

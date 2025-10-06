@@ -23,7 +23,7 @@ class FlextAuthSessionService(FlextService):
         self._dispatcher = dispatcher
         self._session_manager = FlextAuthManagers.FlextAuthSessionManager(config)
         self._audit_logger = FlextAuthManagers.FlextAuthAuditLogger(config, dispatcher)
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def execute(self, _request: object) -> FlextResult[object]:
         """Execute method for FlextService interface.
@@ -65,7 +65,7 @@ class FlextAuthSessionService(FlextService):
             expired_count = 0
             # This would typically be done in the session manager with a database query
             # For now, we'll return a mock result since we don't have access to all sessions
-            self._logger.info("Cleanup of expired sessions requested")
+            self.logger.info("Cleanup of expired sessions requested")
             return FlextResult[int].ok(expired_count)
         except Exception as e:
             return FlextResult[int].fail(f"Session cleanup failed: {e}")

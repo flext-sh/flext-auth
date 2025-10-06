@@ -53,7 +53,7 @@ class HttpTransportAdapter:
         """
         self._timeout = timeout
         self._max_retries = max_retries
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
         # MANDATORY: Use flext-api for ALL HTTP operations
         # Initialize client lazily to avoid configuration conflicts in tests
@@ -75,7 +75,7 @@ class HttpTransportAdapter:
                     }
                 )
             except Exception as e:
-                self._logger.warning(
+                self.logger.warning(
                     f"Failed to create FlextApiClient with config: {e}. "
                     "Trying with minimal config."
                 )
@@ -193,7 +193,7 @@ class HttpTransportAdapter:
             encoded = base64.b64encode(credentials.encode()).decode()
             request_headers["Authorization"] = f"Basic {encoded}"
 
-        self._logger.debug(
+        self.logger.debug(
             f"Sending token request to {url}",
             extra={"grant_type": data.get("grant_type")},
         )
@@ -273,7 +273,7 @@ class HttpTransportAdapter:
         # OIDC requires Bearer token authentication
         request_headers["Authorization"] = f"Bearer {access_token}"
 
-        self._logger.debug(f"Requesting UserInfo from {url}")
+        self.logger.debug(f"Requesting UserInfo from {url}")
 
         try:
             client = self._get_client()
@@ -307,7 +307,7 @@ class HttpTransportAdapter:
                     "UserInfo response missing required 'sub' claim"
                 )
 
-            self._logger.info(
+            self.logger.info(
                 f"UserInfo retrieved successfully for subject: {userinfo['sub']}"
             )
 
@@ -367,7 +367,7 @@ class HttpTransportAdapter:
             )
 
         # Optional fields: expires_in, refresh_token, scope
-        self._logger.info(
+        self.logger.info(
             "Token response validated successfully",
             extra={
                 "token_type": response_data.get("token_type"),

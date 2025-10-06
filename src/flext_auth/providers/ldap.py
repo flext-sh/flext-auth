@@ -72,7 +72,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         """
         self._config = config
-        self._logger = FlextLogger(__name__)
+        self.logger = FlextLogger(__name__)
 
         # Validate required configuration
         self._server = self._config.get("server")
@@ -102,7 +102,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # from flext_ldap import FlextLdapClients
         # self._ldap_client = FlextLdapClients(...)
 
-        self._logger.info(
+        self.logger.info(
             "LDAP authentication provider initialized",
             extra={
                 "server": self._server,
@@ -189,7 +189,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         ):
             return FlextResult[bool].fail("Session expired")
 
-        self._logger.debug("LDAP token validated (basic validation)")
+        self.logger.debug("LDAP token validated (basic validation)")
         return FlextResult[bool].ok(True)
 
     def refresh(
@@ -239,7 +239,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # In production: Close LDAP connection/session
         # Mark session as revoked in session store
 
-        self._logger.info("LDAP session revoked")
+        self.logger.info("LDAP session revoked")
 
         return FlextResult[None].ok(None)
 
