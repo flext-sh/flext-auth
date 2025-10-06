@@ -16,7 +16,7 @@ from flext_core import FlextResult, FlextTypes
 from flext_auth.models import FlextAuthModels
 
 
-class BaseAuthProvider(ABC):
+class FlextAuthBaseProvider(ABC):
     """Base protocol for all authentication providers.
 
     All authentication providers must implement this interface to ensure
@@ -31,7 +31,7 @@ class BaseAuthProvider(ABC):
     - supports: Declare provider capabilities
 
     Example:
-        >>> class MyAuthProvider(BaseAuthProvider):
+        >>> class MyAuthProvider(FlextAuthBaseProvider):
         ...     def authenticate(
         ...         self, credentials: dict
         ...     ) -> FlextResult[FlextAuthModels.AuthToken]:
@@ -74,7 +74,7 @@ class BaseAuthProvider(ABC):
             ... })
             >>> if result.is_success:
             ...     token = result.unwrap()
-            ...     print(f"Authenticated: {token.access_token}")
+            ...     print(f"Authenticated: {token.token}")
 
         """
         ...
@@ -223,104 +223,4 @@ class BaseAuthProvider(ABC):
         ...
 
 
-class BaseAuthProviderMixin:
-    """Mixin providing common functionality for authentication providers.
-
-    This mixin can be used by concrete providers to inherit common utility
-    methods and reduce code duplication.
-
-    Example:
-        >>> class JwtAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
-        ...     # Provider implementation with mixin utilities
-        ...     pass
-
-    """
-
-    def _extract_token_string(
-        self,
-        token: str | FlextAuthModels.AuthToken,
-    ) -> str:
-        """Extract token string from token or AuthToken object.
-
-        Args:
-            token: Token as string or AuthToken object
-
-        Returns:
-            str: Token string
-
-        Raises:
-            ValueError: If token cannot be extracted
-
-        """
-        if isinstance(token, str):
-            return token
-
-        if isinstance(token, FlextAuthModels.AuthToken):
-            return token.access_token
-
-        error_msg = f"Invalid token type: expected str or AuthToken, got {type(token)}"
-        raise ValueError(error_msg)
-
-    def _validate_credentials_dict(
-        self,
-        credentials: FlextTypes.Dict,
-        required_fields: FlextTypes.StringList,
-    ) -> FlextResult[None]:
-        """Validate that credentials contain required fields.
-
-        Args:
-            credentials: Credentials dictionary to validate
-            required_fields: List of required field names
-
-        Returns:
-            FlextResult[None]: Success or validation error
-
-        Example:
-            >>> result = self._validate_credentials_dict(
-            ...     credentials, ["username", "password"]
-            ... )
-            >>> if result.is_failure:
-            ...     return result
-
-        """
-        if not isinstance(credentials, dict):
-            return FlextResult[None].fail("Credentials must be a dictionary")
-
-        missing_fields = [
-            field
-            for field in required_fields
-            if field not in credentials or not credentials[field]
-        ]
-
-        if missing_fields:
-            return FlextResult[None].fail(
-                f"Missing required fields: {', '.join(missing_fields)}"
-            )
-
-        return FlextResult[None].ok(None)
-
-    def _check_capability_supported(
-        self,
-        capability: str,
-    ) -> FlextResult[None]:
-        """Check if a capability is supported by this provider.
-
-        Args:
-            capability: Capability to check
-
-        Returns:
-            FlextResult[None]: Success if supported, error if not
-
-        Example:
-            >>> result = self._check_capability_supported("refresh")
-            >>> if result.is_failure:
-            ...     return FlextResult[AuthToken].fail("Refresh not supported")
-
-        """
-        if capability not in self.supports():
-            return FlextResult[None].fail(
-                f"Provider does not support '{capability}' capability. "
-                f"Supported capabilities: {', '.join(sorted(self.supports()))}"
-            )
-
-        return FlextResult[None].ok(None)
+__all__ = ["FlextAuthBaseProvider"]

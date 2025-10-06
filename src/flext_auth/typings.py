@@ -24,13 +24,13 @@ from flext_core import FlextTypes
 
 
 # Authentication domain TypeVars
-class FlextAuthTypes:
+class FlextAuthTypes(FlextTypes):
     """Authentication-specific type definitions for authentication domain.
 
     Domain-specific type system for authentication/authorization operations.
     Contains ONLY complex authentication-specific types, no simple aliases.
     Uses Python 3.13+ type syntax and patterns.
-    Does not inherit from FlextTypes to avoid naming conflicts with nested classes.
+    Extends FlextTypes for proper inheritance following FLEXT unified patterns.
     """
 
     # =========================================================================
@@ -222,6 +222,18 @@ class FlextAuthTypes:
         success: bool
 
     # =========================================================================
+    # MANAGER TYPES - Type definitions for manager data structures
+    # =========================================================================
+
+    class Managers:
+        """Manager-specific type definitions."""
+
+        type UserData = dict[str, object]
+        type SessionData = dict[str, object]
+        type LogEntry = dict[str, object]
+        type AttemptData = list[datetime]
+
+    # =========================================================================
     # AUTH PROJECT TYPES - Domain-specific project types extending FlextTypes
     # =========================================================================
 
@@ -265,5 +277,5 @@ class FlextAuthTypes:
 # =============================================================================
 
 __all__: FlextTypes.StringList = [
-    "FlextAuthTypes",
+    "FlextTypes",
 ]

@@ -42,7 +42,7 @@ class TestRealModelsExhaustive:
     """Testa TODAS as linhas não cobertas do models.py com testes reais."""
 
     def test_user_validation_line_139_string_validation_error(self) -> None:
-        """Testa linha 139 - erro de validação de string do FlextCore."""
+        """Testa linha 139 - erro de validação de string do Flext."""
         # Forçar erro de validação de string (muito curto - menos que 3 chars)
         # Pydantic gera ValidationError, não ValueError
         with pytest.raises(ValidationError):

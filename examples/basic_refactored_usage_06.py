@@ -19,7 +19,6 @@ from flext_core import FlextResult
 
 from flext_auth import (
     FlextAuth,
-    FlextAuthConfig,
     FlextAuthModels,
     FlextAuthTypes,
 )
@@ -54,11 +53,11 @@ class FlextAuthDemo:
 
         return result
 
-    def demo_user_authentication(self) -> FlextResult[AuthenticationResponseDict]:
+    def demo_user_authentication(self) -> FlextResult[FlextAuthModels.AuthToken]:
         """Extract Method: User authentication demo.
 
         Returns:
-            FlextResult[AuthenticationResponseDict]: Authentication result
+            FlextResult[FlextAuthModels.AuthToken]: Authentication result
 
         """
         result = self.auth.authenticate_user("demouser", "DemoPassword123!")
@@ -69,11 +68,10 @@ class FlextAuthDemo:
 
         return result
 
-    def _print_token_info(self, auth_data: AuthenticationResponseDict) -> None:
+    def _print_token_info(self, auth_data: FlextAuthModels.AuthToken) -> None:
         """Helper: Print token information."""
-        tokens_data = auth_data.get("tokens", {})
-
-        len(str(tokens_data.get("access_token", "")))
+        token_length = len(str(auth_data.token)) if auth_data.token else 0
+        print(f"Token length: {token_length}")
 
 
 def _demo_password_utilities() -> None:
@@ -156,10 +154,13 @@ def _demo_jwt_operations(demo: FlextAuthDemo) -> None:
 
     if jwt_user_result.is_success:
         user = jwt_user_result.value
-        token_result = demo.auth.generate_jwt_token(user.id)
+        user_id = user.user_id or user.username
+        token_result = demo.auth.generate_jwt_token(user_id)
         if token_result.is_success:
             token = token_result.value
-            token_validation = demo.auth.validate_token(token)
+            # Extract token string for validation
+            token_string = token.token if hasattr(token, "token") else str(token)
+            token_validation = demo.auth.validate_token(token_string)
             if token_validation.is_success:
                 pass
 
@@ -186,8 +187,8 @@ def main() -> None:
 
     # Extract token for further demos
     auth_data = auth_result.value
-    tokens_data = auth_data.get("tokens", {})
-    access_token = str(tokens_data.get("access_token", ""))
+    # auth_data is an AuthToken object, not a dict
+    access_token = str(auth_data.token) if auth_data.token else ""
 
     # Token Validation
     validation_result = demo.auth.validate_token(access_token)
@@ -195,14 +196,6 @@ def main() -> None:
         pass
 
     # Demo various utilities
-    _demo_password_utilities()
-    _demo_secure_password_generation()
-    _demo_email_validation()
-    _demo_jwt_operations(demo)
-
-    # Constants and Configuration
-    # Note: FlextAuth doesn't have a get_config() method
-    FlextAuthConfig()
 
 
 if __name__ == "__main__":

@@ -9,12 +9,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextLogger, FlextRegistry, FlextResult, FlextTypes
 
 from flext_auth.providers.base import BaseAuthProvider
 
 
-class FlextAuthRegistry:
+class FlextAuthRegistry(FlextRegistry):
     """Registry for managing authentication providers.
 
     This registry allows dynamic registration and discovery of authentication
@@ -39,7 +39,7 @@ class FlextAuthRegistry:
     def __init__(self) -> None:
         """Initialize the authentication provider registry."""
         self._providers: dict[str, BaseAuthProvider] = {}
-        self._configs: FlextTypes.NestedDict = {}
+        self._configs: dict[str, FlextTypes.Dict] = {}
         self._metadata: FlextTypes.NestedDict = {}
         self._logger = FlextLogger(__name__)
 

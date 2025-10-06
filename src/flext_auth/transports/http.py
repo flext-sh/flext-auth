@@ -15,6 +15,8 @@ import json
 from flext_api import FlextApiClient, FlextApiExceptions
 from flext_core import FlextLogger, FlextResult, FlextTypes
 
+from flext_auth.constants import FlextAuthConstants
+
 
 class HttpTransportAdapter:
     """HTTP transport adapter for OAuth2/OIDC authentication operations.
@@ -37,7 +39,11 @@ class HttpTransportAdapter:
         ...     print(f"Access token: {token_data['access_token']}")
     """
 
-    def __init__(self, timeout: float = 30.0, max_retries: int = 3) -> None:
+    def __init__(
+        self,
+        timeout: float = FlextAuthConstants.Defaults.DEFAULT_TIMEOUT,
+        max_retries: int = FlextAuthConstants.Defaults.MAX_RETRIES,
+    ) -> None:
         """Initialize HTTP transport adapter with flext-api client.
 
         Args:

@@ -25,10 +25,11 @@ from flext_core import FlextLogger, FlextResult, FlextTypes
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
-from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
+from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth.providers.mixin import FlextAuthProviderMixin
 
 
-class ApiKeyAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
+class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     """API Key authentication provider.
 
     This provider implements API key-based authentication for REST APIs
@@ -173,11 +174,7 @@ class ApiKeyAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             token_type=FlextAuthConstants.Jwt.API_TOKEN_TYPE,
             expires_at=token_expires_at,
             user_id=key_metadata["user_id"],
-            # Additional metadata stored as extra fields
-            key_id=key_metadata.get("key_id"),
-            key_name=key_metadata.get("name"),
-            scopes=key_metadata.get("scopes", []),
-            username=key_metadata.get("username"),
+            is_revoked=False,
         )
 
         self._logger.info(
@@ -433,4 +430,4 @@ class ApiKeyAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         })
 
 
-__all__ = ["ApiKeyAuthProvider"]
+__all__ = ["FlextAuthApiKeyProvider"]

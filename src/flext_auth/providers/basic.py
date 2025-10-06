@@ -23,10 +23,11 @@ from flext_core import FlextLogger, FlextResult, FlextTypes
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
-from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
+from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth.providers.mixin import FlextAuthProviderMixin
 
 
-class BasicAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
+class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     """HTTP Basic authentication provider.
 
     This provider implements HTTP Basic Authentication (RFC 7617) for simple
@@ -166,12 +167,7 @@ class BasicAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             token_type=FlextAuthConstants.Jwt.BASIC_TOKEN_TYPE,
             expires_at=token_expires_at,
             user_id=user_data["user_id"],
-            # Additional metadata stored as extra fields
-            username=username,
-            realm=self._realm,
-            roles=user_data.get("roles", []),
-            permissions=user_data.get("permissions", []),
-            auth_method="basic",
+            is_revoked=False,
         )
 
         self._logger.info(
@@ -439,13 +435,7 @@ class BasicAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             token_type=FlextAuthConstants.Jwt.BASIC_TOKEN_TYPE,
             expires_at=token_expires_at,
             user_id=anonymous_id,
-            # Additional metadata
-            username="anonymous",
-            realm=self._realm,
-            anonymous=True,
-            roles=["anonymous"],
-            permissions=[],
-            auth_method="basic",
+            is_revoked=False,
         )
 
         self._logger.info("Anonymous access granted", extra={"user_id": anonymous_id})
@@ -515,4 +505,4 @@ class BasicAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         return FlextResult[None].ok(None)
 
 
-__all__ = ["BasicAuthProvider"]
+__all__ = ["FlextAuthBasicProvider"]

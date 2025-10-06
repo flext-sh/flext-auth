@@ -80,7 +80,7 @@ def main() -> None:
     # Note: config access methods don't exist in current FlextAuth API
     # Configuration would be accessed through FlextAuthConfig if needed
 
-    # 5. FlextCore Constants
+    # 5. Flext Constants
 
 
 if __name__ == "__main__":

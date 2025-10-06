@@ -59,7 +59,7 @@ def demonstrate_flext_result_integration() -> None:
 
     # Show real usage in auth operations
     auth: FlextAuth = FlextAuth()
-    token_result = auth.generate_jwt_token("test_user_id")
+    token_result = auth.generate_token_for_user("test_user_id")
 
     if token_result.is_success:
         pass

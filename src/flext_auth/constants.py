@@ -81,14 +81,18 @@ class FlextAuthConstants(FlextConstants):
         CLEANUP_INTERVAL_MINUTES = 30
         EXTEND_MINUTES = 30
         MIN_TOKEN_LENGTH = 32
+        DEFAULT_EXTEND_HOURS = 2
 
-    class Security:
+    class AuthSecurity:
         """Authentication-specific security enforcement constants."""
 
         MAX_LOGIN_ATTEMPTS = 5
         LOCKOUT_DURATION_MINUTES = 30
         MAX_REQUESTS_PER_MINUTE = 60
         MAX_REQUESTS_PER_HOUR = 1000
+        # Rate limiting defaults
+        RATE_LIMIT_MAX_ATTEMPTS = 5
+        RATE_LIMIT_WINDOW_MINUTES = 15
 
     class ErrorCodes:
         """Authentication error codes."""
@@ -183,7 +187,7 @@ class FlextAuthConstants(FlextConstants):
         DEFAULT_ROLES: ClassVar[FlextTypes.StringList] = [USER]
         VALID_ROLES: ClassVar[FlextTypes.StringList] = [ADMIN, USER, MODERATOR, GUEST]
 
-    class Platform:
+    class AuthPlatform:
         """Platform defaults for authentication services."""
 
         FLEXT_API_PORT = 8000
@@ -191,7 +195,7 @@ class FlextAuthConstants(FlextConstants):
         LOOPBACK_IP = "127.0.0.1"
         HTTP_STATUS_OK = 200
 
-    class Network:
+    class AuthNetwork:
         """Network defaults for authentication services."""
 
         MIN_PORT = 1
@@ -199,11 +203,33 @@ class FlextAuthConstants(FlextConstants):
         TOTAL_TIMEOUT = 60
         DEFAULT_TIMEOUT = 30
 
+    class Defaults:
+        """Default values for various operations."""
+
+        DEFAULT_TOKEN_LENGTH = 32
+        DEFAULT_SESSION_EXTEND_HOURS = 24  # For protocols
+        DEMO_USERS_COUNT = 3
+        # Transport defaults
+        DEFAULT_TIMEOUT = 30.0
+        MAX_RETRIES = 3
+        # OIDC defaults
+        JWT_PARTS_COUNT = 3
+        BASE64_PADDING_SIZE = 4
+        # Admin defaults
+        DEFAULT_ADMIN_PASSWORD = "AdminPassword123!"  # nosec B105 - Default REDACTED_LDAP_BIND_PASSWORD password for testing
+
     class OAuth2:
         """OAuth2 authentication constants."""
 
         CLIENT_SECRET_POST = "client_secret_post"
         CLIENT_SECRET_BASIC = "client_secret_basic"
+
+    class SAML:
+        """SAML 2.0 authentication constants."""
+
+        NS_SAML = "urn:oasis:names:tc:SAML:2.0:assertion"
+        NS_SAMLP = "urn:oasis:names:tc:SAML:2.0:protocol"
+        NS_DS = "http://www.w3.org/2000/09/xmldsig#"
 
 
 __all__ = ["FlextAuthConstants"]

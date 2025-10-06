@@ -12,6 +12,7 @@ from flext_core import FlextResult, FlextService, FlextTypes
 
 from flext_auth.api import FlextAuth
 from flext_auth.config import FlextAuthConfig
+from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 
 
@@ -28,7 +29,7 @@ class FlextAuthQuickstart(FlextService[Any]):
         super().__init__()
 
         # Use provided config or create default
-        self.config = config if config is not None else FlextAuthConfig()
+        self.config = config if config is not None else FlextAuthConfig.create()
 
         self._auth = FlextAuth(self.config)
 
@@ -58,7 +59,9 @@ class FlextAuthQuickstart(FlextService[Any]):
         """Get user by ID."""
         return self._auth.get_user(user_id)
 
-    def create_demo_users(self, count: int = 3) -> FlextResult[FlextTypes.StringList]:
+    def create_demo_users(
+        self, count: int = FlextAuthConstants.Defaults.DEMO_USERS_COUNT
+    ) -> FlextResult[FlextTypes.StringList]:
         """Create demo users for testing."""
         user_ids = []
         for i in range(count):
@@ -75,6 +78,16 @@ class FlextAuthQuickstart(FlextService[Any]):
                 )
 
         return FlextResult[FlextTypes.StringList].ok(user_ids)
+
+    def execute(self, _request: object) -> FlextResult[Any]:
+        """Execute method for FlextService interface.
+
+        Quickstart service doesn't use generic execute pattern.
+        Use specific quickstart methods instead.
+        """
+        return FlextResult[Any].fail(
+            "FlextAuthQuickstart is focused - use specific quickstart methods like register_user()"
+        )
 
 
 __all__ = ["FlextAuthQuickstart"]

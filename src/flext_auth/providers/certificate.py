@@ -25,10 +25,11 @@ from flext_core import FlextLogger, FlextResult, FlextTypes
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
-from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
+from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth.providers.mixin import FlextAuthProviderMixin
 
 
-class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
+class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     r"""X.509 Certificate authentication provider.
 
     This provider implements certificate-based authentication for mutual TLS
@@ -170,15 +171,7 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             token_type=FlextAuthConstants.Jwt.BASIC_TOKEN_TYPE,  # Must match pattern: access|refresh|api|bearer
             expires_at=token_expires_at,
             user_id=user_data["user_id"],
-            # Additional metadata
-            username=user_data.get("username"),
-            certificate_subject=cert_info.get("subject"),
-            certificate_issuer=cert_info.get("issuer"),
-            certificate_serial=cert_info.get("serial_number"),
-            certificate_fingerprint=cert_fingerprint,
-            roles=user_data.get("roles", []),
-            permissions=user_data.get("permissions", []),
-            auth_method="certificate",
+            is_revoked=False,
         )
 
         self._logger.info(
@@ -630,4 +623,4 @@ class CertificateAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         return FlextResult[None].ok(None)
 
 
-__all__ = ["CertificateAuthProvider"]
+__all__ = ["FlextAuthCertificateProvider"]

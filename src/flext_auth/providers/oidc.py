@@ -20,11 +20,12 @@ from datetime import UTC, datetime
 
 from flext_core import FlextResult, FlextTypes
 
+from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
-from flext_auth.providers.oauth2 import OAuth2AuthProvider
+from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
 
 
-class OidcAuthProvider(OAuth2AuthProvider):
+class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
     """OpenID Connect authentication provider.
 
     This provider extends OAuth2AuthProvider with OIDC-specific functionality:
@@ -316,7 +317,7 @@ class OidcAuthProvider(OAuth2AuthProvider):
         """
         # Basic JWT structure validation
         parts = id_token.split(".")
-        jwt_parts_count = 3
+        jwt_parts_count = FlextAuthConstants.Defaults.JWT_PARTS_COUNT
         if len(parts) != jwt_parts_count:
             return FlextResult[FlextTypes.Dict].fail(
                 "Invalid ID token format (not a valid JWT)"
@@ -332,7 +333,7 @@ class OidcAuthProvider(OAuth2AuthProvider):
             # Decode payload (add padding if needed)
             payload_part = parts[1]
             # Add padding
-            base64_padding_size = 4
+            base64_padding_size = FlextAuthConstants.Defaults.BASE64_PADDING_SIZE
             padding_needed = base64_padding_size - (
                 len(payload_part) % base64_padding_size
             )
@@ -390,4 +391,4 @@ class OidcAuthProvider(OAuth2AuthProvider):
             return FlextResult[FlextTypes.Dict].fail(f"ID token parsing failed: {e}")
 
 
-__all__ = ["OidcAuthProvider"]
+__all__ = ["FlextAuthOidcProvider"]

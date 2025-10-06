@@ -25,10 +25,11 @@ from urllib.parse import urlencode
 from flext_core import FlextLogger, FlextResult, FlextTypes
 
 from flext_auth.models import FlextAuthModels
-from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
+from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth.providers.mixin import FlextAuthProviderMixin
 
 
-class SamlAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
+class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     r"""SAML 2.0 authentication provider for enterprise SSO.
 
     This provider implements SAML 2.0 protocol for authentication with Identity Providers.
@@ -57,7 +58,7 @@ class SamlAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         ...     "name_id_format": "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress",
         ...     "sign_assertions": True,
         ... }
-        >>> provider = SamlAuthProvider(config)
+        >>> provider = FlextAuthProvidersSaml(config)
         >>> # Generate authentication request URL
         >>> auth_url_result = provider.get_authentication_request_url()
         >>> # After SAML response, process it
@@ -65,10 +66,7 @@ class SamlAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
     """
 
-    # SAML 2.0 namespaces
-    NS_SAML = "urn:oasis:names:tc:SAML:2.0:assertion"
-    NS_SAMLP = "urn:oasis:names:tc:SAML:2.0:protocol"
-    NS_DS = "http://www.w3.org/2000/09/xmldsig#"
+    # SAML 2.0 namespaces from constants
 
     def __init__(self, config: FlextTypes.Dict) -> None:
         """Initialize SAML authentication provider.
@@ -406,4 +404,4 @@ class SamlAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         return FlextResult[str].ok(metadata_template)
 
 
-__all__ = ["SamlAuthProvider"]
+__all__ = ["FlextAuthSamlProvider"]

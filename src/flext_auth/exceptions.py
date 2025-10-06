@@ -27,22 +27,34 @@ class FlextAuthExceptions(FlextExceptions):
             message: str,
             **kwargs: object,
         ) -> None:
-            """Initialize authentication error with context using helpers.
+            """Initialize authentication error with context.
 
             Args:
                 message: Error message
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Extract common parameters using helper
-            base_context, correlation_id, error_code = self._extract_common_kwargs(
-                kwargs
-            )
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
+            error_code = kwargs.get("error_code")
+
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
+            if error_code is not None and not isinstance(error_code, str):
+                error_code = str(error_code)
 
             # Build context
-            context = self._build_context(base_context)
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
 
-            # Call parent with complete error information
+            # Call parent
             super().__init__(
                 message,
                 code=error_code or "AUTH_ERROR",
@@ -61,7 +73,7 @@ class FlextAuthExceptions(FlextExceptions):
             field: str | None = None,
             **kwargs: object,
         ) -> None:
-            """Initialize validation error with field context using helpers.
+            """Initialize validation error with field context.
 
             Args:
                 message: Error message
@@ -69,21 +81,30 @@ class FlextAuthExceptions(FlextExceptions):
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Store field before extracting common kwargs
             self.field = field
 
-            # Extract common parameters using helper
-            base_context, correlation_id, error_code = self._extract_common_kwargs(
-                kwargs
-            )
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
+            error_code = kwargs.get("error_code")
 
-            # Build context with validation-specific fields
-            context = self._build_context(
-                base_context,
-                field=field,
-            )
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
+            if error_code is not None and not isinstance(error_code, str):
+                error_code = str(error_code)
 
-            # Call parent with complete error information
+            # Build context
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
+            context["field"] = field
+
+            # Call parent
             super().__init__(
                 message,
                 code=error_code or "VALIDATION_ERROR",
@@ -102,7 +123,7 @@ class FlextAuthExceptions(FlextExceptions):
             username: str | None = None,
             **kwargs: object,
         ) -> None:
-            """Initialize authentication error with username context using helpers.
+            """Initialize authentication error with username context.
 
             Args:
                 message: Error message
@@ -110,21 +131,30 @@ class FlextAuthExceptions(FlextExceptions):
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Store username before extracting common kwargs
             self.username = username
 
-            # Extract common parameters using helper
-            base_context, correlation_id, error_code = self._extract_common_kwargs(
-                kwargs
-            )
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
+            error_code = kwargs.get("error_code")
 
-            # Build context with authentication-specific fields
-            context = self._build_context(
-                base_context,
-                username=username,
-            )
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
+            if error_code is not None and not isinstance(error_code, str):
+                error_code = str(error_code)
 
-            # Call parent with complete error information
+            # Build context
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
+            context["username"] = username
+
+            # Call parent
             super().__init__(
                 message,
                 code=error_code or "AUTHENTICATION_FAILED",
@@ -143,7 +173,7 @@ class FlextAuthExceptions(FlextExceptions):
             required_role: str | None = None,
             **kwargs: object,
         ) -> None:
-            """Initialize authorization error with role context using helpers.
+            """Initialize authorization error with role context.
 
             Args:
                 message: Error message
@@ -151,21 +181,30 @@ class FlextAuthExceptions(FlextExceptions):
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Store required_role before extracting common kwargs
             self.required_role = required_role
 
-            # Extract common parameters using helper
-            base_context, correlation_id, error_code = self._extract_common_kwargs(
-                kwargs
-            )
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
+            error_code = kwargs.get("error_code")
 
-            # Build context with authorization-specific fields
-            context = self._build_context(
-                base_context,
-                required_role=required_role,
-            )
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
+            if error_code is not None and not isinstance(error_code, str):
+                error_code = str(error_code)
 
-            # Call parent with complete error information
+            # Build context
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
+            context["required_role"] = required_role
+
+            # Call parent
             super().__init__(
                 message,
                 code=error_code or "AUTHORIZATION_DENIED",
@@ -184,7 +223,7 @@ class FlextAuthExceptions(FlextExceptions):
             token_type: str | None = None,
             **kwargs: object,
         ) -> None:
-            """Initialize token error with token type context using helpers.
+            """Initialize token error with token type context.
 
             Args:
                 message: Error message
@@ -192,21 +231,30 @@ class FlextAuthExceptions(FlextExceptions):
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Store token_type before extracting common kwargs
             self.token_type = token_type
 
-            # Extract common parameters using helper
-            base_context, correlation_id, error_code = self._extract_common_kwargs(
-                kwargs
-            )
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
+            error_code = kwargs.get("error_code")
 
-            # Build context with token-specific fields
-            context = self._build_context(
-                base_context,
-                token_type=token_type,
-            )
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
+            if error_code is not None and not isinstance(error_code, str):
+                error_code = str(error_code)
 
-            # Call parent with complete error information
+            # Build context
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
+            context["token_type"] = token_type
+
+            # Call parent
             super().__init__(
                 message,
                 code=error_code or "TOKEN_ERROR",
@@ -225,7 +273,7 @@ class FlextAuthExceptions(FlextExceptions):
             token_type: str | None = None,
             **kwargs: object,
         ) -> None:
-            """Initialize expired token error using helpers.
+            """Initialize expired token error.
 
             Args:
                 message: Error message
@@ -233,16 +281,25 @@ class FlextAuthExceptions(FlextExceptions):
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Extract common parameters using helper
-            base_context, correlation_id, _ = self._extract_common_kwargs(kwargs)
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
 
-            # Build context with token-specific fields
-            context = self._build_context(
-                base_context,
-                token_type=token_type,
-            )
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
 
-            # Call parent with specific error code
+            # Build context
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
+            context["token_type"] = token_type
+
+            # Call parent
             super().__init__(
                 message,
                 token_type=token_type,
@@ -262,7 +319,7 @@ class FlextAuthExceptions(FlextExceptions):
             token_type: str | None = None,
             **kwargs: object,
         ) -> None:
-            """Initialize invalid token error using helpers.
+            """Initialize invalid token error.
 
             Args:
                 message: Error message
@@ -270,16 +327,25 @@ class FlextAuthExceptions(FlextExceptions):
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Extract common parameters using helper
-            base_context, correlation_id, _ = self._extract_common_kwargs(kwargs)
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
 
-            # Build context with token-specific fields
-            context = self._build_context(
-                base_context,
-                token_type=token_type,
-            )
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
 
-            # Call parent with specific error code
+            # Build context
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
+            context["token_type"] = token_type
+
+            # Call parent
             super().__init__(
                 message,
                 token_type=token_type,
@@ -299,7 +365,7 @@ class FlextAuthExceptions(FlextExceptions):
             session_id: str | None = None,
             **kwargs: object,
         ) -> None:
-            """Initialize session error with session ID context using helpers.
+            """Initialize session error with session ID context.
 
             Args:
                 message: Error message
@@ -307,21 +373,30 @@ class FlextAuthExceptions(FlextExceptions):
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Store session_id before extracting common kwargs
             self.session_id = session_id
 
-            # Extract common parameters using helper
-            base_context, correlation_id, error_code = self._extract_common_kwargs(
-                kwargs
-            )
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
+            error_code = kwargs.get("error_code")
 
-            # Build context with session-specific fields
-            context = self._build_context(
-                base_context,
-                session_id=session_id,
-            )
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
+            if error_code is not None and not isinstance(error_code, str):
+                error_code = str(error_code)
 
-            # Call parent with complete error information
+            # Build context
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
+            context["session_id"] = session_id
+
+            # Call parent
             super().__init__(
                 message,
                 code=error_code or "SESSION_ERROR",
@@ -340,7 +415,7 @@ class FlextAuthExceptions(FlextExceptions):
             session_id: str | None = None,
             **kwargs: object,
         ) -> None:
-            """Initialize session not found error using helpers.
+            """Initialize session not found error.
 
             Args:
                 message: Error message
@@ -348,16 +423,25 @@ class FlextAuthExceptions(FlextExceptions):
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Extract common parameters using helper
-            base_context, correlation_id, _ = self._extract_common_kwargs(kwargs)
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
 
-            # Build context with session-specific fields
-            context = self._build_context(
-                base_context,
-                session_id=session_id,
-            )
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
 
-            # Call parent with specific error code
+            # Build context
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
+            context["session_id"] = session_id
+
+            # Call parent
             super().__init__(
                 message,
                 session_id=session_id,
@@ -377,7 +461,7 @@ class FlextAuthExceptions(FlextExceptions):
             user_id: str | None = None,
             **kwargs: object,
         ) -> None:
-            """Initialize user error with user ID context using helpers.
+            """Initialize user error with user ID context.
 
             Args:
                 message: Error message
@@ -385,21 +469,30 @@ class FlextAuthExceptions(FlextExceptions):
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Store user_id before extracting common kwargs
             self.user_id = user_id
 
-            # Extract common parameters using helper
-            base_context, correlation_id, error_code = self._extract_common_kwargs(
-                kwargs
-            )
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
+            error_code = kwargs.get("error_code")
 
-            # Build context with user-specific fields
-            context = self._build_context(
-                base_context,
-                user_id=user_id,
-            )
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
+            if error_code is not None and not isinstance(error_code, str):
+                error_code = str(error_code)
 
-            # Call parent with complete error information
+            # Build context
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
+            context["user_id"] = user_id
+
+            # Call parent
             super().__init__(
                 message,
                 code=error_code or "USER_ERROR",
@@ -418,7 +511,7 @@ class FlextAuthExceptions(FlextExceptions):
             user_id: str | None = None,
             **kwargs: object,
         ) -> None:
-            """Initialize user not found error using helpers.
+            """Initialize user not found error.
 
             Args:
                 message: Error message
@@ -426,16 +519,25 @@ class FlextAuthExceptions(FlextExceptions):
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Extract common parameters using helper
-            base_context, correlation_id, _ = self._extract_common_kwargs(kwargs)
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
 
-            # Build context with user-specific fields
-            context = self._build_context(
-                base_context,
-                user_id=user_id,
-            )
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
 
-            # Call parent with specific error code
+            # Build context
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
+            context["user_id"] = user_id
+
+            # Call parent
             super().__init__(
                 message,
                 user_id=user_id,
@@ -455,7 +557,7 @@ class FlextAuthExceptions(FlextExceptions):
             identifier: str | None = None,
             **kwargs: object,
         ) -> None:
-            """Initialize user exists error using helpers.
+            """Initialize user exists error.
 
             Args:
                 message: Error message
@@ -463,19 +565,27 @@ class FlextAuthExceptions(FlextExceptions):
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Store identifier before extracting common kwargs
             self.identifier = identifier
 
-            # Extract common parameters using helper
-            base_context, correlation_id, _ = self._extract_common_kwargs(kwargs)
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
 
-            # Build context with user-specific fields
-            context = self._build_context(
-                base_context,
-                identifier=identifier,
-            )
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
 
-            # Call parent with specific error code
+            # Build context
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
+            context["identifier"] = identifier
+
+            # Call parent
             super().__init__(
                 message,
                 code="USER_EXISTS",
@@ -494,7 +604,7 @@ class FlextAuthExceptions(FlextExceptions):
             username: str | None = None,
             **kwargs: object,
         ) -> None:
-            """Initialize account locked error using helpers.
+            """Initialize account locked error.
 
             Args:
                 message: Error message
@@ -502,16 +612,25 @@ class FlextAuthExceptions(FlextExceptions):
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Extract common parameters using helper
-            base_context, correlation_id, _ = self._extract_common_kwargs(kwargs)
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
 
-            # Build context with authentication-specific fields
-            context = self._build_context(
-                base_context,
-                username=username,
-            )
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
 
-            # Call parent with specific error code
+            # Build context
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
+            context["username"] = username
+
+            # Call parent
             super().__init__(
                 message,
                 username=username,
@@ -531,7 +650,7 @@ class FlextAuthExceptions(FlextExceptions):
             username: str | None = None,
             **kwargs: object,
         ) -> None:
-            """Initialize account disabled error using helpers.
+            """Initialize account disabled error.
 
             Args:
                 message: Error message
@@ -539,16 +658,25 @@ class FlextAuthExceptions(FlextExceptions):
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Extract common parameters using helper
-            base_context, correlation_id, _ = self._extract_common_kwargs(kwargs)
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
 
-            # Build context with authentication-specific fields
-            context = self._build_context(
-                base_context,
-                username=username,
-            )
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
 
-            # Call parent with specific error code
+            # Build context
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
+            context["username"] = username
+
+            # Call parent
             super().__init__(
                 message,
                 username=username,
@@ -566,20 +694,31 @@ class FlextAuthExceptions(FlextExceptions):
             message: str = "Password validation failed",
             **kwargs: object,
         ) -> None:
-            """Initialize password validation error using helpers.
+            """Initialize password validation error.
 
             Args:
                 message: Error message
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Extract common parameters using helper
-            base_context, correlation_id, _ = self._extract_common_kwargs(kwargs)
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
+
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
 
             # Build context
-            context = self._build_context(base_context)
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
 
-            # Call parent with specific error code
+            # Call parent
             super().__init__(
                 message,
                 code="PASSWORD_VALIDATION_ERROR",
@@ -596,20 +735,31 @@ class FlextAuthExceptions(FlextExceptions):
             message: str = "Rate limit exceeded",
             **kwargs: object,
         ) -> None:
-            """Initialize rate limit error using helpers.
+            """Initialize rate limit error.
 
             Args:
                 message: Error message
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Extract common parameters using helper
-            base_context, correlation_id, _ = self._extract_common_kwargs(kwargs)
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
+
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
 
             # Build context
-            context = self._build_context(base_context)
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
 
-            # Call parent with specific error code
+            # Call parent
             super().__init__(
                 message,
                 code="RATE_LIMIT_EXCEEDED",
@@ -626,20 +776,31 @@ class FlextAuthExceptions(FlextExceptions):
             message: str = "Configuration error",
             **kwargs: object,
         ) -> None:
-            """Initialize configuration error using helpers.
+            """Initialize configuration error.
 
             Args:
                 message: Error message
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Extract common parameters using helper
-            base_context, correlation_id, _ = self._extract_common_kwargs(kwargs)
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
+
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
 
             # Build context
-            context = self._build_context(base_context)
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
 
-            # Call parent with specific error code
+            # Call parent
             super().__init__(
                 message,
                 code="CONFIGURATION_ERROR",
@@ -656,20 +817,31 @@ class FlextAuthExceptions(FlextExceptions):
             message: str = "Session has expired",
             **kwargs: object,
         ) -> None:
-            """Initialize session expired error using helpers.
+            """Initialize session expired error.
 
             Args:
                 message: Error message
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Extract common parameters using helper
-            base_context, correlation_id, _ = self._extract_common_kwargs(kwargs)
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
+
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
 
             # Build context
-            context = self._build_context(base_context)
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
 
-            # Call parent with specific error code
+            # Call parent
             super().__init__(
                 message,
                 code="SESSION_EXPIRED",
@@ -686,20 +858,31 @@ class FlextAuthExceptions(FlextExceptions):
             message: str = "Session is invalid",
             **kwargs: object,
         ) -> None:
-            """Initialize session invalid error using helpers.
+            """Initialize session invalid error.
 
             Args:
                 message: Error message
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Extract common parameters using helper
-            base_context, correlation_id, _ = self._extract_common_kwargs(kwargs)
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
+
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
 
             # Build context
-            context = self._build_context(base_context)
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
 
-            # Call parent with specific error code
+            # Call parent
             super().__init__(
                 message,
                 code="SESSION_INVALID",
@@ -716,20 +899,31 @@ class FlextAuthExceptions(FlextExceptions):
             message: str = "User already exists",
             **kwargs: object,
         ) -> None:
-            """Initialize user already exists error using helpers.
+            """Initialize user already exists error.
 
             Args:
                 message: Error message
                 **kwargs: Additional context (context, correlation_id, error_code)
 
             """
-            # Extract common parameters using helper
-            base_context, correlation_id, _ = self._extract_common_kwargs(kwargs)
+            # Extract parameters
+            base_context = kwargs.get("context", {})
+            correlation_id = kwargs.get("correlation_id")
+
+            # Ensure types
+            if not isinstance(base_context, dict):
+                base_context = {}
+            if correlation_id is not None and not isinstance(correlation_id, str):
+                correlation_id = str(correlation_id)
 
             # Build context
-            context = self._build_context(base_context)
+            context = dict(base_context)
+            if "domain" not in context:
+                context["domain"] = "authentication"
+            if "service" not in context:
+                context["service"] = "flext_auth"
 
-            # Call parent with specific error code
+            # Call parent
             super().__init__(
                 message,
                 code="USER_ALREADY_EXISTS",

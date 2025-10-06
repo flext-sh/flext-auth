@@ -12,22 +12,22 @@ from flext_auth.api import FlextAuth
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.exceptions import FlextAuthExceptions
-from flext_auth.middleware import HttpAuthMiddleware, WebAuthMiddleware
+from flext_auth.middleware import FlextAuthMiddleware
 from flext_auth.models import FlextAuthModels
 from flext_auth.protocols import FlextAuthProtocols
 from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers import (
-    ApiKeyAuthProvider,
-    BaseAuthProvider,
-    BaseAuthProviderMixin,
-    BasicAuthProvider,
-    CertificateAuthProvider,
-    JwtAuthProvider,
-    KerberosAuthProvider,
-    LdapAuthProvider,
-    OAuth2AuthProvider,
-    OidcAuthProvider,
-    SamlAuthProvider,
+    FlextAuthApiKeyProvider,
+    FlextAuthBaseProvider,
+    FlextAuthBasicProvider,
+    FlextAuthCertificateProvider,
+    FlextAuthJwtProvider,
+    FlextAuthKerberosProvider,
+    FlextAuthLdapProvider,
+    FlextAuthOAuth2Provider,
+    FlextAuthOidcProvider,
+    FlextAuthProviderMixin,
+    FlextAuthSamlProvider,
 )
 from flext_auth.quickstart import FlextAuthQuickstart
 from flext_auth.registry import FlextAuthRegistry
@@ -45,33 +45,32 @@ __version_info__: tuple[int | str, ...] = VERSION.version_info
 __all__ = [
     "PROJECT_VERSION",
     "VERSION",
-    "ApiKeyAuthProvider",
-    "BaseAuthProvider",
-    "BaseAuthProviderMixin",
-    "BasicAuthProvider",
-    "CertificateAuthProvider",
     "FlextAuth",
+    "FlextAuthApiKeyProvider",
+    "FlextAuthBaseProvider",
+    "FlextAuthBasicProvider",
+    "FlextAuthCertificateProvider",
     "FlextAuthConfig",
     "FlextAuthConstants",
     "FlextAuthExceptions",
+    "FlextAuthJwtProvider",
+    "FlextAuthKerberosProvider",
+    "FlextAuthLdapProvider",
+    "FlextAuthMiddleware",
     "FlextAuthModels",
+    "FlextAuthOAuth2Provider",
+    "FlextAuthOidcProvider",
     "FlextAuthProtocols",
+    "FlextAuthProviderMixin",
     "FlextAuthProviderService",
     "FlextAuthQuickstart",
     "FlextAuthRegistry",
+    "FlextAuthSamlProvider",
     "FlextAuthSessionService",
     "FlextAuthTokenService",
     "FlextAuthTypes",
     "FlextAuthUserService",
     "FlextAuthVersion",
-    "HttpAuthMiddleware",
-    "JwtAuthProvider",
-    "KerberosAuthProvider",
-    "LdapAuthProvider",
-    "OAuth2AuthProvider",
-    "OidcAuthProvider",
-    "SamlAuthProvider",
-    "WebAuthMiddleware",
     "__version__",
     "__version_info__",
 ]

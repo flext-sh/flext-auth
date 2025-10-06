@@ -34,7 +34,7 @@ def example_basic_authentication() -> None:
 
     # Show current configuration
     # Note: FlextAuth doesn't have a get_config() method
-    config = FlextAuthConfig()
+    config = FlextAuthConfig.create()
 
     logger.info(
         "Authentication configuration loaded",
@@ -168,14 +168,14 @@ def example_user_lifecycle() -> None:
 
         if auth_result.is_success:
             logger.info("User authentication successful")
-            auth_data = auth_result.value
+            auth_token = auth_result.value
 
             # Extract token info
-            jwt_token_str = str(auth_data.get("jwt_token", ""))
-            session_id = auth_data.get("session_id")
+            jwt_token_str = auth_token.token
+            session_id = auth_token.session_id
 
             logger.info(
-                "Authentication tokens generated",
+                "Authentication token generated",
                 jwt_token_preview=jwt_token_str[:30] + "..." if jwt_token_str else "",
                 session_id=session_id,
             )
@@ -221,10 +221,8 @@ def example_direct_auth() -> None:
         if auth_result.is_success:
             logger.info("User authenticated successfully", username=username)
 
-            auth_data = auth_result.value
-            tokens_data = auth_data.get("tokens", {})
-
-            access_token = str(tokens_data.get("access_token", ""))
+            auth_token = auth_result.value
+            access_token = auth_token.token
             logger.info(
                 "Access token generated",
                 token_preview=access_token[:20] + "..." if access_token else "",
@@ -316,13 +314,12 @@ def example_complete_workflow() -> None:
         logger.error("Authentication failed", error=auth_result.error)
         return
 
-    auth_data = auth_result.value
+    auth_token = auth_result.value
     logger.info("Authentication successful")
 
     # Step 3: Token operations
     logger.info("Step 3: Token operations")
-    jwt_token_str = str(auth_data.get("jwt_token", ""))
-    session_id = str(auth_data.get("session_id", ""))
+    jwt_token_str = auth_token.token
 
     # Validate token
     token_validation = auth.validate_token(jwt_token_str)
@@ -332,20 +329,16 @@ def example_complete_workflow() -> None:
     else:
         logger.error("Token validation failed", error=token_validation.error)
 
-    # Step 4: Session management
-    logger.info("Step 4: Session management")
-    user_sessions = auth.get_user_sessions(user.id)
-    if user_sessions.is_success:
-        sessions = user_sessions.value
-        logger.info("User sessions retrieved", active_sessions=len(sessions))
-
-    # Step 5: Logout
-    logger.info("Step 5: User logout")
-    logout_result = auth.logout_user(session_id)
-    if logout_result.is_success:
-        logger.info("User logged out successfully")
+    # Step 4: Get user information
+    logger.info("Step 4: Get user information")
+    # Use the user_id from the user object, or fallback to username
+    user_id = user.user_id or user.username
+    user_info = auth.get_user(user_id)
+    if user_info.is_success:
+        retrieved_user = user_info.value
+        logger.info("User information retrieved", username=retrieved_user.username)
     else:
-        logger.error("Logout failed", error=logout_result.error)
+        logger.error("Failed to get user information", error=user_info.error)
 
 
 def generate_secure_password(length: int = 16) -> str:

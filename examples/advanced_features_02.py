@@ -18,28 +18,22 @@ import string
 from flext_core import FlextLogger
 
 from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthModels
-from flext_auth.constants import FlextAuthConstants
 
 
 def example_advanced_configuration() -> None:
     """Demonstrate advanced configuration options."""
-    # Create auth with advanced configuration
-    auth_result = FlextAuth.create_with_config_overrides(
-        jwt_expiry_minutes=FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES * 2,
-        bcrypt_rounds=FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS,
-    )
-    if auth_result.is_failure:
-        # Use proper logging instead of print
-        logger = FlextLogger(__name__)
-        logger.error(f"Failed to create auth: {auth_result.error}")
-        return
+    # Create custom configuration
+    config = FlextAuthConfig()
 
-    # Show configuration details
-    # Note: FlextAuth doesn't have a get_config() method
-    # Configuration is passed during initialization
-    FlextAuthConfig()
+    # Create auth with custom configuration
+    FlextAuth(config=config)
 
-    # Display some configuration settings
+    # Show that configuration is applied
+    # Note: Configuration is encapsulated within FlextAuth
+    logger = FlextLogger(__name__)
+    logger.info("FlextAuth created with custom configuration")
+
+    # Display some configuration details (would need config inspection if available)
 
 
 def example_jwt_operations() -> None:
@@ -57,11 +51,10 @@ def example_jwt_operations() -> None:
     if user_result.is_failure:
         return
 
-    user = user_result.value
-
-    # Generate JWT with custom expiry
-    token_result = auth.generate_jwt_token(
-        user.id, expires_in_minutes=FlextAuthConstants.Session.DEFAULT_EXPIRY_MINUTES
+    # Authenticate user to get JWT token
+    token_result = auth.authenticate_user(
+        username="advanced_user",
+        password=os.getenv("EXAMPLE_PASSWORD", "AdvancedPassword123!"),
     )
     if token_result.is_success:
         auth_token = token_result.value
@@ -102,7 +95,7 @@ def example_role_based_access() -> None:
 
 
 def example_session_management() -> None:
-    """Demonstrate advanced session management."""
+    """Demonstrate authentication session handling."""
     auth: FlextAuth = FlextAuth()
 
     # Register user for session demo
@@ -114,39 +107,14 @@ def example_session_management() -> None:
     if user_result.is_failure:
         return
 
-    user = user_result.value
-
-    # Create multiple authentication sessions
-    sessions = []
+    # Create multiple authentication tokens (sessions handled internally)
+    tokens = []
     for _i in range(3):
         auth_result = auth.authenticate_user("sessionuser", "SessionPass123!")
         if auth_result.is_success:
-            session_id = auth_result.value.get("session_id")
-            sessions.append(session_id)
-
-    # Show user sessions
-    user_sessions_result = auth.get_user_sessions(user.id)
-    if user_sessions_result.is_success:
-        user_sessions = user_sessions_result.value
-
-        for session in user_sessions:
-            # Display session information
-            # Session is active
-            if session:
-                # Process active session
-                pass
-
-    # Cleanup expired sessions
-    cleanup_result = auth.cleanup_expired_sessions()
-    if cleanup_result.is_success:
-        pass
-
-    # Logout all sessions
-    for session_id in sessions:
-        if session_id:
-            logout_result = auth.logout_user(str(session_id))
-            if logout_result.is_success:
-                pass
+            token = auth_result.value.token
+            tokens.append(token)
+            # Session management is handled internally by the authentication provider
 
 
 def example_password_security() -> None:
@@ -221,8 +189,9 @@ def example_token_validation() -> None:
 
     user = user_result.value
 
-    # Generate token
-    token_result = auth.generate_jwt_token(user.id)
+    # Generate token - use user_id or fallback to username
+    user_id = user.user_id or user.username
+    token_result = auth.generate_token_for_user(user_id)
     if token_result.is_failure:
         return
 

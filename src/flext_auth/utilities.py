@@ -11,14 +11,23 @@ from datetime import datetime
 
 import bcrypt
 import jwt
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextResult, FlextService, FlextTypes
 from pydantic import SecretStr
 
 from flext_auth.constants import FlextAuthConstants
 
 
-class FlextAuthUtilities:
+class FlextAuthUtilities(FlextService):
     """Auth utilities class with JWT and password processing."""
+
+    def execute(self, _request: object) -> FlextResult[object]:
+        """Execute method for FlextService interface.
+
+        FlextAuthUtilities is a namespace class - use specific utility classes instead.
+        """
+        return FlextResult[object].fail(
+            "FlextAuthUtilities is a namespace class - use specific utility classes like PasswordProcessing"
+        )
 
     class PasswordProcessing:
         """Password hashing and verification utilities using bcrypt."""
@@ -222,7 +231,9 @@ class FlextAuthUtilities:
         """Token generation and processing utilities."""
 
         @staticmethod
-        def generate_secure_token(length: int = 32) -> str:
+        def generate_secure_token(
+            length: int = FlextAuthConstants.Defaults.DEFAULT_TOKEN_LENGTH,
+        ) -> str:
             """Generate a secure random token.
 
             Args:

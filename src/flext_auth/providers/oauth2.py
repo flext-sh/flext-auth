@@ -24,11 +24,12 @@ from flext_core import FlextLogger, FlextResult, FlextTypes
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
-from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
+from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth.providers.mixin import FlextAuthProviderMixin
 from flext_auth.transports.http import HttpTransportAdapter
 
 
-class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
+class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     """OAuth2 authentication provider supporting multiple authorization flows.
 
     This provider implements the OAuth2 protocol for authentication and authorization,
@@ -567,7 +568,7 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
             token_type = token_response["token_type"]
             expires_in = token_response.get("expires_in")
             refresh_token = token_response.get("refresh_token")
-            scope = token_response.get("scope", self._scope)
+            # scope = token_response.get("scope", self._scope)  # Not used in current implementation
 
             # Calculate expiration time
             expires_at = None
@@ -585,7 +586,7 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
                 token_type=token_type.lower() if token_type else "bearer",
                 expires_at=expires_at,
                 refresh_token=refresh_token,
-                scope=scope,
+                is_revoked=False,
                 metadata={
                     "oauth2_flow": self._flow,
                     "grant_type": self._flow,
@@ -682,4 +683,4 @@ class OAuth2AuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         return FlextResult[str].ok(auth_url)
 
 
-__all__ = ["OAuth2AuthProvider"]
+__all__ = ["FlextAuthOAuth2Provider"]

@@ -116,97 +116,98 @@
         flext-auth        = "flext_auth.cli_new:cli"
         flext-auth-legacy = "flext_auth.cli:main"
 
-[tool.poetry]
-    authors = [
-        "FLEXT Team <team@flext.sh>",
-    ]
-    description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
-    name = "flext-auth"
-    version = "0.9.0"
-    [[tool.poetry.packages]]
-        from    = "src"
-        include = "flext_auth"
+[tool]
+    [tool.poetry]
+        authors = [
+            "FLEXT Team <team@flext.sh>",
+        ]
+        description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
+        name = "flext-auth"
+        version = "0.9.0"
+        [[tool.poetry.packages]]
+            from    = "src"
+            include = "flext_auth"
 
-    [tool.poetry.dependencies.flext-core]
-        develop = true
-        path    = "../flext-core"
+        [tool.poetry.dependencies.flext-core]
+            develop = true
+            path    = "../flext-core"
 
-    [tool.poetry.dependencies.flext-observability]
-        develop = true
-        path    = "../flext-observability"
+        [tool.poetry.dependencies.flext-observability]
+            develop = true
+            path    = "../flext-observability"
 
-    [tool.poetry.group.dev.dependencies]
-        commitizen     = ">=4.8.3"
-        detect-secrets = ">=1.5.0"
-        pyrefly        = "^0.34.0"
+        [tool.poetry.group.dev.dependencies]
+            commitizen     = ">=4.8.3"
+            detect-secrets = ">=1.5.0"
+            pyrefly        = "^0.34.0"
 
-[tool.bandit]
-    extend = "../.bandit-shared.toml"
+    [tool.bandit]
+        extend = "../.bandit-shared.toml"
 
-[tool.coverage]
-    extend = "../.coverage-shared.toml"
+    [tool.coverage]
+        extend = "../.coverage-shared.toml"
 
-[tool.deptry]
-    exclude = [
-        ".archive",
-        ".git",
-        ".meltano",
-        ".mypy_cache",
-        ".pyrefly_cache",
-        ".pytest_cache",
-        ".ruff_cache",
-        ".venv",
-        "__pycache__",
-        "build",
-        "dist",
-        "htmlcov",
-        "node_modules",
-        "reports",
-        "vendor",
-        "venv",
-    ]
-    known_first_party = [
-        "flext_auth",
-    ]
-    pep621_dev_dependency_groups = [
-        "dev",
-        "security",
-        "test",
-        "typings",
-    ]
-
-[tool.pytest.ini_options]
-    addopts = "-v --tb=short --strict-markers --strict-config --color=yes"
-    markers = [
-        "concurrency: marks tests as concurrency tests",
-        "e2e: marks tests as end-to-end tests",
-        "integration: marks tests as integration tests",
-        "memory: marks tests as memory tests",
-        "performance: marks tests as performance tests",
-        "race_condition: marks tests as race condition tests",
-        "regression: marks tests as regression tests",
-        "slow: marks tests as slow (deselect with '-m \"not slow\"')",
-        "smoke: marks tests as smoke tests",
-        "timeout: marks tests as timeout tests",
-        "unit: marks tests as unit tests",
-    ]
-    testpaths = [
-        "tests",
-    ]
-
-[tool.ruff]
-    extend = "../ruff-shared.toml"
-
-    [tool.ruff.lint.isort]
-        known-first-party = [
+    [tool.deptry]
+        exclude = [
+            ".archive",
+            ".git",
+            ".meltano",
+            ".mypy_cache",
+            ".pyrefly_cache",
+            ".pytest_cache",
+            ".ruff_cache",
+            ".venv",
+            "__pycache__",
+            "build",
+            "dist",
+            "htmlcov",
+            "node_modules",
+            "reports",
+            "vendor",
+            "venv",
+        ]
+        known_first_party = [
             "flext_auth",
         ]
+        pep621_dev_dependency_groups = [
+            "dev",
+            "security",
+            "test",
+            "typings",
+        ]
 
-[tool.pyrefly]
-    python-version = "3.13"
-    search-path = [
-        "examples",
-        "scripts",
-        "src",
-        "tests",
-    ]
+    [tool.pytest.ini_options]
+        addopts = "-v --tb=short --strict-markers --strict-config --color=yes"
+        markers = [
+            "concurrency: marks tests as concurrency tests",
+            "e2e: marks tests as end-to-end tests",
+            "integration: marks tests as integration tests",
+            "memory: marks tests as memory tests",
+            "performance: marks tests as performance tests",
+            "race_condition: marks tests as race condition tests",
+            "regression: marks tests as regression tests",
+            "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+            "smoke: marks tests as smoke tests",
+            "timeout: marks tests as timeout tests",
+            "unit: marks tests as unit tests",
+        ]
+        testpaths = [
+            "tests",
+        ]
+
+    [tool.ruff]
+        extend = "../ruff-shared.toml"
+
+        [tool.ruff.lint.isort]
+            known-first-party = [
+                "flext_auth",
+            ]
+
+    [tool.pyrefly]
+        python-version = "3.13"
+        search-path = [
+            "examples",
+            "scripts",
+            "src",
+            "tests",
+        ]

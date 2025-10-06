@@ -39,9 +39,9 @@ def demo_complete_auth_workflow() -> None:
     if auth_result.is_success:
         auth_data = auth_result.value
 
-        # Extract authentication details
-        session_id = auth_data.get("session_id")
-        jwt_token = auth_data.get("jwt_token")
+        # Extract authentication details - auth_data is an AuthToken object
+        session_id = auth_data.session_id
+        jwt_token = auth_data.token
 
         # 4. Validate JWT token
         if jwt_token:
@@ -50,7 +50,8 @@ def demo_complete_auth_workflow() -> None:
                 pass
 
         # 5. Session management
-        user_sessions = auth.get_user_sessions(user.id)
+        user_id = user.user_id or user.username
+        user_sessions = auth.get_user_sessions(user_id)
         if user_sessions.is_success:
             pass
 
@@ -107,12 +108,15 @@ def demo_jwt_operations() -> None:
     user = user_result.value
 
     # Generate JWT token
-    token_result = auth.generate_jwt_token(user.id)
+    user_id = user.user_id or user.username
+    token_result = auth.generate_jwt_token(user_id)
     if token_result.is_success:
         token = token_result.value
+        # Extract token string for validation
+        token_string = token.token if hasattr(token, "token") else str(token)
 
         # Validate token
-        validation_result = auth.validate_token(token)
+        validation_result = auth.validate_token(token_string)
         if validation_result.is_success:
             pass
 

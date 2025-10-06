@@ -325,7 +325,7 @@ class FlextAuthModels(FlextModels):
             # If user has too many failed attempts, should be locked
             if (
                 self.failed_login_attempts
-                >= FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS
+                >= FlextAuthConstants.AuthSecurity.MAX_LOGIN_ATTEMPTS
                 and not self.locked_until
             ):
                 error_msg = "User with excessive failed attempts must be locked"
@@ -425,13 +425,13 @@ class FlextAuthModels(FlextModels):
             # Check if this attempt will trigger lockout BEFORE incrementing
             will_lock = (
                 self.failed_login_attempts + 1
-                >= FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS
+                >= FlextAuthConstants.AuthSecurity.MAX_LOGIN_ATTEMPTS
             )
 
             if will_lock:
                 # Set locked_until BEFORE incrementing to avoid validation error
                 self.locked_until = datetime.now(UTC) + timedelta(
-                    minutes=FlextAuthConstants.Security.LOCKOUT_DURATION_MINUTES
+                    minutes=FlextAuthConstants.AuthSecurity.LOCKOUT_DURATION_MINUTES
                 )
 
             # Now increment - validator will see locked_until is set
@@ -477,15 +477,6 @@ class FlextAuthModels(FlextModels):
                 )
 
         @classmethod
-        def get_by_username(cls, _username: str) -> FlextResult[FlextAuthModels.User]:
-            """Get user by username (mock implementation for examples)."""
-            # This would normally query a database
-            # For examples, we'll return a failure since we don't have a real user store
-            return FlextResult[FlextAuthModels.User].fail(
-                "User not found - this is a mock implementation"
-            )
-
-        @classmethod
         def create_user(
             cls, request: FlextAuthModels.UserCreationRequest
         ) -> FlextResult[FlextAuthModels.User]:
@@ -514,6 +505,16 @@ class FlextAuthModels(FlextModels):
                 return FlextResult[FlextAuthModels.User].fail(
                     f"User validation failed: {e}"
                 )
+
+        @classmethod
+        def get_by_username(
+            cls, username: str
+        ) -> FlextResult[FlextAuthModels.User | None]:
+            """Get user by username."""
+            # This is a placeholder implementation
+            # In a real implementation, this would query the database
+            _ = username  # Mark as used to avoid linting error
+            return FlextResult[FlextAuthModels.User | None].ok(None)
 
     class Role(FlextModels.Role):
         """Auth Role domain model extending FlextModels.Role."""
@@ -657,7 +658,9 @@ class FlextAuthModels(FlextModels):
             # Allow last_accessed_at to be equal to created_at
             return self
 
-        def extend_session(self, hours: int = 2) -> FlextResult[bool]:
+        def extend_session(
+            self, hours: int = FlextAuthConstants.Session.DEFAULT_EXTEND_HOURS
+        ) -> FlextResult[bool]:
             """Extend session expiration time (implements FlextAuthSessionProtocol)."""
             try:
                 self.expires_at = datetime.now(UTC) + timedelta(hours=hours)
@@ -680,7 +683,7 @@ class FlextAuthModels(FlextModels):
             user_id: str,
             ip_address: str | None = None,
             user_agent: str | None = None,
-            expiry_hours: int = 2,
+            expiry_hours: int = FlextAuthConstants.Session.DEFAULT_EXTEND_HOURS,
         ) -> FlextResult[FlextAuthModels.Session]:
             """Create new session for user using secrets directly."""
             try:

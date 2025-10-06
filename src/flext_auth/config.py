@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import Any
+
 from flext_core import (
     FlextConfig,
     FlextTypes,
@@ -19,6 +21,7 @@ from pydantic import (
     SecretStr,
     model_validator,
 )
+from pydantic_settings import SettingsConfigDict
 
 from flext_auth.constants import FlextAuthConstants
 
@@ -30,12 +33,14 @@ class FlextAuthConfig(FlextConfig):
     All settings are environment-configurable for production deployment flexibility.
     """
 
-    class Config:
-        """Pydantic configuration for FlextAuthConfig."""
-
-        env_prefix = "FLEXT_AUTH_"
-        case_sensitive = False
-        validate_assignment = True
+    model_config = SettingsConfigDict(
+        env_prefix="FLEXT_AUTH_",
+        case_sensitive=False,
+        validate_assignment=True,
+        env_file=".env",
+        extra="ignore",
+        validate_default=True,
+    )
 
     # JWT Configuration
     jwt_auth_secret: SecretStr = Field(
@@ -81,12 +86,12 @@ class FlextAuthConfig(FlextConfig):
 
     # Login Security
     max_login_attempts: int = Field(
-        default=FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS,
+        default=FlextAuthConstants.AuthSecurity.MAX_LOGIN_ATTEMPTS,
         description="Maximum login attempts before account lockout",
         ge=1,
     )
     lockout_duration_minutes: int = Field(
-        default=FlextAuthConstants.Security.LOCKOUT_DURATION_MINUTES,
+        default=FlextAuthConstants.AuthSecurity.LOCKOUT_DURATION_MINUTES,
         description="Account lockout duration in minutes",
         ge=1,
     )
@@ -168,12 +173,12 @@ class FlextAuthConfig(FlextConfig):
 
     # Request Limits
     max_requests_per_minute: int = Field(
-        default=FlextAuthConstants.Security.MAX_REQUESTS_PER_MINUTE,
+        default=FlextAuthConstants.AuthSecurity.MAX_REQUESTS_PER_MINUTE,
         description="Maximum requests per minute per IP",
         ge=1,
     )
     max_requests_per_hour: int = Field(
-        default=FlextAuthConstants.Security.MAX_REQUESTS_PER_HOUR,
+        default=FlextAuthConstants.AuthSecurity.MAX_REQUESTS_PER_HOUR,
         description="Maximum requests per hour per IP",
         ge=1,
     )
@@ -187,18 +192,6 @@ class FlextAuthConfig(FlextConfig):
         default=False,
         description="Enable password history to prevent reuse",
     )
-
-    @classmethod
-    def get_global_instance(cls) -> FlextAuthConfig:
-        """Get or create the global FlextAuthConfig instance.
-
-        Returns:
-            The global FlextAuthConfig instance
-
-        """
-        if not hasattr(cls, "_global_instance") or cls._global_instance is None:
-            cls._global_instance = cls()
-        return cls._global_instance
 
     def to_dict(self) -> FlextTypes.Dict:
         """Convert configuration to dictionary for serialization."""
@@ -255,26 +248,31 @@ class FlextAuthConfig(FlextConfig):
             raise ValueError(msg)
 
         # Validate login attempts
-        if self.max_login_attempts > FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS:
-            msg = f"Maximum login attempts cannot exceed {FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS}"
+        if self.max_login_attempts > FlextAuthConstants.AuthSecurity.MAX_LOGIN_ATTEMPTS:
+            msg = f"Maximum login attempts cannot exceed {FlextAuthConstants.AuthSecurity.MAX_LOGIN_ATTEMPTS}"
             raise ValueError(msg)
 
         # Validate request limits
         if (
             self.max_requests_per_minute
-            > FlextAuthConstants.Security.MAX_REQUESTS_PER_MINUTE
+            > FlextAuthConstants.AuthSecurity.MAX_REQUESTS_PER_MINUTE
         ):
-            msg = f"Maximum requests per minute cannot exceed {FlextAuthConstants.Security.MAX_REQUESTS_PER_MINUTE}"
+            msg = f"Maximum requests per minute cannot exceed {FlextAuthConstants.AuthSecurity.MAX_REQUESTS_PER_MINUTE}"
             raise ValueError(msg)
 
         if (
             self.max_requests_per_hour
-            > FlextAuthConstants.Security.MAX_REQUESTS_PER_HOUR
+            > FlextAuthConstants.AuthSecurity.MAX_REQUESTS_PER_HOUR
         ):
-            msg = f"Maximum requests per hour cannot exceed {FlextAuthConstants.Security.MAX_REQUESTS_PER_HOUR}"
+            msg = f"Maximum requests per hour cannot exceed {FlextAuthConstants.AuthSecurity.MAX_REQUESTS_PER_HOUR}"
             raise ValueError(msg)
 
         return self
+
+    @classmethod
+    def create(cls, **kwargs: Any) -> FlextAuthConfig:
+        """Create a new FlextAuthConfig instance with optional overrides."""
+        return cls(**kwargs)
 
 
 __all__ = [

@@ -60,7 +60,7 @@ def main() -> None:
 
     # Create authentication service
     auth_service = FlextAuth(
-        config=FlextAuthConfig(
+        config=FlextAuthConfig.create(
             jwt_auth_secret="demo-jwt-secret-key-for-examples-only-not-secure",  # nosec
             jwt_expiry_minutes=30,
             bcrypt_rounds=4,  # Fast for demo
@@ -94,13 +94,8 @@ def main() -> None:
     else:
         print(f"✗ Token validation failed: {validation_result.error}")
 
-    # Refresh token
-    refresh_result = auth_service.refresh_token(token.token)
-    if refresh_result.is_success:
-        new_token = refresh_result.value
-        print(f"✓ Token refresh successful, new token: {new_token.token[:20]}...")
-    else:
-        print(f"✗ Token refresh failed: {refresh_result.error}")
+    # Token refresh is handled internally by the authentication provider
+    # when tokens expire, re-authentication is required
 
     # 3. User Management Example
     print("\n=== User Management Demo ===")

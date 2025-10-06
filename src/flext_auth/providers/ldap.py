@@ -21,10 +21,11 @@ from datetime import UTC, datetime
 from flext_core import FlextLogger, FlextResult, FlextTypes
 
 from flext_auth.models import FlextAuthModels
-from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
+from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth.providers.mixin import FlextAuthProviderMixin
 
 
-class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
+class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     """LDAP authentication provider.
 
     This provider implements LDAP authentication for integration with
@@ -51,7 +52,7 @@ class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         ...     "user_search_filter": "(uid={username})",
         ...     "use_ssl": True,
         ... }
-        >>> provider = LdapAuthProvider(config)
+        >>> provider = FlextAuthProvidersLdap(config)
         >>> # Authenticate user
         >>> result = provider.authenticate({
         ...     "username": "jdoe",
@@ -98,8 +99,8 @@ class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
 
         # LDAP connection will be initialized on demand
         # In production, integrate with flext-ldap:
-        # from flext_ldap import FlextLdapClient
-        # self._ldap_client = FlextLdapClient(...)
+        # from flext_ldap import FlextLDAPClient
+        # self._ldap_client = FlextLDAPClient(...)
 
         self._logger.info(
             "LDAP authentication provider initialized",
@@ -320,4 +321,4 @@ class LdapAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         return groups
 
 
-__all__ = ["LdapAuthProvider"]
+__all__ = ["FlextAuthLdapProvider"]

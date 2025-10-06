@@ -20,19 +20,37 @@ from flext_core import (
     FlextProcessors,
     FlextRegistry,
     FlextResult,
-    FlextTypes,
+    FlextService,
 )
 
 from flext_auth.config import FlextAuthConfig
+from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 
+# Type definitions imported from typings
+from flext_auth.typings import FlextAuthTypes
 
-class FlextAuthManagers:
+UserData = FlextAuthTypes.Managers.UserData
+SessionData = FlextAuthTypes.Managers.SessionData
+LogEntry = FlextAuthTypes.Managers.LogEntry
+AttemptData = FlextAuthTypes.Managers.AttemptData
+
+
+class FlextAuthManagers(FlextService):
     """Namespace class for all authentication managers following FLEXT patterns.
 
     This namespace class contains all manager implementations as nested classes,
     providing a single import point while maintaining clean separation of concerns.
     """
+
+    def execute(self) -> FlextResult[object]:
+        """Execute method for FlextService interface.
+
+        FlextAuthManagers is a namespace class - use specific manager classes instead.
+        """
+        return FlextResult[object].fail(
+            "FlextAuthManagers is a namespace class - use specific manager classes like FlextAuthUserManager"
+        )
 
     class FlextAuthUserManager:
         """User management business logic.
@@ -47,7 +65,7 @@ class FlextAuthManagers:
             self._logger = FlextLogger(__name__)
             self._context = FlextContext()
             self._bus = FlextBus()
-            self._users: FlextTypes.NestedDict = {}  # In production, use database
+            self._users: dict[str, UserData] = {}  # In production, use database
 
         def create_user(
             self,
@@ -182,19 +200,21 @@ class FlextAuthManagers:
             self._context = FlextContext()
             self._bus = FlextBus()
             self._dispatcher = FlextDispatcher()
-            self._sessions: FlextTypes.NestedDict = {}  # In production, use Redis/database
+            self._sessions: dict[
+                str, dict[str, object]
+            ] = {}  # In production, use Redis/database
 
         def create_session(
             self,
             user_id: str,
             token: str,
             expires_in_minutes: int = 60,
-        ) -> FlextResult[FlextAuthModels.AuthSession]:
+        ) -> FlextResult[FlextAuthModels.Session]:
             """Create a new session."""
             session_id = str(uuid4())
             expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
 
-            session_data = {
+            session_data: dict[str, object] = {
                 "id": session_id,
                 "user_id": user_id,
                 "token": token,
@@ -204,24 +224,25 @@ class FlextAuthManagers:
             }
 
             self._sessions[session_id] = session_data
-            session = FlextAuthModels.AuthSession(**session_data)
-            return FlextResult[FlextAuthModels.AuthSession].ok(session)
+            session = FlextAuthModels.Session(**session_data)
+            return FlextResult[FlextAuthModels.Session].ok(session)
 
         def get_active_sessions(
             self, user_id: str
-        ) -> FlextResult[list[FlextAuthModels.AuthSession]]:
+        ) -> FlextResult[list[FlextAuthModels.Session]]:
             """Get all active sessions for a user."""
             sessions = []
             for session_data in self._sessions.values():
                 if (
                     session_data["user_id"] == user_id
                     and session_data["active"]
+                    and isinstance(session_data["expires_at"], datetime)
                     and session_data["expires_at"] > datetime.now(UTC)
                 ):
-                    session = FlextAuthModels.AuthSession(**session_data)
+                    session = FlextAuthModels.Session(**session_data)
                     sessions.append(session)
 
-            return FlextResult[list[FlextAuthModels.AuthSession]].ok(sessions)
+            return FlextResult[list[FlextAuthModels.Session]].ok(sessions)
 
         def end_session(self, user_id: str) -> FlextResult[None]:
             """End all sessions for a user."""
@@ -248,7 +269,9 @@ class FlextAuthManagers:
             return sum(
                 1
                 for session in self._sessions.values()
-                if session["active"] and session["expires_at"] > datetime.now(UTC)
+                if session["active"]
+                and isinstance(session["expires_at"], datetime)
+                and session["expires_at"] > datetime.now(UTC)
             )
 
     class FlextAuthAuditLogger:
@@ -268,7 +291,7 @@ class FlextAuthManagers:
             self._context = FlextContext()
             self._bus = FlextBus()
             self._processors = FlextProcessors()
-            self._logs: list[FlextTypes.NestedDict] = []  # In production, use database
+            self._logs: list[LogEntry] = []  # In production, use database
 
         def log_auth_success(
             self, username: str, provider: str, **extra: object
@@ -377,7 +400,7 @@ class FlextAuthManagers:
             start_date: datetime | None = None,
             end_date: datetime | None = None,
             limit: int = 100,
-        ) -> FlextResult[list[FlextTypes.NestedDict]]:
+        ) -> FlextResult[list[dict[str, object]]]:
             """Get audit logs with optional filtering."""
             # Filter logs based on criteria
             filtered_logs = self._logs
@@ -398,18 +421,22 @@ class FlextAuthManagers:
                 filtered_logs = [
                     log
                     for log in filtered_logs
-                    if log.get("timestamp") and log["timestamp"] >= start_date
+                    if log.get("timestamp")
+                    and isinstance(log["timestamp"], datetime)
+                    and log["timestamp"] >= start_date
                 ]
 
             if end_date is not None:
                 filtered_logs = [
                     log
                     for log in filtered_logs
-                    if log.get("timestamp") and log["timestamp"] <= end_date
+                    if log.get("timestamp")
+                    and isinstance(log["timestamp"], datetime)
+                    and log["timestamp"] <= end_date
                 ]
 
             # Apply limit and return
-            return FlextResult[list[FlextTypes.NestedDict]].ok(filtered_logs[-limit:])
+            return FlextResult[list[dict[str, object]]].ok(filtered_logs[-limit:])
 
     class FlextAuthRateLimiter:
         """Rate limiting business logic.
@@ -428,9 +455,13 @@ class FlextAuthManagers:
             self._context = FlextContext()
             self._bus = FlextBus()
             self._registry = FlextRegistry(dispatcher)
-            self._attempts: FlextTypes.NestedDict = {}  # username -> list of timestamps
-            self._max_attempts = 5  # Configurable
-            self._window_minutes = 15  # Configurable
+            self._attempts: dict[
+                str, AttemptData
+            ] = {}  # username -> list of timestamps
+            self._max_attempts = FlextAuthConstants.AuthSecurity.RATE_LIMIT_MAX_ATTEMPTS
+            self._window_minutes = (
+                FlextAuthConstants.AuthSecurity.RATE_LIMIT_WINDOW_MINUTES
+            )
 
         def check_rate_limit(self, username: str) -> FlextResult[None]:
             """Check if user is within rate limits."""

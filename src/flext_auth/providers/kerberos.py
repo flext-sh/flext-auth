@@ -22,10 +22,11 @@ from datetime import UTC, datetime
 from flext_core import FlextLogger, FlextResult, FlextTypes
 
 from flext_auth.models import FlextAuthModels
-from flext_auth.providers.base import BaseAuthProvider, BaseAuthProviderMixin
+from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth.providers.mixin import FlextAuthProviderMixin
 
 
-class KerberosAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
+class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     """Kerberos authentication provider.
 
     This provider implements Kerberos authentication for enterprise SSO
@@ -404,4 +405,4 @@ class KerberosAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         return {"primary": name_part, "instance": None, "realm": realm}
 
 
-__all__ = ["KerberosAuthProvider"]
+__all__ = ["FlextAuthKerberosProvider"]

@@ -3,6 +3,7 @@
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![Production Ready](https://img.shields.io/badge/status-production--ready-green.svg)](#current-status)
 [![Multi-Provider](https://img.shields.io/badge/architecture-multi--provider-blue.svg)](#provider-architecture)
+[![GitHub](https://img.shields.io/badge/github-flext--auth-black.svg)](https://github.com/flext/flext-auth)
 
 **Generic enterprise authentication library** for the FLEXT ecosystem, providing **extensible multi-provider authentication** with **JWT, OAuth2, OIDC, SAML, API Keys, and more** using **FLEXT architectural patterns**.
 
