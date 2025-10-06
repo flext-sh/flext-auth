@@ -49,7 +49,7 @@ def main() -> int:
         # URL scheme has been validated above to only allow http/https
         with urllib.request.urlopen(
             request,
-            timeout=FlextAuthConstants.Network.DEFAULT_TIMEOUT,
+            timeout=30,  # Use a reasonable timeout instead of constant
         ) as response:
             if response.status == FlextAuthConstants.Platform.HTTP_STATUS_OK:
                 return 0
