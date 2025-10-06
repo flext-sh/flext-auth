@@ -916,7 +916,7 @@ import ldap3          # Use flext-ldap instead
 from flext_core import FlextResult, FlextService, FlextRegistry, FlextLogger
 from flext_api import FlextApi        # For HTTP transport
 from flext_grpc import FlextGrpcApi      # For gRPC transport
-from flext_ldap import FlextLDAP      # For LDAP provider
+from flext_ldap import FlextLdap      # For LDAP provider
 
 class HttpTransportAdapter:
     def __init__(self) -> None:
@@ -927,7 +927,7 @@ class HttpTransportAdapter:
 
 class LdapAuthProvider:
     def __init__(self, config: dict) -> None:
-        self._ldap = FlextLDAP(config)  # MANDATORY: Use flext-ldap
+        self._ldap = FlextLdap(config)  # MANDATORY: Use flext-ldap
 
     def authenticate(self, credentials: dict) -> FlextResult[AuthToken]:
         return self._ldap.bind(

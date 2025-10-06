@@ -99,8 +99,8 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         # LDAP connection will be initialized on demand
         # In production, integrate with flext-ldap:
-        # from flext_ldap import FlextLDAPClient
-        # self._ldap_client = FlextLDAPClient(...)
+        # from flext_ldap import FlextLdapClients
+        # self._ldap_client = FlextLdapClients(...)
 
         self._logger.info(
             "LDAP authentication provider initialized",
