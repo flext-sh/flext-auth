@@ -10,8 +10,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
-
 from flext_core import (
     FlextConfig,
     FlextTypes,
@@ -270,7 +268,7 @@ class FlextAuthConfig(FlextConfig):
         return self
 
     @classmethod
-    def create(cls, **kwargs: Any) -> FlextAuthConfig:
+    def create(cls, **kwargs: object) -> FlextAuthConfig:
         """Create a new FlextAuthConfig instance with optional overrides."""
         return cls(**kwargs)
 

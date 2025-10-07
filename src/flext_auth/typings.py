@@ -14,7 +14,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Literal, NotRequired, TypedDict
+from typing import Literal, NotRequired, TypedDict
 
 from flext_core import FlextTypes
 
@@ -266,10 +266,10 @@ class FlextAuthTypes(FlextTypes):
         ]
 
         # Auth-specific project configurations
-        type AuthProjectConfig = dict[str, str | int | float | bool | Any | None]
+        type AuthProjectConfig = dict[str, str | int | float | bool | object | None]
         type IdentityConfig = dict[str, str | int | bool | FlextTypes.StringList]
         type SecurityConfig = dict[str, bool | str | FlextTypes.Dict]
-        type SessionConfig = dict[str, str | int | float | bool | Any | None]
+        type SessionConfig = dict[str, str | int | float | bool | object | None]
 
 
 # =============================================================================

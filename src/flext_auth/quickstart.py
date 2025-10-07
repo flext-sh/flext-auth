@@ -6,8 +6,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
-
 from flext_core import FlextResult, FlextService, FlextTypes
 
 from flext_auth.api import FlextAuth
@@ -16,7 +14,7 @@ from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 
 
-class FlextAuthQuickstart(FlextService[Any]):
+class FlextAuthQuickstart(FlextService[object]):
     """Quickstart convenience wrapper for FlextAuth with sensible defaults.
 
     This class provides a simplified interface for common authentication operations
@@ -79,13 +77,13 @@ class FlextAuthQuickstart(FlextService[Any]):
 
         return FlextResult[FlextTypes.StringList].ok(user_ids)
 
-    def execute(self, _request: object) -> FlextResult[Any]:
+    def execute(self, _request: object) -> FlextResult[object]:
         """Execute method for FlextService interface.
 
         Quickstart service doesn't use generic execute pattern.
         Use specific quickstart methods instead.
         """
-        return FlextResult[Any].fail(
+        return FlextResult[object].fail(
             "FlextAuthQuickstart is focused - use specific quickstart methods like register_user()"
         )
 
