@@ -41,14 +41,10 @@ def main() -> int:
         if not parsed_url.hostname or not isinstance(parsed_url.hostname, str):
             return 1
 
-        # Create request with validated URL
-        # URL scheme has been validated above to only allow http/https
-        request = urllib.request.Request(health_url)
-
         # Use urllib.request.urlopen with validated scheme and security checks
         # URL scheme has been validated above to only allow http/https
         with urllib.request.urlopen(
-            request,
+            health_url,
             timeout=30,  # Use a reasonable timeout instead of constant
         ) as response:
             if response.status == FlextAuthConstants.Platform.HTTP_STATUS_OK:
