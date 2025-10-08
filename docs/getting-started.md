@@ -99,7 +99,7 @@ else:
 from flext_auth import FlextAuthConfig
 
 # Development configuration
-config = FlextAuthConfig.create_for_environment("development")
+config = FlextAuthConfig()
 
 if config.is_success:
     dev_config = config.unwrap()
@@ -195,7 +195,7 @@ from flext_auth import FlextAuth, FlextAuthConfig
 container = FlextContainer.get_global()
 
 # Configure and register
-config = FlextAuthConfig.create_for_environment("production").unwrap()
+config = FlextAuthConfig()
 auth_service = FlextAuth(config=config)
 container.register("auth_service", auth_service)
 

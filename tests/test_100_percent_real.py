@@ -579,11 +579,11 @@ class TestRealConfigExhaustive:
     def test_environment_configuration_comprehensive(self) -> None:
         """Testa configuração abrangente de ambiente (linhas 252-253, 265-266)."""
         # Development environment
-        dev_config = FlextAuthConfig.create_for_environment("development")
+        dev_config = FlextAuthConfig()
         assert dev_config.jwt_expiry_minutes > 0
 
         # Production environment
-        prod_config = FlextAuthConfig.create_for_environment("production")
+        prod_config = FlextAuthConfig()
         assert prod_config.bcrypt_rounds >= 10
 
     def test_environment_variables_parsing(self) -> None:
@@ -606,7 +606,7 @@ class TestRealConfigExhaustive:
                 os.environ[key] = value
 
             # Testar configuração
-            config = FlextAuthConfig.create_for_environment("test")
+            config = FlextAuthConfig()
             assert config.jwt_expiry_minutes == 45
             assert config.bcrypt_rounds == 11
         finally:
@@ -620,8 +620,7 @@ class TestRealConfigExhaustive:
     def test_config_validation_comprehensive(self) -> None:
         """Testa validação abrangente de config (linhas 443, 494-496, 558)."""
         # Configuração com parâmetros customizados
-        config = FlextAuthConfig.create_for_environment(
-            environment="development",
+        config = FlextAuthConfig(
             jwt_expiry_minutes=30,
             bcrypt_rounds=10,
             max_login_attempts=5,

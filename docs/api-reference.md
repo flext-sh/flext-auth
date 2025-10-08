@@ -37,7 +37,7 @@ auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 ```python
 from flext_auth import FlextAuth, FlextAuthConfig
 
-config = FlextAuthConfig.create_for_environment("development").unwrap()
+config = FlextAuthConfig()
 auth = FlextAuth(config=config)
 ```
 
@@ -221,7 +221,7 @@ Create configuration for specific environment.
 **Example**:
 
 ```python
-config_result = FlextAuthConfig.create_for_environment("production")
+config_result = FlextAuthConfig()
 if config_result.is_success:
     config = config_result.unwrap()
 ```

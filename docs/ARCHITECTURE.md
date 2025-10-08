@@ -499,14 +499,14 @@ class HttpTransportAdapter(BaseTransportAdapter):
 **⚠️ MANDATORY**: Uses **flext-grpc** (NOT direct grpc/grpcio)
 
 ```python
-from flext_grpc import FlextGrpcApi
+from flext_grpc import FlextGrpc
 from flext_core import FlextResult
 
 class GrpcTransportAdapter(BaseTransportAdapter):
     """gRPC transport adapter using flext-grpc."""
 
     def __init__(self, config: dict | None = None) -> None:
-        self._grpc = FlextGrpcApi(config=config)  # MANDATORY: Use flext-grpc
+        self._grpc = FlextGrpc(config=config)  # MANDATORY: Use flext-grpc
         self.logger = FlextLogger(__name__)
 
     def send_auth_request(
@@ -915,7 +915,7 @@ import ldap3          # Use flext-ldap instead
 # ✅ CORRECT - Using FLEXT domain libraries
 from flext_core import FlextResult, FlextService, FlextRegistry, FlextLogger
 from flext_api import FlextApi        # For HTTP transport
-from flext_grpc import FlextGrpcApi      # For gRPC transport
+from flext_grpc import FlextGrpc      # For gRPC transport
 from flext_ldap import FlextLdap      # For LDAP provider
 
 class HttpTransportAdapter:

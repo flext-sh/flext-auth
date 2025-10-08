@@ -28,12 +28,12 @@ print(f"Bcrypt Rounds: {config.bcrypt_rounds}")
 
 ```python
 # Development configuration
-dev_config = FlextAuthConfig.create_for_environment("development")
+dev_config = FlextAuthConfig()
 if dev_config.is_success:
     config = dev_config.unwrap()
 
 # Production configuration
-prod_config = FlextAuthConfig.create_for_environment("production")
+prod_config = FlextAuthConfig()
 if prod_config.is_success:
     config = prod_config.unwrap()
 ```
@@ -106,7 +106,7 @@ prod_config = FlextAuthConfig(
 ### Validate Configuration
 
 ```python
-config_result = FlextAuthConfig.create_for_environment("production")
+config_result = FlextAuthConfig()
 if config_result.is_failure:
     print(f"Configuration error: {config_result.error}")
 ```
@@ -131,7 +131,7 @@ FlextAuthConfig follows FLEXT singleton pattern for global configuration:
 
 ```python
 # Set global configuration
-config = FlextAuthConfig.create_for_environment("production").unwrap()
+config = FlextAuthConfig()
 FlextAuthConfig.set_global_instance(config)
 
 # Use global configuration
@@ -195,7 +195,7 @@ FlextAuthConfig(
 import os
 
 env = os.getenv("FLEXT_ENV", "development")
-config = FlextAuthConfig.create_for_environment(env)
+config = FlextAuthConfig()
 ```
 
 ---

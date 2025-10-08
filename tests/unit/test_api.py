@@ -248,7 +248,7 @@ class TestFlextAuthConfigurationOverrides:
     def test_custom_config_initialization(self) -> None:
         """Test initialization with custom configuration."""
         # Create custom config - create_for_environment returns FlextAuthConfig directly
-        custom_config = FlextAuthConfig.create_for_environment("development")
+        custom_config = FlextAuthConfig()
 
         # Create auth with custom config
         auth = FlextAuth(config=custom_config)

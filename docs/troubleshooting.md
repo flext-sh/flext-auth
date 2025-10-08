@@ -123,7 +123,7 @@ validation_result = auth.validate_token(token)
 **Problem**: Configuration not loading correctly
 
 ```python
-config = FlextAuthConfig.create_for_environment("production")
+config = FlextAuthConfig()
 if config.is_failure:
     print(f"Config error: {config.error}")
 ```
@@ -142,7 +142,7 @@ if config.is_failure:
    ```python
    # Use valid environment names
    valid_envs = ["development", "testing", "staging", "production"]
-   config = FlextAuthConfig.create_for_environment("development")
+   config = FlextAuthConfig()
    ```
 
 3. **Manual Configuration**:
@@ -376,7 +376,7 @@ bandit -r src/flext_auth/
 # Verify secure configuration
 python -c "
 from flext_auth import FlextAuthConfig
-config = FlextAuthConfig.create_for_environment('production').unwrap()
+config = FlextAuthConfig()
 print(f'Bcrypt rounds: {config.bcrypt_rounds}')  # Should be >= 12
 print(f'JWT expiry: {config.jwt_expiry_minutes}')  # Should be <= 60
 print(f'Max attempts: {config.max_failed_attempts}')  # Should be <= 5

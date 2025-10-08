@@ -55,7 +55,7 @@ from flext_auth import FlextAuth, FlextAuthConfig
 # Register authentication service
 container = FlextContainer.get_global()
 
-config = FlextAuthConfig.create_for_environment("production").unwrap()
+config = FlextAuthConfig()
 auth_service = FlextAuth(config=config)
 container.register("auth_service", auth_service)
 
@@ -327,7 +327,7 @@ import os
 flext_env = os.getenv("FLEXT_ENV", "development")
 
 # Create environment-specific configuration
-config_result = FlextAuthConfig.create_for_environment(flext_env)
+config_result = FlextAuthConfig()
 if config_result.is_success:
     auth_config = config_result.unwrap()
     auth = FlextAuth(config=auth_config)
@@ -348,7 +348,7 @@ class FlextAuthWorkspaceConfig(FlextWorkspaceConfig):
 
     def __init__(self):
         super().__init__()
-        self.auth_config = FlextAuthConfig.create_for_environment(self.environment)
+        self.auth_config = FlextAuthConfig()
 
     def get_auth_service(self) -> FlextResult[FlextAuth]:
         """Get configured authentication service."""

@@ -121,11 +121,11 @@ class TestFlextAuthConfigCoverage:
     def test_environment_config_request_model_and_defaults(self) -> None:
         """Test environment configuration (simplified) and defaults."""
         # Test that we can create config for different environments
-        dev_config = FlextAuthConfig.create_for_environment("development")
+        dev_config = FlextAuthConfig()
         assert dev_config.environment == "development"
 
         # Test production environment
-        prod_config = FlextAuthConfig.create_for_environment("production")
+        prod_config = FlextAuthConfig()
         assert prod_config.environment == "production"
 
     def test_flext_auth_config_all_fields(self) -> None:
@@ -233,8 +233,7 @@ class TestFlextAuthConfigCoverage:
         assert config.bcrypt_rounds == 12
 
         # Test environment configuration validation
-        env_config = FlextAuthConfig.create_for_environment(
-            "test",
+        env_config = FlextAuthConfig(
             jwt_expiry_minutes=30,
             bcrypt_rounds=12,
             enable_audit_logging=True,
@@ -300,7 +299,7 @@ class TestFlextAuthConfigCoverage:
                 "FLEXT_AUTH_ENABLE_RATE_LIMITING": "false",
             },
         ):
-            config = FlextAuthConfig.create_for_environment("test")
+            config = FlextAuthConfig()
 
             assert config.jwt_secret == "test_jwt_secret_minimum_32_characters_long"
             assert config.jwt_expiry_minutes == 30
@@ -330,7 +329,7 @@ class TestFlextAuthConfigCoverage:
             mock_get_or_create.side_effect = Exception("Test exception")
             # The method should raise the exception
             with pytest.raises(Exception, match="Test exception"):
-                FlextAuthConfig.create_for_environment("test")
+                FlextAuthConfig()
 
 
 class TestFlextAuthConfigAdditionalCoverage:
@@ -1098,7 +1097,7 @@ class TestFlextAuthConfigSingletonOnly:
         FlextAuthConfig.reset_global_instance()
 
         # Test creating from environment
-        config = FlextAuthConfig.create_for_environment("development")
+        config = FlextAuthConfig()
         assert config.environment == "development"
         assert config.validate_configuration().is_success
 
@@ -1128,4 +1127,4 @@ class TestFlextAuthConfigSingletonAdditionalCoverage:
 
         # Test with invalid environment - raises ValidationError
         with pytest.raises(ValidationError, match="Invalid environment"):
-            FlextAuthConfig.create_for_environment("invalid_environment")
+            FlextAuthConfig()

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from flext_core import FlextLogger, FlextRegistry, FlextResult, FlextTypes
 
-from flext_auth.providers.base import BaseAuthProvider
+from flext_auth.providers.base import FlextAuthBaseProvider
 
 
 class FlextAuthRegistry(FlextRegistry):
@@ -38,7 +38,7 @@ class FlextAuthRegistry(FlextRegistry):
 
     def __init__(self) -> None:
         """Initialize the authentication provider registry."""
-        self._providers: dict[str, BaseAuthProvider] = {}
+        self._providers: dict[str, FlextAuthBaseProvider] = {}
         self._configs: dict[str, FlextTypes.Dict] = {}
         self._metadata: FlextTypes.NestedDict = {}
         self.logger = FlextLogger(__name__)
@@ -48,7 +48,7 @@ class FlextAuthRegistry(FlextRegistry):
     def register(
         self,
         name: str,
-        provider: BaseAuthProvider,
+        provider: FlextAuthBaseProvider,
         config: FlextTypes.Dict | None = None,
     ) -> FlextResult[None]:
         """Register an authentication provider.
@@ -135,7 +135,7 @@ class FlextAuthRegistry(FlextRegistry):
 
         return FlextResult[None].ok(None)
 
-    def get(self, name: str) -> FlextResult[BaseAuthProvider]:
+    def get(self, name: str) -> FlextResult[FlextAuthBaseProvider]:
         """Retrieve a registered authentication provider.
 
         Args:

@@ -86,7 +86,11 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
 
         self._userinfo_endpoint = self._config.get("userinfo_endpoint")
         self._discovery_endpoint = self._config.get("discovery_endpoint")
-        self._id_token_signing_alg = self._config.get("id_token_signing_alg", "RS256")
+
+        self._id_token_signing_alg = self._config.get(
+            "id_token_signing_alg",
+            FlextAuthConstants.Oidc.DEFAULT_ID_TOKEN_SIGNING_ALGORITHM,
+        )
         self._validate_nonce = self._config.get("validate_nonce", True)
 
         # Ensure openid scope is included
