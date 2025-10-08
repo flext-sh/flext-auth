@@ -53,7 +53,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         ...     "require_https": True,
         ...     "case_sensitive": True,
         ... }
-        >>> provider = BasicAuthProvider(config)
+        >>> provider = FlextAuthBasicProvider(config)
         >>> # Register user credentials
         >>> provider.add_user("REDACTED_LDAP_BIND_PASSWORD", "secure-password", user_id="REDACTED_LDAP_BIND_PASSWORD-001")
         >>> # Authenticate with Basic credentials

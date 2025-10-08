@@ -29,8 +29,8 @@ class FlextAuthRegistry(FlextRegistry):
 
     Example:
         >>> registry = FlextAuthRegistry()
-        >>> registry.register("jwt", JwtAuthProvider(config))
-        >>> registry.register("oauth2", OAuth2AuthProvider(config))
+        >>> registry.register("jwt", FlextAuthJwtProvider(config))
+        >>> registry.register("oauth2", FlextAuthOAuth2Provider(config))
         >>> providers = registry.list_providers()  # ["jwt", "oauth2"]
         >>> jwt_provider = registry.get("jwt").unwrap()
 
@@ -62,7 +62,7 @@ class FlextAuthRegistry(FlextRegistry):
             FlextResult[None]: Success or failure with error message
 
         Example:
-            >>> result = registry.register("jwt", JwtAuthProvider(jwt_config))
+            >>> result = registry.register("jwt", FlextAuthJwtProvider(jwt_config))
             >>> if result.is_success:
             ...     print("Provider registered successfully")
 
@@ -142,7 +142,7 @@ class FlextAuthRegistry(FlextRegistry):
             name: Provider identifier
 
         Returns:
-            FlextResult[BaseAuthProvider]: Provider instance or error
+            FlextResult[FlextAuthBaseProvider]: Provider instance or error
 
         Example:
             >>> result = registry.get("jwt")
@@ -152,13 +152,13 @@ class FlextAuthRegistry(FlextRegistry):
 
         """
         if name not in self._providers:
-            return FlextResult[BaseAuthProvider].fail(
+            return FlextResult[FlextAuthBaseProvider].fail(
                 f"Provider '{name}' is not registered. "
                 f"Available providers: {', '.join(self.list_providers())}"
             )
 
         provider = self._providers[name]
-        return FlextResult[BaseAuthProvider].ok(provider)
+        return FlextResult[FlextAuthBaseProvider].ok(provider)
 
     def list_providers(self) -> FlextTypes.StringList:
         """List all registered provider names.
@@ -240,14 +240,14 @@ class FlextAuthRegistry(FlextRegistry):
         metadata = self._metadata.get(name, {})
         return FlextResult[FlextTypes.Dict].ok(metadata)
 
-    def discover_providers(self) -> dict[str, type[BaseAuthProvider]]:
+    def discover_providers(self) -> dict[str, type[FlextAuthBaseProvider]]:
         """Discover available provider classes.
 
         This method will be enhanced in future versions to support
         automatic discovery of provider classes via entry points or plugins.
 
         Returns:
-            dict[str, type[BaseAuthProvider]]: Mapping of provider names to classes
+            dict[str, type[FlextAuthBaseProvider]]: Mapping of provider names to classes
 
         Note:
             Currently returns empty dict. Will be implemented in Phase 2+

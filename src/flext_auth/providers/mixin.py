@@ -21,7 +21,7 @@ class FlextAuthProviderMixin:
     methods and reduce code duplication.
 
     Example:
-        >>> class JwtAuthProvider(BaseAuthProvider, FlextAuthProviderMixin):
+        >>> class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         ...     # Provider implementation with mixin utilities
         ...     pass
 

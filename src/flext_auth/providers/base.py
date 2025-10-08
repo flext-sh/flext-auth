@@ -31,7 +31,7 @@ class FlextAuthBaseProvider(ABC):
     - supports: Declare provider capabilities
 
     Example:
-        >>> class MyAuthProvider(FlextAuthBaseProvider):
+        >>> class FlextAuthMyProvider(FlextAuthBaseProvider):
         ...     def authenticate(
         ...         self, credentials: dict
         ...     ) -> FlextResult[FlextAuthModels.AuthToken]:

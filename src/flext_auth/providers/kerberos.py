@@ -51,7 +51,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         ...     "keytab_path": "/etc/krb5.keytab",
         ...     "ticket_lifetime": 10,
         ... }
-        >>> provider = KerberosAuthProvider(config)
+        >>> provider = FlextAuthKerberosProvider(config)
         >>> # Authenticate with Kerberos ticket
         >>> result = provider.authenticate({
         ...     "gssapi_token": "base64-encoded-gssapi-token",

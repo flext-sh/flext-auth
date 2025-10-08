@@ -9,16 +9,17 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock
 
 from flext_core import FlextResult, FlextTypes
 
 from flext_auth import FlextAuthMiddleware
 from flext_auth.models import FlextAuthModels
-from flext_auth.providers.base import BaseAuthProvider
+from flext_auth.providers.base import FlextAuthBaseProvider
 
 
-class MockAuthProvider(BaseAuthProvider):
+class FlextAuthMockProvider(FlextAuthBaseProvider):
     """Mock authentication provider for testing."""
 
     def __init__(
@@ -43,8 +44,6 @@ class MockAuthProvider(BaseAuthProvider):
     def authenticate(
         self, credentials: FlextTypes.Dict
     ) -> FlextResult[FlextAuthModels.AuthToken]:
-        from datetime import UTC, datetime, timedelta
-
         self._auth_calls += 1
         if not self._auth_success:
             return FlextResult[FlextAuthModels.AuthToken].fail("Authentication failed")
@@ -65,8 +64,6 @@ class MockAuthProvider(BaseAuthProvider):
     def refresh(
         self, token: str | FlextAuthModels.AuthToken
     ) -> FlextResult[FlextAuthModels.AuthToken]:
-        from datetime import UTC, datetime, timedelta
-
         self._refresh_calls += 1
         if not self._refresh_success:
             return FlextResult[FlextAuthModels.AuthToken].fail("Refresh failed")
@@ -379,8 +376,8 @@ class TestFlextAuthMiddleware:
 
     def test_multiple_providers_different_middlewares(self) -> None:
         """Test multiple middleware instances with different providers."""
-        jwt_provider = MockAuthProvider(auth_token="jwt-token")
-        oauth_provider = MockAuthProvider(auth_token="oauth-token")
+        jwt_provider = FlextAuthMockProvider(auth_token="jwt-token")
+        oauth_provider = FlextAuthMockProvider(auth_token="oauth-token")
 
         jwt_middleware = FlextAuthMiddleware.HttpAuthMiddleware(
             provider=jwt_provider,
@@ -401,7 +398,7 @@ class TestFlextAuthMiddleware:
         assert "oauth-token" in result2.unwrap().headers["Authorization"]
 
 
-class MockAuthProviderSecond(BaseAuthProvider):
+class MockAuthProviderSecond(FlextAuthBaseProvider):
     """Mock authentication provider for testing."""
 
     def __init__(
@@ -418,8 +415,6 @@ class MockAuthProviderSecond(BaseAuthProvider):
     def authenticate(
         self, credentials: FlextTypes.Dict
     ) -> FlextResult[FlextAuthModels.AuthToken]:
-        from datetime import UTC, datetime, timedelta
-
         token = FlextAuthModels.AuthToken(
             user_id=credentials.get("username", "test-user"),
             token="mock-token",
@@ -743,7 +738,7 @@ class TestFlextAuthMiddleware2:
     def test_multiple_middlewares_different_providers(self) -> None:
         """Test multiple middleware instances with different providers."""
 
-        class JwtMockProvider(MockAuthProvider):
+        class JwtMockProvider(FlextAuthMockProvider):
             def get_metadata(self) -> FlextTypes.Dict:
                 return {
                     "name": "jwt",
@@ -751,7 +746,7 @@ class TestFlextAuthMiddleware2:
                     "capabilities": ["token", "validate"],
                 }
 
-        class OAuth2MockProvider(MockAuthProvider):
+        class OAuth2MockProvider(FlextAuthMockProvider):
             def get_metadata(self) -> FlextTypes.Dict:
                 return {
                     "name": "oauth2",

@@ -7,10 +7,14 @@ from __future__ import annotations
 
 import pytest
 
-from flext_auth import OAuth2AuthProvider, OidcAuthProvider, SamlAuthProvider
+from flext_auth import (
+    FlextAuthOAuth2Provider,
+    FlextAuthOidcProvider,
+    FlextAuthSamlProvider,
+)
 
 
-class TestOAuth2AuthProvider:
+class TestFlextAuthOAuth2Provider:
     """Test OAuth2 authentication provider."""
 
     def test_oauth2_initialization(self) -> None:
@@ -23,7 +27,7 @@ class TestOAuth2AuthProvider:
             "redirect_uri": "https://app.example.com/callback",
         }
 
-        provider = OAuth2AuthProvider(config)
+        provider = FlextAuthOAuth2Provider(config)
 
         assert provider is not None
         assert provider.supports() == {"token", "validate", "oauth2", "refresh", "pkce"}
@@ -36,7 +40,7 @@ class TestOAuth2AuthProvider:
         }
 
         with pytest.raises(ValueError, match="client_id"):
-            OAuth2AuthProvider(config)
+            FlextAuthOAuth2Provider(config)
 
     def test_oauth2_missing_token_endpoint(self) -> None:
         """Test OAuth2 provider fails without token_endpoint."""
@@ -46,7 +50,7 @@ class TestOAuth2AuthProvider:
         }
 
         with pytest.raises(ValueError, match="token_endpoint"):
-            OAuth2AuthProvider(config)
+            FlextAuthOAuth2Provider(config)
 
     def test_oauth2_metadata(self) -> None:
         """Test OAuth2 provider metadata."""
@@ -58,7 +62,7 @@ class TestOAuth2AuthProvider:
             "flow": "client_credentials",
         }
 
-        provider = OAuth2AuthProvider(config)
+        provider = FlextAuthOAuth2Provider(config)
         metadata = provider.get_metadata()
 
         assert metadata["name"] == "oauth2"
@@ -74,7 +78,7 @@ class TestOAuth2AuthProvider:
             "use_pkce": True,
         }
 
-        provider = OAuth2AuthProvider(config)
+        provider = FlextAuthOAuth2Provider(config)
         code_verifier, code_challenge = provider.generate_pkce_challenge()
 
         # Verify code verifier is base64-url encoded
@@ -97,7 +101,7 @@ class TestOAuth2AuthProvider:
             "use_pkce": True,
         }
 
-        provider = OAuth2AuthProvider(config)
+        provider = FlextAuthOAuth2Provider(config)
         result = provider.get_authorization_url(state="test-state")
 
         assert result.is_success
@@ -113,7 +117,7 @@ class TestOAuth2AuthProvider:
         assert "code_challenge_method=S256" in auth_url
 
 
-class TestOidcAuthProvider:
+class TestFlextAuthOidcProvider:
     """Test OIDC authentication provider."""
 
     def test_oidc_initialization(self) -> None:
@@ -127,7 +131,7 @@ class TestOidcAuthProvider:
             "userinfo_endpoint": "https://auth.example.com/userinfo",
         }
 
-        provider = OidcAuthProvider(config)
+        provider = FlextAuthOidcProvider(config)
 
         assert provider is not None
         capabilities = provider.supports()
@@ -144,7 +148,7 @@ class TestOidcAuthProvider:
         }
 
         with pytest.raises(ValueError, match="issuer"):
-            OidcAuthProvider(config)
+            FlextAuthOidcProvider(config)
 
     def test_oidc_scope_includes_openid(self) -> None:
         """Test OIDC provider ensures 'openid' scope is included."""
@@ -156,7 +160,7 @@ class TestOidcAuthProvider:
             "scope": "profile email",
         }
 
-        provider = OidcAuthProvider(config)
+        provider = FlextAuthOidcProvider(config)
         metadata = provider.get_metadata()
 
         # Verify openid scope was added
@@ -172,7 +176,7 @@ class TestOidcAuthProvider:
             "id_token_signing_alg": "RS256",
         }
 
-        provider = OidcAuthProvider(config)
+        provider = FlextAuthOidcProvider(config)
         metadata = provider.get_metadata()
 
         assert metadata["name"] == "oidc"
@@ -191,7 +195,7 @@ class TestOidcAuthProvider:
             "validate_nonce": True,
         }
 
-        provider = OidcAuthProvider(config)
+        provider = FlextAuthOidcProvider(config)
         result = provider.get_authorization_url(state="test-state", nonce="test-nonce")
 
         assert result.is_success
@@ -201,7 +205,7 @@ class TestOidcAuthProvider:
         assert "nonce=test-nonce" in auth_url
 
 
-class TestSamlAuthProvider:
+class TestFlextAuthSamlProvider:
     """Test SAML authentication provider."""
 
     def test_saml_initialization(self) -> None:
@@ -213,7 +217,7 @@ class TestSamlAuthProvider:
             "assertion_consumer_service_url": "https://app.example.com/saml/acs",
         }
 
-        provider = SamlAuthProvider(config)
+        provider = FlextAuthSamlProvider(config)
 
         assert provider is not None
         capabilities = provider.supports()
@@ -230,7 +234,7 @@ class TestSamlAuthProvider:
         }
 
         with pytest.raises(ValueError, match="entity_id"):
-            SamlAuthProvider(config)
+            FlextAuthSamlProvider(config)
 
     def test_saml_missing_sso_url(self) -> None:
         """Test SAML provider fails without sso_url."""
@@ -241,7 +245,7 @@ class TestSamlAuthProvider:
         }
 
         with pytest.raises(ValueError, match="sso_url"):
-            SamlAuthProvider(config)
+            FlextAuthSamlProvider(config)
 
     def test_saml_missing_x509_cert(self) -> None:
         """Test SAML provider fails without x509_cert."""
@@ -252,7 +256,7 @@ class TestSamlAuthProvider:
         }
 
         with pytest.raises(ValueError, match="x509_cert"):
-            SamlAuthProvider(config)
+            FlextAuthSamlProvider(config)
 
     def test_saml_metadata(self) -> None:
         """Test SAML provider metadata."""
@@ -265,7 +269,7 @@ class TestSamlAuthProvider:
             "sign_requests": True,
         }
 
-        provider = SamlAuthProvider(config)
+        provider = FlextAuthSamlProvider(config)
         metadata = provider.get_metadata()
 
         assert metadata["name"] == "saml"
@@ -285,7 +289,7 @@ class TestSamlAuthProvider:
             "assertion_consumer_service_url": "https://app.example.com/saml/acs",
         }
 
-        provider = SamlAuthProvider(config)
+        provider = FlextAuthSamlProvider(config)
         request_id1 = provider.generate_request_id()
         request_id2 = provider.generate_request_id()
 
@@ -304,7 +308,7 @@ class TestSamlAuthProvider:
             "assertion_consumer_service_url": "https://app.example.com/saml/acs",
         }
 
-        provider = SamlAuthProvider(config)
+        provider = FlextAuthSamlProvider(config)
         result = provider.generate_sp_metadata()
 
         assert result.is_success
@@ -326,7 +330,7 @@ class TestSamlAuthProvider:
             "assertion_consumer_service_url": "https://app.example.com/saml/acs",
         }
 
-        provider = SamlAuthProvider(config)
+        provider = FlextAuthSamlProvider(config)
         result = provider.get_authentication_request_url(relay_state="test-relay-state")
 
         assert result.is_success

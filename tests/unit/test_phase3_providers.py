@@ -1,11 +1,11 @@
 """Tests for Phase 3 Authentication Providers.
 
 Tests for advanced authentication providers including:
-- ApiKeyAuthProvider
-- BasicAuthProvider
-- CertificateAuthProvider
-- LdapAuthProvider
-- KerberosAuthProvider
+- FlextAuthApiKeyProvider
+- FlextAuthBasicProvider
+- FlextAuthCertificateProvider
+- FlextAuthLdapProvider
+- FlextAuthKerberosProvider
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 """
@@ -17,17 +17,17 @@ import base64
 import pytest
 
 from flext_auth.providers import (
-    ApiKeyAuthProvider,
-    BasicAuthProvider,
-    CertificateAuthProvider,
-    KerberosAuthProvider,
-    LdapAuthProvider,
+    FlextAuthApiKeyProvider,
+    FlextAuthBasicProvider,
+    FlextAuthCertificateProvider,
+    FlextAuthKerberosProvider,
+    FlextAuthLdapProvider,
 )
 
-# ===== ApiKeyAuthProvider Tests =====
+# ===== FlextAuthApiKeyProvider Tests =====
 
 
-class TestApiKeyAuthProvider:
+class TestFlextAuthApiKeyProvider:
     """Tests for API Key authentication provider."""
 
     def test_apikey_initialization(self) -> None:
@@ -39,7 +39,7 @@ class TestApiKeyAuthProvider:
             "rate_limit_enabled": True,
             "rate_limit_requests": 1000,
         }
-        provider = ApiKeyAuthProvider(config)
+        provider = FlextAuthApiKeyProvider(config)
 
         metadata = provider.get_metadata()
         assert metadata["name"] == "apikey"
@@ -53,7 +53,7 @@ class TestApiKeyAuthProvider:
             "key_prefix": "sk_",
             "rate_limit_enabled": True,
         }
-        provider = ApiKeyAuthProvider(config)
+        provider = FlextAuthApiKeyProvider(config)
 
         capabilities = provider.supports()
         assert "token" in capabilities
@@ -65,7 +65,7 @@ class TestApiKeyAuthProvider:
     def test_apikey_generation(self) -> None:
         """Test API key generation."""
         config = {"key_prefix": "sk_", "key_length": 32}
-        provider = ApiKeyAuthProvider(config)
+        provider = FlextAuthApiKeyProvider(config)
 
         result = provider.generate_api_key(
             user_id="user-123", name="Production API Key", scopes=["read", "write"]
@@ -81,7 +81,7 @@ class TestApiKeyAuthProvider:
     def test_apikey_authentication_success(self) -> None:
         """Test successful API key authentication."""
         config = {"key_prefix": "sk_"}
-        provider = ApiKeyAuthProvider(config)
+        provider = FlextAuthApiKeyProvider(config)
 
         # Generate API key
         key_result = provider.generate_api_key(user_id="user-123", name="Test Key")
@@ -101,7 +101,7 @@ class TestApiKeyAuthProvider:
     def test_apikey_authentication_invalid_key(self) -> None:
         """Test API key authentication with invalid key."""
         config = {"key_prefix": "sk_"}
-        provider = ApiKeyAuthProvider(config)
+        provider = FlextAuthApiKeyProvider(config)
 
         result = provider.authenticate({"api_key": "sk_invalid_key"})
 
@@ -111,7 +111,7 @@ class TestApiKeyAuthProvider:
     def test_apikey_revocation(self) -> None:
         """Test API key revocation."""
         config = {"key_prefix": "sk_"}
-        provider = ApiKeyAuthProvider(config)
+        provider = FlextAuthApiKeyProvider(config)
 
         # Generate and authenticate
         key_result = provider.generate_api_key(user_id="user-123", name="Test Key")
@@ -126,10 +126,10 @@ class TestApiKeyAuthProvider:
         assert auth_result.is_failure
 
 
-# ===== BasicAuthProvider Tests =====
+# ===== FlextAuthBasicProvider Tests =====
 
 
-class TestBasicAuthProvider:
+class FlextAuthTestBasicProvider:
     """Tests for HTTP Basic authentication provider."""
 
     def test_basic_initialization(self) -> None:
@@ -140,7 +140,7 @@ class TestBasicAuthProvider:
             "case_sensitive": True,
             "require_https": True,
         }
-        provider = BasicAuthProvider(config)
+        provider = FlextAuthBasicProvider(config)
 
         metadata = provider.get_metadata()
         assert metadata["name"] == "basic"
@@ -150,7 +150,7 @@ class TestBasicAuthProvider:
     def test_basic_capabilities(self) -> None:
         """Test Basic auth provider capabilities."""
         config = {"realm": "Test", "allow_anonymous": True}
-        provider = BasicAuthProvider(config)
+        provider = FlextAuthBasicProvider(config)
 
         capabilities = provider.supports()
         assert "token" in capabilities
@@ -162,7 +162,7 @@ class TestBasicAuthProvider:
     def test_basic_user_management(self) -> None:
         """Test Basic auth user management."""
         config = {"realm": "Test"}
-        provider = BasicAuthProvider(config)
+        provider = FlextAuthBasicProvider(config)
 
         # Add user
         add_result = provider.add_user(
@@ -177,7 +177,7 @@ class TestBasicAuthProvider:
     def test_basic_authentication_success(self) -> None:
         """Test successful Basic authentication."""
         config = {"realm": "Test", "require_https": False}
-        provider = BasicAuthProvider(config)
+        provider = FlextAuthBasicProvider(config)
 
         # Add user
         provider.add_user("testuser", "password123", user_id="user-001")
@@ -200,7 +200,7 @@ class TestBasicAuthProvider:
     def test_basic_authentication_invalid_password(self) -> None:
         """Test Basic authentication with invalid password."""
         config = {"realm": "Test", "require_https": False}
-        provider = BasicAuthProvider(config)
+        provider = FlextAuthBasicProvider(config)
 
         provider.add_user("testuser", "password123", user_id="user-001")
 
@@ -216,7 +216,7 @@ class TestBasicAuthProvider:
     def test_basic_https_requirement(self) -> None:
         """Test Basic auth HTTPS requirement."""
         config = {"realm": "Test", "require_https": True}
-        provider = BasicAuthProvider(config)
+        provider = FlextAuthBasicProvider(config)
 
         provider.add_user("testuser", "password123")
 
@@ -235,7 +235,7 @@ class TestBasicAuthProvider:
     def test_basic_anonymous_access(self) -> None:
         """Test Basic auth anonymous access."""
         config = {"realm": "Test", "allow_anonymous": True, "require_https": False}
-        provider = BasicAuthProvider(config)
+        provider = FlextAuthBasicProvider(config)
 
         # Empty credentials for anonymous
         credentials = base64.b64encode(b":").decode("utf-8")
@@ -248,10 +248,10 @@ class TestBasicAuthProvider:
         assert token.username == "anonymous"
 
 
-# ===== CertificateAuthProvider Tests =====
+# ===== FlextAuthCertificateProvider Tests =====
 
 
-class TestCertificateAuthProvider:
+class TestFlextAuthCertificateProvider:
     """Tests for X.509 Certificate authentication provider."""
 
     def test_certificate_initialization(self) -> None:
@@ -262,7 +262,7 @@ class TestCertificateAuthProvider:
             "check_ocsp": True,
             "allow_self_signed": False,
         }
-        provider = CertificateAuthProvider(config)
+        provider = FlextAuthCertificateProvider(config)
 
         metadata = provider.get_metadata()
         assert metadata["name"] == "certificate"
@@ -272,7 +272,7 @@ class TestCertificateAuthProvider:
     def test_certificate_initialization_missing_ca(self) -> None:
         """Test Certificate provider initialization without CA cert."""
         with pytest.raises(ValueError, match="ca_cert"):
-            CertificateAuthProvider({})
+            FlextAuthCertificateProvider({})
 
     def test_certificate_capabilities(self) -> None:
         """Test Certificate provider capabilities."""
@@ -281,7 +281,7 @@ class TestCertificateAuthProvider:
             "check_ocsp": True,
             "check_crl": True,
         }
-        provider = CertificateAuthProvider(config)
+        provider = FlextAuthCertificateProvider(config)
 
         capabilities = provider.supports()
         assert "token" in capabilities
@@ -297,7 +297,7 @@ class TestCertificateAuthProvider:
         config = {
             "ca_cert": "-----BEGIN CERTIFICATE-----\nCA\n-----END CERTIFICATE-----"
         }
-        provider = CertificateAuthProvider(config)
+        provider = FlextAuthCertificateProvider(config)
 
         # Register certificate
         fingerprint = "abc123def456"
@@ -327,7 +327,7 @@ class TestCertificateAuthProvider:
             "ca_cert": cert_fixture.cert_pem,  # Use same cert as CA for self-signed
             "auto_provision": True,
         }
-        provider = CertificateAuthProvider(config)
+        provider = FlextAuthCertificateProvider(config)
 
         # Authenticate with real certificate (should auto-provision)
         result = provider.authenticate({"client_cert": cert_fixture.cert_pem})
@@ -342,10 +342,10 @@ class TestCertificateAuthProvider:
         assert "test-client.example.com" in token.certificate_subject
 
 
-# ===== LdapAuthProvider Tests =====
+# ===== FlextAuthLdapProvider Tests =====
 
 
-class TestLdapAuthProvider:
+class TestFlextAuthLdapProvider:
     """Tests for LDAP authentication provider."""
 
     def test_ldap_initialization(self) -> None:
@@ -357,7 +357,7 @@ class TestLdapAuthProvider:
             "bind_password": "service-pass",
             "use_ssl": True,
         }
-        provider = LdapAuthProvider(config)
+        provider = FlextAuthLdapProvider(config)
 
         metadata = provider.get_metadata()
         assert metadata["name"] == "ldap"
@@ -367,12 +367,12 @@ class TestLdapAuthProvider:
     def test_ldap_initialization_missing_server(self) -> None:
         """Test LDAP provider initialization without server."""
         with pytest.raises(ValueError, match="server"):
-            LdapAuthProvider({"base_dn": "dc=example,dc=com"})
+            FlextAuthLdapProvider({"base_dn": "dc=example,dc=com"})
 
     def test_ldap_initialization_missing_base_dn(self) -> None:
         """Test LDAP provider initialization without base_dn."""
         with pytest.raises(ValueError, match="base_dn"):
-            LdapAuthProvider({"server": "ldaps://ldap.example.com"})
+            FlextAuthLdapProvider({"server": "ldaps://ldap.example.com"})
 
     def test_ldap_capabilities(self) -> None:
         """Test LDAP provider capabilities."""
@@ -380,7 +380,7 @@ class TestLdapAuthProvider:
             "server": "ldaps://ldap.example.com",
             "base_dn": "dc=example,dc=com",
         }
-        provider = LdapAuthProvider(config)
+        provider = FlextAuthLdapProvider(config)
 
         capabilities = provider.supports()
         assert "token" in capabilities
@@ -395,7 +395,7 @@ class TestLdapAuthProvider:
             "server": "ldaps://ldap.example.com",
             "base_dn": "dc=example,dc=com",
         }
-        provider = LdapAuthProvider(config)
+        provider = FlextAuthLdapProvider(config)
 
         result = provider.authenticate({
             "username": "testuser",
@@ -406,10 +406,10 @@ class TestLdapAuthProvider:
         assert result.error is not None and "flext-ldap" in result.error
 
 
-# ===== KerberosAuthProvider Tests =====
+# ===== FlextAuthKerberosProvider Tests =====
 
 
-class TestKerberosAuthProvider:
+class TestFlextAuthKerberosProvider:
     """Tests for Kerberos authentication provider."""
 
     def test_kerberos_initialization(self) -> None:
@@ -421,7 +421,7 @@ class TestKerberosAuthProvider:
             "ticket_lifetime": 10,
             "forwardable": True,
         }
-        provider = KerberosAuthProvider(config)
+        provider = FlextAuthKerberosProvider(config)
 
         metadata = provider.get_metadata()
         assert metadata["name"] == "kerberos"
@@ -432,7 +432,7 @@ class TestKerberosAuthProvider:
     def test_kerberos_initialization_missing_realm(self) -> None:
         """Test Kerberos provider initialization without realm."""
         with pytest.raises(ValueError, match="realm"):
-            KerberosAuthProvider({
+            FlextAuthKerberosProvider({
                 "kdc": "kdc.example.com",
                 "service_principal": "HTTP/api@REALM",
             })
@@ -440,7 +440,7 @@ class TestKerberosAuthProvider:
     def test_kerberos_initialization_missing_kdc(self) -> None:
         """Test Kerberos provider initialization without KDC."""
         with pytest.raises(ValueError, match="kdc"):
-            KerberosAuthProvider({
+            FlextAuthKerberosProvider({
                 "realm": "EXAMPLE.COM",
                 "service_principal": "HTTP/api@REALM",
             })
@@ -448,7 +448,10 @@ class TestKerberosAuthProvider:
     def test_kerberos_initialization_missing_service_principal(self) -> None:
         """Test Kerberos provider initialization without service principal."""
         with pytest.raises(ValueError, match="service_principal"):
-            KerberosAuthProvider({"realm": "EXAMPLE.COM", "kdc": "kdc.example.com"})
+            FlextAuthKerberosProvider({
+                "realm": "EXAMPLE.COM",
+                "kdc": "kdc.example.com",
+            })
 
     def test_kerberos_capabilities(self) -> None:
         """Test Kerberos provider capabilities."""
@@ -457,7 +460,7 @@ class TestKerberosAuthProvider:
             "kdc": "kdc.example.com",
             "service_principal": "HTTP/api@EXAMPLE.COM",
         }
-        provider = KerberosAuthProvider(config)
+        provider = FlextAuthKerberosProvider(config)
 
         capabilities = provider.supports()
         assert "token" in capabilities
@@ -475,7 +478,7 @@ class TestKerberosAuthProvider:
             "kdc": "kdc.example.com",
             "service_principal": "HTTP/api@EXAMPLE.COM",
         }
-        provider = KerberosAuthProvider(config)
+        provider = FlextAuthKerberosProvider(config)
 
         # GSSAPI token authentication
         result = provider.authenticate({"gssapi_token": "base64-token"})
@@ -490,7 +493,7 @@ class TestKerberosAuthProvider:
             "kdc": "kdc.example.com",
             "service_principal": "HTTP/api@EXAMPLE.COM",
         }
-        provider = KerberosAuthProvider(config)
+        provider = FlextAuthKerberosProvider(config)
 
         # Password authentication
         result = provider.authenticate({
@@ -508,7 +511,7 @@ class TestKerberosAuthProvider:
             "kdc": "kdc.example.com",
             "service_principal": "HTTP/api@EXAMPLE.COM",
         }
-        provider = KerberosAuthProvider(config)
+        provider = FlextAuthKerberosProvider(config)
 
         # User principal
         user_principal = provider._parse_principal("user@EXAMPLE.COM")

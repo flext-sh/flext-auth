@@ -1,6 +1,6 @@
 """FLEXT Auth Middleware - Authentication middleware adapters following FLEXT standards.
 
-This module provides middleware that adapts BaseAuthProvider implementations
+This module provides middleware that adapts FlextAuthBaseProvider implementations
 to work with HTTP client middleware (flext-api) and web application middleware
 (flext-web). This eliminates duplication by allowing all authentication logic
 to be centralized in flext-auth providers.
@@ -11,16 +11,16 @@ Extends flext-core patterns for proper integration.
 Integration Pattern:
     # HTTP Client with JWT Auth
     from flext_api import FlextApiClient
-    from flext_auth import JwtAuthProvider, FlextAuthMiddleware
+    from flext_auth import FlextAuthJwtProvider, FlextAuthMiddleware
 
-    auth = FlextAuthMiddleware.HttpAuthMiddleware(JwtAuthProvider(secret="key"))
+    auth = FlextAuthMiddleware.HttpAuthMiddleware(FlextAuthJwtProvider(secret="key"))
     client = FlextApiClient(middlewares=[auth])
 
     # Web App with OAuth2
     from flext_web import create_fastapi_app
-    from flext_auth import OAuth2AuthProvider, FlextAuthMiddleware
+    from flext_auth import FlextAuthOAuth2Provider, FlextAuthMiddleware
 
-    auth = FlextAuthMiddleware.WebAuthMiddleware(OAuth2AuthProvider(...))
+    auth = FlextAuthMiddleware.WebAuthMiddleware(FlextAuthOAuth2Provider(...))
     app = create_fastapi_app(middlewares=[auth])
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -32,13 +32,13 @@ from __future__ import annotations
 from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
 
 from flext_auth.models import FlextAuthModels
-from flext_auth.providers.base import BaseAuthProvider
+from flext_auth.providers.base import FlextAuthBaseProvider
 
 
 class FlextAuthMiddleware(FlextService):
     """Authentication middleware adapters following FLEXT standards.
 
-    This class provides middleware that adapts BaseAuthProvider implementations
+    This class provides middleware that adapts FlextAuthBaseProvider implementations
     to work with HTTP client middleware (flext-api) and web application middleware
     (flext-web). Following FLEXT pattern: one class per module with nested middleware classes.
     """
@@ -53,7 +53,7 @@ class FlextAuthMiddleware(FlextService):
         )
 
     class HttpAuthMiddleware:
-        """Adapts BaseAuthProvider to HTTP client middleware.
+        """Adapts FlextAuthBaseProvider to HTTP client middleware.
 
         This middleware integrates flext-auth authentication providers with
         HTTP clients (flext-api). It handles token management, header injection,
@@ -66,11 +66,11 @@ class FlextAuthMiddleware(FlextService):
         - Works with ALL flext-auth providers (JWT, OAuth2, OIDC, SAML, etc.)
 
         Example:
-            >>> from flext_auth import JwtAuthProvider, FlextAuthMiddleware
+            >>> from flext_auth import FlextAuthJwtProvider, FlextAuthMiddleware
             >>> from flext_api import FlextApiClient
             >>>
             >>> # Create auth provider
-            >>> provider = JwtAuthProvider(secret="my-secret", algorithm="HS256")
+            >>> provider = FlextAuthJwtProvider(secret="my-secret", algorithm="HS256")
             >>>
             >>> # Create middleware that adapts provider
             >>> middleware = FlextAuthMiddleware.HttpAuthMiddleware(
@@ -87,7 +87,7 @@ class FlextAuthMiddleware(FlextService):
 
         def __init__(
             self,
-            provider: BaseAuthProvider,
+            provider: FlextAuthBaseProvider,
             credentials: FlextTypes.Dict | None = None,
             header_name: str = "Authorization",
             token_prefix: str = "Bearer",
@@ -96,7 +96,7 @@ class FlextAuthMiddleware(FlextService):
             """Initialize HTTP authentication middleware.
 
             Args:
-                provider: Authentication provider (any BaseAuthProvider implementation)
+                provider: Authentication provider (any FlextAuthBaseProvider implementation)
                 credentials: Initial credentials for authentication (optional)
                 header_name: HTTP header name for token (default: "Authorization")
                 token_prefix: Token prefix (default: "Bearer", set to "" for no prefix)
@@ -285,7 +285,7 @@ class FlextAuthMiddleware(FlextService):
             return self._enabled
 
     class WebAuthMiddleware:
-        """Adapts BaseAuthProvider to web application middleware.
+        """Adapts FlextAuthBaseProvider to web application middleware.
 
         This middleware integrates flext-auth authentication providers with
         web applications (flext-web FastAPI/Flask). It handles token validation,
@@ -298,11 +298,11 @@ class FlextAuthMiddleware(FlextService):
         - Works with ALL flext-auth providers (JWT, OAuth2, OIDC, SAML, etc.)
 
         Example:
-            >>> from flext_auth import OAuth2AuthProvider, WebAuthMiddleware
+            >>> from flext_auth import FlextAuthOAuth2Provider, WebAuthMiddleware
             >>> from flext_web import create_fastapi_app
             >>>
             >>> # Create auth provider
-            >>> provider = OAuth2AuthProvider(
+            >>> provider = FlextAuthOAuth2Provider(
             ...     client_id="client-id",
             ...     client_secret="secret",
             ...     authorization_url="https://oauth.example.com/auth",
@@ -323,7 +323,7 @@ class FlextAuthMiddleware(FlextService):
 
         def __init__(
             self,
-            provider: BaseAuthProvider,
+            provider: FlextAuthBaseProvider,
             header_name: str = "Authorization",
             token_prefix: str = "Bearer",
             cookie_name: str | None = None,
@@ -333,7 +333,7 @@ class FlextAuthMiddleware(FlextService):
             """Initialize web authentication middleware.
 
             Args:
-                provider: Authentication provider (any BaseAuthProvider implementation)
+                provider: Authentication provider (any FlextAuthBaseProvider implementation)
                 header_name: HTTP header name for token (default: "Authorization")
                 token_prefix: Token prefix (default: "Bearer", set to "" for no prefix)
                 cookie_name: Cookie name for token (optional, checked after header)

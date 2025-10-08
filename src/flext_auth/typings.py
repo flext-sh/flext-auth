@@ -46,7 +46,7 @@ class FlextAuthTypes(FlextTypes):
         type AuthCredentials = dict[
             str, str | dict[str, str | int | float | bool | None]
         ]
-        type AuthProvider = dict[
+        type FlextAuthProvider = dict[
             str,
             str | int | float | bool | FlextTypes.StringList | FlextTypes.Dict | None,
         ]

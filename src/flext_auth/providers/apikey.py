@@ -52,7 +52,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         ...     "hash_algorithm": "sha256",
         ...     "require_key_id": True,
         ... }
-        >>> provider = ApiKeyAuthProvider(config)
+        >>> provider = FlextAuthApiKeyProvider(config)
         >>> # Generate new API key
         >>> key_result = provider.generate_api_key(
         ...     user_id="user-123", name="Production API Key"

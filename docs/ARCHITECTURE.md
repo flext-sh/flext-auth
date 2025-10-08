@@ -102,15 +102,15 @@ Transform flext-auth from a specific JWT/bcrypt authentication implementation in
 │  └── supports() -> set[str]                                  │
 ├─────────────────────────────────────────────────────────────┤
 │  Concrete Providers:                                         │
-│  • JwtAuthProvider (JWT tokens)                              │
-│  • OAuth2AuthProvider (OAuth 2.0)                            │
-│  • OidcAuthProvider (OpenID Connect)                         │
-│  • SamlAuthProvider (SAML 2.0)                               │
-│  • ApiKeyAuthProvider (API keys)                             │
-│  • BasicAuthProvider (HTTP Basic)                            │
-│  • CertificateAuthProvider (X.509 certs)                     │
-│  • LdapAuthProvider (LDAP bind - uses flext-ldap)            │
-│  • KerberosAuthProvider (Kerberos/GSSAPI)                    │
+│  • FlextAuthJwtProvider (JWT tokens)                              │
+│  • FlextAuthOAuth2Provider (OAuth 2.0)                            │
+│  • FlextAuthOidcProvider (OpenID Connect)                         │
+│  • FlextAuthSamlProvider (SAML 2.0)                               │
+│  • FlextAuthApiKeyProvider (API keys)                             │
+│  • FlextAuthBasicProvider (HTTP Basic)                            │
+│  • FlextAuthCertificateProvider (X.509 certs)                     │
+│  • FlextAuthLdapProvider (LDAP bind - uses flext-ldap)            │
+│  • FlextAuthKerberosProvider (Kerberos/GSSAPI)                    │
 └───────────────────────┬─────────────────────────────────────┘
                         │
             ┌───────────┼───────────┐
@@ -156,7 +156,7 @@ class FlextAuth(FlextService[AuthenticationResponseDict]):
     def with_oauth2(cls, client_id: str, client_secret: str, **kwargs) -> FlextAuth
 
     @classmethod
-    def with_provider(cls, provider: BaseAuthProvider, **kwargs) -> FlextAuth
+    def with_provider(cls, provider: FlextAuthBaseProvider, **kwargs) -> FlextAuth
 
     # Core operations
     def authenticate(
@@ -173,7 +173,7 @@ class FlextAuth(FlextService[AuthenticationResponseDict]):
 
     # Registry operations
     def list_providers(self) -> FlextTypes.StringList
-    def get_provider(self, name: str) -> FlextResult[BaseAuthProvider]
+    def get_provider(self, name: str) -> FlextResult[FlextAuthBaseProvider]
     def get_provider_capabilities(self, name: str) -> FlextResult[set[str]]
 
     # Token/Session management
@@ -200,17 +200,17 @@ class FlextAuthRegistry:
     def register(
         self,
         name: str,
-        provider: BaseAuthProvider,
+        provider: FlextAuthBaseProvider,
         config: dict | None = None
     ) -> FlextResult[None]
 
     def unregister(self, name: str) -> FlextResult[None]
 
-    def get(self, name: str) -> FlextResult[BaseAuthProvider]
+    def get(self, name: str) -> FlextResult[FlextAuthBaseProvider]
 
     def list_providers(self) -> FlextTypes.StringList
 
-    def discover_providers(self) -> dict[str, type[BaseAuthProvider]]
+    def discover_providers(self) -> dict[str, type[FlextAuthBaseProvider]]
 
     def get_capabilities(self, name: str) -> FlextResult[set[str]]
 
@@ -226,7 +226,7 @@ class FlextAuthRegistry:
 **Protocol Definition**:
 
 ```python
-class BaseAuthProvider(Protocol):
+class FlextAuthBaseProvider(Protocol):
     """Base protocol for all authentication providers."""
 
     def authenticate(
@@ -352,10 +352,10 @@ class BaseAuthProvider(Protocol):
 from __future__ import annotations
 
 from flext_core import FlextResult, FlextLogger
-from flext_auth.providers.base import BaseAuthProvider
+from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.models import FlextAuthModels
 
-class ExampleAuthProvider(BaseAuthProvider):
+class FlextAuthExampleProvider(FlextAuthBaseProvider):
     """Example authentication provider implementation."""
 
     def __init__(self, config: dict) -> None:
@@ -656,7 +656,7 @@ class TokenManager:
 
     def __init__(
         self,
-        provider: BaseAuthProvider,
+        provider: FlextAuthBaseProvider,
         cache: TokenCache | None = None,
         retry_policy: RetryPolicy | None = None
     ) -> None:
@@ -925,7 +925,7 @@ class HttpTransportAdapter:
     def send_request(self, url: str, data: dict) -> FlextResult[FlextTypes.Dict]:
         return self._api.post(url=url, json=data)
 
-class LdapAuthProvider:
+class FlextAuthLdapProvider:
     def __init__(self, config: dict) -> None:
         self._ldap = FlextLdap(config)  # MANDATORY: Use flext-ldap
 
@@ -943,7 +943,7 @@ All providers and managers extend FlextService for consistency:
 ```python
 from flext_core import FlextService, FlextResult
 
-class JwtAuthProvider(FlextService[AuthToken]):
+class FlextAuthJwtProvider(FlextService[AuthToken]):
     """JWT provider extending FlextService."""
 
     def __init__(self, config: dict) -> None:
@@ -976,15 +976,15 @@ result = auth.authenticate_user("username", "password")
 
 ```python
 from flext_auth import FlextAuth, FlextAuthRegistry
-from flext_auth.providers import JwtAuthProvider, OAuth2AuthProvider, SamlAuthProvider
+from flext_auth.providers import FlextAuthJwtProvider, FlextAuthOAuth2Provider, FlextAuthSamlProvider
 
 # Create registry
 registry = FlextAuthRegistry()
 
 # Register providers
-registry.register("jwt", JwtAuthProvider(jwt_config))
-registry.register("oauth2", OAuth2AuthProvider(oauth_config))
-registry.register("saml", SamlAuthProvider(saml_config))
+registry.register("jwt", FlextAuthJwtProvider(jwt_config))
+registry.register("oauth2", FlextAuthOAuth2Provider(oauth_config))
+registry.register("saml", FlextAuthSamlProvider(saml_config))
 
 # Create auth service
 auth = FlextAuth(registry=registry)
@@ -1008,11 +1008,11 @@ providers = auth.list_providers()  # ["jwt", "oauth2", "saml"]
 
 ```python
 from flext_auth import FlextAuth
-from flext_auth.providers import OAuth2AuthProvider
+from flext_auth.providers import FlextAuthOAuth2Provider
 from flext_auth.transports import GrpcTransportAdapter
 
 # Create provider with gRPC transport
-provider = OAuth2AuthProvider(
+provider = FlextAuthOAuth2Provider(
     config=oauth_config,
     transport=GrpcTransportAdapter()
 )
@@ -1068,10 +1068,10 @@ token = token_mgr.get_with_retry(
 
 **Deliverables**:
 
-- [ ] Implement OAuth2AuthProvider (authlib)
-- [ ] Implement OidcAuthProvider (extends OAuth2)
-- [ ] Implement ApiKeyAuthProvider
-- [ ] Implement BasicAuthProvider (bcrypt)
+- [ ] Implement FlextAuthOAuth2Provider (authlib)
+- [ ] Implement FlextAuthOidcProvider (extends OAuth2)
+- [ ] Implement FlextAuthApiKeyProvider
+- [ ] Implement FlextAuthBasicProvider (bcrypt)
 - [ ] Provider factory pattern
 - [ ] Provider tests (95%+ coverage)
 - [ ] Quality gates: make validate passing
@@ -1082,9 +1082,9 @@ token = token_mgr.get_with_retry(
 
 **Deliverables**:
 
-- [ ] Implement SamlAuthProvider (python3-saml)
-- [ ] Implement LdapAuthProvider (flext-ldap MANDATORY)
-- [ ] Implement CertificateAuthProvider (cryptography)
+- [ ] Implement FlextAuthSamlProvider (python3-saml)
+- [ ] Implement FlextAuthLdapProvider (flext-ldap MANDATORY)
+- [ ] Implement FlextAuthCertificateProvider (cryptography)
 - [ ] Kerberos provider stub
 - [ ] Security validation per provider
 - [ ] Quality gates: make validate passing

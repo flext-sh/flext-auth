@@ -28,7 +28,7 @@ from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
 class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
     """OpenID Connect authentication provider.
 
-    This provider extends OAuth2AuthProvider with OIDC-specific functionality:
+    This provider extends FlextAuthOAuth2Provider with OIDC-specific functionality:
     - ID token validation and parsing
     - UserInfo endpoint integration
     - OIDC Discovery support
@@ -53,7 +53,7 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
         ...     "redirect_uri": "https://app.example.com/callback",
         ...     "scope": "openid profile email",
         ... }
-        >>> provider = OidcAuthProvider(config)
+        >>> provider = FlextAuthOidcProvider(config)
         >>> result = provider.authenticate({
         ...     "code": "auth-code",
         ...     "state": "state",

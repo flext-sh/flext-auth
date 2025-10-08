@@ -13,7 +13,7 @@ from flext_auth.constants import FlextAuthConstants
 from flext_auth.managers import FlextAuthManagers
 from flext_auth.models import FlextAuthModels
 from flext_auth.provider_service import FlextAuthProviderService
-from flext_auth.providers import JwtAuthProvider
+from flext_auth.providers import FlextAuthJwtProvider
 from flext_auth.utilities import FlextAuthUtilities
 
 
@@ -65,7 +65,7 @@ class FlextAuthTokenService(FlextService):
             return FlextResult[FlextAuthModels.User].fail(validation_result.error)
 
         # Token is valid, decode to get user information
-        if not isinstance(jwt_provider, JwtAuthProvider):
+        if not isinstance(jwt_provider, FlextAuthJwtProvider):
             return FlextResult[FlextAuthModels.User].fail("Invalid JWT provider type")
 
         # Get decoding parameters from provider
@@ -175,17 +175,19 @@ class FlextAuthTokenService(FlextService):
 
         return token_result
 
-    def _get_jwt_provider(self) -> FlextResult[JwtAuthProvider]:
+    def _get_jwt_provider(self) -> FlextResult[FlextAuthJwtProvider]:
         """Get the JWT provider from the provider service."""
         result = self._provider_service.get_provider("jwt")
         if result.is_failure:
-            return FlextResult[JwtAuthProvider].fail(result.error)
+            return FlextResult[FlextAuthJwtProvider].fail(result.error)
 
         provider = result.value
-        if not isinstance(provider, JwtAuthProvider):
-            return FlextResult[JwtAuthProvider].fail("Provider is not a JWT provider")
+        if not isinstance(provider, FlextAuthJwtProvider):
+            return FlextResult[FlextAuthJwtProvider].fail(
+                "Provider is not a JWT provider"
+            )
 
-        return FlextResult[JwtAuthProvider].ok(provider)
+        return FlextResult[FlextAuthJwtProvider].ok(provider)
 
 
 __all__ = ["FlextAuthTokenService"]

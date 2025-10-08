@@ -57,7 +57,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         ...     "flow": "authorization_code",
         ...     "use_pkce": True,
         ... }
-        >>> provider = OAuth2AuthProvider(config)
+        >>> provider = FlextAuthOAuth2Provider(config)
         >>> # Authorization code flow
         >>> auth_url_result = provider.get_authorization_url(state="random-state")
         >>> # After redirect, exchange code for token

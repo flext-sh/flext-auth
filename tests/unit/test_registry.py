@@ -10,11 +10,11 @@ from unittest.mock import MagicMock
 
 from flext_core import FlextResult, FlextTypes
 
-from flext_auth.providers.base import BaseAuthProvider
+from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
 
 
-class MockAuthProvider(BaseAuthProvider):
+class FlextAuthMockProvider(FlextAuthBaseProvider):
     """Mock authentication provider for testing."""
 
     def __init__(self, name: str = "mock") -> None:
@@ -76,7 +76,7 @@ class TestFlextAuthRegistryRegistration:
     def test_register_provider_success(self) -> None:
         """Test successful provider registration."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
 
         result = registry.register("test_provider", provider)
 
@@ -88,7 +88,7 @@ class TestFlextAuthRegistryRegistration:
     def test_register_provider_with_config(self) -> None:
         """Test provider registration with configuration."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
         config = {"key": "value", "enabled": True}
 
         result = registry.register("test_provider", provider, config)
@@ -99,7 +99,7 @@ class TestFlextAuthRegistryRegistration:
     def test_register_provider_empty_name(self) -> None:
         """Test registration fails with empty provider name."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
 
         result = registry.register("", provider)
 
@@ -109,7 +109,7 @@ class TestFlextAuthRegistryRegistration:
     def test_register_provider_whitespace_name(self) -> None:
         """Test registration fails with whitespace-only provider name."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
 
         result = registry.register("   ", provider)
 
@@ -119,8 +119,8 @@ class TestFlextAuthRegistryRegistration:
     def test_register_provider_duplicate_name(self) -> None:
         """Test registration fails when provider name already exists."""
         registry = FlextAuthRegistry()
-        provider1 = MockAuthProvider("test1")
-        provider2 = MockAuthProvider("test2")
+        provider1 = FlextAuthMockProvider("test1")
+        provider2 = FlextAuthMockProvider("test2")
 
         # Register first provider
         registry.register("duplicate", provider1)
@@ -135,7 +135,7 @@ class TestFlextAuthRegistryRegistration:
     def test_register_provider_invalid_config(self) -> None:
         """Test registration fails with invalid configuration."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
         invalid_config = {"invalid": True}
 
         result = registry.register("test_provider", provider, invalid_config)
@@ -149,7 +149,7 @@ class TestFlextAuthRegistryRegistration:
     def test_register_provider_metadata_failure(self) -> None:
         """Test registration succeeds even if metadata retrieval fails."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
 
         # Mock get_metadata to raise exception
         provider.get_metadata = MagicMock(side_effect=Exception("Metadata error"))
@@ -167,7 +167,7 @@ class TestFlextAuthRegistryUnregistration:
     def test_unregister_provider_success(self) -> None:
         """Test successful provider unregistration."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
 
         # Register first
         registry.register("test_provider", provider)
@@ -183,7 +183,7 @@ class TestFlextAuthRegistryUnregistration:
     def test_unregister_provider_with_config(self) -> None:
         """Test unregistration removes config and metadata."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
         config = {"key": "value"}
 
         # Register with config
@@ -212,7 +212,7 @@ class TestFlextAuthRegistryRetrieval:
     def test_get_provider_success(self) -> None:
         """Test successful provider retrieval."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
 
         registry.register("test_provider", provider)
         result = registry.get("test_provider")
@@ -240,8 +240,8 @@ class TestFlextAuthRegistryRetrieval:
     def test_list_providers_with_registered(self) -> None:
         """Test listing providers with registered providers."""
         registry = FlextAuthRegistry()
-        provider1 = MockAuthProvider("test1")
-        provider2 = MockAuthProvider("test2")
+        provider1 = FlextAuthMockProvider("test1")
+        provider2 = FlextAuthMockProvider("test2")
 
         registry.register("provider1", provider1)
         registry.register("provider2", provider2)
@@ -255,7 +255,7 @@ class TestFlextAuthRegistryRetrieval:
     def test_list_providers_after_unregistration(self) -> None:
         """Test listing providers after unregistration."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
 
         registry.register("test_provider", provider)
         registry.unregister("test_provider")
@@ -271,7 +271,7 @@ class TestFlextAuthRegistryCapabilities:
     def test_has_capability_provider_has(self) -> None:
         """Test capability check when provider has capability."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
 
         registry.register("test_provider", provider)
         result = registry.has_capability("test_provider", "authenticate")
@@ -282,7 +282,7 @@ class TestFlextAuthRegistryCapabilities:
     def test_has_capability_provider_missing(self) -> None:
         """Test capability check when provider lacks capability."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
 
         registry.register("test_provider", provider)
         result = registry.has_capability("test_provider", "unknown")
@@ -304,11 +304,11 @@ class TestFlextAuthRegistryCapabilities:
         registry = FlextAuthRegistry()
 
         # Provider with authenticate capability
-        provider1 = MockAuthProvider("test1")
+        provider1 = FlextAuthMockProvider("test1")
         registry.register("provider1", provider1)
 
         # Provider without authenticate capability
-        provider2 = MockAuthProvider("test2")
+        provider2 = FlextAuthMockProvider("test2")
         provider2._capabilities = {"authorize"}  # Remove authenticate
         registry.register("provider2", provider2)
 
@@ -320,7 +320,7 @@ class TestFlextAuthRegistryCapabilities:
     def test_find_providers_with_capability_none_have(self) -> None:
         """Test finding providers when none have the capability."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
         provider._capabilities = {"authorize"}
 
         registry.register("test_provider", provider)
@@ -336,7 +336,7 @@ class TestFlextAuthRegistryConfiguration:
     def test_get_config_success(self) -> None:
         """Test retrieving provider configuration."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
         config = {"key": "value"}
 
         registry.register("test_provider", provider, config)
@@ -348,7 +348,7 @@ class TestFlextAuthRegistryConfiguration:
     def test_get_config_no_config(self) -> None:
         """Test retrieving config when none was set."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
 
         registry.register("test_provider", provider)
         result = registry.get_config("test_provider")
@@ -368,7 +368,7 @@ class TestFlextAuthRegistryConfiguration:
     def test_update_config_success(self) -> None:
         """Test updating provider configuration."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
         old_config = {"key": "old"}
         new_config = {"key": "new", "extra": True}
 
@@ -395,7 +395,7 @@ class TestFlextAuthRegistryMetadata:
     def test_get_metadata_success(self) -> None:
         """Test retrieving provider metadata."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
 
         registry.register("test_provider", provider)
         result = registry.get_metadata("test_provider")
@@ -417,8 +417,8 @@ class TestFlextAuthRegistryMetadata:
     def test_get_all_metadata(self) -> None:
         """Test retrieving all provider metadata."""
         registry = FlextAuthRegistry()
-        provider1 = MockAuthProvider("test1")
-        provider2 = MockAuthProvider("test2")
+        provider1 = FlextAuthMockProvider("test1")
+        provider2 = FlextAuthMockProvider("test2")
 
         registry.register("provider1", provider1)
         registry.register("provider2", provider2)
@@ -444,7 +444,7 @@ class TestFlextAuthRegistryValidation:
     def test_validate_provider_config_success(self) -> None:
         """Test successful configuration validation."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
         config = {"key": "value"}
 
         result = registry._validate_provider_config("test", provider, config)
@@ -454,7 +454,7 @@ class TestFlextAuthRegistryValidation:
     def test_validate_provider_config_failure(self) -> None:
         """Test configuration validation failure."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
         invalid_config = {"invalid": True}
 
         result = registry._validate_provider_config("test", provider, invalid_config)
@@ -469,8 +469,8 @@ class TestFlextAuthRegistryLifecycle:
     def test_clear_registry(self) -> None:
         """Test clearing all providers from registry."""
         registry = FlextAuthRegistry()
-        provider1 = MockAuthProvider("test1")
-        provider2 = MockAuthProvider("test2")
+        provider1 = FlextAuthMockProvider("test1")
+        provider2 = FlextAuthMockProvider("test2")
 
         registry.register("provider1", provider1, {"config": True})
         registry.register("provider2", provider2)
@@ -485,7 +485,7 @@ class TestFlextAuthRegistryLifecycle:
     def test_registry_size(self) -> None:
         """Test getting registry size."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
 
         assert registry.size() == 0
 
@@ -501,7 +501,7 @@ class TestFlextAuthRegistryLifecycle:
     def test_is_empty(self) -> None:
         """Test checking if registry is empty."""
         registry = FlextAuthRegistry()
-        provider = MockAuthProvider("test")
+        provider = FlextAuthMockProvider("test")
 
         assert registry.is_empty() is True
 

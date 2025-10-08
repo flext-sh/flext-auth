@@ -52,7 +52,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
         ...     "check_ocsp": True,
         ...     "allow_self_signed": False,
         ... }
-        >>> provider = CertificateAuthProvider(config)
+        >>> provider = FlextAuthCertificateProvider(config)
         >>> # Authenticate with client certificate
         >>> result = provider.authenticate({
         ...     "client_cert": "-----BEGIN CERTIFICATE-----\\\\n...\\\\n-----END CERTIFICATE-----",

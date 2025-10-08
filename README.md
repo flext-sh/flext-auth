@@ -70,7 +70,7 @@ Support for diverse authentication technologies through a provider-based archite
         ┌────────────────────┼────────────────────┐
         │                    │                    │
 ┌───────▼────────┐  ┌───────▼────────┐  ┌───────▼────────┐
-│ JwtAuthProvider│  │OAuth2Provider  │  │ SAMLProvider   │
+│ FlextAuthJwtProvider│  │OAuth2Provider  │  │ SAMLProvider   │
 │  (Production)  │  │   (Phase 2)    │  │   (Phase 2)    │
 └────────────────┘  └────────────────┘  └────────────────┘
 ```
@@ -86,8 +86,8 @@ src/flext_auth/
 ├── utilities.py                # Core utilities (password/JWT processing)
 ├── providers/                  # Authentication provider implementations
 │   ├── __init__.py            # Provider exports
-│   ├── base.py                # BaseAuthProvider protocol + mixin
-│   └── jwt.py                 # JwtAuthProvider (production-ready)
+│   ├── base.py                # FlextAuthBaseProvider protocol + mixin
+│   └── jwt.py                 # FlextAuthJwtProvider (production-ready)
 ├── transports/                 # Transport layer (Phase 4)
 │   ├── __init__.py
 │   ├── http.py                # HTTP transport (flext-api)
@@ -196,7 +196,7 @@ if result.is_success:
 #### **2. Custom Provider Registration**
 
 ```python
-from flext_auth import FlextAuth, FlextAuthRegistry, JwtAuthProvider
+from flext_auth import FlextAuth, FlextAuthRegistry, FlextAuthJwtProvider
 
 # Create a provider
 jwt_config = {
@@ -204,7 +204,7 @@ jwt_config = {
     "algorithm": "HS256",
     "access_token_expiry_minutes": 30
 }
-jwt_provider = JwtAuthProvider(jwt_config)
+jwt_provider = FlextAuthJwtProvider(jwt_config)
 
 # Register with FlextAuth
 auth = FlextAuth.with_provider(
@@ -219,17 +219,17 @@ result = auth.authenticate(credentials)
 #### **3. Multi-Provider Registry**
 
 ```python
-from flext_auth import FlextAuth, FlextAuthRegistry, JwtAuthProvider
+from flext_auth import FlextAuth, FlextAuthRegistry, FlextAuthJwtProvider
 
 # Create registry with multiple providers
 registry = FlextAuthRegistry()
 
 # Register JWT provider
-jwt_provider = JwtAuthProvider({"secret_key": "jwt-secret"})
+jwt_provider = FlextAuthJwtProvider({"secret_key": "jwt-secret"})
 registry.register("jwt", jwt_provider)
 
 # Register OAuth2 provider (Phase 2 - coming soon)
-# oauth2_provider = OAuth2AuthProvider(oauth2_config)
+# oauth2_provider = FlextAuthOAuth2Provider(oauth2_config)
 # registry.register("oauth2", oauth2_provider)
 
 # Create FlextAuth with registry
@@ -250,11 +250,11 @@ print(f"JWT capabilities: {jwt_capabilities}")
 #### **4. Custom Provider Implementation**
 
 ```python
-from flext_auth.providers import BaseAuthProvider, BaseAuthProviderMixin
+from flext_auth.providers import FlextAuthBaseProvider, BaseAuthProviderMixin
 from flext_auth import FlextAuthModels
 from flext_core import FlextResult
 
-class CustomAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
+class FlextAuthCustomProvider(FlextAuthBaseProvider, BaseAuthProviderMixin):
     """Custom authentication provider example."""
 
     def authenticate(
@@ -297,7 +297,7 @@ class CustomAuthProvider(BaseAuthProvider, BaseAuthProviderMixin):
         }
 
 # Use custom provider
-custom_provider = CustomAuthProvider(config)
+custom_provider = FlextAuthCustomProvider(config)
 auth = FlextAuth.with_provider(custom_provider, "custom")
 ```
 
@@ -362,9 +362,9 @@ pytest --cov=src/flext_auth # Coverage report
 
 **Multi-Provider Architecture Successfully Implemented** - Phase 1 complete with zero breaking changes:
 
-- ✅ **Provider Architecture**: BaseAuthProvider protocol with capability detection
+- ✅ **Provider Architecture**: FlextAuthBaseProvider protocol with capability detection
 - ✅ **Registry System**: FlextAuthRegistry for dynamic provider management
-- ✅ **JWT Provider**: Production-ready JwtAuthProvider extracted and enhanced
+- ✅ **JWT Provider**: Production-ready FlextAuthJwtProvider extracted and enhanced
 - ✅ **Backward Compatibility**: 100% v1.0.0 API compatibility maintained
 - ✅ **Extensibility**: Ready for 9 additional provider implementations
 
@@ -385,7 +385,7 @@ pytest --cov=src/flext_auth # Coverage report
 - ✅ **Provider Registry**: Dynamic provider registration and discovery
 - ✅ **Multi-Provider API**: v2.0.0 API with `with_jwt()`, `with_provider()`, `with_registry()`
 - ✅ **Capability Detection**: Query provider capabilities at runtime
-- ✅ **Custom Providers**: Extensible BaseAuthProvider for custom implementations
+- ✅ **Custom Providers**: Extensible FlextAuthBaseProvider for custom implementations
 
 **Coming in Phase 2-7**
 
@@ -412,8 +412,8 @@ pytest --cov=src/flext_auth # Coverage report
 ### **Phase 1: Foundation & Provider Architecture (v2.0.0)** ✅ COMPLETE
 
 - ✅ Multi-provider architecture with registry system
-- ✅ BaseAuthProvider protocol with capability detection
-- ✅ JwtAuthProvider production-ready implementation
+- ✅ FlextAuthBaseProvider protocol with capability detection
+- ✅ FlextAuthJwtProvider production-ready implementation
 - ✅ 100% backward compatibility (v1.0.0 API maintained)
 - ✅ Zero breaking changes, extensible design
 - ✅ Complete ARCHITECTURE.md with 7-phase plan

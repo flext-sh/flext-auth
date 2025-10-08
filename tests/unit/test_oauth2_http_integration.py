@@ -14,7 +14,7 @@ from __future__ import annotations
 from flext_core import FlextTypes
 from pytest_httpx import HTTPXMock
 
-from flext_auth.providers import OAuth2AuthProvider, OidcAuthProvider
+from flext_auth.providers import FlextAuthOAuth2Provider, FlextAuthOidcProvider
 
 # ===== OAuth2 Token Endpoint Tests =====
 
@@ -48,7 +48,7 @@ class TestOAuth2TokenEndpoint:
             "flow": "authorization_code",
             "use_pkce": False,
         }
-        provider = OAuth2AuthProvider(config)
+        provider = FlextAuthOAuth2Provider(config)
 
         # Authenticate with authorization code
         result = provider.authenticate({
@@ -85,7 +85,7 @@ class TestOAuth2TokenEndpoint:
             "flow": "authorization_code",
             "use_pkce": True,
         }
-        provider = OAuth2AuthProvider(config)
+        provider = FlextAuthOAuth2Provider(config)
 
         # Generate PKCE challenge
         code_verifier, _code_challenge = provider.generate_pkce_challenge()
@@ -120,7 +120,7 @@ class TestOAuth2TokenEndpoint:
             "token_endpoint": "https://auth.example.com/token",
             "flow": "client_credentials",
         }
-        provider = OAuth2AuthProvider(config)
+        provider = FlextAuthOAuth2Provider(config)
 
         # Authenticate with client credentials
         result = provider.authenticate({})
@@ -151,7 +151,7 @@ class TestOAuth2TokenEndpoint:
             "token_endpoint": "https://auth.example.com/token",
             "flow": "password",
         }
-        provider = OAuth2AuthProvider(config)
+        provider = FlextAuthOAuth2Provider(config)
 
         # Authenticate with username/password
         result = provider.authenticate({
@@ -184,7 +184,7 @@ class TestOAuth2TokenEndpoint:
             "token_endpoint": "https://auth.example.com/token",
             "flow": "authorization_code",
         }
-        provider = OAuth2AuthProvider(config)
+        provider = FlextAuthOAuth2Provider(config)
 
         # Refresh token
         result = provider.refresh("test_old_refresh_token")
@@ -215,7 +215,7 @@ class TestOAuth2TokenEndpoint:
             "flow": "authorization_code",
             "use_pkce": False,
         }
-        provider = OAuth2AuthProvider(config)
+        provider = FlextAuthOAuth2Provider(config)
 
         # Attempt authentication
         result = provider.authenticate({
@@ -241,7 +241,7 @@ class TestOAuth2TokenEndpoint:
             "token_endpoint": "https://auth.example.com/token",
             "flow": "client_credentials",
         }
-        provider = OAuth2AuthProvider(config)
+        provider = FlextAuthOAuth2Provider(config)
 
         # Attempt authentication
         result = provider.authenticate({})
@@ -269,7 +269,7 @@ class TestOAuth2TokenEndpoint:
             "token_endpoint": "https://auth.example.com/token",
             "flow": "client_credentials",
         }
-        provider = OAuth2AuthProvider(config)
+        provider = FlextAuthOAuth2Provider(config)
 
         # Attempt authentication - will retry on 500 error
         result = provider.authenticate({})
@@ -315,7 +315,7 @@ class TestOidcUserInfoEndpoint:
             "token_endpoint": "https://auth.example.com/token",
             "userinfo_endpoint": "https://auth.example.com/userinfo",
         }
-        provider = OidcAuthProvider(config)
+        provider = FlextAuthOidcProvider(config)
 
         # Fetch UserInfo
         result = provider.get_userinfo("test_access_token")
@@ -347,7 +347,7 @@ class TestOidcUserInfoEndpoint:
             "token_endpoint": "https://auth.example.com/token",
             "userinfo_endpoint": "https://auth.example.com/userinfo",
         }
-        provider = OidcAuthProvider(config)
+        provider = FlextAuthOidcProvider(config)
 
         # Fetch UserInfo
         result = provider.get_userinfo("test_access_token")
@@ -372,7 +372,7 @@ class TestOidcUserInfoEndpoint:
             "token_endpoint": "https://auth.example.com/token",
             "userinfo_endpoint": "https://auth.example.com/userinfo",
         }
-        provider = OidcAuthProvider(config)
+        provider = FlextAuthOidcProvider(config)
 
         # Fetch UserInfo
         result = provider.get_userinfo("invalid_token")
@@ -391,7 +391,7 @@ class TestOidcUserInfoEndpoint:
             "token_endpoint": "https://auth.example.com/token",
             # No userinfo_endpoint configured
         }
-        provider = OidcAuthProvider(config)
+        provider = FlextAuthOidcProvider(config)
 
         # Fetch UserInfo
         result = provider.get_userinfo("test_access_token")
