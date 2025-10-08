@@ -251,10 +251,11 @@ class FlextAuthModels(FlextModels):
             max_length=200,
         )
         is_active: bool = Field(
-            default=True, description="Whether user account is active"
+            default=FlextAuthConstants.Defaults.DEFAULT_USER_ACTIVE,
+            description="Whether user account is active",
         )
         roles: FlextTypes.StringList = Field(
-            default_factory=list,
+            default_factory=FlextAuthConstants.Defaults.DEFAULT_USER_ROLES.copy,
             description="User roles",
             min_length=0,
         )
@@ -264,7 +265,7 @@ class FlextAuthModels(FlextModels):
             min_length=0,
         )
         failed_login_attempts: int = Field(
-            0,
+            default=FlextAuthConstants.Defaults.DEFAULT_FAILED_LOGIN_ATTEMPTS,
             description="Failed login attempt count",
             ge=0,  # Non-negative constraint
         )
@@ -594,7 +595,10 @@ class FlextAuthModels(FlextModels):
             exclude=True,  # Never serialize session tokens
         )
         expires_at: datetime = Field(..., description="Session expiration time")
-        is_active: bool = Field(True, description="Whether session is active")
+        is_active: bool = Field(
+            default=FlextAuthConstants.Defaults.DEFAULT_SESSION_ACTIVE,
+            description="Whether session is active",
+        )
         ip_address: str | None = Field(
             None,
             description="Client IP address",
@@ -739,7 +743,10 @@ class FlextAuthModels(FlextModels):
             exclude=True,  # Never serialize actual tokens
         )
         expires_at: datetime = Field(..., description="Token expiration time")
-        is_revoked: bool = Field(False, description="Whether token is revoked")
+        is_revoked: bool = Field(
+            default=FlextAuthConstants.Defaults.DEFAULT_TOKEN_REVOKED,
+            description="Whether token is revoked",
+        )
         token_type: str = Field(
             FlextAuthConstants.Jwt.DEFAULT_TOKEN_TYPE,
             description="Type of token (access, refresh, api, bearer)",

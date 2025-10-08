@@ -10,6 +10,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import threading
+from typing import ClassVar
+
+from dependency_injector import providers
 from flext_core import (
     FlextConfig,
     FlextTypes,
@@ -29,7 +33,12 @@ class FlextAuthConfig(FlextConfig):
 
     Provides comprehensive authentication configuration with security-focused defaults.
     All settings are environment-configurable for production deployment flexibility.
+    Enhanced with dependency injector integration for service registration.
     """
+
+    # Dependency Injection integration (v1.1.0+)
+    _di_config_provider: ClassVar[providers.Configuration | None] = None
+    _di_provider_lock: ClassVar[threading.Lock] = threading.Lock()
 
     model_config = SettingsConfigDict(
         env_prefix="FLEXT_AUTH_",
@@ -148,7 +157,7 @@ class FlextAuthConfig(FlextConfig):
 
     # Rate Limiting
     enable_rate_limiting: bool = Field(
-        default=True,
+        default=FlextAuthConstants.Defaults.DEFAULT_ENABLE_RATE_LIMITING,
         description="Enable rate limiting for authentication endpoints",
     )
     session_cleanup_interval_minutes: int = Field(
@@ -159,7 +168,7 @@ class FlextAuthConfig(FlextConfig):
 
     # Password Policy
     require_password_complexity: bool = Field(
-        default=True,
+        default=FlextAuthConstants.Defaults.DEFAULT_REQUIRE_PASSWORD_COMPLEXITY,
         description="Require password complexity validation",
     )
     min_password_score: int = Field(
@@ -183,11 +192,11 @@ class FlextAuthConfig(FlextConfig):
 
     # Feature Flags
     enable_email_verification: bool = Field(
-        default=False,
+        default=FlextAuthConstants.Defaults.DEFAULT_ENABLE_EMAIL_VERIFICATION,
         description="Enable email verification for new accounts",
     )
     enable_password_history: bool = Field(
-        default=False,
+        default=FlextAuthConstants.Defaults.DEFAULT_ENABLE_PASSWORD_HISTORY,
         description="Enable password history to prevent reuse",
     )
 
@@ -266,6 +275,20 @@ class FlextAuthConfig(FlextConfig):
             raise ValueError(msg)
 
         return self
+
+    # Class methods for DI integration
+    @classmethod
+    def get_di_config_provider(cls) -> providers.Configuration:
+        """Get the dependency-injector Configuration provider."""
+        if cls._di_config_provider is None:
+            with cls._di_provider_lock:
+                if cls._di_config_provider is None:
+                    cls._di_config_provider = providers.Configuration()
+                    instance = cls._instances.get(cls)
+                    if instance is not None:
+                        config_dict = instance.model_dump()
+                        cls._di_config_provider.from_dict(config_dict)
+        return cls._di_config_provider
 
     @classmethod
     def create(cls, **kwargs: object) -> FlextAuthConfig:

@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar
+from typing import ClassVar, Literal
 
 from flext_core import FlextConstants, FlextTypes
 
@@ -18,8 +18,7 @@ class FlextAuthConstants(FlextConstants):
     auth-specific constants using nested namespace classes.
     """
 
-    # Default credentials
-    DEFAULT_ADMIN_PASSWORD = "AdminPassword123!"  # nosec B105 - Default REDACTED_LDAP_BIND_PASSWORD password for testing
+    # Default credentials (inherited from FlextConstants where possible)
 
     class Jwt:
         """JWT Token management constants."""
@@ -39,6 +38,7 @@ class FlextAuthConstants(FlextConstants):
         )
         API_TOKEN_TYPE = FlextConstants.Security.JWT_API_TOKEN_TYPE
         BASIC_TOKEN_TYPE = FlextConstants.Security.JWT_BASIC_TOKEN_TYPE
+        BEARER_TOKEN_TYPE = "bearer"
         BEARER_PREFIX = FlextConstants.Security.JWT_BEARER_PREFIX
         MIN_SECRET_KEY_LENGTH = FlextConstants.Security.JWT_MIN_SECRET_KEY_LENGTH
 
@@ -237,7 +237,105 @@ class FlextAuthConstants(FlextConstants):
         JWT_PARTS_COUNT = 3
         BASE64_PADDING_SIZE = 4
         # Admin defaults
-        DEFAULT_ADMIN_PASSWORD = "AdminPassword123!"  # nosec B105 - Default REDACTED_LDAP_BIND_PASSWORD password for testing
+        DEFAULT_ADMIN_PASSWORD = FlextConstants.Security.DEFAULT_ADMIN_PASSWORD
+        # Mock/test data defaults
+        MOCK_USER_PREFIX = "user_"
+        MOCK_EMAIL_DOMAIN = "@example.com"
+        MOCK_VALIDATED_USER_ID = "validated_user"
+        MOCK_VALIDATED_USERNAME = "validated_user"
+        MOCK_VALIDATED_EMAIL = "validated@example.com"
+        # Provider defaults
+        DEFAULT_PROVIDER = "basic"
+        # User model defaults
+        DEFAULT_USER_ACTIVE = True
+        DEFAULT_USER_ROLES: ClassVar[FlextTypes.StringList] = [Roles.USER]
+        DEFAULT_FAILED_LOGIN_ATTEMPTS = 0
+        # Session model defaults
+        DEFAULT_SESSION_ACTIVE = True
+        # Token model defaults
+        DEFAULT_TOKEN_REVOKED = False
+        # Config defaults
+        DEFAULT_ENABLE_RATE_LIMITING = True
+        DEFAULT_REQUIRE_PASSWORD_COMPLEXITY = True
+        DEFAULT_ENABLE_EMAIL_VERIFICATION = False
+        DEFAULT_ENABLE_PASSWORD_HISTORY = False
+
+    class Literals:
+        """Literal types for type safety - CRITICAL VIOLATION to define elsewhere."""
+
+        # Project types for auth domain
+        PROJECT_TYPES: ClassVar[tuple[str, ...]] = (
+            # Generic types
+            "library",
+            "application",
+            "service",
+            # Auth-specific types
+            "auth-service",
+            "identity-provider",
+            "sso-service",
+            "oauth-provider",
+            "auth-gateway",
+            "session-manager",
+            "jwt-service",
+            "rbac-system",
+            "auth-api",
+            "identity-api",
+            "credential-manager",
+            "security-service",
+        )
+        type ProjectType = Literal[
+            "library",
+            "application",
+            "service",
+            "auth-service",
+            "identity-provider",
+            "sso-service",
+            "oauth-provider",
+            "auth-gateway",
+            "session-manager",
+            "jwt-service",
+            "rbac-system",
+            "auth-api",
+            "identity-api",
+            "credential-manager",
+            "security-service",
+        ]
+
+        # Token types
+        TOKEN_TYPES: ClassVar[tuple[str, ...]] = (
+            "access",
+            "refresh",
+            "api",
+            "bearer",
+        )
+        type TokenType = Literal[
+            "access",
+            "refresh",
+            "api",
+            "bearer",
+        ]
+
+        # Provider types
+        PROVIDER_TYPES: ClassVar[tuple[str, ...]] = (
+            "basic",
+            "jwt",
+            "oauth2",
+            "saml",
+            "ldap",
+            "certificate",
+            "kerberos",
+            "apikey",
+        )
+        type ProviderType = Literal[
+            "basic",
+            "jwt",
+            "oauth2",
+            "saml",
+            "ldap",
+            "certificate",
+            "kerberos",
+            "apikey",
+        ]
 
     class OAuth2:
         """OAuth2 authentication constants."""

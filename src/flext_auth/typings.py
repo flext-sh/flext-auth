@@ -14,9 +14,11 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Literal, NotRequired, TypedDict
+from typing import NotRequired, TypedDict
 
 from flext_core import FlextTypes
+
+from flext_auth.constants import FlextAuthConstants
 
 # =============================================================================
 # AUTH-SPECIFIC TYPE VARIABLES - Domain-specific TypeVars for authentication operations
@@ -244,26 +246,8 @@ class FlextAuthTypes(FlextTypes):
         Follows domain separation principle: Auth domain owns auth-specific types.
         """
 
-        # Auth-specific project types
-        type ProjectType = Literal[
-            # Generic types
-            "library",
-            "application",
-            "service",
-            # Auth-specific types
-            "auth-service",
-            "identity-provider",
-            "sso-service",
-            "oauth-provider",
-            "auth-gateway",
-            "session-manager",
-            "jwt-service",
-            "rbac-system",
-            "auth-api",
-            "identity-api",
-            "credential-manager",
-            "security-service",
-        ]
+        # Auth-specific project types - imported from constants for centralization
+        type ProjectType = FlextAuthConstants.Literals.ProjectType
 
         # Auth-specific project configurations
         type AuthProjectConfig = dict[str, str | int | float | bool | object | None]

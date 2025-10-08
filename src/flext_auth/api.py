@@ -71,7 +71,7 @@ class FlextAuth(FlextService):
 
         # Create user data structure (simplified - no complex service layer)
         user_data = {
-            "user_id": f"user_{username}",
+            "user_id": f"{FlextAuthConstants.Defaults.MOCK_USER_PREFIX}{username}",
             "username": username,
             "email": email,
             "password_hash": f"hashed_{password}",  # Simplified
@@ -87,7 +87,7 @@ class FlextAuth(FlextService):
         self,
         username: str,
         password: str,
-        provider: str = "basic",
+        provider: str = FlextAuthConstants.Defaults.DEFAULT_PROVIDER,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate a user with username/password.
 
@@ -121,9 +121,9 @@ class FlextAuth(FlextService):
 
         # For now, return a mock user - in real implementation would extract user from token
         user = FlextAuthModels.User(
-            user_id="validated_user",
-            username="validated_user",
-            email="validated@example.com",
+            user_id=FlextAuthConstants.Defaults.MOCK_VALIDATED_USER_ID,
+            username=FlextAuthConstants.Defaults.MOCK_VALIDATED_USERNAME,
+            email=FlextAuthConstants.Defaults.MOCK_VALIDATED_EMAIL,
             password_hash=FlextAuthConstants.Defaults.DEFAULT_ADMIN_PASSWORD,
             roles=["user"],
             full_name=None,
@@ -146,8 +146,8 @@ class FlextAuth(FlextService):
         # For now, return a mock user to maintain API compatibility
         user = FlextAuthModels.User(
             user_id=user_id,
-            username=f"user_{user_id}",
-            email=f"{user_id}@example.com",
+            username=f"{FlextAuthConstants.Defaults.MOCK_USER_PREFIX}{user_id}",
+            email=f"{user_id}{FlextAuthConstants.Defaults.MOCK_EMAIL_DOMAIN}",
             password_hash=FlextAuthConstants.Defaults.DEFAULT_ADMIN_PASSWORD,
             roles=["user"],
             full_name=None,
@@ -242,7 +242,9 @@ class FlextAuth(FlextService):
             FlextResult containing the AuthToken or error
 
         """
-        return self.generate_token_for_user(user_id, "bearer", expires_in_minutes)
+        return self.generate_token_for_user(
+            user_id, FlextAuthConstants.Jwt.BEARER_TOKEN_TYPE, expires_in_minutes
+        )
 
     def logout_user(self, session_id: str) -> FlextResult[None]:
         """Logout user by session ID.
@@ -271,7 +273,10 @@ class FlextAuth(FlextService):
 
         """
         # Simplified implementation - in real implementation would query session store
-        session = FlextAuthModels.Session.create_session(user_id)
+        session = FlextAuthModels.Session.create_session(
+            user_id=user_id,
+            expiry_hours=FlextAuthConstants.Defaults.DEFAULT_SESSION_EXTEND_HOURS,
+        )
         if session.is_failure:
             return FlextResult[list[FlextAuthModels.Session]].fail(session.error)
         return FlextResult[list[FlextAuthModels.Session]].ok([session.value])
@@ -288,9 +293,9 @@ class FlextAuth(FlextService):
         """
         # Simplified implementation - in real implementation would query user store
         user = FlextAuthModels.User(
-            user_id=f"user_{username}",
+            user_id=f"{FlextAuthConstants.Defaults.MOCK_USER_PREFIX}{username}",
             username=username,
-            email=f"{username}@example.com",
+            email=f"{username}{FlextAuthConstants.Defaults.MOCK_EMAIL_DOMAIN}",
             password_hash=FlextAuthConstants.Defaults.DEFAULT_ADMIN_PASSWORD,
             roles=["user"],
             full_name=None,

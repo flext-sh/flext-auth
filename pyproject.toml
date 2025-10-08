@@ -17,23 +17,16 @@
         "Typing :: Typed",
     ]
     dependencies = [
-        "argon2-cffi>=25.1.0",
         "bcrypt>=4.3.0",
         "cryptography>=45.0.5",
-        "email-validator>=2.2.0",
-        "fastapi>=0.116.1",
-        "passlib>=1.7.4",
         "pydantic-settings>=2.10.1",
         "pydantic>=2.11.7",
         "pyjwt>=2.9.0",
-        "python-jose[cryptography]>=3.3.0",
-        "redis>=5.3.0",
-        "sqlalchemy>=2.0.41",
-        "structlog>=25.4.0",
+        "flext-core @ file:../flext-core",
+        "flext-api @ file:../flext-api",
     ]
     description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
     keywords = [
-        "",
         "authentication",
         "authorization",
         "enterprise",
@@ -89,6 +82,7 @@
             "pytest-cov>=6.2.0",
             "pytest-deadfixtures>=2.2.1",
             "pytest-env>=1.1.5",
+            "pytest-httpx>=0.35.0",
             "pytest-mock>=3.14.0",
             "pytest-randomly>=3.16.0",
             "pytest-sugar>=1.0.0",
@@ -163,12 +157,16 @@
             "htmlcov",
             "node_modules",
             "reports",
+            "tests",
+            "tests",
             "vendor",
             "venv",
         ]
         known_first_party = [
             "flext_auth",
         ]
+        [tool.deptry.package_module_name_map]
+            pyjwt = "jwt"
         pep621_dev_dependency_groups = [
             "dev",
             "security",
