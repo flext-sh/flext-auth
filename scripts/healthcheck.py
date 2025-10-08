@@ -43,7 +43,7 @@ def main() -> int:
 
         # Use urllib.request.urlopen with validated scheme and security checks
         # URL scheme has been validated above to only allow http/https
-        with urllib.request.urlopen(
+        with urllib.request.urlopen(  # noqa: S310
             health_url,
             timeout=30,  # Use a reasonable timeout instead of constant
         ) as response:
