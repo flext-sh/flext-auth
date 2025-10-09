@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
+from flext_core import FlextResult, FlextService, FlextTypes
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.models import FlextAuthModels
@@ -33,7 +33,6 @@ class FlextAuthProviderService(FlextService):
         super().__init__()
         self._config = config
         self._providers = FlextAuthRegistry()
-        self.logger: FlextLogger = FlextLogger(__name__)
         self._register_builtin_providers()
 
     def execute(self) -> FlextResult[object]:

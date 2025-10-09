@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import secrets
 from datetime import datetime
+from typing import TypedDict
 
 import bcrypt
 import jwt
@@ -17,10 +18,22 @@ from pydantic import SecretStr
 from flext_auth.constants import FlextAuthConstants
 
 
+class PasswordValidationResult(TypedDict):
+    """Type for password validation results."""
+    length: int
+    min_length: int
+    has_upper: bool
+    has_lower: bool
+    has_digit: bool
+    is_weak: bool
+    is_valid: bool
+    errors: list[str]
+
+
 class FlextAuthUtilities(FlextService):
     """Auth utilities class with JWT and password processing."""
 
-    def execute(self, _request: object) -> FlextResult[object]:
+    def execute(self) -> FlextResult[object]:
         """Execute method for FlextService interface.
 
         FlextAuthUtilities is a namespace class - use specific utility classes instead.
@@ -76,7 +89,7 @@ class FlextAuthUtilities(FlextService):
                 return FlextResult[bool].fail(f"Password verification failed: {e}")
 
         @staticmethod
-        def validate_password(password: str) -> FlextResult[FlextTypes.Dict]:
+        def validate_password(password: str) -> FlextResult[PasswordValidationResult]:
             """Validate password strength and return detailed results.
 
             Args:
@@ -86,7 +99,7 @@ class FlextAuthUtilities(FlextService):
                 FlextResult containing validation results dict
 
             """
-            results = {
+            results: PasswordValidationResult = {
                 "length": len(password),
                 "min_length": FlextAuthConstants.Credentials.Password.MIN_LENGTH,
                 "has_upper": any(c.isupper() for c in password),
@@ -185,7 +198,8 @@ class FlextAuthUtilities(FlextService):
 
             """
             try:
-                token_str = jwt.encode(payload, secret_key, algorithm=algorithm)
+                token = jwt.encode(payload, secret_key, algorithm=algorithm)
+                token_str = token if isinstance(token, str) else token.decode('utf-8')
                 return FlextResult[str].ok(token_str)
             except Exception as e:
                 return FlextResult[str].fail(f"JWT encoding failed: {e}")
@@ -232,7 +246,7 @@ class FlextAuthUtilities(FlextService):
 
         @staticmethod
         def generate_secure_token(
-            length: int = FlextAuthConstants.Defaults.DEFAULT_TOKEN_LENGTH,
+            length: int = FlextAuthConstants.AuthDefaults.DEFAULT_TOKEN_LENGTH,
         ) -> str:
             """Generate a secure random token.
 

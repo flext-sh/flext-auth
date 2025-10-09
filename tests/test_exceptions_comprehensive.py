@@ -2,7 +2,12 @@
 
 Copyright (c) 2025 Flext. All rights reserved.
 SPDX-License-Identifier: MIT
+
+Note: This test file uses pickle for exception serialization testing.
+Expected ruff S403/S301 warnings are acceptable for controlled test scenarios.
+
 """
+# ruff: noqa: S403,S301 # Required for testing exception serialization in controlled test environment
 
 from __future__ import annotations
 

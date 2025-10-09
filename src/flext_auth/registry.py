@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextLogger, FlextRegistry, FlextResult, FlextTypes
+from flext_core import FlextRegistry, FlextResult, FlextTypes
 
 from flext_auth.providers.base import FlextAuthBaseProvider
 
@@ -41,21 +41,20 @@ class FlextAuthRegistry(FlextRegistry):
         self._providers: dict[str, FlextAuthBaseProvider] = {}
         self._configs: dict[str, FlextTypes.Dict] = {}
         self._metadata: FlextTypes.NestedDict = {}
-        self.logger = FlextLogger(__name__)
 
         self.logger.info("FlextAuthRegistry initialized")
 
     def register(
         self,
         name: str,
-        provider: FlextAuthBaseProvider,
+        service: FlextAuthBaseProvider,
         config: FlextTypes.Dict | None = None,
     ) -> FlextResult[None]:
         """Register an authentication provider.
 
         Args:
             name: Unique identifier for the provider
-            provider: Authentication provider instance
+            service: Authentication provider instance
             config: Optional configuration for the provider
 
         Returns:
@@ -77,20 +76,20 @@ class FlextAuthRegistry(FlextRegistry):
 
         # Validate configuration if provided
         if config:
-            validation_result = self._validate_provider_config(name, provider, config)
+            validation_result = self._validate_provider_config(name, config)
             if validation_result.is_failure:
                 return FlextResult[None].fail(
                     f"Configuration validation failed: {validation_result.error}"
                 )
 
         # Register provider
-        self._providers[name] = provider
+        self._providers[name] = service
         if config:
             self._configs[name] = config
 
         # Store provider metadata
         try:
-            metadata = provider.get_metadata()
+            metadata = service.get_metadata()
             self._metadata[name] = metadata
         except Exception as e:
             self.logger.warning(
@@ -100,7 +99,7 @@ class FlextAuthRegistry(FlextRegistry):
 
         self.logger.info(
             f"Provider '{name}' registered successfully",
-            extra={"provider": name, "capabilities": list(provider.supports())},
+            extra={"provider": name, "capabilities": list(service.supports())},
         )
 
         return FlextResult[None].ok(None)
@@ -359,7 +358,7 @@ class FlextAuthRegistry(FlextRegistry):
         """
         capabilities_result = self.get_capabilities(provider_name)
         if capabilities_result.is_failure:
-            return capabilities_result
+            return FlextResult[bool].fail(capabilities_result.error)
 
         capabilities = capabilities_result.value
         return FlextResult[bool].ok(capability in capabilities)
@@ -399,10 +398,7 @@ class FlextAuthRegistry(FlextRegistry):
             return FlextResult[None].fail(f"Provider '{provider_name}' not registered")
 
         # Validate new config
-        provider = self._providers[provider_name]
-        validation_result = self._validate_provider_config(
-            provider_name, provider, new_config
-        )
+        validation_result = self._validate_provider_config(provider_name, new_config)
         if validation_result.is_failure:
             return validation_result
 
@@ -410,14 +406,14 @@ class FlextAuthRegistry(FlextRegistry):
         self.logger.info(f"Configuration updated for provider '{provider_name}'")
         return FlextResult[None].ok(None)
 
-    def get_all_metadata(self) -> FlextResult[FlextTypes.Dict]:
+    def get_all_metadata(self) -> FlextResult[FlextTypes.NestedDict]:
         """Get metadata for all registered providers.
 
         Returns:
-            FlextResult[FlextTypes.Dict]: Dictionary mapping provider names to metadata
+            FlextResult[FlextTypes.NestedDict]: Dictionary mapping provider names to metadata
 
         """
-        return FlextResult[FlextTypes.Dict].ok(self._metadata.copy())
+        return FlextResult[FlextTypes.NestedDict].ok(self._metadata.copy())
 
     def find_providers_with_capability(self, capability: str) -> FlextResult[list[str]]:
         """Find all providers that support a specific capability.

@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import cast
 from uuid import uuid4
 
 import jwt
@@ -65,16 +66,23 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         """
         super().__init__()
         self._config = config
-        self._secret_key = config.get("secret_key", FlextAuthConstants.Jwt.SECRET_KEY)
-        self._algorithm = config.get(
-            "algorithm", FlextAuthConstants.Jwt.DEFAULT_ALGORITHM
+        self._secret_key = cast(
+            "str", config.get("secret_key", FlextAuthConstants.Jwt.SECRET_KEY)
         )
-        self._expiry_minutes = config.get(
-            "expiry_minutes", FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES
+        self._algorithm = cast(
+            "str", config.get("algorithm", FlextAuthConstants.Jwt.DEFAULT_ALGORITHM)
         )
-        self._refresh_expiry_days = config.get("refresh_expiry_days", 7)
-        self._issuer = config.get("issuer", FlextAuthConstants.Jwt.ISSUER_CLAIM)
-        self._audience = config.get("audience", FlextAuthConstants.Jwt.AUDIENCE_CLAIM)
+        self._expiry_minutes = cast(
+            "float",
+            config.get("expiry_minutes", FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES),
+        )
+        self._refresh_expiry_days = cast("float", config.get("refresh_expiry_days", 7))
+        self._issuer = cast(
+            "str", config.get("issuer", FlextAuthConstants.Jwt.ISSUER_CLAIM)
+        )
+        self._audience = cast(
+            "str", config.get("audience", FlextAuthConstants.Jwt.AUDIENCE_CLAIM)
+        )
 
         # Initialize flext-core components
         self.logger = FlextLogger(__name__)
@@ -101,12 +109,12 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         if validation.is_failure:
             return FlextResult[FlextAuthModels.AuthToken].fail(validation.error)
 
-        username = credentials["username"]
-        password = credentials["password"]
+        username = cast("str", credentials["username"])
+        password = cast("str", credentials["password"])
 
         # Verify password (in real implementation, this would query user database)
         password_valid = FlextAuthUtilities.PasswordProcessing.verify_password(
-            password, credentials.get("password_hash", "hashed_password")
+            password, cast("str", credentials.get("password_hash", "hashed_password"))
         )
 
         if not password_valid:
@@ -199,6 +207,18 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             return FlextResult[bool].ok(False)
         except jwt.InvalidTokenError as e:
             return FlextResult[bool].fail(f"Invalid token: {e}")
+
+    def get_decoding_params(self) -> FlextResult[dict[str, object]]:
+        """Get parameters needed for JWT decoding.
+
+        Returns:
+            FlextResult[dict]: Decoding parameters with secret_key and algorithm
+
+        """
+        return FlextResult[dict[str, object]].ok({
+            "secret_key": self._secret_key,
+            "algorithm": self._algorithm,
+        })
 
     def refresh(
         self,
@@ -330,7 +350,9 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
             # Generate token
             token = FlextAuthUtilities.JWTProcessing.encode_token(
-                payload, self._secret_key, self._algorithm
+                cast("dict[str, bool | datetime | float | int | str | None]", payload),
+                self._secret_key,
+                self._algorithm,
             )
 
             return FlextResult[FlextTypes.Dict].ok({
@@ -372,7 +394,9 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
             # Generate refresh token
             token = FlextAuthUtilities.JWTProcessing.encode_token(
-                payload, self._secret_key, self._algorithm
+                cast("dict[str, bool | datetime | float | int | str | None]", payload),
+                self._secret_key,
+                self._algorithm,
             )
 
             return FlextResult[FlextTypes.Dict].ok({
@@ -415,7 +439,12 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
             # Generate token
             token = FlextAuthUtilities.JWTProcessing.encode_token(
-                full_payload, self._secret_key, self._algorithm
+                cast(
+                    "dict[str, bool | datetime | float | int | str | None]",
+                    full_payload,
+                ),
+                self._secret_key,
+                self._algorithm,
             )
 
             return FlextResult[FlextTypes.Dict].ok({

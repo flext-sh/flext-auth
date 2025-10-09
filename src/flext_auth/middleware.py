@@ -164,6 +164,13 @@ class FlextAuthMiddleware(FlextService):
 
                 object.__setattr__(request, "headers", current_headers)
 
+                # Add user context for tracking
+                user_context = {
+                    "provider": self._provider.get_metadata()["name"],
+                    "token_type": token.token_type,
+                }
+                object.__setattr__(request, "user_context", user_context)
+
                 self.logger.debug(
                     "Added authentication to HTTP request",
                     header=self._header_name,

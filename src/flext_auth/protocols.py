@@ -120,7 +120,7 @@ class FlextAuthProtocols(FlextProtocols):
 
             def extend_session(
                 self,
-                hours: int = FlextAuthConstants.Defaults.DEFAULT_SESSION_EXTEND_HOURS,
+                hours: int = FlextAuthConstants.AuthDefaults.DEFAULT_SESSION_EXTEND_HOURS,
             ) -> FlextResult[bool]:
                 """Extend session expiration time."""
                 return FlextResult[bool].ok(True)  # Placeholder implementation

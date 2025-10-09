@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import Any, cast
 from uuid import uuid4
 
 from flext_core import (
@@ -79,7 +80,7 @@ class FlextAuthManagers(FlextService):
                 return FlextResult[FlextAuthModels.User].fail("User already exists")
 
             user_id = str(uuid4())
-            user_data = {
+            user_data = cast(dict[str, Any], {
                 "id": user_id,
                 "username": username,
                 "email": email,
@@ -90,7 +91,7 @@ class FlextAuthManagers(FlextService):
                 "created_at": datetime.now(UTC),
                 "updated_at": datetime.now(UTC),
                 **extra_fields,
-            }
+            })
 
             self._users[username] = user_data
             user = FlextAuthModels.User(**user_data)
@@ -100,7 +101,7 @@ class FlextAuthManagers(FlextService):
             """Get user by ID."""
             for user_data in self._users.values():
                 if user_data["id"] == user_id:
-                    user = FlextAuthModels.User(**user_data)
+                    user = FlextAuthModels.User(**cast(dict[str, Any], user_data))
                     return FlextResult[FlextAuthModels.User].ok(user)
 
             return FlextResult[FlextAuthModels.User].fail("User not found")

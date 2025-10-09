@@ -224,7 +224,7 @@ class FlextAuthConstants(FlextConstants):
         TOTAL_TIMEOUT = 60
         DEFAULT_TIMEOUT = 30
 
-    class Defaults:
+    class AuthDefaults:
         """Default values for various operations."""
 
         DEFAULT_TOKEN_LENGTH = 32
@@ -237,7 +237,7 @@ class FlextAuthConstants(FlextConstants):
         JWT_PARTS_COUNT = 3
         BASE64_PADDING_SIZE = 4
         # Admin defaults
-        DEFAULT_ADMIN_PASSWORD = FlextConstants.Security.DEFAULT_ADMIN_PASSWORD
+        DEFAULT_ADMIN_PASSWORD = "***MUST_BE_SET_IN_PRODUCTION***"
         # Mock/test data defaults
         MOCK_USER_PREFIX = "user_"
         MOCK_EMAIL_DOMAIN = "@example.com"
@@ -248,7 +248,7 @@ class FlextAuthConstants(FlextConstants):
         DEFAULT_PROVIDER = "basic"
         # User model defaults
         DEFAULT_USER_ACTIVE = True
-        DEFAULT_USER_ROLES: ClassVar[FlextTypes.StringList] = [Roles.USER]
+        DEFAULT_USER_ROLES: ClassVar[FlextTypes.StringList] = ["user"]
         DEFAULT_FAILED_LOGIN_ATTEMPTS = 0
         # Session model defaults
         DEFAULT_SESSION_ACTIVE = True

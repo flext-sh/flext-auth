@@ -18,14 +18,13 @@ class FlextAuthSessionService(FlextService):
 
     def __init__(self, config: FlextAuthConfig, dispatcher: FlextDispatcher) -> None:
         """Initialize session service with flext-core integration."""
-        super().__init__()
+        super().__init__(logger=FlextLogger(__name__))
         self._config = config
         self._dispatcher = dispatcher
         self._session_manager = FlextAuthManagers.FlextAuthSessionManager(config)
         self._audit_logger = FlextAuthManagers.FlextAuthAuditLogger(config, dispatcher)
-        self.logger = FlextLogger(__name__)
 
-    def execute(self, _request: object) -> FlextResult[object]:
+    def execute(self) -> FlextResult[object]:
         """Execute method for FlextService interface.
 
         Session service doesn't use generic execute pattern.

@@ -72,16 +72,18 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         self._config = config
         self.logger = FlextLogger(__name__)
 
-        # Configuration with defaults
-        self._key_prefix = self._config.get("key_prefix", "")
-        self._key_length = self._config.get("key_length", 32)
-        self._hash_algorithm = self._config.get("hash_algorithm", "sha256")
-        self._require_key_id = self._config.get("require_key_id", False)
-        self._key_storage = self._config.get("key_storage", "memory")
-        self._rate_limit_enabled = self._config.get("rate_limit_enabled", False)
-        self._rate_limit_requests = self._config.get("rate_limit_requests", 1000)
-        self._rate_limit_window_seconds = self._config.get(
-            "rate_limit_window_seconds", 3600
+        # Configuration with defaults and type checking
+        self._key_prefix = str(self._config.get("key_prefix", ""))
+        self._key_length = int(str(self._config.get("key_length", 32)))
+        self._hash_algorithm = str(self._config.get("hash_algorithm", "sha256"))
+        self._require_key_id = bool(self._config.get("require_key_id", False))
+        self._key_storage = str(self._config.get("key_storage", "memory"))
+        self._rate_limit_enabled = bool(self._config.get("rate_limit_enabled", False))
+        self._rate_limit_requests = int(
+            str(self._config.get("rate_limit_requests", 1000))
+        )
+        self._rate_limit_window_seconds = int(
+            str(self._config.get("rate_limit_window_seconds", 3600))
         )
 
         # In-memory storage (for development/testing)
@@ -131,6 +133,10 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
 
         api_key = credentials["api_key"]
+        if not isinstance(api_key, str):
+            return FlextResult[FlextAuthModels.AuthToken].fail(
+                "API key must be a string"
+            )
 
         # Validate API key format
         if self._key_prefix and not api_key.startswith(self._key_prefix):
@@ -154,7 +160,11 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         # Check expiration
         expires_at = key_metadata.get("expires_at")
-        if expires_at and datetime.now(UTC) > expires_at:
+        if (
+            expires_at
+            and isinstance(expires_at, datetime)
+            and datetime.now(UTC) > expires_at
+        ):
             return FlextResult[FlextAuthModels.AuthToken].fail("API key expired")
 
         # Check rate limits
@@ -219,14 +229,18 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         # Check expiration
         expires_at = key_metadata.get("expires_at")
-        if expires_at and datetime.now(UTC) > expires_at:
+        if (
+            expires_at
+            and isinstance(expires_at, datetime)
+            and datetime.now(UTC) > expires_at
+        ):
             return FlextResult[bool].fail("API key expired")
 
         return FlextResult[bool].ok(True)
 
     def refresh(
         self,
-        _token: str | FlextAuthModels.AuthToken,
+        token: str | FlextAuthModels.AuthToken,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Refresh API key.
 
@@ -240,6 +254,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             FlextResult[AuthToken]: Error indicating refresh not supported
 
         """
+        _ = token  # Token parameter required by interface but not used for API key refresh
         return FlextResult[FlextAuthModels.AuthToken].fail(
             "API keys do not support refresh. Generate a new key or update expiration."
         )

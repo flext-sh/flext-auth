@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import secrets
 from datetime import UTC, datetime
+from typing import cast
 
 from flext_core import FlextLogger, FlextResult, FlextTypes
 
@@ -74,29 +75,29 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         # Validate required configuration
         self._realm = self._config.get("realm")
-        if not self._realm:
-            error_msg = "Kerberos provider requires 'realm' in configuration"
-            raise ValueError(error_msg)
+        if not isinstance(self._realm, str):
+            error_msg = "Kerberos provider requires 'realm' to be a string"
+            raise TypeError(error_msg)
 
         self._kdc = self._config.get("kdc")
-        if not self._kdc:
-            error_msg = "Kerberos provider requires 'kdc' (Key Distribution Center) in configuration"
-            raise ValueError(error_msg)
+        if not isinstance(self._kdc, str):
+            error_msg = "Kerberos provider requires 'kdc' to be a string"
+            raise TypeError(error_msg)
 
         self._service_principal = self._config.get("service_principal")
-        if not self._service_principal:
-            error_msg = (
-                "Kerberos provider requires 'service_principal' in configuration"
-            )
-            raise ValueError(error_msg)
+        if not isinstance(self._service_principal, str):
+            error_msg = "Kerberos provider requires 'service_principal' to be a string"
+            raise TypeError(error_msg)
 
         # Optional configuration
-        self._keytab_path = self._config.get("keytab_path")
-        self._clockskew_tolerance = self._config.get("clockskew_tolerance", 300)
-        self._ticket_lifetime = self._config.get("ticket_lifetime", 10)
-        self._renew_lifetime = self._config.get("renew_lifetime", 7)
-        self._forwardable = self._config.get("forwardable", False)
-        self._proxiable = self._config.get("proxiable", False)
+        self._keytab_path = cast("str | None", self._config.get("keytab_path"))
+        self._clockskew_tolerance = cast(
+            "int", self._config.get("clockskew_tolerance", 300)
+        )
+        self._ticket_lifetime = cast("int", self._config.get("ticket_lifetime", 10))
+        self._renew_lifetime = cast("int", self._config.get("renew_lifetime", 7))
+        self._forwardable = cast("bool", self._config.get("forwardable", False))
+        self._proxiable = cast("bool", self._config.get("proxiable", False))
 
         # Runtime state for ticket management
         self._active_tickets: dict[
@@ -383,7 +384,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         """
         return f"krb5_{secrets.token_hex(16)}"
 
-    def _parse_principal(self, principal: str) -> FlextTypes.StringDict:
+    def _parse_principal(self, principal: str) -> dict[str, str | None]:
         """Parse Kerberos principal name.
 
         Args:
@@ -395,7 +396,10 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         """
         # Parse principal format: primary[/instance]@realm
         if "@" not in principal:
-            return {"primary": principal, "instance": None, "realm": self._realm}
+            return cast(
+                "dict[str, str | None]",
+                {"primary": principal, "instance": None, "realm": self._realm},
+            )
 
         name_part, realm = principal.rsplit("@", 1)
 

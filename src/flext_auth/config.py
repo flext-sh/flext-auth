@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import threading
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from dependency_injector import providers
 from flext_core import (
@@ -157,7 +157,7 @@ class FlextAuthConfig(FlextConfig):
 
     # Rate Limiting
     enable_rate_limiting: bool = Field(
-        default=FlextAuthConstants.Defaults.DEFAULT_ENABLE_RATE_LIMITING,
+        default=FlextAuthConstants.AuthDefaults.DEFAULT_ENABLE_RATE_LIMITING,
         description="Enable rate limiting for authentication endpoints",
     )
     session_cleanup_interval_minutes: int = Field(
@@ -168,7 +168,7 @@ class FlextAuthConfig(FlextConfig):
 
     # Password Policy
     require_password_complexity: bool = Field(
-        default=FlextAuthConstants.Defaults.DEFAULT_REQUIRE_PASSWORD_COMPLEXITY,
+        default=FlextAuthConstants.AuthDefaults.DEFAULT_REQUIRE_PASSWORD_COMPLEXITY,
         description="Require password complexity validation",
     )
     min_password_score: int = Field(
@@ -192,11 +192,11 @@ class FlextAuthConfig(FlextConfig):
 
     # Feature Flags
     enable_email_verification: bool = Field(
-        default=FlextAuthConstants.Defaults.DEFAULT_ENABLE_EMAIL_VERIFICATION,
+        default=FlextAuthConstants.AuthDefaults.DEFAULT_ENABLE_EMAIL_VERIFICATION,
         description="Enable email verification for new accounts",
     )
     enable_password_history: bool = Field(
-        default=FlextAuthConstants.Defaults.DEFAULT_ENABLE_PASSWORD_HISTORY,
+        default=FlextAuthConstants.AuthDefaults.DEFAULT_ENABLE_PASSWORD_HISTORY,
         description="Enable password history to prevent reuse",
     )
 
@@ -291,7 +291,7 @@ class FlextAuthConfig(FlextConfig):
         return cls._di_config_provider
 
     @classmethod
-    def create(cls, **kwargs: object) -> FlextAuthConfig:
+    def create(cls, **kwargs: Any) -> FlextAuthConfig:
         """Create a new FlextAuthConfig instance with optional overrides."""
         return cls(**kwargs)
 

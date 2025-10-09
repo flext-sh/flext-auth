@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import secrets
 from datetime import UTC, datetime, timedelta
+from typing import cast
 
 # Third-party imports for certificate processing
 from cryptography import x509
@@ -76,7 +77,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
         # Validate required configuration
         self._ca_cert = self._config.get("ca_cert")
-        if not self._ca_cert:
+        if not self._ca_cert or not isinstance(self._ca_cert, str):
             error_msg = (
                 "Certificate provider requires 'ca_cert' (trusted CA certificate)"
             )
@@ -134,6 +135,10 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
 
         client_cert = credentials["client_cert"]
+        if not isinstance(client_cert, str):
+            return FlextResult[FlextAuthModels.AuthToken].fail(
+                "Client certificate must be a string"
+            )
 
         # Step 1: Parse and extract certificate information
         cert_info_result = self._extract_certificate_info(client_cert)
@@ -148,7 +153,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
 
         # Check if certificate is mapped to a user
-        cert_fingerprint = cert_info.get("fingerprint", "")
+        cert_fingerprint = str(cert_info.get("fingerprint", ""))
         user_data = self._cert_mappings.get(cert_fingerprint)
 
         if not user_data:
@@ -179,7 +184,9 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             extra={
                 "user_id": user_data["user_id"],
                 "subject": cert_info.get("subject"),
-                "fingerprint": cert_fingerprint[:16] + "...",
+                "fingerprint": str(cert_fingerprint)[:16] + "..."
+                if cert_fingerprint
+                else "unknown",
             },
         )
 
@@ -230,7 +237,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
     def refresh(
         self,
-        _token: str | FlextAuthModels.AuthToken,
+        token: str | FlextAuthModels.AuthToken,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Refresh certificate token.
 
@@ -244,6 +251,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             FlextResult[AuthToken]: Error indicating refresh not supported
 
         """
+        _ = token  # Token parameter required by interface but not used for certificate refresh
         return FlextResult[FlextAuthModels.AuthToken].fail(
             "Certificate authentication does not support token refresh. "
             "Obtain a new certificate from the Certificate Authority."
@@ -397,7 +405,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
                 extra={"fingerprint": fingerprint, "subject": subject_dn},
             )
 
-            return FlextResult[FlextTypes.Dict].ok(cert_info)
+            return FlextResult[FlextTypes.Dict].ok(cast("dict[str, object]", cert_info))
 
         except ValueError as e:
             return FlextResult[FlextTypes.Dict].fail(f"Invalid certificate format: {e}")
@@ -438,7 +446,9 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
             # Validate against CA certificate
             if self._ca_cert:
-                ca_validation_result = self._validate_against_ca(cert, self._ca_cert)
+                ca_validation_result = self._validate_against_ca(
+                    cert, cast("str", self._ca_cert)
+                )
                 if ca_validation_result.is_failure:
                     return ca_validation_result
 
@@ -452,7 +462,9 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
         except Exception as e:
             return FlextResult[None].fail(f"Certificate validation failed: {e}")
 
-    def _validate_against_ca(self, cert: object, ca_cert_pem: str) -> FlextResult[None]:
+    def _validate_against_ca(
+        self, cert: x509.Certificate, ca_cert_pem: str
+    ) -> FlextResult[None]:
         """Validate certificate against CA certificate.
 
         Args:
@@ -504,7 +516,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
         """
         # Extract username from certificate subject (CN field)
-        subject = cert_info.get("subject", "")
+        subject = cast("str", cert_info.get("subject", ""))
         username = self._extract_cn_from_subject(subject)
 
         if not username:
@@ -526,6 +538,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
         }
 
         # Store certificate mapping
+        fingerprint = cast("str", cert_info.get("fingerprint", ""))
         self._cert_mappings[fingerprint] = user_data
 
         self.logger.info(

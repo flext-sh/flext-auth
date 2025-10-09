@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from flext_core import FlextLogger, FlextResult, FlextService
+from flext_core import FlextResult, FlextService
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
@@ -31,9 +31,9 @@ class FlextAuth(FlextService):
             config: Authentication configuration. If None, uses global config.
 
         """
-        self.config: FlextAuthConfig = config or FlextAuthConfig()
-        self.logger = FlextLogger(__name__)
-        self._provider_service = FlextAuthProviderService(self.config)
+        super().__init__()
+        self._auth_config: FlextAuthConfig = config or FlextAuthConfig()
+        self._provider_service = FlextAuthProviderService(self._auth_config)
 
     def execute(self) -> FlextResult[object]:
         """Execute method for FlextService interface.
@@ -71,7 +71,7 @@ class FlextAuth(FlextService):
 
         # Create user data structure (simplified - no complex service layer)
         user_data = {
-            "user_id": f"{FlextAuthConstants.Defaults.MOCK_USER_PREFIX}{username}",
+            "user_id": f"{FlextAuthConstants.AuthDefaults.MOCK_USER_PREFIX}{username}",
             "username": username,
             "email": email,
             "password_hash": f"hashed_{password}",  # Simplified
@@ -87,7 +87,7 @@ class FlextAuth(FlextService):
         self,
         username: str,
         password: str,
-        provider: str = FlextAuthConstants.Defaults.DEFAULT_PROVIDER,
+        provider: str = FlextAuthConstants.AuthDefaults.DEFAULT_PROVIDER,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate a user with username/password.
 
@@ -114,17 +114,17 @@ class FlextAuth(FlextService):
 
         """
         # Use JWT provider for token validation
-        jwt_provider = FlextAuthJwtProvider(config=self.config.to_dict())
+        jwt_provider = FlextAuthJwtProvider(config=self._auth_config.to_dict())
         validation_result = jwt_provider.validate(token)
         if validation_result.is_failure:
             return FlextResult[FlextAuthModels.User].fail(validation_result.error)
 
         # For now, return a mock user - in real implementation would extract user from token
         user = FlextAuthModels.User(
-            user_id=FlextAuthConstants.Defaults.MOCK_VALIDATED_USER_ID,
-            username=FlextAuthConstants.Defaults.MOCK_VALIDATED_USERNAME,
-            email=FlextAuthConstants.Defaults.MOCK_VALIDATED_EMAIL,
-            password_hash=FlextAuthConstants.Defaults.DEFAULT_ADMIN_PASSWORD,
+            user_id=FlextAuthConstants.AuthDefaults.MOCK_VALIDATED_USER_ID,
+            username=FlextAuthConstants.AuthDefaults.MOCK_VALIDATED_USERNAME,
+            email=FlextAuthConstants.AuthDefaults.MOCK_VALIDATED_EMAIL,
+            password_hash=FlextAuthConstants.AuthDefaults.DEFAULT_ADMIN_PASSWORD,
             roles=["user"],
             full_name=None,
             failed_login_attempts=0,
@@ -146,9 +146,9 @@ class FlextAuth(FlextService):
         # For now, return a mock user to maintain API compatibility
         user = FlextAuthModels.User(
             user_id=user_id,
-            username=f"{FlextAuthConstants.Defaults.MOCK_USER_PREFIX}{user_id}",
-            email=f"{user_id}{FlextAuthConstants.Defaults.MOCK_EMAIL_DOMAIN}",
-            password_hash=FlextAuthConstants.Defaults.DEFAULT_ADMIN_PASSWORD,
+            username=f"{FlextAuthConstants.AuthDefaults.MOCK_USER_PREFIX}{user_id}",
+            email=f"{user_id}{FlextAuthConstants.AuthDefaults.MOCK_EMAIL_DOMAIN}",
+            password_hash=FlextAuthConstants.AuthDefaults.DEFAULT_ADMIN_PASSWORD,
             roles=["user"],
             full_name=None,
             failed_login_attempts=0,
@@ -181,7 +181,7 @@ class FlextAuth(FlextService):
         user = user_result.value
 
         # Use JWT provider to generate token
-        jwt_provider = FlextAuthJwtProvider(config=self.config.to_dict())
+        jwt_provider = FlextAuthJwtProvider(config=self._auth_config.to_dict())
 
         # Create token payload with proper typing
         payload: dict[str, object] = {
@@ -275,7 +275,7 @@ class FlextAuth(FlextService):
         # Simplified implementation - in real implementation would query session store
         session = FlextAuthModels.Session.create_session(
             user_id=user_id,
-            expiry_hours=FlextAuthConstants.Defaults.DEFAULT_SESSION_EXTEND_HOURS,
+            expiry_hours=FlextAuthConstants.AuthDefaults.DEFAULT_SESSION_EXTEND_HOURS,
         )
         if session.is_failure:
             return FlextResult[list[FlextAuthModels.Session]].fail(session.error)
@@ -293,10 +293,10 @@ class FlextAuth(FlextService):
         """
         # Simplified implementation - in real implementation would query user store
         user = FlextAuthModels.User(
-            user_id=f"{FlextAuthConstants.Defaults.MOCK_USER_PREFIX}{username}",
+            user_id=f"{FlextAuthConstants.AuthDefaults.MOCK_USER_PREFIX}{username}",
             username=username,
-            email=f"{username}{FlextAuthConstants.Defaults.MOCK_EMAIL_DOMAIN}",
-            password_hash=FlextAuthConstants.Defaults.DEFAULT_ADMIN_PASSWORD,
+            email=f"{username}{FlextAuthConstants.AuthDefaults.MOCK_EMAIL_DOMAIN}",
+            password_hash=FlextAuthConstants.AuthDefaults.DEFAULT_ADMIN_PASSWORD,
             roles=["user"],
             full_name=None,
             failed_login_attempts=0,

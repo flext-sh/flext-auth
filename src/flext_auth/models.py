@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import secrets
 from datetime import UTC, datetime, timedelta
+from typing import cast
 
 from flext_core import FlextModels, FlextResult, FlextTypes
 from pydantic import (
@@ -251,11 +252,11 @@ class FlextAuthModels(FlextModels):
             max_length=200,
         )
         is_active: bool = Field(
-            default=FlextAuthConstants.Defaults.DEFAULT_USER_ACTIVE,
+            default=FlextAuthConstants.AuthDefaults.DEFAULT_USER_ACTIVE,
             description="Whether user account is active",
         )
         roles: FlextTypes.StringList = Field(
-            default_factory=FlextAuthConstants.Defaults.DEFAULT_USER_ROLES.copy,
+            default_factory=FlextAuthConstants.AuthDefaults.DEFAULT_USER_ROLES.copy,
             description="User roles",
             min_length=0,
         )
@@ -265,7 +266,7 @@ class FlextAuthModels(FlextModels):
             min_length=0,
         )
         failed_login_attempts: int = Field(
-            default=FlextAuthConstants.Defaults.DEFAULT_FAILED_LOGIN_ATTEMPTS,
+            default=FlextAuthConstants.AuthDefaults.DEFAULT_FAILED_LOGIN_ATTEMPTS,
             description="Failed login attempt count",
             ge=0,  # Non-negative constraint
         )
@@ -339,9 +340,9 @@ class FlextAuthModels(FlextModels):
             """Computed field: Check if user can attempt login (implements FlextAuthUserProtocol)."""
             return self.is_active and not self.is_locked
 
-        @computed_field
+        @property
         def is_locked(self) -> bool:
-            """Computed field: Check if account is currently locked (implements FlextAuthUserProtocol)."""
+            """Check if account is currently locked (implements FlextAuthUserProtocol)."""
             if self.locked_until is None:
                 return False
             return datetime.now(UTC) < self.locked_until
@@ -457,9 +458,9 @@ class FlextAuthModels(FlextModels):
                     username=username,
                     email=email,
                     password_hash="",  # Will be set by set_password
-                    full_name=extra_fields.get("full_name"),
-                    is_active=extra_fields.get("is_active", True),
-                    roles=extra_fields.get("roles", ["user"]),
+                    full_name=cast(str | None, extra_fields.get("full_name")),
+                    is_active=cast(bool, extra_fields.get("is_active", True)),
+                    roles=cast(list[str], extra_fields.get("roles", ["user"])),
                     failed_login_attempts=0,
                     locked_until=None,
                     last_login=None,
@@ -508,14 +509,12 @@ class FlextAuthModels(FlextModels):
                 )
 
         @classmethod
-        def get_by_username(
-            cls, username: str
-        ) -> FlextResult[FlextAuthModels.User | None]:
+        def get_by_username(cls, username: str) -> FlextResult[FlextAuthModels.User]:
             """Get user by username."""
             # This is a placeholder implementation
             # In a real implementation, this would query the database
             _ = username  # Mark as used to avoid linting error
-            return FlextResult[FlextAuthModels.User | None].ok(None)
+            return FlextResult[FlextAuthModels.User].fail("User not found")
 
     class Role(FlextModels.Role):
         """Auth Role domain model extending FlextModels.Role."""
@@ -596,7 +595,7 @@ class FlextAuthModels(FlextModels):
         )
         expires_at: datetime = Field(..., description="Session expiration time")
         is_active: bool = Field(
-            default=FlextAuthConstants.Defaults.DEFAULT_SESSION_ACTIVE,
+            default=FlextAuthConstants.AuthDefaults.DEFAULT_SESSION_ACTIVE,
             description="Whether session is active",
         )
         ip_address: str | None = Field(
@@ -630,9 +629,9 @@ class FlextAuthModels(FlextModels):
                 raise ValueError(error_msg)
             return v
 
-        @computed_field
+        @property
         def is_expired(self) -> bool:
-            """Computed field: Check if session is expired (implements FlextAuthSessionProtocol)."""
+            """Check if session is expired (implements FlextAuthSessionProtocol)."""
             return datetime.now(UTC) > self.expires_at
 
         @computed_field
@@ -744,7 +743,7 @@ class FlextAuthModels(FlextModels):
         )
         expires_at: datetime = Field(..., description="Token expiration time")
         is_revoked: bool = Field(
-            default=FlextAuthConstants.Defaults.DEFAULT_TOKEN_REVOKED,
+            default=FlextAuthConstants.AuthDefaults.DEFAULT_TOKEN_REVOKED,
             description="Whether token is revoked",
         )
         token_type: str = Field(

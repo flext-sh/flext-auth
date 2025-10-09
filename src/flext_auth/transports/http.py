@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import base64
 import json
+from typing import cast
 
 from flext_api import FlextApiClient, FlextApiExceptions
 from flext_core import FlextLogger, FlextResult, FlextTypes
@@ -41,8 +42,8 @@ class HttpTransportAdapter:
 
     def __init__(
         self,
-        timeout: float = FlextAuthConstants.Defaults.DEFAULT_TIMEOUT,
-        max_retries: int = FlextAuthConstants.Defaults.MAX_RETRIES,
+        timeout: float = FlextAuthConstants.AuthDefaults.DEFAULT_TIMEOUT,
+        max_retries: int = FlextAuthConstants.AuthDefaults.MAX_RETRIES,
     ) -> None:
         """Initialize HTTP transport adapter with flext-api client.
 
@@ -213,7 +214,7 @@ class HttpTransportAdapter:
 
             # Extract JSON data from HttpResponse
             try:
-                response_data = json.loads(http_response.body)
+                response_data = json.loads(cast("str", http_response.body))
             except (json.JSONDecodeError, TypeError) as e:
                 return FlextResult[FlextTypes.Dict].fail(
                     f"Failed to parse token JSON response: {e}"
@@ -290,7 +291,7 @@ class HttpTransportAdapter:
 
             # Extract JSON data from HttpResponse
             try:
-                userinfo = json.loads(http_response.body)
+                userinfo = json.loads(cast("str", http_response.body))
             except (json.JSONDecodeError, TypeError) as e:
                 return FlextResult[FlextTypes.Dict].fail(
                     f"Failed to parse UserInfo JSON response: {e}"

@@ -38,29 +38,29 @@ class TestMissingCoverage:
     def test_user_invalid_hash_validation(self) -> None:
         """Test models.py line 138 - invalid hash validation."""
         # Test the special case for invalid_hash prefix
-        FlextAuthModels.User = FlextAuthModels.User(
+        user = FlextAuthModels.User(
             id="test-id",
             username="testuser",
             email="test@example.com",
             password_hash="invalid_hash_test_that_is_long_enough_to_pass_length_validation_but_still_invalid_format",
-            full_name="Test FlextAuthModels.User",
+            full_name="Test User",
             is_active=True,
             failed_login_attempts=0,
             locked_until=None,
             last_login=None,
         )
         assert (
-            FlextAuthModels.User.password_hash
+            user.password_hash
             == "invalid_hash_test_that_is_long_enough_to_pass_length_validation_but_still_invalid_format"
         )
 
     def test_user_set_password_exception(self) -> None:
         """Test models.py lines 158-159 - password hashing exception."""
-        FlextAuthModels.User = FlextAuthModels.User(
+        user = FlextAuthModels.User(
             id="test-id",
             username="testuser",
             email="test@example.com",
-            full_name="Test FlextAuthModels.User",
+            full_name="Test User",
             is_active=True,
             failed_login_attempts=0,
             locked_until=None,
@@ -69,7 +69,7 @@ class TestMissingCoverage:
 
         # Mock bcrypt to raise an exception
         with patch("bcrypt.hashpw", side_effect=Exception("Bcrypt error")):
-            result = FlextAuthModels.User.set_password("TestPassword123!")
+            result = user.set_password("TestPassword123!")
             assert result.is_failure
             assert (
                 result.error is not None and "Password hashing failed" in result.error
@@ -77,11 +77,11 @@ class TestMissingCoverage:
 
     def test_user_validate_strength_edge_cases(self) -> None:
         """Test password strength validation edge cases in set_password method."""
-        FlextAuthModels.User = FlextAuthModels.User(
+        user = FlextAuthModels.User(
             id="test-id",
             username="testuser",
             email="test@example.com",
-            full_name="Test FlextAuthModels.User",
+            full_name="Test User",
             is_active=True,
             failed_login_attempts=0,
             locked_until=None,
@@ -89,15 +89,15 @@ class TestMissingCoverage:
         )
 
         # Test various password strength scenarios through set_password
-        result = FlextAuthModels.User.set_password("")
+        result = user.set_password("")
         assert result.is_failure  # Empty password
         assert result.error is not None and "at least" in result.error
 
-        result = FlextAuthModels.User.set_password("a")
+        result = user.set_password("a")
         assert result.is_failure  # Too short
         assert result.error is not None and "at least" in result.error
 
-        result = FlextAuthModels.User.set_password("bbbbbbbb")
+        result = user.set_password("bbbbbbbb")
         assert result.is_failure  # No uppercase
         assert result.error is not None and "uppercase" in result.error
 

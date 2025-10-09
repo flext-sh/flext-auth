@@ -17,6 +17,7 @@ from __future__ import annotations
 import base64
 import json
 from datetime import UTC, datetime
+from typing import cast
 
 from flext_core import FlextResult, FlextTypes
 
@@ -80,22 +81,41 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
 
         # OIDC-specific configuration
         self._issuer = self._config.get("issuer")
-        if not self._issuer:
-            error_msg = "OIDC provider requires 'issuer' in configuration"
-            raise ValueError(error_msg)
+        if not isinstance(self._issuer, str):
+            error_msg = "OIDC provider requires 'issuer' to be a string"
+            raise TypeError(error_msg)
 
         self._userinfo_endpoint = self._config.get("userinfo_endpoint")
+        if self._userinfo_endpoint is not None and not isinstance(
+            self._userinfo_endpoint, str
+        ):
+            error_msg = "OIDC provider 'userinfo_endpoint' must be a string or None"
+            raise TypeError(error_msg)
+
         self._discovery_endpoint = self._config.get("discovery_endpoint")
+        if self._discovery_endpoint is not None and not isinstance(
+            self._discovery_endpoint, str
+        ):
+            error_msg = "OIDC provider 'discovery_endpoint' must be a string or None"
+            raise TypeError(error_msg)
 
         self._id_token_signing_alg = self._config.get(
             "id_token_signing_alg",
             FlextAuthConstants.Oidc.DEFAULT_ID_TOKEN_SIGNING_ALGORITHM,
         )
+        if not isinstance(self._id_token_signing_alg, str):
+            self._id_token_signing_alg = (
+                FlextAuthConstants.Oidc.DEFAULT_ID_TOKEN_SIGNING_ALGORITHM
+            )
+
         self._validate_nonce = self._config.get("validate_nonce", True)
+        if not isinstance(self._validate_nonce, bool):
+            self._validate_nonce = True
 
         # Ensure openid scope is included
-        if "openid" not in self._scope:
-            self._scope = f"openid {self._scope}"
+        scope_str = cast("str", self._scope)
+        if "openid" not in scope_str:
+            self._scope = f"openid {scope_str}"
 
         # Runtime state for nonce validation
         self._nonces: FlextTypes.StringDict = {}  # state -> nonce mapping
@@ -290,7 +310,7 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
 
         # Fetch user information from UserInfo endpoint
         userinfo_result = self._http_client.get_userinfo(
-            url=self._userinfo_endpoint,
+            url=cast("str", self._userinfo_endpoint),
             access_token=access_token,
         )
 
@@ -321,7 +341,7 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
         """
         # Basic JWT structure validation
         parts = id_token.split(".")
-        jwt_parts_count = FlextAuthConstants.Defaults.JWT_PARTS_COUNT
+        jwt_parts_count = FlextAuthConstants.AuthDefaults.JWT_PARTS_COUNT
         if len(parts) != jwt_parts_count:
             return FlextResult[FlextTypes.Dict].fail(
                 "Invalid ID token format (not a valid JWT)"
@@ -337,7 +357,7 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
             # Decode payload (add padding if needed)
             payload_part = parts[1]
             # Add padding
-            base64_padding_size = FlextAuthConstants.Defaults.BASE64_PADDING_SIZE
+            base64_padding_size = FlextAuthConstants.AuthDefaults.BASE64_PADDING_SIZE
             padding_needed = base64_padding_size - (
                 len(payload_part) % base64_padding_size
             )

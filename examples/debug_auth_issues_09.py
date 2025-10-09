@@ -71,7 +71,7 @@ def debug_jwt_operations() -> None:
     if token_result.is_failure:
         return
 
-    token = token_result.value
+    token = token_result.value.token
 
     # Test token validation
     validate_result = auth.validate_token(token)

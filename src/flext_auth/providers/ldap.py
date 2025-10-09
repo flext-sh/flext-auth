@@ -17,6 +17,7 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import cast
 
 from flext_core import FlextLogger, FlextResult, FlextTypes
 
@@ -75,27 +76,31 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         self.logger = FlextLogger(__name__)
 
         # Validate required configuration
-        self._server = self._config.get("server")
+        self._server = cast("str", self._config.get("server"))
         if not self._server:
             error_msg = "LDAP provider requires 'server' in configuration"
             raise ValueError(error_msg)
 
-        self._base_dn = self._config.get("base_dn")
+        self._base_dn = cast("str", self._config.get("base_dn"))
         if not self._base_dn:
             error_msg = "LDAP provider requires 'base_dn' in configuration"
             raise ValueError(error_msg)
 
         # Optional configuration
-        self._bind_dn = self._config.get("bind_dn")
-        self._bind_password = self._config.get("bind_password")
-        self._user_search_filter = self._config.get(
-            "user_search_filter", "(uid={username})"
+        self._bind_dn = cast("str | None", self._config.get("bind_dn"))
+        self._bind_password = cast("str | None", self._config.get("bind_password"))
+        self._user_search_filter = cast(
+            "str", self._config.get("user_search_filter", "(uid={username})")
         )
-        self._attributes = self._config.get("attributes", ["cn", "mail", "memberOf"])
-        self._use_ssl = self._config.get("use_ssl", True)
-        self._timeout = self._config.get("timeout", 10)
-        self._group_base_dn = self._config.get("group_base_dn")
-        self._group_search_filter = self._config.get("group_search_filter")
+        self._attributes = cast(
+            "list[str]", self._config.get("attributes", ["cn", "mail", "memberOf"])
+        )
+        self._use_ssl = cast("bool", self._config.get("use_ssl", True))
+        self._timeout = cast("int", self._config.get("timeout", 10))
+        self._group_base_dn = cast("str | None", self._config.get("group_base_dn"))
+        self._group_search_filter = cast(
+            "str | None", self._config.get("group_search_filter")
+        )
 
         # LDAP connection will be initialized on demand
         # In production, integrate with flext-ldap:
@@ -308,6 +313,8 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         if isinstance(member_of, str):
             member_of = [member_of]
+
+        member_of = cast("list[str]", member_of)
 
         # Extract CN from group DNs (e.g., "CN=Admins,OU=Groups,DC=example,DC=com" -> "Admins")
         groups = []

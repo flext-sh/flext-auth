@@ -27,16 +27,15 @@ class FlextAuthTokenService(FlextService):
         dispatcher: FlextDispatcher,
     ) -> None:
         """Initialize token service with flext-core integration."""
-        super().__init__()
+        super().__init__(logger=FlextLogger(__name__))
         self._config = config
         self._dispatcher = dispatcher
         self._user_manager = FlextAuthManagers.FlextAuthUserManager(config)
         self._audit_logger = FlextAuthManagers.FlextAuthAuditLogger(config, dispatcher)
         self._utils = FlextAuthUtilities()
-        self.logger = FlextLogger(__name__)
         self._provider_service = provider_service
 
-    def execute(self, _request: object) -> FlextResult[object]:
+    def execute(self) -> FlextResult[object]:
         """Execute method for FlextService interface.
 
         Token service doesn't use generic execute pattern.

@@ -122,12 +122,18 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
 
         authorization = credentials["authorization"]
+        if not isinstance(authorization, str):
+            return FlextResult[FlextAuthModels.AuthToken].fail(
+                "Authorization header must be a string"
+            )
+
         request_url = credentials.get("request_url", "")
 
         # Check HTTPS requirement
         if (
             self._require_https
             and request_url
+            and isinstance(request_url, str)
             and not request_url.startswith("https://")
         ):
             return FlextResult[FlextAuthModels.AuthToken].fail(
@@ -211,7 +217,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     def refresh(
         self,
-        _token: str | FlextAuthModels.AuthToken,
+        token: str | FlextAuthModels.AuthToken,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Refresh Basic auth token.
 
@@ -225,6 +231,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             FlextResult[AuthToken]: Error indicating refresh not needed
 
         """
+        _ = token  # Token parameter required by interface but not used for Basic auth refresh
         return FlextResult[FlextAuthModels.AuthToken].fail(
             "Basic authentication does not require token refresh. "
             "Use the same credentials for subsequent requests."

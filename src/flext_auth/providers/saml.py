@@ -217,7 +217,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     def refresh(
         self,
-        _token: str | FlextAuthModels.AuthToken,
+        token: str | FlextAuthModels.AuthToken,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Refresh SAML session.
 
@@ -231,6 +231,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             FlextResult[AuthToken]: Error indicating refresh not supported
 
         """
+        _ = token  # Token parameter required by interface but not used for SAML refresh
         return FlextResult[FlextAuthModels.AuthToken].fail(
             "SAML does not support token refresh. User must re-authenticate with IdP."
         )

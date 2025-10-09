@@ -17,7 +17,9 @@ from __future__ import annotations
 import hashlib
 import secrets
 from base64 import urlsafe_b64encode
+from collections.abc import Callable
 from datetime import UTC, datetime
+from typing import cast
 from urllib.parse import urlencode
 
 from flext_core import FlextLogger, FlextResult, FlextTypes
@@ -83,26 +85,54 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         # Validate required configuration
         self._client_id = self._config.get("client_id")
-        if not self._client_id:
-            error_msg = "OAuth2 provider requires 'client_id' in configuration"
-            raise ValueError(error_msg)
+        if not isinstance(self._client_id, str):
+            error_msg = "OAuth2 provider requires 'client_id' to be a string"
+            raise TypeError(error_msg)
 
         self._client_secret = self._config.get("client_secret")
-        self._authorization_endpoint = self._config.get("authorization_endpoint")
-        self._token_endpoint = self._config.get("token_endpoint")
+        if self._client_secret is not None and not isinstance(self._client_secret, str):
+            error_msg = "OAuth2 provider 'client_secret' must be a string or None"
+            raise TypeError(error_msg)
 
-        if not self._token_endpoint:
-            error_msg = "OAuth2 provider requires 'token_endpoint' in configuration"
-            raise ValueError(error_msg)
+        self._authorization_endpoint = self._config.get("authorization_endpoint")
+        if self._authorization_endpoint is not None and not isinstance(
+            self._authorization_endpoint, str
+        ):
+            error_msg = (
+                "OAuth2 provider 'authorization_endpoint' must be a string or None"
+            )
+            raise TypeError(error_msg)
+
+        self._token_endpoint = self._config.get("token_endpoint")
+        if not isinstance(self._token_endpoint, str):
+            error_msg = "OAuth2 provider requires 'token_endpoint' to be a string"
+            raise TypeError(error_msg)
 
         # Optional configuration with defaults
         self._redirect_uri = self._config.get("redirect_uri")
+        if self._redirect_uri is not None and not isinstance(self._redirect_uri, str):
+            error_msg = "OAuth2 provider 'redirect_uri' must be a string or None"
+            raise ValueError(error_msg)
+
         self._scope = self._config.get("scope", "openid profile email")
+        if not isinstance(self._scope, str):
+            self._scope = "openid profile email"
+
         self._flow = self._config.get("flow", "authorization_code")
+        if not isinstance(self._flow, str):
+            self._flow = "authorization_code"
+
         self._use_pkce = self._config.get("use_pkce", True)
+        if not isinstance(self._use_pkce, bool):
+            self._use_pkce = True
+
         self._token_endpoint_auth_method = self._config.get(
             "token_endpoint_auth_method", FlextAuthConstants.OAuth2.CLIENT_SECRET_POST
         )
+        if not isinstance(self._token_endpoint_auth_method, str):
+            self._token_endpoint_auth_method = (
+                FlextAuthConstants.OAuth2.CLIENT_SECRET_POST
+            )
 
         # Runtime state storage (in production, use proper storage)
         self._pkce_verifiers: FlextTypes.StringDict = {}  # state -> code_verifier mapping
@@ -157,7 +187,9 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         """
         # Route to appropriate flow handler
-        flow_handlers = {
+        flow_handlers: dict[
+            str, Callable[[dict[str, object]], FlextResult[FlextAuthModels.AuthToken]]
+        ] = {
             "authorization_code": self._handle_authorization_code_flow,
             "client_credentials": self._handle_client_credentials_flow,
             "password": self._handle_password_flow,
@@ -266,11 +298,13 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             == FlextAuthConstants.OAuth2.CLIENT_SECRET_BASIC
             and self._client_secret
         ):
-            auth = (self._client_id, self._client_secret)
+            auth = cast(
+                "tuple[str, str]", (self._client_id, cast("str", self._client_secret))
+            )
 
         # Request new access token
         token_response = self._http_client.post_token_request(
-            url=self._token_endpoint,
+            url=cast("str", self._token_endpoint),
             data=token_data,
             auth=auth,
         )
@@ -387,9 +421,10 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         # Add PKCE code verifier if enabled
         if self._use_pkce:
-            code_verifier = credentials.get(
-                "code_verifier"
-            ) or self._pkce_verifiers.get(state)
+            code_verifier = cast(
+                "str",
+                credentials.get("code_verifier") or self._pkce_verifiers.get(state),
+            )
             if not code_verifier:
                 return FlextResult[FlextAuthModels.AuthToken].fail(
                     "PKCE code verifier required but not provided"
@@ -410,11 +445,13 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             and self._client_secret
         ):
             # HTTP Basic Authentication
-            auth = (self._client_id, self._client_secret)
+            auth = cast(
+                "tuple[str, str]", (self._client_id, cast("str", self._client_secret))
+            )
 
         # Exchange authorization code for access token
         token_response = self._http_client.post_token_request(
-            url=self._token_endpoint,
+            url=cast("str", self._token_endpoint),
             data=token_data,
             auth=auth,
         )
@@ -463,11 +500,11 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             self._token_endpoint_auth_method
             == FlextAuthConstants.OAuth2.CLIENT_SECRET_BASIC
         ):
-            auth = (client_id, client_secret)
+            auth = (cast("str", client_id), cast("str", client_secret))
 
         # Request access token
         token_response = self._http_client.post_token_request(
-            url=self._token_endpoint,
+            url=cast("str", self._token_endpoint),
             data=token_data,
             auth=auth,
         )
@@ -517,11 +554,13 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             == FlextAuthConstants.OAuth2.CLIENT_SECRET_BASIC
             and self._client_secret
         ):
-            auth = (self._client_id, self._client_secret)
+            auth = cast(
+                "tuple[str, str]", (self._client_id, cast("str", self._client_secret))
+            )
 
         # Request access token
         token_response = self._http_client.post_token_request(
-            url=self._token_endpoint,
+            url=cast("str", self._token_endpoint),
             data=token_data,
             auth=auth,
         )
@@ -573,7 +612,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             # Calculate expiration time
             expires_at = None
             if expires_in:
-                expires_at = datetime.now(UTC).timestamp() + expires_in
+                expires_at = datetime.now(UTC).timestamp() + cast("float", expires_in)
 
             # Create AuthToken
             # For OAuth2, user_id may not be known yet (especially for client_credentials)
@@ -583,7 +622,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             auth_token = FlextAuthModels.AuthToken(
                 user_id=user_id,
                 token=access_token,
-                token_type=token_type.lower() if token_type else "bearer",
+                token_type=cast("str", token_type).lower() if token_type else "bearer",
                 expires_at=expires_at,
                 refresh_token=refresh_token,
                 is_revoked=False,
@@ -654,13 +693,16 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             state = secrets.token_urlsafe(32)
 
         # Build authorization URL parameters
-        params: FlextTypes.StringDict = {
-            "response_type": "code",
-            "client_id": self._client_id,
-            "redirect_uri": self._redirect_uri or "",
-            "scope": self._scope,
-            "state": state,
-        }
+        params = cast(
+            "FlextTypes.StringDict",
+            {
+                "response_type": "code",
+                "client_id": self._client_id,
+                "redirect_uri": self._redirect_uri or "",
+                "scope": self._scope,
+                "state": state,
+            },
+        )
 
         # Add PKCE if enabled
         if self._use_pkce:

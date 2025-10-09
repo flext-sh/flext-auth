@@ -27,7 +27,7 @@ class FlextAuthQuickstart(FlextService[object]):
         super().__init__()
 
         # Use provided config or create default
-        self.config = config if config is not None else FlextAuthConfig.create()
+        self._config = config if config is not None else FlextAuthConfig.create()
 
         self._auth = FlextAuth(self.config)
 
@@ -58,7 +58,7 @@ class FlextAuthQuickstart(FlextService[object]):
         return self._auth.get_user(user_id)
 
     def create_demo_users(
-        self, count: int = FlextAuthConstants.Defaults.DEMO_USERS_COUNT
+        self, count: int = FlextAuthConstants.AuthDefaults.DEMO_USERS_COUNT
     ) -> FlextResult[FlextTypes.StringList]:
         """Create demo users for testing."""
         user_ids = []
@@ -77,7 +77,29 @@ class FlextAuthQuickstart(FlextService[object]):
 
         return FlextResult[FlextTypes.StringList].ok(user_ids)
 
-    def execute(self, _request: object) -> FlextResult[object]:
+    def flext_auth_quick_start(
+        self, *, create_REDACTED_LDAP_BIND_PASSWORD: bool = True
+    ) -> FlextResult[FlextTypes.StringList]:
+        """Quick start the auth service with demo users."""
+        result = self.create_demo_users()
+        if result.is_failure:
+            return result
+
+        if create_REDACTED_LDAP_BIND_PASSWORD:
+            # Create REDACTED_LDAP_BIND_PASSWORD user
+            REDACTED_LDAP_BIND_PASSWORD_result = self.register_user(
+                "REDACTED_LDAP_BIND_PASSWORD", "REDACTED_LDAP_BIND_PASSWORD@example.com", "AdminPass123!", ["ADMIN"]
+            )
+            if REDACTED_LDAP_BIND_PASSWORD_result.is_failure:
+                return FlextResult[FlextTypes.StringList].fail(
+                    f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {REDACTED_LDAP_BIND_PASSWORD_result.error}"
+                )
+            if REDACTED_LDAP_BIND_PASSWORD_result.value.user_id is not None:
+                result.value.append(REDACTED_LDAP_BIND_PASSWORD_result.value.user_id)
+
+        return result
+
+    def execute(self) -> FlextResult[object]:
         """Execute method for FlextService interface.
 
         Quickstart service doesn't use generic execute pattern.

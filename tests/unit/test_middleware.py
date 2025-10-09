@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import cast
 from unittest.mock import MagicMock
 
 from flext_core import FlextResult, FlextTypes
@@ -765,9 +766,11 @@ class TestFlextAuthMiddleware2:
         request1 = MockWebRequest(headers={"Authorization": "Bearer jwt-token"})
         result1 = jwt_middleware.process_request(request1)
         assert result1.is_success
-        assert result1.unwrap().user_context["provider"] == "jwt"
+        authenticated_request1 = cast("MockWebRequest", result1.unwrap())
+        assert authenticated_request1.user_context["provider"] == "jwt"
 
         request2 = MockWebRequest(headers={"Authorization": "Bearer oauth-token"})
         result2 = oauth_middleware.process_request(request2)
         assert result2.is_success
-        assert result2.unwrap().user_context["provider"] == "oauth2"
+        authenticated_request2 = cast("MockWebRequest", result2.unwrap())
+        assert authenticated_request2.user_context["provider"] == "oauth2"

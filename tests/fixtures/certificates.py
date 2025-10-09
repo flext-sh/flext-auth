@@ -8,7 +8,7 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from typing import NamedTuple
+from typing import NamedTuple, cast
 
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
@@ -217,8 +217,9 @@ def generate_signed_cert(
     """
     # Load CA certificate and key
     ca_cert = x509.load_pem_x509_certificate(ca_cert_pem.encode("utf-8"))
-    ca_key = serialization.load_pem_private_key(
-        ca_key_pem.encode("utf-8"), password=None
+    ca_key = cast(
+        "rsa.RSAPrivateKey",
+        serialization.load_pem_private_key(ca_key_pem.encode("utf-8"), password=None),
     )
 
     # Generate client private key

@@ -52,6 +52,14 @@ class FlextAuthProviderMixin:
         error_msg = f"Invalid token type: expected str or AuthToken, got {type(token)}"
         raise ValueError(error_msg)
 
+    def supports(self) -> set[str]:
+        """Return set of capabilities supported by this provider.
+
+        This is a default implementation that returns an empty set.
+        Providers should override this method to declare their capabilities.
+        """
+        return set()
+
     def _validate_credentials_dict(
         self,
         credentials: FlextTypes.Dict,

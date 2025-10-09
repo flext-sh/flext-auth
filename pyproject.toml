@@ -209,3 +209,6 @@
             "src",
             "tests",
         ]
+        ignore-missing-imports = [
+            "pytest",
+        ]
