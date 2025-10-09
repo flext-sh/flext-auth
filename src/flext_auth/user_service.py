@@ -31,9 +31,8 @@ class FlextAuthUserService(FlextService):
         self._user_manager = FlextAuthManagers.FlextAuthUserManager(config)
         self._audit_logger = FlextAuthManagers.FlextAuthAuditLogger(config, dispatcher)
         self._utils = FlextAuthUtilities()
-        self.logger = FlextLogger(__name__)
 
-    def execute(self, _request: object) -> FlextResult[object]:
+    def execute(self) -> FlextResult[object]:
         """Execute method for FlextService interface.
 
         User service doesn't use generic execute pattern.

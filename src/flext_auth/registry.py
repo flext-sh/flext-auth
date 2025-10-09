@@ -47,7 +47,7 @@ class FlextAuthRegistry(FlextRegistry):
     def register(
         self,
         name: str,
-        service: FlextAuthBaseProvider,
+        service: object,
         config: FlextTypes.Dict | None = None,
     ) -> FlextResult[None]:
         """Register an authentication provider.

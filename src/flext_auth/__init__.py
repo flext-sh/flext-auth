@@ -6,6 +6,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_auth.__version__ import __version__, __version_info__
+
 from typing import Final
 
 from flext_auth.api import FlextAuth
@@ -35,16 +37,8 @@ from flext_auth.session_service import FlextAuthSessionService
 from flext_auth.token_service import FlextAuthTokenService
 from flext_auth.typings import FlextAuthTypes
 from flext_auth.user_service import FlextAuthUserService
-from flext_auth.version import VERSION, FlextAuthVersion
-
-PROJECT_VERSION: Final[FlextAuthVersion] = VERSION
-
-__version__: str = VERSION.version
-__version_info__: tuple[int | str, ...] = VERSION.version_info
 
 __all__ = [
-    "PROJECT_VERSION",
-    "VERSION",
     "FlextAuth",
     "FlextAuthApiKeyProvider",
     "FlextAuthBaseProvider",
@@ -70,7 +64,6 @@ __all__ = [
     "FlextAuthTokenService",
     "FlextAuthTypes",
     "FlextAuthUserService",
-    "FlextAuthVersion",
     "__version__",
     "__version_info__",
 ]

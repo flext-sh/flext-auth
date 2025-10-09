@@ -114,7 +114,7 @@ class FlextAuthManagers(FlextService):
                 return FlextResult[FlextAuthModels.User].fail("User not found")
 
             user_data = self._users[username]
-            user = FlextAuthModels.User(**user_data)
+            user = FlextAuthModels.User(**cast(dict[str, Any], user_data))
             return FlextResult[FlextAuthModels.User].ok(user)
 
         def update_user(
@@ -125,7 +125,7 @@ class FlextAuthManagers(FlextService):
                 if user_data["id"] == user_id:
                     user_data.update(updates)
                     user_data["updated_at"] = datetime.now(UTC)
-                    user = FlextAuthModels.User(**user_data)
+                    user = FlextAuthModels.User(**cast(dict[str, Any], user_data))
                     return FlextResult[FlextAuthModels.User].ok(user)
 
             return FlextResult[FlextAuthModels.User].fail("User not found")
@@ -215,14 +215,14 @@ class FlextAuthManagers(FlextService):
             session_id = str(uuid4())
             expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
 
-            session_data: dict[str, object] = {
+            session_data = cast(dict[str, Any], {
                 "id": session_id,
                 "user_id": user_id,
                 "token": token,
                 "created_at": datetime.now(UTC),
                 "expires_at": expires_at,
                 "active": True,
-            }
+            })
 
             self._sessions[session_id] = session_data
             session = FlextAuthModels.Session(**session_data)
@@ -240,7 +240,7 @@ class FlextAuthManagers(FlextService):
                     and isinstance(session_data["expires_at"], datetime)
                     and session_data["expires_at"] > datetime.now(UTC)
                 ):
-                    session = FlextAuthModels.Session(**session_data)
+                    session = FlextAuthModels.Session(**cast(dict[str, Any], session_data))
                     sessions.append(session)
 
             return FlextResult[list[FlextAuthModels.Session]].ok(sessions)
