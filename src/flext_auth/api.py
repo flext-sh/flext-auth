@@ -8,12 +8,13 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from flext_core import FlextResult, FlextService
+from flext_core import FlextDispatcher, FlextResult, FlextService
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.provider_service import FlextAuthProviderService
+from flext_auth.user_service import FlextAuthUserService
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 
 
@@ -33,6 +34,8 @@ class FlextAuth(FlextService):
         """
         super().__init__()
         self._auth_config: FlextAuthConfig = config or FlextAuthConfig()
+        self._dispatcher = FlextDispatcher()
+        self._user_service = FlextAuthUserService(self._auth_config, self._dispatcher)
         self._provider_service = FlextAuthProviderService(self._auth_config)
 
     def execute(self) -> FlextResult[object]:
@@ -66,22 +69,13 @@ class FlextAuth(FlextService):
             FlextResult containing the created User or error
 
         """
-        if roles is None:
-            roles = ["user"]
-
-        # Create user data structure (simplified - no complex service layer)
-        user_data = {
-            "user_id": f"{FlextAuthConstants.AuthDefaults.MOCK_USER_PREFIX}{username}",
-            "username": username,
-            "email": email,
-            "password_hash": f"hashed_{password}",  # Simplified
-            "roles": roles,
+        return self._user_service.create_user(
+            username=username,
+            email=email,
+            password=password,
+            roles=roles,
             **extra_fields,
-        }
-
-        # Create user model
-        user = FlextAuthModels.User(**user_data)
-        return FlextResult[FlextAuthModels.User].ok(user)
+        )
 
     def authenticate_user(
         self,
@@ -100,8 +94,15 @@ class FlextAuth(FlextService):
             FlextResult containing AuthToken or error
 
         """
-        # Use provider service for actual authentication
-        return self._provider_service.authenticate_user(username, password, provider)
+        # First authenticate using user service
+        auth_result = self._user_service.authenticate_user(username, password)
+        if auth_result.is_failure:
+            return FlextResult[FlextAuthModels.AuthToken].fail(auth_result.error)
+
+        user = auth_result.value
+
+        # Generate tokens using provider
+        return self._provider_service.generate_tokens_for_user(user, provider)
 
     def validate_token(self, token: str) -> FlextResult[FlextAuthModels.User]:
         """Validate an authentication token.

@@ -29,7 +29,7 @@ class FlextAuthQuickstart(FlextService[object]):
         # Use provided config or create default
         self._config = config if config is not None else FlextAuthConfig.create()
 
-        self._auth = FlextAuth(self.config)
+        self._auth = FlextAuth(self._config)
 
     def register_user(
         self,
@@ -68,7 +68,7 @@ class FlextAuthQuickstart(FlextService[object]):
             password = f"DemoPass{i}23!"
 
             result = self.register_user(username, email, password)
-            if result.is_success:
+            if result.is_success and result.value.user_id is not None:
                 user_ids.append(result.value.user_id)
             else:
                 return FlextResult[FlextTypes.StringList].fail(

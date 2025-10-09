@@ -102,23 +102,31 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             FlextResult[AuthToken]: Authentication token on success
 
         """
-        # Validate required fields
-        validation = self._validate_credentials_dict(
-            credentials, ["username", "password"]
-        )
-        if validation.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(validation.error)
+        # Check if this is token generation for authenticated user or authentication
+        if "user_id" in credentials:
+            # Token generation for authenticated user
+            user_id = cast("str", credentials["user_id"])
+            username = cast("str", credentials["username"])
+        else:
+            # Authentication with username/password
+            validation = self._validate_credentials_dict(
+                credentials, ["username", "password"]
+            )
+            if validation.is_failure:
+                return FlextResult[FlextAuthModels.AuthToken].fail(validation.error)
 
-        username = cast("str", credentials["username"])
-        password = cast("str", credentials["password"])
+            username = cast("str", credentials["username"])
+            password = cast("str", credentials["password"])
 
-        # Verify password (in real implementation, this would query user database)
-        password_valid = FlextAuthUtilities.PasswordProcessing.verify_password(
-            password, cast("str", credentials.get("password_hash", "hashed_password"))
-        )
+            # Verify password (in real implementation, this would query user database)
+            password_valid = FlextAuthUtilities.PasswordProcessing.verify_password(
+                password, cast("str", credentials.get("password_hash", "hashed_password"))
+            )
 
-        if not password_valid:
-            return FlextResult[FlextAuthModels.AuthToken].fail("Invalid credentials")
+            if not password_valid:
+                return FlextResult[FlextAuthModels.AuthToken].fail("Invalid credentials")
+
+            user_id = cast("str", credentials.get("user_id", username))
 
         # Generate access token
         access_token_result = self._generate_access_token(credentials)
@@ -349,14 +357,16 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             }
 
             # Generate token
-            token = FlextAuthUtilities.JWTProcessing.encode_token(
+            token_result = FlextAuthUtilities.JWTProcessing.encode_token(
                 cast("dict[str, bool | datetime | float | int | str | None]", payload),
                 self._secret_key,
                 self._algorithm,
             )
+            if token_result.is_failure:
+                return FlextResult[FlextTypes.Dict].fail(token_result.error)
 
             return FlextResult[FlextTypes.Dict].ok({
-                "token": token,
+                "token": token_result.value,
                 "expires_at": expires_at,
             })
 
@@ -393,14 +403,16 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             }
 
             # Generate refresh token
-            token = FlextAuthUtilities.JWTProcessing.encode_token(
+            token_result = FlextAuthUtilities.JWTProcessing.encode_token(
                 cast("dict[str, bool | datetime | float | int | str | None]", payload),
                 self._secret_key,
                 self._algorithm,
             )
+            if token_result.is_failure:
+                return FlextResult[FlextTypes.Dict].fail(token_result.error)
 
             return FlextResult[FlextTypes.Dict].ok({
-                "token": token,
+                "token": token_result.value,
                 "expires_at": expires_at,
             })
 

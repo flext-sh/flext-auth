@@ -118,7 +118,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         if not isinstance(self._scope, str):
             self._scope = "openid profile email"
 
-        self._flow = self._config.get("flow", "authorization_code")
+        self._flow = cast(str, self._config.get("flow", "authorization_code"))
         if not isinstance(self._flow, str):
             self._flow = "authorization_code"
 

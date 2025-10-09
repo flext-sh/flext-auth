@@ -245,7 +245,7 @@ class FlextAuthConstants(FlextConstants):
         MOCK_VALIDATED_USERNAME = "validated_user"
         MOCK_VALIDATED_EMAIL = "validated@example.com"
         # Provider defaults
-        DEFAULT_PROVIDER = "basic"
+        DEFAULT_PROVIDER = "jwt"
         # User model defaults
         DEFAULT_USER_ACTIVE = True
         DEFAULT_USER_ROLES: ClassVar[FlextTypes.StringList] = ["user"]

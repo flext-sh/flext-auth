@@ -8,7 +8,6 @@ from __future__ import annotations
 
 from flext_core import (
     FlextDispatcher,
-    FlextLogger,
     FlextResult,
     FlextService,
     FlextTypes,
@@ -42,11 +41,47 @@ class FlextAuthUserService(FlextService):
             "FlextAuthUserService is focused - use specific user methods like create_user()"
         )
 
+    def authenticate_user(
+        self,
+        username: str,
+        password: str,
+    ) -> FlextResult[FlextAuthModels.User]:
+        """Authenticate a user with username and password.
+
+        Args:
+            username: User's username
+            password: User's password
+
+        Returns:
+            FlextResult containing authenticated User or error
+        """
+        # Get user by username
+        user_result = self.get_user_by_username(username)
+        if user_result.is_failure:
+            return FlextResult[FlextAuthModels.User].fail("Invalid credentials")
+
+        user = user_result.value
+
+        # Verify password
+        from flext_auth.utilities import FlextAuthUtilities
+        verify_result = FlextAuthUtilities.PasswordProcessing.verify_password(
+            password, user.password_hash
+        )
+
+        if not verify_result:
+            return FlextResult[FlextAuthModels.User].fail("Invalid credentials")
+
+        # Update last login
+        user.record_successful_login()
+
+        return FlextResult[FlextAuthModels.User].ok(user)
+
     def create_user(
         self,
         username: str,
         email: str,
         password: str,
+        roles: list[str] | None = None,
         **extra_fields: object,
     ) -> FlextResult[FlextAuthModels.User]:
         """Create a new user account with password hashing."""
@@ -55,11 +90,16 @@ class FlextAuthUserService(FlextService):
         if hash_result.is_failure:
             return FlextResult[FlextAuthModels.User].fail(hash_result.error)
 
+        # Prepare extra fields
+        user_extra_fields = dict(extra_fields)
+        if roles is not None:
+            user_extra_fields["roles"] = roles
+
         return self._user_manager.create_user(
             username=username,
             email=email,
             password_hash=hash_result.value,
-            **extra_fields,
+            **user_extra_fields,
         )
 
     def get_user(self, user_id: str) -> FlextResult[FlextAuthModels.User]:

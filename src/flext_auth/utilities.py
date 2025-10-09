@@ -20,6 +20,7 @@ from flext_auth.constants import FlextAuthConstants
 
 class PasswordValidationResult(TypedDict):
     """Type for password validation results."""
+
     length: int
     min_length: int
     has_upper: bool
@@ -137,7 +138,7 @@ class FlextAuthUtilities(FlextService):
                 results["is_valid"] = False
                 results["errors"].append("Password is too weak")
 
-            return FlextResult[FlextTypes.Dict].ok(results)
+            return FlextResult[PasswordValidationResult].ok(results)
 
     class JWTProcessing:
         """JWT token processing utilities."""

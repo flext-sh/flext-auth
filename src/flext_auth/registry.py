@@ -9,6 +9,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import cast
+
 from flext_core import FlextRegistry, FlextResult, FlextTypes
 
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -48,14 +50,14 @@ class FlextAuthRegistry(FlextRegistry):
         self,
         name: str,
         service: object,
-        config: FlextTypes.Dict | None = None,
+        metadata: FlextTypes.Dict | None = None,
     ) -> FlextResult[None]:
         """Register an authentication provider.
 
         Args:
             name: Unique identifier for the provider
             service: Authentication provider instance
-            config: Optional configuration for the provider
+            metadata: Optional configuration for the provider
 
         Returns:
             FlextResult[None]: Success or failure with error message
@@ -75,22 +77,22 @@ class FlextAuthRegistry(FlextRegistry):
             return FlextResult[None].fail(f"Provider '{name}' is already registered")
 
         # Validate configuration if provided
-        if config:
-            validation_result = self._validate_provider_config(name, config)
+        if metadata:
+            validation_result = self._validate_provider_config(name, metadata)
             if validation_result.is_failure:
                 return FlextResult[None].fail(
                     f"Configuration validation failed: {validation_result.error}"
                 )
 
         # Register provider
-        self._providers[name] = service
-        if config:
-            self._configs[name] = config
+        self._providers[name] = cast(FlextAuthBaseProvider, service)
+        if metadata:
+            self._configs[name] = metadata
 
         # Store provider metadata
         try:
-            metadata = service.get_metadata()
-            self._metadata[name] = metadata
+            provider_metadata = service.get_metadata()
+            self._metadata[name] = provider_metadata
         except Exception as e:
             self.logger.warning(
                 f"Failed to retrieve metadata for provider '{name}': {e}"

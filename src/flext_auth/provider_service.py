@@ -165,5 +165,35 @@ class FlextAuthProviderService(FlextService):
             "password": password,
         })
 
+    def generate_tokens_for_user(
+        self,
+        user: FlextAuthModels.User,
+        provider: str = "jwt",
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
+        """Generate authentication tokens for an authenticated user.
+
+        Args:
+            user: Authenticated user
+            provider: Token provider to use
+
+        Returns:
+            FlextResult containing AuthToken or error
+        """
+        # Get the token provider
+        provider_result = self._providers.get(provider)
+        if provider_result.is_failure:
+            return FlextResult[FlextAuthModels.AuthToken].fail(provider_result.error)
+
+        token_provider = provider_result.value
+
+        # Generate tokens using user data
+        return token_provider.authenticate({
+            "user_id": user.user_id,
+            "username": user.username,
+            "email": user.email,
+            "roles": user.roles,
+            "permissions": user.permissions,
+        })
+
 
 __all__ = ["FlextAuthProviderService"]

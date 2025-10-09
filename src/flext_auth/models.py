@@ -458,9 +458,9 @@ class FlextAuthModels(FlextModels):
                     username=username,
                     email=email,
                     password_hash="",  # Will be set by set_password
-                    full_name=cast(str | None, extra_fields.get("full_name")),
-                    is_active=cast(bool, extra_fields.get("is_active", True)),
-                    roles=cast(list[str], extra_fields.get("roles", ["user"])),
+                    full_name=cast("str | None", extra_fields.get("full_name")),
+                    is_active=cast("bool", extra_fields.get("is_active", True)),
+                    roles=cast("list[str]", extra_fields.get("roles", ["user"])),
                     failed_login_attempts=0,
                     locked_until=None,
                     last_login=None,
