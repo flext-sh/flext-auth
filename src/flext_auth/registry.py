@@ -9,8 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import cast
-
 from flext_core import FlextRegistry, FlextResult, FlextTypes
 
 from flext_auth.providers.base import FlextAuthBaseProvider

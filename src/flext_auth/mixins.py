@@ -16,7 +16,7 @@ from flext_auth.constants import FlextAuthConstants
 class FlextAuthMixins(FlextMixins):
     """Auth mixins class with validation utilities extending flext-core mixins."""
 
-    class ValidationMixin(FlextMixins.LoggableDI):
+    class ValidationMixin(FlextMixins):
         """Validation utilities for Auth domain."""
 
         @staticmethod
