@@ -105,7 +105,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # Check if this is token generation for authenticated user or authentication
         if "user_id" in credentials:
             # Token generation for authenticated user
-            user_id = cast("str", credentials["user_id"])
+            cast("str", credentials["user_id"])
             username = cast("str", credentials["username"])
         else:
             # Authentication with username/password
@@ -120,13 +120,16 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
             # Verify password (in real implementation, this would query user database)
             password_valid = FlextAuthUtilities.PasswordProcessing.verify_password(
-                password, cast("str", credentials.get("password_hash", "hashed_password"))
+                password,
+                cast("str", credentials.get("password_hash", "hashed_password")),
             )
 
             if not password_valid:
-                return FlextResult[FlextAuthModels.AuthToken].fail("Invalid credentials")
+                return FlextResult[FlextAuthModels.AuthToken].fail(
+                    "Invalid credentials"
+                )
 
-            user_id = cast("str", credentials.get("user_id", username))
+            cast("str", credentials.get("user_id", username))
 
         # Generate access token
         access_token_result = self._generate_access_token(credentials)
@@ -153,11 +156,11 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         # Create AuthToken model
         auth_token = FlextAuthModels.AuthToken(
-            token=access_token_data["token"],
+            token=str(access_token_data["token"]),
             token_type=FlextAuthConstants.Jwt.DEFAULT_TOKEN_TYPE,
-            expires_at=access_token_data["expires_at"],
+            expires_at=cast("datetime", access_token_data["expires_at"]),
             refresh_token=refresh_token,
-            user_id=credentials["user_id"],
+            user_id=str(credentials["user_id"]),
             is_revoked=False,
         )
 
@@ -269,10 +272,10 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
             # Create new AuthToken
             auth_token = FlextAuthModels.AuthToken(
-                token=new_token_data["token"],
+                token=str(new_token_data["token"]),
                 token_type=FlextAuthConstants.Jwt.DEFAULT_TOKEN_TYPE,
-                expires_at=new_token_data["expires_at"],
-                user_id=payload.get("user_id", "unknown"),
+                expires_at=cast("datetime", new_token_data["expires_at"]),
+                user_id=str(payload.get("user_id", "unknown")),
                 is_revoked=False,
             )
 

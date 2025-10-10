@@ -616,7 +616,7 @@ class FlextAuthModels(FlextModels):
         @classmethod
         def map_session_id_to_id(cls, data: FlextTypes.Dict) -> FlextTypes.Dict:
             """Map session_id to id for backward compatibility."""
-            if isinstance(data, dict) and "session_id" in data and "id" not in data:
+            if "session_id" in data and "id" not in data:
                 data["id"] = data.pop("session_id")
             return data
 

@@ -178,6 +178,7 @@ class FlextAuthProviderService(FlextService):
 
         Returns:
             FlextResult containing AuthToken or error
+
         """
         # Get the token provider
         provider_result = self._providers.get(provider)

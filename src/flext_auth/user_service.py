@@ -54,6 +54,7 @@ class FlextAuthUserService(FlextService):
 
         Returns:
             FlextResult containing authenticated User or error
+
         """
         # Get user by username
         user_result = self.get_user_by_username(username)
@@ -63,7 +64,6 @@ class FlextAuthUserService(FlextService):
         user = user_result.value
 
         # Verify password
-        from flext_auth.utilities import FlextAuthUtilities
         verify_result = FlextAuthUtilities.PasswordProcessing.verify_password(
             password, user.password_hash
         )

@@ -18,7 +18,7 @@ import hashlib
 import secrets
 from base64 import urlsafe_b64encode
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from typing import cast
 from urllib.parse import urlencode
 
@@ -118,7 +118,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         if not isinstance(self._scope, str):
             self._scope = "openid profile email"
 
-        self._flow = cast(str, self._config.get("flow", "authorization_code"))
+        self._flow = cast("str", self._config.get("flow", "authorization_code"))
         if not isinstance(self._flow, str):
             self._flow = "authorization_code"
 
@@ -423,7 +423,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         if self._use_pkce:
             code_verifier = cast(
                 "str",
-                credentials.get("code_verifier") or self._pkce_verifiers.get(state),
+                cast("str | None", credentials.get("code_verifier")) or self._pkce_verifiers.get(state),
             )
             if not code_verifier:
                 return FlextResult[FlextAuthModels.AuthToken].fail(
@@ -612,7 +612,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             # Calculate expiration time
             expires_at = None
             if expires_in:
-                expires_at = datetime.now(UTC).timestamp() + cast("float", expires_in)
+                expires_at = datetime.now(UTC) + timedelta(seconds=cast("float", expires_in))
 
             # Create AuthToken
             # For OAuth2, user_id may not be known yet (especially for client_credentials)
@@ -620,11 +620,11 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             user_id = token_response.get("user_id", "oauth2_user")
 
             auth_token = FlextAuthModels.AuthToken(
-                user_id=user_id,
-                token=access_token,
+                user_id=str(user_id),
+                token=str(access_token),
                 token_type=cast("str", token_type).lower() if token_type else "bearer",
                 expires_at=expires_at,
-                refresh_token=refresh_token,
+                refresh_token=cast("str | None", refresh_token),
                 is_revoked=False,
                 metadata={
                     "oauth2_flow": self._flow,

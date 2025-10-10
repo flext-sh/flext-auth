@@ -172,7 +172,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             ),  # Basic token is the credentials
             token_type=FlextAuthConstants.Jwt.BASIC_TOKEN_TYPE,
             expires_at=token_expires_at,
-            user_id=user_data["user_id"],
+            user_id=str(user_data["user_id"]),
             is_revoked=False,
         )
 

@@ -1,8 +1,8 @@
 # Development
 
-**Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
+**Version**: 0.9.0 Multi-Provider Implementation | **Updated**: October 10, 2025
 
-Development workflow and contributing guidelines for flext-auth with complete FlextService and FlextHandlers architecture.
+Development workflow and contributing guidelines for flext-auth with multi-provider authentication architecture. Implementation complete for Phases 1-3, transport layer in progress.
 
 ---
 
@@ -27,7 +27,7 @@ poetry install
 make setup
 
 # Verify setup
-python -c "from flext_auth import flext_auth_quick_start; print('Development setup complete')"
+python -c "from flext_auth import FlextAuth; print('Development setup complete')"
 ```
 
 ---

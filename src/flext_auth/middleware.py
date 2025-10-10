@@ -29,10 +29,18 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import Protocol
+
 from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
+
+
+class HttpRequestProtocol(Protocol):
+    """Protocol for HTTP request objects with headers."""
+
+    headers: object  # Dict-like headers
 
 
 class FlextAuthMiddleware(FlextService):
@@ -117,7 +125,7 @@ class FlextAuthMiddleware(FlextService):
 
         def process_request(
             self,
-            request: object,  # FlextApiModels.HttpRequest - avoid import
+            request: HttpRequestProtocol,  # FlextApiModels.HttpRequest - avoid import
         ) -> FlextResult[object]:
             """Process HTTP request by adding authentication headers.
 

@@ -167,15 +167,15 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
         # Create authentication token
         # Certificate validity from not_after or far future if not available
-        token_expires_at = cert_info.get("not_after") or (
+        token_expires_at = cast("datetime | None", cert_info.get("not_after")) or (
             datetime.now(UTC) + timedelta(days=365)
         )
 
         auth_token = FlextAuthModels.AuthToken(
-            token=cert_fingerprint,  # Use certificate fingerprint as token
+            token=str(cert_fingerprint),  # Use certificate fingerprint as token
             token_type=FlextAuthConstants.Jwt.BASIC_TOKEN_TYPE,  # Must match pattern: access|refresh|api|bearer
             expires_at=token_expires_at,
-            user_id=user_data["user_id"],
+            user_id=str(user_data["user_id"]),
             is_revoked=False,
         )
 

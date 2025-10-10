@@ -14,8 +14,8 @@ from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.provider_service import FlextAuthProviderService
-from flext_auth.user_service import FlextAuthUserService
 from flext_auth.providers.jwt import FlextAuthJwtProvider
+from flext_auth.user_service import FlextAuthUserService
 
 
 class FlextAuth(FlextService):

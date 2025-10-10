@@ -26,7 +26,7 @@ from flext_auth.constants import FlextAuthConstants
 
 
 # Authentication domain TypeVars
-class FlextAuthTypes(FlextTypes):
+class FlextAuthTypes:
     """Authentication-specific type definitions for authentication domain.
 
     Domain-specific type system for authentication/authorization operations.

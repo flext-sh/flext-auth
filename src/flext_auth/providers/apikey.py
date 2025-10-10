@@ -159,7 +159,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             return FlextResult[FlextAuthModels.AuthToken].fail("API key is disabled")
 
         # Check expiration
-        expires_at = key_metadata.get("expires_at")
+        expires_at = cast("datetime | None", key_metadata.get("expires_at"))
         if (
             expires_at
             and isinstance(expires_at, datetime)
@@ -180,10 +180,10 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         token_expires_at = expires_at or datetime.now(UTC) + timedelta(days=365 * 10)
 
         auth_token = FlextAuthModels.AuthToken(
-            token=api_key,  # API key serves as the token
+            token=str(api_key),  # API key serves as the token
             token_type=FlextAuthConstants.Jwt.API_TOKEN_TYPE,
             expires_at=token_expires_at,
-            user_id=key_metadata["user_id"],
+            user_id=str(key_metadata["user_id"]),
             is_revoked=False,
         )
 

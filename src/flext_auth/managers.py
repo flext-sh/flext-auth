@@ -80,17 +80,20 @@ class FlextAuthManagers(FlextService):
                 return FlextResult[FlextAuthModels.User].fail("User already exists")
 
             user_id = str(uuid4())
-            user_data = cast("dict[str, Any]", {
-                "user_id": user_id,
-                "username": username,
-                "email": email,
-                "password_hash": password_hash,
-                "is_active": extra_fields.get("is_active", True),
-                "roles": extra_fields.get("roles", []),
-                "permissions": extra_fields.get("permissions", []),
-                "created_at": datetime.now(UTC),
-                "updated_at": datetime.now(UTC),
-            })
+            user_data = cast(
+                "dict[str, Any]",
+                {
+                    "user_id": user_id,
+                    "username": username,
+                    "email": email,
+                    "password_hash": password_hash,
+                    "is_active": extra_fields.get("is_active", True),
+                    "roles": extra_fields.get("roles", []),
+                    "permissions": extra_fields.get("permissions", []),
+                    "created_at": datetime.now(UTC),
+                    "updated_at": datetime.now(UTC),
+                },
+            )
 
             self._users[username] = user_data
             user = FlextAuthModels.User(**user_data)
@@ -214,14 +217,17 @@ class FlextAuthManagers(FlextService):
             session_id = str(uuid4())
             expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
 
-            session_data = cast("dict[str, Any]", {
-                "id": session_id,
-                "user_id": user_id,
-                "token": token,
-                "created_at": datetime.now(UTC),
-                "expires_at": expires_at,
-                "active": True,
-            })
+            session_data = cast(
+                "dict[str, Any]",
+                {
+                    "id": session_id,
+                    "user_id": user_id,
+                    "token": token,
+                    "created_at": datetime.now(UTC),
+                    "expires_at": expires_at,
+                    "active": True,
+                },
+            )
 
             self._sessions[session_id] = session_data
             session = FlextAuthModels.Session(**session_data)
@@ -239,7 +245,9 @@ class FlextAuthManagers(FlextService):
                     and isinstance(session_data["expires_at"], datetime)
                     and session_data["expires_at"] > datetime.now(UTC)
                 ):
-                    session = FlextAuthModels.Session(**cast("dict[str, Any]", session_data))
+                    session = FlextAuthModels.Session(
+                        **cast("dict[str, Any]", session_data)
+                    )
                     sessions.append(session)
 
             return FlextResult[list[FlextAuthModels.Session]].ok(sessions)

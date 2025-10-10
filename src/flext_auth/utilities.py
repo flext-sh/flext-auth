@@ -12,7 +12,7 @@ from typing import TypedDict
 
 import bcrypt
 import jwt
-from flext_core import FlextResult, FlextService, FlextTypes
+from flext_core import FlextResult, FlextService
 from pydantic import SecretStr
 
 from flext_auth.constants import FlextAuthConstants
@@ -200,7 +200,7 @@ class FlextAuthUtilities(FlextService):
             """
             try:
                 token = jwt.encode(payload, secret_key, algorithm=algorithm)
-                token_str = token if isinstance(token, str) else token.decode('utf-8')
+                token_str = token if isinstance(token, str) else token.decode("utf-8")
                 return FlextResult[str].ok(token_str)
             except Exception as e:
                 return FlextResult[str].fail(f"JWT encoding failed: {e}")
