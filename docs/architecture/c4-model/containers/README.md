@@ -11,6 +11,7 @@ flext-auth is deployed as a Python-based container with external dependencies fo
 ### Technology Choices
 
 #### Application Container (flext-auth)
+
 - **Technology**: Python 3.13+ FastAPI/ASGI application
 - **Responsibilities**:
   - Authentication orchestration
@@ -23,6 +24,7 @@ flext-auth is deployed as a Python-based container with external dependencies fo
   - Internal Python API
 
 #### Database Container
+
 - **Technology**: PostgreSQL / Redis / MongoDB (configurable)
 - **Responsibilities**:
   - User credential storage
@@ -35,6 +37,7 @@ flext-auth is deployed as a Python-based container with external dependencies fo
   - Transaction management
 
 #### External Identity Providers
+
 - **Technology**: Various (LDAP, OAuth2, SAML servers)
 - **Responsibilities**:
   - User identity verification
@@ -48,6 +51,7 @@ flext-auth is deployed as a Python-based container with external dependencies fo
   - Kerberos protocol
 
 #### FLEXT Ecosystem Services
+
 - **Technology**: Python services (flext-api, flext-core)
 - **Responsibilities**:
   - HTTP transport integration
@@ -61,6 +65,7 @@ flext-auth is deployed as a Python-based container with external dependencies fo
   - Service discovery
 
 #### Monitoring & Observability
+
 - **Technology**: Prometheus, ELK stack, Jaeger
 - **Responsibilities**:
   - Metrics collection
@@ -76,6 +81,7 @@ flext-auth is deployed as a Python-based container with external dependencies fo
 ## Deployment Architecture
 
 ### Single Container Deployment
+
 ```
 ┌─────────────────┐
 │   flext-auth    │
@@ -89,6 +95,7 @@ flext-auth is deployed as a Python-based container with external dependencies fo
 ```
 
 ### Microservices Deployment
+
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   flext-auth    │    │   Database      │    │   Identity      │
@@ -113,6 +120,7 @@ flext-auth is deployed as a Python-based container with external dependencies fo
 ```
 
 ### Kubernetes Deployment
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Kubernetes Cluster                       │
@@ -137,6 +145,7 @@ flext-auth is deployed as a Python-based container with external dependencies fo
 ## Container Relationships
 
 ### Data Flow
+
 1. **Authentication Request** → flext-auth container
 2. **Provider Selection** → Identity provider lookup
 3. **Credential Verification** → External identity provider
@@ -146,6 +155,7 @@ flext-auth is deployed as a Python-based container with external dependencies fo
 7. **Metrics Export** → Monitoring system
 
 ### Communication Patterns
+
 - **Synchronous**: HTTP/gRPC for real-time authentication
 - **Asynchronous**: Message queues for audit logging
 - **Batch**: Periodic cleanup operations
@@ -154,18 +164,21 @@ flext-auth is deployed as a Python-based container with external dependencies fo
 ## Technology Stack Details
 
 ### Runtime Environment
+
 - **Python Version**: 3.13+
 - **Framework**: FastAPI/ASGI for HTTP, grpcio for gRPC
 - **Security**: cryptography, bcrypt, PyJWT
 - **Validation**: Pydantic v2 for data models
 
 ### Data Storage
+
 - **Primary Database**: PostgreSQL (production), SQLite (development)
 - **Cache**: Redis for sessions and tokens
 - **Search**: Elasticsearch for audit log analysis
 - **Backup**: Automated database backups
 
 ### External Integrations
+
 - **Identity Providers**: Configurable protocol support
 - **Monitoring**: Prometheus metrics, structured logging
 - **Security**: Integration with enterprise security tools
@@ -174,18 +187,21 @@ flext-auth is deployed as a Python-based container with external dependencies fo
 ## Quality Attributes by Container
 
 ### flext-auth Container
+
 - **Security**: Encryption, secure token handling
 - **Performance**: Sub-100ms authentication responses
 - **Reliability**: Circuit breakers, graceful degradation
 - **Maintainability**: Modular provider architecture
 
 ### Database Container
+
 - **Durability**: ACID transactions, data consistency
 - **Performance**: Connection pooling, query optimization
 - **Availability**: Replication, failover support
 - **Security**: Encrypted data at rest and in transit
 
 ### External Services
+
 - **Compatibility**: Multiple protocol support
 - **Reliability**: Retry logic, fallback mechanisms
 - **Security**: Secure communication protocols
@@ -194,18 +210,21 @@ flext-auth is deployed as a Python-based container with external dependencies fo
 ## Deployment Considerations
 
 ### Scaling Strategies
+
 - **Horizontal Scaling**: Multiple flext-auth replicas
 - **Database Scaling**: Read replicas, sharding
 - **Cache Scaling**: Redis cluster configuration
 - **Load Balancing**: Kubernetes services, ingress controllers
 
 ### High Availability
+
 - **Pod Anti-affinity**: Spread across nodes
 - **Health Checks**: Liveness and readiness probes
 - **Rolling Updates**: Zero-downtime deployments
 - **Backup Strategy**: Regular database backups
 
 ### Security Considerations
+
 - **Network Policies**: Kubernetes network segmentation
 - **Secret Management**: External secret stores
 - **TLS Everywhere**: Encrypted communication
@@ -253,4 +272,4 @@ Rel(auth_service, flext_core, "Uses foundation patterns", "Python imports")
 @enduml
 ```
 
-*Note: This diagram is generated from PlantUML source. See [diagrams/plantuml/container-architecture.puml](../../../diagrams/plantuml/container-architecture.puml) for the source file.*
+_Note: This diagram is generated from PlantUML source. See [diagrams/plantuml/container-architecture.puml](../../../diagrams/plantuml/container-architecture.puml) for the source file._

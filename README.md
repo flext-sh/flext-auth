@@ -108,13 +108,13 @@ src/flext_auth/
 
 ### **FLEXT-Core Integration Status**
 
-| Pattern              | Status  | Description                                            |
-| -------------------- | ------- | ------------------------------------------------------ |
-| **FlextCore.Result<T>**   | 🟢 100% | All operations return FlextCore.Result with railway pattern |
-| **FlextCore.Service**     | 🟢 100% | FlextAuth extends FlextCore.Service patterns                |
-| **FlextCore.Container**   | 🟢 100% | Dependency injection throughout                        |
-| **Domain Patterns**  | 🟢 100% | Provider protocol with capability detection            |
-| **Registry Pattern** | 🟢 100% | Dynamic provider registration and discovery            |
+| Pattern                 | Status  | Description                                                 |
+| ----------------------- | ------- | ----------------------------------------------------------- |
+| **FlextCore.Result<T>** | 🟢 100% | All operations return FlextCore.Result with railway pattern |
+| **FlextCore.Service**   | 🟢 100% | FlextAuth extends FlextCore.Service patterns                |
+| **FlextCore.Container** | 🟢 100% | Dependency injection throughout                             |
+| **Domain Patterns**     | 🟢 100% | Provider protocol with capability detection                 |
+| **Registry Pattern**    | 🟢 100% | Dynamic provider registration and discovery                 |
 
 > **Status**: 🟢 v2.0.0 Foundation Complete | Provider architecture ready for ecosystem expansion
 

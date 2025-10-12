@@ -11,18 +11,21 @@ flext-auth is a generic, extensible authentication library that provides multi-p
 ### Key Elements
 
 #### Primary Users
+
 - **Application Developers**: Build applications using flext-auth for authentication
 - **System Integrators**: Integrate flext-auth into larger FLEXT deployments
 - **DevOps Teams**: Deploy and maintain flext-auth in production environments
 - **Security Teams**: Configure and monitor authentication security
 
 #### External Systems
+
 - **Identity Providers**: LDAP, Active Directory, OAuth2/OIDC servers, SAML IdPs
 - **FLEXT Ecosystem**: flext-api, flext-core, flext-observability, flext-ldap
 - **Infrastructure**: Databases, caching systems, message queues
 - **Monitoring**: Logging, metrics, and alerting systems
 
 #### System Responsibilities
+
 - **Authentication**: Verify user identities through multiple protocols
 - **Authorization**: Provide role-based access control decisions
 - **Token Management**: Issue and validate authentication tokens
@@ -31,7 +34,8 @@ flext-auth is a generic, extensible authentication library that provides multi-p
 
 ## System Boundaries
 
-### What flext-auth IS responsible for:
+### What flext-auth IS responsible for
+
 - User authentication and identity verification
 - Token generation and validation
 - Session lifecycle management
@@ -39,7 +43,8 @@ flext-auth is a generic, extensible authentication library that provides multi-p
 - Security policy enforcement
 - Audit logging and compliance reporting
 
-### What flext-auth is NOT responsible for:
+### What flext-auth is NOT responsible for
+
 - User interface or UX (handled by consuming applications)
 - Business logic (handled by application services)
 - Data persistence (abstracted through interfaces)
@@ -49,6 +54,7 @@ flext-auth is a generic, extensible authentication library that provides multi-p
 ## External Interfaces
 
 ### Authentication Protocols
+
 - **JWT**: JSON Web Token authentication
 - **OAuth2/OIDC**: Modern web authentication flows
 - **SAML**: Enterprise SSO protocols
@@ -59,6 +65,7 @@ flext-auth is a generic, extensible authentication library that provides multi-p
 - **Kerberos**: Network authentication
 
 ### Integration Points
+
 - **FLEXT Core**: Foundation patterns and utilities
 - **FLEXT API**: HTTP transport and REST APIs
 - **FLEXT gRPC**: High-performance service communication
@@ -68,18 +75,21 @@ flext-auth is a generic, extensible authentication library that provides multi-p
 ## Quality Attributes in Context
 
 ### Security
+
 - **Confidentiality**: Protect sensitive authentication data
 - **Integrity**: Ensure authentication decisions are tamper-proof
 - **Availability**: Maintain authentication service availability
 - **Compliance**: Meet enterprise security standards
 
 ### Performance
+
 - **Response Time**: Fast authentication decisions (<100ms typical)
 - **Throughput**: Handle high-volume authentication requests
 - **Scalability**: Support growing user bases and request volumes
 - **Efficiency**: Minimal resource usage for authentication operations
 
 ### Usability
+
 - **Developer Experience**: Easy integration and configuration
 - **Operational Excellence**: Clear monitoring and troubleshooting
 - **Maintainability**: Modular architecture for easy updates
@@ -87,18 +97,21 @@ flext-auth is a generic, extensible authentication library that provides multi-p
 ## Constraints and Assumptions
 
 ### Technical Constraints
+
 - Must integrate with existing FLEXT ecosystem components
 - Python 3.13+ runtime requirement
 - Container-based deployment model
 - Stateless service architecture
 
 ### Business Constraints
+
 - Enterprise-grade security and compliance requirements
 - Support for multiple authentication protocols
 - Integration with various identity providers
 - High availability and reliability expectations
 
 ### Environmental Assumptions
+
 - Container orchestration platform (Kubernetes/Docker)
 - External identity provider infrastructure
 - Monitoring and logging infrastructure
@@ -141,4 +154,4 @@ Rel(flext_auth, monitoring, "Sends logs/metrics to")
 @enduml
 ```
 
-*Note: This diagram is generated from PlantUML source. See [diagrams/plantuml/system-context.puml](../../../diagrams/plantuml/system-context.puml) for the source file.*
+_Note: This diagram is generated from PlantUML source. See [diagrams/plantuml/system-context.puml](../../../diagrams/plantuml/system-context.puml) for the source file._

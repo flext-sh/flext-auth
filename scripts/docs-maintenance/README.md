@@ -72,6 +72,7 @@ Documentation Files → Audit → Validation → Optimization → Sync → QA Re
 **Purpose**: Comprehensive analysis of documentation quality metrics.
 
 **Features**:
+
 - File discovery and categorization
 - Content freshness analysis
 - Structure validation (headings, TOC, frontmatter)
@@ -79,11 +80,13 @@ Documentation Files → Audit → Validation → Optimization → Sync → QA Re
 - Technical content analysis
 
 **Usage**:
+
 ```bash
 python docs_audit.py --project-root /path/to/flext-auth --output audit_report.json
 ```
 
 **Sample Output**:
+
 ```json
 {
   "discovery": {
@@ -107,6 +110,7 @@ python docs_audit.py --project-root /path/to/flext-auth --output audit_report.js
 **Purpose**: Automated link checking and reference validation.
 
 **Features**:
+
 - External link health monitoring
 - Internal link validation
 - Image reference checking
@@ -114,11 +118,13 @@ python docs_audit.py --project-root /path/to/flext-auth --output audit_report.js
 - Response time monitoring
 
 **Usage**:
+
 ```bash
 python link_validator.py --project-root /path/to/flext-auth --timeout 15
 ```
 
 **Sample Output**:
+
 ```json
 {
   "validation_results": {
@@ -138,6 +144,7 @@ python link_validator.py --project-root /path/to/flext-auth --timeout 15
 **Purpose**: Automated content enhancement and improvement suggestions.
 
 **Features**:
+
 - Readability analysis
 - Structure optimization suggestions
 - Technical content validation
@@ -145,11 +152,13 @@ python link_validator.py --project-root /path/to/flext-auth --timeout 15
 - Enhancement recommendations
 
 **Usage**:
+
 ```bash
 python content_optimizer.py --project-root /path/to/flext-auth --format text
 ```
 
 **Sample Output**:
+
 ```json
 {
   "summary": {
@@ -172,6 +181,7 @@ python content_optimizer.py --project-root /path/to/flext-auth --format text
 **Purpose**: Git-based change tracking and version control integration.
 
 **Features**:
+
 - Recent change analysis
 - Synchronization status monitoring
 - Automated commit generation
@@ -179,6 +189,7 @@ python content_optimizer.py --project-root /path/to/flext-auth --format text
 - Conflict resolution support
 
 **Usage**:
+
 ```bash
 # Generate sync report
 python docs_sync.py report --output sync_status.json
@@ -195,6 +206,7 @@ python docs_sync.py pull
 **Purpose**: Unified interface for all maintenance operations.
 
 **Commands**:
+
 - `comprehensive`: Full maintenance cycle
 - `quick`: Fast audit only
 - `fix`: Apply auto-fixable issues
@@ -202,6 +214,7 @@ python docs_sync.py pull
 - `config`: Export configuration template
 
 **Usage**:
+
 ```bash
 # Full maintenance cycle
 python main.py comprehensive
@@ -262,16 +275,16 @@ DOCS_REPORT_DIR=reports/docs-qa
 
 ### Automatic Quality Checks
 
-| Metric | Threshold | Action |
-|--------|-----------|--------|
-| Quality Score | ≥75 | ✅ Pass |
-| Quality Score | 60-74 | ⚠️ Warning |
-| Quality Score | <60 | ❌ Fail |
-| Broken Links | ≤5 | ✅ Pass |
-| Broken Links | 6-10 | ⚠️ Warning |
-| Broken Links | >10 | ❌ Fail |
-| High Severity Issues | ≤3 | ✅ Pass |
-| High Severity Issues | >3 | ❌ Fail |
+| Metric               | Threshold | Action     |
+| -------------------- | --------- | ---------- |
+| Quality Score        | ≥75       | ✅ Pass    |
+| Quality Score        | 60-74     | ⚠️ Warning |
+| Quality Score        | <60       | ❌ Fail    |
+| Broken Links         | ≤5        | ✅ Pass    |
+| Broken Links         | 6-10      | ⚠️ Warning |
+| Broken Links         | >10       | ❌ Fail    |
+| High Severity Issues | ≤3        | ✅ Pass    |
+| High Severity Issues | >3        | ❌ Fail    |
 
 ### Content Standards
 
@@ -290,14 +303,14 @@ name: Documentation QA
 on:
   push:
     paths:
-      - 'docs/**'
-      - '*.md'
+      - "docs/**"
+      - "*.md"
   pull_request:
     paths:
-      - 'docs/**'
-      - '*.md'
+      - "docs/**"
+      - "*.md"
   schedule:
-    - cron: '0 2 * * 1'  # Weekly on Monday
+    - cron: "0 2 * * 1" # Weekly on Monday
 
 jobs:
   docs-qa:
@@ -307,7 +320,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.13'
+          python-version: "3.13"
       - name: Install dependencies
         run: |
           pip install requests beautifulsoup4 lxml
@@ -344,6 +357,7 @@ repos:
 ### Common Issues
 
 **Import Errors**:
+
 ```bash
 # Ensure you're in the scripts/docs-maintenance directory
 cd scripts/docs-maintenance
@@ -351,12 +365,14 @@ PYTHONPATH=../.. python main.py comprehensive
 ```
 
 **Permission Errors**:
+
 ```bash
 # Check write permissions for reports directory
 chmod -R 755 reports/
 ```
 
 **Git Integration Issues**:
+
 ```bash
 # Ensure git is available and repository is clean
 git status
@@ -366,6 +382,7 @@ git remote -v
 ### Debug Mode
 
 Enable detailed logging:
+
 ```bash
 export DOCS_DEBUG=1
 export DOCS_VERBOSE=1

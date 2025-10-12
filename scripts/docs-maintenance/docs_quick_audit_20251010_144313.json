@@ -302,9 +302,7 @@
       "total_files": 1,
       "active_files": 1,
       "archive_files": 0,
-      "active_paths": [
-        "README.md"
-      ]
+      "active_paths": ["README.md"]
     },
     "issue_summary": {
       "total_issues": 0,

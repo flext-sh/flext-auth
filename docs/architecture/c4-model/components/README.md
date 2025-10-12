@@ -11,6 +11,7 @@ flext-auth follows a provider-centric architecture with clear separation of conc
 ### Core Components
 
 #### FlextAuth (API Facade)
+
 - **Type**: Main application facade
 - **Responsibilities**:
   - Unified authentication API
@@ -24,6 +25,7 @@ flext-auth follows a provider-centric architecture with clear separation of conc
   - `generate_token_for_user()` - Token generation
 
 #### FlextAuthRegistry (Provider Registry)
+
 - **Type**: Component registry and factory
 - **Responsibilities**:
   - Dynamic provider registration
@@ -36,6 +38,7 @@ flext-auth follows a provider-centric architecture with clear separation of conc
   - Metadata-driven configuration
 
 #### Provider Ecosystem
+
 - **Type**: Strategy pattern implementation
 - **Responsibilities**:
   - Protocol-specific authentication logic
@@ -44,21 +47,25 @@ flext-auth follows a provider-centric architecture with clear separation of conc
   - Provider-specific security controls
 
 ##### FlextAuthJwtProvider
+
 - **Protocol**: JWT (JSON Web Tokens)
 - **Features**: HS256 signing, bcrypt password hashing, configurable expiry
 - **Status**: Production-ready
 
 ##### FlextAuthOAuth2Provider
+
 - **Protocol**: OAuth 2.0 (Authorization Code, Client Credentials, etc.)
 - **Features**: PKCE support, multiple grant types, token refresh
 - **Status**: Implemented
 
 ##### FlextAuthOidcProvider
+
 - **Protocol**: OpenID Connect
 - **Features**: ID token validation, userinfo endpoint, discovery
 - **Status**: Implemented
 
 ##### Additional Providers
+
 - **FlextAuthSamlProvider**: SAML 2.0 SP-initiated flows
 - **FlextAuthLdapProvider**: LDAP directory authentication
 - **FlextAuthCertificateProvider**: X.509 certificate authentication
@@ -69,6 +76,7 @@ flext-auth follows a provider-centric architecture with clear separation of conc
 #### Service Layer
 
 ##### FlextAuthUserService
+
 - **Type**: Domain service
 - **Responsibilities**:
   - User lifecycle management
@@ -77,6 +85,7 @@ flext-auth follows a provider-centric architecture with clear separation of conc
   - Account status management
 
 ##### FlextAuthTokenService
+
 - **Type**: Domain service
 - **Responsibilities**:
   - Token generation and validation
@@ -85,6 +94,7 @@ flext-auth follows a provider-centric architecture with clear separation of conc
   - Token refresh operations
 
 ##### FlextAuthSessionService
+
 - **Type**: Domain service
 - **Responsibilities**:
   - Session creation and management
@@ -93,6 +103,7 @@ flext-auth follows a provider-centric architecture with clear separation of conc
   - Concurrent session limits
 
 ##### FlextAuthProviderService
+
 - **Type**: Orchestration service
 - **Responsibilities**:
   - Provider selection and delegation
@@ -103,6 +114,7 @@ flext-auth follows a provider-centric architecture with clear separation of conc
 #### Transport Layer (Phase 4)
 
 ##### HttpTransportAdapter
+
 - **Type**: Transport adapter
 - **Responsibilities**:
   - HTTP request/response handling
@@ -111,6 +123,7 @@ flext-auth follows a provider-centric architecture with clear separation of conc
   - Request/response transformation
 
 ##### GrpcTransportAdapter (Partial)
+
 - **Type**: Transport adapter
 - **Responsibilities**:
   - gRPC service implementation
@@ -121,6 +134,7 @@ flext-auth follows a provider-centric architecture with clear separation of conc
 #### Configuration & Infrastructure
 
 ##### FlextAuthConfig
+
 - **Type**: Configuration management
 - **Responsibilities**:
   - Configuration loading and validation
@@ -129,6 +143,7 @@ flext-auth follows a provider-centric architecture with clear separation of conc
   - Runtime reconfiguration
 
 ##### FlextAuthConstants
+
 - **Type**: System constants
 - **Responsibilities**:
   - Authentication protocol constants
@@ -137,6 +152,7 @@ flext-auth follows a provider-centric architecture with clear separation of conc
   - Provider-specific parameters
 
 ##### FlextAuthModels
+
 - **Type**: Domain models
 - **Responsibilities**:
   - Pydantic data models
@@ -169,12 +185,14 @@ Response ← HttpTransportAdapter
 ### Key Interaction Patterns
 
 #### Provider Registration
+
 1. **Startup**: FlextAuthRegistry loads available providers
 2. **Configuration**: Provider-specific settings are validated
 3. **Registration**: Providers register capabilities and metadata
 4. **Discovery**: Runtime provider selection based on requirements
 
 #### Authentication Flow
+
 1. **Request**: Authentication request received
 2. **Validation**: Input validation and sanitization
 3. **Provider Selection**: Registry selects appropriate provider
@@ -184,6 +202,7 @@ Response ← HttpTransportAdapter
 7. **Response**: Return authentication result
 
 #### Token Validation Flow
+
 1. **Request**: Token validation request
 2. **Parsing**: Extract token claims
 3. **Verification**: Validate token signature and claims
@@ -195,23 +214,27 @@ Response ← HttpTransportAdapter
 ## Design Patterns Used
 
 ### Provider Pattern (Strategy)
+
 - **Context**: FlextAuth needs different authentication protocols
 - **Strategy**: Interchangeable provider implementations
 - **Concrete Strategies**: JWT, OAuth2, SAML, LDAP providers
 - **Benefits**: Extensibility, testability, protocol independence
 
 ### Registry Pattern
+
 - **Context**: Dynamic provider discovery and management
 - **Registry**: FlextAuthRegistry manages provider lifecycle
 - **Benefits**: Plugin architecture, runtime configuration, loose coupling
 
 ### Facade Pattern
+
 - **Context**: Complex subsystem with multiple components
 - **Facade**: FlextAuth provides simple authentication API
 - **Subsystem**: Providers, services, configuration, transport
 - **Benefits**: Simplified API, reduced coupling, backward compatibility
 
 ### Railway-Oriented Programming
+
 - **Context**: Error handling across complex authentication flows
 - **Railway**: FlextCore.Result[T] for composable error handling
 - **Benefits**: Explicit error handling, composability, type safety
@@ -219,6 +242,7 @@ Response ← HttpTransportAdapter
 ## Component Boundaries
 
 ### Clear Responsibilities
+
 - **API Layer**: External interface and orchestration
 - **Provider Layer**: Protocol-specific authentication logic
 - **Service Layer**: Business logic and data management
@@ -226,12 +250,14 @@ Response ← HttpTransportAdapter
 - **Infrastructure**: Configuration, constants, models
 
 ### Dependency Direction
+
 ```
 Transport Layer ← API Layer ← Service Layer ← Provider Layer
 Infrastructure ↑ ↑ ↑ ↑
 ```
 
 ### Interface Segregation
+
 - **Provider Interface**: Authentication protocol contract
 - **Service Interfaces**: Domain service contracts
 - **Transport Interfaces**: Communication protocol contracts
@@ -240,18 +266,21 @@ Infrastructure ↑ ↑ ↑ ↑
 ## Quality Attributes by Component
 
 ### Security
+
 - **Provider Isolation**: Each provider handles its own security
 - **Token Security**: Cryptographically secure token generation
 - **Credential Protection**: Secure password hashing and storage
 - **Audit Trail**: Comprehensive authentication logging
 
 ### Performance
+
 - **Provider Selection**: Efficient runtime provider lookup
 - **Token Caching**: Fast token validation with caching
 - **Session Management**: Optimized session storage and retrieval
 - **Async Support**: Non-blocking operations where applicable
 
 ### Maintainability
+
 - **Modular Design**: Clear component boundaries and responsibilities
 - **Type Safety**: Full type annotations throughout
 - **Testability**: Each component can be tested in isolation
@@ -260,18 +289,21 @@ Infrastructure ↑ ↑ ↑ ↑
 ## Testing Strategy by Component
 
 ### Unit Testing
+
 - **Individual Components**: Isolated unit tests for each component
 - **Provider Testing**: Mock external dependencies for provider testing
 - **Service Testing**: In-memory repositories for service testing
 - **Utility Testing**: Pure function testing for utilities
 
 ### Integration Testing
+
 - **Component Integration**: Test component interactions
 - **Provider Integration**: Test with real external services (LDAP, OAuth2)
 - **Transport Integration**: Test HTTP/gRPC communication
 - **Database Integration**: Test with real database connections
 
 ### End-to-End Testing
+
 - **Authentication Flows**: Complete authentication scenarios
 - **Multi-Provider Testing**: Test provider switching and fallback
 - **Load Testing**: Performance testing under load
@@ -346,4 +378,4 @@ Rel(api_facade, monitoring, "Sends metrics/logs")
 @enduml
 ```
 
-*Note: This diagram is generated from PlantUML source. See [diagrams/plantuml/component-architecture.puml](../../../diagrams/plantuml/component-architecture.puml) for the source file.*
+_Note: This diagram is generated from PlantUML source. See [diagrams/plantuml/component-architecture.puml](../../../diagrams/plantuml/component-architecture.puml) for the source file._
