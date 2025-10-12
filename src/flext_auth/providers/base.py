@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextCore
 
 from flext_auth.models import FlextAuthModels
 
@@ -34,7 +34,7 @@ class FlextAuthBaseProvider(ABC):
         >>> class FlextAuthMyProvider(FlextAuthBaseProvider):
         ...     def authenticate(
         ...         self, credentials: dict
-        ...     ) -> FlextResult[FlextAuthModels.AuthToken]:
+        ...     ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
         ...         # Implementation
         ...         pass
         ...
@@ -46,8 +46,8 @@ class FlextAuthBaseProvider(ABC):
     @abstractmethod
     def authenticate(
         self,
-        credentials: FlextTypes.Dict,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+        credentials: FlextCore.Types.Dict,
+    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
         """Authenticate user with provided credentials.
 
         This is the primary authentication method. It should validate the
@@ -64,7 +64,7 @@ class FlextAuthBaseProvider(ABC):
                          - SAML: {"saml_response": "...", "relay_state": "..."}
 
         Returns:
-            FlextResult[AuthToken]: Authentication token on success,
+            FlextCore.Result[AuthToken]: Authentication token on success,
                                     error message on failure
 
         Example:
@@ -83,7 +83,7 @@ class FlextAuthBaseProvider(ABC):
     def validate(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[bool]:
+    ) -> FlextCore.Result[bool]:
         """Validate authentication token.
 
         Verify that the provided token is valid, not expired, and properly signed
@@ -93,7 +93,7 @@ class FlextAuthBaseProvider(ABC):
             token: Token to validate (string or AuthToken object)
 
         Returns:
-            FlextResult[bool]: True if valid, False if invalid,
+            FlextCore.Result[bool]: True if valid, False if invalid,
                               or error message on validation failure
 
         Example:
@@ -108,7 +108,7 @@ class FlextAuthBaseProvider(ABC):
     def refresh(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
         """Refresh authentication token.
 
         Generate a new token based on an existing valid token. This operation
@@ -119,7 +119,7 @@ class FlextAuthBaseProvider(ABC):
             token: Existing token to refresh
 
         Returns:
-            FlextResult[AuthToken]: New token on success,
+            FlextCore.Result[AuthToken]: New token on success,
                                    error if refresh not supported or failed
 
         Example:
@@ -135,7 +135,7 @@ class FlextAuthBaseProvider(ABC):
     def revoke(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Revoke authentication token.
 
         Invalidate the provided token, preventing further use. This operation
@@ -146,7 +146,7 @@ class FlextAuthBaseProvider(ABC):
             token: Token to revoke
 
         Returns:
-            FlextResult[None]: Success if revoked,
+            FlextCore.Result[None]: Success if revoked,
                               error if revocation not supported or failed
 
         Example:
@@ -193,7 +193,7 @@ class FlextAuthBaseProvider(ABC):
         ...
 
     @abstractmethod
-    def get_metadata(self) -> FlextTypes.Dict:
+    def get_metadata(self) -> FlextCore.Types.Dict:
         """Return provider metadata.
 
         Metadata provides information about the provider for introspection,
@@ -202,7 +202,7 @@ class FlextAuthBaseProvider(ABC):
         Required metadata fields:
             - name: str - Provider name (e.g., "jwt", "oauth2")
             - version: str - Provider version
-            - capabilities: FlextTypes.StringList - List of capabilities (from supports())
+            - capabilities: FlextCore.Types.StringList - List of capabilities (from supports())
 
         Optional metadata fields:
             - description: str - Human-readable description
@@ -212,7 +212,7 @@ class FlextAuthBaseProvider(ABC):
             - endpoints: dict - API endpoints (for OAuth2/OIDC/SAML)
 
         Returns:
-            FlextTypes.Dict: Provider metadata
+            FlextCore.Types.Dict: Provider metadata
 
         Example:
             >>> metadata = provider.get_metadata()

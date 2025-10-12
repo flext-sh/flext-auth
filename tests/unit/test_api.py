@@ -13,7 +13,7 @@ import threading
 import time
 
 import pytest
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextCore
 from pydantic import ValidationError
 
 from flext_auth.api import FlextAuth
@@ -89,7 +89,7 @@ class TestFlextAuthProcessorRegistration:
         """Test that processors are registered during initialization."""
         auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
-        # Verify FlextProcessors and FlextDispatcher are initialized
+        # Verify FlextCore.Processors and FlextCore.Dispatcher are initialized
         assert hasattr(auth, "_processors")
         assert hasattr(auth, "_dispatcher")
         assert auth._processors is not None
@@ -136,13 +136,13 @@ class TestFlextAuthProcessorRegistration:
 
 
 class TestFlextAuthHandlerRegistration:
-    """Test FlextBus handler registration."""
+    """Test FlextCore.Bus handler registration."""
 
     def test_command_handlers_registered(self) -> None:
-        """Test that command handlers are registered with FlextBus."""
+        """Test that command handlers are registered with FlextCore.Bus."""
         auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
-        # Verify FlextBus is initialized
+        # Verify FlextCore.Bus is initialized
         assert hasattr(auth, "_bus")
         assert auth._bus is not None
 
@@ -151,7 +151,7 @@ class TestFlextAuthHandlerRegistration:
         assert result.is_success
 
     def test_query_handlers_registered(self) -> None:
-        """Test that query handlers are registered with FlextBus."""
+        """Test that query handlers are registered with FlextCore.Bus."""
         auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
         # Create a user first
@@ -162,10 +162,10 @@ class TestFlextAuthHandlerRegistration:
         assert result.is_success
 
     def test_registry_handlers_registered(self) -> None:
-        """Test that handlers are registered with FlextRegistry."""
+        """Test that handlers are registered with FlextCore.Registry."""
         auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
-        # Verify FlextRegistry is initialized
+        # Verify FlextCore.Registry is initialized
         assert hasattr(auth, "_registry")
         assert auth._registry is not None
 
@@ -174,7 +174,7 @@ class TestFlextAuthAdvancedPatterns:
     """Test advanced flext-core pattern integration."""
 
     def test_flext_container_integration(self) -> None:
-        """Test FlextContainer dependency injection."""
+        """Test FlextCore.Container dependency injection."""
         auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
         # Verify container is initialized
@@ -182,7 +182,7 @@ class TestFlextAuthAdvancedPatterns:
         assert auth.container is not None
 
     def test_flext_context_integration(self) -> None:
-        """Test FlextContext execution context."""
+        """Test FlextCore.Context execution context."""
         auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
         # Verify context is initialized
@@ -190,7 +190,7 @@ class TestFlextAuthAdvancedPatterns:
         assert auth._context is not None
 
     def test_flext_dispatcher_integration(self) -> None:
-        """Test FlextDispatcher event bus."""
+        """Test FlextCore.Dispatcher event bus."""
         auth = FlextAuth.quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
         # Verify dispatcher is initialized
@@ -986,7 +986,7 @@ class TestFlextAuthPasswordMethods:
         )
         result = user.set_password("StrongTestPass123!@#")
 
-        # set_password returns FlextResult[bool]
+        # set_password returns FlextCore.Result[bool]
         assert result.is_success
         assert result.unwrap() is True
         assert user.password_hash != "StrongTestPass123!@#"
@@ -1057,7 +1057,7 @@ class TestFlextAuthTokenMethods:
         assert auth_result.is_success
         user_id = auth_result.value["user"]["id"]
 
-        # generate_token returns string directly, not FlextResult
+        # generate_token returns string directly, not FlextCore.Result
         token = auth.generate_token(user_id)
 
         assert isinstance(token, str)
@@ -1352,7 +1352,7 @@ class TestAuthModule:
         """Nested helper class for test data creation."""
 
         @staticmethod
-        def create_test_user_data() -> FlextTypes.Dict:
+        def create_test_user_data() -> FlextCore.Types.Dict:
             """Create test user data."""
             return {
                 "username": "test_user",
@@ -1362,7 +1362,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_auth_data() -> FlextTypes.Dict:
+        def create_test_auth_data() -> FlextCore.Types.Dict:
             """Create test authentication data."""
             return {
                 "username": "test_user",
@@ -1371,7 +1371,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_session_data() -> FlextTypes.Dict:
+        def create_test_session_data() -> FlextCore.Types.Dict:
             """Create test session data."""
             return {
                 "user_id": "user_123",
@@ -1396,7 +1396,7 @@ class TestAuthModule:
             password=str(test_data["password"]),
             full_name=str(test_data.get("full_name", "")),
         )
-        assert isinstance(result, FlextResult)
+        assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_authenticate_user(self) -> None:
         """Test FlextAuth authenticate_user functionality."""
@@ -1408,7 +1408,7 @@ class TestAuthModule:
             result = auth.authenticate_user(
                 str(test_data["username"]), str(test_data["password"])
             )
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_get_user_by_username(self) -> None:
         """Test FlextAuth get_user_by_username functionality."""
@@ -1426,7 +1426,7 @@ class TestAuthModule:
 
         # Test user retrieval
         result = auth.get_user_by_username(str(test_data["username"]))
-        assert isinstance(result, FlextResult)
+        assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_get_user_by_id(self) -> None:
         """Test FlextAuth get_user_by_id functionality."""
@@ -1448,7 +1448,7 @@ class TestAuthModule:
 
         # Test user retrieval by ID
         result = auth.get_user_by_id(str(user_id))
-        assert isinstance(result, FlextResult)
+        assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_validate_token(self) -> None:
         """Test FlextAuth validate_token functionality."""
@@ -1474,7 +1474,7 @@ class TestAuthModule:
 
         # Test token validation
         result = auth.validate_token(token)
-        assert isinstance(result, FlextResult)
+        assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_get_user_sessions(self) -> None:
         """Test FlextAuth get_user_sessions functionality."""
@@ -1500,7 +1500,7 @@ class TestAuthModule:
 
         # Test getting user sessions
         result = auth.get_user_sessions(user_id)
-        assert isinstance(result, FlextResult)
+        assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_get_user_by_token_direct_api(self) -> None:
         """Test FlextAuth get user by token using direct API (validate_token + get_user_by_id)."""
@@ -1530,7 +1530,7 @@ class TestAuthModule:
         user_id = token_result.value.get("user_id")
         assert user_id is not None
         result = auth.get_user_by_id(str(user_id))
-        assert isinstance(result, FlextResult)
+        assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_revoke_session(self) -> None:
         """Test FlextAuth revoke_session functionality."""
@@ -1556,7 +1556,7 @@ class TestAuthModule:
 
         # Test session revocation
         result = auth.revoke_session(session_id)
-        assert isinstance(result, FlextResult)
+        assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_comprehensive_scenario(self) -> None:
         """Test comprehensive auth module scenario."""
@@ -1574,21 +1574,21 @@ class TestAuthModule:
             password=str(test_user_data["password"]),
             full_name=str(test_user_data.get("full_name", "")),
         )
-        assert isinstance(register_result, FlextResult)
+        assert isinstance(register_result, FlextCore.Result)
         assert register_result.is_success
 
         # Test user authentication
         auth_result = auth.authenticate_user(
             str(test_auth_data["username"]), str(test_auth_data["password"])
         )
-        assert isinstance(auth_result, FlextResult)
+        assert isinstance(auth_result, FlextCore.Result)
         assert auth_result.is_success
 
         # Test token validation
         auth_data = auth_result.unwrap()
         token = auth_data["jwt_token"]
         validate_result = auth.validate_token(token)
-        assert isinstance(validate_result, FlextResult)
+        assert isinstance(validate_result, FlextCore.Result)
 
     def test_flext_auth_error_handling(self) -> None:
         """Test auth module error handling patterns."""
@@ -1600,17 +1600,17 @@ class TestAuthModule:
             email="invalid_email",  # Invalid email format
             password="",  # Invalid empty password
         )
-        assert isinstance(result, FlextResult)
+        assert isinstance(result, FlextCore.Result)
         assert result.is_failure  # Should fail with invalid data
 
         # Test authentication with invalid credentials
         result = auth.authenticate_user("invalid_user", "invalid_password")
-        assert isinstance(result, FlextResult)
+        assert isinstance(result, FlextCore.Result)
         assert result.is_failure  # Should fail with invalid credentials
 
         # Test retrieval of non-existent user
         result = auth.get_user_by_username("non_existent_user")
-        assert isinstance(result, FlextResult)
+        assert isinstance(result, FlextCore.Result)
         # Should return None for non-existent user
         if result.is_success:
             user = result.unwrap()
@@ -1638,14 +1638,14 @@ class TestAuthModule:
             email=test_user_data["email"],
             password=test_user_data["password"],
         )
-        assert isinstance(result, FlextResult)
+        assert isinstance(result, FlextCore.Result)
         assert result.is_success
 
         # Test authentication with flext_tests data
         result = auth.authenticate_user(
             test_auth_data["username"], test_auth_data["password"]
         )
-        assert isinstance(result, FlextResult)
+        assert isinstance(result, FlextCore.Result)
         assert result.is_success
 
     def test_flext_auth_docstring(self) -> None:
@@ -1709,7 +1709,7 @@ class TestAuthModule:
                 password=user_data["password"],
                 roles=[user_data["role"]] if "role" in user_data else None,
             )
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
             assert result.is_success
 
         # Test authentication with realistic data
@@ -1717,7 +1717,7 @@ class TestAuthModule:
             result = auth.authenticate_user(
                 user_data["username"], user_data["password"]
             )
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
             assert result.is_success
 
     def test_flext_auth_integration_patterns(self) -> None:
@@ -1734,21 +1734,21 @@ class TestAuthModule:
             email=str(test_user_data["email"]),
             password=str(test_user_data["password"]),
         )
-        assert isinstance(register_result, FlextResult)
+        assert isinstance(register_result, FlextCore.Result)
         assert register_result.is_success
 
         # Authenticate user
         auth_result = auth.authenticate_user(
             str(test_auth_data["username"]), str(test_auth_data["password"])
         )
-        assert isinstance(auth_result, FlextResult)
+        assert isinstance(auth_result, FlextCore.Result)
         assert auth_result.is_success
 
         # Validate token from authentication
         auth_data = auth_result.unwrap()
         token = auth_data["jwt_token"]
         validate_result = auth.validate_token(token)
-        assert isinstance(validate_result, FlextResult)
+        assert isinstance(validate_result, FlextCore.Result)
         assert validate_result.is_success
 
     def test_flext_auth_performance_patterns(self) -> None:
@@ -1767,7 +1767,7 @@ class TestAuthModule:
                 email=f"user_{i}@example.com",
                 password=str(test_user_data["password"]),
             )
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
             assert result.is_success
 
         end_time = time.time()
@@ -1814,6 +1814,6 @@ class TestAuthModule:
         for thread in auth_threads:
             thread.join()
 
-        # All results should be FlextResult instances
+        # All results should be FlextCore.Result instances
         for result in results:
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)

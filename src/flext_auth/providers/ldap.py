@@ -19,7 +19,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import cast
 
-from flext_core import FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextCore
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -62,7 +62,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     """
 
-    def __init__(self, config: FlextTypes.Dict) -> None:
+    def __init__(self, config: FlextCore.Types.Dict) -> None:
         """Initialize LDAP authentication provider.
 
         Args:
@@ -73,7 +73,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         """
         self._config = config
-        self.logger = FlextLogger(__name__)
+        self.logger = FlextCore.Logger(__name__)
 
         # Validate required configuration
         self._server = cast("str", self._config.get("server"))
@@ -93,7 +93,8 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             "str", self._config.get("user_search_filter", "(uid={username})")
         )
         self._attributes = cast(
-            "list[str]", self._config.get("attributes", ["cn", "mail", "memberOf"])
+            "FlextCore.Types.StringList",
+            self._config.get("attributes", ["cn", "mail", "memberOf"]),
         )
         self._use_ssl = cast("bool", self._config.get("use_ssl", True))
         self._timeout = cast("int", self._config.get("timeout", 10))
@@ -118,15 +119,15 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: FlextTypes.Dict,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+        credentials: FlextCore.Types.Dict,
+    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
         """Authenticate using LDAP credentials.
 
         Args:
             credentials: Must contain 'username' and 'password'
 
         Returns:
-            FlextResult[AuthToken]: Authentication token or error
+            FlextCore.Result[AuthToken]: Authentication token or error
 
         Example:
             >>> result = provider.authenticate({
@@ -140,7 +141,9 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             credentials, ["username", "password"]
         )
         if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
+            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+                validation_result.error
+            )
 
         credentials["username"]
         credentials["password"]
@@ -155,7 +158,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # 7. Create AuthToken with user information
 
         # For now, return error indicating flext-ldap integration needed
-        return FlextResult[FlextAuthModels.AuthToken].fail(
+        return FlextCore.Result[FlextAuthModels.AuthToken].fail(
             "LDAP authentication requires flext-ldap integration. "
             "Install flext-ldap and implement LDAP connection and bind operations."
         )
@@ -163,24 +166,24 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     def validate(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[bool]:
+    ) -> FlextCore.Result[bool]:
         """Validate LDAP session token.
 
         Args:
             token: Session token or AuthToken object
 
         Returns:
-            FlextResult[bool]: True if token is valid
+            FlextCore.Result[bool]: True if token is valid
 
         """
         try:
             token_string = self._extract_token_string(token)
         except ValueError as e:
-            return FlextResult[bool].fail(str(e))
+            return FlextCore.Result[bool].fail(str(e))
 
         # Basic validation
         if not token_string or not token_string.strip():
-            return FlextResult[bool].fail("Token is empty")
+            return FlextCore.Result[bool].fail("Token is empty")
 
         # In production: Validate session with LDAP
         # - Re-bind to verify user still exists and is active
@@ -192,15 +195,15 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             and token.expires_at
             and datetime.now(UTC) > token.expires_at
         ):
-            return FlextResult[bool].fail("Session expired")
+            return FlextCore.Result[bool].fail("Session expired")
 
         self.logger.debug("LDAP token validated (basic validation)")
-        return FlextResult[bool].ok(True)
+        return FlextCore.Result[bool].ok(True)
 
     def refresh(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
         """Refresh LDAP session.
 
         LDAP sessions typically don't support refresh. User must re-authenticate.
@@ -209,16 +212,16 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             token: Current session token (validated for presence)
 
         Returns:
-            FlextResult[AuthToken]: Error indicating refresh not supported
+            FlextCore.Result[AuthToken]: Error indicating refresh not supported
 
         """
         # Validate token is provided (even though LDAP doesn't support refresh)
         if not token:
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
                 "Token is required for refresh attempt"
             )
 
-        return FlextResult[FlextAuthModels.AuthToken].fail(
+        return FlextCore.Result[FlextAuthModels.AuthToken].fail(
             "LDAP authentication does not support token refresh. "
             "User must re-authenticate with credentials."
         )
@@ -226,27 +229,27 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     def revoke(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Revoke LDAP session.
 
         Args:
             token: Session token to revoke
 
         Returns:
-            FlextResult[None]: Success or error
+            FlextCore.Result[None]: Success or error
 
         """
         try:
             self._extract_token_string(token)
         except ValueError as e:
-            return FlextResult[None].fail(str(e))
+            return FlextCore.Result[None].fail(str(e))
 
         # In production: Close LDAP connection/session
         # Mark session as revoked in session store
 
         self.logger.info("LDAP session revoked")
 
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
     def supports(self) -> set[str]:
         """Return LDAP provider capabilities.
@@ -264,11 +267,11 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         """
         return {"token", "validate", "ldap", "directory", "groups"}
 
-    def get_metadata(self) -> FlextTypes.Dict:
+    def get_metadata(self) -> FlextCore.Types.Dict:
         """Return LDAP provider metadata.
 
         Returns:
-            FlextTypes.Dict: Provider metadata
+            FlextCore.Types.Dict: Provider metadata
 
         """
         return {
@@ -297,15 +300,15 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         return self._user_search_filter.format(username=username)
 
     def _extract_groups_from_attributes(
-        self, attributes: FlextTypes.Dict
-    ) -> FlextTypes.StringList:
+        self, attributes: FlextCore.Types.Dict
+    ) -> FlextCore.Types.StringList:
         """Extract group memberships from LDAP attributes.
 
         Args:
             attributes: LDAP user attributes
 
         Returns:
-            FlextTypes.StringList: List of group DNs or names
+            FlextCore.Types.StringList: List of group DNs or names
 
         """
         # Extract groups from memberOf attribute
@@ -314,7 +317,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         if isinstance(member_of, str):
             member_of = [member_of]
 
-        member_of = cast("list[str]", member_of)
+        member_of = cast("FlextCore.Types.StringList", member_of)
 
         # Extract CN from group DNs (e.g., "CN=Admins,OU=Groups,DC=example,DC=com" -> "Admins")
         groups = []

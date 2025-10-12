@@ -19,7 +19,7 @@ import base64
 import secrets
 from datetime import UTC, datetime, timedelta
 
-from flext_core import FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextCore
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
@@ -63,7 +63,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     """
 
-    def __init__(self, config: FlextTypes.Dict) -> None:
+    def __init__(self, config: FlextCore.Types.Dict) -> None:
         """Initialize HTTP Basic authentication provider.
 
         Args:
@@ -71,7 +71,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         """
         self._config = config
-        self.logger = FlextLogger(__name__)
+        self.logger = FlextCore.Logger(__name__)
 
         # Configuration with defaults
         self._realm = self._config.get("realm", "Restricted")
@@ -82,7 +82,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         # In-memory user storage (for development/testing)
         # In production, integrate with user database or directory service
-        self._users: FlextTypes.NestedDict = {}  # username -> user data
+        self._users: FlextCore.Types.NestedDict = {}  # username -> user data
 
         self.logger.info(
             "Basic Auth provider initialized",
@@ -96,8 +96,8 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: FlextTypes.Dict,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+        credentials: FlextCore.Types.Dict,
+    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
         """Authenticate using HTTP Basic credentials.
 
         Args:
@@ -105,7 +105,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
                         Optional: 'request_url' to validate HTTPS requirement
 
         Returns:
-            FlextResult[AuthToken]: Authentication token or error
+            FlextCore.Result[AuthToken]: Authentication token or error
 
         Example:
             >>> result = provider.authenticate({
@@ -119,11 +119,13 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             credentials, ["authorization"]
         )
         if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
+            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+                validation_result.error
+            )
 
         authorization = credentials["authorization"]
         if not isinstance(authorization, str):
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
                 "Authorization header must be a string"
             )
 
@@ -136,14 +138,14 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             and isinstance(request_url, str)
             and not request_url.startswith("https://")
         ):
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
                 "Basic authentication requires HTTPS"
             )
 
         # Parse Authorization header
         parse_result = self._parse_authorization_header(authorization)
         if parse_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(parse_result.error)
+            return FlextCore.Result[FlextAuthModels.AuthToken].fail(parse_result.error)
 
         username, password = parse_result.unwrap()
 
@@ -158,7 +160,9 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
                 "Authentication failed",
                 extra={"username": username, "reason": validation_result.error},
             )
-            return FlextResult[FlextAuthModels.AuthToken].fail("Invalid credentials")
+            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+                "Invalid credentials"
+            )
 
         user_data = validation_result.unwrap()
 
@@ -181,44 +185,44 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             extra={"username": username, "user_id": user_data["user_id"]},
         )
 
-        return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)
+        return FlextCore.Result[FlextAuthModels.AuthToken].ok(auth_token)
 
     def validate(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[bool]:
+    ) -> FlextCore.Result[bool]:
         """Validate Basic auth credentials.
 
         Args:
             token: Basic auth token string or AuthToken object
 
         Returns:
-            FlextResult[bool]: True if credentials are valid
+            FlextCore.Result[bool]: True if credentials are valid
 
         """
         try:
             token_string = self._extract_token_string(token)
         except ValueError as e:
-            return FlextResult[bool].fail(str(e))
+            return FlextCore.Result[bool].fail(str(e))
 
         # Parse credentials from token
         parse_result = self._parse_basic_token(token_string)
         if parse_result.is_failure:
-            return FlextResult[bool].fail(parse_result.error)
+            return FlextCore.Result[bool].fail(parse_result.error)
 
         username, password = parse_result.unwrap()
 
         # Validate against stored credentials
         validation_result = self._validate_user_credentials(username, password)
         if validation_result.is_failure:
-            return FlextResult[bool].fail("Invalid credentials")
+            return FlextCore.Result[bool].fail("Invalid credentials")
 
-        return FlextResult[bool].ok(True)
+        return FlextCore.Result[bool].ok(True)
 
     def refresh(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
         """Refresh Basic auth token.
 
         Basic authentication doesn't support token refresh since credentials
@@ -228,11 +232,11 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             token: Current Basic auth token
 
         Returns:
-            FlextResult[AuthToken]: Error indicating refresh not needed
+            FlextCore.Result[AuthToken]: Error indicating refresh not needed
 
         """
         _ = token  # Token parameter required by interface but not used for Basic auth refresh
-        return FlextResult[FlextAuthModels.AuthToken].fail(
+        return FlextCore.Result[FlextAuthModels.AuthToken].fail(
             "Basic authentication does not require token refresh. "
             "Use the same credentials for subsequent requests."
         )
@@ -240,7 +244,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     def revoke(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Revoke Basic auth credentials.
 
         This disables the user account associated with the credentials.
@@ -249,18 +253,18 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             token: Basic auth token to revoke
 
         Returns:
-            FlextResult[None]: Success or error
+            FlextCore.Result[None]: Success or error
 
         """
         try:
             token_string = self._extract_token_string(token)
         except ValueError as e:
-            return FlextResult[None].fail(str(e))
+            return FlextCore.Result[None].fail(str(e))
 
         # Parse credentials
         parse_result = self._parse_basic_token(token_string)
         if parse_result.is_failure:
-            return FlextResult[None].fail(parse_result.error)
+            return FlextCore.Result[None].fail(parse_result.error)
 
         username, _ = parse_result.unwrap()
 
@@ -268,14 +272,14 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         lookup_username = username if self._case_sensitive else username.lower()
 
         if lookup_username not in self._users:
-            return FlextResult[None].fail("User not found")
+            return FlextCore.Result[None].fail("User not found")
 
         # Mark user as inactive
         self._users[lookup_username]["active"] = False
 
         self.logger.info("Basic auth credentials revoked", extra={"username": username})
 
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
     def supports(self) -> set[str]:
         """Return Basic auth provider capabilities.
@@ -298,11 +302,11 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         return capabilities
 
-    def get_metadata(self) -> FlextTypes.Dict:
+    def get_metadata(self) -> FlextCore.Types.Dict:
         """Return Basic auth provider metadata.
 
         Returns:
-            FlextTypes.Dict: Provider metadata
+            FlextCore.Types.Dict: Provider metadata
 
         """
         return {
@@ -320,18 +324,18 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     def _parse_authorization_header(
         self, authorization: str
-    ) -> FlextResult[tuple[str, str]]:
+    ) -> FlextCore.Result[tuple[str, str]]:
         """Parse Authorization header.
 
         Args:
             authorization: Authorization header value
 
         Returns:
-            FlextResult[tuple[str, str]]: (username, password) or error
+            FlextCore.Result[tuple[str, str]]: (username, password) or error
 
         """
         if not authorization.startswith("Basic "):
-            return FlextResult[tuple[str, str]].fail(
+            return FlextCore.Result[tuple[str, str]].fail(
                 "Invalid Authorization header: expected 'Basic' scheme"
             )
 
@@ -341,44 +345,46 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             credentials_bytes = base64.b64decode(credentials_b64)
             credentials_str = credentials_bytes.decode("utf-8")
         except Exception as e:
-            return FlextResult[tuple[str, str]].fail(f"Invalid base64 encoding: {e}")
+            return FlextCore.Result[tuple[str, str]].fail(
+                f"Invalid base64 encoding: {e}"
+            )
 
         # Split username:password
         if ":" not in credentials_str:
-            return FlextResult[tuple[str, str]].fail(
+            return FlextCore.Result[tuple[str, str]].fail(
                 "Invalid credentials format: expected 'username:password'"
             )
 
         username, password = credentials_str.split(":", 1)
 
-        return FlextResult[tuple[str, str]].ok((username, password))
+        return FlextCore.Result[tuple[str, str]].ok((username, password))
 
-    def _parse_basic_token(self, token: str) -> FlextResult[tuple[str, str]]:
+    def _parse_basic_token(self, token: str) -> FlextCore.Result[tuple[str, str]]:
         """Parse Basic auth token.
 
         Args:
             token: Basic auth token (base64-encoded credentials)
 
         Returns:
-            FlextResult[tuple[str, str]]: (username, password) or error
+            FlextCore.Result[tuple[str, str]]: (username, password) or error
 
         """
         try:
             credentials_bytes = base64.b64decode(token)
             credentials_str = credentials_bytes.decode("utf-8")
         except Exception as e:
-            return FlextResult[tuple[str, str]].fail(f"Invalid token format: {e}")
+            return FlextCore.Result[tuple[str, str]].fail(f"Invalid token format: {e}")
 
         if ":" not in credentials_str:
-            return FlextResult[tuple[str, str]].fail("Invalid credentials format")
+            return FlextCore.Result[tuple[str, str]].fail("Invalid credentials format")
 
         username, password = credentials_str.split(":", 1)
 
-        return FlextResult[tuple[str, str]].ok((username, password))
+        return FlextCore.Result[tuple[str, str]].ok((username, password))
 
     def _validate_user_credentials(
         self, username: str, password: str
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Validate user credentials.
 
         Args:
@@ -386,27 +392,29 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             password: Password
 
         Returns:
-            FlextResult[FlextTypes.Dict]: User data or error
+            FlextCore.Result[FlextCore.Types.Dict]: User data or error
 
         """
         # Normalize username for lookup
         lookup_username = username if self._case_sensitive else username.lower()
 
         if lookup_username not in self._users:
-            return FlextResult[FlextTypes.Dict].fail("User not found")
+            return FlextCore.Result[FlextCore.Types.Dict].fail("User not found")
 
         user_data = self._users[lookup_username]
 
         # Check if user is active
         if not user_data.get("active", True):
-            return FlextResult[FlextTypes.Dict].fail("User account is disabled")
+            return FlextCore.Result[FlextCore.Types.Dict].fail(
+                "User account is disabled"
+            )
 
         # Validate password
         stored_password = user_data["password"]
         if password != stored_password:
-            return FlextResult[FlextTypes.Dict].fail("Invalid password")
+            return FlextCore.Result[FlextCore.Types.Dict].fail("Invalid password")
 
-        return FlextResult[FlextTypes.Dict].ok(user_data)
+        return FlextCore.Result[FlextCore.Types.Dict].ok(user_data)
 
     def _encode_credentials(self, username: str, password: str) -> str:
         """Encode credentials as Basic auth token.
@@ -423,11 +431,11 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         credentials_bytes = credentials.encode("utf-8")
         return base64.b64encode(credentials_bytes).decode("utf-8")
 
-    def _create_anonymous_token(self) -> FlextResult[FlextAuthModels.AuthToken]:
+    def _create_anonymous_token(self) -> FlextCore.Result[FlextAuthModels.AuthToken]:
         """Create anonymous access token.
 
         Returns:
-            FlextResult[AuthToken]: Anonymous token
+            FlextCore.Result[AuthToken]: Anonymous token
 
         """
         anonymous_id = f"anonymous-{secrets.token_hex(8)}"
@@ -445,7 +453,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         self.logger.info("Anonymous access granted", extra={"user_id": anonymous_id})
 
-        return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)
+        return FlextCore.Result[FlextAuthModels.AuthToken].ok(auth_token)
 
     # User management methods (for in-memory storage)
 
@@ -454,9 +462,9 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         username: str,
         password: str,
         user_id: str | None = None,
-        roles: FlextTypes.StringList | None = None,
-        permissions: FlextTypes.StringList | None = None,
-    ) -> FlextResult[None]:
+        roles: FlextCore.Types.StringList | None = None,
+        permissions: FlextCore.Types.StringList | None = None,
+    ) -> FlextCore.Result[None]:
         """Add user to in-memory storage.
 
         Args:
@@ -467,13 +475,13 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             permissions: User permissions
 
         Returns:
-            FlextResult[None]: Success or error
+            FlextCore.Result[None]: Success or error
 
         """
         lookup_username = username if self._case_sensitive else username.lower()
 
         if lookup_username in self._users:
-            return FlextResult[None].fail(f"User '{username}' already exists")
+            return FlextCore.Result[None].fail(f"User '{username}' already exists")
 
         self._users[lookup_username] = {
             "username": username,
@@ -486,28 +494,28 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         self.logger.info("User added", extra={"username": username})
 
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
-    def remove_user(self, username: str) -> FlextResult[None]:
+    def remove_user(self, username: str) -> FlextCore.Result[None]:
         """Remove user from in-memory storage.
 
         Args:
             username: Username to remove
 
         Returns:
-            FlextResult[None]: Success or error
+            FlextCore.Result[None]: Success or error
 
         """
         lookup_username = username if self._case_sensitive else username.lower()
 
         if lookup_username not in self._users:
-            return FlextResult[None].fail(f"User '{username}' not found")
+            return FlextCore.Result[None].fail(f"User '{username}' not found")
 
         del self._users[lookup_username]
 
         self.logger.info("User removed", extra={"username": username})
 
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
 
 __all__ = ["FlextAuthBasicProvider"]

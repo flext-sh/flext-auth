@@ -76,7 +76,7 @@ pytest --cov=src/flext_auth --cov-report=term-missing
 - **Type Safety**: MyPy strict mode with zero errors in src/ ✅
 - **Code Quality**: Ruff linting with zero violations ✅
 - **Security**: Production-grade bcrypt (12 rounds) + JWT (HS256) ✅
-- **Architecture**: Complete FlextService + FlextHandlers integration ✅
+- **Architecture**: Complete FlextCore.Service + FlextCore.Handlers integration ✅
 
 ### Quality Gates
 
@@ -96,13 +96,13 @@ All contributions must pass:
 All code must follow FLEXT patterns:
 
 ```python
-# ✅ Correct - Use FlextResult for error handling
-def authenticate_user(username: str, password: str) -> FlextResult[FlextTypes.Dict]:
+# ✅ Correct - Use FlextCore.Result for error handling
+def authenticate_user(username: str, password: str) -> FlextCore.Result[FlextCore.Types.Dict]:
     if not username:
-        return FlextResult[FlextTypes.Dict].fail("Username required")
+        return FlextCore.Result[FlextCore.Types.Dict].fail("Username required")
 
     # Authentication logic
-    return FlextResult[FlextTypes.Dict].ok(result)
+    return FlextCore.Result[FlextCore.Types.Dict].ok(result)
 
 # ❌ Incorrect - Don't use exceptions for business logic
 def authenticate_user(username: str, password: str) -> dict:
@@ -115,15 +115,15 @@ def authenticate_user(username: str, password: str) -> dict:
 ### Domain Model Patterns
 
 ```python
-# ✅ Correct - Extend FlextModels.Entity
-from flext_core import FlextModels
+# ✅ Correct - Extend FlextCore.Models.Entity
+from flext_core import FlextCore
 
-class User(FlextModels.Entity):
+class User(FlextCore.Models.Entity):
     username: str
     email: str
 
-    def verify_password(self, password: str) -> FlextResult[bool]:
-        # Business logic returning FlextResult
+    def verify_password(self, password: str) -> FlextCore.Result[bool]:
+        # Business logic returning FlextCore.Result
         pass
 
 # ❌ Incorrect - Don't create plain classes
@@ -220,8 +220,8 @@ make format
 ### 4. Contribution Guidelines
 
 - Follow FLEXT architectural patterns
-- Use FlextResult for all error handling
-- Extend FlextModels.Entity for domain entities
+- Use FlextCore.Result for all error handling
+- Extend FlextCore.Models.Entity for domain entities
 - Add tests for new functionality
 - Update documentation for API changes
 
@@ -254,7 +254,7 @@ tests/
 ```python
 import pytest
 from flext_auth import FlextAuth, FlextAuthConfig
-from flext_core import FlextResult
+from flext_core import FlextCore
 
 class TestNewFeature:
     def test_new_functionality(self):
@@ -278,26 +278,26 @@ class TestNewFeature:
 Follow FLEXT service patterns:
 
 ```python
-from flext_core import FlextService, FlextResult
+from flext_core import FlextCore
 
-class AuthenticationService(FlextService):
+class AuthenticationService(FlextCore.Service):
     def __init__(self):
         super().__init__()
-        self._container = FlextContainer.get_global()
-        self.logger = FlextLogger(__name__)
+        self._container = FlextCore.Container.get_global()
+        self.logger = FlextCore.Logger(__name__)
 
-    def process(self, request) -> FlextResult[Response]:
+    def process(self, request) -> FlextCore.Result[Response]:
         # Service implementation
         pass
 ```
 
 ### Error Handling
 
-Use FlextResult exclusively:
+Use FlextCore.Result exclusively:
 
 ```python
-# Chain operations with FlextResult
-def complete_auth_flow(username: str, password: str) -> FlextResult[FlextTypes.Dict]:
+# Chain operations with FlextCore.Result
+def complete_auth_flow(username: str, password: str) -> FlextCore.Result[FlextCore.Types.Dict]:
     return (
         self._validate_input(username, password)
         .flat_map(lambda _: self._authenticate_user(username, password))

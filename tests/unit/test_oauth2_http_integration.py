@@ -11,7 +11,7 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 
 from __future__ import annotations
 
-from flext_core import FlextTypes
+from flext_core import FlextCore
 from pytest_httpx import HTTPXMock
 
 from flext_auth.providers import FlextAuthOAuth2Provider, FlextAuthOidcProvider
@@ -39,7 +39,7 @@ class TestOAuth2TokenEndpoint:
         )
 
         # Create provider
-        config: FlextTypes.Dict = {
+        config: FlextCore.Types.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "authorization_endpoint": "https://auth.example.com/authorize",
@@ -114,7 +114,7 @@ class TestOAuth2TokenEndpoint:
             status_code=200,
         )
 
-        config: FlextTypes.Dict = {
+        config: FlextCore.Types.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "token_endpoint": "https://auth.example.com/token",
@@ -145,7 +145,7 @@ class TestOAuth2TokenEndpoint:
             status_code=200,
         )
 
-        config: FlextTypes.Dict = {
+        config: FlextCore.Types.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "token_endpoint": "https://auth.example.com/token",
@@ -178,7 +178,7 @@ class TestOAuth2TokenEndpoint:
             status_code=200,
         )
 
-        config: FlextTypes.Dict = {
+        config: FlextCore.Types.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "token_endpoint": "https://auth.example.com/token",
@@ -208,7 +208,7 @@ class TestOAuth2TokenEndpoint:
             status_code=400,
         )
 
-        config: FlextTypes.Dict = {
+        config: FlextCore.Types.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "token_endpoint": "https://auth.example.com/token",
@@ -235,7 +235,7 @@ class TestOAuth2TokenEndpoint:
             url="https://auth.example.com/token",
         )
 
-        config: FlextTypes.Dict = {
+        config: FlextCore.Types.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "token_endpoint": "https://auth.example.com/token",
@@ -263,7 +263,7 @@ class TestOAuth2TokenEndpoint:
                 text="Internal Server Error",
             )
 
-        config: FlextTypes.Dict = {
+        config: FlextCore.Types.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "token_endpoint": "https://auth.example.com/token",
@@ -308,7 +308,7 @@ class TestOidcUserInfoEndpoint:
             status_code=200,
         )
 
-        config: FlextTypes.Dict = {
+        config: FlextCore.Types.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "issuer": "https://auth.example.com",
@@ -340,7 +340,7 @@ class TestOidcUserInfoEndpoint:
             status_code=200,
         )
 
-        config: FlextTypes.Dict = {
+        config: FlextCore.Types.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "issuer": "https://auth.example.com",
@@ -365,7 +365,7 @@ class TestOidcUserInfoEndpoint:
             text="Unauthorized",
         )
 
-        config: FlextTypes.Dict = {
+        config: FlextCore.Types.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "issuer": "https://auth.example.com",
@@ -384,7 +384,7 @@ class TestOidcUserInfoEndpoint:
 
     def test_userinfo_no_endpoint_configured(self) -> None:
         """Test UserInfo request when endpoint not configured."""
-        config: FlextTypes.Dict = {
+        config: FlextCore.Types.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "issuer": "https://auth.example.com",

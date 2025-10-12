@@ -2,7 +2,7 @@
 
 **Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
 
-Installation and first steps for implementing enterprise authentication in your FLEXT projects using flext-auth with complete FlextService and FlextHandlers integration.
+Installation and first steps for implementing enterprise authentication in your FLEXT projects using flext-auth with complete FlextCore.Service and FlextCore.Handlers integration.
 
 ---
 
@@ -46,7 +46,7 @@ user_request = FlextAuthModels.UserCreationRequest(
     password="secure123"
 )
 
-# Register user (FlextResult pattern)
+# Register user (FlextCore.Result pattern)
 result = auth.register_user(
     username=user_request.username,
     email=user_request.email,
@@ -157,17 +157,17 @@ flext-auth manage-config show
 
 ## FLEXT Integration Patterns
 
-### FlextResult Error Handling
+### FlextCore.Result Error Handling
 
 ```python
-from flext_core import FlextResult
+from flext_core import FlextCore
 
-def process_authentication_workflow(username: str, password: str) -> FlextResult[FlextTypes.Dict]:
-    """Authentication workflow using FlextResult error handling."""
+def process_authentication_workflow(username: str, password: str) -> FlextCore.Result[FlextCore.Types.Dict]:
+    """Authentication workflow using FlextCore.Result error handling."""
 
     auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
-    # Chain operations with FlextResult
+    # Chain operations with FlextCore.Result
     return (
         auth.authenticate_user(username, password)
         .flat_map(lambda auth_data: auth.validate_token(auth_data['token']))
@@ -188,11 +188,11 @@ if result.is_success:
 ### Container Integration
 
 ```python
-from flext_core import FlextContainer
+from flext_core import FlextCore
 from flext_auth import FlextAuth, FlextAuthConfig
 
 # Register authentication service in container
-container = FlextContainer.get_global()
+container = FlextCore.Container.get_global()
 
 # Configure and register
 config = FlextAuthConfig()
@@ -254,7 +254,7 @@ if session.is_active and datetime.utcnow() < session.expires_at:
 
 ## Testing Your Integration
 
-### Unit Testing with FlextResult
+### Unit Testing with FlextCore.Result
 
 ```python
 import pytest

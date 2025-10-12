@@ -8,18 +8,18 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_core import FlextExceptions
+from flext_core import FlextCore
 
 
-class FlextAuthExceptions(FlextExceptions):
+class FlextAuthExceptions(FlextCore.Exceptions):
     """Single unified auth exceptions class following FLEXT standards.
 
     Contains all exception definitions for authentication domain operations.
     Follows FLEXT pattern: one class per module with nested subclasses.
     """
 
-    class FlextAuthError(FlextExceptions.BaseError):
-        """Base authentication error extending FlextExceptions.BaseError."""
+    class FlextAuthError(FlextCore.Exceptions.BaseError):
+        """Base authentication error extending FlextCore.Exceptions.BaseError."""
 
         @override
         def __init__(

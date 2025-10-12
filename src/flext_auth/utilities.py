@@ -12,7 +12,7 @@ from typing import TypedDict
 
 import bcrypt
 import jwt
-from flext_core import FlextResult, FlextService
+from flext_core import FlextCore
 from pydantic import SecretStr
 
 from flext_auth.constants import FlextAuthConstants
@@ -28,18 +28,18 @@ class PasswordValidationResult(TypedDict):
     has_digit: bool
     is_weak: bool
     is_valid: bool
-    errors: list[str]
+    errors: FlextCore.Types.StringList
 
 
-class FlextAuthUtilities(FlextService):
+class FlextAuthUtilities(FlextCore.Service):
     """Auth utilities class with JWT and password processing."""
 
-    def execute(self) -> FlextResult[object]:
-        """Execute method for FlextService interface.
+    def execute(self) -> FlextCore.Result[object]:
+        """Execute method for FlextCore.Service interface.
 
         FlextAuthUtilities is a namespace class - use specific utility classes instead.
         """
-        return FlextResult[object].fail(
+        return FlextCore.Result[object].fail(
             "FlextAuthUtilities is a namespace class - use specific utility classes like PasswordProcessing"
         )
 
@@ -50,7 +50,7 @@ class FlextAuthUtilities(FlextService):
         def hash_password(
             password: str,
             rounds: int = FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS,
-        ) -> FlextResult[str]:
+        ) -> FlextCore.Result[str]:
             """Hash password using bcrypt.
 
             Args:
@@ -58,19 +58,21 @@ class FlextAuthUtilities(FlextService):
                 rounds: Number of bcrypt rounds (default from constants)
 
             Returns:
-                FlextResult containing hashed password or error
+                FlextCore.Result containing hashed password or error
 
             """
             try:
                 password_bytes = password.encode("utf-8")
                 salt = bcrypt.gensalt(rounds=rounds)
                 hashed = bcrypt.hashpw(password_bytes, salt)
-                return FlextResult[str].ok(hashed.decode("utf-8"))
+                return FlextCore.Result[str].ok(hashed.decode("utf-8"))
             except Exception as e:
-                return FlextResult[str].fail(f"Password hashing failed: {e}")
+                return FlextCore.Result[str].fail(f"Password hashing failed: {e}")
 
         @staticmethod
-        def verify_password(password: str, password_hash: str) -> FlextResult[bool]:
+        def verify_password(
+            password: str, password_hash: str
+        ) -> FlextCore.Result[bool]:
             """Verify password against stored hash using bcrypt.
 
             Args:
@@ -78,26 +80,28 @@ class FlextAuthUtilities(FlextService):
                 password_hash: Stored bcrypt hash
 
             Returns:
-                FlextResult containing verification result or error
+                FlextCore.Result containing verification result or error
 
             """
             try:
                 is_valid = bcrypt.checkpw(
                     password.encode("utf-8"), password_hash.encode("utf-8")
                 )
-                return FlextResult[bool].ok(is_valid)
+                return FlextCore.Result[bool].ok(is_valid)
             except Exception as e:
-                return FlextResult[bool].fail(f"Password verification failed: {e}")
+                return FlextCore.Result[bool].fail(f"Password verification failed: {e}")
 
         @staticmethod
-        def validate_password(password: str) -> FlextResult[PasswordValidationResult]:
+        def validate_password(
+            password: str,
+        ) -> FlextCore.Result[PasswordValidationResult]:
             """Validate password strength and return detailed results.
 
             Args:
                 password: Password to validate
 
             Returns:
-                FlextResult containing validation results dict
+                FlextCore.Result containing validation results dict
 
             """
             results: PasswordValidationResult = {
@@ -138,7 +142,7 @@ class FlextAuthUtilities(FlextService):
                 results["is_valid"] = False
                 results["errors"].append("Password is too weak")
 
-            return FlextResult[PasswordValidationResult].ok(results)
+            return FlextCore.Result[PasswordValidationResult].ok(results)
 
     class JWTProcessing:
         """JWT token processing utilities."""
@@ -146,7 +150,7 @@ class FlextAuthUtilities(FlextService):
         @staticmethod
         def extract_claims(
             token: str, secret_key: SecretStr
-        ) -> FlextResult[dict[str, str | int | float | bool | None]]:
+        ) -> FlextCore.Result[dict[str, str | int | float | bool | None]]:
             """Extract claims from JWT token.
 
             Args:
@@ -154,7 +158,7 @@ class FlextAuthUtilities(FlextService):
                 secret_key: Secret key for verification
 
             Returns:
-                FlextResult containing claims or error
+                FlextCore.Result containing claims or error
 
             """
             try:
@@ -169,24 +173,24 @@ class FlextAuthUtilities(FlextService):
                         "verify_nbf": False,
                     },
                 )
-                return FlextResult[dict[str, str | int | float | bool | None]].ok(
+                return FlextCore.Result[dict[str, str | int | float | bool | None]].ok(
                     decoded_payload
                 )
             except jwt.InvalidTokenError as e:
-                return FlextResult[dict[str, str | int | float | bool | None]].fail(
-                    f"Invalid token: {e}"
-                )
+                return FlextCore.Result[
+                    dict[str, str | int | float | bool | None]
+                ].fail(f"Invalid token: {e}")
             except Exception as e:
-                return FlextResult[dict[str, str | int | float | bool | None]].fail(
-                    f"Claims extraction failed: {e}"
-                )
+                return FlextCore.Result[
+                    dict[str, str | int | float | bool | None]
+                ].fail(f"Claims extraction failed: {e}")
 
         @staticmethod
         def encode_token(
             payload: dict[str, str | int | float | bool | datetime | None],
             secret_key: str,
             algorithm: str = FlextAuthConstants.Jwt.DEFAULT_ALGORITHM,
-        ) -> FlextResult[str]:
+        ) -> FlextCore.Result[str]:
             """Encode JWT token with payload.
 
             Args:
@@ -195,22 +199,22 @@ class FlextAuthUtilities(FlextService):
                 algorithm: JWT algorithm (default from constants)
 
             Returns:
-                FlextResult containing encoded token or error
+                FlextCore.Result containing encoded token or error
 
             """
             try:
                 token = jwt.encode(payload, secret_key, algorithm=algorithm)
                 token_str = token if isinstance(token, str) else token.decode("utf-8")
-                return FlextResult[str].ok(token_str)
+                return FlextCore.Result[str].ok(token_str)
             except Exception as e:
-                return FlextResult[str].fail(f"JWT encoding failed: {e}")
+                return FlextCore.Result[str].fail(f"JWT encoding failed: {e}")
 
         @staticmethod
         def decode_token(
             token: str,
             secret_key: str,
             algorithm: str = FlextAuthConstants.Jwt.DEFAULT_ALGORITHM,
-        ) -> FlextResult[dict[str, str | int | float | bool | None]]:
+        ) -> FlextCore.Result[dict[str, str | int | float | bool | None]]:
             """Decode JWT token and return payload.
 
             Args:
@@ -219,7 +223,7 @@ class FlextAuthUtilities(FlextService):
                 algorithm: JWT algorithm (default from constants)
 
             Returns:
-                FlextResult containing decoded payload or error
+                FlextCore.Result containing decoded payload or error
 
             """
             try:
@@ -234,13 +238,13 @@ class FlextAuthUtilities(FlextService):
                         "verify_nbf": False,
                     },
                 )
-                return FlextResult[dict[str, str | int | float | bool | None]].ok(
+                return FlextCore.Result[dict[str, str | int | float | bool | None]].ok(
                     decoded_payload
                 )
             except Exception as e:
-                return FlextResult[dict[str, str | int | float | bool | None]].fail(
-                    f"JWT verification failed: {e}"
-                )
+                return FlextCore.Result[
+                    dict[str, str | int | float | bool | None]
+                ].fail(f"JWT verification failed: {e}")
 
     class TokenProcessing:
         """Token generation and processing utilities."""

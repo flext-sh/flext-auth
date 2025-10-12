@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextResult, FlextService, FlextTypes
+from flext_core import FlextCore
 
 from flext_auth.api import FlextAuth
 from flext_auth.config import FlextAuthConfig
@@ -14,12 +14,12 @@ from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 
 
-class FlextAuthQuickstart(FlextService[object]):
+class FlextAuthQuickstart(FlextCore.Service[object]):
     """Quickstart convenience wrapper for FlextAuth with sensible defaults.
 
     This class provides a simplified interface for common authentication operations
     with pre-configured settings for rapid development and testing.
-    Uses newer FlextConfig features for complete integration.
+    Uses newer FlextCore.Config features for complete integration.
     """
 
     def __init__(self, config: FlextAuthConfig | None = None) -> None:
@@ -36,8 +36,8 @@ class FlextAuthQuickstart(FlextService[object]):
         username: str,
         email: str,
         password: str,
-        roles: FlextTypes.StringList | None = None,
-    ) -> FlextResult[FlextAuthModels.User]:
+        roles: FlextCore.Types.StringList | None = None,
+    ) -> FlextCore.Result[FlextAuthModels.User]:
         """Register a new user with default settings."""
         return self._auth.register_user(username, email, password, roles)
 
@@ -45,21 +45,21 @@ class FlextAuthQuickstart(FlextService[object]):
         self,
         username: str,
         password: str,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
         """Authenticate a user and return token."""
         return self._auth.authenticate_user(username, password)
 
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.User]:
+    def validate_token(self, token: str) -> FlextCore.Result[FlextAuthModels.User]:
         """Validate an authentication token."""
         return self._auth.validate_token(token)
 
-    def get_user(self, user_id: str) -> FlextResult[FlextAuthModels.User]:
+    def get_user(self, user_id: str) -> FlextCore.Result[FlextAuthModels.User]:
         """Get user by ID."""
         return self._auth.get_user(user_id)
 
     def create_demo_users(
         self, count: int = FlextAuthConstants.AuthDefaults.DEMO_USERS_COUNT
-    ) -> FlextResult[FlextTypes.StringList]:
+    ) -> FlextCore.Result[FlextCore.Types.StringList]:
         """Create demo users for testing."""
         user_ids = []
         for i in range(count):
@@ -71,15 +71,15 @@ class FlextAuthQuickstart(FlextService[object]):
             if result.is_success and result.value.user_id is not None:
                 user_ids.append(result.value.user_id)
             else:
-                return FlextResult[FlextTypes.StringList].fail(
+                return FlextCore.Result[FlextCore.Types.StringList].fail(
                     f"Failed to create demo user {i}: {result.error}"
                 )
 
-        return FlextResult[FlextTypes.StringList].ok(user_ids)
+        return FlextCore.Result[FlextCore.Types.StringList].ok(user_ids)
 
     def flext_auth_quick_start(
         self, *, create_REDACTED_LDAP_BIND_PASSWORD: bool = True
-    ) -> FlextResult[FlextTypes.StringList]:
+    ) -> FlextCore.Result[FlextCore.Types.StringList]:
         """Quick start the auth service with demo users."""
         result = self.create_demo_users()
         if result.is_failure:
@@ -91,7 +91,7 @@ class FlextAuthQuickstart(FlextService[object]):
                 "REDACTED_LDAP_BIND_PASSWORD", "REDACTED_LDAP_BIND_PASSWORD@example.com", "AdminPass123!", ["ADMIN"]
             )
             if REDACTED_LDAP_BIND_PASSWORD_result.is_failure:
-                return FlextResult[FlextTypes.StringList].fail(
+                return FlextCore.Result[FlextCore.Types.StringList].fail(
                     f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {REDACTED_LDAP_BIND_PASSWORD_result.error}"
                 )
             if REDACTED_LDAP_BIND_PASSWORD_result.value.user_id is not None:
@@ -99,13 +99,18 @@ class FlextAuthQuickstart(FlextService[object]):
 
         return result
 
-    def execute(self) -> FlextResult[object]:
-        """Execute method for FlextService interface.
+    @property
+    def auth(self) -> FlextAuth:
+        """Get the underlying FlextAuth instance."""
+        return self._auth
+
+    def execute(self) -> FlextCore.Result[object]:
+        """Execute method for FlextCore.Service interface.
 
         Quickstart service doesn't use generic execute pattern.
         Use specific quickstart methods instead.
         """
-        return FlextResult[object].fail(
+        return FlextCore.Result[object].fail(
             "FlextAuthQuickstart is focused - use specific quickstart methods like register_user()"
         )
 

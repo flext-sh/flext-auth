@@ -16,11 +16,11 @@ flext-auth integrates with the FLEXT ecosystem through [flext-core](../../flext-
 
 ## FLEXT-Core Integration
 
-flext-auth follows **[flext-core](../../flext-core/README.md)** patterns. For complete FlextResult usage patterns, see the flext-core documentation.
+flext-auth follows **[flext-core](../../flext-core/README.md)** patterns. For complete FlextCore.Result usage patterns, see the flext-core documentation.
 
 ### Authentication-Specific Integration
 
-Authentication operations return FlextResult for consistency with FLEXT ecosystem:
+Authentication operations return FlextCore.Result for consistency with FLEXT ecosystem:
 
 ```python
 from flext_auth import FlextAuth
@@ -44,16 +44,16 @@ else:
     print(f"Authentication failed: {result.error}")
 ```
 
-### FlextContainer Integration
+### FlextCore.Container Integration
 
-Use FlextContainer for dependency injection:
+Use FlextCore.Container for dependency injection:
 
 ```python
-from flext_core import FlextContainer
+from flext_core import FlextCore
 from flext_auth import FlextAuth, FlextAuthConfig
 
 # Register authentication service
-container = FlextContainer.get_global()
+container = FlextCore.Container.get_global()
 
 config = FlextAuthConfig()
 auth_service = FlextAuth(config=config)
@@ -62,20 +62,20 @@ container.register("auth_service", auth_service)
 # Use from container in other services
 class UserService:
     def __init__(self):
-        self._container = FlextContainer.get_global()
+        self._container = FlextCore.Container.get_global()
         self._auth = self._container.get("auth_service").unwrap()
 
-    def create_authenticated_user(self, user_data: dict) -> FlextResult[FlextTypes.Dict]:
+    def create_authenticated_user(self, user_data: dict) -> FlextCore.Result[FlextCore.Types.Dict]:
         # Use injected auth service
         return self._auth.register_user(**user_data)
 ```
 
 ### Domain Modeling
 
-All domain entities extend FlextModels.Entity:
+All domain entities extend FlextCore.Models.Entity:
 
 ```python
-from flext_core import FlextModels
+from flext_core import FlextCore
 from flext_auth.models import FlextAuthModels
 
 # User entity follows FLEXT patterns
@@ -84,7 +84,7 @@ user = FlextAuthModels.User(
     email="demo@example.com"
 )
 
-# Business logic returns FlextResult
+# Business logic returns FlextCore.Result
 password_result = user.set_password("secure123")
 if password_result.is_success:
     print("Password set successfully")
@@ -212,13 +212,13 @@ class AuthenticationProvider:
 
     def __init__(self):
         self._auth = FlextAuth()
-        self._container = FlextContainer.get_global()
+        self._container = FlextCore.Container.get_global()
 
-    def authenticate_service_request(self, token: str) -> FlextResult[FlextTypes.Dict]:
+    def authenticate_service_request(self, token: str) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Authenticate requests from other FLEXT services."""
         return self._auth.validate_token(token)
 
-    def create_service_token(self, service_name: str) -> FlextResult[str]:
+    def create_service_token(self, service_name: str) -> FlextCore.Result[str]:
         """Create token for service-to-service authentication."""
         # Implementation for service tokens
         pass
@@ -235,7 +235,7 @@ class ServiceA:
         self._auth = FlextAuth()
         self._service_token = self._get_service_token()
 
-    def call_service_b(self, data: dict) -> FlextResult[FlextTypes.Dict]:
+    def call_service_b(self, data: dict) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Call Service B with authentication."""
         headers = {
             "Authorization": f"Bearer {self._service_token}",
@@ -250,9 +250,9 @@ class ServiceA:
         )
 
         if response.status_code == 200:
-            return FlextResult[FlextTypes.Dict].ok(response.json())
+            return FlextCore.Result[FlextCore.Types.Dict].ok(response.json())
         else:
-            return FlextResult[FlextTypes.Dict].fail(f"Service call failed: {response.text}")
+            return FlextCore.Result[FlextCore.Types.Dict].fail(f"Service call failed: {response.text}")
 ```
 
 ---
@@ -271,12 +271,12 @@ from flext_auth.models import User
 class UserRepository(OracleRepository[User]):
     """User storage using Oracle database."""
 
-    def find_by_username(self, username: str) -> FlextResult[User]:
+    def find_by_username(self, username: str) -> FlextCore.Result[User]:
         """Find user by username."""
         # Oracle-specific implementation
         pass
 
-    def create_user(self, user: User) -> FlextResult[User]:
+    def create_user(self, user: User) -> FlextCore.Result[User]:
         """Create user in database."""
         # Oracle-specific implementation
         pass
@@ -297,7 +297,7 @@ class RedisSessionStorage:
     def __init__(self):
         self._redis = redis.Redis(host='localhost', port=6379, db=0)
 
-    def store_session(self, session: Session) -> FlextResult[bool]:
+    def store_session(self, session: Session) -> FlextCore.Result[bool]:
         """Store session in Redis."""
         try:
             session_data = session.model_dump_json()
@@ -306,9 +306,9 @@ class RedisSessionStorage:
                 session.expires_at.timestamp(),
                 session_data
             )
-            return FlextResult[bool].ok(True)
+            return FlextCore.Result[bool].ok(True)
         except Exception as e:
-            return FlextResult[bool].fail(f"Session storage failed: {e}")
+            return FlextCore.Result[bool].fail(f"Session storage failed: {e}")
 ```
 
 ---
@@ -350,12 +350,12 @@ class FlextAuthWorkspaceConfig(FlextWorkspaceConfig):
         super().__init__()
         self.auth_config = FlextAuthConfig()
 
-    def get_auth_service(self) -> FlextResult[FlextAuth]:
+    def get_auth_service(self) -> FlextCore.Result[FlextAuth]:
         """Get configured authentication service."""
         if self.auth_config.is_success:
-            return FlextResult[FlextAuth].ok(FlextAuth(config=self.auth_config.unwrap()))
+            return FlextCore.Result[FlextAuth].ok(FlextAuth(config=self.auth_config.unwrap()))
         else:
-            return FlextResult[FlextAuth].fail("Auth configuration failed")
+            return FlextCore.Result[FlextAuth].fail("Auth configuration failed")
 ```
 
 ---
@@ -408,12 +408,12 @@ class OAuth2Provider:
     def __init__(self):
         self._auth = FlextAuth()
 
-    def authorize(self, client_id: str, redirect_uri: str) -> FlextResult[str]:
+    def authorize(self, client_id: str, redirect_uri: str) -> FlextCore.Result[str]:
         """OAuth2 authorization endpoint."""
         # Implementation using flext-auth
         pass
 
-    def token(self, code: str, client_id: str) -> FlextResult[FlextTypes.Dict]:
+    def token(self, code: str, client_id: str) -> FlextCore.Result[FlextCore.Types.Dict]:
         """OAuth2 token endpoint."""
         # Implementation using flext-auth
         pass
@@ -431,7 +431,7 @@ class SAMLProvider:
     def __init__(self):
         self._auth = FlextAuth()
 
-    def process_saml_response(self, saml_response: str) -> FlextResult[User]:
+    def process_saml_response(self, saml_response: str) -> FlextCore.Result[User]:
         """Process SAML authentication response."""
         # Implementation using flext-auth
         pass

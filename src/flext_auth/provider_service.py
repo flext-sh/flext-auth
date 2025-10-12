@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextResult, FlextService, FlextTypes
+from flext_core import FlextCore
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.models import FlextAuthModels
@@ -25,7 +25,7 @@ from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
 
 
-class FlextAuthProviderService(FlextService):
+class FlextAuthProviderService(FlextCore.Service):
     """Focused service for authentication provider management with flext-core integration."""
 
     def __init__(self, config: FlextAuthConfig) -> None:
@@ -35,13 +35,13 @@ class FlextAuthProviderService(FlextService):
         self._providers = FlextAuthRegistry()
         self._register_builtin_providers()
 
-    def execute(self) -> FlextResult[object]:
-        """Execute method for FlextService interface.
+    def execute(self) -> FlextCore.Result[object]:
+        """Execute method for FlextCore.Service interface.
 
         Provider service doesn't use generic execute pattern.
         Use specific provider methods instead.
         """
-        return FlextResult[object].fail(
+        return FlextCore.Result[object].fail(
             "FlextAuthProviderService is focused - use specific provider methods like get_provider()"
         )
 
@@ -131,17 +131,17 @@ class FlextAuthProviderService(FlextService):
         except (ValueError, TypeError) as e:
             self.logger.warning(f"Failed to register API key provider: {e}")
 
-    def get_provider(self, name: str) -> FlextResult[FlextAuthBaseProvider]:
+    def get_provider(self, name: str) -> FlextCore.Result[FlextAuthBaseProvider]:
         """Get a registered authentication provider."""
         return self._providers.get(name)
 
     def register_provider(
         self, name: str, provider: FlextAuthBaseProvider
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Register a custom authentication provider."""
         return self._providers.register(name, provider)
 
-    def list_providers(self) -> FlextTypes.StringList:
+    def list_providers(self) -> FlextCore.Types.StringList:
         """List all registered provider names."""
         return self._providers.list_providers()
 
@@ -150,12 +150,14 @@ class FlextAuthProviderService(FlextService):
         username: str,
         password: str,
         provider: str = "basic",
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
         """Authenticate a user with username/password using specified provider."""
         # Get the authentication provider
         provider_result = self._providers.get(provider)
         if provider_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(provider_result.error)
+            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+                provider_result.error
+            )
 
         auth_provider = provider_result.value
 
@@ -169,7 +171,7 @@ class FlextAuthProviderService(FlextService):
         self,
         user: FlextAuthModels.User,
         provider: str = "jwt",
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
         """Generate authentication tokens for an authenticated user.
 
         Args:
@@ -177,13 +179,15 @@ class FlextAuthProviderService(FlextService):
             provider: Token provider to use
 
         Returns:
-            FlextResult containing AuthToken or error
+            FlextCore.Result containing AuthToken or error
 
         """
         # Get the token provider
         provider_result = self._providers.get(provider)
         if provider_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(provider_result.error)
+            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+                provider_result.error
+            )
 
         token_provider = provider_result.value
 

@@ -31,7 +31,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
+from flext_core import FlextCore
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -43,7 +43,7 @@ class HttpRequestProtocol(Protocol):
     headers: object  # Dict-like headers
 
 
-class FlextAuthMiddleware(FlextService):
+class FlextAuthMiddleware(FlextCore.Service):
     """Authentication middleware adapters following FLEXT standards.
 
     This class provides middleware that adapts FlextAuthBaseProvider implementations
@@ -51,12 +51,12 @@ class FlextAuthMiddleware(FlextService):
     (flext-web). Following FLEXT pattern: one class per module with nested middleware classes.
     """
 
-    def execute(self) -> FlextResult[object]:
-        """Execute method for FlextService interface.
+    def execute(self) -> FlextCore.Result[object]:
+        """Execute method for FlextCore.Service interface.
 
         FlextAuthMiddleware is a namespace class - use specific middleware classes instead.
         """
-        return FlextResult[object].fail(
+        return FlextCore.Result[object].fail(
             "FlextAuthMiddleware is a namespace class - use specific middleware classes like HttpAuthMiddleware"
         )
 
@@ -96,7 +96,7 @@ class FlextAuthMiddleware(FlextService):
         def __init__(
             self,
             provider: FlextAuthBaseProvider,
-            credentials: FlextTypes.Dict | None = None,
+            credentials: FlextCore.Types.Dict | None = None,
             header_name: str = "Authorization",
             token_prefix: str = "Bearer",
             auto_refresh: bool = True,
@@ -117,7 +117,7 @@ class FlextAuthMiddleware(FlextService):
             self._header_name = header_name
             self._token_prefix = token_prefix
             self._auto_refresh = auto_refresh
-            self.logger = FlextLogger(
+            self.logger = FlextCore.Logger(
                 f"flext_auth.middleware.http.{provider.get_metadata()['name']}"
             )
             self._current_token: FlextAuthModels.AuthToken | None = None
@@ -126,7 +126,7 @@ class FlextAuthMiddleware(FlextService):
         def process_request(
             self,
             request: HttpRequestProtocol,  # FlextApiModels.HttpRequest - avoid import
-        ) -> FlextResult[object]:
+        ) -> FlextCore.Result[object]:
             """Process HTTP request by adding authentication headers.
 
             This method is called by the HTTP client before sending a request.
@@ -140,17 +140,17 @@ class FlextAuthMiddleware(FlextService):
                 request: HTTP request to authenticate
 
             Returns:
-                FlextResult with authenticated request or error
+                FlextCore.Result with authenticated request or error
 
             """
             if not self._enabled:
-                return FlextResult[object].ok(request)
+                return FlextCore.Result[object].ok(request)
 
             try:
                 # Ensure we have a valid token
                 token_result = self._ensure_valid_token()
                 if token_result.is_failure:
-                    return FlextResult[object].fail(
+                    return FlextCore.Result[object].fail(
                         f"Authentication failed: {token_result.error}"
                     )
 
@@ -185,7 +185,7 @@ class FlextAuthMiddleware(FlextService):
                     provider=self._provider.get_metadata()["name"],
                 )
 
-                return FlextResult[object].ok(request)
+                return FlextCore.Result[object].ok(request)
 
             except Exception as e:
                 self.logger.exception(
@@ -193,12 +193,12 @@ class FlextAuthMiddleware(FlextService):
                     error=str(e),
                     provider=self._provider.get_metadata()["name"],
                 )
-                return FlextResult[object].fail(f"HTTP authentication failed: {e}")
+                return FlextCore.Result[object].fail(f"HTTP authentication failed: {e}")
 
         def process_response(
             self,
             response: object,  # FlextApiModels.HttpResponse - avoid import
-        ) -> FlextResult[object]:
+        ) -> FlextCore.Result[object]:
             """Process HTTP response (pass-through for HTTP auth).
 
             HTTP auth middleware doesn't need to process responses,
@@ -208,12 +208,12 @@ class FlextAuthMiddleware(FlextService):
                 response: HTTP response
 
             Returns:
-                FlextResult with unchanged response
+                FlextCore.Result with unchanged response
 
             """
-            return FlextResult[object].ok(response)
+            return FlextCore.Result[object].ok(response)
 
-        def _ensure_valid_token(self) -> FlextResult[FlextAuthModels.AuthToken]:
+        def _ensure_valid_token(self) -> FlextCore.Result[FlextAuthModels.AuthToken]:
             """Ensure we have a valid authentication token.
 
             This method handles the token lifecycle:
@@ -223,13 +223,13 @@ class FlextAuthMiddleware(FlextService):
             4. If refresh fails or not supported, re-authenticate
 
             Returns:
-                FlextResult with valid token or error
+                FlextCore.Result with valid token or error
 
             """
             # If no token, authenticate
             if not self._current_token:
                 if not self._credentials:
-                    return FlextResult[FlextAuthModels.AuthToken].fail(
+                    return FlextCore.Result[FlextAuthModels.AuthToken].fail(
                         "No authentication token and no credentials provided"
                     )
 
@@ -242,13 +242,17 @@ class FlextAuthMiddleware(FlextService):
                     "Initial authentication successful",
                     provider=self._provider.get_metadata()["name"],
                 )
-                return FlextResult[FlextAuthModels.AuthToken].ok(self._current_token)
+                return FlextCore.Result[FlextAuthModels.AuthToken].ok(
+                    self._current_token
+                )
 
             # Validate current token
             validation_result = self._provider.validate(self._current_token)
             if validation_result.is_success and validation_result.unwrap():
                 # Token is valid
-                return FlextResult[FlextAuthModels.AuthToken].ok(self._current_token)
+                return FlextCore.Result[FlextAuthModels.AuthToken].ok(
+                    self._current_token
+                )
 
             # Token is invalid/expired - try to refresh
             if self._auto_refresh and "refresh" in self._provider.supports():
@@ -264,7 +268,7 @@ class FlextAuthMiddleware(FlextService):
                         "Token refresh successful",
                         provider=self._provider.get_metadata()["name"],
                     )
-                    return FlextResult[FlextAuthModels.AuthToken].ok(
+                    return FlextCore.Result[FlextAuthModels.AuthToken].ok(
                         self._current_token
                     )
 
@@ -278,11 +282,11 @@ class FlextAuthMiddleware(FlextService):
                 auth_result = self._provider.authenticate(self._credentials)
                 if auth_result.is_success:
                     self._current_token = auth_result.unwrap()
-                    return FlextResult[FlextAuthModels.AuthToken].ok(
+                    return FlextCore.Result[FlextAuthModels.AuthToken].ok(
                         self._current_token
                     )
 
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
                 "Token expired and unable to refresh or re-authenticate"
             )
 
@@ -342,7 +346,7 @@ class FlextAuthMiddleware(FlextService):
             header_name: str = "Authorization",
             token_prefix: str = "Bearer",
             cookie_name: str | None = None,
-            exclude_paths: FlextTypes.StringList | None = None,
+            exclude_paths: FlextCore.Types.StringList | None = None,
             require_auth: bool = True,
         ) -> None:
             """Initialize web authentication middleware.
@@ -363,7 +367,7 @@ class FlextAuthMiddleware(FlextService):
             self._cookie_name = cookie_name
             self._exclude_paths = exclude_paths or []
             self._require_auth = require_auth
-            self.logger = FlextLogger(
+            self.logger = FlextCore.Logger(
                 f"flext_auth.middleware.web.{provider.get_metadata()['name']}"
             )
             self._enabled = True
@@ -371,7 +375,7 @@ class FlextAuthMiddleware(FlextService):
         def process_request(
             self,
             request: object,  # FlextWebModels.WebRequest - avoid import
-        ) -> FlextResult[object]:
+        ) -> FlextCore.Result[object]:
             """Process web request by validating authentication.
 
             This method is called by the web application for each incoming request.
@@ -385,11 +389,11 @@ class FlextAuthMiddleware(FlextService):
                 request: Web request to authenticate
 
             Returns:
-                FlextResult with authenticated request (with user context) or error
+                FlextCore.Result with authenticated request (with user context) or error
 
             """
             if not self._enabled:
-                return FlextResult[object].ok(request)
+                return FlextCore.Result[object].ok(request)
 
             try:
                 # Check if path is excluded from authentication
@@ -402,26 +406,26 @@ class FlextAuthMiddleware(FlextService):
                         "Request path excluded from authentication",
                         path=request_path,
                     )
-                    return FlextResult[object].ok(request)
+                    return FlextCore.Result[object].ok(request)
 
                 # Extract token from request
                 token = self._extract_token(request)
                 if not token:
                     if self._require_auth:
-                        return FlextResult[object].fail(
+                        return FlextCore.Result[object].fail(
                             f"Authentication required: No token found in {self._header_name} header or cookies"
                         )
-                    return FlextResult[object].ok(request)
+                    return FlextCore.Result[object].ok(request)
 
                 # Validate token
                 validation_result = self._provider.validate(token)
                 if validation_result.is_failure:
-                    return FlextResult[object].fail(
+                    return FlextCore.Result[object].fail(
                         f"Token validation failed: {validation_result.error}"
                     )
 
                 if not validation_result.unwrap():
-                    return FlextResult[object].fail(
+                    return FlextCore.Result[object].fail(
                         "Authentication failed: Invalid or expired token"
                     )
 
@@ -442,7 +446,7 @@ class FlextAuthMiddleware(FlextService):
                     path=request_path,
                 )
 
-                return FlextResult[object].ok(request)
+                return FlextCore.Result[object].ok(request)
 
             except Exception as e:
                 self.logger.exception(
@@ -450,12 +454,12 @@ class FlextAuthMiddleware(FlextService):
                     error=str(e),
                     provider=self._provider.get_metadata()["name"],
                 )
-                return FlextResult[object].fail(f"Web authentication failed: {e}")
+                return FlextCore.Result[object].fail(f"Web authentication failed: {e}")
 
         def process_response(
             self,
             response: object,  # FlextWebModels.WebResponse - avoid import
-        ) -> FlextResult[object]:
+        ) -> FlextCore.Result[object]:
             """Process web response (pass-through for web auth).
 
             Web auth middleware doesn't need to process responses,
@@ -465,10 +469,10 @@ class FlextAuthMiddleware(FlextService):
                 response: Web response
 
             Returns:
-                FlextResult with unchanged response
+                FlextCore.Result with unchanged response
 
             """
-            return FlextResult[object].ok(response)
+            return FlextCore.Result[object].ok(response)
 
         def _extract_token(self, request: object) -> str | None:
             """Extract authentication token from request.

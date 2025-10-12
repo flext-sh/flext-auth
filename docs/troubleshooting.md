@@ -320,7 +320,7 @@ mypy src/flext_auth/
 
 # Common errors:
 # - Missing type annotations
-# - FlextResult type issues
+# - FlextCore.Result type issues
 # - Generic type problems
 ```
 
@@ -332,15 +332,15 @@ mypy src/flext_auth/
    # Always use proper type hints
    from typing import Optional
 
-   def find_user(username: str) -> FlextResult[Optional[User]]:
+   def find_user(username: str) -> FlextCore.Result[Optional[User]]:
        pass
    ```
 
-2. **FlextResult Types**:
+2. **FlextCore.Result Types**:
 
    ```python
-   # Specify generic type for FlextResult
-   result: FlextResult[User] = auth.register_user(...)
+   # Specify generic type for FlextCore.Result
+   result: FlextCore.Result[User] = auth.register_user(...)
    ```
 
 ### Import Issues

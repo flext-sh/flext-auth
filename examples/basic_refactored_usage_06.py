@@ -15,7 +15,7 @@ import secrets
 import string
 import sys
 
-from flext_core import FlextResult
+from flext_core import FlextCore
 
 from flext_auth import (
     FlextAuth,
@@ -34,11 +34,11 @@ class FlextAuthDemo:
         """Initialize demo with FlextAuth instance."""
         self.auth = FlextAuth()
 
-    def demo_user_registration(self) -> FlextResult[FlextAuthModels.User]:
+    def demo_user_registration(self) -> FlextCore.Result[FlextAuthModels.User]:
         """Extract Method: User registration demo.
 
         Returns:
-            FlextResult[FlextAuthModels.User]: Registration result
+            FlextCore.Result[FlextAuthModels.User]: Registration result
 
         """
         result = self.auth.register_user(
@@ -53,11 +53,11 @@ class FlextAuthDemo:
 
         return result
 
-    def demo_user_authentication(self) -> FlextResult[FlextAuthModels.AuthToken]:
+    def demo_user_authentication(self) -> FlextCore.Result[FlextAuthModels.AuthToken]:
         """Extract Method: User authentication demo.
 
         Returns:
-            FlextResult[FlextAuthModels.AuthToken]: Authentication result
+            FlextCore.Result[FlextAuthModels.AuthToken]: Authentication result
 
         """
         result = self.auth.authenticate_user("demouser", "DemoPassword123!")

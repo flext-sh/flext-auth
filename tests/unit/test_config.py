@@ -17,7 +17,7 @@ from typing import cast
 from unittest.mock import patch
 
 import pytest
-from flext_core import FlextConfig, FlextConstants, FlextResult, FlextTypes
+from flext_core import FlextCore
 from pydantic import SecretStr, ValidationError
 
 from flext_auth import FlextAuthConfig
@@ -164,11 +164,11 @@ class TestFlextAuthConfigCoverage:
         assert config.max_login_attempts == 5
 
     def test_flext_auth_config_inheritance(self) -> None:
-        """Test FlextAuthConfig inheritance from FlextConfig."""
+        """Test FlextAuthConfig inheritance from FlextCore.Config."""
         config = FlextAuthConfig()
 
-        # Should inherit from FlextConfig
-        assert isinstance(config, FlextConfig)
+        # Should inherit from FlextCore.Config
+        assert isinstance(config, FlextCore.Config)
 
     def test_flext_auth_config_field_validation(self) -> None:
         """Test field validation in FlextAuthConfig."""
@@ -243,12 +243,12 @@ class TestFlextAuthConfigCoverage:
         assert env_config.jwt_expiry_minutes == 30
 
     def test_constants_usage_and_settings_methods(self) -> None:
-        """Test usage of FlextConstants and get_security_settings/get_jwt_settings methods."""
+        """Test usage of FlextCore.Constants and get_security_settings/get_jwt_settings methods."""
         config = FlextAuthConfig()
 
-        # Should use constants from FlextConstants.Auth
+        # Should use constants from FlextCore.Constants.Auth
         # Verify that constants are being used appropriately
-        assert hasattr(FlextConstants, "Auth") or config.jwt_algorithm is not None
+        assert hasattr(FlextCore.Constants, "Auth") or config.jwt_algorithm is not None
 
         security_settings = config.get_security_settings()
 
@@ -357,7 +357,7 @@ class TestFlextAuthConfigAdditionalCoverage:
             match="Instance must be of type FlextAuthConfig",
         ):
             # Cast needed for intentional type violation in test
-            FlextAuthConfig.set_global_instance(cast("FlextConfig", object()))
+            FlextAuthConfig.set_global_instance(cast("FlextCore.Config", object()))
 
         # Test get_or_create_global with overrides
         result = FlextAuthConfig.get_or_create_global(
@@ -383,7 +383,7 @@ class TestConfigModule:
         """Nested helper class for test data creation."""
 
         @staticmethod
-        def create_test_config_data() -> FlextTypes.Dict:
+        def create_test_config_data() -> FlextCore.Types.Dict:
             """Create test configuration data."""
             return {
                 "auth_secret_key": "test_secret_key_123",
@@ -394,7 +394,7 @@ class TestConfigModule:
             }
 
         @staticmethod
-        def create_test_auth_config_data() -> FlextTypes.Dict:
+        def create_test_auth_config_data() -> FlextCore.Types.Dict:
             """Create test authentication configuration data."""
             return {
                 "jwt_secret": "jwt_secret_key_456",
@@ -404,7 +404,7 @@ class TestConfigModule:
             }
 
         @staticmethod
-        def create_test_security_config_data() -> FlextTypes.Dict:
+        def create_test_security_config_data() -> FlextCore.Types.Dict:
             """Create test security configuration data."""
             return {
                 "bcrypt_rounds": 12,
@@ -427,7 +427,7 @@ class TestConfigModule:
         load_config_method = getattr(config, "load_config", None)
         if load_config_method:
             result = load_config_method(test_data)
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_config_get_config(self) -> None:
         """Test FlextAuthConfig get_config functionality."""
@@ -441,7 +441,7 @@ class TestConfigModule:
         # Test config retrieval if method exists
         if hasattr(config, "get_config"):
             result = config.get_config()
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_config_set_config(self) -> None:
         """Test FlextAuthConfig set_config functionality."""
@@ -451,7 +451,7 @@ class TestConfigModule:
         # Test config setting if method exists
         if hasattr(config, "set_config"):
             result = config.set_config(test_data)
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_config_validate_config(self) -> None:
         """Test FlextAuthConfig validate_config functionality."""
@@ -461,7 +461,7 @@ class TestConfigModule:
         # Test config validation if method exists
         if hasattr(config, "validate_config"):
             result = config.validate_config(test_data)
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_config_reset_config(self) -> None:
         """Test FlextAuthConfig reset_config functionality."""
@@ -475,7 +475,7 @@ class TestConfigModule:
         # Test config reset if method exists
         if hasattr(config, "reset_config"):
             result = config.reset_config()
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_config_get_auth_config(self) -> None:
         """Test FlextAuthConfig get_auth_config functionality."""
@@ -489,7 +489,7 @@ class TestConfigModule:
         # Test auth config retrieval if method exists
         if hasattr(config, "get_auth_config"):
             result = config.get_auth_config()
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_config_get_security_config(self) -> None:
         """Test FlextAuthConfig get_security_config functionality."""
@@ -503,7 +503,7 @@ class TestConfigModule:
         # Test security config retrieval if method exists
         if hasattr(config, "get_security_config"):
             result = config.get_security_config()
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_config_comprehensive_scenario(self) -> None:
         """Test comprehensive config module scenario."""
@@ -516,21 +516,21 @@ class TestConfigModule:
         # Test config operations
         if hasattr(config, "load_config"):
             load_result = config.load_config(test_config_data)
-            assert isinstance(load_result, FlextResult)
+            assert isinstance(load_result, FlextCore.Result)
 
         if hasattr(config, "validate_config"):
             validate_result = config.validate_config(test_config_data)
-            assert isinstance(validate_result, FlextResult)
+            assert isinstance(validate_result, FlextCore.Result)
 
         # Test auth config operations
         if hasattr(config, "get_auth_config"):
             auth_config_result = config.get_auth_config()
-            assert isinstance(auth_config_result, FlextResult)
+            assert isinstance(auth_config_result, FlextCore.Result)
 
         # Test security config operations
         if hasattr(config, "get_security_config"):
             security_config_result = config.get_security_config()
-            assert isinstance(security_config_result, FlextResult)
+            assert isinstance(security_config_result, FlextCore.Result)
 
     def test_flext_auth_config_error_handling(self) -> None:
         """Test config module error handling patterns."""
@@ -542,19 +542,19 @@ class TestConfigModule:
         # Test config loading error handling
         if hasattr(config, "load_config"):
             result = config.load_config(invalid_data)
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
             # Should handle invalid data gracefully
 
         # Test config validation error handling
         if hasattr(config, "validate_config"):
             result = config.validate_config(invalid_data)
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
             # Should handle invalid data gracefully
 
         # Test retrieval of non-existent config
         if hasattr(config, "get_config"):
             result = config.get_config()
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
             # Should handle empty config gracefully
 
     def test_flext_auth_config_with_flext_tests(self) -> None:
@@ -570,12 +570,12 @@ class TestConfigModule:
         # Test config loading with flext_tests data
         if hasattr(config, "load_config"):
             result = config.load_config(test_config_data)
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
 
         # Test config validation with flext_tests data
         if hasattr(config, "validate_config"):
             result = config.validate_config(test_config_data)
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_config_docstring(self) -> None:
         """Test that FlextAuthConfig has proper docstring."""
@@ -638,13 +638,13 @@ class TestConfigModule:
         if hasattr(config, "load_config"):
             for config_data in realistic_configs:
                 result = config.load_config(config_data)
-                assert isinstance(result, FlextResult)
+                assert isinstance(result, FlextCore.Result)
 
         # Test config validation with realistic data
         if hasattr(config, "validate_config"):
             for config_data in realistic_configs:
                 result = config.validate_config(config_data)
-                assert isinstance(result, FlextResult)
+                assert isinstance(result, FlextCore.Result)
 
     def test_flext_auth_config_integration_patterns(self) -> None:
         """Test config integration patterns between different components."""
@@ -656,17 +656,17 @@ class TestConfigModule:
         # Load config
         if hasattr(config, "load_config"):
             load_result = config.load_config(test_config_data)
-            assert isinstance(load_result, FlextResult)
+            assert isinstance(load_result, FlextCore.Result)
 
         # Validate config
         if hasattr(config, "validate_config"):
             validate_result = config.validate_config(test_config_data)
-            assert isinstance(validate_result, FlextResult)
+            assert isinstance(validate_result, FlextCore.Result)
 
         # Get config
         if hasattr(config, "get_config"):
             get_result = config.get_config()
-            assert isinstance(get_result, FlextResult)
+            assert isinstance(get_result, FlextCore.Result)
 
     def test_flext_auth_config_performance_patterns(self) -> None:
         """Test config performance patterns."""
@@ -682,7 +682,7 @@ class TestConfigModule:
             for i in range(10):
                 config_data = {**test_config_data, "auth_secret_key": f"secret_{i}"}
                 result = config.load_config(config_data)
-                assert isinstance(result, FlextResult)
+                assert isinstance(result, FlextCore.Result)
 
         end_time = time.time()
         assert (end_time - start_time) < 1.0  # Should complete in less than 1 second
@@ -718,9 +718,9 @@ class TestConfigModule:
         for thread in threads:
             thread.join()
 
-        # All results should be FlextResult instances
+        # All results should be FlextCore.Result instances
         for result in results:
-            assert isinstance(result, FlextResult)
+            assert isinstance(result, FlextCore.Result)
 
 
 class TestFlextAuthConfigSingletonOnly:
@@ -935,15 +935,15 @@ class TestFlextAuthConfigSingletonOnly:
         assert config.enable_rate_limiting is True
 
     def test_singleton_inheritance(self) -> None:
-        """Test FlextAuthConfig singleton inheritance from FlextConfig."""
+        """Test FlextAuthConfig singleton inheritance from FlextCore.Config."""
         # Clear any existing singleton
         FlextAuthConfig.reset_global_instance()
 
         config = FlextAuthConfig.get_global_instance()
 
-        # Should inherit from FlextConfig
+        # Should inherit from FlextCore.Config
 
-        assert isinstance(config, FlextConfig)
+        assert isinstance(config, FlextCore.Config)
 
         # Should have environment attribute
         assert hasattr(config, "environment")

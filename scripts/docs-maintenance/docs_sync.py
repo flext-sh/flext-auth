@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-FLEXT Auth Documentation Synchronization System
+"""FLEXT Auth Documentation Synchronization System.
 
 Automated git-based change tracking, version control integration,
 and synchronization tools for flext-auth project documentation.
@@ -9,54 +8,63 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
 
-import subprocess
-import sys
-from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional, Set, Tuple, Any
+import argparse
 import json
-import re
+import shutil
+import subprocess  # noqa: S404
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
 
 
 class DocumentationSynchronizer:
     """Automated documentation synchronization and version control integration."""
 
-    def __init__(self, project_root: Path):
+    def __init__(self, project_root: Path) -> None:
+        """Initialize documentation synchronizer with project root."""
         self.project_root = project_root
         self.git_available = self._check_git_available()
 
     def _check_git_available(self) -> bool:
         """Check if git is available and we're in a git repository."""
+        git_path = shutil.which("git")
+        if not git_path:
+            return False
+
         try:
             result = subprocess.run(
-                ["git", "rev-parse", "--git-dir"],
+                [git_path, "rev-parse", "--git-dir"],
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
             )
             return result.returncode == 0
         except (subprocess.CalledProcessError, FileNotFoundError):
             return False
 
-    def _run_git_command(self, command: List[str]) -> Tuple[bool, str]:
+    def _run_git_command(self, command: list[str]) -> tuple[bool, str]:
         """Run a git command and return success status and output."""
         if not self.git_available:
             return False, "Git not available"
 
+        git_path = shutil.which("git")
+        if not git_path:
+            return False, "Git not found in PATH"
+
         try:
             result = subprocess.run(
-                command,
+                [git_path] + command,
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
             )
             return True, result.stdout.strip()
         except subprocess.CalledProcessError as e:
             return False, f"Git command failed: {e.stderr.strip()}"
 
-    def get_recent_changes(self, days: int = 7) -> Dict[str, Any]:
+    def get_recent_changes(self, days: int = 7) -> dict[str, Any]:
         """Get recent documentation changes."""
         changes = {
             "period_days": days,
@@ -64,7 +72,7 @@ class DocumentationSynchronizer:
             "new_files": [],
             "deleted_files": [],
             "commits": [],
-            "authors": set()
+            "authors": set(),
         }
 
         if not self.git_available:
@@ -72,46 +80,56 @@ class DocumentationSynchronizer:
 
         # Get modified files in the last N days
         success, output = self._run_git_command([
-            "git", "log", "--since", f"{days} days ago", "--name-status", "--pretty=format:"
+            "git",
+            "log",
+            "--since",
+            f"{days} days ago",
+            "--name-status",
+            "--pretty=format:",
         ])
 
         if success:
-            current_file = None
-            for line in output.split('\n'):
-                if line.startswith(('M', 'A', 'D')):
-                    status, file_path = line.split('\t', 1)
-                    if file_path.endswith(('.md', '.mdx')):
-                        if status == 'M':
+            for line in output.split("\n"):
+                if line.startswith(("M", "A", "D")):
+                    status, file_path = line.split("\t", 1)
+                    if file_path.endswith((".md", ".mdx")):
+                        if status == "M":
                             changes["modified_files"].append(file_path)
-                        elif status == 'A':
+                        elif status == "A":
                             changes["new_files"].append(file_path)
-                        elif status == 'D':
+                        elif status == "D":
                             changes["deleted_files"].append(file_path)
 
         # Get commit information
         success, output = self._run_git_command([
-            "git", "log", "--since", f"{days} days ago",
+            "git",
+            "log",
+            "--since",
+            f"{days} days ago",
             "--pretty=format:%H|%an|%ae|%s|%ad",
-            "--date=iso", "--", "*.md", "*.mdx"
+            "--date=iso",
+            "--",
+            "*.md",
+            "*.mdx",
         ])
 
         if success:
-            for line in output.split('\n'):
+            for line in output.split("\n"):
                 if line.strip():
-                    commit_hash, author, email, subject, date = line.split('|', 4)
+                    commit_hash, author, email, subject, date = line.split("|", 4)
                     changes["commits"].append({
                         "hash": commit_hash,
                         "author": author,
                         "email": email,
                         "subject": subject,
-                        "date": date
+                        "date": date,
                     })
                     changes["authors"].add(author)
 
         changes["authors"] = list(changes["authors"])
         return changes
 
-    def check_sync_status(self) -> Dict[str, Any]:
+    def check_sync_status(self) -> dict[str, Any]:
         """Check synchronization status of documentation."""
         status = {
             "git_status": "unknown",
@@ -119,7 +137,7 @@ class DocumentationSynchronizer:
             "staged_changes": [],
             "ahead_of_remote": False,
             "behind_remote": False,
-            "diverged": False
+            "diverged": False,
         }
 
         if not self.git_available:
@@ -129,32 +147,41 @@ class DocumentationSynchronizer:
         # Check for uncommitted changes
         success, output = self._run_git_command(["git", "status", "--porcelain"])
         if success:
-            for line in output.split('\n'):
+            for line in output.split("\n"):
                 if line.strip():
                     status_code, file_path = line[:2], line[3:]
-                    if file_path.endswith(('.md', '.mdx')):
-                        if status_code[0] == 'M':
+                    if file_path.endswith((".md", ".mdx")):
+                        if status_code[0] == "M":
                             status["uncommitted_changes"].append(file_path)
-                        elif status_code[0] in ['A', 'C', 'R']:
+                        elif status_code[0] in {"A", "C", "R"}:
                             status["staged_changes"].append(file_path)
 
         # Check remote status
-        success, output = self._run_git_command(["git", "status", "-b", "--ahead-behind"])
+        success, output = self._run_git_command([
+            "git",
+            "status",
+            "-b",
+            "--ahead-behind",
+        ])
         if success:
             # Parse ahead/behind information
-            lines = output.split('\n')
-            if lines and 'ahead' in lines[0]:
-                if 'ahead' in lines[0] and 'behind' in lines[0]:
+            lines = output.split("\n")
+            if lines and "ahead" in lines[0]:
+                if "ahead" in lines[0] and "behind" in lines[0]:
                     status["diverged"] = True
-                elif 'ahead' in lines[0]:
+                elif "ahead" in lines[0]:
                     status["ahead_of_remote"] = True
-                elif 'behind' in lines[0]:
+                elif "behind" in lines[0]:
                     status["behind_remote"] = True
 
-        status["git_status"] = "clean" if not status["uncommitted_changes"] and not status["staged_changes"] else "modified"
+        status["git_status"] = (
+            "clean"
+            if not status["uncommitted_changes"] and not status["staged_changes"]
+            else "modified"
+        )
         return status
 
-    def create_sync_commit(self, message: str, files: List[str]) -> Tuple[bool, str]:
+    def create_sync_commit(self, message: str, files: list[str]) -> tuple[bool, str]:
         """Create a commit for documentation synchronization."""
         if not self.git_available:
             return False, "Git not available"
@@ -171,36 +198,48 @@ class DocumentationSynchronizer:
 
         return True, f"Successfully committed {len(files)} files"
 
-    def generate_sync_report(self) -> Dict[str, Any]:
+    def generate_sync_report(self) -> dict[str, Any]:
         """Generate comprehensive synchronization report."""
         report = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "git_integration": self.git_available,
             "recent_changes": self.get_recent_changes(),
             "sync_status": self.check_sync_status(),
-            "recommendations": []
+            "recommendations": [],
         }
 
         # Generate recommendations
         if not self.git_available:
-            report["recommendations"].append("❌ CRITICAL: Git integration not available")
+            report["recommendations"].append(
+                "❌ CRITICAL: Git integration not available"
+            )
         else:
             sync_status = report["sync_status"]
             if sync_status["uncommitted_changes"]:
-                report["recommendations"].append(f"📝 ACTION NEEDED: {len(sync_status['uncommitted_changes'])} files have uncommitted changes")
+                report["recommendations"].append(
+                    f"📝 ACTION NEEDED: {len(sync_status['uncommitted_changes'])} files have uncommitted changes"
+                )
 
             if sync_status["ahead_of_remote"]:
-                report["recommendations"].append("⬆️ PUSH: Local repository is ahead of remote")
+                report["recommendations"].append(
+                    "⬆️ PUSH: Local repository is ahead of remote"
+                )
 
             if sync_status["behind_remote"]:
-                report["recommendations"].append("⬇️ PULL: Local repository is behind remote - pull latest changes")
+                report["recommendations"].append(
+                    "⬇️ PULL: Local repository is behind remote - pull latest changes"
+                )
 
             if sync_status["diverged"]:
-                report["recommendations"].append("🔄 MERGE: Local and remote branches have diverged - manual merge required")
+                report["recommendations"].append(
+                    "🔄 MERGE: Local and remote branches have diverged - manual merge required"
+                )
 
         return report
 
-    def push_changes(self, remote: str = "origin", branch: str = "main") -> Tuple[bool, str]:
+    def push_changes(
+        self, remote: str = "origin", branch: str = "main"
+    ) -> tuple[bool, str]:
         """Push documentation changes to remote."""
         if not self.git_available:
             return False, "Git not available"
@@ -208,10 +247,11 @@ class DocumentationSynchronizer:
         success, output = self._run_git_command(["git", "push", remote, branch])
         if success:
             return True, "Successfully pushed changes to remote"
-        else:
-            return False, f"Failed to push: {output}"
+        return False, f"Failed to push: {output}"
 
-    def pull_changes(self, remote: str = "origin", branch: str = "main") -> Tuple[bool, str]:
+    def pull_changes(
+        self, remote: str = "origin", branch: str = "main"
+    ) -> tuple[bool, str]:
         """Pull latest changes from remote."""
         if not self.git_available:
             return False, "Git not available"
@@ -219,104 +259,136 @@ class DocumentationSynchronizer:
         success, output = self._run_git_command(["git", "pull", remote, branch])
         if success:
             return True, "Successfully pulled latest changes"
-        else:
-            return False, f"Failed to pull: {output}"
+        return False, f"Failed to pull: {output}"
 
 
 class QualityAssuranceReporter:
     """Quality assurance reporting and monitoring system."""
 
-    def __init__(self, project_root: Path):
+    def __init__(self, project_root: Path) -> None:
+        """Initialize quality assurance reporter with project root."""
         self.project_root = project_root
         self.reports_dir = project_root / "reports" / "docs-qa"
         self.reports_dir.mkdir(parents=True, exist_ok=True)
 
-    def generate_comprehensive_report(self, audit_results: Dict[str, Any],
-                                    link_results: Dict[str, Any],
-                                    optimization_results: Dict[str, Any],
-                                    sync_results: Dict[str, Any]) -> Dict[str, Any]:
+    def generate_comprehensive_report(
+        self,
+        audit_results: dict[str, Any],
+        link_results: dict[str, Any],
+        optimization_results: dict[str, Any],
+        sync_results: dict[str, Any],
+    ) -> dict[str, Any]:
         """Generate comprehensive QA report combining all audit results."""
-
         # Calculate overall quality score
         audit_score = self._calculate_audit_score(audit_results)
         link_score = link_results.get("summary", {}).get("quality_score", 0)
-        optimization_score = optimization_results.get("summary", {}).get("average_quality_score", 0)
+        optimization_score = optimization_results.get("summary", {}).get(
+            "average_quality_score", 0
+        )
 
         # Weighted average (audit 40%, links 30%, optimization 30%)
-        overall_score = (audit_score * 0.4 + link_score * 0.3 + optimization_score * 0.3)
+        overall_score = audit_score * 0.4 + link_score * 0.3 + optimization_score * 0.3
 
-        report = {
+        return {
             "report_metadata": {
-                "generated_at": datetime.now().isoformat(),
+                "generated_at": datetime.now(UTC).isoformat(),
                 "project": "flext-auth",
                 "report_type": "comprehensive_docs_qa",
-                "version": "1.0"
+                "version": "1.0",
             },
             "overall_quality_score": round(overall_score, 1),
             "component_scores": {
                 "content_audit": audit_score,
                 "link_validation": link_score,
-                "content_optimization": optimization_score
+                "content_optimization": optimization_score,
             },
             "audit_summary": {
-                "files_analyzed": audit_results.get("discovery", {}).get("active_files", 0),
-                "issues_found": audit_results.get("issue_summary", {}).get("total_issues", 0),
-                "quality_score": audit_score
+                "files_analyzed": audit_results.get("discovery", {}).get(
+                    "active_files", 0
+                ),
+                "issues_found": audit_results.get("issue_summary", {}).get(
+                    "total_issues", 0
+                ),
+                "quality_score": audit_score,
             },
             "link_summary": {
-                "links_checked": link_results.get("validation_results", {}).get("statistics", {}).get("total_links_checked", 0),
-                "broken_links": link_results.get("validation_results", {}).get("statistics", {}).get("broken_links", 0),
-                "quality_score": link_score
+                "links_checked": link_results.get("validation_results", {})
+                .get("statistics", {})
+                .get("total_links_checked", 0),
+                "broken_links": link_results.get("validation_results", {})
+                .get("statistics", {})
+                .get("broken_links", 0),
+                "quality_score": link_score,
             },
             "optimization_summary": {
-                "files_analyzed": optimization_results.get("summary", {}).get("files_analyzed", 0),
-                "suggestions": optimization_results.get("summary", {}).get("total_suggestions", 0),
-                "auto_fixable": optimization_results.get("summary", {}).get("auto_fixable", 0),
-                "quality_score": round(optimization_score, 1)
+                "files_analyzed": optimization_results.get("summary", {}).get(
+                    "files_analyzed", 0
+                ),
+                "suggestions": optimization_results.get("summary", {}).get(
+                    "total_suggestions", 0
+                ),
+                "auto_fixable": optimization_results.get("summary", {}).get(
+                    "auto_fixable", 0
+                ),
+                "quality_score": round(optimization_score, 1),
             },
             "sync_summary": sync_results,
-            "critical_issues": self._identify_critical_issues(audit_results, link_results, optimization_results),
-            "recommendations": self._generate_comprehensive_recommendations(audit_results, link_results, optimization_results, sync_results),
+            "critical_issues": self._identify_critical_issues(
+                audit_results, link_results
+            ),
+            "recommendations": self._generate_comprehensive_recommendations(
+                audit_results, link_results, optimization_results, sync_results
+            ),
             "trends": self._analyze_trends(),
-            "action_plan": self._create_action_plan(audit_results, link_results, optimization_results, sync_results)
+            "action_plan": self._create_action_plan(
+                audit_results, link_results, optimization_results, sync_results
+            ),
         }
 
-        return report
-
-    def _calculate_audit_score(self, audit_results: Dict[str, Any]) -> int:
+    def _calculate_audit_score(self, audit_results: dict[str, Any]) -> int:
         """Calculate audit quality score."""
         total_issues = audit_results.get("issue_summary", {}).get("total_issues", 0)
         high_severity = audit_results.get("issue_summary", {}).get("high_severity", 0)
-        medium_severity = audit_results.get("issue_summary", {}).get("medium_severity", 0)
+        medium_severity = audit_results.get("issue_summary", {}).get(
+            "medium_severity", 0
+        )
 
         # Base score of 100, deduct for issues
         score = 100 - (high_severity * 10) - (medium_severity * 5) - (total_issues * 1)
         return max(0, min(100, score))
 
-    def _identify_critical_issues(self, audit_results: Dict[str, Any],
-                                link_results: Dict[str, Any],
-                                optimization_results: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _identify_critical_issues(
+        self,
+        audit_results: dict[str, Any],
+        link_results: dict[str, Any],
+    ) -> list[dict[str, Any]]:
         """Identify critical issues requiring immediate attention."""
         critical_issues = []
 
         # High-severity audit issues
-        high_severity_count = audit_results.get("issue_summary", {}).get("high_severity", 0)
+        high_severity_count = audit_results.get("issue_summary", {}).get(
+            "high_severity", 0
+        )
         if high_severity_count > 0:
             critical_issues.append({
                 "category": "audit",
                 "severity": "high",
                 "description": f"{high_severity_count} high-severity audit issues",
-                "impact": "Critical documentation problems requiring immediate fixes"
+                "impact": "Critical documentation problems requiring immediate fixes",
             })
 
         # Broken external links
-        broken_external = len(link_results.get("validation_results", {}).get("issues_by_type", {}).get("broken_external_link", []))
+        broken_external = len(
+            link_results.get("validation_results", {})
+            .get("issues_by_type", {})
+            .get("broken_external_link", [])
+        )
         if broken_external > 0:
             critical_issues.append({
                 "category": "links",
                 "severity": "high",
                 "description": f"{broken_external} broken external links",
-                "impact": "Broken links affect user experience and credibility"
+                "impact": "Broken links affect user experience and credibility",
             })
 
         # Very low quality scores
@@ -325,32 +397,45 @@ class QualityAssuranceReporter:
                 "category": "quality",
                 "severity": "high",
                 "description": "Overall documentation quality is critically low",
-                "impact": "Poor documentation affects project maintainability and adoption"
+                "impact": "Poor documentation affects project maintainability and adoption",
             })
 
         return critical_issues
 
-    def _generate_comprehensive_recommendations(self, audit_results: Dict[str, Any],
-                                              link_results: Dict[str, Any],
-                                              optimization_results: Dict[str, Any],
-                                              sync_results: Dict[str, Any]) -> List[str]:
+    def _generate_comprehensive_recommendations(
+        self,
+        audit_results: dict[str, Any],
+        link_results: dict[str, Any],
+        optimization_results: dict[str, Any],
+        sync_results: dict[str, Any],
+    ) -> list[str]:
         """Generate comprehensive recommendations."""
         recommendations = []
 
         # Audit recommendations
         audit_issues = audit_results.get("issue_summary", {}).get("total_issues", 0)
         if audit_issues > 20:
-            recommendations.append("🔴 HIGH PRIORITY: Address the high volume of audit issues systematically")
+            recommendations.append(
+                "🔴 HIGH PRIORITY: Address the high volume of audit issues systematically"
+            )
 
         # Link recommendations
-        broken_links = link_results.get("validation_results", {}).get("statistics", {}).get("broken_links", 0)
+        broken_links = (
+            link_results.get("validation_results", {})
+            .get("statistics", {})
+            .get("broken_links", 0)
+        )
         if broken_links > 5:
-            recommendations.append(f"🔗 LINK MAINTENANCE: Fix {broken_links} broken links across documentation")
+            recommendations.append(
+                f"🔗 LINK MAINTENANCE: Fix {broken_links} broken links across documentation"
+            )
 
         # Optimization recommendations
         auto_fixable = optimization_results.get("summary", {}).get("auto_fixable", 0)
         if auto_fixable > 0:
-            recommendations.append(f"🤖 AUTOMATION: Apply {auto_fixable} auto-fixable content optimizations")
+            recommendations.append(
+                f"🤖 AUTOMATION: Apply {auto_fixable} auto-fixable content optimizations"
+            )
 
         # Sync recommendations
         if sync_results.get("sync_status", {}).get("git_status") == "modified":
@@ -362,13 +447,17 @@ class QualityAssuranceReporter:
         # Quality score recommendations
         audit_score = self._calculate_audit_score(audit_results)
         if audit_score < 70:
-            recommendations.append(f"🟡 IMPROVE: Documentation quality needs attention ({audit_score:.1f}/100)")
+            recommendations.append(
+                f"🟡 IMPROVE: Documentation quality needs attention ({audit_score:.1f}/100)"
+            )
         elif audit_score > 90:
-            recommendations.append("✅ EXCELLENT: Maintain high documentation quality standards")
+            recommendations.append(
+                "✅ EXCELLENT: Maintain high documentation quality standards"
+            )
 
         return recommendations
 
-    def _analyze_trends(self) -> Dict[str, Any]:
+    def _analyze_trends(self) -> dict[str, Any]:
         """Analyze documentation quality trends."""
         # This would typically analyze historical data
         # For now, return placeholder structure
@@ -379,45 +468,58 @@ class QualityAssuranceReporter:
             "recommendations": [
                 "Continue regular audits every 2 weeks",
                 "Monitor link health monthly",
-                "Review content freshness quarterly"
-            ]
+                "Review content freshness quarterly",
+            ],
         }
 
-    def _create_action_plan(self, audit_results: Dict[str, Any],
-                          link_results: Dict[str, Any],
-                          optimization_results: Dict[str, Any],
-                          sync_results: Dict[str, Any]) -> Dict[str, Any]:
+    def _create_action_plan(
+        self,
+        audit_results: dict[str, Any],
+        link_results: dict[str, Any],
+        optimization_results: dict[str, Any],
+        sync_results: dict[str, Any],
+    ) -> dict[str, Any]:
         """Create actionable improvement plan."""
         action_plan = {
             "immediate_actions": [],
             "short_term_goals": [],
             "long_term_improvements": [],
-            "automation_opportunities": []
+            "automation_opportunities": [],
         }
 
         # Immediate actions (1-3 days)
         high_severity = audit_results.get("issue_summary", {}).get("high_severity", 0)
         if high_severity > 0:
-            action_plan["immediate_actions"].append(f"Fix {high_severity} high-severity audit issues")
+            action_plan["immediate_actions"].append(
+                f"Fix {high_severity} high-severity audit issues"
+            )
 
-        broken_links = link_results.get("validation_results", {}).get("statistics", {}).get("broken_links", 0)
+        broken_links = (
+            link_results.get("validation_results", {})
+            .get("statistics", {})
+            .get("broken_links", 0)
+        )
         if broken_links > 0:
             action_plan["immediate_actions"].append(f"Fix {broken_links} broken links")
 
         # Short-term goals (1-2 weeks)
         auto_fixable = optimization_results.get("summary", {}).get("auto_fixable", 0)
         if auto_fixable > 0:
-            action_plan["short_term_goals"].append(f"Apply {auto_fixable} automated content fixes")
+            action_plan["short_term_goals"].append(
+                f"Apply {auto_fixable} automated content fixes"
+            )
 
         if sync_results.get("sync_status", {}).get("git_status") == "modified":
-            action_plan["short_term_goals"].append("Commit and push documentation improvements")
+            action_plan["short_term_goals"].append(
+                "Commit and push documentation improvements"
+            )
 
         # Long-term improvements (1-3 months)
         action_plan["long_term_improvements"].extend([
             "Implement automated link checking in CI/CD",
             "Set up regular documentation quality monitoring",
             "Create documentation contribution guidelines",
-            "Establish content freshness monitoring"
+            "Establish content freshness monitoring",
         ])
 
         # Automation opportunities
@@ -425,30 +527,32 @@ class QualityAssuranceReporter:
             "Set up weekly automated QA reports",
             "Implement link health monitoring alerts",
             "Create automated content freshness checks",
-            "Establish documentation quality gates in CI/CD"
+            "Establish documentation quality gates in CI/CD",
         ])
 
         return action_plan
 
-    def save_comprehensive_report(self, report: Dict[str, Any], filename: Optional[str] = None) -> Path:
+    def save_comprehensive_report(
+        self, report: dict[str, Any], filename: str | None = None
+    ) -> Path:
         """Save comprehensive QA report."""
         if filename is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
             filename = f"docs_qa_report_{timestamp}.json"
 
         report_path = self.reports_dir / filename
 
-        with open(report_path, 'w', encoding='utf-8') as f:
+        with Path(report_path).open("w", encoding="utf-8") as f:
             json.dump(report, f, indent=2, ensure_ascii=False)
 
         print(f"📄 Comprehensive QA report saved to: {report_path}")
         return report_path
 
-    def print_executive_summary(self, report: Dict[str, Any]):
+    def print_executive_summary(self, report: dict[str, Any]) -> None:
         """Print executive summary of QA report."""
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("📊 DOCUMENTATION QUALITY ASSURANCE EXECUTIVE SUMMARY")
-        print("="*80)
+        print("=" * 80)
 
         print(f"🎯 Overall Quality Score: {report['overall_quality_score']}/100")
 
@@ -493,22 +597,29 @@ class QualityAssuranceReporter:
             for action in immediate:
                 print(f"  • {action}")
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
 
 
-def main():
+def main() -> None:
     """Main entry point for documentation synchronization."""
-    import argparse
-
-    parser = argparse.ArgumentParser(description="FLEXT Auth Documentation Synchronization System")
-    parser.add_argument("--project-root", type=Path, default=Path.cwd(),
-                       help="Project root directory")
-    parser.add_argument("--output", type=Path,
-                       help="Output file for synchronization report")
-    parser.add_argument("--format", choices=["json", "text"], default="text",
-                       help="Output format")
-    parser.add_argument("--action", choices=["report", "sync", "push", "pull"],
-                       default="report", help="Action to perform")
+    parser = argparse.ArgumentParser(
+        description="FLEXT Auth Documentation Synchronization System"
+    )
+    parser.add_argument(
+        "--project-root", type=Path, default=Path.cwd(), help="Project root directory"
+    )
+    parser.add_argument(
+        "--output", type=Path, help="Output file for synchronization report"
+    )
+    parser.add_argument(
+        "--format", choices=["json", "text"], default="text", help="Output format"
+    )
+    parser.add_argument(
+        "--action",
+        choices=["report", "sync", "push", "pull"],
+        default="report",
+        help="Action to perform",
+    )
 
     args = parser.parse_args()
 
@@ -523,10 +634,10 @@ def main():
         if args.output:
             output_path = args.output
         else:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
             output_path = args.project_root / f"docs_sync_report_{timestamp}.json"
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with Path(output_path).open("w", encoding="utf-8") as f:
             json.dump(report, f, indent=2)
 
         if args.format == "text":

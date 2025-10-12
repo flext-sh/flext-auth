@@ -12,10 +12,10 @@ class TestFlextAuthTypes:
     """Test FlextAuthTypes class and its nested type classes."""
 
     def test_inherits_from_flext_types(self) -> None:
-        """Test that FlextAuthTypes inherits from FlextTypes."""
-        from flext_core import FlextTypes
+        """Test that FlextAuthTypes inherits from FlextCore.Types."""
+        from flext_core import FlextCore
 
-        assert issubclass(FlextAuthTypes, FlextTypes)
+        assert issubclass(FlextAuthTypes, FlextCore.Types)
 
     def test_authentication_types_exist(self) -> None:
         """Test that authentication type classes exist."""

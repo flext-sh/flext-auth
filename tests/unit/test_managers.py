@@ -12,10 +12,10 @@ class TestFlextAuthManagers:
     """Test FlextAuthManagers class and its nested manager classes."""
 
     def test_inherits_from_flext_service(self) -> None:
-        """Test that FlextAuthManagers inherits from FlextService."""
-        from flext_core import FlextService
+        """Test that FlextAuthManagers inherits from FlextCore.Service."""
+        from flext_core import FlextCore
 
-        assert issubclass(FlextAuthManagers, FlextService)
+        assert issubclass(FlextAuthManagers, FlextCore.Service)
 
     def test_execute_method_returns_failure(self) -> None:
         """Test that execute method returns appropriate failure for namespace class."""

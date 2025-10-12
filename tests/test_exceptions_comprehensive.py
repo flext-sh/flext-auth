@@ -288,15 +288,15 @@ class TestFlextAuthExceptions:
         assert error.code == "RATE_LIMIT_EXCEEDED"
 
     def test_flext_configuration_error_default(self) -> None:
-        """Test FlextConfigurationError with default message."""
-        error = FlextAuthExceptions.FlextConfigurationError()
+        """Test FlextCore.ConfigurationError with default message."""
+        error = FlextAuthExceptions.FlextCore.ConfigurationError()
 
         assert error.message == "Configuration error"
         assert error.code == "CONFIGURATION_ERROR"
 
     def test_flext_configuration_error_custom(self) -> None:
-        """Test FlextConfigurationError with custom message."""
-        error = FlextAuthExceptions.FlextConfigurationError("Custom config error")
+        """Test FlextCore.ConfigurationError with custom message."""
+        error = FlextAuthExceptions.FlextCore.ConfigurationError("Custom config error")
 
         assert error.message == "Custom config error"
         assert error.code == "CONFIGURATION_ERROR"

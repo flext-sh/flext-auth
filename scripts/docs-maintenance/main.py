@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-FLEXT Auth Documentation Maintenance System - Main Orchestrator
+"""FLEXT Auth Documentation Maintenance System - Main Orchestrator.
 
 Comprehensive documentation maintenance framework orchestrator
 for flext-auth project documentation.
@@ -10,23 +9,25 @@ SPDX-License-Identifier: MIT
 """
 
 import argparse
-import sys
-from datetime import datetime
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
 import json
+import sys
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+from content_optimizer import ContentOptimizer
 
 # Import our maintenance modules
 from docs_audit import DocumentationAuditor
-from link_validator import LinkValidator
-from content_optimizer import ContentOptimizer
 from docs_sync import DocumentationSynchronizer, QualityAssuranceReporter
+from link_validator import LinkValidator
 
 
 class DocumentationMaintenanceSystem:
     """Main orchestrator for comprehensive documentation maintenance."""
 
-    def __init__(self, project_root: Path):
+    def __init__(self, project_root: Path) -> None:
+        """Initialize documentation maintenance orchestrator with project root."""
         self.project_root = project_root
         self.auditor = DocumentationAuditor(project_root)
         self.link_validator = LinkValidator(project_root)
@@ -35,12 +36,12 @@ class DocumentationMaintenanceSystem:
         self.qa_reporter = QualityAssuranceReporter(project_root)
 
         # Results storage
-        self.audit_results: Optional[Dict[str, Any]] = None
-        self.link_results: Optional[Dict[str, Any]] = None
-        self.optimization_results: Optional[Dict[str, Any]] = None
-        self.sync_results: Optional[Dict[str, Any]] = None
+        self.audit_results: dict[str, Any] | None = None
+        self.link_results: dict[str, Any] | None = None
+        self.optimization_results: dict[str, Any] | None = None
+        self.sync_results: dict[str, Any] | None = None
 
-    def run_comprehensive_maintenance(self) -> Dict[str, Any]:
+    def run_comprehensive_maintenance(self) -> dict[str, Any]:
         """Run complete documentation maintenance cycle."""
         print("🚀 Starting comprehensive documentation maintenance...")
         print(f"📁 Project root: {self.project_root}")
@@ -67,7 +68,7 @@ class DocumentationMaintenanceSystem:
             self.audit_results,
             self.link_results,
             self.optimization_results,
-            self.sync_results
+            self.sync_results,
         )
 
         # Save comprehensive report
@@ -78,7 +79,7 @@ class DocumentationMaintenanceSystem:
 
         return comprehensive_report
 
-    def run_quick_audit(self) -> Dict[str, Any]:
+    def run_quick_audit(self) -> dict[str, Any]:
         """Run quick audit for immediate feedback."""
         print("⚡ Running quick documentation audit...")
 
@@ -87,35 +88,43 @@ class DocumentationMaintenanceSystem:
 
         # Generate basic report
         report = {
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "audit_type": "quick",
-            "results": self.audit_results
+            "results": self.audit_results,
         }
 
         # Save quick report
-        output_path = self.project_root / f"docs_quick_audit_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
-        with open(output_path, 'w', encoding='utf-8') as f:
+        output_path = (
+            self.project_root
+            / f"docs_quick_audit_{datetime.now(UTC).strftime('%Y%m%d_%H%M%S')}.json"
+        )
+        with Path(output_path).open("w", encoding="utf-8") as f:
             json.dump(report, f, indent=2)
 
         print(f"📄 Quick audit report saved to: {output_path}")
         return report
 
-    def generate_maintenance_report(self) -> Dict[str, Any]:
+    def generate_maintenance_report(self) -> dict[str, Any]:
         """Generate maintenance status report."""
-        if not all([self.audit_results, self.link_results, self.optimization_results, self.sync_results]):
-            print("❌ Cannot generate maintenance report - run comprehensive maintenance first")
-            return {}
-
-        comprehensive_report = self.qa_reporter.generate_comprehensive_report(
+        if not all([
             self.audit_results,
             self.link_results,
             self.optimization_results,
-            self.sync_results
+            self.sync_results,
+        ]):
+            print(
+                "❌ Cannot generate maintenance report - run comprehensive maintenance first"
+            )
+            return {}
+
+        return self.qa_reporter.generate_comprehensive_report(
+            self.audit_results,
+            self.link_results,
+            self.optimization_results,
+            self.sync_results,
         )
 
-        return comprehensive_report
-
-    def print_maintenance_summary(self):
+    def print_maintenance_summary(self) -> None:
         """Print maintenance summary."""
         if not self.audit_results:
             print("❌ No audit results available. Run maintenance first.")
@@ -125,7 +134,7 @@ class DocumentationMaintenanceSystem:
         if comprehensive_report:
             self.qa_reporter.print_executive_summary(comprehensive_report)
 
-    def apply_auto_fixes(self) -> Tuple[int, List[str]]:
+    def apply_auto_fixes(self) -> tuple[int, list[str]]:
         """Apply auto-fixable issues."""
         if not self.optimization_results:
             print("❌ No optimization results available. Run maintenance first.")
@@ -142,26 +151,28 @@ class DocumentationMaintenanceSystem:
             full_path = self.project_root / file_path
 
             try:
-                content = full_path.read_text(encoding='utf-8')
+                content = full_path.read_text(encoding="utf-8")
                 original_content = content
 
                 for suggestion in suggestions:
-                    if suggestion.get("auto_fixable", False):
+                    if (
+                        suggestion.get("auto_fixable", False)
+                        and "trailing whitespace" in suggestion["issue"].lower()
+                    ):
                         # Apply the fix (simplified - only handling trailing whitespace for now)
-                        if "trailing whitespace" in suggestion["issue"].lower():
-                            lines = content.split('\n')
-                            fixed_lines = [line.rstrip() for line in lines]
-                            content = '\n'.join(fixed_lines)
-                            file_fixes += 1
-                            fix_log.append(f"Fixed trailing whitespace in {file_path}")
+                        lines = content.split("\n")
+                        fixed_lines = [line.rstrip() for line in lines]
+                        content = "\n".join(fixed_lines)
+                        file_fixes += 1
+                        fix_log.append(f"Fixed trailing whitespace in {file_path}")
 
                 # Save if changes were made
                 if content != original_content:
-                    full_path.write_text(content, encoding='utf-8')
+                    full_path.write_text(content, encoding="utf-8")
                     fixes_applied += file_fixes
 
             except Exception as e:
-                fix_log.append(f"Error processing {file_path}: {str(e)}")
+                fix_log.append(f"Error processing {file_path}: {e!s}")
 
         return fixes_applied, fix_log
 
@@ -171,56 +182,56 @@ class DocumentationMaintenanceSystem:
             "maintenance_system": {
                 "version": "1.0",
                 "project": "flext-auth",
-                "description": "Documentation maintenance configuration"
+                "description": "Documentation maintenance configuration",
             },
             "audit_config": {
                 "enabled": True,
                 "frequency": "weekly",
                 "quality_threshold": 80,
-                "max_issues_per_file": 10
+                "max_issues_per_file": 10,
             },
             "link_validation": {
                 "enabled": True,
                 "check_external_links": True,
                 "check_internal_links": True,
                 "timeout_seconds": 10,
-                "max_retries": 3
+                "max_retries": 3,
             },
             "content_optimization": {
                 "enabled": True,
                 "auto_fix_enabled": True,
                 "readability_checks": True,
-                "structure_validation": True
+                "structure_validation": True,
             },
             "synchronization": {
                 "enabled": True,
                 "auto_commit": False,
                 "remote_tracking": True,
-                "conflict_resolution": "manual"
+                "conflict_resolution": "manual",
             },
             "reporting": {
                 "enabled": True,
                 "report_frequency": "weekly",
                 "email_notifications": False,
-                "dashboard_enabled": False
+                "dashboard_enabled": False,
             },
             "quality_gates": {
                 "minimum_quality_score": 75,
                 "maximum_broken_links": 5,
                 "maximum_high_severity_issues": 3,
-                "require_freshness_check": True
-            }
+                "require_freshness_check": True,
+            },
         }
 
         config_path = self.project_root / "docs_maintenance_config.json"
-        with open(config_path, 'w', encoding='utf-8') as f:
+        with Path(config_path).open("w", encoding="utf-8") as f:
             json.dump(config, f, indent=2)
 
         print(f"📄 Maintenance configuration template saved to: {config_path}")
         return config_path
 
 
-def main():
+def main() -> None:
     """Main entry point for documentation maintenance system."""
     parser = argparse.ArgumentParser(
         description="FLEXT Auth Documentation Maintenance System",
@@ -241,27 +252,20 @@ Examples:
 
   # Show maintenance summary
   python main.py summary
-        """
+        """,
     )
 
     parser.add_argument(
         "command",
         choices=["comprehensive", "quick", "fix", "summary", "config"],
-        help="Maintenance command to run"
+        help="Maintenance command to run",
     )
 
     parser.add_argument(
-        "--project-root",
-        type=Path,
-        default=Path.cwd(),
-        help="Project root directory"
+        "--project-root", type=Path, default=Path.cwd(), help="Project root directory"
     )
 
-    parser.add_argument(
-        "--output-dir",
-        type=Path,
-        help="Output directory for reports"
-    )
+    parser.add_argument("--output-dir", type=Path, help="Output directory for reports")
 
     args = parser.parse_args()
 
@@ -270,18 +274,20 @@ Examples:
 
     if args.command == "comprehensive":
         # Run full maintenance cycle
-        report = system.run_comprehensive_maintenance()
+        system.run_comprehensive_maintenance()
         system.print_maintenance_summary()
 
     elif args.command == "quick":
         # Quick audit
-        report = system.run_quick_audit()
+        system.run_quick_audit()
         system.auditor.print_summary()
 
     elif args.command == "fix":
         # Apply auto-fixes
         if not system.optimization_results:
-            print("❌ No optimization results available. Run comprehensive maintenance first.")
+            print(
+                "❌ No optimization results available. Run comprehensive maintenance first."
+            )
             sys.exit(1)
 
         fixes_applied, fix_log = system.apply_auto_fixes()
@@ -295,7 +301,7 @@ Examples:
 
     elif args.command == "config":
         # Export configuration template
-        config_path = system.export_maintenance_config()
+        system.export_maintenance_config()
         print("📋 Maintenance configuration template created")
         print("Edit the file to customize maintenance settings")
 

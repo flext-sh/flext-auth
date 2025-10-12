@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextCore
 
 
 class BaseTransportAdapter(Protocol):
@@ -29,9 +29,9 @@ class BaseTransportAdapter(Protocol):
         ...         self,
         ...         url: str,
         ...         method: str = "POST",
-        ...         data: FlextTypes.Dict | None = None,
-        ...         headers: FlextTypes.StringDict | None = None,
-        ...     ) -> FlextResult[FlextTypes.Dict]:
+        ...         data: FlextCore.Types.Dict | None = None,
+        ...         headers: FlextCore.Types.StringDict | None = None,
+        ...     ) -> FlextCore.Result[FlextCore.Types.Dict]:
         ...         # HTTP-specific implementation
         ...         pass
 
@@ -41,10 +41,10 @@ class BaseTransportAdapter(Protocol):
         self,
         url: str,
         method: str = "POST",
-        data: FlextTypes.Dict | None = None,
-        headers: FlextTypes.StringDict | None = None,
+        data: FlextCore.Types.Dict | None = None,
+        headers: FlextCore.Types.StringDict | None = None,
         **kwargs: object,
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Send a request using this transport.
 
         Args:
@@ -55,7 +55,7 @@ class BaseTransportAdapter(Protocol):
             **kwargs: Transport-specific additional parameters
 
         Returns:
-            FlextResult containing response data or error
+            FlextCore.Result containing response data or error
 
         """
         ...

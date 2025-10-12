@@ -22,7 +22,7 @@ import secrets
 from datetime import UTC, datetime
 from urllib.parse import urlencode
 
-from flext_core import FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextCore
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -68,7 +68,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     # SAML 2.0 namespaces from constants
 
-    def __init__(self, config: FlextTypes.Dict) -> None:
+    def __init__(self, config: FlextCore.Types.Dict) -> None:
         """Initialize SAML authentication provider.
 
         Args:
@@ -79,7 +79,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         """
         self._config = config
-        self.logger = FlextLogger(__name__)
+        self.logger = FlextCore.Logger(__name__)
 
         # Validate required configuration
         self._entity_id = self._config.get("entity_id")
@@ -117,7 +117,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         self._encrypt_assertions = self._config.get("encrypt_assertions", False)
 
         # Runtime state for request tracking
-        self._pending_requests: FlextTypes.NestedDict = {}
+        self._pending_requests: FlextCore.Types.NestedDict = {}
 
         self.logger.info(
             "SAML provider initialized",
@@ -131,8 +131,8 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: FlextTypes.Dict,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+        credentials: FlextCore.Types.Dict,
+    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
         """Authenticate using SAML assertion.
 
         This method processes a SAML Response from the Identity Provider.
@@ -142,7 +142,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
                         and optionally 'relay_state' for request tracking
 
         Returns:
-            FlextResult[AuthToken]: Authentication token from SAML assertion or error
+            FlextCore.Result[AuthToken]: Authentication token from SAML assertion or error
 
         Example:
             >>> result = provider.authenticate({
@@ -156,7 +156,9 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             credentials, ["saml_response"]
         )
         if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
+            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+                validation_result.error
+            )
 
         credentials["saml_response"]
         credentials.get("relay_state")
@@ -172,7 +174,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # 8. Extract session information
 
         # For now, return error indicating implementation needed
-        return FlextResult[FlextAuthModels.AuthToken].fail(
+        return FlextCore.Result[FlextAuthModels.AuthToken].fail(
             "SAML response processing requires XML parsing and crypto library integration. "
             "Implement SAML response validation with python-saml or pysaml2 in production."
         )
@@ -180,24 +182,24 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     def validate(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[bool]:
+    ) -> FlextCore.Result[bool]:
         """Validate SAML session token.
 
         Args:
             token: SAML session token or AuthToken object
 
         Returns:
-            FlextResult[bool]: True if token is valid
+            FlextCore.Result[bool]: True if token is valid
 
         """
         try:
             token_string = self._extract_token_string(token)
         except ValueError as e:
-            return FlextResult[bool].fail(str(e))
+            return FlextCore.Result[bool].fail(str(e))
 
         # Basic validation
         if not token_string or not token_string.strip():
-            return FlextResult[bool].fail("Token is empty")
+            return FlextCore.Result[bool].fail("Token is empty")
 
         # In production:
         # 1. Validate session index if stored
@@ -210,15 +212,15 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             and token.expires_at
             and datetime.now(UTC) > token.expires_at
         ):
-            return FlextResult[bool].fail("SAML session expired")
+            return FlextCore.Result[bool].fail("SAML session expired")
 
         self.logger.debug("SAML token validated (basic validation)")
-        return FlextResult[bool].ok(True)
+        return FlextCore.Result[bool].ok(True)
 
     def refresh(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
         """Refresh SAML session.
 
         SAML does not support token refresh in the same way as OAuth2.
@@ -228,36 +230,36 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             token: Current SAML session token
 
         Returns:
-            FlextResult[AuthToken]: Error indicating refresh not supported
+            FlextCore.Result[AuthToken]: Error indicating refresh not supported
 
         """
         _ = token  # Token parameter required by interface but not used for SAML refresh
-        return FlextResult[FlextAuthModels.AuthToken].fail(
+        return FlextCore.Result[FlextAuthModels.AuthToken].fail(
             "SAML does not support token refresh. User must re-authenticate with IdP."
         )
 
     def revoke(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Revoke SAML session (Single Logout).
 
         Args:
             token: SAML session token to revoke
 
         Returns:
-            FlextResult[None]: Success or error
+            FlextCore.Result[None]: Success or error
 
         """
         if not self._slo_url:
-            return FlextResult[None].fail(
+            return FlextCore.Result[None].fail(
                 "Single Logout not supported: SLO URL not configured"
             )
 
         try:
             self._extract_token_string(token)
         except ValueError as e:
-            return FlextResult[None].fail(str(e))
+            return FlextCore.Result[None].fail(str(e))
 
         # In production: Generate and send SAML LogoutRequest
         # This would require:
@@ -270,7 +272,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             "SAML Single Logout requires implementation with XML signing support"
         )
 
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
     def supports(self) -> set[str]:
         """Return SAML provider capabilities.
@@ -297,11 +299,11 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         return capabilities
 
-    def get_metadata(self) -> FlextTypes.Dict:
+    def get_metadata(self) -> FlextCore.Types.Dict:
         """Return SAML provider metadata.
 
         Returns:
-            FlextTypes.Dict: Provider metadata
+            FlextCore.Types.Dict: Provider metadata
 
         """
         return {
@@ -332,14 +334,14 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     def get_authentication_request_url(
         self, relay_state: str | None = None
-    ) -> FlextResult[str]:
+    ) -> FlextCore.Result[str]:
         """Generate SAML AuthnRequest URL.
 
         Args:
             relay_state: Optional relay state for request tracking
 
         Returns:
-            FlextResult[str]: Authentication request URL or error
+            FlextCore.Result[str]: Authentication request URL or error
 
         """
         request_id = self.generate_request_id()
@@ -353,7 +355,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # 5. Build redirect URL
 
         # For now, build basic redirect URL structure
-        params: FlextTypes.StringDict = {
+        params: FlextCore.Types.StringDict = {
             "SAMLRequest": "base64-encoded-request-placeholder",
         }
 
@@ -374,13 +376,13 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             },
         )
 
-        return FlextResult[str].ok(auth_url)
+        return FlextCore.Result[str].ok(auth_url)
 
-    def generate_sp_metadata(self) -> FlextResult[str]:
+    def generate_sp_metadata(self) -> FlextCore.Result[str]:
         """Generate SAML Service Provider metadata XML.
 
         Returns:
-            FlextResult[str]: SP metadata XML or error
+            FlextCore.Result[str]: SP metadata XML or error
 
         """
         # In production: Generate proper SAML metadata XML
@@ -402,7 +404,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 </EntityDescriptor>"""
 
         self.logger.info("Generated SP metadata")
-        return FlextResult[str].ok(metadata_template)
+        return FlextCore.Result[str].ok(metadata_template)
 
 
 __all__ = ["FlextAuthSamlProvider"]

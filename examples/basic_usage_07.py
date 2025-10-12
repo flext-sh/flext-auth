@@ -26,7 +26,7 @@ def exemplo_flext_auth() -> None:
     else:
         return
 
-    # Autenticação em 1 linha (retorna FlextResult)
+    # Autenticação em 1 linha (retorna FlextCore.Result)
     auth_result = auth.authenticate_user("usuario_teste", "MinhaSenh@123!")
 
     if auth_result.is_success:

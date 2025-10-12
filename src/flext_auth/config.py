@@ -2,7 +2,7 @@
 
 Provides unified configuration management for the FLEXT Auth ecosystem
 using Pydantic Settings for environment variable support.
-Single FlextAuthConfig class extending FlextConfig with all defaults from FlextAuthConstants.
+Single FlextAuthConfig class extending FlextCore.Config with all defaults from FlextAuthConstants.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -14,10 +14,7 @@ import threading
 from typing import Any, ClassVar
 
 from dependency_injector import providers
-from flext_core import (
-    FlextConfig,
-    FlextTypes,
-)
+from flext_core import FlextCore
 from pydantic import (
     Field,
     SecretStr,
@@ -28,7 +25,7 @@ from pydantic_settings import SettingsConfigDict
 from flext_auth.constants import FlextAuthConstants
 
 
-class FlextAuthConfig(FlextConfig):
+class FlextAuthConfig(FlextCore.Config):
     """Configuration class for FLEXT Authentication service.
 
     Provides comprehensive authentication configuration with security-focused defaults.
@@ -200,7 +197,7 @@ class FlextAuthConfig(FlextConfig):
         description="Enable password history to prevent reuse",
     )
 
-    def to_dict(self) -> FlextTypes.Dict:
+    def to_dict(self) -> FlextCore.Types.Dict:
         """Convert configuration to dictionary for serialization."""
         return {
             "jwt_auth_secret": "***masked***" if self.jwt_auth_secret else None,

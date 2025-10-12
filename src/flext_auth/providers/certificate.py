@@ -22,7 +22,7 @@ from typing import cast
 # Third-party imports for certificate processing
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
-from flext_core import FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextCore
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
@@ -62,7 +62,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
     """
 
-    def __init__(self, config: FlextTypes.Dict) -> None:
+    def __init__(self, config: FlextCore.Types.Dict) -> None:
         """Initialize Certificate authentication provider.
 
         Args:
@@ -73,7 +73,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
         """
         self._config = config
-        self.logger = FlextLogger(__name__)
+        self.logger = FlextCore.Logger(__name__)
 
         # Validate required configuration
         self._ca_cert = self._config.get("ca_cert")
@@ -95,7 +95,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
         # In-memory storage for certificate mappings (for development)
         # In production, integrate with certificate store or directory service
         self._cert_mappings: dict[
-            str, FlextTypes.Dict
+            str, FlextCore.Types.Dict
         ] = {}  # cert_fingerprint -> user data
 
         self.logger.info(
@@ -110,8 +110,8 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
     def authenticate(
         self,
-        credentials: FlextTypes.Dict,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+        credentials: FlextCore.Types.Dict,
+    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
         r"""Authenticate using X.509 client certificate.
 
         Args:
@@ -119,7 +119,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
                         Optional: 'client_key' (PEM-encoded private key)
 
         Returns:
-            FlextResult[AuthToken]: Authentication token or error
+            FlextCore.Result[AuthToken]: Authentication token or error
 
         Example:
             >>> result = provider.authenticate({
@@ -132,25 +132,31 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             credentials, ["client_cert"]
         )
         if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
+            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+                validation_result.error
+            )
 
         client_cert = credentials["client_cert"]
         if not isinstance(client_cert, str):
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
                 "Client certificate must be a string"
             )
 
         # Step 1: Parse and extract certificate information
         cert_info_result = self._extract_certificate_info(client_cert)
         if cert_info_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(cert_info_result.error)
+            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+                cert_info_result.error
+            )
 
         cert_info = cert_info_result.unwrap()
 
         # Step 2: Validate certificate (expiration, CA signature)
         validation_result = self._validate_certificate(client_cert, cert_info)
         if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
+            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+                validation_result.error
+            )
 
         # Check if certificate is mapped to a user
         cert_fingerprint = str(cert_info.get("fingerprint", ""))
@@ -160,7 +166,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             # Auto-provision user from certificate (if enabled)
             auto_provision_result = self._auto_provision_user(cert_info)
             if auto_provision_result.is_failure:
-                return FlextResult[FlextAuthModels.AuthToken].fail(
+                return FlextCore.Result[FlextAuthModels.AuthToken].fail(
                     f"Certificate not authorized: {auto_provision_result.error}"
                 )
             user_data = auto_provision_result.unwrap()
@@ -190,35 +196,35 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             },
         )
 
-        return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)
+        return FlextCore.Result[FlextAuthModels.AuthToken].ok(auth_token)
 
     def validate(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[bool]:
+    ) -> FlextCore.Result[bool]:
         """Validate certificate token.
 
         Args:
             token: Certificate fingerprint or AuthToken object
 
         Returns:
-            FlextResult[bool]: True if certificate is valid
+            FlextCore.Result[bool]: True if certificate is valid
 
         """
         try:
             token_string = self._extract_token_string(token)
         except ValueError as e:
-            return FlextResult[bool].fail(str(e))
+            return FlextCore.Result[bool].fail(str(e))
 
         # Check if certificate is mapped
         if token_string not in self._cert_mappings:
-            return FlextResult[bool].fail("Certificate not found")
+            return FlextCore.Result[bool].fail("Certificate not found")
 
         user_data = self._cert_mappings[token_string]
 
         # Check if user is active
         if not user_data.get("active", True):
-            return FlextResult[bool].fail("Certificate has been revoked")
+            return FlextCore.Result[bool].fail("Certificate has been revoked")
 
         # In production: Re-validate certificate
         # - Check validity period
@@ -231,14 +237,14 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             and token.expires_at
             and datetime.now(UTC) > token.expires_at
         ):
-            return FlextResult[bool].fail("Certificate expired")
+            return FlextCore.Result[bool].fail("Certificate expired")
 
-        return FlextResult[bool].ok(True)
+        return FlextCore.Result[bool].ok(True)
 
     def refresh(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
         """Refresh certificate token.
 
         Certificates cannot be refreshed programmatically. A new certificate
@@ -248,11 +254,11 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             token: Current certificate token
 
         Returns:
-            FlextResult[AuthToken]: Error indicating refresh not supported
+            FlextCore.Result[AuthToken]: Error indicating refresh not supported
 
         """
         _ = token  # Token parameter required by interface but not used for certificate refresh
-        return FlextResult[FlextAuthModels.AuthToken].fail(
+        return FlextCore.Result[FlextAuthModels.AuthToken].fail(
             "Certificate authentication does not support token refresh. "
             "Obtain a new certificate from the Certificate Authority."
         )
@@ -260,7 +266,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     def revoke(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Revoke certificate access.
 
         This marks the certificate as revoked in the local mapping.
@@ -270,16 +276,16 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             token: Certificate token to revoke
 
         Returns:
-            FlextResult[None]: Success or error
+            FlextCore.Result[None]: Success or error
 
         """
         try:
             token_string = self._extract_token_string(token)
         except ValueError as e:
-            return FlextResult[None].fail(str(e))
+            return FlextCore.Result[None].fail(str(e))
 
         if token_string not in self._cert_mappings:
-            return FlextResult[None].fail("Certificate not found")
+            return FlextCore.Result[None].fail("Certificate not found")
 
         # Mark certificate as revoked
         self._cert_mappings[token_string]["active"] = False
@@ -292,7 +298,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             extra={"fingerprint": token_string[:16] + "..."},
         )
 
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
     def supports(self) -> set[str]:
         """Return Certificate provider capabilities.
@@ -320,11 +326,11 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
         return capabilities
 
-    def get_metadata(self) -> FlextTypes.Dict:
+    def get_metadata(self) -> FlextCore.Types.Dict:
         """Return Certificate provider metadata.
 
         Returns:
-            FlextTypes.Dict: Provider metadata
+            FlextCore.Types.Dict: Provider metadata
 
         """
         return {
@@ -340,18 +346,22 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
     # Helper methods
 
-    def _extract_certificate_info(self, cert_pem: str) -> FlextResult[FlextTypes.Dict]:
+    def _extract_certificate_info(
+        self, cert_pem: str
+    ) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Extract information from PEM certificate using cryptography library.
 
         Args:
             cert_pem: PEM-encoded certificate
 
         Returns:
-            FlextResult[FlextTypes.Dict]: Certificate information or error
+            FlextCore.Result[FlextCore.Types.Dict]: Certificate information or error
 
         """
         if not cert_pem.startswith("-----BEGIN CERTIFICATE-----"):
-            return FlextResult[FlextTypes.Dict].fail("Invalid PEM certificate format")
+            return FlextCore.Result[FlextCore.Types.Dict].fail(
+                "Invalid PEM certificate format"
+            )
 
         try:
             # Parse PEM certificate
@@ -405,16 +415,22 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
                 extra={"fingerprint": fingerprint, "subject": subject_dn},
             )
 
-            return FlextResult[FlextTypes.Dict].ok(cast("dict[str, object]", cert_info))
+            return FlextCore.Result[FlextCore.Types.Dict].ok(
+                cast("FlextCore.Types.Dict", cert_info)
+            )
 
         except ValueError as e:
-            return FlextResult[FlextTypes.Dict].fail(f"Invalid certificate format: {e}")
+            return FlextCore.Result[FlextCore.Types.Dict].fail(
+                f"Invalid certificate format: {e}"
+            )
         except Exception as e:
-            return FlextResult[FlextTypes.Dict].fail(f"Certificate parsing failed: {e}")
+            return FlextCore.Result[FlextCore.Types.Dict].fail(
+                f"Certificate parsing failed: {e}"
+            )
 
     def _validate_certificate(
-        self, cert_pem: str, cert_info: FlextTypes.Dict
-    ) -> FlextResult[None]:
+        self, cert_pem: str, cert_info: FlextCore.Types.Dict
+    ) -> FlextCore.Result[None]:
         """Validate certificate using cryptography library.
 
         Args:
@@ -422,7 +438,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             cert_info: Parsed certificate information
 
         Returns:
-            FlextResult[None]: Success if valid, error otherwise
+            FlextCore.Result[None]: Success if valid, error otherwise
 
         """
         try:
@@ -435,12 +451,12 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             not_after = cert.not_valid_after_utc
 
             if now < not_before:
-                return FlextResult[None].fail(
+                return FlextCore.Result[None].fail(
                     f"Certificate not yet valid (valid from {not_before})"
                 )
 
             if now > not_after:
-                return FlextResult[None].fail(
+                return FlextCore.Result[None].fail(
                     f"Certificate expired (expired on {not_after})"
                 )
 
@@ -457,14 +473,14 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
                 extra={"fingerprint": cert_info.get("fingerprint")},
             )
 
-            return FlextResult[None].ok(None)
+            return FlextCore.Result[None].ok(None)
 
         except Exception as e:
-            return FlextResult[None].fail(f"Certificate validation failed: {e}")
+            return FlextCore.Result[None].fail(f"Certificate validation failed: {e}")
 
     def _validate_against_ca(
         self, cert: x509.Certificate, ca_cert_pem: str
-    ) -> FlextResult[None]:
+    ) -> FlextCore.Result[None]:
         """Validate certificate against CA certificate.
 
         Args:
@@ -472,7 +488,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             ca_cert_pem: PEM-encoded CA certificate
 
         Returns:
-            FlextResult[None]: Success if valid, error otherwise
+            FlextCore.Result[None]: Success if valid, error otherwise
 
         """
         try:
@@ -486,7 +502,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             ca_subject = ca_cert.subject.rfc4514_string()
 
             if cert_issuer != ca_subject:
-                return FlextResult[None].fail(
+                return FlextCore.Result[None].fail(
                     f"Certificate issuer does not match CA subject: {cert_issuer} != {ca_subject}"
                 )
 
@@ -498,21 +514,21 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
             self.logger.debug("Certificate CA validation passed")
 
-            return FlextResult[None].ok(None)
+            return FlextCore.Result[None].ok(None)
 
         except Exception as e:
-            return FlextResult[None].fail(f"CA validation failed: {e}")
+            return FlextCore.Result[None].fail(f"CA validation failed: {e}")
 
     def _auto_provision_user(
-        self, cert_info: FlextTypes.Dict
-    ) -> FlextResult[FlextTypes.Dict]:
+        self, cert_info: FlextCore.Types.Dict
+    ) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Auto-provision user from certificate information.
 
         Args:
             cert_info: Certificate information
 
         Returns:
-            FlextResult[FlextTypes.Dict]: User data or error
+            FlextCore.Result[FlextCore.Types.Dict]: User data or error
 
         """
         # Extract username from certificate subject (CN field)
@@ -520,7 +536,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
         username = self._extract_cn_from_subject(subject)
 
         if not username:
-            return FlextResult[FlextTypes.Dict].fail(
+            return FlextCore.Result[FlextCore.Types.Dict].fail(
                 "Cannot extract username from certificate subject"
             )
 
@@ -546,7 +562,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             extra={"user_id": user_id, "username": username},
         )
 
-        return FlextResult[FlextTypes.Dict].ok(user_data)
+        return FlextCore.Result[FlextCore.Types.Dict].ok(user_data)
 
     def _extract_cn_from_subject(self, subject: str) -> str:
         """Extract Common Name (CN) from certificate subject.
@@ -577,9 +593,9 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
         cert_fingerprint: str,
         user_id: str,
         username: str | None = None,
-        roles: FlextTypes.StringList | None = None,
-        permissions: FlextTypes.StringList | None = None,
-    ) -> FlextResult[None]:
+        roles: FlextCore.Types.StringList | None = None,
+        permissions: FlextCore.Types.StringList | None = None,
+    ) -> FlextCore.Result[None]:
         """Register certificate mapping to user.
 
         Args:
@@ -590,11 +606,11 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             permissions: User permissions
 
         Returns:
-            FlextResult[None]: Success or error
+            FlextCore.Result[None]: Success or error
 
         """
         if cert_fingerprint in self._cert_mappings:
-            return FlextResult[None].fail(
+            return FlextCore.Result[None].fail(
                 f"Certificate '{cert_fingerprint}' already registered"
             )
 
@@ -611,20 +627,22 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             extra={"fingerprint": cert_fingerprint[:16] + "...", "user_id": user_id},
         )
 
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
-    def unregister_certificate(self, cert_fingerprint: str) -> FlextResult[None]:
+    def unregister_certificate(self, cert_fingerprint: str) -> FlextCore.Result[None]:
         """Unregister certificate mapping.
 
         Args:
             cert_fingerprint: Certificate fingerprint to remove
 
         Returns:
-            FlextResult[None]: Success or error
+            FlextCore.Result[None]: Success or error
 
         """
         if cert_fingerprint not in self._cert_mappings:
-            return FlextResult[None].fail(f"Certificate '{cert_fingerprint}' not found")
+            return FlextCore.Result[None].fail(
+                f"Certificate '{cert_fingerprint}' not found"
+            )
 
         del self._cert_mappings[cert_fingerprint]
 
@@ -633,7 +651,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             extra={"fingerprint": cert_fingerprint[:16] + "..."},
         )
 
-        return FlextResult[None].ok(None)
+        return FlextCore.Result[None].ok(None)
 
 
 __all__ = ["FlextAuthCertificateProvider"]

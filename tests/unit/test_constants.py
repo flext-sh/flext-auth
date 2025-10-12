@@ -12,10 +12,10 @@ class TestFlextAuthConstants:
     """Test FlextAuthConstants class and its nested constant classes."""
 
     def test_inherits_from_flext_constants(self) -> None:
-        """Test that FlextAuthConstants inherits from FlextConstants."""
-        from flext_core import FlextConstants
+        """Test that FlextAuthConstants inherits from FlextCore.Constants."""
+        from flext_core import FlextCore
 
-        assert issubclass(FlextAuthConstants, FlextConstants)
+        assert issubclass(FlextAuthConstants, FlextCore.Constants)
 
     def test_jwt_constants(self) -> None:
         """Test JWT-related constants."""

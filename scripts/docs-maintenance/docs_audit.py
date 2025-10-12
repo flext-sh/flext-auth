@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-"""
-FLEXT Auth Documentation Audit System
+"""FLEXT Auth Documentation Audit System.
 
 Comprehensive documentation quality assurance and maintenance system
 for flext-auth project documentation.
@@ -12,33 +11,39 @@ SPDX-License-Identifier: MIT
 import argparse
 import asyncio
 import json
-import os
 import re
-import sys
-from datetime import datetime, timedelta
+from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import urlopen
-from urllib.error import URLError, HTTPError
-import yaml
+
+try:
+    import aiohttp
+
+    HAS_AIOHTTP = True
+except ImportError:
+    HAS_AIOHTTP = False
+
 
 class DocumentationAuditor:
     """Comprehensive documentation audit and quality assurance system."""
 
-    def __init__(self, project_root: Path):
+    def __init__(self, project_root: Path) -> None:
+        """Initialize documentation auditor with project root."""
         self.project_root = project_root
         self.docs_dir = project_root / "docs"
-        self.results: Dict[str, Any] = {
-            "timestamp": datetime.now().isoformat(),
+        self.results: dict[str, Any] = {
+            "timestamp": datetime.now(UTC).isoformat(),
             "project": "flext-auth",
             "audit_results": {},
             "quality_score": 0,
             "issues": [],
-            "recommendations": []
+            "recommendations": [],
         }
 
-    def discover_docs(self) -> List[Path]:
+    def discover_docs(self) -> list[Path]:
         """Discover all documentation files."""
         docs_files = []
 
@@ -60,48 +65,50 @@ class DocumentationAuditor:
             "total_files": len(docs_files),
             "active_files": len(active_docs),
             "archive_files": len(archive_docs),
-            "active_paths": [str(p.relative_to(self.project_root)) for p in active_docs]
+            "active_paths": [
+                str(p.relative_to(self.project_root)) for p in active_docs
+            ],
         }
 
         return active_docs
 
-    def analyze_content_quality(self, docs_files: List[Path]) -> Dict[str, Any]:
+    def analyze_content_quality(self, docs_files: list[Path]) -> dict[str, Any]:
         """Analyze content quality metrics."""
         quality_analysis = {
             "file_metrics": [],
             "content_freshness": [],
             "structure_analysis": [],
-            "completeness_check": []
+            "completeness_check": [],
         }
 
         for doc_file in docs_files:
             try:
-                content = doc_file.read_text(encoding='utf-8')
+                content = doc_file.read_text(encoding="utf-8")
                 metrics = self._analyze_single_file(doc_file, content)
                 quality_analysis["file_metrics"].append(metrics)
 
                 # Check freshness
-                mtime = datetime.fromtimestamp(doc_file.stat().st_mtime)
-                days_old = (datetime.now() - mtime).days
+                mtime = datetime.fromtimestamp(doc_file.stat().st_mtime, tz=UTC)
+                days_old = (datetime.now(UTC) - mtime).days
                 quality_analysis["content_freshness"].append({
                     "file": str(doc_file.relative_to(self.project_root)),
                     "last_modified": mtime.isoformat(),
                     "days_old": days_old,
-                    "freshness_score": self._calculate_freshness_score(days_old)
+                    "freshness_score": self._calculate_freshness_score(days_old),
                 })
 
                 # Structure analysis
                 structure = self._analyze_structure(content)
                 quality_analysis["structure_analysis"].append({
                     "file": str(doc_file.relative_to(self.project_root)),
-                    **structure
+                    **structure,
                 })
 
                 # Completeness check
                 completeness = self._check_completeness(content, doc_file.name)
                 quality_analysis["completeness_check"].append({
                     "file": str(doc_file.relative_to(self.project_root)),
-                    **completeness
+                    **completeness,
                 })
 
             except Exception as e:
@@ -109,24 +116,24 @@ class DocumentationAuditor:
                     "type": "file_read_error",
                     "file": str(doc_file.relative_to(self.project_root)),
                     "error": str(e),
-                    "severity": "high"
+                    "severity": "high",
                 })
 
         return quality_analysis
 
-    def _analyze_single_file(self, file_path: Path, content: str) -> Dict[str, Any]:
+    def _analyze_single_file(self, file_path: Path, content: str) -> dict[str, Any]:
         """Analyze a single documentation file."""
-        lines = content.split('\n')
-        word_count = len(re.findall(r'\b\w+\b', content))
-        code_blocks = len(re.findall(r'```', content)) // 2
-        links = len(re.findall(r'\[([^\]]+)\]\(([^)]+)\)', content))
-        images = len(re.findall(r'!\[([^\]]*)\]\(([^)]+)\)', content))
-        headers = len(re.findall(r'^#{1,6}\s+', content, re.MULTILINE))
-        lists = len(re.findall(r'^[\s]*[-*+]\s+', content, re.MULTILINE))
-        tables = len(re.findall(r'^\|.*\|.*\|', content, re.MULTILINE))
+        lines = content.split("\n")
+        word_count = len(re.findall(r"\b\w+\b", content))
+        code_blocks = len(re.findall(r"```", content)) // 2
+        links = len(re.findall(r"\[([^\]]+)\]\(([^)]+)\)", content))
+        images = len(re.findall(r"!\[([^\]]*)\]\(([^)]+)\)", content))
+        headers = len(re.findall(r"^#{1,6}\s+", content, re.MULTILINE))
+        lists = len(re.findall(r"^[\s]*[-*+]\s+", content, re.MULTILINE))
+        tables = len(re.findall(r"^\|.*\|.*\|", content, re.MULTILINE))
 
         # Check for TODO/FIXME markers
-        todo_markers = len(re.findall(r'(?i)(todo|fixme|hack|xxx)', content))
+        todo_markers = len(re.findall(r"(?i)(todo|fixme|hack|xxx)", content))
 
         return {
             "file": str(file_path.relative_to(self.project_root)),
@@ -139,30 +146,29 @@ class DocumentationAuditor:
             "lists": lists,
             "tables": tables,
             "todo_markers": todo_markers,
-            "avg_words_per_line": round(word_count / max(len(lines), 1), 2)
+            "avg_words_per_line": round(word_count / max(len(lines), 1), 2),
         }
 
     def _calculate_freshness_score(self, days_old: int) -> str:
         """Calculate content freshness score."""
         if days_old <= 7:
             return "excellent"
-        elif days_old <= 30:
+        if days_old <= 30:
             return "good"
-        elif days_old <= 90:
+        if days_old <= 90:
             return "fair"
-        elif days_old <= 180:
+        if days_old <= 180:
             return "stale"
-        else:
-            return "outdated"
+        return "outdated"
 
-    def _analyze_structure(self, content: str) -> Dict[str, Any]:
+    def _analyze_structure(self, content: str) -> dict[str, Any]:
         """Analyze document structure."""
-        lines = content.split('\n')
+        lines = content.split("\n")
 
         # Header hierarchy analysis
         headers = []
         for line in lines:
-            if match := re.match(r'^(#{1,6})\s+(.+)', line):
+            if match := re.match(r"^(#{1,6})\s+(.+)", line):
                 level = len(match.group(1))
                 title = match.group(2).strip()
                 headers.append({"level": level, "title": title})
@@ -176,8 +182,10 @@ class DocumentationAuditor:
             prev_level = header["level"]
 
         # Check for required sections
-        has_toc = bool(re.search(r'(table of contents|contents)', content, re.IGNORECASE))
-        has_examples = bool(re.findall(r'```', content))
+        has_toc = bool(
+            re.search(r"(table of contents|contents)", content, re.IGNORECASE)
+        )
+        has_examples = bool(re.findall(r"```", content))
 
         return {
             "total_headers": len(headers),
@@ -185,31 +193,41 @@ class DocumentationAuditor:
             "hierarchy_issues": hierarchy_issues,
             "has_table_of_contents": has_toc,
             "has_code_examples": has_examples,
-            "structure_score": "good" if len(hierarchy_issues) == 0 else "needs_attention"
+            "structure_score": "good"
+            if len(hierarchy_issues) == 0
+            else "needs_attention",
         }
 
-    def _check_completeness(self, content: str, filename: str) -> Dict[str, Any]:
+    def _check_completeness(self, content: str, filename: str) -> dict[str, Any]:
         """Check documentation completeness."""
         checks = {
-            "has_frontmatter": bool(re.search(r'^---\s*$', content, re.MULTILINE)),
-            "has_version_info": bool(re.search(r'(version|updated)', content, re.IGNORECASE)),
-            "has_examples": bool(re.findall(r'```', content)),
-            "has_links": bool(re.findall(r'\[([^\]]+)\]\(([^)]+)\)', content)),
-            "has_status_indicators": bool(re.findall(r'(✅|❌|⚠️|🚧|📅)', content)),
-            "has_todo_markers": bool(re.findall(r'(?i)(todo|fixme)', content))
+            "has_frontmatter": bool(re.search(r"^---\s*$", content, re.MULTILINE)),
+            "has_version_info": bool(
+                re.search(r"(version|updated)", content, re.IGNORECASE)
+            ),
+            "has_examples": bool(re.findall(r"```", content)),
+            "has_links": bool(re.findall(r"\[([^\]]+)\]\(([^)]+)\)", content)),
+            "has_status_indicators": bool(re.findall(r"(✅|❌|⚠️|🚧|📅)", content)),
+            "has_todo_markers": bool(re.findall(r"(?i)(todo|fixme)", content)),
         }
 
         # File-specific checks
         if filename == "README.md":
             checks.update({
-                "has_badges": bool(re.findall(r'!\[.*\]\(.*\)', content)),
-                "has_installation": bool(re.search(r'(install|setup)', content, re.IGNORECASE)),
-                "has_usage": bool(re.search(r'(usage|example)', content, re.IGNORECASE))
+                "has_badges": bool(re.findall(r"!\[.*\]\(.*\)", content)),
+                "has_installation": bool(
+                    re.search(r"(install|setup)", content, re.IGNORECASE)
+                ),
+                "has_usage": bool(
+                    re.search(r"(usage|example)", content, re.IGNORECASE)
+                ),
             })
         elif filename == "CLAUDE.md":
             checks.update({
-                "has_commands": bool(re.search(r'make', content)),
-                "has_patterns": bool(re.search(r'(pattern|architecture)', content, re.IGNORECASE))
+                "has_commands": bool(r"make" in content),
+                "has_patterns": bool(
+                    re.search(r"(pattern|architecture)", content, re.IGNORECASE)
+                ),
             })
 
         completeness_score = sum(checks.values()) / len(checks)
@@ -217,40 +235,40 @@ class DocumentationAuditor:
 
         return checks
 
-    async def validate_links(self, docs_files: List[Path]) -> Dict[str, Any]:
+    async def validate_links(self, docs_files: list[Path]) -> dict[str, Any]:
         """Validate all links in documentation."""
         link_validation = {
             "internal_links": [],
             "external_links": [],
             "broken_links": [],
-            "image_links": []
+            "image_links": [],
         }
 
         for doc_file in docs_files:
             try:
-                content = doc_file.read_text(encoding='utf-8')
+                content = doc_file.read_text(encoding="utf-8")
 
                 # Find all links
-                link_pattern = r'\[([^\]]+)\]\(([^)]+)\)'
+                link_pattern = r"\[([^\]]+)\]\(([^)]+)\)"
                 for match in re.finditer(link_pattern, content):
                     link_text = match.group(1)
                     link_url = match.group(2)
 
-                    if link_url.startswith('http'):
+                    if link_url.startswith("http"):
                         # External link
                         is_valid = await self._check_external_link(link_url)
                         link_validation["external_links"].append({
                             "file": str(doc_file.relative_to(self.project_root)),
                             "text": link_text,
                             "url": link_url,
-                            "valid": is_valid
+                            "valid": is_valid,
                         })
                         if not is_valid:
                             link_validation["broken_links"].append({
                                 "file": str(doc_file.relative_to(self.project_root)),
                                 "text": link_text,
                                 "url": link_url,
-                                "type": "external"
+                                "type": "external",
                             })
                     else:
                         # Internal link
@@ -259,30 +277,30 @@ class DocumentationAuditor:
                             "file": str(doc_file.relative_to(self.project_root)),
                             "text": link_text,
                             "url": link_url,
-                            "valid": is_valid
+                            "valid": is_valid,
                         })
                         if not is_valid:
                             link_validation["broken_links"].append({
                                 "file": str(doc_file.relative_to(self.project_root)),
                                 "text": link_text,
                                 "url": link_url,
-                                "type": "internal"
+                                "type": "internal",
                             })
 
                 # Check image links
-                image_pattern = r'!\[([^\]]*)\]\(([^)]+)\)'
+                image_pattern = r"!\[([^\]]*)\]\(([^)]+)\)"
                 for match in re.finditer(image_pattern, content):
                     alt_text = match.group(1)
                     image_url = match.group(2)
 
-                    if image_url.startswith('http'):
+                    if image_url.startswith("http"):
                         # External image
                         is_valid = await self._check_external_link(image_url)
                         link_validation["image_links"].append({
                             "file": str(doc_file.relative_to(self.project_root)),
                             "alt_text": alt_text,
                             "url": image_url,
-                            "valid": is_valid
+                            "valid": is_valid,
                         })
                     else:
                         # Local image
@@ -292,7 +310,7 @@ class DocumentationAuditor:
                             "file": str(doc_file.relative_to(self.project_root)),
                             "alt_text": alt_text,
                             "url": image_url,
-                            "valid": is_valid
+                            "valid": is_valid,
                         })
 
             except Exception as e:
@@ -300,7 +318,7 @@ class DocumentationAuditor:
                     "type": "link_validation_error",
                     "file": str(doc_file.relative_to(self.project_root)),
                     "error": str(e),
-                    "severity": "medium"
+                    "severity": "medium",
                 })
 
         return link_validation
@@ -313,53 +331,75 @@ class DocumentationAuditor:
             if not parsed.scheme or not parsed.netloc:
                 return False
 
+            # Security: Only allow HTTP/HTTPS schemes
+            if parsed.scheme.lower() not in {"http", "https"}:
+                return False
+
             # Try to access the URL (with timeout)
-            req = urlopen(url, timeout=10)
-            return req.status == 200
-        except (URLError, HTTPError, OSError):
+            if HAS_AIOHTTP:
+                async with (
+                    aiohttp.ClientSession() as session,
+                    session.head(
+                        url, timeout=aiohttp.ClientTimeout(total=10)
+                    ) as response,
+                ):
+                    return response.status == 200
+            else:
+                # Fallback to thread-based blocking call
+                def check_url() -> bool:
+                    req = urlopen(url, timeout=10)  # noqa: S310
+                    return req.status == 200
+
+                return await asyncio.to_thread(check_url)
+        except (TimeoutError, URLError, HTTPError, OSError, Exception):
             return False
 
     def _check_internal_link(self, from_file: Path, link_url: str) -> bool:
         """Check if an internal link is valid."""
         try:
             # Handle relative links
-            if link_url.startswith('#'):
+            if link_url.startswith("#"):
                 # Anchor link - check if heading exists in same file
-                content = from_file.read_text(encoding='utf-8')
-                anchor = link_url[1:].lower().replace('-', ' ')
+                content = from_file.read_text(encoding="utf-8")
+                anchor = link_url[1:].lower().replace("-", " ")
                 # Simple check for heading with similar text
-                return bool(re.search(rf'^#{1,6}.*{re.escape(anchor)}', content, re.MULTILINE | re.IGNORECASE))
-            elif link_url.startswith('./') or link_url.startswith('../'):
+                return bool(
+                    re.search(
+                        rf"^#{1, 6}.*{re.escape(anchor)}",
+                        content,
+                        re.MULTILINE | re.IGNORECASE,
+                    )
+                )
+            if link_url.startswith(("./", "../")):
                 # Relative file path
                 target_path = (from_file.parent / link_url).resolve()
                 return target_path.exists() and target_path.is_file()
-            else:
-                # Absolute path from project root
-                target_path = (self.project_root / link_url).resolve()
-                return target_path.exists() and target_path.is_file()
+            # Absolute path from project root
+            target_path = (self.project_root / link_url).resolve()
+            return target_path.exists() and target_path.is_file()
         except Exception:
             return False
 
-    def check_style_consistency(self, docs_files: List[Path]) -> Dict[str, Any]:
+    def check_style_consistency(self, docs_files: list[Path]) -> dict[str, Any]:
         """Check style consistency across documentation."""
         style_issues = {
             "inconsistent_headers": [],
             "missing_alt_text": [],
             "inconsistent_lists": [],
             "code_block_issues": [],
-            "formatting_issues": []
+            "formatting_issues": [],
         }
 
         for doc_file in docs_files:
             try:
-                content = doc_file.read_text(encoding='utf-8')
-                lines = content.split('\n')
+                content = doc_file.read_text(encoding="utf-8")
+                lines = content.split("\n")
 
                 # Check header consistency
-                header_pattern = re.compile(r'^(#{1,6})\s+(.+)')
+                header_pattern = re.compile(r"^(#{1,6})\s+(.+)")
                 for i, line in enumerate(lines):
                     if match := header_pattern.match(line):
-                        level = len(match.group(1))
+                        len(match.group(1))
                         title = match.group(2)
 
                         # Check for inconsistent capitalization
@@ -368,27 +408,27 @@ class DocumentationAuditor:
                                 "file": str(doc_file.relative_to(self.project_root)),
                                 "line": i + 1,
                                 "header": title,
-                                "issue": "inconsistent capitalization"
+                                "issue": "inconsistent capitalization",
                             })
 
                 # Check for missing alt text on images
-                image_pattern = re.compile(r'!\[([^\]]*)\]\(([^)]+)\)')
+                image_pattern = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
                 for match in image_pattern.finditer(content):
                     alt_text = match.group(1)
                     if not alt_text.strip():
                         style_issues["missing_alt_text"].append({
                             "file": str(doc_file.relative_to(self.project_root)),
                             "alt_text": alt_text,
-                            "line": content[:match.start()].count('\n') + 1
+                            "line": content[: match.start()].count("\n") + 1,
                         })
 
                 # Check code block consistency
-                code_blocks = re.findall(r'```(\w+)?', content)
+                code_blocks = re.findall(r"```(\w+)?", content)
                 for i, lang in enumerate(code_blocks):
                     if not lang and i % 2 == 0:  # Opening code block without language
                         style_issues["code_block_issues"].append({
                             "file": str(doc_file.relative_to(self.project_root)),
-                            "issue": "code block without language specification"
+                            "issue": "code block without language specification",
                         })
 
             except Exception as e:
@@ -396,22 +436,24 @@ class DocumentationAuditor:
                     "type": "style_check_error",
                     "file": str(doc_file.relative_to(self.project_root)),
                     "error": str(e),
-                    "severity": "low"
+                    "severity": "low",
                 })
 
         return style_issues
 
-    def generate_report(self) -> Dict[str, Any]:
+    def generate_report(self) -> dict[str, Any]:
         """Generate comprehensive audit report."""
         # Calculate quality score
-        total_files = self.results["discovery"]["total_files"]
+        self.results["discovery"]["total_files"]
         issues = self.results["issues"]
         high_severity = len([i for i in issues if i.get("severity") == "high"])
         medium_severity = len([i for i in issues if i.get("severity") == "medium"])
         low_severity = len([i for i in issues if i.get("severity") == "low"])
 
         # Quality score calculation
-        quality_score = max(0, 100 - (high_severity * 20 + medium_severity * 10 + low_severity * 2))
+        quality_score = max(
+            0, 100 - (high_severity * 20 + medium_severity * 10 + low_severity * 2)
+        )
         quality_score = min(quality_score, 100)
 
         self.results["quality_score"] = quality_score
@@ -419,7 +461,7 @@ class DocumentationAuditor:
             "total_issues": len(issues),
             "high_severity": high_severity,
             "medium_severity": medium_severity,
-            "low_severity": low_severity
+            "low_severity": low_severity,
         }
 
         # Generate recommendations
@@ -427,17 +469,25 @@ class DocumentationAuditor:
         if high_severity > 0:
             recommendations.append("🔴 CRITICAL: Fix high-severity issues immediately")
         if quality_score < 70:
-            recommendations.append("🟡 IMPROVE: Overall documentation quality needs attention")
-        if not self.results["audit_results"].get("link_validation", {}).get("broken_links"):
+            recommendations.append(
+                "🟡 IMPROVE: Overall documentation quality needs attention"
+            )
+        if (
+            not self.results["audit_results"]
+            .get("link_validation", {})
+            .get("broken_links")
+        ):
             recommendations.append("✅ GOOD: No broken links detected")
         if quality_score > 85:
-            recommendations.append("✅ EXCELLENT: High-quality documentation standards maintained")
+            recommendations.append(
+                "✅ EXCELLENT: High-quality documentation standards maintained"
+            )
 
         self.results["recommendations"] = recommendations
 
         return self.results
 
-    def run_comprehensive_audit(self) -> Dict[str, Any]:
+    def run_comprehensive_audit(self) -> dict[str, Any]:
         """Run complete documentation audit."""
         print("🔍 Starting comprehensive documentation audit...")
 
@@ -462,32 +512,30 @@ class DocumentationAuditor:
 
         # Generate final report
         print("📋 Generating audit report...")
-        final_report = self.generate_report()
+        return self.generate_report()
 
-        return final_report
-
-    def save_report(self, output_path: Optional[Path] = None) -> Path:
+    def save_report(self, output_path: Path | None = None) -> Path:
         """Save audit report to file."""
         if output_path is None:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
             output_path = self.project_root / f"docs_audit_{timestamp}.json"
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with Path(output_path).open("w", encoding="utf-8") as f:
             json.dump(self.results, f, indent=2, ensure_ascii=False)
 
         print(f"📄 Audit report saved to: {output_path}")
         return output_path
 
-    def print_summary(self):
+    def print_summary(self) -> None:
         """Print audit summary to console."""
         quality_score = self.results.get("quality_score", 0)
         issue_summary = self.results.get("issue_summary", {})
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
         print("📊 DOCUMENTATION AUDIT SUMMARY")
-        print("="*60)
+        print("=" * 60)
 
         print(f"📈 Quality Score: {quality_score}/100")
 
@@ -507,18 +555,21 @@ class DocumentationAuditor:
             for rec in recommendations:
                 print(f"  {rec}")
 
-        print("\n" + "="*60)
+        print("\n" + "=" * 60)
 
 
-def main():
+def main() -> None:
     """Main entry point for documentation audit."""
-    parser = argparse.ArgumentParser(description="FLEXT Auth Documentation Audit System")
-    parser.add_argument("--project-root", type=Path, default=Path.cwd(),
-                       help="Project root directory")
-    parser.add_argument("--output", type=Path,
-                       help="Output file for audit report")
-    parser.add_argument("--format", choices=["json", "text"], default="text",
-                       help="Output format")
+    parser = argparse.ArgumentParser(
+        description="FLEXT Auth Documentation Audit System"
+    )
+    parser.add_argument(
+        "--project-root", type=Path, default=Path.cwd(), help="Project root directory"
+    )
+    parser.add_argument("--output", type=Path, help="Output file for audit report")
+    parser.add_argument(
+        "--format", choices=["json", "text"], default="text", help="Output format"
+    )
 
     args = parser.parse_args()
 
@@ -529,7 +580,7 @@ def main():
     report = auditor.run_comprehensive_audit()
 
     # Save detailed report
-    report_file = auditor.save_report(args.output)
+    auditor.save_report(args.output)
 
     # Print summary
     if args.format == "text":

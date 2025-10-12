@@ -12,10 +12,10 @@ class TestFlextAuthProtocols:
     """Test FlextAuthProtocols class and its nested protocol classes."""
 
     def test_inherits_from_flext_protocols(self) -> None:
-        """Test that FlextAuthProtocols inherits from FlextProtocols."""
-        from flext_core import FlextProtocols
+        """Test that FlextAuthProtocols inherits from FlextCore.Protocols."""
+        from flext_core import FlextCore
 
-        assert issubclass(FlextAuthProtocols, FlextProtocols)
+        assert issubclass(FlextAuthProtocols, FlextCore.Protocols)
 
     def test_foundation_re_exports(self) -> None:
         """Test that foundation protocols are properly re-exported."""
