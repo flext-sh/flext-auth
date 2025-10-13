@@ -83,8 +83,8 @@ class LinkValidator:
 
                 req = Request(url, headers={"User-Agent": self.user_agent})  # noqa: S310
 
-                def check_url():
-                    with urlopen(req, timeout=self.timeout) as response:  # noqa: S310 - only http/https schemes allowed
+                def check_url(request: Request = req) -> tuple[int, str | None]:
+                    with urlopen(request, timeout=self.timeout) as response:  # noqa: S310 - controlled external link checking
                         return response.status, getattr(response, "url", None)
 
                 _status_code, response_url = await asyncio.to_thread(check_url)

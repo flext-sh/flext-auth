@@ -42,9 +42,8 @@ def main() -> None:
             test_password,
         )
         if user_result.is_success:
-            user = user_result.value
-            # Password verification through user model
-            user.verify_password(test_password)
+            pass
+            # Note: Password verification should be done through the auth service
     except Exception as e:
         # Handle password verification error
         error_message = f"Password verification failed: {e}"

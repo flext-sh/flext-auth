@@ -33,14 +33,7 @@ def debug_password_operations() -> None:
             last_login=None,
         )
 
-        # Set password (this will hash it)
-        set_result = debug_user.set_password(password)
-        if set_result.is_success:
-            # Test verification
-            debug_user.verify_password(password)
-
-            # Test with wrong password
-            debug_user.verify_password("WrongPassword")
+        # Note: Password operations should be done through the auth service
 
     except Exception as e:
         # Handle password verification error

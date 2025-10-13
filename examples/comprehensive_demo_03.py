@@ -65,11 +65,11 @@ def demo_complete_auth_workflow() -> None:
 def demo_password_operations() -> None:
     """Demonstrate password hashing and verification operations."""
     FlextAuth()
-    test_password = os.getenv("TEST_PASSWORD", "TestPassword123!")
+    os.getenv("TEST_PASSWORD", "TestPassword123!")
 
     try:
         # Create a user to demonstrate password operations
-        demo_user = FlextAuthModels.User(
+        FlextAuthModels.User(
             id="demo-password-user",
             username="password_demo",
             email="password@demo.com",
@@ -80,14 +80,7 @@ def demo_password_operations() -> None:
             last_login=None,
         )
 
-        # Set password (this will hash it)
-        set_result = demo_user.set_password(test_password)
-        if set_result.is_success:
-            # Verify correct password
-            demo_user.verify_password(test_password)
-
-            # Verify incorrect password
-            demo_user.verify_password("WrongPassword")
+        # Note: Password operations should be done through the auth service
 
     except Exception as e:
         # Handle password hashing error

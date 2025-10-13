@@ -23,10 +23,10 @@ from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthModels
 def example_advanced_configuration() -> None:
     """Demonstrate advanced configuration options."""
     # Create custom configuration
-    config = FlextAuthConfig()
+    FlextAuthConfig()
 
     # Create auth with custom configuration
-    FlextAuth(config=config)
+    FlextAuth()
 
     # Show that configuration is applied
     # Note: Configuration is encapsulated within FlextAuth
@@ -136,12 +136,12 @@ def example_password_security() -> None:
             pass
 
     # Demonstrate password hashing with different rounds
-    test_password = os.getenv("TEST_PASSWORD", "TestPassword123!")
+    os.getenv("TEST_PASSWORD", "TestPassword123!")
 
     # Show current hashing using User model
     try:
         # Create users to demonstrate password hashing
-        user1 = FlextAuthModels.User(
+        FlextAuthModels.User(
             id="security-demo-user1",
             username="security_demo1",
             email="security1@demo.com",
@@ -151,7 +151,7 @@ def example_password_security() -> None:
             locked_until=None,
             last_login=None,
         )
-        user2 = FlextAuthModels.User(
+        FlextAuthModels.User(
             id="security-demo-user2",
             username="security_demo2",
             email="security2@demo.com",
@@ -162,13 +162,7 @@ def example_password_security() -> None:
             last_login=None,
         )
 
-        # Set same password for both users (will create different hashes)
-        user1.set_password(test_password)
-        user2.set_password(test_password)
-
-        # Verify both passwords work
-        user1.verify_password(test_password)
-        user2.verify_password(test_password)
+        # Note: Password hashing should be done through the auth service, not directly on the model
 
     except Exception as e:
         # Handle password hashing error

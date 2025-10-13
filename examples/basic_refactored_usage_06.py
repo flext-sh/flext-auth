@@ -76,10 +76,10 @@ class FlextAuthDemo:
 
 def _demo_password_utilities() -> None:
     """Demo password utilities and validation."""
-    test_password = os.getenv("FLEXT_DEMO_TEST_PASSWORD", "TestPassword123!")
+    os.getenv("FLEXT_DEMO_TEST_PASSWORD", "TestPassword123!")
 
     try:
-        demo_user = FlextAuthModels.User(
+        FlextAuthModels.User(
             id="password-util-demo",
             username="util_demo",
             email="util@demo.com",
@@ -90,10 +90,7 @@ def _demo_password_utilities() -> None:
             last_login=None,
         )
 
-        # Set and verify password using User model
-        set_result = demo_user.set_password(test_password)
-        if set_result.is_success:
-            demo_user.verify_password(test_password)
+        # Note: Password operations should be done through the auth service
     except Exception as e:
         error_message = f"Password hashing failed: {e}"
         del error_message  # Clean up

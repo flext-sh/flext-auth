@@ -21,15 +21,11 @@ from flext_auth.config import FlextAuthConfig
 
 def main() -> None:
     """Demonstrate basic authentication functionality."""
-    # 1. Password Hashing Example using User model
-    # For demo purposes, we'll use a default password
-    password = "SecurePassword123!"  # In production, this would come from secure config
-
-    # Create a user with password
-    user_creation_result = FlextAuthModels.User.create(
+    # 1. User Creation Example
+    # Create a user (password operations are handled by the auth service)
+    user_creation_result = FlextAuthModels.User(
         username="demouser",
         email="demo@example.com",
-        password=password,
     )
 
     if user_creation_result.is_failure:
@@ -37,41 +33,27 @@ def main() -> None:
         return
 
     user = user_creation_result.value
-
-    # Demonstrate password operations
-    print("=== Password Operations Demo ===")
-
-    # Set password (this will hash it)
-    set_result = user.set_password(password)
-    if set_result.is_success:
-        print("✓ Password set successfully")
-
-        # Verify password
-        verify_result = user.verify_password(password)
-        if verify_result.is_success and verify_result.value:
-            print("✓ Password verification successful")
-        else:
-            print("✗ Password verification failed")
-    else:
-        print(f"✗ Failed to set password: {set_result.error}")
+    print(f"✓ Created user: {user.username}")
 
     # 2. JWT Token Example
     print("\n=== JWT Token Demo ===")
 
-    # Create authentication service
-    auth_service = FlextAuth(
-        config=FlextAuthConfig.create(
-            jwt_auth_secret="demo-jwt-secret-key-for-examples-only-not-secure",  # nosec
-            jwt_expiry_minutes=30,
-            bcrypt_rounds=4,  # Fast for demo
-        )
+    # Configure authentication service through FlextCore.Container
+    container = FlextCore.Container.get_global()
+    config = FlextAuthConfig.create(
+        jwt_auth_secret="demo-jwt-secret-key-for-examples-only-not-secure",  # nosec
+        jwt_expiry_minutes=30,
+        bcrypt_rounds=4,  # Fast for demo
     )
+    container.register("config", config)
+
+    # Create authentication service
+    auth_service = FlextAuth()
 
     # Create user for token demo
-    token_user_creation = FlextAuthModels.User.create(
+    token_user_creation = FlextAuthModels.User(
         username="tokendemo",
         email="token@example.com",
-        password="TokenPassword123!",  # Demo password for example
     )
 
     if token_user_creation.is_failure:
@@ -121,9 +103,7 @@ def main() -> None:
 
     created_users = []
     for username, email, pwd in users_data:
-        user_result = FlextAuthModels.User.create(
-            username=username, email=email, password=pwd
-        )
+        user_result = FlextAuthModels.User(username=username, email=email)
         if user_result.is_success:
             created_users.append(user_result.value)
             print(f"✓ Created user: {username}")

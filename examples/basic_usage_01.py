@@ -18,7 +18,7 @@ import string
 
 from flext_core import FlextCore
 
-from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthModels
+from flext_auth import FlextAuth, FlextAuthConfig
 
 # Get structured logger instance
 logger = FlextCore.Logger(__name__)
@@ -50,44 +50,8 @@ def example_password_operations() -> None:
 
     FlextAuth()
 
-    # Hash a password using User model
-    password = os.getenv("FLEXT_DEMO_PASSWORD", "MySecurePassword123!")
-    try:
-        demo_user = FlextAuthModels.User(
-            id="password-demo-user",
-            username="password_demo",
-            email="password@demo.com",
-            full_name="Password Demo User",
-            is_active=True,
-            failed_login_attempts=0,
-            locked_until=None,
-            last_login=None,
-        )
-
-        # Set password (this will hash it)
-        set_result = demo_user.set_password(password)
-        if set_result.is_success:
-            logger.info("Password hashed successfully")
-
-            # Verify correct password
-            verify_result = demo_user.verify_password(password)
-            is_valid = verify_result.value if verify_result.is_success else False
-            logger.info(
-                "Password verification with correct password", is_valid=is_valid
-            )
-
-            # Verify wrong password
-            wrong_verify_result = demo_user.verify_password("WrongPassword")
-            is_invalid = (
-                wrong_verify_result.value if wrong_verify_result.is_success else False
-            )
-            logger.info(
-                "Password verification with wrong password", is_valid=is_invalid
-            )
-
-    except Exception as e:
-        logger.exception("Password operation failed", error=str(e))
-        raise
+    # Note: Password operations should be done through the auth service, not direct model instantiation
+    logger.info("Password operations are handled by the auth service")
 
 
 def example_email_validation() -> None:
@@ -184,11 +148,11 @@ def example_user_lifecycle() -> None:
             logger.info("Validating JWT token")
             token_result = auth.validate_token(jwt_token_str)
             if token_result.is_success:
-                claims = token_result.value
+                user = token_result.value
                 logger.info(
                     "Token validation successful",
-                    user_id=claims.get("user_id"),
-                    username=claims.get("username"),
+                    user_id=user.user_id,
+                    username=user.username,
                 )
             else:
                 logger.error("Token validation failed", error=token_result.error)
@@ -324,8 +288,8 @@ def example_complete_workflow() -> None:
     # Validate token
     token_validation = auth.validate_token(jwt_token_str)
     if token_validation.is_success:
-        claims = token_validation.value
-        logger.info("Token validation successful", username=claims.get("username"))
+        user = token_validation.value
+        logger.info("Token validation successful", username=user.username)
     else:
         logger.error("Token validation failed", error=token_validation.error)
 

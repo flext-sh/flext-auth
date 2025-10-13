@@ -23,6 +23,7 @@
         "pydantic>=2.11.7",
         "pyjwt>=2.9.0",
         "flext-core @ file:../flext-core",
+        "flext-web @ file:../flext-web",
         "flext-api @ file:../flext-api",
     ]
     description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
