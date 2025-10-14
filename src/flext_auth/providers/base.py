@@ -208,8 +208,8 @@ class FlextAuthBaseProvider(ABC):
             - description: str - Human-readable description
             - author: str - Provider author/maintainer
             - documentation_url: str - Link to documentation
-            - config_schema: dict - Configuration schema (JSON Schema format)
-            - endpoints: dict - API endpoints (for OAuth2/OIDC/SAML)
+            - config_schema: dict[str, object] - Configuration schema (JSON Schema format)
+            - endpoints: dict[str, object] - API endpoints (for OAuth2/OIDC/SAML)
 
         Returns:
             FlextCore.Types.Dict: Provider metadata

@@ -201,7 +201,7 @@ class FlextAuthRegistry:
         self,
         name: str,
         provider: FlextAuthBaseProvider,
-        config: dict | None = None
+        config: dict[str, object] | None = None
     ) -> FlextCore.Result[None]
 
     def unregister(self, name: str) -> FlextCore.Result[None]
@@ -261,7 +261,7 @@ class FlextAuthBaseProvider(Protocol):
         """Return set of supported capabilities."""
         ...
 
-    def get_metadata(self) -> dict:
+    def get_metadata(self) -> dict[str, object]:
         """Return provider metadata."""
         ...
 ```
@@ -415,7 +415,7 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
         """Return provider capabilities."""
         return {"token", "validate", "refresh"}
 
-    def get_metadata(self) -> dict:
+    def get_metadata(self) -> dict[str, object]:
         """Return provider metadata."""
         return {
             "name": "example",
@@ -439,7 +439,7 @@ class BaseTransportAdapter(Protocol):
         self,
         endpoint: str,
         credentials: dict,
-        metadata: dict | None = None
+        metadata: dict[str, object] | None = None
     ) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Send authentication request over transport."""
         ...
@@ -448,12 +448,12 @@ class BaseTransportAdapter(Protocol):
         self,
         endpoint: str,
         token: str,
-        metadata: dict | None = None
+        metadata: dict[str, object] | None = None
     ) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Send token validation request over transport."""
         ...
 
-    def get_transport_metadata(self) -> dict:
+    def get_transport_metadata(self) -> dict[str, object]:
         """Return transport metadata."""
         ...
 ```
@@ -469,7 +469,7 @@ from flext_core import FlextCore
 class HttpTransportAdapter(BaseTransportAdapter):
     """HTTP transport adapter using flext-api."""
 
-    def __init__(self, config: dict | None = None) -> None:
+    def __init__(self, config: dict[str, object] | None = None) -> None:
         self._api = FlextApi(config=config)  # MANDATORY: Use flext-api
         self.logger = FlextCore.Logger(__name__)
 
@@ -477,7 +477,7 @@ class HttpTransportAdapter(BaseTransportAdapter):
         self,
         endpoint: str,
         credentials: dict,
-        metadata: dict | None = None
+        metadata: dict[str, object] | None = None
     ) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Send authentication request via HTTP using flext-api."""
         result = self._api.post(
@@ -505,7 +505,7 @@ from flext_core import FlextCore
 class GrpcTransportAdapter(BaseTransportAdapter):
     """gRPC transport adapter using flext-grpc."""
 
-    def __init__(self, config: dict | None = None) -> None:
+    def __init__(self, config: dict[str, object] | None = None) -> None:
         self._grpc = FlextGrpc(config=config)  # MANDATORY: Use flext-grpc
         self.logger = FlextCore.Logger(__name__)
 
@@ -513,7 +513,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
         self,
         endpoint: str,
         credentials: dict,
-        metadata: dict | None = None
+        metadata: dict[str, object] | None = None
     ) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Send authentication request via gRPC using flext-grpc."""
         result = self._grpc.call(
@@ -537,7 +537,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
 class WebSocketTransportAdapter(BaseTransportAdapter):
     """WebSocket transport adapter for real-time authentication."""
 
-    def __init__(self, config: dict | None = None) -> None:
+    def __init__(self, config: dict[str, object] | None = None) -> None:
         self._config = config
         self.logger = FlextCore.Logger(__name__)
 
@@ -545,7 +545,7 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
         self,
         endpoint: str,
         credentials: dict,
-        metadata: dict | None = None
+        metadata: dict[str, object] | None = None
     ) -> FlextCore.Result[FlextCore.Types.Dict]:
         """Send authentication request via WebSocket."""
         # Implementation using websockets library
@@ -565,7 +565,7 @@ class BaseProtocolHandler(Protocol):
     def format_auth_request(
         self,
         credentials: dict,
-        metadata: dict | None = None
+        metadata: dict[str, object] | None = None
     ) -> FlextCore.Result[bytes | str]:
         """Format authentication request for protocol."""
         ...
@@ -587,7 +587,7 @@ class RestProtocolHandler(BaseProtocolHandler):
     def format_auth_request(
         self,
         credentials: dict,
-        metadata: dict | None = None
+        metadata: dict[str, object] | None = None
     ) -> FlextCore.Result[str]:
         """Format as JSON REST request."""
         import json
@@ -619,7 +619,7 @@ class SoapProtocolHandler(BaseProtocolHandler):
     def format_auth_request(
         self,
         credentials: dict,
-        metadata: dict | None = None
+        metadata: dict[str, object] | None = None
     ) -> FlextCore.Result[str]:
         """Format as SOAP XML request."""
         # Implementation for SOAP envelope creation
@@ -762,7 +762,7 @@ class TokenCache:
     def __init__(
         self,
         backend: str = "memory",  # "memory", "redis", "memcached"
-        config: dict | None = None
+        config: dict[str, object] | None = None
     ) -> None:
         self._backend = self._create_backend(backend, config)
         self.logger = FlextCore.Logger(__name__)
@@ -820,7 +820,7 @@ class CredentialManager:
         self,
         identifier: str,
         credential: dict,
-        metadata: dict | None = None
+        metadata: dict[str, object] | None = None
     ) -> FlextCore.Result[None]:
         """Store credential with encryption."""
         encrypted = self._cipher.encrypt(credential)

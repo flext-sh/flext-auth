@@ -48,7 +48,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 error_code = str(error_code)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -97,7 +97,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 error_code = str(error_code)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -147,7 +147,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 error_code = str(error_code)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -197,7 +197,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 error_code = str(error_code)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -247,7 +247,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 error_code = str(error_code)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -292,7 +292,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 correlation_id = str(correlation_id)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -338,7 +338,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 correlation_id = str(correlation_id)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -389,7 +389,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 error_code = str(error_code)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -434,7 +434,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 correlation_id = str(correlation_id)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -485,7 +485,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 error_code = str(error_code)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -530,7 +530,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 correlation_id = str(correlation_id)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -578,7 +578,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 correlation_id = str(correlation_id)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -623,7 +623,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 correlation_id = str(correlation_id)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -669,7 +669,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 correlation_id = str(correlation_id)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -712,7 +712,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 correlation_id = str(correlation_id)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -753,7 +753,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 correlation_id = str(correlation_id)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -794,7 +794,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 correlation_id = str(correlation_id)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -835,7 +835,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 correlation_id = str(correlation_id)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -876,7 +876,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 correlation_id = str(correlation_id)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:
@@ -917,7 +917,7 @@ class FlextAuthExceptions(FlextCore.Exceptions):
                 correlation_id = str(correlation_id)
 
             # Build context
-            context = dict(base_context)
+            context = dict[str, object](base_context)
             if "domain" not in context:
                 context["domain"] = "authentication"
             if "service" not in context:

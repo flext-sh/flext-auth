@@ -88,7 +88,7 @@ class FlextAuthUserService(FlextCore.Service):
             return FlextCore.Result[FlextAuthModels.User].fail(hash_result.error)
 
         # Prepare extra fields
-        user_extra_fields = dict(extra_fields)
+        user_extra_fields = dict[str, object](extra_fields)
         if roles is not None:
             user_extra_fields["roles"] = roles
 

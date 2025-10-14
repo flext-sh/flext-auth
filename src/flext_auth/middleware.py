@@ -159,7 +159,9 @@ class FlextAuthMiddleware(FlextCore.Service):
                 # Add authentication header to request
                 # Use object.__setattr__ to bypass Pydantic's extra="forbid"
                 current_headers = (
-                    dict(request.headers) if hasattr(request, "headers") else {}
+                    dict[str, object](request.headers)
+                    if hasattr(request, "headers")
+                    else {}
                 )
                 current_headers[self._header_name] = auth_value
 

@@ -56,7 +56,7 @@ class FlextAuthProviderService(FlextCore.Service):
         config_dict = self._config.model_dump()
 
         # Map flext-auth config fields to provider-expected fields
-        provider_config = dict(config_dict)
+        provider_config = dict[str, object](config_dict)
         if hasattr(self._config, "jwt_auth_secret") and self._config.jwt_auth_secret:
             provider_config["secret_key"] = (
                 self._config.jwt_auth_secret.get_secret_value()

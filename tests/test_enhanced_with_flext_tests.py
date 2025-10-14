@@ -364,7 +364,7 @@ class TestEnhancedAuthentication:
         """Test authentication and token operations.
 
         Returns:
-            dict: Authentication data including session and token information.
+            dict[str, object]: Authentication data including session and token information.
 
         """
         auth_result = auth.authenticate_user(username, "LifecycleTest123!@#")

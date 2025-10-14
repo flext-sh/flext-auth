@@ -393,7 +393,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             principal: Principal name (e.g., "user@REALM" or "service/host@REALM")
 
         Returns:
-            dict: Parsed principal components
+            dict[str, object]: Parsed principal components
 
         """
         # Parse principal format: primary[/instance]@realm

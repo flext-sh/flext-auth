@@ -312,7 +312,7 @@ class FlextAuthRegistry(FlextCore.Registry):
             return FlextCore.Result[None].fail("Configuration must be a dictionary")
 
         # Provider-specific validation would be added here
-        # For now, we accept any dict configuration
+        # For now, we accept any dict[str, object] configuration
         self.logger.debug(
             f"Configuration validated for provider '{name}'",
             extra={"provider": name, "config_keys": list(config.keys())},

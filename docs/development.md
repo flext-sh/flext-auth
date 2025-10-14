@@ -105,7 +105,7 @@ def authenticate_user(username: str, password: str) -> FlextCore.Result[FlextCor
     return FlextCore.Result[FlextCore.Types.Dict].ok(result)
 
 # ❌ Incorrect - Don't use exceptions for business logic
-def authenticate_user(username: str, password: str) -> dict:
+def authenticate_user(username: str, password: str) -> dict[str, object]:
     if not username:
         raise ValueError("Username required")
 

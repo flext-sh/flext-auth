@@ -135,7 +135,7 @@ class FlextAuthProviderMixin:
         """Get metadata about provider capabilities.
 
         Returns:
-            dict: Metadata including supported capabilities
+            dict[str, object]: Metadata including supported capabilities
 
         Example:
             >>> metadata = provider._get_capability_metadata()
