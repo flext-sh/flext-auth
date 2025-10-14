@@ -11,10 +11,9 @@ SPDX-License-Identifier: MIT
 import argparse
 import json
 import shutil
-import subprocess  # noqa: S404
+import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
 
 class DocumentationSynchronizer:
@@ -64,7 +63,7 @@ class DocumentationSynchronizer:
         except subprocess.CalledProcessError as e:
             return False, f"Git command failed: {e.stderr.strip()}"
 
-    def get_recent_changes(self, days: int = 7) -> dict[str, Any]:
+    def get_recent_changes(self, days: int = 7) -> dict[str, object]:
         """Get recent documentation changes."""
         changes = {
             "period_days": days,
@@ -129,7 +128,7 @@ class DocumentationSynchronizer:
         changes["authors"] = list(changes["authors"])
         return changes
 
-    def check_sync_status(self) -> dict[str, Any]:
+    def check_sync_status(self) -> dict[str, object]:
         """Check synchronization status of documentation."""
         status = {
             "git_status": "unknown",
@@ -198,7 +197,7 @@ class DocumentationSynchronizer:
 
         return True, f"Successfully committed {len(files)} files"
 
-    def generate_sync_report(self) -> dict[str, Any]:
+    def generate_sync_report(self) -> dict[str, object]:
         """Generate comprehensive synchronization report."""
         report = {
             "timestamp": datetime.now(UTC).isoformat(),
@@ -273,11 +272,11 @@ class QualityAssuranceReporter:
 
     def generate_comprehensive_report(
         self,
-        audit_results: dict[str, Any],
-        link_results: dict[str, Any],
-        optimization_results: dict[str, Any],
-        sync_results: dict[str, Any],
-    ) -> dict[str, Any]:
+        audit_results: dict[str, object],
+        link_results: dict[str, object],
+        optimization_results: dict[str, object],
+        sync_results: dict[str, object],
+    ) -> dict[str, object]:
         """Generate comprehensive QA report combining all audit results."""
         # Calculate overall quality score
         audit_score = self._calculate_audit_score(audit_results)
@@ -345,7 +344,7 @@ class QualityAssuranceReporter:
             ),
         }
 
-    def _calculate_audit_score(self, audit_results: dict[str, Any]) -> int:
+    def _calculate_audit_score(self, audit_results: dict[str, object]) -> int:
         """Calculate audit quality score."""
         total_issues = audit_results.get("issue_summary", {}).get("total_issues", 0)
         high_severity = audit_results.get("issue_summary", {}).get("high_severity", 0)
@@ -359,9 +358,9 @@ class QualityAssuranceReporter:
 
     def _identify_critical_issues(
         self,
-        audit_results: dict[str, Any],
-        link_results: dict[str, Any],
-    ) -> list[dict[str, Any]]:
+        audit_results: dict[str, object],
+        link_results: dict[str, object],
+    ) -> list[dict[str, object]]:
         """Identify critical issues requiring immediate attention."""
         critical_issues = []
 
@@ -404,10 +403,10 @@ class QualityAssuranceReporter:
 
     def _generate_comprehensive_recommendations(
         self,
-        audit_results: dict[str, Any],
-        link_results: dict[str, Any],
-        optimization_results: dict[str, Any],
-        sync_results: dict[str, Any],
+        audit_results: dict[str, object],
+        link_results: dict[str, object],
+        optimization_results: dict[str, object],
+        sync_results: dict[str, object],
     ) -> list[str]:
         """Generate comprehensive recommendations."""
         recommendations = []
@@ -457,7 +456,7 @@ class QualityAssuranceReporter:
 
         return recommendations
 
-    def _analyze_trends(self) -> dict[str, Any]:
+    def _analyze_trends(self) -> dict[str, object]:
         """Analyze documentation quality trends."""
         # This would typically analyze historical data
         # For now, return placeholder structure
@@ -474,11 +473,11 @@ class QualityAssuranceReporter:
 
     def _create_action_plan(
         self,
-        audit_results: dict[str, Any],
-        link_results: dict[str, Any],
-        optimization_results: dict[str, Any],
-        sync_results: dict[str, Any],
-    ) -> dict[str, Any]:
+        audit_results: dict[str, object],
+        link_results: dict[str, object],
+        optimization_results: dict[str, object],
+        sync_results: dict[str, object],
+    ) -> dict[str, object]:
         """Create actionable improvement plan."""
         action_plan = {
             "immediate_actions": [],
@@ -533,7 +532,7 @@ class QualityAssuranceReporter:
         return action_plan
 
     def save_comprehensive_report(
-        self, report: dict[str, Any], filename: str | None = None
+        self, report: dict[str, object], filename: str | None = None
     ) -> Path:
         """Save comprehensive QA report."""
         if filename is None:
@@ -548,7 +547,7 @@ class QualityAssuranceReporter:
         print(f"📄 Comprehensive QA report saved to: {report_path}")
         return report_path
 
-    def print_executive_summary(self, report: dict[str, Any]) -> None:
+    def print_executive_summary(self, report: dict[str, object]) -> None:
         """Print executive summary of QA report."""
         print("\n" + "=" * 80)
         print("📊 DOCUMENTATION QUALITY ASSURANCE EXECUTIVE SUMMARY")

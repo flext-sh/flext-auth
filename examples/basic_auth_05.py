@@ -102,7 +102,7 @@ def main() -> None:
     ]
 
     created_users = []
-    for username, email, pwd in users_data:
+    for username, email, _pwd in users_data:
         user_result = FlextAuthModels.User(username=username, email=email)
         if user_result.is_success:
             created_users.append(user_result.value)

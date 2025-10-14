@@ -49,7 +49,7 @@ All ADRs follow a consistent template:
 
 ## Notes
 
-[Any additional notes or implementation details]
+[object additional notes or implementation details]
 ```
 
 ## Current ADRs

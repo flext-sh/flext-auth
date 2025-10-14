@@ -107,7 +107,7 @@
 
 ## Notes
 
-[Any additional notes, implementation details, or future considerations]
+[object additional notes, implementation details, or future considerations]
 
 ---
 

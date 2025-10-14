@@ -13,7 +13,6 @@ import json
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
 from content_optimizer import ContentOptimizer
 
@@ -36,12 +35,12 @@ class DocumentationMaintenanceSystem:
         self.qa_reporter = QualityAssuranceReporter(project_root)
 
         # Results storage
-        self.audit_results: dict[str, Any] | None = None
-        self.link_results: dict[str, Any] | None = None
-        self.optimization_results: dict[str, Any] | None = None
-        self.sync_results: dict[str, Any] | None = None
+        self.audit_results: dict[str, object] | None = None
+        self.link_results: dict[str, object] | None = None
+        self.optimization_results: dict[str, object] | None = None
+        self.sync_results: dict[str, object] | None = None
 
-    def run_comprehensive_maintenance(self) -> dict[str, Any]:
+    def run_comprehensive_maintenance(self) -> dict[str, object]:
         """Run complete documentation maintenance cycle."""
         print("🚀 Starting comprehensive documentation maintenance...")
         print(f"📁 Project root: {self.project_root}")
@@ -79,7 +78,7 @@ class DocumentationMaintenanceSystem:
 
         return comprehensive_report
 
-    def run_quick_audit(self) -> dict[str, Any]:
+    def run_quick_audit(self) -> dict[str, object]:
         """Run quick audit for immediate feedback."""
         print("⚡ Running quick documentation audit...")
 
@@ -104,7 +103,7 @@ class DocumentationMaintenanceSystem:
         print(f"📄 Quick audit report saved to: {output_path}")
         return report
 
-    def generate_maintenance_report(self) -> dict[str, Any]:
+    def generate_maintenance_report(self) -> dict[str, object]:
         """Generate maintenance status report."""
         if not all([
             self.audit_results,

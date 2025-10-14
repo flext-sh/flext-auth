@@ -14,7 +14,6 @@ import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
 
 @dataclass
@@ -426,7 +425,7 @@ class ContentOptimizer:
         # Filter out archive files
         return [doc for doc in docs_files if "archive" not in str(doc)]
 
-    def run_optimization_audit(self) -> dict[str, Any]:
+    def run_optimization_audit(self) -> dict[str, object]:
         """Run comprehensive content optimization audit."""
         print("🔍 Starting content optimization audit...")
 
@@ -518,7 +517,7 @@ class ContentOptimizer:
             overall_quality=max(0, min(100, overall_quality)),
         )
 
-    def generate_report(self) -> dict[str, Any]:
+    def generate_report(self) -> dict[str, object]:
         """Generate comprehensive optimization report."""
         audit_results = self.run_optimization_audit()
 
@@ -549,7 +548,7 @@ class ContentOptimizer:
             "detailed_suggestions": audit_results["suggestions_by_file"],
         }
 
-    def _generate_recommendations(self, audit_results: dict[str, Any]) -> list[str]:
+    def _generate_recommendations(self, audit_results: dict[str, object]) -> list[str]:
         """Generate actionable recommendations."""
         recommendations = []
 

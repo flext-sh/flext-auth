@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import threading
-from typing import Any, ClassVar
+from typing import ClassVar
 
 from dependency_injector import providers
 from flext_core import FlextCore
@@ -288,7 +288,7 @@ class FlextAuthConfig(FlextCore.Config):
         return cls._di_config_provider
 
     @classmethod
-    def create(cls, **kwargs: Any) -> FlextAuthConfig:
+    def create(cls, **kwargs: object) -> FlextAuthConfig:
         """Create a new FlextAuthConfig instance with optional overrides."""
         return cls(**kwargs)
 

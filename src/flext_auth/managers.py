@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from typing import Any, cast
+from typing import cast
 from uuid import uuid4
 
 from flext_core import FlextCore
@@ -74,7 +74,7 @@ class FlextAuthManagers(FlextCore.Service):
 
             user_id = str(uuid4())
             user_data = cast(
-                "dict[str, Any]",
+                "dict[str, object]",
                 {
                     "user_id": user_id,
                     "username": username,
@@ -96,7 +96,7 @@ class FlextAuthManagers(FlextCore.Service):
             """Get user by ID."""
             for user_data in self._users.values():
                 if user_data["id"] == user_id:
-                    user = FlextAuthModels.User(**cast("dict[str, Any]", user_data))
+                    user = FlextAuthModels.User(**cast("dict[str, object]", user_data))
                     return FlextCore.Result[FlextAuthModels.User].ok(user)
 
             return FlextCore.Result[FlextAuthModels.User].fail("User not found")
@@ -109,7 +109,7 @@ class FlextAuthManagers(FlextCore.Service):
                 return FlextCore.Result[FlextAuthModels.User].fail("User not found")
 
             user_data = self._users[username]
-            user = FlextAuthModels.User(**cast("dict[str, Any]", user_data))
+            user = FlextAuthModels.User(**cast("dict[str, object]", user_data))
             return FlextCore.Result[FlextAuthModels.User].ok(user)
 
         def update_user(
@@ -120,7 +120,7 @@ class FlextAuthManagers(FlextCore.Service):
                 if user_data["id"] == user_id:
                     user_data.update(updates)
                     user_data["updated_at"] = datetime.now(UTC)
-                    user = FlextAuthModels.User(**cast("dict[str, Any]", user_data))
+                    user = FlextAuthModels.User(**cast("dict[str, object]", user_data))
                     return FlextCore.Result[FlextAuthModels.User].ok(user)
 
             return FlextCore.Result[FlextAuthModels.User].fail("User not found")
@@ -211,7 +211,7 @@ class FlextAuthManagers(FlextCore.Service):
             expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
 
             session_data = cast(
-                "dict[str, Any]",
+                "dict[str, object]",
                 {
                     "id": session_id,
                     "user_id": user_id,
@@ -239,7 +239,7 @@ class FlextAuthManagers(FlextCore.Service):
                     and session_data["expires_at"] > datetime.now(UTC)
                 ):
                     session = FlextAuthModels.Session(
-                        **cast("dict[str, Any]", session_data)
+                        **cast("dict[str, object]", session_data)
                     )
                     sessions.append(session)
 

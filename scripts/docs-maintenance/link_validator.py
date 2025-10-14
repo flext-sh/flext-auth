@@ -15,7 +15,6 @@ import re
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
@@ -56,7 +55,7 @@ class LinkValidator:
         self.timeout = timeout
         self.max_retries = max_retries
         self.user_agent = "FLEXT-Docs-Link-Validator/1.0"
-        self.results: dict[str, Any] = {
+        self.results: dict[str, object] = {
             "timestamp": time.time(),
             "validation_results": {},
             "issues": [],
@@ -81,10 +80,10 @@ class LinkValidator:
                         redirect_url=None,
                     )
 
-                req = Request(url, headers={"User-Agent": self.user_agent})  # noqa: S310
+                req = Request(url, headers={"User-Agent": self.user_agent})
 
                 def check_url(request: Request = req) -> tuple[int, str | None]:
-                    with urlopen(request, timeout=self.timeout) as response:  # noqa: S310 - controlled external link checking
+                    with urlopen(request, timeout=self.timeout) as response:
                         return response.status, getattr(response, "url", None)
 
                 _status_code, response_url = await asyncio.to_thread(check_url)
@@ -349,7 +348,7 @@ class LinkValidator:
         # Filter out archive files
         return [doc for doc in docs_files if "archive" not in str(doc)]
 
-    async def run_link_audit(self) -> dict[str, Any]:
+    async def run_link_audit(self) -> dict[str, object]:
         """Run comprehensive link audit."""
         print("🔗 Starting comprehensive link validation...")
 
@@ -470,7 +469,7 @@ class LinkValidator:
             "files_with_issues": len(validation_results["issues_by_file"]),
         }
 
-    def generate_report(self) -> dict[str, Any]:
+    def generate_report(self) -> dict[str, object]:
         """Generate comprehensive validation report."""
         return {
             "summary": {

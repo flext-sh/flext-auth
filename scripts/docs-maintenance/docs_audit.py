@@ -14,7 +14,6 @@ import json
 import re
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import urlopen
@@ -34,7 +33,7 @@ class DocumentationAuditor:
         """Initialize documentation auditor with project root."""
         self.project_root = project_root
         self.docs_dir = project_root / "docs"
-        self.results: dict[str, Any] = {
+        self.results: dict[str, object] = {
             "timestamp": datetime.now(UTC).isoformat(),
             "project": "flext-auth",
             "audit_results": {},
@@ -72,7 +71,7 @@ class DocumentationAuditor:
 
         return active_docs
 
-    def analyze_content_quality(self, docs_files: list[Path]) -> dict[str, Any]:
+    def analyze_content_quality(self, docs_files: list[Path]) -> dict[str, object]:
         """Analyze content quality metrics."""
         quality_analysis = {
             "file_metrics": [],
@@ -121,7 +120,7 @@ class DocumentationAuditor:
 
         return quality_analysis
 
-    def _analyze_single_file(self, file_path: Path, content: str) -> dict[str, Any]:
+    def _analyze_single_file(self, file_path: Path, content: str) -> dict[str, object]:
         """Analyze a single documentation file."""
         lines = content.split("\n")
         word_count = len(re.findall(r"\b\w+\b", content))
@@ -161,7 +160,7 @@ class DocumentationAuditor:
             return "stale"
         return "outdated"
 
-    def _analyze_structure(self, content: str) -> dict[str, Any]:
+    def _analyze_structure(self, content: str) -> dict[str, object]:
         """Analyze document structure."""
         lines = content.split("\n")
 
@@ -198,7 +197,7 @@ class DocumentationAuditor:
             else "needs_attention",
         }
 
-    def _check_completeness(self, content: str, filename: str) -> dict[str, Any]:
+    def _check_completeness(self, content: str, filename: str) -> dict[str, object]:
         """Check documentation completeness."""
         checks = {
             "has_frontmatter": bool(re.search(r"^---\s*$", content, re.MULTILINE)),
@@ -235,7 +234,7 @@ class DocumentationAuditor:
 
         return checks
 
-    async def validate_links(self, docs_files: list[Path]) -> dict[str, Any]:
+    async def validate_links(self, docs_files: list[Path]) -> dict[str, object]:
         """Validate all links in documentation."""
         link_validation = {
             "internal_links": [],
@@ -347,7 +346,7 @@ class DocumentationAuditor:
             else:
                 # Fallback to thread-based blocking call
                 def check_url() -> bool:
-                    req = urlopen(url, timeout=10)  # noqa: S310
+                    req = urlopen(url, timeout=10)
                     return req.status == 200
 
                 return await asyncio.to_thread(check_url)
@@ -380,7 +379,7 @@ class DocumentationAuditor:
         except Exception:
             return False
 
-    def check_style_consistency(self, docs_files: list[Path]) -> dict[str, Any]:
+    def check_style_consistency(self, docs_files: list[Path]) -> dict[str, object]:
         """Check style consistency across documentation."""
         style_issues = {
             "inconsistent_headers": [],
@@ -441,7 +440,7 @@ class DocumentationAuditor:
 
         return style_issues
 
-    def generate_report(self) -> dict[str, Any]:
+    def generate_report(self) -> dict[str, object]:
         """Generate comprehensive audit report."""
         # Calculate quality score
         self.results["discovery"]["total_files"]
@@ -487,7 +486,7 @@ class DocumentationAuditor:
 
         return self.results
 
-    def run_comprehensive_audit(self) -> dict[str, Any]:
+    def run_comprehensive_audit(self) -> dict[str, object]:
         """Run complete documentation audit."""
         print("🔍 Starting comprehensive documentation audit...")
 
