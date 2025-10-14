@@ -5,6 +5,7 @@ enabling dynamic registration, discovery, and lifecycle management of auth provi
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
+
 """
 
 from __future__ import annotations
