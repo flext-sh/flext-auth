@@ -76,9 +76,7 @@ class TestFlextAuthExceptionsCoverage:
 
     def test_configuration_error(self) -> None:
         """Test ConfigurationError exception."""
-        error = FlextAuthExceptions.FlextCore.ConfigurationError(
-            "Invalid configuration"
-        )
+        error = FlextAuthExceptions.FlextConfigurationError("Invalid configuration")
         assert "[CONFIGURATION_ERROR] Invalid configuration" in str(error)
         assert isinstance(error, Exception)
 
@@ -105,7 +103,7 @@ class TestFlextAuthExceptionsCoverage:
             FlextAuthExceptions.FlextPasswordValidationError("test"),
             FlextAuthExceptions.FlextRateLimitExceededError("test"),
             FlextAuthExceptions.FlextAccountLockedError("test"),
-            FlextAuthExceptions.FlextCore.ConfigurationError("test"),
+            FlextAuthExceptions.FlextConfigurationError("test"),
         ]
 
         for exc in exceptions:

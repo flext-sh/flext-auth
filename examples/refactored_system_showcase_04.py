@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextCore
+from flext_core import FlextResult
 
 from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthQuickstart
 
@@ -51,11 +51,11 @@ def demonstrate_quickstart_functionality() -> None:
 
 
 def demonstrate_flext_result_integration() -> None:
-    """Demonstrate FlextCore.Result pattern integration."""
-    # FlextCore.Result pattern usage
-    FlextCore.Result[str].ok("Refactoring successful")
+    """Demonstrate FlextResult pattern integration."""
+    # FlextResult pattern usage
+    FlextResult[str].ok("Refactoring successful")
 
-    FlextCore.Result[str].fail("Example failure case")
+    FlextResult[str].fail("Example failure case")
 
     # Show real usage in auth operations
     auth: FlextAuth = FlextAuth()

@@ -16,7 +16,7 @@ from typing import cast
 from uuid import uuid4
 
 import jwt
-from flext_core import FlextCore
+from flext_core import FlextBus, FlextContext, FlextLogger, FlextResult, FlextTypes
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
@@ -48,7 +48,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     """
 
-    def __init__(self, config: FlextCore.Types.Dict) -> None:
+    def __init__(self, config: FlextTypes.Dict) -> None:
         """Initialize JWT provider with configuration.
 
         Args:
@@ -86,21 +86,21 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         )
 
         # Initialize flext-core components
-        self.logger = FlextCore.Logger(__name__)
-        self._context = FlextCore.Context()
-        self._bus = FlextCore.Bus()
+        self.logger = FlextLogger(__name__)
+        self._context = FlextContext()
+        self._bus = FlextBus()
 
     def authenticate(
         self,
-        credentials: FlextCore.Types.Dict,
-    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
+        credentials: FlextTypes.Dict,
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate user with username/password credentials.
 
         Args:
             credentials: Dictionary containing username and password
 
         Returns:
-            FlextCore.Result[AuthToken]: Authentication token on success
+            FlextResult[AuthToken]: Authentication token on success
 
         """
         # Check if this is token generation for authenticated user or authentication
@@ -114,9 +114,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
                 credentials, ["username", "password"]
             )
             if validation.is_failure:
-                return FlextCore.Result[FlextAuthModels.AuthToken].fail(
-                    validation.error
-                )
+                return FlextResult[FlextAuthModels.AuthToken].fail(validation.error)
 
             username = cast("str", credentials["username"])
             password = cast("str", credentials["password"])
@@ -128,7 +126,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             )
 
             if not password_valid:
-                return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+                return FlextResult[FlextAuthModels.AuthToken].fail(
                     "Invalid credentials"
                 )
 
@@ -137,7 +135,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # Generate access token
         access_token_result = self._generate_access_token(credentials)
         if access_token_result.is_failure:
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+            return FlextResult[FlextAuthModels.AuthToken].fail(
                 access_token_result.error
             )
 
@@ -176,19 +174,19 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             },
         )
 
-        return FlextCore.Result[FlextAuthModels.AuthToken].ok(auth_token)
+        return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)
 
     def validate(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextCore.Result[bool]:
+    ) -> FlextResult[bool]:
         """Validate JWT token.
 
         Args:
             token: JWT token string or AuthToken object
 
         Returns:
-            FlextCore.Result[bool]: True if valid, False if invalid
+            FlextResult[bool]: True if valid, False if invalid
 
         """
         # Extract token string
@@ -197,7 +195,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # Validate token string format
         validation = self._validate_token_string(token_string)
         if validation.is_failure:
-            return FlextCore.Result[bool].fail(validation.error)
+            return FlextResult[bool].fail(validation.error)
 
         try:
             # Decode and validate JWT
@@ -213,46 +211,46 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             if "exp" in payload:
                 exp_timestamp = payload["exp"]
                 if datetime.now(UTC).timestamp() > exp_timestamp:
-                    return FlextCore.Result[bool].ok(False)
+                    return FlextResult[bool].ok(False)
 
-            return FlextCore.Result[bool].ok(True)
+            return FlextResult[bool].ok(True)
 
         except jwt.ExpiredSignatureError:
-            return FlextCore.Result[bool].ok(False)
+            return FlextResult[bool].ok(False)
         except jwt.InvalidTokenError as e:
-            return FlextCore.Result[bool].fail(f"Invalid token: {e}")
+            return FlextResult[bool].fail(f"Invalid token: {e}")
 
-    def get_decoding_params(self) -> FlextCore.Result[FlextCore.Types.Dict]:
+    def get_decoding_params(self) -> FlextResult[FlextTypes.Dict]:
         """Get parameters needed for JWT decoding.
 
         Returns:
-            FlextCore.Result[dict]: Decoding parameters with secret_key and algorithm
+            FlextResult[dict]: Decoding parameters with secret_key and algorithm
 
         """
-        return FlextCore.Result[FlextCore.Types.Dict].ok({
-            "secret_key": self._secret_key,
-            "algorithm": self._algorithm,
-        })
+        return FlextResult[FlextTypes.Dict].ok(
+            {
+                "secret_key": self._secret_key,
+                "algorithm": self._algorithm,
+            }
+        )
 
     def refresh(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Refresh JWT token.
 
         Args:
             token: Existing token to refresh
 
         Returns:
-            FlextCore.Result[AuthToken]: New token on success
+            FlextResult[AuthToken]: New token on success
 
         """
         # Check if refresh is supported
         capability_check = self._check_capability_supported("refresh")
         if capability_check.is_failure:
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
-                capability_check.error
-            )
+            return FlextResult[FlextAuthModels.AuthToken].fail(capability_check.error)
 
         # Extract token string
         token_string = self._extract_token_string(token)
@@ -269,7 +267,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             # Generate new token with same user info
             new_token_result = self._generate_access_token(payload)
             if new_token_result.is_failure:
-                return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+                return FlextResult[FlextAuthModels.AuthToken].fail(
                     new_token_result.error
                 )
 
@@ -284,31 +282,31 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
                 is_revoked=False,
             )
 
-            return FlextCore.Result[FlextAuthModels.AuthToken].ok(auth_token)
+            return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)
 
         except jwt.InvalidTokenError as e:
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+            return FlextResult[FlextAuthModels.AuthToken].fail(
                 f"Invalid token for refresh: {e}"
             )
 
     def revoke(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Revoke JWT token.
 
         Args:
             token: Token to revoke
 
         Returns:
-            FlextCore.Result[None]: Success if revoked
+            FlextResult[None]: Success if revoked
 
         """
         # JWT tokens are stateless, so revocation requires external tracking
         # This is a placeholder implementation
         _ = token  # Mark as used to avoid linting error
         self.logger.info("Token revocation requested (stateless JWT)")
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
     def supports(self) -> set[str]:
         """Return supported capabilities.
@@ -319,11 +317,11 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         """
         return {"token", "validate", "refresh"}
 
-    def get_metadata(self) -> FlextCore.Types.Dict:
+    def get_metadata(self) -> FlextTypes.Dict:
         """Return provider metadata.
 
         Returns:
-            FlextCore.Types.Dict: Provider metadata
+            FlextTypes.Dict: Provider metadata
 
         """
         return {
@@ -336,15 +334,15 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         }
 
     def _generate_access_token(
-        self, credentials: FlextCore.Types.Dict
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+        self, credentials: FlextTypes.Dict
+    ) -> FlextResult[FlextTypes.Dict]:
         """Generate access token.
 
         Args:
             credentials: User credentials
 
         Returns:
-            FlextCore.Result[dict]: Token data on success
+            FlextResult[dict]: Token data on success
 
         """
         try:
@@ -371,28 +369,28 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
                 self._algorithm,
             )
             if token_result.is_failure:
-                return FlextCore.Result[FlextCore.Types.Dict].fail(token_result.error)
+                return FlextResult[FlextTypes.Dict].fail(token_result.error)
 
-            return FlextCore.Result[FlextCore.Types.Dict].ok({
-                "token": token_result.value,
-                "expires_at": expires_at,
-            })
-
-        except Exception as e:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
-                f"Token generation failed: {e}"
+            return FlextResult[FlextTypes.Dict].ok(
+                {
+                    "token": token_result.value,
+                    "expires_at": expires_at,
+                }
             )
 
+        except Exception as e:
+            return FlextResult[FlextTypes.Dict].fail(f"Token generation failed: {e}")
+
     def _generate_refresh_token(
-        self, credentials: FlextCore.Types.Dict
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+        self, credentials: FlextTypes.Dict
+    ) -> FlextResult[FlextTypes.Dict]:
         """Generate refresh token.
 
         Args:
             credentials: User credentials
 
         Returns:
-            FlextCore.Result[dict]: Refresh token data on success
+            FlextResult[dict]: Refresh token data on success
 
         """
         try:
@@ -419,21 +417,23 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
                 self._algorithm,
             )
             if token_result.is_failure:
-                return FlextCore.Result[FlextCore.Types.Dict].fail(token_result.error)
+                return FlextResult[FlextTypes.Dict].fail(token_result.error)
 
-            return FlextCore.Result[FlextCore.Types.Dict].ok({
-                "token": token_result.value,
-                "expires_at": expires_at,
-            })
+            return FlextResult[FlextTypes.Dict].ok(
+                {
+                    "token": token_result.value,
+                    "expires_at": expires_at,
+                }
+            )
 
         except Exception as e:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 f"Refresh token generation failed: {e}"
             )
 
     def generate_access_token(
-        self, payload: FlextCore.Types.Dict, expires_in_minutes: int | None = None
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+        self, payload: FlextTypes.Dict, expires_in_minutes: int | None = None
+    ) -> FlextResult[FlextTypes.Dict]:
         """Generate access token with custom payload.
 
         Args:
@@ -441,7 +441,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             expires_in_minutes: Token expiration in minutes
 
         Returns:
-            FlextCore.Result[dict]: Token data on success
+            FlextResult[dict]: Token data on success
 
         """
         try:
@@ -469,15 +469,15 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
                 self._algorithm,
             )
 
-            return FlextCore.Result[FlextCore.Types.Dict].ok({
-                "token": token,
-                "expires_at": expires_at,
-            })
+            return FlextResult[FlextTypes.Dict].ok(
+                {
+                    "token": token,
+                    "expires_at": expires_at,
+                }
+            )
 
         except Exception as e:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
-                f"Token generation failed: {e}"
-            )
+            return FlextResult[FlextTypes.Dict].fail(f"Token generation failed: {e}")
 
 
 __all__ = ["FlextAuthJwtProvider"]

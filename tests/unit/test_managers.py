@@ -5,6 +5,8 @@ Tests the authentication managers module following FLEXT standards.
 
 from __future__ import annotations
 
+from flext_core import FlextService
+
 from flext_auth.managers import FlextAuthManagers
 
 
@@ -12,10 +14,8 @@ class TestFlextAuthManagers:
     """Test FlextAuthManagers class and its nested manager classes."""
 
     def test_inherits_from_flext_service(self) -> None:
-        """Test that FlextAuthManagers inherits from FlextCore.Service."""
-        from flext_core import FlextCore
-
-        assert issubclass(FlextAuthManagers, FlextCore.Service)
+        """Test that FlextAuthManagers inherits from FlextService."""
+        assert issubclass(FlextAuthManagers, FlextService)
 
     def test_execute_method_returns_failure(self) -> None:
         """Test that execute method returns appropriate failure for namespace class."""

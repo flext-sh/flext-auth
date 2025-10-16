@@ -43,7 +43,7 @@ Support for diverse authentication technologies through a provider-based archite
 
 ### **Integration Points**
 
-- **[flext-core](../flext-core/README.md)** → Foundation patterns (FlextCore.Result, FlextCore.Container, FlextCore.Models)
+- **[flext-core](../flext-core/README.md)** → Foundation patterns (FlextResult, FlextContainer, FlextModels)
 - **[flext-api](../flext-api/README.md)** → HTTP transport integration (MANDATORY)
 - **[flext-grpc](../flext-grpc/README.md)** → gRPC transport integration (MANDATORY)
 - **[flext-ldap](../flext-ldap/README.md)** → LDAP provider integration (MANDATORY)
@@ -108,13 +108,13 @@ src/flext_auth/
 
 ### **FLEXT-Core Integration Status**
 
-| Pattern                 | Status  | Description                                                 |
-| ----------------------- | ------- | ----------------------------------------------------------- |
-| **FlextCore.Result<T>** | 🟢 100% | All operations return FlextCore.Result with railway pattern |
-| **FlextCore.Service**   | 🟢 100% | FlextAuth extends FlextCore.Service patterns                |
-| **FlextCore.Container** | 🟢 100% | Dependency injection throughout                             |
-| **Domain Patterns**     | 🟢 100% | Provider protocol with capability detection                 |
-| **Registry Pattern**    | 🟢 100% | Dynamic provider registration and discovery                 |
+| Pattern              | Status  | Description                                            |
+| -------------------- | ------- | ------------------------------------------------------ |
+| **FlextResult<T>**   | 🟢 100% | All operations return FlextResult with railway pattern |
+| **FlextService**     | 🟢 100% | FlextAuth extends FlextService patterns                |
+| **FlextContainer**   | 🟢 100% | Dependency injection throughout                        |
+| **Domain Patterns**  | 🟢 100% | Provider protocol with capability detection            |
+| **Registry Pattern** | 🟢 100% | Dynamic provider registration and discovery            |
 
 > **Status**: 🟢 v2.0.0 Foundation Complete | Provider architecture ready for ecosystem expansion
 
@@ -144,7 +144,7 @@ user_request = FlextAuthModels.UserCreationRequest(
     password="secure123"
 )
 
-# Register user (returns FlextCore.Result)
+# Register user (returns FlextResult)
 result = auth.register_user(
     username=user_request.username,
     email=user_request.email,
@@ -252,34 +252,53 @@ print(f"JWT capabilities: {jwt_capabilities}")
 ```python
 from flext_auth.providers import FlextAuthBaseProvider, BaseAuthProviderMixin
 from flext_auth import FlextAuthModels
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 
 class FlextAuthCustomProvider(FlextAuthBaseProvider, BaseAuthProviderMixin):
     """Custom authentication provider example."""
 
     def authenticate(
         self,
-        credentials: FlextCore.Types.Dict
-    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
+        credentials: FlextTypes.Dict
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Custom authentication logic."""
         # Validate credentials
         validation_result = self._validate_credentials_dict(
             credentials, ["username", "api_key"]
         )
         if validation_result.is_failure:
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+            return FlextResult[FlextAuthModels.AuthToken].fail(
                 validation_result.error
             )
 
         # Custom authentication logic here
         # ...
 
-        return FlextCore.Result[FlextAuthModels.AuthToken].ok(auth_token)
+        return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)
 
     def validate(
         self,
         token: str | FlextAuthModels.AuthToken
-    ) -> FlextCore.Result[bool]:
+    ) -> FlextResult[bool]:
         """Custom token validation."""
         # Implementation here
         pass
@@ -288,7 +307,7 @@ class FlextAuthCustomProvider(FlextAuthBaseProvider, BaseAuthProviderMixin):
         """Declare provider capabilities."""
         return {"token", "validate", "api_key"}
 
-    def get_metadata(self) -> FlextCore.Types.Dict:
+    def get_metadata(self) -> FlextTypes.Dict:
         """Provider metadata."""
         return {
             "name": "custom",
@@ -375,7 +394,7 @@ pytest --cov=src/flext_auth # Coverage report
 - **Type Safety**: MyPy/PyRight with zero errors in src/ ✅
 - **Linting**: Ruff with 7 acceptable warnings (S106 false positive, S301/S403 test code) ✅
 - **Security**: Production-grade bcrypt (12 rounds) + JWT (HS256) ✅
-- **FLEXT-Core Compliance**: 100% integration with FlextCore.Result, FlextCore.Container patterns ✅
+- **FLEXT-Core Compliance**: 100% integration with FlextResult, FlextContainer patterns ✅
 - **Code Organization**: Clean provider separation, directory structure for all phases ✅
 
 ### **Production Capabilities (v2.0.0)**
@@ -506,9 +525,9 @@ pytest --cov=src/flext_auth # Coverage report
 
 ### **FLEXT-Core Compliance Checklist**
 
-- [ ] All operations return FlextCore.Result[T] for error handling
-- [ ] Use FlextCore.Container.get_global() for dependency injection
-- [ ] Domain models extend FlextCore.Models.Entity
+- [ ] All operations return FlextResult[T] for error handling
+- [ ] Use FlextContainer.get_global() for dependency injection
+- [ ] Domain models extend FlextModels.Entity
 - [ ] Follow railway-oriented programming patterns
 - [ ] Maintain type safety with Python 3.13+ annotations
 

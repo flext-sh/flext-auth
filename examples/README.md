@@ -69,7 +69,7 @@ if auth_result.success:
 - Quick start setup
 - User registration
 - User authentication
-- Error handling with FlextCore.Result
+- Error handling with FlextResult
 
 ### 2. Advanced Features (`02_advanced_features.py`)
 

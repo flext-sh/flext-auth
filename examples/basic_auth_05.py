@@ -15,6 +15,8 @@ from __future__ import annotations
 
 import os
 
+from flext_core import FlextContainer
+
 from flext_auth import FlextAuth, FlextAuthModels
 from flext_auth.config import FlextAuthConfig
 
@@ -38,8 +40,8 @@ def main() -> None:
     # 2. JWT Token Example
     print("\n=== JWT Token Demo ===")
 
-    # Configure authentication service through FlextCore.Container
-    container = FlextCore.Container.get_global()
+    # Configure authentication service through FlextContainer
+    container = FlextContainer.get_global()
     config = FlextAuthConfig.create(
         jwt_auth_secret="demo-jwt-secret-key-for-examples-only-not-secure",  # nosec
         jwt_expiry_minutes=30,

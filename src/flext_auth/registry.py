@@ -10,12 +10,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextCore
+from typing import cast
+
+from flext_core import FlextRegistry, FlextResult, FlextTypes
 
 from flext_auth.providers.base import FlextAuthBaseProvider
 
 
-class FlextAuthRegistry(FlextCore.Registry):
+class FlextAuthRegistry(FlextRegistry):
     """Registry for managing authentication providers.
 
     This registry allows dynamic registration and discovery of authentication
@@ -39,18 +41,18 @@ class FlextAuthRegistry(FlextCore.Registry):
 
     def __init__(self) -> None:
         """Initialize the authentication provider registry."""
-        self._providers: dict[str, FlextAuthBaseProvider] = {}
-        self._configs: dict[str, FlextCore.Types.Dict] = {}
-        self._metadata: FlextCore.Types.NestedDict = {}
+        self._providers: dict[str, object] = {}
+        self._configs: dict[str, FlextTypes.Dict] = {}
+        self._metadata: FlextTypes.NestedDict = {}
 
         self.logger.info("FlextAuthRegistry initialized")
 
     def register(
         self,
         name: str,
-        service: FlextAuthBaseProvider,
-        metadata: FlextCore.Types.Dict | None = None,
-    ) -> FlextCore.Result[None]:
+        service: object,
+        metadata: FlextTypes.Dict | None = None,
+    ) -> FlextResult[None]:
         """Register an authentication provider.
 
         Args:
@@ -59,7 +61,7 @@ class FlextAuthRegistry(FlextCore.Registry):
             metadata: Optional configuration for the provider
 
         Returns:
-            FlextCore.Result[None]: Success or failure with error message
+            FlextResult[None]: Success or failure with error message
 
         Example:
             >>> result = registry.register("jwt", FlextAuthJwtProvider(jwt_config))
@@ -69,19 +71,17 @@ class FlextAuthRegistry(FlextCore.Registry):
         """
         # Validate provider name
         if not name or not name.strip():
-            return FlextCore.Result[None].fail("Provider name cannot be empty")
+            return FlextResult[None].fail("Provider name cannot be empty")
 
         # Check if provider already registered
         if name in self._providers:
-            return FlextCore.Result[None].fail(
-                f"Provider '{name}' is already registered"
-            )
+            return FlextResult[None].fail(f"Provider '{name}' is already registered")
 
         # Validate configuration if provided
         if metadata:
             validation_result = self._validate_provider_config(name, metadata)
             if validation_result.is_failure:
-                return FlextCore.Result[None].fail(
+                return FlextResult[None].fail(
                     f"Configuration validation failed: {validation_result.error}"
                 )
 
@@ -92,8 +92,11 @@ class FlextAuthRegistry(FlextCore.Registry):
 
         # Store provider metadata
         try:
-            provider_metadata = service.get_metadata()
-            self._metadata[name] = provider_metadata
+            if hasattr(service, "get_metadata"):
+                provider_metadata = service.get_metadata()
+                self._metadata[name] = provider_metadata
+            else:
+                self._metadata[name] = {"name": name, "version": "unknown"}
         except Exception as e:
             self.logger.warning(
                 f"Failed to retrieve metadata for provider '{name}': {e}"
@@ -102,19 +105,24 @@ class FlextAuthRegistry(FlextCore.Registry):
 
         self.logger.info(
             f"Provider '{name}' registered successfully",
-            extra={"provider": name, "capabilities": list(service.supports())},
+            extra={
+                "provider": name,
+                "capabilities": list(service.supports())
+                if hasattr(service, "supports")
+                else [],
+            },
         )
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
-    def unregister(self, name: str) -> FlextCore.Result[None]:
+    def unregister(self, name: str) -> FlextResult[None]:
         """Unregister an authentication provider.
 
         Args:
             name: Provider identifier to unregister
 
         Returns:
-            FlextCore.Result[None]: Success or failure with error message
+            FlextResult[None]: Success or failure with error message
 
         Example:
             >>> result = registry.unregister("jwt")
@@ -123,7 +131,7 @@ class FlextAuthRegistry(FlextCore.Registry):
 
         """
         if name not in self._providers:
-            return FlextCore.Result[None].fail(f"Provider '{name}' is not registered")
+            return FlextResult[None].fail(f"Provider '{name}' is not registered")
 
         # Remove provider and associated data
         del self._providers[name]
@@ -135,16 +143,16 @@ class FlextAuthRegistry(FlextCore.Registry):
             extra={"provider": name},
         )
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
-    def get(self, name: str) -> FlextCore.Result[FlextAuthBaseProvider]:
+    def get(self, name: str) -> FlextResult[FlextAuthBaseProvider]:
         """Retrieve a registered authentication provider.
 
         Args:
             name: Provider identifier
 
         Returns:
-            FlextCore.Result[FlextAuthBaseProvider]: Provider instance or error
+            FlextResult[FlextAuthBaseProvider]: Provider instance or error
 
         Example:
             >>> result = registry.get("jwt")
@@ -154,19 +162,22 @@ class FlextAuthRegistry(FlextCore.Registry):
 
         """
         if name not in self._providers:
-            return FlextCore.Result[FlextAuthBaseProvider].fail(
+            return FlextResult[FlextAuthBaseProvider].fail(
                 f"Provider '{name}' is not registered. "
                 f"Available providers: {', '.join(self.list_providers())}"
             )
 
         provider = self._providers[name]
-        return FlextCore.Result[FlextAuthBaseProvider].ok(provider)
+        # Cast to the expected type since we know it's a provider
+        return FlextResult[FlextAuthBaseProvider].ok(
+            cast("FlextAuthBaseProvider", provider)
+        )
 
-    def list_providers(self) -> FlextCore.Types.StringList:
+    def list_providers(self) -> FlextTypes.StringList:
         """List all registered provider names.
 
         Returns:
-            FlextCore.Types.StringList: List of registered provider identifiers
+            FlextTypes.StringList: List of registered provider identifiers
 
         Example:
             >>> providers = registry.list_providers()
@@ -191,14 +202,14 @@ class FlextAuthRegistry(FlextCore.Registry):
         """
         return name in self._providers
 
-    def get_capabilities(self, name: str) -> FlextCore.Result[set[str]]:
+    def get_capabilities(self, name: str) -> FlextResult[set[str]]:
         """Get capabilities of a registered provider.
 
         Args:
             name: Provider identifier
 
         Returns:
-            FlextCore.Result[set[str]]: Set of capabilities or error
+            FlextResult[set[str]]: Set of capabilities or error
 
         Example:
             >>> result = registry.get_capabilities("oauth2")
@@ -209,27 +220,25 @@ class FlextAuthRegistry(FlextCore.Registry):
 
         """
         if name not in self._providers:
-            return FlextCore.Result[set[str]].fail(
-                f"Provider '{name}' is not registered"
-            )
+            return FlextResult[set[str]].fail(f"Provider '{name}' is not registered")
 
         provider = self._providers[name]
         try:
-            capabilities = provider.supports()
-            return FlextCore.Result[set[str]].ok(capabilities)
+            if hasattr(provider, "supports"):
+                capabilities = provider.supports()
+                return FlextResult[set[str]].ok(capabilities)
+            return FlextResult[set[str]].ok(set())
         except Exception as e:
-            return FlextCore.Result[set[str]].fail(
-                f"Failed to retrieve capabilities: {e}"
-            )
+            return FlextResult[set[str]].fail(f"Failed to retrieve capabilities: {e}")
 
-    def get_metadata(self, name: str) -> FlextCore.Result[FlextCore.Types.Dict]:
+    def get_metadata(self, name: str) -> FlextResult[FlextTypes.Dict]:
         """Get metadata for a registered provider.
 
         Args:
             name: Provider identifier
 
         Returns:
-            FlextCore.Result[FlextCore.Types.Dict]: Provider metadata or error
+            FlextResult[FlextTypes.Dict]: Provider metadata or error
 
         Example:
             >>> result = registry.get_metadata("saml")
@@ -239,12 +248,12 @@ class FlextAuthRegistry(FlextCore.Registry):
 
         """
         if name not in self._providers:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 f"Provider '{name}' is not registered"
             )
 
         metadata = self._metadata.get(name, {})
-        return FlextCore.Result[FlextCore.Types.Dict].ok(metadata)
+        return FlextResult[FlextTypes.Dict].ok(metadata)
 
     def discover_providers(self) -> dict[str, type[FlextAuthBaseProvider]]:
         """Discover available provider classes.
@@ -269,8 +278,8 @@ class FlextAuthRegistry(FlextCore.Registry):
     def validate_config(
         self,
         name: str,
-        config: FlextCore.Types.Dict,
-    ) -> FlextCore.Result[None]:
+        config: FlextTypes.Dict,
+    ) -> FlextResult[None]:
         """Validate configuration for a provider.
 
         Args:
@@ -278,7 +287,7 @@ class FlextAuthRegistry(FlextCore.Registry):
             config: Configuration to validate
 
         Returns:
-            FlextCore.Result[None]: Success or validation error
+            FlextResult[None]: Success or validation error
 
         Example:
             >>> config = {"secret_key": "key", "algorithm": "HS256"}
@@ -288,7 +297,7 @@ class FlextAuthRegistry(FlextCore.Registry):
 
         """
         if name not in self._providers:
-            return FlextCore.Result[None].fail(f"Provider '{name}' is not registered")
+            return FlextResult[None].fail(f"Provider '{name}' is not registered")
 
         self._providers[name]
         return self._validate_provider_config(name, config)
@@ -296,8 +305,8 @@ class FlextAuthRegistry(FlextCore.Registry):
     def _validate_provider_config(
         self,
         name: str,
-        config: FlextCore.Types.Dict,
-    ) -> FlextCore.Result[None]:
+        config: FlextTypes.Dict,
+    ) -> FlextResult[None]:
         """Internal validation of provider configuration.
 
         Args:
@@ -305,12 +314,12 @@ class FlextAuthRegistry(FlextCore.Registry):
             config: Configuration to validate
 
         Returns:
-            FlextCore.Result[None]: Success or validation error
+            FlextResult[None]: Success or validation error
 
         """
         # Basic validation
         if not isinstance(config, dict):
-            return FlextCore.Result[None].fail("Configuration must be a dictionary")
+            return FlextResult[None].fail("Configuration must be a dictionary")
 
         # Provider-specific validation would be added here
         # For now, we accept any dict[str, object] configuration
@@ -319,7 +328,7 @@ class FlextAuthRegistry(FlextCore.Registry):
             extra={"provider": name, "config_keys": list(config.keys())},
         )
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
     def clear(self) -> None:
         """Clear all registered providers.
@@ -352,9 +361,7 @@ class FlextAuthRegistry(FlextCore.Registry):
         """Check if registry has no registered providers."""
         return len(self._providers) == 0
 
-    def has_capability(
-        self, provider_name: str, capability: str
-    ) -> FlextCore.Result[bool]:
+    def has_capability(self, provider_name: str, capability: str) -> FlextResult[bool]:
         """Check if a provider has a specific capability.
 
         Args:
@@ -362,37 +369,37 @@ class FlextAuthRegistry(FlextCore.Registry):
             capability: Capability to check
 
         Returns:
-            FlextCore.Result[bool]: True if provider has capability
+            FlextResult[bool]: True if provider has capability
 
         """
         capabilities_result = self.get_capabilities(provider_name)
         if capabilities_result.is_failure:
-            return FlextCore.Result[bool].fail(capabilities_result.error)
+            return FlextResult[bool].fail(capabilities_result.error)
 
         capabilities = capabilities_result.value
-        return FlextCore.Result[bool].ok(capability in capabilities)
+        return FlextResult[bool].ok(capability in capabilities)
 
-    def get_config(self, provider_name: str) -> FlextCore.Result[FlextCore.Types.Dict]:
+    def get_config(self, provider_name: str) -> FlextResult[FlextTypes.Dict]:
         """Get configuration for a provider.
 
         Args:
             provider_name: Name of the provider
 
         Returns:
-            FlextCore.Result[FlextCore.Types.Dict]: Provider configuration
+            FlextResult[FlextTypes.Dict]: Provider configuration
 
         """
         if provider_name not in self._providers:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 f"Provider '{provider_name}' not registered"
             )
 
         config = self._configs.get(provider_name, {})
-        return FlextCore.Result[FlextCore.Types.Dict].ok(config)
+        return FlextResult[FlextTypes.Dict].ok(config)
 
     def update_config(
-        self, provider_name: str, new_config: FlextCore.Types.Dict
-    ) -> FlextCore.Result[None]:
+        self, provider_name: str, new_config: FlextTypes.Dict
+    ) -> FlextResult[None]:
         """Update configuration for a provider.
 
         Args:
@@ -400,13 +407,11 @@ class FlextAuthRegistry(FlextCore.Registry):
             new_config: New configuration
 
         Returns:
-            FlextCore.Result[None]: Success or error
+            FlextResult[None]: Success or error
 
         """
         if provider_name not in self._providers:
-            return FlextCore.Result[None].fail(
-                f"Provider '{provider_name}' not registered"
-            )
+            return FlextResult[None].fail(f"Provider '{provider_name}' not registered")
 
         # Validate new config
         validation_result = self._validate_provider_config(provider_name, new_config)
@@ -415,27 +420,27 @@ class FlextAuthRegistry(FlextCore.Registry):
 
         self._configs[provider_name] = new_config
         self.logger.info(f"Configuration updated for provider '{provider_name}'")
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
-    def get_all_metadata(self) -> FlextCore.Result[FlextCore.Types.NestedDict]:
+    def get_all_metadata(self) -> FlextResult[FlextTypes.NestedDict]:
         """Get metadata for all registered providers.
 
         Returns:
-            FlextCore.Result[FlextCore.Types.NestedDict]: Dictionary mapping provider names to metadata
+            FlextResult[FlextTypes.NestedDict]: Dictionary mapping provider names to metadata
 
         """
-        return FlextCore.Result[FlextCore.Types.NestedDict].ok(self._metadata.copy())
+        return FlextResult[FlextTypes.NestedDict].ok(self._metadata.copy())
 
     def find_providers_with_capability(
         self, capability: str
-    ) -> FlextCore.Result[FlextCore.Types.StringList]:
+    ) -> FlextResult[FlextTypes.StringList]:
         """Find all providers that support a specific capability.
 
         Args:
             capability: Capability to search for
 
         Returns:
-            FlextCore.Result[FlextCore.Types.StringList]: List of provider names with the capability
+            FlextResult[FlextTypes.StringList]: List of provider names with the capability
 
         """
         matching_providers = []
@@ -444,7 +449,7 @@ class FlextAuthRegistry(FlextCore.Registry):
             if has_cap_result.is_success and has_cap_result.value:
                 matching_providers.append(name)
 
-        return FlextCore.Result[FlextCore.Types.StringList].ok(matching_providers)
+        return FlextResult[FlextTypes.StringList].ok(matching_providers)
 
     def __len__(self) -> int:
         """Return number of registered providers."""

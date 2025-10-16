@@ -11,7 +11,6 @@ from flext_auth.__version__ import __version__, __version_info__
 from flext_auth.api import FlextAuth
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
-from flext_auth.exceptions import FlextAuthExceptions
 from flext_auth.middleware import FlextAuthMiddleware
 from flext_auth.models import FlextAuthModels
 from flext_auth.protocols import FlextAuthProtocols
@@ -44,7 +43,6 @@ __all__ = [
     "FlextAuthCertificateProvider",
     "FlextAuthConfig",
     "FlextAuthConstants",
-    "FlextAuthExceptions",
     "FlextAuthJwtProvider",
     "FlextAuthKerberosProvider",
     "FlextAuthLdapProvider",

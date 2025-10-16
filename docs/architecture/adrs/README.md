@@ -54,12 +54,12 @@ All ADRs follow a consistent template:
 
 ## Current ADRs
 
-| ADR                                                 | Title                                                 | Status   | Date       |
-| --------------------------------------------------- | ----------------------------------------------------- | -------- | ---------- |
-| [001](decisions/001-multi-provider-architecture.md) | Multi-Provider Authentication Architecture            | Accepted | 2025-10-10 |
-| [002](decisions/002-provider-registry-pattern.md)   | Provider Registry Pattern Implementation              | Accepted | 2025-10-10 |
-| [003](decisions/003-flextresult-error-handling.md)  | Railway-Oriented Error Handling with FlextCore.Result | Accepted | 2025-10-10 |
-| [004](decisions/004-jwt-provider-implementation.md) | JWT Provider as Production-Ready Reference            | Accepted | 2025-10-10 |
+| ADR                                                 | Title                                            | Status   | Date       |
+| --------------------------------------------------- | ------------------------------------------------ | -------- | ---------- |
+| [001](decisions/001-multi-provider-architecture.md) | Multi-Provider Authentication Architecture       | Accepted | 2025-10-10 |
+| [002](decisions/002-provider-registry-pattern.md)   | Provider Registry Pattern Implementation         | Accepted | 2025-10-10 |
+| [003](decisions/003-flextresult-error-handling.md)  | Railway-Oriented Error Handling with FlextResult | Accepted | 2025-10-10 |
+| [004](decisions/004-jwt-provider-implementation.md) | JWT Provider as Production-Ready Reference       | Accepted | 2025-10-10 |
 
 ## ADR Categories
 

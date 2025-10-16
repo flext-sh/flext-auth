@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextCore
+from flext_core import FlextResult, FlextService, FlextTypes
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.models import FlextAuthModels
@@ -26,7 +26,7 @@ from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
 
 
-class FlextAuthProviderService(FlextCore.Service):
+class FlextAuthProviderService(FlextService):
     """Focused service for authentication provider management with flext-core integration."""
 
     def __init__(self, config: FlextAuthConfig) -> None:
@@ -36,13 +36,13 @@ class FlextAuthProviderService(FlextCore.Service):
         self._providers = FlextAuthRegistry()
         self._register_builtin_providers()
 
-    def execute(self) -> FlextCore.Result[object]:
-        """Execute method for FlextCore.Service interface.
+    def execute(self) -> FlextResult[object]:
+        """Execute method for FlextService interface.
 
         Provider service doesn't use generic execute pattern.
         Use specific provider methods instead.
         """
-        return FlextCore.Result[object].fail(
+        return FlextResult[object].fail(
             "FlextAuthProviderService is focused - use specific provider methods like get_provider()"
         )
 
@@ -132,17 +132,17 @@ class FlextAuthProviderService(FlextCore.Service):
         except (ValueError, TypeError) as e:
             self.logger.warning(f"Failed to register API key provider: {e}")
 
-    def get_provider(self, name: str) -> FlextCore.Result[FlextAuthBaseProvider]:
+    def get_provider(self, name: str) -> FlextResult[FlextAuthBaseProvider]:
         """Get a registered authentication provider."""
         return self._providers.get(name)
 
     def register_provider(
         self, name: str, provider: FlextAuthBaseProvider
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Register a custom authentication provider."""
         return self._providers.register(name, provider)
 
-    def list_providers(self) -> FlextCore.Types.StringList:
+    def list_providers(self) -> FlextTypes.StringList:
         """List all registered provider names."""
         return self._providers.list_providers()
 
@@ -151,28 +151,28 @@ class FlextAuthProviderService(FlextCore.Service):
         username: str,
         password: str,
         provider: str = "basic",
-    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate a user with username/password using specified provider."""
         # Get the authentication provider
         provider_result = self._providers.get(provider)
         if provider_result.is_failure:
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
-                provider_result.error
-            )
+            return FlextResult[FlextAuthModels.AuthToken].fail(provider_result.error)
 
         auth_provider = provider_result.value
 
         # Attempt authentication
-        return auth_provider.authenticate({
-            "username": username,
-            "password": password,
-        })
+        return auth_provider.authenticate(
+            {
+                "username": username,
+                "password": password,
+            }
+        )
 
     def generate_tokens_for_user(
         self,
         user: FlextAuthModels.User,
         provider: str = "jwt",
-    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Generate authentication tokens for an authenticated user.
 
         Args:
@@ -180,26 +180,81 @@ class FlextAuthProviderService(FlextCore.Service):
             provider: Token provider to use
 
         Returns:
-            FlextCore.Result containing AuthToken or error
+            FlextResult containing AuthToken or error
 
         """
         # Get the token provider
         provider_result = self._providers.get(provider)
         if provider_result.is_failure:
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
-                provider_result.error
-            )
+            return FlextResult[FlextAuthModels.AuthToken].fail(provider_result.error)
 
         token_provider = provider_result.value
 
         # Generate tokens using user data
-        return token_provider.authenticate({
-            "user_id": user.user_id,
-            "username": user.username,
-            "email": user.email,
-            "roles": user.roles,
-            "permissions": user.permissions,
-        })
+        return token_provider.authenticate(
+            {
+                "user_id": user.user_id,
+                "username": user.username,
+                "email": user.email,
+                "roles": user.roles,
+                "permissions": user.permissions,
+            }
+        )
+
+    def validate_token_and_get_user(
+        self, token: str
+    ) -> FlextResult[FlextAuthModels.User | None]:
+        """Validate a token and return the associated user."""
+        # Try JWT provider first
+        jwt_provider = self._providers.get("jwt")
+        if jwt_provider.is_success:
+            return jwt_provider.unwrap().validate_token(token)
+
+        # Try API key provider
+        api_key_provider = self._providers.get("apikey")
+        if api_key_provider.is_success:
+            return api_key_provider.unwrap().validate_token(token)
+
+        return FlextResult[FlextAuthModels.User | None].fail(
+            "No token provider available"
+        )
+
+    def generate_token_for_user(
+        self,
+        user: FlextAuthModels.User,
+        token_type: str = "access",  # noqa: S107
+        expiry_minutes: int | None = None,
+    ) -> FlextResult[str]:
+        """Generate a token for a user."""
+        # Try JWT provider first
+        jwt_provider = self._providers.get("jwt")
+        if jwt_provider.is_success:
+            return jwt_provider.unwrap().generate_token_for_user(
+                user, token_type, expiry_minutes
+            )
+
+        # Try API key provider
+        api_key_provider = self._providers.get("apikey")
+        if api_key_provider.is_success:
+            return api_key_provider.unwrap().generate_token_for_user(
+                user, token_type, expiry_minutes
+            )
+
+        return FlextResult[str].fail("No token provider available")
+
+    def revoke_session(self, _session_id: str) -> FlextResult[None]:
+        """Revoke a user session."""
+        # This would typically interact with a session store
+        # For now, return success as this is a placeholder
+        return FlextResult[None].ok(None)
+
+    def get_user_sessions(
+        self, _user_id: str
+    ) -> FlextResult[list[FlextAuthModels.Session]]:
+        """Get all active sessions for a user."""
+        # This would typically interact with a session store
+        # For now, return empty list as this is a placeholder
+        return FlextResult[list[FlextAuthModels.Session]].ok([])
 
 
 __all__ = ["FlextAuthProviderService"]

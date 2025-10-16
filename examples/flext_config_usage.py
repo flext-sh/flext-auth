@@ -1,8 +1,8 @@
-"""FLEXT Auth - Example of using FlextCore.Config as source of truth.
+"""FLEXT Auth - Example of using FlextConfig as source of truth.
 
-This example demonstrates how to use FlextCore.Config singleton pattern
+This example demonstrates how to use FlextConfig singleton pattern
 in the flext-auth module, showing how parameters can change behavior
-and how FlextCore.Config serves as the single source of truth.
+and how FlextConfig serves as the single source of truth.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -18,7 +18,7 @@ from flext_auth.constants import FlextAuthConstants
 
 
 def main() -> None:
-    """Demonstrate FlextCore.Config usage in flext-auth."""
+    """Demonstrate FlextConfig usage in flext-auth."""
     # =========================================================================
     # 1. BASIC SINGLETON USAGE - Get global instance
     # =========================================================================
@@ -82,12 +82,12 @@ def main() -> None:
         pass
 
     # =========================================================================
-    # 4. USING CONFIG IN SERVICES - FlextCore.Config as source of truth
+    # 4. USING CONFIG IN SERVICES - FlextConfig as source of truth
     # =========================================================================
 
-    # Create FlextAuth instances using FlextCore.Config singleton as source of truth
+    # Create FlextAuth instances using FlextConfig singleton as source of truth
     # Method 1: Use global singleton (default)
-    FlextAuth.quick_start()  # Uses global FlextCore.Config singleton automatically
+    FlextAuth.quick_start()  # Uses global FlextConfig singleton automatically
 
     # Method 2: Use production configuration singleton
     if production_config_result.is_success:

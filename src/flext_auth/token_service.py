@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextCore
+from flext_core import FlextDispatcher, FlextLogger, FlextResult, FlextService
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
@@ -18,17 +18,17 @@ from flext_auth.providers import FlextAuthJwtProvider
 from flext_auth.utilities import FlextAuthUtilities
 
 
-class FlextAuthTokenService(FlextCore.Service):
+class FlextAuthTokenService(FlextService):
     """Focused service for token operations with complete flext-core integration."""
 
     def __init__(
         self,
         config: FlextAuthConfig,
         provider_service: FlextAuthProviderService,
-        dispatcher: FlextCore.Dispatcher,
+        dispatcher: FlextDispatcher,
     ) -> None:
         """Initialize token service with flext-core integration."""
-        super().__init__(logger=FlextCore.Logger(__name__))
+        super().__init__(logger=FlextLogger(__name__))
         self._config = config
         self._dispatcher = dispatcher
         self._user_manager = FlextAuthManagers.FlextAuthUserManager(config)
@@ -36,24 +36,22 @@ class FlextAuthTokenService(FlextCore.Service):
         self._utils = FlextAuthUtilities()
         self._provider_service = provider_service
 
-    def execute(self) -> FlextCore.Result[object]:
-        """Execute method for FlextCore.Service interface.
+    def execute(self) -> FlextResult[object]:
+        """Execute method for FlextService interface.
 
         Token service doesn't use generic execute pattern.
         Use specific token methods instead.
         """
-        return FlextCore.Result[object].fail(
+        return FlextResult[object].fail(
             "FlextAuthTokenService is focused - use specific token methods like validate_token()"
         )
 
-    def validate_token(self, token: str) -> FlextCore.Result[FlextAuthModels.User]:
+    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.User]:
         """Validate an authentication token and return user."""
         # Use JWT provider for validation
         jwt_provider_result = self._get_jwt_provider()
         if jwt_provider_result.is_failure:
-            return FlextCore.Result[FlextAuthModels.User].fail(
-                jwt_provider_result.error
-            )
+            return FlextResult[FlextAuthModels.User].fail(jwt_provider_result.error)
 
         jwt_provider = jwt_provider_result.value
         validation_result = jwt_provider.validate(token)
@@ -64,18 +62,16 @@ class FlextAuthTokenService(FlextCore.Service):
                 token_id=token[:10] + "..." if token else "unknown",
                 reason=str(validation_result.error),
             )
-            return FlextCore.Result[FlextAuthModels.User].fail(validation_result.error)
+            return FlextResult[FlextAuthModels.User].fail(validation_result.error)
 
         # Token is valid, decode to get user information
         if not isinstance(jwt_provider, FlextAuthJwtProvider):
-            return FlextCore.Result[FlextAuthModels.User].fail(
-                "Invalid JWT provider type"
-            )
+            return FlextResult[FlextAuthModels.User].fail("Invalid JWT provider type")
 
         # Get decoding parameters from provider
         params_result = jwt_provider.get_decoding_params()
         if params_result.is_failure:
-            return FlextCore.Result[FlextAuthModels.User].fail(
+            return FlextResult[FlextAuthModels.User].fail(
                 f"Failed to get JWT decoding parameters: {params_result.error}"
             )
 
@@ -90,12 +86,12 @@ class FlextAuthTokenService(FlextCore.Service):
                 token_id=token[:10] + "...",
                 reason=str(decode_result.error),
             )
-            return FlextCore.Result[FlextAuthModels.User].fail(decode_result.error)
+            return FlextResult[FlextAuthModels.User].fail(decode_result.error)
 
         payload = decode_result.value
         user_id = payload.get("sub")
         if not user_id or not isinstance(user_id, str):
-            return FlextCore.Result[FlextAuthModels.User].fail(
+            return FlextResult[FlextAuthModels.User].fail(
                 "Invalid token: missing or invalid user ID"
             )
 
@@ -107,7 +103,7 @@ class FlextAuthTokenService(FlextCore.Service):
                 token_id=token[:10] + "...",
                 reason="user_not_found",
             )
-            return FlextCore.Result[FlextAuthModels.User].fail("User not found")
+            return FlextResult[FlextAuthModels.User].fail("User not found")
 
         self._audit_logger.log_token_validation(
             success=True,
@@ -116,11 +112,11 @@ class FlextAuthTokenService(FlextCore.Service):
 
         return user_result
 
-    def refresh_token(self, token: str) -> FlextCore.Result[FlextAuthModels.AuthToken]:
+    def refresh_token(self, token: str) -> FlextResult[FlextAuthModels.AuthToken]:
         """Refresh an authentication token."""
         jwt_provider_result = self._get_jwt_provider()
         if jwt_provider_result.is_failure:
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+            return FlextResult[FlextAuthModels.AuthToken].fail(
                 jwt_provider_result.error
             )
 
@@ -148,12 +144,12 @@ class FlextAuthTokenService(FlextCore.Service):
         user_id: str,
         expires_in_minutes: int | None = None,
         token_type: str = FlextAuthConstants.Jwt.DEFAULT_ACCESS_TOKEN_TYPE,
-    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Generate a JWT token for a user."""
         # Get user first to ensure they exist
         user_result = self._user_manager.get_user(user_id)
         if user_result.is_failure:
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail(user_result.error)
+            return FlextResult[FlextAuthModels.AuthToken].fail(user_result.error)
 
         # Create JWT token
         token_result = FlextAuthModels.AuthToken.create_jwt_token(
@@ -179,19 +175,19 @@ class FlextAuthTokenService(FlextCore.Service):
 
         return token_result
 
-    def _get_jwt_provider(self) -> FlextCore.Result[FlextAuthJwtProvider]:
+    def _get_jwt_provider(self) -> FlextResult[FlextAuthJwtProvider]:
         """Get the JWT provider from the provider service."""
         result = self._provider_service.get_provider("jwt")
         if result.is_failure:
-            return FlextCore.Result[FlextAuthJwtProvider].fail(result.error)
+            return FlextResult[FlextAuthJwtProvider].fail(result.error)
 
         provider = result.value
         if not isinstance(provider, FlextAuthJwtProvider):
-            return FlextCore.Result[FlextAuthJwtProvider].fail(
+            return FlextResult[FlextAuthJwtProvider].fail(
                 "Provider is not a JWT provider"
             )
 
-        return FlextCore.Result[FlextAuthJwtProvider].ok(provider)
+        return FlextResult[FlextAuthJwtProvider].ok(provider)
 
 
 __all__ = ["FlextAuthTokenService"]

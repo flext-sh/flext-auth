@@ -5,6 +5,8 @@ Tests the authentication protocols module following FLEXT standards.
 
 from __future__ import annotations
 
+from flext_core import FlextProtocols
+
 from flext_auth.protocols import FlextAuthProtocols
 
 
@@ -12,10 +14,8 @@ class TestFlextAuthProtocols:
     """Test FlextAuthProtocols class and its nested protocol classes."""
 
     def test_inherits_from_flext_protocols(self) -> None:
-        """Test that FlextAuthProtocols inherits from FlextCore.Protocols."""
-        from flext_core import FlextCore
-
-        assert issubclass(FlextAuthProtocols, FlextCore.Protocols)
+        """Test that FlextAuthProtocols inherits from FlextProtocols."""
+        assert issubclass(FlextAuthProtocols, FlextProtocols)
 
     def test_foundation_re_exports(self) -> None:
         """Test that foundation protocols are properly re-exported."""

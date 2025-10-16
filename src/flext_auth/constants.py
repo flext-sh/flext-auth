@@ -7,41 +7,41 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar, Literal
+from typing import ClassVar, Final, Literal
 
-from flext_core import FlextCore
+from flext_core import FlextConstants, FlextTypes
 
 
-class FlextAuthConstants(FlextCore.Constants):
+class FlextAuthConstants(FlextConstants):
     """Authentication-specific constants following FLEXT unified pattern with nested domains.
 
-    Inherits from FlextCore.Constants for universal constants, defines only
+    Inherits from FlextConstants for universal constants, defines only
     auth-specific constants using nested namespace classes.
     """
 
-    # Default credentials (inherited from FlextCore.Constants where possible)
+    # Default credentials (inherited from FlextConstants where possible)
 
     class Jwt:
         """JWT Token management constants."""
 
-        DEFAULT_ALGORITHM = FlextCore.Constants.Security.JWT_DEFAULT_ALGORITHM
-        DEFAULT_EXPIRY_MINUTES = FlextCore.Constants.Security.JWT_DEFAULT_EXPIRY_MINUTES
-        MAX_EXPIRY_MINUTES = FlextCore.Constants.Security.JWT_MAX_EXPIRY_MINUTES
-        ISSUER_CLAIM = FlextCore.Constants.Security.JWT_ISSUER_CLAIM
-        AUDIENCE_CLAIM = FlextCore.Constants.Security.JWT_AUDIENCE_CLAIM
-        SECRET_KEY = FlextCore.Constants.Security.DEFAULT_JWT_SECRET  # nosec B105
-        ALLOWED_ALGORITHMS: ClassVar[FlextCore.Types.StringList] = list(
-            FlextCore.Constants.Security.JWT_ALLOWED_ALGORITHMS
-        )
-        DEFAULT_TOKEN_TYPE = FlextCore.Constants.Security.JWT_DEFAULT_TOKEN_TYPE
-        DEFAULT_ACCESS_TOKEN_TYPE = (
-            FlextCore.Constants.Security.JWT_DEFAULT_ACCESS_TOKEN_TYPE
-        )
-        API_TOKEN_TYPE = FlextCore.Constants.Security.JWT_API_TOKEN_TYPE
-        BASIC_TOKEN_TYPE = FlextCore.Constants.Security.JWT_BASIC_TOKEN_TYPE
-        BEARER_TOKEN_TYPE = "bearer"
-        BEARER_PREFIX = FlextCore.Constants.Security.JWT_BEARER_PREFIX
-        MIN_SECRET_KEY_LENGTH = FlextCore.Constants.Security.JWT_MIN_SECRET_KEY_LENGTH
+        DEFAULT_ALGORITHM: Final[str] = "HS256"
+        DEFAULT_EXPIRY_MINUTES: Final[int] = 60  # 1 hour default
+        MAX_EXPIRY_MINUTES: Final[int] = 43200  # 30 days maximum
+        ISSUER_CLAIM: Final[str] = "iss"
+        AUDIENCE_CLAIM: Final[str] = "aud"
+        SECRET_KEY: Final[str] = "your-secret-key-change-in-production"  # nosec B105
+        ALLOWED_ALGORITHMS: ClassVar[FlextTypes.StringList] = [
+            "HS256",
+            "RS256",
+            "ES256",
+        ]
+        DEFAULT_TOKEN_TYPE: Final[str] = "access"
+        DEFAULT_ACCESS_TOKEN_TYPE: Final[str] = "access"
+        API_TOKEN_TYPE: Final[str] = "api"
+        BASIC_TOKEN_TYPE: Final[str] = "basic"
+        BEARER_TOKEN_TYPE: Final[str] = "bearer"
+        BEARER_PREFIX: Final[str] = "Bearer"
+        MIN_SECRET_KEY_LENGTH: Final[int] = 32
 
     class Credentials:
         """User credential validation constants."""
@@ -49,26 +49,20 @@ class FlextAuthConstants(FlextCore.Constants):
         class Username:
             """Username validation rules."""
 
-            MIN_LENGTH = FlextCore.Constants.Security.CREDENTIAL_USERNAME_MIN_LENGTH
-            MAX_LENGTH = FlextCore.Constants.Security.CREDENTIAL_USERNAME_MAX_LENGTH
+            MIN_LENGTH: Final[int] = 3
+            MAX_LENGTH: Final[int] = 50
 
         class Password:
             """Password validation and security constants."""
 
-            MIN_LENGTH = FlextCore.Constants.Security.CREDENTIAL_PASSWORD_MIN_LENGTH
-            MAX_LENGTH = FlextCore.Constants.Security.CREDENTIAL_PASSWORD_MAX_LENGTH
-            MIN_SCORE = FlextCore.Constants.Security.CREDENTIAL_PASSWORD_MIN_SCORE
-            MIN_BCRYPT_HASH_LENGTH = (
-                FlextCore.Constants.Security.CREDENTIAL_MIN_BCRYPT_HASH_LENGTH
-            )
-            BCRYPT_ROUNDS = FlextCore.Constants.Security.CREDENTIAL_BCRYPT_ROUNDS
-            MIN_BCRYPT_ROUNDS = (
-                FlextCore.Constants.Security.CREDENTIAL_MIN_BCRYPT_ROUNDS
-            )
-            MAX_BCRYPT_ROUNDS = (
-                FlextCore.Constants.Security.CREDENTIAL_MAX_BCRYPT_ROUNDS
-            )
-            WEAK_PASSWORDS: ClassVar[FlextCore.Types.StringList] = [
+            MIN_LENGTH: Final[int] = 8
+            MAX_LENGTH: Final[int] = 128
+            MIN_SCORE: Final[int] = 3
+            MIN_BCRYPT_HASH_LENGTH: Final[int] = 60
+            BCRYPT_ROUNDS: Final[int] = 12
+            MIN_BCRYPT_ROUNDS: Final[int] = 8
+            MAX_BCRYPT_ROUNDS: Final[int] = 16
+            WEAK_PASSWORDS: ClassVar[FlextTypes.StringList] = [
                 "123",
                 "abc",
                 "password",
@@ -79,56 +73,40 @@ class FlextAuthConstants(FlextCore.Constants):
     class Session:
         """Session management constants."""
 
-        DEFAULT_EXPIRY_MINUTES = (
-            FlextCore.Constants.Security.SESSION_DEFAULT_EXPIRY_MINUTES
-        )
-        MAX_EXPIRY_MINUTES = FlextCore.Constants.Security.SESSION_MAX_EXPIRY_MINUTES
-        MAX_SESSIONS_PER_USER = (
-            FlextCore.Constants.Security.SESSION_MAX_SESSIONS_PER_USER
-        )
-        CLEANUP_INTERVAL_MINUTES = (
-            FlextCore.Constants.Security.SESSION_CLEANUP_INTERVAL_MINUTES
-        )
-        EXTEND_MINUTES = FlextCore.Constants.Security.SESSION_EXTEND_MINUTES
-        MIN_TOKEN_LENGTH = FlextCore.Constants.Security.SESSION_MIN_TOKEN_LENGTH
-        DEFAULT_EXTEND_HOURS = FlextCore.Constants.Security.SESSION_DEFAULT_EXTEND_HOURS
+        DEFAULT_EXPIRY_MINUTES: Final[int] = 60
+        MAX_EXPIRY_MINUTES: Final[int] = 10080  # 7 days
+        MAX_SESSIONS_PER_USER: Final[int] = 5
+        CLEANUP_INTERVAL_MINUTES: Final[int] = 60
+        EXTEND_MINUTES: Final[int] = 30
+        MIN_TOKEN_LENGTH: Final[int] = 32
+        DEFAULT_EXTEND_HOURS: Final[int] = 24
 
     class AuthSecurity:
         """Authentication-specific security enforcement constants."""
 
-        MAX_LOGIN_ATTEMPTS = FlextCore.Constants.Security.AUTH_MAX_LOGIN_ATTEMPTS
-        LOCKOUT_DURATION_MINUTES = (
-            FlextCore.Constants.Security.AUTH_LOCKOUT_DURATION_MINUTES
-        )
-        MAX_REQUESTS_PER_MINUTE = (
-            FlextCore.Constants.Security.AUTH_MAX_REQUESTS_PER_MINUTE
-        )
-        MAX_REQUESTS_PER_HOUR = FlextCore.Constants.Security.AUTH_MAX_REQUESTS_PER_HOUR
+        MAX_LOGIN_ATTEMPTS: Final[int] = 5
+        LOCKOUT_DURATION_MINUTES: Final[int] = 30
+        MAX_REQUESTS_PER_MINUTE: Final[int] = 100
+        MAX_REQUESTS_PER_HOUR: Final[int] = 1000
         # Rate limiting defaults
-        RATE_LIMIT_MAX_ATTEMPTS = (
-            FlextCore.Constants.Security.AUTH_RATE_LIMIT_MAX_ATTEMPTS
-        )
-        RATE_LIMIT_WINDOW_MINUTES = (
-            FlextCore.Constants.Security.AUTH_RATE_LIMIT_WINDOW_MINUTES
-        )
+        RATE_LIMIT_MAX_ATTEMPTS: Final[int] = 10
+        RATE_LIMIT_WINDOW_MINUTES: Final[int] = 15
 
     class Oidc:
         """OIDC provider constants."""
 
-        DEFAULT_ID_TOKEN_SIGNING_ALGORITHM = (
-            FlextCore.Constants.Security.OIDC_DEFAULT_ID_TOKEN_SIGNING_ALGORITHM
-        )
+        DEFAULT_ID_TOKEN_SIGNING_ALGORITHM: Final[str] = "RS256"
 
     class ApiKey:
         """API Key provider constants."""
 
-        DEFAULT_KEY_LENGTH = 32
-        DEFAULT_HASH_ALGORITHM = "sha256"
-        DEFAULT_REQUIRE_KEY_ID = False
-        DEFAULT_KEY_STORAGE = "memory"
-        DEFAULT_RATE_LIMIT_ENABLED = False
-        DEFAULT_RATE_LIMIT_REQUESTS = 1000
-        DEFAULT_RATE_LIMIT_WINDOW_SECONDS = 3600
+        DEFAULT_KEY_LENGTH: Final[int] = 32
+        DEFAULT_HASH_ALGORITHM: Final[str] = "sha256"
+        DEFAULT_REQUIRE_KEY_ID: Final[bool] = False
+        DEFAULT_KEY_STORAGE: Final[str] = "memory"
+        DEFAULT_RATE_LIMIT_ENABLED: Final[bool] = False
+        DEFAULT_RATE_LIMIT_REQUESTS: Final[int] = 1000
+        DEFAULT_RATE_LIMIT_WINDOW_SECONDS: Final[int] = 3600
 
     class ErrorCodes:
         """Authentication error codes."""
@@ -202,8 +180,8 @@ class FlextAuthConstants(FlextCore.Constants):
         ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
 
         # Permission sets
-        BASIC_USER_PERMISSIONS: ClassVar[FlextCore.Types.StringList] = [READ, WRITE]
-        ADMIN_PERMISSIONS: ClassVar[FlextCore.Types.StringList] = [
+        BASIC_USER_PERMISSIONS: ClassVar[FlextTypes.StringList] = [READ, WRITE]
+        ADMIN_PERMISSIONS: ClassVar[FlextTypes.StringList] = [
             READ,
             WRITE,
             DELETE,
@@ -220,8 +198,8 @@ class FlextAuthConstants(FlextCore.Constants):
         GUEST = "guest"
 
         # Role sets
-        DEFAULT_ROLES: ClassVar[FlextCore.Types.StringList] = [USER]
-        VALID_ROLES: ClassVar[FlextCore.Types.StringList] = [
+        DEFAULT_ROLES: ClassVar[FlextTypes.StringList] = [USER]
+        VALID_ROLES: ClassVar[FlextTypes.StringList] = [
             ADMIN,
             USER,
             MODERATOR,
@@ -231,54 +209,54 @@ class FlextAuthConstants(FlextCore.Constants):
     class AuthPlatform:
         """Platform defaults for authentication services."""
 
-        FLEXT_API_PORT = 8000
-        DEFAULT_HOST = "localhost"
-        LOOPBACK_IP = "127.0.0.1"
-        HTTP_STATUS_OK = 200
+        FLEXT_API_PORT: Final[int] = FlextConstants.Platform.FLEXT_API_PORT
+        DEFAULT_HOST: Final[str] = FlextConstants.Platform.DEFAULT_HOST
+        LOOPBACK_IP: Final[str] = FlextConstants.Platform.LOOPBACK_IP
+        HTTP_STATUS_OK: Final[int] = FlextConstants.Http.HTTP_OK
 
     class AuthNetwork:
         """Network defaults for authentication services."""
 
-        MIN_PORT = 1
-        MAX_PORT = 65535
-        TOTAL_TIMEOUT = 60
-        DEFAULT_TIMEOUT = 30
+        MIN_PORT: Final[int] = FlextConstants.Network.MIN_PORT
+        MAX_PORT: Final[int] = FlextConstants.Network.MAX_PORT
+        TOTAL_TIMEOUT: Final[int] = FlextConstants.Network.TOTAL_TIMEOUT
+        DEFAULT_TIMEOUT: Final[int] = FlextConstants.Network.DEFAULT_TIMEOUT
 
     class AuthDefaults:
         """Default values for various operations."""
 
-        DEFAULT_TOKEN_LENGTH = 32
-        DEFAULT_SESSION_EXTEND_HOURS = 24  # For protocols
-        DEMO_USERS_COUNT = 3
+        DEFAULT_TOKEN_LENGTH: Final[int] = 32
+        DEFAULT_SESSION_EXTEND_HOURS: Final[int] = 24  # For protocols
+        DEMO_USERS_COUNT: Final[int] = 3
         # Transport defaults
-        DEFAULT_TIMEOUT = 30.0
-        MAX_RETRIES = 3
+        DEFAULT_TIMEOUT: Final[float] = 30.0
+        MAX_RETRIES: Final[int] = 3
         # OIDC defaults
-        JWT_PARTS_COUNT = 3
-        BASE64_PADDING_SIZE = 4
+        JWT_PARTS_COUNT: Final[int] = 3
+        BASE64_PADDING_SIZE: Final[int] = 4
         # Admin defaults
-        DEFAULT_ADMIN_PASSWORD = "***MUST_BE_SET_IN_PRODUCTION***"
+        DEFAULT_ADMIN_PASSWORD: Final[str] = "***MUST_BE_SET_IN_PRODUCTION***"
         # Mock/test data defaults
-        MOCK_USER_PREFIX = "user_"
-        MOCK_EMAIL_DOMAIN = "@example.com"
-        MOCK_VALIDATED_USER_ID = "validated_user"
-        MOCK_VALIDATED_USERNAME = "validated_user"
-        MOCK_VALIDATED_EMAIL = "validated@example.com"
+        MOCK_USER_PREFIX: Final[str] = "user_"
+        MOCK_EMAIL_DOMAIN: Final[str] = "@example.com"
+        MOCK_VALIDATED_USER_ID: Final[str] = "validated_user"
+        MOCK_VALIDATED_USERNAME: Final[str] = "validated_user"
+        MOCK_VALIDATED_EMAIL: Final[str] = "validated@example.com"
         # Provider defaults
-        DEFAULT_PROVIDER = "jwt"
+        DEFAULT_PROVIDER: Final[str] = "jwt"
         # User model defaults
-        DEFAULT_USER_ACTIVE = True
-        DEFAULT_USER_ROLES: ClassVar[FlextCore.Types.StringList] = ["user"]
-        DEFAULT_FAILED_LOGIN_ATTEMPTS = 0
+        DEFAULT_USER_ACTIVE: Final[bool] = True
+        DEFAULT_USER_ROLES: ClassVar[FlextTypes.StringList] = ["user"]
+        DEFAULT_FAILED_LOGIN_ATTEMPTS: Final[int] = 0
         # Session model defaults
-        DEFAULT_SESSION_ACTIVE = True
+        DEFAULT_SESSION_ACTIVE: Final[bool] = True
         # Token model defaults
-        DEFAULT_TOKEN_REVOKED = False
+        DEFAULT_TOKEN_REVOKED: Final[bool] = False
         # Config defaults
-        DEFAULT_ENABLE_RATE_LIMITING = True
-        DEFAULT_REQUIRE_PASSWORD_COMPLEXITY = True
-        DEFAULT_ENABLE_EMAIL_VERIFICATION = False
-        DEFAULT_ENABLE_PASSWORD_HISTORY = False
+        DEFAULT_ENABLE_RATE_LIMITING: Final[bool] = True
+        DEFAULT_REQUIRE_PASSWORD_COMPLEXITY: Final[bool] = True
+        DEFAULT_ENABLE_EMAIL_VERIFICATION: Final[bool] = False
+        DEFAULT_ENABLE_PASSWORD_HISTORY: Final[bool] = False
 
     class Literals:
         """Literal types for type safety - CRITICAL VIOLATION to define elsewhere."""

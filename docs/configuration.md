@@ -8,7 +8,7 @@ Configuration management for flext-auth authentication service.
 
 ## Overview
 
-flext-auth uses FlextAuthConfig class extending [flext-core](../../flext-core/README.md) FlextCore.Config patterns for environment-aware configuration management.
+flext-auth uses FlextAuthConfig class extending [flext-core](../../flext-core/README.md) FlextConfig patterns for environment-aware configuration management.
 
 ---
 

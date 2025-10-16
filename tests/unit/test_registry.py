@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from flext_core import FlextCore
+from flext_core import FlextResult, FlextTypes
 
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
@@ -23,22 +23,22 @@ class FlextAuthMockProvider(FlextAuthBaseProvider):
         self._capabilities = {"authenticate", "authorize"}
 
     def authenticate(
-        self, credentials: FlextCore.Types.Dict
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
-        return FlextCore.Result[FlextCore.Types.Dict].ok({
-            "user_id": "test",
-            "authenticated": True,
-        })
+        self, credentials: FlextTypes.Dict
+    ) -> FlextResult[FlextTypes.Dict]:
+        return FlextResult[FlextTypes.Dict].ok(
+            {
+                "user_id": "test",
+                "authenticated": True,
+            }
+        )
 
-    def authorize(
-        self, user_id: str, resource: str, action: str
-    ) -> FlextCore.Result[bool]:
-        return FlextCore.Result[bool].ok(True)
+    def authorize(self, user_id: str, resource: str, action: str) -> FlextResult[bool]:
+        return FlextResult[bool].ok(True)
 
     def supports(self) -> set[str]:
         return self._capabilities
 
-    def get_metadata(self) -> FlextCore.Types.Dict:
+    def get_metadata(self) -> FlextTypes.Dict:
         return {
             "name": self._name,
             "version": "1.0.0",
@@ -46,10 +46,10 @@ class FlextAuthMockProvider(FlextAuthBaseProvider):
             "description": f"Mock auth provider {self._name}",
         }
 
-    def validate_config(self, config: FlextCore.Types.Dict) -> FlextCore.Result[None]:
+    def validate_config(self, config: FlextTypes.Dict) -> FlextResult[None]:
         if config.get("invalid") is True:
-            return FlextCore.Result[None].fail("Invalid configuration")
-        return FlextCore.Result[None].ok(None)
+            return FlextResult[None].fail("Invalid configuration")
+        return FlextResult[None].ok(None)
 
 
 class TestFlextAuthRegistryInitialization:

@@ -224,10 +224,12 @@ class FlextAuthTestBasicProvider:
         auth_header = f"Basic {credentials}"
 
         # HTTP URL should fail
-        result = provider.authenticate({
-            "authorization": auth_header,
-            "request_url": "http://api.example.com",
-        })
+        result = provider.authenticate(
+            {
+                "authorization": auth_header,
+                "request_url": "http://api.example.com",
+            }
+        )
 
         assert result.is_failure
         assert result.error is not None and "requires HTTPS" in result.error
@@ -397,10 +399,12 @@ class TestFlextAuthLdapProvider:
         }
         provider = FlextAuthLdapProvider(config)
 
-        result = provider.authenticate({
-            "username": "testuser",
-            "password": "password",
-        })
+        result = provider.authenticate(
+            {
+                "username": "testuser",
+                "password": "password",
+            }
+        )
 
         assert result.is_failure
         assert result.error is not None and "flext-ldap" in result.error
@@ -432,26 +436,32 @@ class TestFlextAuthKerberosProvider:
     def test_kerberos_initialization_missing_realm(self) -> None:
         """Test Kerberos provider initialization without realm."""
         with pytest.raises(ValueError, match="realm"):
-            FlextAuthKerberosProvider({
-                "kdc": "kdc.example.com",
-                "service_principal": "HTTP/api@REALM",
-            })
+            FlextAuthKerberosProvider(
+                {
+                    "kdc": "kdc.example.com",
+                    "service_principal": "HTTP/api@REALM",
+                }
+            )
 
     def test_kerberos_initialization_missing_kdc(self) -> None:
         """Test Kerberos provider initialization without KDC."""
         with pytest.raises(ValueError, match="kdc"):
-            FlextAuthKerberosProvider({
-                "realm": "EXAMPLE.COM",
-                "service_principal": "HTTP/api@REALM",
-            })
+            FlextAuthKerberosProvider(
+                {
+                    "realm": "EXAMPLE.COM",
+                    "service_principal": "HTTP/api@REALM",
+                }
+            )
 
     def test_kerberos_initialization_missing_service_principal(self) -> None:
         """Test Kerberos provider initialization without service principal."""
         with pytest.raises(ValueError, match="service_principal"):
-            FlextAuthKerberosProvider({
-                "realm": "EXAMPLE.COM",
-                "kdc": "kdc.example.com",
-            })
+            FlextAuthKerberosProvider(
+                {
+                    "realm": "EXAMPLE.COM",
+                    "kdc": "kdc.example.com",
+                }
+            )
 
     def test_kerberos_capabilities(self) -> None:
         """Test Kerberos provider capabilities."""
@@ -496,10 +506,12 @@ class TestFlextAuthKerberosProvider:
         provider = FlextAuthKerberosProvider(config)
 
         # Password authentication
-        result = provider.authenticate({
-            "username": "user@EXAMPLE.COM",
-            "password": "password",
-        })
+        result = provider.authenticate(
+            {
+                "username": "user@EXAMPLE.COM",
+                "password": "password",
+            }
+        )
 
         assert result.is_failure
         assert result.error is not None and "kerberos" in result.error.lower()

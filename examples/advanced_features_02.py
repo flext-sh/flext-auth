@@ -15,7 +15,7 @@ import os
 import secrets
 import string
 
-from flext_core import FlextCore
+from flext_core import FlextLogger
 
 from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthModels
 
@@ -30,7 +30,7 @@ def example_advanced_configuration() -> None:
 
     # Show that configuration is applied
     # Note: Configuration is encapsulated within FlextAuth
-    logger = FlextCore.Logger(__name__)
+    logger = FlextLogger(__name__)
     logger.info("FlextAuth created with custom configuration")
 
     # Display some configuration details (would need config inspection if available)

@@ -1,6 +1,6 @@
-"""Test FlextCore.Config singleton behavior and CLI integration.
+"""Test FlextConfig singleton behavior and CLI integration.
 
-Tests that FlextCore.Config is used as singleton throughout the module and that
+Tests that FlextConfig is used as singleton throughout the module and that
 CLI parameters can override configuration behavior while maintaining singleton
 consistency.
 
@@ -17,10 +17,10 @@ from flext_auth import FlextAuth, FlextAuthConfig
 
 
 class TestFlextConfigSingleton:
-    """Test FlextCore.Config singleton behavior."""
+    """Test FlextConfig singleton behavior."""
 
     def test_singleton_consistency(self) -> None:
-        """Test that FlextCore.Config maintains singleton consistency."""
+        """Test that FlextConfig maintains singleton consistency."""
         # Clear any existing global instance
         FlextAuthConfig.reset_global_instance()
 
@@ -62,7 +62,7 @@ class TestFlextConfigSingleton:
         assert global_config.jwt_expiry_minutes == 30
 
     def test_flext_auth_uses_singleton(self) -> None:
-        """Test that FlextAuth uses FlextCore.Config singleton."""
+        """Test that FlextAuth uses FlextConfig singleton."""
         # Clear any existing global instance
         FlextAuthConfig.reset_global_instance()
 

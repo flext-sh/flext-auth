@@ -9,18 +9,18 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 
-from flext_core import FlextCore
+from flext_core import FlextModels, FlextResult, FlextTypes
 from pydantic import BaseModel, Field
 
 from flext_auth.constants import FlextAuthConstants
 
 
-class FlextAuthModels(FlextCore.Models):
+class FlextAuthModels(FlextModels):
     """Unified auth models class following FLEXT standards.
 
     Contains all Pydantic models for authentication domain operations.
     Follows FLEXT pattern: one class per module with nested subclasses.
-    Extends FlextCore.Models for proper composition and inheritance.
+    Extends FlextModels for proper composition and inheritance.
     """
 
     # =========================================================================
@@ -45,7 +45,7 @@ class FlextAuthModels(FlextCore.Models):
 
         status: str = Field(..., description="Service operational status")
         service: str = Field(..., description="Name of the service reporting status")
-        capabilities: FlextCore.Types.StringList = Field(
+        capabilities: FlextTypes.StringList = Field(
             default_factory=list, description="List of capabilities"
         )
         version: str | None = Field(default=None, description="Service version")
@@ -75,13 +75,13 @@ class FlextAuthModels(FlextCore.Models):
             exclude=True,
         )
         full_name: str | None = Field(default=None, description="User's full name")
-        roles: FlextCore.Types.StringList = Field(
+        roles: FlextTypes.StringList = Field(
             default_factory=lambda: [FlextAuthConstants.Roles.USER],
             description="User roles",
         )
 
-    class User(FlextCore.Models.Entity):
-        """User domain model extending FlextCore.Models.Entity."""
+    class User(FlextModels.Entity):
+        """User domain model extending FlextModels.Entity."""
 
         user_id: str | None = Field(default=None, description="Unique user identifier")
         username: str = Field(
@@ -98,10 +98,10 @@ class FlextAuthModels(FlextCore.Models):
         is_active: bool = Field(
             default=True, description="Whether user account is active"
         )
-        roles: FlextCore.Types.StringList = Field(
+        roles: FlextTypes.StringList = Field(
             default_factory=list, description="User roles"
         )
-        permissions: FlextCore.Types.StringList = Field(
+        permissions: FlextTypes.StringList = Field(
             default_factory=list, description="User permissions"
         )
         failed_login_attempts: int = Field(
@@ -114,19 +114,48 @@ class FlextAuthModels(FlextCore.Models):
             default=None, description="Last successful login"
         )
 
-    class Role(FlextCore.Models.Entity):
-        """Role domain model extending FlextCore.Models.Entity."""
+        def record_successful_login(self) -> None:
+            """Record a successful login for this user."""
+            from datetime import datetime
+
+            self.last_login = datetime.now(UTC)
+            self.failed_login_attempts = 0
+            self.locked_until = None
+
+        def verify_password(self, password: str) -> bool:
+            """Verify a password against the stored hash."""
+            import bcrypt
+
+            if not self.password_hash:
+                return False
+            return bcrypt.checkpw(
+                password.encode("utf-8"), self.password_hash.encode("utf-8")
+            )
+
+        def set_password(self, password: str) -> None:
+            """Set a new password for the user."""
+            import bcrypt
+
+            salt = bcrypt.gensalt(
+                rounds=FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS
+            )
+            self.password_hash = bcrypt.hashpw(password.encode("utf-8"), salt).decode(
+                "utf-8"
+            )
+
+    class Role(FlextModels.Entity):
+        """Role domain model extending FlextModels.Entity."""
 
         name: str = Field(..., description="Role name", min_length=1, max_length=50)
         description: str | None = Field(
             default=None, description="Role description", max_length=500
         )
-        permissions: FlextCore.Types.StringList = Field(
+        permissions: FlextTypes.StringList = Field(
             default_factory=list, description="Role permissions"
         )
 
-    class Session(FlextCore.Models.Entity):
-        """Session domain model extending FlextCore.Models.Entity."""
+    class Session(FlextModels.Entity):
+        """Session domain model extending FlextModels.Entity."""
 
         user_id: str = Field(..., description="User ID for this session")
         session_token: str = Field(
@@ -140,8 +169,8 @@ class FlextAuthModels(FlextCore.Models):
             default_factory=lambda: datetime.now(UTC), description="Last access time"
         )
 
-    class AuthToken(FlextCore.Models.Entity):
-        """AuthToken domain model extending FlextCore.Models.Entity."""
+    class AuthToken(FlextModels.Entity):
+        """AuthToken domain model extending FlextModels.Entity."""
 
         user_id: str = Field(..., description="User ID for this token")
         token: str = Field(..., description="JWT token string", exclude=True)
@@ -154,9 +183,36 @@ class FlextAuthModels(FlextCore.Models):
         refresh_token: str | None = Field(
             default=None, description="Refresh token", exclude=True
         )
-        metadata: FlextCore.Types.Dict | None = Field(
+        metadata: FlextTypes.Dict | None = Field(
             default_factory=dict, description="Additional token metadata"
         )
+
+        @classmethod
+        def create_jwt_token(
+            cls,
+            user_id: str,
+            expiry_minutes: int = 60,
+            token_type: str = "access",  # noqa: S107
+        ) -> FlextResult[AuthToken]:
+            """Create a JWT token for a user."""
+            from datetime import datetime, timedelta
+
+            # Simple JWT token creation (in a real implementation, use proper JWT library)
+            expires_at = datetime.now(UTC) + timedelta(minutes=expiry_minutes)
+
+            # Create a simple token (in production, use proper JWT encoding)
+            import secrets
+
+            token = f"jwt_{user_id}_{secrets.token_urlsafe(32)}"
+
+            auth_token = cls(
+                user_id=user_id,
+                token=token,
+                expires_at=expires_at,
+                token_type=token_type,
+            )
+
+            return FlextResult[AuthToken].ok(auth_token)
 
 
 __all__ = [

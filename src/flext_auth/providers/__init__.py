@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextCore
+from flext_core import FlextTypes
 
 from flext_auth.providers.apikey import FlextAuthApiKeyProvider
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -25,7 +25,7 @@ from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
 from flext_auth.providers.oidc import FlextAuthOidcProvider
 from flext_auth.providers.saml import FlextAuthSamlProvider
 
-__all__: FlextCore.Types.StringList = [
+__all__: FlextTypes.StringList = [
     "FlextAuthApiKeyProvider",
     "FlextAuthBaseProvider",
     "FlextAuthBasicProvider",

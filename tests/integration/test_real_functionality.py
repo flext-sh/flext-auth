@@ -219,7 +219,7 @@ class TestRealAuthentication:
         assert custom_config.max_login_attempts == 10
 
     def test_error_handling_and_validation(self) -> None:
-        """Test comprehensive error handling with FlextCore.Result pattern."""
+        """Test comprehensive error handling with FlextResult pattern."""
         auth: FlextAuth = FlextAuth()
 
         # Test duplicate username registration

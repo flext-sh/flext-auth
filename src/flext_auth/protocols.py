@@ -6,20 +6,19 @@ SPDX-License-Identifier: MIT
 """
 
 # ruff: noqa: ARG002, S106
-
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 from typing import Protocol, runtime_checkable
 
-from flext_core import FlextCore
+from flext_core import FlextProtocols, FlextResult, FlextTypes
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.typings import FlextAuthTypes
 
 
-class FlextAuthProtocols(FlextCore.Protocols):
+class FlextAuthProtocols(FlextProtocols):
     """Unified authentication protocols following FLEXT domain extension pattern.
 
     This class consolidates authentication-specific protocols while explicitly
@@ -41,19 +40,6 @@ class FlextAuthProtocols(FlextCore.Protocols):
     """
 
     # =========================================================================
-    # FOUNDATION PROTOCOL RE-EXPORTS (from flext-core)
-    # =========================================================================
-    # Explicitly re-export foundation protocols for unified access.
-    # This maintains backward compatibility while providing clean namespace access.
-
-    Foundation = FlextCore.Protocols.Foundation
-    Domain = FlextCore.Protocols.Domain
-    Application = FlextCore.Protocols.Application
-    Infrastructure = FlextCore.Protocols.Infrastructure
-    Extensions = FlextCore.Protocols.Extensions
-    Commands = FlextCore.Protocols.Commands
-
-    # =========================================================================
     # AUTHENTICATION-SPECIFIC PROTOCOLS
     # =========================================================================
     # Domain-specific protocols for authentication and authorization operations.
@@ -66,24 +52,24 @@ class FlextAuthProtocols(FlextCore.Protocols):
         """
 
         @runtime_checkable
-        class UserProtocol(FlextCore.Protocols.Domain.Service, Protocol):
+        class UserProtocol(FlextProtocols.Service, Protocol):
             """Protocol for user-like objects in authentication."""
 
             id: str
             username: str
             email: str
             is_active: bool
-            roles: FlextCore.Types.StringList
+            roles: FlextTypes.StringList
             failed_login_attempts: int
             locked_until: datetime | None
 
-            def verify_password(self, password: str) -> FlextCore.Result[bool]:
+            def verify_password(self, password: str) -> FlextResult[bool]:
                 """Verify password against stored hash."""
-                return FlextCore.Result[bool].ok(True)  # Placeholder implementation
+                return FlextResult[bool].ok(True)  # Placeholder implementation
 
-            def set_password(self, password: str) -> FlextCore.Result[bool]:
+            def set_password(self, password: str) -> FlextResult[bool]:
                 """Set password with secure hashing."""
-                return FlextCore.Result[bool].ok(True)  # Placeholder implementation
+                return FlextResult[bool].ok(True)  # Placeholder implementation
 
             @property
             def can_login(self) -> bool:
@@ -104,7 +90,7 @@ class FlextAuthProtocols(FlextCore.Protocols):
                 # Placeholder implementation
 
         @runtime_checkable
-        class SessionProtocol(FlextCore.Protocols.Domain.Service, Protocol):
+        class SessionProtocol(FlextProtocols.Service, Protocol):
             """Protocol for session-like objects in authentication."""
 
             id: str
@@ -122,20 +108,20 @@ class FlextAuthProtocols(FlextCore.Protocols):
             def extend_session(
                 self,
                 hours: int = FlextAuthConstants.AuthDefaults.DEFAULT_SESSION_EXTEND_HOURS,
-            ) -> FlextCore.Result[bool]:
+            ) -> FlextResult[bool]:
                 """Extend session expiration time."""
-                return FlextCore.Result[bool].ok(True)  # Placeholder implementation
+                return FlextResult[bool].ok(True)  # Placeholder implementation
 
             def is_valid(self) -> bool:
                 """Check if session is valid (active and not expired)."""
                 return True  # Placeholder implementation
 
-            def revoke(self) -> FlextCore.Result[bool]:
+            def revoke(self) -> FlextResult[bool]:
                 """Revoke this session."""
-                return FlextCore.Result[bool].ok(True)  # Placeholder implementation
+                return FlextResult[bool].ok(True)  # Placeholder implementation
 
         @runtime_checkable
-        class TokenProtocol(FlextCore.Protocols.Domain.Service, Protocol):
+        class TokenProtocol(FlextProtocols.Service, Protocol):
             """Protocol for token-like objects in authentication."""
 
             token: str
@@ -148,7 +134,7 @@ class FlextAuthProtocols(FlextCore.Protocols):
                 return False  # Placeholder implementation
 
         @runtime_checkable
-        class ServiceProtocol(FlextCore.Protocols.Domain.Service, Protocol):
+        class ServiceProtocol(FlextProtocols.Service, Protocol):
             """Protocol for authentication service-like objects."""
 
             def register_user(
@@ -157,10 +143,10 @@ class FlextAuthProtocols(FlextCore.Protocols):
                 email: str,
                 password: str,
                 full_name: str | None = None,
-                roles: FlextCore.Types.StringList | None = None,
-            ) -> FlextCore.Result[FlextAuthModels.User]:
+                roles: FlextTypes.StringList | None = None,
+            ) -> FlextResult[FlextAuthModels.User]:
                 """Register new user."""
-                return FlextCore.Result[FlextAuthModels.User].ok(
+                return FlextResult[FlextAuthModels.User].ok(
                     FlextAuthModels.User(
                         user_id=f"user_{username}",
                         username=username,
@@ -178,39 +164,41 @@ class FlextAuthProtocols(FlextCore.Protocols):
                 password: str,
                 client_ip: str | None = None,
                 user_agent: str | None = None,
-            ) -> FlextCore.Result[FlextAuthTypes.AuthenticationResponseDict]:
+            ) -> FlextResult[FlextAuthTypes.AuthenticationResponseDict]:
                 """Authenticate user and create session."""
-                return FlextCore.Result[FlextAuthTypes.AuthenticationResponseDict].ok({
-                    "user": {
-                        "id": f"user_{username}",
-                        "username": username,
-                        "email": f"{username}@example.com",
-                        "full_name": None,
-                        "is_active": True,
-                        "roles": ["user"],
-                        "created_at": datetime.now(UTC),
-                        "updated_at": datetime.now(UTC),
-                        "last_login": None,
-                    },
-                    "session": {
-                        "id": f"session_{username}",
-                        "user_id": f"user_{username}",
-                        "session_token": f"token_{username}",
-                        "expires_at": datetime.now(UTC) + timedelta(hours=24),
-                        "created_at": datetime.now(UTC),
-                        "last_accessed_at": datetime.now(UTC),
-                        "is_active": True,
-                        "ip_address": client_ip,
-                        "user_agent": user_agent,
-                    },
-                    "jwt_token": f"jwt_token_{username}",
-                    "authenticated": True,
-                    "success": True,
-                })  # Placeholder implementation
+                return FlextResult[FlextAuthTypes.AuthenticationResponseDict].ok(
+                    {
+                        "user": {
+                            "id": f"user_{username}",
+                            "username": username,
+                            "email": f"{username}@example.com",
+                            "full_name": None,
+                            "is_active": True,
+                            "roles": ["user"],
+                            "created_at": datetime.now(UTC),
+                            "updated_at": datetime.now(UTC),
+                            "last_login": None,
+                        },
+                        "session": {
+                            "id": f"session_{username}",
+                            "user_id": f"user_{username}",
+                            "session_token": f"token_{username}",
+                            "expires_at": datetime.now(UTC) + timedelta(hours=24),
+                            "created_at": datetime.now(UTC),
+                            "last_accessed_at": datetime.now(UTC),
+                            "is_active": True,
+                            "ip_address": client_ip,
+                            "user_agent": user_agent,
+                        },
+                        "jwt_token": f"jwt_token_{username}",
+                        "authenticated": True,
+                        "success": True,
+                    }
+                )  # Placeholder implementation
 
-            def logout_user(self, session_id: str) -> FlextCore.Result[None]:
+            def logout_user(self, session_id: str) -> FlextResult[None]:
                 """Logout user by session ID."""
-                return FlextCore.Result[None].ok(None)  # Placeholder implementation
+                return FlextResult[None].ok(None)  # Placeholder implementation
 
 
 __all__ = [

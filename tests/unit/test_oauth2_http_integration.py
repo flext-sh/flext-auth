@@ -11,7 +11,7 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 
 from __future__ import annotations
 
-from flext_core import FlextCore
+from flext_core import FlextTypes
 from pytest_httpx import HTTPXMock
 
 from flext_auth.providers import FlextAuthOAuth2Provider, FlextAuthOidcProvider
@@ -39,7 +39,7 @@ class TestOAuth2TokenEndpoint:
         )
 
         # Create provider
-        config: FlextCore.Types.Dict = {
+        config: FlextTypes.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "authorization_endpoint": "https://auth.example.com/authorize",
@@ -51,10 +51,12 @@ class TestOAuth2TokenEndpoint:
         provider = FlextAuthOAuth2Provider(config)
 
         # Authenticate with authorization code
-        result = provider.authenticate({
-            "code": "test_auth_code",
-            "state": "test_state",
-        })
+        result = provider.authenticate(
+            {
+                "code": "test_auth_code",
+                "state": "test_state",
+            }
+        )
 
         assert result.is_success
         token = result.unwrap()
@@ -91,11 +93,13 @@ class TestOAuth2TokenEndpoint:
         code_verifier, _code_challenge = provider.generate_pkce_challenge()
 
         # Authenticate with authorization code and PKCE verifier
-        result = provider.authenticate({
-            "code": "test_auth_code",
-            "state": "test_state",
-            "code_verifier": code_verifier,
-        })
+        result = provider.authenticate(
+            {
+                "code": "test_auth_code",
+                "state": "test_state",
+                "code_verifier": code_verifier,
+            }
+        )
 
         assert result.is_success
 
@@ -114,7 +118,7 @@ class TestOAuth2TokenEndpoint:
             status_code=200,
         )
 
-        config: FlextCore.Types.Dict = {
+        config: FlextTypes.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "token_endpoint": "https://auth.example.com/token",
@@ -145,7 +149,7 @@ class TestOAuth2TokenEndpoint:
             status_code=200,
         )
 
-        config: FlextCore.Types.Dict = {
+        config: FlextTypes.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "token_endpoint": "https://auth.example.com/token",
@@ -154,10 +158,12 @@ class TestOAuth2TokenEndpoint:
         provider = FlextAuthOAuth2Provider(config)
 
         # Authenticate with username/password
-        result = provider.authenticate({
-            "username": "testuser",
-            "password": "testpassword",
-        })
+        result = provider.authenticate(
+            {
+                "username": "testuser",
+                "password": "testpassword",
+            }
+        )
 
         assert result.is_success
         token = result.unwrap()
@@ -178,7 +184,7 @@ class TestOAuth2TokenEndpoint:
             status_code=200,
         )
 
-        config: FlextCore.Types.Dict = {
+        config: FlextTypes.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "token_endpoint": "https://auth.example.com/token",
@@ -208,7 +214,7 @@ class TestOAuth2TokenEndpoint:
             status_code=400,
         )
 
-        config: FlextCore.Types.Dict = {
+        config: FlextTypes.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "token_endpoint": "https://auth.example.com/token",
@@ -218,10 +224,12 @@ class TestOAuth2TokenEndpoint:
         provider = FlextAuthOAuth2Provider(config)
 
         # Attempt authentication
-        result = provider.authenticate({
-            "code": "expired_code",
-            "state": "test_state",
-        })
+        result = provider.authenticate(
+            {
+                "code": "expired_code",
+                "state": "test_state",
+            }
+        )
 
         assert result.is_failure
         assert result.error is not None and "invalid_grant" in result.error
@@ -235,7 +243,7 @@ class TestOAuth2TokenEndpoint:
             url="https://auth.example.com/token",
         )
 
-        config: FlextCore.Types.Dict = {
+        config: FlextTypes.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "token_endpoint": "https://auth.example.com/token",
@@ -263,7 +271,7 @@ class TestOAuth2TokenEndpoint:
                 text="Internal Server Error",
             )
 
-        config: FlextCore.Types.Dict = {
+        config: FlextTypes.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "token_endpoint": "https://auth.example.com/token",
@@ -308,7 +316,7 @@ class TestOidcUserInfoEndpoint:
             status_code=200,
         )
 
-        config: FlextCore.Types.Dict = {
+        config: FlextTypes.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "issuer": "https://auth.example.com",
@@ -340,7 +348,7 @@ class TestOidcUserInfoEndpoint:
             status_code=200,
         )
 
-        config: FlextCore.Types.Dict = {
+        config: FlextTypes.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "issuer": "https://auth.example.com",
@@ -365,7 +373,7 @@ class TestOidcUserInfoEndpoint:
             text="Unauthorized",
         )
 
-        config: FlextCore.Types.Dict = {
+        config: FlextTypes.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "issuer": "https://auth.example.com",
@@ -384,7 +392,7 @@ class TestOidcUserInfoEndpoint:
 
     def test_userinfo_no_endpoint_configured(self) -> None:
         """Test UserInfo request when endpoint not configured."""
-        config: FlextCore.Types.Dict = {
+        config: FlextTypes.Dict = {
             "client_id": "test-client",
             "client_secret": "test-secret",
             "issuer": "https://auth.example.com",

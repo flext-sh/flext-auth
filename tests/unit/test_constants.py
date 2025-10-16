@@ -5,6 +5,8 @@ Tests the authentication constants module following FLEXT standards.
 
 from __future__ import annotations
 
+from flext_core import FlextConstants
+
 from flext_auth.constants import FlextAuthConstants
 
 
@@ -12,10 +14,8 @@ class TestFlextAuthConstants:
     """Test FlextAuthConstants class and its nested constant classes."""
 
     def test_inherits_from_flext_constants(self) -> None:
-        """Test that FlextAuthConstants inherits from FlextCore.Constants."""
-        from flext_core import FlextCore
-
-        assert issubclass(FlextAuthConstants, FlextCore.Constants)
+        """Test that FlextAuthConstants inherits from FlextConstants."""
+        assert issubclass(FlextAuthConstants, FlextConstants)
 
     def test_jwt_constants(self) -> None:
         """Test JWT-related constants."""

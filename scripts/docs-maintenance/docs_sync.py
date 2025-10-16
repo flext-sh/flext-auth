@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT
 import argparse
 import json
 import shutil
-import subprocess
+import subprocess  # noqa: S404
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -79,14 +79,16 @@ class DocumentationSynchronizer:
             return changes
 
         # Get modified files in the last N days
-        success, output = self._run_git_command([
-            "git",
-            "log",
-            "--since",
-            f"{days} days ago",
-            "--name-status",
-            "--pretty=format:",
-        ])
+        success, output = self._run_git_command(
+            [
+                "git",
+                "log",
+                "--since",
+                f"{days} days ago",
+                "--name-status",
+                "--pretty=format:",
+            ]
+        )
 
         if success:
             for line in output.split("\n"):
@@ -101,29 +103,33 @@ class DocumentationSynchronizer:
                             changes["deleted_files"].append(file_path)
 
         # Get commit information
-        success, output = self._run_git_command([
-            "git",
-            "log",
-            "--since",
-            f"{days} days ago",
-            "--pretty=format:%H|%an|%ae|%s|%ad",
-            "--date=iso",
-            "--",
-            "*.md",
-            "*.mdx",
-        ])
+        success, output = self._run_git_command(
+            [
+                "git",
+                "log",
+                "--since",
+                f"{days} days ago",
+                "--pretty=format:%H|%an|%ae|%s|%ad",
+                "--date=iso",
+                "--",
+                "*.md",
+                "*.mdx",
+            ]
+        )
 
         if success:
             for line in output.split("\n"):
                 if line.strip():
                     commit_hash, author, email, subject, date = line.split("|", 4)
-                    changes["commits"].append({
-                        "hash": commit_hash,
-                        "author": author,
-                        "email": email,
-                        "subject": subject,
-                        "date": date,
-                    })
+                    changes["commits"].append(
+                        {
+                            "hash": commit_hash,
+                            "author": author,
+                            "email": email,
+                            "subject": subject,
+                            "date": date,
+                        }
+                    )
                     changes["authors"].add(author)
 
         changes["authors"] = list(changes["authors"])
@@ -157,12 +163,14 @@ class DocumentationSynchronizer:
                             status["staged_changes"].append(file_path)
 
         # Check remote status
-        success, output = self._run_git_command([
-            "git",
-            "status",
-            "-b",
-            "--ahead-behind",
-        ])
+        success, output = self._run_git_command(
+            [
+                "git",
+                "status",
+                "-b",
+                "--ahead-behind",
+            ]
+        )
         if success:
             # Parse ahead/behind information
             lines = output.split("\n")
@@ -370,12 +378,14 @@ class QualityAssuranceReporter:
             "high_severity", 0
         )
         if high_severity_count > 0:
-            critical_issues.append({
-                "category": "audit",
-                "severity": "high",
-                "description": f"{high_severity_count} high-severity audit issues",
-                "impact": "Critical documentation problems requiring immediate fixes",
-            })
+            critical_issues.append(
+                {
+                    "category": "audit",
+                    "severity": "high",
+                    "description": f"{high_severity_count} high-severity audit issues",
+                    "impact": "Critical documentation problems requiring immediate fixes",
+                }
+            )
 
         # Broken external links
         broken_external = len(
@@ -384,21 +394,25 @@ class QualityAssuranceReporter:
             .get("broken_external_link", [])
         )
         if broken_external > 0:
-            critical_issues.append({
-                "category": "links",
-                "severity": "high",
-                "description": f"{broken_external} broken external links",
-                "impact": "Broken links affect user experience and credibility",
-            })
+            critical_issues.append(
+                {
+                    "category": "links",
+                    "severity": "high",
+                    "description": f"{broken_external} broken external links",
+                    "impact": "Broken links affect user experience and credibility",
+                }
+            )
 
         # Very low quality scores
         if self._calculate_audit_score(audit_results) < 50:
-            critical_issues.append({
-                "category": "quality",
-                "severity": "high",
-                "description": "Overall documentation quality is critically low",
-                "impact": "Poor documentation affects project maintainability and adoption",
-            })
+            critical_issues.append(
+                {
+                    "category": "quality",
+                    "severity": "high",
+                    "description": "Overall documentation quality is critically low",
+                    "impact": "Poor documentation affects project maintainability and adoption",
+                }
+            )
 
         return critical_issues
 
@@ -515,20 +529,24 @@ class QualityAssuranceReporter:
             )
 
         # Long-term improvements (1-3 months)
-        action_plan["long_term_improvements"].extend([
-            "Implement automated link checking in CI/CD",
-            "Set up regular documentation quality monitoring",
-            "Create documentation contribution guidelines",
-            "Establish content freshness monitoring",
-        ])
+        action_plan["long_term_improvements"].extend(
+            [
+                "Implement automated link checking in CI/CD",
+                "Set up regular documentation quality monitoring",
+                "Create documentation contribution guidelines",
+                "Establish content freshness monitoring",
+            ]
+        )
 
         # Automation opportunities
-        action_plan["automation_opportunities"].extend([
-            "Set up weekly automated QA reports",
-            "Implement link health monitoring alerts",
-            "Create automated content freshness checks",
-            "Establish documentation quality gates in CI/CD",
-        ])
+        action_plan["automation_opportunities"].extend(
+            [
+                "Set up weekly automated QA reports",
+                "Implement link health monitoring alerts",
+                "Create automated content freshness checks",
+                "Establish documentation quality gates in CI/CD",
+            ]
+        )
 
         return action_plan
 

@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextCore
+from flext_core import FlextExceptions, FlextResult, FlextTypes
 
 from flext_auth.models import FlextAuthModels
 
@@ -51,7 +51,7 @@ class FlextAuthProviderMixin:
             return token.token
 
         error_msg = f"Invalid token type: expected str or AuthToken, got {type(token)}"
-        raise ValueError(error_msg)
+        raise FlextExceptions.ValidationError(error_msg, field="token", value=str(type(token)))
 
     def supports(self) -> set[str]:
         """Return set of capabilities supported by this provider.
@@ -63,9 +63,9 @@ class FlextAuthProviderMixin:
 
     def _validate_credentials_dict(
         self,
-        credentials: FlextCore.Types.Dict,
-        required_fields: FlextCore.Types.StringList,
-    ) -> FlextCore.Result[None]:
+        credentials: FlextTypes.Dict,
+        required_fields: FlextTypes.StringList,
+    ) -> FlextResult[None]:
         """Validate that credentials contain required fields.
 
         Args:
@@ -73,7 +73,7 @@ class FlextAuthProviderMixin:
             required_fields: List of required field names
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         missing_fields = [
@@ -82,57 +82,55 @@ class FlextAuthProviderMixin:
 
         if missing_fields:
             error_msg = f"Missing required fields: {', '.join(missing_fields)}"
-            return FlextCore.Result[None].fail(error_msg)
+            return FlextResult[None].fail(error_msg)
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
-    def _validate_token_string(self, token: str) -> FlextCore.Result[None]:
+    def _validate_token_string(self, token: str) -> FlextResult[None]:
         """Validate token string format.
 
         Args:
             token: Token string to validate
 
         Returns:
-            FlextCore.Result indicating success or failure
+            FlextResult indicating success or failure
 
         """
         if not token or not isinstance(token, str):
-            return FlextCore.Result[None].fail("Token must be a non-empty string")
+            return FlextResult[None].fail("Token must be a non-empty string")
 
         if len(token.strip()) == 0:
-            return FlextCore.Result[None].fail(
-                "Token cannot be empty or whitespace only"
-            )
+            return FlextResult[None].fail("Token cannot be empty or whitespace only")
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
     def _check_capability_supported(
         self,
         capability: str,
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Check if a capability is supported by this provider.
 
         Args:
             capability: Capability to check
 
         Returns:
-            FlextCore.Result[None]: Success if supported, error if not
+            FlextResult[None]: Success if supported, error if not
 
         Example:
             >>> result = self._check_capability_supported("refresh")
             >>> if result.is_failure:
-            ...     return FlextCore.Result[AuthToken].fail("Refresh not supported")
+            ...     return FlextResult[AuthToken].fail("Refresh not supported")
 
         """
         if capability not in self.supports():
-            return FlextCore.Result[None].fail(
+            return FlextResult[None].fail(
                 f"Provider does not support '{capability}' capability. "
                 f"Supported capabilities: {', '.join(sorted(self.supports()))}"
             )
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
-    def _get_capability_metadata(self) -> FlextCore.Types.Dict:
+    def _get_capability_metadata(self) -> FlextTypes.Dict:
         """Get metadata about provider capabilities.
 
         Returns:

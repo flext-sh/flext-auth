@@ -14,7 +14,7 @@ from datetime import UTC, datetime, timedelta
 from typing import cast
 from unittest.mock import MagicMock
 
-from flext_core import FlextCore
+from flext_core import FlextResult, FlextTypes
 
 from flext_auth import FlextAuthMiddleware
 from flext_auth.models import FlextAuthModels
@@ -44,35 +44,31 @@ class FlextAuthMockProvider(FlextAuthBaseProvider):
         self._refresh_calls = 0
 
     def authenticate(
-        self, credentials: FlextCore.Types.Dict
-    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
+        self, credentials: FlextTypes.Dict
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
         self._auth_calls += 1
         if not self._auth_success:
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
-                "Authentication failed"
-            )
+            return FlextResult[FlextAuthModels.AuthToken].fail("Authentication failed")
         token = FlextAuthModels.AuthToken(
             user_id=credentials.get("username", "test-user"),
             token=self._auth_token,
             token_type="Bearer",
             expires_at=datetime.now(UTC) + timedelta(seconds=3600),
         )
-        return FlextCore.Result[FlextAuthModels.AuthToken].ok(token)
+        return FlextResult[FlextAuthModels.AuthToken].ok(token)
 
-    def validate(
-        self, token: str | FlextAuthModels.AuthToken
-    ) -> FlextCore.Result[bool]:
+    def validate(self, token: str | FlextAuthModels.AuthToken) -> FlextResult[bool]:
         self._validate_calls += 1
         if not self._validate_success:
-            return FlextCore.Result[bool].fail("Validation failed")
-        return FlextCore.Result[bool].ok(self._validate_success)
+            return FlextResult[bool].fail("Validation failed")
+        return FlextResult[bool].ok(self._validate_success)
 
     def refresh(
         self, token: str | FlextAuthModels.AuthToken
-    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
         self._refresh_calls += 1
         if not self._refresh_success:
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail("Refresh failed")
+            return FlextResult[FlextAuthModels.AuthToken].fail("Refresh failed")
 
         # Get user_id from existing token
         user_id = (
@@ -87,10 +83,10 @@ class FlextAuthMockProvider(FlextAuthBaseProvider):
             token_type="Bearer",
             expires_at=datetime.now(UTC) + timedelta(seconds=3600),
         )
-        return FlextCore.Result[FlextAuthModels.AuthToken].ok(new_token)
+        return FlextResult[FlextAuthModels.AuthToken].ok(new_token)
 
-    def revoke(self, token: str | FlextAuthModels.AuthToken) -> FlextCore.Result[None]:
-        return FlextCore.Result[None].ok(None)
+    def revoke(self, token: str | FlextAuthModels.AuthToken) -> FlextResult[None]:
+        return FlextResult[None].ok(None)
 
     def supports(self) -> set[str]:
         capabilities = {"token", "validate"}
@@ -98,7 +94,7 @@ class FlextAuthMockProvider(FlextAuthBaseProvider):
             capabilities.add("refresh")
         return capabilities
 
-    def get_metadata(self) -> FlextCore.Types.Dict:
+    def get_metadata(self) -> FlextTypes.Dict:
         return {
             "name": "mock",
             "version": "1.0.0",
@@ -113,7 +109,7 @@ class MockHttpRequest:
         self,
         url: str = "https://api.example.com/test",
         method: str = "GET",
-        headers: FlextCore.Types.StringDict | None = None,
+        headers: FlextTypes.StringDict | None = None,
     ) -> None:
         """Initialize mock HTTP request."""
         self.url = url
@@ -419,8 +415,8 @@ class MockAuthProviderSecond(FlextAuthBaseProvider):
         self._validate_calls = 0
 
     def authenticate(
-        self, credentials: FlextCore.Types.Dict
-    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
+        self, credentials: FlextTypes.Dict
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
         token = FlextAuthModels.AuthToken(
             user_id=credentials.get("username", "test-user"),
             token="mock-token",
@@ -428,28 +424,26 @@ class MockAuthProviderSecond(FlextAuthBaseProvider):
             expires_at=datetime.now(UTC) + timedelta(seconds=3600),
             is_revoked=False,
         )
-        return FlextCore.Result[FlextAuthModels.AuthToken].ok(token)
+        return FlextResult[FlextAuthModels.AuthToken].ok(token)
 
-    def validate(
-        self, token: str | FlextAuthModels.AuthToken
-    ) -> FlextCore.Result[bool]:
+    def validate(self, token: str | FlextAuthModels.AuthToken) -> FlextResult[bool]:
         self._validate_calls += 1
         if not self._validate_success:
-            return FlextCore.Result[bool].fail("Validation error")
-        return FlextCore.Result[bool].ok(self._validate_result)
+            return FlextResult[bool].fail("Validation error")
+        return FlextResult[bool].ok(self._validate_result)
 
     def refresh(
         self, token: str | FlextAuthModels.AuthToken
-    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
-        return FlextCore.Result[FlextAuthModels.AuthToken].fail("Not supported")
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
+        return FlextResult[FlextAuthModels.AuthToken].fail("Not supported")
 
-    def revoke(self, token: str | FlextAuthModels.AuthToken) -> FlextCore.Result[None]:
-        return FlextCore.Result[None].ok(None)
+    def revoke(self, token: str | FlextAuthModels.AuthToken) -> FlextResult[None]:
+        return FlextResult[None].ok(None)
 
     def supports(self) -> set[str]:
         return {"token", "validate"}
 
-    def get_metadata(self) -> FlextCore.Types.Dict:
+    def get_metadata(self) -> FlextTypes.Dict:
         return {
             "name": "mock-web",
             "version": "1.0.0",
@@ -463,8 +457,8 @@ class MockWebRequest:
     def __init__(
         self,
         path: str = "/api/test",
-        headers: FlextCore.Types.StringDict | None = None,
-        cookies: FlextCore.Types.StringDict | None = None,
+        headers: FlextTypes.StringDict | None = None,
+        cookies: FlextTypes.StringDict | None = None,
     ) -> None:
         """Initialize mock web request."""
         self.path = path
@@ -747,7 +741,7 @@ class TestFlextAuthMiddleware2:
         """Test multiple middleware instances with different providers."""
 
         class JwtMockProvider(FlextAuthMockProvider):
-            def get_metadata(self) -> FlextCore.Types.Dict:
+            def get_metadata(self) -> FlextTypes.Dict:
                 return {
                     "name": "jwt",
                     "version": "1.0.0",
@@ -755,7 +749,7 @@ class TestFlextAuthMiddleware2:
                 }
 
         class OAuth2MockProvider(FlextAuthMockProvider):
-            def get_metadata(self) -> FlextCore.Types.Dict:
+            def get_metadata(self) -> FlextTypes.Dict:
                 return {
                     "name": "oauth2",
                     "version": "1.0.0",

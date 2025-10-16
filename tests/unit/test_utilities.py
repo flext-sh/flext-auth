@@ -5,6 +5,8 @@ Tests the authentication utilities module following FLEXT standards.
 
 from __future__ import annotations
 
+from flext_core import FlextService
+
 from flext_auth.utilities import FlextAuthUtilities
 
 
@@ -12,10 +14,8 @@ class TestFlextAuthUtilities:
     """Test FlextAuthUtilities class and its nested utility classes."""
 
     def test_inherits_from_flext_service(self) -> None:
-        """Test that FlextAuthUtilities inherits from FlextCore.Service."""
-        from flext_core import FlextCore
-
-        assert issubclass(FlextAuthUtilities, FlextCore.Service)
+        """Test that FlextAuthUtilities inherits from FlextService."""
+        assert issubclass(FlextAuthUtilities, FlextService)
 
     def test_execute_method_returns_failure(self) -> None:
         """Test that execute method returns appropriate failure for namespace class."""

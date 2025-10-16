@@ -163,7 +163,7 @@ vim docs/architecture/adrs/decisions/001-new-decision.md
 
 ### Reliability
 
-- **Error Handling**: Railway pattern with FlextCore.Result
+- **Error Handling**: Railway pattern with FlextResult
 - **Logging**: Structured logging throughout
 - **Monitoring**: Integration with observability frameworks
 - **Resilience**: Graceful failure handling

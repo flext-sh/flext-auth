@@ -20,7 +20,7 @@ import secrets
 from datetime import UTC, datetime
 from typing import cast
 
-from flext_core import FlextCore
+from flext_core import FlextLogger, FlextResult, FlextTypes
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -60,7 +60,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     """
 
-    def __init__(self, config: FlextCore.Types.Dict) -> None:
+    def __init__(self, config: FlextTypes.Dict) -> None:
         """Initialize Kerberos authentication provider.
 
         Args:
@@ -71,7 +71,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         """
         self._config = config
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
 
         # Validate required configuration
         self._realm = self._config.get("realm")
@@ -101,7 +101,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         # Runtime state for ticket management
         self._active_tickets: dict[
-            str, FlextCore.Types.Dict
+            str, FlextTypes.Dict
         ] = {}  # ticket_id -> ticket data
 
         self.logger.info(
@@ -115,8 +115,8 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: FlextCore.Types.Dict,
-    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
+        credentials: FlextTypes.Dict,
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using Kerberos ticket.
 
         This method accepts either:
@@ -129,7 +129,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
                         - 'username' and 'password': For TGT acquisition
 
         Returns:
-            FlextCore.Result[AuthToken]: Authentication token or error
+            FlextResult[AuthToken]: Authentication token or error
 
         Example:
             >>> # GSSAPI authentication
@@ -148,20 +148,20 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             return self._authenticate_with_gssapi(credentials)
         if "username" in credentials and "password" in credentials:
             return self._authenticate_with_password(credentials)
-        return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+        return FlextResult[FlextAuthModels.AuthToken].fail(
             "Kerberos authentication requires either 'gssapi_token' or 'username' and 'password'"
         )
 
     def _authenticate_with_gssapi(
-        self, credentials: FlextCore.Types.Dict
-    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
+        self, credentials: FlextTypes.Dict
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using GSSAPI token.
 
         Args:
             credentials: Must contain 'gssapi_token'
 
         Returns:
-            FlextCore.Result[AuthToken]: Authentication token or error
+            FlextResult[AuthToken]: Authentication token or error
 
         """
         credentials["gssapi_token"]
@@ -175,30 +175,28 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # 6. Extract user information and group memberships
 
         # For now, return error indicating implementation needed
-        return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+        return FlextResult[FlextAuthModels.AuthToken].fail(
             "Kerberos GSSAPI authentication requires python-gssapi or pykerberos integration. "
             "Implement GSSAPI context acceptance and ticket validation in production."
         )
 
     def _authenticate_with_password(
-        self, credentials: FlextCore.Types.Dict
-    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
+        self, credentials: FlextTypes.Dict
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate with username/password to obtain TGT.
 
         Args:
             credentials: Must contain 'username' and 'password'
 
         Returns:
-            FlextCore.Result[AuthToken]: Authentication token or error
+            FlextResult[AuthToken]: Authentication token or error
 
         """
         validation_result = self._validate_credentials_dict(
             credentials, ["username", "password"]
         )
         if validation_result.is_failure:
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
-                validation_result.error
-            )
+            return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
 
         credentials["username"]
         credentials["password"]
@@ -211,7 +209,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # 5. Store TGT for service ticket requests
 
         # For now, return error indicating implementation needed
-        return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+        return FlextResult[FlextAuthModels.AuthToken].fail(
             "Kerberos password authentication requires python-kerberos or kREDACTED_LDAP_BIND_PASSWORD integration. "
             "Implement AS-REQ/AS-REP exchange with KDC in production."
         )
@@ -219,24 +217,24 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     def validate(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextCore.Result[bool]:
+    ) -> FlextResult[bool]:
         """Validate Kerberos ticket.
 
         Args:
             token: Kerberos ticket ID or AuthToken object
 
         Returns:
-            FlextCore.Result[bool]: True if ticket is valid
+            FlextResult[bool]: True if ticket is valid
 
         """
         try:
             token_string = self._extract_token_string(token)
         except ValueError as e:
-            return FlextCore.Result[bool].fail(str(e))
+            return FlextResult[bool].fail(str(e))
 
         # Check if ticket exists in active tickets
         if token_string not in self._active_tickets:
-            return FlextCore.Result[bool].fail("Kerberos ticket not found")
+            return FlextResult[bool].fail("Kerberos ticket not found")
 
         self._active_tickets[token_string]
 
@@ -246,19 +244,19 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             and token.expires_at
             and datetime.now(UTC) > token.expires_at
         ):
-            return FlextCore.Result[bool].fail("Kerberos ticket expired")
+            return FlextResult[bool].fail("Kerberos ticket expired")
 
         # In production: Validate ticket with KDC
         # - Check ticket is not expired
         # - Verify ticket hasn't been revoked
         # - Validate ticket checksum
 
-        return FlextCore.Result[bool].ok(True)
+        return FlextResult[bool].ok(True)
 
     def refresh(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Refresh Kerberos ticket.
 
         If the ticket is renewable, request a new ticket from KDC.
@@ -267,22 +265,22 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             token: Current Kerberos ticket
 
         Returns:
-            FlextCore.Result[AuthToken]: Refreshed ticket or error
+            FlextResult[AuthToken]: Refreshed ticket or error
 
         """
         try:
             token_string = self._extract_token_string(token)
         except ValueError as e:
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail(str(e))
+            return FlextResult[FlextAuthModels.AuthToken].fail(str(e))
 
         if token_string not in self._active_tickets:
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail("Ticket not found")
+            return FlextResult[FlextAuthModels.AuthToken].fail("Ticket not found")
 
         ticket_data = self._active_tickets[token_string]
 
         # Check if ticket is renewable
         if not ticket_data.get("renewable", False):
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+            return FlextResult[FlextAuthModels.AuthToken].fail(
                 "Kerberos ticket is not renewable"
             )
 
@@ -291,7 +289,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # - Validate new ticket
         # - Update ticket expiration
 
-        return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+        return FlextResult[FlextAuthModels.AuthToken].fail(
             "Kerberos ticket renewal requires KDC integration. "
             "Implement TGS-REQ for ticket renewal in production."
         )
@@ -299,23 +297,23 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     def revoke(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Revoke Kerberos ticket.
 
         Args:
             token: Kerberos ticket to revoke
 
         Returns:
-            FlextCore.Result[None]: Success or error
+            FlextResult[None]: Success or error
 
         """
         try:
             token_string = self._extract_token_string(token)
         except ValueError as e:
-            return FlextCore.Result[None].fail(str(e))
+            return FlextResult[None].fail(str(e))
 
         if token_string not in self._active_tickets:
-            return FlextCore.Result[None].fail("Ticket not found")
+            return FlextResult[None].fail("Ticket not found")
 
         # Remove ticket from active tickets
         del self._active_tickets[token_string]
@@ -324,9 +322,9 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # - Clear ticket cache
         # - Notify KDC of revocation if supported
 
-        self.logger.info("Kerberos ticket revoked", extra={"ticket_id": token_string})
+        self.logger.info("Kerberos ticket revoked", ticket_id=token_string)
 
-        return FlextCore.Result[None].ok(None)
+        return FlextResult[None].ok(None)
 
     def supports(self) -> set[str]:
         """Return Kerberos provider capabilities.
@@ -354,11 +352,11 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             "mutual_auth",
         }
 
-    def get_metadata(self) -> FlextCore.Types.Dict:
+    def get_metadata(self) -> FlextTypes.Dict:
         """Return Kerberos provider metadata.
 
         Returns:
-            FlextCore.Types.Dict: Provider metadata
+            FlextTypes.Dict: Provider metadata
 
         """
         return {

@@ -15,7 +15,7 @@ import time
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from flext_core import FlextCore
+from flext_core import FlextResult, FlextTypes
 from pydantic import ValidationError
 
 from flext_auth import FlextAuthModels
@@ -28,7 +28,7 @@ class TestModelsModule:
         """Nested helper class for test data creation."""
 
         @staticmethod
-        def create_test_user_model_data() -> FlextCore.Types.Dict:
+        def create_test_user_model_data() -> FlextTypes.Dict:
             """Create test user model data."""
             return {
                 "username": "test_user",
@@ -39,7 +39,7 @@ class TestModelsModule:
             }
 
         @staticmethod
-        def create_test_role_model_data() -> FlextCore.Types.Dict:
+        def create_test_role_model_data() -> FlextTypes.Dict:
             """Create test role model data."""
             return {
                 "name": "REDACTED_LDAP_BIND_PASSWORD",
@@ -49,7 +49,7 @@ class TestModelsModule:
             }
 
         @staticmethod
-        def create_test_session_model_data() -> FlextCore.Types.Dict:
+        def create_test_session_model_data() -> FlextTypes.Dict:
             """Create test session model data."""
             return {
                 "user_id": "user_123",
@@ -72,7 +72,7 @@ class TestModelsModule:
         # Test user model creation if method exists
         if hasattr(models, "create_user_model"):
             result = models.create_user_model(test_data)
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
 
     def test_flext_auth_models_create_role_model(self) -> None:
         """Test FlextAuthModels create_role_model functionality."""
@@ -82,7 +82,7 @@ class TestModelsModule:
         # Test role model creation if method exists
         if hasattr(models, "create_role_model"):
             result = models.create_role_model(test_data)
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
 
     def test_flext_auth_models_create_session_model(self) -> None:
         """Test FlextAuthModels create_session_model functionality."""
@@ -92,7 +92,7 @@ class TestModelsModule:
         # Test session model creation if method exists
         if hasattr(models, "create_session_model"):
             result = models.create_session_model(test_data)
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
 
     def test_flext_auth_models_validate_user_model(self) -> None:
         """Test FlextAuthModels validate_user_model functionality."""
@@ -102,7 +102,7 @@ class TestModelsModule:
         # Test user model validation if method exists
         if hasattr(models, "validate_user_model"):
             result = models.validate_user_model(test_data)
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
 
     def test_flext_auth_models_validate_role_model(self) -> None:
         """Test FlextAuthModels validate_role_model functionality."""
@@ -112,7 +112,7 @@ class TestModelsModule:
         # Test role model validation if method exists
         if hasattr(models, "validate_role_model"):
             result = models.validate_role_model(test_data)
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
 
     def test_flext_auth_models_validate_session_model(self) -> None:
         """Test FlextAuthModels validate_session_model functionality."""
@@ -122,7 +122,7 @@ class TestModelsModule:
         # Test session model validation if method exists
         if hasattr(models, "validate_session_model"):
             result = models.validate_session_model(test_data)
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
 
     def test_flext_auth_models_serialize_user_model(self) -> None:
         """Test FlextAuthModels serialize_user_model functionality."""
@@ -132,7 +132,7 @@ class TestModelsModule:
         # Test user model serialization if method exists
         if hasattr(models, "serialize_user_model"):
             result = models.serialize_user_model(test_data)
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
 
     def test_flext_auth_models_deserialize_user_model(self) -> None:
         """Test FlextAuthModels deserialize_user_model functionality."""
@@ -142,7 +142,7 @@ class TestModelsModule:
         # Test user model deserialization if method exists
         if hasattr(models, "deserialize_user_model"):
             result = models.deserialize_user_model(str(test_data))
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
 
     def test_flext_auth_models_get_user_model_schema(self) -> None:
         """Test FlextAuthModels get_user_model_schema functionality."""
@@ -151,7 +151,7 @@ class TestModelsModule:
         # Test user model schema retrieval if method exists
         if hasattr(models, "get_user_model_schema"):
             result = models.get_user_model_schema()
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
 
     def test_flext_auth_models_get_role_model_schema(self) -> None:
         """Test FlextAuthModels get_role_model_schema functionality."""
@@ -160,7 +160,7 @@ class TestModelsModule:
         # Test role model schema retrieval if method exists
         if hasattr(models, "get_role_model_schema"):
             result = models.get_role_model_schema()
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
 
     def test_flext_auth_models_get_session_model_schema(self) -> None:
         """Test FlextAuthModels get_session_model_schema functionality."""
@@ -169,7 +169,7 @@ class TestModelsModule:
         # Test session model schema retrieval if method exists
         if hasattr(models, "get_session_model_schema"):
             result = models.get_session_model_schema()
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
 
     def test_flext_auth_models_comprehensive_scenario(self) -> None:
         """Test comprehensive models module scenario."""
@@ -184,29 +184,29 @@ class TestModelsModule:
         # Test user model operations
         if hasattr(models, "create_user_model"):
             user_result = models.create_user_model(test_user_data)
-            assert isinstance(user_result, FlextCore.Result)
+            assert isinstance(user_result, FlextResult)
 
         if hasattr(models, "validate_user_model"):
             validate_user_result = models.validate_user_model(test_user_data)
-            assert isinstance(validate_user_result, FlextCore.Result)
+            assert isinstance(validate_user_result, FlextResult)
 
         # Test role model operations
         if hasattr(models, "create_role_model"):
             role_result = models.create_role_model(test_role_data)
-            assert isinstance(role_result, FlextCore.Result)
+            assert isinstance(role_result, FlextResult)
 
         if hasattr(models, "validate_role_model"):
             validate_role_result = models.validate_role_model(test_role_data)
-            assert isinstance(validate_role_result, FlextCore.Result)
+            assert isinstance(validate_role_result, FlextResult)
 
         # Test session model operations
         if hasattr(models, "create_session_model"):
             session_result = models.create_session_model(test_session_data)
-            assert isinstance(session_result, FlextCore.Result)
+            assert isinstance(session_result, FlextResult)
 
         if hasattr(models, "validate_session_model"):
             validate_session_result = models.validate_session_model(test_session_data)
-            assert isinstance(validate_session_result, FlextCore.Result)
+            assert isinstance(validate_session_result, FlextResult)
 
     def test_flext_auth_models_error_handling(self) -> None:
         """Test models module error handling patterns."""
@@ -218,19 +218,19 @@ class TestModelsModule:
         # Test user model creation error handling
         if hasattr(models, "create_user_model"):
             result = models.create_user_model(invalid_data)
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
             # Should handle invalid data gracefully
 
         # Test role model validation error handling
         if hasattr(models, "validate_role_model"):
             result = models.validate_role_model(invalid_data)
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
             # Should handle invalid data gracefully
 
         # Test session model deserialization error handling
         if hasattr(models, "deserialize_session_model"):
             result = models.deserialize_session_model("invalid_json")
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
             # Should handle invalid JSON gracefully
 
     def test_flext_auth_models_with_flext_tests(self) -> None:
@@ -254,12 +254,12 @@ class TestModelsModule:
         # Test user model creation with flext_tests data
         if hasattr(models, "create_user_model"):
             result = models.create_user_model(test_user_data)
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
 
         # Test role model creation with flext_tests data
         if hasattr(models, "create_role_model"):
             result = models.create_role_model(test_role_data)
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
 
     def test_flext_auth_models_docstring(self) -> None:
         """Test that FlextAuthModels has proper docstring."""
@@ -348,13 +348,13 @@ class TestModelsModule:
         if hasattr(models, "create_user_model"):
             for user_data in realistic_users:
                 result = models.create_user_model(user_data)
-                assert isinstance(result, FlextCore.Result)
+                assert isinstance(result, FlextResult)
 
         # Test role model creation with realistic data
         if hasattr(models, "create_role_model"):
             for role_data in realistic_roles:
                 result = models.create_role_model(role_data)
-                assert isinstance(result, FlextCore.Result)
+                assert isinstance(result, FlextResult)
 
     def test_flext_auth_models_integration_patterns(self) -> None:
         """Test models integration patterns between different components."""
@@ -366,17 +366,17 @@ class TestModelsModule:
         # Create user model
         if hasattr(models, "create_user_model"):
             create_result = models.create_user_model(test_user_data)
-            assert isinstance(create_result, FlextCore.Result)
+            assert isinstance(create_result, FlextResult)
 
         # Validate user model
         if hasattr(models, "validate_user_model"):
             validate_result = models.validate_user_model(test_user_data)
-            assert isinstance(validate_result, FlextCore.Result)
+            assert isinstance(validate_result, FlextResult)
 
         # Serialize user model
         if hasattr(models, "serialize_user_model"):
             serialize_result = models.serialize_user_model(test_user_data)
-            assert isinstance(serialize_result, FlextCore.Result)
+            assert isinstance(serialize_result, FlextResult)
 
     def test_flext_auth_models_performance_patterns(self) -> None:
         """Test models performance patterns."""
@@ -392,7 +392,7 @@ class TestModelsModule:
             for i in range(10):
                 user_data = {**test_user_data, "username": f"user_{i}"}
                 result = models.create_user_model(user_data)
-                assert isinstance(result, FlextCore.Result)
+                assert isinstance(result, FlextResult)
 
         end_time = time.time()
         assert (end_time - start_time) < 1.0  # Should complete in less than 1 second
@@ -434,9 +434,9 @@ class TestModelsModule:
         for thread in threads:
             thread.join()
 
-        # All results should be FlextCore.Result instances
+        # All results should be FlextResult instances
         for result in results:
-            assert isinstance(result, FlextCore.Result)
+            assert isinstance(result, FlextResult)
 
 
 class TestUserCreateUserMethod:

@@ -32,7 +32,7 @@ The existing monolithic JWT implementation couldn't easily accommodate these req
 - Hard-coded authentication logic
 - Limited extensibility
 - Production-ready for JWT use cases
-- Strong foundation with FlextCore.Result patterns
+- Strong foundation with FlextResult patterns
 
 ### Constraints
 

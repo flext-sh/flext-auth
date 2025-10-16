@@ -16,12 +16,12 @@ import os
 import secrets
 import string
 
-from flext_core import FlextCore
+from flext_core import FlextLogger
 
 from flext_auth import FlextAuth, FlextAuthConfig
 
 # Get structured logger instance
-logger = FlextCore.Logger(__name__)
+logger = FlextLogger(__name__)
 
 
 def example_basic_authentication() -> None:

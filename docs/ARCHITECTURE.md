@@ -37,7 +37,7 @@ Transform flext-auth from a specific JWT/bcrypt authentication implementation in
 
 - **Purpose**: JWT/bcrypt authentication with session management
 - **Status**: Production-ready, 71/72 tests passing (99%)
-- **Integration**: Complete FlextCore.Service + FlextCore.Handlers architecture
+- **Integration**: Complete FlextService + FlextHandlers architecture
 - **Quality**: Zero lint/type errors, production security (bcrypt 12 rounds, JWT HS256)
 
 ### Target State (v2.0.0)
@@ -62,7 +62,7 @@ Transform flext-auth from a specific JWT/bcrypt authentication implementation in
 4. **Protocol-Agnostic**: Supports REST, SOAP, GraphQL, etc.
 5. **FLEXT-Native**: Mandatory use of FLEXT domain libraries
 6. **Type-Safe**: Complete type annotations, MyPy strict mode
-7. **Railway-Oriented**: FlextCore.Result for all operations
+7. **Railway-Oriented**: FlextResult for all operations
 8. **Zero-CLI**: Pure library with no CLI dependencies
 
 ### Architectural Layers
@@ -95,10 +95,10 @@ Transform flext-auth from a specific JWT/bcrypt authentication implementation in
 │              PROVIDER ECOSYSTEM LAYER                        │
 ├─────────────────────────────────────────────────────────────┤
 │  Base Provider Protocol                                      │
-│  ├── authenticate(credentials) -> FlextCore.Result[Token]         │
-│  ├── validate(token) -> FlextCore.Result[bool]                    │
-│  ├── refresh(token) -> FlextCore.Result[Token]                    │
-│  ├── revoke(token) -> FlextCore.Result[None]                      │
+│  ├── authenticate(credentials) -> FlextResult[Token]         │
+│  ├── validate(token) -> FlextResult[bool]                    │
+│  ├── refresh(token) -> FlextResult[Token]                    │
+│  ├── revoke(token) -> FlextResult[None]                      │
 │  └── supports() -> set[str]                                  │
 ├─────────────────────────────────────────────────────────────┤
 │  Concrete Providers:                                         │
@@ -144,7 +144,7 @@ Transform flext-auth from a specific JWT/bcrypt authentication implementation in
 **Public API**:
 
 ```python
-class FlextAuth(FlextCore.Service[AuthenticationResponseDict]):
+class FlextAuth(FlextService[AuthenticationResponseDict]):
     # Factory methods
     @classmethod
     def quick_start(cls, create_REDACTED_LDAP_BIND_PASSWORD: bool = False) -> FlextAuth
@@ -163,18 +163,18 @@ class FlextAuth(FlextCore.Service[AuthenticationResponseDict]):
         self,
         credentials: dict,
         provider: str | None = None
-    ) -> FlextCore.Result[AuthToken]
+    ) -> FlextResult[AuthToken]
 
     def validate_token(
         self,
         token: str,
         provider: str | None = None
-    ) -> FlextCore.Result[bool]
+    ) -> FlextResult[bool]
 
     # Registry operations
-    def list_providers(self) -> FlextCore.Types.StringList
-    def get_provider(self, name: str) -> FlextCore.Result[FlextAuthBaseProvider]
-    def get_provider_capabilities(self, name: str) -> FlextCore.Result[set[str]]
+    def list_providers(self) -> FlextTypes.StringList
+    def get_provider(self, name: str) -> FlextResult[FlextAuthBaseProvider]
+    def get_provider_capabilities(self, name: str) -> FlextResult[set[str]]
 
     # Token/Session management
     def get_token_manager(self) -> TokenManager
@@ -202,23 +202,23 @@ class FlextAuthRegistry:
         name: str,
         provider: FlextAuthBaseProvider,
         config: dict[str, object] | None = None
-    ) -> FlextCore.Result[None]
+    ) -> FlextResult[None]
 
-    def unregister(self, name: str) -> FlextCore.Result[None]
+    def unregister(self, name: str) -> FlextResult[None]
 
-    def get(self, name: str) -> FlextCore.Result[FlextAuthBaseProvider]
+    def get(self, name: str) -> FlextResult[FlextAuthBaseProvider]
 
-    def list_providers(self) -> FlextCore.Types.StringList
+    def list_providers(self) -> FlextTypes.StringList
 
     def discover_providers(self) -> dict[str, type[FlextAuthBaseProvider]]
 
-    def get_capabilities(self, name: str) -> FlextCore.Result[set[str]]
+    def get_capabilities(self, name: str) -> FlextResult[set[str]]
 
     def validate_config(
         self,
         name: str,
         config: dict
-    ) -> FlextCore.Result[None]
+    ) -> FlextResult[None]
 ```
 
 ### 3. Base Provider Protocol (`providers/base.py`)
@@ -232,28 +232,28 @@ class FlextAuthBaseProvider(Protocol):
     def authenticate(
         self,
         credentials: dict
-    ) -> FlextCore.Result[AuthToken]:
+    ) -> FlextResult[AuthToken]:
         """Authenticate user with provided credentials."""
         ...
 
     def validate(
         self,
         token: str | AuthToken
-    ) -> FlextCore.Result[bool]:
+    ) -> FlextResult[bool]:
         """Validate authentication token."""
         ...
 
     def refresh(
         self,
         token: str | AuthToken
-    ) -> FlextCore.Result[AuthToken]:
+    ) -> FlextResult[AuthToken]:
         """Refresh authentication token."""
         ...
 
     def revoke(
         self,
         token: str | AuthToken
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Revoke authentication token."""
         ...
 
@@ -350,8 +350,48 @@ class FlextAuthBaseProvider(Protocol):
 
 ```python
 from __future__ import annotations
+from flext_core import FlextBus
 
-from flext_core import FlextCore
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
+
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.models import FlextAuthModels
 
@@ -360,16 +400,16 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
 
     def __init__(self, config: dict) -> None:
         self._config = config
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def authenticate(
         self,
         credentials: dict
-    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using provider-specific logic."""
         # Validation
         if not credentials.get("username"):
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+            return FlextResult[FlextAuthModels.AuthToken].fail(
                 "Username required"
             )
 
@@ -377,16 +417,16 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
         try:
             # Actual authentication logic
             token = self._generate_token(credentials)
-            return FlextCore.Result[FlextAuthModels.AuthToken].ok(token)
+            return FlextResult[FlextAuthModels.AuthToken].ok(token)
         except Exception as e:
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+            return FlextResult[FlextAuthModels.AuthToken].fail(
                 f"Authentication failed: {e}"
             )
 
     def validate(
         self,
         token: str | FlextAuthModels.AuthToken
-    ) -> FlextCore.Result[bool]:
+    ) -> FlextResult[bool]:
         """Validate token using provider-specific logic."""
         # Implementation
         ...
@@ -394,10 +434,10 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
     def refresh(
         self,
         token: str | FlextAuthModels.AuthToken
-    ) -> FlextCore.Result[FlextAuthModels.AuthToken]:
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Refresh token if provider supports it."""
         if "refresh" not in self.supports():
-            return FlextCore.Result[FlextAuthModels.AuthToken].fail(
+            return FlextResult[FlextAuthModels.AuthToken].fail(
                 "Refresh not supported by this provider"
             )
         # Implementation
@@ -406,7 +446,7 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
     def revoke(
         self,
         token: str | FlextAuthModels.AuthToken
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Revoke token if provider supports it."""
         # Implementation
         ...
@@ -440,7 +480,7 @@ class BaseTransportAdapter(Protocol):
         endpoint: str,
         credentials: dict,
         metadata: dict[str, object] | None = None
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Send authentication request over transport."""
         ...
 
@@ -449,7 +489,7 @@ class BaseTransportAdapter(Protocol):
         endpoint: str,
         token: str,
         metadata: dict[str, object] | None = None
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Send token validation request over transport."""
         ...
 
@@ -464,21 +504,40 @@ class BaseTransportAdapter(Protocol):
 
 ```python
 from flext_api import FlextApi
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 
 class HttpTransportAdapter(BaseTransportAdapter):
     """HTTP transport adapter using flext-api."""
 
     def __init__(self, config: dict[str, object] | None = None) -> None:
         self._api = FlextApi(config=config)  # MANDATORY: Use flext-api
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def send_auth_request(
         self,
         endpoint: str,
         credentials: dict,
         metadata: dict[str, object] | None = None
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Send authentication request via HTTP using flext-api."""
         result = self._api.post(
             url=endpoint,
@@ -487,11 +546,11 @@ class HttpTransportAdapter(BaseTransportAdapter):
         )
 
         if result.is_failure:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 f"HTTP transport failed: {result.error}"
             )
 
-        return FlextCore.Result[FlextCore.Types.Dict].ok(result.unwrap())
+        return FlextResult[FlextTypes.Dict].ok(result.unwrap())
 ```
 
 ### gRPC Transport (`transports/grpc.py`)
@@ -500,21 +559,40 @@ class HttpTransportAdapter(BaseTransportAdapter):
 
 ```python
 from flext_grpc import FlextGrpc
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 
 class GrpcTransportAdapter(BaseTransportAdapter):
     """gRPC transport adapter using flext-grpc."""
 
     def __init__(self, config: dict[str, object] | None = None) -> None:
         self._grpc = FlextGrpc(config=config)  # MANDATORY: Use flext-grpc
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def send_auth_request(
         self,
         endpoint: str,
         credentials: dict,
         metadata: dict[str, object] | None = None
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Send authentication request via gRPC using flext-grpc."""
         result = self._grpc.call(
             service="AuthService",
@@ -524,11 +602,11 @@ class GrpcTransportAdapter(BaseTransportAdapter):
         )
 
         if result.is_failure:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 f"gRPC transport failed: {result.error}"
             )
 
-        return FlextCore.Result[FlextCore.Types.Dict].ok(result.unwrap())
+        return FlextResult[FlextTypes.Dict].ok(result.unwrap())
 ```
 
 ### WebSocket Transport (`transports/websocket.py`)
@@ -539,14 +617,14 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
 
     def __init__(self, config: dict[str, object] | None = None) -> None:
         self._config = config
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def send_auth_request(
         self,
         endpoint: str,
         credentials: dict,
         metadata: dict[str, object] | None = None
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Send authentication request via WebSocket."""
         # Implementation using websockets library
         ...
@@ -566,14 +644,14 @@ class BaseProtocolHandler(Protocol):
         self,
         credentials: dict,
         metadata: dict[str, object] | None = None
-    ) -> FlextCore.Result[bytes | str]:
+    ) -> FlextResult[bytes | str]:
         """Format authentication request for protocol."""
         ...
 
     def parse_auth_response(
         self,
         response: bytes | str
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Parse authentication response from protocol."""
         ...
 ```
@@ -588,26 +666,26 @@ class RestProtocolHandler(BaseProtocolHandler):
         self,
         credentials: dict,
         metadata: dict[str, object] | None = None
-    ) -> FlextCore.Result[str]:
+    ) -> FlextResult[str]:
         """Format as JSON REST request."""
         import json
         try:
             formatted = json.dumps(credentials)
-            return FlextCore.Result[str].ok(formatted)
+            return FlextResult[str].ok(formatted)
         except Exception as e:
-            return FlextCore.Result[str].fail(f"JSON formatting failed: {e}")
+            return FlextResult[str].fail(f"JSON formatting failed: {e}")
 
     def parse_auth_response(
         self,
         response: str
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Parse JSON REST response."""
         import json
         try:
             parsed = json.loads(response)
-            return FlextCore.Result[FlextCore.Types.Dict].ok(parsed)
+            return FlextResult[FlextTypes.Dict].ok(parsed)
         except Exception as e:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(f"JSON parsing failed: {e}")
+            return FlextResult[FlextTypes.Dict].fail(f"JSON parsing failed: {e}")
 ```
 
 ### SOAP Protocol Handler (`protocol_handlers/soap.py`)
@@ -620,7 +698,7 @@ class SoapProtocolHandler(BaseProtocolHandler):
         self,
         credentials: dict,
         metadata: dict[str, object] | None = None
-    ) -> FlextCore.Result[str]:
+    ) -> FlextResult[str]:
         """Format as SOAP XML request."""
         # Implementation for SOAP envelope creation
         ...
@@ -628,7 +706,7 @@ class SoapProtocolHandler(BaseProtocolHandler):
     def parse_auth_response(
         self,
         response: str
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Parse SOAP XML response."""
         # Implementation for SOAP envelope parsing
         ...
@@ -663,18 +741,18 @@ class TokenManager:
         self._provider = provider
         self._cache = cache or TokenCache()
         self._retry = retry_policy or RetryPolicy()
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def get_token(
         self,
         credentials: dict,
         use_cache: bool = True
-    ) -> FlextCore.Result[AuthToken]:
+    ) -> FlextResult[AuthToken]:
         """Get token with caching."""
         if use_cache:
             cached = self._cache.get(credentials)
             if cached:
-                return FlextCore.Result[AuthToken].ok(cached)
+                return FlextResult[AuthToken].ok(cached)
 
         result = self._provider.authenticate(credentials)
 
@@ -689,7 +767,7 @@ class TokenManager:
         max_retries: int = 3,
         backoff_factor: float = 2.0,
         retry_on: list[type[Exception]] | None = None
-    ) -> FlextCore.Result[AuthToken]:
+    ) -> FlextResult[AuthToken]:
         """Get token with automatic retry on failure."""
         return self._retry.execute(
             func=self._provider.authenticate,
@@ -702,10 +780,10 @@ class TokenManager:
     def refresh_token(
         self,
         token: AuthToken
-    ) -> FlextCore.Result[AuthToken]:
+    ) -> FlextResult[AuthToken]:
         """Refresh token if provider supports it."""
         if "refresh" not in self._provider.supports():
-            return FlextCore.Result[AuthToken].fail(
+            return FlextResult[AuthToken].fail(
                 "Provider does not support token refresh"
             )
 
@@ -714,7 +792,7 @@ class TokenManager:
     def validate_token(
         self,
         token: AuthToken
-    ) -> FlextCore.Result[bool]:
+    ) -> FlextResult[bool]:
         """Validate token."""
         return self._provider.validate(token)
 ```
@@ -732,7 +810,7 @@ class RetryPolicy:
         backoff_factor: float = 2.0,
         retry_on: list[type[Exception]] | None = None,
         **kwargs
-    ) -> FlextCore.Result[T]:
+    ) -> FlextResult[T]:
         """Execute function with retry logic."""
         retry_on = retry_on or [ConnectionError, TimeoutError]
 
@@ -742,12 +820,12 @@ class RetryPolicy:
                 return result
             except Exception as e:
                 if attempt == max_retries:
-                    return FlextCore.Result[T].fail(
+                    return FlextResult[T].fail(
                         f"Max retries ({max_retries}) exceeded: {e}"
                     )
 
                 if not any(isinstance(e, exc) for exc in retry_on):
-                    return FlextCore.Result[T].fail(f"Non-retryable error: {e}")
+                    return FlextResult[T].fail(f"Non-retryable error: {e}")
 
                 wait_time = backoff_factor ** attempt
                 sleep(wait_time)
@@ -765,7 +843,7 @@ class TokenCache:
         config: dict[str, object] | None = None
     ) -> None:
         self._backend = self._create_backend(backend, config)
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def get(self, key: dict) -> AuthToken | None:
         """Get token from cache."""
@@ -814,14 +892,14 @@ class CredentialManager:
     ) -> None:
         self._storage = storage
         self._cipher = self._init_cipher(encryption_key)
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
 
     def store_credential(
         self,
         identifier: str,
         credential: dict,
         metadata: dict[str, object] | None = None
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Store credential with encryption."""
         encrypted = self._cipher.encrypt(credential)
         return self._storage.save(identifier, encrypted, metadata)
@@ -829,21 +907,21 @@ class CredentialManager:
     def retrieve_credential(
         self,
         identifier: str
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Retrieve and decrypt credential."""
         result = self._storage.load(identifier)
         if result.is_failure:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(result.error)
+            return FlextResult[FlextTypes.Dict].fail(result.error)
 
         encrypted = result.unwrap()
         decrypted = self._cipher.decrypt(encrypted)
-        return FlextCore.Result[FlextCore.Types.Dict].ok(decrypted)
+        return FlextResult[FlextTypes.Dict].ok(decrypted)
 
     def rotate_credential(
         self,
         identifier: str,
         new_credential: dict
-    ) -> FlextCore.Result[None]:
+    ) -> FlextResult[None]:
         """Rotate credential with old credential backup."""
         # Archive old credential
         old_result = self.retrieve_credential(identifier)
@@ -861,20 +939,20 @@ class SecurityValidator:
     """Security validation for authentication operations."""
 
     @staticmethod
-    def validate_token_expiration(token: AuthToken) -> FlextCore.Result[bool]:
+    def validate_token_expiration(token: AuthToken) -> FlextResult[bool]:
         """Validate token has not expired."""
         if token.expires_at < datetime.now(UTC):
-            return FlextCore.Result[bool].fail("Token expired")
-        return FlextCore.Result[bool].ok(True)
+            return FlextResult[bool].fail("Token expired")
+        return FlextResult[bool].ok(True)
 
     @staticmethod
-    def validate_token_signature(token: str, secret: str) -> FlextCore.Result[bool]:
+    def validate_token_signature(token: str, secret: str) -> FlextResult[bool]:
         """Validate token signature."""
         # Implementation
         ...
 
     @staticmethod
-    def validate_certificate(cert: bytes) -> FlextCore.Result[bool]:
+    def validate_certificate(cert: bytes) -> FlextResult[bool]:
         """Validate X.509 certificate."""
         # Implementation
         ...
@@ -890,13 +968,13 @@ class SecurityValidator:
 
 #### Integration Matrix
 
-| Domain               | FLEXT Library       | Status    | Usage in flext-auth                                     |
-| -------------------- | ------------------- | --------- | ------------------------------------------------------- |
-| HTTP Operations      | **flext-api**       | MANDATORY | HTTP transport adapter                                  |
-| gRPC Operations      | **flext-grpc**      | MANDATORY | gRPC transport adapter                                  |
-| LDAP Authentication  | **flext-ldap**      | MANDATORY | LDAP provider                                           |
-| Database (if needed) | **flext-db-oracle** | MANDATORY | User/session persistence                                |
-| Foundation Patterns  | **flext-core**      | MANDATORY | FlextCore.Result, FlextCore.Service, FlextCore.Registry |
+| Domain               | FLEXT Library       | Status    | Usage in flext-auth                      |
+| -------------------- | ------------------- | --------- | ---------------------------------------- |
+| HTTP Operations      | **flext-api**       | MANDATORY | HTTP transport adapter                   |
+| gRPC Operations      | **flext-grpc**      | MANDATORY | gRPC transport adapter                   |
+| LDAP Authentication  | **flext-ldap**      | MANDATORY | LDAP provider                            |
+| Database (if needed) | **flext-db-oracle** | MANDATORY | User/session persistence                 |
+| Foundation Patterns  | **flext-core**      | MANDATORY | FlextResult, FlextService, FlextRegistry |
 
 #### FORBIDDEN Direct Imports
 
@@ -913,7 +991,26 @@ import ldap3          # Use flext-ldap instead
 
 ```python
 # ✅ CORRECT - Using FLEXT domain libraries
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 from flext_api import FlextApi        # For HTTP transport
 from flext_grpc import FlextGrpc      # For gRPC transport
 from flext_ldap import FlextLdap      # For LDAP provider
@@ -922,34 +1019,53 @@ class HttpTransportAdapter:
     def __init__(self) -> None:
         self._api = FlextApi()  # MANDATORY: Use flext-api
 
-    def send_request(self, url: str, data: dict) -> FlextCore.Result[FlextCore.Types.Dict]:
+    def send_request(self, url: str, data: dict) -> FlextResult[FlextTypes.Dict]:
         return self._api.post(url=url, json=data)
 
 class FlextAuthLdapProvider:
     def __init__(self, config: dict) -> None:
         self._ldap = FlextLdap(config)  # MANDATORY: Use flext-ldap
 
-    def authenticate(self, credentials: dict) -> FlextCore.Result[AuthToken]:
+    def authenticate(self, credentials: dict) -> FlextResult[AuthToken]:
         return self._ldap.bind(
             username=credentials["username"],
             password=credentials["password"]
         )
 ```
 
-### FlextCore.Service Integration
+### FlextService Integration
 
-All providers and managers extend FlextCore.Service for consistency:
+All providers and managers extend FlextService for consistency:
 
 ```python
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 
-class FlextAuthJwtProvider(FlextCore.Service[AuthToken]):
-    """JWT provider extending FlextCore.Service."""
+class FlextAuthJwtProvider(FlextService[AuthToken]):
+    """JWT provider extending FlextService."""
 
     def __init__(self, config: dict) -> None:
         super().__init__()
         self._config = config
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
 ```
 
 ---

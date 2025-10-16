@@ -14,7 +14,17 @@ from datetime import UTC, datetime, timedelta
 from typing import cast
 from uuid import uuid4
 
-from flext_core import FlextCore
+from flext_core import (
+    FlextBus,
+    FlextContext,
+    FlextDispatcher,
+    FlextLogger,
+    FlextProcessors,
+    FlextRegistry,
+    FlextResult,
+    FlextService,
+    FlextTypes,
+)
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
@@ -29,19 +39,19 @@ LogEntry = FlextAuthTypes.Managers.LogEntry
 AttemptData = FlextAuthTypes.Managers.AttemptData
 
 
-class FlextAuthManagers(FlextCore.Service):
+class FlextAuthManagers(FlextService):
     """Namespace class for all authentication managers following FLEXT patterns.
 
     This namespace class contains all manager implementations as nested classes,
     providing a single import point while maintaining clean separation of concerns.
     """
 
-    def execute(self) -> FlextCore.Result[object]:
-        """Execute method for FlextCore.Service interface.
+    def execute(self) -> FlextResult[object]:
+        """Execute method for FlextService interface.
 
         FlextAuthManagers is a namespace class - use specific manager classes instead.
         """
-        return FlextCore.Result[object].fail(
+        return FlextResult[object].fail(
             "FlextAuthManagers is a namespace class - use specific manager classes like FlextAuthUserManager"
         )
 
@@ -49,15 +59,15 @@ class FlextAuthManagers(FlextCore.Service):
         """User management business logic.
 
         Handles user CRUD operations, role/permission management, and user data persistence.
-        Uses newer FlextCore.Config features for complete integration.
+        Uses newer FlextConfig features for complete integration.
         """
 
         def __init__(self, config: FlextAuthConfig) -> None:
             """Initialize user manager with configuration."""
             self._config = config
-            self.logger = FlextCore.Logger(__name__)
-            self._context = FlextCore.Context()
-            self._bus = FlextCore.Bus()
+            self.logger = FlextLogger(__name__)
+            self._context = FlextContext()
+            self._bus = FlextBus()
             self._users: dict[str, UserData] = {}  # In production, use database
 
         def create_user(
@@ -66,12 +76,10 @@ class FlextAuthManagers(FlextCore.Service):
             email: str,
             password_hash: str,
             **extra_fields: object,
-        ) -> FlextCore.Result[FlextAuthModels.User]:
+        ) -> FlextResult[FlextAuthModels.User]:
             """Create a new user."""
             if username in self._users:
-                return FlextCore.Result[FlextAuthModels.User].fail(
-                    "User already exists"
-                )
+                return FlextResult[FlextAuthModels.User].fail("User already exists")
 
             user_id = str(uuid4())
             user_data = cast(
@@ -91,114 +99,122 @@ class FlextAuthManagers(FlextCore.Service):
 
             self._users[username] = user_data
             user = FlextAuthModels.User(**user_data)
-            return FlextCore.Result[FlextAuthModels.User].ok(user)
+            return FlextResult[FlextAuthModels.User].ok(user)
 
-        def get_user(self, user_id: str) -> FlextCore.Result[FlextAuthModels.User]:
+        def get_user(self, user_id: str) -> FlextResult[FlextAuthModels.User]:
             """Get user by ID."""
             for user_data in self._users.values():
                 if user_data["id"] == user_id:
-                    user = FlextAuthModels.User(**cast("dict[str, object]", user_data))
-                    return FlextCore.Result[FlextAuthModels.User].ok(user)
+                    user = FlextAuthModels.User(**user_data)
+                    return FlextResult[FlextAuthModels.User].ok(user)
 
-            return FlextCore.Result[FlextAuthModels.User].fail("User not found")
+            return FlextResult[FlextAuthModels.User].fail("User not found")
 
         def get_user_by_username(
             self, username: str
-        ) -> FlextCore.Result[FlextAuthModels.User]:
+        ) -> FlextResult[FlextAuthModels.User]:
             """Get user by username."""
             if username not in self._users:
-                return FlextCore.Result[FlextAuthModels.User].fail("User not found")
+                return FlextResult[FlextAuthModels.User].fail("User not found")
 
             user_data = self._users[username]
-            user = FlextAuthModels.User(**cast("dict[str, object]", user_data))
-            return FlextCore.Result[FlextAuthModels.User].ok(user)
+            user = FlextAuthModels.User(**user_data)
+            return FlextResult[FlextAuthModels.User].ok(user)
 
         def update_user(
             self, user_id: str, **updates: object
-        ) -> FlextCore.Result[FlextAuthModels.User]:
+        ) -> FlextResult[FlextAuthModels.User]:
             """Update user data."""
             for user_data in self._users.values():
                 if user_data["id"] == user_id:
                     user_data.update(updates)
                     user_data["updated_at"] = datetime.now(UTC)
-                    user = FlextAuthModels.User(**cast("dict[str, object]", user_data))
-                    return FlextCore.Result[FlextAuthModels.User].ok(user)
+                    user = FlextAuthModels.User(**user_data)
+                    return FlextResult[FlextAuthModels.User].ok(user)
 
-            return FlextCore.Result[FlextAuthModels.User].fail("User not found")
+            return FlextResult[FlextAuthModels.User].fail("User not found")
 
-        def delete_user(self, user_id: str) -> FlextCore.Result[None]:
+        def delete_user(self, user_id: str) -> FlextResult[None]:
             """Delete user."""
             for username, user_data in self._users.items():
                 if user_data["id"] == user_id:
                     del self._users[username]
-                    return FlextCore.Result[None].ok(None)
+                    return FlextResult[None].ok(None)
 
-            return FlextCore.Result[None].fail("User not found")
+            return FlextResult[None].fail("User not found")
 
-        def add_user_role(self, user_id: str, role: str) -> FlextCore.Result[None]:
+        def add_user_role(self, user_id: str, role: str) -> FlextResult[None]:
             """Add role to user."""
             for user_data in self._users.values():
                 if user_data["id"] == user_id:
                     roles = user_data["roles"]
                     if isinstance(roles, list) and role not in roles:
                         roles.append(role)
-                    return FlextCore.Result[None].ok(None)
+                    return FlextResult[None].ok(None)
 
-            return FlextCore.Result[None].fail("User not found")
+            return FlextResult[None].fail("User not found")
 
-        def remove_user_role(self, user_id: str, role: str) -> FlextCore.Result[None]:
+        def remove_user_role(self, user_id: str, role: str) -> FlextResult[None]:
             """Remove role from user."""
             for user_data in self._users.values():
                 if user_data["id"] == user_id:
                     roles = user_data["roles"]
                     if isinstance(roles, list) and role in roles:
                         roles.remove(role)
-                    return FlextCore.Result[None].ok(None)
+                    return FlextResult[None].ok(None)
 
-            return FlextCore.Result[None].fail("User not found")
+            return FlextResult[None].fail("User not found")
 
         def add_user_permission(
             self, user_id: str, permission: str
-        ) -> FlextCore.Result[None]:
+        ) -> FlextResult[None]:
             """Add permission to user."""
             for user_data in self._users.values():
                 if user_data["id"] == user_id:
                     permissions = user_data["permissions"]
                     if isinstance(permissions, list) and permission not in permissions:
                         permissions.append(permission)
-                    return FlextCore.Result[None].ok(None)
+                    return FlextResult[None].ok(None)
 
-            return FlextCore.Result[None].fail("User not found")
+            return FlextResult[None].fail("User not found")
 
         def remove_user_permission(
             self, user_id: str, permission: str
-        ) -> FlextCore.Result[None]:
+        ) -> FlextResult[None]:
             """Remove permission from user."""
             for user_data in self._users.values():
                 if user_data["id"] == user_id:
                     permissions = user_data["permissions"]
                     if isinstance(permissions, list) and permission in permissions:
                         permissions.remove(permission)
-                    return FlextCore.Result[None].ok(None)
+                    return FlextResult[None].ok(None)
 
-            return FlextCore.Result[None].fail("User not found")
+            return FlextResult[None].fail("User not found")
+
+        def get_user_by_id(
+            self, _user_id: str
+        ) -> FlextResult[FlextAuthModels.User | None]:
+            """Get a user by their ID."""
+            # In a real implementation, this would query a database
+            # For now, return None as this is a placeholder
+            return FlextResult[FlextAuthModels.User | None].ok(None)
 
     class FlextAuthSessionManager:
         """Session management business logic.
 
         Handles user session creation, validation, and cleanup.
-        Uses newer FlextCore.Config features for complete integration.
+        Uses newer FlextConfig features for complete integration.
         """
 
         def __init__(self, config: FlextAuthConfig) -> None:
             """Initialize session manager with configuration."""
             self._config = config
-            self.logger = FlextCore.Logger(__name__)
-            self._context = FlextCore.Context()
-            self._bus = FlextCore.Bus()
-            self._dispatcher = FlextCore.Dispatcher()
+            self.logger = FlextLogger(__name__)
+            self._context = FlextContext()
+            self._bus = FlextBus()
+            self._dispatcher = FlextDispatcher()
             self._sessions: dict[
-                str, FlextCore.Types.Dict
+                str, FlextTypes.Dict
             ] = {}  # In production, use Redis/database
 
         def create_session(
@@ -206,7 +222,7 @@ class FlextAuthManagers(FlextCore.Service):
             user_id: str,
             token: str,
             expires_in_minutes: int = 60,
-        ) -> FlextCore.Result[FlextAuthModels.Session]:
+        ) -> FlextResult[FlextAuthModels.Session]:
             """Create a new session."""
             session_id = str(uuid4())
             expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
@@ -225,11 +241,11 @@ class FlextAuthManagers(FlextCore.Service):
 
             self._sessions[session_id] = session_data
             session = FlextAuthModels.Session(**session_data)
-            return FlextCore.Result[FlextAuthModels.Session].ok(session)
+            return FlextResult[FlextAuthModels.Session].ok(session)
 
         def get_active_sessions(
             self, user_id: str
-        ) -> FlextCore.Result[list[FlextAuthModels.Session]]:
+        ) -> FlextResult[list[FlextAuthModels.Session]]:
             """Get all active sessions for a user."""
             sessions = []
             for session_data in self._sessions.values():
@@ -239,30 +255,28 @@ class FlextAuthManagers(FlextCore.Service):
                     and isinstance(session_data["expires_at"], datetime)
                     and session_data["expires_at"] > datetime.now(UTC)
                 ):
-                    session = FlextAuthModels.Session(
-                        **cast("dict[str, object]", session_data)
-                    )
+                    session = FlextAuthModels.Session(**session_data)
                     sessions.append(session)
 
-            return FlextCore.Result[list[FlextAuthModels.Session]].ok(sessions)
+            return FlextResult[list[FlextAuthModels.Session]].ok(sessions)
 
-        def end_session(self, user_id: str) -> FlextCore.Result[None]:
+        def end_session(self, user_id: str) -> FlextResult[None]:
             """End all sessions for a user."""
             for session_data in self._sessions.values():
                 if session_data["user_id"] == user_id:
                     session_data["active"] = False
 
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
 
-        def end_session_by_id(self, session_id: str) -> FlextCore.Result[None]:
+        def end_session_by_id(self, session_id: str) -> FlextResult[None]:
             """End a specific session."""
             if session_id in self._sessions:
                 self._sessions[session_id]["active"] = False
-                return FlextCore.Result[None].ok(None)
+                return FlextResult[None].ok(None)
 
-            return FlextCore.Result[None].fail("Session not found")
+            return FlextResult[None].fail("Session not found")
 
-        def end_all_sessions(self, user_id: str) -> FlextCore.Result[None]:
+        def end_all_sessions(self, user_id: str) -> FlextResult[None]:
             """End all sessions for a user."""
             return self.end_session(user_id)
 
@@ -280,19 +294,19 @@ class FlextAuthManagers(FlextCore.Service):
         """Audit logging business logic.
 
         Records authentication and authorization events for compliance and debugging.
-        Uses newer FlextCore.Config features for complete integration.
+        Uses newer FlextConfig features for complete integration.
         """
 
         def __init__(
-            self, config: FlextAuthConfig, dispatcher: FlextCore.Dispatcher
+            self, config: FlextAuthConfig, dispatcher: FlextDispatcher
         ) -> None:
             """Initialize audit logger with configuration."""
             self._config = config
             self._dispatcher = dispatcher
-            self.logger = FlextCore.Logger(__name__)
-            self._context = FlextCore.Context()
-            self._bus = FlextCore.Bus()
-            self._processors = FlextCore.Processors()
+            self.logger = FlextLogger(__name__)
+            self._context = FlextContext()
+            self._bus = FlextBus()
+            self._processors = FlextProcessors()
             self._logs: list[LogEntry] = []  # In production, use database
 
         def log_auth_success(
@@ -393,7 +407,7 @@ class FlextAuthManagers(FlextCore.Service):
                 **data,
             }
             self._logs.append(log_entry)
-            self.logger.info(f"Audit event: {event_type}", extra=log_entry)
+            self.logger.info(f"Audit event: {event_type}", **log_entry)
 
         def get_logs(
             self,
@@ -402,7 +416,7 @@ class FlextAuthManagers(FlextCore.Service):
             start_date: datetime | None = None,
             end_date: datetime | None = None,
             limit: int = 100,
-        ) -> FlextCore.Result[list[FlextCore.Types.Dict]]:
+        ) -> FlextResult[list[FlextTypes.Dict]]:
             """Get audit logs with optional filtering."""
             # Filter logs based on criteria
             filtered_logs = self._logs
@@ -438,27 +452,25 @@ class FlextAuthManagers(FlextCore.Service):
                 ]
 
             # Apply limit and return
-            return FlextCore.Result[list[FlextCore.Types.Dict]].ok(
-                filtered_logs[-limit:]
-            )
+            return FlextResult[list[FlextTypes.Dict]].ok(filtered_logs[-limit:])
 
     class FlextAuthRateLimiter:
         """Rate limiting business logic.
 
         Prevents brute force attacks by limiting authentication attempts.
-        Uses newer FlextCore.Config features for complete integration.
+        Uses newer FlextConfig features for complete integration.
         """
 
         def __init__(
-            self, config: FlextAuthConfig, dispatcher: FlextCore.Dispatcher
+            self, config: FlextAuthConfig, dispatcher: FlextDispatcher
         ) -> None:
             """Initialize rate limiter with configuration."""
             self._config = config
             self._dispatcher = dispatcher
-            self.logger = FlextCore.Logger(__name__)
-            self._context = FlextCore.Context()
-            self._bus = FlextCore.Bus()
-            self._registry = FlextCore.Registry(dispatcher)
+            self.logger = FlextLogger(__name__)
+            self._context = FlextContext()
+            self._bus = FlextBus()
+            self._registry = FlextRegistry(dispatcher)
             self._attempts: dict[
                 str, AttemptData
             ] = {}  # username -> list of timestamps
@@ -467,13 +479,13 @@ class FlextAuthManagers(FlextCore.Service):
                 FlextAuthConstants.AuthSecurity.RATE_LIMIT_WINDOW_MINUTES
             )
 
-        def check_rate_limit(self, username: str) -> FlextCore.Result[None]:
+        def check_rate_limit(self, username: str) -> FlextResult[None]:
             """Check if user is within rate limits."""
             now = datetime.now(UTC)
             window_start = now - timedelta(minutes=self._window_minutes)
 
             if username not in self._attempts:
-                return FlextCore.Result[None].ok(None)
+                return FlextResult[None].ok(None)
 
             # Filter attempts within the window
             recent_attempts = [
@@ -485,11 +497,11 @@ class FlextAuthManagers(FlextCore.Service):
             self._attempts[username] = recent_attempts  # Update stored attempts
 
             if len(recent_attempts) >= self._max_attempts:
-                return FlextCore.Result[None].fail(
+                return FlextResult[None].fail(
                     "Too many failed attempts. Please try again later."
                 )
 
-            return FlextCore.Result[None].ok(None)
+            return FlextResult[None].ok(None)
 
         def record_failed_attempt(self, username: str) -> None:
             """Record a failed authentication attempt."""

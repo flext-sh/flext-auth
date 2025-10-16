@@ -2,7 +2,7 @@
 
 **Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
 
-Installation and first steps for implementing enterprise authentication in your FLEXT projects using flext-auth with complete FlextCore.Service and FlextCore.Handlers integration.
+Installation and first steps for implementing enterprise authentication in your FLEXT projects using flext-auth with complete FlextService and FlextHandlers integration.
 
 ---
 
@@ -46,7 +46,7 @@ user_request = FlextAuthModels.UserCreationRequest(
     password="secure123"
 )
 
-# Register user (FlextCore.Result pattern)
+# Register user (FlextResult pattern)
 result = auth.register_user(
     username=user_request.username,
     email=user_request.email,
@@ -157,17 +157,36 @@ flext-auth manage-config show
 
 ## FLEXT Integration Patterns
 
-### FlextCore.Result Error Handling
+### FlextResult Error Handling
 
 ```python
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 
-def process_authentication_workflow(username: str, password: str) -> FlextCore.Result[FlextCore.Types.Dict]:
-    """Authentication workflow using FlextCore.Result error handling."""
+def process_authentication_workflow(username: str, password: str) -> FlextResult[FlextTypes.Dict]:
+    """Authentication workflow using FlextResult error handling."""
 
     auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
-    # Chain operations with FlextCore.Result
+    # Chain operations with FlextResult
     return (
         auth.authenticate_user(username, password)
         .flat_map(lambda auth_data: auth.validate_token(auth_data['token']))
@@ -188,11 +207,30 @@ if result.is_success:
 ### Container Integration
 
 ```python
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 from flext_auth import FlextAuth, FlextAuthConfig
 
 # Register authentication service in container
-container = FlextCore.Container.get_global()
+container = FlextContainer.get_global()
 
 # Configure and register
 config = FlextAuthConfig()
@@ -254,7 +292,7 @@ if session.is_active and datetime.utcnow() < session.expires_at:
 
 ## Testing Your Integration
 
-### Unit Testing with FlextCore.Result
+### Unit Testing with FlextResult
 
 ```python
 import pytest

@@ -2,11 +2,11 @@
 
 **Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
 
-Complete API documentation for flext-auth enterprise authentication service with FlextCore.Service and FlextCore.Handlers architecture.
+Complete API documentation for flext-auth enterprise authentication service with FlextService and FlextHandlers architecture.
 
-For general FLEXT patterns and FlextCore.Result usage, see **[flext-core](../../flext-core/README.md)** documentation.
+For general FLEXT patterns and FlextResult usage, see **[flext-core](../../flext-core/README.md)** documentation.
 
-**Note**: This API is 100% backward compatible. All existing code continues to work unchanged after the FlextCore.Handlers refactoring.
+**Note**: This API is 100% backward compatible. All existing code continues to work unchanged after the FlextHandlers refactoring.
 
 ---
 
@@ -51,7 +51,7 @@ def register_user(
     username: str,
     email: str,
     password: str
-) -> FlextCore.Result[User]:
+) -> FlextResult[User]:
 ```
 
 **Parameters**:
@@ -60,7 +60,7 @@ def register_user(
 - `email` (str): Valid email address
 - `password` (str): User password (will be hashed with bcrypt)
 
-**Returns**: `FlextCore.Result[User]` - Created user or error
+**Returns**: `FlextResult[User]` - Created user or error
 
 **Example**:
 
@@ -80,7 +80,7 @@ def authenticate_user(
     self,
     username: str,
     password: str
-) -> FlextCore.Result[FlextCore.Types.Dict]:
+) -> FlextResult[FlextTypes.Dict]:
 ```
 
 **Parameters**:
@@ -88,7 +88,7 @@ def authenticate_user(
 - `username` (str): Username to authenticate
 - `password` (str): User password
 
-**Returns**: `FlextCore.Result[FlextCore.Types.Dict]` with session and token data
+**Returns**: `FlextResult[FlextTypes.Dict]` with session and token data
 
 **Example**:
 
@@ -105,14 +105,14 @@ if auth_result.is_success:
 Validate JWT token and extract user information.
 
 ```python
-def validate_token(self, token: str) -> FlextCore.Result[FlextCore.Types.Dict]:
+def validate_token(self, token: str) -> FlextResult[FlextTypes.Dict]:
 ```
 
 **Parameters**:
 
 - `token` (str): JWT token (with or without Bearer prefix)
 
-**Returns**: `FlextCore.Result[FlextCore.Types.Dict]` with token payload or error
+**Returns**: `FlextResult[FlextTypes.Dict]` with token payload or error
 
 **Example**:
 
@@ -129,14 +129,14 @@ if validation_result.is_success:
 
 ### User
 
-User entity extending FlextCore.Models.Entity.
+User entity extending FlextModels.Entity.
 
 ```python
-class User(FlextCore.Models.Entity):
+class User(FlextModels.Entity):
     username: str
     email: str
     password_hash: str
-    roles: FlextCore.Types.StringList
+    roles: FlextTypes.StringList
     created_at: datetime
     is_active: bool = True
 ```
@@ -146,7 +146,7 @@ class User(FlextCore.Models.Entity):
 #### set_password()
 
 ```python
-def set_password(self, password: str) -> FlextCore.Result[bool]:
+def set_password(self, password: str) -> FlextResult[bool]:
 ```
 
 Hash and set user password using bcrypt.
@@ -154,7 +154,7 @@ Hash and set user password using bcrypt.
 #### verify_password()
 
 ```python
-def verify_password(self, password: str) -> FlextCore.Result[bool]:
+def verify_password(self, password: str) -> FlextResult[bool]:
 ```
 
 Verify password against stored hash.
@@ -164,7 +164,7 @@ Verify password against stored hash.
 Session entity for managing user sessions.
 
 ```python
-class Session(FlextCore.Models.Entity):
+class Session(FlextModels.Entity):
     user_id: str
     session_token: str
     expires_at: datetime
@@ -181,7 +181,7 @@ class UserCreationRequest(BaseModel):
     email: str
     password: str
     full_name: str | None = None
-    roles: FlextCore.Types.StringList = Field(default_factory=list)
+    roles: FlextTypes.StringList = Field(default_factory=list)
 ```
 
 ---
@@ -190,10 +190,10 @@ class UserCreationRequest(BaseModel):
 
 ### FlextAuthConfig
 
-Configuration class extending FlextCore.Config.
+Configuration class extending FlextConfig.
 
 ```python
-class FlextAuthConfig(FlextCore.Config):
+class FlextAuthConfig(FlextConfig):
     # JWT Settings
     jwt_secret_key: str = "dev-secret-key"
     jwt_expiry_minutes: int = 60
@@ -209,7 +209,7 @@ class FlextAuthConfig(FlextCore.Config):
 
 ```python
 @classmethod
-def create_for_environment(cls, env: str) -> FlextCore.Result[FlextAuthConfig]:
+def create_for_environment(cls, env: str) -> FlextResult[FlextAuthConfig]:
 ```
 
 Create configuration for specific environment.
@@ -263,7 +263,7 @@ flext-auth validate-config
 
 ## Error Handling
 
-All operations return `FlextCore.Result[T]` for type-safe error handling.
+All operations return `FlextResult[T]` for type-safe error handling.
 
 ### Success Pattern
 
@@ -279,9 +279,28 @@ else:
 ### Chaining Pattern
 
 ```python
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 
-def complete_auth_flow(username: str, password: str) -> FlextCore.Result[FlextCore.Types.Dict]:
+def complete_auth_flow(username: str, password: str) -> FlextResult[FlextTypes.Dict]:
     return (
         auth.authenticate_user(username, password)
         .flat_map(lambda auth_data: auth.validate_token(auth_data['token']))
@@ -300,9 +319,28 @@ def complete_auth_flow(username: str, password: str) -> FlextCore.Result[FlextCo
 ### Container Integration
 
 ```python
-from flext_core import FlextCore
+from flext_core import FlextBus
+from flext_core import FlextConfig
+from flext_core import FlextConstants
+from flext_core import FlextContainer
+from flext_core import FlextContext
+from flext_core import FlextDecorators
+from flext_core import FlextDispatcher
+from flext_core import FlextExceptions
+from flext_core import FlextHandlers
+from flext_core import FlextLogger
+from flext_core import FlextMixins
+from flext_core import FlextModels
+from flext_core import FlextProcessors
+from flext_core import FlextProtocols
+from flext_core import FlextRegistry
+from flext_core import FlextResult
+from flext_core import FlextRuntime
+from flext_core import FlextService
+from flext_core import FlextTypes
+from flext_core import FlextUtilities
 
-container = FlextCore.Container.get_global()
+container = FlextContainer.get_global()
 container.register("auth_service", auth)
 
 auth_result = container.get("auth_service")
@@ -310,9 +348,9 @@ if auth_result.is_success:
     auth = auth_result.unwrap()
 ```
 
-### FlextCore.Result Usage
+### FlextResult Usage
 
-All flext-auth operations follow FlextCore.Result pattern from flext-core:
+All flext-auth operations follow FlextResult pattern from flext-core:
 
 - Use `.is_success` to check success
 - Use `.unwrap()` to extract value on success

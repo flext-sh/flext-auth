@@ -12,10 +12,9 @@ from __future__ import annotations
 
 import base64
 import json
-from typing import cast
 
-from flext_api import FlextApiClient, FlextApiExceptions
-from flext_core import FlextCore
+import httpx
+from flext_core import FlextLogger, FlextResult, FlextTypes
 
 from flext_auth.constants import FlextAuthConstants
 
@@ -55,44 +54,33 @@ class HttpTransportAdapter:
         """
         self._timeout = timeout
         self._max_retries = max_retries
-        self.logger = FlextCore.Logger(__name__)
+        self.logger = FlextLogger(__name__)
 
-        # MANDATORY: Use flext-api for ALL HTTP operations
-        # Initialize client lazily to avoid configuration conflicts in tests
-        self._client: FlextApiClient | None = None
+        # Initialize HTTP client lazily
+        self._client: httpx.Client | None = None
 
-    def _get_client(self) -> FlextApiClient:
+    def _get_client(self) -> httpx.Client:
         """Get or create HTTP client instance.
 
         Returns:
-            Configured FlextApiClient instance
+            Configured httpx.Client instance
 
         """
         if self._client is None:
-            try:
-                self._client = FlextApiClient(
-                    config={
-                        "timeout": self._timeout,
-                        "max_retries": self._max_retries,
-                    }
-                )
-            except Exception as e:
-                self.logger.warning(
-                    f"Failed to create FlextApiClient with config: {e}. "
-                    "Trying with minimal config."
-                )
-                # Fallback to minimal configuration
-                self._client = FlextApiClient()
+            self._client = httpx.Client(
+                timeout=self._timeout,
+                follow_redirects=True,
+            )
         return self._client
 
     def send_request(
         self,
         url: str,
         method: str = "POST",
-        data: FlextCore.Types.Dict | None = None,
-        headers: FlextCore.Types.StringDict | None = None,
+        data: FlextTypes.Dict | None = None,
+        headers: FlextTypes.StringDict | None = None,
         **_kwargs: object,
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+    ) -> FlextResult[FlextTypes.Dict]:
         """Send HTTP request using flext-api transport.
 
         Implements BaseTransportAdapter protocol for generic HTTP operations.
@@ -105,45 +93,52 @@ class HttpTransportAdapter:
             **kwargs: Additional transport-specific parameters
 
         Returns:
-            FlextCore.Result containing response data or error
+            FlextResult containing response data or error
 
         """
         try:
             client = self._get_client()
 
             # Route to appropriate HTTP method
-            if method.upper() == "GET":
-                response_result = client.get(url, headers=headers)
-            elif method.upper() == "POST":
-                response_result = client.post(url, json=data, headers=headers)
-            elif method.upper() == "PUT":
-                response_result = client.put(url, json=data, headers=headers)
-            elif method.upper() == "DELETE":
-                response_result = client.delete(url, headers=headers)
-            elif method.upper() == "PATCH":
-                response_result = client.patch(url, json=data, headers=headers)
-            else:
-                return FlextCore.Result[FlextCore.Types.Dict].fail(
-                    f"Unsupported HTTP method: {method}"
-                )
+            try:
+                if method.upper() == "GET":
+                    response = client.get(url, headers=headers)
+                elif method.upper() == "POST":
+                    response = client.post(url, json=data, headers=headers)
+                elif method.upper() == "PUT":
+                    response = client.put(url, json=data, headers=headers)
+                elif method.upper() == "DELETE":
+                    response = client.delete(url, headers=headers)
+                elif method.upper() == "PATCH":
+                    response = client.patch(url, json=data, headers=headers)
+                else:
+                    return FlextResult[FlextTypes.Dict].fail(
+                        f"Unsupported HTTP method: {method}"
+                    )
 
-            # FlextApiClient already returns FlextCore.Result
-            if response_result.is_success:
-                response_data = response_result.unwrap()
-                # Ensure response is FlextCore.Types.Dict
-                if isinstance(response_data, dict):
-                    return FlextCore.Result[FlextCore.Types.Dict].ok(response_data)
-                return FlextCore.Result[FlextCore.Types.Dict].fail(
-                    f"Unexpected response type: {type(response_data)}"
-                )
-            return FlextCore.Result[FlextCore.Types.Dict].fail(response_result.error)
+                # Check response status
+                response.raise_for_status()
 
-        except FlextApiExceptions.HttpError as e:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
-                f"HTTP request failed: {e}"
-            )
+                # Parse response JSON
+                try:
+                    response_data = response.json()
+                    return FlextResult[FlextTypes.Dict].ok(response_data)
+                except Exception as e:
+                    return FlextResult[FlextTypes.Dict].fail(
+                        f"Failed to parse response JSON: {e}"
+                    )
+
+            except httpx.HTTPStatusError as e:
+                return FlextResult[FlextTypes.Dict].fail(
+                    f"HTTP request failed with status {e.response.status_code}: {e.response.text}"
+                )
+            except Exception as e:
+                return FlextResult[FlextTypes.Dict].fail(f"HTTP request failed: {e}")
+
+        except httpx.HTTPError as e:
+            return FlextResult[FlextTypes.Dict].fail(f"HTTP request failed: {e}")
         except Exception as e:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 f"Request failed with unexpected error: {e}"
             )
 
@@ -159,10 +154,10 @@ class HttpTransportAdapter:
     def post_token_request(
         self,
         url: str,
-        data: FlextCore.Types.Dict,
+        data: FlextTypes.Dict,
         auth: tuple[str, str] | None = None,
-        headers: FlextCore.Types.StringDict | None = None,
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+        headers: FlextTypes.StringDict | None = None,
+    ) -> FlextResult[FlextTypes.Dict]:
         """POST request to OAuth2 token endpoint.
 
         Specialized method for OAuth2/OIDC token requests with proper
@@ -175,7 +170,7 @@ class HttpTransportAdapter:
             headers: Optional additional headers
 
         Returns:
-            FlextCore.Result containing token response or error
+            FlextResult containing token response or error
 
         Example:
             >>> result = adapter.post_token_request(
@@ -205,43 +200,34 @@ class HttpTransportAdapter:
         try:
             client = self._get_client()
 
-            # Use flext-api client for POST request
-            response_result = client.post(url, data=data, headers=request_headers)
+            # Use httpx client for POST request
+            response = client.post(url, data=data, headers=request_headers)
 
-            if response_result.is_failure:
-                return FlextCore.Result[FlextCore.Types.Dict].fail(
-                    f"Token request failed: {response_result.error}"
-                )
-
-            http_response = response_result.unwrap()
-
-            # Extract JSON data from HttpResponse
+            # Extract JSON data from httpx Response
             try:
-                response_data = json.loads(cast("str", http_response.body))
+                response_data = response.json()
             except (json.JSONDecodeError, TypeError) as e:
-                return FlextCore.Result[FlextCore.Types.Dict].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     f"Failed to parse token JSON response: {e}"
                 )
 
-            # Ensure response_data is FlextCore.Types.Dict for parsing
+            # Ensure response_data is FlextTypes.Dict for parsing
             if not isinstance(response_data, dict):
-                return FlextCore.Result[FlextCore.Types.Dict].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     f"Unexpected token response type: {type(response_data)}"
                 )
 
             # Parse OAuth2 token response
             return self._parse_token_response(response_data)
 
-        except FlextApiExceptions.AuthenticationError as e:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
+        except httpx.HTTPStatusError as e:
+            return FlextResult[FlextTypes.Dict].fail(
                 f"Token request authentication failed: {e}"
             )
-        except FlextApiExceptions.HttpError as e:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
-                f"Token request HTTP error: {e}"
-            )
+        except httpx.HTTPError as e:
+            return FlextResult[FlextTypes.Dict].fail(f"Token request HTTP error: {e}")
         except Exception as e:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 f"Token request failed with unexpected error: {e}"
             )
 
@@ -249,8 +235,8 @@ class HttpTransportAdapter:
         self,
         url: str,
         access_token: str,
-        headers: FlextCore.Types.StringDict | None = None,
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+        headers: FlextTypes.StringDict | None = None,
+    ) -> FlextResult[FlextTypes.Dict]:
         """GET request to OIDC UserInfo endpoint.
 
         Retrieves user information using an OAuth2 access token according
@@ -262,7 +248,7 @@ class HttpTransportAdapter:
             headers: Optional additional headers
 
         Returns:
-            FlextCore.Result containing user information or error
+            FlextResult containing user information or error
 
         Example:
             >>> result = adapter.get_userinfo(
@@ -284,32 +270,28 @@ class HttpTransportAdapter:
         try:
             client = self._get_client()
 
-            # Use flext-api client for GET request
-            response_result = client.get(url, headers=request_headers)
+            # Use httpx client for GET request
+            response = client.get(url, headers=request_headers)
 
-            if response_result.is_failure:
-                return FlextCore.Result[FlextCore.Types.Dict].fail(
-                    f"UserInfo request failed: {response_result.error}"
-                )
+            # Check response status
+            response.raise_for_status()
 
-            http_response = response_result.unwrap()
-
-            # Extract JSON data from HttpResponse
+            # Extract JSON data from httpx Response
             try:
-                userinfo = json.loads(cast("str", http_response.body))
+                userinfo = response.json()
             except (json.JSONDecodeError, TypeError) as e:
-                return FlextCore.Result[FlextCore.Types.Dict].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     f"Failed to parse UserInfo JSON response: {e}"
                 )
 
             # Validate OIDC UserInfo response (must contain 'sub' claim)
             if not isinstance(userinfo, dict):
-                return FlextCore.Result[FlextCore.Types.Dict].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     f"UserInfo response is not a dictionary: {type(userinfo)}"
                 )
 
             if "sub" not in userinfo:
-                return FlextCore.Result[FlextCore.Types.Dict].fail(
+                return FlextResult[FlextTypes.Dict].fail(
                     "UserInfo response missing required 'sub' claim"
                 )
 
@@ -317,24 +299,24 @@ class HttpTransportAdapter:
                 f"UserInfo retrieved successfully for subject: {userinfo['sub']}"
             )
 
-            return FlextCore.Result[FlextCore.Types.Dict].ok(userinfo)
+            return FlextResult[FlextTypes.Dict].ok(userinfo)
 
-        except FlextApiExceptions.AuthenticationError as e:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
+        except httpx.HTTPStatusError as e:
+            return FlextResult[FlextTypes.Dict].fail(
                 f"UserInfo request authentication failed: {e}"
             )
-        except FlextApiExceptions.HttpError as e:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
+        except httpx.HTTPError as e:
+            return FlextResult[FlextTypes.Dict].fail(
                 f"UserInfo request HTTP error: {e}"
             )
         except Exception as e:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 f"UserInfo request failed with unexpected error: {e}"
             )
 
     def _parse_token_response(
-        self, response_data: FlextCore.Types.Dict
-    ) -> FlextCore.Result[FlextCore.Types.Dict]:
+        self, response_data: FlextTypes.Dict
+    ) -> FlextResult[FlextTypes.Dict]:
         """Parse OAuth2 token endpoint response.
 
         Validates token response according to RFC 6749 Section 5.1 (success)
@@ -344,7 +326,7 @@ class HttpTransportAdapter:
             response_data: Token endpoint response data
 
         Returns:
-            FlextCore.Result containing validated token data or error
+            FlextResult containing validated token data or error
 
         """
         # Check for OAuth2 error response (RFC 6749 Section 5.2)
@@ -359,16 +341,16 @@ class HttpTransportAdapter:
             if error_uri:
                 error_msg += f" (see {error_uri})"
 
-            return FlextCore.Result[FlextCore.Types.Dict].fail(error_msg)
+            return FlextResult[FlextTypes.Dict].fail(error_msg)
 
         # Validate required fields (RFC 6749 Section 5.1)
         if "access_token" not in response_data:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 "Token response missing required 'access_token' field"
             )
 
         if "token_type" not in response_data:
-            return FlextCore.Result[FlextCore.Types.Dict].fail(
+            return FlextResult[FlextTypes.Dict].fail(
                 "Token response missing required 'token_type' field"
             )
 
@@ -382,7 +364,7 @@ class HttpTransportAdapter:
             },
         )
 
-        return FlextCore.Result[FlextCore.Types.Dict].ok(response_data)
+        return FlextResult[FlextTypes.Dict].ok(response_data)
 
 
 __all__ = ["HttpTransportAdapter"]
