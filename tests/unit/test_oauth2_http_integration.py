@@ -51,12 +51,10 @@ class TestOAuth2TokenEndpoint:
         provider = FlextAuthOAuth2Provider(config)
 
         # Authenticate with authorization code
-        result = provider.authenticate(
-            {
-                "code": "test_auth_code",
-                "state": "test_state",
-            }
-        )
+        result = provider.authenticate({
+            "code": "test_auth_code",
+            "state": "test_state",
+        })
 
         assert result.is_success
         token = result.unwrap()
@@ -93,13 +91,11 @@ class TestOAuth2TokenEndpoint:
         code_verifier, _code_challenge = provider.generate_pkce_challenge()
 
         # Authenticate with authorization code and PKCE verifier
-        result = provider.authenticate(
-            {
-                "code": "test_auth_code",
-                "state": "test_state",
-                "code_verifier": code_verifier,
-            }
-        )
+        result = provider.authenticate({
+            "code": "test_auth_code",
+            "state": "test_state",
+            "code_verifier": code_verifier,
+        })
 
         assert result.is_success
 
@@ -158,12 +154,10 @@ class TestOAuth2TokenEndpoint:
         provider = FlextAuthOAuth2Provider(config)
 
         # Authenticate with username/password
-        result = provider.authenticate(
-            {
-                "username": "testuser",
-                "password": "testpassword",
-            }
-        )
+        result = provider.authenticate({
+            "username": "testuser",
+            "password": "testpassword",
+        })
 
         assert result.is_success
         token = result.unwrap()
@@ -224,12 +218,10 @@ class TestOAuth2TokenEndpoint:
         provider = FlextAuthOAuth2Provider(config)
 
         # Attempt authentication
-        result = provider.authenticate(
-            {
-                "code": "expired_code",
-                "state": "test_state",
-            }
-        )
+        result = provider.authenticate({
+            "code": "expired_code",
+            "state": "test_state",
+        })
 
         assert result.is_failure
         assert result.error is not None and "invalid_grant" in result.error

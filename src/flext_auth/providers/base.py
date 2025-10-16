@@ -240,7 +240,7 @@ class FlextAuthBaseProvider(ABC):
     def generate_token_for_user(
         self,
         user: FlextAuthModels.User,
-        token_type: str = "access",  # noqa: S107
+        token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate a token for a user.

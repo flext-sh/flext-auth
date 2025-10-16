@@ -81,10 +81,10 @@ class LinkValidator:
                         redirect_url=None,
                     )
 
-                req = Request(url, headers={"User-Agent": self.user_agent})  # noqa: S310
+                req = Request(url, headers={"User-Agent": self.user_agent})
 
                 def check_url(request: Request = req) -> tuple[int, str | None]:
-                    with urlopen(request, timeout=self.timeout) as response:  # noqa: S310
+                    with urlopen(request, timeout=self.timeout) as response:
                         return response.status, getattr(response, "url", None)
 
                 _status_code, response_url = await asyncio.to_thread(check_url)
@@ -398,16 +398,14 @@ class LinkValidator:
             issue_type = issue.issue_type
             if issue_type not in self.results["validation_results"]["issues_by_type"]:
                 self.results["validation_results"]["issues_by_type"][issue_type] = []
-            self.results["validation_results"]["issues_by_type"][issue_type].append(
-                {
-                    "file": str(issue.file_path.relative_to(self.project_root)),
-                    "line": issue.line_number,
-                    "text": issue.link_text,
-                    "url": issue.url,
-                    "severity": issue.severity,
-                    "suggestion": issue.suggestion,
-                }
-            )
+            self.results["validation_results"]["issues_by_type"][issue_type].append({
+                "file": str(issue.file_path.relative_to(self.project_root)),
+                "line": issue.line_number,
+                "text": issue.link_text,
+                "url": issue.url,
+                "severity": issue.severity,
+                "suggestion": issue.suggestion,
+            })
 
             # By severity
             severity = issue.severity
@@ -419,16 +417,14 @@ class LinkValidator:
             file_path = str(issue.file_path.relative_to(self.project_root))
             if file_path not in self.results["validation_results"]["issues_by_file"]:
                 self.results["validation_results"]["issues_by_file"][file_path] = []
-            self.results["validation_results"]["issues_by_file"][file_path].append(
-                {
-                    "line": issue.line_number,
-                    "text": issue.link_text,
-                    "url": issue.url,
-                    "type": issue.issue_type,
-                    "severity": issue.severity,
-                    "suggestion": issue.suggestion,
-                }
-            )
+            self.results["validation_results"]["issues_by_file"][file_path].append({
+                "line": issue.line_number,
+                "text": issue.link_text,
+                "url": issue.url,
+                "type": issue.issue_type,
+                "severity": issue.severity,
+                "suggestion": issue.suggestion,
+            })
 
         # Store raw issues for further processing
         self.results["issues"] = all_issues

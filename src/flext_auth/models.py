@@ -192,7 +192,7 @@ class FlextAuthModels(FlextModels):
             cls,
             user_id: str,
             expiry_minutes: int = 60,
-            token_type: str = "access",  # noqa: S107
+            token_type: str = "access",
         ) -> FlextResult[AuthToken]:
             """Create a JWT token for a user."""
             from datetime import datetime, timedelta

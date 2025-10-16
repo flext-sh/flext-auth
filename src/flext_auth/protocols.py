@@ -166,35 +166,33 @@ class FlextAuthProtocols(FlextProtocols):
                 user_agent: str | None = None,
             ) -> FlextResult[FlextAuthTypes.AuthenticationResponseDict]:
                 """Authenticate user and create session."""
-                return FlextResult[FlextAuthTypes.AuthenticationResponseDict].ok(
-                    {
-                        "user": {
-                            "id": f"user_{username}",
-                            "username": username,
-                            "email": f"{username}@example.com",
-                            "full_name": None,
-                            "is_active": True,
-                            "roles": ["user"],
-                            "created_at": datetime.now(UTC),
-                            "updated_at": datetime.now(UTC),
-                            "last_login": None,
-                        },
-                        "session": {
-                            "id": f"session_{username}",
-                            "user_id": f"user_{username}",
-                            "session_token": f"token_{username}",
-                            "expires_at": datetime.now(UTC) + timedelta(hours=24),
-                            "created_at": datetime.now(UTC),
-                            "last_accessed_at": datetime.now(UTC),
-                            "is_active": True,
-                            "ip_address": client_ip,
-                            "user_agent": user_agent,
-                        },
-                        "jwt_token": f"jwt_token_{username}",
-                        "authenticated": True,
-                        "success": True,
-                    }
-                )  # Placeholder implementation
+                return FlextResult[FlextAuthTypes.AuthenticationResponseDict].ok({
+                    "user": {
+                        "id": f"user_{username}",
+                        "username": username,
+                        "email": f"{username}@example.com",
+                        "full_name": None,
+                        "is_active": True,
+                        "roles": ["user"],
+                        "created_at": datetime.now(UTC),
+                        "updated_at": datetime.now(UTC),
+                        "last_login": None,
+                    },
+                    "session": {
+                        "id": f"session_{username}",
+                        "user_id": f"user_{username}",
+                        "session_token": f"token_{username}",
+                        "expires_at": datetime.now(UTC) + timedelta(hours=24),
+                        "created_at": datetime.now(UTC),
+                        "last_accessed_at": datetime.now(UTC),
+                        "is_active": True,
+                        "ip_address": client_ip,
+                        "user_agent": user_agent,
+                    },
+                    "jwt_token": f"jwt_token_{username}",
+                    "authenticated": True,
+                    "success": True,
+                })  # Placeholder implementation
 
             def logout_user(self, session_id: str) -> FlextResult[None]:
                 """Logout user by session ID."""

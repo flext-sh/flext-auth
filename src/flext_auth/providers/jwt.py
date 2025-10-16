@@ -227,12 +227,10 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             FlextResult[dict]: Decoding parameters with secret_key and algorithm
 
         """
-        return FlextResult[FlextTypes.Dict].ok(
-            {
-                "secret_key": self._secret_key,
-                "algorithm": self._algorithm,
-            }
-        )
+        return FlextResult[FlextTypes.Dict].ok({
+            "secret_key": self._secret_key,
+            "algorithm": self._algorithm,
+        })
 
     def refresh(
         self,
@@ -371,12 +369,10 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             if token_result.is_failure:
                 return FlextResult[FlextTypes.Dict].fail(token_result.error)
 
-            return FlextResult[FlextTypes.Dict].ok(
-                {
-                    "token": token_result.value,
-                    "expires_at": expires_at,
-                }
-            )
+            return FlextResult[FlextTypes.Dict].ok({
+                "token": token_result.value,
+                "expires_at": expires_at,
+            })
 
         except Exception as e:
             return FlextResult[FlextTypes.Dict].fail(f"Token generation failed: {e}")
@@ -419,12 +415,10 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             if token_result.is_failure:
                 return FlextResult[FlextTypes.Dict].fail(token_result.error)
 
-            return FlextResult[FlextTypes.Dict].ok(
-                {
-                    "token": token_result.value,
-                    "expires_at": expires_at,
-                }
-            )
+            return FlextResult[FlextTypes.Dict].ok({
+                "token": token_result.value,
+                "expires_at": expires_at,
+            })
 
         except Exception as e:
             return FlextResult[FlextTypes.Dict].fail(
@@ -469,12 +463,10 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
                 self._algorithm,
             )
 
-            return FlextResult[FlextTypes.Dict].ok(
-                {
-                    "token": token,
-                    "expires_at": expires_at,
-                }
-            )
+            return FlextResult[FlextTypes.Dict].ok({
+                "token": token,
+                "expires_at": expires_at,
+            })
 
         except Exception as e:
             return FlextResult[FlextTypes.Dict].fail(f"Token generation failed: {e}")

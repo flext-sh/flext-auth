@@ -161,12 +161,10 @@ class FlextAuthProviderService(FlextService):
         auth_provider = provider_result.value
 
         # Attempt authentication
-        return auth_provider.authenticate(
-            {
-                "username": username,
-                "password": password,
-            }
-        )
+        return auth_provider.authenticate({
+            "username": username,
+            "password": password,
+        })
 
     def generate_tokens_for_user(
         self,
@@ -191,15 +189,13 @@ class FlextAuthProviderService(FlextService):
         token_provider = provider_result.value
 
         # Generate tokens using user data
-        return token_provider.authenticate(
-            {
-                "user_id": user.user_id,
-                "username": user.username,
-                "email": user.email,
-                "roles": user.roles,
-                "permissions": user.permissions,
-            }
-        )
+        return token_provider.authenticate({
+            "user_id": user.user_id,
+            "username": user.username,
+            "email": user.email,
+            "roles": user.roles,
+            "permissions": user.permissions,
+        })
 
     def validate_token_and_get_user(
         self, token: str
@@ -222,7 +218,7 @@ class FlextAuthProviderService(FlextService):
     def generate_token_for_user(
         self,
         user: FlextAuthModels.User,
-        token_type: str = "access",  # noqa: S107
+        token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate a token for a user."""

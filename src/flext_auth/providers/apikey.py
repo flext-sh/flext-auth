@@ -439,13 +439,11 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             },
         )
 
-        return FlextResult[FlextTypes.StringDict].ok(
-            {
-                "key_id": key_id,
-                "api_key": api_key,  # Return only once - never log or store raw key
-                "key_hash": key_hash,
-            }
-        )
+        return FlextResult[FlextTypes.StringDict].ok({
+            "key_id": key_id,
+            "api_key": api_key,  # Return only once - never log or store raw key
+            "key_hash": key_hash,
+        })
 
 
 __all__ = ["FlextAuthApiKeyProvider"]

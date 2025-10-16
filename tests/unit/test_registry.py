@@ -25,12 +25,10 @@ class FlextAuthMockProvider(FlextAuthBaseProvider):
     def authenticate(
         self, credentials: FlextTypes.Dict
     ) -> FlextResult[FlextTypes.Dict]:
-        return FlextResult[FlextTypes.Dict].ok(
-            {
-                "user_id": "test",
-                "authenticated": True,
-            }
-        )
+        return FlextResult[FlextTypes.Dict].ok({
+            "user_id": "test",
+            "authenticated": True,
+        })
 
     def authorize(self, user_id: str, resource: str, action: str) -> FlextResult[bool]:
         return FlextResult[bool].ok(True)

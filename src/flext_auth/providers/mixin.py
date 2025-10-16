@@ -51,7 +51,9 @@ class FlextAuthProviderMixin:
             return token.token
 
         error_msg = f"Invalid token type: expected str or AuthToken, got {type(token)}"
-        raise FlextExceptions.ValidationError(error_msg, field="token", value=str(type(token)))
+        raise FlextExceptions.ValidationError(
+            error_msg, field="token", value=str(type(token))
+        )
 
     def supports(self) -> set[str]:
         """Return set of capabilities supported by this provider.

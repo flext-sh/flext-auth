@@ -19,7 +19,7 @@ import json
 from datetime import UTC, datetime
 from typing import cast
 
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextExceptions, FlextResult, FlextTypes
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
@@ -83,21 +83,36 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
         self._issuer = self._config.get("issuer")
         if not isinstance(self._issuer, str):
             error_msg = "OIDC provider requires 'issuer' to be a string"
-            raise TypeError(error_msg)
+            raise FlextExceptions.ValidationError(
+                error_msg,
+                field="issuer",
+                expected_type="str",
+                actual_type=str(type(self._issuer)),
+            )
 
         self._userinfo_endpoint = self._config.get("userinfo_endpoint")
         if self._userinfo_endpoint is not None and not isinstance(
             self._userinfo_endpoint, str
         ):
             error_msg = "OIDC provider 'userinfo_endpoint' must be a string or None"
-            raise TypeError(error_msg)
+            raise FlextExceptions.ValidationError(
+                error_msg,
+                field="userinfo_endpoint",
+                expected_type="str",
+                actual_type=str(type(self._userinfo_endpoint)),
+            )
 
         self._discovery_endpoint = self._config.get("discovery_endpoint")
         if self._discovery_endpoint is not None and not isinstance(
             self._discovery_endpoint, str
         ):
             error_msg = "OIDC provider 'discovery_endpoint' must be a string or None"
-            raise TypeError(error_msg)
+            raise FlextExceptions.ValidationError(
+                error_msg,
+                field="discovery_endpoint",
+                expected_type="str",
+                actual_type=str(type(self._discovery_endpoint)),
+            )
 
         self._id_token_signing_alg = self._config.get(
             "id_token_signing_alg",
@@ -245,16 +260,14 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
         metadata = super().get_metadata()
 
         # Add OIDC-specific metadata
-        metadata.update(
-            {
-                "name": "oidc",
-                "description": "OpenID Connect authentication provider",
-                "issuer": self._issuer,
-                "id_token_signing_alg": self._id_token_signing_alg,
-                "userinfo_endpoint": self._userinfo_endpoint,
-                "discovery_endpoint": self._discovery_endpoint,
-            }
-        )
+        metadata.update({
+            "name": "oidc",
+            "description": "OpenID Connect authentication provider",
+            "issuer": self._issuer,
+            "id_token_signing_alg": self._id_token_signing_alg,
+            "userinfo_endpoint": self._userinfo_endpoint,
+            "discovery_endpoint": self._discovery_endpoint,
+        })
 
         return metadata
 

@@ -88,12 +88,22 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         self._client_id = self._config.get("client_id")
         if not isinstance(self._client_id, str):
             error_msg = "OAuth2 provider requires 'client_id' to be a string"
-            raise FlextExceptions.ValidationError(error_msg, field="client_id", expected_type="str", actual_type=str(type(self._client_id)))
+            raise FlextExceptions.ValidationError(
+                error_msg,
+                field="client_id",
+                expected_type="str",
+                actual_type=str(type(self._client_id)),
+            )
 
         self._client_secret = self._config.get("client_secret")
         if self._client_secret is not None and not isinstance(self._client_secret, str):
             error_msg = "OAuth2 provider 'client_secret' must be a string or None"
-            raise FlextExceptions.ValidationError(error_msg, field="client_secret", expected_type="str", actual_type=str(type(self._client_secret)))
+            raise FlextExceptions.ValidationError(
+                error_msg,
+                field="client_secret",
+                expected_type="str",
+                actual_type=str(type(self._client_secret)),
+            )
 
         self._authorization_endpoint = self._config.get("authorization_endpoint")
         if self._authorization_endpoint is not None and not isinstance(
@@ -102,18 +112,33 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             error_msg = (
                 "OAuth2 provider 'authorization_endpoint' must be a string or None"
             )
-            raise FlextExceptions.ValidationError(error_msg, field="authorization_endpoint", expected_type="str", actual_type=str(type(self._authorization_endpoint)))
+            raise FlextExceptions.ValidationError(
+                error_msg,
+                field="authorization_endpoint",
+                expected_type="str",
+                actual_type=str(type(self._authorization_endpoint)),
+            )
 
         self._token_endpoint = self._config.get("token_endpoint")
         if not isinstance(self._token_endpoint, str):
             error_msg = "OAuth2 provider requires 'token_endpoint' to be a string"
-            raise FlextExceptions.ValidationError(error_msg, field="token_endpoint", expected_type="str", actual_type=str(type(self._token_endpoint)))
+            raise FlextExceptions.ValidationError(
+                error_msg,
+                field="token_endpoint",
+                expected_type="str",
+                actual_type=str(type(self._token_endpoint)),
+            )
 
         # Optional configuration with defaults
         self._redirect_uri = self._config.get("redirect_uri")
         if self._redirect_uri is not None and not isinstance(self._redirect_uri, str):
             error_msg = "OAuth2 provider 'redirect_uri' must be a string or None"
-            raise FlextExceptions.ValidationError(error_msg, field="redirect_uri", expected_type="str", actual_type=str(type(self._redirect_uri)))
+            raise FlextExceptions.ValidationError(
+                error_msg,
+                field="redirect_uri",
+                expected_type="str",
+                actual_type=str(type(self._redirect_uri)),
+            )
 
         self._scope = self._config.get("scope", "openid profile email")
         if not isinstance(self._scope, str):
