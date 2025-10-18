@@ -23,7 +23,6 @@ from flext_core import (
     FlextRegistry,
     FlextResult,
     FlextService,
-    FlextTypes,
 )
 
 from flext_auth.config import FlextAuthConfig
@@ -76,19 +75,21 @@ class FlextAuthManagers(FlextService):
             email: str,
             password_hash: str,
             **extra_fields: object,
-        ) -> FlextResult[FlextAuthModels.User]:
+        ) -> FlextResult[FlextAuthModels.Identity]:
             """Create a new user."""
             if username in self._users:
-                return FlextResult[FlextAuthModels.User].fail("User already exists")
+                return FlextResult[FlextAuthModels.Identity].fail(
+                    "Identity already exists"
+                )
 
             user_id = str(uuid4())
             user_data = cast(
                 "dict[str, object]",
                 {
-                    "user_id": user_id,
-                    "username": username,
-                    "email": email,
-                    "password_hash": password_hash,
+                    "identity_id": user_id,
+                    "name": username,
+                    "contact": email,
+                    "credential_hash": password_hash,
                     "is_active": extra_fields.get("is_active", True),
                     "roles": extra_fields.get("roles", []),
                     "permissions": extra_fields.get("permissions", []),
@@ -98,46 +99,46 @@ class FlextAuthManagers(FlextService):
             )
 
             self._users[username] = user_data
-            user = FlextAuthModels.User(**user_data)
-            return FlextResult[FlextAuthModels.User].ok(user)
+            user = FlextAuthModels.Identity(**user_data)
+            return FlextResult[FlextAuthModels.Identity].ok(user)
 
-        def get_user(self, user_id: str) -> FlextResult[FlextAuthModels.User]:
+        def get_user(self, user_id: str) -> FlextResult[FlextAuthModels.Identity]:
             """Get user by ID."""
             for user_data in self._users.values():
-                if user_data["id"] == user_id:
-                    user = FlextAuthModels.User(**user_data)
-                    return FlextResult[FlextAuthModels.User].ok(user)
+                if user_data.get("identity_id") == user_id:
+                    user = FlextAuthModels.Identity(**user_data)
+                    return FlextResult[FlextAuthModels.Identity].ok(user)
 
-            return FlextResult[FlextAuthModels.User].fail("User not found")
+            return FlextResult[FlextAuthModels.Identity].fail("User not found")
 
         def get_user_by_username(
             self, username: str
-        ) -> FlextResult[FlextAuthModels.User]:
+        ) -> FlextResult[FlextAuthModels.Identity]:
             """Get user by username."""
             if username not in self._users:
-                return FlextResult[FlextAuthModels.User].fail("User not found")
+                return FlextResult[FlextAuthModels.Identity].fail("User not found")
 
             user_data = self._users[username]
-            user = FlextAuthModels.User(**user_data)
-            return FlextResult[FlextAuthModels.User].ok(user)
+            user = FlextAuthModels.Identity(**user_data)
+            return FlextResult[FlextAuthModels.Identity].ok(user)
 
         def update_user(
             self, user_id: str, **updates: object
-        ) -> FlextResult[FlextAuthModels.User]:
+        ) -> FlextResult[FlextAuthModels.Identity]:
             """Update user data."""
             for user_data in self._users.values():
-                if user_data["id"] == user_id:
+                if user_data.get("identity_id") == user_id:
                     user_data.update(updates)
                     user_data["updated_at"] = datetime.now(UTC)
-                    user = FlextAuthModels.User(**user_data)
-                    return FlextResult[FlextAuthModels.User].ok(user)
+                    user = FlextAuthModels.Identity(**user_data)
+                    return FlextResult[FlextAuthModels.Identity].ok(user)
 
-            return FlextResult[FlextAuthModels.User].fail("User not found")
+            return FlextResult[FlextAuthModels.Identity].fail("User not found")
 
         def delete_user(self, user_id: str) -> FlextResult[None]:
             """Delete user."""
             for username, user_data in self._users.items():
-                if user_data["id"] == user_id:
+                if user_data.get("identity_id") == user_id:
                     del self._users[username]
                     return FlextResult[None].ok(None)
 
@@ -146,7 +147,7 @@ class FlextAuthManagers(FlextService):
         def add_user_role(self, user_id: str, role: str) -> FlextResult[None]:
             """Add role to user."""
             for user_data in self._users.values():
-                if user_data["id"] == user_id:
+                if user_data.get("identity_id") == user_id:
                     roles = user_data["roles"]
                     if isinstance(roles, list) and role not in roles:
                         roles.append(role)
@@ -214,7 +215,7 @@ class FlextAuthManagers(FlextService):
             self._bus = FlextBus()
             self._dispatcher = FlextDispatcher()
             self._sessions: dict[
-                str, FlextTypes.Dict
+                str, dict[str, object]
             ] = {}  # In production, use Redis/database
 
         def create_session(
@@ -416,7 +417,7 @@ class FlextAuthManagers(FlextService):
             start_date: datetime | None = None,
             end_date: datetime | None = None,
             limit: int = 100,
-        ) -> FlextResult[list[FlextTypes.Dict]]:
+        ) -> FlextResult[list[dict[str, object]]]:
             """Get audit logs with optional filtering."""
             # Filter logs based on criteria
             filtered_logs = self._logs
@@ -452,7 +453,7 @@ class FlextAuthManagers(FlextService):
                 ]
 
             # Apply limit and return
-            return FlextResult[list[FlextTypes.Dict]].ok(filtered_logs[-limit:])
+            return FlextResult[list[dict[str, object]]].ok(filtered_logs[-limit:])
 
     class FlextAuthRateLimiter:
         """Rate limiting business logic.

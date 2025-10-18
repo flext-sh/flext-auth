@@ -525,7 +525,7 @@ from flext_core import FlextService
 from flext_core import FlextTypes
 from flext_core import FlextUtilities
 
-class HttpTransportAdapter(BaseTransportAdapter):
+class FlextWebTransportAdapter(BaseTransportAdapter):
     """HTTP transport adapter using flext-api."""
 
     def __init__(self, config: dict[str, object] | None = None) -> None:
@@ -1015,7 +1015,7 @@ from flext_api import FlextApi        # For HTTP transport
 from flext_grpc import FlextGrpc      # For gRPC transport
 from flext_ldap import FlextLdap      # For LDAP provider
 
-class HttpTransportAdapter:
+class FlextWebTransportAdapter:
     def __init__(self) -> None:
         self._api = FlextApi()  # MANDATORY: Use flext-api
 
@@ -1214,8 +1214,8 @@ token = token_mgr.get_with_retry(
 
 **Deliverables**:
 
-- ✅ Transport base protocol (HttpTransportAdapter implemented)
-- ✅ HttpTransportAdapter (integrated with flext-api MANDATORY)
+- ✅ Transport base protocol (FlextWebTransportAdapter implemented)
+- ✅ FlextWebTransportAdapter (integrated with flext-api MANDATORY)
 - ⚠️ GrpcTransportAdapter (partial implementation, flext-grpc MANDATORY)
 - ❌ WebSocket adapter (not implemented)
 - ❌ REST/SOAP/GraphQL protocol handlers (not implemented)

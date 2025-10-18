@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextResult, FlextService, FlextTypes
+from flext_core import FlextResult, FlextService
 
 from flext_auth.api import FlextAuth
 from flext_auth.config import FlextAuthConfig
@@ -37,7 +37,7 @@ class FlextAuthQuickstart(FlextService[object]):
         username: str,
         email: str,
         password: str,
-        roles: FlextTypes.StringList | None = None,
+        roles: list[str] | None = None,
     ) -> FlextResult[FlextAuthModels.User]:
         """Register a new user with default settings."""
         return self._auth.register_user(username, email, password, roles)
@@ -59,8 +59,8 @@ class FlextAuthQuickstart(FlextService[object]):
         return self._auth.get_user(user_id)
 
     def create_demo_users(
-        self, count: int = FlextAuthConstants.AuthDefaults.DEMO_USERS_COUNT
-    ) -> FlextResult[FlextTypes.StringList]:
+        self, count: int = FlextAuthConstants.DEMO_USERS_COUNT
+    ) -> FlextResult[list[str]]:
         """Create demo users for testing."""
         user_ids = []
         for i in range(count):
@@ -72,15 +72,15 @@ class FlextAuthQuickstart(FlextService[object]):
             if result.is_success and result.value.user_id is not None:
                 user_ids.append(result.value.user_id)
             else:
-                return FlextResult[FlextTypes.StringList].fail(
+                return FlextResult[list[str]].fail(
                     f"Failed to create demo user {i}: {result.error}"
                 )
 
-        return FlextResult[FlextTypes.StringList].ok(user_ids)
+        return FlextResult[list[str]].ok(user_ids)
 
     def flext_auth_quick_start(
         self, *, create_REDACTED_LDAP_BIND_PASSWORD: bool = True
-    ) -> FlextResult[FlextTypes.StringList]:
+    ) -> FlextResult[list[str]]:
         """Quick start the auth service with demo users."""
         result = self.create_demo_users()
         if result.is_failure:
@@ -92,7 +92,7 @@ class FlextAuthQuickstart(FlextService[object]):
                 "REDACTED_LDAP_BIND_PASSWORD", "REDACTED_LDAP_BIND_PASSWORD@example.com", "AdminPass123!", ["ADMIN"]
             )
             if REDACTED_LDAP_BIND_PASSWORD_result.is_failure:
-                return FlextResult[FlextTypes.StringList].fail(
+                return FlextResult[list[str]].fail(
                     f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {REDACTED_LDAP_BIND_PASSWORD_result.error}"
                 )
             if REDACTED_LDAP_BIND_PASSWORD_result.value.user_id is not None:

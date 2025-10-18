@@ -18,7 +18,7 @@ from typing import cast
 from unittest.mock import patch
 
 import pytest
-from flext_core import FlextConfig, FlextConstants, FlextResult, FlextTypes
+from flext_core import FlextConfig, FlextConstants, FlextResult
 from pydantic import SecretStr, ValidationError
 
 from flext_auth import FlextAuthConfig
@@ -384,7 +384,7 @@ class TestConfigModule:
         """Nested helper class for test data creation."""
 
         @staticmethod
-        def create_test_config_data() -> FlextTypes.Dict:
+        def create_test_config_data() -> dict[str, object]:
             """Create test configuration data."""
             return {
                 "auth_secret_key": "test_secret_key_123",
@@ -395,7 +395,7 @@ class TestConfigModule:
             }
 
         @staticmethod
-        def create_test_auth_config_data() -> FlextTypes.Dict:
+        def create_test_auth_config_data() -> dict[str, object]:
             """Create test authentication configuration data."""
             return {
                 "jwt_secret": "jwt_secret_key_456",
@@ -405,7 +405,7 @@ class TestConfigModule:
             }
 
         @staticmethod
-        def create_test_security_config_data() -> FlextTypes.Dict:
+        def create_test_security_config_data() -> dict[str, object]:
             """Create test security configuration data."""
             return {
                 "bcrypt_rounds": 12,

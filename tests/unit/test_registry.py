@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextResult
 
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
@@ -23,9 +23,9 @@ class FlextAuthMockProvider(FlextAuthBaseProvider):
         self._capabilities = {"authenticate", "authorize"}
 
     def authenticate(
-        self, credentials: FlextTypes.Dict
-    ) -> FlextResult[FlextTypes.Dict]:
-        return FlextResult[FlextTypes.Dict].ok({
+        self, credentials: dict[str, object]
+    ) -> FlextResult[dict[str, object]]:
+        return FlextResult[dict[str, object]].ok({
             "user_id": "test",
             "authenticated": True,
         })
@@ -36,7 +36,7 @@ class FlextAuthMockProvider(FlextAuthBaseProvider):
     def supports(self) -> set[str]:
         return self._capabilities
 
-    def get_metadata(self) -> FlextTypes.Dict:
+    def get_metadata(self) -> dict[str, object]:
         return {
             "name": self._name,
             "version": "1.0.0",
@@ -44,7 +44,7 @@ class FlextAuthMockProvider(FlextAuthBaseProvider):
             "description": f"Mock auth provider {self._name}",
         }
 
-    def validate_config(self, config: FlextTypes.Dict) -> FlextResult[None]:
+    def validate_config(self, config: dict[str, object]) -> FlextResult[None]:
         if config.get("invalid") is True:
             return FlextResult[None].fail("Invalid configuration")
         return FlextResult[None].ok(None)

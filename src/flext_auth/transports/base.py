@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextResult
 
 
 class BaseTransportAdapter(Protocol):
@@ -25,14 +25,14 @@ class BaseTransportAdapter(Protocol):
     consistent interface across different transport mechanisms.
 
     Example:
-        >>> class HttpTransportAdapter(BaseTransportAdapter):
+        >>> class FlextWebTransportAdapter(BaseTransportAdapter):
         ...     def send_request(
         ...         self,
         ...         url: str,
         ...         method: str = "POST",
-        ...         data: FlextTypes.Dict | None = None,
-        ...         headers: FlextTypes.StringDict | None = None,
-        ...     ) -> FlextResult[FlextTypes.Dict]:
+        ...         data: dict[str, object] | None = None,
+        ...         headers: dict[str, str] | None = None,
+        ...     ) -> FlextResult[dict[str, object]]:
         ...         # HTTP-specific implementation
         ...         pass
 
@@ -42,10 +42,10 @@ class BaseTransportAdapter(Protocol):
         self,
         url: str,
         method: str = "POST",
-        data: FlextTypes.Dict | None = None,
-        headers: FlextTypes.StringDict | None = None,
+        data: dict[str, object] | None = None,
+        headers: dict[str, str] | None = None,
         **kwargs: object,
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextResult[dict[str, object]]:
         """Send a request using this transport.
 
         Args:

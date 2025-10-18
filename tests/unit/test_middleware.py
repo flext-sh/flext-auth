@@ -1,4 +1,4 @@
-"""Unit tests for FlextAuthMiddleware.HttpAuthMiddleware.
+"""Unit tests for FlextAuthMiddleware.FlextWebAuthMiddleware.
 
 Tests the HTTP client authentication middleware adapter that integrates
 flext-auth providers with HTTP clients (flext-api).
@@ -14,7 +14,7 @@ from datetime import UTC, datetime, timedelta
 from typing import cast
 from unittest.mock import MagicMock
 
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextResult
 
 from flext_auth import FlextAuthMiddleware
 from flext_auth.models import FlextAuthModels
@@ -44,7 +44,7 @@ class FlextAuthMockProvider(FlextAuthBaseProvider):
         self._refresh_calls = 0
 
     def authenticate(
-        self, credentials: FlextTypes.Dict
+        self, credentials: dict[str, object]
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         self._auth_calls += 1
         if not self._auth_success:
@@ -94,7 +94,7 @@ class FlextAuthMockProvider(FlextAuthBaseProvider):
             capabilities.add("refresh")
         return capabilities
 
-    def get_metadata(self) -> FlextTypes.Dict:
+    def get_metadata(self) -> dict[str, object]:
         return {
             "name": "mock",
             "version": "1.0.0",
@@ -109,7 +109,7 @@ class MockHttpRequest:
         self,
         url: str = "https://api.example.com/test",
         method: str = "GET",
-        headers: FlextTypes.StringDict | None = None,
+        headers: dict[str, str] | None = None,
     ) -> None:
         """Initialize mock HTTP request."""
         self.url = url
@@ -118,17 +118,17 @@ class MockHttpRequest:
 
 
 class TestFlextAuthMiddleware:
-    """Test suite for FlextAuthMiddleware.HttpAuthMiddleware."""
+    """Test suite for FlextAuthMiddleware.FlextWebAuthMiddleware."""
 
     def test_middleware_initialization(self) -> None:
         """Test middleware initialization with provider."""
         provider = MockAuthProviderSecond()
-        middleware = FlextAuthMiddleware.HttpAuthMiddleware(
+        middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(
             provider=provider,
             credentials={"username": "user", "password": "pass"},
         )
 
-        assert middleware.name == "FlextAuthMiddleware.HttpAuthMiddleware(mock)"
+        assert middleware.name == "FlextAuthMiddleware.FlextWebAuthMiddleware(mock)"
         assert middleware.is_enabled
         assert middleware._provider == provider
         assert middleware._credentials == {"username": "user", "password": "pass"}
@@ -139,7 +139,7 @@ class TestFlextAuthMiddleware:
     def test_process_request_success(self) -> None:
         """Test successful request processing with authentication."""
         provider = MockAuthProviderSecond(auth_token="test-token-123")
-        middleware = FlextAuthMiddleware.HttpAuthMiddleware(
+        middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(
             provider=provider,
             credentials={"username": "user", "password": "pass"},
         )
@@ -157,7 +157,7 @@ class TestFlextAuthMiddleware:
     def test_process_request_without_credentials(self) -> None:
         """Test request processing fails without credentials."""
         provider = MockAuthProviderSecond()
-        middleware = FlextAuthMiddleware.HttpAuthMiddleware(
+        middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(
             provider=provider,
             credentials=None,  # No credentials
         )
@@ -174,7 +174,7 @@ class TestFlextAuthMiddleware:
     def test_process_request_reuses_token(self) -> None:
         """Test middleware reuses valid token for subsequent requests."""
         provider = MockAuthProviderSecond(auth_token="cached-token")
-        middleware = FlextAuthMiddleware.HttpAuthMiddleware(
+        middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(
             provider=provider,
             credentials={"username": "user", "password": "pass"},
         )
@@ -200,7 +200,7 @@ class TestFlextAuthMiddleware:
             refresh_success=True,
             supports_refresh=True,
         )
-        middleware = FlextAuthMiddleware.HttpAuthMiddleware(
+        middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(
             provider=provider,
             credentials={"username": "user", "password": "pass"},
             auto_refresh=True,
@@ -232,7 +232,7 @@ class TestFlextAuthMiddleware:
             refresh_success=False,  # Refresh will fail
             supports_refresh=True,
         )
-        middleware = FlextAuthMiddleware.HttpAuthMiddleware(
+        middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(
             provider=provider,
             credentials={"username": "user", "password": "pass"},
             auto_refresh=True,
@@ -256,7 +256,7 @@ class TestFlextAuthMiddleware:
     def test_process_request_custom_header(self) -> None:
         """Test middleware with custom authorization header."""
         provider = MockAuthProviderSecond(auth_token="api-key-123")
-        middleware = FlextAuthMiddleware.HttpAuthMiddleware(
+        middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(
             provider=provider,
             credentials={"api_key": "key"},
             header_name="X-API-Key",
@@ -274,7 +274,7 @@ class TestFlextAuthMiddleware:
     def test_process_request_with_token_prefix(self) -> None:
         """Test middleware with custom token prefix."""
         provider = MockAuthProviderSecond(auth_token="jwt-token")
-        middleware = FlextAuthMiddleware.HttpAuthMiddleware(
+        middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(
             provider=provider,
             credentials={"username": "user", "password": "pass"},
             token_prefix="JWT",
@@ -289,7 +289,7 @@ class TestFlextAuthMiddleware:
     def test_process_request_disabled_middleware(self) -> None:
         """Test middleware pass-through when disabled."""
         provider = MockAuthProviderSecond()
-        middleware = FlextAuthMiddleware.HttpAuthMiddleware(
+        middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(
             provider=provider,
             credentials={"username": "user", "password": "pass"},
         )
@@ -305,7 +305,7 @@ class TestFlextAuthMiddleware:
     def test_process_response_passthrough(self) -> None:
         """Test response processing is pass-through."""
         provider = MockAuthProviderSecond()
-        middleware = FlextAuthMiddleware.HttpAuthMiddleware(
+        middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(
             provider=provider,
             credentials={"username": "user", "password": "pass"},
         )
@@ -321,7 +321,7 @@ class TestFlextAuthMiddleware:
     def test_authentication_failure(self) -> None:
         """Test middleware handles authentication failure."""
         provider = MockAuthProviderSecond(auth_success=False)
-        middleware = FlextAuthMiddleware.HttpAuthMiddleware(
+        middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(
             provider=provider,
             credentials={"username": "user", "password": "wrong"},
         )
@@ -335,7 +335,7 @@ class TestFlextAuthMiddleware:
     def test_enable_disable_toggle(self) -> None:
         """Test enabling and disabling middleware."""
         provider = MockAuthProviderSecond()
-        middleware = FlextAuthMiddleware.HttpAuthMiddleware(
+        middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(
             provider=provider,
             credentials={"username": "user", "password": "pass"},
         )
@@ -355,7 +355,7 @@ class TestFlextAuthMiddleware:
             validate_success=True,
             supports_refresh=True,
         )
-        middleware = FlextAuthMiddleware.HttpAuthMiddleware(
+        middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(
             provider=provider,
             credentials={"username": "user", "password": "pass"},
             auto_refresh=False,  # Disable auto-refresh
@@ -381,12 +381,12 @@ class TestFlextAuthMiddleware:
         jwt_provider = FlextAuthMockProvider(auth_token="jwt-token")
         oauth_provider = FlextAuthMockProvider(auth_token="oauth-token")
 
-        jwt_middleware = FlextAuthMiddleware.HttpAuthMiddleware(
+        jwt_middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(
             provider=jwt_provider,
             credentials={"username": "user1", "password": "pass1"},
         )
 
-        oauth_middleware = FlextAuthMiddleware.HttpAuthMiddleware(
+        oauth_middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(
             provider=oauth_provider,
             credentials={"username": "user2", "password": "pass2"},
         )
@@ -415,7 +415,7 @@ class MockAuthProviderSecond(FlextAuthBaseProvider):
         self._validate_calls = 0
 
     def authenticate(
-        self, credentials: FlextTypes.Dict
+        self, credentials: dict[str, object]
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         token = FlextAuthModels.AuthToken(
             user_id=credentials.get("username", "test-user"),
@@ -443,7 +443,7 @@ class MockAuthProviderSecond(FlextAuthBaseProvider):
     def supports(self) -> set[str]:
         return {"token", "validate"}
 
-    def get_metadata(self) -> FlextTypes.Dict:
+    def get_metadata(self) -> dict[str, object]:
         return {
             "name": "mock-web",
             "version": "1.0.0",
@@ -457,8 +457,8 @@ class MockWebRequest:
     def __init__(
         self,
         path: str = "/api/test",
-        headers: FlextTypes.StringDict | None = None,
-        cookies: FlextTypes.StringDict | None = None,
+        headers: dict[str, str] | None = None,
+        cookies: dict[str, str] | None = None,
     ) -> None:
         """Initialize mock web request."""
         self.path = path
@@ -741,7 +741,7 @@ class TestFlextAuthMiddleware2:
         """Test multiple middleware instances with different providers."""
 
         class JwtMockProvider(FlextAuthMockProvider):
-            def get_metadata(self) -> FlextTypes.Dict:
+            def get_metadata(self) -> dict[str, object]:
                 return {
                     "name": "jwt",
                     "version": "1.0.0",
@@ -749,7 +749,7 @@ class TestFlextAuthMiddleware2:
                 }
 
         class OAuth2MockProvider(FlextAuthMockProvider):
-            def get_metadata(self) -> FlextTypes.Dict:
+            def get_metadata(self) -> dict[str, object]:
                 return {
                     "name": "oauth2",
                     "version": "1.0.0",

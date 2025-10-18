@@ -13,7 +13,7 @@ Integration Pattern:
     from flext_api import FlextApiClient
     from flext_auth import FlextAuthJwtProvider, FlextAuthMiddleware
 
-    auth = FlextAuthMiddleware.HttpAuthMiddleware(FlextAuthJwtProvider(secret="key"))
+    auth = FlextAuthMiddleware.FlextWebAuthMiddleware(FlextAuthJwtProvider(secret="key"))
     client = FlextApiClient(middlewares=[auth])
 
     # Web App with OAuth2
@@ -30,7 +30,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextLogger, FlextResult, FlextService, FlextTypes
+from flext_core import FlextLogger, FlextResult, FlextService
 from flext_web.models import FlextWebModels
 
 from flext_auth.models import FlextAuthModels
@@ -51,10 +51,10 @@ class FlextAuthMiddleware(FlextService):
         FlextAuthMiddleware is a namespace class - use specific middleware classes instead.
         """
         return FlextResult[object].fail(
-            "FlextAuthMiddleware is a namespace class - use specific middleware classes like HttpAuthMiddleware"
+            "FlextAuthMiddleware is a namespace class - use specific middleware classes like FlextWebAuthMiddleware"
         )
 
-    class HttpAuthMiddleware:
+    class FlextWebAuthMiddleware:
         """Adapts FlextAuthBaseProvider to HTTP client middleware.
 
         This middleware integrates flext-auth authentication providers with
@@ -75,7 +75,7 @@ class FlextAuthMiddleware(FlextService):
             >>> provider = FlextAuthJwtProvider(secret="my-secret", algorithm="HS256")
             >>>
             >>> # Create middleware that adapts provider
-            >>> middleware = FlextAuthMiddleware.HttpAuthMiddleware(
+            >>> middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(
             ...     provider=provider,
             ...     credentials={"username": "user", "password": "pass"},
             ...     header_name="Authorization",
@@ -90,7 +90,7 @@ class FlextAuthMiddleware(FlextService):
         def __init__(
             self,
             provider: FlextAuthBaseProvider,
-            credentials: FlextTypes.Dict | None = None,
+            credentials: dict[str, object] | None = None,
             header_name: str = "Authorization",
             token_prefix: str = "Bearer",
             auto_refresh: bool = True,
@@ -105,7 +105,7 @@ class FlextAuthMiddleware(FlextService):
                 auto_refresh: Automatically refresh expired tokens (default: True)
 
             """
-            self.name = f"HttpAuthMiddleware({provider.get_metadata()['name']})"
+            self.name = f"FlextWebAuthMiddleware({provider.get_metadata()['name']})"
             self._provider = provider
             self._credentials = credentials
             self._header_name = header_name
@@ -119,7 +119,7 @@ class FlextAuthMiddleware(FlextService):
 
         def process_request(
             self,
-            request: FlextWebModels.HttpRequest,
+            request: FlextWebModels.FlextApiModels.HttpRequest,
         ) -> FlextResult[object]:
             """Process HTTP request by adding authentication headers.
 
@@ -193,7 +193,7 @@ class FlextAuthMiddleware(FlextService):
 
         def process_response(
             self,
-            response: FlextWebModels.HttpResponse,
+            response: FlextWebModels.FlextApiModels.HttpResponse,
         ) -> FlextResult[object]:
             """Process HTTP response (pass-through for HTTP auth).
 
@@ -338,7 +338,7 @@ class FlextAuthMiddleware(FlextService):
             header_name: str = "Authorization",
             token_prefix: str = "Bearer",
             cookie_name: str | None = None,
-            exclude_paths: FlextTypes.StringList | None = None,
+            exclude_paths: list[str] | None = None,
             require_auth: bool = True,
         ) -> None:
             """Initialize web authentication middleware.

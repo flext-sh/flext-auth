@@ -1,8 +1,10 @@
-"""FLEXT Auth Token Service - Focused token operations.
+"""FLEXT Auth Token Service - Advanced flext-core patterns with minimal line count.
+
+Uses Python 3.13+ syntax, railway-oriented programming, and consolidated patterns
+for maximum maintainability. Single FlextAuthTokenService class with advanced composition.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
@@ -19,7 +21,11 @@ from flext_auth.utilities import FlextAuthUtilities
 
 
 class FlextAuthTokenService(FlextService):
-    """Focused service for token operations with complete flext-core integration."""
+    """Advanced token service using flext-core patterns and railway-oriented programming.
+
+    Python 3.13+ features, minimal line count through consolidated operations.
+    Advanced composition with dependency injection and error handling.
+    """
 
     def __init__(
         self,
@@ -27,167 +33,150 @@ class FlextAuthTokenService(FlextService):
         provider_service: FlextAuthProviderService,
         dispatcher: FlextDispatcher,
     ) -> None:
-        """Initialize token service with flext-core integration."""
-        super().__init__(logger=FlextLogger(__name__))
-        self._config = config
-        self._dispatcher = dispatcher
+        """Advanced initialization with dependency injection."""
+        super().__init__()
+        self._config, self._dispatcher, self._provider_service = (
+            config,
+            dispatcher,
+            provider_service,
+        )
         self._user_manager = FlextAuthManagers.FlextAuthUserManager(config)
         self._audit_logger = FlextAuthManagers.FlextAuthAuditLogger(config, dispatcher)
         self._utils = FlextAuthUtilities()
-        self._provider_service = provider_service
 
     def execute(self) -> FlextResult[object]:
-        """Execute method for FlextService interface.
-
-        Token service doesn't use generic execute pattern.
-        Use specific token methods instead.
-        """
-        return FlextResult[object].fail(
-            "FlextAuthTokenService is focused - use specific token methods like validate_token()"
+        """Railway-oriented execute with focused service pattern."""
+        return FlextResult.fail(
+            "Use specific token methods: validate_token, generate_jwt_token, etc."
         )
 
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.User]:
-        """Validate an authentication token and return user."""
-        # Use JWT provider for validation
-        jwt_provider_result = self._get_jwt_provider()
-        if jwt_provider_result.is_failure:
-            return FlextResult[FlextAuthModels.User].fail(jwt_provider_result.error)
+    # =========================================================================
+    # ADVANCED TOKEN OPERATIONS WITH RAILWAY PATTERNS
+    # =========================================================================
 
-        jwt_provider = jwt_provider_result.value
-        validation_result = jwt_provider.validate(token)
-
-        if validation_result.is_failure:
-            self._audit_logger.log_token_validation(
-                success=False,
-                token_id=token[:10] + "..." if token else "unknown",
-                reason=str(validation_result.error),
+    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.Identity]:
+        """Railway-oriented token validation with audit logging."""
+        return (
+            self._get_jwt_provider()
+            .flat_map(lambda p: p.validate(token))
+            .flat_map(lambda _: self._decode_token_payload(token))
+            .flat_map(lambda payload: self._get_user_from_payload(payload, token))
+            .tap(
+                lambda _: self._audit_logger.log_token_validation(
+                    success=True, token_id=token[:10] + "..."
+                )
             )
-            return FlextResult[FlextAuthModels.User].fail(validation_result.error)
-
-        # Token is valid, decode to get user information
-        if not isinstance(jwt_provider, FlextAuthJwtProvider):
-            return FlextResult[FlextAuthModels.User].fail("Invalid JWT provider type")
-
-        # Get decoding parameters from provider
-        params_result = jwt_provider.get_decoding_params()
-        if params_result.is_failure:
-            return FlextResult[FlextAuthModels.User].fail(
-                f"Failed to get JWT decoding parameters: {params_result.error}"
+            .recover(
+                lambda e: (
+                    self._audit_logger.log_token_validation(
+                        success=False, token_id=token[:10] + "...", reason=str(e)
+                    ),
+                    FlextResult.fail(e),
+                )[1]
             )
-
-        params = params_result.value
-        decode_result = FlextAuthUtilities.JWTProcessing.decode_token(
-            token, str(params["secret_key"]), str(params["algorithm"])
         )
-
-        if decode_result.is_failure:
-            self._audit_logger.log_token_validation(
-                success=False,
-                token_id=token[:10] + "...",
-                reason=str(decode_result.error),
-            )
-            return FlextResult[FlextAuthModels.User].fail(decode_result.error)
-
-        payload = decode_result.value
-        user_id = payload.get("sub")
-        if not user_id or not isinstance(user_id, str):
-            return FlextResult[FlextAuthModels.User].fail(
-                "Invalid token: missing or invalid user ID"
-            )
-
-        # Get user from user manager
-        user_result = self._user_manager.get_user(user_id)
-        if user_result.is_failure:
-            self._audit_logger.log_token_validation(
-                success=False,
-                token_id=token[:10] + "...",
-                reason="user_not_found",
-            )
-            return FlextResult[FlextAuthModels.User].fail("User not found")
-
-        self._audit_logger.log_token_validation(
-            success=True,
-            token_id=token[:10] + "...",
-        )
-
-        return user_result
 
     def refresh_token(self, token: str) -> FlextResult[FlextAuthModels.AuthToken]:
-        """Refresh an authentication token."""
-        jwt_provider_result = self._get_jwt_provider()
-        if jwt_provider_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(
-                jwt_provider_result.error
+        """Railway-oriented token refresh with audit logging."""
+        return (
+            self._get_jwt_provider()
+            .flat_map(lambda p: p.refresh(token))
+            .tap(
+                lambda t: self._audit_logger.log_token_refresh(
+                    success=True,
+                    old_token_id=token[:10] + "...",
+                    new_token_id=t.token[:10] + "...",
+                )
             )
-
-        jwt_provider = jwt_provider_result.value
-        refresh_result = jwt_provider.refresh(token)
-
-        if refresh_result.is_success:
-            self._audit_logger.log_token_refresh(
-                success=True,
-                old_token_id=token[:10] + "...",
-                new_token_id=refresh_result.value.token[:10] + "...",
+            .recover(
+                lambda e: (
+                    self._audit_logger.log_token_refresh(
+                        success=False,
+                        old_token_id=token[:10] + "...",
+                        new_token_id=None,
+                        reason=str(e),
+                    ),
+                    FlextResult.fail(e),
+                )[1]
             )
-        else:
-            self._audit_logger.log_token_refresh(
-                success=False,
-                old_token_id=token[:10] + "..." if token else "unknown",
-                new_token_id=None,
-                reason=str(refresh_result.error),
-            )
-
-        return refresh_result
+        )
 
     def generate_jwt_token(
         self,
         user_id: str,
         expires_in_minutes: int | None = None,
-        token_type: str = FlextAuthConstants.Jwt.DEFAULT_ACCESS_TOKEN_TYPE,
+        token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
-        """Generate a JWT token for a user."""
-        # Get user first to ensure they exist
-        user_result = self._user_manager.get_user(user_id)
-        if user_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(user_result.error)
-
-        # Create JWT token
-        token_result = FlextAuthModels.AuthToken.create_jwt_token(
-            user_id=user_id,
-            expiry_minutes=expires_in_minutes
-            or FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES,
-            token_type=token_type,
+        """Railway-oriented JWT token generation with audit logging."""
+        return (
+            self._user_manager.get_user(user_id)
+            .flat_map(
+                lambda user: FlextAuthModels.AuthToken.create_token(
+                    user_id=user_id,
+                    expiry_minutes=expires_in_minutes
+                    or FlextAuthConstants.JWT_EXPIRY_MINUTES,
+                    token_type=token_type,
+                )
+            )
+            .tap(
+                lambda _: self._audit_logger.log_token_creation(
+                    success=True, user_id=user_id, token_type=token_type
+                )
+            )
+            .recover(
+                lambda e: (
+                    self._audit_logger.log_token_creation(
+                        success=False,
+                        user_id=user_id,
+                        token_type=token_type,
+                        reason=str(e),
+                    ),
+                    FlextResult.fail(e),
+                )[1]
+            )
+            .map(lambda auth_token_result: auth_token_result.unwrap().token)
         )
 
-        if token_result.is_success:
-            self._audit_logger.log_token_creation(
-                success=True,
-                user_id=user_id,
-                token_type=token_type,
-            )
-        else:
-            self._audit_logger.log_token_creation(
-                success=False,
-                user_id=user_id,
-                token_type=token_type,
-                reason=str(token_result.error),
-            )
-
-        return token_result
+    # =========================================================================
+    # PRIVATE HELPER METHODS
+    # =========================================================================
 
     def _get_jwt_provider(self) -> FlextResult[FlextAuthJwtProvider]:
-        """Get the JWT provider from the provider service."""
-        result = self._provider_service.get_provider("jwt")
-        if result.is_failure:
-            return FlextResult[FlextAuthJwtProvider].fail(result.error)
+        """Get JWT provider with type safety."""
+        return self._provider_service.get_provider("jwt").flat_map(
+            lambda p: FlextResult.ok(p)
+            if isinstance(p, FlextAuthJwtProvider)
+            else FlextResult.fail("Invalid JWT provider type")
+        )
 
-        provider = result.value
-        if not isinstance(provider, FlextAuthJwtProvider):
-            return FlextResult[FlextAuthJwtProvider].fail(
-                "Provider is not a JWT provider"
+    def _decode_token_payload(self, token: str) -> FlextResult[dict[str, object]]:
+        """Decode token payload with railway pattern."""
+        return (
+            self._get_jwt_provider()
+            .flat_map(lambda p: p.get_decoding_params())
+            .flat_map(
+                lambda params: FlextAuthUtilities.JWTProcessing.decode_token(
+                    token, str(params["secret_key"]), str(params["algorithm"])
+                )
             )
+        )
 
-        return FlextResult[FlextAuthJwtProvider].ok(provider)
+    def _get_user_from_payload(
+        self, payload: dict[str, object], token: str
+    ) -> FlextResult[FlextAuthModels.Identity]:
+        """Extract identity from token payload with validation."""
+        user_id = payload.get("sub")
+        if not user_id or not isinstance(user_id, str):
+            return FlextResult.fail("Invalid token: missing or invalid user ID")
+
+        return self._user_manager.get_user(user_id).recover(
+            lambda _: (
+                self._audit_logger.log_token_validation(
+                    success=False, token_id=token[:10] + "...", reason="user_not_found"
+                ),
+                FlextResult.fail("User not found"),
+            )[1]
+        )
 
 
 __all__ = ["FlextAuthTokenService"]

@@ -14,7 +14,7 @@ import threading
 import time
 
 import pytest
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextResult
 from pydantic import ValidationError
 
 from flext_auth.api import FlextAuth
@@ -1353,7 +1353,7 @@ class TestAuthModule:
         """Nested helper class for test data creation."""
 
         @staticmethod
-        def create_test_user_data() -> FlextTypes.Dict:
+        def create_test_user_data() -> dict[str, object]:
             """Create test user data."""
             return {
                 "username": "test_user",
@@ -1363,7 +1363,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_auth_data() -> FlextTypes.Dict:
+        def create_test_auth_data() -> dict[str, object]:
             """Create test authentication data."""
             return {
                 "username": "test_user",
@@ -1372,7 +1372,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_session_data() -> FlextTypes.Dict:
+        def create_test_session_data() -> dict[str, object]:
             """Create test session data."""
             return {
                 "user_id": "user_123",

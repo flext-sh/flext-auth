@@ -17,7 +17,7 @@ import uuid
 from collections.abc import Callable
 from typing import TypedDict, cast
 
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextResult
 
 from flext_auth import (
     FlextAuth,
@@ -34,11 +34,11 @@ class UserFactory:
     """Factory for creating test user data."""
 
     @staticmethod
-    def create_dict() -> FlextTypes.StringDict:
+    def create_dict() -> dict[str, str]:
         """Create a simple user data dictionary.
 
         Returns:
-            FlextTypes.StringDict: User data dictionary
+            dict[str, str]: User data dictionary
 
         """
         return {
@@ -48,11 +48,11 @@ class UserFactory:
         }
 
     @staticmethod
-    def batch(count: int) -> list[FlextTypes.StringDict]:
+    def batch(count: int) -> list[dict[str, str]]:
         """Create a batch of user data dictionaries.
 
         Returns:
-            list[FlextTypes.StringDict]: List of user data dictionaries
+            list[dict[str, str]]: List of user data dictionaries
 
         """
         return [UserFactory.create_dict() for _ in range(count)]
@@ -101,7 +101,7 @@ class UserData(TypedDict):
 AuthUserDict = dict[str, str | int | bool]
 AuthSessionDict = dict[str, str | int | bool]
 AuthDataDict = (
-    dict[str, str | int | bool] | AuthUserDict | AuthSessionDict | FlextTypes.StringDict
+    dict[str, str | int | bool] | AuthUserDict | AuthSessionDict | dict[str, str]
 )
 
 
@@ -337,7 +337,7 @@ class TestEnhancedAuthentication:
 
         # Test session management
         self._test_session_management(
-            auth, user.id, cast("FlextTypes.Dict", auth_data["session"])
+            auth, user.id, cast("dict[str, object]", auth_data["session"])
         )
 
     def _test_user_retrieval_methods(
@@ -386,7 +386,7 @@ class TestEnhancedAuthentication:
         return auth_data
 
     def _test_session_management(
-        self, auth: FlextAuth, user_id: str, session_data: FlextTypes.Dict
+        self, auth: FlextAuth, user_id: str, session_data: dict[str, object]
     ) -> None:
         """Test session management operations."""
         # Get user sessions
@@ -478,14 +478,14 @@ class TestEnhancedPerformanceValidation:
         """Test batch user registration performance characteristics."""
         auth: FlextAuth = FlextAuth()
 
-        def register_batch_users() -> FlextTypes.List:
+        def register_batch_users() -> list[object]:
             """Register multiple users and return results.
 
             Returns:
-                FlextTypes.List: List of registration results
+                list[object]: List of registration results
 
             """
-            results: FlextTypes.List = []
+            results: list[object] = []
             users_data = cast(
                 "list[UserData]",
                 FlextTestsFactories.UserFactory.batch(count=5),
@@ -526,7 +526,7 @@ class TestEnhancedPerformanceValidation:
             "list[UserData]",
             FlextTestsFactories.UserFactory.batch(count=3),
         )
-        user_sessions: FlextTypes.StringList = []
+        user_sessions: list[str] = []
 
         for i, user_data in enumerate(users_data):
             username = f"session_perf_{i}"
@@ -538,14 +538,14 @@ class TestEnhancedPerformanceValidation:
             FlextTestsMatchers.assert_result_success(register_result)
             user_sessions.append(username)
 
-        def session_operations_batch() -> FlextTypes.List:
+        def session_operations_batch() -> list[object]:
             """Perform batch session operations.
 
             Returns:
-                FlextTypes.List: List of session operation results
+                list[object]: List of session operation results
 
             """
-            session_results: FlextTypes.List = []
+            session_results: list[object] = []
             for username in user_sessions:
                 # Authenticate to create session
                 auth_result = auth.authenticate_user(username, "SessionPerfTest123!@#")

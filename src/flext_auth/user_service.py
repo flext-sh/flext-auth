@@ -1,13 +1,15 @@
-"""FLEXT Auth User Service - Focused user management operations.
+"""FLEXT Auth Identity Service - Generic identity management with flext-core integration.
+
+Uses Python 3.13+ syntax, railway-oriented programming, and consolidated generic patterns
+for maximum maintainability. Single FlextAuthIdentityService class with SOLID principles.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
 
-from flext_core import FlextDispatcher, FlextResult, FlextService, FlextTypes
+from flext_core import FlextDispatcher, FlextResult, FlextService
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.managers import FlextAuthManagers
@@ -15,229 +17,200 @@ from flext_auth.models import FlextAuthModels
 from flext_auth.utilities import FlextAuthUtilities
 
 
-class FlextAuthUserService(FlextService):
-    """Focused service for user management operations with complete flext-core integration."""
+class FlextAuthIdentityService(FlextService):
+    """Generic identity service using flext-core patterns and railway-oriented programming.
+
+    Python 3.13+ features, minimal line count through consolidated operations.
+    SOLID principles with dependency injection and railway error handling.
+    """
 
     def __init__(self, config: FlextAuthConfig, dispatcher: FlextDispatcher) -> None:
-        """Initialize user service with flext-core integration."""
+        """Generic initialization with dependency injection."""
         super().__init__()
-        self._config = config
-        self._dispatcher = dispatcher
-        self._user_manager = FlextAuthManagers.FlextAuthUserManager(config)
+        self._config, self._dispatcher = config, dispatcher
+        self._identity_manager = FlextAuthManagers.FlextAuthUserManager(config)
         self._audit_logger = FlextAuthManagers.FlextAuthAuditLogger(config, dispatcher)
         self._utils = FlextAuthUtilities()
 
     def execute(self) -> FlextResult[object]:
-        """Execute method for FlextService interface.
-
-        User service doesn't use generic execute pattern.
-        Use specific user management methods instead.
-        """
-        return FlextResult[object].fail(
-            "FlextAuthUserService is focused - use specific user methods like create_user()"
+        """Railway-oriented execute with focused service pattern."""
+        return FlextResult.fail(
+            "Use specific identity methods: create_identity, authenticate_identity, etc."
         )
 
-    def authenticate_user(
+    def authenticate_identity(
         self,
-        username: str,
-        password: str,
-    ) -> FlextResult[FlextAuthModels.User]:
-        """Authenticate a user with username and password.
-
-        Args:
-            username: User's username
-            password: User's password
-
-        Returns:
-            FlextResult containing authenticated User or error
-
-        """
-        # Get user by username
-        user_result = self.get_user_by_username(username)
-        if user_result.is_failure:
-            return FlextResult[FlextAuthModels.User].fail("Invalid credentials")
-
-        user = user_result.value
-
-        # Verify password
-        verify_result = FlextAuthUtilities.PasswordProcessing.verify_password(
-            password, user.password_hash
-        )
-
-        if not verify_result:
-            return FlextResult[FlextAuthModels.User].fail("Invalid credentials")
-
-        # Update last login
-        user.record_successful_login()
-
-        return FlextResult[FlextAuthModels.User].ok(user)
-
-    def create_user(
-        self,
-        username: str,
-        email: str,
-        password: str,
-        roles: FlextTypes.StringList | None = None,
-        **extra_fields: object,
-    ) -> FlextResult[FlextAuthModels.User]:
-        """Create a new user account with password hashing."""
-        # Hash password using flext-auth utilities
-        hash_result = FlextAuthUtilities.PasswordProcessing.hash_password(password)
-        if hash_result.is_failure:
-            return FlextResult[FlextAuthModels.User].fail(hash_result.error)
-
-        # Prepare extra fields
-        user_extra_fields = dict[str, object](extra_fields)
-        if roles is not None:
-            user_extra_fields["roles"] = roles
-
-        return self._user_manager.create_user(
-            username=username,
-            email=email,
-            password_hash=hash_result.value,
-            **user_extra_fields,
-        )
-
-    def get_user(self, user_id: str) -> FlextResult[FlextAuthModels.User]:
-        """Get user by ID."""
-        return self._user_manager.get_user(user_id)
-
-    def get_user_by_username(self, username: str) -> FlextResult[FlextAuthModels.User]:
-        """Get user by username."""
-        return self._user_manager.get_user_by_username(username)
-
-    def update_user(
-        self,
-        user_id: str,
-        **updates: object,
-    ) -> FlextResult[FlextAuthModels.User]:
-        """Update user information."""
-        return self._user_manager.update_user(user_id, **updates)
-
-    def delete_user(self, user_id: str) -> FlextResult[None]:
-        """Delete a user account."""
-        return self._user_manager.delete_user(user_id)
-
-    def change_password(
-        self,
-        user_id: str,
-        current_password: str,
-        new_password: str,
-    ) -> FlextResult[None]:
-        """Change a user's password with validation."""
-        # Get user
-        user_result = self._user_manager.get_user(user_id)
-        if user_result.is_failure:
-            return FlextResult[None].fail(user_result.error)
-
-        user = user_result.value
-
-        # Verify current password
-        if not user.verify_password(current_password):
-            self._audit_logger.log_password_change_failure(
-                username=user.username,
-                reason="invalid_current_password",
+        name: str,
+        credential: str,
+    ) -> FlextResult[FlextAuthModels.Identity]:
+        """Railway-oriented identity authentication."""
+        return (
+            self.get_identity_by_name(name)
+            .flat_map(lambda identity: FlextResult.ok((identity, credential)))
+            .flat_map(
+                lambda ic: FlextResult.ok(ic[0])
+                if ic[0].verify_credential(ic[1]).value
+                else FlextResult.fail("Invalid credentials")
             )
-            return FlextResult[None].fail("Current password is incorrect")
-
-        # Validate new password
-        validation_result = FlextAuthUtilities.PasswordProcessing.validate_password(
-            new_password
+            .map(lambda identity: (identity.record_successful_access(), identity)[1])
         )
-        if validation_result.is_failure:
-            return FlextResult[None].fail(validation_result.error)
 
-        # Set new password
-        user.set_password(new_password)
-
-        # Log success
-        self._audit_logger.log_password_change_success(user.username)
-        return FlextResult.ok(None)
-
-    def reset_password(self, user_id: str, new_password: str) -> FlextResult[None]:
-        """Reset a user's password (REDACTED_LDAP_BIND_PASSWORD operation)."""
-        # Get user
-        user_result = self._user_manager.get_user(user_id)
-        if user_result.is_failure:
-            return FlextResult[None].fail(user_result.error)
-
-        user = user_result.value
-
-        # Validate new password
-        validation_result = FlextAuthUtilities.PasswordProcessing.validate_password(
-            new_password
-        )
-        if validation_result.is_failure:
-            return FlextResult[None].fail(validation_result.error)
-
-        # Set new password
-        user.set_password(new_password)
-
-        # Log reset
-        self._audit_logger.log_password_reset(user.username)
-        return FlextResult.ok(None)
-
-    def authorize_user(
+    def create_identity(
         self,
-        user_id: str,
+        name: str,
+        contact: str,
+        credential: str,
+        roles: list[str] | None = None,
+        **extra_fields: object,
+    ) -> FlextResult[FlextAuthModels.Identity]:
+        """Railway-oriented identity creation with credential hashing."""
+        return FlextAuthUtilities.PasswordProcessing.hash_password(credential).flat_map(
+            lambda ch: self._identity_manager.create_user(
+                username=name,
+                email=contact,
+                password_hash=ch,
+                roles=roles or [],
+                **extra_fields,
+            )
+        )
+
+    # =========================================================================
+    # CONSOLIDATED IDENTITY OPERATIONS
+    # =========================================================================
+
+    def get_identity(self, identity_id: str) -> FlextResult[FlextAuthModels.Identity]:
+        """Get identity by ID."""
+        return self._identity_manager.get_user(identity_id)
+
+    def get_identity_by_name(self, name: str) -> FlextResult[FlextAuthModels.Identity]:
+        """Get identity by name."""
+        return self._identity_manager.get_user_by_username(name)
+
+    def update_identity(
+        self, identity_id: str, **updates: object
+    ) -> FlextResult[FlextAuthModels.Identity]:
+        """Update identity information."""
+        return self._identity_manager.update_user(identity_id, **updates)
+
+    def delete_identity(self, identity_id: str) -> FlextResult[None]:
+        """Delete identity."""
+        return self._identity_manager.delete_user(identity_id)
+
+    def change_credential(
+        self,
+        identity_id: str,
+        current_credential: str,
+        new_credential: str,
+    ) -> FlextResult[None]:
+        """Railway-oriented credential change with validation."""
+        return (
+            self._identity_manager.get_user(identity_id)
+            .flat_map(
+                lambda identity: (
+                    FlextResult.ok(identity)
+                    if identity.verify_credential(current_credential).value
+                    else FlextResult.fail("Current credential is incorrect")
+                )
+            )
+            .flat_map(
+                lambda identity: FlextAuthUtilities.PasswordProcessing.validate_password(
+                    new_credential
+                ).map(lambda _: identity)
+            )
+            .map(
+                lambda identity: (
+                    identity.set_credential(new_credential),
+                    self._audit_logger.log_password_change_success(identity.name),
+                )[0]
+            )
+            .map(lambda _: None)
+        )
+
+    def reset_credential(
+        self, identity_id: str, new_credential: str
+    ) -> FlextResult[None]:
+        """Railway-oriented credential reset for REDACTED_LDAP_BIND_PASSWORD operations."""
+        return (
+            self._identity_manager.get_user(identity_id)
+            .flat_map(
+                lambda identity: FlextAuthUtilities.PasswordProcessing.validate_password(
+                    new_credential
+                ).map(lambda _: identity)
+            )
+            .map(
+                lambda identity: (
+                    identity.set_credential(new_credential),
+                    self._audit_logger.log_password_reset(identity.name),
+                )[0]
+            )
+            .map(lambda _: None)
+        )
+
+    # =========================================================================
+    # GENERIC AUTHORIZATION AND PERMISSION OPERATIONS
+    # =========================================================================
+
+    def authorize_identity(
+        self,
+        identity_id: str,
         permission: str,
         resource: str | None = None,
     ) -> FlextResult[bool]:
-        """Check if a user has a specific permission."""
-        user_result = self._user_manager.get_user(user_id)
-        if user_result.is_failure:
-            return FlextResult[bool].fail(user_result.error)
-
-        user = user_result.value
-        has_permission = permission in user.permissions
-
-        # Log authorization check
-        self._audit_logger.log_authorization_check(
-            username=user.username,
-            resource=resource or "",
-            action=permission,
-            allowed=has_permission,
+        """Railway-oriented authorization with audit logging."""
+        return (
+            self._identity_manager.get_user(identity_id)
+            .map(lambda identity: (identity, permission in identity.permissions))
+            .map(
+                lambda ip: (
+                    self._audit_logger.log_authorization_check(
+                        username=ip[0].name,
+                        resource=resource or "",
+                        action=permission,
+                        allowed=ip[1],
+                    ),
+                    ip[1],
+                )[1]
+            )
         )
 
-        return FlextResult[bool].ok(has_permission)
+    def get_identity_permissions(self, identity_id: str) -> FlextResult[list[str]]:
+        """Get identity permissions with railway pattern."""
+        return self._identity_manager.get_user(identity_id).map(
+            lambda identity: identity.permissions
+        )
 
-    def get_user_permissions(self, user_id: str) -> FlextResult[FlextTypes.StringList]:
-        """Get all permissions for a user."""
-        user_result = self._user_manager.get_user(user_id)
-        if user_result.is_failure:
-            return FlextResult[FlextTypes.StringList].fail(user_result.error)
+    def get_identity_roles(self, identity_id: str) -> FlextResult[list[str]]:
+        """Get identity roles with railway pattern."""
+        return self._identity_manager.get_user(identity_id).map(
+            lambda identity: identity.roles
+        )
 
-        return FlextResult[FlextTypes.StringList].ok(user_result.value.permissions)
+    # Consolidated role/permission management
+    def add_identity_role(self, identity_id: str, role: str) -> FlextResult[None]:
+        """Add role to identity."""
+        return self._identity_manager.add_user_role(identity_id, role)
 
-    def get_user_roles(self, user_id: str) -> FlextResult[FlextTypes.StringList]:
-        """Get all roles for a user."""
-        user_result = self._user_manager.get_user(user_id)
-        if user_result.is_failure:
-            return FlextResult[FlextTypes.StringList].fail(user_result.error)
+    def remove_identity_role(self, identity_id: str, role: str) -> FlextResult[None]:
+        """Remove role from identity."""
+        return self._identity_manager.remove_user_role(identity_id, role)
 
-        return FlextResult[FlextTypes.StringList].ok(user_result.value.roles)
-
-    def add_user_role(self, user_id: str, role: str) -> FlextResult[None]:
-        """Add a role to a user."""
-        return self._user_manager.add_user_role(user_id, role)
-
-    def remove_user_role(self, user_id: str, role: str) -> FlextResult[None]:
-        """Remove a role from a user."""
-        return self._user_manager.remove_user_role(user_id, role)
-
-    def add_user_permission(self, user_id: str, permission: str) -> FlextResult[None]:
-        """Add a permission to a user."""
-        return self._user_manager.add_user_permission(user_id, permission)
-
-    def remove_user_permission(
-        self, user_id: str, permission: str
+    def add_identity_permission(
+        self, identity_id: str, permission: str
     ) -> FlextResult[None]:
-        """Remove a permission from a user."""
-        return self._user_manager.remove_user_permission(user_id, permission)
+        """Add permission to identity."""
+        return self._identity_manager.add_user_permission(identity_id, permission)
 
-    def get_user_by_id(self, user_id: str) -> FlextResult[FlextAuthModels.User | None]:
-        """Get a user by their ID."""
-        return self._user_manager.get_user_by_id(user_id)
+    def remove_identity_permission(
+        self, identity_id: str, permission: str
+    ) -> FlextResult[None]:
+        """Remove permission from identity."""
+        return self._identity_manager.remove_user_permission(identity_id, permission)
+
+    def get_identity_by_id(
+        self, identity_id: str
+    ) -> FlextResult[FlextAuthModels.Identity | None]:
+        """Get identity by ID."""
+        return self._identity_manager.get_user_by_id(identity_id)
 
 
-__all__ = ["FlextAuthUserService"]
+__all__ = ["FlextAuthIdentityService"]

@@ -17,7 +17,7 @@ Container_Boundary(auth_service, "flext-auth Service") {
     Component(token_service, "FlextAuthTokenService", "Python", "Token generation and validation")
     Component(session_service, "FlextAuthSessionService", "Python", "Session management and persistence")
 
-    Component(http_transport, "HttpTransportAdapter", "Python/FastAPI", "HTTP transport and middleware")
+    Component(http_transport, "FlextWebTransportAdapter", "Python/FastAPI", "HTTP transport and middleware")
     Component(grpc_transport, "GrpcTransportAdapter", "Python/grpcio", "gRPC transport implementation")
 
     Component(config, "FlextAuthConfig", "Python/Pydantic", "Configuration management")

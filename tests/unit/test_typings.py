@@ -5,8 +5,6 @@ Tests the authentication types module following FLEXT standards.
 
 from __future__ import annotations
 
-from flext_core import FlextTypes
-
 from flext_auth.typings import FlextAuthTypes
 
 
@@ -15,7 +13,7 @@ class TestFlextAuthTypes:
 
     def test_inherits_from_flext_types(self) -> None:
         """Test that FlextAuthTypes inherits from FlextTypes."""
-        assert issubclass(FlextAuthTypes, FlextTypes.Dict)
+        assert issubclass(FlextAuthTypes, dict[str, object])
 
     def test_authentication_types_exist(self) -> None:
         """Test that authentication type classes exist."""

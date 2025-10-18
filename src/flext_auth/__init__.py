@@ -33,7 +33,7 @@ from flext_auth.registry import FlextAuthRegistry
 from flext_auth.session_service import FlextAuthSessionService
 from flext_auth.token_service import FlextAuthTokenService
 from flext_auth.typings import FlextAuthTypes
-from flext_auth.user_service import FlextAuthUserService
+from flext_auth.user_service import FlextAuthIdentityService
 
 __all__ = [
     "FlextAuth",
@@ -43,6 +43,7 @@ __all__ = [
     "FlextAuthCertificateProvider",
     "FlextAuthConfig",
     "FlextAuthConstants",
+    "FlextAuthIdentityService",
     "FlextAuthJwtProvider",
     "FlextAuthKerberosProvider",
     "FlextAuthLdapProvider",
@@ -59,7 +60,6 @@ __all__ = [
     "FlextAuthSessionService",
     "FlextAuthTokenService",
     "FlextAuthTypes",
-    "FlextAuthUserService",
     "__version__",
     "__version_info__",
 ]

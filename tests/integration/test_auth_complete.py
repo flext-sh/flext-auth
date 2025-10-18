@@ -10,8 +10,6 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import cast
 
-from flext_core import FlextTypes
-
 from flext_auth import (
     FlextAuth,
     FlextAuthConfig,
@@ -47,7 +45,7 @@ class TestFlextAuthBasic:
         )  # Production-ready default (at least 30 minutes)
 
         # Test that auth is properly initialized
-        jwt_settings: FlextTypes.Dict = auth.config.get_jwt_settings()
+        jwt_settings: dict[str, object] = auth.config.get_jwt_settings()
         assert (
             cast("int", jwt_settings["jwt_expiry_minutes"]) >= 30
         )  # Production-ready default (at least 30 minutes)

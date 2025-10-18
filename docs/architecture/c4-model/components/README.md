@@ -113,7 +113,7 @@ flext-auth follows a provider-centric architecture with clear separation of conc
 
 #### Transport Layer (Phase 4)
 
-##### HttpTransportAdapter
+##### FlextWebTransportAdapter
 
 - **Type**: Transport adapter
 - **Responsibilities**:
@@ -167,7 +167,7 @@ flext-auth follows a provider-centric architecture with clear separation of conc
 ```
 HTTP Request
     ↓
-HttpTransportAdapter
+FlextWebTransportAdapter
     ↓
 FlextAuth (Facade)
     ↓
@@ -179,7 +179,7 @@ Token Generation → FlextAuthTokenService
     ↓
 Session Management → FlextAuthSessionService
     ↓
-Response ← HttpTransportAdapter
+Response ← FlextWebTransportAdapter
 ```
 
 ### Key Interaction Patterns
@@ -337,7 +337,7 @@ Container_Boundary(auth_service, "flext-auth Service") {
     Component(token_service, "FlextAuthTokenService", "Python", "Token generation and validation")
     Component(session_service, "FlextAuthSessionService", "Python", "Session management and persistence")
 
-    Component(http_transport, "HttpTransportAdapter", "Python/FastAPI", "HTTP transport and middleware")
+    Component(http_transport, "FlextWebTransportAdapter", "Python/FastAPI", "HTTP transport and middleware")
     Component(grpc_transport, "GrpcTransportAdapter", "Python/grpcio", "gRPC transport implementation")
 
     Component(config, "FlextAuthConfig", "Python/Pydantic", "Configuration management")

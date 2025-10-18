@@ -15,7 +15,7 @@ import time
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextResult
 from pydantic import ValidationError
 
 from flext_auth import FlextAuthModels
@@ -28,7 +28,7 @@ class TestModelsModule:
         """Nested helper class for test data creation."""
 
         @staticmethod
-        def create_test_user_model_data() -> FlextTypes.Dict:
+        def create_test_user_model_data() -> dict[str, object]:
             """Create test user model data."""
             return {
                 "username": "test_user",
@@ -39,7 +39,7 @@ class TestModelsModule:
             }
 
         @staticmethod
-        def create_test_role_model_data() -> FlextTypes.Dict:
+        def create_test_role_model_data() -> dict[str, object]:
             """Create test role model data."""
             return {
                 "name": "REDACTED_LDAP_BIND_PASSWORD",
@@ -49,7 +49,7 @@ class TestModelsModule:
             }
 
         @staticmethod
-        def create_test_session_model_data() -> FlextTypes.Dict:
+        def create_test_session_model_data() -> dict[str, object]:
             """Create test session model data."""
             return {
                 "user_id": "user_123",

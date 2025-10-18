@@ -1,220 +1,231 @@
-"""FLEXT Auth Models - Authentication domain models with Pydantic v2.
+"""FLEXT Auth Models - Generic pydantic models with flext-core integration.
 
-This module contains Pydantic BaseModel classes and Settings,
-following flext-core standardization without complex validation.
-All type definitions are in typings.py, exceptions in exceptions.py.
+Uses Python 3.13+ syntax, railway-oriented programming, and consolidated generic patterns
+for maximum maintainability. Single FlextAuthModels class with SOLID principles.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
 """
 
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from typing import Self
 
-from flext_core import FlextModels, FlextResult, FlextTypes
+from flext_core import FlextModels, FlextResult
 from pydantic import BaseModel, Field
 
 from flext_auth.constants import FlextAuthConstants
 
 
 class FlextAuthModels(FlextModels):
-    """Unified auth models class following FLEXT standards.
+    """Generic auth models using flext-core patterns and Python 3.13+ features.
 
-    Contains all Pydantic models for authentication domain operations.
-    Follows FLEXT pattern: one class per module with nested subclasses.
-    Extends FlextModels for proper composition and inheritance.
+    Minimal line count through consolidated patterns, railway-oriented operations.
+    Domain-agnostic models for any authentication system.
     """
 
+    # Generic type aliases for minimal field definitions
+    type IdentityIdField = str | None
+    type TimestampField = datetime | None
+    type RolesField = list[str]
+    type PermissionsField = list[str]
+    type TokenField = str
+    type BoolField = bool
+    type IntField = int
+
     # =========================================================================
-    # UTILITY MODELS FOR TOKEN AND STATUS RESPONSES
+    # CONSOLIDATED GENERIC MODELS
     # =========================================================================
 
     class TokenPayload(BaseModel):
-        """JWT token payload model with proper typing."""
+        """Generic token payload with consolidated field definitions."""
 
-        sub: str = Field(..., description="Subject (user ID) from JWT token")
-        exp: int = Field(..., description="Expiration timestamp (Unix epoch)")
-        iat: int = Field(..., description="Issued at timestamp (Unix epoch)")
-        jti: str | None = Field(default=None, description="JWT ID for token tracking")
-        iss: str | None = Field(default=None, description="Issuer of the token")
-        aud: str | None = Field(default=None, description="Audience for the token")
-        session_id: str | None = Field(
-            default=None, description="Session ID associated with this token"
-        )
+        sub: str = Field(..., description="Subject (identity ID)")
+        exp: int = Field(..., description="Expiration timestamp")
+        iat: int = Field(..., description="Issued at timestamp")
+        jti: str | None = Field(default=None, description="Token ID")
+        iss: str | None = Field(default=None, description="Issuer")
+        aud: str | None = Field(default=None, description="Audience")
+        session_id: str | None = Field(default=None, description="Session ID")
 
     class StatusResponse(BaseModel):
-        """Service status response model with proper typing."""
+        """Generic service status response with default factories."""
 
-        status: str = Field(..., description="Service operational status")
-        service: str = Field(..., description="Name of the service reporting status")
-        capabilities: FlextTypes.StringList = Field(
-            default_factory=list, description="List of capabilities"
+        status: str = Field(..., description="Operational status")
+        service: str = Field(..., description="Service name")
+        capabilities: list[str] = Field(
+            default_factory=list, description="Capabilities"
         )
-        version: str | None = Field(default=None, description="Service version")
+        version: str | None = Field(default=None, description="Version")
         timestamp: datetime = Field(
-            default_factory=lambda: datetime.now(UTC),
-            description="Status report timestamp",
+            default_factory=lambda: datetime.now(UTC), description="Report timestamp"
         )
 
     # =========================================================================
-    # USER CREATION AND AUTHENTICATION MODELS
+    # GENERIC IDENTITY MODELS - DOMAIN AGNOSTIC
     # =========================================================================
 
-    class UserCreationRequest(BaseModel):
-        """User creation parameter object."""
+    class IdentityCreationRequest(BaseModel):
+        """Generic identity creation with consolidated field validation."""
 
-        username: str = Field(
+        name: str = Field(
             ...,
-            min_length=FlextAuthConstants.Credentials.Username.MIN_LENGTH,
-            max_length=FlextAuthConstants.Credentials.Username.MAX_LENGTH,
-            description="Unique username",
+            min_length=FlextAuthConstants.IDENTITY_MIN_LENGTH,
+            max_length=FlextAuthConstants.IDENTITY_MAX_LENGTH,
+            description="Unique identity name",
         )
-        email: str = Field(..., description="User email address")
-        password: str = Field(
+        contact: str = Field(..., description="Contact information")
+        credential: str = Field(
             ...,
-            min_length=FlextAuthConstants.Credentials.Password.MIN_LENGTH,
-            description="User password",
+            min_length=FlextAuthConstants.CREDENTIAL_MIN_LENGTH,
+            description="Credential",
             exclude=True,
         )
-        full_name: str | None = Field(default=None, description="User's full name")
-        roles: FlextTypes.StringList = Field(
-            default_factory=lambda: [FlextAuthConstants.Roles.USER],
-            description="User roles",
+        full_name: str | None = Field(default=None, description="Full name")
+        roles: RolesField = Field(
+            default_factory=lambda: FlextAuthConstants.DEFAULT_ROLES,
+            description="Roles",
         )
 
-    class User(FlextModels.Entity):
-        """User domain model extending FlextModels.Entity."""
+    class Identity(FlextModels.Entity):
+        """Generic identity model with railway-oriented operations."""
 
-        user_id: str | None = Field(default=None, description="Unique user identifier")
-        username: str = Field(
+        # Consolidated field definitions using type aliases
+        identity_id: IdentityIdField = Field(
+            default=None, description="Unique identifier"
+        )
+        name: str = Field(
             ...,
-            min_length=FlextAuthConstants.Credentials.Username.MIN_LENGTH,
-            max_length=FlextAuthConstants.Credentials.Username.MAX_LENGTH,
-            description="Unique username",
+            min_length=FlextAuthConstants.IDENTITY_MIN_LENGTH,
+            max_length=FlextAuthConstants.IDENTITY_MAX_LENGTH,
+            description="Unique identity name",
         )
-        email: str = Field(..., description="User email address")
-        password_hash: str = Field(
-            default="", description="Hashed password", exclude=True
+        contact: str = Field(..., description="Contact information")
+        credential_hash: str = Field(
+            default="", description="Hashed credential", exclude=True
         )
-        full_name: str | None = Field(default=None, description="User's full name")
-        is_active: bool = Field(
-            default=True, description="Whether user account is active"
+        failed_attempts: IntField = Field(
+            default=0, description="Failed attempts", ge=0
         )
-        roles: FlextTypes.StringList = Field(
-            default_factory=list, description="User roles"
+        locked_until: TimestampField = Field(
+            default=None, description="Lock expiration"
         )
-        permissions: FlextTypes.StringList = Field(
-            default_factory=list, description="User permissions"
+        full_name: str | None = Field(default=None, description="Full name")
+        is_active: BoolField = Field(default=True, description="Active status")
+        roles: RolesField = Field(default_factory=list, description="Roles")
+        permissions: PermissionsField = Field(
+            default_factory=list, description="Permissions"
         )
-        failed_login_attempts: int = Field(
-            default=0, description="Failed login attempt count", ge=0
-        )
-        locked_until: datetime | None = Field(
-            default=None, description="Account locked until this time"
-        )
-        last_login: datetime | None = Field(
-            default=None, description="Last successful login"
-        )
+        last_access: TimestampField = Field(default=None, description="Last access")
 
-        def record_successful_login(self) -> None:
-            """Record a successful login for this user."""
-            from datetime import datetime
-
-            self.last_login = datetime.now(UTC)
-            self.failed_login_attempts = 0
+        # Railway-oriented credential operations
+        def record_successful_access(self) -> Self:
+            """Fluent interface for successful access recording."""
+            self.last_access = datetime.now(UTC)
+            self.failed_attempts = 0
             self.locked_until = None
+            return self
 
-        def verify_password(self, password: str) -> bool:
-            """Verify a password against the stored hash."""
+        def verify_credential(self, credential: str) -> FlextResult[bool]:
+            """Railway-oriented credential verification."""
+            if not self.credential_hash:
+                return FlextResult.fail("No credential hash set")
+
             import bcrypt
 
-            if not self.password_hash:
-                return False
-            return bcrypt.checkpw(
-                password.encode("utf-8"), self.password_hash.encode("utf-8")
-            )
+            try:
+                result = bcrypt.checkpw(
+                    credential.encode("utf-8"), self.credential_hash.encode("utf-8")
+                )
+                return FlextResult.ok(result)
+            except Exception as e:
+                return FlextResult.fail(f"Credential verification failed: {e}")
 
-        def set_password(self, password: str) -> None:
-            """Set a new password for the user."""
+        def set_credential(self, credential: str) -> FlextResult[Self]:
+            """Railway-oriented credential setting."""
             import bcrypt
 
-            salt = bcrypt.gensalt(
-                rounds=FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS
-            )
-            self.password_hash = bcrypt.hashpw(password.encode("utf-8"), salt).decode(
-                "utf-8"
-            )
+            try:
+                salt = bcrypt.gensalt(FlextAuthConstants.HASH_ROUNDS_DEFAULT)
+                self.credential_hash = bcrypt.hashpw(
+                    credential.encode("utf-8"), salt
+                ).decode("utf-8")
+                return FlextResult.ok(self)
+            except Exception as e:
+                return FlextResult.fail(f"Credential hashing failed: {e}")
+
+    # =========================================================================
+    # GENERIC REMAINING MODELS - MINIMAL DECLARATIONS
+    # =========================================================================
 
     class Role(FlextModels.Entity):
-        """Role domain model extending FlextModels.Entity."""
+        """Generic role model with consolidated fields."""
 
         name: str = Field(..., description="Role name", min_length=1, max_length=50)
         description: str | None = Field(
-            default=None, description="Role description", max_length=500
+            default=None, description="Description", max_length=500
         )
-        permissions: FlextTypes.StringList = Field(
-            default_factory=list, description="Role permissions"
+        permissions: PermissionsField = Field(
+            default_factory=list, description="Permissions"
         )
 
     class Session(FlextModels.Entity):
-        """Session domain model extending FlextModels.Entity."""
+        """Generic session model with composition."""
 
-        user_id: str = Field(..., description="User ID for this session")
-        session_token: str = Field(
-            ..., description="Unique session token", exclude=True
+        identity_id: str = Field(..., description="Identity ID")
+        session_token: TokenField = Field(
+            ..., description="Session token", exclude=True
         )
-        expires_at: datetime = Field(..., description="Session expiration time")
-        is_active: bool = Field(default=True, description="Whether session is active")
-        ip_address: str | None = Field(default=None, description="Client IP address")
-        user_agent: str | None = Field(default=None, description="Client user agent")
+        expires_at: datetime = Field(..., description="Expiration time")
+        is_active: BoolField = Field(default=True, description="Active status")
+        ip_address: str | None = Field(default=None, description="IP address")
+        user_agent: str | None = Field(default=None, description="User agent")
         last_accessed_at: datetime = Field(
             default_factory=lambda: datetime.now(UTC), description="Last access time"
         )
 
     class AuthToken(FlextModels.Entity):
-        """AuthToken domain model extending FlextModels.Entity."""
+        """Generic auth token model with railway-oriented creation."""
 
-        user_id: str = Field(..., description="User ID for this token")
-        token: str = Field(..., description="JWT token string", exclude=True)
-        expires_at: datetime = Field(..., description="Token expiration time")
-        is_revoked: bool = Field(default=False, description="Whether token is revoked")
-        token_type: str = Field(default="bearer", description="Type of token")
-        session_id: str | None = Field(
-            default=None, description="Session ID associated with this token"
-        )
+        identity_id: str = Field(..., description="Identity ID")
+        token: TokenField = Field(..., description="Token string", exclude=True)
+        expires_at: datetime = Field(..., description="Expiration time")
+        is_revoked: BoolField = Field(default=False, description="Revoked status")
+        token_type: str = Field(default="bearer", description="Token type")
+        session_id: str | None = Field(default=None, description="Session ID")
         refresh_token: str | None = Field(
             default=None, description="Refresh token", exclude=True
         )
-        metadata: FlextTypes.Dict | None = Field(
-            default_factory=dict, description="Additional token metadata"
+        metadata: dict[str, object] | None = Field(
+            default_factory=dict, description="Metadata"
         )
 
         @classmethod
-        def create_jwt_token(
+        def create_token(
             cls,
-            user_id: str,
+            identity_id: str,
             expiry_minutes: int = 60,
             token_type: str = "access",
-        ) -> FlextResult[AuthToken]:
-            """Create a JWT token for a user."""
-            from datetime import datetime, timedelta
-
-            # Simple JWT token creation (in a real implementation, use proper JWT library)
-            expires_at = datetime.now(UTC) + timedelta(minutes=expiry_minutes)
-
-            # Create a simple token (in production, use proper JWT encoding)
+        ) -> FlextResult[Self]:
+            """Railway-oriented token creation."""
             import secrets
+            from datetime import timedelta
 
-            token = f"jwt_{user_id}_{secrets.token_urlsafe(32)}"
-
-            auth_token = cls(
-                user_id=user_id,
-                token=token,
-                expires_at=expires_at,
-                token_type=token_type,
+            return (
+                FlextResult.ok(None)
+                .map(lambda _: datetime.now(UTC) + timedelta(minutes=expiry_minutes))
+                .map(lambda exp: f"token_{identity_id}_{secrets.token_urlsafe(32)}")
+                .map(
+                    lambda token: cls(
+                        identity_id=identity_id,
+                        token=token,
+                        expires_at=exp,
+                        token_type=token_type,
+                    )
+                )
+                .recover(lambda e: FlextResult.fail(f"Token creation failed: {e}"))
             )
 
-            return FlextResult[AuthToken].ok(auth_token)
 
-
-__all__ = [
-    "FlextAuthModels",
-]
+__all__ = ["FlextAuthModels"]

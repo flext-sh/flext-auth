@@ -83,7 +83,7 @@
 
 **Transport Layer**
 
-- ✅ HttpTransportAdapter - HTTP transport implementation
+- ✅ FlextWebTransportAdapter - HTTP transport implementation
 - ⚠️ GrpcTransportAdapter - Partially implemented
 - ❌ WebSocket adapter - Not implemented
 

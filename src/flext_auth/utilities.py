@@ -13,7 +13,7 @@ from typing import TypedDict
 
 import bcrypt
 import jwt
-from flext_core import FlextResult, FlextService, FlextTypes
+from flext_core import FlextResult, FlextService
 from pydantic import SecretStr
 
 from flext_auth.constants import FlextAuthConstants
@@ -29,7 +29,7 @@ class PasswordValidationResult(TypedDict):
     has_digit: bool
     is_weak: bool
     is_valid: bool
-    errors: FlextTypes.StringList
+    errors: list[str]
 
 
 class FlextAuthUtilities(FlextService):
@@ -50,7 +50,7 @@ class FlextAuthUtilities(FlextService):
         @staticmethod
         def hash_password(
             password: str,
-            rounds: int = FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS,
+            rounds: int = FlextAuthConstants.HASH_ROUNDS_DEFAULT,
         ) -> FlextResult[str]:
             """Hash password using bcrypt.
 
@@ -115,10 +115,10 @@ class FlextAuthUtilities(FlextService):
                 "errors": [],
             }
 
-            if len(password) < FlextAuthConstants.Credentials.Password.MIN_LENGTH:
+            if len(password) < FlextAuthConstants.CREDENTIAL_MIN_LENGTH:
                 results["is_valid"] = False
                 results["errors"].append(
-                    f"Password must be at least {FlextAuthConstants.Credentials.Password.MIN_LENGTH} characters"
+                    f"Password must be at least {FlextAuthConstants.CREDENTIAL_MIN_LENGTH} characters"
                 )
 
             if not results["has_upper"]:
@@ -164,7 +164,7 @@ class FlextAuthUtilities(FlextService):
                 decoded_payload = jwt.decode(
                     token,
                     secret_key.get_secret_value(),
-                    algorithms=[FlextAuthConstants.Jwt.DEFAULT_ALGORITHM],
+                    algorithms=[FlextAuthConstants.ALGORITHM_DEFAULT],
                     options={
                         "verify_exp": False,
                         "verify_aud": False,
@@ -188,7 +188,7 @@ class FlextAuthUtilities(FlextService):
         def encode_token(
             payload: dict[str, str | int | float | bool | datetime | None],
             secret_key: str,
-            algorithm: str = FlextAuthConstants.Jwt.DEFAULT_ALGORITHM,
+            algorithm: str = FlextAuthConstants.ALGORITHM_DEFAULT,
         ) -> FlextResult[str]:
             """Encode JWT token with payload.
 
@@ -212,7 +212,7 @@ class FlextAuthUtilities(FlextService):
         def decode_token(
             token: str,
             secret_key: str,
-            algorithm: str = FlextAuthConstants.Jwt.DEFAULT_ALGORITHM,
+            algorithm: str = FlextAuthConstants.ALGORITHM_DEFAULT,
         ) -> FlextResult[dict[str, str | int | float | bool | None]]:
             """Decode JWT token and return payload.
 
@@ -250,7 +250,7 @@ class FlextAuthUtilities(FlextService):
 
         @staticmethod
         def generate_secure_token(
-            length: int = FlextAuthConstants.AuthDefaults.DEFAULT_TOKEN_LENGTH,
+            length: int = FlextAuthConstants.DEFAULT_TOKEN_LENGTH,
         ) -> str:
             """Generate a secure random token.
 
@@ -262,6 +262,55 @@ class FlextAuthUtilities(FlextService):
 
             """
             return secrets.token_hex(length)
+
+    @staticmethod
+    def create_jwt_token(
+        claims: dict[str, str | int | float | bool | datetime | None],
+        secret_key: str,
+        algorithm: str,
+        expires_in: timedelta,
+    ) -> FlextResult[str]:
+        """Create a JWT token with the given claims and expiration.
+
+        Args:
+            claims: Token claims/payload
+            secret_key: Secret key for signing
+            algorithm: JWT algorithm
+            expires_in: Token expiration time
+
+        Returns:
+            FlextResult containing the JWT token string or error
+
+        """
+        # Add expiration time to claims
+        expiration_time = datetime.now(UTC) + expires_in
+        claims["exp"] = int(expiration_time.timestamp())
+        claims["iat"] = int(datetime.now(UTC).timestamp())
+
+        return FlextAuthUtilities.JWTProcessing.encode_token(
+            claims, secret_key, algorithm
+        )
+
+    @staticmethod
+    def verify_jwt_token(
+        token: str,
+        secret_key: str,
+        algorithm: str,
+    ) -> FlextResult[dict[str, str | int | float | bool | None]]:
+        """Verify and decode a JWT token.
+
+        Args:
+            token: JWT token string
+            secret_key: Secret key for verification
+            algorithm: JWT algorithm
+
+        Returns:
+            FlextResult containing the decoded token payload or error
+
+        """
+        return FlextAuthUtilities.JWTProcessing.decode_token(
+            token, secret_key, algorithm
+        )
 
 
 __all__ = ["FlextAuthUtilities"]

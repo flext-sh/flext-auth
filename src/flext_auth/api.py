@@ -1,385 +1,210 @@
-"""FLEXT Auth API - Main authentication service class.
+"""FLEXT Auth API - Generic authentication with flext-core integration.
 
-Enterprise-grade authentication service consolidating all auth operations
-into a single FlextAuth class following FLEXT single-class-per-project pattern.
+Uses Python 3.13+ syntax, railway-oriented programming, and consolidated generic patterns
+for maximum maintainability. Single FlextAuth class with SOLID principles.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
 
 import threading
-from typing import ClassVar
+from datetime import datetime
+from typing import ClassVar, Self
 
-from flext_core import FlextResult, FlextService, FlextTypes
+from flext_core import FlextContainer, FlextDispatcher, FlextResult, FlextService
+from pydantic import SecretStr
 
 from flext_auth.config import FlextAuthConfig
-from flext_auth.managers import FlextAuthManagers
 from flext_auth.models import FlextAuthModels
 from flext_auth.provider_service import FlextAuthProviderService
-from flext_auth.providers import (
-    FlextAuthBaseProvider,
-)
-from flext_auth.providers.mixin import FlextAuthProviderMixin
-
-# Lazy import to avoid circular dependency
-# from flext_auth.quickstart import FlextAuthQuickstart
+from flext_auth.providers import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
-from flext_auth.session_service import FlextAuthSessionService
 from flext_auth.token_service import FlextAuthTokenService
 from flext_auth.typings import FlextAuthTypes
-from flext_auth.user_service import FlextAuthUserService
+from flext_auth.user_service import FlextAuthIdentityService
 
 
 class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
-    """Main authentication service class consolidating all auth operations.
+    """Advanced authentication service using flext-core patterns.
 
-    Enterprise-grade authentication service following FLEXT single-class-per-project
-    pattern. All authentication functionality unified into one main class with
-    nested classes for complex subsystems.
-
-    **SINGLE-CLASS ARCHITECTURE**: Everything consolidated into one main class
-    - No separate module files - all functionality integrated
-    - Nested classes for complex subsystems (Config, Providers, Sessions)
-    - Clean facade API with rich internal organization
-
-    **COMPREHENSIVE AUTHENTICATION OPERATIONS**:
-    - Multi-provider authentication (JWT, OAuth2, LDAP, Basic, etc.)
-    - User management and registration
-    - Session management and lifecycle
-    - Token validation and refresh
-    - Role-based access control
-    - Security monitoring and audit logging
-
-    **FLEXT INTEGRATION**:
-    - FlextResult[T] for railway-oriented error handling
-    - FlextService for dependency injection and lifecycle
-    - FlextLogger for structured logging
-    - FlextContainer for service management
+    Thread-safe singleton service with:
+    - Railway-oriented programming via FlextResult[T]
+    - Advanced DI with FlextContainer
+    - Event-driven architecture with FlextDispatcher
+    - Comprehensive provider ecosystem with registry
+    - Advanced token lifecycle management
+    - Python 3.13+ type safety throughout
     """
 
-    # Singleton pattern
-    _instance: FlextAuth | None = None
+    _instance: ClassVar[FlextAuth | None] = None
     _lock: ClassVar[threading.Lock] = threading.Lock()
 
-    def __init__(self, config: FlextAuthConfig | None = None) -> None:
-        """Initialize consolidated authentication operations.
-
-        Args:
-            config: Optional auth configuration. If not provided, uses default instance.
-
-        """
+    def __init__(self, config: FlextAuthConfig | None = None, service_name: str | None = None) -> None:
+        """Initialize with dependency injection and event bus."""
         super().__init__()
+        self._config = config or FlextAuthConfig()
+        self._registry = FlextAuthRegistry()
+        self._dispatcher = FlextDispatcher()
+        self._service_name = service_name or "flext_auth"
 
-        # Core state
-        self._config: FlextAuthConfig = (
-            config if config is not None else FlextAuthConfig()
+        container = FlextContainer.get_global()
+        container_result = container.register(self._service_name, self)
+        if not container_result.is_success:
+            msg = f"Failed to register FlextAuth: {container_result.error}"
+            raise RuntimeError(msg)
+
+        # Initialize provider service for dependency injection
+        self._provider_service = FlextAuthProviderService(self._config)
+
+        # Initialize token service with dependencies
+        self._token_service = FlextAuthTokenService(
+            self._config, self._provider_service, self._dispatcher
         )
 
-        # Lazy-loaded services
-        self._provider_service: FlextAuthProviderService | None = None
-        self._user_service: FlextAuthUserService | None = None
-        self._token_service: FlextAuthTokenService | None = None
-        self._session_service: FlextAuthSessionService | None = None
-        self._registry: FlextAuthRegistry | None = None
-        self._managers: FlextAuthManagers | None = None
-
     @classmethod
-    def get_instance(cls) -> FlextAuth:
-        """Get singleton FlextAuth instance."""
+    def get_global(cls) -> FlextAuth:
+        """Thread-safe singleton pattern with advanced configuration."""
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
-                    cls._instance = cls()
+                    cls._instance = cls(service_name="flext_auth")
         return cls._instance
 
     @classmethod
-    def quick_start(cls, create_REDACTED_LDAP_BIND_PASSWORD: bool = False) -> FlextAuth:
-        """Factory method to create FlextAuth with quick start configuration.
-
-        Args:
-            create_REDACTED_LDAP_BIND_PASSWORD: Whether to create an REDACTED_LDAP_BIND_PASSWORD user during initialization.
-
-        Returns:
-            FlextAuth: Configured authentication service instance.
-
-        """
-        from flext_auth.quickstart import FlextAuthQuickstart
-
-        quickstart = FlextAuthQuickstart()
-        config = quickstart.create_config()
-        instance = cls(config)
-
-        if create_REDACTED_LDAP_BIND_PASSWORD:
-            quickstart.create_REDACTED_LDAP_BIND_PASSWORD_user(instance)
-
-        return instance
-
-    @classmethod
-    def with_jwt(
+    def with_config(
         cls,
         secret_key: str,
         algorithm: str = "HS256",
         expiration_hours: int = 24,
-    ) -> FlextAuth:
-        """Factory method to create FlextAuth with JWT provider.
-
-        Args:
-            secret_key: JWT secret key for token signing.
-            algorithm: JWT algorithm (default: HS256).
-            expiration_hours: Token expiration time in hours.
-
-        Returns:
-            FlextAuth: Configured authentication service instance.
-
-        """
+    ) -> Self:
+        """Factory method with generic configuration."""
         config = FlextAuthConfig(
-            jwt_secret_key=secret_key,
-            jwt_algorithm=algorithm,
-            jwt_expiration_hours=expiration_hours,
+            auth_secret=SecretStr(secret_key),
+            algorithm=algorithm,
+            expiry_minutes=expiration_hours * 60,
         )
         return cls(config)
-
-    @classmethod
-    def with_oauth2(
-        cls,
-        client_id: str,
-        client_secret: str,
-        provider_url: str,
-        **kwargs,
-    ) -> FlextAuth:
-        """Factory method to create FlextAuth with OAuth2 provider.
-
-        Args:
-            client_id: OAuth2 client ID.
-            client_secret: OAuth2 client secret.
-            provider_url: OAuth2 provider base URL.
-            **kwargs: Additional configuration options.
-
-        Returns:
-            FlextAuth: Configured authentication service instance.
-
-        """
-        config = FlextAuthConfig(
-            oauth2_client_id=client_id,
-            oauth2_client_secret=client_secret,
-            oauth2_provider_url=provider_url,
-            **kwargs,
-        )
-        return cls(config)
-
-    @classmethod
-    def with_provider(
-        cls,
-        provider: FlextAuthBaseProvider,
-        **kwargs,
-    ) -> FlextAuth:
-        """Factory method to create FlextAuth with custom provider.
-
-        Args:
-            provider: Custom authentication provider instance.
-            **kwargs: Additional configuration options.
-
-        Returns:
-            FlextAuth: Configured authentication service instance.
-
-        """
-        config = FlextAuthConfig(**kwargs)
-        instance = cls(config)
-        instance.registry.register("custom", provider)
-        return instance
 
     @property
     def config(self) -> FlextAuthConfig:
-        """Get authentication configuration."""
+        """Configuration access."""
         return self._config
 
     @property
-    def provider_service(self) -> FlextAuthProviderService:
-        """Get provider service instance."""
-        if self._provider_service is None:
-            self._provider_service = FlextAuthProviderService(self._config)
-        return self._provider_service
-
-    @property
-    def user_service(self) -> FlextAuthUserService:
-        """Get user service instance."""
-        if self._user_service is None:
-            self._user_service = FlextAuthUserService(
-                self._config, self.provider_service
-            )
-        return self._user_service
-
-    @property
-    def token_service(self) -> FlextAuthTokenService:
-        """Get token service instance."""
-        if self._token_service is None:
-            from flext_core import FlextDispatcher
-
-            dispatcher = FlextDispatcher()
-            self._token_service = FlextAuthTokenService(
-                self._config, self.provider_service, dispatcher
-            )
-        return self._token_service
-
-    @property
-    def session_service(self) -> FlextAuthSessionService:
-        """Get session service instance."""
-        if self._session_service is None:
-            self._session_service = FlextAuthSessionService(
-                self._config, self.user_service
-            )
-        return self._session_service
-
-    @property
     def registry(self) -> FlextAuthRegistry:
-        """Get provider registry instance."""
-        if self._registry is None:
-            self._registry = FlextAuthRegistry()
+        """Registry access."""
         return self._registry
-
-    @property
-    def managers(self) -> FlextAuthManagers:
-        """Get managers instance."""
-        if self._managers is None:
-            self._managers = FlextAuthManagers(self._config)
-        return self._managers
-
-    def execute(self) -> FlextResult[FlextAuthTypes.AuthenticationResponseDict]:
-        """Execute method for FlextService interface.
-
-        Returns authentication service status.
-        """
-        return FlextResult[FlextAuthTypes.AuthenticationResponseDict].ok({
-            "user": {
-                "id": "system",
-                "username": "system",
-                "email": "system@internal.invalid",
-                "full_name": "Flext Auth System",
-                "is_active": True,
-                "roles": ["system"],
-                "created_at": "2025-01-01T00:00:00Z",
-                "updated_at": "2025-01-01T00:00:00Z",
-                "last_login": None,
-            },
-            "session": {
-                "id": "system-session",
-                "user_id": "system",
-                "session_token": "system-token",
-                "expires_at": "2025-12-31T23:59:59Z",
-                "created_at": "2025-01-01T00:00:00Z",
-                "last_accessed_at": "2025-01-01T00:00:00Z",
-                "is_active": True,
-                "ip_address": "127.0.0.1",
-                "user_agent": "FlextAuth/1.0",
-            },
-            "jwt_token": "system-jwt-token",
-            "authenticated": True,
-            "success": True,
-        })
 
     def authenticate(
         self,
-        credentials: dict,
-        provider: str | None = None,
-    ) -> FlextResult[FlextAuthModels.TokenPayload]:
-        """Authenticate user with credentials.
+        credentials: dict[str, object],
+        provider: str | None = None,  # noqa: ARG002 - Reserved for future provider selection
+    ) -> FlextResult[FlextAuthModels.Identity]:
+        """Railway-oriented authentication with advanced chaining."""
+        # Extract username and password from credentials
+        username = credentials.get("username")
+        password = credentials.get("password")
 
-        Args:
-            credentials: User credentials dictionary.
-            provider: Optional provider name to use.
+        if not isinstance(username, str) or not isinstance(password, str):
+            return FlextResult[FlextAuthModels.Identity].fail(
+                "Invalid credentials: username and password must be strings"
+            )
 
-        Returns:
-            FlextResult[TokenPayload]: Authentication result with token payload.
+        # Create identity service with existing provider service
+        identity_service = FlextAuthIdentityService(self._config, self._dispatcher)
+        return identity_service.authenticate_identity(username, password)
 
-        """
-        return self.user_service.authenticate_user(credentials, provider)
+    def validate_token(self, token: str) -> FlextResult[bool]:
+        """Advanced token validation with railway pattern."""
+        return self._token_service.validate_token(token).map(lambda _result: True)
 
-    def validate_token(
+    def list_providers(self) -> list[str]:
+        """Provider listing."""
+        return self._registry.list_providers()
+
+    def register_provider(
         self,
-        token: str,
-        provider: str | None = None,
-    ) -> FlextResult[bool]:
-        """Validate an authentication token.
+        name: str,
+        provider: type[FlextAuthBaseProvider],
+    ) -> FlextResult[None]:
+        """Railway-oriented provider registration."""
+        return self._registry.register(name, provider)
 
-        Args:
-            token: JWT token to validate.
-            provider: Optional provider name.
+    def get_provider(
+        self,
+        name: str,
+    ) -> FlextResult[FlextAuthBaseProvider]:
+        """Railway-oriented provider retrieval."""
+        return self._registry.get(name)
 
-        Returns:
-            FlextResult[bool]: True if token is valid.
+    def register_user(
+        self,
+        username: str,
+        email: str,
+        password: str,
+    ) -> FlextResult[FlextAuthModels.Identity]:
+        """Railway-oriented user registration."""
+        # Create identity service for user management
+        identity_service = FlextAuthIdentityService(self._config, self._dispatcher)
+        return identity_service.create_identity(name=username, contact=email, credential=password)
 
-        """
-        result = self.token_service.validate_token(token)
-        return result.map(lambda _: True)
+    def generate_jwt_token(
+        self,
+        user_id: str,
+        expires_in_minutes: int | None = None,
+    ) -> FlextResult[str]:
+        """Generate JWT token for user (alias for create_token)."""
+        return self.create_token(identity_id=user_id, extra_claims=None)
 
-    def list_providers(self) -> FlextTypes.StringList:
-        """List all registered authentication providers.
+    def create_token(
+        self,
+        identity_id: str,
+        extra_claims: dict[str, object] | None = None,
+    ) -> FlextResult[str]:
+        """Railway-oriented token creation."""
+        claims: dict[str, str | int | float | bool | datetime | None] = {
+            "sub": identity_id
+        }
+        if extra_claims:
+            # Convert extra_claims to the expected type for claims
+            for key, value in extra_claims.items():
+                if (
+                    isinstance(value, (str, int, float, bool))
+                    or value is None
+                    or isinstance(value, datetime)
+                ):
+                    claims[key] = value
+                else:
+                    # Convert other objects to string representation
+                    claims[key] = str(value)
+        identity_id = str(claims.get("sub", ""))
+        return self._token_service.generate_jwt_token(
+            user_id=identity_id,
+            expires_in_minutes=self._config.expiry_minutes,
+        ).map(lambda token: str(token.token))
 
-        Returns:
-            StringList: List of provider names.
+    def verify_token(
+        self, token: str
+    ) -> FlextResult[dict[str, str | int | float | bool | None]]:
+        """Railway-oriented token verification with payload extraction."""
 
-        """
-        return self.registry.list_providers()
+        def extract_identity_data(
+            identity: FlextAuthModels.Identity,
+        ) -> dict[str, str | int | float | bool | None]:
+            return {
+                "sub": identity.id,
+                "name": identity.name,
+                "contact": identity.contact,
+                "roles": identity.roles,
+                "permissions": identity.permissions,
+            }
 
-    def get_provider(self, name: str) -> FlextResult[FlextAuthBaseProvider]:
-        """Get a specific authentication provider.
+        return self._token_service.validate_token(token).map(extract_identity_data)
 
-        Args:
-            name: Provider name.
-
-        Returns:
-            FlextResult[BaseProvider]: Provider instance.
-
-        """
-        return self.registry.get(name)
-
-    def get_provider_capabilities(self, name: str) -> FlextResult[set[str]]:
-        """Get capabilities of a specific provider.
-
-        Args:
-            name: Provider name.
-
-        Returns:
-            FlextResult[set[str]]: Provider capabilities.
-
-        """
-        result = self.get_provider(name)
-        if result.is_failure:
-            return FlextResult[set[str]].fail(result.error)
-
-        provider = result.unwrap()
-        capabilities = set()
-        if isinstance(provider, FlextAuthProviderMixin):
-            capabilities.update(provider.get_capabilities())
-
-        return FlextResult[set[str]].ok(capabilities)
-
-    def get_token_manager(self) -> FlextAuthTokenService:
-        """Get token manager instance.
-
-        Returns:
-            FlextAuthTokenService: Token management service.
-
-        """
-        return self.token_service
-
-    def get_session_manager(self) -> FlextAuthSessionService:
-        """Get session manager instance.
-
-        Returns:
-            FlextAuthSessionService: Session management service.
-
-        """
-        return self.session_service
-
-    def get_credential_manager(self) -> FlextAuthUserService:
-        """Get credential manager instance.
-
-        Returns:
-            FlextAuthUserService: User/credential management service.
-
-        """
-        return self.user_service
+    def execute(self) -> FlextResult[FlextAuthTypes.AuthenticationResponseDict]:
+        """Advanced execute implementation with railway orchestration."""
+        return FlextResult[FlextAuthTypes.AuthenticationResponseDict].fail(
+            "FlextAuth is a focused service - use specific methods like authenticate() instead"
+        )

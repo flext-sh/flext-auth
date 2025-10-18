@@ -17,10 +17,6 @@ from __future__ import annotations
 from datetime import datetime
 from typing import NotRequired, TypedDict
 
-from flext_core import FlextTypes
-
-from flext_auth.constants import FlextAuthConstants
-
 # =============================================================================
 # AUTH-SPECIFIC TYPE VARIABLES - Domain-specific TypeVars for authentication operations
 # =============================================================================
@@ -44,19 +40,17 @@ class FlextAuthTypes:
         """Authentication domain complex types."""
 
         type AuthConfiguration = dict[
-            str, str | int | float | bool | FlextTypes.Dict | None
+            str, str | int | float | bool | dict[str, object] | None
         ]
         type AuthCredentials = dict[
             str, str | dict[str, str | int | float | bool | None]
         ]
         type FlextAuthProvider = dict[
             str,
-            str | int | float | bool | FlextTypes.StringList | FlextTypes.Dict | None,
+            str | int | float | bool | list[str] | dict[str, object] | None,
         ]
-        type AuthenticationFlow = list[dict[str, str | bool | FlextTypes.Dict]]
-        type AuthValidation = dict[
-            str, bool | str | FlextTypes.StringList | FlextTypes.Dict
-        ]
+        type AuthenticationFlow = list[dict[str, str | bool | dict[str, object]]]
+        type AuthValidation = dict[str, bool | str | list[str] | dict[str, object]]
         type LoginAttempt = dict[str, str | datetime | int | bool]
 
     # =========================================================================
@@ -67,21 +61,18 @@ class FlextAuthTypes:
         """User management complex types."""
 
         type UserProfile = dict[
-            str, str | int | float | bool | datetime | FlextTypes.Dict | None
+            str, str | int | float | bool | datetime | dict[str, object] | None
         ]
         type UserCreation = dict[
             str,
-            str
-            | bool
-            | FlextTypes.StringList
-            | dict[str, str | int | float | bool | None],
+            str | bool | list[str] | dict[str, str | int | float | bool | None],
         ]
         type UserUpdate = dict[str, str | int | float | bool | datetime | None]
         type UserPreferences = dict[
-            str, str | int | float | bool | FlextTypes.Dict | None
+            str, str | int | float | bool | dict[str, object] | None
         ]
         type AccountStatus = dict[str, bool | datetime | int | str]
-        type UserActivity = dict[str, datetime | str | int | FlextTypes.Dict]
+        type UserActivity = dict[str, datetime | str | int | dict[str, object]]
 
     # =========================================================================
     # SESSION MANAGEMENT TYPES - Complex session handling types
@@ -94,11 +85,11 @@ class FlextAuthTypes:
             str, int | bool | str | dict[str, str | int | float | bool | None]
         ]
         type SessionData = dict[
-            str, str | int | float | bool | datetime | FlextTypes.Dict | None
+            str, str | int | float | bool | datetime | dict[str, object] | None
         ]
         type SessionStorage = dict[str, str | int | float | bool | datetime | None]
         type SessionLifecycle = dict[str, datetime | bool | int]
-        type SessionValidation = dict[str, bool | datetime | str | FlextTypes.Dict]
+        type SessionValidation = dict[str, bool | datetime | str | dict[str, object]]
         type ConcurrentSessions = list[
             dict[str, str | int | float | bool | datetime | None]
         ]
@@ -114,7 +105,7 @@ class FlextAuthTypes:
             str, int | str | bool | dict[str, str | int | float | bool | None]
         ]
         type TokenPayload = dict[
-            str, str | int | float | bool | datetime | FlextTypes.StringList | None
+            str, str | int | float | bool | datetime | list[str] | None
         ]
 
         # More specific token payload type for JWT tokens
@@ -128,9 +119,9 @@ class FlextAuthTypes:
             type: str
             valid: bool
 
-        type TokenValidation = dict[str, bool | datetime | str | FlextTypes.Dict]
-        type RefreshToken = dict[str, str | datetime | bool | FlextTypes.Dict]
-        type AccessToken = dict[str, str | datetime | int | FlextTypes.StringList]
+        type TokenValidation = dict[str, bool | datetime | str | dict[str, object]]
+        type RefreshToken = dict[str, str | datetime | bool | dict[str, object]]
+        type AccessToken = dict[str, str | datetime | int | list[str]]
         type TokenRevocation = dict[str, datetime | str | bool]
 
     # =========================================================================
@@ -142,22 +133,20 @@ class FlextAuthTypes:
 
         type RoleDefinition = dict[
             str,
-            str | FlextTypes.StringList | dict[str, str | int | float | bool | None],
+            str | list[str] | dict[str, str | int | float | bool | None],
         ]
-        type PermissionSet = dict[str, bool | FlextTypes.StringList | FlextTypes.Dict]
+        type PermissionSet = dict[str, bool | list[str] | dict[str, object]]
         type AccessPolicy = dict[
-            str, str | int | float | bool | list[FlextTypes.Dict] | None
+            str, str | int | float | bool | list[dict[str, object]] | None
         ]
         type AuthorityMapping = dict[
-            str, FlextTypes.StringList | dict[str, str | int | float | bool | None]
+            str, list[str] | dict[str, str | int | float | bool | None]
         ]
         type ResourceAccess = dict[
             str,
-            bool | FlextTypes.StringList | dict[str, str | int | float | bool | None],
+            bool | list[str] | dict[str, str | int | float | bool | None],
         ]
-        type PolicyValidation = dict[
-            str, bool | str | FlextTypes.StringList | FlextTypes.Dict
-        ]
+        type PolicyValidation = dict[str, bool | str | list[str] | dict[str, object]]
 
     # =========================================================================
     # SECURITY TYPES - Complex security and password types
@@ -166,16 +155,12 @@ class FlextAuthTypes:
     class Security:
         """Security and password complex types."""
 
-        type PasswordPolicy = dict[
-            str, int | bool | FlextTypes.StringList | FlextTypes.Dict
-        ]
-        type PasswordValidation = dict[str, bool | str | FlextTypes.StringList]
+        type PasswordPolicy = dict[str, int | bool | list[str] | dict[str, object]]
+        type PasswordValidation = dict[str, bool | str | list[str]]
         type SecurityConfiguration = dict[
-            str, str | int | float | bool | FlextTypes.Dict | None
+            str, str | int | float | bool | dict[str, object] | None
         ]
-        type ThreatDetection = dict[
-            str, bool | int | FlextTypes.StringList | dict[str, datetime]
-        ]
+        type ThreatDetection = dict[str, bool | int | list[str] | dict[str, datetime]]
         type AuditLog = dict[
             str, datetime | str | dict[str, str | int | float | bool | None]
         ]
@@ -196,7 +181,7 @@ class FlextAuthTypes:
         email: str
         full_name: str | None
         is_active: bool
-        roles: FlextTypes.StringList
+        roles: list[str]
         created_at: datetime
         updated_at: datetime
         last_login: datetime | None
@@ -231,9 +216,9 @@ class FlextAuthTypes:
     class Managers:
         """Manager-specific type definitions."""
 
-        type UserData = FlextTypes.Dict
-        type SessionData = FlextTypes.Dict
-        type LogEntry = FlextTypes.Dict
+        type UserData = dict[str, object]
+        type SessionData = dict[str, object]
+        type LogEntry = dict[str, object]
         type AttemptData = list[datetime]
 
     # =========================================================================
@@ -248,12 +233,12 @@ class FlextAuthTypes:
         """
 
         # Auth-specific project types - imported from constants for centralization
-        type ProjectType = FlextAuthConstants.Literals.ProjectType
+        type ProjectType = ProjectType
 
         # Auth-specific project configurations
         type AuthProjectConfig = dict[str, str | int | float | bool | object | None]
-        type IdentityConfig = dict[str, str | int | bool | FlextTypes.StringList]
-        type SecurityConfig = dict[str, bool | str | FlextTypes.Dict]
+        type IdentityConfig = dict[str, str | int | bool | list[str]]
+        type SecurityConfig = dict[str, bool | str | dict[str, object]]
         type SessionConfig = dict[str, str | int | float | bool | object | None]
 
 
@@ -261,6 +246,6 @@ class FlextAuthTypes:
 # PUBLIC API EXPORTS - Auth TypeVars and types
 # =============================================================================
 
-__all__: FlextTypes.StringList = [
+__all__: list[str] = [
     "FlextAuthTypes",
 ]

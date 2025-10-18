@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from flext_core import FlextResult, FlextTypes
+from flext_core import FlextResult
 
 from flext_auth.models import FlextAuthModels
 
@@ -47,7 +47,7 @@ class FlextAuthBaseProvider(ABC):
     @abstractmethod
     def authenticate(
         self,
-        credentials: FlextTypes.Dict,
+        credentials: dict[str, object],
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate user with provided credentials.
 
@@ -194,7 +194,7 @@ class FlextAuthBaseProvider(ABC):
         ...
 
     @abstractmethod
-    def get_metadata(self) -> FlextTypes.Dict:
+    def get_metadata(self) -> dict[str, object]:
         """Return provider metadata.
 
         Metadata provides information about the provider for introspection,
@@ -203,7 +203,7 @@ class FlextAuthBaseProvider(ABC):
         Required metadata fields:
             - name: str - Provider name (e.g., "jwt", "oauth2")
             - version: str - Provider version
-            - capabilities: FlextTypes.StringList - List of capabilities (from supports())
+            - capabilities: list[str] - List of capabilities (from supports())
 
         Optional metadata fields:
             - description: str - Human-readable description
@@ -213,7 +213,7 @@ class FlextAuthBaseProvider(ABC):
             - endpoints: dict[str, object] - API endpoints (for OAuth2/OIDC/SAML)
 
         Returns:
-            FlextTypes.Dict: Provider metadata
+            dict[str, object]: Provider metadata
 
         Example:
             >>> metadata = provider.get_metadata()
@@ -240,7 +240,7 @@ class FlextAuthBaseProvider(ABC):
     def generate_token_for_user(
         self,
         user: FlextAuthModels.User,
-        token_type: str = "access",
+        token_type: str = "access",  # noqa: S107
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate a token for a user.

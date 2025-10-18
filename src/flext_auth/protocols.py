@@ -11,7 +11,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import Protocol, runtime_checkable
 
-from flext_core import FlextProtocols, FlextResult, FlextTypes
+from flext_core import FlextProtocols, FlextResult
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
@@ -59,7 +59,7 @@ class FlextAuthProtocols(FlextProtocols):
             username: str
             email: str
             is_active: bool
-            roles: FlextTypes.StringList
+            roles: list[str]
             failed_login_attempts: int
             locked_until: datetime | None
 
@@ -107,7 +107,7 @@ class FlextAuthProtocols(FlextProtocols):
 
             def extend_session(
                 self,
-                hours: int = FlextAuthConstants.AuthDefaults.DEFAULT_SESSION_EXTEND_HOURS,
+                hours: int = FlextAuthConstants.DEFAULT_SESSION_EXTEND_HOURS,
             ) -> FlextResult[bool]:
                 """Extend session expiration time."""
                 return FlextResult[bool].ok(True)  # Placeholder implementation
@@ -143,7 +143,7 @@ class FlextAuthProtocols(FlextProtocols):
                 email: str,
                 password: str,
                 full_name: str | None = None,
-                roles: FlextTypes.StringList | None = None,
+                roles: list[str] | None = None,
             ) -> FlextResult[FlextAuthModels.User]:
                 """Register new user."""
                 return FlextResult[FlextAuthModels.User].ok(
