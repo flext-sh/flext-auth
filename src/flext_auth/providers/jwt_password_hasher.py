@@ -15,8 +15,6 @@ from typing import TYPE_CHECKING
 import bcrypt
 from flext_core import FlextResult
 
-from flext_auth.constants import FlextAuthConstants
-
 if TYPE_CHECKING:
     from flext_auth.providers.jwt import FlextAuthJwtProvider
 
@@ -43,7 +41,7 @@ class FlextAuthPasswordHasher:
 
         """
         try:
-            salt_rounds = FlextAuthConstants.HASH_ROUNDS_DEFAULT
+            salt_rounds = 12
             salt = bcrypt.gensalt(rounds=salt_rounds)
             hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
             return FlextResult.ok(hashed.decode("utf-8"))
@@ -64,8 +62,7 @@ class FlextAuthPasswordHasher:
         """
         try:
             result = bcrypt.checkpw(
-                password.encode("utf-8"),
-                hashed_password.encode("utf-8")
+                password.encode("utf-8"), hashed_password.encode("utf-8")
             )
             return FlextResult.ok(result)
 

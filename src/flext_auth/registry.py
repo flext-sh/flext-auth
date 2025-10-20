@@ -30,6 +30,15 @@ class FlextAuthRegistry(FlextRegistry):
         self._metadata: FlextTypes.NestedDict = {}
         self.logger.info("FlextAuthRegistry initialized")
 
+    def _ensure_provider_exists(self, name: str) -> FlextResult[None]:
+        """Check provider exists - single source of truth (eliminates 8+ duplications)."""
+        if name not in self._providers:
+            available = ", ".join(self.list_providers()) if self._providers else "none"
+            return FlextResult.fail(
+                f"Provider '{name}' not registered. Available: {available}"
+            )
+        return FlextResult.ok(None)
+
     def register(
         self,
         name: str,
@@ -104,13 +113,9 @@ class FlextAuthRegistry(FlextRegistry):
 
     def get(self, name: str) -> FlextResult[FlextAuthBaseProvider]:
         """Railway-oriented provider retrieval with type safety."""
-        if name not in self._providers:
-            available = ", ".join(self.list_providers())
-            return FlextResult.fail(
-                f"Provider '{name}' not registered. Available: {available}"
-            )
-
-        return FlextResult.ok(cast("FlextAuthBaseProvider", self._providers[name]))
+        return self._ensure_provider_exists(name).map(
+            lambda _: cast("FlextAuthBaseProvider", self._providers[name])
+        )
 
     def list_providers(self) -> list[str]:
         """List registered provider names."""

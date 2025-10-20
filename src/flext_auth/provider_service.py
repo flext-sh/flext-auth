@@ -13,7 +13,17 @@ from flext_core import FlextResult, FlextService
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.models import FlextAuthModels
-from flext_auth.providers import *
+from flext_auth.providers import (
+    FlextAuthApiKeyProvider,
+    FlextAuthBasicProvider,
+    FlextAuthCertificateProvider,
+    FlextAuthJwtProvider,
+    FlextAuthKerberosProvider,
+    FlextAuthLdapProvider,
+    FlextAuthOAuth2Provider,
+    FlextAuthOidcProvider,
+    FlextAuthSamlProvider,
+)
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
 
@@ -130,66 +140,25 @@ class FlextAuthProviderService(FlextService):
             lambda p: p.authenticate({"username": username, "password": password})
         )
 
-    def generate_tokens_for_user(
-        self,
-        user: FlextAuthModels.User,
-        provider: str = "jwt",
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
-        """Railway-oriented token generation for authenticated user."""
-        return self._providers.get(provider).flat_map(
-            lambda p: p.authenticate({
-                "user_id": user.user_id,
-                "username": user.username,
-                "email": user.email,
-                "roles": user.roles,
-                "permissions": user.permissions,
-            })
-        )
-
-    def validate_token_and_get_user(
-        self, token: str
-    ) -> FlextResult[FlextAuthModels.User | None]:
-        """Advanced token validation with provider selection."""
-        providers = ["jwt", "apikey"]
-        for provider_name in providers:
-            result = self._providers.get(provider_name)
-            if result.is_success:
-                validation_result = result.unwrap().validate_token(token)
-                if validation_result.is_success:
-                    return validation_result
-        return FlextResult.fail("No token provider available")
-
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.User,
-        token_type: str = "access",
+        user: FlextAuthModels.Identity,
+        provider: str = "jwt",
+        token_type: str = "access_token",  # noqa: S107
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
-        """Advanced token generation with provider selection."""
-        providers = ["jwt", "apikey"]
-        for provider_name in providers:
-            result = self._providers.get(provider_name)
-            if result.is_success:
-                token_result = result.unwrap().generate_token_for_user(
-                    user, token_type, expiry_minutes
-                )
-                if token_result.is_success:
-                    return token_result
-        return FlextResult.fail("No token provider available")
+        """Railway-oriented token generation with direct provider access."""
+        return self._providers.get(provider).flat_map(
+            lambda p: p.generate_token_for_user(user, token_type, expiry_minutes)
+        )
 
-    # =========================================================================
-    # SESSION MANAGEMENT (PLACEHOLDER)
-    # =========================================================================
-
-    def revoke_session(self, _session_id: str) -> FlextResult[None]:
-        """Revoke user session (placeholder implementation)."""
-        return FlextResult.ok(None)
-
-    def get_user_sessions(
-        self, _user_id: str
-    ) -> FlextResult[list[FlextAuthModels.Session]]:
-        """Get user sessions (placeholder implementation)."""
-        return FlextResult.ok([])
+    def validate_token(
+        self,
+        token: str,
+        provider: str = "jwt",
+    ) -> FlextResult[FlextAuthModels.Identity | None]:
+        """Railway-oriented token validation with direct provider access."""
+        return self._providers.get(provider).flat_map(lambda p: p.validate_token(token))
 
 
 __all__ = ["FlextAuthProviderService"]

@@ -224,7 +224,9 @@ class FlextAuthBaseProvider(ABC):
         ...
 
     @abstractmethod
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.User | None]:
+    def validate_token(
+        self, token: str
+    ) -> FlextResult[FlextAuthModels.Identity | None]:
         """Validate a token and return the associated user.
 
         Args:
@@ -239,7 +241,7 @@ class FlextAuthBaseProvider(ABC):
     @abstractmethod
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.User,
+        user: FlextAuthModels.Identity,
         token_type: str = "access",  # noqa: S107
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:

@@ -7,11 +7,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import Any
+
 from flext_core import FlextResult, FlextService
 
 from flext_auth.api import FlextAuth
 from flext_auth.config import FlextAuthConfig
-from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 
 
@@ -28,7 +29,7 @@ class FlextAuthQuickstart(FlextService[object]):
         super().__init__()
 
         # Use provided config or create default
-        self._config = config if config is not None else FlextAuthConfig.create()
+        self._config = config if config is not None else FlextAuthConfig()
 
         self._auth = FlextAuth()
 
@@ -37,30 +38,29 @@ class FlextAuthQuickstart(FlextService[object]):
         username: str,
         email: str,
         password: str,
+        full_name: str | None = None,
         roles: list[str] | None = None,
-    ) -> FlextResult[FlextAuthModels.User]:
+    ) -> FlextResult[FlextAuthModels.Identity]:
         """Register a new user with default settings."""
-        return self._auth.register_user(username, email, password, roles)
+        return self._auth.register_user(username, email, password, full_name, roles)
 
     def authenticate_user(
         self,
         username: str,
         password: str,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> FlextResult[Any]:
         """Authenticate a user and return token."""
         return self._auth.authenticate_user(username, password)
 
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.User]:
+    def validate_token(self, token: str) -> FlextResult[Any]:
         """Validate an authentication token."""
         return self._auth.validate_token(token)
 
-    def get_user(self, user_id: str) -> FlextResult[FlextAuthModels.User]:
+    def get_user(self, user_id: str) -> FlextResult[FlextAuthModels.Identity]:
         """Get user by ID."""
         return self._auth.get_user(user_id)
 
-    def create_demo_users(
-        self, count: int = FlextAuthConstants.DEMO_USERS_COUNT
-    ) -> FlextResult[list[str]]:
+    def create_demo_users(self, count: int = 5) -> FlextResult[list[str]]:
         """Create demo users for testing."""
         user_ids = []
         for i in range(count):
@@ -69,8 +69,8 @@ class FlextAuthQuickstart(FlextService[object]):
             password = f"DemoPass{i}23!"
 
             result = self.register_user(username, email, password)
-            if result.is_success and result.value.user_id is not None:
-                user_ids.append(result.value.user_id)
+            if result.is_success:
+                user_ids.append(username)
             else:
                 return FlextResult[list[str]].fail(
                     f"Failed to create demo user {i}: {result.error}"
@@ -86,6 +86,8 @@ class FlextAuthQuickstart(FlextService[object]):
         if result.is_failure:
             return result
 
+        user_ids = result.unwrap()
+
         if create_REDACTED_LDAP_BIND_PASSWORD:
             # Create REDACTED_LDAP_BIND_PASSWORD user
             REDACTED_LDAP_BIND_PASSWORD_result = self.register_user(
@@ -95,10 +97,9 @@ class FlextAuthQuickstart(FlextService[object]):
                 return FlextResult[list[str]].fail(
                     f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {REDACTED_LDAP_BIND_PASSWORD_result.error}"
                 )
-            if REDACTED_LDAP_BIND_PASSWORD_result.value.user_id is not None:
-                result.value.append(REDACTED_LDAP_BIND_PASSWORD_result.value.user_id)
+            user_ids.append("REDACTED_LDAP_BIND_PASSWORD")
 
-        return result
+        return FlextResult[list[str]].ok(user_ids)
 
     @property
     def auth(self) -> FlextAuth:

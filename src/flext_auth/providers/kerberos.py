@@ -134,16 +134,18 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: validate Kerberos tickets.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthKerberosProvider) -> None:
             """Initialize ticket validator."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
 
         def validate_ticket(
-            self, ticket_data: dict[str, object]
+            self,
+            ticket_data: dict[str, object]  # noqa: ARG002,
         ) -> FlextResult[dict[str, object]]:
             """Validate Kerberos ticket."""
             # Simplified implementation - in production would use proper Kerberos validation
+            # ticket_data parameter reserved for future Kerberos ticket validation
             return FlextResult[dict[str, object]].ok({
                 "user_id": "kerberos_user",
                 "valid": True,
@@ -155,7 +157,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: handle service ticket operations.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthKerberosProvider) -> None:
             """Initialize service handler."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
@@ -174,7 +176,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: manage Kerberos authentication.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthKerberosProvider) -> None:
             """Initialize auth manager."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
@@ -184,7 +186,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         ) -> FlextResult[dict[str, object]]:
             """Authenticate using Kerberos ticket."""
             # Use composition for ticket validation
-            return self.provider._ticket_validator.validate_ticket(ticket_data)
+            return self.provider.validate_ticket(ticket_data)
 
     def supports(self) -> set[str]:
         """Return Kerberos provider capabilities."""
@@ -198,19 +200,27 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             "capabilities": list(self.supports()),
         }
 
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.User | None]:
+    def validate_token(
+        self, token: str
+    ) -> FlextResult[FlextAuthModels.Identity | None]:
         """Validate Kerberos token and return user."""
-        return FlextResult[FlextAuthModels.User | None].ok(
+        # token parameter reserved for future Kerberos token validation
+        _ = token  # Mark as intentionally unused for now
+        return FlextResult[FlextAuthModels.Identity | None].ok(
             None
         )  # Simplified implementation
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.User,
-        token_type: str = "access",
+        user: FlextAuthModels.Identity,
+        token_type: str = "kerberos_access",  # noqa: S107
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate Kerberos token for user."""
+        # user, token_type, expiry_minutes parameters reserved for future implementation
+        _ = user  # Mark as intentionally unused for now
+        _ = token_type  # Mark as intentionally unused for now
+        _ = expiry_minutes  # Mark as intentionally unused for now
         return FlextResult[str].fail(
             "Kerberos token generation not implemented in this refactor"
         )

@@ -63,7 +63,11 @@ class FlextAuthJwtTokenGenerator:
             payload = {
                 "sub": identity_id,
                 "iat": int(now.timestamp()),
-                "exp": int((now + timedelta(minutes=expiry_minutes or default_expiry)).timestamp()),
+                "exp": int(
+                    (
+                        now + timedelta(minutes=expiry_minutes or default_expiry)
+                    ).timestamp()
+                ),
                 "iss": config.get("issuer", "flext-auth"),
                 "aud": config.get("audience"),
             }

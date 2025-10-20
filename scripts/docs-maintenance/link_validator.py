@@ -20,6 +20,11 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
+try:
+    import requests
+except ImportError:
+    requests = None
+
 
 @dataclass
 class LinkValidationResult:
@@ -81,10 +86,28 @@ class LinkValidator:
                         redirect_url=None,
                     )
 
-                req = Request(url, headers={"User-Agent": self.user_agent})
+                # Validate URL scheme for security
+                parsed = urlparse(url)
+                if parsed.scheme not in {"http", "https"}:
+                    msg = f"Unsupported URL scheme: {parsed.scheme}"
+                    raise ValueError(msg)
 
-                def check_url(request: Request = req) -> tuple[int, str | None]:
-                    with urlopen(request, timeout=self.timeout) as response:
+                def check_url() -> tuple[int, str | None]:
+                    if requests is not None:
+                        response = requests.get(
+                            url,
+                            headers={"User-Agent": self.user_agent},
+                            timeout=self.timeout,
+                            allow_redirects=True,
+                        )
+                        return response.status_code, response.url
+                    # Fallback to urlopen with validation
+                    parsed = urlparse(url)
+                    if parsed.scheme not in {"http", "https"}:
+                        msg = "Unsupported URL scheme"
+                        raise ValueError(msg) from None
+                    req = Request(url, headers={"User-Agent": self.user_agent})
+                    with urlopen(req, timeout=self.timeout) as response:
                         return response.status, getattr(response, "url", None)
 
                 _status_code, response_url = await asyncio.to_thread(check_url)

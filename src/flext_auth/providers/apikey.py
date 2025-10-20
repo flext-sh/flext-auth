@@ -42,14 +42,14 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         >>> provider = FlextAuthApiKeyProvider(config)
         >>> # Generate new API key
         >>> key_result = provider.generate_api_key(
-        ...     user_id="user-123", name="Production API Key"
+        ...     identity_id="user-123", name="Production API Key"
         ... )
         >>> # Authenticate with API key
         >>> result = provider.authenticate({"api_key": "sk_..."})
 
     """
 
-    def __init__(self, config: dict[str, object]) -> None:
+    def __init__(self, config: FlextAuthModels.ProviderConfiguration) -> None:
         """Initialize API Key provider with SOLID delegation.
 
         Uses composition for key validation, generation, and rate limiting.
@@ -74,6 +74,38 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         self._rate_limits: dict[str, list[datetime]] = {}
 
         self.logger.info("API Key provider initialized")
+
+    def get_api_key_data(self, key_hash: str) -> dict[str, object] | None:
+        """Get API key data by hash."""
+        return self._api_keys.get(key_hash)
+
+    def get_hash_algorithm(self) -> str:
+        """Get hash algorithm for API keys."""
+        return "sha256"
+
+    def get_key_length(self) -> int:
+        """Get API key length."""
+        return 32
+
+    def get_key_prefix(self) -> str:
+        """Get API key prefix."""
+        return "fk_"
+
+    def is_rate_limit_enabled(self) -> bool:
+        """Check if rate limiting is enabled."""
+        return True
+
+    def get_rate_limit_requests(self) -> int:
+        """Get rate limit requests per window."""
+        return 100
+
+    def get_rate_limit_window(self) -> int:
+        """Get rate limit window in seconds."""
+        return 3600
+
+    def get_rate_limit_history(self, key_hash: str) -> list[datetime]:
+        """Get rate limit history for key."""
+        return self._rate_limits.get(key_hash, [])
 
     def _validate_configuration(self) -> FlextResult[None]:
         """Railway-oriented configuration validation."""
@@ -136,7 +168,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: validate API keys.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthApiKeyProvider) -> None:
             """Initialize key validator."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
@@ -153,7 +185,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             key_hash = self._hash_api_key(api_key)
 
             # Check if key exists in storage
-            key_data = self.provider._api_keys.get(key_hash)
+            key_data = self.provider.get_api_key_data(key_hash)
             if not key_data:
                 return FlextResult[dict[str, object]].fail("Invalid API key")
 
@@ -161,7 +193,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         def _hash_api_key(self, api_key: str) -> str:
             """Hash API key for secure storage."""
-            algorithm = self.provider._config.get("hash_algorithm", "sha256")
+            algorithm = self.provider.get_hash_algorithm()
             if algorithm == "sha256":
                 return hashlib.sha256(api_key.encode()).hexdigest()
             if algorithm == "sha512":
@@ -174,15 +206,15 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: generate secure API keys.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthApiKeyProvider) -> None:
             """Initialize key generator."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
 
         def generate_key(self) -> str:
             """Generate a new API key."""
-            key_length = self.provider._config.get("key_length", 32)
-            key_prefix = self.provider._config.get("key_prefix", "")
+            key_length = self.provider.get_key_length()
+            key_prefix = self.provider.get_key_prefix()
 
             # Generate random key
             random_part = secrets.token_hex(key_length // 2)
@@ -195,29 +227,24 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: enforce API rate limits.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthApiKeyProvider) -> None:
             """Initialize rate limiter."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
 
         def check_rate_limit(self, key_hash: str) -> FlextResult[bool]:
             """Check if request is within rate limits."""
-            if not self.provider._config.get("rate_limit_enabled", False):
+            if not self.provider.is_rate_limit_enabled():
                 return FlextResult[bool].ok(True)  # Rate limiting disabled
 
-            max_requests = self.provider._config.get("rate_limit_requests", 1000)
-            window_seconds = self.provider._config.get(
-                "rate_limit_window_seconds", 3600
-            )
+            max_requests = self.provider.get_rate_limit_requests()
+            window_seconds = self.provider.get_rate_limit_window()
 
             # Get current timestamp
             now = datetime.now(UTC)
 
             # Get request history for this key
-            if key_hash not in self.provider._rate_limits:
-                self.provider._rate_limits[key_hash] = []
-
-            request_times = self.provider._rate_limits[key_hash]
+            request_times = self.provider.get_rate_limit_history(key_hash)
 
             # Remove old requests outside the window
             cutoff_time = now - timedelta(seconds=window_seconds)
@@ -233,7 +260,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: dict[str, object],
+        credentials: FlextAuthModels.ApiKeyValidation,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using API key.
 
@@ -249,44 +276,41 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             ... })
 
         """
-        # Validate required fields
-        required_fields = ["api_key"]
-        if self._config.get("require_key_id", False):
-            required_fields.append("key_id")
-
-        validation_result = self._validate_credentials_dict(
-            credentials, required_fields
-        )
-        if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
-
-        api_key = credentials["api_key"]
-        if not isinstance(api_key, str):
+        # Use the ApiKeyValidation model directly
+        if not credentials.is_valid:
             return FlextResult[FlextAuthModels.AuthToken].fail(
-                "API key must be a string"
+                credentials.error_message or "Invalid API key"
             )
 
+        if not credentials.key_data:
+            return FlextResult[FlextAuthModels.AuthToken].fail("No key data available")
+
+        # Extract API key from validation result
+        api_key = str(credentials.key_data.get("api_key", ""))
+
         # Use composition for key processing
-        return self._key_validator.validate_key(api_key).bind(
-            lambda key_data: self._process_api_key_authentication(api_key, key_data)
-        )
+        return self._process_api_key_authentication(api_key, credentials.key_data)
 
     def _process_api_key_authentication(
-        self, api_key: str, key_data: dict[str, object]
+        self, api_key: str, key_data: FlextAuthModels.ApiKeyData
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Process API key authentication result."""
         # Get key hash for rate limiting
-        key_hash = self._key_validator._hash_api_key(api_key)
+        key_hash = self._key_validator.hash_api_key(api_key)
 
         # Check rate limits using composition
         return self._rate_limiter.check_rate_limit(key_hash).bind(
             lambda within_limits: self._create_api_key_token(
-                api_key, key_data, within_limits
+                api_key, key_data, within_limits=within_limits
             )
         )
 
     def _create_api_key_token(
-        self, api_key: str, key_data: dict[str, object], within_limits: bool
+        self,
+        api_key: str,
+        key_data: dict[str, object],
+        *,
+        within_limits: bool,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Create authentication token for API key."""
         if not within_limits:
@@ -296,9 +320,9 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         # Create authentication token
         auth_token = FlextAuthModels.AuthToken(
-            user_id=str(key_data.get("user_id", "api_user")),
+            identity_id=str(key_data.get("user_id", "api_user")),
             token=api_key,  # API key serves as token
-            token_type="api_key",
+            token_type="apikey",  # noqa: S106
             expires_at=datetime.now(UTC) + timedelta(days=365),
             is_revoked=False,
         )

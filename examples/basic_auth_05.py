@@ -43,7 +43,7 @@ def main() -> None:
     # Configure authentication service through FlextContainer
     container = FlextContainer.get_global()
     config = FlextAuthConfig.create(
-        jwt_auth_secret="demo-jwt-secret-key-for-examples-only-not-secure",  # nosec
+        jwt_auth_secret="demo-jwt-secret-key-for-examples-only-not-secure",
         jwt_expiry_minutes=30,
         bcrypt_rounds=4,  # Fast for demo
     )

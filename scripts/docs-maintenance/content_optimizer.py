@@ -48,6 +48,18 @@ class ContentOptimizer:
     def __init__(self, project_root: Path) -> None:
         """Initialize content optimizer with project root."""
         self.project_root = project_root
+
+        # Constants for optimization thresholds
+        self.MIN_CONTENT_LENGTH_FOR_TOC = 2000
+        self.MIN_WORD_COUNT = 100
+        self.MAX_PASSIVE_RATIO = 0.3
+        self.MAX_PARAGRAPH_WORD_COUNT = 150
+        self.MIN_CODE_BLOCK_LENGTH = 50
+        self.MIN_CONTENT_LENGTH_FOR_LINKS = 1000
+        self.MIN_QUALITY_SCORE = 70
+        self.EXCELLENT_QUALITY_SCORE = 90
+        self.MAX_STRUCTURE_ISSUES = 5
+        self.MAX_TECHNICAL_ISSUES = 3
         self.suggestions: list[OptimizationSuggestion] = []
         self.metrics: dict[str, ContentMetrics] = {}
 
@@ -95,7 +107,10 @@ class ContentOptimizer:
         suggestions: list[OptimizationSuggestion] = []
 
         # Check for table of contents
-        if not self._has_table_of_contents(content) and len(content) > 2000:
+        if (
+            not self._has_table_of_contents(content)
+            and len(content) > self.MIN_CONTENT_LENGTH_FOR_TOC
+        ):
             suggestions.append(
                 OptimizationSuggestion(
                     file_path=doc_file,
@@ -150,7 +165,7 @@ class ContentOptimizer:
         words = re.findall(r"\b\w+\b", content)
         word_count = len(words)
 
-        if word_count < 100:
+        if word_count < self.MIN_WORD_COUNT:
             suggestions.append(
                 OptimizationSuggestion(
                     file_path=doc_file,
@@ -173,7 +188,7 @@ class ContentOptimizer:
                 passive_sentences += 1
 
         passive_ratio = passive_sentences / max(len(sentences), 1)
-        if passive_ratio > 0.3:  # More than 30% passive
+        if passive_ratio > self.MAX_PASSIVE_RATIO:  # More than 30% passive
             suggestions.append(
                 OptimizationSuggestion(
                     file_path=doc_file,
@@ -187,7 +202,9 @@ class ContentOptimizer:
 
         # Check for long paragraphs
         paragraphs = re.split(r"\n\s*\n", content)
-        long_paragraphs = [p for p in paragraphs if len(p.split()) > 150]
+        long_paragraphs = [
+            p for p in paragraphs if len(p.split()) > self.MAX_PARAGRAPH_WORD_COUNT
+        ]
 
         # Limit to first 3 examples
         suggestions.extend(
@@ -213,7 +230,9 @@ class ContentOptimizer:
         # Check for code examples without language specification
         code_blocks = re.findall(r"```(\w+)?\n(.*?)\n```", content, re.DOTALL)
         for lang, code in code_blocks:
-            if not lang and len(code.strip()) > 50:  # Non-trivial code without language
+            if (
+                not lang and len(code.strip()) > self.MIN_CODE_BLOCK_LENGTH
+            ):  # Non-trivial code without language
                 suggestions.append(
                     OptimizationSuggestion(
                         file_path=doc_file,
@@ -350,7 +369,7 @@ class ContentOptimizer:
 
         # Check for missing links to related documentation
         internal_links = len(re.findall(r"\[([^\]]+)\]\((?!http)", content))
-        if internal_links == 0 and len(content) > 1000:
+        if internal_links == 0 and len(content) > self.MIN_CONTENT_LENGTH_FOR_LINKS:
             suggestions.append(
                 OptimizationSuggestion(
                     file_path=doc_file,
@@ -568,22 +587,22 @@ class ContentOptimizer:
                 f"🔴 PRIORITY: Address {severity_breakdown['high']} high-severity issues first"
             )
 
-        if avg_quality < 70:
+        if avg_quality < self.MIN_QUALITY_SCORE:
             recommendations.append(
                 f"🟡 IMPROVE: Overall documentation quality needs attention ({avg_quality:.1f}/100)"
             )
-        elif avg_quality > 90:
+        elif avg_quality > self.EXCELLENT_QUALITY_SCORE:
             recommendations.append(
                 "✅ EXCELLENT: High content quality standards maintained"
             )
 
         type_breakdown = audit_results["suggestions_by_type"]
-        if type_breakdown.get("structure", 0) > 5:
+        if type_breakdown.get("structure", 0) > self.MAX_STRUCTURE_ISSUES:
             recommendations.append(
                 "🏗️ STRUCTURE: Multiple files need structural improvements"
             )
 
-        if type_breakdown.get("technical", 0) > 3:
+        if type_breakdown.get("technical", 0) > self.MAX_TECHNICAL_ISSUES:
             recommendations.append("🔧 TECHNICAL: Review technical content accuracy")
 
         return recommendations

@@ -18,7 +18,6 @@ from urllib.parse import urlencode
 
 from flext_core import FlextExceptions, FlextLogger, FlextResult
 
-from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
@@ -80,12 +79,10 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             self._use_pkce = True
 
         self._token_endpoint_auth_method = self._config.get(
-            "token_endpoint_auth_method", FlextAuthConstants.OAuth2.CLIENT_SECRET_POST
+            "token_endpoint_auth_method", "client_secret_post"
         )
         if not isinstance(self._token_endpoint_auth_method, str):
-            self._token_endpoint_auth_method = (
-                FlextAuthConstants.OAuth2.CLIENT_SECRET_POST
-            )
+            self._token_endpoint_auth_method = "client_secret_post"  # noqa: S105
 
         # Runtime state storage (in production, use proper storage)
         self._pkce_verifiers: dict[str, str] = {}  # state -> code_verifier mapping
@@ -157,7 +154,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: handle OAuth2 authorization flows.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthOAuth2Provider) -> None:
             """Initialize flow manager."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
@@ -170,23 +167,23 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             **kwargs: object,
         ) -> FlextResult[str]:
             """Generate authorization URL for authorization code flow."""
-            auth_endpoint = self.provider._config.get("authorization_endpoint")
+            auth_endpoint = self.provider.get_authorization_endpoint()
             if not auth_endpoint:
                 return FlextResult[str].fail("Authorization endpoint not configured")
 
             params = {
-                "client_id": self.provider._config["client_id"],
+                "client_id": self.provider.get_client_id(),
                 "response_type": "code",
-                "redirect_uri": self.provider._config.get("redirect_uri") or "",
+                "redirect_uri": self.provider.get_redirect_uri() or "",
             }
 
-            if scope := self.provider._config.get("scope"):
+            if scope := self.provider.get_scope():
                 params["scope"] = scope
 
             if state:
                 params["state"] = state
 
-            if self.provider._config.get("use_pkce", True) and code_challenge:
+            if self.provider.should_use_pkce() and code_challenge:
                 params["code_challenge"] = code_challenge
                 params["code_challenge_method"] = code_challenge_method
 
@@ -215,7 +212,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: handle OAuth2 token operations.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthOAuth2Provider) -> None:
             """Initialize token manager."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
@@ -227,13 +224,17 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             redirect_uri: str | None = None,
         ) -> FlextResult[dict[str, object]]:
             """Exchange authorization code for access token."""
+            # code, code_verifier, redirect_uri parameters reserved for future OAuth2 implementation
+            _ = code  # Mark as intentionally unused for now
+            _ = code_verifier  # Mark as intentionally unused for now
+            _ = redirect_uri  # Mark as intentionally unused for now
             # This would typically make an HTTP request to the token endpoint
             # For now, we'll simulate the response structure
             token_response = {
                 "access_token": f"access_token_{secrets.token_hex(16)}",
                 "token_type": "Bearer",
                 "expires_in": 3600,
-                "scope": self.provider._config.get("scope") or "",
+                "scope": self.provider.get_scope() or "",
             }
 
             if code_verifier:
@@ -253,9 +254,12 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             return FlextResult[dict[str, object]].ok(token_response)
 
         def refresh_access_token(
-            self, refresh_token: str
+            self,
+            refresh_token: str,
         ) -> FlextResult[dict[str, object]]:
             """Refresh access token using refresh token."""
+            # refresh_token parameter reserved for future OAuth2 implementation
+            _ = refresh_token  # Mark as intentionally unused for now
             token_response = {
                 "access_token": f"access_token_{secrets.token_hex(16)}",
                 "token_type": "Bearer",
@@ -312,7 +316,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         credentials: dict[str, object],
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using OAuth2 flows with delegation."""
-        return self._flow_manager._handle_authorization_code_flow(credentials)
+        return self._flow_manager.handle_authorization_code_flow(credentials)
 
     def validate(
         self,
@@ -336,6 +340,8 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         token: str | FlextAuthModels.AuthToken,
     ) -> FlextResult[None]:
         """Revoke OAuth2 token."""
+        # token parameter reserved for future OAuth2 token revocation
+        _ = token  # Mark as intentionally unused for now
         return FlextResult[None].ok(None)  # Simplified implementation
 
     def get_metadata(self) -> dict[str, object]:
@@ -348,19 +354,27 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             "pkce_supported": self._config.get("use_pkce", True),
         }
 
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.User | None]:
+    def validate_token(
+        self, token: str
+    ) -> FlextResult[FlextAuthModels.Identity | None]:
         """Validate OAuth2 token and return user."""
-        return FlextResult[FlextAuthModels.User | None].ok(
+        # token parameter reserved for future OAuth2 token validation
+        _ = token  # Mark as intentionally unused for now
+        return FlextResult[FlextAuthModels.Identity | None].ok(
             None
         )  # Simplified implementation
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.User,
-        token_type: str = "access",
+        user: FlextAuthModels.Identity,
+        token_type: str = "oauth2_access",  # noqa: S107
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate OAuth2 token for user."""
+        # user, token_type, expiry_minutes parameters reserved for future implementation
+        _ = user  # Mark as intentionally unused for now
+        _ = token_type  # Mark as intentionally unused for now
+        _ = expiry_minutes  # Mark as intentionally unused for now
         return FlextResult[str].fail("OAuth2 token generation requires HTTP transport")
 
 

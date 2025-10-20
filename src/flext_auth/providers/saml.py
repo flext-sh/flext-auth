@@ -19,7 +19,7 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 from __future__ import annotations
 
 import secrets
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from flext_core import FlextLogger, FlextResult, FlextTypes
 
@@ -154,12 +154,12 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: build SAML authentication requests.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthSamlProvider) -> None:
             """Initialize request builder."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
 
-        def build_authn_request(self, relay_state: str | None = None) -> str:
+        def build_authn_request(self, _relay_state: str | None = None) -> str:
             """Build SAML authentication request."""
             # Simplified implementation - in production would create proper SAML XML
             return f"saml_authn_request_{secrets.token_hex(16)}"
@@ -170,12 +170,12 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: parse SAML responses.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthSamlProvider) -> None:
             """Initialize response parser."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
 
-        def parse_response(self, saml_response: str) -> FlextResult[dict[str, object]]:
+        def parse_response(self, _saml_response: str) -> FlextResult[dict[str, object]]:
             """Parse SAML response."""
             # Simplified implementation - in production would parse SAML XML
             return FlextResult[dict[str, object]].ok({
@@ -189,14 +189,14 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: validate SAML signatures.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthSamlProvider) -> None:
             """Initialize signature validator."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
             # Runtime state for request tracking
             self._pending_requests: FlextTypes.NestedDict = {}
 
-        def validate_signature(self, saml_response: str) -> FlextResult[bool]:
+        def validate_signature(self, _saml_response: str) -> FlextResult[bool]:
             """Validate SAML response signature."""
             # Simplified implementation - in production would use proper XML signature validation
             return FlextResult[bool].ok(True)  # Assume valid for demo
@@ -227,15 +227,18 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         return (
             self._response_parser.parse_response(saml_response)
             .bind(
-                lambda user_data: self._signature_validator.validate_signature(
+                lambda _user_data: self._signature_validator.validate_signature(
                     saml_response
                 )
             )
-            .bind(lambda is_valid: self._create_saml_token(user_data, is_valid))
+            .bind(lambda is_valid: self._create_saml_token({}, is_valid))
         )
 
     def _create_saml_token(
-        self, user_data: dict[str, object], is_valid: bool
+        self,
+        user_data: dict[str, object],
+        *,
+        is_valid: bool,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Create authentication token from SAML data."""
         if not is_valid:
@@ -243,9 +246,9 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         # Create authentication token
         auth_token = FlextAuthModels.AuthToken(
-            user_id=str(user_data.get("user_id", "saml_user")),
+            identity_id=str(user_data.get("user_id", "saml_user")),
             token=f"saml_{secrets.token_hex(32)}",
-            token_type="saml",
+            token_type="bearer",  # noqa: S106
             expires_at=datetime.now(UTC) + timedelta(hours=8),
             is_revoked=False,
         )
@@ -264,17 +267,19 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             "capabilities": list(self.supports()),
         }
 
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.User | None]:
+    def validate_token(
+        self, _token: str
+    ) -> FlextResult[FlextAuthModels.Identity | None]:
         """Validate SAML token and return user."""
-        return FlextResult[FlextAuthModels.User | None].ok(
+        return FlextResult[FlextAuthModels.Identity | None].ok(
             None
         )  # Simplified implementation
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.User,
-        token_type: str = "access",
-        expiry_minutes: int | None = None,
+        _user: FlextAuthModels.Identity,
+        _token_type: str = "access",  # noqa: S107
+        _expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate SAML token for user."""
         return FlextResult[str].fail(

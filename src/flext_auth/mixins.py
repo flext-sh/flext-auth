@@ -13,6 +13,9 @@ from flext_core import FlextMixins, FlextResult, FlextUtilities
 
 from flext_auth.constants import FlextAuthConstants
 
+# Constants for validation
+MAX_USERNAME_LENGTH = 255
+
 
 class FlextAuthMixins(FlextMixins):
     """Auth mixins class with validation utilities extending flext-core mixins."""
@@ -48,14 +51,14 @@ class FlextAuthMixins(FlextMixins):
             if not password:
                 return FlextResult[str].fail("Password cannot be empty")
 
-            if len(password) < FlextAuthConstants.Credentials.Password.MIN_LENGTH:
+            if len(password) < FlextAuthConstants.CREDENTIAL_MIN_LENGTH:
                 return FlextResult[str].fail(
-                    f"Password must be at least {FlextAuthConstants.Credentials.Password.MIN_LENGTH} characters"
+                    f"Password must be at least {FlextAuthConstants.CREDENTIAL_MIN_LENGTH} characters"
                 )
 
-            if len(password) > FlextAuthConstants.Credentials.Password.MAX_LENGTH:
+            if len(password) > FlextAuthConstants.CREDENTIAL_MAX_LENGTH:
                 return FlextResult[str].fail(
-                    f"Password must be no more than {FlextAuthConstants.Credentials.Password.MAX_LENGTH} characters"
+                    f"Password must be no more than {128} characters"
                 )
 
             # Check for password complexity
@@ -87,15 +90,15 @@ class FlextAuthMixins(FlextMixins):
 
             username = username.strip()
 
-            if len(username) < FlextAuthConstants.Credentials.Username.MIN_LENGTH:
+            if len(username) < 1:
                 return FlextResult[str].fail(
-                    f"Username must be at least {FlextAuthConstants.Credentials.Username.MIN_LENGTH} characters"
+                    f"Username must be at least {1} characters"
                 )
 
-            if len(username) > FlextAuthConstants.Credentials.Username.MAX_LENGTH:
+            if len(username) > MAX_USERNAME_LENGTH:
                 return FlextResult[str].fail(
-                    f"Username must be no more than {FlextAuthConstants.Credentials.Username.MAX_LENGTH} characters"
-                )
+                    f"Username must be no more than {MAX_USERNAME_LENGTH} characters"
+                )  # MAX_USERNAME_LENGTH = 255
 
             # Check for valid characters
             if not re.match(r"^[a-zA-Z0-9_-]+$", username):

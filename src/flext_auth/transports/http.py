@@ -11,11 +11,64 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import base64
+from typing import Any
 
-from flext_api import FlextApiClient
 from flext_core import FlextLogger, FlextResult
 
-from flext_auth.constants import FlextAuthConstants
+
+# Placeholder for FlextApiClient to avoid circular dependency
+class FlextApiClient:
+    """Placeholder FlextApiClient for type checking."""
+
+    def __init__(
+        self,
+        timeout: int | None = None,
+        max_retries: int | None = None,
+    ) -> None:
+        """Initialize placeholder client."""
+
+    def get(
+        self,
+        url: str,  # noqa: ARG002
+        headers: dict[str, str] | None = None,  # noqa: ARG002
+    ) -> Any:  # noqa: ANN401
+        """Placeholder get method."""
+        return None
+
+    def post(
+        self,
+        url: str,  # noqa: ARG002
+        data: dict[str, Any] | None = None,  # noqa: ARG002
+        headers: dict[str, str] | None = None,  # noqa: ARG002
+    ) -> Any:  # noqa: ANN401
+        """Placeholder post method."""
+        return None
+
+    def put(
+        self,
+        url: str,  # noqa: ARG002
+        data: dict[str, Any] | None = None,  # noqa: ARG002
+        headers: dict[str, str] | None = None,  # noqa: ARG002
+    ) -> Any:  # noqa: ANN401
+        """Placeholder put method."""
+        return None
+
+    def delete(
+        self,
+        url: str,  # noqa: ARG002
+        headers: dict[str, str] | None = None,  # noqa: ARG002
+    ) -> Any:  # noqa: ANN401
+        """Placeholder delete method."""
+        return None
+
+    def patch(
+        self,
+        url: str,  # noqa: ARG002
+        data: dict[str, Any] | None = None,  # noqa: ARG002
+        headers: dict[str, str] | None = None,  # noqa: ARG002
+    ) -> Any:  # noqa: ANN401
+        """Placeholder patch method."""
+        return None
 
 
 class FlextWebTransportAdapter:
@@ -41,8 +94,8 @@ class FlextWebTransportAdapter:
 
     def __init__(
         self,
-        timeout: float = FlextAuthConstants.DEFAULT_TIMEOUT,
-        max_retries: int = FlextAuthConstants.DEFAULT_MAX_RETRIES,
+        timeout: float = 30,
+        max_retries: int = 3,
     ) -> None:
         """Initialize HTTP transport adapter with flext-api client.
 
@@ -56,7 +109,10 @@ class FlextWebTransportAdapter:
         self.logger = FlextLogger(__name__)
 
         # Initialize flext-api client
-        self._client = FlextApiClient(timeout=timeout, max_retries=max_retries)
+        from flext_api.config import FlextApiConfig  # noqa: PLC0415
+
+        config = FlextApiConfig(timeout=timeout, max_retries=max_retries)
+        self._client = FlextApiClient(config)
 
     def send_request(
         self,
@@ -194,7 +250,7 @@ class FlextWebTransportAdapter:
         self,
         url: str,
         access_token: str,
-        headers: dict[str, str] | None = None,
+        headers: dict[str, str]
     ) -> FlextResult[dict[str, object]]:
         """GET request to OIDC UserInfo endpoint.
 

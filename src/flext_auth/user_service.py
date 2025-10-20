@@ -12,12 +12,15 @@ from __future__ import annotations
 from flext_core import FlextDispatcher, FlextResult, FlextService
 
 from flext_auth.config import FlextAuthConfig
-from flext_auth.managers import FlextAuthManagers
+from flext_auth.managers import (
+    FlextAuthManagers,
+    ServiceManagerMixin,
+)
 from flext_auth.models import FlextAuthModels
 from flext_auth.utilities import FlextAuthUtilities
 
 
-class FlextAuthIdentityService(FlextService):
+class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
     """Generic identity service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
@@ -27,10 +30,12 @@ class FlextAuthIdentityService(FlextService):
     def __init__(self, config: FlextAuthConfig, dispatcher: FlextDispatcher) -> None:
         """Generic initialization with dependency injection."""
         super().__init__()
-        self._config, self._dispatcher = config, dispatcher
-        self._identity_manager = FlextAuthManagers.FlextAuthUserManager(config)
-        self._audit_logger = FlextAuthManagers.FlextAuthAuditLogger(config, dispatcher)
-        self._utils = FlextAuthUtilities()
+        self._init_managers(config, dispatcher)
+
+    @property
+    def identity_manager(self) -> FlextAuthManagers.FlextAuthUserManager:
+        """Direct access to identity manager for client orchestration."""
+        return self._user_manager
 
     def execute(self) -> FlextResult[object]:
         """Railway-oriented execute with focused service pattern."""
@@ -45,7 +50,7 @@ class FlextAuthIdentityService(FlextService):
     ) -> FlextResult[FlextAuthModels.Identity]:
         """Railway-oriented identity authentication."""
         return (
-            self.get_identity_by_name(name)
+            self._user_manager.get_user_by_username(name)
             .flat_map(lambda identity: FlextResult.ok((identity, credential)))
             .flat_map(
                 lambda ic: FlextResult.ok(ic[0])
@@ -64,8 +69,8 @@ class FlextAuthIdentityService(FlextService):
         **extra_fields: object,
     ) -> FlextResult[FlextAuthModels.Identity]:
         """Railway-oriented identity creation with credential hashing."""
-        return FlextAuthUtilities.PasswordProcessing.hash_password(credential).flat_map(
-            lambda ch: self._identity_manager.create_user(
+        return FlextAuthUtilities.hash_credential(credential).flat_map(
+            lambda ch: self._user_manager.create_user(
                 username=name,
                 email=contact,
                 password_hash=ch,
@@ -75,26 +80,8 @@ class FlextAuthIdentityService(FlextService):
         )
 
     # =========================================================================
-    # CONSOLIDATED IDENTITY OPERATIONS
+    # COMPLEX CREDENTIAL OPERATIONS (Non-Thin Wrappers)
     # =========================================================================
-
-    def get_identity(self, identity_id: str) -> FlextResult[FlextAuthModels.Identity]:
-        """Get identity by ID."""
-        return self._identity_manager.get_user(identity_id)
-
-    def get_identity_by_name(self, name: str) -> FlextResult[FlextAuthModels.Identity]:
-        """Get identity by name."""
-        return self._identity_manager.get_user_by_username(name)
-
-    def update_identity(
-        self, identity_id: str, **updates: object
-    ) -> FlextResult[FlextAuthModels.Identity]:
-        """Update identity information."""
-        return self._identity_manager.update_user(identity_id, **updates)
-
-    def delete_identity(self, identity_id: str) -> FlextResult[None]:
-        """Delete identity."""
-        return self._identity_manager.delete_user(identity_id)
 
     def change_credential(
         self,
@@ -104,7 +91,7 @@ class FlextAuthIdentityService(FlextService):
     ) -> FlextResult[None]:
         """Railway-oriented credential change with validation."""
         return (
-            self._identity_manager.get_user(identity_id)
+            self._user_manager.get_user(identity_id)
             .flat_map(
                 lambda identity: (
                     FlextResult.ok(identity)
@@ -113,15 +100,19 @@ class FlextAuthIdentityService(FlextService):
                 )
             )
             .flat_map(
-                lambda identity: FlextAuthUtilities.PasswordProcessing.validate_password(
+                lambda identity: FlextAuthUtilities.validate_credential_strength(
                     new_credential
-                ).map(lambda _: identity)
+                ).map(lambda r: identity if r.get("is_valid") else None)
             )
             .map(
                 lambda identity: (
                     identity.set_credential(new_credential),
-                    self._audit_logger.log_password_change_success(identity.name),
+                    self._audit_logger.log_password_change_success(
+                        identity.name if identity else ""
+                    ),
                 )[0]
+                if identity
+                else None
             )
             .map(lambda _: None)
         )
@@ -131,23 +122,27 @@ class FlextAuthIdentityService(FlextService):
     ) -> FlextResult[None]:
         """Railway-oriented credential reset for REDACTED_LDAP_BIND_PASSWORD operations."""
         return (
-            self._identity_manager.get_user(identity_id)
+            self._user_manager.get_user(identity_id)
             .flat_map(
-                lambda identity: FlextAuthUtilities.PasswordProcessing.validate_password(
+                lambda identity: FlextAuthUtilities.validate_credential_strength(
                     new_credential
-                ).map(lambda _: identity)
+                ).map(lambda r: identity if r.get("is_valid") else None)
             )
             .map(
                 lambda identity: (
                     identity.set_credential(new_credential),
-                    self._audit_logger.log_password_reset(identity.name),
+                    self._audit_logger.log_password_reset(
+                        identity.name if identity else ""
+                    ),
                 )[0]
+                if identity
+                else None
             )
             .map(lambda _: None)
         )
 
     # =========================================================================
-    # GENERIC AUTHORIZATION AND PERMISSION OPERATIONS
+    # COMPLEX AUTHORIZATION WITH AUDIT LOGGING
     # =========================================================================
 
     def authorize_identity(
@@ -158,7 +153,7 @@ class FlextAuthIdentityService(FlextService):
     ) -> FlextResult[bool]:
         """Railway-oriented authorization with audit logging."""
         return (
-            self._identity_manager.get_user(identity_id)
+            self._user_manager.get_user(identity_id)
             .map(lambda identity: (identity, permission in identity.permissions))
             .map(
                 lambda ip: (
@@ -172,45 +167,6 @@ class FlextAuthIdentityService(FlextService):
                 )[1]
             )
         )
-
-    def get_identity_permissions(self, identity_id: str) -> FlextResult[list[str]]:
-        """Get identity permissions with railway pattern."""
-        return self._identity_manager.get_user(identity_id).map(
-            lambda identity: identity.permissions
-        )
-
-    def get_identity_roles(self, identity_id: str) -> FlextResult[list[str]]:
-        """Get identity roles with railway pattern."""
-        return self._identity_manager.get_user(identity_id).map(
-            lambda identity: identity.roles
-        )
-
-    # Consolidated role/permission management
-    def add_identity_role(self, identity_id: str, role: str) -> FlextResult[None]:
-        """Add role to identity."""
-        return self._identity_manager.add_user_role(identity_id, role)
-
-    def remove_identity_role(self, identity_id: str, role: str) -> FlextResult[None]:
-        """Remove role from identity."""
-        return self._identity_manager.remove_user_role(identity_id, role)
-
-    def add_identity_permission(
-        self, identity_id: str, permission: str
-    ) -> FlextResult[None]:
-        """Add permission to identity."""
-        return self._identity_manager.add_user_permission(identity_id, permission)
-
-    def remove_identity_permission(
-        self, identity_id: str, permission: str
-    ) -> FlextResult[None]:
-        """Remove permission from identity."""
-        return self._identity_manager.remove_user_permission(identity_id, permission)
-
-    def get_identity_by_id(
-        self, identity_id: str
-    ) -> FlextResult[FlextAuthModels.Identity | None]:
-        """Get identity by ID."""
-        return self._identity_manager.get_user_by_id(identity_id)
 
 
 __all__ = ["FlextAuthIdentityService"]

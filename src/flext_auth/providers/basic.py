@@ -40,7 +40,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         ... }
         >>> provider = FlextAuthBasicProvider(config)
         >>> # Register user credentials
-        >>> provider.add_user("REDACTED_LDAP_BIND_PASSWORD", "secure-password", user_id="REDACTED_LDAP_BIND_PASSWORD-001")
+        >>> provider.add_user("REDACTED_LDAP_BIND_PASSWORD", "secure-password", identity_id="REDACTED_LDAP_BIND_PASSWORD-001")
         >>> # Authenticate with Basic credentials
         >>> result = provider.authenticate({
         ...     "authorization": "Basic YWRtaW46c2VjdXJlLXBhc3N3b3Jk"
@@ -48,7 +48,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     """
 
-    def __init__(self, config: dict[str, object]) -> None:
+    def __init__(self, config: FlextAuthModels.ProviderConfiguration) -> None:
         """Initialize Basic Auth provider with SOLID delegation.
 
         Uses composition for credential validation, user management, and metadata handling.
@@ -129,7 +129,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: validate Basic Auth credentials.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthBasicProvider) -> None:
             """Initialize credential validator."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
@@ -169,7 +169,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: manage user storage and authentication.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthBasicProvider) -> None:
             """Initialize user manager."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
@@ -179,11 +179,11 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         ) -> FlextResult[dict[str, object]]:
             """Authenticate user against stored credentials."""
             # Check case sensitivity
-            case_sensitive = self.provider._config.get("case_sensitive", True)
+            case_sensitive = self.provider.is_case_sensitive()
             lookup_username = username if case_sensitive else username.lower()
 
             # Look up user in storage
-            user_data = self.provider._users.get(lookup_username)
+            user_data = self.provider.get_user_data(lookup_username)
             if not user_data:
                 return FlextResult[dict[str, object]].fail("User not found")
 
@@ -200,7 +200,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: handle authentication metadata.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthBasicProvider) -> None:
             """Initialize metadata handler."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
@@ -210,39 +210,44 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         ) -> FlextAuthModels.AuthToken:
             """Create authentication token from user data."""
             return FlextAuthModels.AuthToken(
-                user_id=str(user_data.get("user_id", "unknown")),
+                identity_id=str(user_data.get("user_id", "unknown")),
                 token=secrets.token_hex(32),  # Generate random token
-                token_type="basic",
+                token_type="basic_auth",  # noqa: S106
                 expires_at=datetime.now(UTC) + timedelta(days=1),
                 is_revoked=False,
             )
 
     def authenticate(
         self,
-        credentials: dict[str, object],
+        credentials: FlextAuthModels.CredentialValidation,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using HTTP Basic credentials with SOLID delegation.
 
         Delegates credential parsing, user authentication, and token creation
         to specialized components following SRP.
         """
-        # Validate required fields
-        validation_result = self._validate_credentials_dict(
-            credentials, ["authorization"]
-        )
-        if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
-
-        authorization = credentials["authorization"]
-        if not isinstance(authorization, str):
+        # Use the CredentialValidation model directly
+        if not credentials.is_valid:
             return FlextResult[FlextAuthModels.AuthToken].fail(
-                "Authorization header must be a string"
+                credentials.error_message or "Invalid credentials"
             )
 
-        # Use composition for credential processing
-        return self._credential_validator.parse_authorization_header(
-            authorization
-        ).bind(self._process_basic_authentication)
+        if not credentials.user_data:
+            return FlextResult[FlextAuthModels.AuthToken].fail("No user data available")
+
+        user_data = credentials.user_data
+        username = str(user_data.get("username", ""))
+        password = str(user_data.get("password", ""))
+
+        if not username:
+            return FlextResult[FlextAuthModels.AuthToken].fail(
+                "Username not found in credentials"
+            )
+
+        # Use composition for user authentication
+        return self._user_manager.authenticate_user(username, password).map(
+            self._metadata_handler.create_auth_token
+        )
 
     def _process_basic_authentication(
         self, credentials: tuple[str, str]
@@ -254,9 +259,9 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         if self._config.get("allow_anonymous", False) and not username:
             return FlextResult[FlextAuthModels.AuthToken].ok(
                 FlextAuthModels.AuthToken(
-                    user_id="anonymous",
-                    token="anonymous",
-                    token_type="basic",
+                    identity_id="anonymous",
+                    token="anonymous",  # noqa: S106
+                    token_type="basic_auth",  # noqa: S106
                     expires_at=datetime.now(UTC) + timedelta(days=1),
                     is_revoked=False,
                 )
@@ -382,37 +387,47 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         return capabilities
 
-    def get_metadata(self) -> dict[str, object]:
+    def get_metadata(self) -> FlextAuthModels.ProviderConfiguration:
         """Return Basic auth provider metadata.
 
         Returns:
             dict[str, object]: Provider metadata
 
         """
-        return {
-            "name": "basic",
-            "version": "2.0.0",
-            "description": "HTTP Basic authentication provider",
-            "capabilities": list(self.supports()),
-            "realm": self._realm,
-            "allow_anonymous": self._allow_anonymous,
-            "case_sensitive": self._case_sensitive,
-            "require_https": self._require_https,
-        }
+        return FlextAuthModels.ProviderConfiguration(
+            name="basic",
+            type="http_basic",
+            enabled=True,
+            version="2.0.0",
+            description="HTTP Basic authentication provider",
+            capabilities=list(self.supports()),
+            realm=self._realm,
+            allow_anonymous=self._allow_anonymous,
+            case_sensitive=self._case_sensitive,
+            require_https=self._require_https,
+        )
 
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.User | None]:
+    def validate_token(
+        self, token: str
+    ) -> FlextResult[FlextAuthModels.Identity | None]:
         """Validate Basic auth token and return user."""
-        return FlextResult[FlextAuthModels.User | None].ok(
+        # token parameter reserved for future Basic auth token validation
+        _ = token  # Mark as intentionally unused for now
+        return FlextResult[FlextAuthModels.Identity | None].ok(
             None
         )  # Simplified implementation
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.User,
-        token_type: str = "access",
+        user: FlextAuthModels.Identity,
+        token_type: str = "basic_access",  # noqa: S107
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate Basic auth token for user."""
+        # user, token_type, expiry_minutes parameters reserved for future implementation
+        _ = user  # Mark as intentionally unused for now
+        _ = token_type  # Mark as intentionally unused for now
+        _ = expiry_minutes  # Mark as intentionally unused for now
         return FlextResult[str].fail(
             "Basic auth token generation not implemented in this refactor"
         )
@@ -540,11 +555,11 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             token="",  # No credentials for anonymous
             token_type=FlextAuthConstants.Jwt.BASIC_TOKEN_TYPE,
             expires_at=token_expires_at,
-            user_id=anonymous_id,
+            identity_id=anonymous_id,
             is_revoked=False,
         )
 
-        self.logger.info("Anonymous access granted", user_id=anonymous_id)
+        self.logger.info("Anonymous access granted", identity_id=anonymous_id)
 
         return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)
 

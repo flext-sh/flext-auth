@@ -31,10 +31,43 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_core import FlextLogger, FlextResult, FlextService
-from flext_web.models import FlextWebModels
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
+
+
+# Placeholder types for HTTP requests/responses (to avoid circular dependencies)
+class HttpRequest:
+    """Placeholder for HTTP request type."""
+
+
+class HttpResponse:
+    """Placeholder for HTTP response type."""
+
+
+class _MiddlewareControlMixin:
+    """Shared enable/disable functionality for middleware classes.
+
+    Eliminates duplication of enable/disable/is_enabled pattern (12 lines × 2 classes).
+    This mixin provides the base control functionality for all middleware implementations.
+    """
+
+    def __init__(self) -> None:
+        """Initialize middleware control state."""
+        self._enabled = True
+
+    def enable(self) -> None:
+        """Enable middleware processing."""
+        self._enabled = True
+
+    def disable(self) -> None:
+        """Disable middleware processing."""
+        self._enabled = False
+
+    @property
+    def is_enabled(self) -> bool:
+        """Check if middleware is enabled."""
+        return self._enabled
 
 
 class FlextAuthMiddleware(FlextService):
@@ -54,7 +87,7 @@ class FlextAuthMiddleware(FlextService):
             "FlextAuthMiddleware is a namespace class - use specific middleware classes like FlextWebAuthMiddleware"
         )
 
-    class FlextWebAuthMiddleware:
+    class FlextWebAuthMiddleware(_MiddlewareControlMixin):
         """Adapts FlextAuthBaseProvider to HTTP client middleware.
 
         This middleware integrates flext-auth authentication providers with
@@ -105,21 +138,21 @@ class FlextAuthMiddleware(FlextService):
                 auto_refresh: Automatically refresh expired tokens (default: True)
 
             """
-            self.name = f"FlextWebAuthMiddleware({provider.get_metadata()['name']})"
+            super().__init__()  # Initialize mixin
+            provider_name = provider.get_metadata()["name"]
+            self.name = f"FlextWebAuthMiddleware({provider_name})"
             self._provider = provider
+            self._provider_name = provider_name  # Cache provider name
             self._credentials = credentials
             self._header_name = header_name
             self._token_prefix = token_prefix
             self._auto_refresh = auto_refresh
-            self.logger = FlextLogger(
-                f"flext_auth.middleware.http.{provider.get_metadata()['name']}"
-            )
+            self.logger = FlextLogger(f"flext_auth.middleware.http.{provider_name}")
             self._current_token: FlextAuthModels.AuthToken | None = None
-            self._enabled = True
 
         def process_request(
             self,
-            request: FlextWebModels.FlextApiModels.HttpRequest,
+            request: HttpRequest,
         ) -> FlextResult[object]:
             """Process HTTP request by adding authentication headers.
 
@@ -193,7 +226,7 @@ class FlextAuthMiddleware(FlextService):
 
         def process_response(
             self,
-            response: FlextWebModels.FlextApiModels.HttpResponse,
+            response: HttpResponse,
         ) -> FlextResult[object]:
             """Process HTTP response (pass-through for HTTP auth).
 
@@ -210,55 +243,61 @@ class FlextAuthMiddleware(FlextService):
             return FlextResult[object].ok(response)
 
         def _ensure_valid_token(self) -> FlextResult[FlextAuthModels.AuthToken]:
-            """Ensure we have a valid authentication token.
+            """Ensure we have a valid authentication token (Orchestrator pattern).
 
-            This method handles the token lifecycle:
-            1. If no token exists, authenticate using credentials
-            2. If token exists, validate it
-            3. If token is invalid/expired and refresh supported, refresh it
-            4. If refresh fails or not supported, re-authenticate
-
-            Returns:
-                FlextResult with valid token or error
-
+            Delegates token lifecycle to specific methods with SRP.
             """
-            # If no token, authenticate
             if not self._current_token:
-                if not self._credentials:
-                    return FlextResult[FlextAuthModels.AuthToken].fail(
-                        "No authentication token and no credentials provided"
-                    )
+                return self._authenticate_initial()
 
-                auth_result = self._provider.authenticate(self._credentials)
-                if auth_result.is_failure:
-                    return auth_result
+            if self._is_token_still_valid():
+                return FlextResult[FlextAuthModels.AuthToken].ok(self._current_token)
 
-                self._current_token = auth_result.unwrap()
-                self.logger.info(
-                    "Initial authentication successful",
-                    provider=self._provider.get_metadata()["name"],
+            return self._refresh_or_reauthenticate()
+
+        def _authenticate_initial(self) -> FlextResult[FlextAuthModels.AuthToken]:
+            """Authenticate using credentials for initial token (SRP: Initial auth only)."""
+            if not self._credentials:
+                return FlextResult[FlextAuthModels.AuthToken].fail(
+                    "No authentication token and no credentials provided"
                 )
-                return FlextResult[FlextAuthModels.AuthToken].ok(self._current_token)
 
-            # Validate current token
+            auth_result = self._provider.authenticate(self._credentials)
+            if auth_result.is_failure:
+                return auth_result
+
+            self._current_token = auth_result.unwrap()
+            self.logger.info(
+                "Initial authentication successful", provider=self._provider_name
+            )
+            return FlextResult[FlextAuthModels.AuthToken].ok(self._current_token)
+
+        def _is_token_still_valid(self) -> bool:
+            """Check if current token is still valid (SRP: Validation check only)."""
+            if not self._current_token:
+                return False
             validation_result = self._provider.validate(self._current_token)
-            if validation_result.is_success and validation_result.unwrap():
-                # Token is valid
-                return FlextResult[FlextAuthModels.AuthToken].ok(self._current_token)
+            return validation_result.is_success and validation_result.unwrap()
 
-            # Token is invalid/expired - try to refresh
-            if self._auto_refresh and "refresh" in self._provider.supports():
+        def _refresh_or_reauthenticate(
+            self,
+        ) -> FlextResult[FlextAuthModels.AuthToken]:
+            """Attempt to refresh or re-authenticate (SRP: Recovery logic only)."""
+            # Try to refresh if supported
+            if (
+                self._auto_refresh
+                and "refresh" in self._provider.supports()
+                and self._current_token
+            ):
                 self.logger.debug(
-                    "Token expired, attempting refresh",
-                    provider=self._provider.get_metadata()["name"],
+                    "Token expired, attempting refresh", provider=self._provider_name
                 )
 
                 refresh_result = self._provider.refresh(self._current_token)
                 if refresh_result.is_success:
                     self._current_token = refresh_result.unwrap()
                     self.logger.info(
-                        "Token refresh successful",
-                        provider=self._provider.get_metadata()["name"],
+                        "Token refresh successful", provider=self._provider_name
                     )
                     return FlextResult[FlextAuthModels.AuthToken].ok(
                         self._current_token
@@ -268,7 +307,7 @@ class FlextAuthMiddleware(FlextService):
             if self._credentials:
                 self.logger.debug(
                     "Token refresh failed, re-authenticating",
-                    provider=self._provider.get_metadata()["name"],
+                    provider=self._provider_name,
                 )
 
                 auth_result = self._provider.authenticate(self._credentials)
@@ -282,20 +321,7 @@ class FlextAuthMiddleware(FlextService):
                 "Token expired and unable to refresh or re-authenticate"
             )
 
-        def enable(self) -> None:
-            """Enable middleware processing."""
-            self._enabled = True
-
-        def disable(self) -> None:
-            """Disable middleware processing."""
-            self._enabled = False
-
-        @property
-        def is_enabled(self) -> bool:
-            """Check if middleware is enabled."""
-            return self._enabled
-
-    class WebAuthMiddleware:
+    class WebAuthMiddleware(_MiddlewareControlMixin):
         """Adapts FlextAuthBaseProvider to web application middleware.
 
         This middleware integrates flext-auth authentication providers with
@@ -352,17 +378,17 @@ class FlextAuthMiddleware(FlextService):
                 require_auth: Require authentication for all non-excluded paths (default: True)
 
             """
-            self.name = f"WebAuthMiddleware({provider.get_metadata()['name']})"
+            super().__init__()  # Initialize mixin
+            provider_name = provider.get_metadata()["name"]
+            self.name = f"WebAuthMiddleware({provider_name})"
             self._provider = provider
+            self._provider_name = provider_name  # Cache provider name
             self._header_name = header_name
             self._token_prefix = token_prefix
             self._cookie_name = cookie_name
             self._exclude_paths = exclude_paths or []
             self._require_auth = require_auth
-            self.logger = FlextLogger(
-                f"flext_auth.middleware.web.{provider.get_metadata()['name']}"
-            )
-            self._enabled = True
+            self.logger = FlextLogger(f"flext_auth.middleware.web.{provider_name}")
 
         def process_request(
             self,
@@ -510,19 +536,6 @@ class FlextAuthMiddleware(FlextService):
                         return token
 
             return None
-
-        def enable(self) -> None:
-            """Enable middleware processing."""
-            self._enabled = True
-
-        def disable(self) -> None:
-            """Disable middleware processing."""
-            self._enabled = False
-
-        @property
-        def is_enabled(self) -> bool:
-            """Check if middleware is enabled."""
-            return self._enabled
 
 
 __all__ = ["FlextAuthMiddleware"]

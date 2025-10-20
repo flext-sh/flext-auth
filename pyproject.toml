@@ -40,6 +40,7 @@
     readme = "README.md"
     requires-python = ">=3.13,<3.14"
     version = "0.9.0"
+
     [[project.authors]]
         email = "team@flext.sh"
         name  = "FLEXT Team"
@@ -112,16 +113,18 @@
         flext-auth-legacy = "flext_auth.cli:main"
 
 [tool]
-    [tool.poetry]
-        authors = [
-            "FLEXT Team <team@flext.sh>",
+    [tool.deptry]
+        known_first_party = [
+            "flext_auth",
         ]
-        description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
-        name = "flext-auth"
-        version = "0.9.0"
+
+    [tool.poetry]
         [[tool.poetry.packages]]
             from    = "src"
             include = "flext_auth"
+
+        [tool.poetry.dependencies]
+            python = ">=3.13,<3.14"
 
         [tool.poetry.dependencies.flext-core]
             develop = true
@@ -131,52 +134,23 @@
             develop = true
             path    = "../flext-observability"
 
-        [tool.poetry.group.dev.dependencies]
-            commitizen     = ">=4.8.3"
-            detect-secrets = ">=1.5.0"
-            pyrefly        = "^0.34.0"
-
-    [tool.bandit]
-        extend = "../.bandit-shared.toml"
-
-    [tool.coverage]
-        extend = "../.coverage-shared.toml"
-
-    [tool.deptry]
-        exclude = [
-            ".archive",
-            ".git",
-            ".meltano",
-            ".mypy_cache",
-            ".pyrefly_cache",
-            ".pytest_cache",
-            ".ruff_cache",
-            ".venv",
-            "__pycache__",
-            "build",
-            "dist",
-            "htmlcov",
-            "node_modules",
-            "reports",
-            "tests",
-            "tests",
-            "vendor",
-            "venv",
-        ]
-        known_first_party = [
-            "flext_auth",
-        ]
-        [tool.deptry.package_module_name_map]
-            pyjwt = "jwt"
-        pep621_dev_dependency_groups = [
-            "dev",
-            "security",
-            "test",
-            "typings",
-        ]
+        [tool.poetry.group]
+		    [tool.poetry.group.dev.dependencies]
+		        commitizen     = ">=4.8.3"
+		        detect-secrets = ">=1.5.0"
+		        pyrefly        = "^0.34.0"
 
     [tool.pytest.ini_options]
-        addopts = "-v --tb=short --strict-markers --strict-config --color=yes"
+        addopts = [
+            "--cov-report=term-missing",
+            "--cov=src/",
+            "--strict-config",
+            "--strict-markers",
+            "--tb=short",
+            "-p no:sugar",
+            "-q",
+            "-ra",
+        ]
         markers = [
             "concurrency: marks tests as concurrency tests",
             "e2e: marks tests as end-to-end tests",
@@ -190,6 +164,17 @@
             "timeout: marks tests as timeout tests",
             "unit: marks tests as unit tests",
         ]
+        minversion = "8.0"
+        python_classes = [
+            "Test*",
+        ]
+        python_files = [
+            "*_test.py",
+            "test_*.py",
+        ]
+        python_functions = [
+            "test_*",
+        ]
         testpaths = [
             "tests",
         ]
@@ -201,23 +186,3 @@
             known-first-party = [
                 "flext_auth",
             ]
-
-    [tool.pyrefly]
-        python-version = "3.13"
-        search-path = [
-            "examples",
-            "scripts",
-            "src",
-            "tests",
-        ]
-        ignore-missing-imports = [
-            "pytest",
-        ]
-
-
-        # SubConfig: Disable unknown-name error for models.py
-        # This handles forward references to classes defined later in the same file
-        [[tool.pyrefly.sub-config]]
-            matches = "**/models.py"
-            [tool.pyrefly.sub-config.errors]
-                unknown-name = false

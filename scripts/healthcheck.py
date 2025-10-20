@@ -8,7 +8,7 @@ Note: This script uses urllib.request.urlopen with validated HTTP/HTTPS URLs onl
 Expected ruff S310 warning is acceptable due to explicit scheme validation.
 
 """
-# ruff: noqa: S310 # URL scheme validated above to only allow http/https
+# URL scheme validated above to only allow http/https
 
 from __future__ import annotations
 

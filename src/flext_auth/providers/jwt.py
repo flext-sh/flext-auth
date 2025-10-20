@@ -30,7 +30,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     Railway-oriented programming with flext-core patterns for maximum maintainability.
     """
 
-    def __init__(self, config: dict[str, object]) -> None:
+    def __init__(self, config: FlextAuthModels.ProviderConfiguration) -> None:
         """Initialize JWT provider with SOLID delegation.
 
         Uses dedicated services for token generation, validation, and password hashing.
@@ -56,13 +56,13 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         self._bus = FlextBus()
 
     @property
-    def config(self) -> dict[str, object]:
+    def config(self) -> FlextAuthModels.ProviderConfiguration:
         """Get provider configuration."""
         return self._config
 
     def authenticate(
         self,
-        credentials: dict[str, object],
+        credentials: FlextAuthModels.CredentialValidation,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate user with username/password using SOLID delegation.
 
@@ -87,10 +87,15 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # Use dedicated password hasher service for authentication
         return self._password_hasher.verify_password(
             password, self._get_user_password_hash(username)
-        ).bind(lambda is_valid: self._process_authentication(username, is_valid))
+        ).bind(
+            lambda is_valid: self._process_authentication(username, is_valid=is_valid)
+        )
 
     def _process_authentication(
-        self, username: str, is_valid: bool  # noqa: FBT001
+        self,
+        username: str,
+        *,
+        is_valid: bool,
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Process authentication result."""
         if not is_valid:
@@ -99,11 +104,11 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # Generate token using dedicated token generator service
         return self._token_generator.generate_token(username).map(
             lambda token: FlextAuthModels.AuthToken(
-                user_id=username,
+                identity_id=username,
                 token=token,
-                token_type="access",  # noqa: S106
+                token_type="jwt_access",  # noqa: S106
                 expires_at=datetime.now(UTC)
-                + timedelta(minutes=int(self._config.get("expiry_minutes", 30))),
+                + timedelta(minutes=self.get_expiry_minutes()),
                 is_revoked=False,
             )
         )
@@ -140,44 +145,53 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             return FlextResult[FlextAuthModels.AuthToken].fail(token_result.error)
 
         new_token = token_result.unwrap()
-        return FlextResult.ok(FlextAuthModels.AuthToken(
-            user_id=str(payload["sub"]),
-            token=new_token,
-            token_type="access",  # noqa: S106
-            expires_at=datetime.now(UTC)
-            + timedelta(minutes=int(self._config.get("expiry_minutes", 30))),
-            is_revoked=False,
-        ))
+        return FlextResult.ok(
+            FlextAuthModels.AuthToken(
+                identity_id=str(payload["sub"]),
+                token=new_token,
+                token_type="jwt_access",  # noqa: S106
+                expires_at=datetime.now(UTC)
+                + timedelta(minutes=self.get_expiry_minutes()),
+                is_revoked=False,
+            )
+        )
 
     def supports(self) -> set[str]:
         """Return JWT provider capabilities using composition."""
         return {"jwt", "token", "validate", "refresh", "password"}
 
-    def get_metadata(self) -> dict[str, object]:
+    def get_metadata(self) -> FlextAuthModels.ProviderConfiguration:
         """Get JWT provider metadata using composition."""
-        return {
-            "name": "jwt",
-            "version": "1.0.0",
-            "algorithm": self._config.get("algorithm", "HS256"),
-            "capabilities": list(self.supports()),
-        }
+        return FlextAuthModels.ProviderConfiguration(
+            name="jwt",
+            type="jwt",
+            enabled=True,
+            algorithm=self._config.get("algorithm", "HS256"),
+            capabilities=list(self.supports()),
+        )
 
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.User | None]:
-        """Validate JWT token and return user using dedicated token validator service."""
+    def validate_token(
+        self, token: str
+    ) -> FlextResult[FlextAuthModels.Identity | None]:
+        """Validate JWT token and return identity using dedicated token validator service."""
         return self._token_validator.validate_token(token).map(
-            lambda payload: FlextAuthModels.User(
-                user_id=str(payload.get("sub", "")),
-                username=str(payload.get("sub", "")),
-                email="",
-                roles=[],
-                permissions=[],
+            lambda payload: FlextAuthModels.Identity(
+                id=str(payload.get("sub", "")),
+                name=str(payload.get("sub", "")),
+                contact=str(payload.get("email", "")),
+                roles=payload.get("roles", [])
+                if isinstance(payload.get("roles"), list)
+                else [],
+                permissions=payload.get("permissions", [])
+                if isinstance(payload.get("permissions"), list)
+                else [],
             )
         )
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.User,
-        _token_type: str = "access",  # noqa: S107
+        user: FlextAuthModels.Identity,
+        _token_type: str = "jwt_access",  # noqa: S107
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate JWT token for user using dedicated token generator service."""

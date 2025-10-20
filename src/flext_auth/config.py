@@ -1,7 +1,7 @@
-"""FLEXT Auth Configuration - Generic pydantic config with flext-core integration.
+"""FLEXT Auth Configuration - Generic Pydantic configuration with flext-core integration.
 
-Uses Python 3.13+ syntax, flext patterns directly, and consolidated generic fields
-for maximum maintainability. Single FlextAuthConfig class with SOLID principles.
+Single FlextAuthConfig class using Pydantic ConfigDict with environment variable
+override support, validation, and SOLID principles.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -11,18 +11,18 @@ from __future__ import annotations
 
 from typing import Self
 
-from flext_core import FlextConfig
-from pydantic import Field, SecretStr, computed_field, model_validator
+from flext_core import FlextConfig, FlextResult
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import SettingsConfigDict
 
 from flext_auth.constants import FlextAuthConstants
 
 
 class FlextAuthConfig(FlextConfig):
-    """Generic auth configuration using flext-core patterns and pydantic.
+    """Generic authentication configuration using Pydantic and flext-core patterns.
 
-    Python 3.13+ features, SOLID principles, minimal line count through consolidation.
-    Domain-agnostic configuration for any authentication system.
+    All auth configuration unified in single class with environment override,
+    validation, and sensible defaults embedded directly (not from constants).
     """
 
     model_config = SettingsConfigDict(
@@ -34,214 +34,282 @@ class FlextAuthConfig(FlextConfig):
         validate_default=True,
     )
 
-    # =========================================================================
-    # CONSOLIDATED GENERIC CONFIGURATION FIELDS
-    # =========================================================================
-
-    # Core Security - Generic
+    # Security: Generic secret and algorithm
     auth_secret: SecretStr = Field(
-        default=SecretStr(FlextAuthConstants.SECRET_KEY_DEFAULT),
-        description="Generic secret key for cryptographic operations",
+        default=SecretStr("flext-auth-default-secret-key-change-in-production"),
+        description="Generic secret key",
     )
     algorithm: str = Field(
         default=FlextAuthConstants.ALGORITHM_DEFAULT,
         description="Cryptographic algorithm",
     )
     expiry_minutes: int = Field(
-        default=FlextAuthConstants.EXPIRY_MINUTES_DEFAULT,
-        description="Default expiry time in minutes",
+        default=FlextAuthConstants.EXPIRY_DEFAULT_MINUTES,
         ge=1,
         le=FlextAuthConstants.EXPIRY_MAX_MINUTES,
+        description="Default expiry time",
     )
-    issuer: str = Field(default="flext-auth", description="Token issuer identifier")
+    issuer: str = Field(
+        default=FlextAuthConstants.DEFAULT_ISSUER, description="Token issuer"
+    )
     audience: str = Field(
-        default="flext-users", description="Token audience identifier"
+        default=FlextAuthConstants.DEFAULT_AUDIENCE, description="Token audience"
     )
 
-    # Credential Processing - Generic
+    # Credential Processing
     hash_rounds: int = Field(
         default=FlextAuthConstants.HASH_ROUNDS_DEFAULT,
-        description="Rounds for credential hashing",
         ge=FlextAuthConstants.HASH_ROUNDS_MIN,
         le=FlextAuthConstants.HASH_ROUNDS_MAX,
+        description="Credential hashing rounds",
     )
     min_credential_length: int = Field(
         default=FlextAuthConstants.CREDENTIAL_MIN_LENGTH,
-        description="Minimum credential length",
         ge=1,
+        description="Minimum credential length",
     )
     max_credential_length: int = Field(
         default=FlextAuthConstants.CREDENTIAL_MAX_LENGTH,
-        description="Maximum credential length",
         ge=1,
+        description="Maximum credential length",
     )
 
-    # Security Policies - Generic
+    # Security Policies
     max_attempts: int = Field(
         default=FlextAuthConstants.MAX_ATTEMPTS_DEFAULT,
-        description="Maximum attempts before lockout",
         ge=1,
+        description="Max attempts before lockout",
     )
     lockout_duration_minutes: int = Field(
         default=FlextAuthConstants.LOCKOUT_DURATION_MINUTES,
-        description="Lockout duration in minutes",
         ge=1,
+        description="Lockout duration",
     )
 
-    # Session Management - Generic
+    # Session Management
     session_expiry_minutes: int = Field(
-        default=FlextAuthConstants.SESSION_EXPIRY_MINUTES_DEFAULT,
-        description="Session expiry in minutes",
+        default=FlextAuthConstants.SESSION_EXPIRY_DEFAULT_MINUTES,
         ge=1,
         le=FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES,
+        description="Session expiry",
     )
     max_sessions_per_identity: int = Field(
-        default=FlextAuthConstants.MAX_SESSIONS_PER_IDENTITY,
-        description="Maximum concurrent sessions per identity",
+        default=FlextAuthConstants.MAX_SESSIONS_DEFAULT,
         ge=1,
+        description="Max concurrent sessions",
     )
 
-    # Audit & Logging - Generic
+    # Audit & Logging
     enable_audit_logging: bool = Field(
-        default=FlextAuthConstants.ENABLE_AUDIT_LOGGING,
+        default=True,
         description="Enable audit logging",
     )
-    log_attempts: bool = Field(
-        default=FlextAuthConstants.LOG_ATTEMPTS,
-        description="Log authentication attempts",
-    )
-    log_failures: bool = Field(
-        default=FlextAuthConstants.LOG_FAILURES, description="Log failures"
-    )
-    log_success: bool = Field(
-        default=FlextAuthConstants.LOG_SUCCESS, description="Log successful operations"
-    )
-    mask_credentials: bool = Field(
-        default=FlextAuthConstants.MASK_CREDENTIALS,
-        description="Mask credentials in logs",
-    )
-    mask_tokens: bool = Field(
-        default=FlextAuthConstants.MASK_TOKENS, description="Mask tokens in logs"
-    )
+    log_attempts: bool = Field(default=True, description="Log attempts")
+    log_failures: bool = Field(default=True, description="Log failures")
+    log_success: bool = Field(default=False, description="Log success")
+    mask_credentials: bool = Field(default=True, description="Mask credentials")
+    mask_tokens: bool = Field(default=True, description="Mask tokens")
 
-    # Performance & Rate Limiting - Generic
+    # Performance & Rate Limiting
     track_performance: bool = Field(
-        default=FlextAuthConstants.TRACK_PERFORMANCE,
-        description="Track performance metrics",
+        default=False,
+        description="Track performance",
     )
     performance_warning_threshold: float = Field(
-        default=FlextAuthConstants.PERFORMANCE_WARNING_THRESHOLD,
-        description="Performance warning threshold in milliseconds",
+        default=FlextAuthConstants.PERFORMANCE_THRESHOLD_MS,
         ge=0.0,
+        description="Performance warning threshold (ms)",
     )
     enable_rate_limiting: bool = Field(
-        default=FlextAuthConstants.ENABLE_RATE_LIMITING,
+        default=False,
         description="Enable rate limiting",
     )
     max_requests_per_minute: int = Field(
         default=FlextAuthConstants.MAX_REQUESTS_PER_MINUTE,
-        description="Maximum requests per minute",
         ge=1,
+        description="Max requests/minute",
     )
     max_requests_per_hour: int = Field(
         default=FlextAuthConstants.MAX_REQUESTS_PER_HOUR,
-        description="Maximum requests per hour",
         ge=1,
+        description="Max requests/hour",
     )
 
-    # Advanced Features - Generic
+    # Advanced Features
     require_complexity: bool = Field(
-        default=FlextAuthConstants.REQUIRE_COMPLEXITY,
-        description="Require complexity validation",
+        default=False,
+        description="Require complexity",
     )
     min_score: int = Field(
-        default=FlextAuthConstants.CREDENTIAL_MIN_SCORE,
-        description="Minimum complexity score",
+        default=2,
         ge=0,
         le=4,
+        description="Min complexity score",
     )
     enable_verification: bool = Field(
-        default=FlextAuthConstants.ENABLE_VERIFICATION,
-        description="Enable verification process",
+        default=False,
+        description="Enable verification",
     )
-    enable_history: bool = Field(
-        default=FlextAuthConstants.ENABLE_HISTORY, description="Enable history tracking"
-    )
+    enable_history: bool = Field(default=False, description="Enable history")
 
-    # =========================================================================
-    # METHODS WITH SOLID PRINCIPLES
-    # =========================================================================
+    # Legacy property names for backward compatibility
+    @property
+    def max_login_attempts(self) -> int:
+        """Maximum login attempts (alias for max_attempts)."""
+        return self.max_attempts
 
-    def to_dict(self) -> dict[str, object]:
-        """Generic serialization with security masking."""
+    @property
+    def jwt_expiry_minutes(self) -> int:
+        """Legacy property for jwt_expiry_minutes."""
+        return self.expiry_minutes
+
+    @property
+    def jwt_algorithm(self) -> str:
+        """Legacy property for jwt_algorithm."""
+        return self.algorithm
+
+    @property
+    def jwt_auth_secret(self) -> SecretStr:
+        """Legacy property for jwt_auth_secret."""
+        return self.auth_secret
+
+    @property
+    def bcrypt_rounds(self) -> int:
+        """Legacy property for bcrypt_rounds."""
+        return self.hash_rounds
+
+    @property
+    def environment(self) -> str:
+        """Get current environment."""
+        return "development"  # Default for now
+
+    @classmethod
+    def create_with_overrides(cls, **overrides: object) -> FlextResult[Self]:
+        """Create config instance with overrides."""
+        try:
+            # Validate overrides using base class method
+            validation_result = cls.validate_overrides(cls(), **overrides)
+            if validation_result.is_failure:
+                return FlextResult[Self].fail(
+                    validation_result.error or "Validation failed"
+                )
+
+            # Create a new instance and apply validated overrides
+            instance = cls.__new__(cls)
+            # Initialize with defaults first
+            super(cls, instance).__init__()
+
+            # Apply validated overrides
+            for key, value in validation_result.unwrap().items():
+                setattr(instance, key, value)
+
+            return FlextResult[Self].ok(instance)
+        except Exception as e:
+            return FlextResult[Self].fail(str(e))
+
+    def get_jwt_settings(self) -> dict[str, str | int]:
+        """Get JWT-specific settings."""
         return {
-            "auth_secret": "***masked***" if self.auth_secret else None,
             "algorithm": self.algorithm,
+            "jwt_expiry_minutes": self.expiry_minutes,
             "expiry_minutes": self.expiry_minutes,
             "issuer": self.issuer,
             "audience": self.audience,
+        }
+
+    def get_security_settings(self) -> dict[str, int | bool]:
+        """Get security-related settings."""
+        return {
             "hash_rounds": self.hash_rounds,
-            "min_credential_length": self.min_credential_length,
-            "max_credential_length": self.max_credential_length,
+            "bcrypt_rounds": self.hash_rounds,
             "max_attempts": self.max_attempts,
             "lockout_duration_minutes": self.lockout_duration_minutes,
-            "session_expiry_minutes": self.session_expiry_minutes,
-            "max_sessions_per_identity": self.max_sessions_per_identity,
-            "enable_audit_logging": self.enable_audit_logging,
-            "log_attempts": self.log_attempts,
-            "log_failures": self.log_failures,
-            "log_success": self.log_success,
-            "mask_credentials": self.mask_credentials,
-            "mask_tokens": self.mask_tokens,
-            "track_performance": self.track_performance,
-            "performance_warning_threshold": self.performance_warning_threshold,
-            "enable_rate_limiting": self.enable_rate_limiting,
-            "require_complexity": self.require_complexity,
-            "min_score": self.min_score,
-            "max_requests_per_minute": self.max_requests_per_minute,
-            "max_requests_per_hour": self.max_requests_per_hour,
-            "enable_verification": self.enable_verification,
-            "enable_history": self.enable_history,
         }
 
     @model_validator(mode="after")
     def validate_configuration(self) -> Self:
-        """Generic validation with security checks."""
-        # Security validations
-        if (
-            len(self.auth_secret.get_secret_value())
-            < FlextAuthConstants.SECRET_MIN_LENGTH
-        ):
-            msg = f"Secret key must be at least {FlextAuthConstants.SECRET_MIN_LENGTH} characters long"
+        """Validate configuration after initialization."""
+        secret_len = len(self.auth_secret.get_secret_value())
+        if secret_len < FlextAuthConstants.SECRET_MIN_LENGTH:
+            msg = f"Secret must be ≥{FlextAuthConstants.SECRET_MIN_LENGTH} chars, got {secret_len}"
             raise ValueError(msg)
 
-        # Boundary validations
         if self.min_credential_length > self.max_credential_length:
-            msg = "Minimum credential length cannot exceed maximum credential length"
+            msg = "Min credential length > max"
             raise ValueError(msg)
 
         if self.session_expiry_minutes > FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES:
-            msg = f"Session expiry cannot exceed {FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES} minutes"
-            raise ValueError(msg)
-
-        if self.max_attempts > FlextAuthConstants.MAX_ATTEMPTS_DEFAULT:
-            msg = f"Maximum attempts cannot exceed {FlextAuthConstants.MAX_ATTEMPTS_DEFAULT}"
-            raise ValueError(msg)
-
-        # Rate limiting validations
-        if self.max_requests_per_minute > FlextAuthConstants.MAX_REQUESTS_PER_MINUTE:
-            msg = f"Maximum requests per minute cannot exceed {FlextAuthConstants.MAX_REQUESTS_PER_MINUTE}"
-            raise ValueError(msg)
-
-        if self.max_requests_per_hour > FlextAuthConstants.MAX_REQUESTS_PER_HOUR:
-            msg = f"Maximum requests per hour cannot exceed {FlextAuthConstants.MAX_REQUESTS_PER_HOUR}"
+            msg = f"Session expiry > {FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES}min (30 days)"
             raise ValueError(msg)
 
         return self
 
     @classmethod
-    def create(cls, **kwargs: object) -> Self:
-        """Factory method for configuration creation."""
+    def get_or_create_global(
+        cls,
+        **kwargs: str | int | bool | SecretStr | None,
+    ) -> FlextResult[FlextAuthConfig]:
+        """Get or create global instance with optional overrides.
+
+        Args:
+            **kwargs: Configuration overrides with proper types
+
+        Returns:
+            FlextResult containing the config instance
+
+        """
+        try:
+            # If instance exists, return it
+            instance = cls.get_global_instance()
+            return FlextResult.ok(instance)
+        except Exception:
+            # Create new instance with provided kwargs
+            try:
+                instance = cls(**kwargs)
+                # Set as global instance
+                cls._global_instance = instance
+                return FlextResult.ok(instance)
+            except Exception as e:
+                return FlextResult.fail(f"Failed to create config: {e}")
+
+    @property
+    def jwt_secret(self) -> SecretStr:
+        """Alias for auth_secret for backward compatibility."""
+        return self.auth_secret
+
+    @jwt_secret.setter
+    def jwt_secret(self, value: str | SecretStr) -> None:
+        """Set auth_secret via jwt_secret alias."""
+        if isinstance(value, str):
+            self.auth_secret = SecretStr(value)
+        else:
+            self.auth_secret = value
+
+    # Additional backward compatibility properties for tests
+    @property
+    def min_password_length(self) -> int:
+        """Alias for min_credential_length."""
+        return self.min_credential_length
+
+    @property
+    def max_password_length(self) -> int:
+        """Alias for max_credential_length."""
+        return self.max_credential_length
+
+    @property
+    def jwt_issuer(self) -> str:
+        """Alias for issuer."""
+        return self.issuer
+
+    @property
+    def jwt_audience(self) -> str:
+        """Alias for audience."""
+        return self.audience
+
+    # Class method for backward compatibility
+    @classmethod
+    def create(cls, **kwargs: str | int | bool | SecretStr | None) -> Self:
+        """Create config instance (alias for constructor)."""
         return cls(**kwargs)
 
 

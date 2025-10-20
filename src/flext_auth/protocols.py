@@ -5,7 +5,7 @@ SPDX-License-Identifier: MIT
 
 """
 
-# ruff: noqa: ARG002, S106
+# ruff: noqa: ARG002
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
@@ -13,7 +13,6 @@ from typing import Protocol, runtime_checkable
 
 from flext_core import FlextProtocols, FlextResult
 
-from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.typings import FlextAuthTypes
 
@@ -107,7 +106,7 @@ class FlextAuthProtocols(FlextProtocols):
 
             def extend_session(
                 self,
-                hours: int = FlextAuthConstants.DEFAULT_SESSION_EXTEND_HOURS,
+                hours: int = 1,
             ) -> FlextResult[bool]:
                 """Extend session expiration time."""
                 return FlextResult[bool].ok(True)  # Placeholder implementation
@@ -144,16 +143,15 @@ class FlextAuthProtocols(FlextProtocols):
                 password: str,
                 full_name: str | None = None,
                 roles: list[str] | None = None,
-            ) -> FlextResult[FlextAuthModels.User]:
+            ) -> FlextResult[FlextAuthModels.Identity]:
                 """Register new user."""
-                return FlextResult[FlextAuthModels.User].ok(
-                    FlextAuthModels.User(
-                        user_id=f"user_{username}",
-                        username=username,
-                        email=email,
-                        password_hash="placeholder",
+                return FlextResult[FlextAuthModels.Identity].ok(
+                    FlextAuthModels.Identity(
+                        name=username,
+                        contact=email,
+                        credential_hash="placeholder",
                         full_name=full_name,
-                        failed_login_attempts=0,
+                        failed_attempts=0,
                         locked_until=None,
                     )
                 )  # Placeholder implementation

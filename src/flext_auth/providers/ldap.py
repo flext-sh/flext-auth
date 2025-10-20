@@ -46,7 +46,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     """
 
-    def __init__(self, config: dict[str, object]) -> None:
+    def __init__(self, config: FlextAuthModels.ProviderConfiguration) -> None:
         """Initialize LDAP provider with SOLID delegation.
 
         Uses composition for LDAP connection, user search, and authentication.
@@ -134,7 +134,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: manage LDAP connections.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthLdapProvider) -> None:
             """Initialize LDAP connector."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
@@ -151,7 +151,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: search for users in LDAP.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthLdapProvider) -> None:
             """Initialize user searcher."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
@@ -161,7 +161,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             # Simplified implementation - in production would use flext-ldap
             # For demo purposes, return mock user data
             user_data = {
-                "dn": f"uid={username},{self.provider._config['base_dn']}",
+                "dn": f"uid={username},{self.provider.get_base_dn()}",
                 "username": username,
                 "cn": f"User {username}",
                 "mail": f"{username}@example.com",
@@ -175,7 +175,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Single responsibility: authenticate users against LDAP.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthLdapProvider) -> None:
             """Initialize authenticator."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
@@ -185,15 +185,18 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         ) -> FlextResult[dict[str, object]]:
             """Authenticate user credentials against LDAP."""
             # Use composition for user search and connection
-            return self.provider._user_searcher.search_user(username).bind(
+            return self.provider.search_user(username).bind(
                 lambda user_data: self._verify_credentials(user_data, password)
             )
 
         def _verify_credentials(
-            self, user_data: dict[str, object], password: str
+            self,
+            user_data: dict[str, object],
+            password: str,  # noqa: ARG002
         ) -> FlextResult[dict[str, object]]:
             """Verify user credentials."""
             # Simplified implementation - in production would bind to LDAP and verify
+            # password parameter reserved for future LDAP authentication
             # For demo purposes, accept any password for existing users
             return FlextResult[dict[str, object]].ok(user_data)
 
@@ -209,19 +212,27 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             "capabilities": list(self.supports()),
         }
 
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.User | None]:
+    def validate_token(
+        self, token: str
+    ) -> FlextResult[FlextAuthModels.Identity | None]:
         """Validate LDAP token and return user."""
-        return FlextResult[FlextAuthModels.User | None].ok(
+        # token parameter reserved for future LDAP token validation
+        _ = token  # Mark as intentionally unused for now
+        return FlextResult[FlextAuthModels.Identity | None].ok(
             None
         )  # Simplified implementation
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.User,
-        token_type: str = "access",
+        user: FlextAuthModels.Identity,
+        token_type: str = "ldap_access",  # noqa: S107
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate LDAP token for user."""
+        # user, token_type, expiry_minutes parameters reserved for future implementation
+        _ = user  # Mark as intentionally unused for now
+        _ = token_type  # Mark as intentionally unused for now
+        _ = expiry_minutes  # Mark as intentionally unused for now
         return FlextResult[str].fail(
             "LDAP token generation not implemented in this refactor"
         )

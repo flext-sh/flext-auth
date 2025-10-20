@@ -20,6 +20,11 @@ from urllib.parse import urlparse
 from urllib.request import urlopen
 
 try:
+    import requests
+except ImportError:
+    requests = None
+
+try:
     import aiohttp
 
     HAS_AIOHTTP = True
@@ -345,10 +350,21 @@ class DocumentationAuditor:
                 ):
                     return response.status == 200
             else:
-                # Fallback to thread-based blocking call
+                # Fallback to safe HTTP client
                 def check_url() -> bool:
-                    req = urlopen(url, timeout=10)
-                    return req.status == 200
+                    if requests is not None:
+                        # requests only allows http/https by default
+                        response = requests.head(url, timeout=10, allow_redirects=True)
+                        return response.status_code == 200
+                    # If requests not available, use urlopen with strict validation
+                    parsed = urlparse(url)
+                    if parsed.scheme not in {"http", "https"}:
+                        return False
+                    try:
+                        req = urlopen(url, timeout=10)
+                        return req.status == 200
+                    except Exception:
+                        return False
 
                 return await asyncio.to_thread(check_url)
         except (TimeoutError, URLError, HTTPError, OSError, Exception):

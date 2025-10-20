@@ -15,6 +15,7 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 from __future__ import annotations
 
 from flext_core import FlextExceptions, FlextResult
+from flext_core.loggings import FlextLogger
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
@@ -135,17 +136,17 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
         Single responsibility: validate OIDC ID tokens.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthOidcProvider) -> None:
             """Initialize ID token validator."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
 
-        def validate_id_token(self, id_token: str) -> FlextResult[dict[str, object]]:
+        def validate_id_token(self, _id_token: str) -> FlextResult[dict[str, object]]:
             """Validate OIDC ID token."""
             # Simplified implementation - in production would use proper JWT validation
             return FlextResult[dict[str, object]].ok({
                 "sub": "user123",
-                "iss": self.provider._config.get("issuer"),
+                "iss": self.provider.get_issuer(),
             })
 
     class _OIDCUserInfoClient:
@@ -154,12 +155,12 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
         Single responsibility: retrieve user information from UserInfo endpoint.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthOidcProvider) -> None:
             """Initialize UserInfo client."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
 
-        def get_user_info(self, access_token: str) -> FlextResult[dict[str, object]]:
+        def get_user_info(self, _access_token: str) -> FlextResult[dict[str, object]]:
             """Get user information from UserInfo endpoint."""
             # Simplified implementation - in production would make HTTP request
             return FlextResult[dict[str, object]].ok({
@@ -173,7 +174,7 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
         Single responsibility: handle OIDC Discovery protocol.
         """
 
-        def __init__(self, provider) -> None:
+        def __init__(self, provider: FlextAuthOidcProvider) -> None:
             """Initialize Discovery client."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
@@ -182,7 +183,7 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
             """Discover OIDC provider configuration."""
             # Simplified implementation - in production would fetch from discovery endpoint
             return FlextResult[dict[str, object]].ok({
-                "issuer": self.provider._config.get("issuer")
+                "issuer": self.provider.get_issuer()
             })
 
     def supports(self) -> set[str]:
@@ -197,17 +198,19 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
             "capabilities": list(self.supports()),
         }
 
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.User | None]:
+    def validate_token(
+        self, _token: str
+    ) -> FlextResult[FlextAuthModels.Identity | None]:
         """Validate OIDC token and return user."""
-        return FlextResult[FlextAuthModels.User | None].ok(
+        return FlextResult[FlextAuthModels.Identity | None].ok(
             None
         )  # Simplified implementation
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.User,
-        token_type: str = "access",
-        expiry_minutes: int | None = None,
+        _user: FlextAuthModels.Identity,
+        _token_type: str | None = None,
+        _expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate OIDC token for user."""
         return FlextResult[str].fail(
