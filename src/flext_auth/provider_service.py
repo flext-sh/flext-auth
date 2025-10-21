@@ -1,7 +1,7 @@
-"""FLEXT Auth Provider Service - Advanced flext-core patterns with minimal line count.
+"""FLEXT Auth Provider Service - Flexible flext-core patterns with minimal line count.
 
 Uses Python 3.13+ syntax, railway-oriented programming, and consolidated patterns
-for maximum maintainability. Single FlextAuthProviderService class with advanced composition.
+for maximum maintainability. Single FlextAuthProviderService class with composition.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -29,14 +29,14 @@ from flext_auth.registry import FlextAuthRegistry
 
 
 class FlextAuthProviderService(FlextService):
-    """Advanced provider service using flext-core patterns and railway-oriented programming.
+    """Flexible provider service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
-    Advanced composition with dependency injection and error handling.
+    Flexible composition with dependency injection and error handling.
     """
 
     def __init__(self, config: FlextAuthConfig) -> None:
-        """Advanced initialization with automatic provider registration."""
+        """Flexible initialization with automatic provider registration."""
         super().__init__()
         self._config, self._providers = config, FlextAuthRegistry()
         self._register_builtin_providers()
@@ -48,7 +48,7 @@ class FlextAuthProviderService(FlextService):
         )
 
     def _register_builtin_providers(self) -> None:
-        """Advanced provider registration with conditional loading."""
+        """Flexible provider registration with conditional loading."""
         if not self._config:
             self.logger.warning(
                 "No configuration provided, skipping provider registration"
@@ -126,7 +126,7 @@ class FlextAuthProviderService(FlextService):
         return self._providers.list_providers()
 
     # =========================================================================
-    # ADVANCED AUTHENTICATION OPERATIONS
+    # Advanced AUTHENTICATION OPERATIONS
     # =========================================================================
 
     def authenticate_user(
@@ -144,7 +144,7 @@ class FlextAuthProviderService(FlextService):
         self,
         user: FlextAuthModels.Identity,
         provider: str = "jwt",
-        token_type: str = "access_token",  # noqa: S107
+        token_type: str = "access_token",
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Railway-oriented token generation with direct provider access."""

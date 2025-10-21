@@ -1,7 +1,7 @@
-"""FLEXT Auth Token Service - Advanced flext-core patterns with minimal line count.
+"""FLEXT Auth Token Service - Flexible flext-core patterns with minimal line count.
 
 Uses Python 3.13+ syntax, railway-oriented programming, and consolidated patterns
-for maximum maintainability. Single FlextAuthTokenService class with advanced composition.
+for maximum maintainability. Single FlextAuthTokenService class with composition.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -23,10 +23,10 @@ from flext_auth.utilities import FlextAuthUtilities
 
 
 class FlextAuthTokenService(ServiceManagerMixin, FlextService):
-    """Advanced token service using flext-core patterns and railway-oriented programming.
+    """Flexible token service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
-    Advanced composition with dependency injection and error handling.
+    Flexible composition with dependency injection and error handling.
     """
 
     def __init__(
@@ -35,7 +35,7 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService):
         provider_service: FlextAuthProviderService,
         dispatcher: FlextDispatcher,
     ) -> None:
-        """Advanced initialization with dependency injection."""
+        """Flexible initialization with dependency injection."""
         super().__init__()
         self._init_managers(config, dispatcher)
         self._provider_service = provider_service
@@ -142,7 +142,7 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService):
     def _get_user_from_payload(
         self,
         payload: dict[str, object],
-        token: str,  # noqa: ARG002
+        token: str,
     ) -> FlextResult[FlextAuthModels.Identity]:
         """Extract identity from token payload with validation."""
         user_id = payload.get("sub")

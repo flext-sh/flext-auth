@@ -29,44 +29,44 @@ class FlextApiClient:
 
     def get(
         self,
-        url: str,  # noqa: ARG002
-        headers: dict[str, str] | None = None,  # noqa: ARG002
-    ) -> Any:  # noqa: ANN401
+        url: str,
+        headers: dict[str, str] | None = None,
+    ) -> Any:
         """Placeholder get method."""
         return None
 
     def post(
         self,
-        url: str,  # noqa: ARG002
-        data: dict[str, Any] | None = None,  # noqa: ARG002
-        headers: dict[str, str] | None = None,  # noqa: ARG002
-    ) -> Any:  # noqa: ANN401
+        url: str,
+        data: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> Any:
         """Placeholder post method."""
         return None
 
     def put(
         self,
-        url: str,  # noqa: ARG002
-        data: dict[str, Any] | None = None,  # noqa: ARG002
-        headers: dict[str, str] | None = None,  # noqa: ARG002
-    ) -> Any:  # noqa: ANN401
+        url: str,
+        data: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> Any:
         """Placeholder put method."""
         return None
 
     def delete(
         self,
-        url: str,  # noqa: ARG002
-        headers: dict[str, str] | None = None,  # noqa: ARG002
-    ) -> Any:  # noqa: ANN401
+        url: str,
+        headers: dict[str, str] | None = None,
+    ) -> Any:
         """Placeholder delete method."""
         return None
 
     def patch(
         self,
-        url: str,  # noqa: ARG002
-        data: dict[str, Any] | None = None,  # noqa: ARG002
-        headers: dict[str, str] | None = None,  # noqa: ARG002
-    ) -> Any:  # noqa: ANN401
+        url: str,
+        data: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> Any:
         """Placeholder patch method."""
         return None
 
@@ -92,12 +92,12 @@ class FlextWebTransportAdapter:
         ...     print(f"Access token: {token_data['access_token']}")
     """
 
-    def __init__(
-        self,
-        timeout: float = 30,
-        max_retries: int = 3,
-    ) -> None:
-        """Initialize HTTP transport adapter with flext-api client.
+ def __init__(
+ self,
+ timeout: float = 30,
+ max_retries: int = 3,
+ ) -> None:
+ """Initialize HTTP transport adapter with flext-api client.
 
         Args:
             timeout: Request timeout in seconds (default: 30.0)
@@ -109,7 +109,7 @@ class FlextWebTransportAdapter:
         self.logger = FlextLogger(__name__)
 
         # Initialize flext-api client
-        from flext_api.config import FlextApiConfig  # noqa: PLC0415
+        from flext_api.config import FlextApiConfig
 
         config = FlextApiConfig(timeout=timeout, max_retries=max_retries)
         self._client = FlextApiClient(config)
@@ -124,19 +124,19 @@ class FlextWebTransportAdapter:
     ) -> FlextResult[dict[str, object]]:
         """Send HTTP request using flext-api transport.
 
-        Implements BaseTransportAdapter protocol for generic HTTP operations.
+ Implements BaseTransportAdapter protocol for generic HTTP operations.
 
-        Args:
-            url: Target URL for the request
-            method: HTTP method (GET, POST, PUT, DELETE, etc.)
-            data: Request body data
-            headers: Request headers
-            **kwargs: Additional transport-specific parameters
+ Args:
+ url: Target URL for the request
+ method: HTTP method (GET, POST, PUT, DELETE, etc.)
+ data: Request body data
+ headers: Request headers
+ **kwargs: Additional transport-specific parameters
 
-        Returns:
-            FlextResult containing response data or error
+ Returns:
+ FlextResult containing response data or error
 
-        """
+ """
         try:
             # Route to appropriate flext-api client method
             if method.upper() == "GET":
@@ -247,10 +247,7 @@ class FlextWebTransportAdapter:
         return self._parse_token_response(response_data)
 
     def get_userinfo(
-        self,
-        url: str,
-        access_token: str,
-        headers: dict[str, str]
+        self, url: str, access_token: str, headers: dict[str, str]
     ) -> FlextResult[dict[str, object]]:
         """GET request to OIDC UserInfo endpoint.
 
@@ -314,16 +311,16 @@ class FlextWebTransportAdapter:
     ) -> FlextResult[dict[str, object]]:
         """Parse OAuth2 token endpoint response.
 
-        Validates token response according to RFC 6749 Section 5.1 (success)
-        and Section 5.2 (error).
+ Validates token response according to RFC 6749 Section 5.1 (success)
+ and Section 5.2 (error).
 
-        Args:
-            response_data: Token endpoint response data
+ Args:
+ response_data: Token endpoint response data
 
-        Returns:
-            FlextResult containing validated token data or error
+ Returns:
+ FlextResult containing validated token data or error
 
-        """
+ """
         # Check for OAuth2 error response (RFC 6749 Section 5.2)
         if "error" in response_data:
             error_code = response_data.get("error", "unknown_error")

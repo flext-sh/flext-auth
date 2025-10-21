@@ -29,11 +29,11 @@ class FlextAuthUtilities:
         """Generic credential hashing using bcrypt.
 
         Args:
-            credential: Credential to hash
-            rounds: Bcrypt rounds
+        credential: Credential to hash
+        rounds: Bcrypt rounds
 
         Returns:
-            FlextResult with hashed credential or error
+        FlextResult with hashed credential or error
 
         """
         try:
@@ -48,11 +48,11 @@ class FlextAuthUtilities:
         """Generic credential verification.
 
         Args:
-            credential: Plain credential to verify
-            credential_hash: Stored hash
+        credential: Plain credential to verify
+        credential_hash: Stored hash
 
         Returns:
-            FlextResult with boolean or error
+        FlextResult with boolean or error
 
         """
         try:
@@ -68,10 +68,10 @@ class FlextAuthUtilities:
         """Generic credential strength validation.
 
         Args:
-            credential: Credential to validate
+        credential: Credential to validate
 
         Returns:
-            FlextResult with validation result dict or error
+        FlextResult with validation result dict or error
 
         """
         errors: list[str] = []
@@ -101,12 +101,12 @@ class FlextAuthUtilities:
         """Generic JWT token encoding.
 
         Args:
-            payload: Token payload
-            secret: Secret key for signing
-            algorithm: JWT algorithm
+        payload: Token payload
+        secret: Secret key for signing
+        algorithm: JWT algorithm
 
         Returns:
-            FlextResult with encoded token or error
+        FlextResult with encoded token or error
 
         """
         try:
@@ -127,12 +127,12 @@ class FlextAuthUtilities:
         """Generic JWT token decoding.
 
         Args:
-            token: JWT token to decode
-            secret: Secret key for verification
-            verify: Whether to verify signature
+        token: JWT token to decode
+        secret: Secret key for verification
+        verify: Whether to verify signature
 
         Returns:
-            FlextResult with decoded payload or error
+        FlextResult with decoded payload or error
 
         """
         try:

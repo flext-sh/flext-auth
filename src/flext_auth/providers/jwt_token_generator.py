@@ -40,12 +40,12 @@ class FlextAuthJwtTokenGenerator:
         """Generate JWT token with railway-oriented programming.
 
         Args:
-            identity_id: Identity identifier for token subject
-            expiry_minutes: Custom expiry time (uses config default if None)
-            extra_claims: Additional claims to include in token
+        identity_id: Identity identifier for token subject
+        expiry_minutes: Custom expiry time (uses config default if None)
+        extra_claims: Additional claims to include in token
 
         Returns:
-            FlextResult containing token string or error
+        FlextResult containing token string or error
 
         """
         try:

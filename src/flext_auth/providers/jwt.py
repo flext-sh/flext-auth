@@ -106,7 +106,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             lambda token: FlextAuthModels.AuthToken(
                 identity_id=username,
                 token=token,
-                token_type="jwt_access",  # noqa: S106
+                token_type="jwt_access",
                 expires_at=datetime.now(UTC)
                 + timedelta(minutes=self.get_expiry_minutes()),
                 is_revoked=False,
@@ -149,7 +149,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             FlextAuthModels.AuthToken(
                 identity_id=str(payload["sub"]),
                 token=new_token,
-                token_type="jwt_access",  # noqa: S106
+                token_type="jwt_access",
                 expires_at=datetime.now(UTC)
                 + timedelta(minutes=self.get_expiry_minutes()),
                 is_revoked=False,
@@ -191,7 +191,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     def generate_token_for_user(
         self,
         user: FlextAuthModels.Identity,
-        _token_type: str = "jwt_access",  # noqa: S107
+        _token_type: str = "jwt_access",
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate JWT token for user using dedicated token generator service."""

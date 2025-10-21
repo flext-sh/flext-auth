@@ -50,8 +50,8 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
     """
 
-    def __init__(self, config: FlextAuthModels.ProviderConfiguration) -> None:
-        """Initialize Certificate authentication provider with SOLID delegation.
+ def __init__(self, config: FlextAuthModels.ProviderConfiguration) -> None:
+ """Initialize Certificate authentication provider with SOLID delegation.
 
         Uses composition for certificate validation, revocation checking, and metadata extraction.
         Railway-oriented initialization with proper error handling.
@@ -143,8 +143,8 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     class _CertificateValidator:
         """SOLID-compliant certificate validator.
 
-        Single responsibility: validate X.509 certificates.
-        """
+ Single responsibility: validate X.509 certificates.
+ """
 
         def __init__(self, provider: FlextAuthCertificateProvider) -> None:
             """Initialize certificate validator."""
@@ -186,17 +186,15 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     class _RevocationChecker:
         """SOLID-compliant certificate revocation checker.
 
-        Single responsibility: check certificate revocation status.
-        """
+ Single responsibility: check certificate revocation status.
+ """
 
         def __init__(self, provider: FlextAuthCertificateProvider) -> None:
             """Initialize revocation checker."""
             self.provider = provider
             self.logger = FlextLogger(__name__)
 
-        def check_revocation(
-            self, cert_info: dict[str, object]  # noqa: ARG002
-        ) -> FlextResult[bool]:
+        def check_revocation(self, cert_info: dict[str, object]) -> FlextResult[bool]:
             """Check if certificate is revoked."""
             # Simplified implementation - in production would check OCSP/CRL
             # cert_info parameter reserved for future certificate validation
@@ -212,8 +210,8 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     class _MetadataExtractor:
         """SOLID-compliant metadata extractor.
 
-        Single responsibility: extract metadata from certificates.
-        """
+ Single responsibility: extract metadata from certificates.
+ """
 
         def __init__(self, provider: FlextAuthCertificateProvider) -> None:
             """Initialize metadata extractor."""
@@ -255,9 +253,9 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using X.509 certificate with SOLID delegation.
 
-        Delegates certificate validation, revocation checking, and metadata extraction
-        to specialized components following SRP.
-        """
+ Delegates certificate validation, revocation checking, and metadata extraction
+ to specialized components following SRP.
+ """
         # Use the CertificateValidation model directly
         if not credentials.is_valid:
             return FlextResult[FlextAuthModels.AuthToken].fail(
@@ -300,13 +298,13 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     ) -> FlextResult[bool]:
         """Validate certificate token.
 
-        Args:
-            token: Certificate fingerprint or AuthToken object
+ Args:
+ token: Certificate fingerprint or AuthToken object
 
-        Returns:
-            FlextResult[bool]: True if certificate is valid
+ Returns:
+ FlextResult[bool]: True if certificate is valid
 
-        """
+ """
         try:
             token_string = self._extract_token_string(token)
         except ValueError as e:
@@ -343,16 +341,16 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Refresh certificate token.
 
-        Certificates cannot be refreshed programmatically. A new certificate
-        must be obtained from the CA.
+ Certificates cannot be refreshed programmatically. A new certificate
+ must be obtained from the CA.
 
-        Args:
-            token: Current certificate token
+ Args:
+ token: Current certificate token
 
-        Returns:
-            FlextResult[AuthToken]: Error indicating refresh not supported
+ Returns:
+ FlextResult[AuthToken]: Error indicating refresh not supported
 
-        """
+ """
         _ = token  # Token parameter required by interface but not used for certificate refresh
         return FlextResult[FlextAuthModels.AuthToken].fail(
             "Certificate authentication does not support token refresh. "
@@ -365,16 +363,16 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     ) -> FlextResult[None]:
         """Revoke certificate access.
 
-        This marks the certificate as revoked in the local mapping.
-        In production, this should also trigger CRL/OCSP updates.
+ This marks the certificate as revoked in the local mapping.
+ In production, this should also trigger CRL/OCSP updates.
 
-        Args:
-            token: Certificate token to revoke
+ Args:
+ token: Certificate token to revoke
 
-        Returns:
-            FlextResult[None]: Success or error
+ Returns:
+ FlextResult[None]: Success or error
 
-        """
+ """
         try:
             token_string = self._extract_token_string(token)
         except ValueError as e:
@@ -399,19 +397,19 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     def supports(self) -> set[str]:
         """Return Certificate provider capabilities.
 
-        Returns:
-            set[str]: Set of supported capability strings
+ Returns:
+ set[str]: Set of supported capability strings
 
-        Capabilities:
-            - token: Token generation from certificate
-            - validate: Certificate validation
-            - certificate: X.509 certificate authentication
-            - mtls: Mutual TLS support
-            - revoke: Certificate revocation
-            - ocsp: OCSP revocation checking (if enabled)
-            - crl: CRL revocation checking (if enabled)
+ Capabilities:
+ - token: Token generation from certificate
+ - validate: Certificate validation
+ - certificate: X.509 certificate authentication
+ - mtls: Mutual TLS support
+ - revoke: Certificate revocation
+ - ocsp: OCSP revocation checking (if enabled)
+ - crl: CRL revocation checking (if enabled)
 
-        """
+ """
         capabilities = {"token", "validate", "certificate", "mtls", "revoke"}
 
         if self._check_ocsp:
@@ -425,10 +423,10 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     def get_metadata(self) -> FlextAuthModels.ProviderConfiguration:
         """Return Certificate provider metadata.
 
-        Returns:
-            dict[str, object]: Provider metadata
+ Returns:
+ dict[str, object]: Provider metadata
 
-        """
+ """
         return FlextAuthModels.ProviderConfiguration(
             name="certificate",
             type="x509_certificate",
@@ -444,7 +442,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
     def validate_token(
         self,
-        token: str,  # noqa: ARG002
+        token: str,
     ) -> FlextResult[FlextAuthModels.Identity | None]:
         """Validate certificate token and return user using composition."""
         return FlextResult[FlextAuthModels.Identity | None].ok(
@@ -453,9 +451,9 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.Identity,  # noqa: ARG002
-        token_type: str = "cert_access",  # noqa: ARG002, S107
-        expiry_minutes: int | None = None,  # noqa: ARG002
+        user: FlextAuthModels.Identity,
+        token_type: str = "cert_access",
+        expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate certificate token for user."""
         return FlextResult[str].fail(
@@ -469,13 +467,13 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     ) -> FlextResult[dict[str, object]]:
         """Extract information from PEM certificate using cryptography library.
 
-        Args:
-            cert_pem: PEM-encoded certificate
+ Args:
+ cert_pem: PEM-encoded certificate
 
-        Returns:
-            FlextResult[dict[str, object]]: Certificate information or error
+ Returns:
+ FlextResult[dict[str, object]]: Certificate information or error
 
-        """
+ """
         if not cert_pem.startswith("-----BEGIN CERTIFICATE-----"):
             return FlextResult[dict[str, object]].fail("Invalid PEM certificate format")
 
@@ -549,14 +547,14 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     ) -> FlextResult[None]:
         """Validate certificate using cryptography library.
 
-        Args:
-            cert_pem: PEM-encoded certificate
-            cert_info: Parsed certificate information
+ Args:
+ cert_pem: PEM-encoded certificate
+ cert_info: Parsed certificate information
 
-        Returns:
-            FlextResult[None]: Success if valid, error otherwise
+ Returns:
+ FlextResult[None]: Success if valid, error otherwise
 
-        """
+ """
         try:
             # Parse certificate
             cert = x509.load_pem_x509_certificate(cert_pem.encode("utf-8"))
@@ -599,14 +597,14 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     ) -> FlextResult[None]:
         """Validate certificate against CA certificate.
 
-        Args:
-            cert: Parsed certificate object
-            ca_cert_pem: PEM-encoded CA certificate
+ Args:
+ cert: Parsed certificate object
+ ca_cert_pem: PEM-encoded CA certificate
 
-        Returns:
-            FlextResult[None]: Success if valid, error otherwise
+ Returns:
+ FlextResult[None]: Success if valid, error otherwise
 
-        """
+ """
         try:
             # Parse CA certificate
             ca_cert = x509.load_pem_x509_certificate(ca_cert_pem.encode("utf-8"))
@@ -640,13 +638,13 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     ) -> FlextResult[dict[str, object]]:
         """Auto-provision user from certificate information.
 
-        Args:
-            cert_info: Certificate information
+ Args:
+ cert_info: Certificate information
 
-        Returns:
-            FlextResult[dict[str, object]]: User data or error
+ Returns:
+ FlextResult[dict[str, object]]: User data or error
 
-        """
+ """
         # Extract username from certificate subject (CN field)
         subject = cast("str", cert_info.get("subject", ""))
         username = self._extract_cn_from_subject(subject)
@@ -683,13 +681,13 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     def _extract_cn_from_subject(self, subject: str) -> str:
         """Extract Common Name (CN) from certificate subject.
 
-        Args:
-            subject: Certificate subject string
+ Args:
+ subject: Certificate subject string
 
-        Returns:
-            str: Common Name or empty string
+ Returns:
+ str: Common Name or empty string
 
-        """
+ """
         # Parse subject string - handles both formats:
         # Old: "CN=example.com,O=Example Corp"
         # New (cryptography): "commonName=example.com,organizationName=Example Corp"
@@ -714,17 +712,17 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     ) -> FlextResult[None]:
         """Register certificate mapping to user.
 
-        Args:
-            cert_fingerprint: Certificate fingerprint (SHA256 hex)
-            user_id: User ID to associate with certificate
-            username: Username
-            roles: User roles
-            permissions: User permissions
+ Args:
+ cert_fingerprint: Certificate fingerprint (SHA256 hex)
+ user_id: User ID to associate with certificate
+ username: Username
+ roles: User roles
+ permissions: User permissions
 
-        Returns:
-            FlextResult[None]: Success or error
+ Returns:
+ FlextResult[None]: Success or error
 
-        """
+ """
         if cert_fingerprint in self._cert_mappings:
             return FlextResult[None].fail(
                 f"Certificate '{cert_fingerprint}' already registered"
@@ -748,13 +746,13 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     def unregister_certificate(self, cert_fingerprint: str) -> FlextResult[None]:
         """Unregister certificate mapping.
 
-        Args:
-            cert_fingerprint: Certificate fingerprint to remove
+ Args:
+ cert_fingerprint: Certificate fingerprint to remove
 
-        Returns:
-            FlextResult[None]: Success or error
+ Returns:
+ FlextResult[None]: Success or error
 
-        """
+ """
         if cert_fingerprint not in self._cert_mappings:
             return FlextResult[None].fail(f"Certificate '{cert_fingerprint}' not found")
 

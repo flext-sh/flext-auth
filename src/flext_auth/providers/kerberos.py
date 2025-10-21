@@ -44,8 +44,8 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     """
 
-    def __init__(self, config: dict[str, object]) -> None:
-        """Initialize Kerberos provider with SOLID delegation.
+ def __init__(self, config: dict[str, object]) -> None:
+ """Initialize Kerberos provider with SOLID delegation.
 
         Uses composition for Kerberos ticket validation, service ticket handling,
         and authentication. Railway-oriented initialization with proper error handling.
@@ -131,8 +131,8 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     class _KerberosTicketValidator:
         """SOLID-compliant Kerberos ticket validator.
 
-        Single responsibility: validate Kerberos tickets.
-        """
+ Single responsibility: validate Kerberos tickets.
+ """
 
         def __init__(self, provider: FlextAuthKerberosProvider) -> None:
             """Initialize ticket validator."""
@@ -140,8 +140,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             self.logger = FlextLogger(__name__)
 
         def validate_ticket(
-            self,
-            ticket_data: dict[str, object]  # noqa: ARG002,
+            self, ticket_data: dict[str, object]
         ) -> FlextResult[dict[str, object]]:
             """Validate Kerberos ticket."""
             # Simplified implementation - in production would use proper Kerberos validation
@@ -154,8 +153,8 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     class _KerberosServiceHandler:
         """SOLID-compliant Kerberos service handler.
 
-        Single responsibility: handle service ticket operations.
-        """
+ Single responsibility: handle service ticket operations.
+ """
 
         def __init__(self, provider: FlextAuthKerberosProvider) -> None:
             """Initialize service handler."""
@@ -173,8 +172,8 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     class _KerberosAuthManager:
         """SOLID-compliant Kerberos authentication manager.
 
-        Single responsibility: manage Kerberos authentication.
-        """
+ Single responsibility: manage Kerberos authentication.
+ """
 
         def __init__(self, provider: FlextAuthKerberosProvider) -> None:
             """Initialize auth manager."""
@@ -213,7 +212,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     def generate_token_for_user(
         self,
         user: FlextAuthModels.Identity,
-        token_type: str = "kerberos_access",  # noqa: S107
+        token_type: str = "kerberos_access",
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate Kerberos token for user."""

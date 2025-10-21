@@ -135,7 +135,7 @@ class FlextAuthConfig(FlextConfig):
         description="Max requests/hour",
     )
 
-    # Advanced Features
+    # Flexible Features
     require_complexity: bool = Field(
         default=False,
         description="Require complexity",
@@ -252,10 +252,10 @@ class FlextAuthConfig(FlextConfig):
         """Get or create global instance with optional overrides.
 
         Args:
-            **kwargs: Configuration overrides with proper types
+        **kwargs: Configuration overrides with proper types
 
         Returns:
-            FlextResult containing the config instance
+        FlextResult containing the config instance
 
         """
         try:

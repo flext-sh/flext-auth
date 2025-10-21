@@ -51,10 +51,10 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     """
 
-    # SAML 2.0 namespaces from constants
+ # SAML 2.0 namespaces from constants
 
-    def __init__(self, config: dict[str, object]) -> None:
-        """Initialize SAML provider with SOLID delegation.
+ def __init__(self, config: dict[str, object]) -> None:
+ """Initialize SAML provider with SOLID delegation.
 
         Uses composition for SAML request/response handling, signature validation,
         and metadata management. Railway-oriented initialization with proper error handling.
@@ -151,8 +151,8 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     class _SAMLRequestBuilder:
         """SOLID-compliant SAML request builder.
 
-        Single responsibility: build SAML authentication requests.
-        """
+ Single responsibility: build SAML authentication requests.
+ """
 
         def __init__(self, provider: FlextAuthSamlProvider) -> None:
             """Initialize request builder."""
@@ -167,8 +167,8 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     class _SAMLResponseParser:
         """SOLID-compliant SAML response parser.
 
-        Single responsibility: parse SAML responses.
-        """
+ Single responsibility: parse SAML responses.
+ """
 
         def __init__(self, provider: FlextAuthSamlProvider) -> None:
             """Initialize response parser."""
@@ -186,8 +186,8 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     class _SAMLSignatureValidator:
         """SOLID-compliant SAML signature validator.
 
-        Single responsibility: validate SAML signatures.
-        """
+ Single responsibility: validate SAML signatures.
+ """
 
         def __init__(self, provider: FlextAuthSamlProvider) -> None:
             """Initialize signature validator."""
@@ -207,9 +207,9 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using SAML assertion with SOLID delegation.
 
-        Delegates SAML response parsing, signature validation, and token creation
-        to specialized components following SRP.
-        """
+ Delegates SAML response parsing, signature validation, and token creation
+ to specialized components following SRP.
+ """
         # Validate required fields
         validation_result = self._validate_credentials_dict(
             credentials, ["saml_response"]
@@ -248,7 +248,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         auth_token = FlextAuthModels.AuthToken(
             identity_id=str(user_data.get("user_id", "saml_user")),
             token=f"saml_{secrets.token_hex(32)}",
-            token_type="bearer",  # noqa: S106
+            token_type="bearer",
             expires_at=datetime.now(UTC) + timedelta(hours=8),
             is_revoked=False,
         )
@@ -278,7 +278,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     def generate_token_for_user(
         self,
         _user: FlextAuthModels.Identity,
-        _token_type: str = "access",  # noqa: S107
+        _token_type: str = "access",
         _expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate SAML token for user."""

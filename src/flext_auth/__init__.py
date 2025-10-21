@@ -1,26 +1,21 @@
-"""FLEXT Auth - Enterprise Authentication Library for FLEXT Ecosystem.
+"""FLEXT Auth - Authentication Library.
 
-==============================================================================
-ROOT MODULE - ECOSYSTEM INTEGRATION POINT
-==============================================================================
+Root module providing authentication framework with multi-provider
+support through unified, protocol-based architecture integrated with
+FLEXT ecosystem patterns.
 
-FLEXT Auth is an enterprise-grade authentication library providing a generic,
-extensible authentication framework with multi-provider support through a
-unified, protocol-based architecture fully integrated with FLEXT ecosystem
-patterns (flext-core, flext-cli, flext-ldap, flext-ldif).
+Architecture Layer: Layer 3+ (Application & Infrastructure)
 
-**Architecture Layer**: Layer 3+ (Application & Infrastructure)
+Provides public API for flext-auth through:
 
-Provides the canonical public API for flext-auth through:
-
-**Core Facade**:
-  FlextAuth - Main unified API for all authentication operations
+Core Facade:
+  FlextAuth - Main unified API for authentication operations
   - Provider registration and lifecycle management
   - Multi-protocol authentication support
   - Railway-oriented error handling with FlextResult[T]
   - Integration with flext-core patterns
 
-**Provider System** (Protocol-Based):
+Provider System (Protocol-Based):
   FlextAuthBaseProvider - Provider protocol (structural typing)
   FlextAuthRegistry - Provider registration and discovery
   FlextAuthProviderService - Provider orchestration
@@ -29,7 +24,7 @@ Provides the canonical public API for flext-auth through:
   - Capability detection: Query provider capabilities at runtime
   - Configuration validation: Pydantic v2 provider configs
 
-**Service Layer** (Domain Services):
+Service Layer (Domain Services):
   FlextAuthIdentityService - User management and lifecycle
   FlextAuthTokenService - Token generation, validation, refresh
   FlextAuthSessionService - Session management and lifecycle
@@ -37,28 +32,28 @@ Provides the canonical public API for flext-auth through:
   - Return FlextResult[T] for error composition
   - Integration with FlextContainer dependency injection
 
-**Configuration & Constants**:
+Configuration & Constants:
   FlextAuthConfig - Singleton configuration (Pydantic v2 settings)
   FlextAuthConstants - System constants, error codes, defaults
   - Environment variable override support
   - Type-safe configuration access
   - Validation on initialization
 
-**Data Models** (Domain-Driven Design):
+Data Models (Domain-Driven Design):
   FlextAuthModels - Pydantic v2 models for all domain entities
   - Generic models for credential, token, session, user data
-  - Comprehensive validation with Field() constraints
+  - Complete validation with Field() constraints
   - Computed properties for derived data
   - Model validators for business logic
 
-**Type System & Protocols**:
+Type System & Protocols:
   FlextAuthTypes - Authentication-specific type definitions
   FlextAuthProtocols - Protocol definitions for structural typing
   - Domain-specific TypeVars for type safety
   - Complex type aliases for credential/token/session data
   - Protocol-based extensibility
 
-**Error Handling**:
+Error Handling:
   FlextAuthExceptions - Authentication-specific exception hierarchy
   - AuthenticationError - Auth operation failures
   - AuthorizationError - Permission denied
@@ -68,54 +63,54 @@ Provides the canonical public API for flext-auth through:
   - CredentialError - Credential validation failures
   - ProviderError - Generic provider failures
 
-**Utilities & Mixins**:
+Utilities & Mixins:
   FlextAuthUtilities - JWT and password processing utilities
   FlextAuthMixins - Reusable authentication behaviors
   - Password hashing with bcrypt
   - Password strength validation
   - Token processing helpers
 
-**Lifecycle Management**:
+Lifecycle Management:
   FlextAuthManagers - Authentication lifecycle managers
   - Provider lifecycle management
   - Session lifecycle management
   - Token lifecycle management
 
-**Infrastructure Integration**:
+Infrastructure Integration:
   FlextAuthMiddleware - HTTP middleware for authentication
   FlextAuthTransports - Multi-transport support (HTTP, gRPC, WebSocket)
   - Integration with web frameworks
   - Transport-agnostic authentication
   - Multi-protocol support
 
-**Quick Start**:
+Quick Start:
   FlextAuthQuickstart - Quick-start utilities for common scenarios
   - Pre-configured providers
   - Demo data initialization
   - Example authentication flows
 
-==============================================================================
-PROVIDER-CENTRIC ARCHITECTURE
-==============================================================================
 
-FLEXT-AUTH is built around a **provider-centric architecture** where all
+PROVIDER-CENTRIC ARCHITECTURE
+
+
+FLEXT-AUTH is built around a provider-centric architecture where all
 authentication technologies are encapsulated in provider implementations that
 conform to a unified protocol:
 
-**Core Components**:
+Core Components:
   - FlextAuth - Main facade API (single entry point)
   - FlextAuthRegistry - Provider registration and discovery
   - FlextAuthBaseProvider - Protocol defining provider capabilities
   - Provider Implementations - Technology-specific authentication logic
 
-**Architectural Principles**:
+Architectural Principles:
   - All authentication flows through the provider registry system
   - Each provider implements the same protocol interface
   - Providers are registered dynamically at runtime
   - Provider capabilities are queried at runtime
   - No direct provider imports in main API (registry only)
 
-**Supported Providers** (Phase 2-3 Expansion):
+Supported Providers (Phase 2-3 Expansion):
   - JWT - Production-ready token-based authentication
   - OAuth2 - Authorization code and client credentials flows
   - OIDC - OpenID Connect authentication
@@ -126,9 +121,9 @@ conform to a unified protocol:
   - Certificate - X.509 certificate authentication
   - Kerberos - Kerberos network authentication
 
-==============================================================================
+
 LAYER ARCHITECTURE (Clean Architecture)
-==============================================================================
+
 
 Layer 4: Infrastructure (config.py, middleware.py, transports/)
     ├─ FlextAuthConfig (Pydantic Settings)
@@ -158,67 +153,67 @@ Layer 0: Pure Constants (constants.py, typings.py)
     ├─ FlextAuthConstants (Error codes, defaults)
     └─ FlextAuthTypes (Type definitions)
 
-**CRITICAL RULE**: Higher layers import from lower layers ONLY. Violations
+Critical Rule: Higher layers import from lower layers ONLY. Violations
 cause circular dependencies and violate Clean Architecture principles.
 
-==============================================================================
-SOLID PRINCIPLES IMPLEMENTATION
-==============================================================================
 
-**Single Responsibility Principle (SRP)**:
+SOLID PRINCIPLES IMPLEMENTATION
+
+
+Single Responsibility Principle (SRP):
   - Each class has ONE reason to change
   - api.py: FlextAuth facade only (coordinates providers)
   - *_service.py: Focused domain services (user, token, session)
   - Each provider implements ONE authentication technology
 
-**Open/Closed Principle (OCP)**:
+Open/Closed Principle (OCP):
   - Open for extension: Add providers via registry without modifying core
   - Closed for modification: Provider protocol is stable interface
   - FlextAuthBaseProvider defines extension point
 
-**Liskov Substitution Principle (LSP)**:
+Liskov Substitution Principle (LSP):
   - All providers implement FlextAuthBaseProvider protocol
   - Providers are substitutable: Use any provider through registry
   - Protocol compliance verified through structural typing
 
-**Interface Segregation Principle (ISP)**:
+Interface Segregation Principle (ISP):
   - FlextAuthProtocols defines focused, client-specific interfaces
   - Providers implement only needed capabilities
   - Clients depend on minimal required methods
 
-**Dependency Inversion Principle (DIP)**:
+Dependency Inversion Principle (DIP):
   - High-level modules depend on abstractions (protocols)
   - Low-level modules (providers) implement protocols
   - FlextAuthRegistry manages provider lifecycle
   - FlextResult[T] abstracts error handling
 
-==============================================================================
-PYDANTIC V2 BEST PRACTICES
-==============================================================================
 
-**Model Validation**:
+PYDANTIC V2 BEST PRACTICES
+
+
+Model Validation:
   - All models use Field() with descriptions and constraints
   - Custom validators for complex business logic
   - Model validators for cross-field validation
   - Computed properties via @computed_field
 
-**Type Safety**:
+Type Safety:
   - Python 3.13+ type syntax throughout
   - Complete type annotations required (zero Any types)
   - Generic types for type-safe operations
   - TypedDict for complex dictionary structures
 
-**Configuration Management**:
+Configuration Management:
   - FlextAuthConfig uses ConfigDict for strict validation
   - Environment variable override support
   - Hierarchical configuration with inheritance
   - Validation on initialization (fails fast)
 
-==============================================================================
-RAILWAY-ORIENTED PROGRAMMING PATTERN
-==============================================================================
 
-**All operations return FlextResult[T]**:
+RAILWAY-ORIENTED PROGRAMMING PATTERN
+
+
+All operations return FlextResult[T]:
   >>> from flext_auth import FlextAuth, FlextResult
   >>> auth = FlextAuth()
   >>> result = (
@@ -231,17 +226,17 @@ RAILWAY-ORIENTED PROGRAMMING PATTERN
   ... else:
   ...     error = result.error
 
-**Benefits**:
+Benefits:
   - Composable error handling (no exceptions in flow)
   - Type-safe error composition
   - Functional programming style
   - Integration with flext-core patterns
 
-==============================================================================
-USAGE EXAMPLES
-==============================================================================
 
-**Example 1: Basic Authentication with JWT**:
+USAGE EXAMPLES
+
+
+Example 1: Basic Authentication with JWT:
   >>> from flext_auth import FlextAuth, FlextAuthConfig
   >>>
   >>> # Initialize with JWT provider
@@ -344,11 +339,11 @@ USAGE EXAMPLES
   ...     def get_metadata(self) -> dict[str, object]:
   ...         return {"name": "custom", "version": "1.0.0"}
 
-==============================================================================
-ROOT IMPORT PATTERN (ECOSYSTEM STANDARD)
-==============================================================================
 
-✅ CORRECT - Always use root imports (this module):
+Root Import Pattern (Ecosystem Standard)
+
+
+Correct - Always use root imports (this module):
   from flext_auth import (
       FlextAuth,
       FlextAuthConfig,
@@ -358,56 +353,56 @@ ROOT IMPORT PATTERN (ECOSYSTEM STANDARD)
       FlextAuthExceptions,
   )
 
-❌ FORBIDDEN - Never use internal module imports:
-  from flext_auth.api import FlextAuth                # ❌ Breaks ecosystem
-  from flext_auth.models import FlextAuthModels       # ❌ Breaks ecosystem
-  from flext_auth.config import FlextAuthConfig       # ❌ Breaks ecosystem
-  from flext_auth.providers.jwt import FlextAuthJwtProvider  # ❌ FORBIDDEN
+Forbidden - Never use internal module imports:
+  from flext_auth.api import FlextAuth                # Breaks ecosystem
+  from flext_auth.models import FlextAuthModels       # Breaks ecosystem
+  from flext_auth.config import FlextAuthConfig       # Breaks ecosystem
+  from flext_auth.providers.jwt import FlextAuthJwtProvider  # FORBIDDEN
 
 Why: 32+ ecosystem projects rely on root imports. Internal imports break the
 entire ecosystem by creating circular dependencies and import order issues.
 ALWAYS use root imports from this module (flext_auth/__init__.py).
 
-==============================================================================
+
 QUALITY GATES & VALIDATION
-==============================================================================
+
 
 Production Readiness (All Mandatory):
-  ✅ Type Safety: Pyrefly strict mode (zero type errors)
-  ✅ Linting: Ruff with zero violations
-  ✅ Testing: Comprehensive test coverage (75%+)
-  ✅ Security: Bandit security scanning (no high/medium issues)
-  ✅ Documentation: Complete API documentation
-  ✅ SOLID Principles: All principles verified and documented
-  ✅ Pydantic v2: Best practices throughout
-  ✅ PEP 8: Strict compliance with 88-char line length
+  Type Safety: Pyrefly strict mode (zero type errors)
+  Linting: Ruff with zero violations
+   Testing: Test coverage (75%+)
+  Security: Bandit security scanning (no high/medium issues)
+  Documentation: Complete API documentation
+  SOLID Principles: All principles verified and documented
+  Pydantic v2: Best practices throughout
+  PEP 8: Strict compliance with 88-char line length
 
-==============================================================================
+
 INTEGRATION WITH FLEXT ECOSYSTEM
-==============================================================================
 
-**Core Integration**:
+
+Core Integration:
   - Uses flext-core FlextResult[T] for error composition
   - Uses flext-core FlextContainer for dependency injection
   - Uses flext-core FlextModels base class for domain models
   - Uses flext-core FlextService base class for all services
   - Uses flext-core FlextExceptions patterns for auth exceptions
 
-**Ecosystem Projects Using flext-auth**:
+Ecosystem Projects Using flext-auth:
   - flext-api: REST API authentication
   - flext-web: Web application authentication
   - flext-cli: CLI authentication
   - flext-ldap: LDAP authentication
   - All other FLEXT ecosystem projects requiring auth
 
-**Breaking Change Policy**:
+Breaking Change Policy:
   - All changes to FlextAuth public API maintain backward compatibility
   - Deprecation cycle: 2 versions (6+ months) before removal
   - Migration tools provided for any necessary transitions
 
-==============================================================================
+
 VERSIONING & METADATA
-==============================================================================
+
 
 - Package: flext-auth (production-ready)
 - Version: 0.9.0 (see __version__ for current)

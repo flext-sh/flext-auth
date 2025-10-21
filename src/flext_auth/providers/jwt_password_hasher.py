@@ -34,10 +34,10 @@ class FlextAuthPasswordHasher:
         """Hash password using bcrypt with railway-oriented programming.
 
         Args:
-            password: Plain text password to hash
+        password: Plain text password to hash
 
         Returns:
-            FlextResult containing hashed password or error
+        FlextResult containing hashed password or error
 
         """
         try:
@@ -53,11 +53,11 @@ class FlextAuthPasswordHasher:
         """Verify password against hash using bcrypt.
 
         Args:
-            password: Plain text password to verify
-            hashed_password: Hashed password to check against
+        password: Plain text password to verify
+        hashed_password: Hashed password to check against
 
         Returns:
-            FlextResult containing verification result or error
+        FlextResult containing verification result or error
 
         """
         try:

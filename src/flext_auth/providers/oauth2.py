@@ -82,7 +82,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             "token_endpoint_auth_method", "client_secret_post"
         )
         if not isinstance(self._token_endpoint_auth_method, str):
-            self._token_endpoint_auth_method = "client_secret_post"  # noqa: S105
+            self._token_endpoint_auth_method = "client_secret_post"
 
         # Runtime state storage (in production, use proper storage)
         self._pkce_verifiers: dict[str, str] = {}  # state -> code_verifier mapping
@@ -367,7 +367,7 @@ class FlextAuthOAuth2Provider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     def generate_token_for_user(
         self,
         user: FlextAuthModels.Identity,
-        token_type: str = "oauth2_access",  # noqa: S107
+        token_type: str = "oauth2_access",
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate OAuth2 token for user."""

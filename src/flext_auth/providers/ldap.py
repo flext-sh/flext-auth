@@ -46,8 +46,8 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     """
 
-    def __init__(self, config: FlextAuthModels.ProviderConfiguration) -> None:
-        """Initialize LDAP provider with SOLID delegation.
+ def __init__(self, config: FlextAuthModels.ProviderConfiguration) -> None:
+ """Initialize LDAP provider with SOLID delegation.
 
         Uses composition for LDAP connection, user search, and authentication.
         Railway-oriented initialization with proper error handling.
@@ -131,8 +131,8 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     class _LDAPConnector:
         """SOLID-compliant LDAP connector.
 
-        Single responsibility: manage LDAP connections.
-        """
+ Single responsibility: manage LDAP connections.
+ """
 
         def __init__(self, provider: FlextAuthLdapProvider) -> None:
             """Initialize LDAP connector."""
@@ -148,8 +148,8 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     class _UserSearcher:
         """SOLID-compliant user searcher.
 
-        Single responsibility: search for users in LDAP.
-        """
+ Single responsibility: search for users in LDAP.
+ """
 
         def __init__(self, provider: FlextAuthLdapProvider) -> None:
             """Initialize user searcher."""
@@ -172,8 +172,8 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     class _Authenticator:
         """SOLID-compliant LDAP authenticator.
 
-        Single responsibility: authenticate users against LDAP.
-        """
+ Single responsibility: authenticate users against LDAP.
+ """
 
         def __init__(self, provider: FlextAuthLdapProvider) -> None:
             """Initialize authenticator."""
@@ -192,7 +192,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         def _verify_credentials(
             self,
             user_data: dict[str, object],
-            password: str,  # noqa: ARG002
+            password: str,
         ) -> FlextResult[dict[str, object]]:
             """Verify user credentials."""
             # Simplified implementation - in production would bind to LDAP and verify
@@ -225,7 +225,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     def generate_token_for_user(
         self,
         user: FlextAuthModels.Identity,
-        token_type: str = "ldap_access",  # noqa: S107
+        token_type: str = "ldap_access",
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate LDAP token for user."""

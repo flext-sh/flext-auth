@@ -28,10 +28,10 @@ class FlextAuthMixins(FlextMixins):
             """Validate email format using flext-core validation.
 
             Args:
-                email: Email string to validate
+            email: Email string to validate
 
             Returns:
-                FlextResult[str]: Success with validated email or failure
+            FlextResult[str]: Success with validated email or failure
 
             """
             # Use flext-core validation instead of custom regex
@@ -42,10 +42,10 @@ class FlextAuthMixins(FlextMixins):
             """Validate password strength.
 
             Args:
-                password: Password string to validate
+            password: Password string to validate
 
             Returns:
-                FlextResult[str]: Success with validated password or failure
+            FlextResult[str]: Success with validated password or failure
 
             """
             if not password:
@@ -79,10 +79,10 @@ class FlextAuthMixins(FlextMixins):
             """Validate username format.
 
             Args:
-                username: Username string to validate
+            username: Username string to validate
 
             Returns:
-                FlextResult[str]: Success with validated username or failure
+            FlextResult[str]: Success with validated username or failure
 
             """
             if not username or not username.strip():

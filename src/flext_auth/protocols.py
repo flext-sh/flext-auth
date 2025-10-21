@@ -24,18 +24,18 @@ class FlextAuthProtocols(FlextProtocols):
     re-exporting foundation protocols for backward compatibility and clean access.
 
     Architecture:
-        - RE-EXPORTS: Foundation protocols from flext-core for unified access
-        - EXTENDS: Authentication-specific protocols in Auth namespace
-        - MAINTAINS: Zero breaking changes through explicit re-export pattern
+    - RE-EXPORTS: Foundation protocols from flext-core for unified access
+    - EXTENDS: Authentication-specific protocols in Auth namespace
+    - MAINTAINS: Zero breaking changes through explicit re-export pattern
 
     Usage:
-        from flext_auth.protocols import FlextAuthProtocols
+    from flext_auth.protocols import FlextAuthProtocols
 
-        # Foundation access (re-exported)
-        FlextAuthProtocols.Foundation.ResultProtocol
+    # Foundation access (re-exported)
+    FlextAuthProtocols.Foundation.ResultProtocol
 
-        # Authentication-specific access
-        FlextAuthProtocols.Auth.UserProtocol
+    # Authentication-specific access
+    FlextAuthProtocols.Auth.UserProtocol
     """
 
     # =========================================================================

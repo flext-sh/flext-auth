@@ -1,7 +1,7 @@
-"""FLEXT Auth Registry - Advanced provider management with flext-core patterns.
+"""FLEXT Auth Registry - Flexible provider management with flext-core patterns.
 
 Uses Python 3.13+ syntax, railway-oriented programming, and consolidated patterns
-for maximum maintainability. Single FlextAuthRegistry class with advanced composition.
+for maximum maintainability. Single FlextAuthRegistry class with composition.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -17,14 +17,14 @@ from flext_auth.providers.base import FlextAuthBaseProvider
 
 
 class FlextAuthRegistry(FlextRegistry):
-    """Advanced provider registry using flext-core patterns and railway-oriented programming.
+    """Flexible provider registry using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
-    Advanced composition with dependency injection and error handling.
+    Flexible composition with dependency injection and error handling.
     """
 
     def __init__(self) -> None:
-        """Advanced initialization with consolidated storage."""
+        """Flexible initialization with consolidated storage."""
         self._providers: dict[str, object] = {}
         self._configs: dict[str, dict[str, object]] = {}
         self._metadata: FlextTypes.NestedDict = {}

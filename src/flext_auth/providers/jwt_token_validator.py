@@ -34,10 +34,10 @@ class FlextAuthJwtTokenValidator:
         """Validate JWT token with railway-oriented programming.
 
         Args:
-            token: JWT token string to validate
+        token: JWT token string to validate
 
         Returns:
-            FlextResult containing token payload or error
+        FlextResult containing token payload or error
 
         """
         try:

@@ -1,11 +1,11 @@
 """FLEXT Auth Constants - Authentication domain constants following standardization plan.
 
 **Standardization Compliance:**
-- ✅ Layer 0 purity: Only constants, no functions or behavior
-- ✅ Direct FlextConstants inheritance: Clean dependency chain
-- ✅ Composition pattern: CoreErrors, CoreNetwork, etc. for easy access
-- ✅ Final[Type] declarations: Immutable type-safe constants
-- ✅ Type aliases: Literal types for strict typing
+- Layer 0 purity: Only constants, no functions or behavior
+- Direct FlextConstants inheritance: Clean dependency chain
+- Composition pattern: CoreErrors, CoreNetwork, etc. for easy access
+- Final[Type] declarations: Immutable type-safe constants
+- Type aliases: Literal types for strict typing
 
 **Domain Coverage:**
 - Token types, algorithms, providers, roles, permissions

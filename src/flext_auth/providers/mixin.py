@@ -22,9 +22,9 @@ class FlextAuthProviderMixin:
     methods and reduce code duplication.
 
     Example:
-        >>> class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
-        ...     # Provider implementation with mixin utilities
-        ...     pass
+    >>> class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
+    ... # Provider implementation with mixin utilities
+    ... pass
 
     """
 
@@ -35,13 +35,13 @@ class FlextAuthProviderMixin:
         """Extract token string from token or AuthToken object.
 
         Args:
-            token: Token as string or AuthToken object
+        token: Token as string or AuthToken object
 
         Returns:
-            str: Token string
+        str: Token string
 
         Raises:
-            ValueError: If token cannot be extracted
+        ValueError: If token cannot be extracted
 
         """
         if isinstance(token, str):
@@ -71,11 +71,11 @@ class FlextAuthProviderMixin:
         """Validate that credentials contain required fields.
 
         Args:
-            credentials: Credentials dictionary to validate
-            required_fields: List of required field names
+        credentials: Credentials dictionary to validate
+        required_fields: List of required field names
 
         Returns:
-            FlextResult indicating success or failure
+        FlextResult indicating success or failure
 
         """
         missing_fields = [
@@ -92,10 +92,10 @@ class FlextAuthProviderMixin:
         """Validate token string format.
 
         Args:
-            token: Token string to validate
+        token: Token string to validate
 
         Returns:
-            FlextResult indicating success or failure
+        FlextResult indicating success or failure
 
         """
         if not token or not isinstance(token, str):

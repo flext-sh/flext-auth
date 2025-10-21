@@ -49,14 +49,14 @@ class BaseTransportAdapter(Protocol):
         """Send a request using this transport.
 
         Args:
-            url: Target URL or endpoint
-            method: HTTP method or operation type
-            data: Request payload data
-            headers: Request headers or metadata
-            **kwargs: Transport-specific additional parameters
+        url: Target URL or endpoint
+        method: HTTP method or operation type
+        data: Request payload data
+        headers: Request headers or metadata
+        **kwargs: Transport-specific additional parameters
 
         Returns:
-            FlextResult containing response data or error
+        FlextResult containing response data or error
 
         """
         ...

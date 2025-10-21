@@ -29,14 +29,14 @@ from flext_auth.user_service import (
 
 
 class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
-    """Advanced authentication service using flext-core patterns.
+    """Flexible authentication service using flext-core patterns.
 
     Thread-safe singleton service with:
     - Railway-oriented programming via FlextResult[T]
-    - Advanced DI with FlextContainer
+    - Flexible DI with FlextContainer
     - Event-driven architecture with FlextDispatcher
-    - Comprehensive provider ecosystem with registry
-    - Advanced token lifecycle management
+    - Complete provider ecosystem with registry
+    - Flexible token lifecycle management
     - Python 3.13+ type safety throughout
     """
 
@@ -70,7 +70,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
 
     @classmethod
     def get_global(cls) -> FlextAuth:
-        """Thread-safe singleton pattern with advanced configuration."""
+        """Thread-safe singleton pattern with configuration."""
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
@@ -97,18 +97,18 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         cls,
         *,
         create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
-        REDACTED_LDAP_BIND_PASSWORD_username: str | None = None,  # noqa: ARG003
-        REDACTED_LDAP_BIND_PASSWORD_password: str | None = None,  # noqa: ARG003
+        REDACTED_LDAP_BIND_PASSWORD_username: str | None = None,
+        REDACTED_LDAP_BIND_PASSWORD_password: str | None = None,
     ) -> Self:
         """Quick start factory with default configuration and optional REDACTED_LDAP_BIND_PASSWORD creation.
 
         Args:
-            create_REDACTED_LDAP_BIND_PASSWORD: Whether to create an REDACTED_LDAP_BIND_PASSWORD user during initialization
-            REDACTED_LDAP_BIND_PASSWORD_username: Custom REDACTED_LDAP_BIND_PASSWORD username (defaults to 'REDACTED_LDAP_BIND_PASSWORD')
-            REDACTED_LDAP_BIND_PASSWORD_password: Custom REDACTED_LDAP_BIND_PASSWORD password (defaults to 'REDACTED_LDAP_BIND_PASSWORD123!')
+        create_REDACTED_LDAP_BIND_PASSWORD: Whether to create an REDACTED_LDAP_BIND_PASSWORD user during initialization
+        REDACTED_LDAP_BIND_PASSWORD_username: Custom REDACTED_LDAP_BIND_PASSWORD username (defaults to 'REDACTED_LDAP_BIND_PASSWORD')
+        REDACTED_LDAP_BIND_PASSWORD_password: Custom REDACTED_LDAP_BIND_PASSWORD password (defaults to 'REDACTED_LDAP_BIND_PASSWORD123!')
 
         Returns:
-            Initialized FlextAuth instance
+        Initialized FlextAuth instance
 
         """
         instance = cls()
@@ -122,16 +122,16 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
     def create_with_config_overrides(
         cls,
         config_overrides: dict[str, object] | None = None,
-        **kwargs: object,  # noqa: ARG003
+        **kwargs: object,
     ) -> Self:
         """Create FlextAuth instance with configuration overrides.
 
         Args:
-            config_overrides: Dictionary of configuration overrides
-            **kwargs: Additional configuration parameters
+        config_overrides: Dictionary of configuration overrides
+        **kwargs: Additional configuration parameters
 
         Returns:
-            Initialized FlextAuth instance with overridden configuration
+        Initialized FlextAuth instance with overridden configuration
 
         """
         if config_overrides:
@@ -154,20 +154,20 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
 
     @property
     def token_service(self) -> FlextAuthTokenService:
-        """Token service access for advanced usage."""
+        """Token service access for usage."""
         return self._token_service
 
     @property
     def identity_service(self) -> FlextAuthIdentityService:
-        """Identity service access for advanced usage."""
+        """Identity service access for usage."""
         return self._identity_service
 
     def authenticate(
         self,
         credentials: dict[str, object],
-        provider: str | None = None,  # noqa: ARG002
+        provider: str | None = None,
     ) -> FlextResult[FlextAuthModels.Identity]:
-        """Railway-oriented authentication with advanced chaining."""
+        """Railway-oriented authentication with chaining."""
         # Extract username and password from credentials
         username = credentials.get("username")
         password = credentials.get("password")
@@ -183,28 +183,28 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         self,
         username: str,
         password: str,
-        ip_address: str | None = None,  # noqa: ARG002
-        user_agent: str | None = None,  # noqa: ARG002
+        ip_address: str | None = None,
+        user_agent: str | None = None,
     ) -> FlextResult[FlextAuthModels.Identity]:
         """Authenticate user by username and password with optional metadata.
 
         Args:
-            username: User username
-            password: User password
-            ip_address: Optional client IP address for audit logging (reserved)
-            user_agent: Optional user agent string for audit logging (reserved)
+        username: User username
+        password: User password
+        ip_address: Optional client IP address for audit logging (reserved)
+        user_agent: Optional user agent string for audit logging (reserved)
 
         Returns:
-            Authentication result with user identity
+        Authentication result with user identity
 
         Note:
-            ip_address and user_agent are reserved for future audit trail implementation
+        ip_address and user_agent are reserved for future audit trail implementation
 
         """
         return self._identity_service.authenticate_identity(username, password)
 
     def validate_token(self, token: str) -> FlextResult[bool]:
-        """Advanced token validation with railway pattern."""
+        """Flexible token validation with railway pattern."""
         return self._token_service.validate_token(token).map(lambda _result: True)
 
     def list_providers(self) -> list[str]:
@@ -223,15 +223,15 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         """Register a new user.
 
         Args:
-            username: User username
-            email: User email address
-            password: User password
-            roles: Optional list of user roles
-            role: Optional user role (defaults to 'user') - for backward compatibility
-            **kwargs: Additional user data
+        username: User username
+        email: User email address
+        password: User password
+        roles: Optional list of user roles
+        role: Optional user role (defaults to 'user') - for backward compatibility
+        **kwargs: Additional user data
 
         Returns:
-            Registration result with user identity
+        Registration result with user identity
 
         """
         # Handle roles parameter - prefer roles list over single role
@@ -274,16 +274,16 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
     def generate_jwt_token(
         self,
         user_id: str,
-        expires_in_minutes: int | None = None,  # noqa: ARG002
+        expires_in_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate JWT token for user (alias for create_token).
 
         Args:
-            user_id: User identifier
-            expires_in_minutes: Token expiry time (reserved for future implementation)
+        user_id: User identifier
+        expires_in_minutes: Token expiry time (reserved for future implementation)
 
         Note:
-            expires_in_minutes parameter is reserved for future custom expiry support
+        expires_in_minutes parameter is reserved for future custom expiry support
 
         """
         return self.create_token(identity_id=user_id, extra_claims=None)
@@ -363,7 +363,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         """Clean up expired sessions.
 
         Returns:
-            Number of sessions cleaned up
+        Number of sessions cleaned up
 
         """
         # Implementation would go here
@@ -398,7 +398,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         return self.generate_token(user_id)
 
     def execute(self) -> FlextResult[FlextAuthTypes.AuthenticationResponseDict]:
-        """Advanced execute implementation with railway orchestration."""
+        """Flexible execute implementation with railway orchestration."""
         return FlextResult[FlextAuthTypes.AuthenticationResponseDict].fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead"
         )
