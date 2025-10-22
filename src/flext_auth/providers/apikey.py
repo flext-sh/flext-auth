@@ -49,8 +49,8 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     """
 
- def __init__(self, config: FlextAuthModels.ProviderConfiguration) -> None:
- """Initialize API Key provider with SOLID delegation.
+    def __init__(self, config: FlextAuthModels.ProviderConfiguration) -> None:
+        """Initialize API Key provider with SOLID delegation.
 
         Uses composition for key validation, generation, and rate limiting.
         Railway-oriented initialization with proper error handling.
@@ -165,8 +165,8 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     class _KeyValidator:
         """SOLID-compliant API key validator.
 
- Single responsibility: validate API keys.
- """
+        Single responsibility: validate API keys.
+        """
 
         def __init__(self, provider: FlextAuthApiKeyProvider) -> None:
             """Initialize key validator."""
@@ -203,8 +203,8 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     class _KeyGenerator:
         """SOLID-compliant API key generator.
 
- Single responsibility: generate secure API keys.
- """
+        Single responsibility: generate secure API keys.
+        """
 
         def __init__(self, provider: FlextAuthApiKeyProvider) -> None:
             """Initialize key generator."""
@@ -224,8 +224,8 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     class _RateLimiter:
         """SOLID-compliant rate limiter.
 
- Single responsibility: enforce API rate limits.
- """
+        Single responsibility: enforce API rate limits.
+        """
 
         def __init__(self, provider: FlextAuthApiKeyProvider) -> None:
             """Initialize rate limiter."""

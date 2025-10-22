@@ -92,12 +92,12 @@ class FlextWebTransportAdapter:
         ...     print(f"Access token: {token_data['access_token']}")
     """
 
- def __init__(
- self,
- timeout: float = 30,
- max_retries: int = 3,
- ) -> None:
- """Initialize HTTP transport adapter with flext-api client.
+    def __init__(
+        self,
+        timeout: float = 30,
+        max_retries: int = 3,
+    ) -> None:
+        """Initialize HTTP transport adapter with flext-api client.
 
         Args:
             timeout: Request timeout in seconds (default: 30.0)
@@ -124,19 +124,19 @@ class FlextWebTransportAdapter:
     ) -> FlextResult[dict[str, object]]:
         """Send HTTP request using flext-api transport.
 
- Implements BaseTransportAdapter protocol for generic HTTP operations.
+        Implements BaseTransportAdapter protocol for generic HTTP operations.
 
- Args:
- url: Target URL for the request
- method: HTTP method (GET, POST, PUT, DELETE, etc.)
- data: Request body data
- headers: Request headers
- **kwargs: Additional transport-specific parameters
+        Args:
+        url: Target URL for the request
+        method: HTTP method (GET, POST, PUT, DELETE, etc.)
+        data: Request body data
+        headers: Request headers
+        **kwargs: Additional transport-specific parameters
 
- Returns:
- FlextResult containing response data or error
+        Returns:
+        FlextResult containing response data or error
 
- """
+        """
         try:
             # Route to appropriate flext-api client method
             if method.upper() == "GET":
@@ -311,16 +311,16 @@ class FlextWebTransportAdapter:
     ) -> FlextResult[dict[str, object]]:
         """Parse OAuth2 token endpoint response.
 
- Validates token response according to RFC 6749 Section 5.1 (success)
- and Section 5.2 (error).
+        Validates token response according to RFC 6749 Section 5.1 (success)
+        and Section 5.2 (error).
 
- Args:
- response_data: Token endpoint response data
+        Args:
+        response_data: Token endpoint response data
 
- Returns:
- FlextResult containing validated token data or error
+        Returns:
+        FlextResult containing validated token data or error
 
- """
+        """
         # Check for OAuth2 error response (RFC 6749 Section 5.2)
         if "error" in response_data:
             error_code = response_data.get("error", "unknown_error")

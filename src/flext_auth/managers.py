@@ -32,19 +32,19 @@ from flext_auth.typings import FlextAuthTypes
 class ServiceManagerMixin:
     """Common manager initialization mixin for all auth services.
 
- Eliminates 3x duplication of manager initialization across
- user_service, token_service, and session_service.
+    Eliminates 3x duplication of manager initialization across
+    user_service, token_service, and session_service.
 
- This mixin provides the single source of truth for manager setup.
- """
+    This mixin provides the single source of truth for manager setup.
+    """
 
     def _init_managers(
         self, config: FlextAuthConfig, dispatcher: FlextDispatcher
     ) -> None:
         """Initialize all standard managers used by services.
 
- Called by service __init__ methods to set up managers once.
- """
+        Called by service __init__ methods to set up managers once.
+        """
         self._config = config
         self._dispatcher = dispatcher
         self._user_manager = FlextAuthManagers.FlextAuthUserManager(config)
@@ -56,15 +56,15 @@ class ServiceManagerMixin:
 class FlextAuthManagers(FlextService[object]):
     """Namespace class for all authentication managers following FLEXT patterns.
 
- This namespace class contains all manager implementations as nested classes,
- providing a single import point while maintaining clean separation of concerns.
- """
+    This namespace class contains all manager implementations as nested classes,
+    providing a single import point while maintaining clean separation of concerns.
+    """
 
     def execute(self) -> FlextResult[object]:
         """Execute method for FlextService interface.
 
- FlextAuthManagers is a namespace class - use specific manager classes instead.
- """
+        FlextAuthManagers is a namespace class - use specific manager classes instead.
+        """
         return FlextResult[object].fail(
             "FlextAuthManagers is a namespace class - use specific manager classes like FlextAuthUserManager"
         )
@@ -72,9 +72,9 @@ class FlextAuthManagers(FlextService[object]):
     class FlextAuthUserManager:
         """User management business logic.
 
- Handles user CRUD operations, role/permission management, and user data persistence.
- Uses newer FlextConfig features for complete integration.
- """
+        Handles user CRUD operations, role/permission management, and user data persistence.
+        Uses newer FlextConfig features for complete integration.
+        """
 
         def __init__(self, config: FlextAuthConfig) -> None:
             """Initialize user manager with configuration."""
@@ -92,8 +92,8 @@ class FlextAuthManagers(FlextService[object]):
         ) -> FlextResult[tuple[str, FlextAuthTypes.Managers.UserData]]:
             """Find user by ID (either identity_id or id field).
 
- Eliminates duplication across 7 methods.
- """
+            Eliminates duplication across 7 methods.
+            """
             for username, user_data in self._users.items():
                 if (
                     user_data.get("identity_id") == user_id
@@ -107,8 +107,8 @@ class FlextAuthManagers(FlextService[object]):
         ) -> FlextResult[None]:
             """Add or remove value from user list field (roles/permissions).
 
- Generic list field modifier - eliminates duplication in 4 methods.
- """
+            Generic list field modifier - eliminates duplication in 4 methods.
+            """
             return self._find_user_by_id(user_id).map(
                 lambda ud: self._apply_list_modification(ud[1], field, value, add=add)
             )
@@ -231,9 +231,9 @@ class FlextAuthManagers(FlextService[object]):
     class FlextAuthSessionManager:
         """Session management business logic.
 
- Handles user session creation, validation, and cleanup.
- Uses newer FlextConfig features for complete integration.
- """
+        Handles user session creation, validation, and cleanup.
+        Uses newer FlextConfig features for complete integration.
+        """
 
         def __init__(self, config: FlextAuthConfig) -> None:
             """Initialize session manager with configuration."""
@@ -252,8 +252,8 @@ class FlextAuthManagers(FlextService[object]):
         ) -> bool:
             """Check if session is active and not expired.
 
- Eliminates duplication of expiration check (appeared 2+ times).
- """
+            Eliminates duplication of expiration check (appeared 2+ times).
+            """
             expires_at = session_data.get("expires_at")
             is_active = session_data.get("is_active", False)
             return (
@@ -328,9 +328,9 @@ class FlextAuthManagers(FlextService[object]):
     class FlextAuthAuditLogger:
         """Audit logging business logic.
 
- Records authentication and authorization events for compliance and debugging.
- Uses newer FlextConfig features for complete integration.
- """
+        Records authentication and authorization events for compliance and debugging.
+        Uses newer FlextConfig features for complete integration.
+        """
 
         # Event type constants - consolidates 11 methods into constants
         # Note: These are event type identifiers, not passwords - S105 suppression
@@ -371,117 +371,124 @@ class FlextAuthManagers(FlextService[object]):
                 self.log_event(self._EVENT_AUTH_SUCCESS, username="user", provider="jwt")
                 self.log_event(self._EVENT_TOKEN_VALIDATION_FAILURE, reason="expired")
             """
- self._log_event(event_type, **data)
+            self._log_event(event_type, **data)
 
- # Convenience shortcuts for backward compatibility (thin wrappers)
- def log_auth_success(
- self, username: str, provider: str, **extra: object
- ) -> None:
- """Log successful authentication."""
- self.log_event(
- self._EVENT_AUTH_SUCCESS, username=username, provider=provider, **extra
- )
+            # Convenience shortcuts for backward compatibility (thin wrappers)
+            def log_auth_success(
+                self, username: str, provider: str, **extra: object
+            ) -> None:
+                """Log successful authentication."""
+                self.log_event(
+                    self._EVENT_AUTH_SUCCESS,
+                    username=username,
+                    provider=provider,
+                    **extra,
+                )
 
- def log_auth_failure(
- self, username: str, provider: str, reason: str, **extra: object
- ) -> None:
- """Log failed authentication."""
- self.log_event(
- self._EVENT_AUTH_FAILURE,
- username=username,
- provider=provider,
- reason=reason,
- **extra,
- )
+            def log_auth_failure(
+                self, username: str, provider: str, reason: str, **extra: object
+            ) -> None:
+                """Log failed authentication."""
+                self.log_event(
+                    self._EVENT_AUTH_FAILURE,
+                    username=username,
+                    provider=provider,
+                    reason=reason,
+                    **extra,
+                )
 
- def log_token_validation(
- self, username: str | None = None, *, success: bool = True, **extra: object
- ) -> None:
- """Log token validation attempt."""
- event_type = (
- self._EVENT_TOKEN_VALIDATION_SUCCESS
- if success
- else self._EVENT_TOKEN_VALIDATION_FAILURE
- )
- self.log_event(event_type, username=username, **extra)
+            def log_token_validation(
+                self,
+                username: str | None = None,
+                *,
+                success: bool = True,
+                **extra: object,
+            ) -> None:
+                """Log token validation attempt."""
+                event_type = (
+                    self._EVENT_TOKEN_VALIDATION_SUCCESS
+                    if success
+                    else self._EVENT_TOKEN_VALIDATION_FAILURE
+                )
+                self.log_event(event_type, username=username, **extra)
 
- def log_token_refresh(
- self, username: str | None = None, *, success: bool = True, **extra: object
- ) -> None:
- """Log token refresh attempt."""
- event_type = (
- self._EVENT_TOKEN_REFRESH_SUCCESS
- if success
- else self._EVENT_TOKEN_REFRESH_FAILURE
- )
- self.log_event(event_type, username=username, **extra)
+        def log_token_refresh(
+            self, username: str | None = None, *, success: bool = True, **extra: object
+        ) -> None:
+            """Log token refresh attempt."""
+            event_type = (
+                self._EVENT_TOKEN_REFRESH_SUCCESS
+                if success
+                else self._EVENT_TOKEN_REFRESH_FAILURE
+            )
+            self.log_event(event_type, username=username, **extra)
 
- def log_token_creation(
- self,
- user_id: str | None = None,
- token_type: str | None = None,
- *,
- success: bool = True,
- **extra: object,
- ) -> None:
- """Log token creation attempt."""
- event_type = (
- self._EVENT_TOKEN_CREATION_SUCCESS
- if success
- else self._EVENT_TOKEN_CREATION_FAILURE
- )
- self.log_event(event_type, user_id=user_id, token_type=token_type, **extra)
+        def log_token_creation(
+            self,
+            user_id: str | None = None,
+            token_type: str | None = None,
+            *,
+            success: bool = True,
+            **extra: object,
+        ) -> None:
+            """Log token creation attempt."""
+            event_type = (
+                self._EVENT_TOKEN_CREATION_SUCCESS
+                if success
+                else self._EVENT_TOKEN_CREATION_FAILURE
+            )
+            self.log_event(event_type, user_id=user_id, token_type=token_type, **extra)
 
- def log_user_logout(self, username: str, **extra: object) -> None:
- """Log user logout."""
- self.log_event(self._EVENT_USER_LOGOUT, username=username, **extra)
+        def log_user_logout(self, username: str, **extra: object) -> None:
+            """Log user logout."""
+            self.log_event(self._EVENT_USER_LOGOUT, username=username, **extra)
 
- def log_password_change_success(self, username: str, **extra: object) -> None:
- """Log successful password change."""
- self.log_event(
- self._EVENT_PASSWORD_CHANGE_SUCCESS, username=username, **extra
- )
+        def log_password_change_success(self, username: str, **extra: object) -> None:
+            """Log successful password change."""
+            self.log_event(
+                self._EVENT_PASSWORD_CHANGE_SUCCESS, username=username, **extra
+            )
 
- def log_password_change_failure(
- self, username: str, reason: str, **extra: object
- ) -> None:
- """Log failed password change."""
- self.log_event(
- self._EVENT_PASSWORD_CHANGE_FAILURE,
- username=username,
- reason=reason,
- **extra,
- )
+        def log_password_change_failure(
+            self, username: str, reason: str, **extra: object
+        ) -> None:
+            """Log failed password change."""
+            self.log_event(
+                self._EVENT_PASSWORD_CHANGE_FAILURE,
+                username=username,
+                reason=reason,
+                **extra,
+            )
 
- def log_password_reset(self, username: str, **extra: object) -> None:
- """Log password reset."""
- self.log_event(self._EVENT_PASSWORD_RESET, username=username, **extra)
+        def log_password_reset(self, username: str, **extra: object) -> None:
+            """Log password reset."""
+            self.log_event(self._EVENT_PASSWORD_RESET, username=username, **extra)
 
- def log_authorization_check(
- self,
- username: str,
- resource: str,
- action: str,
- *,
- allowed: bool,
- **extra: object,
- ) -> None:
- """Log authorization check."""
- event_type = (
- self._EVENT_AUTHORIZATION_GRANTED
- if allowed
- else self._EVENT_AUTHORIZATION_DENIED
- )
- self.log_event(
- event_type, username=username, resource=resource, action=action, **extra
- )
+        def log_authorization_check(
+            self,
+            username: str,
+            resource: str,
+            action: str,
+            *,
+            allowed: bool,
+            **extra: object,
+        ) -> None:
+            """Log authorization check."""
+            event_type = (
+                self._EVENT_AUTHORIZATION_GRANTED
+                if allowed
+                else self._EVENT_AUTHORIZATION_DENIED
+            )
+            self.log_event(
+                event_type, username=username, resource=resource, action=action, **extra
+            )
 
- def get_total_log_entries(self) -> int:
- """Get total count of log entries."""
- return len(self._logs)
+        def get_total_log_entries(self) -> int:
+            """Get total count of log entries."""
+            return len(self._logs)
 
- def _log_event(self, event_type: str, **data: object) -> None:
- """Log an audit event."""
+        def _log_event(self, event_type: str, **data: object) -> None:
+            """Log an audit event."""
             log_entry = {
                 "id": str(uuid4()),
                 "event_type": event_type,
@@ -539,9 +546,9 @@ class FlextAuthManagers(FlextService[object]):
     class FlextAuthRateLimiter:
         """Rate limiting business logic.
 
- Prevents brute force attacks by limiting authentication attempts.
- Uses newer FlextConfig features for complete integration.
- """
+        Prevents brute force attacks by limiting authentication attempts.
+        Uses newer FlextConfig features for complete integration.
+        """
 
         def __init__(
             self, config: FlextAuthConfig, dispatcher: FlextDispatcher
@@ -563,8 +570,8 @@ class FlextAuthManagers(FlextService[object]):
         def _cleanup_window(self, username: str, now: datetime) -> list[datetime]:
             """Clean up attempts outside the time window.
 
- Generic pattern used in 2 methods - eliminates duplication.
- """
+            Generic pattern used in 2 methods - eliminates duplication.
+            """
             window_start = now - timedelta(minutes=self._window_minutes)
             return [
                 attempt

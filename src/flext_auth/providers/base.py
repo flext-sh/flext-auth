@@ -44,25 +44,25 @@ class FlextAuthBaseProvider(ABC):
 
     """
 
- @abstractmethod
- def authenticate(
- self,
- credentials: dict[str, object],
- ) -> FlextResult[FlextAuthModels.AuthToken]:
- """Authenticate user with provided credentials.
+    @abstractmethod
+    def authenticate(
+        self,
+        credentials: dict[str, object],
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
+        """Authenticate user with provided credentials.
 
         This is the primary authentication method. It should validate the
         provided credentials and, if valid, return an authentication token.
 
         Args:
             credentials: Dictionary containing authentication credentials.
-                         The exact structure depends on the provider type.
+                        The exact structure depends on the provider type.
 
         Examples:
-                         - JWT/Basic: {"username": "user", "password": "pass"}
-                         - OAuth2: {"authorization_code": "code", "redirect_uri": "..."}
-                         - API Key: {"api_key": "key"}
-                         - SAML: {"saml_response": "...", "relay_state": "..."}
+                        - JWT/Basic: {"username": "user", "password": "pass"}
+                        - OAuth2: {"authorization_code": "code", "redirect_uri": "..."}
+                        - API Key: {"api_key": "key"}
+                        - SAML: {"saml_response": "...", "relay_state": "..."}
 
         Returns:
             FlextResult[AuthToken]: Authentication token on success,
@@ -78,14 +78,14 @@ class FlextAuthBaseProvider(ABC):
             ...     print(f"Authenticated: {token.token}")
 
         """
-...
+        ...
 
- @abstractmethod
- def validate(
- self,
- token: str | FlextAuthModels.AuthToken,
- ) -> FlextResult[bool]:
- """Validate authentication token.
+    @abstractmethod
+    def validate(
+        self,
+        token: str | FlextAuthModels.AuthToken,
+    ) -> FlextResult[bool]:
+        """Validate authentication token.
 
         Verify that the provided token is valid, not expired, and properly signed
         (if applicable). This should NOT perform any authorization checks.
@@ -95,7 +95,7 @@ class FlextAuthBaseProvider(ABC):
 
         Returns:
             FlextResult[bool]: True if valid, False if invalid,
-                              or error message on validation failure
+                            or error message on validation failure
 
         Example:
             >>> result = provider.validate(token_string)
@@ -103,14 +103,14 @@ class FlextAuthBaseProvider(ABC):
             ...     print("Token is valid")
 
         """
-...
+        ...
 
- @abstractmethod
- def refresh(
- self,
- token: str | FlextAuthModels.AuthToken,
- ) -> FlextResult[FlextAuthModels.AuthToken]:
- """Refresh authentication token.
+    @abstractmethod
+    def refresh(
+        self,
+        token: str | FlextAuthModels.AuthToken,
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
+        """Refresh authentication token.
 
         Generate a new token based on an existing valid token. This operation
         is optional and should return an error if the provider doesn't support
@@ -121,7 +121,7 @@ class FlextAuthBaseProvider(ABC):
 
         Returns:
             FlextResult[AuthToken]: New token on success,
-                                   error if refresh not supported or failed
+                                error if refresh not supported or failed
 
         Example:
             >>> if "refresh" in provider.supports():
@@ -130,14 +130,14 @@ class FlextAuthBaseProvider(ABC):
             ...         new_token = result.unwrap()
 
         """
-...
+        ...
 
- @abstractmethod
- def revoke(
- self,
- token: str | FlextAuthModels.AuthToken,
- ) -> FlextResult[None]:
- """Revoke authentication token.
+    @abstractmethod
+    def revoke(
+        self,
+        token: str | FlextAuthModels.AuthToken,
+    ) -> FlextResult[None]:
+        """Revoke authentication token.
 
         Invalidate the provided token, preventing further use. This operation
         is optional and should return an error if the provider doesn't support
@@ -148,7 +148,7 @@ class FlextAuthBaseProvider(ABC):
 
         Returns:
             FlextResult[None]: Success if revoked,
-                              error if revocation not supported or failed
+                            error if revocation not supported or failed
 
         Example:
             >>> if "revoke" in provider.supports():
@@ -157,11 +157,11 @@ class FlextAuthBaseProvider(ABC):
             ...         print("Token revoked successfully")
 
         """
-...
+        ...
 
- @abstractmethod
- def supports(self) -> set[str]:
- """Return set of capabilities supported by this provider.
+    @abstractmethod
+    def supports(self) -> set[str]:
+        """Return set of capabilities supported by this provider.
 
         Capabilities help consumers understand what operations are available
         for this provider. This allows graceful degradation when using providers
@@ -191,11 +191,11 @@ class FlextAuthBaseProvider(ABC):
             ...     pass
 
         """
-...
+        ...
 
- @abstractmethod
- def get_metadata(self) -> dict[str, object]:
- """Return provider metadata.
+    @abstractmethod
+    def get_metadata(self) -> dict[str, object]:
+        """Return provider metadata.
 
         Metadata provides information about the provider for introspection,
         logging, and REDACTED_LDAP_BIND_PASSWORDistrative purposes.
@@ -221,13 +221,13 @@ class FlextAuthBaseProvider(ABC):
             >>> print(f"Capabilities: {', '.join(metadata['capabilities'])}")
 
         """
-...
+        ...
 
- @abstractmethod
- def validate_token(
- self, token: str
- ) -> FlextResult[FlextAuthModels.Identity | None]:
- """Validate a token and return the associated user.
+    @abstractmethod
+    def validate_token(
+        self, token: str
+    ) -> FlextResult[FlextAuthModels.Identity | None]:
+        """Validate a token and return the associated user.
 
         Args:
             token: Token string to validate

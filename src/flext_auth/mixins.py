@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 
-from flext_core import FlextMixins, FlextResult, FlextUtilities
+from flext_core import FlextMixins, FlextResult
 
 from flext_auth.constants import FlextAuthConstants
 
@@ -22,20 +22,6 @@ class FlextAuthMixins(FlextMixins):
 
     class ValidationMixin(FlextMixins):
         """Validation utilities for Auth domain."""
-
-        @staticmethod
-        def validate_email_format(email: str) -> FlextResult[str]:
-            """Validate email format using flext-core validation.
-
-            Args:
-            email: Email string to validate
-
-            Returns:
-            FlextResult[str]: Success with validated email or failure
-
-            """
-            # Use flext-core validation instead of custom regex
-            return FlextUtilities.Validation.validate_email(email)
 
         @staticmethod
         def validate_password_strength(password: str) -> FlextResult[str]:

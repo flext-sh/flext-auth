@@ -38,48 +38,48 @@ from flext_auth.providers.base import FlextAuthBaseProvider
 
 # Placeholder types for HTTP requests/responses (to avoid circular dependencies)
 class HttpRequest:
- """Placeholder for HTTP request type."""
+    """Placeholder for HTTP request type."""
 
 
 class HttpResponse:
- """Placeholder for HTTP response type."""
+    """Placeholder for HTTP response type."""
 
 
 class _MiddlewareControlMixin:
- """Shared enable/disable functionality for middleware classes.
+    """Shared enable/disable functionality for middleware classes.
 
     Eliminates duplication of enable/disable/is_enabled pattern (12 lines × 2 classes).
     This mixin provides the base control functionality for all middleware implementations.
     """
 
- def __init__(self) -> None:
- """Initialize middleware control state."""
- self._enabled = True
+    def __init__(self) -> None:
+        """Initialize middleware control state."""
+        self._enabled = True
 
- def enable(self) -> None:
- """Enable middleware processing."""
- self._enabled = True
+    def enable(self) -> None:
+        """Enable middleware processing."""
+        self._enabled = True
 
- def disable(self) -> None:
- """Disable middleware processing."""
- self._enabled = False
+    def disable(self) -> None:
+        """Disable middleware processing."""
+        self._enabled = False
 
- @property
- def is_enabled(self) -> bool:
- """Check if middleware is enabled."""
- return self._enabled
+    @property
+    def is_enabled(self) -> bool:
+        """Check if middleware is enabled."""
+        return self._enabled
 
 
 class FlextAuthMiddleware(FlextService):
- """Authentication middleware adapters following FLEXT standards.
+    """Authentication middleware adapters following FLEXT standards.
 
     This class provides middleware that adapts FlextAuthBaseProvider implementations
     to work with HTTP client middleware (flext-api) and web application middleware
     (flext-web). Following FLEXT pattern: one class per module with nested middleware classes.
     """
 
- def execute(self) -> FlextResult[object]:
- """Execute method for FlextService interface.
+    def execute(self) -> FlextResult[object]:
+        """Execute method for FlextService interface.
 
         FlextAuthMiddleware is a namespace class - use specific middleware classes instead.
         """
@@ -156,20 +156,20 @@ class FlextAuthMiddleware(FlextService):
         ) -> FlextResult[object]:
             """Process HTTP request by adding authentication headers.
 
- This method is called by the HTTP client before sending a request.
- It ensures the request has valid authentication by:
- 1. Checking if we have a current token
- 2. Authenticating if no token exists (using credentials)
- 3. Refreshing token if expired (if auto_refresh enabled)
- 4. Injecting token into request headers
+            This method is called by the HTTP client before sending a request.
+            It ensures the request has valid authentication by:
+            1. Checking if we have a current token
+            2. Authenticating if no token exists (using credentials)
+            3. Refreshing token if expired (if auto_refresh enabled)
+            4. Injecting token into request headers
 
- Args:
- request: HTTP request to authenticate
+            Args:
+            request: HTTP request to authenticate
 
- Returns:
- FlextResult with authenticated request or error
+            Returns:
+            FlextResult with authenticated request or error
 
- """
+            """
             if not self._enabled:
                 return FlextResult[object].ok(request)
 
@@ -230,23 +230,23 @@ class FlextAuthMiddleware(FlextService):
         ) -> FlextResult[object]:
             """Process HTTP response (pass-through for HTTP auth).
 
- HTTP auth middleware doesn't need to process responses,
- but this method is required by the middleware protocol.
+            HTTP auth middleware doesn't need to process responses,
+            but this method is required by the middleware protocol.
 
- Args:
- response: HTTP response
+            Args:
+            response: HTTP response
 
- Returns:
- FlextResult with unchanged response
+            Returns:
+            FlextResult with unchanged response
 
- """
+            """
             return FlextResult[object].ok(response)
 
         def _ensure_valid_token(self) -> FlextResult[FlextAuthModels.AuthToken]:
             """Ensure we have a valid authentication token (Orchestrator pattern).
 
- Delegates token lifecycle to specific methods with SRP.
- """
+            Delegates token lifecycle to specific methods with SRP.
+            """
             if not self._current_token:
                 return self._authenticate_initial()
 
@@ -396,20 +396,20 @@ class FlextAuthMiddleware(FlextService):
         ) -> FlextResult[object]:
             """Process web request by validating authentication.
 
- This method is called by the web application for each incoming request.
- It validates authentication by:
- 1. Checking if path is excluded (skip auth)
- 2. Extracting token from header or cookie
- 3. Validating token using provider
- 4. Extracting user context and injecting into request
+            This method is called by the web application for each incoming request.
+            It validates authentication by:
+            1. Checking if path is excluded (skip auth)
+            2. Extracting token from header or cookie
+            3. Validating token using provider
+            4. Extracting user context and injecting into request
 
- Args:
- request: Web request to authenticate
+            Args:
+            request: Web request to authenticate
 
- Returns:
- FlextResult with authenticated request (with user context) or error
+            Returns:
+            FlextResult with authenticated request (with user context) or error
 
- """
+            """
             if not self._enabled:
                 return FlextResult[object].ok(request)
 
@@ -480,32 +480,32 @@ class FlextAuthMiddleware(FlextService):
         ) -> FlextResult[object]:
             """Process web response (pass-through for web auth).
 
- Web auth middleware doesn't need to process responses,
- but this method is required by the middleware protocol.
+            Web auth middleware doesn't need to process responses,
+            but this method is required by the middleware protocol.
 
- Args:
- response: Web response
+            Args:
+            response: Web response
 
- Returns:
- FlextResult with unchanged response
+            Returns:
+            FlextResult with unchanged response
 
- """
+            """
             return FlextResult[object].ok(response)
 
         def _extract_token(self, request: object) -> str | None:
             """Extract authentication token from request.
 
- Checks in order:
- 1. Authorization header (with prefix stripping)
- 2. Cookie (if cookie_name configured)
+            Checks in order:
+            1. Authorization header (with prefix stripping)
+            2. Cookie (if cookie_name configured)
 
- Args:
- request: Web request
+            Args:
+            request: Web request
 
- Returns:
- Extracted token or None if not found
+            Returns:
+            Extracted token or None if not found
 
- """
+            """
             # Try header first
             headers = getattr(request, "headers", {})
             if isinstance(headers, dict):

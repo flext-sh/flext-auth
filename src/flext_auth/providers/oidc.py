@@ -49,8 +49,8 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
 
     """
 
- def __init__(self, config: dict[str, object]) -> None:
- """Initialize OIDC provider with SOLID delegation.
+    def __init__(self, config: dict[str, object]) -> None:
+        """Initialize OIDC provider with SOLID delegation.
 
         Uses composition for OIDC-specific features: ID token validation, UserInfo integration,
         and OIDC Discovery. Railway-oriented initialization with proper error handling.
@@ -133,8 +133,8 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
     class _OIDCIDTokenValidator:
         """SOLID-compliant OIDC ID token validator.
 
- Single responsibility: validate OIDC ID tokens.
- """
+        Single responsibility: validate OIDC ID tokens.
+        """
 
         def __init__(self, provider: FlextAuthOidcProvider) -> None:
             """Initialize ID token validator."""
@@ -152,8 +152,8 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
     class _OIDCUserInfoClient:
         """SOLID-compliant OIDC UserInfo client.
 
- Single responsibility: retrieve user information from UserInfo endpoint.
- """
+        Single responsibility: retrieve user information from UserInfo endpoint.
+        """
 
         def __init__(self, provider: FlextAuthOidcProvider) -> None:
             """Initialize UserInfo client."""
@@ -171,8 +171,8 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
     class _OIDCDiscoveryClient:
         """SOLID-compliant OIDC Discovery client.
 
- Single responsibility: handle OIDC Discovery protocol.
- """
+        Single responsibility: handle OIDC Discovery protocol.
+        """
 
         def __init__(self, provider: FlextAuthOidcProvider) -> None:
             """Initialize Discovery client."""
