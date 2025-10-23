@@ -20,11 +20,12 @@
         "bcrypt>=4.3.0",
         "cryptography>=45.0.5",
         "pydantic-settings>=2.10.1",
-        "pydantic>=2.11.7",
+        "pydantic (>=2.12.3)",
         "pyjwt>=2.9.0",
         "flext-core @ file:../flext-core",
         "flext-web @ file:../flext-web",
         "flext-api @ file:../flext-api",
+        "pydantic-core (>=2.41.4)",
     ]
     description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
     keywords = [

@@ -11,10 +11,10 @@ SPDX-License-Identifier: MIT
 
 import argparse
 import json
-import shutil
-import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
+
+from git import InvalidGitRepositoryError, Repo
 
 
 class DocumentationSynchronizer:
@@ -24,45 +24,50 @@ class DocumentationSynchronizer:
         """Initialize documentation synchronizer with project root."""
         self.project_root = project_root
         self.git_available = self._check_git_available()
+        self._repo: Repo | None = None
 
     def _check_git_available(self) -> bool:
         """Check if git is available and we're in a git repository."""
-        git_path = shutil.which("git")
-        if not git_path:
+        try:
+            self._repo = Repo(str(self.project_root))
+            return True
+        except InvalidGitRepositoryError:
+            return False
+        except Exception:
             return False
 
-        try:
-            result = subprocess.run(
-                [git_path, "rev-parse", "--git-dir"],
-                cwd=self.project_root,
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            return result.returncode == 0
-        except (subprocess.CalledProcessError, FileNotFoundError):
-            return False
+    def _get_repo(self) -> Repo | None:
+        """Get or create the cached Repo instance."""
+        if self._repo is None and self.git_available:
+            try:
+                self._repo = Repo(str(self.project_root))
+            except Exception:
+                return None
+        return self._repo
 
     def _run_git_command(self, command: list[str]) -> tuple[bool, str]:
-        """Run a git command and return success status and output."""
+        """Run a git command and return success status and output using GitPython."""
         if not self.git_available:
             return False, "Git not available"
 
-        git_path = shutil.which("git")
-        if not git_path:
-            return False, "Git not found in PATH"
-
         try:
-            result = subprocess.run(
-                [git_path] + command,
-                cwd=self.project_root,
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            return True, result.stdout.strip()
-        except subprocess.CalledProcessError as e:
-            return False, f"Git command failed: {e.stderr.strip()}"
+            repo = self._get_repo()
+            if not repo:
+                return False, "Could not access git repository"
+
+            # Convert command list to git method call
+            # command format: [subcommand, arg1, arg2, ...]
+            if not command:
+                return False, "No git command provided"
+
+            git_method = command[0]
+            args = command[1:] if len(command) > 1 else []
+
+            # Call the git method dynamically
+            result = repo.git.execute([git_method] + args)
+            return True, result.strip() if result else ""
+        except Exception as e:
+            return False, f"Git command failed: {e!s}"
 
     def get_recent_changes(self, days: int = 7) -> dict[str, object]:
         """Get recent documentation changes."""

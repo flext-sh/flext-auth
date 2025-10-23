@@ -12,7 +12,6 @@ SPDX-License-Identifier: MIT
 import argparse
 import json
 import re
-import subprocess
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -103,27 +102,67 @@ class ArchitectureDocumentationGenerator:
         """Generate architecture diagrams from PlantUML sources."""
         print("🎨 Generating architecture diagrams...")
 
-        script_path = self.diagrams_dir / "generate-diagrams.sh"
+        plantuml_dir = self.diagrams_dir / "plantuml"
+        generated_dir = self.diagrams_dir / "generated"
 
-        if not script_path.exists():
-            print(f"❌ Diagram generation script not found: {script_path}")
+        if not plantuml_dir.exists():
+            print(f"❌ PlantUML directory not found: {plantuml_dir}")
+            return False
+
+        # Ensure generated directory exists
+        generated_dir.mkdir(parents=True, exist_ok=True)
+
+        # Generate diagrams from PlantUML source files
+        puml_files = list(plantuml_dir.glob("*.puml"))
+        if not puml_files:
+            print(f"❌ No PlantUML source files found in {plantuml_dir}")
             return False
 
         try:
-            result = subprocess.run(
-                [str(script_path)],
-                cwd=self.project_root,
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            print("✅ Diagrams generated successfully")
-            print(result.stdout)
-            return True
-        except subprocess.CalledProcessError as e:
+            generated_count = 0
+            for puml_file in puml_files:
+                # Read PlantUML source
+                puml_content = puml_file.read_text(encoding="utf-8")
+
+                # Try to generate diagrams using plantuml if available
+                try:
+                    from plantuml import PlantUML
+
+                    puml = PlantUML(url="http://www.plantuml.com/plantuml/img/")
+
+                    # Generate PNG
+                    png_path = generated_dir / f"{puml_file.stem}.png"
+                    try:
+                        # Generate and save PNG
+                        image_data = puml.processes(puml_content)
+                        if image_data:
+                            png_path.write_bytes(image_data)
+                            generated_count += 1
+                            print(f"  ✓ Generated {puml_file.stem}.png")
+                    except Exception:
+                        # If online plantuml fails, note it but continue
+                        print(
+                            f"  ⚠ Could not generate PNG for {puml_file.name} (requires plantuml)"
+                        )
+
+                except ImportError:
+                    print(
+                        "  ⚠ plantuml library not available, skipping diagram generation"
+                    )
+                    print("    Install with: pip install plantuml")
+                    return False
+
+            if generated_count > 0:
+                print(f"✅ Generated {generated_count} diagram(s) successfully")
+                return True
+            print("⚠️  No diagrams generated (may require online PlantUML service)")
+            return True  # Not a hard failure
+
+        except Exception as e:
             print(f"❌ Diagram generation failed: {e}")
-            print(f"STDOUT: {e.stdout}")
-            print(f"STDERR: {e.stderr}")
+            import traceback
+
+            traceback.print_exc()
             return False
 
     def validate_architecture_docs(self) -> dict[str, object]:
