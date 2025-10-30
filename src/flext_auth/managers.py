@@ -14,11 +14,9 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 from flext_core import (
-    FlextBus,
     FlextContext,
     FlextDispatcher,
     FlextLogger,
-    FlextProcessors,
     FlextRegistry,
     FlextResult,
     FlextService,
@@ -82,7 +80,6 @@ class FlextAuthManagers(FlextService[object]):
             self._config = config
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
-            self._bus = FlextBus()
             self._users: dict[
                 str, FlextAuthTypes.Managers.UserData
             ] = {}  # In production, use database
@@ -241,7 +238,6 @@ class FlextAuthManagers(FlextService[object]):
             self._config = config
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
-            self._bus = FlextBus()
             self._dispatcher = FlextDispatcher()
             self._sessions: dict[
                 str, dict[str, object]
@@ -358,8 +354,6 @@ class FlextAuthManagers(FlextService[object]):
             self._dispatcher = dispatcher
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
-            self._bus = FlextBus()
-            self._processors = FlextProcessors()
             self._logs: list[
                 FlextAuthTypes.Managers.LogEntry
             ] = []  # In production, use database
@@ -559,7 +553,6 @@ class FlextAuthManagers(FlextService[object]):
             self._dispatcher = dispatcher
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
-            self._bus = FlextBus()
             self._registry = FlextRegistry(dispatcher)
             self._attempts: dict[
                 str, FlextAuthTypes.Managers.AttemptData

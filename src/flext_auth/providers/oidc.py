@@ -14,8 +14,7 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 
 from __future__ import annotations
 
-from flext_core import FlextExceptions, FlextResult
-from flext_core.loggings import FlextLogger
+from flext_core import FlextExceptions, FlextLogger, FlextResult
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider

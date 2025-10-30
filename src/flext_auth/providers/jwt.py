@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from flext_core import FlextBus, FlextContext, FlextLogger, FlextResult
+from flext_core import FlextContext, FlextLogger, FlextResult
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -53,7 +53,6 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         # Initialize flext-core components
         self._context = FlextContext()
-        self._bus = FlextBus()
 
     @property
     def config(self) -> FlextAuthModels.ProviderConfiguration:
