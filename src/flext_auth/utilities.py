@@ -9,14 +9,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
-
 import bcrypt
 import jwt
 from flext_core import FlextResult
 from pydantic import SecretStr
 
 from flext_auth.constants import FlextAuthConstants
+from flext_auth.typings import FlextAuthTypes
 
 
 class FlextAuthUtilities:
@@ -64,7 +63,9 @@ class FlextAuthUtilities:
             return FlextResult[bool].fail(f"Verification failed: {e}")
 
     @staticmethod
-    def validate_credential_strength(credential: str) -> FlextResult[dict[str, Any]]:
+    def validate_credential_strength(
+        credential: str,
+    ) -> FlextResult[FlextAuthTypes.Security.CredentialStrength]:
         """Generic credential strength validation.
 
         Args:
@@ -86,15 +87,16 @@ class FlextAuthUtilities:
         if not any(c.isdigit() for c in credential):
             errors.append("Need digit")
 
-        return FlextResult[dict[str, Any]].ok({
-            "is_valid": len(errors) == 0,
+        result: FlextAuthTypes.Security.CredentialStrength = {
+            "is_valid": not errors,
             "length": len(credential),
-            "errors": errors,
-        })
+            "errors": tuple(errors),
+        }
+        return FlextResult[FlextAuthTypes.Security.CredentialStrength].ok(result)
 
     @staticmethod
     def encode_token(
-        payload: dict[str, Any],
+        payload: FlextAuthTypes.Tokens.ClaimMap,
         secret: str,
         algorithm: str = FlextAuthConstants.ALGORITHM_DEFAULT,
     ) -> FlextResult[str]:
@@ -123,7 +125,8 @@ class FlextAuthUtilities:
         secret: SecretStr,
         *,
         verify: bool = True,
-    ) -> FlextResult[dict[str, Any]]:
+        algorithms: tuple[str, ...] | None = None,
+    ) -> FlextResult[FlextAuthTypes.Tokens.ClaimMap]:
         """Generic JWT token decoding.
 
         Args:
@@ -139,14 +142,26 @@ class FlextAuthUtilities:
             payload = jwt.decode(
                 token,
                 secret.get_secret_value(),
-                algorithms=[FlextAuthConstants.ALGORITHM_DEFAULT],
+                algorithms=list(algorithms or (FlextAuthConstants.ALGORITHM_DEFAULT,)),
                 options={"verify_signature": verify},
             )
-            return FlextResult[dict[str, Any]].ok(payload)
+            if not isinstance(payload, dict):
+                return FlextResult[FlextAuthTypes.Tokens.ClaimMap].fail(
+                    "Decoded token payload is not a dictionary"
+                )
+
+            typed_payload: FlextAuthTypes.Tokens.ClaimMap = {
+                str(key): value for key, value in payload.items()
+            }
+            return FlextResult[FlextAuthTypes.Tokens.ClaimMap].ok(typed_payload)
         except jwt.InvalidTokenError as e:
-            return FlextResult[dict[str, Any]].fail(f"Invalid token: {e}")
+            return FlextResult[FlextAuthTypes.Tokens.ClaimMap].fail(
+                f"Invalid token: {e}"
+            )
         except Exception as e:
-            return FlextResult[dict[str, Any]].fail(f"Decoding failed: {e}")
+            return FlextResult[FlextAuthTypes.Tokens.ClaimMap].fail(
+                f"Decoding failed: {e}"
+            )
 
 
 __all__ = ["FlextAuthUtilities"]

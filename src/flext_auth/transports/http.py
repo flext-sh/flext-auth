@@ -11,64 +11,14 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import base64
-from typing import Any
+import json
+from urllib.parse import urlencode
 
+from flext_api.client import FlextApiClient
+from flext_api.config import FlextApiConfig
+from flext_api.models import FlextApiModels
+from flext_api.typings import FlextApiTypes
 from flext_core import FlextLogger, FlextResult
-
-
-# Placeholder for FlextApiClient to avoid circular dependency
-class FlextApiClient:
-    """Placeholder FlextApiClient for type checking."""
-
-    def __init__(
-        self,
-        timeout: int | None = None,
-        max_retries: int | None = None,
-    ) -> None:
-        """Initialize placeholder client."""
-
-    def get(
-        self,
-        url: str,
-        headers: dict[str, str] | None = None,
-    ) -> Any:
-        """Placeholder get method."""
-        return None
-
-    def post(
-        self,
-        url: str,
-        data: dict[str, Any] | None = None,
-        headers: dict[str, str] | None = None,
-    ) -> Any:
-        """Placeholder post method."""
-        return None
-
-    def put(
-        self,
-        url: str,
-        data: dict[str, Any] | None = None,
-        headers: dict[str, str] | None = None,
-    ) -> Any:
-        """Placeholder put method."""
-        return None
-
-    def delete(
-        self,
-        url: str,
-        headers: dict[str, str] | None = None,
-    ) -> Any:
-        """Placeholder delete method."""
-        return None
-
-    def patch(
-        self,
-        url: str,
-        data: dict[str, Any] | None = None,
-        headers: dict[str, str] | None = None,
-    ) -> Any:
-        """Placeholder patch method."""
-        return None
 
 
 class FlextWebTransportAdapter:
@@ -108,9 +58,6 @@ class FlextWebTransportAdapter:
         self._max_retries = max_retries
         self.logger = FlextLogger(__name__)
 
-        # Initialize flext-api client
-        from flext_api.config import FlextApiConfig
-
         config = FlextApiConfig(timeout=timeout, max_retries=max_retries)
         self._client = FlextApiClient(config)
 
@@ -118,10 +65,11 @@ class FlextWebTransportAdapter:
         self,
         url: str,
         method: str = "POST",
-        data: dict[str, object] | None = None,
+        data: FlextApiTypes.RequestBody | None = None,
         headers: dict[str, str] | None = None,
-        **_kwargs: object,
-    ) -> FlextResult[dict[str, object]]:
+        query: FlextApiTypes.WebParams | None = None,
+        timeout: float | None = None,
+    ) -> FlextResult[FlextApiTypes.ResponseDict]:
         """Send HTTP request using flext-api transport.
 
         Implements BaseTransportAdapter protocol for generic HTTP operations.
@@ -131,46 +79,21 @@ class FlextWebTransportAdapter:
         method: HTTP method (GET, POST, PUT, DELETE, etc.)
         data: Request body data
         headers: Request headers
-        **kwargs: Additional transport-specific parameters
 
         Returns:
         FlextResult containing response data or error
 
         """
-        try:
-            # Route to appropriate flext-api client method
-            if method.upper() == "GET":
-                result = self._client.get(url, headers=headers)
-            elif method.upper() == "POST":
-                result = self._client.post(url, data=data, headers=headers)
-            elif method.upper() == "PUT":
-                result = self._client.put(url, data=data, headers=headers)
-            elif method.upper() == "DELETE":
-                result = self._client.delete(url, headers=headers)
-            elif method.upper() == "PATCH":
-                result = self._client.patch(url, data=data, headers=headers)
-            else:
-                return FlextResult[dict[str, object]].fail(
-                    f"Unsupported HTTP method: {method}"
-                )
-
-            # Handle flext-api result
-            if result.is_failure:
-                return FlextResult[dict[str, object]].fail(
-                    f"HTTP request failed: {result.error}"
-                )
-
-            # Parse response data
-            response_data = result.unwrap()
-            if isinstance(response_data, dict):
-                return FlextResult[dict[str, object]].ok(response_data)
-            return FlextResult[dict[str, object]].fail(
-                f"Unexpected response type: {type(response_data)}"
+        return self._execute_request(
+            FlextApiModels.HttpRequest(
+                method=method.upper(),
+                url=url,
+                headers=headers or {},
+                body=self._resolve_body(method, data),
+                query_params=self._resolve_query(method, data, query),
+                timeout=timeout or self._timeout,
             )
-        except Exception as e:
-            return FlextResult[dict[str, object]].fail(
-                f"Request failed with unexpected error: {e}"
-            )
+        )
 
     def get_transport_type(self) -> str:
         """Get the transport type identifier.
@@ -228,27 +151,22 @@ class FlextWebTransportAdapter:
         )
 
         # Use flext-api client for POST request
-        result = self._client.post(url, data=data, headers=request_headers)
-
-        if result.is_failure:
-            return FlextResult[dict[str, object]].fail(
-                f"Token request failed: {result.error}"
+        request_body = urlencode(data, doseq=True)
+        response = self._execute_request(
+            FlextApiModels.HttpRequest(
+                method="POST",
+                url=url,
+                headers=request_headers,
+                body=request_body,
+                timeout=self._timeout,
             )
+        )
 
-        response_data = result.unwrap()
-
-        # Ensure response_data is dict[str, object] for parsing
-        if not isinstance(response_data, dict):
-            return FlextResult[dict[str, object]].fail(
-                f"Unexpected token response type: {type(response_data)}"
-            )
-
-        # Parse OAuth2 token response
-        return self._parse_token_response(response_data)
+        return response.flat_map(self._parse_token_response)
 
     def get_userinfo(
         self, url: str, access_token: str, headers: dict[str, str]
-    ) -> FlextResult[dict[str, object]]:
+    ) -> FlextResult[FlextApiTypes.ResponseDict]:
         """GET request to OIDC UserInfo endpoint.
 
         Retrieves user information using an OAuth2 access token according
@@ -280,35 +198,18 @@ class FlextWebTransportAdapter:
         self.logger.debug(f"Requesting UserInfo from {url}")
 
         # Use flext-api client for GET request
-        result = self._client.get(url, headers=request_headers)
-
-        if result.is_failure:
-            return FlextResult[dict[str, object]].fail(
-                f"UserInfo request failed: {result.error}"
+        return self._execute_request(
+            FlextApiModels.HttpRequest(
+                method="GET",
+                url=url,
+                headers=request_headers,
+                timeout=self._timeout,
             )
-
-        userinfo = result.unwrap()
-
-        # Validate OIDC UserInfo response (must contain 'sub' claim)
-        if not isinstance(userinfo, dict):
-            return FlextResult[dict[str, object]].fail(
-                f"UserInfo response is not a dictionary: {type(userinfo)}"
-            )
-
-        if "sub" not in userinfo:
-            return FlextResult[dict[str, object]].fail(
-                "UserInfo response missing required 'sub' claim"
-            )
-
-        self.logger.info(
-            f"UserInfo retrieved successfully for subject: {userinfo['sub']}"
-        )
-
-        return FlextResult[dict[str, object]].ok(userinfo)
+        ).flat_map(self._validate_userinfo_response)
 
     def _parse_token_response(
-        self, response_data: dict[str, object]
-    ) -> FlextResult[dict[str, object]]:
+        self, response_data: FlextApiTypes.ResponseDict
+    ) -> FlextResult[FlextApiTypes.ResponseDict]:
         """Parse OAuth2 token endpoint response.
 
         Validates token response according to RFC 6749 Section 5.1 (success)
@@ -356,7 +257,96 @@ class FlextWebTransportAdapter:
             },
         )
 
-        return FlextResult[dict[str, object]].ok(response_data)
+        return FlextResult[FlextApiTypes.ResponseDict].ok(response_data)
+
+    def _execute_request(
+        self, request: FlextApiModels.HttpRequest
+    ) -> FlextResult[FlextApiTypes.ResponseDict]:
+        response = self._client.request(request)
+        if response.is_failure:
+            return FlextResult[FlextApiTypes.ResponseDict].fail(response.error)
+
+        http_response = response.unwrap()
+        body = http_response.body
+
+        if body is None:
+            return FlextResult[FlextApiTypes.ResponseDict].ok({})
+
+        if isinstance(body, dict):
+            return FlextResult[FlextApiTypes.ResponseDict].ok(
+                self._normalize_response_dict(body)
+            )
+
+        if isinstance(body, (bytes, str)):
+            decoded = (
+                body.decode("utf-8", errors="replace")
+                if isinstance(body, bytes)
+                else body
+            )
+            try:
+                parsed = json.loads(decoded)
+            except json.JSONDecodeError:
+                return FlextResult[FlextApiTypes.ResponseDict].fail(
+                    "Unable to parse response body as JSON"
+                )
+            if isinstance(parsed, dict):
+                return FlextResult[FlextApiTypes.ResponseDict].ok(
+                    self._normalize_response_dict(parsed)
+                )
+            return FlextResult[FlextApiTypes.ResponseDict].fail(
+                f"Unexpected parsed response type: {type(parsed)}"
+            )
+
+        return FlextResult[FlextApiTypes.ResponseDict].fail(
+            f"Unsupported response body type: {type(body)}"
+        )
+
+    def _normalize_response_dict(
+        self, payload: dict[str, object]
+    ) -> FlextApiTypes.ResponseDict:
+        return {str(key): value for key, value in payload.items()}
+
+    def _resolve_body(
+        self,
+        method: str,
+        data: FlextApiTypes.RequestBody | None,
+    ) -> FlextApiTypes.RequestBody | None:
+        if data is None:
+            return None
+        if method.upper() in {"GET", "DELETE"}:
+            return None
+        return data
+
+    def _resolve_query(
+        self,
+        method: str,
+        data: FlextApiTypes.RequestBody | None,
+        query: FlextApiTypes.WebParams | None,
+    ) -> FlextApiTypes.WebParams | None:
+        if isinstance(data, dict) and method.upper() == "GET":
+            merged_query = {**(query or {}), **data}
+            normalized: FlextApiTypes.WebParams = {}
+            for key, value in merged_query.items():
+                if isinstance(value, list):
+                    normalized[str(key)] = [str(item) for item in value]
+                else:
+                    normalized[str(key)] = str(value)
+            return normalized
+        return query
+
+    def _validate_userinfo_response(
+        self, payload: FlextApiTypes.ResponseDict
+    ) -> FlextResult[FlextApiTypes.ResponseDict]:
+        if "sub" not in payload:
+            return FlextResult[FlextApiTypes.ResponseDict].fail(
+                "UserInfo response missing required 'sub' claim"
+            )
+
+        self.logger.info(
+            "UserInfo retrieved successfully",
+            extra={"subject": payload["sub"]},
+        )
+        return FlextResult[FlextApiTypes.ResponseDict].ok(payload)
 
 
 __all__ = ["FlextWebTransportAdapter"]

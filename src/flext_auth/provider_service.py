@@ -9,9 +9,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextResult, FlextService
+from collections.abc import Callable
+
+from flext_core import FlextResult, FlextService, FlextTypes
 
 from flext_auth.config import FlextAuthConfig
+from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers import (
     FlextAuthApiKeyProvider,
@@ -26,6 +29,7 @@ from flext_auth.providers import (
 )
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
+from flext_auth.typings import FlextAuthTypes
 
 
 class FlextAuthProviderService(FlextService):
@@ -55,15 +59,23 @@ class FlextAuthProviderService(FlextService):
             )
             return
 
-        config_dict = self._config.model_dump()
-        provider_config = dict[str, object](config_dict)
-        if hasattr(self._config, "jwt_auth_secret") and self._config.jwt_auth_secret:
+        provider_config: FlextTypes.JsonDict = dict(self._config.model_dump())
+        if (
+            hasattr(self._config, "jwt_auth_secret")
+            and self._config.jwt_auth_secret is not None
+        ):
             provider_config["secret_key"] = (
                 self._config.jwt_auth_secret.get_secret_value()
             )
 
         # Provider registration mapping with requirements
-        providers = [
+        providers: list[
+            tuple[
+                FlextAuthTypes.Providers.Key,
+                type[FlextAuthBaseProvider],
+                Callable[[], bool],
+            ]
+        ] = [
             ("basic", FlextAuthBasicProvider, lambda: True),
             (
                 "jwt",
@@ -73,27 +85,36 @@ class FlextAuthProviderService(FlextService):
             (
                 "ldap",
                 FlextAuthLdapProvider,
-                lambda: bool(config_dict.get("server") and config_dict.get("base_dn")),
+                lambda: bool(
+                    provider_config.get("server") and provider_config.get("base_dn")
+                ),
             ),
             (
                 "oauth2",
                 FlextAuthOAuth2Provider,
                 lambda: bool(
-                    config_dict.get("client_id") and config_dict.get("token_endpoint")
+                    provider_config.get("client_id")
+                    and provider_config.get("token_endpoint")
                 ),
             ),
-            ("oidc", FlextAuthOidcProvider, lambda: bool(config_dict.get("issuer"))),
+            (
+                "oidc",
+                FlextAuthOidcProvider,
+                lambda: bool(provider_config.get("issuer")),
+            ),
             (
                 "saml",
                 FlextAuthSamlProvider,
                 lambda: bool(
-                    config_dict.get("entity_id") and config_dict.get("sso_url")
+                    provider_config.get("entity_id") and provider_config.get("sso_url")
                 ),
             ),
             (
                 "kerberos",
                 FlextAuthKerberosProvider,
-                lambda: bool(config_dict.get("realm") and config_dict.get("kdc")),
+                lambda: bool(
+                    provider_config.get("realm") and provider_config.get("kdc")
+                ),
             ),
             ("certificate", FlextAuthCertificateProvider, lambda: True),
             ("apikey", FlextAuthApiKeyProvider, lambda: True),
@@ -103,7 +124,11 @@ class FlextAuthProviderService(FlextService):
             if condition():
                 try:
                     provider = provider_class(provider_config)
-                    self._providers.register(name, provider)
+                    self._providers.register(
+                        name,
+                        provider,
+                        configuration=provider_config,
+                    )
                 except Exception as e:
                     self.logger.warning(f"Failed to register {name} provider: {e}")
 
@@ -144,7 +169,7 @@ class FlextAuthProviderService(FlextService):
         self,
         user: FlextAuthModels.Identity,
         provider: str = "jwt",
-        token_type: str = "access_token",
+        token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Railway-oriented token generation with direct provider access."""

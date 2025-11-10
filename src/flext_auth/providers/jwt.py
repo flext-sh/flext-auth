@@ -15,6 +15,7 @@ from datetime import UTC, datetime, timedelta
 
 from flext_core import FlextContext, FlextLogger, FlextResult
 
+from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.jwt_password_hasher import FlextAuthPasswordHasher
@@ -105,7 +106,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             lambda token: FlextAuthModels.AuthToken(
                 identity_id=username,
                 token=token,
-                token_type="jwt_access",
+                token_type=FlextAuthConstants.TOKEN_TYPE_ACCESS,
                 expires_at=datetime.now(UTC)
                 + timedelta(minutes=self.get_expiry_minutes()),
                 is_revoked=False,
@@ -148,7 +149,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             FlextAuthModels.AuthToken(
                 identity_id=str(payload["sub"]),
                 token=new_token,
-                token_type="jwt_access",
+                token_type=FlextAuthConstants.TOKEN_TYPE_ACCESS,
                 expires_at=datetime.now(UTC)
                 + timedelta(minutes=self.get_expiry_minutes()),
                 is_revoked=False,
@@ -190,14 +191,18 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     def generate_token_for_user(
         self,
         user: FlextAuthModels.Identity,
-        _token_type: str = "jwt_access",
+        token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate JWT token for user using dedicated token generator service."""
         return self._token_generator.generate_token(
             user.user_id,
             expiry_minutes=expiry_minutes,
-            extra_claims={"username": user.username, "email": user.email},
+            extra_claims={
+                "username": user.username,
+                "email": user.email,
+                "token_type": token_type,
+            },
         )
 
 

@@ -19,7 +19,6 @@ from flext_auth.managers import (
 from flext_auth.models import FlextAuthModels
 from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers.jwt import FlextAuthJwtProvider
-from flext_auth.utilities import FlextAuthUtilities
 
 
 class FlextAuthTokenService(ServiceManagerMixin, FlextService):
@@ -54,33 +53,58 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService):
 
     def validate_token(self, token: str) -> FlextResult[FlextAuthModels.Identity]:
         """Railway-oriented token validation with audit logging."""
-        return (
-            self._get_jwt_provider_cached()
-            .flat_map(lambda p: p.validate(token))
-            .flat_map(lambda _: self._decode_token_payload(token))
-            .flat_map(lambda payload: self._get_user_from_payload(payload, token))
-            .tap(
-                lambda _: self._audit_logger.log_token_validation(
-                    success=True, token_id=token[:10] + "..."
-                )
-            )
-            .recover(FlextResult.fail)
+        provider_result = self._get_jwt_provider_cached().flat_map(
+            lambda provider: provider.validate_token(token)
         )
+        if provider_result.is_failure:
+            error = provider_result.error
+            self._audit_logger.log_token_validation(
+                success=False,
+                token_id=self._short_token(token),
+                reason=error,
+            )
+            return FlextResult[FlextAuthModels.Identity].fail(error)
+
+        identity_result = self._ensure_identity_present(provider_result.unwrap())
+        if identity_result.is_failure:
+            error = identity_result.error
+            self._audit_logger.log_token_validation(
+                success=False,
+                token_id=self._short_token(token),
+                reason=error,
+            )
+            return FlextResult[FlextAuthModels.Identity].fail(error)
+
+        identity = identity_result.unwrap()
+        self._audit_logger.log_token_validation(
+            success=True,
+            username=identity.username,
+            token_id=self._short_token(token),
+        )
+        return FlextResult[FlextAuthModels.Identity].ok(identity)
 
     def refresh_token(self, token: str) -> FlextResult[FlextAuthModels.AuthToken]:
         """Railway-oriented token refresh with audit logging."""
-        return (
-            self._get_jwt_provider_cached()
-            .flat_map(lambda p: p.refresh(token))
-            .tap(
-                lambda t: self._audit_logger.log_token_refresh(
-                    success=True,
-                    old_token_id=token[:10] + "...",
-                    new_token_id=t.token[:10] + "...",
-                )
-            )
-            .recover(FlextResult.fail)
+        result = self._get_jwt_provider_cached().flat_map(
+            lambda provider: provider.refresh(token)
         )
+        if result.is_failure:
+            error = result.error
+            self._audit_logger.log_token_refresh(
+                success=False,
+                old_token_id=self._short_token(token),
+                reason=error,
+            )
+            return FlextResult[FlextAuthModels.AuthToken].fail(error)
+
+        refreshed = result.unwrap()
+        self._audit_logger.log_token_refresh(
+            success=True,
+            old_token_id=self._short_token(token),
+            new_token_id=self._short_token(refreshed.token),
+            username=refreshed.identity_id,
+        )
+        return FlextResult[FlextAuthModels.AuthToken].ok(refreshed)
 
     def generate_jwt_token(
         self,
@@ -89,26 +113,41 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService):
         token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
     ) -> FlextResult[str]:
         """Railway-oriented JWT token generation with audit logging."""
-        # Get user
         user_result = self._user_manager.get_user(user_id)
-        if not user_result.is_success:
-            return FlextResult.fail(user_result.error)
+        if user_result.is_failure:
+            error = user_result.error
+            self._audit_logger.log_token_creation(
+                user_id=user_id,
+                token_type=token_type,
+                success=False,
+                reason=error,
+            )
+            return FlextResult[str].fail(error)
 
-        # Create token
-        token_result = FlextAuthModels.AuthToken.create_token(
-            identity_id=user_id,
-            expiry_minutes=expires_in_minutes or 1440,
-            token_type=token_type,
+        user = user_result.unwrap()
+        token_result = self._get_jwt_provider_cached().flat_map(
+            lambda provider: provider.generate_token_for_user(
+                user, token_type=token_type, expiry_minutes=expires_in_minutes
+            )
         )
-        if not token_result.is_success:
-            return FlextResult.fail(token_result.error)
 
-        # Audit logging
+        if token_result.is_failure:
+            error = token_result.error
+            self._audit_logger.log_token_creation(
+                user_id=user_id,
+                token_type=token_type,
+                success=False,
+                reason=error,
+            )
+            return FlextResult[str].fail(error)
+
+        token_value = token_result.unwrap()
         self._audit_logger.log_token_creation(
-            success=True, user_id=user_id, token_type=token_type
+            user_id=user_id,
+            token_type=token_type,
+            success=True,
         )
-
-        return FlextResult.ok(token_result.unwrap().token)
+        return FlextResult[str].ok(token_value)
 
     # =========================================================================
     # PRIVATE HELPER METHODS
@@ -127,31 +166,20 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService):
             self._jwt_provider_cache = result.unwrap()
         return FlextResult.ok(self._jwt_provider_cache)
 
-    def _decode_token_payload(self, token: str) -> FlextResult[dict[str, object]]:
-        """Decode token payload with railway pattern."""
-        return (
-            self._get_jwt_provider_cached()
-            .flat_map(lambda p: p.get_decoding_params())
-            .flat_map(
-                lambda params: FlextAuthUtilities.JWTProcessing.decode_token(
-                    token, str(params["secret_key"]), str(params["algorithm"])
-                )
-            )
-        )
-
-    def _get_user_from_payload(
-        self,
-        payload: dict[str, object],
-        token: str,
+    def _ensure_identity_present(
+        self, identity: FlextAuthModels.Identity | None
     ) -> FlextResult[FlextAuthModels.Identity]:
-        """Extract identity from token payload with validation."""
-        user_id = payload.get("sub")
-        if not user_id or not isinstance(user_id, str):
-            return FlextResult.fail("Invalid token: missing or invalid user ID")
+        if identity is None:
+            return FlextResult[FlextAuthModels.Identity].fail(
+                "Token validation returned no identity"
+            )
+        return FlextResult[FlextAuthModels.Identity].ok(identity)
 
-        return self._user_manager.get_user(user_id).recover(
-            lambda e: FlextResult.fail(f"User not found: {e}")
-        )
+    @staticmethod
+    def _short_token(token: str, length: int = 10) -> str:
+        if len(token) <= length:
+            return token
+        return f"{token[:length]}..."
 
 
 __all__ = ["FlextAuthTokenService"]
