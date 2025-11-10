@@ -212,7 +212,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             return FlextAuthModels.AuthToken(
                 identity_id=str(user_data.get("user_id", "unknown")),
                 token=secrets.token_hex(32),  # Generate random token
-                token_type="basic_auth",
+                token_type=FlextAuthConstants.TOKEN_TYPE_ACCESS,
                 expires_at=datetime.now(UTC) + timedelta(days=1),
                 is_revoked=False,
             )
@@ -261,7 +261,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
                 FlextAuthModels.AuthToken(
                     identity_id="anonymous",
                     token="anonymous",
-                    token_type="basic_auth",
+                    token_type=FlextAuthConstants.TOKEN_TYPE_ACCESS,
                     expires_at=datetime.now(UTC) + timedelta(days=1),
                     is_revoked=False,
                 )
@@ -419,17 +419,16 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.Identity,
-        token_type: str = "basic_access",
-        expiry_minutes: int | None = None,
+        _user: FlextAuthModels.Identity,
+        _token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
+        _expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate Basic auth token for user."""
-        # user, token_type, expiry_minutes parameters reserved for future implementation
-        _ = user  # Mark as intentionally unused for now
-        _ = token_type  # Mark as intentionally unused for now
-        _ = expiry_minutes  # Mark as intentionally unused for now
+        # User, token type, and expiry are currently unused because Basic authentication
+        # does not issue bearer tokens. Return explicit error with context.
         return FlextResult[str].fail(
-            "Basic auth token generation not implemented in this refactor"
+            "Basic auth token generation is not supported (type "
+            f"{_token_type}, expiry={_expiry_minutes})"
         )
 
     # Helper methods

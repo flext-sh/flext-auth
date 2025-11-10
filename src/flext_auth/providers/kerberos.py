@@ -140,7 +140,7 @@ class FlextAuthKerberosProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             self.logger = FlextLogger(__name__)
 
         def validate_ticket(
-            self, ticket_data: dict[str, object]
+            self, _ticket_data: dict[str, object]
         ) -> FlextResult[dict[str, object]]:
             """Validate Kerberos ticket."""
             # Simplified implementation - in production would use proper Kerberos validation

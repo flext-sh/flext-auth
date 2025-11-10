@@ -8,7 +8,7 @@ from typing import Annotated, TypedDict
 from flext_core import FlextTypes
 from pydantic import Field, SecretStr
 
-from flext_auth.constants import FlextAuthConstants
+from flext_auth.constants import FlextAuthConstants, PermissionType, RoleType
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
 
@@ -206,8 +206,8 @@ class FlextAuthTypes(FlextTypes):
         """Domain-level literals and shortcuts."""
 
         type ProviderType = FlextAuthConstants.ProviderType
-        type Role = FlextAuthConstants.RoleType
-        type Permission = FlextAuthConstants.PermissionType
+        type Role = RoleType
+        type Permission = PermissionType
 
 
 __all__ = ["FlextAuthTypes"]

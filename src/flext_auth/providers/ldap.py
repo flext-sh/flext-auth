@@ -192,7 +192,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         def _verify_credentials(
             self,
             user_data: dict[str, object],
-            password: str,
+            _password: str,
         ) -> FlextResult[dict[str, object]]:
             """Verify user credentials."""
             # Simplified implementation - in production would bind to LDAP and verify

@@ -194,7 +194,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
             self.provider = provider
             self.logger = FlextLogger(__name__)
 
-        def check_revocation(self, cert_info: dict[str, object]) -> FlextResult[bool]:
+        def check_revocation(self, _cert_info: dict[str, object]) -> FlextResult[bool]:
             """Check if certificate is revoked."""
             # Simplified implementation - in production would check OCSP/CRL
             # cert_info parameter reserved for future certificate validation
@@ -442,7 +442,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
     def validate_token(
         self,
-        token: str,
+        _token: str,
     ) -> FlextResult[FlextAuthModels.Identity | None]:
         """Validate certificate token and return user using composition."""
         return FlextResult[FlextAuthModels.Identity | None].ok(
@@ -451,9 +451,9 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.Identity,
-        token_type: str = "cert_access",
-        expiry_minutes: int | None = None,
+        _user: FlextAuthModels.Identity,
+        _token_type: str = "cert_access",
+        _expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate certificate token for user."""
         return FlextResult[str].fail(

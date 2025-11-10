@@ -97,15 +97,11 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         cls,
         *,
         create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
-        REDACTED_LDAP_BIND_PASSWORD_username: str | None = None,
-        REDACTED_LDAP_BIND_PASSWORD_password: str | None = None,
     ) -> Self:
-        """Quick start factory with default configuration and optional REDACTED_LDAP_BIND_PASSWORD creation.
+        """Quick start factory with default configuration.
 
         Args:
-        create_REDACTED_LDAP_BIND_PASSWORD: Whether to create an REDACTED_LDAP_BIND_PASSWORD user during initialization
-        REDACTED_LDAP_BIND_PASSWORD_username: Custom REDACTED_LDAP_BIND_PASSWORD username (defaults to 'REDACTED_LDAP_BIND_PASSWORD')
-        REDACTED_LDAP_BIND_PASSWORD_password: Custom REDACTED_LDAP_BIND_PASSWORD password (defaults to 'REDACTED_LDAP_BIND_PASSWORD123!')
+        create_REDACTED_LDAP_BIND_PASSWORD: Reserved for future REDACTED_LDAP_BIND_PASSWORD creation functionality
 
         Returns:
         Initialized FlextAuth instance
@@ -122,7 +118,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
     def create_with_config_overrides(
         cls,
         config_overrides: dict[str, object] | None = None,
-        **kwargs: object,
+        **_kwargs: object,
     ) -> Self:
         """Create FlextAuth instance with configuration overrides.
 
@@ -165,7 +161,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
     def authenticate(
         self,
         credentials: dict[str, object],
-        provider: str | None = None,
+        _provider: str | None = None,
     ) -> FlextResult[FlextAuthModels.Identity]:
         """Railway-oriented authentication with chaining."""
         # Extract username and password from credentials
@@ -183,16 +179,14 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         self,
         username: str,
         password: str,
-        ip_address: str | None = None,
-        user_agent: str | None = None,
+        _ip_address: str | None = None,
+        _user_agent: str | None = None,
     ) -> FlextResult[FlextAuthModels.Identity]:
         """Authenticate user by username and password with optional metadata.
 
         Args:
         username: User username
         password: User password
-        ip_address: Optional client IP address for audit logging (reserved)
-        user_agent: Optional user agent string for audit logging (reserved)
 
         Returns:
         Authentication result with user identity
@@ -274,13 +268,12 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
     def generate_jwt_token(
         self,
         user_id: str,
-        expires_in_minutes: int | None = None,
+        _expires_in_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate JWT token for user (alias for create_token).
 
         Args:
         user_id: User identifier
-        expires_in_minutes: Token expiry time (reserved for future implementation)
 
         Note:
         expires_in_minutes parameter is reserved for future custom expiry support
