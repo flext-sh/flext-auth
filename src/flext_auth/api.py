@@ -12,7 +12,7 @@ from __future__ import annotations
 import threading
 from typing import ClassVar, Self
 
-from flext_core import FlextContainer, FlextDispatcher, FlextResult, FlextService
+from flext_core import FlextDispatcher, FlextResult, FlextService
 from pydantic import SecretStr
 
 from flext_auth.config import FlextAuthConfig
@@ -63,6 +63,11 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
 
         # Initialize service dependencies once with shared managers
         self._provider_service = FlextAuthProviderService(config=self._config)
+        # Register providers from provider_service into main registry
+        for provider_name in self._provider_service.list_providers():
+            provider_result = self._provider_service.get_provider(provider_name)
+            if provider_result.is_success:
+                self._registry.register(provider_name, provider_result.unwrap())
         self._identity_service = FlextAuthIdentityService(
             config=self._config, dispatcher=self._dispatcher
         )
@@ -116,9 +121,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
             algorithm=algorithm,
             expiry_minutes=expiration_hours * 60,
         )
-        instance = cls.__new__(cls)
-        instance.__init__(config)
-        return instance
+        return cls(config=config)
 
     @classmethod
     def quick_start(
@@ -234,7 +237,31 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         ip_address and user_agent are reserved for future audit trail implementation
 
         """
-        return self._identity_service.authenticate_identity(username, password)
+        # Authenticate identity
+        auth_result = self._identity_service.authenticate_identity(username, password)
+
+        # Create session automatically on successful authentication
+        if auth_result.is_success:
+            identity = auth_result.unwrap()
+            # Generate token for the session
+            token_result = self.create_token(identity_id=identity.unique_id)
+            if token_result.is_success:
+                token = token_result.unwrap()
+                # Create session with the token
+                session_result = self._session_service.session_manager.create_session(
+                    user_id=identity.unique_id,
+                    token=token,
+                    expires_in_minutes=self._config.session_expiry_minutes,
+                    ip_address=_ip_address or "",
+                    user_agent=_user_agent or "",
+                )
+                # If session creation fails, log but don't fail authentication
+                if session_result.is_failure:
+                    self.logger.warning(
+                        f"Failed to create session for user {identity.name}: {session_result.error}"
+                    )
+
+        return auth_result
 
     def validate_token(self, token: str) -> FlextResult[bool]:
         """Flexible token validation with railway pattern."""
@@ -385,11 +412,11 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         """Logout user by session ID."""
         return self._session_service.session_manager.end_session_by_id(session_id)
 
-    def get_user_sessions(self, user_id: str) -> FlextResult[list[str]]:
+    def get_user_sessions(
+        self, user_id: str
+    ) -> FlextResult[list[FlextAuthModels.Session]]:
         """Get user sessions."""
-        return self._session_service.session_manager.get_active_sessions(user_id).map(
-            lambda sessions: [session.unique_id for session in sessions]
-        )
+        return self._session_service.session_manager.get_active_sessions(user_id)
 
     def revoke_session(self, session_id: str) -> FlextResult[bool]:
         """Revoke a session."""

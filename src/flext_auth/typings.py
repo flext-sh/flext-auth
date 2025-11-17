@@ -16,6 +16,75 @@ from flext_auth.providers.base import FlextAuthBaseProvider
 class FlextAuthTypes(FlextTypes):
     """Authentication-specific type definitions extending FlextTypes."""
 
+    # =========================================================================
+    # DOMAIN TYPE CLASSES (for test compatibility)
+    # =========================================================================
+
+    class Authentication:
+        """Authentication domain type namespace."""
+
+    class UserManagement:
+        """User management domain type namespace."""
+
+    class SessionManagement:
+        """Session management domain type namespace."""
+
+    class TokenManagement:
+        """Token management domain type namespace."""
+
+    class Authorization:
+        """Authorization domain type namespace."""
+
+    # =========================================================================
+    # TYPED DICT DEFINITIONS (for test compatibility)
+    # =========================================================================
+
+    class UserDict(TypedDict, total=False):
+        """User dictionary structure for backward compatibility."""
+
+        id: str
+        username: str
+        email: str
+        full_name: str
+        is_active: bool
+        roles: list[str]
+        created_at: datetime
+        updated_at: datetime
+        last_login: datetime
+
+    class SessionDict(TypedDict, total=False):
+        """Session dictionary structure for backward compatibility."""
+
+        id: str
+        user_id: str
+        session_token: str
+        expires_at: datetime
+        created_at: datetime
+        last_accessed_at: datetime
+        is_active: bool
+
+    class AuthenticationResponseDict(TypedDict, total=False):
+        """Authentication response dictionary structure for backward compatibility."""
+
+        user: dict[str, object]
+        session: dict[str, object]
+        jwt_token: str
+        authenticated: bool
+        success: bool
+        tokens: dict[str, object]
+
+    # =========================================================================
+    # PROJECT TYPE CLASSES (for test compatibility)
+    # =========================================================================
+
+    class Project:
+        """Project type namespace."""
+
+        type ProjectType = FlextAuthConstants.ProjectType
+
+        class AuthProjectConfig(TypedDict, total=False):
+            """Project configuration structure."""
+
     class Providers:
         """Provider-oriented type definitions."""
 

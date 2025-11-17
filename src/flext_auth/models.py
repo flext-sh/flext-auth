@@ -34,8 +34,8 @@ class FlextAuthModels(FlextModels):
         """Generic validation result for any operation."""
 
         is_valid: bool = Field(..., description="Validation outcome")
-        data: dict[str, object] | None = Field(default=None, description="Result data")
-        error: str | None = Field(default=None, description="Error message")
+        data: dict[str, object] = Field(default_factory=dict, description="Result data")
+        error: str = Field(default="", description="Error message")
         metadata: dict[str, object] = Field(
             default_factory=dict, description="Additional metadata"
         )
@@ -46,7 +46,7 @@ class FlextAuthModels(FlextModels):
             """Human-readable validation status."""
             if self.is_valid:
                 return "valid"
-            if self.error is None:
+            if not self.error:
                 return "invalid"
             return f"invalid: {self.error}"
 
@@ -60,21 +60,31 @@ class FlextAuthModels(FlextModels):
         sub: str = Field(..., description="Subject (identity ID)")
         exp: int = Field(..., description="Expiration timestamp (UNIX)")
         iat: int = Field(..., description="Issued at timestamp (UNIX)")
-        jti: str | None = Field(default=None, description="Token ID")
-        iss: str | None = Field(default=None, description="Issuer")
-        aud: str | None = Field(default=None, description="Audience")
-        session_id: str | None = Field(default=None, description="Session ID")
+        jti: str = Field(default="", description="Token ID")
+        iss: str = Field(
+            default=FlextAuthConstants.DEFAULT_ISSUER, description="Issuer"
+        )
+        aud: str = Field(
+            default=FlextAuthConstants.DEFAULT_AUDIENCE, description="Audience"
+        )
+        session_id: str = Field(default="", description="Session ID")
 
     class TokenRequest(BaseModel):
         """Generic token generation request."""
 
         identity_id: str = Field(..., description="Identity ID")
-        token_type: str = Field(default="access", description="Token type")
-        expiry_minutes: int = Field(default=60, ge=1, description="Token expiry")
-        extra_claims: dict[str, object] | None = Field(
-            default=None, description="Additional claims"
+        token_type: str = Field(
+            default=FlextAuthConstants.DEFAULT_TOKEN_TYPE, description="Token type"
         )
-        session_id: str | None = Field(default=None, description="Session ID")
+        expiry_minutes: int = Field(
+            default=FlextAuthConstants.EXPIRY_DEFAULT_MINUTES,
+            ge=1,
+            description="Token expiry",
+        )
+        extra_claims: dict[str, object] = Field(
+            default_factory=dict, description="Additional claims"
+        )
+        session_id: str = Field(default="", description="Session ID")
 
         @model_validator(mode="after")
         def validate_token_type(self) -> Self:
@@ -90,12 +100,14 @@ class FlextAuthModels(FlextModels):
 
         identity_id: str = Field(..., description="Identity ID")
         token: str = Field(..., description="Token value", exclude=True)
-        token_type: str = Field(default="bearer", description="Token type")
+        token_type: str = Field(
+            default=FlextAuthConstants.TOKEN_TYPE_BEARER, description="Token type"
+        )
         expires_at: datetime = Field(..., description="Expiration time")
-        session_id: str | None = Field(default=None, description="Session ID")
+        session_id: str = Field(default="", description="Session ID")
         is_revoked: bool = Field(default=False, description="Revoked status")
-        refresh_token: str | None = Field(
-            default=None, description="Refresh token", exclude=True
+        refresh_token: str = Field(
+            default="", description="Refresh token", exclude=True
         )
 
         @computed_field
@@ -113,20 +125,25 @@ class FlextAuthModels(FlextModels):
 
         name: str = Field(
             ...,
-            min_length=FlextAuthConstants.IDENTITY_MIN_LENGTH,
+            min_length=3,
             max_length=FlextAuthConstants.IDENTITY_MAX_LENGTH,
             description="Unique identity name",
         )
-        contact: str = Field(..., min_length=1, description="Contact info")
+        contact: str = Field(
+            ...,
+            min_length=1,
+            pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+            description="Contact info (email)",
+        )
         credential: str = Field(
             ...,
             min_length=FlextAuthConstants.CREDENTIAL_MIN_LENGTH,
             description="Credential (password/key)",
             exclude=True,
         )
-        full_name: str | None = Field(default=None, description="Full name")
+        full_name: str = Field(default="", description="Full name")
         roles: list[str] = Field(
-            default_factory=lambda: [FlextAuthConstants.ROLE_USER],
+            default_factory=lambda: list(FlextAuthConstants.DEFAULT_ROLES),
             description="Roles",
         )
 
@@ -135,7 +152,7 @@ class FlextAuthModels(FlextModels):
 
         name: str = Field(
             ...,
-            min_length=FlextAuthConstants.IDENTITY_MIN_LENGTH,
+            min_length=3,
             max_length=FlextAuthConstants.IDENTITY_MAX_LENGTH,
             description="Unique identity name",
         )
@@ -143,13 +160,22 @@ class FlextAuthModels(FlextModels):
         credential_hash: str = Field(
             default="", description="Hashed credential", exclude=True
         )
-        full_name: str | None = Field(default=None, description="Full name")
+        full_name: str = Field(default="", description="Full name")
         is_active: bool = Field(default=True, description="Active status")
-        roles: list[str] = Field(default_factory=list, description="Roles")
+        roles: list[str] = Field(
+            default_factory=lambda: list(FlextAuthConstants.DEFAULT_ROLES),
+            description="Roles",
+        )
         permissions: list[str] = Field(default_factory=list, description="Permissions")
         failed_attempts: int = Field(default=0, ge=0, description="Failed attempts")
-        locked_until: datetime | None = Field(default=None, description="Lock time")
-        last_access: datetime | None = Field(default=None, description="Last access")
+        locked_until: datetime = Field(
+            default_factory=lambda: datetime.min.replace(tzinfo=UTC),
+            description="Lock time (datetime.min means not locked)",
+        )
+        last_access: datetime = Field(
+            default_factory=lambda: datetime.min.replace(tzinfo=UTC),
+            description="Last access (datetime.min means never accessed)",
+        )
 
         # Backward compatibility aliases for User model expectations
         @property
@@ -173,17 +199,15 @@ class FlextAuthModels(FlextModels):
             return self.contact
 
         # Additional attributes expected by tests
-        token: str | None = Field(
-            default=None, description="Associated token", exclude=True
-        )
-        session_id: str | None = Field(default=None, description="Session ID")
+        token: str = Field(default="", description="Associated token", exclude=True)
+        session_id: str = Field(default="", description="Session ID")
 
         def __getitem__(self, key: str) -> object:
             """Support dictionary-like access for backward compatibility."""
             if key == "user":
                 return {"id": self.id, "username": self.name, "email": self.contact}
             if key == "session":
-                return {"id": self.session_id} if self.session_id else {"id": None}
+                return {"id": self.session_id} if self.session_id else {"id": ""}
             if key == "jwt_token":
                 return self.token
             return getattr(self, key)
@@ -192,12 +216,12 @@ class FlextAuthModels(FlextModels):
             """Record successful access (fluent interface)."""
             self.last_access = datetime.now(UTC)
             self.failed_attempts = 0
-            self.locked_until = None
+            self.locked_until = datetime.min.replace(tzinfo=UTC)
             return self
 
         def is_locked(self) -> bool:
             """Check if identity is locked."""
-            if not self.locked_until:
+            if self.locked_until == datetime.min.replace(tzinfo=UTC):
                 return False
             return datetime.now(UTC) < self.locked_until
 
@@ -235,8 +259,8 @@ class FlextAuthModels(FlextModels):
         session_token: str = Field(..., description="Session token", exclude=True)
         expires_at: datetime = Field(..., description="Expiration time")
         is_active: bool = Field(default=True, description="Active status")
-        ip_address: str | None = Field(default=None, description="IP address")
-        user_agent: str | None = Field(default=None, description="User agent")
+        ip_address: str = Field(default="", description="IP address")
+        user_agent: str = Field(default="", description="User agent")
         last_accessed: datetime = Field(
             default_factory=lambda: datetime.now(UTC), description="Last access"
         )
@@ -255,20 +279,16 @@ class FlextAuthModels(FlextModels):
         """Generic role entity."""
 
         name: str = Field(..., min_length=1, max_length=50, description="Role name")
-        description: str | None = Field(
-            default=None, max_length=500, description="Description"
-        )
+        description: str = Field(default="", max_length=500, description="Description")
         permissions: list[str] = Field(default_factory=list, description="Permissions")
 
     class Permission(FlextModels.Entity):
         """Generic permission entity."""
 
         name: str = Field(..., min_length=1, max_length=100, description="Permission")
-        description: str | None = Field(
-            default=None, max_length=500, description="Description"
-        )
-        resource: str | None = Field(default=None, description="Resource path")
-        action: str | None = Field(default=None, description="Action type")
+        description: str = Field(default="", max_length=500, description="Description")
+        resource: str = Field(default="", description="Resource path")
+        action: str = Field(default="", description="Action type")
 
     # =========================================================================
     # PROVIDER MODELS - Generic provider configuration
@@ -322,7 +342,10 @@ class FlextAuthModels(FlextModels):
             default_factory=list, description="Key permissions"
         )
         is_active: bool = Field(default=True, description="Key active status")
-        expires_at: datetime | None = Field(default=None, description="Key expiration")
+        expires_at: datetime = Field(
+            default_factory=lambda: datetime.max.replace(tzinfo=UTC),
+            description="Key expiration (datetime.max means never expires)",
+        )
         created_at: datetime = Field(
             default_factory=lambda: datetime.now(UTC), description="Creation time"
         )
@@ -357,11 +380,16 @@ class FlextAuthModels(FlextModels):
         """Generic authentication response."""
 
         success: bool = Field(..., description="Authentication success")
-        identity: FlextAuthModels.Identity | None = Field(
-            default=None, description="Identity data"
+        identity: FlextAuthModels.Identity = Field(
+            default_factory=lambda: FlextAuthModels.Identity(
+                unique_id="",
+                name="",
+                contact="",
+            ),
+            description="Identity data",
         )
-        token: str | None = Field(default=None, description="Token", exclude=True)
-        message: str | None = Field(default=None, description="Response message")
+        token: str = Field(default="", description="Token", exclude=True)
+        message: str = Field(default="", description="Response message")
         metadata: dict[str, object] = Field(
             default_factory=dict, description="Additional data"
         )

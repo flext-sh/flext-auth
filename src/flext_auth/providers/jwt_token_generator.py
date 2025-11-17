@@ -49,7 +49,7 @@ class FlextAuthJwtTokenGenerator:
 
     def _get_optional_config_str(self, key: str) -> FlextResult[str]:
         """Get optional string configuration value.
-        
+
         Returns empty string if not provided (no None in FlextResult).
         """
         config = self._provider.config
@@ -61,7 +61,9 @@ class FlextAuthJwtTokenGenerator:
             return FlextResult[str].fail(f"{key} must be a string if provided")
         return FlextResult[str].ok(value)
 
-    def _validate_expiry(self, expiry_minutes: int | None, default: int) -> FlextResult[int]:
+    def _validate_expiry(
+        self, expiry_minutes: int | None, default: int
+    ) -> FlextResult[int]:
         """Validate and determine expiry time."""
         if expiry_minutes is None:
             return FlextResult[int].ok(default)
@@ -110,28 +112,40 @@ class FlextAuthJwtTokenGenerator:
         """
         try:
             # Get required configuration values
-            secret_result = self._get_config_str("secret_key", "JWT secret key not configured")
+            secret_result = self._get_config_str(
+                "secret_key", "JWT secret key not configured"
+            )
             if secret_result.is_failure:
                 return FlextResult[str].fail(secret_result.error or "Secret key error")
 
-            algorithm_result = self._get_config_str("algorithm", "JWT algorithm not configured")
+            algorithm_result = self._get_config_str(
+                "algorithm", "JWT algorithm not configured"
+            )
             if algorithm_result.is_failure:
-                return FlextResult[str].fail(algorithm_result.error or "Algorithm error")
+                return FlextResult[str].fail(
+                    algorithm_result.error or "Algorithm error"
+                )
 
             expiry_config_result = self._get_config_int(
                 "expiry_minutes", "JWT expiry_minutes not configured"
             )
             if expiry_config_result.is_failure:
-                return FlextResult[str].fail(expiry_config_result.error or "Expiry error")
+                return FlextResult[str].fail(
+                    expiry_config_result.error or "Expiry error"
+                )
 
             issuer_result = self._get_config_str("issuer", "JWT issuer not configured")
             if issuer_result.is_failure:
                 return FlextResult[str].fail(issuer_result.error or "Issuer error")
 
             # Validate expiry
-            expiry_result = self._validate_expiry(expiry_minutes, expiry_config_result.unwrap())
+            expiry_result = self._validate_expiry(
+                expiry_minutes, expiry_config_result.unwrap()
+            )
             if expiry_result.is_failure:
-                return FlextResult[str].fail(expiry_result.error or "Expiry validation error")
+                return FlextResult[str].fail(
+                    expiry_result.error or "Expiry validation error"
+                )
 
             # Get optional audience
             audience_result = self._get_optional_config_str("audience")
@@ -142,7 +156,7 @@ class FlextAuthJwtTokenGenerator:
             audience_value = audience_result.unwrap()
             # Use None only for payload construction, not in FlextResult
             audience: str | None = audience_value or None
-            
+
             payload = self._build_payload(
                 identity_id,
                 expiry_result.unwrap(),
@@ -150,7 +164,9 @@ class FlextAuthJwtTokenGenerator:
                 audience,
                 extra_claims,
             )
-            token = jwt.encode(payload, secret_result.unwrap(), algorithm=algorithm_result.unwrap())
+            token = jwt.encode(
+                payload, secret_result.unwrap(), algorithm=algorithm_result.unwrap()
+            )
             return FlextResult[str].ok(token)
 
         except Exception as e:

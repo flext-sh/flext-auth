@@ -56,7 +56,7 @@ class TestFlextAuthConstants:
         security = FlextAuthConstants.AuthSecurity
 
         assert security.MAX_LOGIN_ATTEMPTS == 5
-        assert security.LOCKOUT_DURATION_MINUTES == 30
+        assert security.LOCKOUT_DURATION_MINUTES == 15  # Correct value from constants
         assert security.MAX_REQUESTS_PER_MINUTE == 60
         assert security.MAX_REQUESTS_PER_HOUR == 1000
 

@@ -177,7 +177,8 @@ class FlextAuthConfig(FlextConfig):
             "expiry_minutes": self.expiry_minutes,
             "issuer": self.issuer,
             "audience": self.audience,
-            "secret_configured": len(self.auth_secret.get_secret_value()) >= FlextAuthConstants.SECRET_MIN_LENGTH,
+            "secret_configured": len(self.auth_secret.get_secret_value())
+            >= FlextAuthConstants.SECRET_MIN_LENGTH,
         }
 
     def get_security_settings(self) -> dict[str, int | bool]:
@@ -202,10 +203,7 @@ class FlextAuthConfig(FlextConfig):
             msg = "Min credential length > max"
             raise ValueError(msg)
 
-        if (
-            self.session_expiry_minutes
-            > FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES
-        ):
+        if self.session_expiry_minutes > FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES:
             msg = f"Session expiry > {FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES}min (30 days)"
             raise ValueError(msg)
 
@@ -226,7 +224,7 @@ class FlextAuthConfig(FlextConfig):
         try:
             # Pydantic v2 validates automatically on model creation
             # Re-validate by creating a new instance from current data
-            validated = self.model_validate(self.model_dump())
+            self.model_validate(self.model_dump())
             # Check validation constraints manually
             secret_len = len(self.auth_secret.get_secret_value())
             if secret_len < FlextAuthConstants.SECRET_MIN_LENGTH:
@@ -244,13 +242,31 @@ class FlextAuthConfig(FlextConfig):
                 return FlextResult[bool].fail(msg)
 
             if self.expiry_minutes > self.session_expiry_minutes:
-                return FlextResult[bool].fail("JWT expiry should not exceed session expiry")
+                return FlextResult[bool].fail(
+                    "JWT expiry should not exceed session expiry"
+                )
 
             return FlextResult[bool].ok(True)
         except ValueError as e:
             return FlextResult[bool].fail(str(e))
         except Exception as e:
             return FlextResult[bool].fail(f"Validation error: {e}")
+
+    @classmethod
+    def set_global_instance(cls, instance: FlextAuthConfig) -> None:
+        """Set the global instance.
+
+        Args:
+            instance: FlextAuthConfig instance to set as global
+
+        Raises:
+            TypeError: If instance is not of type FlextAuthConfig
+
+        """
+        if not isinstance(instance, FlextAuthConfig):
+            msg = "Instance must be of type FlextAuthConfig"
+            raise TypeError(msg)
+        cls._global_instance = instance
 
     @classmethod
     def get_or_create_global(

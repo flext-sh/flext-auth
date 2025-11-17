@@ -24,7 +24,6 @@ from flext_core import (
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.models import FlextAuthModels
-from flext_auth.typings import FlextAuthTypes
 
 
 class ServiceManagerMixin:
@@ -114,9 +113,7 @@ class FlextAuthManagers(FlextService[object]):
                 )[1]
             )
 
-        def _extract_identity_id(
-            self, storage_data: dict[str, object]
-        ) -> str:
+        def _extract_identity_id(self, storage_data: dict[str, object]) -> str:
             """Extract identity ID from storage data with fast fail."""
             for field in ("unique_id", "id", "identity_id"):
                 value = storage_data.get(field)
@@ -199,7 +196,15 @@ class FlextAuthManagers(FlextService[object]):
                     )
                     field_value = storage_data.get(field)
                     if isinstance(field_value, field_type):
-                        identity_data[field] = field_value
+                        # For datetime fields, ensure they're not None
+                        if field in {"locked_until", "last_access"}:
+                            # If None in storage, use datetime.min as default
+                            if field_value is None:
+                                identity_data[field] = datetime.min.replace(tzinfo=UTC)
+                            else:
+                                identity_data[field] = field_value
+                        else:
+                            identity_data[field] = field_value
 
             filtered_identity_data = {
                 k: v for k, v in identity_data.items() if k in valid_identity_fields
@@ -237,6 +242,17 @@ class FlextAuthManagers(FlextService[object]):
                 return FlextResult[FlextAuthModels.Identity].fail(
                     "Identity already exists"
                 )
+            # Check for duplicate email (contact)
+            normalized_email = email.lower() if isinstance(email, str) else email
+            for existing_user_data in self._users.values():
+                existing_contact = existing_user_data.get("contact", "")
+                if (
+                    isinstance(existing_contact, str)
+                    and existing_contact.lower() == normalized_email
+                ):
+                    return FlextResult[FlextAuthModels.Identity].fail(
+                        "Identity already exists"
+                    )
 
             user_id = str(uuid4())
             # Build user data with only Identity model fields (no extras)
@@ -375,9 +391,7 @@ class FlextAuthManagers(FlextService[object]):
                 str, dict[str, object]
             ] = {}  # In production, use Redis/database (dict for dynamic key access)
 
-        def _is_session_active(
-            self, session_data: dict[str, object]
-        ) -> bool:
+        def _is_session_active(self, session_data: dict[str, object]) -> bool:
             """Check if session is active and not expired.
 
             Eliminates duplication of expiration check (appeared 2+ times).
@@ -399,6 +413,8 @@ class FlextAuthManagers(FlextService[object]):
             user_id: str,
             token: str,
             expires_in_minutes: int = 60,
+            ip_address: str | None = None,
+            user_agent: str | None = None,
         ) -> FlextResult[FlextAuthModels.Session]:
             """Create a new session."""
             session_id = str(uuid4())
@@ -412,6 +428,8 @@ class FlextAuthManagers(FlextService[object]):
                 "expires_at": expires_at,
                 "is_active": True,
                 "last_accessed": datetime.now(UTC),
+                "ip_address": ip_address or "",
+                "user_agent": user_agent or "",
             }
 
             self._sessions[session_id] = session_data
@@ -421,8 +439,8 @@ class FlextAuthManagers(FlextService[object]):
                 session_token=str(session_data["session_token"]),
                 expires_at=session_data["expires_at"],
                 is_active=bool(session_data.get("is_active", True)),
-                ip_address=session_data.get("ip_address"),  # type: ignore[assignment]
-                user_agent=session_data.get("user_agent"),  # type: ignore[assignment]
+                ip_address=str(session_data.get("ip_address", "")),
+                user_agent=str(session_data.get("user_agent", "")),
                 last_accessed=session_data.get("last_accessed", datetime.now(UTC)),  # type: ignore[assignment]
             )
             return FlextResult[FlextAuthModels.Session].ok(session)
@@ -432,14 +450,28 @@ class FlextAuthManagers(FlextService[object]):
         ) -> FlextResult[list[FlextAuthModels.Session]]:
             """Get all active sessions for a user."""
             sessions: list[FlextAuthModels.Session] = []
-            for session_data in self._sessions.values():
+            for session_id, session_data in self._sessions.items():
                 identity_id_value = session_data.get("identity_id")
                 if (
                     isinstance(identity_id_value, str)
                     and identity_id_value == user_id
                     and self._is_session_active(session_data)
                 ):
-                    sessions.append(FlextAuthModels.Session(**session_data))
+                    # Extract only fields that Session model accepts
+                    session = FlextAuthModels.Session(
+                        identity_id=str(session_data["identity_id"]),
+                        session_token=str(session_data["session_token"]),
+                        expires_at=session_data["expires_at"],
+                        is_active=bool(session_data.get("is_active", True)),
+                        ip_address=str(session_data.get("ip_address", "")),
+                        user_agent=str(session_data.get("user_agent", "")),
+                        last_accessed=session_data.get(
+                            "last_accessed", datetime.now(UTC)
+                        ),  # type: ignore[assignment]
+                    )
+                    # Set unique_id from session_id
+                    session.unique_id = session_id
+                    sessions.append(session)
             return FlextResult[list[FlextAuthModels.Session]].ok(sessions)
 
         def end_session(self, user_id: str) -> FlextResult[bool]:
@@ -798,7 +830,9 @@ class FlextAuthManagers(FlextService[object]):
             recent_attempts = self._cleanup_window(username, now)
             if username not in self._attempts:
                 self._attempts[username] = {}
-            self._attempts[username]["attempts"] = recent_attempts  # Update stored attempts
+            self._attempts[username]["attempts"] = (
+                recent_attempts  # Update stored attempts
+            )
 
             if len(recent_attempts) >= self._max_attempts:
                 return FlextResult[bool].fail(

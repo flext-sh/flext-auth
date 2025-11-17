@@ -112,9 +112,17 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
                 credential=credential,
                 roles=user_roles,
             )
-        except ValidationError:
-            # Re-raise ValidationError for Pydantic validation (expected by tests)
-            raise
+        except ValidationError as e:
+            # Convert ValidationError to FlextResult with error message
+            error_messages = []
+            for error in e.errors():
+                field = (
+                    error.get("loc", ("unknown",))[0] if error.get("loc") else "unknown"
+                )
+                msg = error.get("msg", "Validation error")
+                error_messages.append(f"{field}: {msg}")
+            error_msg = "; ".join(error_messages) if error_messages else str(e)
+            return FlextResult[FlextAuthModels.Identity].fail(error_msg)
         except Exception as e:
             return FlextResult[FlextAuthModels.Identity].fail(str(e))
 
