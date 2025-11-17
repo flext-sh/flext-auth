@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Self
+from typing import ClassVar, Self
 
 from flext_core import FlextConfig, FlextResult
 from pydantic import Field, SecretStr, model_validator
@@ -24,6 +24,8 @@ class FlextAuthConfig(FlextConfig):
     All auth configuration unified in single class with environment override,
     validation, and sensible defaults embedded directly (not from constants).
     """
+
+    _global_instance: ClassVar[FlextAuthConfig | None] = None
 
     model_config = SettingsConfigDict(
         env_prefix="FLEXT_AUTH_",
@@ -152,83 +154,45 @@ class FlextAuthConfig(FlextConfig):
     )
     enable_history: bool = Field(default=False, description="Enable history")
 
-    # Legacy property names for backward compatibility
-    @property
-    def max_login_attempts(self) -> int:
-        """Maximum login attempts (alias for max_attempts)."""
-        return self.max_attempts
-
-    @property
-    def jwt_expiry_minutes(self) -> int:
-        """Legacy property for jwt_expiry_minutes."""
-        return self.expiry_minutes
-
-    @property
-    def jwt_algorithm(self) -> str:
-        """Legacy property for jwt_algorithm."""
-        return self.algorithm
-
-    @property
-    def jwt_auth_secret(self) -> SecretStr:
-        """Legacy property for jwt_auth_secret."""
-        return self.auth_secret
-
-    @property
-    def bcrypt_rounds(self) -> int:
-        """Legacy property for bcrypt_rounds."""
-        return self.hash_rounds
-
-    @property
-    def environment(self) -> str:
-        """Get current environment."""
-        return "development"  # Default for now
+    # Environment
+    environment: str = Field(
+        default="development",
+        description="Environment name (development, staging, production)",
+    )
 
     @classmethod
-    def create_with_overrides(cls, **overrides: object) -> FlextResult[Self]:
+    def create_with_overrides(cls, **overrides: object) -> FlextResult[FlextAuthConfig]:
         """Create config instance with overrides."""
         try:
-            # Validate overrides using base class method
-            validation_result = cls.validate_overrides(cls(), **overrides)
-            if validation_result.is_failure:
-                return FlextResult[Self].fail(
-                    validation_result.error or "Validation failed"
-                )
-
-            # Create a new instance and apply validated overrides
-            instance = cls.__new__(cls)
-            # Initialize with defaults first
-            super(cls, instance).__init__()
-
-            # Apply validated overrides
-            for key, value in validation_result.unwrap().items():
-                setattr(instance, key, value)
-
-            return FlextResult[Self].ok(instance)
+            # Create instance with overrides - Pydantic will validate
+            instance = cls(**overrides)
+            return FlextResult[FlextAuthConfig].ok(instance)
         except Exception as e:
-            return FlextResult[Self].fail(str(e))
+            return FlextResult[FlextAuthConfig].fail(str(e))
 
-    def get_jwt_settings(self) -> dict[str, str | int]:
+    def get_jwt_settings(self) -> dict[str, str | int | bool]:
         """Get JWT-specific settings."""
         return {
             "algorithm": self.algorithm,
-            "jwt_expiry_minutes": self.expiry_minutes,
             "expiry_minutes": self.expiry_minutes,
             "issuer": self.issuer,
             "audience": self.audience,
+            "secret_configured": len(self.auth_secret.get_secret_value()) >= FlextAuthConstants.SECRET_MIN_LENGTH,
         }
 
     def get_security_settings(self) -> dict[str, int | bool]:
         """Get security-related settings."""
         return {
             "hash_rounds": self.hash_rounds,
-            "bcrypt_rounds": self.hash_rounds,
             "max_attempts": self.max_attempts,
             "lockout_duration_minutes": self.lockout_duration_minutes,
+            "min_credential_length": self.min_credential_length,
+            "max_credential_length": self.max_credential_length,
         }
 
     @model_validator(mode="after")
-    def validate_configuration(self) -> Self:
-        """Validate configuration after initialization."""
+    def _validate_model(self) -> Self:
+        """Pydantic model validator for automatic validation."""
         secret_len = len(self.auth_secret.get_secret_value())
         if secret_len < FlextAuthConstants.SECRET_MIN_LENGTH:
             msg = f"Secret must be ≥{FlextAuthConstants.SECRET_MIN_LENGTH} chars, got {secret_len}"
@@ -238,11 +202,55 @@ class FlextAuthConfig(FlextConfig):
             msg = "Min credential length > max"
             raise ValueError(msg)
 
-        if self.session_expiry_minutes > FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES:
+        if (
+            self.session_expiry_minutes
+            > FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES
+        ):
             msg = f"Session expiry > {FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES}min (30 days)"
             raise ValueError(msg)
 
+        # JWT expiry should not exceed session expiry
+        if self.expiry_minutes > self.session_expiry_minutes:
+            msg = "JWT expiry should not exceed session expiry"
+            raise ValueError(msg)
+
         return self
+
+    def validate_configuration(self) -> FlextResult[bool]:
+        """Validate configuration after initialization.
+
+        Returns:
+            FlextResult[bool]: True if valid, False with error message if invalid
+
+        """
+        try:
+            # Pydantic v2 validates automatically on model creation
+            # Re-validate by creating a new instance from current data
+            validated = self.model_validate(self.model_dump())
+            # Check validation constraints manually
+            secret_len = len(self.auth_secret.get_secret_value())
+            if secret_len < FlextAuthConstants.SECRET_MIN_LENGTH:
+                msg = f"Secret must be ≥{FlextAuthConstants.SECRET_MIN_LENGTH} chars, got {secret_len}"
+                return FlextResult[bool].fail(msg)
+
+            if self.min_credential_length > self.max_credential_length:
+                return FlextResult[bool].fail("Min credential length > max")
+
+            if (
+                self.session_expiry_minutes
+                > FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES
+            ):
+                msg = f"Session expiry > {FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES}min (30 days)"
+                return FlextResult[bool].fail(msg)
+
+            if self.expiry_minutes > self.session_expiry_minutes:
+                return FlextResult[bool].fail("JWT expiry should not exceed session expiry")
+
+            return FlextResult[bool].ok(True)
+        except ValueError as e:
+            return FlextResult[bool].fail(str(e))
+        except Exception as e:
+            return FlextResult[bool].fail(f"Validation error: {e}")
 
     @classmethod
     def get_or_create_global(
@@ -259,58 +267,44 @@ class FlextAuthConfig(FlextConfig):
 
         """
         try:
-            # If instance exists, return it
-            instance = cls.get_global_instance()
-            return FlextResult.ok(instance)
-        except Exception:
-            # Create new instance with provided kwargs
-            try:
-                instance = cls(**kwargs)
-                # Set as global instance
+            # If instance exists and no kwargs provided, return it
+            if not kwargs:
+                if cls._global_instance is not None:
+                    return FlextResult.ok(cls._global_instance)
+                # Create default instance if none exists
+                instance = cls()
                 cls._global_instance = instance
                 return FlextResult.ok(instance)
-            except Exception as e:
-                return FlextResult.fail(f"Failed to create config: {e}")
+            # If kwargs provided, always create new instance with overrides
+            instance = cls(**kwargs)
+            # Set as global instance
+            cls._global_instance = instance
+            return FlextResult.ok(instance)
+        except Exception as e:
+            return FlextResult.fail(f"Failed to create config: {e}")
 
-    @property
-    def jwt_secret(self) -> SecretStr:
-        """Alias for auth_secret for backward compatibility."""
-        return self.auth_secret
+    def to_provider_config(self) -> dict[str, object]:
+        """Convert config to provider configuration dict.
 
-    @jwt_secret.setter
-    def jwt_secret(self, value: str | SecretStr) -> None:
-        """Set auth_secret via jwt_secret alias."""
-        if isinstance(value, str):
-            self.auth_secret = SecretStr(value)
-        else:
-            self.auth_secret = value
+        Returns provider configuration without using model_dump().
+        Directly accesses config properties to build the dict.
+        """
+        config_dict: dict[str, object] = {
+            "algorithm": self.algorithm,
+            "expiry_minutes": self.expiry_minutes,
+            "issuer": self.issuer,
+            "audience": self.audience,
+            "secret_key": self.auth_secret.get_secret_value(),
+            "hash_rounds": self.hash_rounds,
+            "min_credential_length": self.min_credential_length,
+            "max_credential_length": self.max_credential_length,
+            "max_attempts": self.max_attempts,
+            "lockout_duration_minutes": self.lockout_duration_minutes,
+            "session_expiry_minutes": self.session_expiry_minutes,
+            "max_sessions_per_identity": self.max_sessions_per_identity,
+        }
 
-    # Additional backward compatibility properties for tests
-    @property
-    def min_password_length(self) -> int:
-        """Alias for min_credential_length."""
-        return self.min_credential_length
-
-    @property
-    def max_password_length(self) -> int:
-        """Alias for max_credential_length."""
-        return self.max_credential_length
-
-    @property
-    def jwt_issuer(self) -> str:
-        """Alias for issuer."""
-        return self.issuer
-
-    @property
-    def jwt_audience(self) -> str:
-        """Alias for audience."""
-        return self.audience
-
-    # Class method for backward compatibility
-    @classmethod
-    def create(cls, **kwargs: str | int | bool | SecretStr | None) -> Self:
-        """Create config instance (alias for constructor)."""
-        return cls(**kwargs)
+        return config_dict
 
 
 __all__ = ["FlextAuthConfig"]

@@ -137,7 +137,7 @@ class FlextAuthBaseProvider(ABC):
     def revoke(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[None]:
+    ) -> FlextResult[bool]:
         """Revoke authentication token.
 
         Invalidate the provided token, preventing further use. This operation
@@ -148,13 +148,14 @@ class FlextAuthBaseProvider(ABC):
             token: Token to revoke
 
         Returns:
-            FlextResult[None]: Success if revoked,
-                            error if revocation not supported or failed
+            FlextResult[bool]: True if revoked successfully,
+                            False if revocation not supported or failed,
+                            error message on failure
 
         Example:
             >>> if "revoke" in provider.supports():
             ...     result = provider.revoke(token)
-            ...     if result.is_success:
+            ...     if result.is_success and result.unwrap():
             ...         print("Token revoked successfully")
 
         """
@@ -225,16 +226,14 @@ class FlextAuthBaseProvider(ABC):
         ...
 
     @abstractmethod
-    def validate_token(
-        self, token: str
-    ) -> FlextResult[FlextAuthModels.Identity | None]:
+    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.Identity]:
         """Validate a token and return the associated user.
 
         Args:
             token: Token string to validate
 
         Returns:
-            FlextResult containing user if valid, None if invalid, or error if validation fails
+            FlextResult containing user if valid, or error if validation fails
 
         """
         ...

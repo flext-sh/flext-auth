@@ -21,7 +21,7 @@ from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 
 
-class FlextAuthTokenService(ServiceManagerMixin, FlextService):
+class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
     """Flexible token service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
@@ -30,6 +30,7 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService):
 
     def __init__(
         self,
+        *,
         config: FlextAuthConfig,
         provider_service: FlextAuthProviderService,
         dispatcher: FlextDispatcher,
@@ -41,9 +42,9 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService):
         # Lazy cache for JWT provider (initialized on first access)
         self._jwt_provider_cache: FlextAuthJwtProvider | None = None
 
-    def execute(self) -> FlextResult[object]:
+    def execute(self) -> FlextResult[bool]:
         """Railway-oriented execute with focused service pattern."""
-        return FlextResult.fail(
+        return FlextResult[bool].fail(
             "Use specific token methods: validate_token, generate_jwt_token, etc."
         )
 
@@ -53,29 +54,18 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService):
 
     def validate_token(self, token: str) -> FlextResult[FlextAuthModels.Identity]:
         """Railway-oriented token validation with audit logging."""
-        provider_result = self._get_jwt_provider_cached().flat_map(
+        result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.validate_token(token)
         )
-        if provider_result.is_failure:
-            error = provider_result.error
+        if result.is_failure:
+            error_msg = result.error if result.error is not None else "Unknown error"
             self._audit_logger.log_token_validation(
                 success=False,
                 token_id=self._short_token(token),
-                reason=error,
+                reason=error_msg,
             )
-            return FlextResult[FlextAuthModels.Identity].fail(error)
-
-        identity_result = self._ensure_identity_present(provider_result.unwrap())
-        if identity_result.is_failure:
-            error = identity_result.error
-            self._audit_logger.log_token_validation(
-                success=False,
-                token_id=self._short_token(token),
-                reason=error,
-            )
-            return FlextResult[FlextAuthModels.Identity].fail(error)
-
-        identity = identity_result.unwrap()
+            return result
+        identity = result.unwrap()
         self._audit_logger.log_token_validation(
             success=True,
             username=identity.username,
@@ -155,28 +145,23 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService):
 
     def _get_jwt_provider_cached(self) -> FlextResult[FlextAuthJwtProvider]:
         """Get JWT provider with lazy caching to eliminate repeated lookups."""
-        if self._jwt_provider_cache is None:
-            result = self._provider_service.get_provider("jwt").flat_map(
-                lambda p: FlextResult.ok(p)
-                if isinstance(p, FlextAuthJwtProvider)
-                else FlextResult.fail("Invalid JWT provider type")
-            )
-            if result.is_failure:
-                return result
-            self._jwt_provider_cache = result.unwrap()
+        if self._jwt_provider_cache is not None:
+            return FlextResult.ok(self._jwt_provider_cache)
+
+        result = self._provider_service.get_provider("jwt").flat_map(
+            lambda p: FlextResult.ok(p)
+            if isinstance(p, FlextAuthJwtProvider)
+            else FlextResult.fail("Invalid JWT provider type")
+        )
+        if result.is_failure:
+            return result
+        self._jwt_provider_cache = result.unwrap()
         return FlextResult.ok(self._jwt_provider_cache)
 
-    def _ensure_identity_present(
-        self, identity: FlextAuthModels.Identity | None
-    ) -> FlextResult[FlextAuthModels.Identity]:
-        if identity is None:
-            return FlextResult[FlextAuthModels.Identity].fail(
-                "Token validation returned no identity"
-            )
-        return FlextResult[FlextAuthModels.Identity].ok(identity)
-
     @staticmethod
-    def _short_token(token: str, length: int = 10) -> str:
+    def _short_token(token: str | None, length: int = 10) -> str:
+        if token is None:
+            return "None"
         if len(token) <= length:
             return token
         return f"{token[:length]}..."

@@ -187,6 +187,47 @@ class FlextAuthTypes(FlextTypes):
     class Managers:
         """Manager-specific supporting types."""
 
+        class UserData(TypedDict, total=False):
+            """User data structure for storage."""
+
+            unique_id: str
+            id: str
+            identity_id: str
+            name: str
+            contact: str
+            credential_hash: str
+            full_name: str | None
+            is_active: bool
+            roles: list[str]
+            permissions: list[str]
+            failed_attempts: int
+            locked_until: datetime | None
+            last_access: datetime | None
+
+        class SessionData(TypedDict, total=False):
+            """Session data structure for storage."""
+
+            id: str
+            unique_id: str
+            identity_id: str
+            session_token: str
+            expires_at: datetime
+            is_active: bool
+            ip_address: str | None
+            user_agent: str | None
+            last_accessed: datetime
+
+        class LogEntry(TypedDict, total=False):
+            """Structured log entry for audit logging."""
+
+            event: str
+            occurred_at: datetime
+            actor: FlextAuthModels.Identity | None
+            context: FlextTypes.JsonDict
+            event_type: str
+            timestamp: datetime
+            metadata: FlextTypes.JsonDict
+
         class AuditEntry(TypedDict, total=False):
             """Structured audit log entry."""
 
@@ -194,6 +235,14 @@ class FlextAuthTypes(FlextTypes):
             occurred_at: datetime
             actor: FlextAuthModels.Identity | None
             context: FlextTypes.JsonDict
+
+        class AttemptData(TypedDict, total=False):
+            """Failed attempt data structure."""
+
+            identity_id: str
+            attempts: list[datetime]
+            locked_until: datetime | None
+            last_attempt: datetime | None
 
         class AttemptWindow(TypedDict, total=False):
             """Failed attempt tracking window."""
@@ -208,6 +257,21 @@ class FlextAuthTypes(FlextTypes):
         type ProviderType = FlextAuthConstants.ProviderType
         type Role = RoleType
         type Permission = PermissionType
+
+    class Unit:
+        """Unit type for operations that return nothing but may fail."""
+
+        class UnitType:
+            """Singleton unit type for void operations."""
+
+            __slots__ = ()
+
+            def __repr__(self) -> str:
+                """Return string representation of Unit type."""
+                return "Unit"
+
+        # Singleton instance
+        UNIT = UnitType()
 
 
 __all__ = ["FlextAuthTypes"]

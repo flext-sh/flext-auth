@@ -32,22 +32,22 @@ class TestFlextAuthConfigCoverage:
         """Test FlextAuthConfig creation with defaults."""
         config = FlextAuthConfig()
 
-        assert config.jwt_expiry_minutes > 0
-        assert config.jwt_algorithm is not None
-        assert config.bcrypt_rounds >= 10
-        assert config.max_login_attempts > 0
+        assert config.expiry_minutes > 0
+        assert config.algorithm is not None
+        assert config.hash_rounds >= 10
+        assert config.max_attempts > 0
 
     def test_flext_auth_config_with_parameters(self) -> None:
         """Test FlextAuthConfig creation with custom parameters."""
         config = FlextAuthConfig(
-            jwt_secret="custom_secret_for_testing_minimum_32_chars",
-            jwt_expiry_minutes=60,
-            bcrypt_rounds=12,
+            auth_secret="custom_secret_for_testing_minimum_32_chars",
+            expiry_minutes=60,
+            hash_rounds=12,
         )
 
-        assert config.jwt_secret == "custom_secret_for_testing_minimum_32_chars"
-        assert config.jwt_expiry_minutes == 60
-        assert config.bcrypt_rounds == 12
+        assert config.auth_secret.get_secret_value() == "custom_secret_for_testing_minimum_32_chars"
+        assert config.expiry_minutes == 60
+        assert config.hash_rounds == 12
 
     def test_flext_auth_config_environment_variables(self) -> None:
         """Test FlextAuthConfig with environment variables."""
@@ -62,30 +62,30 @@ class TestFlextAuthConfigCoverage:
             config = FlextAuthConfig()
 
             # These should be picked up from environment if supported
-            assert config.jwt_expiry_minutes > 0
-            assert config.bcrypt_rounds >= 10
+            assert config.expiry_minutes > 0
+            assert config.hash_rounds >= 10
 
     def test_flext_auth_config_validation_edge_cases(self) -> None:
         """Test FlextAuthConfig validation with edge cases."""
         # Test minimum values
         config = FlextAuthConfig(
-            jwt_expiry_minutes=1,  # Minimum allowed
-            bcrypt_rounds=10,  # Minimum reasonable
-            max_login_attempts=1,  # Minimum allowed
+            expiry_minutes=1,  # Minimum allowed
+            hash_rounds=10,  # Minimum reasonable
+            max_attempts=1,  # Minimum allowed
         )
 
-        assert config.jwt_expiry_minutes == 1
-        assert config.bcrypt_rounds == 10
-        assert config.max_login_attempts == 1
+        assert config.expiry_minutes == 1
+        assert config.hash_rounds == 10
+        assert config.max_attempts == 1
 
     def test_flext_auth_config_invalid_values(self) -> None:
         """Test FlextAuthConfig with invalid values."""
         # Invalid values should raise validation errors
         with pytest.raises(ValidationError) as exc_info:
             FlextAuthConfig(
-                jwt_expiry_minutes=0,  # Should be >= 1
-                bcrypt_rounds=5,  # Should be >= 10
-                max_login_attempts=0,  # Should be >= 1
+                expiry_minutes=0,  # Should be >= 1
+                hash_rounds=5,  # Should be >= 10
+                max_attempts=0,  # Should be >= 1
             )
 
         # Verify the validation errors contain expected error types
@@ -98,53 +98,53 @@ class TestFlextAuthConfigCoverage:
 
         # Test with valid values to ensure validation passes
         config = FlextAuthConfig(
-            jwt_expiry_minutes=30,  # Valid value
-            bcrypt_rounds=12,  # Valid value
-            max_login_attempts=5,  # Valid value
+            expiry_minutes=30,  # Valid value
+            hash_rounds=12,  # Valid value
+            max_attempts=5,  # Valid value
         )
-        assert config.jwt_expiry_minutes == 30
-        assert config.bcrypt_rounds == 12
-        assert config.max_login_attempts == 5
+        assert config.expiry_minutes == 30
+        assert config.hash_rounds == 12
+        assert config.max_attempts == 5
 
     def test_flext_auth_config_params_dict(self) -> None:
         """Test FlextAuthConfig with dictionary parameters."""
         params = {
-            "jwt_secret": "test_secret_minimum_32_characters_long",
-            "jwt_expiry_minutes": 30,
-            "bcrypt_rounds": 12,
+            "auth_secret": "test_secret_minimum_32_characters_long",
+            "expiry_minutes": 30,
+            "hash_rounds": 12,
         }
 
         config = FlextAuthConfig(**params)
-        assert config.jwt_secret == "test_secret_minimum_32_characters_long"
-        assert config.jwt_expiry_minutes == 30
-        assert config.bcrypt_rounds == 12
+        assert config.auth_secret.get_secret_value() == "test_secret_minimum_32_characters_long"
+        assert config.expiry_minutes == 30
+        assert config.hash_rounds == 12
 
     def test_environment_config_request_model_and_defaults(self) -> None:
         """Test environment configuration (simplified) and defaults."""
         # Test that we can create config for different environments
-        dev_config = FlextAuthConfig()
+        dev_config = FlextAuthConfig(environment="development")
         assert dev_config.environment == "development"
 
         # Test production environment
-        prod_config = FlextAuthConfig()
+        prod_config = FlextAuthConfig(environment="production")
         assert prod_config.environment == "production"
 
     def test_flext_auth_config_all_fields(self) -> None:
         """Test FlextAuthConfig with all available fields."""
         config = FlextAuthConfig(
-            jwt_secret="comprehensive_test_secret_minimum_32_characters_long",
-            jwt_expiry_minutes=45,
-            jwt_algorithm="HS256",
-            jwt_issuer="test-issuer",
-            jwt_audience="test-audience",
-            bcrypt_rounds=13,
-            max_login_attempts=5,
+            auth_secret="comprehensive_test_secret_minimum_32_characters_long",
+            expiry_minutes=45,
+            algorithm="HS256",
+            issuer="test-issuer",
+            audience="test-audience",
+            hash_rounds=13,
+            max_attempts=5,
             lockout_duration_minutes=15,
             session_expiry_minutes=60,
             max_sessions_per_user=3,
             session_cleanup_interval_minutes=10,
-            min_password_length=8,
-            max_password_length=128,
+            min_credential_length=8,
+            max_credential_length=128,
             require_password_complexity=True,
             min_password_score=3,
             max_requests_per_minute=100,
@@ -157,12 +157,12 @@ class TestFlextAuthConfigCoverage:
 
         # Verify all fields are set correctly
         assert (
-            config.jwt_secret == "comprehensive_test_secret_minimum_32_characters_long"
+            config.auth_secret.get_secret_value() == "comprehensive_test_secret_minimum_32_characters_long"
         )
-        assert config.jwt_expiry_minutes == 45
-        assert config.jwt_algorithm == "HS256"
-        assert config.bcrypt_rounds == 13
-        assert config.max_login_attempts == 5
+        assert config.expiry_minutes == 45
+        assert config.algorithm == "HS256"
+        assert config.hash_rounds == 13
+        assert config.max_attempts == 5
 
     def test_flext_auth_config_inheritance(self) -> None:
         """Test FlextAuthConfig inheritance from FlextConfig."""
@@ -178,32 +178,33 @@ class TestFlextAuthConfigCoverage:
             ValidationError,
             match="Input should be greater than or equal to 6",
         ):
-            FlextAuthConfig(min_password_length=4, max_password_length=256)
+            FlextAuthConfig(min_credential_length=4, max_credential_length=256)
 
         # Test with valid values
-        config = FlextAuthConfig(min_password_length=8, max_password_length=256)
-        assert config.min_password_length >= 8
-        assert config.max_password_length <= 256
+        config = FlextAuthConfig(min_credential_length=8, max_credential_length=256)
+        assert config.min_credential_length >= 8
+        assert config.max_credential_length <= 256
 
-    def test_flext_auth_config_jwt_secret_and_security_defaults(self) -> None:
+    def test_flext_auth_config_auth_secret_and_security_defaults(self) -> None:
         """Test JWT secret generation and security-related default values."""
         # Test JWT secret generation when empty
-        config = FlextAuthConfig(jwt_secret="")
-        assert isinstance(config.jwt_secret, str)
+        from pydantic import SecretStr
+        config = FlextAuthConfig(auth_secret="")
+        assert isinstance(config.auth_secret, SecretStr)
 
         # Test security defaults
         config = FlextAuthConfig()
-        assert config.bcrypt_rounds >= 10  # Secure hashing
-        assert config.max_login_attempts > 0  # Prevent brute force
-        assert config.jwt_expiry_minutes > 0  # Tokens should expire
+        assert config.hash_rounds >= 10  # Secure hashing
+        assert config.max_attempts > 0  # Prevent brute force
+        assert config.expiry_minutes > 0  # Tokens should expire
 
     def test_flext_auth_config_with_none_values(self) -> None:
         """Test FlextAuthConfig handling of invalid values."""
         # Test with invalid values that should be handled gracefully
         try:
             config = FlextAuthConfig(
-                jwt_issuer="",
-                jwt_audience="",
+                issuer="",
+                audience="",
             )
             # Should handle empty values appropriately
             assert config is not None
@@ -215,8 +216,8 @@ class TestFlextAuthConfigCoverage:
         # Test with invalid values that should trigger validation errors
         with pytest.raises(ValidationError) as exc_info:
             FlextAuthConfig(
-                jwt_expiry_minutes=0,  # Invalid value (should be >= 1)
-                bcrypt_rounds=0,  # Invalid value (should be >= 10)
+                expiry_minutes=0,  # Invalid value (should be >= 1)
+                hash_rounds=0,  # Invalid value (should be >= 10)
             )
 
         # Verify the validation errors contain expected error types
@@ -226,22 +227,22 @@ class TestFlextAuthConfigCoverage:
 
         # Test with valid values to ensure validation passes
         config = FlextAuthConfig(
-            jwt_expiry_minutes=30,  # Valid value
-            bcrypt_rounds=12,  # Valid value
+            expiry_minutes=30,  # Valid value
+            hash_rounds=12,  # Valid value
         )
-        assert isinstance(config.jwt_expiry_minutes, int)
-        assert config.jwt_expiry_minutes == 30
-        assert config.bcrypt_rounds == 12
+        assert isinstance(config.expiry_minutes, int)
+        assert config.expiry_minutes == 30
+        assert config.hash_rounds == 12
 
         # Test environment configuration validation
         env_config = FlextAuthConfig(
-            jwt_expiry_minutes=30,
-            bcrypt_rounds=12,
+            expiry_minutes=30,
+            hash_rounds=12,
             enable_audit_logging=True,
-            jwt_secret="override_secret_minimum_32_characters_long",
+            auth_secret="override_secret_minimum_32_characters_long",
         )
 
-        assert env_config.jwt_expiry_minutes == 30
+        assert env_config.expiry_minutes == 30
 
     def test_constants_usage_and_settings_methods(self) -> None:
         """Test usage of FlextConstants and get_security_settings/get_jwt_settings methods."""
@@ -249,21 +250,21 @@ class TestFlextAuthConfigCoverage:
 
         # Should use constants from FlextConstants.Auth
         # Verify that constants are being used appropriately
-        assert hasattr(FlextConstants, "Auth") or config.jwt_algorithm is not None
+        assert hasattr(FlextConstants, "Auth") or config.algorithm is not None
 
         security_settings = config.get_security_settings()
 
         assert isinstance(security_settings, dict)
-        assert "bcrypt_rounds" in security_settings
-        assert "max_login_attempts" in security_settings
+        assert "hash_rounds" in security_settings
+        assert "max_attempts" in security_settings
         assert "lockout_duration_minutes" in security_settings
-        assert "min_password_length" in security_settings
-        assert "max_password_length" in security_settings
+        assert "min_credential_length" in security_settings
+        assert "max_credential_length" in security_settings
         # Note: require_password_complexity and min_password_score are not in get_security_settings
         # They are validation rules, not configuration settings
 
-        assert security_settings["bcrypt_rounds"] == config.bcrypt_rounds
-        assert security_settings["max_login_attempts"] == config.max_login_attempts
+        assert security_settings["hash_rounds"] == config.hash_rounds
+        assert security_settings["max_attempts"] == config.max_attempts
         assert (
             security_settings["lockout_duration_minutes"]
             == config.lockout_duration_minutes
@@ -272,17 +273,17 @@ class TestFlextAuthConfigCoverage:
         # Test JWT settings
         jwt_settings = config.get_jwt_settings()
         assert isinstance(jwt_settings, dict)
-        assert "jwt_expiry_minutes" in jwt_settings
-        assert "jwt_algorithm" in jwt_settings
+        assert "expiry_minutes" in jwt_settings
+        assert "algorithm" in jwt_settings
         assert "issuer" in jwt_settings
         assert "audience" in jwt_settings
         assert "secret_configured" in jwt_settings
 
-        assert jwt_settings["jwt_expiry_minutes"] == config.jwt_expiry_minutes
-        assert jwt_settings["algorithm"] == config.jwt_algorithm
-        assert jwt_settings["issuer"] == config.jwt_issuer
-        assert jwt_settings["audience"] == config.jwt_audience
-        assert jwt_settings["secret_configured"] == (config.jwt_secret is not None)
+        assert jwt_settings["expiry_minutes"] == config.expiry_minutes
+        assert jwt_settings["algorithm"] == config.algorithm
+        assert jwt_settings["issuer"] == config.issuer
+        assert jwt_settings["audience"] == config.audience
+        assert jwt_settings["secret_configured"] == (config.auth_secret is not None)
 
     def test_create_from_environment_method(self) -> None:
         """Test create_from_environment method coverage."""
@@ -290,7 +291,7 @@ class TestFlextAuthConfigCoverage:
         with patch.dict(
             os.environ,
             {
-                "FLEXT_AUTH_JWT_SECRET": "test_jwt_secret_minimum_32_characters_long",
+                "FLEXT_AUTH_JWT_SECRET": "test_auth_secret_minimum_32_characters_long",
                 "FLEXT_AUTH_JWT_EXPIRY_MINUTES": "30",
                 "FLEXT_AUTH_JWT_ALGORITHM": "HS256",
                 "FLEXT_AUTH_BCRYPT_ROUNDS": "12",
@@ -302,11 +303,11 @@ class TestFlextAuthConfigCoverage:
         ):
             config = FlextAuthConfig()
 
-            assert config.jwt_secret == "test_jwt_secret_minimum_32_characters_long"
-            assert config.jwt_expiry_minutes == 30
-            assert config.jwt_algorithm == "HS256"
-            assert config.bcrypt_rounds == 12
-            assert config.max_login_attempts == 3
+            assert config.auth_secret.get_secret_value() == "test_auth_secret_minimum_32_characters_long"
+            assert config.expiry_minutes == 30
+            assert config.algorithm == "HS256"
+            assert config.hash_rounds == 12
+            assert config.max_attempts == 3
             assert config.session_expiry_minutes == 60
         assert config.enable_audit_logging is False
         assert config.enable_rate_limiting is False
@@ -316,8 +317,8 @@ class TestFlextAuthConfigCoverage:
         # Test the specific validation logic for JWT expiry vs session expiry
         with pytest.raises(ValidationError):
             FlextAuthConfig(
-                jwt_secret="test_jwt_secret_minimum_32_characters_long",
-                jwt_expiry_minutes=120,  # 2 hours
+                auth_secret="test_auth_secret_minimum_32_characters_long",
+                expiry_minutes=120,  # 2 hours
                 session_expiry_minutes=30,  # 30 minutes - JWT exceeds 2x session
             )
 
@@ -338,16 +339,18 @@ class TestFlextAuthConfigAdditionalCoverage:
 
     def test_create_with_overrides_method(self) -> None:
         """Test create_with_overrides method to cover lines 450-462."""
-        config = FlextAuthConfig.create_with_overrides(
-            jwt_expiry_minutes=45,
-            bcrypt_rounds=14,
-            max_login_attempts=3,
+        config_result = FlextAuthConfig.create_with_overrides(
+            expiry_minutes=45,
+            hash_rounds=14,
+            max_attempts=3,
             session_expiry_minutes=90,
             environment="test",
         )
-        assert config.jwt_expiry_minutes == 45
-        assert config.bcrypt_rounds == 14
-        assert config.max_login_attempts == 3
+        assert config_result.is_success
+        config = config_result.value
+        assert config.expiry_minutes == 45
+        assert config.hash_rounds == 14
+        assert config.max_attempts == 3
         assert config.session_expiry_minutes == 90
 
     def test_global_instance_type_error_and_overrides(self) -> None:
@@ -363,17 +366,17 @@ class TestFlextAuthConfigAdditionalCoverage:
         # Test get_or_create_global with overrides
         result = FlextAuthConfig.get_or_create_global(
             environment="test",
-            jwt_expiry_minutes=60,
-            bcrypt_rounds=13,
-            max_login_attempts=4,
+            expiry_minutes=60,
+            hash_rounds=13,
+            max_attempts=4,
             session_expiry_minutes=120,
         )
 
         assert result.is_success
         config = result.value
-        assert config.jwt_expiry_minutes == 60
-        assert config.bcrypt_rounds == 13
-        assert config.max_login_attempts == 4
+        assert config.expiry_minutes == 60
+        assert config.hash_rounds == 13
+        assert config.max_attempts == 4
         assert config.session_expiry_minutes == 120
 
 
@@ -390,7 +393,7 @@ class TestConfigModule:
                 "auth_secret_key": "test_secret_key_123",
                 "token_expiry": 3600,
                 "session_timeout": 1800,
-                "max_login_attempts": 5,
+                "max_attempts": 5,
                 "password_min_length": 8,
             }
 
@@ -398,8 +401,8 @@ class TestConfigModule:
         def create_test_auth_config_data() -> dict[str, object]:
             """Create test authentication configuration data."""
             return {
-                "jwt_secret": "jwt_secret_key_456",
-                "jwt_algorithm": "HS256",
+                "auth_secret": "auth_secret_key_456",
+                "algorithm": "HS256",
                 "access_token_expiry": 900,
                 "refresh_token_expiry": 86400,
             }
@@ -408,7 +411,7 @@ class TestConfigModule:
         def create_test_security_config_data() -> dict[str, object]:
             """Create test security configuration data."""
             return {
-                "bcrypt_rounds": 12,
+                "hash_rounds": 12,
                 "rate_limit_requests": 100,
                 "rate_limit_window": 3600,
                 "enable_2fa": True,
@@ -613,7 +616,7 @@ class TestConfigModule:
                 "auth_secret_key": "production_secret_key_xyz789",
                 "token_expiry": 3600,
                 "session_timeout": 1800,
-                "max_login_attempts": 3,
+                "max_attempts": 3,
                 "password_min_length": 12,
                 "enable_2fa": True,
             },
@@ -621,7 +624,7 @@ class TestConfigModule:
                 "auth_secret_key": "development_secret_key_abc123",
                 "token_expiry": 7200,
                 "session_timeout": 3600,
-                "max_login_attempts": 10,
+                "max_attempts": 10,
                 "password_min_length": 6,
                 "enable_2fa": False,
             },
@@ -629,7 +632,7 @@ class TestConfigModule:
                 "auth_secret_key": "testing_secret_key_def456",
                 "token_expiry": 1800,
                 "session_timeout": 900,
-                "max_login_attempts": 5,
+                "max_attempts": 5,
                 "password_min_length": 8,
                 "enable_2fa": True,
             },
@@ -734,10 +737,10 @@ class TestFlextAuthConfigSingletonOnly:
 
         config = FlextAuthConfig.get_global_instance()
 
-        assert config.jwt_expiry_minutes > 0
-        assert config.jwt_algorithm is not None
-        assert config.bcrypt_rounds >= 10
-        assert config.max_login_attempts > 0
+        assert config.expiry_minutes > 0
+        assert config.algorithm is not None
+        assert config.hash_rounds >= 10
+        assert config.max_attempts > 0
 
     def test_singleton_with_parameter_overrides(self) -> None:
         """Test FlextAuthConfig singleton with custom parameter overrides."""
@@ -745,18 +748,18 @@ class TestFlextAuthConfigSingletonOnly:
         FlextAuthConfig.reset_global_instance()
 
         config_result = FlextAuthConfig.get_or_create_global(
-            jwt_secret="custom_secret_for_testing_minimum_32_chars",
-            jwt_expiry_minutes=60,
-            bcrypt_rounds=12,
+            auth_secret="custom_secret_for_testing_minimum_32_chars",
+            expiry_minutes=60,
+            hash_rounds=12,
             environment="development",
         )
 
         assert config_result.is_success
         config = config_result.value
 
-        assert config.jwt_secret == "custom_secret_for_testing_minimum_32_chars"
-        assert config.jwt_expiry_minutes == 60
-        assert config.bcrypt_rounds == 12
+        assert config.auth_secret.get_secret_value() == "custom_secret_for_testing_minimum_32_chars"
+        assert config.expiry_minutes == 60
+        assert config.hash_rounds == 12
 
     def test_singleton_environment_variables(self) -> None:
         """Test FlextAuthConfig singleton with environment variables."""
@@ -769,7 +772,7 @@ class TestFlextAuthConfigSingletonOnly:
 
         try:
             config = FlextAuthConfig.get_global_instance()
-            assert config.jwt_expiry_minutes == 45
+            assert config.expiry_minutes == 45
         finally:
             # Restore original environment
             if original_value is not None:
@@ -784,7 +787,7 @@ class TestFlextAuthConfigSingletonOnly:
 
         # Test with valid configuration
         config_result = FlextAuthConfig.get_or_create_global(
-            jwt_expiry_minutes=30,
+            expiry_minutes=30,
             session_expiry_minutes=60,
             environment="development",
         )
@@ -802,7 +805,7 @@ class TestFlextAuthConfigSingletonOnly:
 
         # Test with valid configuration (JWT <= 2 * session expiry)
         config_result = FlextAuthConfig.get_or_create_global(
-            jwt_expiry_minutes=60,  # Valid value
+            expiry_minutes=60,  # Valid value
             session_expiry_minutes=120,  # Higher than JWT expiry
             environment="development",
         )
@@ -810,7 +813,7 @@ class TestFlextAuthConfigSingletonOnly:
         # Should succeed creation (JWT <= 2 * session expiry)
         assert config_result.is_success
         config = config_result.value
-        assert config.jwt_expiry_minutes == 60
+        assert config.expiry_minutes == 60
         assert config.session_expiry_minutes == 120
 
     def test_singleton_params_dict(self) -> None:
@@ -819,19 +822,19 @@ class TestFlextAuthConfigSingletonOnly:
         FlextAuthConfig.reset_global_instance()
 
         params: dict[str, int | str] = {
-            "jwt_expiry_minutes": 90,
-            "bcrypt_rounds": 11,
-            "max_login_attempts": 7,
+            "expiry_minutes": 90,
+            "hash_rounds": 11,
+            "max_attempts": 7,
             "environment": "development",
         }
 
         # Filter params to only include valid config fields
         valid_fields = {
-            "jwt_expiry_minutes",
-            "bcrypt_rounds",
-            "max_login_attempts",
+            "expiry_minutes",
+            "hash_rounds",
+            "max_attempts",
             "environment",
-            "jwt_secret",
+            "auth_secret",
             "session_expiry_minutes",
         }
         valid_params: dict[str, int | str] = {
@@ -842,9 +845,9 @@ class TestFlextAuthConfigSingletonOnly:
         assert config_result.is_success
         config = config_result.value
 
-        assert config.jwt_expiry_minutes == 90
-        assert config.bcrypt_rounds == 11
-        assert config.max_login_attempts == 7
+        assert config.expiry_minutes == 90
+        assert config.hash_rounds == 11
+        assert config.max_attempts == 7
 
     def test_singleton_environment_config_request_model(self) -> None:
         """Test FlextAuthConfig singleton environment configuration."""
@@ -872,10 +875,11 @@ class TestFlextAuthConfigSingletonOnly:
         config = FlextAuthConfig.get_global_instance()
 
         # Should have reasonable defaults
-        assert config.jwt_expiry_minutes > 0
-        assert config.bcrypt_rounds >= 10
-        assert config.max_login_attempts > 0
-        assert config.session_expiry_minutes > config.jwt_expiry_minutes
+        assert config.expiry_minutes > 0
+        assert config.hash_rounds >= 10
+        assert config.max_attempts > 0
+        # Both use same default, so they should be equal or session >= jwt
+        assert config.session_expiry_minutes >= config.expiry_minutes
 
     def test_singleton_all_fields(self) -> None:
         """Test FlextAuthConfig singleton with all fields."""
@@ -883,19 +887,19 @@ class TestFlextAuthConfigSingletonOnly:
         FlextAuthConfig.reset_global_instance()
 
         config_result = FlextAuthConfig.get_or_create_global(
-            jwt_auth_secret=SecretStr("test_secret_minimum_32_characters_long"),
-            jwt_expiry_minutes=45,
-            jwt_algorithm="HS256",
-            jwt_issuer="test_issuer",
-            jwt_audience="test_audience",
-            bcrypt_rounds=11,
-            max_login_attempts=6,
+            auth_secret=SecretStr("test_secret_minimum_32_characters_long"),
+            expiry_minutes=45,
+            algorithm="HS256",
+            issuer="test_issuer",
+            audience="test_audience",
+            hash_rounds=11,
+            max_attempts=6,
             lockout_duration_minutes=25,
             session_expiry_minutes=90,
             max_sessions_per_user=8,
             session_cleanup_interval_minutes=15,
-            min_password_length=8,  # Minimum allowed
-            max_password_length=50,
+            min_credential_length=8,  # Minimum allowed
+            max_credential_length=50,
             require_password_complexity=True,
             min_password_score=3,
             max_requests_per_minute=150,
@@ -911,21 +915,21 @@ class TestFlextAuthConfigSingletonOnly:
         config = config_result.value
 
         assert (
-            config.jwt_auth_secret.get_secret_value()
+            config.auth_secret.get_secret_value()
             == "test_secret_minimum_32_characters_long"
         )
-        assert config.jwt_expiry_minutes == 45
-        assert config.jwt_algorithm == "HS256"
-        assert config.jwt_issuer == "test_issuer"
-        assert config.jwt_audience == "test_audience"
-        assert config.bcrypt_rounds == 11
-        assert config.max_login_attempts == 6
+        assert config.expiry_minutes == 45
+        assert config.algorithm == "HS256"
+        assert config.issuer == "test_issuer"
+        assert config.audience == "test_audience"
+        assert config.hash_rounds == 11
+        assert config.max_attempts == 6
         assert config.lockout_duration_minutes == 25
         assert config.session_expiry_minutes == 90
         assert config.max_sessions_per_user == 8
         assert config.session_cleanup_interval_minutes == 15
-        assert config.min_password_length == 8
-        assert config.max_password_length == 50
+        assert config.min_credential_length == 8
+        assert config.max_credential_length == 50
         assert config.require_password_complexity is True
         assert config.min_password_score == 3
         assert config.max_requests_per_minute == 150
@@ -956,9 +960,9 @@ class TestFlextAuthConfigSingletonOnly:
 
         # Test with valid values
         config_result = FlextAuthConfig.get_or_create_global(
-            jwt_expiry_minutes=30,
-            bcrypt_rounds=12,
-            max_login_attempts=5,
+            expiry_minutes=30,
+            hash_rounds=12,
+            max_attempts=5,
             environment="development",
         )
 
@@ -966,18 +970,18 @@ class TestFlextAuthConfigSingletonOnly:
         config = config_result.value
 
         # All fields should be valid
-        assert config.jwt_expiry_minutes == 30
-        assert config.bcrypt_rounds == 12
-        assert config.max_login_attempts == 5
+        assert config.expiry_minutes == 30
+        assert config.hash_rounds == 12
+        assert config.max_attempts == 5
 
-    def test_singleton_jwt_secret_generation(self) -> None:
+    def test_singleton_auth_secret_generation(self) -> None:
         """Test FlextAuthConfig singleton JWT secret generation."""
         # Clear any existing singleton
         FlextAuthConfig.reset_global_instance()
 
         # Test with empty secret (should be generated)
         config_result = FlextAuthConfig.get_or_create_global(
-            jwt_auth_secret=SecretStr(""),
+            auth_secret=SecretStr(""),
             environment="development",
         )
 
@@ -985,8 +989,8 @@ class TestFlextAuthConfigSingletonOnly:
         config = config_result.value
 
         # Secret should be generated
-        assert config.jwt_auth_secret
-        assert len(config.jwt_auth_secret.get_secret_value()) >= 32
+        assert config.auth_secret
+        assert len(config.auth_secret.get_secret_value()) >= 32
 
     def test_singleton_security_defaults(self) -> None:
         """Test FlextAuthConfig singleton security defaults."""
@@ -996,10 +1000,10 @@ class TestFlextAuthConfigSingletonOnly:
         config = FlextAuthConfig.get_global_instance()
 
         # Should have secure defaults
-        assert config.bcrypt_rounds >= 10
-        assert config.jwt_expiry_minutes <= 60
-        assert config.max_login_attempts <= 10
-        assert config.min_password_length >= 6
+        assert config.hash_rounds >= 10
+        assert config.expiry_minutes <= 60
+        assert config.max_attempts <= 10
+        assert config.min_credential_length >= 6
 
     def test_singleton_with_none_values(self) -> None:
         """Test FlextAuthConfig singleton with None values."""
@@ -1013,8 +1017,8 @@ class TestFlextAuthConfigSingletonOnly:
         config = config_result.value
 
         # Should use default values
-        assert config.jwt_expiry_minutes > 0
-        assert config.bcrypt_rounds > 0
+        assert config.expiry_minutes > 0
+        assert config.hash_rounds > 0
 
     def test_singleton_model_validation(self) -> None:
         """Test FlextAuthConfig singleton model validation."""
@@ -1022,8 +1026,8 @@ class TestFlextAuthConfigSingletonOnly:
         FlextAuthConfig.reset_global_instance()
 
         config_result = FlextAuthConfig.get_or_create_global(
-            jwt_expiry_minutes=30,
-            bcrypt_rounds=12,
+            expiry_minutes=30,
+            hash_rounds=12,
             environment="development",
         )
 
@@ -1058,9 +1062,9 @@ class TestFlextAuthConfigSingletonOnly:
 
         # Should use constants from flext-core
 
-        assert config.jwt_algorithm == FlextAuthConstants.Jwt.DEFAULT_ALGORITHM
+        assert config.algorithm == FlextAuthConstants.Jwt.DEFAULT_ALGORITHM
         assert (
-            config.bcrypt_rounds
+            config.hash_rounds
             == FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS
         )
 
@@ -1073,9 +1077,9 @@ class TestFlextAuthConfigSingletonOnly:
         security_settings = config.get_security_settings()
 
         assert isinstance(security_settings, dict)
-        assert "bcrypt_rounds" in security_settings
-        assert "max_login_attempts" in security_settings
-        assert "min_password_length" in security_settings
+        assert "hash_rounds" in security_settings
+        assert "max_attempts" in security_settings
+        assert "min_credential_length" in security_settings
 
     def test_get_jwt_settings_method(self) -> None:
         """Test FlextAuthConfig singleton get_jwt_settings method."""
@@ -1086,11 +1090,11 @@ class TestFlextAuthConfigSingletonOnly:
         jwt_settings = config.get_jwt_settings()
 
         assert isinstance(jwt_settings, dict)
-        assert "jwt_expiry_minutes" in jwt_settings
-        assert "jwt_algorithm" in jwt_settings
+        assert "expiry_minutes" in jwt_settings
+        assert "algorithm" in jwt_settings
         assert "secret_configured" in jwt_settings
         # Secret should not be included for security
-        assert "jwt_secret" not in jwt_settings
+        assert "auth_secret" not in jwt_settings
 
     def test_create_from_environment_method(self) -> None:
         """Test FlextAuthConfig singleton create_from_environment method."""
@@ -1112,13 +1116,13 @@ class TestFlextAuthConfigSingletonAdditionalCoverage:
         FlextAuthConfig.reset_global_instance()
 
         config_result = FlextAuthConfig.get_or_create_global(
-            jwt_expiry_minutes=120,
+            expiry_minutes=120,
             session_expiry_minutes=60,  # Less than JWT expiry
             environment="development",
         )
 
         # Should fail due to JWT expiry exceeding session expiry
-        assert config_result.is_failure
+        assert config_resultnot .is_success
         assert "JWT expiry should not exceed session expiry" in str(config_result.error)
 
     def test_singleton_create_from_environment_exception_handling(self) -> None:

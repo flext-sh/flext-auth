@@ -32,41 +32,33 @@ from flext_auth.registry import FlextAuthRegistry
 from flext_auth.typings import FlextAuthTypes
 
 
-class FlextAuthProviderService(FlextService):
+class FlextAuthProviderService(FlextService[object]):
     """Flexible provider service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
     Flexible composition with dependency injection and error handling.
     """
 
-    def __init__(self, config: FlextAuthConfig) -> None:
+    def __init__(self, *, config: FlextAuthConfig) -> None:
         """Flexible initialization with automatic provider registration."""
         super().__init__()
         self._config, self._providers = config, FlextAuthRegistry()
         self._register_builtin_providers()
 
-    def execute(self) -> FlextResult[object]:
+    def execute(self) -> FlextResult[bool]:
         """Railway-oriented execute with focused service pattern."""
-        return FlextResult.fail(
+        return FlextResult[bool].fail(
             "Use specific provider methods: get_provider, authenticate_user, etc."
         )
 
     def _register_builtin_providers(self) -> None:
         """Flexible provider registration with conditional loading."""
+        # Fast fail: config is required
         if not self._config:
-            self.logger.warning(
-                "No configuration provided, skipping provider registration"
-            )
+            self.logger.error("Configuration is required for provider registration")
             return
 
-        provider_config: FlextTypes.JsonDict = dict(self._config.model_dump())
-        if (
-            hasattr(self._config, "jwt_auth_secret")
-            and self._config.jwt_auth_secret is not None
-        ):
-            provider_config["secret_key"] = (
-                self._config.jwt_auth_secret.get_secret_value()
-            )
+        provider_config: FlextTypes.JsonDict = self._config.to_provider_config()
 
         # Provider registration mapping with requirements
         providers: list[
@@ -142,9 +134,14 @@ class FlextAuthProviderService(FlextService):
 
     def register_provider(
         self, name: str, provider: FlextAuthBaseProvider
-    ) -> FlextResult[None]:
-        """Register custom provider."""
-        return self._providers.register(name, provider)
+    ) -> FlextResult[bool]:
+        """Register custom provider.
+
+        Returns:
+            FlextResult[bool]: True if registered successfully, False if failed, error on failure
+
+        """
+        return self._providers.register(name, provider).map(lambda _: True)
 
     def list_providers(self) -> list[str]:
         """List registered provider names."""
@@ -181,7 +178,7 @@ class FlextAuthProviderService(FlextService):
         self,
         token: str,
         provider: str = "jwt",
-    ) -> FlextResult[FlextAuthModels.Identity | None]:
+    ) -> FlextResult[FlextAuthModels.Identity]:
         """Railway-oriented token validation with direct provider access."""
         return self._providers.get(provider).flat_map(lambda p: p.validate_token(token))
 

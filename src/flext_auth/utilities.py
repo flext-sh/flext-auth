@@ -35,10 +35,24 @@ class FlextAuthUtilities:
         FlextResult with hashed credential or error
 
         """
+        if not isinstance(credential, str) or not credential:
+            return FlextResult[str].fail("Credential must be a non-empty string")
+
+        if (
+            not isinstance(rounds, int)
+            or rounds < FlextAuthConstants.BCRYPT_ROUNDS_MIN
+            or rounds > FlextAuthConstants.BCRYPT_ROUNDS_MAX
+        ):
+            return FlextResult[str].fail(
+                f"Bcrypt rounds must be an integer between {FlextAuthConstants.BCRYPT_ROUNDS_MIN} and {FlextAuthConstants.BCRYPT_ROUNDS_MAX}"
+            )
+
         try:
             salt = bcrypt.gensalt(rounds=rounds)
             hashed = bcrypt.hashpw(credential.encode("utf-8"), salt)
             return FlextResult[str].ok(hashed.decode("utf-8"))
+        except (ValueError, TypeError) as e:
+            return FlextResult[str].fail(f"Invalid credential format: {e}")
         except Exception as e:
             return FlextResult[str].fail(f"Hashing failed: {e}")
 
@@ -54,11 +68,19 @@ class FlextAuthUtilities:
         FlextResult with boolean or error
 
         """
+        if not isinstance(credential, str) or not credential:
+            return FlextResult[bool].fail("Credential must be a non-empty string")
+
+        if not isinstance(credential_hash, str) or not credential_hash:
+            return FlextResult[bool].fail("Credential hash must be a non-empty string")
+
         try:
             is_valid = bcrypt.checkpw(
                 credential.encode("utf-8"), credential_hash.encode("utf-8")
             )
             return FlextResult[bool].ok(is_valid)
+        except (ValueError, TypeError) as e:
+            return FlextResult[bool].fail(f"Invalid credential or hash format: {e}")
         except Exception as e:
             return FlextResult[bool].fail(f"Verification failed: {e}")
 
@@ -139,10 +161,15 @@ class FlextAuthUtilities:
 
         """
         try:
+            algorithms_list: list[str]
+            if algorithms is None:
+                algorithms_list = [FlextAuthConstants.ALGORITHM_DEFAULT]
+            else:
+                algorithms_list = list(algorithms)
             payload = jwt.decode(
                 token,
                 secret.get_secret_value(),
-                algorithms=list(algorithms or (FlextAuthConstants.ALGORITHM_DEFAULT,)),
+                algorithms=algorithms_list,
                 options={"verify_signature": verify},
             )
             if not isinstance(payload, dict):

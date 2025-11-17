@@ -7,8 +7,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Any
-
 from flext_core import FlextResult, FlextService
 
 from flext_auth.api import FlextAuth
@@ -48,11 +46,11 @@ class FlextAuthQuickstart(FlextService[object]):
         self,
         username: str,
         password: str,
-    ) -> FlextResult[Any]:
-        """Authenticate a user and return token."""
+    ) -> FlextResult[FlextAuthModels.Identity]:
+        """Authenticate a user and return identity."""
         return self._auth.authenticate_user(username, password)
 
-    def validate_token(self, token: str) -> FlextResult[Any]:
+    def validate_token(self, token: str) -> FlextResult[bool]:
         """Validate an authentication token."""
         return self._auth.validate_token(token)
 
@@ -106,13 +104,13 @@ class FlextAuthQuickstart(FlextService[object]):
         """Get the underlying FlextAuth instance."""
         return self._auth
 
-    def execute(self) -> FlextResult[object]:
+    def execute(self) -> FlextResult[bool]:
         """Execute method for FlextService interface.
 
         Quickstart service doesn't use generic execute pattern.
         Use specific quickstart methods instead.
         """
-        return FlextResult[object].fail(
+        return FlextResult[bool].fail(
             "FlextAuthQuickstart is focused - use specific quickstart methods like register_user()"
         )
 

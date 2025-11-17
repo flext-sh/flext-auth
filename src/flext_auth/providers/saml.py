@@ -21,14 +21,14 @@ from __future__ import annotations
 import secrets
 from datetime import UTC, datetime, timedelta
 
-from flext_core import FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextLogger, FlextResult
 
+from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
-from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_auth.providers.mixin import FlextAuthProviderMixin
+from flext_auth.providers.rfc import FlextAuthRfcProvider
 
 
-class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
+class FlextAuthSamlProvider(FlextAuthRfcProvider):
     r"""SOLID-compliant SAML 2.0 authentication provider.
 
     Uses composition for SAML request/response handling, signature validation,
@@ -78,7 +78,16 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         self.logger.info("SAML provider initialized")
 
-    def _validate_saml_configuration(self) -> FlextResult[None]:
+    def get_rfc_version(self) -> str:
+        """Get the RFC version this provider implements.
+
+        Returns:
+            str: RFC version
+
+        """
+        return "SAML 2.0"
+
+    def _validate_saml_configuration(self) -> FlextResult[bool]:
         """Railway-oriented SAML configuration validation."""
         # Validate required fields
         required_fields = [
@@ -92,7 +101,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         ]
 
         if missing_fields:
-            return FlextResult[None].fail(
+            return FlextResult[bool].fail(
                 f"Missing required SAML configuration fields: {', '.join(missing_fields)}"
             )
 
@@ -142,11 +151,11 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         for field_name, expected_types, error_msg in validations:
             field_value = self._config.get(field_name)
             if field_value is not None and not isinstance(field_value, expected_types):
-                return FlextResult[None].fail(
+                return FlextResult[bool].fail(
                     f"{error_msg}. Got {type(field_value).__name__}"
                 )
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
     class _SAMLRequestBuilder:
         """SOLID-compliant SAML request builder.
@@ -194,7 +203,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             self.provider = provider
             self.logger = FlextLogger(__name__)
             # Runtime state for request tracking
-            self._pending_requests: FlextTypes.NestedDict = {}
+            self._pending_requests: dict[str, dict[str, object]] = {}
 
         def validate_signature(self, _saml_response: str) -> FlextResult[bool]:
             """Validate SAML response signature."""
@@ -244,11 +253,15 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         if not is_valid:
             return FlextResult[FlextAuthModels.AuthToken].fail("Invalid SAML signature")
 
-        # Create authentication token
+        # Create authentication token - fast fail if missing user_id
+        user_id_value = user_data.get("user_id")
+        if not isinstance(user_id_value, str) or not user_id_value:
+            msg = "User data missing required 'user_id' field"
+            raise ValueError(msg)
         auth_token = FlextAuthModels.AuthToken(
-            identity_id=str(user_data.get("user_id", "saml_user")),
+            identity_id=user_id_value,
             token=f"saml_{secrets.token_hex(32)}",
-            token_type="bearer",
+            token_type=FlextAuthConstants.TOKEN_TYPE_BEARER,
             expires_at=datetime.now(UTC) + timedelta(hours=8),
             is_revoked=False,
         )
@@ -267,23 +280,92 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             "capabilities": list(self.supports()),
         }
 
-    def validate_token(
-        self, _token: str
-    ) -> FlextResult[FlextAuthModels.Identity | None]:
+    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.Identity]:
         """Validate SAML token and return user."""
-        return FlextResult[FlextAuthModels.Identity | None].ok(
-            None
-        )  # Simplified implementation
+        # SAML token validation requires implementation
+        # Fast fail: implementation not available
+        _ = token  # Mark as intentionally unused
+        return FlextResult[FlextAuthModels.Identity].fail(
+            "SAML token validation not implemented"
+        )
+
+    def refresh(
+        self,
+        token: str | FlextAuthModels.AuthToken,
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
+        """Refresh SAML token.
+
+        SAML doesn't support token refresh - new authentication required.
+
+        Args:
+            token: Current SAML token
+
+        Returns:
+            FlextResult[AuthToken]: Error indicating refresh not supported
+
+        """
+        _ = token  # Token parameter required by interface but not used for SAML refresh
+        return FlextResult[FlextAuthModels.AuthToken].fail(
+            "SAML authentication does not support token refresh. "
+            "Initiate a new SAML authentication flow."
+        )
+
+    def revoke(
+        self,
+        token: str | FlextAuthModels.AuthToken,
+    ) -> FlextResult[bool]:
+        """Revoke SAML token.
+
+        Args:
+            token: SAML token to revoke
+
+        Returns:
+            FlextResult[bool]: True if revoked successfully, error on failure
+
+        """
+        try:
+            _ = self._extract_token_string(token)
+        except ValueError as e:
+            return FlextResult[bool].fail(str(e))
+
+        # SAML tokens are typically stateless - revocation would be handled
+        # by session management or external token store
+        return FlextResult[bool].ok(True)
+
+    def validate(
+        self,
+        token: str | FlextAuthModels.AuthToken,
+    ) -> FlextResult[bool]:
+        """Validate SAML token.
+
+        Args:
+            token: SAML token string or AuthToken object
+
+        Returns:
+            FlextResult[bool]: True if valid, False if invalid, error on failure
+
+        """
+        try:
+            token_string = self._extract_token_string(token)
+        except ValueError as e:
+            return FlextResult[bool].fail(str(e))
+
+        # Simplified validation - in production would validate token structure
+        if not token_string.startswith("saml_"):
+            return FlextResult[bool].fail("Invalid SAML token format")
+
+        return FlextResult[bool].ok(True)
 
     def generate_token_for_user(
         self,
         _user: FlextAuthModels.Identity,
-        _token_type: str = "access",
+        _token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
         _expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate SAML token for user."""
         return FlextResult[str].fail(
-            "SAML token generation not implemented in this refactor"
+            "SAML token generation not supported. "
+            "SAML authentication requires IdP-initiated or SP-initiated flows."
         )
 
 

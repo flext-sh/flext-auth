@@ -81,19 +81,20 @@ class FlextAuthManagers(FlextService[object]):
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
             self._users: dict[
-                str, FlextAuthTypes.Managers.UserData
-            ] = {}  # In production, use database
+                str, dict[str, object]
+            ] = {}  # In production, use database (dict for dynamic key access)
 
         def _find_user_by_id(
             self, user_id: str
-        ) -> FlextResult[tuple[str, FlextAuthTypes.Managers.UserData]]:
-            """Find user by ID (either identity_id or id field).
+        ) -> FlextResult[tuple[str, dict[str, object]]]:
+            """Find user by ID (either identity_id, unique_id, or id field).
 
             Eliminates duplication across 7 methods.
             """
             for username, user_data in self._users.items():
                 if (
                     user_data.get("identity_id") == user_id
+                    or user_data.get("unique_id") == user_id
                     or user_data.get("id") == user_id
                 ):
                     return FlextResult.ok((username, user_data))
@@ -101,37 +102,135 @@ class FlextAuthManagers(FlextService[object]):
 
         def _modify_user_list_field(
             self, user_id: str, field: str, value: str, *, add: bool = True
-        ) -> FlextResult[None]:
+        ) -> FlextResult[bool]:
             """Add or remove value from user list field (roles/permissions).
 
             Generic list field modifier - eliminates duplication in 4 methods.
             """
             return self._find_user_by_id(user_id).map(
-                lambda ud: self._apply_list_modification(ud[1], field, value, add=add)
+                lambda ud: (
+                    self._apply_list_modification(ud[1], field, value, add=add),
+                    True,
+                )[1]
             )
+
+        def _extract_identity_id(
+            self, storage_data: dict[str, object]
+        ) -> str:
+            """Extract identity ID from storage data with fast fail."""
+            for field in ("unique_id", "id", "identity_id"):
+                value = storage_data.get(field)
+                if isinstance(value, str) and value:
+                    return value
+            msg = "Storage data missing required 'unique_id', 'id', or 'identity_id' field"
+            raise ValueError(msg)
+
+        def _validate_required_field(
+            self,
+            storage_data: dict[str, object],
+            field: str,
+            field_type: type[str | bool | list],
+        ) -> str | bool | list:
+            """Validate and extract required field with type checking."""
+            value = storage_data.get(field)
+            if not isinstance(value, field_type):
+                msg = f"Storage data '{field}' must be a {field_type.__name__}"
+                raise TypeError(msg)
+            return value
+
+        def _create_identity_from_storage(
+            self, storage_data: dict[str, object]
+        ) -> FlextAuthModels.Identity:
+            """Create Identity model from storage data, filtering out non-model fields."""
+            identity_id = self._extract_identity_id(storage_data)
+            name_value = self._validate_required_field(storage_data, "name", str)
+            if not name_value:
+                msg = "Storage data 'name' must be a non-empty string"
+                raise ValueError(msg)
+            contact_value = self._validate_required_field(storage_data, "contact", str)
+            if not contact_value:
+                msg = "Storage data 'contact' must be a non-empty string"
+                raise ValueError(msg)
+
+            credential_hash = self._validate_required_field(
+                storage_data, "credential_hash", str
+            )
+            is_active = self._validate_required_field(storage_data, "is_active", bool)
+            roles = self._validate_required_field(storage_data, "roles", list)
+            permissions = self._validate_required_field(
+                storage_data, "permissions", list
+            )
+
+            identity_data: dict[str, object] = {
+                "unique_id": identity_id,
+                "name": name_value,
+                "contact": contact_value,
+                "credential_hash": credential_hash,
+                "is_active": is_active,
+                "roles": roles,
+                "permissions": permissions,
+            }
+
+            # Add optional fields if present and valid
+            valid_identity_fields = {
+                "unique_id",
+                "name",
+                "contact",
+                "credential_hash",
+                "is_active",
+                "roles",
+                "permissions",
+                "full_name",
+                "failed_attempts",
+                "locked_until",
+                "last_access",
+            }
+            for field in (
+                "full_name",
+                "failed_attempts",
+                "locked_until",
+                "last_access",
+            ):
+                if field in storage_data:
+                    field_type = (
+                        str
+                        if field == "full_name"
+                        else (int if field == "failed_attempts" else datetime)
+                    )
+                    field_value = storage_data.get(field)
+                    if isinstance(field_value, field_type):
+                        identity_data[field] = field_value
+
+            filtered_identity_data = {
+                k: v for k, v in identity_data.items() if k in valid_identity_fields
+            }
+            return FlextAuthModels.Identity(**filtered_identity_data)
 
         def _apply_list_modification(
             self,
-            user_data: FlextAuthTypes.Managers.UserData,
+            user_data: dict[str, object],
             field: str,
             value: str,
             *,
             add: bool = True,
         ) -> None:
             """Apply list modification atomically."""
-            field_list = user_data.get(field, [])
-            if isinstance(field_list, list):
-                if add and value not in field_list:
-                    field_list.append(value)
-                elif not add and value in field_list:
-                    field_list.remove(value)
+            field_list_value = user_data.get(field)
+            if not isinstance(field_list_value, list):
+                msg = f"Field '{field}' must be a list for modification"
+                raise TypeError(msg)
+            field_list = field_list_value
+            if add and value not in field_list:
+                field_list.append(value)
+            elif not add and value in field_list:
+                field_list.remove(value)
 
         def create_user(
             self,
             username: str,
             email: str,
             password_hash: str,
-            **extra_fields: object,
+            **extra_fields: str | int | bool | list[str] | datetime | None,
         ) -> FlextResult[FlextAuthModels.Identity]:
             """Create a new user."""
             if username in self._users:
@@ -140,26 +239,58 @@ class FlextAuthManagers(FlextService[object]):
                 )
 
             user_id = str(uuid4())
-            user_data = {
-                "id": user_id,  # For base class compatibility
+            # Build user data with only Identity model fields (no extras)
+            # Use unique_id (not id) as that's the Entity field name
+            identity_data: dict[str, str | int | bool | list[str] | datetime | None] = {
+                "unique_id": user_id,
                 "name": username,
                 "contact": email,
                 "credential_hash": password_hash,
-                "is_active": extra_fields.get("is_active", True),
-                "roles": extra_fields.get("roles", []),
-                "permissions": extra_fields.get("permissions", []),
+            }
+
+            # Add only valid Identity model fields from extra_fields
+            # Filter to ensure only valid fields are included
+            valid_identity_fields = {
+                "is_active",
+                "roles",
+                "permissions",
+                "full_name",
+                "failed_attempts",
+                "locked_until",
+                "last_access",
+            }
+            filtered_extra = {
+                k: v for k, v in extra_fields.items() if k in valid_identity_fields
+            }
+            identity_data.update(filtered_extra)
+
+            # Set defaults for required fields if not provided
+            if "is_active" not in identity_data:
+                identity_data["is_active"] = True
+            if "roles" not in identity_data:
+                identity_data["roles"] = []
+            if "permissions" not in identity_data:
+                identity_data["permissions"] = []
+
+            # Store full data with timestamps in internal storage
+            # Also store id and identity_id for backward compatibility
+            storage_data: dict[str, object] = {
+                **identity_data,
+                "id": user_id,  # Store id for backward compatibility
+                "identity_id": user_id,  # Store identity_id for backward compatibility
                 "created_at": datetime.now(UTC),
                 "updated_at": datetime.now(UTC),
             }
+            self._users[username] = storage_data
 
-            self._users[username] = user_data
-            user = FlextAuthModels.Identity(**user_data)
+            # Create Identity model with only valid fields (no extras)
+            user = FlextAuthModels.Identity(**identity_data)
             return FlextResult[FlextAuthModels.Identity].ok(user)
 
         def get_user(self, user_id: str) -> FlextResult[FlextAuthModels.Identity]:
             """Get user by ID."""
             return self._find_user_by_id(user_id).map(
-                lambda ud: FlextAuthModels.Identity(**ud[1])
+                lambda ud: self._create_identity_from_storage(ud[1])
             )
 
         def get_user_by_username(
@@ -169,41 +300,44 @@ class FlextAuthManagers(FlextService[object]):
             if username not in self._users:
                 return FlextResult[FlextAuthModels.Identity].fail("User not found")
 
-            user_data = self._users[username]
-            user = FlextAuthModels.Identity(**user_data)
+            storage_data = self._users[username]
+            user = self._create_identity_from_storage(storage_data)
             return FlextResult[FlextAuthModels.Identity].ok(user)
 
         def update_user(
-            self, user_id: str, **updates: object
+            self,
+            user_id: str,
+            **updates: str | int | bool | list[str] | datetime | None,
         ) -> FlextResult[FlextAuthModels.Identity]:
             """Update user data."""
             return self._find_user_by_id(user_id).map(
                 lambda ud: (
                     ud[1].update(updates),
                     ud[1].update({"updated_at": datetime.now(UTC)}),
-                    FlextAuthModels.Identity(**ud[1]),
+                    self._create_identity_from_storage(ud[1]),
                 )[2]
             )
 
-        def delete_user(self, user_id: str) -> FlextResult[None]:
+        def delete_user(self, user_id: str) -> FlextResult[bool]:
             """Delete user."""
             result = self._find_user_by_id(user_id)
             if result.is_success:
                 username = result.unwrap()[0]
                 del self._users[username]
-            return result.map(lambda _: None)
+                return FlextResult[bool].ok(True)
+            return FlextResult[bool].fail(result.error)
 
-        def add_user_role(self, user_id: str, role: str) -> FlextResult[None]:
+        def add_user_role(self, user_id: str, role: str) -> FlextResult[bool]:
             """Add role to user."""
             return self._modify_user_list_field(user_id, "roles", role, add=True)
 
-        def remove_user_role(self, user_id: str, role: str) -> FlextResult[None]:
+        def remove_user_role(self, user_id: str, role: str) -> FlextResult[bool]:
             """Remove role from user."""
             return self._modify_user_list_field(user_id, "roles", role, add=False)
 
         def add_user_permission(
             self, user_id: str, permission: str
-        ) -> FlextResult[None]:
+        ) -> FlextResult[bool]:
             """Add permission to user."""
             return self._modify_user_list_field(
                 user_id, "permissions", permission, add=True
@@ -211,19 +345,17 @@ class FlextAuthManagers(FlextService[object]):
 
         def remove_user_permission(
             self, user_id: str, permission: str
-        ) -> FlextResult[None]:
+        ) -> FlextResult[bool]:
             """Remove permission from user."""
             return self._modify_user_list_field(
                 user_id, "permissions", permission, add=False
             )
 
-        def get_user_by_id(
-            self, _user_id: str
-        ) -> FlextResult[FlextAuthModels.Identity | None]:
+        def get_user_by_id(self, user_id: str) -> FlextResult[FlextAuthModels.Identity]:
             """Get a user by their ID."""
-            # In a real implementation, this would query a database
-            # For now, return None as this is a placeholder
-            return FlextResult[FlextAuthModels.Identity | None].ok(None)
+            return self._find_user_by_id(user_id).map(
+                lambda ud: self._create_identity_from_storage(ud[1])
+            )
 
     class FlextAuthSessionManager:
         """Session management business logic.
@@ -241,22 +373,26 @@ class FlextAuthManagers(FlextService[object]):
             self._dispatcher = FlextDispatcher()
             self._sessions: dict[
                 str, dict[str, object]
-            ] = {}  # In production, use Redis/database
+            ] = {}  # In production, use Redis/database (dict for dynamic key access)
 
         def _is_session_active(
-            self, session_data: FlextAuthTypes.Managers.SessionData
+            self, session_data: dict[str, object]
         ) -> bool:
             """Check if session is active and not expired.
 
             Eliminates duplication of expiration check (appeared 2+ times).
             """
-            expires_at = session_data.get("expires_at")
-            is_active = session_data.get("is_active", False)
-            return (
-                bool(is_active)
-                and isinstance(expires_at, datetime)
-                and expires_at > datetime.now(UTC)
-            )
+            expires_at_value = session_data.get("expires_at")
+            if not isinstance(expires_at_value, datetime):
+                return False
+            expires_at = expires_at_value
+
+            is_active_value = session_data.get("is_active")
+            if not isinstance(is_active_value, bool):
+                return False
+            is_active = is_active_value
+
+            return is_active and expires_at > datetime.now(UTC)
 
         def create_session(
             self,
@@ -268,8 +404,9 @@ class FlextAuthManagers(FlextService[object]):
             session_id = str(uuid4())
             expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
 
-            session_data = {
+            session_data: dict[str, object] = {
                 "id": session_id,
+                "unique_id": session_id,
                 "identity_id": user_id,
                 "session_token": token,
                 "expires_at": expires_at,
@@ -278,38 +415,55 @@ class FlextAuthManagers(FlextService[object]):
             }
 
             self._sessions[session_id] = session_data
-            session = FlextAuthModels.Session(**session_data)
+            # Extract required fields for Session model
+            session = FlextAuthModels.Session(
+                identity_id=str(session_data["identity_id"]),
+                session_token=str(session_data["session_token"]),
+                expires_at=session_data["expires_at"],
+                is_active=bool(session_data.get("is_active", True)),
+                ip_address=session_data.get("ip_address"),  # type: ignore[assignment]
+                user_agent=session_data.get("user_agent"),  # type: ignore[assignment]
+                last_accessed=session_data.get("last_accessed", datetime.now(UTC)),  # type: ignore[assignment]
+            )
             return FlextResult[FlextAuthModels.Session].ok(session)
 
         def get_active_sessions(
             self, user_id: str
         ) -> FlextResult[list[FlextAuthModels.Session]]:
             """Get all active sessions for a user."""
-            sessions = [
-                FlextAuthModels.Session(**session_data)
-                for session_data in self._sessions.values()
-                if session_data.get("identity_id") == user_id
-                and self._is_session_active(session_data)
-            ]
+            sessions: list[FlextAuthModels.Session] = []
+            for session_data in self._sessions.values():
+                identity_id_value = session_data.get("identity_id")
+                if (
+                    isinstance(identity_id_value, str)
+                    and identity_id_value == user_id
+                    and self._is_session_active(session_data)
+                ):
+                    sessions.append(FlextAuthModels.Session(**session_data))
             return FlextResult[list[FlextAuthModels.Session]].ok(sessions)
 
-        def end_session(self, user_id: str) -> FlextResult[None]:
+        def end_session(self, user_id: str) -> FlextResult[bool]:
             """End all sessions for a user."""
+            found = False
             for session_data in self._sessions.values():
-                if session_data["identity_id"] == user_id:
+                identity_id_value = session_data.get("identity_id")
+                if isinstance(identity_id_value, str) and identity_id_value == user_id:
                     session_data["is_active"] = False
+                    found = True
 
-            return FlextResult[None].ok(None)
+            if found:
+                return FlextResult[bool].ok(True)
+            return FlextResult[bool].fail("No sessions found for user")
 
-        def end_session_by_id(self, session_id: str) -> FlextResult[None]:
+        def end_session_by_id(self, session_id: str) -> FlextResult[bool]:
             """End a specific session."""
             if session_id in self._sessions:
                 self._sessions[session_id]["is_active"] = False
-                return FlextResult[None].ok(None)
+                return FlextResult[bool].ok(True)
 
-            return FlextResult[None].fail("Session not found")
+            return FlextResult[bool].fail("Session not found")
 
-        def end_all_sessions(self, user_id: str) -> FlextResult[None]:
+        def end_all_sessions(self, user_id: str) -> FlextResult[bool]:
             """End all sessions for a user."""
             return self.end_session(user_id)
 
@@ -320,6 +474,18 @@ class FlextAuthManagers(FlextService[object]):
                 for session in self._sessions.values()
                 if self._is_session_active(session)
             )
+
+        def cleanup_expired_sessions(self) -> FlextResult[int]:
+            """Clean up expired sessions and return count of cleaned sessions."""
+            cleaned_count = 0
+            sessions_to_check = list(self._sessions.keys())
+            for session_id in sessions_to_check:
+                session_data = self._sessions[session_id]
+                if not self._is_session_active(session_data):
+                    end_result = self.end_session_by_id(session_id)
+                    if end_result.is_success:
+                        cleaned_count += 1
+            return FlextResult[int].ok(cleaned_count)
 
     class FlextAuthAuditLogger:
         """Audit logging business logic.
@@ -354,11 +520,13 @@ class FlextAuthManagers(FlextService[object]):
             self._dispatcher = dispatcher
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
-            self._logs: list[
-                FlextAuthTypes.Managers.LogEntry
-            ] = []  # In production, use database
+            self._logs: list[dict[str, object]] = []  # In production, use database
 
-        def log_event(self, event_type: str, **data: object) -> None:
+        def log_event(
+            self,
+            event_type: str,
+            **data: str | int | bool | list[str] | datetime | None,
+        ) -> None:
             """Generic event logging - single method replaces 11 specific methods.
 
             Usage:
@@ -367,47 +535,58 @@ class FlextAuthManagers(FlextService[object]):
             """
             self._log_event(event_type, **data)
 
-            # Convenience shortcuts for backward compatibility (thin wrappers)
-            def log_auth_success(
-                self, username: str, provider: str, **extra: object
-            ) -> None:
-                """Log successful authentication."""
-                self.log_event(
-                    self._EVENT_AUTH_SUCCESS,
-                    username=username,
-                    provider=provider,
-                    **extra,
-                )
+        # Convenience shortcuts for backward compatibility (thin wrappers)
+        def log_auth_success(
+            self,
+            username: str,
+            provider: str,
+            **extra: str | int | bool | list[str] | datetime | None,
+        ) -> None:
+            """Log successful authentication."""
+            self.log_event(
+                self._EVENT_AUTH_SUCCESS,
+                username=username,
+                provider=provider,
+                **extra,
+            )
 
-            def log_auth_failure(
-                self, username: str, provider: str, reason: str, **extra: object
-            ) -> None:
-                """Log failed authentication."""
-                self.log_event(
-                    self._EVENT_AUTH_FAILURE,
-                    username=username,
-                    provider=provider,
-                    reason=reason,
-                    **extra,
-                )
+        def log_auth_failure(
+            self,
+            username: str,
+            provider: str,
+            reason: str,
+            **extra: str | int | bool | list[str] | datetime | None,
+        ) -> None:
+            """Log failed authentication."""
+            self.log_event(
+                self._EVENT_AUTH_FAILURE,
+                username=username,
+                provider=provider,
+                reason=reason,
+                **extra,
+            )
 
-            def log_token_validation(
-                self,
-                username: str | None = None,
-                *,
-                success: bool = True,
-                **extra: object,
-            ) -> None:
-                """Log token validation attempt."""
-                event_type = (
-                    self._EVENT_TOKEN_VALIDATION_SUCCESS
-                    if success
-                    else self._EVENT_TOKEN_VALIDATION_FAILURE
-                )
-                self.log_event(event_type, username=username, **extra)
+        def log_token_validation(
+            self,
+            username: str | None = None,
+            *,
+            success: bool = True,
+            **extra: str | int | bool | list[str] | datetime | None,
+        ) -> None:
+            """Log token validation attempt."""
+            event_type = (
+                self._EVENT_TOKEN_VALIDATION_SUCCESS
+                if success
+                else self._EVENT_TOKEN_VALIDATION_FAILURE
+            )
+            self.log_event(event_type, username=username, **extra)
 
         def log_token_refresh(
-            self, username: str | None = None, *, success: bool = True, **extra: object
+            self,
+            username: str | None = None,
+            *,
+            success: bool = True,
+            **extra: str | int | bool | list[str] | datetime | None,
         ) -> None:
             """Log token refresh attempt."""
             event_type = (
@@ -423,7 +602,7 @@ class FlextAuthManagers(FlextService[object]):
             token_type: str | None = None,
             *,
             success: bool = True,
-            **extra: object,
+            **extra: str | int | bool | list[str] | datetime | None,
         ) -> None:
             """Log token creation attempt."""
             event_type = (
@@ -433,18 +612,25 @@ class FlextAuthManagers(FlextService[object]):
             )
             self.log_event(event_type, user_id=user_id, token_type=token_type, **extra)
 
-        def log_user_logout(self, username: str, **extra: object) -> None:
+        def log_user_logout(
+            self, username: str, **extra: str | int | bool | list[str] | datetime | None
+        ) -> None:
             """Log user logout."""
             self.log_event(self._EVENT_USER_LOGOUT, username=username, **extra)
 
-        def log_password_change_success(self, username: str, **extra: object) -> None:
+        def log_password_change_success(
+            self, username: str, **extra: str | int | bool | list[str] | datetime | None
+        ) -> None:
             """Log successful password change."""
             self.log_event(
                 self._EVENT_PASSWORD_CHANGE_SUCCESS, username=username, **extra
             )
 
         def log_password_change_failure(
-            self, username: str, reason: str, **extra: object
+            self,
+            username: str,
+            reason: str,
+            **extra: str | int | bool | list[str] | datetime | None,
         ) -> None:
             """Log failed password change."""
             self.log_event(
@@ -454,7 +640,9 @@ class FlextAuthManagers(FlextService[object]):
                 **extra,
             )
 
-        def log_password_reset(self, username: str, **extra: object) -> None:
+        def log_password_reset(
+            self, username: str, **extra: str | int | bool | list[str] | datetime | None
+        ) -> None:
             """Log password reset."""
             self.log_event(self._EVENT_PASSWORD_RESET, username=username, **extra)
 
@@ -465,7 +653,7 @@ class FlextAuthManagers(FlextService[object]):
             action: str,
             *,
             allowed: bool,
-            **extra: object,
+            **extra: str | int | bool | list[str] | datetime | None,
         ) -> None:
             """Log authorization check."""
             event_type = (
@@ -481,9 +669,13 @@ class FlextAuthManagers(FlextService[object]):
             """Get total count of log entries."""
             return len(self._logs)
 
-        def _log_event(self, event_type: str, **data: object) -> None:
+        def _log_event(
+            self,
+            event_type: str,
+            **data: str | int | bool | list[str] | datetime | None,
+        ) -> None:
             """Log an audit event."""
-            log_entry = {
+            log_entry: dict[str, object] = {
                 "id": str(uuid4()),
                 "event_type": event_type,
                 "timestamp": datetime.now(UTC),
@@ -502,37 +694,49 @@ class FlextAuthManagers(FlextService[object]):
         ) -> FlextResult[list[dict[str, object]]]:
             """Get audit logs with optional filtering."""
             # Filter logs based on criteria
-            filtered_logs = self._logs
+            filtered_logs: list[dict[str, object]] = []
 
-            if user_id is not None:
-                filtered_logs = [
-                    log
-                    for log in filtered_logs
-                    if log.get("username") == user_id or log.get("user_id") == user_id
-                ]
+            for log in self._logs:
+                # Filter by user_id
+                if user_id is not None:
+                    username_value = log.get("username")
+                    log_user_id_value = log.get("user_id")
+                    if not (
+                        isinstance(username_value, str) and username_value == user_id
+                    ) and not (
+                        isinstance(log_user_id_value, str)
+                        and log_user_id_value == user_id
+                    ):
+                        continue
 
-            if event_type is not None:
-                filtered_logs = [
-                    log for log in filtered_logs if log.get("event_type") == event_type
-                ]
+                # Filter by event_type
+                if event_type is not None:
+                    log_event_type = log.get("event_type")
+                    if (
+                        not isinstance(log_event_type, str)
+                        or log_event_type != event_type
+                    ):
+                        continue
 
-            if start_date is not None:
-                filtered_logs = [
-                    log
-                    for log in filtered_logs
-                    if log.get("timestamp")
-                    and isinstance(log["timestamp"], datetime)
-                    and log["timestamp"] >= start_date
-                ]
+                # Filter by start_date
+                if start_date is not None:
+                    log_timestamp = log.get("timestamp")
+                    if (
+                        not isinstance(log_timestamp, datetime)
+                        or log_timestamp < start_date
+                    ):
+                        continue
 
-            if end_date is not None:
-                filtered_logs = [
-                    log
-                    for log in filtered_logs
-                    if log.get("timestamp")
-                    and isinstance(log["timestamp"], datetime)
-                    and log["timestamp"] <= end_date
-                ]
+                # Filter by end_date
+                if end_date is not None:
+                    log_timestamp = log.get("timestamp")
+                    if (
+                        not isinstance(log_timestamp, datetime)
+                        or log_timestamp > end_date
+                    ):
+                        continue
+
+                filtered_logs.append(log)
 
             # Apply limit and return
             return FlextResult[list[dict[str, object]]].ok(filtered_logs[-limit:])
@@ -555,8 +759,8 @@ class FlextAuthManagers(FlextService[object]):
             self._context = FlextContext()
             self._registry = FlextRegistry(dispatcher)
             self._attempts: dict[
-                str, FlextAuthTypes.Managers.AttemptData
-            ] = {}  # username -> list of timestamps
+                str, dict[str, object]
+            ] = {}  # username -> attempt data (dict for dynamic key access)
             self._max_attempts = 5
             self._window_minutes = 15
 
@@ -566,41 +770,59 @@ class FlextAuthManagers(FlextService[object]):
             Generic pattern used in 2 methods - eliminates duplication.
             """
             window_start = now - timedelta(minutes=self._window_minutes)
+            attempt_data = self._attempts.get(username)
+            if not isinstance(attempt_data, dict):
+                return []
+            attempts_value = attempt_data.get("attempts")
+            if not isinstance(attempts_value, list):
+                return []
             return [
                 attempt
-                for attempt in self._attempts.get(username, [])
-                if attempt > window_start
+                for attempt in attempts_value
+                if isinstance(attempt, datetime) and attempt > window_start
             ]
 
-        def check_rate_limit(self, username: str) -> FlextResult[None]:
-            """Check if user is within rate limits."""
+        def check_rate_limit(self, username: str) -> FlextResult[bool]:
+            """Check if user is within rate limits.
+
+            Returns:
+                FlextResult[bool]: True if within limits, False if exceeded, error on failure
+
+            """
             now = datetime.now(UTC)
 
             if username not in self._attempts:
-                return FlextResult[None].ok(None)
+                return FlextResult[bool].ok(True)
 
             # Filter attempts within the window
             recent_attempts = self._cleanup_window(username, now)
-            self._attempts[username] = recent_attempts  # Update stored attempts
+            if username not in self._attempts:
+                self._attempts[username] = {}
+            self._attempts[username]["attempts"] = recent_attempts  # Update stored attempts
 
             if len(recent_attempts) >= self._max_attempts:
-                return FlextResult[None].fail(
+                return FlextResult[bool].fail(
                     "Too many failed attempts. Please try again later."
                 )
 
-            return FlextResult[None].ok(None)
+            return FlextResult[bool].ok(True)
 
         def record_failed_attempt(self, username: str) -> None:
             """Record a failed authentication attempt."""
             now = datetime.now(UTC)
 
             if username not in self._attempts:
-                self._attempts[username] = []
+                self._attempts[username] = {"attempts": []}
 
-            self._attempts[username].append(now)
+            attempts_list = self._attempts[username].get("attempts")
+            if not isinstance(attempts_list, list):
+                attempts_list = []
+                self._attempts[username]["attempts"] = attempts_list
+            attempts_list.append(now)
 
             # Clean up old entries
-            self._attempts[username] = self._cleanup_window(username, now)
+            recent_attempts = self._cleanup_window(username, now)
+            self._attempts[username]["attempts"] = recent_attempts
 
         def get_total_failed_attempts(self) -> int:
             """Get total count of failed attempts across all users."""

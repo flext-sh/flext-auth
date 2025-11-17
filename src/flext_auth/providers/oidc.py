@@ -82,7 +82,7 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
 
         self.logger.info("OIDC provider initialized")
 
-    def _validate_oidc_configuration(self) -> FlextResult[None]:
+    def _validate_oidc_configuration(self) -> FlextResult[bool]:
         """Railway-oriented OIDC configuration validation."""
         # Validate required fields
         required_fields = ["issuer"]
@@ -91,7 +91,7 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
         ]
 
         if missing_fields:
-            return FlextResult[None].fail(
+            return FlextResult[bool].fail(
                 f"Missing required OIDC configuration fields: {', '.join(missing_fields)}"
             )
 
@@ -123,11 +123,11 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
         for field_name, expected_types, error_msg in validations:
             field_value = self._config.get(field_name)
             if field_value is not None and not isinstance(field_value, expected_types):
-                return FlextResult[None].fail(
+                return FlextResult[bool].fail(
                     f"{error_msg}. Got {type(field_value).__name__}"
                 )
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
     class _OIDCIDTokenValidator:
         """SOLID-compliant OIDC ID token validator.
@@ -197,13 +197,14 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
             "capabilities": list(self.supports()),
         }
 
-    def validate_token(
-        self, _token: str
-    ) -> FlextResult[FlextAuthModels.Identity | None]:
+    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.Identity]:
         """Validate OIDC token and return user."""
-        return FlextResult[FlextAuthModels.Identity | None].ok(
-            None
-        )  # Simplified implementation
+        # OIDC token validation requires implementation
+        # Fast fail: implementation not available
+        _ = token  # Mark as intentionally unused
+        return FlextResult[FlextAuthModels.Identity].fail(
+            "OIDC token validation not implemented"
+        )
 
     def generate_token_for_user(
         self,

@@ -44,7 +44,11 @@ class FlextAuthModels(FlextModels):
         @property
         def status(self) -> str:
             """Human-readable validation status."""
-            return "valid" if self.is_valid else f"invalid: {self.error or 'unknown'}"
+            if self.is_valid:
+                return "valid"
+            if self.error is None:
+                return "invalid"
+            return f"invalid: {self.error}"
 
     # =========================================================================
     # TOKEN MODELS - Generic token handling
@@ -149,6 +153,11 @@ class FlextAuthModels(FlextModels):
 
         # Backward compatibility aliases for User model expectations
         @property
+        def id(self) -> str:
+            """Alias for unique_id to support id expectations."""
+            return self.unique_id
+
+        @property
         def user_id(self) -> str:
             """Alias for id to support user_id expectations."""
             return self.id
@@ -193,13 +202,24 @@ class FlextAuthModels(FlextModels):
             return datetime.now(UTC) < self.locked_until
 
         def verify_credential(self, credential: str) -> FlextResult[bool]:
-            """Verify a credential against stored hash."""
-            # Simple implementation - in production use proper password hashing
-            return FlextResult[bool].ok(self.credential_hash == credential)
+            """Verify a credential against stored hash using bcrypt."""
+            from flext_auth.utilities import FlextAuthUtilities
 
-        def set_credential(self, credential: str) -> None:
-            """Set a new credential (simplified - should hash in production)."""
-            self.credential_hash = credential
+            return FlextAuthUtilities.verify_credential(
+                credential, self.credential_hash
+            )
+
+        def set_credential(self, credential: str) -> FlextResult[bool]:
+            """Set a new credential with bcrypt hashing."""
+            from flext_auth.utilities import FlextAuthUtilities
+
+            hash_result = FlextAuthUtilities.hash_credential(credential)
+            if hash_result.is_success:
+                self.credential_hash = hash_result.unwrap()
+                return FlextResult[bool].ok(True)
+            return FlextResult[bool].fail(
+                f"Failed to hash credential: {hash_result.error}"
+            )
 
     # Backward compatibility alias for tests expecting User model
     User = Identity

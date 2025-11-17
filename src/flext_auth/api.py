@@ -10,25 +10,24 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import threading
-from datetime import datetime
 from typing import ClassVar, Self
 
 from flext_core import FlextContainer, FlextDispatcher, FlextResult, FlextService
 from pydantic import SecretStr
 
 from flext_auth.config import FlextAuthConfig
+from flext_auth.managers import ServiceManagerMixin
 from flext_auth.models import FlextAuthModels
 from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
+from flext_auth.session_service import FlextAuthSessionService
 from flext_auth.token_service import FlextAuthTokenService
 from flext_auth.typings import FlextAuthTypes
-from flext_auth.user_service import (
-    FlextAuthIdentityService,  # For identity service delegation
-)
+from flext_auth.user_service import FlextAuthIdentityService
 
 
-class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
+class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
     """Flexible authentication service using flext-core patterns.
 
     Thread-safe singleton service with:
@@ -48,34 +47,61 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
     ) -> None:
         """Initialize with dependency injection and event bus."""
         super().__init__()
-        self._config = config or FlextAuthConfig()
+        # Use provided config or create default (config is optional for convenience)
+        self._config = config if config is not None else FlextAuthConfig()
         self._registry = FlextAuthRegistry()
         self._dispatcher = FlextDispatcher()
-        self._service_name = service_name or "flext_auth"
+        # Use provided service_name or default (service_name is optional)
+        self._service_name = service_name if service_name is not None else "flext_auth"
 
-        container = FlextContainer.get_global()
-        # Register with container (idempotent for test isolation)
-        container.register(self._service_name, self).recover(
-            lambda _: None  # Ignore duplicate registration errors
-        )
+        # Note: FlextContainer registration removed - use service directly
+        # Container integration can be added when FlextContainer.register is available
 
-        # Initialize service dependencies once (eliminate repeated instantiation)
-        self._provider_service = FlextAuthProviderService(self._config)
-        self._token_service = FlextAuthTokenService(
-            self._config, self._provider_service, self._dispatcher
-        )
+        # Create shared managers once to ensure data consistency across services
+        shared_managers = ServiceManagerMixin()
+        shared_managers._init_managers(self._config, self._dispatcher)  # noqa: SLF001
+
+        # Initialize service dependencies once with shared managers
+        self._provider_service = FlextAuthProviderService(config=self._config)
         self._identity_service = FlextAuthIdentityService(
-            self._config, self._dispatcher
+            config=self._config, dispatcher=self._dispatcher
         )
+        # Share managers between services to ensure data consistency
+        self._identity_service._user_manager = shared_managers._user_manager  # noqa: SLF001
+        self._identity_service._session_manager = shared_managers._session_manager  # noqa: SLF001
+        self._identity_service._audit_logger = shared_managers._audit_logger  # noqa: SLF001
+        self._identity_service._rate_limiter = shared_managers._rate_limiter  # noqa: SLF001
+
+        self._token_service = FlextAuthTokenService(
+            config=self._config,
+            provider_service=self._provider_service,
+            dispatcher=self._dispatcher,
+        )
+        # Share managers with token service
+        self._token_service._user_manager = shared_managers._user_manager  # noqa: SLF001
+        self._token_service._session_manager = shared_managers._session_manager  # noqa: SLF001
+        self._token_service._audit_logger = shared_managers._audit_logger  # noqa: SLF001
+        self._token_service._rate_limiter = shared_managers._rate_limiter  # noqa: SLF001
+
+        self._session_service = FlextAuthSessionService(
+            config=self._config, dispatcher=self._dispatcher
+        )
+        # Share managers with session service
+        self._session_service._user_manager = shared_managers._user_manager  # noqa: SLF001
+        self._session_service._session_manager = shared_managers._session_manager  # noqa: SLF001
+        self._session_service._audit_logger = shared_managers._audit_logger  # noqa: SLF001
+        self._session_service._rate_limiter = shared_managers._rate_limiter  # noqa: SLF001
 
     @classmethod
     def get_global(cls) -> FlextAuth:
         """Thread-safe singleton pattern with configuration."""
-        if cls._instance is None:
-            with cls._lock:
-                if cls._instance is None:
-                    cls._instance = cls(service_name="flext_auth")
-        return cls._instance
+        if cls._instance is not None:
+            return cls._instance
+        with cls._lock:
+            if cls._instance is not None:
+                return cls._instance
+            cls._instance = cls(service_name="flext_auth")
+            return cls._instance
 
     @classmethod
     def with_config(
@@ -90,7 +116,9 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             algorithm=algorithm,
             expiry_minutes=expiration_hours * 60,
         )
-        return cls(config)
+        instance = cls.__new__(cls)
+        instance.__init__(config)
+        return instance
 
     @classmethod
     def quick_start(
@@ -117,8 +145,8 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
     @classmethod
     def create_with_config_overrides(
         cls,
-        config_overrides: dict[str, object] | None = None,
-        **_kwargs: object,
+        config_overrides: dict[str, str | int | bool] | None = None,
+        **_kwargs: str | int | bool,
     ) -> Self:
         """Create FlextAuth instance with configuration overrides.
 
@@ -158,22 +186,33 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         """Identity service access for usage."""
         return self._identity_service
 
+    @property
+    def session_service(self) -> FlextAuthSessionService:
+        """Session service access for usage."""
+        return self._session_service
+
     def authenticate(
         self,
-        credentials: dict[str, object],
+        credentials: dict[str, str],
         _provider: str | None = None,
     ) -> FlextResult[FlextAuthModels.Identity]:
         """Railway-oriented authentication with chaining."""
-        # Extract username and password from credentials
-        username = credentials.get("username")
-        password = credentials.get("password")
-
-        if not isinstance(username, str) or not isinstance(password, str):
+        # Extract username and password from credentials - fast fail if missing
+        username_value = credentials.get("username")
+        if not isinstance(username_value, str) or not username_value:
             return FlextResult[FlextAuthModels.Identity].fail(
-                "Invalid credentials: username and password must be strings"
+                "Invalid credentials: username is required and must be a non-empty string"
             )
 
-        return self._identity_service.authenticate_identity(username, password)
+        password_value = credentials.get("password")
+        if not isinstance(password_value, str) or not password_value:
+            return FlextResult[FlextAuthModels.Identity].fail(
+                "Invalid credentials: password is required and must be a non-empty string"
+            )
+
+        return self._identity_service.authenticate_identity(
+            username_value, password_value
+        )
 
     def authenticate_user(
         self,
@@ -212,7 +251,7 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         password: str,
         roles: list[str] | None = None,
         role: str | None = None,
-        **kwargs: str | int | bool | None,
+        **kwargs: str | int | bool | list[str] | None,
     ) -> FlextResult[FlextAuthModels.Identity]:
         """Register a new user.
 
@@ -229,7 +268,12 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
 
         """
         # Handle roles parameter - prefer roles list over single role
-        user_roles = roles or ([role] if role else ["user"])
+        if roles is not None:
+            user_roles = roles
+        elif role is not None:
+            user_roles = [role]
+        else:
+            user_roles = ["user"]
 
         return self._identity_service.create_identity(
             name=username,
@@ -242,8 +286,8 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
     def register_provider(
         self,
         name: str,
-        provider: type[FlextAuthBaseProvider],
-    ) -> FlextResult[None]:
+        provider: FlextAuthBaseProvider,
+    ) -> FlextResult[bool]:
         """Railway-oriented provider registration."""
         return self._registry.register(name, provider)
 
@@ -265,55 +309,35 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
             name=username, contact=email, credential=password
         )
 
-    def generate_jwt_token(
-        self,
-        user_id: str,
-        _expires_in_minutes: int | None = None,
-    ) -> FlextResult[str]:
-        """Generate JWT token for user (alias for create_token).
-
-        Args:
-        user_id: User identifier
-
-        Note:
-        expires_in_minutes parameter is reserved for future custom expiry support
-
-        """
-        return self.create_token(identity_id=user_id, extra_claims=None)
-
     def create_token(
         self,
         identity_id: str,
-        extra_claims: dict[str, object] | None = None,
+        extra_claims: dict[str, str | int | bool] | None = None,
     ) -> FlextResult[str]:
-        """Railway-oriented token creation."""
-        claims: dict[str, str | int | float | bool | datetime | None] = {
-            "sub": identity_id
-        }
-        if extra_claims:
-            # Convert extra_claims to the expected type for claims
-            for key, value in extra_claims.items():
-                if (
-                    isinstance(value, (str, int, float, bool))
-                    or value is None
-                    or isinstance(value, datetime)
-                ):
-                    claims[key] = value
-                else:
-                    # Convert other objects to string representation
-                    claims[key] = str(value)
-        identity_id = str(claims.get("sub", ""))
+        """Railway-oriented token creation.
+
+        Args:
+            identity_id: Identity ID for token subject
+            extra_claims: Reserved for future extra claims support
+
+        """
+        if not identity_id or not isinstance(identity_id, str):
+            return FlextResult[str].fail("Identity ID must be a non-empty string")
+
+        _ = extra_claims  # Reserved for future use
         return self._token_service.generate_jwt_token(
             user_id=identity_id,
             expires_in_minutes=self._config.expiry_minutes,
         )
 
-    def verify_token(self, token: str) -> FlextResult[dict[str, object]]:
+    def verify_token(
+        self, token: str
+    ) -> FlextResult[dict[str, str | int | bool | list[str]]]:
         """Railway-oriented token verification with payload extraction."""
 
         def extract_identity_data(
             identity: FlextAuthModels.Identity,
-        ) -> dict[str, object]:
+        ) -> dict[str, bool | int | list[str] | str]:
             return {
                 "sub": identity.id,
                 "name": identity.name,
@@ -332,10 +356,6 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         """Get identity by ID - delegation to identity_service."""
         return self._identity_service.identity_manager.get_user(user_id)
 
-    def get_user_by_id(self, user_id: str) -> FlextResult[FlextAuthModels.Identity]:
-        """Get identity by ID (backward compatibility alias)."""
-        return self.get_user(user_id)
-
     def get_user_by_username(
         self, username: str
     ) -> FlextResult[FlextAuthModels.Identity]:
@@ -343,12 +363,12 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         return self._identity_service.identity_manager.get_user_by_username(username)
 
     def update_user(
-        self, user_id: str, **updates: object
+        self, user_id: str, **updates: str | int | bool | list[str] | None
     ) -> FlextResult[FlextAuthModels.Identity]:
         """Update identity - delegation to identity_service."""
         return self._identity_service.identity_manager.update_user(user_id, **updates)
 
-    def delete_user(self, user_id: str) -> FlextResult[None]:
+    def delete_user(self, user_id: str) -> FlextResult[bool]:
         """Delete identity - delegation to identity_service."""
         return self._identity_service.identity_manager.delete_user(user_id)
 
@@ -359,39 +379,24 @@ class FlextAuth(FlextService[FlextAuthTypes.AuthenticationResponseDict]):
         Number of sessions cleaned up
 
         """
-        # Implementation would go here
-        return FlextResult[int].ok(0)
+        return self._session_service.cleanup_expired_sessions()
 
-    # Backward compatibility methods for tests
-    def generate_token(self, user_id: str) -> FlextResult[str]:
-        """Generate token for user (alias for create_token)."""
-        return self.create_token(identity_id=user_id)
-
-    def logout_user(self, session_id: str) -> FlextResult[None]:
+    def logout_user(self, session_id: str) -> FlextResult[bool]:
         """Logout user by session ID."""
-        # Implementation would revoke the session
-        _ = session_id  # Mark as intentionally used for API compatibility
-        return FlextResult[None].ok(None)
+        return self._session_service.session_manager.end_session_by_id(session_id)
 
     def get_user_sessions(self, user_id: str) -> FlextResult[list[str]]:
         """Get user sessions."""
-        # Implementation would return user's session IDs
-        _ = user_id  # Mark as intentionally used for API compatibility
-        return FlextResult[list[str]].ok([])
+        return self._session_service.session_manager.get_active_sessions(user_id).map(
+            lambda sessions: [session.unique_id for session in sessions]
+        )
 
-    def revoke_session(self, session_id: str) -> FlextResult[None]:
+    def revoke_session(self, session_id: str) -> FlextResult[bool]:
         """Revoke a session."""
-        # Implementation would revoke the session
-        _ = session_id  # Mark as intentionally used for API compatibility
-        return FlextResult[None].ok(None)
+        return self._session_service.session_manager.end_session_by_id(session_id)
 
-    # Additional backward compatibility aliases
-    def generate_token_for_user(self, user_id: str) -> FlextResult[str]:
-        """Generate token for user (alternative naming)."""
-        return self.generate_token(user_id)
-
-    def execute(self) -> FlextResult[FlextAuthTypes.AuthenticationResponseDict]:
+    def execute(self) -> FlextResult[FlextAuthTypes.Responses.Authentication]:
         """Flexible execute implementation with railway orchestration."""
-        return FlextResult[FlextAuthTypes.AuthenticationResponseDict].fail(
+        return FlextResult[FlextAuthTypes.Responses.Authentication].fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead"
         )

@@ -19,15 +19,14 @@ import base64
 import secrets
 from datetime import UTC, datetime, timedelta
 
-from flext_core import FlextLogger, FlextResult, FlextTypes
+from flext_core import FlextLogger, FlextResult
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
-from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_auth.providers.mixin import FlextAuthProviderMixin
+from flext_auth.providers.rfc import FlextAuthRfcProvider
 
 
-class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
+class FlextAuthBasicProvider(FlextAuthRfcProvider):
     r"""SOLID-compliant HTTP Basic authentication provider.
 
     Uses composition for credential validation, user management, and metadata handling.
@@ -54,6 +53,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         Uses composition for credential validation, user management, and metadata handling.
         Railway-oriented initialization with proper error handling.
         """
+        super().__init__()
         self.logger = FlextLogger(__name__)
         self._config = config
 
@@ -71,23 +71,80 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         self._metadata_handler = self._MetadataHandler(self)
 
         # In-memory user storage
-        self._users: FlextTypes.NestedDict = {}
+        self._users: dict[str, dict[str, object]] = {}
 
-        # Anonymous access configuration
-        self._allow_anonymous: bool = config.get("allow_anonymous", False)
+        # Anonymous access configuration - fast fail if invalid type
+        allow_anonymous_value = config.get("allow_anonymous")
+        if allow_anonymous_value is not None and not isinstance(
+            allow_anonymous_value, bool
+        ):
+            error_msg = (
+                f"Basic Auth 'allow_anonymous' must be bool or None, "
+                f"got {type(allow_anonymous_value).__name__}"
+            )
+            raise ValueError(error_msg)
+        self._allow_anonymous = (
+            allow_anonymous_value
+            if isinstance(allow_anonymous_value, bool)
+            else FlextAuthConstants.BasicAuth.ALLOW_ANONYMOUS_DEFAULT
+        )
 
-        # HTTP Basic Auth realm
-        self._realm: str = config.get("realm", "FLEXT Auth")
+        # HTTP Basic Auth realm - fast fail if invalid type
+        realm_value = config.get("realm")
+        if realm_value is not None and not isinstance(realm_value, str):
+            error_msg = (
+                f"Basic Auth 'realm' must be str or None, "
+                f"got {type(realm_value).__name__}"
+            )
+            raise ValueError(error_msg)
+        if isinstance(realm_value, str) and realm_value:
+            self._realm = realm_value
+        else:
+            self._realm = FlextAuthConstants.BasicAuth.REALM_DEFAULT
 
-        # Case sensitivity for credential comparison
-        self._case_sensitive: bool = config.get("case_sensitive", True)
+        # Case sensitivity for credential comparison - fast fail if invalid type
+        case_sensitive_value = config.get("case_sensitive")
+        if case_sensitive_value is not None and not isinstance(
+            case_sensitive_value, bool
+        ):
+            error_msg = (
+                f"Basic Auth 'case_sensitive' must be bool or None, "
+                f"got {type(case_sensitive_value).__name__}"
+            )
+            raise ValueError(error_msg)
+        self._case_sensitive = (
+            case_sensitive_value
+            if isinstance(case_sensitive_value, bool)
+            else FlextAuthConstants.BasicAuth.CASE_SENSITIVE_DEFAULT
+        )
 
-        # HTTPS requirement for Basic Auth
-        self._require_https: bool = config.get("require_https", True)
+        # HTTPS requirement for Basic Auth - fast fail if invalid type
+        require_https_value = config.get("require_https")
+        if require_https_value is not None and not isinstance(
+            require_https_value, bool
+        ):
+            error_msg = (
+                f"Basic Auth 'require_https' must be bool or None, "
+                f"got {type(require_https_value).__name__}"
+            )
+            raise ValueError(error_msg)
+        self._require_https = (
+            require_https_value
+            if isinstance(require_https_value, bool)
+            else FlextAuthConstants.BasicAuth.REQUIRE_HTTPS_DEFAULT
+        )
 
         self.logger.info("Basic Auth provider initialized")
 
-    def _validate_configuration(self) -> FlextResult[None]:
+    def is_case_sensitive(self) -> bool:
+        """Get case sensitivity setting."""
+        return self._case_sensitive
+
+    def get_user_data(self, username: str) -> dict[str, object] | None:
+        """Get user data by username."""
+        return self._users.get(username)
+
+    def _validate_configuration(self) -> FlextResult[bool]:
         """Railway-oriented configuration validation."""
         # Validate field types
         validations = [
@@ -117,11 +174,11 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         for field_name, expected_types, error_msg in validations:
             field_value = self._config.get(field_name)
             if field_value is not None and not isinstance(field_value, expected_types):
-                return FlextResult[None].fail(
+                return FlextResult[bool].fail(
                     f"{error_msg}. Got {type(field_value).__name__}"
                 )
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
     class _CredentialValidator:
         """SOLID-compliant credential validator.
@@ -188,7 +245,12 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
                 return FlextResult[dict[str, object]].fail("User not found")
 
             # Verify password (simplified - in production use proper password hashing)
-            stored_password = user_data.get("password", "")
+            stored_password_value = user_data.get("password")
+            if not isinstance(stored_password_value, str):
+                return FlextResult[dict[str, object]].fail(
+                    "User password not configured"
+                )
+            stored_password = stored_password_value
             if password != stored_password:
                 return FlextResult[dict[str, object]].fail("Invalid password")
 
@@ -209,8 +271,12 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             self, user_data: dict[str, object]
         ) -> FlextAuthModels.AuthToken:
             """Create authentication token from user data."""
+            user_id_value = user_data.get("user_id")
+            if not isinstance(user_id_value, str) or not user_id_value:
+                msg = "User data missing required 'user_id' field"
+                raise ValueError(msg)
             return FlextAuthModels.AuthToken(
-                identity_id=str(user_data.get("user_id", "unknown")),
+                identity_id=user_id_value,
                 token=secrets.token_hex(32),  # Generate random token
                 token_type=FlextAuthConstants.TOKEN_TYPE_ACCESS,
                 expires_at=datetime.now(UTC) + timedelta(days=1),
@@ -219,30 +285,33 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     def authenticate(
         self,
-        credentials: FlextAuthModels.CredentialValidation,
+        credentials: dict[str, object],
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Authenticate using HTTP Basic credentials with SOLID delegation.
 
         Delegates credential parsing, user authentication, and token creation
         to specialized components following SRP.
         """
-        # Use the CredentialValidation model directly
-        if not credentials.is_valid:
+        # Validate credentials dict structure
+        validation_result = self._validate_credentials_dict(
+            credentials, ["username", "password"]
+        )
+        if validation_result.is_failure:
+            return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
+
+        username_value = credentials.get("username")
+        if not isinstance(username_value, str) or not username_value:
             return FlextResult[FlextAuthModels.AuthToken].fail(
-                credentials.error_message or "Invalid credentials"
+                "Username must be a non-empty string"
             )
+        username = username_value
 
-        if not credentials.user_data:
-            return FlextResult[FlextAuthModels.AuthToken].fail("No user data available")
-
-        user_data = credentials.user_data
-        username = str(user_data.get("username", ""))
-        password = str(user_data.get("password", ""))
-
-        if not username:
+        password_value = credentials.get("password")
+        if not isinstance(password_value, str) or not password_value:
             return FlextResult[FlextAuthModels.AuthToken].fail(
-                "Username not found in credentials"
+                "Password must be a non-empty string"
             )
+        password = password_value
 
         # Use composition for user authentication
         return self._user_manager.authenticate_user(username, password).map(
@@ -256,7 +325,11 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         username, password = credentials
 
         # Handle anonymous access
-        if self._config.get("allow_anonymous", False) and not username:
+        allow_anonymous_value = self._config.get("allow_anonymous")
+        allow_anonymous = (
+            isinstance(allow_anonymous_value, bool) and allow_anonymous_value
+        )
+        if allow_anonymous and not username:
             return FlextResult[FlextAuthModels.AuthToken].ok(
                 FlextAuthModels.AuthToken(
                     identity_id="anonymous",
@@ -329,7 +402,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     def revoke(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[None]:
+    ) -> FlextResult[bool]:
         """Revoke Basic auth credentials.
 
         This disables the user account associated with the credentials.
@@ -338,18 +411,18 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         token: Basic auth token to revoke
 
         Returns:
-        FlextResult[None]: Success or error
+        FlextResult[bool]: Success or error
 
         """
         try:
             token_string = self._extract_token_string(token)
         except ValueError as e:
-            return FlextResult[None].fail(str(e))
+            return FlextResult[bool].fail(str(e))
 
         # Parse credentials
         parse_result = self._parse_basic_token(token_string)
         if parse_result.is_failure:
-            return FlextResult[None].fail(parse_result.error)
+            return FlextResult[bool].fail(parse_result.error)
 
         username, _ = parse_result.unwrap()
 
@@ -357,14 +430,14 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         lookup_username = username if self._case_sensitive else username.lower()
 
         if lookup_username not in self._users:
-            return FlextResult[None].fail("User not found")
+            return FlextResult[bool].fail("User not found")
 
         # Mark user as inactive
         self._users[lookup_username]["active"] = False
 
         self.logger.info("Basic auth credentials revoked", username=username)
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
     def supports(self) -> set[str]:
         """Return Basic auth provider capabilities.
@@ -387,14 +460,14 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         return capabilities
 
-    def get_metadata(self) -> FlextAuthModels.ProviderConfiguration:
+    def get_metadata(self) -> dict[str, object]:
         """Return Basic auth provider metadata.
 
         Returns:
         dict[str, object]: Provider metadata
 
         """
-        return FlextAuthModels.ProviderConfiguration(
+        config = FlextAuthModels.ProviderConfiguration(
             name="basic",
             type="http_basic",
             enabled=True,
@@ -406,16 +479,16 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             case_sensitive=self._case_sensitive,
             require_https=self._require_https,
         )
+        return dict(config)
 
-    def validate_token(
-        self, token: str
-    ) -> FlextResult[FlextAuthModels.Identity | None]:
+    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.Identity]:
         """Validate Basic auth token and return user."""
-        # token parameter reserved for future Basic auth token validation
-        _ = token  # Mark as intentionally unused for now
-        return FlextResult[FlextAuthModels.Identity | None].ok(
-            None
-        )  # Simplified implementation
+        # Basic auth token validation requires implementation
+        # Fast fail: implementation not available
+        _ = token  # Mark as intentionally unused
+        return FlextResult[FlextAuthModels.Identity].fail(
+            "Basic auth token validation not implemented"
+        )
 
     def generate_token_for_user(
         self,
@@ -430,6 +503,15 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             "Basic auth token generation is not supported (type "
             f"{_token_type}, expiry={_expiry_minutes})"
         )
+
+    def get_rfc_version(self) -> str:
+        """Get the RFC version this provider implements.
+
+        Returns:
+            str: RFC version (e.g., "RFC 7617", "RFC 6749")
+
+        """
+        return "RFC 7617"
 
     # Helper methods
 
@@ -513,7 +595,8 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         user_data = self._users[lookup_username]
 
         # Check if user is active
-        if not user_data.get("active", True):
+        active_value = user_data.get("active")
+        if isinstance(active_value, bool) and not active_value:
             return FlextResult[dict[str, object]].fail("User account is disabled")
 
         # Validate password
@@ -547,12 +630,12 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         """
         anonymous_id = f"anonymous-{secrets.token_hex(8)}"
         token_expires_at = datetime.now(UTC) + timedelta(
-            hours=24
-        )  # Anonymous tokens expire in 24 hours
+            hours=FlextAuthConstants.BasicAuth.ANONYMOUS_TOKEN_EXPIRY_HOURS
+        )
 
         auth_token = FlextAuthModels.AuthToken(
             token="",  # No credentials for anonymous
-            token_type=FlextAuthConstants.Jwt.BASIC_TOKEN_TYPE,
+            token_type=FlextAuthConstants.TOKEN_TYPE_ACCESS,
             expires_at=token_expires_at,
             identity_id=anonymous_id,
             is_revoked=False,
@@ -571,7 +654,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         user_id: str | None = None,
         roles: list[str] | None = None,
         permissions: list[str] | None = None,
-    ) -> FlextResult[None]:
+    ) -> FlextResult[bool]:
         """Add user to in-memory storage.
 
         Args:
@@ -582,47 +665,66 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         permissions: User permissions
 
         Returns:
-        FlextResult[None]: Success or error
+        FlextResult[bool]: Success or error
 
         """
         lookup_username = username if self._case_sensitive else username.lower()
 
         if lookup_username in self._users:
-            return FlextResult[None].fail(f"User '{username}' already exists")
+            return FlextResult[bool].fail(f"User '{username}' already exists")
 
+        if roles is None:
+            user_roles: list[str] = []
+        else:
+            if not isinstance(roles, list):
+                return FlextResult[bool].fail("Roles must be a list")
+            user_roles = roles
+
+        if permissions is None:
+            user_permissions: list[str] = []
+        else:
+            if not isinstance(permissions, list):
+                return FlextResult[bool].fail("Permissions must be a list")
+            user_permissions = permissions
+
+        if user_id is None:
+            return FlextResult[bool].fail("user_id is required")
+        if not isinstance(user_id, str) or not user_id:
+            return FlextResult[bool].fail("user_id must be a non-empty string")
+        final_user_id = user_id
         self._users[lookup_username] = {
             "username": username,
             "password": password,  # Warning: Plain text - use bcrypt in production
-            "user_id": user_id or f"user-{secrets.token_hex(8)}",
-            "roles": roles or [],
-            "permissions": permissions or [],
+            "user_id": final_user_id,
+            "roles": user_roles,
+            "permissions": user_permissions,
             "active": True,
         }
 
         self.logger.info("User added", username=username)
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
-    def remove_user(self, username: str) -> FlextResult[None]:
+    def remove_user(self, username: str) -> FlextResult[bool]:
         """Remove user from in-memory storage.
 
         Args:
         username: Username to remove
 
         Returns:
-        FlextResult[None]: Success or error
+        FlextResult[bool]: Success or error
 
         """
         lookup_username = username if self._case_sensitive else username.lower()
 
         if lookup_username not in self._users:
-            return FlextResult[None].fail(f"User '{username}' not found")
+            return FlextResult[bool].fail(f"User '{username}' not found")
 
         del self._users[lookup_username]
 
         self.logger.info("User removed", username=username)
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
 
 __all__ = ["FlextAuthBasicProvider"]

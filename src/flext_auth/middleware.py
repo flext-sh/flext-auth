@@ -78,12 +78,12 @@ class FlextAuthMiddleware(FlextService):
     (flext-web). Following FLEXT pattern: one class per module with nested middleware classes.
     """
 
-    def execute(self) -> FlextResult[object]:
+    def execute(self) -> FlextResult[bool]:
         """Execute method for FlextService interface.
 
         FlextAuthMiddleware is a namespace class - use specific middleware classes instead.
         """
-        return FlextResult[object].fail(
+        return FlextResult[bool].fail(
             "FlextAuthMiddleware is a namespace class - use specific middleware classes like FlextWebAuthMiddleware"
         )
 
@@ -386,7 +386,7 @@ class FlextAuthMiddleware(FlextService):
             self._header_name = header_name
             self._token_prefix = token_prefix
             self._cookie_name = cookie_name
-            self._exclude_paths = exclude_paths or []
+            self._exclude_paths = exclude_paths if exclude_paths is not None else []
             self._require_auth = require_auth
             self.logger = FlextLogger(f"flext_auth.middleware.web.{provider_name}")
 
@@ -506,17 +506,15 @@ class FlextAuthMiddleware(FlextService):
             Extracted token or None if not found
 
             """
-            # Try header first
+            # Try header first - fast fail if missing
             headers = getattr(request, "headers", {})
-            if isinstance(headers, dict):
-                auth_header = headers.get(self._header_name, "")
+            if isinstance(headers, dict) or hasattr(headers, "get"):
+                auth_header_value = headers.get(self._header_name)
+                if not isinstance(auth_header_value, str):
+                    return None
+                auth_header = auth_header_value
             else:
-                # Handle case where headers is a special object (like FastAPI's Headers)
-                auth_header = (
-                    headers.get(self._header_name, "")
-                    if hasattr(headers, "get")
-                    else ""
-                )
+                return None
 
             if auth_header:
                 # Strip prefix if present

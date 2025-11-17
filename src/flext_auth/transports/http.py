@@ -84,14 +84,16 @@ class FlextWebTransportAdapter:
         FlextResult containing response data or error
 
         """
+        request_headers = headers if headers is not None else {}
+        request_timeout = timeout if timeout is not None else self._timeout
         return self._execute_request(
             FlextApiModels.HttpRequest(
                 method=method.upper(),
                 url=url,
-                headers=headers or {},
+                headers=request_headers,
                 body=self._resolve_body(method, data),
                 query_params=self._resolve_query(method, data, query),
-                timeout=timeout or self._timeout,
+                timeout=request_timeout,
             )
         )
 
@@ -224,10 +226,21 @@ class FlextWebTransportAdapter:
         """
         # Check for OAuth2 error response (RFC 6749 Section 5.2)
         if "error" in response_data:
-            error_code = response_data.get("error", "unknown_error")
-            error_description = response_data.get(
-                "error_description", "No error description"
-            )
+            error_code_value = response_data.get("error")
+            if not isinstance(error_code_value, str) or not error_code_value:
+                error_code = "unknown_error"
+            else:
+                error_code = error_code_value
+
+            error_description_value = response_data.get("error_description")
+            if (
+                not isinstance(error_description_value, str)
+                or not error_description_value
+            ):
+                error_description = "No error description"
+            else:
+                error_description = error_description_value
+
             error_uri = response_data.get("error_uri")
 
             error_msg = f"OAuth2 error: {error_code} - {error_description}"
@@ -324,7 +337,8 @@ class FlextWebTransportAdapter:
         query: FlextApiTypes.WebParams | None,
     ) -> FlextApiTypes.WebParams | None:
         if isinstance(data, dict) and method.upper() == "GET":
-            merged_query = {**(query or {}), **data}
+            query_dict = query if query is not None else {}
+            merged_query = {**query_dict, **data}
             normalized: FlextApiTypes.WebParams = {}
             for key, value in merged_query.items():
                 if isinstance(value, list):

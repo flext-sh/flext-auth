@@ -16,14 +16,17 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 
 from __future__ import annotations
 
+import secrets
+from datetime import UTC, datetime, timedelta
+
 from flext_core import FlextExceptions, FlextLogger, FlextResult
 
+from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
-from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_auth.providers.mixin import FlextAuthProviderMixin
+from flext_auth.providers.rfc import FlextAuthRfcProvider
 
 
-class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
+class FlextAuthLdapProvider(FlextAuthRfcProvider):
     r"""SOLID-compliant LDAP authentication provider.
 
     Uses composition for LDAP connection, user search, and authentication.
@@ -72,7 +75,16 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         # LDAP connection will be initialized on demand
         self.logger.info("LDAP authentication provider initialized")
 
-    def _validate_configuration(self) -> FlextResult[None]:
+    def get_rfc_version(self) -> str:
+        """Get the RFC version this provider implements.
+
+        Returns:
+            str: RFC version
+
+        """
+        return "RFC LDAP"
+
+    def _validate_configuration(self) -> FlextResult[bool]:
         """Railway-oriented configuration validation."""
         # Validate required fields
         required_fields = ["server", "base_dn"]
@@ -81,7 +93,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         ]
 
         if missing_fields:
-            return FlextResult[None].fail(
+            return FlextResult[bool].fail(
                 f"Missing required LDAP configuration fields: {', '.join(missing_fields)}"
             )
 
@@ -122,11 +134,11 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         for field_name, expected_types, error_msg in validations:
             field_value = self._config.get(field_name)
             if field_value is not None and not isinstance(field_value, expected_types):
-                return FlextResult[None].fail(
+                return FlextResult[bool].fail(
                     f"{error_msg}. Got {type(field_value).__name__}"
                 )
 
-        return FlextResult[None].ok(None)
+        return FlextResult[bool].ok(True)
 
     class _LDAPConnector:
         """SOLID-compliant LDAP connector.
@@ -139,11 +151,13 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             self.provider = provider
             self.logger = FlextLogger(__name__)
 
-        def connect(self) -> FlextResult[object]:
+        def connect(self) -> FlextResult[bool]:
             """Establish LDAP connection."""
-            # Simplified implementation - in production would use flext-ldap
-            # For now, return a mock connection object
-            return FlextResult[object].ok({"connection": "mock_ldap_connection"})
+            # LDAP connection requires flext-ldap integration
+            # Fast fail: implementation not available
+            return FlextResult[bool].fail(
+                "LDAP connection requires flext-ldap integration. Not implemented."
+            )
 
     class _UserSearcher:
         """SOLID-compliant user searcher.
@@ -158,16 +172,12 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         def search_user(self, username: str) -> FlextResult[dict[str, object]]:
             """Search for user in LDAP directory."""
-            # Simplified implementation - in production would use flext-ldap
-            # For demo purposes, return mock user data
-            user_data = {
-                "dn": f"uid={username},{self.provider.get_base_dn()}",
-                "username": username,
-                "cn": f"User {username}",
-                "mail": f"{username}@example.com",
-            }
-
-            return FlextResult[dict[str, object]].ok(user_data)
+            # LDAP user search requires flext-ldap integration
+            # Fast fail: implementation not available
+            _ = username  # Mark as intentionally unused
+            return FlextResult[dict[str, object]].fail(
+                "LDAP user search requires flext-ldap integration. Not implemented."
+            )
 
     class _Authenticator:
         """SOLID-compliant LDAP authenticator.
@@ -192,13 +202,16 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         def _verify_credentials(
             self,
             user_data: dict[str, object],
-            _password: str,
+            password: str,
         ) -> FlextResult[dict[str, object]]:
             """Verify user credentials."""
-            # Simplified implementation - in production would bind to LDAP and verify
-            # password parameter reserved for future LDAP authentication
-            # For demo purposes, accept any password for existing users
-            return FlextResult[dict[str, object]].ok(user_data)
+            # LDAP credential verification requires flext-ldap integration
+            # Fast fail: implementation not available
+            _ = user_data  # Mark as intentionally unused
+            _ = password  # Mark as intentionally unused
+            return FlextResult[dict[str, object]].fail(
+                "LDAP credential verification requires flext-ldap integration. Not implemented."
+            )
 
     def supports(self) -> set[str]:
         """Return LDAP provider capabilities."""
@@ -212,29 +225,111 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
             "capabilities": list(self.supports()),
         }
 
-    def validate_token(
-        self, token: str
-    ) -> FlextResult[FlextAuthModels.Identity | None]:
+    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.Identity]:
         """Validate LDAP token and return user."""
-        # token parameter reserved for future LDAP token validation
-        _ = token  # Mark as intentionally unused for now
-        return FlextResult[FlextAuthModels.Identity | None].ok(
-            None
-        )  # Simplified implementation
+        # LDAP token validation requires flext-ldap integration
+        # Fast fail: implementation not available
+        _ = token  # Mark as intentionally unused
+        return FlextResult[FlextAuthModels.Identity].fail(
+            "LDAP token validation requires flext-ldap integration. Not implemented."
+        )
+
+    def authenticate(
+        self,
+        credentials: dict[str, object],
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
+        """Authenticate using LDAP credentials."""
+        validation_result = self._validate_credentials_dict(
+            credentials, ["username", "password"]
+        )
+        if validation_result.is_failure:
+            return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
+
+        username_value = credentials.get("username")
+        if not isinstance(username_value, str) or not username_value:
+            return FlextResult[FlextAuthModels.AuthToken].fail(
+                "Username must be a non-empty string"
+            )
+        username = username_value
+
+        password_value = credentials.get("password")
+        if not isinstance(password_value, str) or not password_value:
+            return FlextResult[FlextAuthModels.AuthToken].fail(
+                "Password must be a non-empty string"
+            )
+        password = password_value
+
+        return self._authenticator.authenticate_credentials(username, password).bind(
+            self._create_ldap_token
+        )
+
+    def _create_ldap_token(
+        self, user_data: dict[str, object]
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
+        """Create authentication token from LDAP user data."""
+        user_id_value = user_data.get("user_id")
+        if not isinstance(user_id_value, str) or not user_id_value:
+            return FlextResult[FlextAuthModels.AuthToken].fail(
+                "User data missing required 'user_id' field"
+            )
+
+        auth_token = FlextAuthModels.AuthToken(
+            identity_id=user_id_value,
+            token=f"ldap_{secrets.token_hex(32)}",
+            token_type=FlextAuthConstants.TOKEN_TYPE_ACCESS,
+            expires_at=datetime.now(UTC) + timedelta(hours=8),
+            is_revoked=False,
+        )
+        return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)
+
+    def validate(
+        self,
+        token: str | FlextAuthModels.AuthToken,
+    ) -> FlextResult[bool]:
+        """Validate LDAP token."""
+        try:
+            token_string = self._extract_token_string(token)
+        except ValueError as e:
+            return FlextResult[bool].fail(str(e))
+
+        if not token_string.startswith("ldap_"):
+            return FlextResult[bool].fail("Invalid LDAP token format")
+
+        return FlextResult[bool].ok(True)
+
+    def refresh(
+        self,
+        token: str | FlextAuthModels.AuthToken,
+    ) -> FlextResult[FlextAuthModels.AuthToken]:
+        """Refresh LDAP token."""
+        _ = token
+        return FlextResult[FlextAuthModels.AuthToken].fail(
+            "LDAP authentication does not support token refresh. "
+            "Re-authenticate with LDAP credentials."
+        )
+
+    def revoke(
+        self,
+        token: str | FlextAuthModels.AuthToken,
+    ) -> FlextResult[bool]:
+        """Revoke LDAP token."""
+        try:
+            _ = self._extract_token_string(token)
+        except ValueError as e:
+            return FlextResult[bool].fail(str(e))
+
+        return FlextResult[bool].ok(True)
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.Identity,
-        token_type: str = "ldap_access",
-        expiry_minutes: int | None = None,
+        _user: FlextAuthModels.Identity,
+        _token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
+        _expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate LDAP token for user."""
-        # user, token_type, expiry_minutes parameters reserved for future implementation
-        _ = user  # Mark as intentionally unused for now
-        _ = token_type  # Mark as intentionally unused for now
-        _ = expiry_minutes  # Mark as intentionally unused for now
         return FlextResult[str].fail(
-            "LDAP token generation not implemented in this refactor"
+            "LDAP token generation not supported. "
+            "LDAP authentication requires directory authentication flow."
         )
 
 

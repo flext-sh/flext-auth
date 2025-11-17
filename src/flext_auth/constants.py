@@ -209,6 +209,9 @@ class FlextAuthConstants(FlextConstants):
     HASH_ROUNDS_DEFAULT: Final[int] = 12
     HASH_ROUNDS_MIN: Final[int] = 10
     HASH_ROUNDS_MAX: Final[int] = 15
+    # Bcrypt library limits (different from hash rounds defaults)
+    BCRYPT_ROUNDS_MIN: Final[int] = 4
+    BCRYPT_ROUNDS_MAX: Final[int] = 31
     ALGORITHM_DEFAULT: Final[str] = "HS256"
 
     # =========================================================================
@@ -255,6 +258,11 @@ class FlextAuthConstants(FlextConstants):
         MIN_LENGTH: Final[int] = 8
         MAX_LENGTH: Final[int] = 128
 
+        class Password:
+            """Password-specific constants."""
+
+            BCRYPT_ROUNDS: Final[int] = 12
+
     # =========================================================================
     # SESSION CONSTANTS
     # =========================================================================
@@ -285,6 +293,7 @@ class FlextAuthConstants(FlextConstants):
         """JWT token constants."""
 
         ALGORITHM_DEFAULT: Final[str] = "HS256"
+        DEFAULT_ALGORITHM: Final[str] = "HS256"  # Alias for ALGORITHM_DEFAULT
         EXPIRY_DEFAULT_MINUTES: Final[int] = 1440  # 24 hours
         EXPIRY_MAX_MINUTES: Final[int] = 43200  # 30 days
 
@@ -328,6 +337,137 @@ class FlextAuthConstants(FlextConstants):
         ADMIN: Final[str] = "REDACTED_LDAP_BIND_PASSWORD"
         BASIC_PERMISSIONS: Final[list[str]] = ["read", "write"]
         ADMIN_PERMISSIONS: Final[list[str]] = ["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"]
+
+    # =========================================================================
+    # BASIC AUTH CONSTANTS (RFC 7617)
+    # =========================================================================
+
+    class BasicAuth:
+        """HTTP Basic Authentication constants (RFC 7617)."""
+
+        SCHEME: Final[str] = "Basic"
+        REALM_DEFAULT: Final[str] = "FLEXT Auth"
+        REQUIRE_HTTPS_DEFAULT: Final[bool] = True
+        CASE_SENSITIVE_DEFAULT: Final[bool] = True
+        ALLOW_ANONYMOUS_DEFAULT: Final[bool] = False
+        ANONYMOUS_TOKEN_EXPIRY_HOURS: Final[int] = 24
+
+    # =========================================================================
+    # API KEY CONSTANTS
+    # =========================================================================
+
+    class ApiKey:
+        """API Key authentication constants."""
+
+        PREFIX_DEFAULT: Final[str] = "fk_"
+        LENGTH_DEFAULT: Final[int] = 32
+        HASH_ALGORITHM_DEFAULT: Final[str] = "sha256"
+        HASH_ALGORITHMS: Final[list[str]] = ["sha256", "sha512"]
+        REQUIRE_KEY_ID_DEFAULT: Final[bool] = False
+        RATE_LIMIT_ENABLED_DEFAULT: Final[bool] = True
+        RATE_LIMIT_REQUESTS_DEFAULT: Final[int] = 100
+        RATE_LIMIT_WINDOW_SECONDS_DEFAULT: Final[int] = 3600
+        EXPIRY_DAYS_DEFAULT: Final[int] = 365
+
+    # =========================================================================
+    # OAUTH2 CONSTANTS (RFC 6749)
+    # =========================================================================
+
+    class OAuth2:
+        """OAuth 2.0 authentication constants (RFC 6749)."""
+
+        SCOPE_DEFAULT: Final[str] = "openid profile email"
+        FLOW_DEFAULT: Final[str] = "authorization_code"
+        FLOWS: Final[list[str]] = [
+            "authorization_code",
+            "client_credentials",
+            "password",
+            "implicit",
+        ]
+        TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT: Final[str] = "client_secret_post"
+        TOKEN_ENDPOINT_AUTH_METHODS: Final[list[str]] = [
+            "client_secret_post",
+            "client_secret_basic",
+            "none",
+        ]
+        USE_PKCE_DEFAULT: Final[bool] = True
+        PKCE_CODE_CHALLENGE_METHOD: Final[str] = "S256"
+
+    # =========================================================================
+    # JWT CONSTANTS (RFC 7519) - Extended
+    # =========================================================================
+
+    class JwtExtended:
+        """Extended JWT constants (RFC 7519)."""
+
+        ALGORITHMS: Final[list[str]] = ["HS256", "RS256", "ES256", "HS512"]
+        ISSUER_DEFAULT: Final[str] = "flext-auth"
+        AUDIENCE_DEFAULT: Final[str] = "flext-users"
+
+    # =========================================================================
+    # SAML CONSTANTS (SAML 2.0)
+    # =========================================================================
+
+    class Saml:
+        """SAML 2.0 authentication constants."""
+
+        NS_ASSERTION: Final[str] = "urn:oasis:names:tc:SAML:2.0:assertion"
+        NS_PROTOCOL: Final[str] = "urn:oasis:names:tc:SAML:2.0:protocol"
+        NS_SIGNATURE: Final[str] = "http://www.w3.org/2000/09/xmldsig#"
+        NAME_ID_FORMAT_EMAIL: Final[str] = (
+            "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
+        )
+        NAME_ID_FORMAT_UNSPECIFIED: Final[str] = (
+            "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"
+        )
+        NAME_ID_FORMAT_PERSISTENT: Final[str] = (
+            "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"
+        )
+        NAME_ID_FORMATS: Final[list[str]] = [
+            "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress",
+            "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+            "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent",
+            "urn:oasis:names:tc:SAML:2.0:nameid-format:transient",
+        ]
+        SIGN_ASSERTIONS_DEFAULT: Final[bool] = True
+        ENCRYPT_ASSERTIONS_DEFAULT: Final[bool] = False
+
+    # =========================================================================
+    # LDAP CONSTANTS
+    # =========================================================================
+
+    class Ldap:
+        """LDAP authentication constants."""
+
+        USE_SSL_DEFAULT: Final[bool] = True
+        USE_TLS_DEFAULT: Final[bool] = False
+        TIMEOUT_DEFAULT: Final[int] = 30
+        USER_SEARCH_FILTER_DEFAULT: Final[str] = "(uid={username})"
+
+    # =========================================================================
+    # CERTIFICATE CONSTANTS
+    # =========================================================================
+
+    class Certificate:
+        """X.509 Certificate authentication constants."""
+
+        VERIFY_MODE_REQUIRED: Final[str] = "required"
+        VERIFY_MODE_OPTIONAL: Final[str] = "optional"
+        VERIFY_MODE_NONE: Final[str] = "none"
+        VERIFY_MODES: Final[list[str]] = ["required", "optional", "none"]
+        CHECK_OCSP_DEFAULT: Final[bool] = False
+        CHECK_CRL_DEFAULT: Final[bool] = False
+        ALLOW_SELF_SIGNED_DEFAULT: Final[bool] = False
+
+    # =========================================================================
+    # KERBEROS CONSTANTS
+    # =========================================================================
+
+    class Kerberos:
+        """Kerberos authentication constants."""
+
+        CLOCKSKEW_TOLERANCE_DEFAULT: Final[int] = 300
+        TICKET_LIFETIME_DEFAULT: Final[int] = 10
 
 
 __all__ = ["FlextAuthConstants"]
