@@ -9,32 +9,28 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar, Self
+from typing import Self
 
 from flext_core import FlextConfig, FlextResult
 from pydantic import Field, SecretStr, model_validator
-from pydantic_settings import SettingsConfigDict
 
 from flext_auth.constants import FlextAuthConstants
 
 
-class FlextAuthConfig(FlextConfig):
+@FlextConfig.auto_register("auth")
+class FlextAuthConfig(FlextConfig.AutoConfig):
     """Generic authentication configuration using Pydantic and flext-core patterns.
 
-    All auth configuration unified in single class with environment override,
-    validation, and sensible defaults embedded directly (not from constants).
+    **ARCHITECTURAL PATTERN**: Zero-Boilerplate Auto-Registration
+
+    This class uses FlextConfig.AutoConfig for automatic:
+    - Singleton pattern (thread-safe)
+    - Namespace registration (accessible via config.auth)
+    - Test reset capability (_reset_instance)
+
+    All auth configuration unified in single class with validation
+    and sensible defaults embedded directly (not from constants).
     """
-
-    _global_instance: ClassVar[FlextAuthConfig | None] = None
-
-    model_config = SettingsConfigDict(
-        env_prefix="FLEXT_AUTH_",
-        case_sensitive=False,
-        validate_assignment=True,
-        env_file=".env",
-        extra="ignore",
-        validate_default=True,
-    )
 
     # Security: Generic secret and algorithm
     auth_secret: SecretStr = Field(
@@ -253,22 +249,6 @@ class FlextAuthConfig(FlextConfig):
             return FlextResult[bool].fail(f"Validation error: {e}")
 
     @classmethod
-    def set_global_instance(cls, instance: FlextAuthConfig) -> None:
-        """Set the global instance.
-
-        Args:
-            instance: FlextAuthConfig instance to set as global
-
-        Raises:
-            TypeError: If instance is not of type FlextAuthConfig
-
-        """
-        if not isinstance(instance, FlextAuthConfig):
-            msg = "Instance must be of type FlextAuthConfig"
-            raise TypeError(msg)
-        cls._global_instance = instance
-
-    @classmethod
     def get_or_create_global(
         cls,
         **kwargs: str | int | bool | SecretStr | None,
@@ -281,20 +261,19 @@ class FlextAuthConfig(FlextConfig):
         Returns:
         FlextResult containing the config instance
 
+        Note: AutoConfig provides get_instance() for singleton pattern.
+        This method is kept for backward compatibility.
+
         """
         try:
-            # If instance exists and no kwargs provided, return it
+            # Use AutoConfig's get_instance() for singleton pattern
             if not kwargs:
-                if cls._global_instance is not None:
-                    return FlextResult.ok(cls._global_instance)
-                # Create default instance if none exists
-                instance = cls()
-                cls._global_instance = instance
+                instance = cls.get_instance()
                 return FlextResult.ok(instance)
-            # If kwargs provided, always create new instance with overrides
+            # If kwargs provided, create new instance with overrides
             instance = cls(**kwargs)
-            # Set as global instance
-            cls._global_instance = instance
+            # Note: AutoConfig manages singleton internally, but we can't override it here
+            # For overrides, return the new instance (caller should use get_instance() for singleton)
             return FlextResult.ok(instance)
         except Exception as e:
             return FlextResult.fail(f"Failed to create config: {e}")

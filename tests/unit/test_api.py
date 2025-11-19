@@ -422,7 +422,7 @@ class TestFlextAuth:
     def test_flext_auth_initialization(self) -> None:
         """Test FlextAuth initialization with different parameters."""
         # Clear singleton to ensure clean test
-        FlextAuthConfig.reset_global_instance()
+        FlextAuthConfig._reset_instance()
 
         # Test default initialization
         auth: FlextAuth = FlextAuth()
