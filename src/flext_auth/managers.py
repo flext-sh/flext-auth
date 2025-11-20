@@ -441,7 +441,7 @@ class FlextAuthManagers(FlextService[object]):
                 is_active=bool(session_data.get("is_active", True)),
                 ip_address=str(session_data.get("ip_address", "")),
                 user_agent=str(session_data.get("user_agent", "")),
-                last_accessed=session_data.get("last_accessed", datetime.now(UTC)),  # type: ignore[assignment]
+                last_accessed=session_data.get("last_accessed", datetime.now(UTC)),
             )
             return FlextResult[FlextAuthModels.Session].ok(session)
 
@@ -467,7 +467,7 @@ class FlextAuthManagers(FlextService[object]):
                         user_agent=str(session_data.get("user_agent", "")),
                         last_accessed=session_data.get(
                             "last_accessed", datetime.now(UTC)
-                        ),  # type: ignore[assignment]
+                        ),
                     )
                     # Set unique_id from session_id
                     session.unique_id = session_id
