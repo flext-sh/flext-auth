@@ -57,7 +57,7 @@ class FlextAuthManagers(FlextService[object]):
     providing a single import point while maintaining clean separation of concerns.
     """
 
-    def execute(self) -> FlextResult[object]:
+    def execute(self, **kwargs: object) -> FlextResult[object]:
         """Execute method for FlextService interface.
 
         FlextAuthManagers is a namespace class - use specific manager classes instead.
@@ -341,7 +341,7 @@ class FlextAuthManagers(FlextService[object]):
                 username = result.unwrap()[0]
                 del self._users[username]
                 return FlextResult[bool].ok(True)
-            return FlextResult[bool].fail(result.error)
+            return FlextResult[bool].fail(result.error or "Unknown error")
 
         def add_user_role(self, user_id: str, role: str) -> FlextResult[bool]:
             """Add role to user."""
@@ -714,7 +714,7 @@ class FlextAuthManagers(FlextService[object]):
                 **data,
             }
             self._logs.append(log_entry)
-            self.logger.info(f"Audit event: {event_type}", **log_entry)
+            self.logger.info(f"Audit event: {event_type}")
 
         def get_logs(
             self,

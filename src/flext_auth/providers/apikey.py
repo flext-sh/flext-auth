@@ -319,7 +319,9 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
         # Validate credentials dict structure
         validation_result = self._validate_credentials_dict(credentials, ["api_key"])
         if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
+            return FlextResult[FlextAuthModels.AuthToken].fail(
+                validation_result.error or "Unknown error"
+            )
 
         api_key_value = credentials.get("api_key")
         if not isinstance(api_key_value, str) or not api_key_value:
@@ -332,7 +334,7 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
         key_validation_result = self._key_validator.validate_key(api_key)
         if key_validation_result.is_failure:
             return FlextResult[FlextAuthModels.AuthToken].fail(
-                key_validation_result.error
+                key_validation_result.error or "Unknown error"
             )
 
         key_data = key_validation_result.unwrap()
@@ -405,7 +407,7 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
         # Validate key using composition
         validation_result = self._key_validator.validate_key(token_string)
         if validation_result.is_failure:
-            return FlextResult[bool].fail(validation_result.error)
+            return FlextResult[bool].fail(validation_result.error or "Unknown error")
 
         return FlextResult[bool].ok(True)
 
@@ -502,7 +504,9 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
         # Validate key
         validation_result = self._key_validator.validate_key(token)
         if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.Identity].fail(validation_result.error)
+            return FlextResult[FlextAuthModels.Identity].fail(
+                validation_result.error or "Unknown error"
+            )
 
         key_data = validation_result.unwrap()
 

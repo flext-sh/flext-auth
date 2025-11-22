@@ -294,7 +294,6 @@ class FlextAuthConstants(FlextConstants):
     class ErrorCodes(FlextConstants.Errors):
         """Authentication-specific error codes extending core errors."""
 
-        AUTHORIZATION_ERROR: Final[str] = "AUTHORIZATION_ERROR"
         TOKEN_ERROR: Final[str] = "TOKEN_ERROR"
         SESSION_ERROR: Final[str] = "SESSION_ERROR"
         CREDENTIAL_ERROR: Final[str] = "CREDENTIAL_ERROR"

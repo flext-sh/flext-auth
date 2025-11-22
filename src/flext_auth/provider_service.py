@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import cast
 
 from flext_core import FlextResult, FlextService, FlextTypes
 
@@ -45,9 +46,9 @@ class FlextAuthProviderService(FlextService[object]):
         self._config, self._providers = config, FlextAuthRegistry()
         self._register_builtin_providers()
 
-    def execute(self) -> FlextResult[bool]:
+    def execute(self, **kwargs: object) -> FlextResult[object]:
         """Railway-oriented execute with focused service pattern."""
-        return FlextResult[bool].fail(
+        return FlextResult[object].fail(
             "Use specific provider methods: get_provider, authenticate_user, etc."
         )
 
@@ -58,7 +59,9 @@ class FlextAuthProviderService(FlextService[object]):
             self.logger.error("Configuration is required for provider registration")
             return
 
-        provider_config: FlextTypes.JsonDict = self._config.to_provider_config()
+        provider_config: FlextTypes.JsonDict = cast(
+            "FlextTypes.JsonDict", self._config.to_provider_config()
+        )
 
         # Provider registration mapping with requirements
         providers: list[

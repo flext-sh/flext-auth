@@ -185,18 +185,19 @@
             "tests",
         ]
 
+    [tool.pyrefly]
+        search-path = [
+            "src",
+            "tests",
+            "examples",
+            "scripts",
+        ]
+
     [tool.ruff]
         extend = "../ruff-shared.toml"
         exclude = ["scripts/"]  # Exclude maintenance scripts from lint
 
-        [tool.ruff.lint]
-            # Ignore false positive "hardcoded password" warnings for token_type literals
-            # Ignore self type annotations (not needed in Python)
-            ignore = ["S105", "S106", "S107", "ANN001"]
 
-    [tool.pyrefly]
-        # Exclude stub providers and examples from type checking
-        exclude = ["src/flext_auth/providers/", "examples/", "scripts/"]
 
         [tool.ruff.lint.isort]
             known-first-party = [

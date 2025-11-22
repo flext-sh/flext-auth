@@ -297,7 +297,9 @@ class FlextAuthBasicProvider(FlextAuthRfcProvider):
             credentials, ["username", "password"]
         )
         if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
+            return FlextResult[FlextAuthModels.AuthToken].fail(
+                validation_result.error or "Unknown error"
+            )
 
         username_value = credentials.get("username")
         if not isinstance(username_value, str) or not username_value:
@@ -366,7 +368,7 @@ class FlextAuthBasicProvider(FlextAuthRfcProvider):
         # Parse credentials from token
         parse_result = self._parse_basic_token(token_string)
         if parse_result.is_failure:
-            return FlextResult[bool].fail(parse_result.error)
+            return FlextResult[bool].fail(parse_result.error or "Unknown error")
 
         username, password = parse_result.unwrap()
 
@@ -422,7 +424,7 @@ class FlextAuthBasicProvider(FlextAuthRfcProvider):
         # Parse credentials
         parse_result = self._parse_basic_token(token_string)
         if parse_result.is_failure:
-            return FlextResult[bool].fail(parse_result.error)
+            return FlextResult[bool].fail(parse_result.error or "Unknown error")
 
         username, _ = parse_result.unwrap()
 
@@ -492,16 +494,16 @@ class FlextAuthBasicProvider(FlextAuthRfcProvider):
 
     def generate_token_for_user(
         self,
-        _user: FlextAuthModels.Identity,
-        _token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
-        _expiry_minutes: int | None = None,
+        user: FlextAuthModels.Identity,
+        token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
+        expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate Basic auth token for user."""
         # User, token type, and expiry are currently unused because Basic authentication
         # does not issue bearer tokens. Return explicit error with context.
         return FlextResult[str].fail(
             "Basic auth token generation is not supported (type "
-            f"{_token_type}, expiry={_expiry_minutes})"
+            f"{token_type}, expiry={expiry_minutes})"
         )
 
     def get_rfc_version(self) -> str:

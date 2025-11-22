@@ -184,7 +184,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         ) -> FlextResult[dict[str, object]]:
             """Authenticate using Kerberos ticket."""
             # Use composition for ticket validation
-            return self.provider.validate_ticket(ticket_data)
+            return self.provider._ticket_validator.validate_ticket(ticket_data)
 
     def supports(self) -> set[str]:
         """Return Kerberos provider capabilities."""

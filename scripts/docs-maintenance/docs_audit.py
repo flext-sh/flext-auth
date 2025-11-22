@@ -95,34 +95,42 @@ class DocumentationAuditor:
                 # Check freshness
                 mtime = datetime.fromtimestamp(doc_file.stat().st_mtime, tz=UTC)
                 days_old = (datetime.now(UTC) - mtime).days
-                quality_analysis["content_freshness"].append({
-                    "file": str(doc_file.relative_to(self.project_root)),
-                    "last_modified": mtime.isoformat(),
-                    "days_old": days_old,
-                    "freshness_score": self._calculate_freshness_score(days_old),
-                })
+                quality_analysis["content_freshness"].append(
+                    {
+                        "file": str(doc_file.relative_to(self.project_root)),
+                        "last_modified": mtime.isoformat(),
+                        "days_old": days_old,
+                        "freshness_score": self._calculate_freshness_score(days_old),
+                    }
+                )
 
                 # Structure analysis
                 structure = self._analyze_structure(content)
-                quality_analysis["structure_analysis"].append({
-                    "file": str(doc_file.relative_to(self.project_root)),
-                    **structure,
-                })
+                quality_analysis["structure_analysis"].append(
+                    {
+                        "file": str(doc_file.relative_to(self.project_root)),
+                        **structure,
+                    }
+                )
 
                 # Completeness check
                 completeness = self._check_completeness(content, doc_file.name)
-                quality_analysis["completeness_check"].append({
-                    "file": str(doc_file.relative_to(self.project_root)),
-                    **completeness,
-                })
+                quality_analysis["completeness_check"].append(
+                    {
+                        "file": str(doc_file.relative_to(self.project_root)),
+                        **completeness,
+                    }
+                )
 
             except Exception as e:
-                self.results["issues"].append({
-                    "type": "file_read_error",
-                    "file": str(doc_file.relative_to(self.project_root)),
-                    "error": str(e),
-                    "severity": "high",
-                })
+                self.results["issues"].append(
+                    {
+                        "type": "file_read_error",
+                        "file": str(doc_file.relative_to(self.project_root)),
+                        "error": str(e),
+                        "severity": "high",
+                    }
+                )
 
         return quality_analysis
 
@@ -218,22 +226,26 @@ class DocumentationAuditor:
 
         # File-specific checks
         if filename == "README.md":
-            checks.update({
-                "has_badges": bool(re.findall(r"!\[.*\]\(.*\)", content)),
-                "has_installation": bool(
-                    re.search(r"(install|setup)", content, re.IGNORECASE)
-                ),
-                "has_usage": bool(
-                    re.search(r"(usage|example)", content, re.IGNORECASE)
-                ),
-            })
+            checks.update(
+                {
+                    "has_badges": bool(re.findall(r"!\[.*\]\(.*\)", content)),
+                    "has_installation": bool(
+                        re.search(r"(install|setup)", content, re.IGNORECASE)
+                    ),
+                    "has_usage": bool(
+                        re.search(r"(usage|example)", content, re.IGNORECASE)
+                    ),
+                }
+            )
         elif filename == "CLAUDE.md":
-            checks.update({
-                "has_commands": bool(r"make" in content),
-                "has_patterns": bool(
-                    re.search(r"(pattern|architecture)", content, re.IGNORECASE)
-                ),
-            })
+            checks.update(
+                {
+                    "has_commands": bool(r"make" in content),
+                    "has_patterns": bool(
+                        re.search(r"(pattern|architecture)", content, re.IGNORECASE)
+                    ),
+                }
+            )
 
         completeness_score = sum(checks.values()) / len(checks)
         checks["completeness_score"] = round(completeness_score * 100, 1)
@@ -262,35 +274,47 @@ class DocumentationAuditor:
                     if link_url.startswith("http"):
                         # External link
                         is_valid = await self._check_external_link(link_url)
-                        link_validation["external_links"].append({
-                            "file": str(doc_file.relative_to(self.project_root)),
-                            "text": link_text,
-                            "url": link_url,
-                            "valid": is_valid,
-                        })
-                        if not is_valid:
-                            link_validation["broken_links"].append({
+                        link_validation["external_links"].append(
+                            {
                                 "file": str(doc_file.relative_to(self.project_root)),
                                 "text": link_text,
                                 "url": link_url,
-                                "type": "external",
-                            })
+                                "valid": is_valid,
+                            }
+                        )
+                        if not is_valid:
+                            link_validation["broken_links"].append(
+                                {
+                                    "file": str(
+                                        doc_file.relative_to(self.project_root)
+                                    ),
+                                    "text": link_text,
+                                    "url": link_url,
+                                    "type": "external",
+                                }
+                            )
                     else:
                         # Internal link
                         is_valid = self._check_internal_link(doc_file, link_url)
-                        link_validation["internal_links"].append({
-                            "file": str(doc_file.relative_to(self.project_root)),
-                            "text": link_text,
-                            "url": link_url,
-                            "valid": is_valid,
-                        })
-                        if not is_valid:
-                            link_validation["broken_links"].append({
+                        link_validation["internal_links"].append(
+                            {
                                 "file": str(doc_file.relative_to(self.project_root)),
                                 "text": link_text,
                                 "url": link_url,
-                                "type": "internal",
-                            })
+                                "valid": is_valid,
+                            }
+                        )
+                        if not is_valid:
+                            link_validation["broken_links"].append(
+                                {
+                                    "file": str(
+                                        doc_file.relative_to(self.project_root)
+                                    ),
+                                    "text": link_text,
+                                    "url": link_url,
+                                    "type": "internal",
+                                }
+                            )
 
                 # Check image links
                 image_pattern = r"!\[([^\]]*)\]\(([^)]+)\)"
@@ -301,30 +325,36 @@ class DocumentationAuditor:
                     if image_url.startswith("http"):
                         # External image
                         is_valid = await self._check_external_link(image_url)
-                        link_validation["image_links"].append({
-                            "file": str(doc_file.relative_to(self.project_root)),
-                            "alt_text": alt_text,
-                            "url": image_url,
-                            "valid": is_valid,
-                        })
+                        link_validation["image_links"].append(
+                            {
+                                "file": str(doc_file.relative_to(self.project_root)),
+                                "alt_text": alt_text,
+                                "url": image_url,
+                                "valid": is_valid,
+                            }
+                        )
                     else:
                         # Local image
                         image_path = (doc_file.parent / image_url).resolve()
                         is_valid = image_path.exists()
-                        link_validation["image_links"].append({
-                            "file": str(doc_file.relative_to(self.project_root)),
-                            "alt_text": alt_text,
-                            "url": image_url,
-                            "valid": is_valid,
-                        })
+                        link_validation["image_links"].append(
+                            {
+                                "file": str(doc_file.relative_to(self.project_root)),
+                                "alt_text": alt_text,
+                                "url": image_url,
+                                "valid": is_valid,
+                            }
+                        )
 
             except Exception as e:
-                self.results["issues"].append({
-                    "type": "link_validation_error",
-                    "file": str(doc_file.relative_to(self.project_root)),
-                    "error": str(e),
-                    "severity": "medium",
-                })
+                self.results["issues"].append(
+                    {
+                        "type": "link_validation_error",
+                        "file": str(doc_file.relative_to(self.project_root)),
+                        "error": str(e),
+                        "severity": "medium",
+                    }
+                )
 
         return link_validation
 
@@ -420,40 +450,50 @@ class DocumentationAuditor:
 
                         # Check for inconsistent capitalization
                         if title.isupper() or title.islower():
-                            style_issues["inconsistent_headers"].append({
-                                "file": str(doc_file.relative_to(self.project_root)),
-                                "line": i + 1,
-                                "header": title,
-                                "issue": "inconsistent capitalization",
-                            })
+                            style_issues["inconsistent_headers"].append(
+                                {
+                                    "file": str(
+                                        doc_file.relative_to(self.project_root)
+                                    ),
+                                    "line": i + 1,
+                                    "header": title,
+                                    "issue": "inconsistent capitalization",
+                                }
+                            )
 
                 # Check for missing alt text on images
                 image_pattern = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
                 for match in image_pattern.finditer(content):
                     alt_text = match.group(1)
                     if not alt_text.strip():
-                        style_issues["missing_alt_text"].append({
-                            "file": str(doc_file.relative_to(self.project_root)),
-                            "alt_text": alt_text,
-                            "line": content[: match.start()].count("\n") + 1,
-                        })
+                        style_issues["missing_alt_text"].append(
+                            {
+                                "file": str(doc_file.relative_to(self.project_root)),
+                                "alt_text": alt_text,
+                                "line": content[: match.start()].count("\n") + 1,
+                            }
+                        )
 
                 # Check code block consistency
                 code_blocks = re.findall(r"```(\w+)?", content)
                 for i, lang in enumerate(code_blocks):
                     if not lang and i % 2 == 0:  # Opening code block without language
-                        style_issues["code_block_issues"].append({
-                            "file": str(doc_file.relative_to(self.project_root)),
-                            "issue": "code block without language specification",
-                        })
+                        style_issues["code_block_issues"].append(
+                            {
+                                "file": str(doc_file.relative_to(self.project_root)),
+                                "issue": "code block without language specification",
+                            }
+                        )
 
             except Exception as e:
-                self.results["issues"].append({
-                    "type": "style_check_error",
-                    "file": str(doc_file.relative_to(self.project_root)),
-                    "error": str(e),
-                    "severity": "low",
-                })
+                self.results["issues"].append(
+                    {
+                        "type": "style_check_error",
+                        "file": str(doc_file.relative_to(self.project_root)),
+                        "error": str(e),
+                        "severity": "low",
+                    }
+                )
 
         return style_issues
 

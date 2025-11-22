@@ -42,7 +42,7 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
         # Lazy cache for JWT provider (initialized on first access)
         self._jwt_provider_cache: FlextAuthJwtProvider | None = None
 
-    def execute(self) -> FlextResult[bool]:
+    def execute(self, **kwargs: object) -> FlextResult[object]:
         """Railway-oriented execute with focused service pattern."""
         return FlextResult[bool].fail(
             "Use specific token methods: validate_token, generate_jwt_token, etc."

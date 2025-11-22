@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import secrets
 from datetime import UTC, datetime
+from typing import cast
 
 # Third-party imports for certificate processing
 from cryptography import x509
@@ -66,6 +67,13 @@ class FlextAuthCertificateProvider(FlextAuthRfcProvider):
                 config_key="config",
             )
 
+        # Extract configuration values
+        self._ca_cert = self._config.get("ca_cert", "")
+        self._verify_mode = self._config.get("verify_mode", "full")
+        self._check_ocsp = self._config.get("check_ocsp", True)
+        self._check_crl = self._config.get("check_crl", True)
+        self._allow_self_signed = self._config.get("allow_self_signed", False)
+
         # Initialize components using composition
         self._cert_validator = self._CertificateValidator(self)
         self._revocation_checker = self._RevocationChecker(self)
@@ -75,6 +83,14 @@ class FlextAuthCertificateProvider(FlextAuthRfcProvider):
         self._cert_mappings: dict[str, dict[str, object]] = {}
 
         self.logger.info("Certificate authentication provider initialized")
+
+    def should_check_ocsp(self) -> bool:
+        """Check if OCSP validation should be performed."""
+        return bool(self._check_ocsp)
+
+    def should_check_crl(self) -> bool:
+        """Check if CRL validation should be performed."""
+        return bool(self._check_crl)
 
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.
@@ -183,7 +199,9 @@ class FlextAuthCertificateProvider(FlextAuthRfcProvider):
                 if now > cert.not_valid_after:
                     return FlextResult[dict[str, object]].fail("Certificate expired")
 
-                return FlextResult[dict[str, object]].ok(cert_info)
+                return FlextResult[dict[str, object]].ok(
+                    cast("dict[str, object]", cert_info)
+                )
 
             except Exception as e:
                 return FlextResult[dict[str, object]].fail(
@@ -249,7 +267,9 @@ class FlextAuthCertificateProvider(FlextAuthRfcProvider):
                 "email": self._extract_email(subject),
             }
 
-            return FlextResult[dict[str, object]].ok(user_info)
+            return FlextResult[dict[str, object]].ok(
+                cast("dict[str, object]", user_info)
+            )
 
         def _extract_common_name(self, subject: str) -> str:
             """Extract common name from certificate subject."""
@@ -279,7 +299,9 @@ class FlextAuthCertificateProvider(FlextAuthRfcProvider):
             credentials, ["client_cert"]
         )
         if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
+            return FlextResult[FlextAuthModels.AuthToken].fail(
+                validation_result.error or "Credential validation failed"
+            )
 
         client_cert_value = credentials.get("client_cert")
         if not isinstance(client_cert_value, str) or not client_cert_value:
@@ -471,9 +493,9 @@ class FlextAuthCertificateProvider(FlextAuthRfcProvider):
 
     def generate_token_for_user(
         self,
-        _user: FlextAuthModels.Identity,
-        _token_type: str = "cert_access",
-        _expiry_minutes: int | None = None,
+        user: FlextAuthModels.Identity,
+        token_type: str = "cert_access",
+        expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate certificate token for user."""
         return FlextResult[str].fail(

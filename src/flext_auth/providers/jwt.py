@@ -107,7 +107,9 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
             credentials, ["username", "password"]
         )
         if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(validation_result.error)
+            return FlextResult[FlextAuthModels.AuthToken].fail(
+                validation_result.error or "Credential validation failed"
+            )
 
         username_value = credentials.get("username")
         if not isinstance(username_value, str) or not username_value:
@@ -126,7 +128,9 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
         # Get user password hash using railway pattern
         hash_result = self._get_user_password_hash(username)
         if hash_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(hash_result.error)
+            return FlextResult[FlextAuthModels.AuthToken].fail(
+                hash_result.error or "Password hashing failed"
+            )
 
         password_hash = hash_result.unwrap()
 
@@ -179,7 +183,7 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
         # Get user by username using public API
         user_result = auth.get_user_by_username(username)
         if user_result.is_failure:
-            return FlextResult[str].fail(user_result.error)
+            return FlextResult[str].fail(user_result.error or "User retrieval failed")
 
         user = user_result.unwrap()
         if not user.credential_hash:
@@ -205,12 +209,16 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
         # Get the payload first, then generate token, then create auth token
         payload_result = self._token_validator.validate_token(token_str)
         if payload_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(payload_result.error)
+            return FlextResult[FlextAuthModels.AuthToken].fail(
+                payload_result.error or "Token payload validation failed"
+            )
 
         payload = payload_result.unwrap()
         token_result = self._token_generator.generate_token(str(payload["sub"]))
         if token_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(token_result.error)
+            return FlextResult[FlextAuthModels.AuthToken].fail(
+                token_result.error or "Token generation failed"
+            )
 
         new_token = token_result.unwrap()
         return FlextResult.ok(
@@ -246,7 +254,9 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
         token_str = self._extract_token_string(token)
         validation_result = self._token_validator.validate_token(token_str)
         if validation_result.is_failure:
-            return FlextResult[bool].fail(validation_result.error)
+            return FlextResult[bool].fail(
+                validation_result.error or "Token validation failed"
+            )
 
         # Token is valid - in a production system, this would add the token
         # to a revocation list/blacklist. For now, we just validate it exists.

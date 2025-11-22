@@ -10,9 +10,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import threading
-from typing import ClassVar, Self
+from typing import ClassVar, Self, cast
 
-from flext_core import FlextDispatcher, FlextResult, FlextService
+from flext_core import FlextConfig, FlextDispatcher, FlextResult, FlextService
 from pydantic import SecretStr
 
 from flext_auth.config import FlextAuthConfig
@@ -170,9 +170,9 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         return cls(config=config)
 
     @property
-    def config(self) -> FlextAuthConfig:
+    def config(self) -> FlextConfig:
         """Configuration access."""
-        return self._config
+        return cast("FlextConfig", self._config)
 
     @property
     def registry(self) -> FlextAuthRegistry:
@@ -422,7 +422,9 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         """Revoke a session."""
         return self._session_service.session_manager.end_session_by_id(session_id)
 
-    def execute(self) -> FlextResult[FlextAuthTypes.Responses.Authentication]:
+    def execute(
+        self, **kwargs: object
+    ) -> FlextResult[FlextAuthTypes.Responses.Authentication]:
         """Flexible execute implementation with railway orchestration."""
         return FlextResult[FlextAuthTypes.Responses.Authentication].fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead"

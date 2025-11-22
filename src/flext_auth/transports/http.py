@@ -14,10 +14,7 @@ import base64
 import json
 from urllib.parse import urlencode
 
-from flext_api.client import FlextApiClient
-from flext_api.config import FlextApiConfig
-from flext_api.models import FlextApiModels
-from flext_api.typings import FlextApiTypes
+from flext_api import FlextApiClient, FlextApiConfig, FlextApiModels, FlextApiTypes
 from flext_core import FlextLogger, FlextResult
 
 

@@ -17,6 +17,16 @@ from flext_core import FlextModels, FlextResult
 from pydantic import BaseModel, Field, computed_field, model_validator
 
 from flext_auth.constants import FlextAuthConstants
+from flext_auth.utilities import FlextAuthUtilities
+
+
+def _default_identity() -> FlextAuthModels.Identity:
+    """Create default identity for AuthResponse."""
+    return FlextAuthModels.Identity(
+        unique_id="",
+        name="",
+        contact="",
+    )
 
 
 class FlextAuthModels(FlextModels):
@@ -227,16 +237,12 @@ class FlextAuthModels(FlextModels):
 
         def verify_credential(self, credential: str) -> FlextResult[bool]:
             """Verify a credential against stored hash using bcrypt."""
-            from flext_auth.utilities import FlextAuthUtilities
-
             return FlextAuthUtilities.verify_credential(
                 credential, self.credential_hash
             )
 
         def set_credential(self, credential: str) -> FlextResult[bool]:
             """Set a new credential with bcrypt hashing."""
-            from flext_auth.utilities import FlextAuthUtilities
-
             hash_result = FlextAuthUtilities.hash_credential(credential)
             if hash_result.is_success:
                 self.credential_hash = hash_result.unwrap()
@@ -316,7 +322,10 @@ class FlextAuthModels(FlextModels):
             self, dict_: dict[str, object] | None = None, /, **kwargs: object
         ) -> None:
             """Initialize provider configuration with defaults."""
-            super().__init__(dict_, **kwargs)
+            if dict_ is not None:
+                super().__init__(dict_, **kwargs)
+            else:
+                super().__init__(**kwargs)
             # Set defaults if not provided
             if "name" not in self:
                 self["name"] = "default"
@@ -381,11 +390,7 @@ class FlextAuthModels(FlextModels):
 
         success: bool = Field(..., description="Authentication success")
         identity: FlextAuthModels.Identity = Field(
-            default_factory=lambda: FlextAuthModels.Identity(
-                unique_id="",
-                name="",
-                contact="",
-            ),
+            default_factory=_default_identity,
             description="Identity data",
         )
         token: str = Field(default="", description="Token", exclude=True)
