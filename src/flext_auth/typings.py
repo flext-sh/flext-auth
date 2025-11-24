@@ -9,7 +9,6 @@ from flext_core import FlextTypes
 from pydantic import Field, SecretStr
 
 from flext_auth.constants import FlextAuthConstants, PermissionType, RoleType
-from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
 
 
@@ -178,7 +177,7 @@ class FlextAuthTypes(FlextTypes):
     class Tokens:
         """Token-related type definitions."""
 
-        type AuthToken = FlextAuthModels.AuthToken
+        # AuthToken type defined in models.py
         type TokenType = FlextAuthConstants.TokenType
         type ClaimMap = FlextTypes.JsonDict
 
@@ -209,15 +208,9 @@ class FlextAuthTypes(FlextTypes):
     class Sessions:
         """Session-related type definitions."""
 
-        type Session = FlextAuthModels.Session
+        # Session type defined in models.py
 
-        class Snapshot(TypedDict, total=False):
-            """Session snapshot used for auditing."""
-
-            session: FlextAuthModels.Session
-            issued_at: datetime
-            last_seen_at: datetime
-            metadata: FlextTypes.JsonDict
+        # Snapshot definitions removed to avoid circular imports
 
         class Activity(TypedDict, total=False):
             """Session activity entry."""
@@ -240,15 +233,22 @@ class FlextAuthTypes(FlextTypes):
     class Responses:
         """Response payload abstractions."""
 
-        type Authentication = FlextAuthModels.AuthResponse
+        # Authentication response type - defined locally to avoid circular imports
+        class Authentication(TypedDict, total=False):
+            """Authentication response structure."""
+
+            success: bool
+            identity: object  # Will be Identity from models
+            token: object  # Will be AuthToken from models
+            session: object  # Will be Session from models
+            message: str
+            metadata: FlextTypes.JsonDict
 
         class AuthenticationPayload(TypedDict, total=False):
             """Structured authentication response for transports."""
 
             success: bool
-            identity: FlextAuthModels.Identity
-            session: FlextAuthModels.Session
-            token: FlextAuthModels.AuthToken
+            # identity, session, token types defined in models.py
             issued_at: datetime
             expires_at: datetime
             metadata: FlextTypes.JsonDict
@@ -291,7 +291,7 @@ class FlextAuthTypes(FlextTypes):
 
             event: str
             occurred_at: datetime
-            actor: FlextAuthModels.Identity | None
+            # actor type defined in models.py
             context: FlextTypes.JsonDict
             event_type: str
             timestamp: datetime
@@ -302,7 +302,7 @@ class FlextAuthTypes(FlextTypes):
 
             event: str
             occurred_at: datetime
-            actor: FlextAuthModels.Identity | None
+            # actor type defined in models.py
             context: FlextTypes.JsonDict
 
         class AttemptData(TypedDict, total=False):

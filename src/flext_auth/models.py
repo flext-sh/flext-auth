@@ -17,7 +17,6 @@ from flext_core import FlextModels, FlextResult
 from pydantic import BaseModel, Field, computed_field, model_validator
 
 from flext_auth.constants import FlextAuthConstants
-from flext_auth.utilities import FlextAuthUtilities
 
 
 def _default_identity() -> FlextAuthModels.Identity:
@@ -237,12 +236,16 @@ class FlextAuthModels(FlextModels):
 
         def verify_credential(self, credential: str) -> FlextResult[bool]:
             """Verify a credential against stored hash using bcrypt."""
+            from flext_auth.utilities import FlextAuthUtilities
+
             return FlextAuthUtilities.verify_credential(
                 credential, self.credential_hash
             )
 
         def set_credential(self, credential: str) -> FlextResult[bool]:
             """Set a new credential with bcrypt hashing."""
+            from flext_auth.utilities import FlextAuthUtilities
+
             hash_result = FlextAuthUtilities.hash_credential(credential)
             if hash_result.is_success:
                 self.credential_hash = hash_result.unwrap()

@@ -44,7 +44,7 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
 
     def execute(self, **kwargs: object) -> FlextResult[object]:
         """Railway-oriented execute with focused service pattern."""
-        return FlextResult[bool].fail(
+        return FlextResult[object].fail(
             "Use specific token methods: validate_token, generate_jwt_token, etc."
         )
 
@@ -85,7 +85,9 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
                 old_token_id=self._short_token(token),
                 reason=error,
             )
-            return FlextResult[FlextAuthModels.AuthToken].fail(error)
+            return FlextResult[FlextAuthModels.AuthToken].fail(
+                error or "Token refresh failed"
+            )
 
         refreshed = result.unwrap()
         self._audit_logger.log_token_refresh(
@@ -112,7 +114,7 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
                 success=False,
                 reason=error,
             )
-            return FlextResult[str].fail(error)
+            return FlextResult[str].fail(error or "User lookup failed")
 
         user = user_result.unwrap()
         token_result = self._get_jwt_provider_cached().flat_map(
@@ -129,7 +131,7 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
                 success=False,
                 reason=error,
             )
-            return FlextResult[str].fail(error)
+            return FlextResult[str].fail(error or "Token generation failed")
 
         token_value = token_result.unwrap()
         self._audit_logger.log_token_creation(

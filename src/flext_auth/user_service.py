@@ -40,9 +40,9 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
         """Direct access to identity manager for client orchestration."""
         return self._user_manager
 
-    def execute(self) -> FlextResult[bool]:
+    def execute(self, **kwargs: object) -> FlextResult[object]:
         """Railway-oriented execute with focused service pattern."""
-        return FlextResult[bool].fail(
+        return FlextResult[object].fail(
             "Use specific identity methods: create_identity, authenticate_identity, etc."
         )
 
@@ -129,7 +129,9 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
         # Validate credential strength before hashing
         strength_result = FlextAuthUtilities.validate_credential_strength(credential)
         if strength_result.is_failure:
-            return FlextResult[FlextAuthModels.Identity].fail(strength_result.error)
+            return FlextResult[FlextAuthModels.Identity].fail(
+                strength_result.error or "Credential strength validation failed"
+            )
         strength_data = strength_result.unwrap()
         if not strength_data["is_valid"]:
             errors = strength_data.get("errors", ())
@@ -140,13 +142,14 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
             )
             return FlextResult[FlextAuthModels.Identity].fail(error_msg)
 
+        # Create user with basic fields - extra_fields not currently supported
+        # due to type constraints in the manager interface
         return FlextAuthUtilities.hash_credential(credential).flat_map(
             lambda ch: self._user_manager.create_user(
                 username=request.name,
                 email=request.contact,
                 password_hash=ch,
                 roles=request.roles,
-                **extra_fields,
             )
         )
 

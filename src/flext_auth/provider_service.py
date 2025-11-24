@@ -118,7 +118,11 @@ class FlextAuthProviderService(FlextService[object]):
         for name, provider_class, condition in providers:
             if condition():
                 try:
-                    provider = provider_class(provider_config)
+                    # Instantiate provider with config
+                    provider = cast(
+                        "Callable[[FlextTypes.JsonDict], FlextAuthBaseProvider]",
+                        provider_class,
+                    )(provider_config)
                     self._providers.register(
                         name,
                         provider,

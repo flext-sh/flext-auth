@@ -164,10 +164,14 @@ class FlextAuthJwtTokenGenerator:
                 audience,
                 extra_claims,
             )
-            token_bytes = jwt.encode(
+            token_result = jwt.encode(
                 payload, secret_result.unwrap(), algorithm=algorithm_result.unwrap()
             )
-            token = token_bytes.decode("utf-8")
+            # Handle both string and bytes return types from jwt.encode
+            if isinstance(token_result, bytes):
+                token = token_result.decode("utf-8")
+            else:
+                token = str(token_result)
             return FlextResult[str].ok(token)
 
         except Exception as e:

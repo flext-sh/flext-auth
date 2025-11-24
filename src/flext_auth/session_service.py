@@ -29,13 +29,13 @@ class FlextAuthSessionService(ServiceManagerMixin, FlextService[object]):
         """Direct access to session manager for client orchestration."""
         return self._session_manager
 
-    def execute(self) -> FlextResult[bool]:
+    def execute(self, **kwargs: object) -> FlextResult[object]:
         """Execute method for FlextService interface.
 
         Session service doesn't use generic execute pattern.
         Use specific session methods instead.
         """
-        return FlextResult[bool].fail(
+        return FlextResult[object].fail(
             "FlextAuthSessionService is focused - use session_manager property or cleanup_expired_sessions()"
         )
 

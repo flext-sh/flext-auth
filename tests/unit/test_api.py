@@ -350,6 +350,7 @@ class TestFlextAuthErrorHandling:
         result = auth.get_user_by_username("nonexistent")
         # get_user_by_username returns fail() for nonexistent users (fast fail, no None)
         assert not result.is_success
+        assert result.error is not None
         assert "not found" in result.error.lower()
 
 
@@ -809,6 +810,7 @@ class TestFlextAuthQuickStartFunction:
         # since REDACTED_LDAP_BIND_PASSWORD might have been created in previous tests, we test the function works
         nonexistent_result = auth.get_user_by_username("nonexistent_user")
         assert not nonexistent_result.is_success
+        assert nonexistent_result.error is not None
         assert "not found" in nonexistent_result.error.lower()
 
     def test_flext_auth_quick_start_custom_REDACTED_LDAP_BIND_PASSWORD(self) -> None:
@@ -863,7 +865,7 @@ class TestFlextAuthInitializationCoverage:
                 "hash_rounds": 10,
                 "auth_secret": SecretStr(
                     "test-secret-key-with-minimum-32-characters-length"
-                ),
+                ).get_secret_value(),
             }
         )
 
@@ -1142,7 +1144,7 @@ class TestFlextAuthUserMethods:
         if sessions_result.is_success:
             sessions = sessions_result.unwrap()
             if sessions:
-                session_id = sessions[0].id
+                session_id = sessions[0].unique_id
                 logout_result = auth.logout_user(session_id)
                 assert isinstance(logout_result.is_success, bool)
 
@@ -1262,11 +1264,13 @@ class TestFlextAuthErrorHandlingPaths:
         # Get user by invalid ID - should fail (fast fail, no None returns)
         get_result = auth.get_user(invalid_user_id)
         assert not get_result.is_success  # Fast fail when user not found
+        assert get_result.error is not None
         assert "not found" in get_result.error.lower()
 
         # Get user by invalid username - should fail (fast fail)
         username_result = auth.get_user_by_username("nonexistent_username")
         assert not username_result.is_success
+        assert username_result.error is not None
         assert "not found" in username_result.error.lower()
 
         # Logout invalid user - returns failure when user not found
@@ -1575,7 +1579,7 @@ class TestAuthModule:
 
         # Test token validation
         auth_data = auth_result.unwrap()
-        token = auth_data["jwt_token"]
+        token = str(auth_data["jwt_token"])
         validate_result = auth.validate_token(token)
         assert isinstance(validate_result, FlextResult)
 
@@ -1602,6 +1606,7 @@ class TestAuthModule:
         assert isinstance(result, FlextResult)
         # Should fail for non-existent user (fast fail, no None)
         assert not result.is_success
+        assert result.error is not None
         assert "not found" in result.error.lower()
 
     def test_flext_auth_with_flext_tests(self) -> None:

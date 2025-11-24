@@ -9,6 +9,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import cast
+
 from flext_core import FlextRegistry, FlextResult, FlextTypes
 
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -44,12 +47,17 @@ class FlextAuthRegistry(FlextRegistry):
 
     def register(
         self,
-        name: FlextAuthTypes.Providers.Key,
-        service: FlextAuthBaseProvider,
-        configuration: FlextTypes.JsonDict | None = None,
-        metadata: FlextAuthTypes.Providers.Metadata | None = None,
+        name: str,
+        service: object,
+        metadata: object | None = None,
+        configuration: object | None = None,
     ) -> FlextResult[bool]:
         """Railway-oriented provider registration with validation."""
+        # Cast parameters to expected types
+        config_dict = cast("FlextTypes.JsonDict | None", configuration)
+        metadata_dict = cast("FlextAuthTypes.Providers.Metadata | None", metadata)
+        service_typed = cast("FlextAuthBaseProvider", service)
+
         # Consolidated validation and registration
         if not name or not name.strip():
             return FlextResult[bool].fail("Provider name cannot be empty")
@@ -58,19 +66,21 @@ class FlextAuthRegistry(FlextRegistry):
             return FlextResult[bool].fail(f"Provider '{name}' is already registered")
 
         # Validate config if provided
-        if configuration:
-            validation = self._validate_provider_config(name, configuration)
+        if config_dict:
+            validation = self._validate_provider_config(name, config_dict)
             if validation.is_failure:
                 return FlextResult[bool].fail(
                     f"Configuration validation failed: {validation.error}"
                 )
 
         # Atomic registration
-        self._providers[name] = service
-        if configuration:
-            self._configs[name] = configuration
+        self._providers[name] = service_typed
+        if config_dict:
+            self._configs[name] = config_dict
 
-        self._metadata[name] = self._extract_metadata(name, service, metadata)
+        self._metadata[name] = self._extract_metadata(
+            name, service_typed, metadata_dict
+        )
 
         # Success logging
         metadata_entry = self._metadata[name]
@@ -287,19 +297,22 @@ class FlextAuthRegistry(FlextRegistry):
                     f"Failed to retrieve metadata for provider '{name}': {exc}"
                 )
                 return metadata
-            self._apply_raw_metadata(metadata, raw_metadata)
+            metadata = self._apply_raw_metadata(metadata, raw_metadata)
         return metadata
 
     def _apply_raw_metadata(
         self,
         target: FlextAuthTypes.Providers.Metadata,
         raw_metadata: dict[str, object],
-    ) -> None:
+    ) -> FlextAuthTypes.Providers.Metadata:
         """Normalize raw provider metadata into the structured payload."""
         if not isinstance(raw_metadata, dict):
-            return
+            return target
 
-        scalar_fields: tuple[tuple[str, callable[[object], str]], ...] = (
+        # Work with a mutable dict
+        result = dict(target)
+
+        scalar_fields: tuple[tuple[str, Callable[[object], str]], ...] = (
             ("version", str),
             ("description", str),
             ("documentation_url", str),
@@ -307,21 +320,23 @@ class FlextAuthRegistry(FlextRegistry):
         for field, caster in scalar_fields:
             value = raw_metadata.get(field)
             if value is not None:
-                target[field] = caster(value)
+                result[field] = caster(value)
 
         capabilities_value = raw_metadata.get("capabilities")
         if isinstance(capabilities_value, (set, list, tuple)):
-            target["capabilities"] = tuple(
+            result["capabilities"] = tuple(
                 sorted(str(capability) for capability in capabilities_value)
             )
 
         maintainers_value = raw_metadata.get("maintainers")
         if isinstance(maintainers_value, (set, list, tuple)):
-            target["maintainers"] = tuple(str(name) for name in maintainers_value)
+            result["maintainers"] = tuple(str(name) for name in maintainers_value)
 
         extras_value = raw_metadata.get("extras")
         if isinstance(extras_value, dict):
-            target["extras"] = extras_value
+            result["extras"] = extras_value
+
+        return cast("FlextAuthTypes.Providers.Metadata", result)
 
     def _provider_capabilities(
         self, provider: FlextAuthBaseProvider

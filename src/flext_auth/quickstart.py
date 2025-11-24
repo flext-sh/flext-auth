@@ -36,11 +36,19 @@ class FlextAuthQuickstart(FlextService[object]):
         username: str,
         email: str,
         password: str,
-        full_name: str | None = None,
         roles: list[str] | None = None,
+        full_name: str | None = None,
     ) -> FlextResult[FlextAuthModels.Identity]:
         """Register a new user with default settings."""
-        return self._auth.register_user(username, email, password, full_name, roles)
+        # Call api.register_user with correct parameter mapping
+        return self._auth.register_user(
+            username=username,
+            email=email,
+            password=password,
+            roles=roles,
+            role=None,  # Use roles parameter instead
+            full_name=full_name,  # Pass as kwarg
+        )
 
     def authenticate_user(
         self,
@@ -104,13 +112,13 @@ class FlextAuthQuickstart(FlextService[object]):
         """Get the underlying FlextAuth instance."""
         return self._auth
 
-    def execute(self) -> FlextResult[bool]:
+    def execute(self, **kwargs: object) -> FlextResult[object]:
         """Execute method for FlextService interface.
 
         Quickstart service doesn't use generic execute pattern.
         Use specific quickstart methods instead.
         """
-        return FlextResult[bool].fail(
+        return FlextResult[object].fail(
             "FlextAuthQuickstart is focused - use specific quickstart methods like register_user()"
         )
 

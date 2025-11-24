@@ -13,8 +13,14 @@ import argparse
 import json
 import re
 import sys
+import traceback
 from datetime import UTC, datetime
 from pathlib import Path
+
+try:
+    from plantuml import PlantUML
+except ImportError:
+    PlantUML = None
 
 # Import our documentation tools
 sys.path.append(str(Path(__file__).parent / "docs-maintenance"))
@@ -126,31 +132,33 @@ class ArchitectureDocumentationGenerator:
 
                 # Try to generate diagrams using plantuml if available
                 try:
-                    from plantuml import PlantUML
+                    if PlantUML is not None:
+                        puml = PlantUML(url="http://www.plantuml.com/plantuml/img/")
 
-                    puml = PlantUML(url="http://www.plantuml.com/plantuml/img/")
-
-                    # Generate PNG
-                    png_path = generated_dir / f"{puml_file.stem}.png"
-                    try:
-                        # Generate and save PNG
-                        image_data = puml.processes(puml_content)
-                        if image_data:
-                            png_path.write_bytes(image_data)
-                            generated_count += 1
-                            print(f"  ✓ Generated {puml_file.stem}.png")
-                    except Exception:
-                        # If online plantuml fails, note it but continue
+                        # Generate PNG
+                        png_path = generated_dir / f"{puml_file.stem}.png"
+                        try:
+                            # Generate and save PNG
+                            image_data = puml.processes(puml_content)
+                            if image_data:
+                                png_path.write_bytes(image_data)
+                                generated_count += 1
+                                print(f"  ✓ Generated {puml_file.stem}.png")
+                        except Exception:
+                            # If online plantuml fails, note it but continue
+                            print(
+                                f"  ⚠ Could not generate PNG for {puml_file.name} (requires plantuml)"
+                            )
+                    else:
                         print(
-                            f"  ⚠ Could not generate PNG for {puml_file.name} (requires plantuml)"
+                            "  ⚠ plantuml library not available, skipping diagram generation"
                         )
-
+                        print("    Install with: pip install plantuml")
                 except ImportError:
                     print(
                         "  ⚠ plantuml library not available, skipping diagram generation"
                     )
                     print("    Install with: pip install plantuml")
-                    return False
 
             if generated_count > 0:
                 print(f"✅ Generated {generated_count} diagram(s) successfully")
@@ -160,8 +168,6 @@ class ArchitectureDocumentationGenerator:
 
         except Exception as e:
             print(f"❌ Diagram generation failed: {e}")
-            import traceback
-
             traceback.print_exc()
             return False
 
