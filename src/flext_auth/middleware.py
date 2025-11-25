@@ -78,7 +78,7 @@ class FlextAuthMiddleware(FlextService):
     (flext-web). Following FLEXT pattern: one class per module with nested middleware classes.
     """
 
-    def execute(self, **kwargs: object) -> FlextResult[bool]:
+    def execute(self, **_kwargs: object) -> FlextResult[bool]:
         """Execute method for FlextService interface.
 
         FlextAuthMiddleware is a namespace class - use specific middleware classes instead.

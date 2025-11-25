@@ -304,7 +304,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             return FlextResult[tuple[str, str]].ok((code_challenge, code_verifier))
 
         def handle_authorization_code_flow(
-            self, credentials: dict[str, object]
+            self, _credentials: dict[str, object]
         ) -> FlextResult[dict[str, object]]:
             """Handle OAuth2 authorization code flow."""
             # Simplified implementation - would validate authorization code
@@ -461,7 +461,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             FlextAuthModels.AuthToken(
                 identity_id=flow_data.get("user_id", "oauth2_user"),
                 token=credentials.get("access_token", ""),
-                token_type="Bearer",
+                token_type="Bearer",  # noqa: S106
                 expires_at=datetime.now(UTC)
                 + timedelta(hours=1),  # Default 1 hour expiry
             )
@@ -529,7 +529,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def generate_token_for_user(
         self,
         user: FlextAuthModels.Identity,
-        token_type: str = "oauth2_access",
+        token_type: str = "oauth2_access",  # noqa: S107
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate OAuth2 token for user."""

@@ -46,7 +46,7 @@ class FlextAuthProviderService(FlextService[object]):
         self._config, self._providers = config, FlextAuthRegistry()
         self._register_builtin_providers()
 
-    def execute(self, **kwargs: object) -> FlextResult[object]:
+    def execute(self, **_kwargs: object) -> FlextResult[object]:
         """Railway-oriented execute with focused service pattern."""
         return FlextResult[object].fail(
             "Use specific provider methods: get_provider, authenticate_user, etc."

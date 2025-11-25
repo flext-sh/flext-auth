@@ -423,7 +423,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         return self._session_service.session_manager.end_session_by_id(session_id)
 
     def execute(
-        self, **kwargs: object
+        self, **_kwargs: object
     ) -> FlextResult[FlextAuthTypes.Responses.Authentication]:
         """Flexible execute implementation with railway orchestration."""
         return FlextResult[FlextAuthTypes.Responses.Authentication].fail(

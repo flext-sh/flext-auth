@@ -335,7 +335,7 @@ class FlextAuthBasicProvider(FlextAuthRfcProvider):
             return FlextResult[FlextAuthModels.AuthToken].ok(
                 FlextAuthModels.AuthToken(
                     identity_id="anonymous",
-                    token="anonymous",
+                    token="anonymous",  # noqa: S106
                     token_type=FlextAuthConstants.TOKEN_TYPE_ACCESS,
                     expires_at=datetime.now(UTC) + timedelta(days=1),
                     is_revoked=False,
@@ -494,7 +494,7 @@ class FlextAuthBasicProvider(FlextAuthRfcProvider):
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.Identity,
+        _user: FlextAuthModels.Identity,
         token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:

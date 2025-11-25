@@ -12,9 +12,11 @@ from __future__ import annotations
 
 import threading
 import time
+from datetime import UTC, datetime
 
 import pytest
 from flext_core import FlextResult
+from pydantic import SecretStr
 
 from flext_auth.api import FlextAuth
 from flext_auth.config import FlextAuthConfig
@@ -401,8 +403,6 @@ class TestFlextAuthModelConfiguration:
         """Test that arbitrary types are allowed in model config."""
         # FlextAuth is a service, not a Pydantic model
         # Models are in FlextAuthModels
-        from flext_auth.models import FlextAuthModels
-
         # Check that Identity model has proper config
         assert hasattr(FlextAuthModels.Identity, "model_config")
 
@@ -410,8 +410,6 @@ class TestFlextAuthModelConfiguration:
         """Test validate_assignment configuration."""
         # FlextAuth is a service, not a Pydantic model
         # Config validation is in FlextAuthConfig
-        from flext_auth.config import FlextAuthConfig
-
         config = FlextAuthConfig()
         # Config uses validate_assignment=True by default
         assert config.model_config.get("validate_assignment", False) is True
@@ -436,8 +434,6 @@ class TestFlextAuth:
         custom_secret = "test-secret-key-with-minimum-32-characters-length"
         custom_rounds = 10
         custom_expiry = 60
-
-        from pydantic import SecretStr
 
         custom_config = FlextAuthConfig(
             auth_secret=SecretStr(custom_secret),
@@ -857,8 +853,6 @@ class TestFlextAuthInitializationCoverage:
     def test_flext_auth_initialization_with_overrides(self) -> None:
         """Test FlextAuth initialization with parameter overrides - lines 235-237."""
         # Create with custom parameters to cover override paths
-        from pydantic import SecretStr
-
         auth = FlextAuth.create_with_config_overrides(
             config_overrides={
                 "expiry_minutes": 120,
@@ -932,8 +926,6 @@ class TestFlextAuthPasswordMethods:
     def test_hash_password_method(self) -> None:
         """Test hash_password method functionality."""
         # Create identity to test password hashing using correct model
-        from datetime import UTC, datetime
-
         identity = FlextAuthModels.Identity(
             unique_id="test-id",
             name="testuser",
@@ -955,8 +947,6 @@ class TestFlextAuthPasswordMethods:
 
     def test_verify_password_method(self) -> None:
         """Test verify_password method functionality."""
-        from datetime import UTC, datetime
-
         # Use strong password that meets validation requirements
         strong_password = "StrongTestPass123!@#"
 

@@ -195,7 +195,7 @@ class FlextAuthLdapProvider(FlextAuthRfcProvider):
         ) -> FlextResult[dict[str, object]]:
             """Authenticate user credentials against LDAP."""
             # Use composition for user search and connection
-            return self.provider._user_searcher.search_user(username).bind(
+            return self.provider._user_searcher.search_user(username).bind(  # noqa: SLF001
                 lambda user_data: self._verify_credentials(user_data, password)
             )
 
@@ -324,9 +324,9 @@ class FlextAuthLdapProvider(FlextAuthRfcProvider):
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.Identity,
-        token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
-        expiry_minutes: int | None = None,
+        _user: FlextAuthModels.Identity,
+        _token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
+        _expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate LDAP token for user."""
         return FlextResult[str].fail(

@@ -12,6 +12,7 @@ import pytest
 from pydantic import ValidationError
 
 from flext_auth import FlextAuthConfig
+from flext_auth.providers.jwt import FlextAuthJwtProvider, FlextAuthJwtTokenGenerator
 
 
 class TestFlextAuthConfigBasic:
@@ -57,9 +58,6 @@ class TestJwtTokenGenerator:
 
     def test_generate_token_missing_config(self) -> None:
         """Test token generation with missing configuration."""
-        from flext_auth.providers.jwt import FlextAuthJwtProvider
-        from flext_auth.providers.jwt_token_generator import FlextAuthJwtTokenGenerator
-
         # Create provider with minimal config (missing secret)
         provider = FlextAuthJwtProvider({"algorithm": "HS256"})
         generator = FlextAuthJwtTokenGenerator(provider)
@@ -71,9 +69,6 @@ class TestJwtTokenGenerator:
 
     def test_generate_token_success(self) -> None:
         """Test successful token generation."""
-        from flext_auth.providers.jwt import FlextAuthJwtProvider
-        from flext_auth.providers.jwt_token_generator import FlextAuthJwtTokenGenerator
-
         config = {
             "secret_key": "test_secret_key_for_jwt_generation",
             "algorithm": "HS256",

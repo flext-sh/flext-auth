@@ -40,7 +40,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
         """Direct access to identity manager for client orchestration."""
         return self._user_manager
 
-    def execute(self, **kwargs: object) -> FlextResult[object]:
+    def execute(self, **_kwargs: object) -> FlextResult[object]:
         """Railway-oriented execute with focused service pattern."""
         return FlextResult[object].fail(
             "Use specific identity methods: create_identity, authenticate_identity, etc."
@@ -90,7 +90,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
         contact: str,
         credential: str,
         roles: list[str] | None = None,
-        **extra_fields: object,
+        **_extra_fields: object,
     ) -> FlextResult[FlextAuthModels.Identity]:
         """Railway-oriented identity creation with credential hashing."""
         if roles is None:

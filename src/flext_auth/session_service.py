@@ -29,7 +29,7 @@ class FlextAuthSessionService(ServiceManagerMixin, FlextService[object]):
         """Direct access to session manager for client orchestration."""
         return self._session_manager
 
-    def execute(self, **kwargs: object) -> FlextResult[object]:
+    def execute(self, **_kwargs: object) -> FlextResult[object]:
         """Execute method for FlextService interface.
 
         Session service doesn't use generic execute pattern.
