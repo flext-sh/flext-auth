@@ -335,7 +335,7 @@ class FlextAuthBasicProvider(FlextAuthRfcProvider):
             return FlextResult[FlextAuthModels.AuthToken].ok(
                 FlextAuthModels.AuthToken(
                     identity_id="anonymous",
-                    token="anonymous",  # noqa: S106
+                    token="anonymous",
                     token_type=FlextAuthConstants.TOKEN_TYPE_ACCESS,
                     expires_at=datetime.now(UTC) + timedelta(days=1),
                     is_revoked=False,

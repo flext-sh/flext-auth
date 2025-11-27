@@ -195,7 +195,7 @@ class FlextAuthLdapProvider(FlextAuthRfcProvider):
         ) -> FlextResult[dict[str, object]]:
             """Authenticate user credentials against LDAP."""
             # Use composition for user search and connection
-            return self.provider._user_searcher.search_user(username).bind(  # noqa: SLF001
+            return self.provider._user_searcher.search_user(username).bind(
                 lambda user_data: self._verify_credentials(user_data, password)
             )
 
