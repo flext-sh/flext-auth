@@ -35,7 +35,7 @@ class ServiceManagerMixin:
     This mixin provides the single source of truth for manager setup.
     """
 
-    def _init_managers(
+    def init_managers(
         self, config: FlextAuthConfig, dispatcher: FlextDispatcher
     ) -> None:
         """Initialize all standard managers used by services.
@@ -44,10 +44,10 @@ class ServiceManagerMixin:
         """
         self._config = config
         self._dispatcher = dispatcher
-        self._user_manager = FlextAuthManagers.FlextAuthUserManager(config)
-        self._session_manager = FlextAuthManagers.FlextAuthSessionManager(config)
-        self._audit_logger = FlextAuthManagers.FlextAuthAuditLogger(config, dispatcher)
-        self._rate_limiter = FlextAuthManagers.FlextAuthRateLimiter(config, dispatcher)
+        self.user_manager = FlextAuthManagers.FlextAuthUserManager(config)
+        self.session_manager = FlextAuthManagers.FlextAuthSessionManager(config)
+        self.audit_logger = FlextAuthManagers.FlextAuthAuditLogger(config, dispatcher)
+        self.rate_limiter = FlextAuthManagers.FlextAuthRateLimiter(config, dispatcher)
 
 
 class FlextAuthManagers(FlextService[object]):
@@ -530,16 +530,16 @@ class FlextAuthManagers(FlextService[object]):
         # Note: These are event type identifiers, not passwords
         _EVENT_AUTH_SUCCESS = "auth_success"
         _EVENT_AUTH_FAILURE = "auth_failure"
-        _EVENT_TOKEN_VALIDATION_SUCCESS = "token_validation_success"
-        _EVENT_TOKEN_VALIDATION_FAILURE = "token_validation_failure"
-        _EVENT_TOKEN_REFRESH_SUCCESS = "token_refresh_success"
-        _EVENT_TOKEN_REFRESH_FAILURE = "token_refresh_failure"
-        _EVENT_TOKEN_CREATION_SUCCESS = "token_creation_success"
-        _EVENT_TOKEN_CREATION_FAILURE = "token_creation_failure"
+        _EVENT_TOKEN_VALIDATION_SUCCESS = "token_validation_success"  # noqa: S105
+        _EVENT_TOKEN_VALIDATION_FAILURE = "token_validation_failure"  # noqa: S105
+        _EVENT_TOKEN_REFRESH_SUCCESS = "token_refresh_success"  # noqa: S105
+        _EVENT_TOKEN_REFRESH_FAILURE = "token_refresh_failure"  # noqa: S105
+        _EVENT_TOKEN_CREATION_SUCCESS = "token_creation_success"  # noqa: S105
+        _EVENT_TOKEN_CREATION_FAILURE = "token_creation_failure"  # noqa: S105
         _EVENT_USER_LOGOUT = "user_logout"
-        _EVENT_PASSWORD_CHANGE_SUCCESS = "password_change_success"
-        _EVENT_PASSWORD_CHANGE_FAILURE = "password_change_failure"
-        _EVENT_PASSWORD_RESET = "password_reset"
+        _EVENT_PASSWORD_CHANGE_SUCCESS = "password_change_success"  # noqa: S105
+        _EVENT_PASSWORD_CHANGE_FAILURE = "password_change_failure"  # noqa: S105
+        _EVENT_PASSWORD_RESET = "password_reset"  # noqa: S105
         _EVENT_AUTHORIZATION_GRANTED = "authorization_granted"
         _EVENT_AUTHORIZATION_DENIED = "authorization_denied"
 

@@ -29,6 +29,11 @@ class FlextAuthSessionService(ServiceManagerMixin, FlextService[object]):
         """Direct access to session manager for client orchestration."""
         return self._session_manager
 
+    @session_manager.setter
+    def session_manager(self, value: FlextAuthManagers.FlextAuthSessionManager) -> None:
+        """Set session manager (for service composition)."""
+        self._session_manager = value
+
     def execute(self, **_kwargs: object) -> FlextResult[object]:
         """Execute method for FlextService interface.
 
@@ -42,7 +47,7 @@ class FlextAuthSessionService(ServiceManagerMixin, FlextService[object]):
     def cleanup_expired_sessions(self) -> FlextResult[int]:
         """Railway-oriented cleanup of expired sessions from the system."""
         self.logger.info("Cleanup of expired sessions requested")
-        return self._session_manager.cleanup_expired_sessions()
+        return self.session_manager.cleanup_expired_sessions()
 
 
 __all__ = ["FlextAuthSessionService"]

@@ -59,14 +59,14 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
         )
         if result.is_failure:
             error_msg = result.error if result.error is not None else "Unknown error"
-            self._audit_logger.log_token_validation(
+            self.audit_logger.log_token_validation(
                 success=False,
                 token_id=self._short_token(token),
                 reason=error_msg,
             )
             return result
         identity = result.unwrap()
-        self._audit_logger.log_token_validation(
+        self.audit_logger.log_token_validation(
             success=True,
             username=identity.username,
             token_id=self._short_token(token),
@@ -80,7 +80,7 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
         )
         if result.is_failure:
             error = result.error
-            self._audit_logger.log_token_refresh(
+            self.audit_logger.log_token_refresh(
                 success=False,
                 old_token_id=self._short_token(token),
                 reason=error,
@@ -90,7 +90,7 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
             )
 
         refreshed = result.unwrap()
-        self._audit_logger.log_token_refresh(
+        self.audit_logger.log_token_refresh(
             success=True,
             old_token_id=self._short_token(token),
             new_token_id=self._short_token(refreshed.token),
@@ -105,10 +105,10 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
         token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
     ) -> FlextResult[str]:
         """Railway-oriented JWT token generation with audit logging."""
-        user_result = self._user_manager.get_user(user_id)
+        user_result = self.user_manager.get_user(user_id)
         if user_result.is_failure:
             error = user_result.error
-            self._audit_logger.log_token_creation(
+            self.audit_logger.log_token_creation(
                 user_id=user_id,
                 token_type=token_type,
                 success=False,
@@ -125,7 +125,7 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
 
         if token_result.is_failure:
             error = token_result.error
-            self._audit_logger.log_token_creation(
+            self.audit_logger.log_token_creation(
                 user_id=user_id,
                 token_type=token_type,
                 success=False,
@@ -134,7 +134,7 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
             return FlextResult[str].fail(error or "Token generation failed")
 
         token_value = token_result.unwrap()
-        self._audit_logger.log_token_creation(
+        self.audit_logger.log_token_creation(
             user_id=user_id,
             token_type=token_type,
             success=True,

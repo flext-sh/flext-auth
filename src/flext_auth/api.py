@@ -59,7 +59,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
 
         # Create shared managers once to ensure data consistency across services
         shared_managers = ServiceManagerMixin()
-        shared_managers._init_managers(self._config, self._dispatcher)
+        shared_managers.init_managers(self._config, self._dispatcher)
 
         # Initialize service dependencies once with shared managers
         self._provider_service = FlextAuthProviderService(config=self._config)
@@ -72,10 +72,10 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
             config=self._config, dispatcher=self._dispatcher
         )
         # Share managers between services to ensure data consistency
-        self._identity_service._user_manager = shared_managers._user_manager
-        self._identity_service._session_manager = shared_managers._session_manager
-        self._identity_service._audit_logger = shared_managers._audit_logger
-        self._identity_service._rate_limiter = shared_managers._rate_limiter
+        self._identity_service.user_manager = shared_managers.user_manager
+        self._identity_service.session_manager = shared_managers.session_manager
+        self._identity_service.audit_logger = shared_managers.audit_logger
+        self._identity_service.rate_limiter = shared_managers.rate_limiter
 
         self._token_service = FlextAuthTokenService(
             config=self._config,
@@ -83,19 +83,19 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
             dispatcher=self._dispatcher,
         )
         # Share managers with token service
-        self._token_service._user_manager = shared_managers._user_manager
-        self._token_service._session_manager = shared_managers._session_manager
-        self._token_service._audit_logger = shared_managers._audit_logger
-        self._token_service._rate_limiter = shared_managers._rate_limiter
+        self._token_service.user_manager = shared_managers.user_manager
+        self._token_service.session_manager = shared_managers.session_manager
+        self._token_service.audit_logger = shared_managers.audit_logger
+        self._token_service.rate_limiter = shared_managers.rate_limiter
 
         self._session_service = FlextAuthSessionService(
             config=self._config, dispatcher=self._dispatcher
         )
         # Share managers with session service
-        self._session_service._user_manager = shared_managers._user_manager
-        self._session_service._session_manager = shared_managers._session_manager
-        self._session_service._audit_logger = shared_managers._audit_logger
-        self._session_service._rate_limiter = shared_managers._rate_limiter
+        self._session_service.user_manager = shared_managers.user_manager
+        self._session_service.session_manager = shared_managers.session_manager
+        self._session_service.audit_logger = shared_managers.audit_logger
+        self._session_service.rate_limiter = shared_managers.rate_limiter
 
     @classmethod
     def get_global(cls) -> FlextAuth:

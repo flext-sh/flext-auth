@@ -20,6 +20,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Set as AbstractSet
 from enum import StrEnum
 from typing import Final, Literal
 
@@ -70,6 +71,14 @@ class PermissionType(StrEnum):
     ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
 
 
+class AlgorithmType(StrEnum):
+    """Algorithm type enumeration - runtime type-safe algorithm types."""
+
+    HS256 = "HS256"
+    RS256 = "RS256"
+    ES256 = "ES256"
+
+
 class FlextAuthConstants(FlextConstants):
     """Authentication domain constants with composition patterns.
 
@@ -100,6 +109,58 @@ class FlextAuthConstants(FlextConstants):
         >>> provider: AuthConst.ProviderType = "jwt"
     """
 
+    # Validation mappings for runtime validation
+    class ValidationMappings:
+        """Validation mappings for runtime checks using advanced collections.abc."""
+
+        # Token type validation mapping
+        _TOKEN_TYPE_VALIDATION_MAP: ClassVar[Mapping[str, str]] = {
+            "access": "access",
+            "refresh": "refresh",
+            "api": "api",
+            "bearer": "bearer",
+        }
+        _TOKEN_TYPE_VALIDATION_SET: ClassVar[AbstractSet[str]] = frozenset(
+            _TOKEN_TYPE_VALIDATION_MAP.keys()
+        )
+
+        # Provider type validation mapping
+        _PROVIDER_TYPE_VALIDATION_MAP: ClassVar[Mapping[str, str]] = {
+            "basic": "basic",
+            "jwt": "jwt",
+            "oauth2": "oauth2",
+            "saml": "saml",
+            "ldap": "ldap",
+            "certificate": "certificate",
+            "kerberos": "kerberos",
+            "apikey": "apikey",
+        }
+        _PROVIDER_TYPE_VALIDATION_SET: ClassVar[AbstractSet[str]] = frozenset(
+            _PROVIDER_TYPE_VALIDATION_MAP.keys()
+        )
+
+        # Role type validation mapping
+        _ROLE_TYPE_VALIDATION_MAP: ClassVar[Mapping[str, str]] = {
+            "REDACTED_LDAP_BIND_PASSWORD": "REDACTED_LDAP_BIND_PASSWORD",
+            "user": "user",
+            "moderator": "moderator",
+            "guest": "guest",
+        }
+        _ROLE_TYPE_VALIDATION_SET: ClassVar[AbstractSet[str]] = frozenset(
+            _ROLE_TYPE_VALIDATION_MAP.keys()
+        )
+
+        # Permission type validation mapping
+        _PERMISSION_TYPE_VALIDATION_MAP: ClassVar[Mapping[str, str]] = {
+            "read": "read",
+            "write": "write",
+            "delete": "delete",
+            "REDACTED_LDAP_BIND_PASSWORD": "REDACTED_LDAP_BIND_PASSWORD",
+        }
+        _PERMISSION_TYPE_VALIDATION_SET: ClassVar[AbstractSet[str]] = frozenset(
+            _PERMISSION_TYPE_VALIDATION_MAP.keys()
+        )
+
     # =========================================================================
     # COMPOSITION REFERENCES (Standardization Pattern)
     # =========================================================================
@@ -114,12 +175,26 @@ class FlextAuthConstants(FlextConstants):
     # =========================================================================
     # GENERIC TYPE ALIASES - DOMAIN AGNOSTIC
     # =========================================================================
+    # Python 3.13+ PEP 695 best practice: Use type keyword for type aliases
 
-    TokenType = Literal["access", "refresh", "api", "bearer"]
-    ProviderType = Literal[
+    type TokenTypeLiteral = Literal["access", "refresh", "api", "bearer"]
+    """Token type literal - matches TokenType StrEnum values."""
+
+    type ProviderTypeLiteral = Literal[
         "basic", "jwt", "oauth2", "saml", "ldap", "certificate", "kerberos", "apikey"
     ]
-    ProjectType = Literal[
+    """Provider type literal - matches ProviderType StrEnum values."""
+
+    type AlgorithmTypeLiteral = Literal["HS256", "RS256", "ES256"]
+    """Algorithm type literal - matches AlgorithmType StrEnum values."""
+
+    type RoleTypeLiteral = Literal["REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"]
+    """Role type literal - matches RoleType StrEnum values."""
+
+    type PermissionTypeLiteral = Literal["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"]
+    """Permission type literal - matches PermissionType StrEnum values."""
+
+    type ProjectTypeLiteral = Literal[
         "library",
         "application",
         "service",
@@ -136,10 +211,54 @@ class FlextAuthConstants(FlextConstants):
         "credential-manager",
         "security-service",
     ]
+    """Project type literal for authentication service types."""
 
     # =========================================================================
     # IMMUTABLE CONSTANTS - NO CONFIGURATION (USE CONFIG.PY FOR SETTINGS)
     # =========================================================================
+
+    # Validation methods using ValidationMappings
+    @classmethod
+    def validate_token_type(cls, token_type: str) -> str | None:
+        """Validate token type against allowed values."""
+        return cls.ValidationMappings._TOKEN_TYPE_VALIDATION_MAP.get(token_type)
+
+    @classmethod
+    def validate_provider_type(cls, provider_type: str) -> str | None:
+        """Validate provider type against allowed values."""
+        return cls.ValidationMappings._PROVIDER_TYPE_VALIDATION_MAP.get(provider_type)
+
+    @classmethod
+    def validate_role_type(cls, role_type: str) -> str | None:
+        """Validate role type against allowed values."""
+        return cls.ValidationMappings._ROLE_TYPE_VALIDATION_MAP.get(role_type)
+
+    @classmethod
+    def validate_permission_type(cls, permission_type: str) -> str | None:
+        """Validate permission type against allowed values."""
+        return cls.ValidationMappings._PERMISSION_TYPE_VALIDATION_MAP.get(
+            permission_type
+        )
+
+    @classmethod
+    def get_valid_token_types(cls) -> AbstractSet[str]:
+        """Get all valid token types."""
+        return cls.ValidationMappings._TOKEN_TYPE_VALIDATION_SET
+
+    @classmethod
+    def get_valid_provider_types(cls) -> AbstractSet[str]:
+        """Get all valid provider types."""
+        return cls.ValidationMappings._PROVIDER_TYPE_VALIDATION_SET
+
+    @classmethod
+    def get_valid_role_types(cls) -> AbstractSet[str]:
+        """Get all valid role types."""
+        return cls.ValidationMappings._ROLE_TYPE_VALIDATION_SET
+
+    @classmethod
+    def get_valid_permission_types(cls) -> AbstractSet[str]:
+        """Get all valid permission types."""
+        return cls.ValidationMappings._PERMISSION_TYPE_VALIDATION_SET
 
     # Token Types & Prefixes
     TOKEN_TYPES: Final[tuple[str, ...]] = ("access", "refresh", "api", "bearer")
@@ -149,7 +268,7 @@ class FlextAuthConstants(FlextConstants):
     TOKEN_PREFIX_BEARER: Final[str] = "Bearer"
 
     # Algorithms Supported
-    ALLOWED_ALGORITHMS: Final[list[str]] = ["HS256", "RS256", "ES256"]
+    ALLOWED_ALGORITHMS: Final[tuple[str, ...]] = ("HS256", "RS256", "ES256")
 
     # Permission & Role Constants
     PERMISSION_READ: Final[str] = "read"
@@ -160,10 +279,10 @@ class FlextAuthConstants(FlextConstants):
     ROLE_USER: Final[str] = "user"
     ROLE_MODERATOR: Final[str] = "moderator"
     ROLE_GUEST: Final[str] = "guest"
-    DEFAULT_ROLES: Final[list[str]] = ["user"]
-    VALID_ROLES: Final[list[str]] = ["REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"]
-    BASIC_PERMISSIONS: Final[list[str]] = ["read", "write"]
-    ADMIN_PERMISSIONS: Final[list[str]] = ["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"]
+    DEFAULT_ROLES: Final[tuple[str, ...]] = ("user",)
+    VALID_ROLES: Final[tuple[str, ...]] = ("REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest")
+    BASIC_PERMISSIONS: Final[tuple[str, ...]] = ("read", "write")
+    ADMIN_PERMISSIONS: Final[tuple[str, ...]] = ("read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD")
 
     # Weak Credentials (Security Pattern)
     WEAK_CREDENTIALS: Final[list[str]] = [

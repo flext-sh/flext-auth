@@ -2,51 +2,25 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence, Set
 from datetime import datetime
-from typing import Annotated, TypedDict
+from typing import TypeVar
 
 from flext_core import FlextTypes
 from pydantic import Field, SecretStr
 
-from flext_auth.constants import FlextAuthConstants, PermissionType, RoleType
+from flext_auth.constants import FlextAuthConstants
 from flext_auth.providers.base import FlextAuthBaseProvider
 
 
 class FlextAuthTypes(FlextTypes):
-    """Authentication-specific type definitions extending FlextTypes."""
+    """Authentication-specific type definitions extending FlextTypes with composition."""
 
     # =========================================================================
-    # DOMAIN TYPE CLASSES (for test compatibility)
+    # CORE AUTH TYPES - Using dict for pydantic compatibility
     # =========================================================================
 
-    class Authentication:
-        """Authentication domain type namespace."""
-
-    class UserManagement:
-        """User management domain type namespace."""
-
-    class SessionManagement:
-        """Session management domain type namespace."""
-
-    class TokenManagement:
-        """Token management domain type namespace."""
-
-    class Authorization:
-        """Authorization domain type namespace."""
-
-    # =========================================================================
-    # TYPED DICT DEFINITIONS (for test compatibility)
-    # =========================================================================
-
-    class UserDict(TypedDict, total=False):
-        """User dictionary structure for backward compatibility."""
-
-        id: str
-        username: str
-        email: str
-        full_name: str
-        is_active: bool
-        roles: list[str]
+    type UserDict = dict[str, FlextTypes.JsonValue | str | bool | list[str]]
         created_at: datetime
         updated_at: datetime
         last_login: datetime

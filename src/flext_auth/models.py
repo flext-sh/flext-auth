@@ -83,7 +83,7 @@ class FlextAuthModels(FlextModels):
         """Generic token generation request."""
 
         identity_id: str = Field(..., description="Identity ID")
-        token_type: str = Field(
+        token_type: FlextAuthConstants.TokenTypeLiteral | str = Field(
             default=FlextAuthConstants.DEFAULT_TOKEN_TYPE, description="Token type"
         )
         expiry_minutes: int = Field(

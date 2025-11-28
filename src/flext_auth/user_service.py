@@ -38,7 +38,12 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
     @property
     def identity_manager(self) -> FlextAuthManagers.FlextAuthUserManager:
         """Direct access to identity manager for client orchestration."""
-        return self._user_manager
+        return self.user_manager
+
+    @identity_manager.setter
+    def identity_manager(self, value: FlextAuthManagers.FlextAuthUserManager) -> None:
+        """Set identity manager (for service composition)."""
+        self.user_manager = value
 
     def execute(self, **_kwargs: object) -> FlextResult[object]:
         """Railway-oriented execute with focused service pattern."""
@@ -53,7 +58,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
     ) -> FlextResult[FlextAuthModels.Identity]:
         """Railway-oriented identity authentication with account lockout."""
         return (
-            self._user_manager.get_user_by_username(name)
+            self.user_manager.get_user_by_username(name)
             .flat_map(lambda identity: FlextResult.ok((identity, credential)))
             .flat_map(
                 lambda ic: (
@@ -145,7 +150,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
         # Create user with basic fields - extra_fields not currently supported
         # due to type constraints in the manager interface
         return FlextAuthUtilities.hash_credential(credential).flat_map(
-            lambda ch: self._user_manager.create_user(
+            lambda ch: self.user_manager.create_user(
                 username=request.name,
                 email=request.contact,
                 password_hash=ch,
@@ -165,7 +170,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
     ) -> FlextResult[bool]:
         """Railway-oriented credential change with validation."""
         return (
-            self._user_manager.get_user(identity_id)
+            self.user_manager.get_user(identity_id)
             .flat_map(
                 lambda identity: identity.verify_credential(
                     current_credential
@@ -189,7 +194,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
             .flat_map(
                 lambda identity: identity.set_credential(new_credential).map(
                     lambda _: (
-                        self._audit_logger.log_password_change_success(identity.name),
+                        self.audit_logger.log_password_change_success(identity.name),
                         True,
                     )[1]
                 )
@@ -201,7 +206,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
     ) -> FlextResult[bool]:
         """Railway-oriented credential reset for REDACTED_LDAP_BIND_PASSWORD operations."""
         return (
-            self._user_manager.get_user(identity_id)
+            self.user_manager.get_user(identity_id)
             .flat_map(
                 lambda identity: FlextAuthUtilities.validate_credential_strength(
                     new_credential
@@ -216,7 +221,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
             .flat_map(
                 lambda identity: identity.set_credential(new_credential).map(
                     lambda _: (
-                        self._audit_logger.log_password_reset(identity.name),
+                        self.audit_logger.log_password_reset(identity.name),
                         True,
                     )[1]
                 )
@@ -237,20 +242,20 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
         if identity.failed_attempts >= max_attempts:
             lockout_duration = timedelta(minutes=self._config.lockout_duration_minutes)
             identity.locked_until = datetime.now(UTC) + lockout_duration
-            self._audit_logger.log_auth_failure(
+            self.audit_logger.log_auth_failure(
                 username=identity.name,
                 provider="internal",
                 reason=f"Account locked after {identity.failed_attempts} failed attempts",
             )
         else:
-            self._audit_logger.log_auth_failure(
+            self.audit_logger.log_auth_failure(
                 username=identity.name,
                 provider="internal",
                 reason=f"Invalid credentials ({identity.failed_attempts}/{max_attempts} attempts)",
             )
 
         # Update user in storage
-        return self._user_manager.update_user(
+        return self.user_manager.update_user(
             identity.unique_id,
             failed_attempts=identity.failed_attempts,
             locked_until=identity.locked_until,
@@ -268,11 +273,11 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
     ) -> FlextResult[bool]:
         """Railway-oriented authorization with audit logging."""
         return (
-            self._user_manager.get_user(identity_id)
+            self.user_manager.get_user(identity_id)
             .map(lambda identity: (identity, permission in identity.permissions))
             .map(
                 lambda ip: (
-                    self._audit_logger.log_authorization_check(
+                    self.audit_logger.log_authorization_check(
                         username=ip[0].name,
                         resource=resource if resource is not None else "",
                         action=permission,
