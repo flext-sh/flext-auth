@@ -494,7 +494,7 @@ class FlextAuthCertificateProvider(FlextAuthRfcProvider):
     def generate_token_for_user(
         self,
         _user: FlextAuthModels.Identity,
-        _token_type: str = "cert_access",  # noqa: S107
+        _token_type: str = "cert_access",
         _expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate certificate token for user."""

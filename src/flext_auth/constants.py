@@ -1,623 +1,406 @@
-"""FLEXT Auth Constants - Authentication domain constants following standardization plan.
+"""FlextAuth constants - Advanced type-safe constants using StrEnum + Pydantic 2 patterns.
 
-**Standardization Compliance:**
-- Layer 0 purity: Only constants, no functions or behavior
-- Direct FlextConstants inheritance: Clean dependency chain
-- Composition pattern: CoreErrors, CoreNetwork, etc. for easy access
-- Final[Type] declarations: Immutable type-safe constants
-- Type aliases: Literal types for strict typing
-
-**Domain Coverage:**
-- Token types, algorithms, providers, roles, permissions
-- Security policies, cryptography defaults, validation constraints
-- Session management, rate limiting, authentication protocols
-- OAuth2, SAML, JWT, and multi-provider support
+FLEXT-AUTH domain constants with FlextCore integration. Uses advanced Python 3.13+ features:
+- StrEnum for type-safe enumerations with Pydantic 2 validation
+- PEP 695 type aliases for strict Literal types
+- Nested classes for logical grouping (TokenTypes, ProviderTypes, etc.)
+- TypeIs and TypeGuard for advanced type narrowing
+- Collections.abc for immutable validation sets
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Set as AbstractSet
+from collections.abc import Callable, Mapping, Set as AbstractSet
 from enum import StrEnum
-from typing import Final, Literal
+from types import MappingProxyType
+from typing import Final, Literal, TypeGuard, TypeIs
 
-from flext_core import FlextConstants
+from flext_core import FlextConstants, FlextResult, FlextUtilities
 
-# =============================================================================
-# STRING ENUMS - Type-safe string literals for authentication domain
-# =============================================================================
+# ═══════════════════════════════════════════════════════════════════════════
+# STRENUM + PYDANTIC 2: PADRÃO DEFINITIVO PARA FLEXT-AUTH
+# ═══════════════════════════════════════════════════════════════════════════
 
+# PRINCÍPIO FUNDAMENTAL: StrEnum + Pydantic 2 = Validação Automática!
+# - NÃO precisa criar Literal separado para validação
+# - NÃO precisa criar frozenset para validação
+# - NÃO precisa criar AfterValidator
+# - Pydantic valida automaticamente contra o StrEnum
 
-class TokenType(StrEnum):
-    """Token type enumeration - runtime type-safe token types."""
-
-    ACCESS = "access"
-    REFRESH = "refresh"
-    API = "api"
-    BEARER = "bearer"
-
-
-class ProviderType(StrEnum):
-    """Provider type enumeration - runtime type-safe provider types."""
-
-    BASIC = "basic"
-    JWT = "jwt"
-    OAUTH2 = "oauth2"
-    SAML = "saml"
-    LDAP = "ldap"
-    CERTIFICATE = "certificate"
-    KERBEROS = "kerberos"
-    APIKEY = "apikey"
-
-
-class RoleType(StrEnum):
-    """Role type enumeration - runtime type-safe role types."""
-
-    ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
-    USER = "user"
-    MODERATOR = "moderator"
-    GUEST = "guest"
-
-
-class PermissionType(StrEnum):
-    """Permission type enumeration - runtime type-safe permission types."""
-
-    READ = "read"
-    WRITE = "write"
-    DELETE = "delete"
-    ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
-
-
-class AlgorithmType(StrEnum):
-    """Algorithm type enumeration - runtime type-safe algorithm types."""
-
-    HS256 = "HS256"
-    RS256 = "RS256"
-    ES256 = "ES256"
+# SUBSETS: Use Literal[TokenTypes.ACCESS, TokenTypes.REFRESH] para aceitar apenas ALGUNS valores.
+# Isso referencia o enum member, não duplica strings!
 
 
 class FlextAuthConstants(FlextConstants):
-    """Authentication domain constants with composition patterns.
+    """FlextAuth domain constants extending FlextConstants.
 
-    **Usage Examples:**
+    Architecture: Layer 1 (Domain Constants - Extends Core)
+    =========================================================
+    Provides domain-specific constants for authentication using advanced patterns:
+    - StrEnum for type-safe enumerations with automatic Pydantic validation
+    - PEP 695 type aliases for strict Literal unions
+    - Nested classes for logical grouping (TokenTypes, ProviderTypes, etc.)
+    - TypeIs/TypeGuard methods for advanced type narrowing
+    - Collections.abc for immutable validation sets
 
-    1. Token Management:
+    Integration with FlextProtocols:
+    This class provides the constant registry that FlextAuthProtocols depend on.
+    Structural typing ensures protocol compliance without explicit inheritance.
+
+    Usage Patterns:
+        # Direct access (recommended)
         >>> from flext_auth.constants import FlextAuthConstants as AuthConst
-        >>> token_type = AuthConst.TOKEN_TYPE_ACCESS
-        >>> algorithm = AuthConst.ALGORITHM_DEFAULT
-        >>> expiry = AuthConst.EXPIRY_DEFAULT_MINUTES
+        >>> token_type = AuthConst.TokenTypes.ACCESS
+        >>> provider = AuthConst.ProviderTypes.JWT
 
-    2. Security Configuration:
-        >>> rounds = AuthConst.HASH_ROUNDS_DEFAULT
-        >>> attempts = AuthConst.MAX_ATTEMPTS_DEFAULT
-        >>> lockout = AuthConst.LOCKOUT_DURATION_MINUTES
+        # Type-safe validation
+        >>> AuthConst.TokenTypes.is_valid_token_type("access")  # True
+        >>> AuthConst.ProviderTypes.is_jwt_provider("jwt")  # True
 
-    3. Role and Permission Management:
-        >>> roles = AuthConst.VALID_ROLES
-        >>> permissions = AuthConst.ADMIN_PERMISSIONS
-        >>> default_role = AuthConst.DEFAULT_ROLES[0]
-
-    4. Core Composition Access:
-        >>> error = AuthConst.CoreErrors.AUTHENTICATION_ERROR
-        >>> timeout = AuthConst.CoreNetwork.DEFAULT_TIMEOUT
-
-    5. Type-Safe Literals:
-        >>> token_types: AuthConst.TokenType = "access"
-        >>> provider: AuthConst.ProviderType = "jwt"
+        # Literal types for Pydantic models
+        >>> token: AuthConst.TokenTypeLiteral  # Type-safe: "access" | "refresh" | ...
     """
 
-    # Validation mappings for runtime validation
-    class ValidationMappings:
-        """Validation mappings for runtime checks using advanced collections.abc."""
+    # ═══════════════════════════════════════════════════════════════════
+    # STRENUM: Única declaração necessária para validação automática
+    # ═══════════════════════════════════════════════════════════════════
 
-        # Token type validation mapping
-        _TOKEN_TYPE_VALIDATION_MAP: ClassVar[Mapping[str, str]] = {
-            "access": "access",
-            "refresh": "refresh",
-            "api": "api",
-            "bearer": "bearer",
+    class TokenTypes(StrEnum):
+        """Token type enumeration - automatic Pydantic validation.
+
+        PYDANTIC MODELS:
+            model_config = ConfigDict(use_enum_values=True)
+            token_type: FlextAuthConstants.TokenTypes
+
+        Resultado:
+            - Aceita "access", "refresh", etc. ou TokenTypes.ACCESS
+            - Serializa como string
+            - Valida automaticamente (rejeita valores inválidos)
+        """
+
+        ACCESS = "access"
+        REFRESH = "refresh"
+        API = "api"
+        BEARER = "bearer"
+
+    class ProviderTypes(StrEnum):
+        """Provider type enumeration - automatic Pydantic validation."""
+
+        BASIC = "basic"
+        JWT = "jwt"
+        OAUTH2 = "oauth2"
+        SAML = "saml"
+        LDAP = "ldap"
+        CERTIFICATE = "certificate"
+        KERBEROS = "kerberos"
+        APIKEY = "apikey"
+
+    class RoleTypes(StrEnum):
+        """Role type enumeration - automatic Pydantic validation."""
+
+        ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
+        USER = "user"
+        MODERATOR = "moderator"
+        GUEST = "guest"
+
+    class PermissionTypes(StrEnum):
+        """Permission type enumeration - automatic Pydantic validation."""
+
+        READ = "read"
+        WRITE = "write"
+        DELETE = "delete"
+        ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
+
+    class Algorithms(StrEnum):
+        """Algorithm type enumeration."""
+
+        HS256 = "HS256"
+        RS256 = "RS256"
+        ES256 = "ES256"
+
+    # ═══════════════════════════════════════════════════════════════════
+    # SUBSETS: Literal referenciando membros do StrEnum
+    # ═══════════════════════════════════════════════════════════════════
+    # Use para aceitar apenas ALGUNS valores do enum em métodos
+    # Isso NÃO duplica strings - referencia o enum member!
+
+    type AccessTokens = Literal[TokenTypes.ACCESS, TokenTypes.BEARER]
+    """Access token types for operations."""
+    type RefreshTokens = Literal[TokenTypes.REFRESH]
+    """Refresh token types."""
+    type BearerTokens = Literal[TokenTypes.BEARER, TokenTypes.ACCESS]
+    """Bearer token types."""
+    type AdminRoles = Literal[RoleTypes.ADMIN]
+    """Admin role types."""
+    type UserRoles = Literal[RoleTypes.USER, RoleTypes.MODERATOR, RoleTypes.GUEST]
+    """User role types."""
+    type WritePermissions = Literal[PermissionTypes.WRITE, PermissionTypes.DELETE]
+    """Write permission types."""
+    type AdminPermissions = Literal[PermissionTypes.ADMIN]
+    """Admin permission types."""
+
+    # ═══════════════════════════════════════════════════════════════════
+    # TYPEIS + TYPEGUARD: Advanced type narrowing (Python 3.13+ PEP 742)
+    # ═══════════════════════════════════════════════════════════════════
+
+    @classmethod
+    def is_valid_token_type(cls, value: str) -> TypeIs[TokenTypes]:
+        """TypeIs for TokenTypes validation - narrowing in if/else."""
+        return value in cls.TokenTypes._value2member_map_
+
+    @classmethod
+    def is_access_token(cls, value: str) -> TypeGuard[AccessTokens]:
+        """TypeGuard for access token subset."""
+        return value in {cls.TokenTypes.ACCESS.value, cls.TokenTypes.BEARER.value}
+
+    @classmethod
+    def is_refresh_token(cls, value: str) -> TypeGuard[RefreshTokens]:
+        """TypeGuard for refresh token subset."""
+        return value == cls.TokenTypes.REFRESH.value
+
+    @classmethod
+    def is_valid_provider_type(cls, value: str) -> TypeIs[ProviderTypes]:
+        """TypeIs for ProviderTypes validation."""
+        return value in cls.ProviderTypes._value2member_map_
+
+    @classmethod
+    def is_jwt_provider(cls, value: str) -> TypeGuard[Literal[ProviderTypes.JWT]]:
+        """TypeGuard for JWT provider."""
+        return value == cls.ProviderTypes.JWT.value
+
+    @classmethod
+    def is_oauth2_provider(cls, value: str) -> TypeGuard[Literal[ProviderTypes.OAUTH2]]:
+        """TypeGuard for OAuth2 provider."""
+        return value == cls.ProviderTypes.OAUTH2.value
+
+    @classmethod
+    def is_valid_role_type(cls, value: str) -> TypeIs[RoleTypes]:
+        """TypeIs for RoleTypes validation."""
+        return value in cls.RoleTypes._value2member_map_
+
+    @classmethod
+    def is_REDACTED_LDAP_BIND_PASSWORD_role(cls, value: str) -> TypeGuard[AdminRoles]:
+        """TypeGuard for REDACTED_LDAP_BIND_PASSWORD role subset."""
+        return value == cls.RoleTypes.ADMIN.value
+
+    @classmethod
+    def is_user_role(cls, value: str) -> TypeGuard[UserRoles]:
+        """TypeGuard for user role subset."""
+        return value in {
+            cls.RoleTypes.USER.value,
+            cls.RoleTypes.MODERATOR.value,
+            cls.RoleTypes.GUEST.value,
         }
-        _TOKEN_TYPE_VALIDATION_SET: ClassVar[AbstractSet[str]] = frozenset(
-            _TOKEN_TYPE_VALIDATION_MAP.keys()
-        )
 
-        # Provider type validation mapping
-        _PROVIDER_TYPE_VALIDATION_MAP: ClassVar[Mapping[str, str]] = {
-            "basic": "basic",
-            "jwt": "jwt",
-            "oauth2": "oauth2",
-            "saml": "saml",
-            "ldap": "ldap",
-            "certificate": "certificate",
-            "kerberos": "kerberos",
-            "apikey": "apikey",
+    @classmethod
+    def is_valid_permission_type(cls, value: str) -> TypeIs[PermissionTypes]:
+        """TypeIs for PermissionTypes validation."""
+        return value in cls.PermissionTypes._value2member_map_
+
+    @classmethod
+    def is_write_permission(cls, value: str) -> TypeGuard[WritePermissions]:
+        """TypeGuard for write permission subset."""
+        return value in {
+            cls.PermissionTypes.WRITE.value,
+            cls.PermissionTypes.DELETE.value,
         }
-        _PROVIDER_TYPE_VALIDATION_SET: ClassVar[AbstractSet[str]] = frozenset(
-            _PROVIDER_TYPE_VALIDATION_MAP.keys()
-        )
 
-        # Role type validation mapping
-        _ROLE_TYPE_VALIDATION_MAP: ClassVar[Mapping[str, str]] = {
-            "REDACTED_LDAP_BIND_PASSWORD": "REDACTED_LDAP_BIND_PASSWORD",
-            "user": "user",
-            "moderator": "moderator",
-            "guest": "guest",
-        }
-        _ROLE_TYPE_VALIDATION_SET: ClassVar[AbstractSet[str]] = frozenset(
-            _ROLE_TYPE_VALIDATION_MAP.keys()
-        )
+    @classmethod
+    def is_REDACTED_LDAP_BIND_PASSWORD_permission(cls, value: str) -> TypeGuard[AdminPermissions]:
+        """TypeGuard for REDACTED_LDAP_BIND_PASSWORD permission subset."""
+        return value == cls.PermissionTypes.ADMIN.value
 
-        # Permission type validation mapping
-        _PERMISSION_TYPE_VALIDATION_MAP: ClassVar[Mapping[str, str]] = {
-            "read": "read",
-            "write": "write",
-            "delete": "delete",
-            "REDACTED_LDAP_BIND_PASSWORD": "REDACTED_LDAP_BIND_PASSWORD",
-        }
-        _PERMISSION_TYPE_VALIDATION_SET: ClassVar[AbstractSet[str]] = frozenset(
-            _PERMISSION_TYPE_VALIDATION_MAP.keys()
-        )
+    # ═══════════════════════════════════════════════════════════════════
+    # IMMUTABLE COLLECTIONS: frozenset para O(1) validação
+    # ═══════════════════════════════════════════════════════════════════
 
-    # =========================================================================
-    # COMPOSITION REFERENCES (Standardization Pattern)
-    # =========================================================================
+    VALID_TOKEN_TYPES: Final[AbstractSet[str]] = frozenset(
+        member.value for member in TokenTypes.__members__.values()
+    )
+    """Immutable set of all valid token types for O(1) validation."""
 
-    # Core composition - reference core constants for easy access
-    CoreErrors = FlextConstants.Errors
-    CoreNetwork = FlextConstants.Network
-    CoreSecurity = FlextConstants.Security
-    CorePlatform = FlextConstants.Platform
-    CoreValidation = FlextConstants.Validation
+    VALID_PROVIDER_TYPES: Final[AbstractSet[str]] = frozenset(
+        member.value for member in ProviderTypes.__members__.values()
+    )
+    """Immutable set of all valid provider types."""
 
-    # =========================================================================
-    # GENERIC TYPE ALIASES - DOMAIN AGNOSTIC
-    # =========================================================================
-    # Python 3.13+ PEP 695 best practice: Use type keyword for type aliases
+    VALID_ROLE_TYPES: Final[AbstractSet[str]] = frozenset(
+        member.value for member in RoleTypes.__members__.values()
+    )
+    """Immutable set of all valid role types."""
+
+    VALID_PERMISSION_TYPES: Final[AbstractSet[str]] = frozenset(
+        member.value for member in PermissionTypes.__members__.values()
+    )
+    """Immutable set of all valid permission types."""
+
+    ACCESS_TOKEN_TYPES: Final[AbstractSet[str]] = frozenset(
+        member.value for member in [TokenTypes.ACCESS, TokenTypes.BEARER]
+    )
+    """Access token types for validation."""
+
+    USER_ROLE_TYPES: Final[AbstractSet[str]] = frozenset(
+        member.value
+        for member in [RoleTypes.USER, RoleTypes.MODERATOR, RoleTypes.GUEST]
+    )
+    """User role types for validation."""
+
+    WRITE_PERMISSION_TYPES: Final[AbstractSet[str]] = frozenset(
+        member.value for member in [PermissionTypes.WRITE, PermissionTypes.DELETE]
+    )
+    """Write permission types for validation."""
+
+    # ═══════════════════════════════════════════════════════════════════
+    # CONFIGURATION CONSTANTS: Valores padrão e limites
+    # ═══════════════════════════════════════════════════════════════════
+
+    DEFAULT_TIMEOUT: Final[float] = 30.0
+    """Default request timeout in seconds."""
+
+    DEFAULT_MAX_RETRIES: Final[int] = 3
+    """Default maximum retry attempts."""
+
+    DEFAULT_JWT_EXPIRY_MINUTES: Final[int] = 1440  # 24 hours
+    """Default JWT token expiry in minutes."""
+
+    DEFAULT_SESSION_EXPIRY_MINUTES: Final[int] = 1440  # 24 hours
+    """Default session expiry in minutes."""
+
+    DEFAULT_MAX_SESSIONS_PER_USER: Final[int] = 5
+    """Default maximum sessions per user."""
+
+    DEFAULT_HASH_ROUNDS: Final[int] = 12
+    """Default bcrypt hash rounds."""
+
+    DEFAULT_JWT_ALGORITHM: Final[str] = "HS256"
+    """Default JWT algorithm."""
+
+    MAX_USERNAME_LENGTH: Final[int] = 255
+    """Maximum username length."""
+
+    MAX_EMAIL_LENGTH: Final[int] = 254
+    """Maximum email length."""
+
+    MIN_PASSWORD_LENGTH: Final[int] = 8
+    """Minimum password length."""
+
+    MAX_PASSWORD_LENGTH: Final[int] = 128
+    """Maximum password length."""
+
+    MAX_TOKEN_LENGTH: Final[int] = 4096
+    """Maximum token length."""
+
+    MAX_SECRET_KEY_LENGTH: Final[int] = 4096
+    """Maximum secret key length."""
+
+    # ═══════════════════════════════════════════════════════════════════
+    # VALIDATION LIMITS: Mappings imutáveis para validação
+    # ═══════════════════════════════════════════════════════════════════
+
+    VALIDATION_LIMITS: Final[Mapping[str, int | float]] = MappingProxyType({
+        "MAX_USERNAME_LENGTH": MAX_USERNAME_LENGTH,
+        "MAX_EMAIL_LENGTH": MAX_EMAIL_LENGTH,
+        "MIN_PASSWORD_LENGTH": MIN_PASSWORD_LENGTH,
+        "MAX_PASSWORD_LENGTH": MAX_PASSWORD_LENGTH,
+        "MAX_TOKEN_LENGTH": MAX_TOKEN_LENGTH,
+        "MAX_SECRET_KEY_LENGTH": MAX_SECRET_KEY_LENGTH,
+        "DEFAULT_TIMEOUT": DEFAULT_TIMEOUT,
+    })
+    """Validation limits mapping."""
+
+    # ═══════════════════════════════════════════════════════════════════
+    # RESPONSE TEMPLATES: Mappings imutáveis
+    # ═══════════════════════════════════════════════════════════════════
+
+    SUCCESS_AUTH_RESPONSE: Final[Mapping[str, str | None]] = MappingProxyType({
+        "status": "success",
+        "message": "Authentication successful",
+        "token_type": None,
+    })
+    """Template for successful authentication responses."""
+
+    ERROR_AUTH_RESPONSE: Final[Mapping[str, str | None]] = MappingProxyType({
+        "status": "error",
+        "message": None,
+        "error_code": None,
+    })
+    """Template for authentication error responses."""
+
+    # ═══════════════════════════════════════════════════════════════════
+    # UTILITY METHODS: Validação avançada com FlextUtilities
+    # ═══════════════════════════════════════════════════════════════════
+
+    @classmethod
+    def validate_token_type_with_result(cls, value: str) -> FlextResult[TokenTypes]:
+        """Validate token type using FlextUtilities.Enum.parse."""
+        return FlextUtilities.Enum.parse(cls.TokenTypes, value)
+
+    @classmethod
+    def validate_provider_type_with_result(
+        cls, value: str
+    ) -> FlextResult[ProviderTypes]:
+        """Validate provider type using FlextUtilities.Enum.parse."""
+        return FlextUtilities.Enum.parse(cls.ProviderTypes, value)
+
+    @classmethod
+    def validate_role_type_with_result(cls, value: str) -> FlextResult[RoleTypes]:
+        """Validate role type using FlextUtilities.Enum.parse."""
+        return FlextUtilities.Enum.parse(cls.RoleTypes, value)
+
+    @classmethod
+    def validate_permission_type_with_result(
+        cls, value: str
+    ) -> FlextResult[PermissionTypes]:
+        """Validate permission type using FlextUtilities.Enum.parse."""
+        return FlextUtilities.Enum.parse(cls.PermissionTypes, value)
+
+    @classmethod
+    def create_token_type_validator(cls) -> Callable[[str], TokenTypes]:
+        """Create BeforeValidator for TokenTypes in Pydantic models."""
+        return FlextUtilities.Enum.coerce_validator(cls.TokenTypes)
+
+    @classmethod
+    def create_provider_type_validator(cls) -> Callable[[str], ProviderTypes]:
+        """Create BeforeValidator for ProviderTypes in Pydantic models."""
+        return FlextUtilities.Enum.coerce_validator(cls.ProviderTypes)
+
+    # ═══════════════════════════════════════════════════════════════════
+    # LITERAL TYPES: PEP 695 strict type aliases (Python 3.13+)
+    # ═══════════════════════════════════════════════════════════════════
 
     type TokenTypeLiteral = Literal["access", "refresh", "api", "bearer"]
-    """Token type literal - matches TokenType StrEnum values."""
+    """Token type literal - matches TokenTypes StrEnum values exactly."""
 
     type ProviderTypeLiteral = Literal[
         "basic", "jwt", "oauth2", "saml", "ldap", "certificate", "kerberos", "apikey"
     ]
-    """Provider type literal - matches ProviderType StrEnum values."""
-
-    type AlgorithmTypeLiteral = Literal["HS256", "RS256", "ES256"]
-    """Algorithm type literal - matches AlgorithmType StrEnum values."""
+    """Provider type literal - matches ProviderTypes StrEnum values exactly."""
 
     type RoleTypeLiteral = Literal["REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"]
-    """Role type literal - matches RoleType StrEnum values."""
+    """Role type literal - matches RoleTypes StrEnum values exactly."""
 
     type PermissionTypeLiteral = Literal["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"]
-    """Permission type literal - matches PermissionType StrEnum values."""
+    """Permission type literal - matches PermissionTypes StrEnum values exactly."""
 
-    type ProjectTypeLiteral = Literal[
-        "library",
-        "application",
-        "service",
-        "auth-service",
-        "identity-provider",
-        "sso-service",
-        "oauth-provider",
-        "auth-gateway",
-        "session-manager",
-        "jwt-service",
-        "rbac-system",
-        "auth-api",
-        "identity-api",
-        "credential-manager",
-        "security-service",
-    ]
-    """Project type literal for authentication service types."""
+    type AlgorithmLiteral = Literal["HS256", "RS256", "ES256"]
+    """Algorithm literal - matches Algorithms StrEnum values exactly."""
 
-    # =========================================================================
-    # IMMUTABLE CONSTANTS - NO CONFIGURATION (USE CONFIG.PY FOR SETTINGS)
-    # =========================================================================
+    # ═══════════════════════════════════════════════════════════════════
+    # REFERÊNCIAS A FLEXT-CORE: Explicit references (não aliases)
+    # ═══════════════════════════════════════════════════════════════════
 
-    # Validation methods using ValidationMappings
-    @classmethod
-    def validate_token_type(cls, token_type: str) -> str | None:
-        """Validate token type against allowed values."""
-        return cls.ValidationMappings._TOKEN_TYPE_VALIDATION_MAP.get(token_type)
+    class Inherited:
+        """Explicit references to inherited constants from FlextConstants.
 
-    @classmethod
-    def validate_provider_type(cls, provider_type: str) -> str | None:
-        """Validate provider type against allowed values."""
-        return cls.ValidationMappings._PROVIDER_TYPE_VALIDATION_MAP.get(provider_type)
+        Use for documenting which constants from FlextConstants are used
+        in this domain, without creating aliases.
+        """
 
-    @classmethod
-    def validate_role_type(cls, role_type: str) -> str | None:
-        """Validate role type against allowed values."""
-        return cls.ValidationMappings._ROLE_TYPE_VALIDATION_MAP.get(role_type)
-
-    @classmethod
-    def validate_permission_type(cls, permission_type: str) -> str | None:
-        """Validate permission type against allowed values."""
-        return cls.ValidationMappings._PERMISSION_TYPE_VALIDATION_MAP.get(
-            permission_type
-        )
-
-    @classmethod
-    def get_valid_token_types(cls) -> AbstractSet[str]:
-        """Get all valid token types."""
-        return cls.ValidationMappings._TOKEN_TYPE_VALIDATION_SET
-
-    @classmethod
-    def get_valid_provider_types(cls) -> AbstractSet[str]:
-        """Get all valid provider types."""
-        return cls.ValidationMappings._PROVIDER_TYPE_VALIDATION_SET
-
-    @classmethod
-    def get_valid_role_types(cls) -> AbstractSet[str]:
-        """Get all valid role types."""
-        return cls.ValidationMappings._ROLE_TYPE_VALIDATION_SET
-
-    @classmethod
-    def get_valid_permission_types(cls) -> AbstractSet[str]:
-        """Get all valid permission types."""
-        return cls.ValidationMappings._PERMISSION_TYPE_VALIDATION_SET
-
-    # Token Types & Prefixes
-    TOKEN_TYPES: Final[tuple[str, ...]] = ("access", "refresh", "api", "bearer")
-    TOKEN_TYPE_ACCESS: Final[str] = "access"
-    TOKEN_TYPE_BEARER: Final[str] = "bearer"
-    TOKEN_TYPE_API: Final[str] = "api"
-    TOKEN_PREFIX_BEARER: Final[str] = "Bearer"
-
-    # Algorithms Supported
-    ALLOWED_ALGORITHMS: Final[tuple[str, ...]] = ("HS256", "RS256", "ES256")
-
-    # Permission & Role Constants
-    PERMISSION_READ: Final[str] = "read"
-    PERMISSION_WRITE: Final[str] = "write"
-    PERMISSION_DELETE: Final[str] = "delete"
-    PERMISSION_ADMIN: Final[str] = "REDACTED_LDAP_BIND_PASSWORD"
-    ROLE_ADMIN: Final[str] = "REDACTED_LDAP_BIND_PASSWORD"
-    ROLE_USER: Final[str] = "user"
-    ROLE_MODERATOR: Final[str] = "moderator"
-    ROLE_GUEST: Final[str] = "guest"
-    DEFAULT_ROLES: Final[tuple[str, ...]] = ("user",)
-    VALID_ROLES: Final[tuple[str, ...]] = ("REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest")
-    BASIC_PERMISSIONS: Final[tuple[str, ...]] = ("read", "write")
-    ADMIN_PERMISSIONS: Final[tuple[str, ...]] = ("read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD")
-
-    # Weak Credentials (Security Pattern)
-    WEAK_CREDENTIALS: Final[list[str]] = [
-        "123",
-        "abc",
-        "password",
-        "12345678",
-        "aaaaaaaa",
-    ]
-
-    # Platform & Network (from flext-core)
-    PLATFORM_FLEXT_API_PORT: Final[int] = FlextConstants.Platform.FLEXT_API_PORT
-    PLATFORM_DEFAULT_HOST: Final[str] = FlextConstants.Platform.DEFAULT_HOST
-    PLATFORM_LOOPBACK_IP: Final[str] = "127.0.0.1"
-    NETWORK_MIN_PORT: Final[int] = FlextConstants.Network.MIN_PORT
-    NETWORK_MAX_PORT: Final[int] = FlextConstants.Network.MAX_PORT
-    NETWORK_DEFAULT_TIMEOUT: Final[int] = FlextConstants.Network.DEFAULT_TIMEOUT
-
-    # =========================================================================
-    # VALIDATION CONSTRAINTS - All magic values for input validation
-    # =========================================================================
-
-    # Secret/credential length constraints
-    SECRET_MIN_LENGTH: Final[int] = 16
-    CREDENTIAL_MIN_LENGTH: Final[int] = 8
-    CREDENTIAL_MAX_LENGTH: Final[int] = 128
-    IDENTITY_MIN_LENGTH: Final[int] = 1
-    IDENTITY_MAX_LENGTH: Final[int] = 255
-
-    # =========================================================================
-    # TOKEN & SESSION DEFAULTS - Expiry and timing
-    # =========================================================================
-
-    EXPIRY_DEFAULT_MINUTES: Final[int] = 1440  # 24 hours
-    EXPIRY_MAX_MINUTES: Final[int] = 43200  # 30 days
-    SESSION_EXPIRY_DEFAULT_MINUTES: Final[int] = 1440  # 24 hours
-    SESSION_EXPIRY_MAX_MINUTES: Final[int] = 43200  # 30 days
-
-    # =========================================================================
-    # CRYPTOGRAPHY DEFAULTS - Hash rounds and algorithms
-    # =========================================================================
-
-    HASH_ROUNDS_DEFAULT: Final[int] = 12
-    HASH_ROUNDS_MIN: Final[int] = 10
-    HASH_ROUNDS_MAX: Final[int] = 15
-    # Bcrypt library limits (different from hash rounds defaults)
-    BCRYPT_ROUNDS_MIN: Final[int] = 4
-    BCRYPT_ROUNDS_MAX: Final[int] = 31
-    ALGORITHM_DEFAULT: Final[str] = "HS256"
-
-    # =========================================================================
-    # SECURITY POLICIES - Authentication attempt and lockout
-    # =========================================================================
-
-    MAX_ATTEMPTS_DEFAULT: Final[int] = 5
-    LOCKOUT_DURATION_MINUTES: Final[int] = 15
-    MAX_SESSIONS_DEFAULT: Final[int] = 5
-
-    # =========================================================================
-    # RATE LIMITING & PERFORMANCE - Request limits and thresholds
-    # =========================================================================
-
-    MAX_REQUESTS_PER_MINUTE: Final[int] = 60
-    MAX_REQUESTS_PER_HOUR: Final[int] = 1000
-    PERFORMANCE_THRESHOLD_MS: Final[float] = 100.0
-
-    # =========================================================================
-    # DEFAULT ISSUER & AUDIENCE - Token claim defaults
-    # =========================================================================
-
-    DEFAULT_TOKEN_TYPE: Final[str] = "access"
-    DEFAULT_ISSUER: Final[str] = "flext-auth"
-    DEFAULT_AUDIENCE: Final[str] = "flext-users"
-
-    # =========================================================================
-    # PROTOCOL CONSTANTS - GENERIC PROTOCOL SUPPORT
-    # =========================================================================
-
-    OAUTH2_CLIENT_SECRET_POST: Final[str] = "client_secret_post"
-    OAUTH2_CLIENT_SECRET_BASIC: Final[str] = "client_secret_basic"
-    SAML_NS_ASSERTION: Final[str] = "urn:oasis:names:tc:SAML:2.0:assertion"
-    SAML_NS_PROTOCOL: Final[str] = "urn:oasis:names:tc:SAML:2.0:protocol"
-    SAML_NS_SIGNATURE: Final[str] = "http://www.w3.org/2000/09/xmldsig#"
-
-    # =========================================================================
-    # CREDENTIALS CONSTANTS
-    # =========================================================================
-
-    class Credentials(FlextConstants.Validation):
-        """Credential validation and security constants."""
-
-        MIN_LENGTH: Final[int] = 8
-        MAX_LENGTH: Final[int] = 128
-
-        class Username:
-            """Username-specific constants."""
-
-            MIN_LENGTH: Final[int] = 3
-            MAX_LENGTH: Final[int] = 50
-
-        class Password:
-            """Password-specific constants."""
-
-            MIN_LENGTH: Final[int] = 8
-            MAX_LENGTH: Final[int] = 128
-            MIN_SCORE: Final[int] = 3
-            MIN_BCRYPT_HASH_LENGTH: Final[int] = 60
-            BCRYPT_ROUNDS: Final[int] = 12
-
-    # =========================================================================
-    # SESSION CONSTANTS
-    # =========================================================================
-
-    class Session(FlextConstants.Validation):
-        """Session management constants."""
-
-        EXPIRY_DEFAULT_MINUTES: Final[int] = 1440  # 24 hours
-        DEFAULT_EXPIRY_MINUTES: Final[int] = 120  # 2 hours (test expectation)
-        EXPIRY_MAX_MINUTES: Final[int] = 43200  # 30 days
-        MAX_EXPIRY_MINUTES: Final[int] = 1440  # 24 hours (test expectation)
-        MAX_SESSIONS_PER_USER: Final[int] = 5
-        MIN_TOKEN_LENGTH: Final[int] = 32
-
-    # =========================================================================
-    # ERROR CODES
-    # =========================================================================
-
-    class ErrorCodes(FlextConstants.Errors):
-        """Authentication-specific error codes extending core errors."""
-
-        TOKEN_ERROR: Final[str] = "TOKEN_ERROR"
-        SESSION_ERROR: Final[str] = "SESSION_ERROR"
-        CREDENTIAL_ERROR: Final[str] = "CREDENTIAL_ERROR"
-        INVALID_CREDENTIALS: Final[str] = "INVALID_CREDENTIALS"
-        ACCOUNT_LOCKED: Final[str] = "ACCOUNT_LOCKED"
-        ACCOUNT_DISABLED: Final[str] = "ACCOUNT_DISABLED"
-        TOKEN_EXPIRED: Final[str] = "TOKEN_EXPIRED"
-        INVALID_TOKEN: Final[str] = "INVALID_TOKEN"
-
-    # =========================================================================
-    # JWT CONSTANTS
-    # =========================================================================
-
-    class Jwt:
-        """JWT token constants."""
-
-        ALGORITHM_DEFAULT: Final[str] = "HS256"
-        DEFAULT_ALGORITHM: Final[str] = "HS256"  # Alias for ALGORITHM_DEFAULT
-        EXPIRY_DEFAULT_MINUTES: Final[int] = 1440  # 24 hours
-        DEFAULT_EXPIRY_MINUTES: Final[int] = 30  # 30 minutes (test expectation)
-        EXPIRY_MAX_MINUTES: Final[int] = 43200  # 30 days
-        MAX_EXPIRY_MINUTES: Final[int] = 1440  # 24 hours (test expectation)
-        ISSUER_CLAIM: Final[str] = "flext-auth"
-        AUDIENCE_CLAIM: Final[str] = "flext-users"
-        MIN_SECRET_KEY_LENGTH: Final[int] = 32
-        DEFAULT_TOKEN_TYPE: Final[str] = "Bearer"
-
-    # =========================================================================
-    # AUTH SECURITY CONSTANTS
-    # =========================================================================
-
-    class AuthSecurity:
-        """Authentication security constants."""
-
-        HASH_ROUNDS_DEFAULT: Final[int] = 12
-        HASH_ROUNDS_MIN: Final[int] = 10
-        HASH_ROUNDS_MAX: Final[int] = 15
-        MAX_ATTEMPTS_DEFAULT: Final[int] = 5
-        MAX_LOGIN_ATTEMPTS: Final[int] = 5  # Alias for MAX_ATTEMPTS_DEFAULT
-        LOCKOUT_DURATION_MINUTES: Final[int] = 15
-        MAX_REQUESTS_PER_MINUTE: Final[int] = 60
-        MAX_REQUESTS_PER_HOUR: Final[int] = 1000
-
-    # =========================================================================
-    # ROLES CONSTANTS
-    # =========================================================================
-
-    class Roles:
-        """User role constants."""
-
-        ADMIN: Final[str] = "REDACTED_LDAP_BIND_PASSWORD"
-        USER: Final[str] = "user"
-        MODERATOR: Final[str] = "moderator"
-        GUEST: Final[str] = "guest"
-        VALID_ROLES: Final[list[str]] = ["REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"]
-        DEFAULT_ROLES: Final[list[str]] = ["user"]
-
-    # =========================================================================
-    # PERMISSIONS CONSTANTS
-    # =========================================================================
-
-    class Permissions:
-        """User permission constants."""
-
-        READ: Final[str] = "read"
-        WRITE: Final[str] = "write"
-        DELETE: Final[str] = "delete"
-        ADMIN: Final[str] = "REDACTED_LDAP_BIND_PASSWORD"
-        BASIC_PERMISSIONS: Final[list[str]] = ["read", "write"]
-        BASIC_USER_PERMISSIONS: Final[list[str]] = [
-            "read",
-            "write",
-        ]  # Alias for BASIC_PERMISSIONS
-        ADMIN_PERMISSIONS: Final[list[str]] = ["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"]
-
-    # =========================================================================
-    # BASIC AUTH CONSTANTS (RFC 7617)
-    # =========================================================================
-
-    class BasicAuth:
-        """HTTP Basic Authentication constants (RFC 7617)."""
-
-        SCHEME: Final[str] = "Basic"
-        REALM_DEFAULT: Final[str] = "FLEXT Auth"
-        REQUIRE_HTTPS_DEFAULT: Final[bool] = True
-        CASE_SENSITIVE_DEFAULT: Final[bool] = True
-        ALLOW_ANONYMOUS_DEFAULT: Final[bool] = False
-        ANONYMOUS_TOKEN_EXPIRY_HOURS: Final[int] = 24
-
-    # =========================================================================
-    # API KEY CONSTANTS
-    # =========================================================================
-
-    class ApiKey:
-        """API Key authentication constants."""
-
-        PREFIX_DEFAULT: Final[str] = "fk_"
-        LENGTH_DEFAULT: Final[int] = 32
-        HASH_ALGORITHM_DEFAULT: Final[str] = "sha256"
-        HASH_ALGORITHMS: Final[list[str]] = ["sha256", "sha512"]
-        REQUIRE_KEY_ID_DEFAULT: Final[bool] = False
-        RATE_LIMIT_ENABLED_DEFAULT: Final[bool] = True
-        RATE_LIMIT_REQUESTS_DEFAULT: Final[int] = 100
-        RATE_LIMIT_WINDOW_SECONDS_DEFAULT: Final[int] = 3600
-        EXPIRY_DAYS_DEFAULT: Final[int] = 365
-
-    # =========================================================================
-    # OAUTH2 CONSTANTS (RFC 6749)
-    # =========================================================================
-
-    class OAuth2:
-        """OAuth 2.0 authentication constants (RFC 6749)."""
-
-        SCOPE_DEFAULT: Final[str] = "openid profile email"
-        FLOW_DEFAULT: Final[str] = "authorization_code"
-        FLOWS: Final[list[str]] = [
-            "authorization_code",
-            "client_credentials",
-            "password",
-            "implicit",
-        ]
-        TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT: Final[str] = "client_secret_post"
-        TOKEN_ENDPOINT_AUTH_METHODS: Final[list[str]] = [
-            "client_secret_post",
-            "client_secret_basic",
-            "none",
-        ]
-        USE_PKCE_DEFAULT: Final[bool] = True
-        PKCE_CODE_CHALLENGE_METHOD: Final[str] = "S256"
-
-    # =========================================================================
-    # JWT CONSTANTS (RFC 7519) - Extended
-    # =========================================================================
-
-    class JwtExtended:
-        """Extended JWT constants (RFC 7519)."""
-
-        ALGORITHMS: Final[list[str]] = ["HS256", "RS256", "ES256", "HS512"]
-        ISSUER_DEFAULT: Final[str] = "flext-auth"
-        AUDIENCE_DEFAULT: Final[str] = "flext-users"
-
-    # =========================================================================
-    # SAML CONSTANTS (SAML 2.0)
-    # =========================================================================
-
-    class Saml:
-        """SAML 2.0 authentication constants."""
-
-        NS_ASSERTION: Final[str] = "urn:oasis:names:tc:SAML:2.0:assertion"
-        NS_PROTOCOL: Final[str] = "urn:oasis:names:tc:SAML:2.0:protocol"
-        NS_SIGNATURE: Final[str] = "http://www.w3.org/2000/09/xmldsig#"
-        NAME_ID_FORMAT_EMAIL: Final[str] = (
-            "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress"
-        )
-        NAME_ID_FORMAT_UNSPECIFIED: Final[str] = (
-            "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified"
-        )
-        NAME_ID_FORMAT_PERSISTENT: Final[str] = (
-            "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent"
-        )
-        NAME_ID_FORMATS: Final[list[str]] = [
-            "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress",
-            "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
-            "urn:oasis:names:tc:SAML:2.0:nameid-format:persistent",
-            "urn:oasis:names:tc:SAML:2.0:nameid-format:transient",
-        ]
-        SIGN_ASSERTIONS_DEFAULT: Final[bool] = True
-        ENCRYPT_ASSERTIONS_DEFAULT: Final[bool] = False
-
-    # =========================================================================
-    # LDAP CONSTANTS
-    # =========================================================================
-
-    class Ldap:
-        """LDAP authentication constants."""
-
-        USE_SSL_DEFAULT: Final[bool] = True
-        USE_TLS_DEFAULT: Final[bool] = False
-        TIMEOUT_DEFAULT: Final[int] = 30
-        USER_SEARCH_FILTER_DEFAULT: Final[str] = "(uid={username})"
-
-    # =========================================================================
-    # CERTIFICATE CONSTANTS
-    # =========================================================================
-
-    class Certificate:
-        """X.509 Certificate authentication constants."""
-
-        VERIFY_MODE_REQUIRED: Final[str] = "required"
-        VERIFY_MODE_OPTIONAL: Final[str] = "optional"
-        VERIFY_MODE_NONE: Final[str] = "none"
-        VERIFY_MODES: Final[list[str]] = ["required", "optional", "none"]
-        CHECK_OCSP_DEFAULT: Final[bool] = False
-        CHECK_CRL_DEFAULT: Final[bool] = False
-        ALLOW_SELF_SIGNED_DEFAULT: Final[bool] = False
-
-    # =========================================================================
-    # KERBEROS CONSTANTS
-    # =========================================================================
-
-    class Kerberos:
-        """Kerberos authentication constants."""
-
-        CLOCKSKEW_TOLERANCE_DEFAULT: Final[int] = 300
-        TICKET_LIFETIME_DEFAULT: Final[int] = 10
+        # Apenas referências, não aliases
+        # Use FlextConstants.Cqrs.Status diretamente no código
 
 
 __all__ = ["FlextAuthConstants"]

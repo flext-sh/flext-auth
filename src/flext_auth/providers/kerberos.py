@@ -184,7 +184,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         ) -> FlextResult[dict[str, object]]:
             """Authenticate using Kerberos ticket."""
             # Use composition for ticket validation
-            return self.provider._ticket_validator.validate_ticket(ticket_data)  # noqa: SLF001
+            return self.provider._ticket_validator.validate_ticket(ticket_data)
 
     def supports(self) -> set[str]:
         """Return Kerberos provider capabilities."""
@@ -210,7 +210,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     def generate_token_for_user(
         self,
         user: FlextAuthModels.Identity,
-        token_type: str = "kerberos_access",  # noqa: S107
+        token_type: str = "kerberos_access",
         expiry_minutes: int | None = None,
     ) -> FlextResult[str]:
         """Generate Kerberos token for user."""

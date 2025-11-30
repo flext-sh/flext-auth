@@ -1,7 +1,4 @@
-"""FLEXT Auth Utilities - Generic credential and token processing.
-
-Single FlextAuthUtilities class with static methods for password and JWT operations,
-delegating to bcrypt and jwt libraries directly.
+"""FlextAuth utilities - Advanced type-safe utilities using FlextUtilities patterns.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -9,123 +6,433 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TypedDict
+from collections.abc import Callable, Iterable
+from datetime import UTC, datetime
+from enum import StrEnum
+from functools import cache, wraps
+from typing import Annotated, Any, TypeIs
 
-import bcrypt
-import jwt
-from flext_core import FlextResult
-from pydantic import SecretStr
+from flext_core import FlextResult, FlextUtilities
+from pydantic import BaseModel, BeforeValidator, ConfigDict, validate_call
+from pydantic_core import ValidationError
 
 from flext_auth.constants import FlextAuthConstants
 
 
-# Local type definitions to avoid circular imports
-class CredentialStrength(TypedDict):
-    """Credential strength validation result."""
+class FlextAuthUtilities(FlextUtilities):
+    """FlextAuth advanced utilities extending FlextUtilities with domain-specific helpers.
 
-    is_valid: bool
-    length: int
-    errors: tuple[str, ...]
+    Architecture: Advanced utilities with ZERO code bloat through:
+    - TypeIs/TypeGuard for narrowing (PEP 742)
+    - BeforeValidator factories for Pydantic coercion
+    - @validated decorators eliminating manual validation
+    - Generic parsing utilities for StrEnums
+    """
 
+    # ═══════════════════════════════════════════════════════════════════
+    # TYPEIS + TYPEGUARD: Advanced type narrowing (Python 3.13+ PEP 742)
+    # ═══════════════════════════════════════════════════════════════════
 
-class ClaimMap(TypedDict):
-    """JWT claim mapping."""
+    @classmethod
+    def is_valid_token_type(cls, value: str) -> TypeIs[FlextAuthConstants.TokenTypes]:
+        """TypeIs for TokenTypes validation - narrowing in if/else."""
+        return value in cls.TokenTypes._value2member_map_
 
-    sub: str
-    exp: int
-    iat: int
-    jti: str
-    iss: str
-    aud: str
-    session_id: str
+    @classmethod
+    def is_valid_provider_type(
+        cls, value: str
+    ) -> TypeIs[FlextAuthConstants.ProviderTypes]:
+        """TypeIs for ProviderTypes validation."""
+        return value in cls.ProviderTypes._value2member_map_
 
+    @classmethod
+    def is_valid_role_type(cls, value: str) -> TypeIs[FlextAuthConstants.RoleTypes]:
+        """TypeIs for RoleTypes validation."""
+        return value in cls.RoleTypes._value2member_map_
 
-class FlextAuthUtilities:
-    """Generic authentication utilities with password and token processing."""
+    @classmethod
+    def is_valid_permission_type(
+        cls, value: str
+    ) -> TypeIs[FlextAuthConstants.PermissionTypes]:
+        """TypeIs for PermissionTypes validation."""
+        return value in cls.PermissionTypes._value2member_map_
 
-    @staticmethod
-    def hash_credential(
-        credential: str, rounds: int = FlextAuthConstants.HASH_ROUNDS_DEFAULT
-    ) -> FlextResult[str]:
-        """Generic credential hashing using bcrypt.
+    # ═══════════════════════════════════════════════════════════════════
+    # ENUM UTILITIES: Advanced StrEnum handling
+    # ═══════════════════════════════════════════════════════════════════
 
-        Args:
-        credential: Credential to hash
-        rounds: Bcrypt rounds
+    class Enum:
+        """Advanced StrEnum utilities - ZERO manual TypeGuard code."""
 
-        Returns:
-        FlextResult with hashed credential or error
-
-        """
-        if not isinstance(credential, str) or not credential:
-            return FlextResult[str].fail("Credential must be a non-empty string")
-
-        if (
-            not isinstance(rounds, int)
-            or rounds < FlextAuthConstants.BCRYPT_ROUNDS_MIN
-            or rounds > FlextAuthConstants.BCRYPT_ROUNDS_MAX
-        ):
-            return FlextResult[str].fail(
-                f"Bcrypt rounds must be an integer between {FlextAuthConstants.BCRYPT_ROUNDS_MIN} and {FlextAuthConstants.BCRYPT_ROUNDS_MAX}"
+        @staticmethod
+        def is_member[E: StrEnum](enum_cls: type[E], value: object) -> TypeIs[E]:
+            """TypeIs genérico - narrowing em AMBAS branches if/else."""
+            return isinstance(value, enum_cls) or (
+                isinstance(value, str) and value in enum_cls._value2member_map_
             )
 
-        try:
-            salt = bcrypt.gensalt(rounds=rounds)
-            hashed = bcrypt.hashpw(credential.encode("utf-8"), salt)
-            return FlextResult[str].ok(hashed.decode("utf-8"))
-        except (ValueError, TypeError) as e:
-            return FlextResult[str].fail(f"Invalid credential format: {e}")
-        except Exception as e:
-            return FlextResult[str].fail(f"Hashing failed: {e}")
+        @staticmethod
+        def is_subset[E: StrEnum](
+            enum_cls: type[E], valid: frozenset[E], value: object
+        ) -> TypeIs[E]:
+            if isinstance(value, enum_cls):
+                return value in valid
+            if isinstance(value, str):
+                try:
+                    return enum_cls(value) in valid
+                except ValueError:
+                    return False
+            return False
 
-    @staticmethod
-    def verify_credential(credential: str, credential_hash: str) -> FlextResult[bool]:
-        """Generic credential verification.
+        @staticmethod
+        def parse[E: StrEnum](enum_cls: type[E], value: str | E) -> FlextResult[E]:
+            """Parse string to StrEnum with FlextResult."""
+            if isinstance(value, enum_cls):
+                return FlextResult.ok(value)
+            try:
+                return FlextResult.ok(enum_cls(value))
+            except ValueError:
+                valid = ", ".join(m.value for m in enum_cls)
+                return FlextResult.fail(
+                    f"Invalid {enum_cls.__name__}: '{value}'. Valid: {valid}"
+                )
 
-        Args:
-        credential: Plain credential to verify
-        credential_hash: Stored hash
+        @staticmethod
+        def coerce_validator[E: StrEnum](enum_cls: type[E]) -> Callable[[Any], E]:
+            """BeforeValidator factory for Pydantic coercion."""
 
-        Returns:
-        FlextResult with boolean or error
+            def _coerce(v: Any) -> E:
+                if isinstance(v, enum_cls):
+                    return v
+                if isinstance(v, str):
+                    try:
+                        return enum_cls(v)
+                    except ValueError:
+                        pass
+                msg = f"Invalid {enum_cls.__name__}: {v!r}"
+                raise ValueError(msg)
 
-        """
-        if not isinstance(credential, str) or not credential:
-            return FlextResult[bool].fail("Credential must be a non-empty string")
+            return _coerce
 
-        if not isinstance(credential_hash, str) or not credential_hash:
-            return FlextResult[bool].fail("Credential hash must be a non-empty string")
+        @staticmethod
+        @cache
+        def values[E: StrEnum](enum_cls: type[E]) -> frozenset[str]:
+            return frozenset(m.value for m in enum_cls)
 
-        try:
-            is_valid = bcrypt.checkpw(
-                credential.encode("utf-8"), credential_hash.encode("utf-8")
+    class Collection:
+        """Parsing de Sequence/Mapping com StrEnums."""
+
+        @staticmethod
+        def parse_sequence[E: StrEnum](
+            enum_cls: type[E], values: Iterable[str | E]
+        ) -> FlextResult[tuple[E, ...]]:
+            parsed, errors = [], []
+            for i, v in enumerate(values):
+                if isinstance(v, enum_cls):
+                    parsed.append(v)
+                else:
+                    try:
+                        parsed.append(enum_cls(v))
+                    except ValueError:
+                        errors.append(f"[{i}]: '{v}'")
+            return (
+                FlextResult.fail(f"Invalid: {errors}")
+                if errors
+                else FlextResult.ok(tuple(parsed))
             )
-            return FlextResult[bool].ok(is_valid)
-        except (ValueError, TypeError) as e:
-            return FlextResult[bool].fail(f"Invalid credential or hash format: {e}")
-        except Exception as e:
-            return FlextResult[bool].fail(f"Verification failed: {e}")
 
-    @staticmethod
-    def validate_credential_strength(
-        credential: str,
-    ) -> FlextResult[CredentialStrength]:
-        """Generic credential strength validation.
+        @staticmethod
+        def coerce_list_validator[E: StrEnum](
+            enum_cls: type[E],
+        ) -> Callable[[Any], list[E]]:
+            def _coerce(value: Any) -> list[E]:
+                if not isinstance(value, (list, tuple, set)):
+                    msg = "Expected sequence"
+                    raise ValueError(msg)
+                result = []
+                for i, item in enumerate(value):
+                    if isinstance(item, enum_cls):
+                        result.append(item)
+                    elif isinstance(item, str):
+                        try:
+                            result.append(enum_cls(item))
+                        except ValueError:
+                            msg = f"Invalid at [{i}]: {item!r}"
+                            raise ValueError(msg)
+                    else:
+                        msg = f"Expected str at [{i}]"
+                        raise ValueError(msg)
+                return result
 
-        Args:
-        credential: Credential to validate
+            return _coerce
 
-        Returns:
-        FlextResult with validation result dict or error
+    # ═══════════════════════════════════════════════════════════════════
+    # ARGS UTILITIES: @validated decorators - ZERO boilerplate
+    # ═══════════════════════════════════════════════════════════════════
 
-        """
-        errors: list[str] = []
-        if len(credential) < FlextAuthConstants.CREDENTIAL_MIN_LENGTH:
-            errors.append(f"Min length: {FlextAuthConstants.CREDENTIAL_MIN_LENGTH}")
-        if len(credential) > FlextAuthConstants.CREDENTIAL_MAX_LENGTH:
-            errors.append(f"Max length: {FlextAuthConstants.CREDENTIAL_MAX_LENGTH}")
-        if not any(c.isupper() for c in credential):
-            errors.append("Need uppercase letter")
+    class Args:
+        """@validated decorators - ZERO manual validation boilerplate."""
+
+        @staticmethod
+        def validated[P, R](func: Callable[P, R]) -> Callable[P, R]:
+            """@validate_call decorator - aceita str OU enum, converte auto."""
+            return validate_call(
+                config=ConfigDict(arbitrary_types_allowed=True, use_enum_values=False),
+                validate_return=False,
+            )(func)
+
+        @staticmethod
+        def validated_with_result[P, R](
+            func: Callable[P, FlextResult[R]],
+        ) -> Callable[P, FlextResult[R]]:
+            """ValidationError → FlextResult.fail()."""
+
+            @wraps(func)
+            def wrapper(*args: Any, **kwargs: Any) -> FlextResult[R]:
+                try:
+                    return validate_call(
+                        config=ConfigDict(
+                            arbitrary_types_allowed=True, use_enum_values=False
+                        ),
+                        validate_return=False,
+                    )(func)(*args, **kwargs)
+                except ValidationError as e:
+                    return FlextResult.fail(f"Validation failed: {e}")
+                except Exception as e:
+                    return FlextResult.fail(str(e))
+
+            return wrapper
+
+    # ═══════════════════════════════════════════════════════════════════
+    # MODEL UTILITIES: from_dict, merge_defaults, update - ZERO try/except
+    # ═══════════════════════════════════════════════════════════════════
+
+    class Model:
+        """Pydantic model utilities - ZERO manual try/except."""
+
+        @staticmethod
+        def from_dict[M: BaseModel](
+            model_cls: type[M], data: dict[str, Any], *, strict: bool = False
+        ) -> FlextResult[M]:
+            """Create model from dict - automatic validation."""
+            try:
+                return FlextResult.ok(model_cls.model_validate(data, strict=strict))
+            except ValidationError as e:
+                return FlextResult.fail(f"Model validation failed: {e}")
+
+        @staticmethod
+        def merge_defaults[M: BaseModel](
+            model_cls: type[M], defaults: dict[str, Any], overrides: dict[str, Any]
+        ) -> FlextResult[M]:
+            """Merge defaults with overrides - automatic validation."""
+            merged = {**defaults, **overrides}
+            return FlextAuthUtilities.Model.from_dict(model_cls, merged)
+
+        @staticmethod
+        def update[M: BaseModel](instance: M, **updates: Any) -> FlextResult[M]:
+            """Update model instance - automatic re-validation."""
+            try:
+                current = instance.model_dump()
+                current.update(updates)
+                updated = type(instance).model_validate(current)
+                return FlextResult.ok(updated)
+            except ValidationError as e:
+                return FlextResult.fail(f"Model update failed: {e}")
+
+    # ═══════════════════════════════════════════════════════════════════
+    # PYDANTIC UTILITIES: Annotated types factories
+    # ═══════════════════════════════════════════════════════════════════
+
+    class Pydantic:
+        """Fábricas de Annotated types para Pydantic models."""
+
+        @staticmethod
+        def coerced_token_type() -> type:
+            """Annotated[TokenTypes, BeforeValidator(...)]."""
+            return Annotated[
+                FlextAuthConstants.TokenTypes,
+                BeforeValidator(
+                    FlextAuthUtilities.Enum.coerce_validator(
+                        FlextAuthConstants.TokenTypes
+                    )
+                ),
+            ]
+
+        @staticmethod
+        def coerced_provider_type() -> type:
+            """Annotated[ProviderTypes, BeforeValidator(...)]."""
+            return Annotated[
+                FlextAuthConstants.ProviderTypes,
+                BeforeValidator(
+                    FlextAuthUtilities.Enum.coerce_validator(
+                        FlextAuthConstants.ProviderTypes
+                    )
+                ),
+            ]
+
+        @staticmethod
+        def coerced_role_type() -> type:
+            """Annotated[RoleTypes, BeforeValidator(...)]."""
+            return Annotated[
+                FlextAuthConstants.RoleTypes,
+                BeforeValidator(
+                    FlextAuthUtilities.Enum.coerce_validator(
+                        FlextAuthConstants.RoleTypes
+                    )
+                ),
+            ]
+
+    # ═══════════════════════════════════════════════════════════════════
+    # VALIDATION UTILITIES: Domain-specific validation
+    # ═══════════════════════════════════════════════════════════════════
+
+    class Validation:
+        """Domain-specific validation utilities."""
+
+        @staticmethod
+        def validate_username(username: str) -> FlextResult[str]:
+            """Validate username with auth-specific rules."""
+            if not username or not username.strip():
+                return FlextResult[str].fail("Username cannot be empty")
+
+            username = username.strip()
+            if len(username) < FlextAuthConstants.MIN_USERNAME_LENGTH:
+                return FlextResult[str].fail(
+                    f"Username too short (min {FlextAuthConstants.MIN_USERNAME_LENGTH} chars)"
+                )
+            if len(username) > FlextAuthConstants.MAX_USERNAME_LENGTH:
+                return FlextResult[str].fail(
+                    f"Username too long (max {FlextAuthConstants.MAX_USERNAME_LENGTH} chars)"
+                )
+            return FlextResult[str].ok(username)
+
+        @staticmethod
+        def validate_email(email: str) -> FlextResult[str]:
+            """Validate email format."""
+            if not email or not email.strip():
+                return FlextResult[str].fail("Email cannot be empty")
+
+            email = email.strip()
+            if len(email) > FlextAuthConstants.MAX_EMAIL_LENGTH:
+                return FlextResult[str].fail(
+                    f"Email too long (max {FlextAuthConstants.MAX_EMAIL_LENGTH} chars)"
+                )
+
+            if "@" not in email or "." not in email.split("@")[1]:
+                return FlextResult[str].fail("Invalid email format")
+
+            return FlextResult[str].ok(email)
+
+        @staticmethod
+        def validate_password(password: str) -> FlextResult[str]:
+            """Validate password strength."""
+            if not password:
+                return FlextResult[str].fail("Password cannot be empty")
+
+            if len(password) < FlextAuthConstants.MIN_PASSWORD_LENGTH:
+                return FlextResult[str].fail(
+                    f"Password too short (min {FlextAuthConstants.MIN_PASSWORD_LENGTH} chars)"
+                )
+            if len(password) > FlextAuthConstants.MAX_PASSWORD_LENGTH:
+                return FlextResult[str].fail(
+                    f"Password too long (max {FlextAuthConstants.MAX_PASSWORD_LENGTH} chars)"
+                )
+
+            if password.lower() in FlextAuthConstants.WEAK_CREDENTIALS:
+                return FlextResult[str].fail("Password is too weak")
+
+            return FlextResult[str].ok(password)
+
+    # ═══════════════════════════════════════════════════════════════════
+    # TOKEN UTILITIES: Token/session management
+    # ═══════════════════════════════════════════════════════════════════
+
+    class Token:
+        """Token manipulation utilities."""
+
+        @staticmethod
+        def generate_session_id() -> str:
+            """Generate a secure session ID."""
+            import secrets
+
+            return secrets.token_hex(16)
+
+        @staticmethod
+        def calculate_expiry_time(minutes: int) -> datetime:
+            """Calculate token/session expiry time."""
+            return datetime.now(UTC) + FlextUtilities.DateTime.timedelta(
+                minutes=minutes
+            )
+
+        @staticmethod
+        def is_expired(expiry_time: datetime) -> bool:
+            """Check if a timestamp is expired."""
+            return datetime.now(UTC) > expiry_time
+
+    # ═══════════════════════════════════════════════════════════════════
+    # PASSWORD UTILITIES: Secure password handling
+    # ═══════════════════════════════════════════════════════════════════
+
+    class Password:
+        """Password hashing utilities using best practices."""
+
+        @staticmethod
+        def hash_password(password: str) -> str:
+            """Hash a password using bcrypt."""
+            import bcrypt
+
+            salt = bcrypt.gensalt(rounds=FlextAuthConstants.DEFAULT_HASH_ROUNDS)
+            return bcrypt.hashpw(password.encode(), salt).decode()
+
+        @staticmethod
+        def verify_password(password: str, hashed: str) -> bool:
+            """Verify a password against its hash."""
+            import bcrypt
+
+            return bcrypt.checkpw(password.encode(), hashed.encode())
+
+    # ═══════════════════════════════════════════════════════════════════
+    # RESPONSE UTILITIES: Response building
+    # ═══════════════════════════════════════════════════════════════════
+
+    class Response:
+        """Utilities for building authentication responses."""
+
+        @staticmethod
+        def build_auth_success_response(
+            token: str | None = None,
+            user_id: str | None = None,
+            expires_at: datetime | None = None,
+        ) -> dict[str, Any]:
+            """Build a successful authentication response."""
+            response = {
+                "success": True,
+                "message": "Authentication successful",
+                "timestamp": datetime.now(UTC).isoformat(),
+            }
+
+            if token:
+                response["token"] = token
+            if user_id:
+                response["user_id"] = user_id
+            if expires_at:
+                response["expires_at"] = expires_at.isoformat()
+
+            return response
+
+        @staticmethod
+        def build_auth_error_response(
+            error: str,
+            error_code: str = "AUTH_ERROR",
+        ) -> dict[str, Any]:
+            """Build an authentication error response."""
+            return {
+                "success": False,
+                "error": error,
+                "error_code": error_code,
+                "timestamp": datetime.now(UTC).isoformat(),
+            }
+
         if not any(c.islower() for c in credential):
             errors.append("Need lowercase letter")
         if not any(c.isdigit() for c in credential):

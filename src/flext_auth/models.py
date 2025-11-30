@@ -20,6 +20,19 @@ from flext_auth.constants import FlextAuthConstants
 from flext_auth.utilities import FlextAuthUtilities
 
 
+class FlextAuthBaseModel(BaseModel):
+    """Base model for FlextAuth with standard Pydantic v2 configuration."""
+
+    from pydantic import ConfigDict
+
+    model_config = ConfigDict(
+        use_enum_values=True,
+        validate_default=True,
+        str_strip_whitespace=True,
+        extra="forbid",
+    )
+
+
 def _default_identity() -> FlextAuthModels.Identity:
     """Create default identity for AuthResponse."""
     return FlextAuthModels.Identity(

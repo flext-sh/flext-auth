@@ -168,7 +168,7 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
         and retrieve the user's password hash through the identity service.
         """
         # Import here to avoid circular dependency - runtime import required
-        from flext_auth.api import FlextAuth  # noqa: PLC0415
+        from flext_auth.api import FlextAuth
 
         # Get FlextAuth instance from container
         container = FlextContainer.get_global()

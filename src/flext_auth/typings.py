@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence, Set
 from datetime import datetime
-from typing import TypeVar
+from typing import Annotated, TypedDict
 
 from flext_core import FlextTypes
 from pydantic import Field, SecretStr
@@ -21,9 +20,6 @@ class FlextAuthTypes(FlextTypes):
     # =========================================================================
 
     type UserDict = dict[str, FlextTypes.JsonValue | str | bool | list[str]]
-        created_at: datetime
-        updated_at: datetime
-        last_login: datetime
 
     class SessionDict(TypedDict, total=False):
         """Session dictionary structure for backward compatibility."""
@@ -297,9 +293,9 @@ class FlextAuthTypes(FlextTypes):
     class Domain:
         """Domain-level literals and shortcuts."""
 
-        type ProviderType = FlextAuthConstants.ProviderType
-        type Role = RoleType
-        type Permission = PermissionType
+        type ProviderType = FlextAuthConstants.ProviderTypes
+        type Role = FlextAuthConstants.RoleTypes
+        type Permission = FlextAuthConstants.PermissionTypes
 
     class Unit:
         """Unit type for operations that return nothing but may fail."""
