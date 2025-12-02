@@ -12,11 +12,13 @@ from enum import StrEnum
 from functools import cache, wraps
 from typing import Annotated, Any, TypeIs
 
+import jwt
 from flext_core import FlextResult, FlextUtilities
-from pydantic import BaseModel, BeforeValidator, ConfigDict, validate_call
+from pydantic import BaseModel, BeforeValidator, ConfigDict, SecretStr, validate_call
 from pydantic_core import ValidationError
 
 from flext_auth.constants import FlextAuthConstants
+from flext_auth.typings import FlextAuthTypes
 
 
 class FlextAuthUtilities(FlextUtilities):
@@ -75,6 +77,7 @@ class FlextAuthUtilities(FlextUtilities):
         def is_subset[E: StrEnum](
             enum_cls: type[E], valid: frozenset[E], value: object
         ) -> TypeIs[E]:
+            """Check if value is subset of valid enum values."""
             if isinstance(value, enum_cls):
                 return value in valid
             if isinstance(value, str):
@@ -101,7 +104,7 @@ class FlextAuthUtilities(FlextUtilities):
         def coerce_validator[E: StrEnum](enum_cls: type[E]) -> Callable[[Any], E]:
             """BeforeValidator factory for Pydantic coercion."""
 
-            def _coerce(v: Any) -> E:
+            def _coerce(v: Any) -> E:  # noqa: ANN401
                 if isinstance(v, enum_cls):
                     return v
                 if isinstance(v, str):
@@ -117,6 +120,7 @@ class FlextAuthUtilities(FlextUtilities):
         @staticmethod
         @cache
         def values[E: StrEnum](enum_cls: type[E]) -> frozenset[str]:
+            """Get all enum values as frozenset."""
             return frozenset(m.value for m in enum_cls)
 
     class Collection:
@@ -126,6 +130,7 @@ class FlextAuthUtilities(FlextUtilities):
         def parse_sequence[E: StrEnum](
             enum_cls: type[E], values: Iterable[str | E]
         ) -> FlextResult[tuple[E, ...]]:
+            """Parse sequence of enum values."""
             parsed, errors = [], []
             for i, v in enumerate(values):
                 if isinstance(v, enum_cls):
@@ -145,10 +150,11 @@ class FlextAuthUtilities(FlextUtilities):
         def coerce_list_validator[E: StrEnum](
             enum_cls: type[E],
         ) -> Callable[[Any], list[E]]:
-            def _coerce(value: Any) -> list[E]:
+            """Create validator for list of enum values."""
+            def _coerce(value: Any) -> list[E]:  # noqa: ANN401
                 if not isinstance(value, (list, tuple, set)):
                     msg = "Expected sequence"
-                    raise ValueError(msg)
+                    raise TypeError(msg)
                 result = []
                 for i, item in enumerate(value):
                     if isinstance(item, enum_cls):
@@ -156,12 +162,12 @@ class FlextAuthUtilities(FlextUtilities):
                     elif isinstance(item, str):
                         try:
                             result.append(enum_cls(item))
-                        except ValueError:
+                        except ValueError as err:
                             msg = f"Invalid at [{i}]: {item!r}"
-                            raise ValueError(msg)
+                            raise ValueError(msg) from err
                     else:
                         msg = f"Expected str at [{i}]"
-                        raise ValueError(msg)
+                        raise TypeError(msg)
                 return result
 
             return _coerce
@@ -188,7 +194,7 @@ class FlextAuthUtilities(FlextUtilities):
             """ValidationError → FlextResult.fail()."""
 
             @wraps(func)
-            def wrapper(*args: Any, **kwargs: Any) -> FlextResult[R]:
+            def wrapper(*args: Any, **kwargs: Any) -> FlextResult[R]:  # noqa: ANN401
                 try:
                     return validate_call(
                         config=ConfigDict(
@@ -229,7 +235,7 @@ class FlextAuthUtilities(FlextUtilities):
             return FlextAuthUtilities.Model.from_dict(model_cls, merged)
 
         @staticmethod
-        def update[M: BaseModel](instance: M, **updates: Any) -> FlextResult[M]:
+        def update[M: BaseModel](instance: M, **updates: Any) -> FlextResult[M]:  # noqa: ANN401
             """Update model instance - automatic re-validation."""
             try:
                 current = instance.model_dump()
@@ -353,7 +359,7 @@ class FlextAuthUtilities(FlextUtilities):
         @staticmethod
         def generate_session_id() -> str:
             """Generate a secure session ID."""
-            import secrets
+            import secrets  # noqa: PLC0415
 
             return secrets.token_hex(16)
 
@@ -379,7 +385,7 @@ class FlextAuthUtilities(FlextUtilities):
         @staticmethod
         def hash_password(password: str) -> str:
             """Hash a password using bcrypt."""
-            import bcrypt
+            import bcrypt  # noqa: PLC0415
 
             salt = bcrypt.gensalt(rounds=FlextAuthConstants.DEFAULT_HASH_ROUNDS)
             return bcrypt.hashpw(password.encode(), salt).decode()
@@ -387,7 +393,7 @@ class FlextAuthUtilities(FlextUtilities):
         @staticmethod
         def verify_password(password: str, hashed: str) -> bool:
             """Verify a password against its hash."""
-            import bcrypt
+            import bcrypt  # noqa: PLC0415
 
             return bcrypt.checkpw(password.encode(), hashed.encode())
 
@@ -433,21 +439,9 @@ class FlextAuthUtilities(FlextUtilities):
                 "timestamp": datetime.now(UTC).isoformat(),
             }
 
-        if not any(c.islower() for c in credential):
-            errors.append("Need lowercase letter")
-        if not any(c.isdigit() for c in credential):
-            errors.append("Need digit")
-
-        result: CredentialStrength = {
-            "is_valid": not errors,
-            "length": len(credential),
-            "errors": tuple(errors),
-        }
-        return FlextResult[CredentialStrength].ok(result)
-
     @staticmethod
     def encode_token(
-        payload: ClaimMap,
+        payload: FlextAuthTypes.ClaimMap,
         secret: str,
         algorithm: str = FlextAuthConstants.ALGORITHM_DEFAULT,
     ) -> FlextResult[str]:
@@ -477,7 +471,7 @@ class FlextAuthUtilities(FlextUtilities):
         *,
         verify: bool = True,
         algorithms: tuple[str, ...] | None = None,
-    ) -> FlextResult[ClaimMap]:
+    ) -> FlextResult[FlextAuthTypes.ClaimMap]:
         """Generic JWT token decoding.
 
         Args:
@@ -502,18 +496,18 @@ class FlextAuthUtilities(FlextUtilities):
                 options={"verify_signature": verify},
             )
             if not isinstance(payload, dict):
-                return FlextResult[ClaimMap].fail(
+                return FlextResult[FlextAuthTypes.ClaimMap].fail(
                     "Decoded token payload is not a dictionary"
                 )
 
-            typed_payload: ClaimMap = {
+            typed_payload: FlextAuthTypes.ClaimMap = {
                 str(key): value for key, value in payload.items()
             }
-            return FlextResult[ClaimMap].ok(typed_payload)
+            return FlextResult[FlextAuthTypes.ClaimMap].ok(typed_payload)
         except jwt.InvalidTokenError as e:
-            return FlextResult[ClaimMap].fail(f"Invalid token: {e}")
+            return FlextResult[FlextAuthTypes.ClaimMap].fail(f"Invalid token: {e}")
         except Exception as e:
-            return FlextResult[ClaimMap].fail(f"Decoding failed: {e}")
+            return FlextResult[FlextAuthTypes.ClaimMap].fail(f"Decoding failed: {e}")
 
 
 __all__ = ["FlextAuthUtilities"]
