@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import r, FlextService
+from flext_core import FlextService, r
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
@@ -85,9 +85,7 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
                 old_token_id=self._short_token(token),
                 reason=error,
             )
-            return r[FlextAuthModels.AuthToken].fail(
-                error or "Token refresh failed"
-            )
+            return r[FlextAuthModels.AuthToken].fail(error or "Token refresh failed")
 
         refreshed = result.unwrap()
         self.audit_logger.log_token_refresh(

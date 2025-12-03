@@ -233,7 +233,7 @@ class FlextAuthBaseProvider(ABC):
             token: Token string to validate
 
         Returns:
-            FlextResult containing user if valid, or error if validation fails
+            r containing user if valid, or error if validation fails
 
         """
         ...
@@ -253,7 +253,7 @@ class FlextAuthBaseProvider(ABC):
             expiry_minutes: Token expiry time in minutes (uses provider default if None)
 
         Returns:
-            FlextResult containing token string or error
+            r containing token string or error
 
         """
         ...

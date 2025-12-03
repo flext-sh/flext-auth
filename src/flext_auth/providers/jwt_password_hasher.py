@@ -44,10 +44,10 @@ class FlextAuthPasswordHasher:
             salt_rounds = 12
             salt = bcrypt.gensalt(rounds=salt_rounds)
             hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
-            return FlextResult.ok(hashed.decode("utf-8"))
+            return r.ok(hashed.decode("utf-8"))
 
         except Exception as e:
-            return FlextResult.fail(f"Password hashing failed: {e}")
+            return r.fail(f"Password hashing failed: {e}")
 
     def verify_password(self, password: str, hashed_password: str) -> r[bool]:
         """Verify password against hash using bcrypt.
@@ -57,17 +57,17 @@ class FlextAuthPasswordHasher:
         hashed_password: Hashed password to check against
 
         Returns:
-        FlextResult containing verification result or error
+        r containing verification result or error
 
         """
         try:
             result = bcrypt.checkpw(
                 password.encode("utf-8"), hashed_password.encode("utf-8")
             )
-            return FlextResult.ok(result)
+            return r.ok(result)
 
         except Exception as e:
-            return FlextResult.fail(f"Password verification failed: {e}")
+            return r.fail(f"Password verification failed: {e}")
 
 
 __all__ = ["FlextAuthPasswordHasher"]

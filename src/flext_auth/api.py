@@ -12,7 +12,7 @@ from __future__ import annotations
 import threading
 from typing import ClassVar, Self, cast
 
-from flext_core import r, FlextService
+from flext_core import FlextService, r
 from pydantic import SecretStr
 
 from flext_auth.config import FlextAuthConfig
@@ -357,9 +357,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
             expires_in_minutes=self._config.expiry_minutes,
         )
 
-    def verify_token(
-        self, token: str
-    ) -> r[dict[str, str | int | bool | list[str]]]:
+    def verify_token(self, token: str) -> r[dict[str, str | int | bool | list[str]]]:
         """Railway-oriented token verification with payload extraction."""
 
         def extract_identity_data(
@@ -383,9 +381,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         """Get identity by ID - delegation to identity_service."""
         return self._identity_service.identity_manager.get_user(user_id)
 
-    def get_user_by_username(
-        self, username: str
-    ) -> r[FlextAuthModels.Identity]:
+    def get_user_by_username(self, username: str) -> r[FlextAuthModels.Identity]:
         """Get identity by username - delegation to identity_service."""
         return self._identity_service.identity_manager.get_user_by_username(username)
 
@@ -412,9 +408,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         """Logout user by session ID."""
         return self._session_service.session_manager.end_session_by_id(session_id)
 
-    def get_user_sessions(
-        self, user_id: str
-    ) -> r[list[FlextAuthModels.Session]]:
+    def get_user_sessions(self, user_id: str) -> r[list[FlextAuthModels.Session]]:
         """Get user sessions."""
         return self._session_service.session_manager.get_active_sessions(user_id)
 
@@ -422,9 +416,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         """Revoke a session."""
         return self._session_service.session_manager.end_session_by_id(session_id)
 
-    def execute(
-        self, **_kwargs: object
-    ) -> r[FlextAuthTypes.Responses.Authentication]:
+    def execute(self, **_kwargs: object) -> r[FlextAuthTypes.Responses.Authentication]:
         """Flexible execute implementation with railway orchestration."""
         return r[FlextAuthTypes.Responses.Authentication].fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead"

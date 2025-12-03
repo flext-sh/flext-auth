@@ -283,9 +283,7 @@ class FlextWebTransportAdapter:
             return r[FlextApiTypes.ResponseDict].ok({})
 
         if isinstance(body, dict):
-            return r[FlextApiTypes.ResponseDict].ok(
-                self._normalize_response_dict(body)
-            )
+            return r[FlextApiTypes.ResponseDict].ok(self._normalize_response_dict(body))
 
         if isinstance(body, (bytes, str)):
             decoded = (

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from flext_core import r, FlextService
+from flext_core import FlextService, r
 from pydantic import ValidationError
 
 from flext_auth.config import FlextAuthConfig
@@ -104,9 +104,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
             user_roles = roles
         # Normalize email to lowercase for consistency
         if not isinstance(contact, str):
-            return r[FlextAuthModels.Identity].fail(
-                "Contact must be a string"
-            )
+            return r[FlextAuthModels.Identity].fail("Contact must be a string")
         normalized_contact = contact.lower()
 
         # Validate using Pydantic model to ensure proper validation errors
@@ -201,9 +199,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
             )
         )
 
-    def reset_credential(
-        self, identity_id: str, new_credential: str
-    ) -> r[bool]:
+    def reset_credential(self, identity_id: str, new_credential: str) -> r[bool]:
         """Railway-oriented credential reset for REDACTED_LDAP_BIND_PASSWORD operations."""
         return (
             self.user_manager.get_user(identity_id)
@@ -232,9 +228,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
     # ACCOUNT LOCKOUT HANDLING
     # =========================================================================
 
-    def _handle_failed_attempt(
-        self, identity: FlextAuthModels.Identity
-    ) -> r[bool]:
+    def _handle_failed_attempt(self, identity: FlextAuthModels.Identity) -> r[bool]:
         """Handle failed authentication attempt with lockout logic."""
         identity.failed_attempts += 1
         max_attempts = self._config.max_attempts

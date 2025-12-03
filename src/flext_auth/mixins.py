@@ -43,9 +43,7 @@ class FlextAuthMixins(x):
                 )
 
             if len(password) > FlextAuthConstants.CREDENTIAL_MAX_LENGTH:
-                return r[str].fail(
-                    f"Password must be no more than {128} characters"
-                )
+                return r[str].fail(f"Password must be no more than {128} characters")
 
             # Check for password complexity
             has_upper = any(c.isupper() for c in password)
@@ -77,9 +75,7 @@ class FlextAuthMixins(x):
             username = username.strip()
 
             if len(username) < 1:
-                return r[str].fail(
-                    f"Username must be at least {1} characters"
-                )
+                return r[str].fail(f"Username must be at least {1} characters")
 
             if len(username) > MAX_USERNAME_LENGTH:
                 return r[str].fail(

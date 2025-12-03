@@ -17,7 +17,7 @@ from datetime import UTC, datetime, timedelta
 from typing import cast
 from urllib.parse import urlencode
 
-from flext_core import r
+from flext_core import e, r, u
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
@@ -38,7 +38,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         Uses composition for better separation of concerns.
         """
         super().__init__()
-        self.logger = FlextLogger(__name__)
+        # Logger removed - use logging module directly if needed
         self._config = config
 
         # Use railway-oriented validation
@@ -164,13 +164,16 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         """Railway-oriented configuration validation."""
         # Validate required fields
         required_fields = ["client_id", "token_endpoint"]
-        missing_fields = [
-            field for field in required_fields if field not in self._config
-        ]
+        # Use u.filter() for unified filtering (DSL pattern)
+        missing_fields = cast(
+            "list[str]",
+            u.filter(required_fields, lambda field: field not in self._config),
+        )
 
         if missing_fields:
+            fields_str = ", ".join(missing_fields)
             return r[bool].fail(
-                f"Missing required OAuth2 configuration fields: {', '.join(missing_fields)}"
+                f"Missing required OAuth2 configuration fields: {fields_str}"
             )
 
         # Validate field types
@@ -209,9 +212,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         for field_name, expected_types, error_msg in validations:
             field_value = self._config.get(field_name)
             if field_value is not None and not isinstance(field_value, expected_types):
-                return r[bool].fail(
-                    f"{error_msg}. Got {type(field_value).__name__}"
-                )
+                return r[bool].fail(f"{error_msg}. Got {type(field_value).__name__}")
 
         return r[bool].ok(True)
 
@@ -244,7 +245,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         def __init__(self, provider: FlextAuthOAuth2Provider) -> None:
             """Initialize flow manager."""
             self.provider = provider
-            self.logger = FlextLogger(__name__)
+            # Logger removed - use logging module directly if needed
 
         def get_authorization_url(
             self,
@@ -262,9 +263,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             if redirect_uri_value is None:
                 return r[str].fail("OAuth2 redirect_uri is required")
             if not isinstance(redirect_uri_value, str) or not redirect_uri_value:
-                return r[str].fail(
-                    "OAuth2 redirect_uri must be a non-empty string"
-                )
+                return r[str].fail("OAuth2 redirect_uri must be a non-empty string")
             redirect_uri = redirect_uri_value
             params = {
                 "client_id": self.provider.get_client_id(),
@@ -322,7 +321,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         def __init__(self, provider: FlextAuthOAuth2Provider) -> None:
             """Initialize token manager."""
             self.provider = provider
-            self.logger = FlextLogger(__name__)
+            # Logger removed - use logging module directly if needed
 
         def exchange_code_for_token(
             self,
@@ -331,7 +330,8 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             redirect_uri: str | None = None,
         ) -> r[dict[str, object]]:
             """Exchange authorization code for access token."""
-            # code, code_verifier, redirect_uri parameters reserved for future OAuth2 implementation
+            # code, code_verifier, redirect_uri parameters reserved for future
+            # OAuth2 implementation
             _ = code  # Mark as intentionally unused for now
             _ = code_verifier  # Mark as intentionally unused for now
             _ = redirect_uri  # Mark as intentionally unused for now
@@ -341,9 +341,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             if scope_value is None:
                 return r[dict[str, object]].fail("OAuth2 scope is required")
             if not isinstance(scope_value, str):
-                return r[dict[str, object]].fail(
-                    "OAuth2 scope must be a string"
-                )
+                return r[dict[str, object]].fail("OAuth2 scope must be a string")
             scope = scope_value
             token_response = {
                 "access_token": f"access_token_{secrets.token_hex(16)}",
@@ -356,9 +354,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 # In a real implementation, this would verify the PKCE challenge
                 pass
 
-            return r[dict[str, object]].ok(
-                cast("dict[str, object]", token_response)
-            )
+            return r[dict[str, object]].ok(cast("dict[str, object]", token_response))
 
         def get_client_credentials_token(self) -> r[dict[str, object]]:
             """Get access token using client credentials flow."""
@@ -368,9 +364,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 "expires_in": 3600,
             }
 
-            return r[dict[str, object]].ok(
-                cast("dict[str, object]", token_response)
-            )
+            return r[dict[str, object]].ok(cast("dict[str, object]", token_response))
 
         def refresh_access_token(
             self,
@@ -386,9 +380,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 "refresh_token": f"refresh_token_{secrets.token_hex(16)}",
             }
 
-            return r[dict[str, object]].ok(
-                cast("dict[str, object]", token_response)
-            )
+            return r[dict[str, object]].ok(cast("dict[str, object]", token_response))
 
     class _OAuth2PKCEManager:
         """SOLID-compliant OAuth2 PKCE manager.
@@ -398,7 +390,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         def __init__(self) -> None:
             """Initialize PKCE manager."""
-            self.logger = FlextLogger(__name__)
+            # Logger removed - use logging module directly if needed
             self._verifiers: dict[str, str] = {}
 
         def store_verifier(self, state: str, verifier: str) -> None:
@@ -457,7 +449,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             )
         # Convert flow result to AuthToken
         flow_data = flow_result.unwrap()
-        return FlextResult.ok(
+        return r.ok(
             FlextAuthModels.AuthToken(
                 identity_id=flow_data.get("user_id", "oauth2_user"),
                 token=credentials.get("access_token", ""),
@@ -488,7 +480,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 )
             # Convert dict to AuthToken
             token_data = token_result.unwrap()
-            return FlextResult.ok(
+            return r.ok(
                 FlextAuthModels.AuthToken(
                     identity_id=token.identity_id,
                     token=token_data.get("access_token", ""),

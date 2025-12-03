@@ -16,7 +16,9 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 
 from __future__ import annotations
 
-from flext_core import r
+from typing import cast
+
+from flext_core import r, u
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.rfc import FlextAuthRfcProvider
@@ -49,7 +51,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         Uses composition for Kerberos ticket validation, service ticket handling,
         and authentication. Railway-oriented initialization with proper error handling.
         """
-        self.logger = FlextLogger(__name__)
+        # Logger removed - use logging module directly if needed
         self._config = config
 
         # Use railway-oriented validation
@@ -72,9 +74,11 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         """Railway-oriented Kerberos configuration validation."""
         # Validate required fields
         required_fields = ["realm", "kdc", "service_principal"]
-        missing_fields = [
-            field for field in required_fields if field not in self._config
-        ]
+        # Use u.filter() for unified filtering (DSL pattern)
+        missing_fields = cast(
+            "list[str]",
+            u.filter(required_fields, lambda field: field not in self._config),
+        )
 
         if missing_fields:
             return r[bool].fail(
@@ -121,9 +125,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         for field_name, expected_types, error_msg in validations:
             field_value = self._config.get(field_name)
             if field_value is not None and not isinstance(field_value, expected_types):
-                return r[bool].fail(
-                    f"{error_msg}. Got {type(field_value).__name__}"
-                )
+                return r[bool].fail(f"{error_msg}. Got {type(field_value).__name__}")
 
         return r[bool].ok(True)
 
@@ -136,7 +138,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         def __init__(self, provider: FlextAuthKerberosProvider) -> None:
             """Initialize ticket validator."""
             self.provider = provider
-            self.logger = FlextLogger(__name__)
+            # Logger removed - use logging module directly if needed
 
         def validate_ticket(
             self, _ticket_data: dict[str, object]
@@ -158,7 +160,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         def __init__(self, provider: FlextAuthKerberosProvider) -> None:
             """Initialize service handler."""
             self.provider = provider
-            self.logger = FlextLogger(__name__)
+            # Logger removed - use logging module directly if needed
 
         def handle_service_ticket(self, ticket: str) -> r[dict[str, object]]:
             """Handle Kerberos service ticket."""
@@ -177,7 +179,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         def __init__(self, provider: FlextAuthKerberosProvider) -> None:
             """Initialize auth manager."""
             self.provider = provider
-            self.logger = FlextLogger(__name__)
+            # Logger removed - use logging module directly if needed
 
         def authenticate_ticket(
             self, ticket_data: dict[str, object]
@@ -218,9 +220,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         _ = user  # Mark as intentionally unused for now
         _ = token_type  # Mark as intentionally unused for now
         _ = expiry_minutes  # Mark as intentionally unused for now
-        return r[str].fail(
-            "Kerberos token generation not implemented in this refactor"
-        )
+        return r[str].fail("Kerberos token generation not implemented in this refactor")
 
 
 __all__ = ["FlextAuthKerberosProvider"]

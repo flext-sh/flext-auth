@@ -30,7 +30,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import r, FlextService
+from flext_core import FlextService, r
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -299,9 +299,7 @@ class FlextAuthMiddleware(FlextService):
                     self.logger.info(
                         "Token refresh successful", provider=self._provider_name
                     )
-                    return r[FlextAuthModels.AuthToken].ok(
-                        self._current_token
-                    )
+                    return r[FlextAuthModels.AuthToken].ok(self._current_token)
 
             # Refresh failed or not supported - re-authenticate
             if self._credentials:
@@ -313,9 +311,7 @@ class FlextAuthMiddleware(FlextService):
                 auth_result = self._provider.authenticate(self._credentials)
                 if auth_result.is_success:
                     self._current_token = auth_result.unwrap()
-                    return r[FlextAuthModels.AuthToken].ok(
-                        self._current_token
-                    )
+                    return r[FlextAuthModels.AuthToken].ok(self._current_token)
 
             return r[FlextAuthModels.AuthToken].fail(
                 "Token expired and unable to refresh or re-authenticate"

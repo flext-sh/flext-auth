@@ -323,9 +323,7 @@ Example 1: Basic Authentication with JWT:
   >>> from flext_auth import FlextAuthBaseProvider, r, FlextAuthModels
   >>>
   >>> class CustomProvider(FlextAuthBaseProvider):
-  ...     def authenticate(
-  ...         self, credentials: dict
-  ...     ) -> r[FlextAuthModels.AuthToken]:
+  ...     def authenticate(self, credentials: dict) -> r[FlextAuthModels.AuthToken]:
   ...         # Custom authentication logic
   ...         return r[FlextAuthModels.AuthToken].ok(token)
   ...

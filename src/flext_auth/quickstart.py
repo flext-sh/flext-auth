@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import r, FlextService
+from flext_core import FlextService, r
 
 from flext_auth.api import FlextAuth
 from flext_auth.config import FlextAuthConfig
@@ -84,9 +84,7 @@ class FlextAuthQuickstart(FlextService[object]):
 
         return r[list[str]].ok(user_ids)
 
-    def flext_auth_quick_start(
-        self, *, create_REDACTED_LDAP_BIND_PASSWORD: bool = True
-    ) -> r[list[str]]:
+    def flext_auth_quick_start(self, *, create_REDACTED_LDAP_BIND_PASSWORD: bool = True) -> r[list[str]]:
         """Quick start the auth service with demo users."""
         result = self.create_demo_users()
         if result.is_failure:

@@ -45,16 +45,12 @@ class FlextAuthJwtTokenValidator:
             config = self._provider.config
             secret_key_value = config.get("secret_key")
             if not isinstance(secret_key_value, str) or not secret_key_value:
-                return r[dict[str, object]].fail(
-                    "JWT secret key not configured"
-                )
+                return r[dict[str, object]].fail("JWT secret key not configured")
             secret_key = secret_key_value
 
             algorithm_value = config.get("algorithm")
             if not isinstance(algorithm_value, str):
-                return r[dict[str, object]].fail(
-                    "JWT algorithm not configured"
-                )
+                return r[dict[str, object]].fail("JWT algorithm not configured")
             algorithm = algorithm_value
 
             audience_value = config.get("audience")

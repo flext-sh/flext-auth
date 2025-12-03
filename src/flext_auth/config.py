@@ -238,9 +238,7 @@ class FlextAuthConfig(FlextConfig.AutoConfig):
                 return r[bool].fail(msg)
 
             if self.expiry_minutes > self.session_expiry_minutes:
-                return r[bool].fail(
-                    "JWT expiry should not exceed session expiry"
-                )
+                return r[bool].fail("JWT expiry should not exceed session expiry")
 
             return r[bool].ok(True)
         except ValueError as e:

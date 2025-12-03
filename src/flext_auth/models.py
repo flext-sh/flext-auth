@@ -260,9 +260,7 @@ class FlextAuthModels(FlextModels):
             if hash_result.is_success:
                 self.credential_hash = hash_result.unwrap()
                 return r[bool].ok(True)
-            return r[bool].fail(
-                f"Failed to hash credential: {hash_result.error}"
-            )
+            return r[bool].fail(f"Failed to hash credential: {hash_result.error}")
 
     # Backward compatibility alias for tests expecting User model
     User = Identity

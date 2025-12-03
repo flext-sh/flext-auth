@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Callable, Iterable
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from functools import cache, wraps
 from typing import Annotated, Any, TypeIs
@@ -89,16 +89,14 @@ class FlextAuthUtilities(u):
 
         @staticmethod
         def parse[E: StrEnum](enum_cls: type[E], value: str | E) -> r[E]:
-            """Parse string to StrEnum with FlextResult."""
+            """Parse string to StrEnum with r."""
             if isinstance(value, enum_cls):
-                return FlextResult.ok(value)
+                return r.ok(value)
             try:
-                return FlextResult.ok(enum_cls(value))
+                return r.ok(enum_cls(value))
             except ValueError:
                 valid = ", ".join(m.value for m in enum_cls)
-                return FlextResult.fail(
-                    f"Invalid {enum_cls.__name__}: '{value}'. Valid: {valid}"
-                )
+                return r.fail(f"Invalid {enum_cls.__name__}: '{value}'. Valid: {valid}")
 
         @staticmethod
         def coerce_validator[E: StrEnum](enum_cls: type[E]) -> Callable[[Any], E]:
@@ -140,11 +138,7 @@ class FlextAuthUtilities(u):
                         parsed.append(enum_cls(v))
                     except ValueError:
                         errors.append(f"[{i}]: '{v}'")
-            return (
-                FlextResult.fail(f"Invalid: {errors}")
-                if errors
-                else FlextResult.ok(tuple(parsed))
-            )
+            return r.fail(f"Invalid: {errors}") if errors else r.ok(tuple(parsed))
 
         @staticmethod
         def coerce_list_validator[E: StrEnum](
@@ -192,7 +186,7 @@ class FlextAuthUtilities(u):
         def validated_with_result[P, R](
             func: Callable[P, r[R]],
         ) -> Callable[P, r[R]]:
-            """ValidationError → FlextResult.fail()."""
+            """ValidationError → r.fail()."""
 
             @wraps(func)
             def wrapper(*args: Any, **kwargs: Any) -> r[R]:  # noqa: ANN401
@@ -204,9 +198,9 @@ class FlextAuthUtilities(u):
                         validate_return=False,
                     )(func)(*args, **kwargs)
                 except ValidationError as e:
-                    return FlextResult.fail(f"Validation failed: {e}")
+                    return r.fail(f"Validation failed: {e}")
                 except Exception as e:
-                    return FlextResult.fail(str(e))
+                    return r.fail(str(e))
 
             return wrapper
 
@@ -223,9 +217,9 @@ class FlextAuthUtilities(u):
         ) -> r[M]:
             """Create model from dict - automatic validation."""
             try:
-                return FlextResult.ok(model_cls.model_validate(data, strict=strict))
+                return r.ok(model_cls.model_validate(data, strict=strict))
             except ValidationError as e:
-                return FlextResult.fail(f"Model validation failed: {e}")
+                return r.fail(f"Model validation failed: {e}")
 
         @staticmethod
         def merge_defaults[M: BaseModel](
@@ -242,9 +236,9 @@ class FlextAuthUtilities(u):
                 current = instance.model_dump()
                 current.update(updates)
                 updated = type(instance).model_validate(current)
-                return FlextResult.ok(updated)
+                return r.ok(updated)
             except ValidationError as e:
-                return FlextResult.fail(f"Model update failed: {e}")
+                return r.fail(f"Model update failed: {e}")
 
     # ═══════════════════════════════════════════════════════════════════
     # PYDANTIC UTILITIES: Annotated types factories
@@ -367,7 +361,7 @@ class FlextAuthUtilities(u):
         @staticmethod
         def calculate_expiry_time(minutes: int) -> datetime:
             """Calculate token/session expiry time."""
-            return datetime.now(UTC) + uedelta(minutes=minutes)
+            return datetime.now(UTC) + timedelta(minutes=minutes)
 
         @staticmethod
         def is_expired(expiry_time: datetime) -> bool:
@@ -457,9 +451,7 @@ class FlextAuthUtilities(u):
         """
         try:
             token = jwt.encode(payload, secret, algorithm=algorithm)
-            return r[str].ok(
-                token if isinstance(token, str) else token.decode()
-            )
+            return r[str].ok(token if isinstance(token, str) else token.decode())
         except Exception as e:
             return r[str].fail(f"Encoding failed: {e}")
 

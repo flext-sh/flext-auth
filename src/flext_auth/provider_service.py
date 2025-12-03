@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import cast
 
-from flext_core import r, FlextService, t
+from flext_core import FlextService, r, t
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
@@ -139,9 +139,7 @@ class FlextAuthProviderService(FlextService[object]):
         """Get registered provider."""
         return self._providers.get(name)
 
-    def register_provider(
-        self, name: str, provider: FlextAuthBaseProvider
-    ) -> r[bool]:
+    def register_provider(self, name: str, provider: FlextAuthBaseProvider) -> r[bool]:
         """Register custom provider.
 
         Returns:

@@ -339,9 +339,7 @@ class FlextAuthConstants(FlextConstants):
         return u.Enum.parse(cls.TokenTypes, value)
 
     @classmethod
-    def validate_provider_type_with_result(
-        cls, value: str
-    ) -> r[ProviderTypes]:
+    def validate_provider_type_with_result(cls, value: str) -> r[ProviderTypes]:
         """Validate provider type using u.Enum.parse."""
         return u.Enum.parse(cls.ProviderTypes, value)
 
@@ -351,9 +349,7 @@ class FlextAuthConstants(FlextConstants):
         return u.Enum.parse(cls.RoleTypes, value)
 
     @classmethod
-    def validate_permission_type_with_result(
-        cls, value: str
-    ) -> r[PermissionTypes]:
+    def validate_permission_type_with_result(cls, value: str) -> r[PermissionTypes]:
         """Validate permission type using u.Enum.parse."""
         return u.Enum.parse(cls.PermissionTypes, value)
 

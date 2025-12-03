@@ -83,9 +83,7 @@ class FlextAuthManagers(FlextService[object]):
                 str, dict[str, object]
             ] = {}  # In production, use database (dict for dynamic key access)
 
-        def _find_user_by_id(
-            self, user_id: str
-        ) -> r[tuple[str, dict[str, object]]]:
+        def _find_user_by_id(self, user_id: str) -> r[tuple[str, dict[str, object]]]:
             """Find user by ID (either identity_id, unique_id, or id field).
 
             Eliminates duplication across 7 methods.
@@ -239,9 +237,7 @@ class FlextAuthManagers(FlextService[object]):
         ) -> r[FlextAuthModels.Identity]:
             """Create a new user."""
             if username in self._users:
-                return r[FlextAuthModels.Identity].fail(
-                    "Identity already exists"
-                )
+                return r[FlextAuthModels.Identity].fail("Identity already exists")
             # Check for duplicate email (contact)
             normalized_email = email.lower() if isinstance(email, str) else email
             for existing_user_data in self._users.values():
@@ -250,9 +246,7 @@ class FlextAuthManagers(FlextService[object]):
                     isinstance(existing_contact, str)
                     and existing_contact.lower() == normalized_email
                 ):
-                    return r[FlextAuthModels.Identity].fail(
-                        "Identity already exists"
-                    )
+                    return r[FlextAuthModels.Identity].fail("Identity already exists")
 
             user_id = str(uuid4())
             # Build user data with only Identity model fields (no extras)
@@ -309,9 +303,7 @@ class FlextAuthManagers(FlextService[object]):
                 lambda ud: self._create_identity_from_storage(ud[1])
             )
 
-        def get_user_by_username(
-            self, username: str
-        ) -> r[FlextAuthModels.Identity]:
+        def get_user_by_username(self, username: str) -> r[FlextAuthModels.Identity]:
             """Get user by username."""
             if username not in self._users:
                 return r[FlextAuthModels.Identity].fail("User not found")
@@ -351,17 +343,13 @@ class FlextAuthManagers(FlextService[object]):
             """Remove role from user."""
             return self._modify_user_list_field(user_id, "roles", role, add=False)
 
-        def add_user_permission(
-            self, user_id: str, permission: str
-        ) -> r[bool]:
+        def add_user_permission(self, user_id: str, permission: str) -> r[bool]:
             """Add permission to user."""
             return self._modify_user_list_field(
                 user_id, "permissions", permission, add=True
             )
 
-        def remove_user_permission(
-            self, user_id: str, permission: str
-        ) -> r[bool]:
+        def remove_user_permission(self, user_id: str, permission: str) -> r[bool]:
             """Remove permission from user."""
             return self._modify_user_list_field(
                 user_id, "permissions", permission, add=False
@@ -445,9 +433,7 @@ class FlextAuthManagers(FlextService[object]):
             )
             return r[FlextAuthModels.Session].ok(session)
 
-        def get_active_sessions(
-            self, user_id: str
-        ) -> r[list[FlextAuthModels.Session]]:
+        def get_active_sessions(self, user_id: str) -> r[list[FlextAuthModels.Session]]:
             """Get all active sessions for a user."""
             sessions: list[FlextAuthModels.Session] = []
             for session_id, session_data in self._sessions.items():
@@ -835,9 +821,7 @@ class FlextAuthManagers(FlextService[object]):
             )
 
             if len(recent_attempts) >= self._max_attempts:
-                return r[bool].fail(
-                    "Too many failed attempts. Please try again later."
-                )
+                return r[bool].fail("Too many failed attempts. Please try again later.")
 
             return r[bool].ok(True)
 
