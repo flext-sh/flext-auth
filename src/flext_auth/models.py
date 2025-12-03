@@ -13,7 +13,7 @@ from collections import UserDict
 from datetime import UTC, datetime
 from typing import Self
 
-from flext_core import FlextModels, FlextResult
+from flext_core import r
 from pydantic import BaseModel, Field, computed_field, model_validator
 
 from flext_auth.constants import FlextAuthConstants
@@ -248,19 +248,19 @@ class FlextAuthModels(FlextModels):
                 return False
             return datetime.now(UTC) < self.locked_until
 
-        def verify_credential(self, credential: str) -> FlextResult[bool]:
+        def verify_credential(self, credential: str) -> r[bool]:
             """Verify a credential against stored hash using bcrypt."""
             return FlextAuthUtilities.verify_credential(
                 credential, self.credential_hash
             )
 
-        def set_credential(self, credential: str) -> FlextResult[bool]:
+        def set_credential(self, credential: str) -> r[bool]:
             """Set a new credential with bcrypt hashing."""
             hash_result = FlextAuthUtilities.hash_credential(credential)
             if hash_result.is_success:
                 self.credential_hash = hash_result.unwrap()
-                return FlextResult[bool].ok(True)
-            return FlextResult[bool].fail(
+                return r[bool].ok(True)
+            return r[bool].fail(
                 f"Failed to hash credential: {hash_result.error}"
             )
 

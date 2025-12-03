@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Protocol, runtime_checkable
 
-from flext_core import FlextResult, p
+from flext_core import r, p
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.typings import FlextAuthTypes
@@ -61,11 +61,11 @@ class FlextAuthProtocols(p):
             failed_login_attempts: int
             locked_until: datetime | None
 
-            def verify_password(self, password: str) -> FlextResult[bool]:
+            def verify_password(self, password: str) -> r[bool]:
                 """Verify password against stored hash."""
                 ...
 
-            def set_password(self, password: str) -> FlextResult[bool]:
+            def set_password(self, password: str) -> r[bool]:
                 """Set password with secure hashing."""
                 ...
 
@@ -106,7 +106,7 @@ class FlextAuthProtocols(p):
             def extend_session(
                 self,
                 hours: int = 1,
-            ) -> FlextResult[bool]:
+            ) -> r[bool]:
                 """Extend session expiration time."""
                 ...
 
@@ -114,7 +114,7 @@ class FlextAuthProtocols(p):
                 """Check if session is valid (active and not expired)."""
                 ...
 
-            def revoke(self) -> FlextResult[bool]:
+            def revoke(self) -> r[bool]:
                 """Revoke this session."""
                 ...
 
@@ -142,7 +142,7 @@ class FlextAuthProtocols(p):
                 password: str,
                 full_name: str | None = None,
                 roles: list[str] | None = None,
-            ) -> FlextResult[FlextAuthModels.Identity]:
+            ) -> r[FlextAuthModels.Identity]:
                 """Register new user."""
                 ...
 
@@ -152,15 +152,15 @@ class FlextAuthProtocols(p):
                 password: str,
                 client_ip: str | None = None,
                 user_agent: str | None = None,
-            ) -> FlextResult[FlextAuthTypes.AuthenticationResponseDict]:
+            ) -> r[FlextAuthTypes.AuthenticationResponseDict]:
                 """Authenticate user and create session."""
                 ...
 
-            def logout_user(self, session_id: str) -> FlextResult[bool]:
+            def logout_user(self, session_id: str) -> r[bool]:
                 """Logout user by session ID.
 
                 Returns:
-                    FlextResult[bool]: True if logout successful, False if failed, error on failure
+                    r[bool]: True if logout successful, False if failed, error on failure
 
                 """
                 ...

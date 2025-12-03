@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Self
 
-from flext_core import FlextConfig, FlextResult
+from flext_core import r
 from pydantic import Field, SecretStr, model_validator
 
 from flext_auth.constants import FlextAuthConstants
@@ -157,14 +157,14 @@ class FlextAuthConfig(FlextConfig.AutoConfig):
     )
 
     @classmethod
-    def create_with_overrides(cls, **overrides: object) -> FlextResult[FlextAuthConfig]:
+    def create_with_overrides(cls, **overrides: object) -> r[FlextAuthConfig]:
         """Create config instance with overrides."""
         try:
             # Create instance with overrides - Pydantic will validate
             instance = cls(**overrides)
-            return FlextResult[FlextAuthConfig].ok(instance)
+            return r[FlextAuthConfig].ok(instance)
         except Exception as e:
-            return FlextResult[FlextAuthConfig].fail(str(e))
+            return r[FlextAuthConfig].fail(str(e))
 
     def get_jwt_settings(self) -> dict[str, str | int | bool]:
         """Get JWT-specific settings."""
@@ -210,11 +210,11 @@ class FlextAuthConfig(FlextConfig.AutoConfig):
 
         return self
 
-    def validate_configuration(self) -> FlextResult[bool]:
+    def validate_configuration(self) -> r[bool]:
         """Validate configuration after initialization.
 
         Returns:
-            FlextResult[bool]: True if valid, False with error message if invalid
+            r[bool]: True if valid, False with error message if invalid
 
         """
         try:
@@ -225,34 +225,34 @@ class FlextAuthConfig(FlextConfig.AutoConfig):
             secret_len = len(self.auth_secret.get_secret_value())
             if secret_len < FlextAuthConstants.SECRET_MIN_LENGTH:
                 msg = f"Secret must be ≥{FlextAuthConstants.SECRET_MIN_LENGTH} chars, got {secret_len}"
-                return FlextResult[bool].fail(msg)
+                return r[bool].fail(msg)
 
             if self.min_credential_length > self.max_credential_length:
-                return FlextResult[bool].fail("Min credential length > max")
+                return r[bool].fail("Min credential length > max")
 
             if (
                 self.session_expiry_minutes
                 > FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES
             ):
                 msg = f"Session expiry > {FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES}min (30 days)"
-                return FlextResult[bool].fail(msg)
+                return r[bool].fail(msg)
 
             if self.expiry_minutes > self.session_expiry_minutes:
-                return FlextResult[bool].fail(
+                return r[bool].fail(
                     "JWT expiry should not exceed session expiry"
                 )
 
-            return FlextResult[bool].ok(True)
+            return r[bool].ok(True)
         except ValueError as e:
-            return FlextResult[bool].fail(str(e))
+            return r[bool].fail(str(e))
         except Exception as e:
-            return FlextResult[bool].fail(f"Validation error: {e}")
+            return r[bool].fail(f"Validation error: {e}")
 
     @classmethod
     def get_or_create_global(
         cls,
         **kwargs: str | int | bool | SecretStr | None,
-    ) -> FlextResult[FlextAuthConfig]:
+    ) -> r[FlextAuthConfig]:
         """Get or create global instance with optional overrides.
 
         Args:

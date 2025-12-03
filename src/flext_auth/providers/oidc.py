@@ -14,7 +14,7 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 
 from __future__ import annotations
 
-from flext_core import FlextExceptions, FlextLogger, FlextResult
+from flext_core import e, r
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
@@ -61,7 +61,7 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
         validation_result = self._validate_oidc_configuration()
         if validation_result.is_failure:
             msg = f"OIDC configuration validation failed: {validation_result.error}"
-            raise FlextExceptions.ValidationError(
+            raise e.ValidationError(
                 msg,
                 field="config",
             )
@@ -82,7 +82,7 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
 
         self.logger.info("OIDC provider initialized")
 
-    def _validate_oidc_configuration(self) -> FlextResult[bool]:
+    def _validate_oidc_configuration(self) -> r[bool]:
         """Railway-oriented OIDC configuration validation."""
         # Validate required fields
         required_fields = ["issuer"]
@@ -91,7 +91,7 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
         ]
 
         if missing_fields:
-            return FlextResult[bool].fail(
+            return r[bool].fail(
                 f"Missing required OIDC configuration fields: {', '.join(missing_fields)}"
             )
 
@@ -123,11 +123,11 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
         for field_name, expected_types, error_msg in validations:
             field_value = self._config.get(field_name)
             if field_value is not None and not isinstance(field_value, expected_types):
-                return FlextResult[bool].fail(
+                return r[bool].fail(
                     f"{error_msg}. Got {type(field_value).__name__}"
                 )
 
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     class _OIDCIDTokenValidator:
         """SOLID-compliant OIDC ID token validator.
@@ -140,10 +140,10 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
             self.provider = provider
             self.logger = FlextLogger(__name__)
 
-        def validate_id_token(self, _id_token: str) -> FlextResult[dict[str, object]]:
+        def validate_id_token(self, _id_token: str) -> r[dict[str, object]]:
             """Validate OIDC ID token."""
             # Simplified implementation - in production would use proper JWT validation
-            return FlextResult[dict[str, object]].ok({
+            return r[dict[str, object]].ok({
                 "sub": "user123",
                 "iss": self.provider.get_issuer(),
             })
@@ -159,10 +159,10 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
             self.provider = provider
             self.logger = FlextLogger(__name__)
 
-        def get_user_info(self, _access_token: str) -> FlextResult[dict[str, object]]:
+        def get_user_info(self, _access_token: str) -> r[dict[str, object]]:
             """Get user information from UserInfo endpoint."""
             # Simplified implementation - in production would make HTTP request
-            return FlextResult[dict[str, object]].ok({
+            return r[dict[str, object]].ok({
                 "sub": "user123",
                 "name": "User Name",
             })
@@ -178,10 +178,10 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
             self.provider = provider
             self.logger = FlextLogger(__name__)
 
-        def discover_configuration(self) -> FlextResult[dict[str, object]]:
+        def discover_configuration(self) -> r[dict[str, object]]:
             """Discover OIDC provider configuration."""
             # Simplified implementation - in production would fetch from discovery endpoint
-            return FlextResult[dict[str, object]].ok({
+            return r[dict[str, object]].ok({
                 "issuer": self.provider.get_issuer()
             })
 
@@ -197,12 +197,12 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
             "capabilities": list(self.supports()),
         }
 
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.Identity]:
+    def validate_token(self, token: str) -> r[FlextAuthModels.Identity]:
         """Validate OIDC token and return user."""
         # OIDC token validation requires implementation
         # Fast fail: implementation not available
         _ = token  # Mark as intentionally unused
-        return FlextResult[FlextAuthModels.Identity].fail(
+        return r[FlextAuthModels.Identity].fail(
             "OIDC token validation not implemented"
         )
 
@@ -211,9 +211,9 @@ class FlextAuthOidcProvider(FlextAuthOAuth2Provider):
         _user: FlextAuthModels.Identity,
         _token_type: str | None = None,
         _expiry_minutes: int | None = None,
-    ) -> FlextResult[str]:
+    ) -> r[str]:
         """Generate OIDC token for user."""
-        return FlextResult[str].fail(
+        return r[str].fail(
             "OIDC token generation not implemented in this refactor"
         )
 

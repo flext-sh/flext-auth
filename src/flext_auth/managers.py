@@ -57,12 +57,12 @@ class FlextAuthManagers(FlextService[object]):
     providing a single import point while maintaining clean separation of concerns.
     """
 
-    def execute(self, **_kwargs: object) -> FlextResult[object]:
+    def execute(self, **_kwargs: object) -> r[object]:
         """Execute method for FlextService interface.
 
         FlextAuthManagers is a namespace class - use specific manager classes instead.
         """
-        return FlextResult[object].fail(
+        return r[object].fail(
             "FlextAuthManagers is a namespace class - use specific manager classes like FlextAuthUserManager"
         )
 
@@ -85,7 +85,7 @@ class FlextAuthManagers(FlextService[object]):
 
         def _find_user_by_id(
             self, user_id: str
-        ) -> FlextResult[tuple[str, dict[str, object]]]:
+        ) -> r[tuple[str, dict[str, object]]]:
             """Find user by ID (either identity_id, unique_id, or id field).
 
             Eliminates duplication across 7 methods.
@@ -101,7 +101,7 @@ class FlextAuthManagers(FlextService[object]):
 
         def _modify_user_list_field(
             self, user_id: str, field: str, value: str, *, add: bool = True
-        ) -> FlextResult[bool]:
+        ) -> r[bool]:
             """Add or remove value from user list field (roles/permissions).
 
             Generic list field modifier - eliminates duplication in 4 methods.
@@ -236,10 +236,10 @@ class FlextAuthManagers(FlextService[object]):
             email: str,
             password_hash: str,
             **extra_fields: str | int | bool | list[str] | datetime | None,
-        ) -> FlextResult[FlextAuthModels.Identity]:
+        ) -> r[FlextAuthModels.Identity]:
             """Create a new user."""
             if username in self._users:
-                return FlextResult[FlextAuthModels.Identity].fail(
+                return r[FlextAuthModels.Identity].fail(
                     "Identity already exists"
                 )
             # Check for duplicate email (contact)
@@ -250,7 +250,7 @@ class FlextAuthManagers(FlextService[object]):
                     isinstance(existing_contact, str)
                     and existing_contact.lower() == normalized_email
                 ):
-                    return FlextResult[FlextAuthModels.Identity].fail(
+                    return r[FlextAuthModels.Identity].fail(
                         "Identity already exists"
                     )
 
@@ -301,9 +301,9 @@ class FlextAuthManagers(FlextService[object]):
 
             # Create Identity model with only valid fields (no extras)
             user = FlextAuthModels.Identity(**identity_data)
-            return FlextResult[FlextAuthModels.Identity].ok(user)
+            return r[FlextAuthModels.Identity].ok(user)
 
-        def get_user(self, user_id: str) -> FlextResult[FlextAuthModels.Identity]:
+        def get_user(self, user_id: str) -> r[FlextAuthModels.Identity]:
             """Get user by ID."""
             return self._find_user_by_id(user_id).map(
                 lambda ud: self._create_identity_from_storage(ud[1])
@@ -311,20 +311,20 @@ class FlextAuthManagers(FlextService[object]):
 
         def get_user_by_username(
             self, username: str
-        ) -> FlextResult[FlextAuthModels.Identity]:
+        ) -> r[FlextAuthModels.Identity]:
             """Get user by username."""
             if username not in self._users:
-                return FlextResult[FlextAuthModels.Identity].fail("User not found")
+                return r[FlextAuthModels.Identity].fail("User not found")
 
             storage_data = self._users[username]
             user = self._create_identity_from_storage(storage_data)
-            return FlextResult[FlextAuthModels.Identity].ok(user)
+            return r[FlextAuthModels.Identity].ok(user)
 
         def update_user(
             self,
             user_id: str,
             **updates: str | int | bool | list[str] | datetime | None,
-        ) -> FlextResult[FlextAuthModels.Identity]:
+        ) -> r[FlextAuthModels.Identity]:
             """Update user data."""
             return self._find_user_by_id(user_id).map(
                 lambda ud: (
@@ -334,26 +334,26 @@ class FlextAuthManagers(FlextService[object]):
                 )[2]
             )
 
-        def delete_user(self, user_id: str) -> FlextResult[bool]:
+        def delete_user(self, user_id: str) -> r[bool]:
             """Delete user."""
             result = self._find_user_by_id(user_id)
             if result.is_success:
                 username = result.unwrap()[0]
                 del self._users[username]
-                return FlextResult[bool].ok(True)
-            return FlextResult[bool].fail(result.error or "Unknown error")
+                return r[bool].ok(True)
+            return r[bool].fail(result.error or "Unknown error")
 
-        def add_user_role(self, user_id: str, role: str) -> FlextResult[bool]:
+        def add_user_role(self, user_id: str, role: str) -> r[bool]:
             """Add role to user."""
             return self._modify_user_list_field(user_id, "roles", role, add=True)
 
-        def remove_user_role(self, user_id: str, role: str) -> FlextResult[bool]:
+        def remove_user_role(self, user_id: str, role: str) -> r[bool]:
             """Remove role from user."""
             return self._modify_user_list_field(user_id, "roles", role, add=False)
 
         def add_user_permission(
             self, user_id: str, permission: str
-        ) -> FlextResult[bool]:
+        ) -> r[bool]:
             """Add permission to user."""
             return self._modify_user_list_field(
                 user_id, "permissions", permission, add=True
@@ -361,13 +361,13 @@ class FlextAuthManagers(FlextService[object]):
 
         def remove_user_permission(
             self, user_id: str, permission: str
-        ) -> FlextResult[bool]:
+        ) -> r[bool]:
             """Remove permission from user."""
             return self._modify_user_list_field(
                 user_id, "permissions", permission, add=False
             )
 
-        def get_user_by_id(self, user_id: str) -> FlextResult[FlextAuthModels.Identity]:
+        def get_user_by_id(self, user_id: str) -> r[FlextAuthModels.Identity]:
             """Get a user by their ID."""
             return self._find_user_by_id(user_id).map(
                 lambda ud: self._create_identity_from_storage(ud[1])
@@ -415,7 +415,7 @@ class FlextAuthManagers(FlextService[object]):
             expires_in_minutes: int = 60,
             ip_address: str | None = None,
             user_agent: str | None = None,
-        ) -> FlextResult[FlextAuthModels.Session]:
+        ) -> r[FlextAuthModels.Session]:
             """Create a new session."""
             session_id = str(uuid4())
             expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
@@ -443,11 +443,11 @@ class FlextAuthManagers(FlextService[object]):
                 user_agent=str(session_data.get("user_agent", "")),
                 last_accessed=session_data.get("last_accessed", datetime.now(UTC)),
             )
-            return FlextResult[FlextAuthModels.Session].ok(session)
+            return r[FlextAuthModels.Session].ok(session)
 
         def get_active_sessions(
             self, user_id: str
-        ) -> FlextResult[list[FlextAuthModels.Session]]:
+        ) -> r[list[FlextAuthModels.Session]]:
             """Get all active sessions for a user."""
             sessions: list[FlextAuthModels.Session] = []
             for session_id, session_data in self._sessions.items():
@@ -472,9 +472,9 @@ class FlextAuthManagers(FlextService[object]):
                     # Set unique_id from session_id
                     session.unique_id = session_id
                     sessions.append(session)
-            return FlextResult[list[FlextAuthModels.Session]].ok(sessions)
+            return r[list[FlextAuthModels.Session]].ok(sessions)
 
-        def end_session(self, user_id: str) -> FlextResult[bool]:
+        def end_session(self, user_id: str) -> r[bool]:
             """End all sessions for a user."""
             found = False
             for session_data in self._sessions.values():
@@ -484,18 +484,18 @@ class FlextAuthManagers(FlextService[object]):
                     found = True
 
             if found:
-                return FlextResult[bool].ok(True)
-            return FlextResult[bool].fail("No sessions found for user")
+                return r[bool].ok(True)
+            return r[bool].fail("No sessions found for user")
 
-        def end_session_by_id(self, session_id: str) -> FlextResult[bool]:
+        def end_session_by_id(self, session_id: str) -> r[bool]:
             """End a specific session."""
             if session_id in self._sessions:
                 self._sessions[session_id]["is_active"] = False
-                return FlextResult[bool].ok(True)
+                return r[bool].ok(True)
 
-            return FlextResult[bool].fail("Session not found")
+            return r[bool].fail("Session not found")
 
-        def end_all_sessions(self, user_id: str) -> FlextResult[bool]:
+        def end_all_sessions(self, user_id: str) -> r[bool]:
             """End all sessions for a user."""
             return self.end_session(user_id)
 
@@ -507,7 +507,7 @@ class FlextAuthManagers(FlextService[object]):
                 if self._is_session_active(session)
             )
 
-        def cleanup_expired_sessions(self) -> FlextResult[int]:
+        def cleanup_expired_sessions(self) -> r[int]:
             """Clean up expired sessions and return count of cleaned sessions."""
             cleaned_count = 0
             sessions_to_check = list(self._sessions.keys())
@@ -517,7 +517,7 @@ class FlextAuthManagers(FlextService[object]):
                     end_result = self.end_session_by_id(session_id)
                     if end_result.is_success:
                         cleaned_count += 1
-            return FlextResult[int].ok(cleaned_count)
+            return r[int].ok(cleaned_count)
 
     class FlextAuthAuditLogger:
         """Audit logging business logic.
@@ -723,7 +723,7 @@ class FlextAuthManagers(FlextService[object]):
             start_date: datetime | None = None,
             end_date: datetime | None = None,
             limit: int = 100,
-        ) -> FlextResult[list[dict[str, object]]]:
+        ) -> r[list[dict[str, object]]]:
             """Get audit logs with optional filtering."""
             # Filter logs based on criteria
             filtered_logs: list[dict[str, object]] = []
@@ -771,7 +771,7 @@ class FlextAuthManagers(FlextService[object]):
                 filtered_logs.append(log)
 
             # Apply limit and return
-            return FlextResult[list[dict[str, object]]].ok(filtered_logs[-limit:])
+            return r[list[dict[str, object]]].ok(filtered_logs[-limit:])
 
     class FlextAuthRateLimiter:
         """Rate limiting business logic.
@@ -814,17 +814,17 @@ class FlextAuthManagers(FlextService[object]):
                 if isinstance(attempt, datetime) and attempt > window_start
             ]
 
-        def check_rate_limit(self, username: str) -> FlextResult[bool]:
+        def check_rate_limit(self, username: str) -> r[bool]:
             """Check if user is within rate limits.
 
             Returns:
-                FlextResult[bool]: True if within limits, False if exceeded, error on failure
+                r[bool]: True if within limits, False if exceeded, error on failure
 
             """
             now = datetime.now(UTC)
 
             if username not in self._attempts:
-                return FlextResult[bool].ok(True)
+                return r[bool].ok(True)
 
             # Filter attempts within the window
             recent_attempts = self._cleanup_window(username, now)
@@ -835,11 +835,11 @@ class FlextAuthManagers(FlextService[object]):
             )
 
             if len(recent_attempts) >= self._max_attempts:
-                return FlextResult[bool].fail(
+                return r[bool].fail(
                     "Too many failed attempts. Please try again later."
                 )
 
-            return FlextResult[bool].ok(True)
+            return r[bool].ok(True)
 
         def record_failed_attempt(self, username: str) -> None:
             """Record a failed authentication attempt."""

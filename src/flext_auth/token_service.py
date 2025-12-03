@@ -9,7 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextDispatcher, FlextResult, FlextService
+from flext_core import r, FlextService
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
@@ -42,9 +42,9 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
         # Lazy cache for JWT provider (initialized on first access)
         self._jwt_provider_cache: FlextAuthJwtProvider | None = None
 
-    def execute(self, **_kwargs: object) -> FlextResult[object]:
+    def execute(self, **_kwargs: object) -> r[object]:
         """Railway-oriented execute with focused service pattern."""
-        return FlextResult[object].fail(
+        return r[object].fail(
             "Use specific token methods: validate_token, generate_jwt_token, etc."
         )
 
@@ -52,7 +52,7 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
     # ADVANCED TOKEN OPERATIONS WITH RAILWAY PATTERNS
     # =========================================================================
 
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.Identity]:
+    def validate_token(self, token: str) -> r[FlextAuthModels.Identity]:
         """Railway-oriented token validation with audit logging."""
         result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.validate_token(token)
@@ -71,9 +71,9 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
             username=identity.username,
             token_id=self._short_token(token),
         )
-        return FlextResult[FlextAuthModels.Identity].ok(identity)
+        return r[FlextAuthModels.Identity].ok(identity)
 
-    def refresh_token(self, token: str) -> FlextResult[FlextAuthModels.AuthToken]:
+    def refresh_token(self, token: str) -> r[FlextAuthModels.AuthToken]:
         """Railway-oriented token refresh with audit logging."""
         result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.refresh(token)
@@ -85,7 +85,7 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
                 old_token_id=self._short_token(token),
                 reason=error,
             )
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return r[FlextAuthModels.AuthToken].fail(
                 error or "Token refresh failed"
             )
 
@@ -96,14 +96,14 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
             new_token_id=self._short_token(refreshed.token),
             username=refreshed.identity_id,
         )
-        return FlextResult[FlextAuthModels.AuthToken].ok(refreshed)
+        return r[FlextAuthModels.AuthToken].ok(refreshed)
 
     def generate_jwt_token(
         self,
         user_id: str,
         expires_in_minutes: int | None = None,
         token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
-    ) -> FlextResult[str]:
+    ) -> r[str]:
         """Railway-oriented JWT token generation with audit logging."""
         user_result = self.user_manager.get_user(user_id)
         if user_result.is_failure:
@@ -114,7 +114,7 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
                 success=False,
                 reason=error,
             )
-            return FlextResult[str].fail(error or "User lookup failed")
+            return r[str].fail(error or "User lookup failed")
 
         user = user_result.unwrap()
         token_result = self._get_jwt_provider_cached().flat_map(
@@ -131,7 +131,7 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
                 success=False,
                 reason=error,
             )
-            return FlextResult[str].fail(error or "Token generation failed")
+            return r[str].fail(error or "Token generation failed")
 
         token_value = token_result.unwrap()
         self.audit_logger.log_token_creation(
@@ -139,13 +139,13 @@ class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
             token_type=token_type,
             success=True,
         )
-        return FlextResult[str].ok(token_value)
+        return r[str].ok(token_value)
 
     # =========================================================================
     # PRIVATE HELPER METHODS
     # =========================================================================
 
-    def _get_jwt_provider_cached(self) -> FlextResult[FlextAuthJwtProvider]:
+    def _get_jwt_provider_cached(self) -> r[FlextAuthJwtProvider]:
         """Get JWT provider with lazy caching to eliminate repeated lookups."""
         if self._jwt_provider_cache is not None:
             return FlextResult.ok(self._jwt_provider_cache)

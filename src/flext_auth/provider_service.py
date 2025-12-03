@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import cast
 
-from flext_core import FlextResult, FlextService, t
+from flext_core import r, FlextService, t
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
@@ -46,9 +46,9 @@ class FlextAuthProviderService(FlextService[object]):
         self._config, self._providers = config, FlextAuthRegistry()
         self._register_builtin_providers()
 
-    def execute(self, **_kwargs: object) -> FlextResult[object]:
+    def execute(self, **_kwargs: object) -> r[object]:
         """Railway-oriented execute with focused service pattern."""
-        return FlextResult[object].fail(
+        return r[object].fail(
             "Use specific provider methods: get_provider, authenticate_user, etc."
         )
 
@@ -135,17 +135,17 @@ class FlextAuthProviderService(FlextService[object]):
     # CONSOLIDATED PROVIDER MANAGEMENT
     # =========================================================================
 
-    def get_provider(self, name: str) -> FlextResult[FlextAuthBaseProvider]:
+    def get_provider(self, name: str) -> r[FlextAuthBaseProvider]:
         """Get registered provider."""
         return self._providers.get(name)
 
     def register_provider(
         self, name: str, provider: FlextAuthBaseProvider
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Register custom provider.
 
         Returns:
-            FlextResult[bool]: True if registered successfully, False if failed, error on failure
+            r[bool]: True if registered successfully, False if failed, error on failure
 
         """
         return self._providers.register(name, provider).map(lambda _: True)
@@ -163,7 +163,7 @@ class FlextAuthProviderService(FlextService[object]):
         username: str,
         password: str,
         provider: str = "basic",
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> r[FlextAuthModels.AuthToken]:
         """Railway-oriented user authentication with provider selection."""
         return self._providers.get(provider).flat_map(
             lambda p: p.authenticate({"username": username, "password": password})
@@ -175,7 +175,7 @@ class FlextAuthProviderService(FlextService[object]):
         provider: str = "jwt",
         token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
         expiry_minutes: int | None = None,
-    ) -> FlextResult[str]:
+    ) -> r[str]:
         """Railway-oriented token generation with direct provider access."""
         return self._providers.get(provider).flat_map(
             lambda p: p.generate_token_for_user(user, token_type, expiry_minutes)
@@ -185,7 +185,7 @@ class FlextAuthProviderService(FlextService[object]):
         self,
         token: str,
         provider: str = "jwt",
-    ) -> FlextResult[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.Identity]:
         """Railway-oriented token validation with direct provider access."""
         return self._providers.get(provider).flat_map(lambda p: p.validate_token(token))
 

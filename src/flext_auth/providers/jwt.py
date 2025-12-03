@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from flext_core import FlextContainer, FlextContext, FlextLogger, FlextResult
+from flext_core import r
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
@@ -69,34 +69,34 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
         """
         return "RFC 7519"
 
-    def _validate_configuration(self) -> FlextResult[bool]:
+    def _validate_configuration(self) -> r[bool]:
         """Railway-oriented configuration validation."""
         # Validate required JWT configuration fields
         secret_key_value = self._config.get("secret_key")
         if not isinstance(secret_key_value, str) or not secret_key_value:
-            return FlextResult[bool].fail(
+            return r[bool].fail(
                 "JWT secret_key is required and must be a non-empty string"
             )
 
         algorithm_value = self._config.get("algorithm")
         if algorithm_value is not None:
             if not isinstance(algorithm_value, str) or not algorithm_value:
-                return FlextResult[bool].fail(
+                return r[bool].fail(
                     "JWT algorithm must be a non-empty string if provided"
                 )
             if algorithm_value not in FlextAuthConstants.JwtExtended.ALGORITHMS:
-                return FlextResult[bool].fail(
+                return r[bool].fail(
                     f"JWT algorithm must be one of {FlextAuthConstants.JwtExtended.ALGORITHMS}, "
                     f"got {algorithm_value}"
                 )
         # If algorithm is None, use default from constants
 
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     def authenticate(
         self,
         credentials: dict[str, object],
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> r[FlextAuthModels.AuthToken]:
         """Authenticate user with username/password using SOLID delegation.
 
         Delegates password verification and token generation to dedicated services.
@@ -107,20 +107,20 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
             credentials, ["username", "password"]
         )
         if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return r[FlextAuthModels.AuthToken].fail(
                 validation_result.error or "Credential validation failed"
             )
 
         username_value = credentials.get("username")
         if not isinstance(username_value, str) or not username_value:
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return r[FlextAuthModels.AuthToken].fail(
                 "Username must be a non-empty string"
             )
         username = username_value
 
         password_value = credentials.get("password")
         if not isinstance(password_value, str) or not password_value:
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return r[FlextAuthModels.AuthToken].fail(
                 "Password must be a non-empty string"
             )
         password = password_value
@@ -128,7 +128,7 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
         # Get user password hash using railway pattern
         hash_result = self._get_user_password_hash(username)
         if hash_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return r[FlextAuthModels.AuthToken].fail(
                 hash_result.error or "Password hashing failed"
             )
 
@@ -144,10 +144,10 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
         username: str,
         *,
         is_valid: bool,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> r[FlextAuthModels.AuthToken]:
         """Process authentication result."""
         if not is_valid:
-            return FlextResult[FlextAuthModels.AuthToken].fail("Invalid credentials")
+            return r[FlextAuthModels.AuthToken].fail("Invalid credentials")
 
         # Generate token using dedicated token generator service
         return self._token_generator.generate_token(username).map(
@@ -161,7 +161,7 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
             )
         )
 
-    def _get_user_password_hash(self, username: str) -> FlextResult[str]:
+    def _get_user_password_hash(self, username: str) -> r[str]:
         """Get user password hash from identity manager.
 
         Uses FlextContainer to access the global FlextAuth instance
@@ -174,27 +174,27 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
         container = FlextContainer.get_global()
         auth_result = container.get("flext_auth")
         if auth_result.is_failure:
-            return FlextResult[str].fail("FlextAuth instance not found in container")
+            return r[str].fail("FlextAuth instance not found in container")
 
         auth = auth_result.unwrap()
         if not isinstance(auth, FlextAuth):
-            return FlextResult[str].fail("Invalid FlextAuth instance in container")
+            return r[str].fail("Invalid FlextAuth instance in container")
 
         # Get user by username using public API
         user_result = auth.get_user_by_username(username)
         if user_result.is_failure:
-            return FlextResult[str].fail(user_result.error or "User retrieval failed")
+            return r[str].fail(user_result.error or "User retrieval failed")
 
         user = user_result.unwrap()
         if not user.credential_hash:
-            return FlextResult[str].fail("User has no credential hash")
+            return r[str].fail("User has no credential hash")
 
-        return FlextResult[str].ok(user.credential_hash)
+        return r[str].ok(user.credential_hash)
 
     def validate(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Validate JWT token using dedicated token validator service."""
         token_str = self._extract_token_string(token)
         return self._token_validator.validate_token(token_str).map(lambda _: True)
@@ -202,21 +202,21 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
     def refresh(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> r[FlextAuthModels.AuthToken]:
         """Refresh JWT token using dedicated services."""
         token_str = self._extract_token_string(token)
 
         # Get the payload first, then generate token, then create auth token
         payload_result = self._token_validator.validate_token(token_str)
         if payload_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return r[FlextAuthModels.AuthToken].fail(
                 payload_result.error or "Token payload validation failed"
             )
 
         payload = payload_result.unwrap()
         token_result = self._token_generator.generate_token(str(payload["sub"]))
         if token_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return r[FlextAuthModels.AuthToken].fail(
                 token_result.error or "Token generation failed"
             )
 
@@ -235,7 +235,7 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
     def revoke(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Revoke JWT token.
 
         For JWT tokens, revocation is typically handled by token expiration
@@ -247,20 +247,20 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
             token: Token to revoke
 
         Returns:
-            FlextResult[bool]: True if token was valid and can be revoked,
+            r[bool]: True if token was valid and can be revoked,
                             False if token is invalid, error on failure
 
         """
         token_str = self._extract_token_string(token)
         validation_result = self._token_validator.validate_token(token_str)
         if validation_result.is_failure:
-            return FlextResult[bool].fail(
+            return r[bool].fail(
                 validation_result.error or "Token validation failed"
             )
 
         # Token is valid - in a production system, this would add the token
         # to a revocation list/blacklist. For now, we just validate it exists.
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     def supports(self) -> set[str]:
         """Return JWT provider capabilities using composition."""
@@ -286,7 +286,7 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
             )
         return dict(config)
 
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.Identity]:
+    def validate_token(self, token: str) -> r[FlextAuthModels.Identity]:
         """Validate JWT token and return identity using dedicated token validator service."""
         return self._token_validator.validate_token(token).flat_map(
             self._extract_identity_from_payload
@@ -294,31 +294,31 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
 
     def _extract_identity_from_payload(
         self, payload: dict[str, object]
-    ) -> FlextResult[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.Identity]:
         """Extract identity from JWT payload with proper validation."""
         sub_value = payload.get("sub")
         if not isinstance(sub_value, str) or not sub_value:
-            return FlextResult[FlextAuthModels.Identity].fail(
+            return r[FlextAuthModels.Identity].fail(
                 "Token payload missing subject"
             )
 
         email_value = payload.get("email")
         if not isinstance(email_value, str):
-            return FlextResult[FlextAuthModels.Identity].fail(
+            return r[FlextAuthModels.Identity].fail(
                 "Token payload missing email"
             )
         contact = email_value
 
         roles_value = payload.get("roles")
         if not isinstance(roles_value, list):
-            return FlextResult[FlextAuthModels.Identity].fail(
+            return r[FlextAuthModels.Identity].fail(
                 "Token payload roles must be a list"
             )
         roles = roles_value
 
         permissions_value = payload.get("permissions")
         if not isinstance(permissions_value, list):
-            return FlextResult[FlextAuthModels.Identity].fail(
+            return r[FlextAuthModels.Identity].fail(
                 "Token payload permissions must be a list"
             )
         permissions = permissions_value
@@ -330,14 +330,14 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider):
             roles=roles,
             permissions=permissions,
         )
-        return FlextResult[FlextAuthModels.Identity].ok(identity)
+        return r[FlextAuthModels.Identity].ok(identity)
 
     def generate_token_for_user(
         self,
         user: FlextAuthModels.Identity,
         token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
         expiry_minutes: int | None = None,
-    ) -> FlextResult[str]:
+    ) -> r[str]:
         """Generate JWT token for user using dedicated token generator service."""
         return self._token_generator.generate_token(
             user.user_id,

@@ -16,7 +16,7 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 
 from __future__ import annotations
 
-from flext_core import FlextLogger, FlextResult
+from flext_core import r
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.rfc import FlextAuthRfcProvider
@@ -68,7 +68,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
         self.logger.info("Kerberos authentication provider initialized")
 
-    def _validate_kerberos_configuration(self) -> FlextResult[bool]:
+    def _validate_kerberos_configuration(self) -> r[bool]:
         """Railway-oriented Kerberos configuration validation."""
         # Validate required fields
         required_fields = ["realm", "kdc", "service_principal"]
@@ -77,7 +77,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         ]
 
         if missing_fields:
-            return FlextResult[bool].fail(
+            return r[bool].fail(
                 f"Missing required Kerberos configuration fields: {', '.join(missing_fields)}"
             )
 
@@ -121,11 +121,11 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         for field_name, expected_types, error_msg in validations:
             field_value = self._config.get(field_name)
             if field_value is not None and not isinstance(field_value, expected_types):
-                return FlextResult[bool].fail(
+                return r[bool].fail(
                     f"{error_msg}. Got {type(field_value).__name__}"
                 )
 
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     class _KerberosTicketValidator:
         """SOLID-compliant Kerberos ticket validator.
@@ -140,11 +140,11 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
         def validate_ticket(
             self, _ticket_data: dict[str, object]
-        ) -> FlextResult[dict[str, object]]:
+        ) -> r[dict[str, object]]:
             """Validate Kerberos ticket."""
             # Simplified implementation - in production would use proper Kerberos validation
             # ticket_data parameter reserved for future Kerberos ticket validation
-            return FlextResult[dict[str, object]].ok({
+            return r[dict[str, object]].ok({
                 "user_id": "kerberos_user",
                 "valid": True,
             })
@@ -160,10 +160,10 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             self.provider = provider
             self.logger = FlextLogger(__name__)
 
-        def handle_service_ticket(self, ticket: str) -> FlextResult[dict[str, object]]:
+        def handle_service_ticket(self, ticket: str) -> r[dict[str, object]]:
             """Handle Kerberos service ticket."""
             # Simplified implementation - in production would handle proper service tickets
-            return FlextResult[dict[str, object]].ok({
+            return r[dict[str, object]].ok({
                 "service": "kerberos_service",
                 "ticket": ticket,
             })
@@ -181,7 +181,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
         def authenticate_ticket(
             self, ticket_data: dict[str, object]
-        ) -> FlextResult[dict[str, object]]:
+        ) -> r[dict[str, object]]:
             """Authenticate using Kerberos ticket."""
             # Use composition for ticket validation
             return self.provider._ticket_validator.validate_ticket(ticket_data)
@@ -198,12 +198,12 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             "capabilities": list(self.supports()),
         }
 
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.Identity]:
+    def validate_token(self, token: str) -> r[FlextAuthModels.Identity]:
         """Validate Kerberos token and return user."""
         # Kerberos token validation requires implementation
         # Fast fail: implementation not available
         _ = token  # Mark as intentionally unused
-        return FlextResult[FlextAuthModels.Identity].fail(
+        return r[FlextAuthModels.Identity].fail(
             "Kerberos token validation not implemented"
         )
 
@@ -212,13 +212,13 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         user: FlextAuthModels.Identity,
         token_type: str = "kerberos_access",
         expiry_minutes: int | None = None,
-    ) -> FlextResult[str]:
+    ) -> r[str]:
         """Generate Kerberos token for user."""
         # user, token_type, expiry_minutes parameters reserved for future implementation
         _ = user  # Mark as intentionally unused for now
         _ = token_type  # Mark as intentionally unused for now
         _ = expiry_minutes  # Mark as intentionally unused for now
-        return FlextResult[str].fail(
+        return r[str].fail(
             "Kerberos token generation not implemented in this refactor"
         )
 

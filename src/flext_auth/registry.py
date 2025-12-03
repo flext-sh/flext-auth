@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import cast
 
-from flext_core import FlextRegistry, FlextResult, t
+from flext_core import r, t
 
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.typings import FlextAuthTypes
@@ -36,14 +36,14 @@ class FlextAuthRegistry(FlextRegistry):
 
     def _ensure_provider_exists(
         self, name: FlextAuthTypes.Providers.Key
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Check provider exists - single source of truth (eliminates 8+ duplications)."""
         if name not in self._providers:
             available = ", ".join(self.list_providers()) if self._providers else "none"
-            return FlextResult[bool].fail(
+            return r[bool].fail(
                 f"Provider '{name}' not registered. Available: {available}"
             )
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     def register(
         self,
@@ -51,7 +51,7 @@ class FlextAuthRegistry(FlextRegistry):
         service: object,
         metadata: object | None = None,
         configuration: object | None = None,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Railway-oriented provider registration with validation."""
         # Cast parameters to expected types
         config_dict = cast("t.JsonDict | None", configuration)
@@ -60,16 +60,16 @@ class FlextAuthRegistry(FlextRegistry):
 
         # Consolidated validation and registration
         if not name or not name.strip():
-            return FlextResult[bool].fail("Provider name cannot be empty")
+            return r[bool].fail("Provider name cannot be empty")
 
         if name in self._providers:
-            return FlextResult[bool].fail(f"Provider '{name}' is already registered")
+            return r[bool].fail(f"Provider '{name}' is already registered")
 
         # Validate config if provided
         if config_dict:
             validation = self._validate_provider_config(name, config_dict)
             if validation.is_failure:
-                return FlextResult[bool].fail(
+                return r[bool].fail(
                     f"Configuration validation failed: {validation.error}"
                 )
 
@@ -96,16 +96,16 @@ class FlextAuthRegistry(FlextRegistry):
                 "capabilities": capabilities,
             },
         )
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     # =========================================================================
     # CONSOLIDATED REGISTRY OPERATIONS
     # =========================================================================
 
-    def unregister(self, name: FlextAuthTypes.Providers.Key) -> FlextResult[bool]:
+    def unregister(self, name: FlextAuthTypes.Providers.Key) -> r[bool]:
         """Railway-oriented provider unregistration."""
         if name not in self._providers:
-            return FlextResult[bool].fail(f"Provider '{name}' is not registered")
+            return r[bool].fail(f"Provider '{name}' is not registered")
 
         # Atomic cleanup
         del self._providers[name]
@@ -115,11 +115,11 @@ class FlextAuthRegistry(FlextRegistry):
         self.logger.info(
             f"Provider '{name}' unregistered successfully", extra={"provider": name}
         )
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     def get(
         self, name: FlextAuthTypes.Providers.Key
-    ) -> FlextResult[FlextAuthBaseProvider]:
+    ) -> r[FlextAuthBaseProvider]:
         """Railway-oriented provider retrieval with type safety."""
         return self._ensure_provider_exists(name).map(
             lambda _exists: self._providers[name]
@@ -135,7 +135,7 @@ class FlextAuthRegistry(FlextRegistry):
 
     def get_capabilities(
         self, name: FlextAuthTypes.Providers.Key
-    ) -> FlextResult[set[str]]:
+    ) -> r[set[str]]:
         """Railway-oriented capability retrieval."""
         if name not in self._providers:
             return FlextResult.fail(f"Provider '{name}' is not registered")
@@ -144,7 +144,7 @@ class FlextAuthRegistry(FlextRegistry):
 
     def get_metadata(
         self, name: FlextAuthTypes.Providers.Key
-    ) -> FlextResult[FlextAuthTypes.Providers.Metadata]:
+    ) -> r[FlextAuthTypes.Providers.Metadata]:
         """Railway-oriented metadata retrieval."""
         if name not in self._providers:
             return FlextResult.fail(f"Provider '{name}' is not registered")
@@ -165,24 +165,24 @@ class FlextAuthRegistry(FlextRegistry):
 
     def validate_config(
         self, name: FlextAuthTypes.Providers.Key, config: t.JsonDict
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Railway-oriented configuration validation."""
         if name not in self._providers:
-            return FlextResult[bool].fail(f"Provider '{name}' is not registered")
+            return r[bool].fail(f"Provider '{name}' is not registered")
         return self._validate_provider_config(name, config)
 
     def _validate_provider_config(
         self, name: FlextAuthTypes.Providers.Key, config: t.JsonDict
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Internal configuration validation."""
         if not isinstance(config, dict):
-            return FlextResult[bool].fail("Configuration must be a dictionary")
+            return r[bool].fail("Configuration must be a dictionary")
 
         self.logger.debug(
             f"Configuration validated for provider '{name}'",
             extra={"provider": name, "config_keys": list(config.keys())},
         )
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     # =========================================================================
     # UTILITY METHODS WITH CONSOLIDATED PATTERNS
@@ -213,13 +213,13 @@ class FlextAuthRegistry(FlextRegistry):
         self,
         provider_name: FlextAuthTypes.Providers.Key,
         capability: FlextAuthTypes.Providers.Capability,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Railway-oriented capability checking."""
         return self.get_capabilities(provider_name).map(lambda caps: capability in caps)
 
     def get_config(
         self, provider_name: FlextAuthTypes.Providers.Key
-    ) -> FlextResult[t.JsonDict]:
+    ) -> r[t.JsonDict]:
         """Railway-oriented configuration retrieval."""
         if provider_name not in self._providers:
             return FlextResult.fail(f"Provider '{provider_name}' not registered")
@@ -234,10 +234,10 @@ class FlextAuthRegistry(FlextRegistry):
         self,
         provider_name: FlextAuthTypes.Providers.Key,
         new_config: t.JsonDict,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Railway-oriented configuration updating."""
         if provider_name not in self._providers:
-            return FlextResult[bool].fail(f"Provider '{provider_name}' not registered")
+            return r[bool].fail(f"Provider '{provider_name}' not registered")
 
         validation_result = self._validate_provider_config(provider_name, new_config)
         if validation_result.is_failure:
@@ -245,11 +245,11 @@ class FlextAuthRegistry(FlextRegistry):
 
         self._configs[provider_name] = new_config
         self.logger.info(f"Configuration updated for provider '{provider_name}'")
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     def get_all_metadata(
         self,
-    ) -> FlextResult[
+    ) -> r[
         dict[FlextAuthTypes.Providers.Key, FlextAuthTypes.Providers.Metadata]
     ]:
         """Get all provider metadata."""
@@ -257,7 +257,7 @@ class FlextAuthRegistry(FlextRegistry):
 
     def find_providers_with_capability(
         self, capability: FlextAuthTypes.Providers.Capability
-    ) -> FlextResult[list[FlextAuthTypes.Providers.Key]]:
+    ) -> r[list[FlextAuthTypes.Providers.Key]]:
         """Find providers with specific capability."""
         matching: list[FlextAuthTypes.Providers.Key] = []
         for name in self._providers:

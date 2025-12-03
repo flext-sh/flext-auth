@@ -13,7 +13,7 @@ from functools import cache, wraps
 from typing import Annotated, Any, TypeIs
 
 import jwt
-from flext_core import FlextResult, u
+from flext_core import r, u
 from pydantic import BaseModel, BeforeValidator, ConfigDict, SecretStr, validate_call
 from pydantic_core import ValidationError
 
@@ -88,7 +88,7 @@ class FlextAuthUtilities(u):
             return False
 
         @staticmethod
-        def parse[E: StrEnum](enum_cls: type[E], value: str | E) -> FlextResult[E]:
+        def parse[E: StrEnum](enum_cls: type[E], value: str | E) -> r[E]:
             """Parse string to StrEnum with FlextResult."""
             if isinstance(value, enum_cls):
                 return FlextResult.ok(value)
@@ -129,7 +129,7 @@ class FlextAuthUtilities(u):
         @staticmethod
         def parse_sequence[E: StrEnum](
             enum_cls: type[E], values: Iterable[str | E]
-        ) -> FlextResult[tuple[E, ...]]:
+        ) -> r[tuple[E, ...]]:
             """Parse sequence of enum values."""
             parsed, errors = [], []
             for i, v in enumerate(values):
@@ -190,12 +190,12 @@ class FlextAuthUtilities(u):
 
         @staticmethod
         def validated_with_result[P, R](
-            func: Callable[P, FlextResult[R]],
-        ) -> Callable[P, FlextResult[R]]:
+            func: Callable[P, r[R]],
+        ) -> Callable[P, r[R]]:
             """ValidationError → FlextResult.fail()."""
 
             @wraps(func)
-            def wrapper(*args: Any, **kwargs: Any) -> FlextResult[R]:  # noqa: ANN401
+            def wrapper(*args: Any, **kwargs: Any) -> r[R]:  # noqa: ANN401
                 try:
                     return validate_call(
                         config=ConfigDict(
@@ -220,7 +220,7 @@ class FlextAuthUtilities(u):
         @staticmethod
         def from_dict[M: BaseModel](
             model_cls: type[M], data: dict[str, Any], *, strict: bool = False
-        ) -> FlextResult[M]:
+        ) -> r[M]:
             """Create model from dict - automatic validation."""
             try:
                 return FlextResult.ok(model_cls.model_validate(data, strict=strict))
@@ -230,13 +230,13 @@ class FlextAuthUtilities(u):
         @staticmethod
         def merge_defaults[M: BaseModel](
             model_cls: type[M], defaults: dict[str, Any], overrides: dict[str, Any]
-        ) -> FlextResult[M]:
+        ) -> r[M]:
             """Merge defaults with overrides - automatic validation."""
             merged = {**defaults, **overrides}
             return FlextAuthUtilities.Model.from_dict(model_cls, merged)
 
         @staticmethod
-        def update[M: BaseModel](instance: M, **updates: Any) -> FlextResult[M]:  # noqa: ANN401
+        def update[M: BaseModel](instance: M, **updates: Any) -> r[M]:  # noqa: ANN401
             """Update model instance - automatic re-validation."""
             try:
                 current = instance.model_dump()
@@ -297,58 +297,58 @@ class FlextAuthUtilities(u):
         """Domain-specific validation utilities."""
 
         @staticmethod
-        def validate_username(username: str) -> FlextResult[str]:
+        def validate_username(username: str) -> r[str]:
             """Validate username with auth-specific rules."""
             if not username or not username.strip():
-                return FlextResult[str].fail("Username cannot be empty")
+                return r[str].fail("Username cannot be empty")
 
             username = username.strip()
             if len(username) < FlextAuthConstants.MIN_USERNAME_LENGTH:
-                return FlextResult[str].fail(
+                return r[str].fail(
                     f"Username too short (min {FlextAuthConstants.MIN_USERNAME_LENGTH} chars)"
                 )
             if len(username) > FlextAuthConstants.MAX_USERNAME_LENGTH:
-                return FlextResult[str].fail(
+                return r[str].fail(
                     f"Username too long (max {FlextAuthConstants.MAX_USERNAME_LENGTH} chars)"
                 )
-            return FlextResult[str].ok(username)
+            return r[str].ok(username)
 
         @staticmethod
-        def validate_email(email: str) -> FlextResult[str]:
+        def validate_email(email: str) -> r[str]:
             """Validate email format."""
             if not email or not email.strip():
-                return FlextResult[str].fail("Email cannot be empty")
+                return r[str].fail("Email cannot be empty")
 
             email = email.strip()
             if len(email) > FlextAuthConstants.MAX_EMAIL_LENGTH:
-                return FlextResult[str].fail(
+                return r[str].fail(
                     f"Email too long (max {FlextAuthConstants.MAX_EMAIL_LENGTH} chars)"
                 )
 
             if "@" not in email or "." not in email.split("@")[1]:
-                return FlextResult[str].fail("Invalid email format")
+                return r[str].fail("Invalid email format")
 
-            return FlextResult[str].ok(email)
+            return r[str].ok(email)
 
         @staticmethod
-        def validate_password(password: str) -> FlextResult[str]:
+        def validate_password(password: str) -> r[str]:
             """Validate password strength."""
             if not password:
-                return FlextResult[str].fail("Password cannot be empty")
+                return r[str].fail("Password cannot be empty")
 
             if len(password) < FlextAuthConstants.MIN_PASSWORD_LENGTH:
-                return FlextResult[str].fail(
+                return r[str].fail(
                     f"Password too short (min {FlextAuthConstants.MIN_PASSWORD_LENGTH} chars)"
                 )
             if len(password) > FlextAuthConstants.MAX_PASSWORD_LENGTH:
-                return FlextResult[str].fail(
+                return r[str].fail(
                     f"Password too long (max {FlextAuthConstants.MAX_PASSWORD_LENGTH} chars)"
                 )
 
             if password.lower() in FlextAuthConstants.WEAK_CREDENTIALS:
-                return FlextResult[str].fail("Password is too weak")
+                return r[str].fail("Password is too weak")
 
-            return FlextResult[str].ok(password)
+            return r[str].ok(password)
 
     # ═══════════════════════════════════════════════════════════════════
     # TOKEN UTILITIES: Token/session management
@@ -443,7 +443,7 @@ class FlextAuthUtilities(u):
         payload: FlextAuthTypes.ClaimMap,
         secret: str,
         algorithm: str = FlextAuthConstants.ALGORITHM_DEFAULT,
-    ) -> FlextResult[str]:
+    ) -> r[str]:
         """Generic JWT token encoding.
 
         Args:
@@ -457,11 +457,11 @@ class FlextAuthUtilities(u):
         """
         try:
             token = jwt.encode(payload, secret, algorithm=algorithm)
-            return FlextResult[str].ok(
+            return r[str].ok(
                 token if isinstance(token, str) else token.decode()
             )
         except Exception as e:
-            return FlextResult[str].fail(f"Encoding failed: {e}")
+            return r[str].fail(f"Encoding failed: {e}")
 
     @staticmethod
     def decode_token(
@@ -470,7 +470,7 @@ class FlextAuthUtilities(u):
         *,
         verify: bool = True,
         algorithms: tuple[str, ...] | None = None,
-    ) -> FlextResult[FlextAuthTypes.ClaimMap]:
+    ) -> r[FlextAuthTypes.ClaimMap]:
         """Generic JWT token decoding.
 
         Args:
@@ -495,18 +495,18 @@ class FlextAuthUtilities(u):
                 options={"verify_signature": verify},
             )
             if not isinstance(payload, dict):
-                return FlextResult[FlextAuthTypes.ClaimMap].fail(
+                return r[FlextAuthTypes.ClaimMap].fail(
                     "Decoded token payload is not a dictionary"
                 )
 
             typed_payload: FlextAuthTypes.ClaimMap = {
                 str(key): value for key, value in payload.items()
             }
-            return FlextResult[FlextAuthTypes.ClaimMap].ok(typed_payload)
+            return r[FlextAuthTypes.ClaimMap].ok(typed_payload)
         except jwt.InvalidTokenError as e:
-            return FlextResult[FlextAuthTypes.ClaimMap].fail(f"Invalid token: {e}")
+            return r[FlextAuthTypes.ClaimMap].fail(f"Invalid token: {e}")
         except Exception as e:
-            return FlextResult[FlextAuthTypes.ClaimMap].fail(f"Decoding failed: {e}")
+            return r[FlextAuthTypes.ClaimMap].fail(f"Decoding failed: {e}")
 
 
 __all__ = ["FlextAuthUtilities"]

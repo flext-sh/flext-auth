@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from abc import ABC
 
-from flext_core import FlextResult
+from flext_core import r
 
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
@@ -40,9 +40,9 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
 
             def authenticate(
                 self, credentials: dict[str, object]
-            ) -> FlextResult[FlextAuthModels.AuthToken]:
+            ) -> r[FlextAuthModels.AuthToken]:
                 # RFC 7617 implementation
-                return FlextResult[FlextAuthModels.AuthToken].ok(token)
+                return r[FlextAuthModels.AuthToken].ok(token)
 
     """
 
@@ -50,14 +50,14 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
         """Initialize RFC provider base class."""
         super().__init__()
 
-    def validate_rfc_compliance(self, operation: str) -> FlextResult[bool]:
+    def validate_rfc_compliance(self, operation: str) -> r[bool]:
         """Validate that an operation follows RFC standards.
 
         Args:
             operation: Operation name to validate (e.g., "authenticate", "validate")
 
         Returns:
-            FlextResult[bool]: True if compliant, False if not, error on failure
+            r[bool]: True if compliant, False if not, error on failure
 
         This method can be overridden by subclasses to implement
         RFC-specific validation logic.
@@ -65,7 +65,7 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
         """
         # Base implementation - subclasses should override for specific RFCs
         _ = operation  # Mark as intentionally unused in base implementation
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.

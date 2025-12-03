@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from flext_core import FlextDispatcher, FlextResult, FlextService
+from flext_core import r, FlextService
 from pydantic import ValidationError
 
 from flext_auth.config import FlextAuthConfig
@@ -45,9 +45,9 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
         """Set identity manager (for service composition)."""
         self.user_manager = value
 
-    def execute(self, **_kwargs: object) -> FlextResult[object]:
+    def execute(self, **_kwargs: object) -> r[object]:
         """Railway-oriented execute with focused service pattern."""
-        return FlextResult[object].fail(
+        return r[object].fail(
             "Use specific identity methods: create_identity, authenticate_identity, etc."
         )
 
@@ -55,7 +55,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
         self,
         name: str,
         credential: str,
-    ) -> FlextResult[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.Identity]:
         """Railway-oriented identity authentication with account lockout."""
         return (
             self.user_manager.get_user_by_username(name)
@@ -96,7 +96,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
         credential: str,
         roles: list[str] | None = None,
         **_extra_fields: object,
-    ) -> FlextResult[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.Identity]:
         """Railway-oriented identity creation with credential hashing."""
         if roles is None:
             user_roles: list[str] = []
@@ -104,7 +104,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
             user_roles = roles
         # Normalize email to lowercase for consistency
         if not isinstance(contact, str):
-            return FlextResult[FlextAuthModels.Identity].fail(
+            return r[FlextAuthModels.Identity].fail(
                 "Contact must be a string"
             )
         normalized_contact = contact.lower()
@@ -127,14 +127,14 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
                 msg = error.get("msg", "Validation error")
                 error_messages.append(f"{field}: {msg}")
             error_msg = "; ".join(error_messages) if error_messages else str(e)
-            return FlextResult[FlextAuthModels.Identity].fail(error_msg)
+            return r[FlextAuthModels.Identity].fail(error_msg)
         except Exception as e:
-            return FlextResult[FlextAuthModels.Identity].fail(str(e))
+            return r[FlextAuthModels.Identity].fail(str(e))
 
         # Validate credential strength before hashing
         strength_result = FlextAuthUtilities.validate_credential_strength(credential)
         if strength_result.is_failure:
-            return FlextResult[FlextAuthModels.Identity].fail(
+            return r[FlextAuthModels.Identity].fail(
                 strength_result.error or "Credential strength validation failed"
             )
         strength_data = strength_result.unwrap()
@@ -145,7 +145,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
                 if errors
                 else "Credential does not meet strength requirements"
             )
-            return FlextResult[FlextAuthModels.Identity].fail(error_msg)
+            return r[FlextAuthModels.Identity].fail(error_msg)
 
         # Create user with basic fields - extra_fields not currently supported
         # due to type constraints in the manager interface
@@ -167,7 +167,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
         identity_id: str,
         current_credential: str,
         new_credential: str,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Railway-oriented credential change with validation."""
         return (
             self.user_manager.get_user(identity_id)
@@ -203,7 +203,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
 
     def reset_credential(
         self, identity_id: str, new_credential: str
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Railway-oriented credential reset for REDACTED_LDAP_BIND_PASSWORD operations."""
         return (
             self.user_manager.get_user(identity_id)
@@ -234,7 +234,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
 
     def _handle_failed_attempt(
         self, identity: FlextAuthModels.Identity
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Handle failed authentication attempt with lockout logic."""
         identity.failed_attempts += 1
         max_attempts = self._config.max_attempts
@@ -270,7 +270,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
         identity_id: str,
         permission: str,
         resource: str | None = None,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Railway-oriented authorization with audit logging."""
         return (
             self.user_manager.get_user(identity_id)

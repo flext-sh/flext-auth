@@ -12,7 +12,7 @@ from __future__ import annotations
 import threading
 from typing import ClassVar, Self, cast
 
-from flext_core import FlextConfig, FlextDispatcher, FlextResult, FlextService
+from flext_core import r, FlextService
 from pydantic import SecretStr
 
 from flext_auth.config import FlextAuthConfig
@@ -31,7 +31,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
     """Flexible authentication service using flext-core patterns.
 
     Thread-safe singleton service with:
-    - Railway-oriented programming via FlextResult[T]
+    - Railway-oriented programming via r[T]
     - Flexible DI with FlextContainer
     - Event-driven architecture with FlextDispatcher
     - Complete provider ecosystem with registry
@@ -198,18 +198,18 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         self,
         credentials: dict[str, str],
         _provider: str | None = None,
-    ) -> FlextResult[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.Identity]:
         """Railway-oriented authentication with chaining."""
         # Extract username and password from credentials - fast fail if missing
         username_value = credentials.get("username")
         if not isinstance(username_value, str) or not username_value:
-            return FlextResult[FlextAuthModels.Identity].fail(
+            return r[FlextAuthModels.Identity].fail(
                 "Invalid credentials: username is required and must be a non-empty string"
             )
 
         password_value = credentials.get("password")
         if not isinstance(password_value, str) or not password_value:
-            return FlextResult[FlextAuthModels.Identity].fail(
+            return r[FlextAuthModels.Identity].fail(
                 "Invalid credentials: password is required and must be a non-empty string"
             )
 
@@ -223,7 +223,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         password: str,
         _ip_address: str | None = None,
         _user_agent: str | None = None,
-    ) -> FlextResult[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.Identity]:
         """Authenticate user by username and password with optional metadata.
 
         Args:
@@ -263,7 +263,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
 
         return auth_result
 
-    def validate_token(self, token: str) -> FlextResult[bool]:
+    def validate_token(self, token: str) -> r[bool]:
         """Flexible token validation with railway pattern."""
         return self._token_service.validate_token(token).map(lambda _result: True)
 
@@ -279,7 +279,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         roles: list[str] | None = None,
         role: str | None = None,
         **kwargs: str | int | bool | list[str] | None,
-    ) -> FlextResult[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.Identity]:
         """Register a new user.
 
         Args:
@@ -314,14 +314,14 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         self,
         name: str,
         provider: FlextAuthBaseProvider,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Railway-oriented provider registration."""
         return self._registry.register(name, provider)
 
     def get_provider(
         self,
         name: str,
-    ) -> FlextResult[FlextAuthBaseProvider]:
+    ) -> r[FlextAuthBaseProvider]:
         """Railway-oriented provider retrieval."""
         return self._registry.get(name)
 
@@ -330,7 +330,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         username: str,
         email: str,
         password: str,
-    ) -> FlextResult[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.Identity]:
         """Railway-oriented user registration via identity service."""
         return self._identity_service.create_identity(
             name=username, contact=email, credential=password
@@ -340,7 +340,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         self,
         identity_id: str,
         extra_claims: dict[str, str | int | bool] | None = None,
-    ) -> FlextResult[str]:
+    ) -> r[str]:
         """Railway-oriented token creation.
 
         Args:
@@ -349,7 +349,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
 
         """
         if not identity_id or not isinstance(identity_id, str):
-            return FlextResult[str].fail("Identity ID must be a non-empty string")
+            return r[str].fail("Identity ID must be a non-empty string")
 
         _ = extra_claims  # Reserved for future use
         return self._token_service.generate_jwt_token(
@@ -359,7 +359,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
 
     def verify_token(
         self, token: str
-    ) -> FlextResult[dict[str, str | int | bool | list[str]]]:
+    ) -> r[dict[str, str | int | bool | list[str]]]:
         """Railway-oriented token verification with payload extraction."""
 
         def extract_identity_data(
@@ -379,27 +379,27 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
     # CONVENIENCE API METHODS (Delegations to services)
     # =========================================================================
 
-    def get_user(self, user_id: str) -> FlextResult[FlextAuthModels.Identity]:
+    def get_user(self, user_id: str) -> r[FlextAuthModels.Identity]:
         """Get identity by ID - delegation to identity_service."""
         return self._identity_service.identity_manager.get_user(user_id)
 
     def get_user_by_username(
         self, username: str
-    ) -> FlextResult[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.Identity]:
         """Get identity by username - delegation to identity_service."""
         return self._identity_service.identity_manager.get_user_by_username(username)
 
     def update_user(
         self, user_id: str, **updates: str | int | bool | list[str] | None
-    ) -> FlextResult[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.Identity]:
         """Update identity - delegation to identity_service."""
         return self._identity_service.identity_manager.update_user(user_id, **updates)
 
-    def delete_user(self, user_id: str) -> FlextResult[bool]:
+    def delete_user(self, user_id: str) -> r[bool]:
         """Delete identity - delegation to identity_service."""
         return self._identity_service.identity_manager.delete_user(user_id)
 
-    def cleanup_expired_sessions(self) -> FlextResult[int]:
+    def cleanup_expired_sessions(self) -> r[int]:
         """Clean up expired sessions.
 
         Returns:
@@ -408,24 +408,24 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         """
         return self._session_service.cleanup_expired_sessions()
 
-    def logout_user(self, session_id: str) -> FlextResult[bool]:
+    def logout_user(self, session_id: str) -> r[bool]:
         """Logout user by session ID."""
         return self._session_service.session_manager.end_session_by_id(session_id)
 
     def get_user_sessions(
         self, user_id: str
-    ) -> FlextResult[list[FlextAuthModels.Session]]:
+    ) -> r[list[FlextAuthModels.Session]]:
         """Get user sessions."""
         return self._session_service.session_manager.get_active_sessions(user_id)
 
-    def revoke_session(self, session_id: str) -> FlextResult[bool]:
+    def revoke_session(self, session_id: str) -> r[bool]:
         """Revoke a session."""
         return self._session_service.session_manager.end_session_by_id(session_id)
 
     def execute(
         self, **_kwargs: object
-    ) -> FlextResult[FlextAuthTypes.Responses.Authentication]:
+    ) -> r[FlextAuthTypes.Responses.Authentication]:
         """Flexible execute implementation with railway orchestration."""
-        return FlextResult[FlextAuthTypes.Responses.Authentication].fail(
+        return r[FlextAuthTypes.Responses.Authentication].fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead"
         )

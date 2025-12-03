@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from flext_core import FlextResult
+from flext_core import r
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
@@ -36,7 +36,7 @@ class FlextAuthBaseProvider(ABC):
         >>> class FlextAuthMyProvider(FlextAuthBaseProvider):
         ...     def authenticate(
         ...         self, credentials: dict
-        ...     ) -> FlextResult[FlextAuthModels.AuthToken]:
+        ...     ) -> r[FlextAuthModels.AuthToken]:
         ...         # Implementation
         ...         pass
         ...
@@ -49,7 +49,7 @@ class FlextAuthBaseProvider(ABC):
     def authenticate(
         self,
         credentials: dict[str, object],
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> r[FlextAuthModels.AuthToken]:
         """Authenticate user with provided credentials.
 
         This is the primary authentication method. It should validate the
@@ -66,7 +66,7 @@ class FlextAuthBaseProvider(ABC):
                         - SAML: {"saml_response": "...", "relay_state": "..."}
 
         Returns:
-            FlextResult[AuthToken]: Authentication token on success,
+            r[AuthToken]: Authentication token on success,
                                     error message on failure
 
         Example:
@@ -85,7 +85,7 @@ class FlextAuthBaseProvider(ABC):
     def validate(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Validate authentication token.
 
         Verify that the provided token is valid, not expired, and properly signed
@@ -95,7 +95,7 @@ class FlextAuthBaseProvider(ABC):
             token: Token to validate (string or AuthToken object)
 
         Returns:
-            FlextResult[bool]: True if valid, False if invalid,
+            r[bool]: True if valid, False if invalid,
                             or error message on validation failure
 
         Example:
@@ -110,7 +110,7 @@ class FlextAuthBaseProvider(ABC):
     def refresh(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> r[FlextAuthModels.AuthToken]:
         """Refresh authentication token.
 
         Generate a new token based on an existing valid token. This operation
@@ -121,7 +121,7 @@ class FlextAuthBaseProvider(ABC):
             token: Existing token to refresh
 
         Returns:
-            FlextResult[AuthToken]: New token on success,
+            r[AuthToken]: New token on success,
                                 error if refresh not supported or failed
 
         Example:
@@ -137,7 +137,7 @@ class FlextAuthBaseProvider(ABC):
     def revoke(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Revoke authentication token.
 
         Invalidate the provided token, preventing further use. This operation
@@ -148,7 +148,7 @@ class FlextAuthBaseProvider(ABC):
             token: Token to revoke
 
         Returns:
-            FlextResult[bool]: True if revoked successfully,
+            r[bool]: True if revoked successfully,
                             False if revocation not supported or failed,
                             error message on failure
 
@@ -226,7 +226,7 @@ class FlextAuthBaseProvider(ABC):
         ...
 
     @abstractmethod
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.Identity]:
+    def validate_token(self, token: str) -> r[FlextAuthModels.Identity]:
         """Validate a token and return the associated user.
 
         Args:
@@ -244,7 +244,7 @@ class FlextAuthBaseProvider(ABC):
         user: FlextAuthModels.Identity,
         token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
         expiry_minutes: int | None = None,
-    ) -> FlextResult[str]:
+    ) -> r[str]:
         """Generate a token for a user.
 
         Args:

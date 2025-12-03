@@ -21,7 +21,7 @@ import hashlib
 import secrets
 from datetime import UTC, datetime, timedelta
 
-from flext_core import FlextLogger, FlextResult
+from flext_core import r
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
@@ -141,7 +141,7 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
             return []
         return history_value
 
-    def _validate_configuration(self) -> FlextResult[bool]:
+    def _validate_configuration(self) -> r[bool]:
         """Railway-oriented configuration validation."""
         # Validate field types
         validations = [
@@ -190,11 +190,11 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
         for field_name, expected_types, error_msg in validations:
             field_value = self._config.get(field_name)
             if field_value is not None and not isinstance(field_value, expected_types):
-                return FlextResult[bool].fail(
+                return r[bool].fail(
                     f"{error_msg}. Got {type(field_value).__name__}"
                 )
 
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     class _KeyValidator:
         """SOLID-compliant API key validator.
@@ -207,11 +207,11 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
             self.provider = provider
             self.logger = FlextLogger(__name__)
 
-        def validate_key(self, api_key: str) -> FlextResult[dict[str, object]]:
+        def validate_key(self, api_key: str) -> r[dict[str, object]]:
             """Validate API key format and authenticity."""
             # Check key format
             if not api_key or not isinstance(api_key, str):
-                return FlextResult[dict[str, object]].fail(
+                return r[dict[str, object]].fail(
                     "API key must be a non-empty string"
                 )
 
@@ -221,9 +221,9 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
             # Check if key exists in storage
             key_data = self.provider.get_api_key_data(key_hash)
             if not key_data:
-                return FlextResult[dict[str, object]].fail("Invalid API key")
+                return r[dict[str, object]].fail("Invalid API key")
 
-            return FlextResult[dict[str, object]].ok(key_data)
+            return r[dict[str, object]].ok(key_data)
 
         def _hash_api_key(self, api_key: str) -> str:
             """Hash API key for secure storage."""
@@ -272,10 +272,10 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
             self.provider = provider
             self.logger = FlextLogger(__name__)
 
-        def check_rate_limit(self, key_hash: str) -> FlextResult[bool]:
+        def check_rate_limit(self, key_hash: str) -> r[bool]:
             """Check if request is within rate limits."""
             if not self.provider.is_rate_limit_enabled():
-                return FlextResult[bool].ok(True)  # Rate limiting disabled
+                return r[bool].ok(True)  # Rate limiting disabled
 
             max_requests = self.provider.get_rate_limit_requests()
             window_seconds = self.provider.get_rate_limit_window()
@@ -292,23 +292,23 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
 
             # Check if under limit
             if len(request_times) >= max_requests:
-                return FlextResult[bool].ok(False)  # Rate limit exceeded
+                return r[bool].ok(False)  # Rate limit exceeded
 
             # Add current request
             request_times.append(now)
-            return FlextResult[bool].ok(True)  # Within limits
+            return r[bool].ok(True)  # Within limits
 
     def authenticate(
         self,
         credentials: dict[str, object],
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> r[FlextAuthModels.AuthToken]:
         """Authenticate using API key.
 
         Args:
             credentials: Must contain 'api_key' (and optionally 'key_id' if required)
 
         Returns:
-            FlextResult[AuthToken]: Authentication token or error
+            r[AuthToken]: Authentication token or error
 
         Example:
             >>> result = provider.authenticate({
@@ -319,13 +319,13 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
         # Validate credentials dict structure
         validation_result = self._validate_credentials_dict(credentials, ["api_key"])
         if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return r[FlextAuthModels.AuthToken].fail(
                 validation_result.error or "Unknown error"
             )
 
         api_key_value = credentials.get("api_key")
         if not isinstance(api_key_value, str) or not api_key_value:
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return r[FlextAuthModels.AuthToken].fail(
                 "API key must be a non-empty string"
             )
         api_key = api_key_value
@@ -333,7 +333,7 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
         # Validate key using composition
         key_validation_result = self._key_validator.validate_key(api_key)
         if key_validation_result.is_failure:
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return r[FlextAuthModels.AuthToken].fail(
                 key_validation_result.error or "Unknown error"
             )
 
@@ -344,7 +344,7 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
 
     def _process_api_key_authentication(
         self, api_key: str, key_data: dict[str, object]
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> r[FlextAuthModels.AuthToken]:
         """Process API key authentication result."""
         # Get key hash for rate limiting
         key_hash = self._key_validator.hash_api_key(api_key)
@@ -362,17 +362,17 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
         key_data: dict[str, object],
         *,
         within_limits: bool,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> r[FlextAuthModels.AuthToken]:
         """Create authentication token for API key."""
         if not within_limits:
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return r[FlextAuthModels.AuthToken].fail(
                 "API key rate limit exceeded"
             )
 
         # Create authentication token - fast fail if missing user_id
         user_id_value = key_data.get("user_id")
         if not isinstance(user_id_value, str) or not user_id_value:
-            return FlextResult[FlextAuthModels.AuthToken].fail(
+            return r[FlextAuthModels.AuthToken].fail(
                 "Key data missing required 'user_id' field"
             )
         auth_token = FlextAuthModels.AuthToken(
@@ -384,37 +384,37 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
             is_revoked=False,
         )
 
-        return FlextResult[FlextAuthModels.AuthToken].ok(auth_token)
+        return r[FlextAuthModels.AuthToken].ok(auth_token)
 
     def validate(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Validate API key token.
 
         Args:
             token: API key token string or AuthToken object
 
         Returns:
-            FlextResult[bool]: True if valid, False if invalid, error on failure
+            r[bool]: True if valid, False if invalid, error on failure
 
         """
         try:
             token_string = self._extract_token_string(token)
         except ValueError as e:
-            return FlextResult[bool].fail(str(e))
+            return r[bool].fail(str(e))
 
         # Validate key using composition
         validation_result = self._key_validator.validate_key(token_string)
         if validation_result.is_failure:
-            return FlextResult[bool].fail(validation_result.error or "Unknown error")
+            return r[bool].fail(validation_result.error or "Unknown error")
 
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     def refresh(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[FlextAuthModels.AuthToken]:
+    ) -> r[FlextAuthModels.AuthToken]:
         """Refresh API key token.
 
         API keys don't support refresh - they remain valid until revoked.
@@ -423,11 +423,11 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
             token: Current API key token
 
         Returns:
-            FlextResult[AuthToken]: Error indicating refresh not needed
+            r[AuthToken]: Error indicating refresh not needed
 
         """
         _ = token
-        return FlextResult[FlextAuthModels.AuthToken].fail(
+        return r[FlextAuthModels.AuthToken].fail(
             "API key authentication does not require token refresh. "
             "Use the same API key for subsequent requests."
         )
@@ -435,26 +435,26 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
     def revoke(
         self,
         token: str | FlextAuthModels.AuthToken,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Revoke API key token.
 
         Args:
             token: API key token to revoke
 
         Returns:
-            FlextResult[bool]: True if revoked successfully, error on failure
+            r[bool]: True if revoked successfully, error on failure
 
         """
         try:
             token_string = self._extract_token_string(token)
         except ValueError as e:
-            return FlextResult[bool].fail(str(e))
+            return r[bool].fail(str(e))
 
         # Hash the key for lookup
         key_hash = self._key_validator.hash_api_key(token_string)
 
         if key_hash not in self._api_keys:
-            return FlextResult[bool].fail("API key not found")
+            return r[bool].fail("API key not found")
 
         # Mark key as revoked
         self._api_keys[key_hash]["active"] = False
@@ -462,7 +462,7 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
 
         self.logger.info("API key revoked", key_hash=key_hash[:8])
 
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     def supports(self) -> set[str]:
         """Return API key provider capabilities.
@@ -499,12 +499,12 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
         )
         return dict(config)
 
-    def validate_token(self, token: str) -> FlextResult[FlextAuthModels.Identity]:
+    def validate_token(self, token: str) -> r[FlextAuthModels.Identity]:
         """Validate API key token and return identity."""
         # Validate key
         validation_result = self._key_validator.validate_key(token)
         if validation_result.is_failure:
-            return FlextResult[FlextAuthModels.Identity].fail(
+            return r[FlextAuthModels.Identity].fail(
                 validation_result.error or "Unknown error"
             )
 
@@ -513,7 +513,7 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
         # Extract identity information
         user_id_value = key_data.get("user_id")
         if not isinstance(user_id_value, str) or not user_id_value:
-            return FlextResult[FlextAuthModels.Identity].fail(
+            return r[FlextAuthModels.Identity].fail(
                 "Key data missing required 'user_id' field"
             )
 
@@ -537,14 +537,14 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
             permissions=permissions,
         )
 
-        return FlextResult[FlextAuthModels.Identity].ok(identity)
+        return r[FlextAuthModels.Identity].ok(identity)
 
     def generate_token_for_user(
         self,
         user: FlextAuthModels.Identity,
         token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
         expiry_minutes: int | None = None,
-    ) -> FlextResult[str]:
+    ) -> r[str]:
         """Generate API key token for user.
 
         Args:
@@ -574,7 +574,7 @@ class FlextAuthApiKeyProvider(FlextAuthRfcProvider):
             "created_at": datetime.now(UTC),
         }
 
-        return FlextResult[str].ok(api_key)
+        return r[str].ok(api_key)
 
 
 __all__ = ["FlextAuthApiKeyProvider"]

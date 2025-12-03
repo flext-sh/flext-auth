@@ -12,7 +12,7 @@ Core Facade:
   FlextAuth - Main unified API for authentication operations
   - Provider registration and lifecycle management
   - Multi-protocol authentication support
-  - Railway-oriented error handling with FlextResult[T]
+  - Railway-oriented error handling with r[T]
   - Integration with flext-core patterns
 
 Provider System (Protocol-Based):
@@ -29,7 +29,7 @@ Service Layer (Domain Services):
   FlextAuthTokenService - Token generation, validation, refresh
   FlextAuthSessionService - Session management and lifecycle
   - All services follow FlextService[T] base class
-  - Return FlextResult[T] for error composition
+  - Return r[T] for error composition
   - Integration with FlextContainer dependency injection
 
 Configuration & Constants:
@@ -185,7 +185,7 @@ Dependency Inversion Principle (DIP):
   - High-level modules depend on abstractions (protocols)
   - Low-level modules (providers) implement protocols
   - FlextAuthRegistry manages provider lifecycle
-  - FlextResult[T] abstracts error handling
+  - r[T] abstracts error handling
 
 
 PYDANTIC V2 BEST PRACTICES
@@ -213,8 +213,8 @@ Configuration Management:
 RAILWAY-ORIENTED PROGRAMMING PATTERN
 
 
-All operations return FlextResult[T]:
-  >>> from flext_auth import FlextAuth, FlextResult
+All operations return r[T]:
+  >>> from flext_auth import FlextAuth, r
   >>> auth = FlextAuth()
   >>> result = (
   ...     auth.authenticate(credentials)
@@ -320,18 +320,18 @@ Example 1: Basic Authentication with JWT:
   ...     fetched_user = get_result.unwrap()
 
 **Example 6: Custom Provider Implementation**:
-  >>> from flext_auth import FlextAuthBaseProvider, FlextResult, FlextAuthModels
+  >>> from flext_auth import FlextAuthBaseProvider, r, FlextAuthModels
   >>>
   >>> class CustomProvider(FlextAuthBaseProvider):
   ...     def authenticate(
   ...         self, credentials: dict
-  ...     ) -> FlextResult[FlextAuthModels.AuthToken]:
+  ...     ) -> r[FlextAuthModels.AuthToken]:
   ...         # Custom authentication logic
-  ...         return FlextResult[FlextAuthModels.AuthToken].ok(token)
+  ...         return r[FlextAuthModels.AuthToken].ok(token)
   ...
-  ...     def validate(self, token: str) -> FlextResult[bool]:
+  ...     def validate(self, token: str) -> r[bool]:
   ...         # Custom validation logic
-  ...         return FlextResult[bool].ok(True)
+  ...         return r[bool].ok(True)
   ...
   ...     def supports(self) -> set[str]:
   ...         return {"authenticate", "validate"}
@@ -382,7 +382,7 @@ INTEGRATION WITH FLEXT ECOSYSTEM
 
 
 Core Integration:
-  - Uses flext-core FlextResult[T] for error composition
+  - Uses flext-core r[T] for error composition
   - Uses flext-core FlextContainer for dependency injection
   - Uses flext-core FlextModels base class for domain models
   - Uses flext-core FlextService base class for all services

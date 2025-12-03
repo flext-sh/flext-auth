@@ -18,7 +18,7 @@ from enum import StrEnum
 from types import MappingProxyType
 from typing import Final, Literal, TypeGuard, TypeIs
 
-from flext_core import FlextConstants, FlextResult, u
+from flext_core import FlextConstants, r, u
 
 # ═══════════════════════════════════════════════════════════════════════════
 # STRENUM + PYDANTIC 2: PADRÃO DEFINITIVO PARA FLEXT-AUTH
@@ -334,26 +334,26 @@ class FlextAuthConstants(FlextConstants):
     # ═══════════════════════════════════════════════════════════════════
 
     @classmethod
-    def validate_token_type_with_result(cls, value: str) -> FlextResult[TokenTypes]:
+    def validate_token_type_with_result(cls, value: str) -> r[TokenTypes]:
         """Validate token type using u.Enum.parse."""
         return u.Enum.parse(cls.TokenTypes, value)
 
     @classmethod
     def validate_provider_type_with_result(
         cls, value: str
-    ) -> FlextResult[ProviderTypes]:
+    ) -> r[ProviderTypes]:
         """Validate provider type using u.Enum.parse."""
         return u.Enum.parse(cls.ProviderTypes, value)
 
     @classmethod
-    def validate_role_type_with_result(cls, value: str) -> FlextResult[RoleTypes]:
+    def validate_role_type_with_result(cls, value: str) -> r[RoleTypes]:
         """Validate role type using u.Enum.parse."""
         return u.Enum.parse(cls.RoleTypes, value)
 
     @classmethod
     def validate_permission_type_with_result(
         cls, value: str
-    ) -> FlextResult[PermissionTypes]:
+    ) -> r[PermissionTypes]:
         """Validate permission type using u.Enum.parse."""
         return u.Enum.parse(cls.PermissionTypes, value)
 

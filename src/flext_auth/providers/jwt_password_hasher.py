@@ -13,7 +13,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import bcrypt
-from flext_core import FlextResult
+from flext_core import r
 
 if TYPE_CHECKING:
     from flext_auth.providers.jwt import FlextAuthJwtProvider
@@ -30,7 +30,7 @@ class FlextAuthPasswordHasher:
         """Initialize with provider reference for configuration access."""
         self._provider = provider
 
-    def hash_password(self, password: str) -> FlextResult[str]:
+    def hash_password(self, password: str) -> r[str]:
         """Hash password using bcrypt with railway-oriented programming.
 
         Args:
@@ -49,7 +49,7 @@ class FlextAuthPasswordHasher:
         except Exception as e:
             return FlextResult.fail(f"Password hashing failed: {e}")
 
-    def verify_password(self, password: str, hashed_password: str) -> FlextResult[bool]:
+    def verify_password(self, password: str, hashed_password: str) -> r[bool]:
         """Verify password against hash using bcrypt.
 
         Args:

@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextExceptions, FlextResult
+from flext_core import r
 
 from flext_auth.models import FlextAuthModels
 
@@ -51,7 +51,7 @@ class FlextAuthProviderMixin:
             return token.token
 
         error_msg = f"Invalid token type: expected str or AuthToken, got {type(token)}"
-        raise FlextExceptions.ValidationError(
+        raise e.ValidationError(
             error_msg, field="token", value=str(type(token))
         )
 
@@ -67,7 +67,7 @@ class FlextAuthProviderMixin:
         self,
         credentials: dict[str, object],
         required_fields: list[str],
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Validate that credentials contain required fields.
 
         Args:
@@ -75,7 +75,7 @@ class FlextAuthProviderMixin:
         required_fields: List of required field names
 
         Returns:
-        FlextResult[bool]: True if valid, False if invalid, error message on failure
+        r[bool]: True if valid, False if invalid, error message on failure
 
         """
         missing_fields = [
@@ -84,53 +84,53 @@ class FlextAuthProviderMixin:
 
         if missing_fields:
             error_msg = f"Missing required fields: {', '.join(missing_fields)}"
-            return FlextResult[bool].fail(error_msg)
+            return r[bool].fail(error_msg)
 
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
-    def _validate_token_string(self, token: str) -> FlextResult[bool]:
+    def _validate_token_string(self, token: str) -> r[bool]:
         """Validate token string format.
 
         Args:
         token: Token string to validate
 
         Returns:
-        FlextResult[bool]: True if valid, False if invalid, error message on failure
+        r[bool]: True if valid, False if invalid, error message on failure
 
         """
         if not token or not isinstance(token, str):
-            return FlextResult[bool].fail("Token must be a non-empty string")
+            return r[bool].fail("Token must be a non-empty string")
 
         if len(token.strip()) == 0:
-            return FlextResult[bool].fail("Token cannot be empty or whitespace only")
+            return r[bool].fail("Token cannot be empty or whitespace only")
 
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     def _check_capability_supported(
         self,
         capability: str,
-    ) -> FlextResult[bool]:
+    ) -> r[bool]:
         """Check if a capability is supported by this provider.
 
         Args:
             capability: Capability to check
 
         Returns:
-            FlextResult[bool]: True if supported, False if not, error message on failure
+            r[bool]: True if supported, False if not, error message on failure
 
         Example:
             >>> result = self._check_capability_supported("refresh")
             >>> if result.is_failure or not result.unwrap():
-            ...     return FlextResult[AuthToken].fail("Refresh not supported")
+            ...     return r[AuthToken].fail("Refresh not supported")
 
         """
         if capability not in self.supports():
-            return FlextResult[bool].fail(
+            return r[bool].fail(
                 f"Provider does not support '{capability}' capability. "
                 f"Supported capabilities: {', '.join(sorted(self.supports()))}"
             )
 
-        return FlextResult[bool].ok(True)
+        return r[bool].ok(True)
 
     def _get_capability_metadata(self) -> dict[str, object]:
         """Get metadata about provider capabilities.
