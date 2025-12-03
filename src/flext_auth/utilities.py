@@ -1,4 +1,4 @@
-"""FlextAuth utilities - Advanced type-safe utilities using FlextUtilities patterns.
+"""FlextAuth utilities - Advanced type-safe utilities using u patterns.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -13,7 +13,7 @@ from functools import cache, wraps
 from typing import Annotated, Any, TypeIs
 
 import jwt
-from flext_core import FlextResult, FlextUtilities
+from flext_core import FlextResult, u
 from pydantic import BaseModel, BeforeValidator, ConfigDict, SecretStr, validate_call
 from pydantic_core import ValidationError
 
@@ -21,8 +21,8 @@ from flext_auth.constants import FlextAuthConstants
 from flext_auth.typings import FlextAuthTypes
 
 
-class FlextAuthUtilities(FlextUtilities):
-    """FlextAuth advanced utilities extending FlextUtilities with domain-specific helpers.
+class FlextAuthUtilities(u):
+    """FlextAuth advanced utilities extending u with domain-specific helpers.
 
     Architecture: Advanced utilities with ZERO code bloat through:
     - TypeIs/TypeGuard for narrowing (PEP 742)
@@ -151,6 +151,7 @@ class FlextAuthUtilities(FlextUtilities):
             enum_cls: type[E],
         ) -> Callable[[Any], list[E]]:
             """Create validator for list of enum values."""
+
             def _coerce(value: Any) -> list[E]:  # noqa: ANN401
                 if not isinstance(value, (list, tuple, set)):
                     msg = "Expected sequence"
@@ -366,9 +367,7 @@ class FlextAuthUtilities(FlextUtilities):
         @staticmethod
         def calculate_expiry_time(minutes: int) -> datetime:
             """Calculate token/session expiry time."""
-            return datetime.now(UTC) + FlextUtilities.DateTime.timedelta(
-                minutes=minutes
-            )
+            return datetime.now(UTC) + uedelta(minutes=minutes)
 
         @staticmethod
         def is_expired(expiry_time: datetime) -> bool:

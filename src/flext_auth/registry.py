@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import cast
 
-from flext_core import FlextRegistry, FlextResult, FlextTypes
+from flext_core import FlextRegistry, FlextResult, t
 
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.typings import FlextAuthTypes
@@ -28,7 +28,7 @@ class FlextAuthRegistry(FlextRegistry):
     def __init__(self) -> None:
         """Flexible initialization with consolidated storage."""
         self._providers: dict[FlextAuthTypes.Providers.Key, FlextAuthBaseProvider] = {}
-        self._configs: dict[FlextAuthTypes.Providers.Key, FlextTypes.JsonDict] = {}
+        self._configs: dict[FlextAuthTypes.Providers.Key, t.JsonDict] = {}
         self._metadata: dict[
             FlextAuthTypes.Providers.Key, FlextAuthTypes.Providers.Metadata
         ] = {}
@@ -54,7 +54,7 @@ class FlextAuthRegistry(FlextRegistry):
     ) -> FlextResult[bool]:
         """Railway-oriented provider registration with validation."""
         # Cast parameters to expected types
-        config_dict = cast("FlextTypes.JsonDict | None", configuration)
+        config_dict = cast("t.JsonDict | None", configuration)
         metadata_dict = cast("FlextAuthTypes.Providers.Metadata | None", metadata)
         service_typed = cast("FlextAuthBaseProvider", service)
 
@@ -164,7 +164,7 @@ class FlextAuthRegistry(FlextRegistry):
         return {}
 
     def validate_config(
-        self, name: FlextAuthTypes.Providers.Key, config: FlextTypes.JsonDict
+        self, name: FlextAuthTypes.Providers.Key, config: t.JsonDict
     ) -> FlextResult[bool]:
         """Railway-oriented configuration validation."""
         if name not in self._providers:
@@ -172,7 +172,7 @@ class FlextAuthRegistry(FlextRegistry):
         return self._validate_provider_config(name, config)
 
     def _validate_provider_config(
-        self, name: FlextAuthTypes.Providers.Key, config: FlextTypes.JsonDict
+        self, name: FlextAuthTypes.Providers.Key, config: t.JsonDict
     ) -> FlextResult[bool]:
         """Internal configuration validation."""
         if not isinstance(config, dict):
@@ -219,7 +219,7 @@ class FlextAuthRegistry(FlextRegistry):
 
     def get_config(
         self, provider_name: FlextAuthTypes.Providers.Key
-    ) -> FlextResult[FlextTypes.JsonDict]:
+    ) -> FlextResult[t.JsonDict]:
         """Railway-oriented configuration retrieval."""
         if provider_name not in self._providers:
             return FlextResult.fail(f"Provider '{provider_name}' not registered")
@@ -233,7 +233,7 @@ class FlextAuthRegistry(FlextRegistry):
     def update_config(
         self,
         provider_name: FlextAuthTypes.Providers.Key,
-        new_config: FlextTypes.JsonDict,
+        new_config: t.JsonDict,
     ) -> FlextResult[bool]:
         """Railway-oriented configuration updating."""
         if provider_name not in self._providers:

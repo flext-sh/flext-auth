@@ -2,11 +2,11 @@
 
 **Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
 
-Complete API documentation for flext-auth enterprise authentication service with FlextService and FlextHandlers architecture.
+Complete API documentation for flext-auth enterprise authentication service with FlextService and h architecture.
 
 For general FLEXT patterns and FlextResult usage, see **[flext-core](../../flext-core/README.md)** documentation.
 
-**Note**: This API is 100% backward compatible. All existing code continues to work unchanged after the FlextHandlers refactoring.
+**Note**: This API is 100% backward compatible. All existing code continues to work unchanged after the h refactoring.
 
 ---
 
@@ -80,7 +80,7 @@ def authenticate_user(
     self,
     username: str,
     password: str
-) -> FlextResult[FlextTypes.Dict]:
+) -> FlextResult[t.Dict]:
 ```
 
 **Parameters**:
@@ -88,7 +88,7 @@ def authenticate_user(
 - `username` (str): Username to authenticate
 - `password` (str): User password
 
-**Returns**: `FlextResult[FlextTypes.Dict]` with session and token data
+**Returns**: `FlextResult[t.Dict]` with session and token data
 
 **Example**:
 
@@ -105,14 +105,14 @@ if auth_result.is_success:
 Validate JWT token and extract user information.
 
 ```python
-def validate_token(self, token: str) -> FlextResult[FlextTypes.Dict]:
+def validate_token(self, token: str) -> FlextResult[t.Dict]:
 ```
 
 **Parameters**:
 
 - `token` (str): JWT token (with or without Bearer prefix)
 
-**Returns**: `FlextResult[FlextTypes.Dict]` with token payload or error
+**Returns**: `FlextResult[t.Dict]` with token payload or error
 
 **Example**:
 
@@ -136,7 +136,7 @@ class User(FlextModels.Entity):
     username: str
     email: str
     password_hash: str
-    roles: FlextTypes.StringList
+    roles: t.StringList
     created_at: datetime
     is_active: bool = True
 ```
@@ -181,7 +181,7 @@ class UserCreationRequest(BaseModel):
     email: str
     password: str
     full_name: str | None = None
-    roles: FlextTypes.StringList = Field(default_factory=list)
+    roles: t.StringList = Field(default_factory=list)
 ```
 
 ---
@@ -287,20 +287,20 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 
-def complete_auth_flow(username: str, password: str) -> FlextResult[FlextTypes.Dict]:
+def complete_auth_flow(username: str, password: str) -> FlextResult[t.Dict]:
     return (
         auth.authenticate_user(username, password)
         .flat_map(lambda auth_data: auth.validate_token(auth_data['token']))
@@ -327,18 +327,18 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 
 container = FlextContainer.get_global()
 container.register("auth_service", auth)

@@ -10,13 +10,13 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Protocol, runtime_checkable
 
-from flext_core import FlextProtocols, FlextResult
+from flext_core import FlextResult, p
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.typings import FlextAuthTypes
 
 
-class FlextAuthProtocols(FlextProtocols):
+class FlextAuthProtocols(p):
     """Unified authentication protocols following FLEXT domain extension pattern.
 
     This class consolidates authentication-specific protocols while explicitly
@@ -50,7 +50,7 @@ class FlextAuthProtocols(FlextProtocols):
         """
 
         @runtime_checkable
-        class UserProtocol(FlextProtocols.Service, Protocol):
+        class UserProtocol(p.Service, Protocol):
             """Protocol for user-like objects in authentication."""
 
             id: str
@@ -88,7 +88,7 @@ class FlextAuthProtocols(FlextProtocols):
                 ...
 
         @runtime_checkable
-        class SessionProtocol(FlextProtocols.Service, Protocol):
+        class SessionProtocol(p.Service, Protocol):
             """Protocol for session-like objects in authentication."""
 
             id: str
@@ -119,7 +119,7 @@ class FlextAuthProtocols(FlextProtocols):
                 ...
 
         @runtime_checkable
-        class TokenProtocol(FlextProtocols.Service, Protocol):
+        class TokenProtocol(p.Service, Protocol):
             """Protocol for token-like objects in authentication."""
 
             token: str
@@ -132,7 +132,7 @@ class FlextAuthProtocols(FlextProtocols):
                 ...
 
         @runtime_checkable
-        class ServiceProtocol(FlextProtocols.Service, Protocol):
+        class ServiceProtocol(p.Service, Protocol):
             """Protocol for authentication service-like objects."""
 
             def register_user(

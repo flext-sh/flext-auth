@@ -5,21 +5,21 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Annotated, TypedDict
 
-from flext_core import FlextTypes
+from flext_core import t
 from pydantic import Field, SecretStr
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.providers.base import FlextAuthBaseProvider
 
 
-class FlextAuthTypes(FlextTypes):
-    """Authentication-specific type definitions extending FlextTypes with composition."""
+class FlextAuthTypes(t):
+    """Authentication-specific type definitions extending t with composition."""
 
     # =========================================================================
     # CORE AUTH TYPES - Using dict for pydantic compatibility
     # =========================================================================
 
-    type UserDict = dict[str, FlextTypes.JsonValue | str | bool | list[str]]
+    type UserDict = dict[str, t.JsonValue | str | bool | list[str]]
 
     class SessionDict(TypedDict, total=False):
         """Session dictionary structure for backward compatibility."""
@@ -89,7 +89,7 @@ class FlextAuthTypes(FlextTypes):
             description: str
             documentation_url: str
             maintainers: tuple[str, ...]
-            extras: FlextTypes.JsonDict
+            extras: t.JsonDict
 
         class Registration(TypedDict, total=False):
             """Payload used when registering providers in registries."""
@@ -97,7 +97,7 @@ class FlextAuthTypes(FlextTypes):
             key: FlextAuthTypes.Providers.Key
             provider: FlextAuthBaseProvider
             metadata: FlextAuthTypes.Providers.Metadata
-            configuration: FlextTypes.JsonDict
+            configuration: t.JsonDict
 
     class Credentials:
         """Credential payload type definitions."""
@@ -133,7 +133,7 @@ class FlextAuthTypes(FlextTypes):
             username: FlextAuthTypes.Credentials.Username
             password: FlextAuthTypes.Credentials.Secret
             remember_me: bool
-            metadata: FlextTypes.JsonDict
+            metadata: t.JsonDict
 
         class MultiFactor(TypedDict, total=False):
             """Extended credential payload supporting MFA."""
@@ -142,14 +142,14 @@ class FlextAuthTypes(FlextTypes):
             password: FlextAuthTypes.Credentials.Secret
             factors: tuple[str, ...]
             otp: str
-            metadata: FlextTypes.JsonDict
+            metadata: t.JsonDict
 
     class Tokens:
         """Token-related type definitions."""
 
         # AuthToken type defined in models.py
         type TokenType = FlextAuthConstants.TokenType
-        type ClaimMap = FlextTypes.JsonDict
+        type ClaimMap = t.JsonDict
 
         class Claims(TypedDict, total=False):
             """Normalized token claims representation."""
@@ -161,7 +161,7 @@ class FlextAuthTypes(FlextTypes):
             session_id: str
             issued_at: datetime
             expires_at: datetime
-            metadata: FlextTypes.JsonDict
+            metadata: t.JsonDict
 
         class Introspection(TypedDict, total=False):
             """Token introspection response payload."""
@@ -173,7 +173,7 @@ class FlextAuthTypes(FlextTypes):
             expires_at: datetime
             issued_at: datetime
             scope: tuple[str, ...]
-            metadata: FlextTypes.JsonDict
+            metadata: t.JsonDict
 
     class Sessions:
         """Session-related type definitions."""
@@ -188,7 +188,7 @@ class FlextAuthTypes(FlextTypes):
             session_id: str
             occurred_at: datetime
             event: str
-            context: FlextTypes.JsonDict
+            context: t.JsonDict
 
     class Security:
         """Security and credential validation types."""
@@ -212,7 +212,7 @@ class FlextAuthTypes(FlextTypes):
             token: object  # Will be AuthToken from models
             session: object  # Will be Session from models
             message: str
-            metadata: FlextTypes.JsonDict
+            metadata: t.JsonDict
 
         class AuthenticationPayload(TypedDict, total=False):
             """Structured authentication response for transports."""
@@ -221,7 +221,7 @@ class FlextAuthTypes(FlextTypes):
             # identity, session, token types defined in models.py
             issued_at: datetime
             expires_at: datetime
-            metadata: FlextTypes.JsonDict
+            metadata: t.JsonDict
 
     class Managers:
         """Manager-specific supporting types."""
@@ -262,10 +262,10 @@ class FlextAuthTypes(FlextTypes):
             event: str
             occurred_at: datetime
             # actor type defined in models.py
-            context: FlextTypes.JsonDict
+            context: t.JsonDict
             event_type: str
             timestamp: datetime
-            metadata: FlextTypes.JsonDict
+            metadata: t.JsonDict
 
         class AuditEntry(TypedDict, total=False):
             """Structured audit log entry."""
@@ -273,7 +273,7 @@ class FlextAuthTypes(FlextTypes):
             event: str
             occurred_at: datetime
             # actor type defined in models.py
-            context: FlextTypes.JsonDict
+            context: t.JsonDict
 
         class AttemptData(TypedDict, total=False):
             """Failed attempt data structure."""

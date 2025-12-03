@@ -76,7 +76,7 @@ pytest --cov=src/flext_auth --cov-report=term-missing
 - **Type Safety**: MyPy strict mode with zero errors in src/ ✅
 - **Code Quality**: Ruff linting with zero violations ✅
 - **Security**: Production-grade bcrypt (12 rounds) + JWT (HS256) ✅
-- **Architecture**: Complete FlextService + FlextHandlers integration ✅
+- **Architecture**: Complete FlextService + h integration ✅
 
 ### Quality Gates
 
@@ -97,12 +97,12 @@ All code must follow FLEXT patterns:
 
 ```python
 # ✅ Correct - Use FlextResult for error handling
-def authenticate_user(username: str, password: str) -> FlextResult[FlextTypes.Dict]:
+def authenticate_user(username: str, password: str) -> FlextResult[t.Dict]:
     if not username:
-        return FlextResult[FlextTypes.Dict].fail("Username required")
+        return FlextResult[t.Dict].fail("Username required")
 
     # Authentication logic
-    return FlextResult[FlextTypes.Dict].ok(result)
+    return FlextResult[t.Dict].ok(result)
 
 # ❌ Incorrect - Don't use exceptions for business logic
 def authenticate_user(username: str, password: str) -> dict[str, object]:
@@ -124,18 +124,18 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 
 class User(FlextModels.Entity):
     username: str
@@ -281,18 +281,18 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 
 class TestNewFeature:
     def test_new_functionality(self):
@@ -324,18 +324,18 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 
 class AuthenticationService(FlextService):
     def __init__(self):
@@ -354,7 +354,7 @@ Use FlextResult exclusively:
 
 ```python
 # Chain operations with FlextResult
-def complete_auth_flow(username: str, password: str) -> FlextResult[FlextTypes.Dict]:
+def complete_auth_flow(username: str, password: str) -> FlextResult[t.Dict]:
     return (
         self._validate_input(username, password)
         .flat_map(lambda _: self._authenticate_user(username, password))

@@ -260,25 +260,25 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 
 class FlextAuthCustomProvider(FlextAuthBaseProvider, BaseAuthProviderMixin):
     """Custom authentication provider example."""
 
     def authenticate(
         self,
-        credentials: FlextTypes.Dict
+        credentials: t.Dict
     ) -> FlextResult[FlextAuthModels.AuthToken]:
         """Custom authentication logic."""
         # Validate credentials
@@ -307,7 +307,7 @@ class FlextAuthCustomProvider(FlextAuthBaseProvider, BaseAuthProviderMixin):
         """Declare provider capabilities."""
         return {"token", "validate", "api_key"}
 
-    def get_metadata(self) -> FlextTypes.Dict:
+    def get_metadata(self) -> t.Dict:
         """Provider metadata."""
         return {
             "name": "custom",

@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 
-from flext_core import FlextMixins, FlextResult
+from flext_core import FlextResult, x
 
 from flext_auth.constants import FlextAuthConstants
 
@@ -17,10 +17,10 @@ from flext_auth.constants import FlextAuthConstants
 MAX_USERNAME_LENGTH = 255
 
 
-class FlextAuthMixins(FlextMixins):
+class FlextAuthMixins(x):
     """Auth mixins class with validation utilities extending flext-core mixins."""
 
-    class ValidationMixin(FlextMixins):
+    class ValidationMixin(x):
         """Validation utilities for Auth domain."""
 
         @staticmethod

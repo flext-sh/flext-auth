@@ -37,7 +37,7 @@ Transform flext-auth from a specific JWT/bcrypt authentication implementation in
 
 - **Purpose**: JWT/bcrypt authentication with session management
 - **Status**: Production-ready, 71/72 tests passing (99%)
-- **Integration**: Complete FlextService + FlextHandlers architecture
+- **Integration**: Complete FlextService + h architecture
 - **Quality**: Zero lint/type errors, production security (bcrypt 12 rounds, JWT HS256)
 
 ### Target State (v2.0.0)
@@ -172,7 +172,7 @@ class FlextAuth(FlextService[AuthenticationResponseDict]):
     ) -> FlextResult[bool]
 
     # Registry operations
-    def list_providers(self) -> FlextTypes.StringList
+    def list_providers(self) -> t.StringList
     def get_provider(self, name: str) -> FlextResult[FlextAuthBaseProvider]
     def get_provider_capabilities(self, name: str) -> FlextResult[set[str]]
 
@@ -208,7 +208,7 @@ class FlextAuthRegistry:
 
     def get(self, name: str) -> FlextResult[FlextAuthBaseProvider]
 
-    def list_providers(self) -> FlextTypes.StringList
+    def list_providers(self) -> t.StringList
 
     def discover_providers(self) -> dict[str, type[FlextAuthBaseProvider]]
 
@@ -359,18 +359,18 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 
 from flext_core import FlextBus
 from flext_core import FlextConfig
@@ -380,18 +380,18 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.models import FlextAuthModels
 
@@ -480,7 +480,7 @@ class BaseTransportAdapter(Protocol):
         endpoint: str,
         credentials: dict,
         metadata: dict[str, object] | None = None
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextResult[t.Dict]:
         """Send authentication request over transport."""
         ...
 
@@ -489,7 +489,7 @@ class BaseTransportAdapter(Protocol):
         endpoint: str,
         token: str,
         metadata: dict[str, object] | None = None
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextResult[t.Dict]:
         """Send token validation request over transport."""
         ...
 
@@ -512,18 +512,18 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 
 class FlextWebTransportAdapter(BaseTransportAdapter):
     """HTTP transport adapter using flext-api."""
@@ -537,7 +537,7 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
         endpoint: str,
         credentials: dict,
         metadata: dict[str, object] | None = None
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextResult[t.Dict]:
         """Send authentication request via HTTP using flext-api."""
         result = self._api.post(
             url=endpoint,
@@ -546,11 +546,11 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
         )
 
         if result.is_failure:
-            return FlextResult[FlextTypes.Dict].fail(
+            return FlextResult[t.Dict].fail(
                 f"HTTP transport failed: {result.error}"
             )
 
-        return FlextResult[FlextTypes.Dict].ok(result.unwrap())
+        return FlextResult[t.Dict].ok(result.unwrap())
 ```
 
 ### gRPC Transport (`transports/grpc.py`)
@@ -567,18 +567,18 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 
 class GrpcTransportAdapter(BaseTransportAdapter):
     """gRPC transport adapter using flext-grpc."""
@@ -592,7 +592,7 @@ class GrpcTransportAdapter(BaseTransportAdapter):
         endpoint: str,
         credentials: dict,
         metadata: dict[str, object] | None = None
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextResult[t.Dict]:
         """Send authentication request via gRPC using flext-grpc."""
         result = self._grpc.call(
             service="AuthService",
@@ -602,11 +602,11 @@ class GrpcTransportAdapter(BaseTransportAdapter):
         )
 
         if result.is_failure:
-            return FlextResult[FlextTypes.Dict].fail(
+            return FlextResult[t.Dict].fail(
                 f"gRPC transport failed: {result.error}"
             )
 
-        return FlextResult[FlextTypes.Dict].ok(result.unwrap())
+        return FlextResult[t.Dict].ok(result.unwrap())
 ```
 
 ### WebSocket Transport (`transports/websocket.py`)
@@ -624,7 +624,7 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
         endpoint: str,
         credentials: dict,
         metadata: dict[str, object] | None = None
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextResult[t.Dict]:
         """Send authentication request via WebSocket."""
         # Implementation using websockets library
         ...
@@ -651,7 +651,7 @@ class BaseProtocolHandler(Protocol):
     def parse_auth_response(
         self,
         response: bytes | str
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextResult[t.Dict]:
         """Parse authentication response from protocol."""
         ...
 ```
@@ -678,14 +678,14 @@ class RestProtocolHandler(BaseProtocolHandler):
     def parse_auth_response(
         self,
         response: str
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextResult[t.Dict]:
         """Parse JSON REST response."""
         import json
         try:
             parsed = json.loads(response)
-            return FlextResult[FlextTypes.Dict].ok(parsed)
+            return FlextResult[t.Dict].ok(parsed)
         except Exception as e:
-            return FlextResult[FlextTypes.Dict].fail(f"JSON parsing failed: {e}")
+            return FlextResult[t.Dict].fail(f"JSON parsing failed: {e}")
 ```
 
 ### SOAP Protocol Handler (`protocol_handlers/soap.py`)
@@ -706,7 +706,7 @@ class SoapProtocolHandler(BaseProtocolHandler):
     def parse_auth_response(
         self,
         response: str
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextResult[t.Dict]:
         """Parse SOAP XML response."""
         # Implementation for SOAP envelope parsing
         ...
@@ -907,15 +907,15 @@ class CredentialManager:
     def retrieve_credential(
         self,
         identifier: str
-    ) -> FlextResult[FlextTypes.Dict]:
+    ) -> FlextResult[t.Dict]:
         """Retrieve and decrypt credential."""
         result = self._storage.load(identifier)
         if result.is_failure:
-            return FlextResult[FlextTypes.Dict].fail(result.error)
+            return FlextResult[t.Dict].fail(result.error)
 
         encrypted = result.unwrap()
         decrypted = self._cipher.decrypt(encrypted)
-        return FlextResult[FlextTypes.Dict].ok(decrypted)
+        return FlextResult[t.Dict].ok(decrypted)
 
     def rotate_credential(
         self,
@@ -999,18 +999,18 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 from flext_api import FlextApi        # For HTTP transport
 from flext_grpc import FlextGrpc      # For gRPC transport
 from flext_ldap import FlextLdap      # For LDAP provider
@@ -1019,7 +1019,7 @@ class FlextWebTransportAdapter:
     def __init__(self) -> None:
         self._api = FlextApi()  # MANDATORY: Use flext-api
 
-    def send_request(self, url: str, data: dict) -> FlextResult[FlextTypes.Dict]:
+    def send_request(self, url: str, data: dict) -> FlextResult[t.Dict]:
         return self._api.post(url=url, json=data)
 
 class FlextAuthLdapProvider:
@@ -1046,18 +1046,18 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 
 class FlextAuthJwtProvider(FlextService[AuthToken]):
     """JWT provider extending FlextService."""

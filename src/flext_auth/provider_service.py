@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import cast
 
-from flext_core import FlextResult, FlextService, FlextTypes
+from flext_core import FlextResult, FlextService, t
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
@@ -59,8 +59,8 @@ class FlextAuthProviderService(FlextService[object]):
             self.logger.error("Configuration is required for provider registration")
             return
 
-        provider_config: FlextTypes.JsonDict = cast(
-            "FlextTypes.JsonDict", self._config.to_provider_config()
+        provider_config: t.JsonDict = cast(
+            "t.JsonDict", self._config.to_provider_config()
         )
 
         # Provider registration mapping with requirements
@@ -120,7 +120,7 @@ class FlextAuthProviderService(FlextService[object]):
                 try:
                     # Instantiate provider with config
                     provider = cast(
-                        "Callable[[FlextTypes.JsonDict], FlextAuthBaseProvider]",
+                        "Callable[[t.JsonDict], FlextAuthBaseProvider]",
                         provider_class,
                     )(provider_config)
                     self._providers.register(

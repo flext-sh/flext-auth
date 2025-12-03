@@ -18,7 +18,7 @@ from enum import StrEnum
 from types import MappingProxyType
 from typing import Final, Literal, TypeGuard, TypeIs
 
-from flext_core import FlextConstants, FlextResult, FlextUtilities
+from flext_core import FlextConstants, FlextResult, u
 
 # ═══════════════════════════════════════════════════════════════════════════
 # STRENUM + PYDANTIC 2: PADRÃO DEFINITIVO PARA FLEXT-AUTH
@@ -46,7 +46,7 @@ class FlextAuthConstants(FlextConstants):
     - TypeIs/TypeGuard methods for advanced type narrowing
     - Collections.abc for immutable validation sets
 
-    Integration with FlextProtocols:
+    Integration with p:
     This class provides the constant registry that FlextAuthProtocols depend on.
     Structural typing ensures protocol compliance without explicit inheritance.
 
@@ -330,42 +330,42 @@ class FlextAuthConstants(FlextConstants):
     """Template for authentication error responses."""
 
     # ═══════════════════════════════════════════════════════════════════
-    # UTILITY METHODS: Validação avançada com FlextUtilities
+    # UTILITY METHODS: Validação avançada com u
     # ═══════════════════════════════════════════════════════════════════
 
     @classmethod
     def validate_token_type_with_result(cls, value: str) -> FlextResult[TokenTypes]:
-        """Validate token type using FlextUtilities.Enum.parse."""
-        return FlextUtilities.Enum.parse(cls.TokenTypes, value)
+        """Validate token type using u.Enum.parse."""
+        return u.Enum.parse(cls.TokenTypes, value)
 
     @classmethod
     def validate_provider_type_with_result(
         cls, value: str
     ) -> FlextResult[ProviderTypes]:
-        """Validate provider type using FlextUtilities.Enum.parse."""
-        return FlextUtilities.Enum.parse(cls.ProviderTypes, value)
+        """Validate provider type using u.Enum.parse."""
+        return u.Enum.parse(cls.ProviderTypes, value)
 
     @classmethod
     def validate_role_type_with_result(cls, value: str) -> FlextResult[RoleTypes]:
-        """Validate role type using FlextUtilities.Enum.parse."""
-        return FlextUtilities.Enum.parse(cls.RoleTypes, value)
+        """Validate role type using u.Enum.parse."""
+        return u.Enum.parse(cls.RoleTypes, value)
 
     @classmethod
     def validate_permission_type_with_result(
         cls, value: str
     ) -> FlextResult[PermissionTypes]:
-        """Validate permission type using FlextUtilities.Enum.parse."""
-        return FlextUtilities.Enum.parse(cls.PermissionTypes, value)
+        """Validate permission type using u.Enum.parse."""
+        return u.Enum.parse(cls.PermissionTypes, value)
 
     @classmethod
     def create_token_type_validator(cls) -> Callable[[str], TokenTypes]:
         """Create BeforeValidator for TokenTypes in Pydantic models."""
-        return FlextUtilities.Enum.coerce_validator(cls.TokenTypes)
+        return uvalidator(cls.TokenTypes)
 
     @classmethod
     def create_provider_type_validator(cls) -> Callable[[str], ProviderTypes]:
         """Create BeforeValidator for ProviderTypes in Pydantic models."""
-        return FlextUtilities.Enum.coerce_validator(cls.ProviderTypes)
+        return uvalidator(cls.ProviderTypes)
 
     # ═══════════════════════════════════════════════════════════════════
     # LITERAL TYPES: PEP 695 strict type aliases (Python 3.13+)

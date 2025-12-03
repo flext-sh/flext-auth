@@ -2,7 +2,7 @@
 
 **Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
 
-Installation and first steps for implementing enterprise authentication in your FLEXT projects using flext-auth with complete FlextService and FlextHandlers integration.
+Installation and first steps for implementing enterprise authentication in your FLEXT projects using flext-auth with complete FlextService and h integration.
 
 ---
 
@@ -168,20 +168,20 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 
-def process_authentication_workflow(username: str, password: str) -> FlextResult[FlextTypes.Dict]:
+def process_authentication_workflow(username: str, password: str) -> FlextResult[t.Dict]:
     """Authentication workflow using FlextResult error handling."""
 
     auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
@@ -215,18 +215,18 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 from flext_auth import FlextAuth, FlextAuthConfig
 
 # Register authentication service in container

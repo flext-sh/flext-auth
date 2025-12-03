@@ -57,18 +57,18 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 from flext_auth import FlextAuth, FlextAuthConfig
 
 # Register authentication service
@@ -84,7 +84,7 @@ class UserService:
         self._container = FlextContainer.get_global()
         self._auth = self._container.get("auth_service").unwrap()
 
-    def create_authenticated_user(self, user_data: dict) -> FlextResult[FlextTypes.Dict]:
+    def create_authenticated_user(self, user_data: dict) -> FlextResult[t.Dict]:
         # Use injected auth service
         return self._auth.register_user(**user_data)
 ```
@@ -102,18 +102,18 @@ from flext_core import FlextContext
 from flext_core import FlextDecorators
 from flext_core import FlextDispatcher
 from flext_core import FlextExceptions
-from flext_core import FlextHandlers
+from flext_core import h
 from flext_core import FlextLogger
-from flext_core import FlextMixins
+from flext_core import x
 from flext_core import FlextModels
 from flext_core import FlextProcessors
-from flext_core import FlextProtocols
+from flext_core import p
 from flext_core import FlextRegistry
 from flext_core import FlextResult
 from flext_core import FlextRuntime
 from flext_core import FlextService
-from flext_core import FlextTypes
-from flext_core import FlextUtilities
+from flext_core import t
+from flext_core import u
 from flext_auth.models import FlextAuthModels
 
 # User entity follows FLEXT patterns
@@ -252,7 +252,7 @@ class AuthenticationProvider:
         self._auth = FlextAuth()
         self._container = FlextContainer.get_global()
 
-    def authenticate_service_request(self, token: str) -> FlextResult[FlextTypes.Dict]:
+    def authenticate_service_request(self, token: str) -> FlextResult[t.Dict]:
         """Authenticate requests from other FLEXT services."""
         return self._auth.validate_token(token)
 
@@ -273,7 +273,7 @@ class ServiceA:
         self._auth = FlextAuth()
         self._service_token = self._get_service_token()
 
-    def call_service_b(self, data: dict) -> FlextResult[FlextTypes.Dict]:
+    def call_service_b(self, data: dict) -> FlextResult[t.Dict]:
         """Call Service B with authentication."""
         headers = {
             "Authorization": f"Bearer {self._service_token}",
@@ -288,9 +288,9 @@ class ServiceA:
         )
 
         if response.status_code == 200:
-            return FlextResult[FlextTypes.Dict].ok(response.json())
+            return FlextResult[t.Dict].ok(response.json())
         else:
-            return FlextResult[FlextTypes.Dict].fail(f"Service call failed: {response.text}")
+            return FlextResult[t.Dict].fail(f"Service call failed: {response.text}")
 ```
 
 ---
@@ -451,7 +451,7 @@ class OAuth2Provider:
         # Implementation using flext-auth
         pass
 
-    def token(self, code: str, client_id: str) -> FlextResult[FlextTypes.Dict]:
+    def token(self, code: str, client_id: str) -> FlextResult[t.Dict]:
         """OAuth2 token endpoint."""
         # Implementation using flext-auth
         pass
