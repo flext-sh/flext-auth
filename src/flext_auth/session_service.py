@@ -7,7 +7,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextDispatcher, FlextService, r
+from flext_core import r, s
+from flext_core.dispatcher import FlextDispatcher
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.managers import (
@@ -16,7 +17,7 @@ from flext_auth.managers import (
 )
 
 
-class FlextAuthSessionService(ServiceManagerMixin, FlextService[object]):
+class FlextAuthSessionService(ServiceManagerMixin, s[object]):
     """Focused service for session management with complete flext-core integration."""
 
     def __init__(self, config: FlextAuthConfig, dispatcher: FlextDispatcher) -> None:

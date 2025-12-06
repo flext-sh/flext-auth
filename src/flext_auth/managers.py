@@ -13,15 +13,11 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-from flext_core import (
-    FlextContext,
-    FlextDispatcher,
-    FlextLogger,
-    FlextRegistry,
-    FlextResult,
-    FlextService,
-    r,
-)
+from flext_core import r, s
+from flext_core.context import FlextContext
+from flext_core.dispatcher import FlextDispatcher
+from flext_core.loggings import FlextLogger
+from flext_core.registry import FlextRegistry
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.models import FlextAuthModels
@@ -53,7 +49,7 @@ class ServiceManagerMixin:
         self.rate_limiter = FlextAuthManagers.FlextAuthRateLimiter(config, dispatcher)
 
 
-class FlextAuthManagers(FlextService[object]):
+class FlextAuthManagers(s[object]):
     """Namespace class for all authentication managers following FLEXT patterns.
 
     This namespace class contains all manager implementations as nested classes,
@@ -98,8 +94,8 @@ class FlextAuthManagers(FlextService[object]):
                     or user_data.get("unique_id") == user_id
                     or user_data.get("id") == user_id
                 ):
-                    return FlextResult.ok((username, user_data))
-            return FlextResult.fail("User not found")
+                    return r.ok((username, user_data))
+            return r.fail("User not found")
 
         def _modify_user_list_field(
             self,

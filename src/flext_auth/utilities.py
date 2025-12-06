@@ -6,15 +6,16 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+import secrets
 from collections.abc import Callable, Iterable
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from functools import cache, wraps
 from typing import Annotated, Any, TypeIs
 
+import bcrypt
 import jwt
-from flext_core import r
-from flext_core.utilities import FlextUtilities
+from flext_core import r, u as u_core
 from pydantic import BaseModel, BeforeValidator, ConfigDict, SecretStr, validate_call
 from pydantic_core import ValidationError
 
@@ -22,7 +23,7 @@ from flext_auth.constants import FlextAuthConstants
 from flext_auth.typings import FlextAuthTypes
 
 
-class FlextAuthUtilities(FlextUtilities):
+class FlextAuthUtilities(u_core):
     """FlextAuth advanced utilities extending u with domain-specific helpers.
 
     Architecture: Advanced utilities with ZERO code bloat through:
@@ -107,7 +108,7 @@ class FlextAuthUtilities(FlextUtilities):
         def coerce_validator[E: StrEnum](enum_cls: type[E]) -> Callable[[Any], E]:
             """BeforeValidator factory for Pydantic coercion."""
 
-            def _coerce(v: Any) -> E:
+            def _coerce(v: object) -> E:
                 if isinstance(v, enum_cls):
                     return v
                 if isinstance(v, str):
@@ -152,7 +153,7 @@ class FlextAuthUtilities(FlextUtilities):
         ) -> Callable[[Any], list[E]]:
             """Create validator for list of enum values."""
 
-            def _coerce(value: Any) -> list[E]:
+            def _coerce(value: object) -> list[E]:
                 if not isinstance(value, (list, tuple, set)):
                     msg = "Expected sequence"
                     raise TypeError(msg)
@@ -195,7 +196,7 @@ class FlextAuthUtilities(FlextUtilities):
             """ValidationError → r.fail()."""
 
             @wraps(func)
-            def wrapper(*args: Any, **kwargs: Any) -> r[R]:
+            def wrapper(*args: object, **kwargs: object) -> r[R]:
                 try:
                     return validate_call(
                         config=ConfigDict(
@@ -242,7 +243,7 @@ class FlextAuthUtilities(FlextUtilities):
             return FlextAuthUtilities.Model.from_dict(model_cls, merged)
 
         @staticmethod
-        def update[M: BaseModel](instance: M, **updates: Any) -> r[M]:
+        def update[M: BaseModel](instance: M, **updates: object) -> r[M]:
             """Update model instance - automatic re-validation."""
             try:
                 current = instance.model_dump()
@@ -366,8 +367,6 @@ class FlextAuthUtilities(FlextUtilities):
         @staticmethod
         def generate_session_id() -> str:
             """Generate a secure session ID."""
-            import secrets
-
             return secrets.token_hex(16)
 
         @staticmethod
@@ -390,16 +389,12 @@ class FlextAuthUtilities(FlextUtilities):
         @staticmethod
         def hash_password(password: str) -> str:
             """Hash a password using bcrypt."""
-            import bcrypt
-
             salt = bcrypt.gensalt(rounds=FlextAuthConstants.DEFAULT_HASH_ROUNDS)
             return bcrypt.hashpw(password.encode(), salt).decode()
 
         @staticmethod
         def verify_password(password: str, hashed: str) -> bool:
             """Verify a password against its hash."""
-            import bcrypt
-
             return bcrypt.checkpw(password.encode(), hashed.encode())
 
     # ═══════════════════════════════════════════════════════════════════
@@ -448,7 +443,7 @@ class FlextAuthUtilities(FlextUtilities):
     def encode_token(
         payload: FlextAuthTypes.ClaimMap,
         secret: str,
-        algorithm: str = FlextAuthConstants.ALGORITHM_DEFAULT,
+        algorithm: str = FlextAuthConstants.DEFAULT_JWT_ALGORITHM,
     ) -> r[str]:
         """Generic JWT token encoding.
 

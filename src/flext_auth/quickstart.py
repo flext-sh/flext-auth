@@ -7,14 +7,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextService, r
+from flext_core import r, s
 
 from flext_auth.api import FlextAuth
 from flext_auth.config import FlextAuthConfig
 from flext_auth.models import FlextAuthModels
 
 
-class FlextAuthQuickstart(FlextService[object]):
+class FlextAuthQuickstart(s[object]):
     """Quickstart convenience wrapper for FlextAuth with sensible defaults.
 
     This class provides a simplified interface for common authentication operations

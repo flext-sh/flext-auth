@@ -13,7 +13,7 @@ from collections import UserDict
 from datetime import UTC, datetime
 from typing import Self
 
-from flext_core import FlextModels, r
+from flext_core import m as m_core, r
 from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
 from flext_auth.constants import FlextAuthConstants
@@ -31,7 +31,7 @@ class FlextAuthBaseModel(BaseModel):
     )
 
 
-class FlextAuthModels(FlextModels):
+class FlextAuthModels(m_core):
     """Single generic authentication models class with nested Pydantic models.
 
     All authentication domain models consolidated with validation, composition,
@@ -112,7 +112,7 @@ class FlextAuthModels(FlextModels):
                 raise ValueError(msg)
             return self
 
-    class AuthToken(FlextModels.Entity):
+    class AuthToken(m_core.Entity):
         """Generic authentication token entity."""
 
         identity_id: str = Field(..., description="Identity ID")
@@ -167,7 +167,7 @@ class FlextAuthModels(FlextModels):
             description="Roles",
         )
 
-    class Identity(FlextModels.Entity):
+    class Identity(m_core.Entity):
         """Generic identity/user entity with minimal fields."""
 
         name: str = Field(
@@ -269,7 +269,7 @@ class FlextAuthModels(FlextModels):
     # SESSION MODELS - Generic session entity
     # =========================================================================
 
-    class Session(FlextModels.Entity):
+    class Session(m_core.Entity):
         """Generic session entity."""
 
         identity_id: str = Field(..., description="Identity ID")
@@ -293,14 +293,14 @@ class FlextAuthModels(FlextModels):
     # ROLE & PERMISSION MODELS - Generic RBAC
     # =========================================================================
 
-    class Role(FlextModels.Entity):
+    class Role(m_core.Entity):
         """Generic role entity."""
 
         name: str = Field(..., min_length=1, max_length=50, description="Role name")
         description: str = Field(default="", max_length=500, description="Description")
         permissions: list[str] = Field(default_factory=list, description="Permissions")
 
-    class Permission(FlextModels.Entity):
+    class Permission(m_core.Entity):
         """Generic permission entity."""
 
         name: str = Field(..., min_length=1, max_length=100, description="Permission")

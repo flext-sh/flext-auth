@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import cast
 
-from flext_core import FlextService, r, t
+from flext_core import r, s, t
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
@@ -33,7 +33,7 @@ from flext_auth.registry import FlextAuthRegistry
 from flext_auth.typings import FlextAuthTypes
 
 
-class FlextAuthProviderService(FlextService[object]):
+class FlextAuthProviderService(s[object]):
     """Flexible provider service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.

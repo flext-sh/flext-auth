@@ -12,7 +12,8 @@ from __future__ import annotations
 import threading
 from typing import ClassVar, Self, cast
 
-from flext_core import FlextConfig, FlextService, r
+from flext_core import r, s
+from flext_core.config import FlextConfig
 from pydantic import SecretStr
 
 from flext_auth.config import FlextAuthConfig
@@ -27,7 +28,7 @@ from flext_auth.typings import FlextAuthTypes
 from flext_auth.user_service import FlextAuthIdentityService
 
 
-class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
+class FlextAuth(s[FlextAuthTypes.Responses.Authentication]):
     """Flexible authentication service using flext-core patterns.
 
     Thread-safe singleton service with:
@@ -53,7 +54,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         self._config = config if config is not None else FlextAuthConfig()
         self._registry = FlextAuthRegistry()
         # Import here to avoid circular dependency
-        from flext_core import FlextDispatcher  # noqa: PLC0415
+        from flext_core.dispatcher import FlextDispatcher  # noqa: PLC0415
 
         self._dispatcher = FlextDispatcher()
         # Use provided service_name or default (service_name is optional)

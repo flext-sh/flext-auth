@@ -12,7 +12,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import cast
 
-from flext_core import FlextRegistry, r, t
+from flext_core import r, t
+from flext_core.registry import FlextRegistry
 
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.typings import FlextAuthTypes

@@ -38,13 +38,13 @@ class FlextAuthConfig(FlextConfig.AutoConfig):
         description="Generic secret key",
     )
     algorithm: str = Field(
-        default=FlextAuthConstants.ALGORITHM_DEFAULT,
+        default=FlextAuthConstants.DEFAULT_JWT_ALGORITHM,
         description="Cryptographic algorithm",
     )
     expiry_minutes: int = Field(
-        default=FlextAuthConstants.EXPIRY_DEFAULT_MINUTES,
+        default=FlextAuthConstants.DEFAULT_JWT_EXPIRY_MINUTES,
         ge=1,
-        le=FlextAuthConstants.EXPIRY_MAX_MINUTES,
+        le=10080,  # 7 days in minutes
         description="Default expiry time",
     )
     issuer: str = Field(

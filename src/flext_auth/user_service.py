@@ -10,27 +10,30 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING
 
-from flext_core import FlextService, r
+from flext_core import r, s
 from pydantic import ValidationError
 
+if TYPE_CHECKING:
+    from flext_core import FlextDispatcher
+
+from flext_auth import m, u
 from flext_auth.config import FlextAuthConfig
 from flext_auth.managers import (
     FlextAuthManagers,
     ServiceManagerMixin,
 )
-from flext_auth.models import FlextAuthModels
-from flext_auth.utilities import FlextAuthUtilities
 
 
-class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
+class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     """Generic identity service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
     SOLID principles with dependency injection and railway error handling.
     """
 
-    def __init__(self, *, config: FlextAuthConfig, dispatcher: "FlextDispatcher") -> None:
+    def __init__(self, *, config: FlextAuthConfig, dispatcher: FlextDispatcher) -> None:
         """Generic initialization with dependency injection."""
         super().__init__()
         self._init_managers(config, dispatcher)
@@ -55,19 +58,19 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
         self,
         name: str,
         credential: str,
-    ) -> r[FlextAuthModels.Identity]:
+    ) -> r[m.Identity]:
         """Railway-oriented identity authentication with account lockout."""
         return (
             self.user_manager.get_user_by_username(name)
-            .flat_map(lambda identity: FlextResult.ok((identity, credential)))
+            .flat_map(lambda identity: r.ok((identity, credential)))
             .flat_map(
                 lambda ic: (
                     # Check if account is locked
-                    FlextResult.fail(
+                    r.fail(
                         "Account is locked due to too many failed attempts",
                     )
                     if ic[0].is_locked()
-                    else FlextResult.ok(ic)
+                    else r.ok(ic)
                 ),
             )
             .flat_map(
@@ -76,12 +79,12 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
                 .flat_map(
                     lambda is_valid: (
                         # Success: reset failed attempts and unlock
-                        FlextResult.ok(ic[0].with_successful_access())
+                        r.ok(ic[0].with_successful_access())
                         if is_valid
                         # Failure: increment failed attempts and lock if threshold reached
                         else (
                             self._handle_failed_attempt(ic[0]).flat_map(
-                                lambda _: FlextResult.fail("Invalid credentials"),
+                                lambda _: r.fail("Invalid credentials"),
                             )
                         )
                     ),
@@ -96,7 +99,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
         credential: str,
         roles: list[str] | None = None,
         **_extra_fields: object,
-    ) -> r[FlextAuthModels.Identity]:
+    ) -> r[m.Identity]:
         """Railway-oriented identity creation with credential hashing."""
         if roles is None:
             user_roles: list[str] = []
@@ -104,12 +107,12 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
             user_roles = roles
         # Normalize email to lowercase for consistency
         if not isinstance(contact, str):
-            return r[FlextAuthModels.Identity].fail("Contact must be a string")
+            return r[m.Identity].fail("Contact must be a string")
         normalized_contact = contact.lower()
 
         # Validate using Pydantic model to ensure proper validation errors
         try:
-            request = FlextAuthModels.IdentityRequest(
+            request = m.IdentityRequest(
                 name=name,
                 contact=normalized_contact,
                 credential=credential,
@@ -125,14 +128,14 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
                 msg = error.get("msg", "Validation error")
                 error_messages.append(f"{field}: {msg}")
             error_msg = "; ".join(error_messages) if error_messages else str(e)
-            return r[FlextAuthModels.Identity].fail(error_msg)
+            return r[m.Identity].fail(error_msg)
         except Exception as e:
-            return r[FlextAuthModels.Identity].fail(str(e))
+            return r[m.Identity].fail(str(e))
 
         # Validate credential strength before hashing
-        strength_result = FlextAuthUtilities.validate_credential_strength(credential)
+        strength_result = u.validate_credential_strength(credential)
         if strength_result.is_failure:
-            return r[FlextAuthModels.Identity].fail(
+            return r[m.Identity].fail(
                 strength_result.error or "Credential strength validation failed",
             )
         strength_data = strength_result.unwrap()
@@ -143,11 +146,11 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
                 if errors
                 else "Credential does not meet strength requirements"
             )
-            return r[FlextAuthModels.Identity].fail(error_msg)
+            return r[m.Identity].fail(error_msg)
 
         # Create user with basic fields - extra_fields not currently supported
         # due to type constraints in the manager interface
-        return FlextAuthUtilities.hash_credential(credential).flat_map(
+        return u.hash_credential(credential).flat_map(
             lambda ch: self.user_manager.create_user(
                 username=request.name,
                 email=request.contact,
@@ -173,18 +176,18 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
                 lambda identity: identity.verify_credential(
                     current_credential,
                 ).flat_map(
-                    lambda is_valid: FlextResult.ok(identity)
+                    lambda is_valid: r.ok(identity)
                     if is_valid
-                    else FlextResult.fail("Current credential is incorrect"),
+                    else r.fail("Current credential is incorrect"),
                 ),
             )
             .flat_map(
-                lambda identity: FlextAuthUtilities.validate_credential_strength(
+                lambda identity: u.validate_credential_strength(
                     new_credential,
                 ).flat_map(
-                    lambda r: FlextResult.ok(identity)
-                    if r["is_valid"]
-                    else FlextResult.fail(
+                    lambda validation_result: r.ok(identity)
+                    if validation_result["is_valid"]
+                    else r.fail(
                         "New credential does not meet strength requirements",
                     ),
                 ),
@@ -204,12 +207,12 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
         return (
             self.user_manager.get_user(identity_id)
             .flat_map(
-                lambda identity: FlextAuthUtilities.validate_credential_strength(
+                lambda identity: u.validate_credential_strength(
                     new_credential,
                 ).flat_map(
-                    lambda r: FlextResult.ok(identity)
-                    if r["is_valid"]
-                    else FlextResult.fail(
+                    lambda validation_result: r.ok(identity)
+                    if validation_result["is_valid"]
+                    else r.fail(
                         "New credential does not meet strength requirements",
                     ),
                 ),
@@ -228,7 +231,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
     # ACCOUNT LOCKOUT HANDLING
     # =========================================================================
 
-    def _handle_failed_attempt(self, identity: FlextAuthModels.Identity) -> r[bool]:
+    def _handle_failed_attempt(self, identity: m.Identity) -> r[bool]:
         """Handle failed authentication attempt with lockout logic."""
         identity.failed_attempts += 1
         max_attempts = self._config.max_attempts

@@ -11,10 +11,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core import FlextService, r
+from flext_core import r, s
 
 if TYPE_CHECKING:
-    from flext_core import FlextDispatcher
+    from flext_core.dispatcher import FlextDispatcher
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
@@ -26,7 +26,7 @@ from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 
 
-class FlextAuthTokenService(ServiceManagerMixin, FlextService[object]):
+class FlextAuthTokenService(ServiceManagerMixin, s[object]):
     """Flexible token service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.

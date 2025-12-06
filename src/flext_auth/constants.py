@@ -296,6 +296,52 @@ class FlextAuthConstants(FlextConstants):
     MAX_SECRET_KEY_LENGTH: Final[int] = 4096
     """Maximum secret key length."""
 
+    # JWT Configuration
+    DEFAULT_ISSUER: Final[str] = "flext-auth"
+    """Default JWT issuer."""
+    DEFAULT_AUDIENCE: Final[str] = "flext-auth-users"
+    """Default JWT audience."""
+
+    # Hash Configuration
+    HASH_ROUNDS_DEFAULT: Final[int] = 12
+    """Default hash rounds."""
+    HASH_ROUNDS_MIN: Final[int] = 4
+    """Minimum hash rounds."""
+    HASH_ROUNDS_MAX: Final[int] = 31
+    """Maximum hash rounds."""
+
+    # Credential Configuration
+    CREDENTIAL_MIN_LENGTH: Final[int] = 8
+    """Minimum credential length."""
+    CREDENTIAL_MAX_LENGTH: Final[int] = 128
+    """Maximum credential length."""
+
+    # Security Policies
+    MAX_ATTEMPTS_DEFAULT: Final[int] = 5
+    """Default max authentication attempts."""
+    LOCKOUT_DURATION_MINUTES: Final[int] = 30
+    """Lockout duration in minutes."""
+
+    # Session Configuration
+    SESSION_EXPIRY_DEFAULT_MINUTES: Final[int] = 1440  # 24 hours
+    """Default session expiry in minutes."""
+    SESSION_EXPIRY_MAX_MINUTES: Final[int] = 43200  # 30 days
+    """Maximum session expiry in minutes."""
+    MAX_SESSIONS_DEFAULT: Final[int] = 5
+    """Default max sessions per user."""
+
+    # Performance & Rate Limiting
+    PERFORMANCE_THRESHOLD_MS: Final[float] = 1000.0
+    """Performance warning threshold in milliseconds."""
+    MAX_REQUESTS_PER_MINUTE: Final[int] = 60
+    """Max requests per minute."""
+    MAX_REQUESTS_PER_HOUR: Final[int] = 3600
+    """Max requests per hour."""
+
+    # Secret Validation
+    SECRET_MIN_LENGTH: Final[int] = 32
+    """Minimum secret key length."""
+
     # ═══════════════════════════════════════════════════════════════════
     # VALIDATION LIMITS: Mappings imutáveis para validação
     # ═══════════════════════════════════════════════════════════════════

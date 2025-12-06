@@ -30,7 +30,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextLogger, FlextService, r
+from flext_core import r, s
+from flext_core.loggings import FlextLogger
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -70,7 +71,7 @@ class _MiddlewareControlMixin:
         return self._enabled
 
 
-class FlextAuthMiddleware(FlextService):
+class FlextAuthMiddleware(s):
     """Authentication middleware adapters following FLEXT standards.
 
     This class provides middleware that adapts FlextAuthBaseProvider implementations
@@ -167,7 +168,7 @@ class FlextAuthMiddleware(FlextService):
             request: HTTP request to authenticate
 
             Returns:
-            FlextResult with authenticated request or error
+            r with authenticated request or error
 
             """
             if not self._enabled:
@@ -237,7 +238,7 @@ class FlextAuthMiddleware(FlextService):
             response: HTTP response
 
             Returns:
-            FlextResult with unchanged response
+            r with unchanged response
 
             """
             return r[object].ok(response)
@@ -406,7 +407,7 @@ class FlextAuthMiddleware(FlextService):
             request: Web request to authenticate
 
             Returns:
-            FlextResult with authenticated request (with user context) or error
+            r with authenticated request (with user context) or error
 
             """
             if not self._enabled:
@@ -486,7 +487,7 @@ class FlextAuthMiddleware(FlextService):
             response: Web response
 
             Returns:
-            FlextResult with unchanged response
+            r with unchanged response
 
             """
             return r[object].ok(response)
