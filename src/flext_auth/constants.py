@@ -356,12 +356,16 @@ class FlextAuthConstants(FlextConstants):
     @classmethod
     def create_token_type_validator(cls) -> Callable[[str], TokenTypes]:
         """Create BeforeValidator for TokenTypes in Pydantic models."""
-        return uvalidator(cls.TokenTypes)
+        from flext_auth.utilities import u  # noqa: PLC0415
+
+        return u.Enum.coerce_validator(cls.TokenTypes)
 
     @classmethod
     def create_provider_type_validator(cls) -> Callable[[str], ProviderTypes]:
         """Create BeforeValidator for ProviderTypes in Pydantic models."""
-        return uvalidator(cls.ProviderTypes)
+        from flext_auth.utilities import u  # noqa: PLC0415
+
+        return u.Enum.coerce_validator(cls.ProviderTypes)
 
     # ═══════════════════════════════════════════════════════════════════
     # LITERAL TYPES: PEP 695 strict type aliases (Python 3.13+)
@@ -371,7 +375,14 @@ class FlextAuthConstants(FlextConstants):
     """Token type literal - matches TokenTypes StrEnum values exactly."""
 
     type ProviderTypeLiteral = Literal[
-        "basic", "jwt", "oauth2", "saml", "ldap", "certificate", "kerberos", "apikey"
+        "basic",
+        "jwt",
+        "oauth2",
+        "saml",
+        "ldap",
+        "certificate",
+        "kerberos",
+        "apikey",
     ]
     """Provider type literal - matches ProviderTypes StrEnum values exactly."""
 
@@ -399,4 +410,6 @@ class FlextAuthConstants(FlextConstants):
         # Use FlextConstants.Cqrs.Status diretamente no código
 
 
-__all__ = ["FlextAuthConstants"]
+c = FlextAuthConstants  # Runtime alias (not TypeAlias to avoid PYI042)
+
+__all__ = ["FlextAuthConstants", "c"]

@@ -32,16 +32,16 @@ def main() -> None:
 
     # Set environment variables to override configuration
     os.environ["FLEXT_AUTH_JWT_EXPIRY_MINUTES"] = str(
-        FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES * 2
+        FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES * 2,
     )
     os.environ["FLEXT_AUTH_BCRYPT_ROUNDS"] = str(
-        FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS + 2
+        FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS + 2,
     )
     os.environ["FLEXT_AUTH_MAX_LOGIN_ATTEMPTS"] = str(
-        FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS
+        FlextAuthConstants.Security.MAX_LOGIN_ATTEMPTS,
     )
     os.environ["FLEXT_AUTH_SESSION_EXPIRY_MINUTES"] = str(
-        FlextAuthConstants.Session.DEFAULT_EXPIRY_MINUTES
+        FlextAuthConstants.Session.DEFAULT_EXPIRY_MINUTES,
     )
 
     # Clear global instance to force reload from environment

@@ -166,6 +166,9 @@ class FlextAuthProtocols(p):
                 ...
 
 
+p = FlextAuthProtocols  # Runtime alias (not TypeAlias to avoid PYI042)
+
 __all__ = [
     "FlextAuthProtocols",
+    "p",
 ]

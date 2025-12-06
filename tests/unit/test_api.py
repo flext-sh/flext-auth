@@ -67,7 +67,9 @@ class TestFlextAuthProcessorRegistration:
 
         # Test with valid username
         result_valid = auth.register_user(
-            "validuser", "test@example.com", "ValidPass123!"
+            "validuser",
+            "test@example.com",
+            "ValidPass123!",
         )
         assert result_valid.is_success
 
@@ -302,7 +304,9 @@ class TestFlextAuthTokenOperations:
 
         # Register and authenticate
         register_result = auth.register_user(
-            "beareruser", "bearer@example.com", "BearerPass123!"
+            "beareruser",
+            "bearer@example.com",
+            "BearerPass123!",
         )
         assert register_result.is_success
         identity = register_result.unwrap()
@@ -858,9 +862,9 @@ class TestFlextAuthInitializationCoverage:
                 "expiry_minutes": 120,
                 "hash_rounds": 10,
                 "auth_secret": SecretStr(
-                    "test-secret-key-with-minimum-32-characters-length"
+                    "test-secret-key-with-minimum-32-characters-length",
                 ).get_secret_value(),
-            }
+            },
         )
 
         assert auth._config.expiry_minutes == 120
@@ -1006,7 +1010,9 @@ class TestFlextAuthTokenMethods:
 
         # Create a user first
         register_result = auth.register_user(
-            "testuser", "test@example.com", "TestPassword123!"
+            "testuser",
+            "test@example.com",
+            "TestPassword123!",
         )
         assert register_result.is_success
         identity = register_result.unwrap()
@@ -1028,7 +1034,9 @@ class TestFlextAuthTokenMethods:
 
         # Create a user first
         register_result = auth.register_user(
-            "testuser", "test@example.com", "TestPassword123!"
+            "testuser",
+            "test@example.com",
+            "TestPassword123!",
         )
         assert register_result.is_success
         identity = register_result.unwrap()
@@ -1369,7 +1377,8 @@ class TestAuthModule:
         # Test user authentication if method exists
         if hasattr(auth, "authenticate_user"):
             result = auth.authenticate_user(
-                str(test_data["username"]), str(test_data["password"])
+                str(test_data["username"]),
+                str(test_data["password"]),
             )
             assert isinstance(result, FlextResult)
 
@@ -1427,7 +1436,8 @@ class TestAuthModule:
         assert register_result.is_success
 
         auth_result = auth.authenticate_user(
-            str(test_data["username"]), str(test_data["password"])
+            str(test_data["username"]),
+            str(test_data["password"]),
         )
         assert auth_result.is_success
 
@@ -1459,7 +1469,8 @@ class TestAuthModule:
         assert register_result.is_success
 
         auth_result = auth.authenticate_user(
-            str(test_data["username"]), str(test_data["password"])
+            str(test_data["username"]),
+            str(test_data["password"]),
         )
         assert auth_result.is_success
 
@@ -1486,7 +1497,8 @@ class TestAuthModule:
         assert register_result.is_success
 
         auth_result = auth.authenticate_user(
-            str(test_data["username"]), str(test_data["password"])
+            str(test_data["username"]),
+            str(test_data["password"]),
         )
         assert auth_result.is_success
 
@@ -1522,7 +1534,8 @@ class TestAuthModule:
         assert register_result.is_success
 
         auth_result = auth.authenticate_user(
-            str(test_data["username"]), str(test_data["password"])
+            str(test_data["username"]),
+            str(test_data["password"]),
         )
         assert auth_result.is_success
 
@@ -1562,7 +1575,8 @@ class TestAuthModule:
 
         # Test user authentication
         auth_result = auth.authenticate_user(
-            str(test_auth_data["username"]), str(test_auth_data["password"])
+            str(test_auth_data["username"]),
+            str(test_auth_data["password"]),
         )
         assert isinstance(auth_result, FlextResult)
         assert auth_result.is_success
@@ -1626,7 +1640,8 @@ class TestAuthModule:
 
         # Test authentication with flext_tests data
         result = auth.authenticate_user(
-            test_auth_data["username"], test_auth_data["password"]
+            test_auth_data["username"],
+            test_auth_data["password"],
         )
         assert isinstance(result, FlextResult)
         assert result.is_success
@@ -1698,7 +1713,8 @@ class TestAuthModule:
         # Test authentication with realistic data
         for user_data in realistic_users:
             result = auth.authenticate_user(
-                user_data["username"], user_data["password"]
+                user_data["username"],
+                user_data["password"],
             )
             assert isinstance(result, FlextResult)
             assert result.is_success
@@ -1722,7 +1738,8 @@ class TestAuthModule:
 
         # Authenticate user
         auth_result = auth.authenticate_user(
-            str(test_auth_data["username"]), str(test_auth_data["password"])
+            str(test_auth_data["username"]),
+            str(test_auth_data["password"]),
         )
         assert isinstance(auth_result, FlextResult)
         assert auth_result.is_success

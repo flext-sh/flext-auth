@@ -133,10 +133,11 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def _init_token_endpoint_auth_method(self) -> str:
         """Initialize token endpoint auth method configuration."""
         token_endpoint_auth_method_value = self._config.get(
-            "token_endpoint_auth_method"
+            "token_endpoint_auth_method",
         )
         if token_endpoint_auth_method_value is not None and not isinstance(
-            token_endpoint_auth_method_value, str
+            token_endpoint_auth_method_value,
+            str,
         ):
             error_msg = (
                 f"OAuth2 'token_endpoint_auth_method' must be str or None, "
@@ -173,7 +174,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         if missing_fields:
             fields_str = ", ".join(missing_fields)
             return r[bool].fail(
-                f"Missing required OAuth2 configuration fields: {fields_str}"
+                f"Missing required OAuth2 configuration fields: {fields_str}",
             )
 
         # Validate field types
@@ -303,7 +304,8 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             return r[tuple[str, str]].ok((code_challenge, code_verifier))
 
         def handle_authorization_code_flow(
-            self, _credentials: dict[str, object]
+            self,
+            _credentials: dict[str, object],
         ) -> r[dict[str, object]]:
             """Handle OAuth2 authorization code flow."""
             # Simplified implementation - would validate authorization code
@@ -445,7 +447,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         flow_result = self._flow_manager.handle_authorization_code_flow(credentials)
         if flow_result.is_failure:
             return r[FlextAuthModels.AuthToken].fail(
-                flow_result.error or "OAuth2 authentication failed"
+                flow_result.error or "OAuth2 authentication failed",
             )
         # Convert flow result to AuthToken
         flow_data = flow_result.unwrap()
@@ -453,10 +455,10 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             FlextAuthModels.AuthToken(
                 identity_id=flow_data.get("user_id", "oauth2_user"),
                 token=credentials.get("access_token", ""),
-                token_type="Bearer",
+                token_type="Bearer",  # noqa: S106
                 expires_at=datetime.now(UTC)
                 + timedelta(hours=1),  # Default 1 hour expiry
-            )
+            ),
         )
 
     def validate(
@@ -476,7 +478,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             token_result = self._token_manager.refresh_access_token(token.refresh_token)
             if token_result.is_failure:
                 return r[FlextAuthModels.AuthToken].fail(
-                    token_result.error or "Token refresh failed"
+                    token_result.error or "Token refresh failed",
                 )
             # Convert dict to AuthToken
             token_data = token_result.unwrap()
@@ -486,7 +488,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                     token=token_data.get("access_token", ""),
                     token_type=token_data.get("token_type", "Bearer"),
                     expires_at=token.expires_at,  # Keep original expiry for now
-                )
+                ),
             )
         return r[FlextAuthModels.AuthToken].fail("No refresh token available")
 
@@ -515,13 +517,13 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         # Fast fail: implementation not available
         _ = token  # Mark as intentionally unused
         return r[FlextAuthModels.Identity].fail(
-            "OAuth2 token validation not implemented"
+            "OAuth2 token validation not implemented",
         )
 
     def generate_token_for_user(
         self,
         user: FlextAuthModels.Identity,
-        token_type: str = "oauth2_access",
+        token_type: str = "oauth2_access",  # noqa: S107
         expiry_minutes: int | None = None,
     ) -> r[str]:
         """Generate OAuth2 token for user."""

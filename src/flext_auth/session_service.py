@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextService, r
+from flext_core import FlextDispatcher, FlextService, r
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.managers import (
@@ -41,7 +41,7 @@ class FlextAuthSessionService(ServiceManagerMixin, FlextService[object]):
         Use specific session methods instead.
         """
         return r[object].fail(
-            "FlextAuthSessionService is focused - use session_manager property or cleanup_expired_sessions()"
+            "FlextAuthSessionService is focused - use session_manager property or cleanup_expired_sessions()",
         )
 
     def cleanup_expired_sessions(self) -> r[int]:

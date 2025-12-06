@@ -13,8 +13,8 @@ from collections import UserDict
 from datetime import UTC, datetime
 from typing import Self
 
-from flext_core import r
-from pydantic import BaseModel, Field, computed_field, model_validator
+from flext_core import FlextModels, r
+from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.utilities import FlextAuthUtilities
@@ -23,22 +23,11 @@ from flext_auth.utilities import FlextAuthUtilities
 class FlextAuthBaseModel(BaseModel):
     """Base model for FlextAuth with standard Pydantic v2 configuration."""
 
-    from pydantic import ConfigDict
-
     model_config = ConfigDict(
         use_enum_values=True,
         validate_default=True,
         str_strip_whitespace=True,
         extra="forbid",
-    )
-
-
-def _default_identity() -> FlextAuthModels.Identity:
-    """Create default identity for AuthResponse."""
-    return FlextAuthModels.Identity(
-        unique_id="",
-        name="",
-        contact="",
     )
 
 
@@ -60,7 +49,8 @@ class FlextAuthModels(FlextModels):
         data: dict[str, object] = Field(default_factory=dict, description="Result data")
         error: str = Field(default="", description="Error message")
         metadata: dict[str, object] = Field(
-            default_factory=dict, description="Additional metadata"
+            default_factory=dict,
+            description="Additional metadata",
         )
 
         @computed_field
@@ -85,10 +75,12 @@ class FlextAuthModels(FlextModels):
         iat: int = Field(..., description="Issued at timestamp (UNIX)")
         jti: str = Field(default="", description="Token ID")
         iss: str = Field(
-            default=FlextAuthConstants.DEFAULT_ISSUER, description="Issuer"
+            default=FlextAuthConstants.DEFAULT_ISSUER,
+            description="Issuer",
         )
         aud: str = Field(
-            default=FlextAuthConstants.DEFAULT_AUDIENCE, description="Audience"
+            default=FlextAuthConstants.DEFAULT_AUDIENCE,
+            description="Audience",
         )
         session_id: str = Field(default="", description="Session ID")
 
@@ -97,7 +89,8 @@ class FlextAuthModels(FlextModels):
 
         identity_id: str = Field(..., description="Identity ID")
         token_type: FlextAuthConstants.TokenTypeLiteral | str = Field(
-            default=FlextAuthConstants.DEFAULT_TOKEN_TYPE, description="Token type"
+            default=FlextAuthConstants.DEFAULT_TOKEN_TYPE,
+            description="Token type",
         )
         expiry_minutes: int = Field(
             default=FlextAuthConstants.EXPIRY_DEFAULT_MINUTES,
@@ -105,7 +98,8 @@ class FlextAuthModels(FlextModels):
             description="Token expiry",
         )
         extra_claims: dict[str, object] = Field(
-            default_factory=dict, description="Additional claims"
+            default_factory=dict,
+            description="Additional claims",
         )
         session_id: str = Field(default="", description="Session ID")
 
@@ -124,13 +118,16 @@ class FlextAuthModels(FlextModels):
         identity_id: str = Field(..., description="Identity ID")
         token: str = Field(..., description="Token value", exclude=True)
         token_type: str = Field(
-            default=FlextAuthConstants.TOKEN_TYPE_BEARER, description="Token type"
+            default=FlextAuthConstants.TOKEN_TYPE_BEARER,
+            description="Token type",
         )
         expires_at: datetime = Field(..., description="Expiration time")
         session_id: str = Field(default="", description="Session ID")
         is_revoked: bool = Field(default=False, description="Revoked status")
         refresh_token: str = Field(
-            default="", description="Refresh token", exclude=True
+            default="",
+            description="Refresh token",
+            exclude=True,
         )
 
         @computed_field
@@ -181,7 +178,9 @@ class FlextAuthModels(FlextModels):
         )
         contact: str = Field(..., description="Contact info")
         credential_hash: str = Field(
-            default="", description="Hashed credential", exclude=True
+            default="",
+            description="Hashed credential",
+            exclude=True,
         )
         full_name: str = Field(default="", description="Full name")
         is_active: bool = Field(default=True, description="Active status")
@@ -251,7 +250,8 @@ class FlextAuthModels(FlextModels):
         def verify_credential(self, credential: str) -> r[bool]:
             """Verify a credential against stored hash using bcrypt."""
             return FlextAuthUtilities.verify_credential(
-                credential, self.credential_hash
+                credential,
+                self.credential_hash,
             )
 
         def set_credential(self, credential: str) -> r[bool]:
@@ -279,7 +279,8 @@ class FlextAuthModels(FlextModels):
         ip_address: str = Field(default="", description="IP address")
         user_agent: str = Field(default="", description="User agent")
         last_accessed: datetime = Field(
-            default_factory=lambda: datetime.now(UTC), description="Last access"
+            default_factory=lambda: datetime.now(UTC),
+            description="Last access",
         )
 
         @computed_field
@@ -330,7 +331,10 @@ class FlextAuthModels(FlextModels):
         """Provider configuration for authentication providers."""
 
         def __init__(
-            self, dict_: dict[str, object] | None = None, /, **kwargs: object
+            self,
+            dict_: dict[str, object] | None = None,
+            /,
+            **kwargs: object,
         ) -> None:
             """Initialize provider configuration with defaults."""
             if dict_ is not None:
@@ -350,7 +354,8 @@ class FlextAuthModels(FlextModels):
 
         api_key: str = Field(..., description="API key to validate")
         metadata: dict[str, object] = Field(
-            default_factory=dict, description="Additional validation data"
+            default_factory=dict,
+            description="Additional validation data",
         )
 
     class ApiKeyData(BaseModel):
@@ -359,7 +364,8 @@ class FlextAuthModels(FlextModels):
         key_hash: str = Field(..., description="Hashed API key")
         name: str = Field(..., description="Key name")
         permissions: list[str] = Field(
-            default_factory=list, description="Key permissions"
+            default_factory=list,
+            description="Key permissions",
         )
         is_active: bool = Field(default=True, description="Key active status")
         expires_at: datetime = Field(
@@ -367,7 +373,8 @@ class FlextAuthModels(FlextModels):
             description="Key expiration (datetime.max means never expires)",
         )
         created_at: datetime = Field(
-            default_factory=lambda: datetime.now(UTC), description="Creation time"
+            default_factory=lambda: datetime.now(UTC),
+            description="Creation time",
         )
 
     class CredentialValidation(BaseModel):
@@ -376,7 +383,8 @@ class FlextAuthModels(FlextModels):
         username: str = Field(..., description="Username")
         password: str = Field(..., description="Password", exclude=True)
         metadata: dict[str, object] = Field(
-            default_factory=dict, description="Additional validation data"
+            default_factory=dict,
+            description="Additional validation data",
         )
 
     # =========================================================================
@@ -389,7 +397,8 @@ class FlextAuthModels(FlextModels):
         credential_type: str = Field(..., description="Credential type")
         value: str = Field(..., description="Credential value", exclude=True)
         metadata: dict[str, object] = Field(
-            default_factory=dict, description="Additional data"
+            default_factory=dict,
+            description="Additional data",
         )
 
     # =========================================================================
@@ -401,14 +410,21 @@ class FlextAuthModels(FlextModels):
 
         success: bool = Field(..., description="Authentication success")
         identity: FlextAuthModels.Identity = Field(
-            default_factory=_default_identity,
+            default_factory=lambda: FlextAuthModels.Identity(
+                unique_id="",
+                name="",
+                contact="",
+            ),
             description="Identity data",
         )
         token: str = Field(default="", description="Token", exclude=True)
         message: str = Field(default="", description="Response message")
         metadata: dict[str, object] = Field(
-            default_factory=dict, description="Additional data"
+            default_factory=dict,
+            description="Additional data",
         )
 
 
-__all__ = ["FlextAuthModels"]
+m = FlextAuthModels  # Runtime alias (not TypeAlias to avoid PYI042)
+
+__all__ = ["FlextAuthModels", "m"]

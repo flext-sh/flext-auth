@@ -20,6 +20,7 @@ from flext_core import (
     FlextRegistry,
     FlextResult,
     FlextService,
+    r,
 )
 
 from flext_auth.config import FlextAuthConfig
@@ -36,7 +37,9 @@ class ServiceManagerMixin:
     """
 
     def init_managers(
-        self, config: FlextAuthConfig, dispatcher: FlextDispatcher
+        self,
+        config: FlextAuthConfig,
+        dispatcher: FlextDispatcher,
     ) -> None:
         """Initialize all standard managers used by services.
 
@@ -63,7 +66,7 @@ class FlextAuthManagers(FlextService[object]):
         FlextAuthManagers is a namespace class - use specific manager classes instead.
         """
         return r[object].fail(
-            "FlextAuthManagers is a namespace class - use specific manager classes like FlextAuthUserManager"
+            "FlextAuthManagers is a namespace class - use specific manager classes like FlextAuthUserManager",
         )
 
     class FlextAuthUserManager:
@@ -80,7 +83,8 @@ class FlextAuthManagers(FlextService[object]):
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
             self._users: dict[
-                str, dict[str, object]
+                str,
+                dict[str, object],
             ] = {}  # In production, use database (dict for dynamic key access)
 
         def _find_user_by_id(self, user_id: str) -> r[tuple[str, dict[str, object]]]:
@@ -98,7 +102,12 @@ class FlextAuthManagers(FlextService[object]):
             return FlextResult.fail("User not found")
 
         def _modify_user_list_field(
-            self, user_id: str, field: str, value: str, *, add: bool = True
+            self,
+            user_id: str,
+            field: str,
+            value: str,
+            *,
+            add: bool = True,
         ) -> r[bool]:
             """Add or remove value from user list field (roles/permissions).
 
@@ -108,7 +117,7 @@ class FlextAuthManagers(FlextService[object]):
                 lambda ud: (
                     self._apply_list_modification(ud[1], field, value, add=add),
                     True,
-                )[1]
+                )[1],
             )
 
         def _extract_identity_id(self, storage_data: dict[str, object]) -> str:
@@ -134,7 +143,8 @@ class FlextAuthManagers(FlextService[object]):
             return value
 
         def _create_identity_from_storage(
-            self, storage_data: dict[str, object]
+            self,
+            storage_data: dict[str, object],
         ) -> FlextAuthModels.Identity:
             """Create Identity model from storage data, filtering out non-model fields."""
             identity_id = self._extract_identity_id(storage_data)
@@ -148,12 +158,16 @@ class FlextAuthManagers(FlextService[object]):
                 raise ValueError(msg)
 
             credential_hash = self._validate_required_field(
-                storage_data, "credential_hash", str
+                storage_data,
+                "credential_hash",
+                str,
             )
             is_active = self._validate_required_field(storage_data, "is_active", bool)
             roles = self._validate_required_field(storage_data, "roles", list)
             permissions = self._validate_required_field(
-                storage_data, "permissions", list
+                storage_data,
+                "permissions",
+                list,
             )
 
             identity_data: dict[str, object] = {
@@ -300,7 +314,7 @@ class FlextAuthManagers(FlextService[object]):
         def get_user(self, user_id: str) -> r[FlextAuthModels.Identity]:
             """Get user by ID."""
             return self._find_user_by_id(user_id).map(
-                lambda ud: self._create_identity_from_storage(ud[1])
+                lambda ud: self._create_identity_from_storage(ud[1]),
             )
 
         def get_user_by_username(self, username: str) -> r[FlextAuthModels.Identity]:
@@ -323,7 +337,7 @@ class FlextAuthManagers(FlextService[object]):
                     ud[1].update(updates),
                     ud[1].update({"updated_at": datetime.now(UTC)}),
                     self._create_identity_from_storage(ud[1]),
-                )[2]
+                )[2],
             )
 
         def delete_user(self, user_id: str) -> r[bool]:
@@ -346,19 +360,25 @@ class FlextAuthManagers(FlextService[object]):
         def add_user_permission(self, user_id: str, permission: str) -> r[bool]:
             """Add permission to user."""
             return self._modify_user_list_field(
-                user_id, "permissions", permission, add=True
+                user_id,
+                "permissions",
+                permission,
+                add=True,
             )
 
         def remove_user_permission(self, user_id: str, permission: str) -> r[bool]:
             """Remove permission from user."""
             return self._modify_user_list_field(
-                user_id, "permissions", permission, add=False
+                user_id,
+                "permissions",
+                permission,
+                add=False,
             )
 
         def get_user_by_id(self, user_id: str) -> r[FlextAuthModels.Identity]:
             """Get a user by their ID."""
             return self._find_user_by_id(user_id).map(
-                lambda ud: self._create_identity_from_storage(ud[1])
+                lambda ud: self._create_identity_from_storage(ud[1]),
             )
 
     class FlextAuthSessionManager:
@@ -376,7 +396,8 @@ class FlextAuthManagers(FlextService[object]):
             self._context = FlextContext()
             self._dispatcher = FlextDispatcher()
             self._sessions: dict[
-                str, dict[str, object]
+                str,
+                dict[str, object],
             ] = {}  # In production, use Redis/database (dict for dynamic key access)
 
         def _is_session_active(self, session_data: dict[str, object]) -> bool:
@@ -452,7 +473,8 @@ class FlextAuthManagers(FlextService[object]):
                         ip_address=str(session_data.get("ip_address", "")),
                         user_agent=str(session_data.get("user_agent", "")),
                         last_accessed=session_data.get(
-                            "last_accessed", datetime.now(UTC)
+                            "last_accessed",
+                            datetime.now(UTC),
                         ),
                     )
                     # Set unique_id from session_id
@@ -516,21 +538,23 @@ class FlextAuthManagers(FlextService[object]):
         # Note: These are event type identifiers, not passwords
         _EVENT_AUTH_SUCCESS = "auth_success"
         _EVENT_AUTH_FAILURE = "auth_failure"
-        _EVENT_TOKEN_VALIDATION_SUCCESS = "token_validation_success"
-        _EVENT_TOKEN_VALIDATION_FAILURE = "token_validation_failure"
-        _EVENT_TOKEN_REFRESH_SUCCESS = "token_refresh_success"
-        _EVENT_TOKEN_REFRESH_FAILURE = "token_refresh_failure"
-        _EVENT_TOKEN_CREATION_SUCCESS = "token_creation_success"
-        _EVENT_TOKEN_CREATION_FAILURE = "token_creation_failure"
+        _EVENT_TOKEN_VALIDATION_SUCCESS = "token_validation_success"  # noqa: S105
+        _EVENT_TOKEN_VALIDATION_FAILURE = "token_validation_failure"  # noqa: S105
+        _EVENT_TOKEN_REFRESH_SUCCESS = "token_refresh_success"  # noqa: S105
+        _EVENT_TOKEN_REFRESH_FAILURE = "token_refresh_failure"  # noqa: S105
+        _EVENT_TOKEN_CREATION_SUCCESS = "token_creation_success"  # noqa: S105
+        _EVENT_TOKEN_CREATION_FAILURE = "token_creation_failure"  # noqa: S105
         _EVENT_USER_LOGOUT = "user_logout"
-        _EVENT_PASSWORD_CHANGE_SUCCESS = "password_change_success"
-        _EVENT_PASSWORD_CHANGE_FAILURE = "password_change_failure"
-        _EVENT_PASSWORD_RESET = "password_reset"
+        _EVENT_PASSWORD_CHANGE_SUCCESS = "password_change_success"  # noqa: S105
+        _EVENT_PASSWORD_CHANGE_FAILURE = "password_change_failure"  # noqa: S105
+        _EVENT_PASSWORD_RESET = "password_reset"  # noqa: S105
         _EVENT_AUTHORIZATION_GRANTED = "authorization_granted"
         _EVENT_AUTHORIZATION_DENIED = "authorization_denied"
 
         def __init__(
-            self, config: FlextAuthConfig, dispatcher: FlextDispatcher
+            self,
+            config: FlextAuthConfig,
+            dispatcher: FlextDispatcher,
         ) -> None:
             """Initialize audit logger with configuration."""
             super().__init__()
@@ -631,17 +655,23 @@ class FlextAuthManagers(FlextService[object]):
             self.log_event(event_type, user_id=user_id, token_type=token_type, **extra)
 
         def log_user_logout(
-            self, username: str, **extra: str | int | bool | list[str] | datetime | None
+            self,
+            username: str,
+            **extra: str | int | bool | list[str] | datetime | None,
         ) -> None:
             """Log user logout."""
             self.log_event(self._EVENT_USER_LOGOUT, username=username, **extra)
 
         def log_password_change_success(
-            self, username: str, **extra: str | int | bool | list[str] | datetime | None
+            self,
+            username: str,
+            **extra: str | int | bool | list[str] | datetime | None,
         ) -> None:
             """Log successful password change."""
             self.log_event(
-                self._EVENT_PASSWORD_CHANGE_SUCCESS, username=username, **extra
+                self._EVENT_PASSWORD_CHANGE_SUCCESS,
+                username=username,
+                **extra,
             )
 
         def log_password_change_failure(
@@ -659,7 +689,9 @@ class FlextAuthManagers(FlextService[object]):
             )
 
         def log_password_reset(
-            self, username: str, **extra: str | int | bool | list[str] | datetime | None
+            self,
+            username: str,
+            **extra: str | int | bool | list[str] | datetime | None,
         ) -> None:
             """Log password reset."""
             self.log_event(self._EVENT_PASSWORD_RESET, username=username, **extra)
@@ -680,7 +712,11 @@ class FlextAuthManagers(FlextService[object]):
                 else self._EVENT_AUTHORIZATION_DENIED
             )
             self.log_event(
-                event_type, username=username, resource=resource, action=action, **extra
+                event_type,
+                username=username,
+                resource=resource,
+                action=action,
+                **extra,
             )
 
         def get_total_log_entries(self) -> int:
@@ -700,7 +736,7 @@ class FlextAuthManagers(FlextService[object]):
                 **data,
             }
             self._logs.append(log_entry)
-            self.logger.info(f"Audit event: {event_type}")
+            self.logger.info("Audit event: %s", event_type)
 
         def get_logs(
             self,
@@ -767,7 +803,9 @@ class FlextAuthManagers(FlextService[object]):
         """
 
         def __init__(
-            self, config: FlextAuthConfig, dispatcher: FlextDispatcher
+            self,
+            config: FlextAuthConfig,
+            dispatcher: FlextDispatcher,
         ) -> None:
             """Initialize rate limiter with configuration."""
             super().__init__()
@@ -777,7 +815,8 @@ class FlextAuthManagers(FlextService[object]):
             self._context = FlextContext()
             self._registry = FlextRegistry(dispatcher)
             self._attempts: dict[
-                str, dict[str, object]
+                str,
+                dict[str, object],
             ] = {}  # username -> attempt data (dict for dynamic key access)
             self._max_attempts = 5
             self._window_minutes = 15

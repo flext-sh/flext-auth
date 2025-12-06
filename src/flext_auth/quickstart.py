@@ -79,7 +79,7 @@ class FlextAuthQuickstart(FlextService[object]):
                 user_ids.append(username)
             else:
                 return r[list[str]].fail(
-                    f"Failed to create demo user {i}: {result.error}"
+                    f"Failed to create demo user {i}: {result.error}",
                 )
 
         return r[list[str]].ok(user_ids)
@@ -95,11 +95,14 @@ class FlextAuthQuickstart(FlextService[object]):
         if create_REDACTED_LDAP_BIND_PASSWORD:
             # Create REDACTED_LDAP_BIND_PASSWORD user
             REDACTED_LDAP_BIND_PASSWORD_result = self.register_user(
-                "REDACTED_LDAP_BIND_PASSWORD", "REDACTED_LDAP_BIND_PASSWORD@example.com", "AdminPass123!", ["ADMIN"]
+                "REDACTED_LDAP_BIND_PASSWORD",
+                "REDACTED_LDAP_BIND_PASSWORD@example.com",
+                "AdminPass123!",
+                ["ADMIN"],
             )
             if REDACTED_LDAP_BIND_PASSWORD_result.is_failure:
                 return r[list[str]].fail(
-                    f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {REDACTED_LDAP_BIND_PASSWORD_result.error}"
+                    f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {REDACTED_LDAP_BIND_PASSWORD_result.error}",
                 )
             user_ids.append("REDACTED_LDAP_BIND_PASSWORD")
 
@@ -117,7 +120,7 @@ class FlextAuthQuickstart(FlextService[object]):
         Use specific quickstart methods instead.
         """
         return r[object].fail(
-            "FlextAuthQuickstart is focused - use specific quickstart methods like register_user()"
+            "FlextAuthQuickstart is focused - use specific quickstart methods like register_user()",
         )
 
 

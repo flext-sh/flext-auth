@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Self
 
-from flext_core import r
+from flext_core import FlextConfig, r
 from pydantic import Field, SecretStr, model_validator
 
 from flext_auth.constants import FlextAuthConstants
@@ -48,10 +48,12 @@ class FlextAuthConfig(FlextConfig.AutoConfig):
         description="Default expiry time",
     )
     issuer: str = Field(
-        default=FlextAuthConstants.DEFAULT_ISSUER, description="Token issuer"
+        default=FlextAuthConstants.DEFAULT_ISSUER,
+        description="Token issuer",
     )
     audience: str = Field(
-        default=FlextAuthConstants.DEFAULT_AUDIENCE, description="Token audience"
+        default=FlextAuthConstants.DEFAULT_AUDIENCE,
+        description="Token audience",
     )
 
     # Credential Processing
@@ -267,14 +269,14 @@ class FlextAuthConfig(FlextConfig.AutoConfig):
             # Use AutoConfig's get_instance() for singleton pattern
             if not kwargs:
                 instance = cls.get_instance()
-                return FlextResult.ok(instance)
+                return r.ok(instance)
             # If kwargs provided, create new instance with overrides
             instance = cls(**kwargs)
             # Note: AutoConfig manages singleton internally, but we can't override it here
             # For overrides, return the new instance (caller should use get_instance() for singleton)
-            return FlextResult.ok(instance)
+            return r.ok(instance)
         except Exception as e:
-            return FlextResult.fail(f"Failed to create config: {e}")
+            return r.fail(f"Failed to create config: {e}")
 
     def to_provider_config(self) -> dict[str, object]:
         """Convert config to provider configuration dict.

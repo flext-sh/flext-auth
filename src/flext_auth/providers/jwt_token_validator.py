@@ -57,7 +57,7 @@ class FlextAuthJwtTokenValidator:
             if audience_value is not None:
                 if not isinstance(audience_value, str):
                     return r[dict[str, object]].fail(
-                        "JWT audience must be a string if provided"
+                        "JWT audience must be a string if provided",
                     )
                 audience = audience_value
             else:

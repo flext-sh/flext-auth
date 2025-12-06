@@ -82,7 +82,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
         if missing_fields:
             return r[bool].fail(
-                f"Missing required Kerberos configuration fields: {', '.join(missing_fields)}"
+                f"Missing required Kerberos configuration fields: {', '.join(missing_fields)}",
             )
 
         # Validate field types
@@ -141,7 +141,8 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             # Logger removed - use logging module directly if needed
 
         def validate_ticket(
-            self, _ticket_data: dict[str, object]
+            self,
+            _ticket_data: dict[str, object],
         ) -> r[dict[str, object]]:
             """Validate Kerberos ticket."""
             # Simplified implementation - in production would use proper Kerberos validation
@@ -182,11 +183,12 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             # Logger removed - use logging module directly if needed
 
         def authenticate_ticket(
-            self, ticket_data: dict[str, object]
+            self,
+            ticket_data: dict[str, object],
         ) -> r[dict[str, object]]:
             """Authenticate using Kerberos ticket."""
             # Use composition for ticket validation
-            return self.provider._ticket_validator.validate_ticket(ticket_data)
+            return self.provider._ticket_validator.validate_ticket(ticket_data)  # noqa: SLF001
 
     def supports(self) -> set[str]:
         """Return Kerberos provider capabilities."""
@@ -206,13 +208,13 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         # Fast fail: implementation not available
         _ = token  # Mark as intentionally unused
         return r[FlextAuthModels.Identity].fail(
-            "Kerberos token validation not implemented"
+            "Kerberos token validation not implemented",
         )
 
     def generate_token_for_user(
         self,
         user: FlextAuthModels.Identity,
-        token_type: str = "kerberos_access",
+        token_type: str = "kerberos_access",  # noqa: S107
         expiry_minutes: int | None = None,
     ) -> r[str]:
         """Generate Kerberos token for user."""

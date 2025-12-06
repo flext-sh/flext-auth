@@ -111,19 +111,22 @@ class FlextAuthJwtTokenGenerator:
         try:
             # Get required configuration values
             secret_result = self._get_config_str(
-                "secret_key", "JWT secret key not configured"
+                "secret_key",
+                "JWT secret key not configured",
             )
             if secret_result.is_failure:
                 return r[str].fail(secret_result.error or "Secret key error")
 
             algorithm_result = self._get_config_str(
-                "algorithm", "JWT algorithm not configured"
+                "algorithm",
+                "JWT algorithm not configured",
             )
             if algorithm_result.is_failure:
                 return r[str].fail(algorithm_result.error or "Algorithm error")
 
             expiry_config_result = self._get_config_int(
-                "expiry_minutes", "JWT expiry_minutes not configured"
+                "expiry_minutes",
+                "JWT expiry_minutes not configured",
             )
             if expiry_config_result.is_failure:
                 return r[str].fail(expiry_config_result.error or "Expiry error")
@@ -134,7 +137,8 @@ class FlextAuthJwtTokenGenerator:
 
             # Validate expiry
             expiry_result = self._validate_expiry(
-                expiry_minutes, expiry_config_result.unwrap()
+                expiry_minutes,
+                expiry_config_result.unwrap(),
             )
             if expiry_result.is_failure:
                 return r[str].fail(expiry_result.error or "Expiry validation error")
@@ -157,7 +161,9 @@ class FlextAuthJwtTokenGenerator:
                 extra_claims,
             )
             token_result = jwt.encode(
-                payload, secret_result.unwrap(), algorithm=algorithm_result.unwrap()
+                payload,
+                secret_result.unwrap(),
+                algorithm=algorithm_result.unwrap(),
             )
             # Handle both string and bytes return types from jwt.encode
             if isinstance(token_result, bytes):

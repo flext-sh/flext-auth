@@ -30,7 +30,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextService, r
+from flext_core import FlextLogger, FlextService, r
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -84,7 +84,7 @@ class FlextAuthMiddleware(FlextService):
         FlextAuthMiddleware is a namespace class - use specific middleware classes instead.
         """
         return r[bool].fail(
-            "FlextAuthMiddleware is a namespace class - use specific middleware classes like FlextWebAuthMiddleware"
+            "FlextAuthMiddleware is a namespace class - use specific middleware classes like FlextWebAuthMiddleware",
         )
 
     class FlextWebAuthMiddleware(_MiddlewareControlMixin):
@@ -178,7 +178,7 @@ class FlextAuthMiddleware(FlextService):
                 token_result = self._ensure_valid_token()
                 if token_result.is_failure:
                     return r[object].fail(
-                        f"Authentication failed: {token_result.error}"
+                        f"Authentication failed: {token_result.error}",
                     )
 
                 token = token_result.unwrap()
@@ -259,7 +259,7 @@ class FlextAuthMiddleware(FlextService):
             """Authenticate using credentials for initial token (SRP: Initial auth only)."""
             if not self._credentials:
                 return r[FlextAuthModels.AuthToken].fail(
-                    "No authentication token and no credentials provided"
+                    "No authentication token and no credentials provided",
                 )
 
             auth_result = self._provider.authenticate(self._credentials)
@@ -268,7 +268,8 @@ class FlextAuthMiddleware(FlextService):
 
             self._current_token = auth_result.unwrap()
             self.logger.info(
-                "Initial authentication successful", provider=self._provider_name
+                "Initial authentication successful",
+                provider=self._provider_name,
             )
             return r[FlextAuthModels.AuthToken].ok(self._current_token)
 
@@ -290,14 +291,16 @@ class FlextAuthMiddleware(FlextService):
                 and self._current_token
             ):
                 self.logger.debug(
-                    "Token expired, attempting refresh", provider=self._provider_name
+                    "Token expired, attempting refresh",
+                    provider=self._provider_name,
                 )
 
                 refresh_result = self._provider.refresh(self._current_token)
                 if refresh_result.is_success:
                     self._current_token = refresh_result.unwrap()
                     self.logger.info(
-                        "Token refresh successful", provider=self._provider_name
+                        "Token refresh successful",
+                        provider=self._provider_name,
                     )
                     return r[FlextAuthModels.AuthToken].ok(self._current_token)
 
@@ -314,7 +317,7 @@ class FlextAuthMiddleware(FlextService):
                     return r[FlextAuthModels.AuthToken].ok(self._current_token)
 
             return r[FlextAuthModels.AuthToken].fail(
-                "Token expired and unable to refresh or re-authenticate"
+                "Token expired and unable to refresh or re-authenticate",
             )
 
     class WebAuthMiddleware(_MiddlewareControlMixin):
@@ -427,7 +430,7 @@ class FlextAuthMiddleware(FlextService):
                 if not token:
                     if self._require_auth:
                         return r[object].fail(
-                            f"Authentication required: No token found in {self._header_name} header or cookies"
+                            f"Authentication required: No token found in {self._header_name} header or cookies",
                         )
                     return r[object].ok(request)
 
@@ -435,12 +438,12 @@ class FlextAuthMiddleware(FlextService):
                 validation_result = self._provider.validate(token)
                 if validation_result.is_failure:
                     return r[object].fail(
-                        f"Token validation failed: {validation_result.error}"
+                        f"Token validation failed: {validation_result.error}",
                     )
 
                 if not validation_result.unwrap():
                     return r[object].fail(
-                        "Authentication failed: Invalid or expired token"
+                        "Authentication failed: Invalid or expired token",
                     )
 
                 # Token is valid - add user context to request
@@ -515,7 +518,7 @@ class FlextAuthMiddleware(FlextService):
             if auth_header:
                 # Strip prefix if present
                 if self._token_prefix and auth_header.startswith(
-                    f"{self._token_prefix} "
+                    f"{self._token_prefix} ",
                 ):
                     return auth_header[len(self._token_prefix) + 1 :]
                 if not self._token_prefix:

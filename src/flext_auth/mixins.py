@@ -39,7 +39,7 @@ class FlextAuthMixins(x):
 
             if len(password) < FlextAuthConstants.CREDENTIAL_MIN_LENGTH:
                 return r[str].fail(
-                    f"Password must be at least {FlextAuthConstants.CREDENTIAL_MIN_LENGTH} characters"
+                    f"Password must be at least {FlextAuthConstants.CREDENTIAL_MIN_LENGTH} characters",
                 )
 
             if len(password) > FlextAuthConstants.CREDENTIAL_MAX_LENGTH:
@@ -53,7 +53,7 @@ class FlextAuthMixins(x):
 
             if not (has_upper and has_lower and has_digit and has_special):
                 return r[str].fail(
-                    "Password must contain at least one uppercase letter, lowercase letter, digit, and special character"
+                    "Password must contain at least one uppercase letter, lowercase letter, digit, and special character",
                 )
 
             return r[str].ok(password)
@@ -79,13 +79,13 @@ class FlextAuthMixins(x):
 
             if len(username) > MAX_USERNAME_LENGTH:
                 return r[str].fail(
-                    f"Username must be no more than {MAX_USERNAME_LENGTH} characters"
+                    f"Username must be no more than {MAX_USERNAME_LENGTH} characters",
                 )  # MAX_USERNAME_LENGTH = 255
 
             # Check for valid characters
             if not re.match(r"^[a-zA-Z0-9_-]+$", username):
                 return r[str].fail(
-                    "Username can only contain letters, numbers, underscores, and hyphens"
+                    "Username can only contain letters, numbers, underscores, and hyphens",
                 )
 
             return r[str].ok(username)

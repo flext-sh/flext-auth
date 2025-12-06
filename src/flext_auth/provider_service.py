@@ -49,7 +49,7 @@ class FlextAuthProviderService(FlextService[object]):
     def execute(self, **_kwargs: object) -> r[object]:
         """Railway-oriented execute with focused service pattern."""
         return r[object].fail(
-            "Use specific provider methods: get_provider, authenticate_user, etc."
+            "Use specific provider methods: get_provider, authenticate_user, etc.",
         )
 
     def _register_builtin_providers(self) -> None:
@@ -60,7 +60,8 @@ class FlextAuthProviderService(FlextService[object]):
             return
 
         provider_config: t.JsonDict = cast(
-            "t.JsonDict", self._config.to_provider_config()
+            "t.JsonDict",
+            self._config.to_provider_config(),
         )
 
         # Provider registration mapping with requirements
@@ -81,7 +82,7 @@ class FlextAuthProviderService(FlextService[object]):
                 "ldap",
                 FlextAuthLdapProvider,
                 lambda: bool(
-                    provider_config.get("server") and provider_config.get("base_dn")
+                    provider_config.get("server") and provider_config.get("base_dn"),
                 ),
             ),
             (
@@ -89,7 +90,7 @@ class FlextAuthProviderService(FlextService[object]):
                 FlextAuthOAuth2Provider,
                 lambda: bool(
                     provider_config.get("client_id")
-                    and provider_config.get("token_endpoint")
+                    and provider_config.get("token_endpoint"),
                 ),
             ),
             (
@@ -101,14 +102,14 @@ class FlextAuthProviderService(FlextService[object]):
                 "saml",
                 FlextAuthSamlProvider,
                 lambda: bool(
-                    provider_config.get("entity_id") and provider_config.get("sso_url")
+                    provider_config.get("entity_id") and provider_config.get("sso_url"),
                 ),
             ),
             (
                 "kerberos",
                 FlextAuthKerberosProvider,
                 lambda: bool(
-                    provider_config.get("realm") and provider_config.get("kdc")
+                    provider_config.get("realm") and provider_config.get("kdc"),
                 ),
             ),
             ("certificate", FlextAuthCertificateProvider, lambda: True),
@@ -129,7 +130,7 @@ class FlextAuthProviderService(FlextService[object]):
                         configuration=provider_config,
                     )
                 except Exception as e:
-                    self.logger.warning(f"Failed to register {name} provider: {e}")
+                    self.logger.warning("Failed to register %s provider: %s", name, e)
 
     # =========================================================================
     # CONSOLIDATED PROVIDER MANAGEMENT
@@ -164,7 +165,7 @@ class FlextAuthProviderService(FlextService[object]):
     ) -> r[FlextAuthModels.AuthToken]:
         """Railway-oriented user authentication with provider selection."""
         return self._providers.get(provider).flat_map(
-            lambda p: p.authenticate({"username": username, "password": password})
+            lambda p: p.authenticate({"username": username, "password": password}),
         )
 
     def generate_token_for_user(
@@ -176,7 +177,7 @@ class FlextAuthProviderService(FlextService[object]):
     ) -> r[str]:
         """Railway-oriented token generation with direct provider access."""
         return self._providers.get(provider).flat_map(
-            lambda p: p.generate_token_for_user(user, token_type, expiry_minutes)
+            lambda p: p.generate_token_for_user(user, token_type, expiry_minutes),
         )
 
     def validate_token(

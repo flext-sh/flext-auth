@@ -313,4 +313,6 @@ class FlextAuthTypes(t):
         UNIT = UnitType()
 
 
-__all__ = ["FlextAuthTypes"]
+t = FlextAuthTypes  # Runtime alias (not TypeAlias to avoid PYI042)
+
+__all__ = ["FlextAuthTypes", "t"]

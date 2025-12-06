@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import cast
 
-from flext_core import r, u
+from flext_core import e, r, u
 
 from flext_auth.models import FlextAuthModels
 
@@ -129,7 +129,7 @@ class FlextAuthProviderMixin:
         if capability not in self.supports():
             return r[bool].fail(
                 f"Provider does not support '{capability}' capability. "
-                f"Supported capabilities: {', '.join(sorted(self.supports()))}"
+                f"Supported capabilities: {', '.join(sorted(self.supports()))}",
             )
 
         return r[bool].ok(True)

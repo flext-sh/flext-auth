@@ -14,8 +14,12 @@ from typing import Final, Literal, TypeAlias
 from flext_auth.constants import FlextAuthConstants
 
 
-class TestConstants:
-    """Centralized test constants following flext-core nested class pattern."""
+class TestsConstants(FlextAuthConstants):
+    """Test constants extending FlextAuthConstants.
+
+    Provides test-specific constants without duplicating parent functionality.
+    All parent constants are accessible via inheritance hierarchy.
+    """
 
     class Paths:
         """Test path constants."""
@@ -92,3 +96,9 @@ class TestConstants:
 
         # Permission type literal (using PermissionType StrEnum values as Literal)
         PermissionTypeLiteral: TypeAlias = Literal["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"]
+
+
+# Standardized short name for use in tests (same pattern as flext-core)
+c = TestsConstants
+
+__all__ = ["TestsConstants", "c"]

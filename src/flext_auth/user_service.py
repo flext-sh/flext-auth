@@ -30,7 +30,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
     SOLID principles with dependency injection and railway error handling.
     """
 
-    def __init__(self, *, config: FlextAuthConfig, dispatcher: FlextDispatcher) -> None:
+    def __init__(self, *, config: FlextAuthConfig, dispatcher: "FlextDispatcher") -> None:
         """Generic initialization with dependency injection."""
         super().__init__()
         self._init_managers(config, dispatcher)
@@ -48,7 +48,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
     def execute(self, **_kwargs: object) -> r[object]:
         """Railway-oriented execute with focused service pattern."""
         return r[object].fail(
-            "Use specific identity methods: create_identity, authenticate_identity, etc."
+            "Use specific identity methods: create_identity, authenticate_identity, etc.",
         )
 
     def authenticate_identity(
@@ -64,11 +64,11 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
                 lambda ic: (
                     # Check if account is locked
                     FlextResult.fail(
-                        "Account is locked due to too many failed attempts"
+                        "Account is locked due to too many failed attempts",
                     )
                     if ic[0].is_locked()
                     else FlextResult.ok(ic)
-                )
+                ),
             )
             .flat_map(
                 lambda ic: ic[0]
@@ -81,11 +81,11 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
                         # Failure: increment failed attempts and lock if threshold reached
                         else (
                             self._handle_failed_attempt(ic[0]).flat_map(
-                                lambda _: FlextResult.fail("Invalid credentials")
+                                lambda _: FlextResult.fail("Invalid credentials"),
                             )
                         )
-                    )
-                )
+                    ),
+                ),
             )
         )
 
@@ -133,7 +133,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
         strength_result = FlextAuthUtilities.validate_credential_strength(credential)
         if strength_result.is_failure:
             return r[FlextAuthModels.Identity].fail(
-                strength_result.error or "Credential strength validation failed"
+                strength_result.error or "Credential strength validation failed",
             )
         strength_data = strength_result.unwrap()
         if not strength_data["is_valid"]:
@@ -153,7 +153,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
                 email=request.contact,
                 password_hash=ch,
                 roles=request.roles,
-            )
+            ),
         )
 
     # =========================================================================
@@ -171,31 +171,31 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
             self.user_manager.get_user(identity_id)
             .flat_map(
                 lambda identity: identity.verify_credential(
-                    current_credential
+                    current_credential,
                 ).flat_map(
                     lambda is_valid: FlextResult.ok(identity)
                     if is_valid
-                    else FlextResult.fail("Current credential is incorrect")
-                )
+                    else FlextResult.fail("Current credential is incorrect"),
+                ),
             )
             .flat_map(
                 lambda identity: FlextAuthUtilities.validate_credential_strength(
-                    new_credential
+                    new_credential,
                 ).flat_map(
                     lambda r: FlextResult.ok(identity)
                     if r["is_valid"]
                     else FlextResult.fail(
-                        "New credential does not meet strength requirements"
-                    )
-                )
+                        "New credential does not meet strength requirements",
+                    ),
+                ),
             )
             .flat_map(
                 lambda identity: identity.set_credential(new_credential).map(
                     lambda _: (
                         self.audit_logger.log_password_change_success(identity.name),
                         True,
-                    )[1]
-                )
+                    )[1],
+                ),
             )
         )
 
@@ -205,22 +205,22 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
             self.user_manager.get_user(identity_id)
             .flat_map(
                 lambda identity: FlextAuthUtilities.validate_credential_strength(
-                    new_credential
+                    new_credential,
                 ).flat_map(
                     lambda r: FlextResult.ok(identity)
                     if r["is_valid"]
                     else FlextResult.fail(
-                        "New credential does not meet strength requirements"
-                    )
-                )
+                        "New credential does not meet strength requirements",
+                    ),
+                ),
             )
             .flat_map(
                 lambda identity: identity.set_credential(new_credential).map(
                     lambda _: (
                         self.audit_logger.log_password_reset(identity.name),
                         True,
-                    )[1]
-                )
+                    )[1],
+                ),
             )
         )
 
@@ -278,7 +278,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, FlextService[object]):
                         allowed=ip[1],
                     ),
                     ip[1],
-                )[1]
+                )[1],
             )
         )
 

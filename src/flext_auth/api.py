@@ -12,7 +12,7 @@ from __future__ import annotations
 import threading
 from typing import ClassVar, Self, cast
 
-from flext_core import FlextService, r
+from flext_core import FlextConfig, FlextService, r
 from pydantic import SecretStr
 
 from flext_auth.config import FlextAuthConfig
@@ -43,13 +43,18 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
     _lock: ClassVar[threading.Lock] = threading.Lock()
 
     def __init__(
-        self, config: FlextAuthConfig | None = None, service_name: str | None = None
+        self,
+        config: FlextAuthConfig | None = None,
+        service_name: str | None = None,
     ) -> None:
         """Initialize with dependency injection and event bus."""
         super().__init__()
         # Use provided config or create default (config is optional for convenience)
         self._config = config if config is not None else FlextAuthConfig()
         self._registry = FlextAuthRegistry()
+        # Import here to avoid circular dependency
+        from flext_core import FlextDispatcher  # noqa: PLC0415
+
         self._dispatcher = FlextDispatcher()
         # Use provided service_name or default (service_name is optional)
         self._service_name = service_name if service_name is not None else "flext_auth"
@@ -69,7 +74,8 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
             if provider_result.is_success:
                 self._registry.register(provider_name, provider_result.unwrap())
         self._identity_service = FlextAuthIdentityService(
-            config=self._config, dispatcher=self._dispatcher
+            config=self._config,
+            dispatcher=self._dispatcher,
         )
         # Share managers between services to ensure data consistency
         self._identity_service.user_manager = shared_managers.user_manager
@@ -89,7 +95,8 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         self._token_service.rate_limiter = shared_managers.rate_limiter
 
         self._session_service = FlextAuthSessionService(
-            config=self._config, dispatcher=self._dispatcher
+            config=self._config,
+            dispatcher=self._dispatcher,
         )
         # Share managers with session service
         self._session_service.user_manager = shared_managers.user_manager
@@ -204,17 +211,18 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         username_value = credentials.get("username")
         if not isinstance(username_value, str) or not username_value:
             return r[FlextAuthModels.Identity].fail(
-                "Invalid credentials: username is required and must be a non-empty string"
+                "Invalid credentials: username is required and must be a non-empty string",
             )
 
         password_value = credentials.get("password")
         if not isinstance(password_value, str) or not password_value:
             return r[FlextAuthModels.Identity].fail(
-                "Invalid credentials: password is required and must be a non-empty string"
+                "Invalid credentials: password is required and must be a non-empty string",
             )
 
         return self._identity_service.authenticate_identity(
-            username_value, password_value
+            username_value,
+            password_value,
         )
 
     def authenticate_user(
@@ -258,7 +266,7 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
                 # If session creation fails, log but don't fail authentication
                 if session_result.is_failure:
                     self.logger.warning(
-                        f"Failed to create session for user {identity.name}: {session_result.error}"
+                        f"Failed to create session for user {identity.name}: {session_result.error}",
                     )
 
         return auth_result
@@ -333,7 +341,9 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
     ) -> r[FlextAuthModels.Identity]:
         """Railway-oriented user registration via identity service."""
         return self._identity_service.create_identity(
-            name=username, contact=email, credential=password
+            name=username,
+            contact=email,
+            credential=password,
         )
 
     def create_token(
@@ -386,7 +396,9 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
         return self._identity_service.identity_manager.get_user_by_username(username)
 
     def update_user(
-        self, user_id: str, **updates: str | int | bool | list[str] | None
+        self,
+        user_id: str,
+        **updates: str | int | bool | list[str] | None,
     ) -> r[FlextAuthModels.Identity]:
         """Update identity - delegation to identity_service."""
         return self._identity_service.identity_manager.update_user(user_id, **updates)
@@ -419,5 +431,5 @@ class FlextAuth(FlextService[FlextAuthTypes.Responses.Authentication]):
     def execute(self, **_kwargs: object) -> r[FlextAuthTypes.Responses.Authentication]:
         """Flexible execute implementation with railway orchestration."""
         return r[FlextAuthTypes.Responses.Authentication].fail(
-            "FlextAuth is a focused service - use specific methods like authenticate() instead"
+            "FlextAuth is a focused service - use specific methods like authenticate() instead",
         )

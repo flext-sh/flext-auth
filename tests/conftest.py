@@ -12,14 +12,14 @@ import pytest
 
 import flext_auth.config
 
-# Import and register FlextTestDocker fixtures if available
+# Import and register FlextTestsDocker fixtures if available
 try:
-    from flext_tests import FlextTestDocker
+    from flext_tests import FlextTestsDocker
 
-    # Register FlextTestDocker pytest fixtures in this module's namespace
-    FlextTestDocker.register_pytest_fixtures(namespace=globals())
+    # Register FlextTestsDocker pytest fixtures in this module's namespace
+    FlextTestsDocker.register_pytest_fixtures(namespace=globals())
 except ImportError:
-    # FlextTestDocker not available, skip docker fixtures
+    # FlextTestsDocker not available, skip docker fixtures
     pass
 
 
