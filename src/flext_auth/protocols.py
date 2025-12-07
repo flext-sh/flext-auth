@@ -1,5 +1,9 @@
 """FLEXT Auth Protocols - Authentication domain protocols.
 
+Protocol interfaces for authentication and authorization operations.
+All protocols organized under single FlextAuthProtocols class per
+FLEXT standardization. Uses structural typing only - no model imports.
+
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 
@@ -7,13 +11,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import datetime
 from typing import Protocol, runtime_checkable
 
-from flext_core import p, r
+from flext_core import p, r, t
 
-from flext_auth.models import FlextAuthModels
-from flext_auth.typings import FlextAuthTypes
+# Note: Protocols avoid importing models to prevent circular dependencies
+# Protocols use structural typing - models satisfy protocols through attributes
 
 
 class FlextAuthProtocols(p):
@@ -26,12 +31,13 @@ class FlextAuthProtocols(p):
     - RE-EXPORTS: Foundation protocols from flext-core for unified access
     - EXTENDS: Authentication-specific protocols in Auth namespace
     - MAINTAINS: Zero breaking changes through explicit re-export pattern
+    - STRUCTURAL TYPING: No model imports - protocols define structural contracts
 
     Usage:
     from flext_auth.protocols import FlextAuthProtocols
 
     # Foundation access (re-exported)
-    FlextAuthProtocols.Foundation.ResultProtocol
+    FlextAuthProtocols.Foundation.Result
 
     # Authentication-specific access
     FlextAuthProtocols.Auth.UserProtocol
@@ -46,37 +52,72 @@ class FlextAuthProtocols(p):
         """Authentication domain-specific protocols.
 
         Provides protocols for user authentication, session management,
-        token operations, and authentication services.
+        token operations, and authentication services. All protocols use
+        structural typing - no model imports required.
         """
 
         @runtime_checkable
-        class UserProtocol(p.Service, Protocol):
-            """Protocol for user-like objects in authentication."""
+        class IdentityProtocol(p.Service, Protocol):
+            """Protocol for identity/user-like objects in authentication.
+
+            Structural typing interface for identity objects. Models implement
+            this protocol through attribute matching (structural typing).
+            """
 
             id: str
-            username: str
-            email: str
+            """Unique identity identifier."""
+
+            name: str
+            """Identity name/username."""
+
+            contact: str
+            """Contact information (e.g., email)."""
+
             is_active: bool
+            """Active status."""
+
             roles: list[str]
-            failed_login_attempts: int
-            locked_until: datetime | None
+            """Identity roles."""
 
-            def verify_password(self, password: str) -> r[bool]:
-                """Verify password against stored hash."""
+            failed_attempts: int
+            """Failed login attempts count."""
+
+            locked_until: datetime
+            """Lock expiration time (datetime.min means not locked)."""
+
+            @property
+            def username(self) -> str:
+                """Alias for name property (backward compatibility)."""
                 ...
 
-            def set_password(self, password: str) -> r[bool]:
-                """Set password with secure hashing."""
+            @property
+            def email(self) -> str:
+                """Alias for contact property (backward compatibility)."""
                 ...
+
+            def verify_credential(self, credential: str) -> r[bool]:
+                """Verify credential against stored hash."""
+                ...
+
+            def set_credential(self, credential: str) -> r[bool]:
+                """Set credential with secure hashing."""
+                ...
+
+            def is_locked(self) -> bool:
+                """Check if identity is locked."""
+                ...
+
+        @runtime_checkable
+        class UserProtocol(IdentityProtocol, Protocol):
+            """Protocol for user-like objects in authentication.
+
+            Extends IdentityProtocol with user-specific methods. Maintains
+            backward compatibility with existing UserProtocol interface.
+            """
 
             @property
             def can_login(self) -> bool:
                 """Check if user can attempt login."""
-                ...
-
-            @property
-            def is_locked(self) -> bool:
-                """Check if account is currently locked."""
                 ...
 
             def record_successful_login(self) -> None:
@@ -132,6 +173,29 @@ class FlextAuthProtocols(p):
                 ...
 
         @runtime_checkable
+        class AuthenticationResponseProtocol(Protocol):
+            """Protocol for authentication response objects.
+
+            Structural typing interface for authentication responses.
+            Supports both TypedDict and model implementations.
+            """
+
+            user: Mapping[str, t.GeneralValueType]
+            """User/identity data."""
+
+            session: Mapping[str, t.GeneralValueType]
+            """Session data."""
+
+            jwt_token: str
+            """JWT token string."""
+
+            authenticated: bool
+            """Authentication status."""
+
+            success: bool
+            """Operation success status."""
+
+        @runtime_checkable
         class ServiceProtocol(p.Service, Protocol):
             """Protocol for authentication service-like objects."""
 
@@ -142,8 +206,11 @@ class FlextAuthProtocols(p):
                 password: str,
                 full_name: str | None = None,
                 roles: list[str] | None = None,
-            ) -> r[FlextAuthModels.Identity]:
-                """Register new user."""
+            ) -> r[FlextAuthProtocols.Auth.IdentityProtocol]:
+                """Register new user.
+
+                Returns IdentityProtocol-compatible object through structural typing.
+                """
                 ...
 
             def authenticate_user(
@@ -152,8 +219,11 @@ class FlextAuthProtocols(p):
                 password: str,
                 client_ip: str | None = None,
                 user_agent: str | None = None,
-            ) -> r[FlextAuthTypes.AuthenticationResponseDict]:
-                """Authenticate user and create session."""
+            ) -> r[FlextAuthProtocols.Auth.IdentityProtocol]:
+                """Authenticate user and return identity.
+
+                Returns IdentityProtocol-compatible object through structural typing.
+                """
                 ...
 
             def logout_user(self, session_id: str) -> r[bool]:

@@ -24,7 +24,9 @@ from flext_auth.providers.ldap import FlextAuthLdapProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
 from flext_auth.providers.oidc import FlextAuthOidcProvider
-from flext_auth.providers.saml import FlextAuthSamlProvider
+
+# SAML provider not yet implemented
+# from flext_auth.providers.saml import FlextAuthSamlProvider
 
 __all__: list[str] = [
     "FlextAuthApiKeyProvider",
@@ -40,5 +42,5 @@ __all__: list[str] = [
     "FlextAuthOidcProvider",
     "FlextAuthPasswordHasher",
     "FlextAuthProviderMixin",
-    "FlextAuthSamlProvider",
+    # "FlextAuthSamlProvider",  # Not yet implemented
 ]

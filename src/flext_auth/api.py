@@ -14,6 +14,7 @@ from typing import ClassVar, Self, cast
 
 from flext_core import r, s
 from flext_core.config import FlextConfig
+from flext_core.dispatcher import FlextDispatcher
 from pydantic import SecretStr
 
 from flext_auth.config import FlextAuthConfig
@@ -51,10 +52,11 @@ class FlextAuth(s[FlextAuthTypes.Responses.Authentication]):
         """Initialize with dependency injection and event bus."""
         super().__init__()
         # Use provided config or create default (config is optional for convenience)
-        self._config = config if config is not None else FlextAuthConfig()
+        self._config: FlextAuthConfig = (
+            config if config is not None else FlextAuthConfig()
+        )
         self._registry = FlextAuthRegistry()
         # Import here to avoid circular dependency
-        from flext_core.dispatcher import FlextDispatcher  # noqa: PLC0415
 
         self._dispatcher = FlextDispatcher()
         # Use provided service_name or default (service_name is optional)

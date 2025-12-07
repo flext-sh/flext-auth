@@ -10,13 +10,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING
 
-from flext_core import r, s
+from flext_core import FlextDispatcher, r, s
 from pydantic import ValidationError
-
-if TYPE_CHECKING:
-    from flext_core import FlextDispatcher
 
 from flext_auth import m, u
 from flext_auth.config import FlextAuthConfig

@@ -49,7 +49,7 @@ class FlextAuthTypes(t):
     class Project:
         """Project type namespace."""
 
-        type ProjectType = FlextAuthConstants.ProjectType
+        # ProjectType removed - use string literal or define in constants if needed
 
         class AuthProjectConfig(TypedDict, total=False):
             """Project configuration structure."""
@@ -95,7 +95,9 @@ class FlextAuthTypes(t):
             """Payload used when registering providers in registries."""
 
             key: FlextAuthTypes.Providers.Key
-            provider: FlextAuthBaseProvider
+            provider: (
+                FlextAuthBaseProvider  # Forward reference to avoid circular import
+            )
             metadata: FlextAuthTypes.Providers.Metadata
             configuration: t.JsonDict
 
@@ -105,8 +107,8 @@ class FlextAuthTypes(t):
         type Username = Annotated[
             str,
             Field(
-                min_length=FlextAuthConstants.IDENTITY_MIN_LENGTH,
-                max_length=FlextAuthConstants.IDENTITY_MAX_LENGTH,
+                min_length=1,  # Use literal value instead of constant access
+                max_length=255,  # Use literal value instead of constant access
                 description="Identity username",
             ),
         ]
@@ -148,7 +150,7 @@ class FlextAuthTypes(t):
         """Token-related type definitions."""
 
         # AuthToken type defined in models.py
-        type TokenType = FlextAuthConstants.TokenType
+        type TokenType = FlextAuthConstants.TokenTypes
         type ClaimMap = t.JsonDict
 
         class Claims(TypedDict, total=False):

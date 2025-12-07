@@ -11,11 +11,11 @@ from collections.abc import Callable, Iterable
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from functools import cache, wraps
-from typing import Annotated, Any, TypeIs
+from typing import Annotated, TypeIs
 
 import bcrypt
 import jwt
-from flext_core import r, u as u_core
+from flext_core import r, t, u as u_core
 from pydantic import BaseModel, BeforeValidator, ConfigDict, SecretStr, validate_call
 from pydantic_core import ValidationError
 
@@ -40,7 +40,7 @@ class FlextAuthUtilities(u_core):
     @classmethod
     def is_valid_token_type(cls, value: str) -> TypeIs[FlextAuthConstants.TokenTypes]:
         """TypeIs for TokenTypes validation - narrowing in if/else."""
-        return value in cls.TokenTypes._value2member_map_
+        return value in FlextAuthConstants.TokenTypes._value2member_map_
 
     @classmethod
     def is_valid_provider_type(
@@ -48,12 +48,12 @@ class FlextAuthUtilities(u_core):
         value: str,
     ) -> TypeIs[FlextAuthConstants.ProviderTypes]:
         """TypeIs for ProviderTypes validation."""
-        return value in cls.ProviderTypes._value2member_map_
+        return value in FlextAuthConstants.ProviderTypes._value2member_map_
 
     @classmethod
     def is_valid_role_type(cls, value: str) -> TypeIs[FlextAuthConstants.RoleTypes]:
         """TypeIs for RoleTypes validation."""
-        return value in cls.RoleTypes._value2member_map_
+        return value in FlextAuthConstants.RoleTypes._value2member_map_
 
     @classmethod
     def is_valid_permission_type(
@@ -61,7 +61,7 @@ class FlextAuthUtilities(u_core):
         value: str,
     ) -> TypeIs[FlextAuthConstants.PermissionTypes]:
         """TypeIs for PermissionTypes validation."""
-        return value in cls.PermissionTypes._value2member_map_
+        return value in FlextAuthConstants.PermissionTypes._value2member_map_
 
     # ═══════════════════════════════════════════════════════════════════
     # ENUM UTILITIES: Advanced StrEnum handling
@@ -105,7 +105,7 @@ class FlextAuthUtilities(u_core):
                 return r.fail(f"Invalid {enum_cls.__name__}: '{value}'. Valid: {valid}")
 
         @staticmethod
-        def coerce_validator[E: StrEnum](enum_cls: type[E]) -> Callable[[Any], E]:
+        def coerce_validator[E: StrEnum](enum_cls: type[E]) -> Callable[[object], E]:
             """BeforeValidator factory for Pydantic coercion."""
 
             def _coerce(v: object) -> E:
@@ -150,7 +150,7 @@ class FlextAuthUtilities(u_core):
         @staticmethod
         def coerce_list_validator[E: StrEnum](
             enum_cls: type[E],
-        ) -> Callable[[Any], list[E]]:
+        ) -> Callable[[object], list[E]]:
             """Create validator for list of enum values."""
 
             def _coerce(value: object) -> list[E]:
@@ -222,7 +222,7 @@ class FlextAuthUtilities(u_core):
         @staticmethod
         def from_dict[M: BaseModel](
             model_cls: type[M],
-            data: dict[str, Any],
+            data: t.JsonDict,
             *,
             strict: bool = False,
         ) -> r[M]:
@@ -235,8 +235,8 @@ class FlextAuthUtilities(u_core):
         @staticmethod
         def merge_defaults[M: BaseModel](
             model_cls: type[M],
-            defaults: dict[str, Any],
-            overrides: dict[str, Any],
+            defaults: t.JsonDict,
+            overrides: t.JsonDict,
         ) -> r[M]:
             """Merge defaults with overrides - automatic validation."""
             merged = {**defaults, **overrides}
@@ -409,7 +409,7 @@ class FlextAuthUtilities(u_core):
             token: str | None = None,
             user_id: str | None = None,
             expires_at: datetime | None = None,
-        ) -> dict[str, Any]:
+        ) -> t.JsonDict:
             """Build a successful authentication response."""
             response = {
                 "success": True,
@@ -430,7 +430,7 @@ class FlextAuthUtilities(u_core):
         def build_auth_error_response(
             error: str,
             error_code: str = "AUTH_ERROR",
-        ) -> dict[str, Any]:
+        ) -> t.JsonDict:
             """Build an authentication error response."""
             return {
                 "success": False,

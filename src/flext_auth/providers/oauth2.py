@@ -455,7 +455,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             FlextAuthModels.AuthToken(
                 identity_id=flow_data.get("user_id", "oauth2_user"),
                 token=credentials.get("access_token", ""),
-                token_type="Bearer",  # noqa: S106
+                token_type="Bearer",
                 expires_at=datetime.now(UTC)
                 + timedelta(hours=1),  # Default 1 hour expiry
             ),
@@ -523,7 +523,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def generate_token_for_user(
         self,
         user: FlextAuthModels.Identity,
-        token_type: str = "oauth2_access",  # noqa: S107
+        token_type: str = "oauth2_access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
         """Generate OAuth2 token for user."""

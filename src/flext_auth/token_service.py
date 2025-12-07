@@ -9,12 +9,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from flext_core import r, s
-
-if TYPE_CHECKING:
-    from flext_core.dispatcher import FlextDispatcher
+from flext_core.dispatcher import FlextDispatcher
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants

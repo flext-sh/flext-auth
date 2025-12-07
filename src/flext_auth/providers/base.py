@@ -14,7 +14,6 @@ from abc import ABC, abstractmethod
 
 from flext_core import r
 
-from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 
 
@@ -36,7 +35,7 @@ class FlextAuthBaseProvider(ABC):
         >>> class FlextAuthMyProvider(FlextAuthBaseProvider):
         ...     def authenticate(
         ...         self, credentials: dict
-        ...     ) -> r[FlextAuthModels.AuthToken]:
+        ...     ) -> r["FlextAuthModels.AuthToken"]:
         ...         # Implementation
         ...         pass
         ...
@@ -242,7 +241,7 @@ class FlextAuthBaseProvider(ABC):
     def generate_token_for_user(
         self,
         user: FlextAuthModels.Identity,
-        token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
+        token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
         """Generate a token for a user.

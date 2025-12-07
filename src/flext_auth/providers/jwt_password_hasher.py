@@ -10,13 +10,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import bcrypt
 from flext_core import r
 
-if TYPE_CHECKING:
-    from flext_auth.providers.jwt import FlextAuthJwtProvider
+from flext_auth.providers.jwt import FlextAuthJwtProvider
 
 
 class FlextAuthPasswordHasher:

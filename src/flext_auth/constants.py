@@ -50,400 +50,566 @@ class FlextAuthConstants(FlextConstants):
     This class provides the constant registry that FlextAuthProtocols depend on.
     Structural typing ensures protocol compliance without explicit inheritance.
 
+    Architecture:
+    - All Auth constants are organized in the .Auth namespace
+    - Direct access via FlextAuthConstants.Auth.*
+    - No aliases - use namespaces directly following FLEXT architecture patterns
+
     Usage Patterns:
-        # Direct access (recommended)
-        >>> from flext_auth.constants import FlextAuthConstants as AuthConst
-        >>> token_type = AuthConst.TokenTypes.ACCESS
-        >>> provider = AuthConst.ProviderTypes.JWT
+    # Direct access (recommended)
+    >>> from flext_auth.constants import FlextAuthConstants as AuthConst
+    >>> token_type = AuthConst.Auth.TokenTypes.ACCESS
+    >>> provider = AuthConst.Auth.ProviderTypes.JWT
 
-        # Type-safe validation
-        >>> AuthConst.TokenTypes.is_valid_token_type("access")  # True
-        >>> AuthConst.ProviderTypes.is_jwt_provider("jwt")  # True
+    # Type-safe validation
+    >>> AuthConst.Auth.TokenTypes.is_valid_token_type("access")  # True
+    >>> AuthConst.Auth.ProviderTypes.is_jwt_provider("jwt")  # True
 
-        # Literal types for Pydantic models
-        >>> token: AuthConst.TokenTypeLiteral  # Type-safe: "access" | "refresh" | ...
+    # Literal types for Pydantic models
+    >>> token: AuthConst.Auth.TokenTypeLiteral  # Type-safe: "access" | "refresh" | ...
     """
 
-    # ═══════════════════════════════════════════════════════════════════
-    # STRENUM: Única declaração necessária para validação automática
-    # ═══════════════════════════════════════════════════════════════════
+    # =========================================================================
+    # NAMESPACE: .Auth - All Auth domain constants
+    # =========================================================================
 
-    class TokenTypes(StrEnum):
-        """Token type enumeration - automatic Pydantic validation.
+    class Auth:
+        """Auth domain constants namespace.
 
-        PYDANTIC MODELS:
-            model_config = ConfigDict(use_enum_values=True)
-            token_type: FlextAuthConstants.TokenTypes
-
-        Resultado:
-            - Aceita "access", "refresh", etc. ou TokenTypes.ACCESS
-            - Serializa como string
-            - Valida automaticamente (rejeita valores inválidos)
+        All Auth-specific constants are organized here for better namespace
+        organization and to enable composition with other domain constants.
         """
 
-        ACCESS = "access"
-        REFRESH = "refresh"
-        API = "api"
-        BEARER = "bearer"
-
-    class ProviderTypes(StrEnum):
-        """Provider type enumeration - automatic Pydantic validation."""
-
-        BASIC = "basic"
-        JWT = "jwt"
-        OAUTH2 = "oauth2"
-        SAML = "saml"
-        LDAP = "ldap"
-        CERTIFICATE = "certificate"
-        KERBEROS = "kerberos"
-        APIKEY = "apikey"
-
-    class RoleTypes(StrEnum):
-        """Role type enumeration - automatic Pydantic validation."""
-
-        ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
-        USER = "user"
-        MODERATOR = "moderator"
-        GUEST = "guest"
-
-    class PermissionTypes(StrEnum):
-        """Permission type enumeration - automatic Pydantic validation."""
-
-        READ = "read"
-        WRITE = "write"
-        DELETE = "delete"
-        ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
-
-    class Algorithms(StrEnum):
-        """Algorithm type enumeration."""
-
-        HS256 = "HS256"
-        RS256 = "RS256"
-        ES256 = "ES256"
-
-    # ═══════════════════════════════════════════════════════════════════
-    # SUBSETS: Literal referenciando membros do StrEnum
-    # ═══════════════════════════════════════════════════════════════════
-    # Use para aceitar apenas ALGUNS valores do enum em métodos
-    # Isso NÃO duplica strings - referencia o enum member!
-
-    type AccessTokens = Literal[TokenTypes.ACCESS, TokenTypes.BEARER]
-    """Access token types for operations."""
-    type RefreshTokens = Literal[TokenTypes.REFRESH]
-    """Refresh token types."""
-    type BearerTokens = Literal[TokenTypes.BEARER, TokenTypes.ACCESS]
-    """Bearer token types."""
-    type AdminRoles = Literal[RoleTypes.ADMIN]
-    """Admin role types."""
-    type UserRoles = Literal[RoleTypes.USER, RoleTypes.MODERATOR, RoleTypes.GUEST]
-    """User role types."""
-    type WritePermissions = Literal[PermissionTypes.WRITE, PermissionTypes.DELETE]
-    """Write permission types."""
-    type AdminPermissions = Literal[PermissionTypes.ADMIN]
-    """Admin permission types."""
-
-    # ═══════════════════════════════════════════════════════════════════
-    # TYPEIS + TYPEGUARD: Advanced type narrowing (Python 3.13+ PEP 742)
-    # ═══════════════════════════════════════════════════════════════════
-
-    @classmethod
-    def is_valid_token_type(cls, value: str) -> TypeIs[TokenTypes]:
-        """TypeIs for TokenTypes validation - narrowing in if/else."""
-        return value in cls.TokenTypes._value2member_map_
-
-    @classmethod
-    def is_access_token(cls, value: str) -> TypeGuard[AccessTokens]:
-        """TypeGuard for access token subset."""
-        return value in {cls.TokenTypes.ACCESS.value, cls.TokenTypes.BEARER.value}
-
-    @classmethod
-    def is_refresh_token(cls, value: str) -> TypeGuard[RefreshTokens]:
-        """TypeGuard for refresh token subset."""
-        return value == cls.TokenTypes.REFRESH.value
-
-    @classmethod
-    def is_valid_provider_type(cls, value: str) -> TypeIs[ProviderTypes]:
-        """TypeIs for ProviderTypes validation."""
-        return value in cls.ProviderTypes._value2member_map_
-
-    @classmethod
-    def is_jwt_provider(cls, value: str) -> TypeGuard[Literal[ProviderTypes.JWT]]:
-        """TypeGuard for JWT provider."""
-        return value == cls.ProviderTypes.JWT.value
-
-    @classmethod
-    def is_oauth2_provider(cls, value: str) -> TypeGuard[Literal[ProviderTypes.OAUTH2]]:
-        """TypeGuard for OAuth2 provider."""
-        return value == cls.ProviderTypes.OAUTH2.value
-
-    @classmethod
-    def is_valid_role_type(cls, value: str) -> TypeIs[RoleTypes]:
-        """TypeIs for RoleTypes validation."""
-        return value in cls.RoleTypes._value2member_map_
-
-    @classmethod
-    def is_REDACTED_LDAP_BIND_PASSWORD_role(cls, value: str) -> TypeGuard[AdminRoles]:
-        """TypeGuard for REDACTED_LDAP_BIND_PASSWORD role subset."""
-        return value == cls.RoleTypes.ADMIN.value
-
-    @classmethod
-    def is_user_role(cls, value: str) -> TypeGuard[UserRoles]:
-        """TypeGuard for user role subset."""
-        return value in {
-            cls.RoleTypes.USER.value,
-            cls.RoleTypes.MODERATOR.value,
-            cls.RoleTypes.GUEST.value,
-        }
-
-    @classmethod
-    def is_valid_permission_type(cls, value: str) -> TypeIs[PermissionTypes]:
-        """TypeIs for PermissionTypes validation."""
-        return value in cls.PermissionTypes._value2member_map_
-
-    @classmethod
-    def is_write_permission(cls, value: str) -> TypeGuard[WritePermissions]:
-        """TypeGuard for write permission subset."""
-        return value in {
-            cls.PermissionTypes.WRITE.value,
-            cls.PermissionTypes.DELETE.value,
-        }
-
-    @classmethod
-    def is_REDACTED_LDAP_BIND_PASSWORD_permission(cls, value: str) -> TypeGuard[AdminPermissions]:
-        """TypeGuard for REDACTED_LDAP_BIND_PASSWORD permission subset."""
-        return value == cls.PermissionTypes.ADMIN.value
-
-    # ═══════════════════════════════════════════════════════════════════
-    # IMMUTABLE COLLECTIONS: frozenset para O(1) validação
-    # ═══════════════════════════════════════════════════════════════════
-
-    VALID_TOKEN_TYPES: Final[AbstractSet[str]] = frozenset(
-        member.value for member in TokenTypes.__members__.values()
-    )
-    """Immutable set of all valid token types for O(1) validation."""
-
-    VALID_PROVIDER_TYPES: Final[AbstractSet[str]] = frozenset(
-        member.value for member in ProviderTypes.__members__.values()
-    )
-    """Immutable set of all valid provider types."""
-
-    VALID_ROLE_TYPES: Final[AbstractSet[str]] = frozenset(
-        member.value for member in RoleTypes.__members__.values()
-    )
-    """Immutable set of all valid role types."""
-
-    VALID_PERMISSION_TYPES: Final[AbstractSet[str]] = frozenset(
-        member.value for member in PermissionTypes.__members__.values()
-    )
-    """Immutable set of all valid permission types."""
-
-    ACCESS_TOKEN_TYPES: Final[AbstractSet[str]] = frozenset(
-        member.value for member in [TokenTypes.ACCESS, TokenTypes.BEARER]
-    )
-    """Access token types for validation."""
-
-    USER_ROLE_TYPES: Final[AbstractSet[str]] = frozenset(
-        member.value
-        for member in [RoleTypes.USER, RoleTypes.MODERATOR, RoleTypes.GUEST]
-    )
-    """User role types for validation."""
-
-    WRITE_PERMISSION_TYPES: Final[AbstractSet[str]] = frozenset(
-        member.value for member in [PermissionTypes.WRITE, PermissionTypes.DELETE]
-    )
-    """Write permission types for validation."""
-
-    # ═══════════════════════════════════════════════════════════════════
-    # CONFIGURATION CONSTANTS: Valores padrão e limites
-    # ═══════════════════════════════════════════════════════════════════
-
-    DEFAULT_TIMEOUT: Final[float] = 30.0
-    """Default request timeout in seconds."""
-
-    DEFAULT_MAX_RETRIES: Final[int] = 3
-    """Default maximum retry attempts."""
-
-    DEFAULT_JWT_EXPIRY_MINUTES: Final[int] = 1440  # 24 hours
-    """Default JWT token expiry in minutes."""
-
-    DEFAULT_SESSION_EXPIRY_MINUTES: Final[int] = 1440  # 24 hours
-    """Default session expiry in minutes."""
-
-    DEFAULT_MAX_SESSIONS_PER_USER: Final[int] = 5
-    """Default maximum sessions per user."""
-
-    DEFAULT_HASH_ROUNDS: Final[int] = 12
-    """Default bcrypt hash rounds."""
-
-    DEFAULT_JWT_ALGORITHM: Final[str] = "HS256"
-    """Default JWT algorithm."""
-
-    MAX_USERNAME_LENGTH: Final[int] = 255
-    """Maximum username length."""
-
-    MAX_EMAIL_LENGTH: Final[int] = 254
-    """Maximum email length."""
-
-    MIN_PASSWORD_LENGTH: Final[int] = 8
-    """Minimum password length."""
-
-    MAX_PASSWORD_LENGTH: Final[int] = 128
-    """Maximum password length."""
-
-    MAX_TOKEN_LENGTH: Final[int] = 4096
-    """Maximum token length."""
-
-    MAX_SECRET_KEY_LENGTH: Final[int] = 4096
-    """Maximum secret key length."""
-
-    # JWT Configuration
-    DEFAULT_ISSUER: Final[str] = "flext-auth"
-    """Default JWT issuer."""
-    DEFAULT_AUDIENCE: Final[str] = "flext-auth-users"
-    """Default JWT audience."""
-
-    # Hash Configuration
-    HASH_ROUNDS_DEFAULT: Final[int] = 12
-    """Default hash rounds."""
-    HASH_ROUNDS_MIN: Final[int] = 4
-    """Minimum hash rounds."""
-    HASH_ROUNDS_MAX: Final[int] = 31
-    """Maximum hash rounds."""
-
-    # Credential Configuration
-    CREDENTIAL_MIN_LENGTH: Final[int] = 8
-    """Minimum credential length."""
-    CREDENTIAL_MAX_LENGTH: Final[int] = 128
-    """Maximum credential length."""
-
-    # Security Policies
-    MAX_ATTEMPTS_DEFAULT: Final[int] = 5
-    """Default max authentication attempts."""
-    LOCKOUT_DURATION_MINUTES: Final[int] = 30
-    """Lockout duration in minutes."""
-
-    # Session Configuration
-    SESSION_EXPIRY_DEFAULT_MINUTES: Final[int] = 1440  # 24 hours
-    """Default session expiry in minutes."""
-    SESSION_EXPIRY_MAX_MINUTES: Final[int] = 43200  # 30 days
-    """Maximum session expiry in minutes."""
-    MAX_SESSIONS_DEFAULT: Final[int] = 5
-    """Default max sessions per user."""
-
-    # Performance & Rate Limiting
-    PERFORMANCE_THRESHOLD_MS: Final[float] = 1000.0
-    """Performance warning threshold in milliseconds."""
-    MAX_REQUESTS_PER_MINUTE: Final[int] = 60
-    """Max requests per minute."""
-    MAX_REQUESTS_PER_HOUR: Final[int] = 3600
-    """Max requests per hour."""
-
-    # Secret Validation
-    SECRET_MIN_LENGTH: Final[int] = 32
-    """Minimum secret key length."""
-
-    # ═══════════════════════════════════════════════════════════════════
-    # VALIDATION LIMITS: Mappings imutáveis para validação
-    # ═══════════════════════════════════════════════════════════════════
-
-    VALIDATION_LIMITS: Final[Mapping[str, int | float]] = MappingProxyType({
-        "MAX_USERNAME_LENGTH": MAX_USERNAME_LENGTH,
-        "MAX_EMAIL_LENGTH": MAX_EMAIL_LENGTH,
-        "MIN_PASSWORD_LENGTH": MIN_PASSWORD_LENGTH,
-        "MAX_PASSWORD_LENGTH": MAX_PASSWORD_LENGTH,
-        "MAX_TOKEN_LENGTH": MAX_TOKEN_LENGTH,
-        "MAX_SECRET_KEY_LENGTH": MAX_SECRET_KEY_LENGTH,
-        "DEFAULT_TIMEOUT": DEFAULT_TIMEOUT,
-    })
-    """Validation limits mapping."""
-
-    # ═══════════════════════════════════════════════════════════════════
-    # RESPONSE TEMPLATES: Mappings imutáveis
-    # ═══════════════════════════════════════════════════════════════════
-
-    SUCCESS_AUTH_RESPONSE: Final[Mapping[str, str | None]] = MappingProxyType({
-        "status": "success",
-        "message": "Authentication successful",
-        "token_type": None,
-    })
-    """Template for successful authentication responses."""
-
-    ERROR_AUTH_RESPONSE: Final[Mapping[str, str | None]] = MappingProxyType({
-        "status": "error",
-        "message": None,
-        "error_code": None,
-    })
-    """Template for authentication error responses."""
-
-    # ═══════════════════════════════════════════════════════════════════
-    # UTILITY METHODS: Validação avançada com u
-    # ═══════════════════════════════════════════════════════════════════
-
-    @classmethod
-    def validate_token_type_with_result(cls, value: str) -> r[TokenTypes]:
-        """Validate token type using u.Enum.parse."""
-        return u.Enum.parse(cls.TokenTypes, value)
-
-    @classmethod
-    def validate_provider_type_with_result(cls, value: str) -> r[ProviderTypes]:
-        """Validate provider type using u.Enum.parse."""
-        return u.Enum.parse(cls.ProviderTypes, value)
-
-    @classmethod
-    def validate_role_type_with_result(cls, value: str) -> r[RoleTypes]:
-        """Validate role type using u.Enum.parse."""
-        return u.Enum.parse(cls.RoleTypes, value)
-
-    @classmethod
-    def validate_permission_type_with_result(cls, value: str) -> r[PermissionTypes]:
-        """Validate permission type using u.Enum.parse."""
-        return u.Enum.parse(cls.PermissionTypes, value)
-
-    @classmethod
-    def create_token_type_validator(cls) -> Callable[[str], TokenTypes]:
-        """Create BeforeValidator for TokenTypes in Pydantic models."""
-        from flext_auth.utilities import u  # noqa: PLC0415
-
-        return u.Enum.coerce_validator(cls.TokenTypes)
-
-    @classmethod
-    def create_provider_type_validator(cls) -> Callable[[str], ProviderTypes]:
-        """Create BeforeValidator for ProviderTypes in Pydantic models."""
-        from flext_auth.utilities import u  # noqa: PLC0415
-
-        return u.Enum.coerce_validator(cls.ProviderTypes)
-
-    # ═══════════════════════════════════════════════════════════════════
-    # LITERAL TYPES: PEP 695 strict type aliases (Python 3.13+)
-    # ═══════════════════════════════════════════════════════════════════
-
-    type TokenTypeLiteral = Literal["access", "refresh", "api", "bearer"]
-    """Token type literal - matches TokenTypes StrEnum values exactly."""
-
-    type ProviderTypeLiteral = Literal[
-        "basic",
-        "jwt",
-        "oauth2",
-        "saml",
-        "ldap",
-        "certificate",
-        "kerberos",
-        "apikey",
-    ]
-    """Provider type literal - matches ProviderTypes StrEnum values exactly."""
-
-    type RoleTypeLiteral = Literal["REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"]
-    """Role type literal - matches RoleTypes StrEnum values exactly."""
-
-    type PermissionTypeLiteral = Literal["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"]
-    """Permission type literal - matches PermissionTypes StrEnum values exactly."""
-
-    type AlgorithmLiteral = Literal["HS256", "RS256", "ES256"]
-    """Algorithm literal - matches Algorithms StrEnum values exactly."""
-
-    # ═══════════════════════════════════════════════════════════════════
-    # REFERÊNCIAS A FLEXT-CORE: Explicit references (não aliases)
-    # ═══════════════════════════════════════════════════════════════════
+        # ═══════════════════════════════════════════════════════════════════
+        # STRENUM: Única declaração necessária para validação automática
+        # ═══════════════════════════════════════════════════════════════════
+
+        class TokenTypes(StrEnum):
+            """Token type enumeration - automatic Pydantic validation.
+
+            PYDANTIC MODELS:
+                model_config = ConfigDict(use_enum_values=True)
+                token_type: FlextAuthConstants.Auth.TokenTypes
+
+            Resultado:
+                - Aceita "access", "refresh", etc. ou TokenTypes.ACCESS
+                - Serializa como string
+                - Valida automaticamente (rejeita valores inválidos)
+            """
+
+            ACCESS = "access"
+            REFRESH = "refresh"
+            API = "api"
+            BEARER = "bearer"
+
+        class ProviderTypes(StrEnum):
+            """Provider type enumeration - automatic Pydantic validation."""
+
+            BASIC = "basic"
+            JWT = "jwt"
+            OAUTH2 = "oauth2"
+            SAML = "saml"
+            LDAP = "ldap"
+            CERTIFICATE = "certificate"
+            KERBEROS = "kerberos"
+            APIKEY = "apikey"
+
+        class RoleTypes(StrEnum):
+            """Role type enumeration - automatic Pydantic validation."""
+
+            ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
+            USER = "user"
+            MODERATOR = "moderator"
+            GUEST = "guest"
+
+        class PermissionTypes(StrEnum):
+            """Permission type enumeration - automatic Pydantic validation."""
+
+            READ = "read"
+            WRITE = "write"
+            DELETE = "delete"
+            ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
+
+        class Algorithms(StrEnum):
+            """Algorithm type enumeration."""
+
+            HS256 = "HS256"
+            RS256 = "RS256"
+            ES256 = "ES256"
+
+        # ═══════════════════════════════════════════════════════════════════
+        # SUBSETS: Literal referenciando membros do StrEnum
+        # ═══════════════════════════════════════════════════════════════════
+        # Use para aceitar apenas ALGUNS valores do enum em métodos
+        # Isso NÃO duplica strings - referencia o enum member!
+
+        type AccessTokens = Literal[TokenTypes.ACCESS, TokenTypes.BEARER]
+        """Access token types for operations."""
+        type RefreshTokens = Literal[TokenTypes.REFRESH]
+        """Refresh token types."""
+        type BearerTokens = Literal[TokenTypes.BEARER, TokenTypes.ACCESS]
+        """Bearer token types."""
+        type AdminRoles = Literal[RoleTypes.ADMIN]
+        """Admin role types."""
+        type UserRoles = Literal[RoleTypes.USER, RoleTypes.MODERATOR, RoleTypes.GUEST]
+        """User role types."""
+        type WritePermissions = Literal[PermissionTypes.WRITE, PermissionTypes.DELETE]
+        """Write permission types."""
+        type AdminPermissions = Literal[PermissionTypes.ADMIN]
+        """Admin permission types."""
+
+        # ═══════════════════════════════════════════════════════════════════
+        # TYPEIS + TYPEGUARD: Advanced type narrowing (Python 3.13+ PEP 742)
+        # ═══════════════════════════════════════════════════════════════════
+
+        @classmethod
+        def is_valid_token_type(cls, value: str) -> TypeIs[TokenTypes]:
+            """TypeIs for TokenTypes validation - narrowing in if/else."""
+            return value in cls.TokenTypes._value2member_map_
+
+        @classmethod
+        def is_access_token(cls, value: str) -> TypeGuard[AccessTokens]:
+            """TypeGuard for access token subset."""
+            return value in {cls.TokenTypes.ACCESS.value, cls.TokenTypes.BEARER.value}
+
+        @classmethod
+        def is_refresh_token(cls, value: str) -> TypeGuard[RefreshTokens]:
+            """TypeGuard for refresh token subset."""
+            return value == cls.TokenTypes.REFRESH.value
+
+        @classmethod
+        def is_valid_provider_type(cls, value: str) -> TypeIs[ProviderTypes]:
+            """TypeIs for ProviderTypes validation."""
+            return value in cls.ProviderTypes._value2member_map_
+
+        @classmethod
+        def is_jwt_provider(cls, value: str) -> TypeGuard[Literal[ProviderTypes.JWT]]:
+            """TypeGuard for JWT provider."""
+            return value == cls.ProviderTypes.JWT.value
+
+        @classmethod
+        def is_oauth2_provider(
+            cls, value: str
+        ) -> TypeGuard[Literal[ProviderTypes.OAUTH2]]:
+            """TypeGuard for OAuth2 provider."""
+            return value == cls.ProviderTypes.OAUTH2.value
+
+        @classmethod
+        def is_valid_role_type(cls, value: str) -> TypeIs[RoleTypes]:
+            """TypeIs for RoleTypes validation."""
+            return value in cls.RoleTypes._value2member_map_
+
+        @classmethod
+        def is_REDACTED_LDAP_BIND_PASSWORD_role(cls, value: str) -> TypeGuard[AdminRoles]:
+            """TypeGuard for REDACTED_LDAP_BIND_PASSWORD role subset."""
+            return value == cls.RoleTypes.ADMIN.value
+
+        @classmethod
+        def is_user_role(cls, value: str) -> TypeGuard[UserRoles]:
+            """TypeGuard for user role subset."""
+            return value in {
+                cls.RoleTypes.USER.value,
+                cls.RoleTypes.MODERATOR.value,
+                cls.RoleTypes.GUEST.value,
+            }
+
+        @classmethod
+        def is_valid_permission_type(cls, value: str) -> TypeIs[PermissionTypes]:
+            """TypeIs for PermissionTypes validation."""
+            return value in cls.PermissionTypes._value2member_map_
+
+        @classmethod
+        def is_write_permission(cls, value: str) -> TypeGuard[WritePermissions]:
+            """TypeGuard for write permission subset."""
+            return value in {
+                cls.PermissionTypes.WRITE.value,
+                cls.PermissionTypes.DELETE.value,
+            }
+
+        @classmethod
+        def is_REDACTED_LDAP_BIND_PASSWORD_permission(cls, value: str) -> TypeGuard[AdminPermissions]:
+            """TypeGuard for REDACTED_LDAP_BIND_PASSWORD permission subset."""
+            return value == cls.PermissionTypes.ADMIN.value
+
+        # ═══════════════════════════════════════════════════════════════════
+        # IMMUTABLE COLLECTIONS: frozenset para O(1) validação
+        # ═══════════════════════════════════════════════════════════════════
+
+        VALID_TOKEN_TYPES: Final[AbstractSet[str]] = frozenset(
+            member.value for member in TokenTypes.__members__.values()
+        )
+        """Immutable set of all valid token types for O(1) validation."""
+
+        VALID_PROVIDER_TYPES: Final[AbstractSet[str]] = frozenset(
+            member.value for member in ProviderTypes.__members__.values()
+        )
+        """Immutable set of all valid provider types."""
+
+        VALID_ROLE_TYPES: Final[AbstractSet[str]] = frozenset(
+            member.value for member in RoleTypes.__members__.values()
+        )
+        """Immutable set of all valid role types."""
+
+        VALID_PERMISSION_TYPES: Final[AbstractSet[str]] = frozenset(
+            member.value for member in PermissionTypes.__members__.values()
+        )
+        """Immutable set of all valid permission types."""
+
+        ACCESS_TOKEN_TYPES: Final[AbstractSet[str]] = frozenset(
+            member.value for member in [TokenTypes.ACCESS, TokenTypes.BEARER]
+        )
+        """Access token types for validation."""
+
+        USER_ROLE_TYPES: Final[AbstractSet[str]] = frozenset(
+            member.value
+            for member in [RoleTypes.USER, RoleTypes.MODERATOR, RoleTypes.GUEST]
+        )
+        """User role types for validation."""
+
+        WRITE_PERMISSION_TYPES: Final[AbstractSet[str]] = frozenset(
+            member.value for member in [PermissionTypes.WRITE, PermissionTypes.DELETE]
+        )
+        """Write permission types for validation."""
+
+        # ═══════════════════════════════════════════════════════════════════
+        # CONFIGURATION CONSTANTS: Default values and limits
+        # ═══════════════════════════════════════════════════════════════════
+
+        DEFAULT_TIMEOUT: Final[float] = 30.0
+        """Default request timeout in seconds."""
+
+        DEFAULT_MAX_RETRIES: Final[int] = 3
+        """Default maximum retry attempts."""
+
+        DEFAULT_JWT_EXPIRY_MINUTES: Final[int] = 1440  # 24 hours
+        """Default JWT token expiry in minutes."""
+
+        DEFAULT_SESSION_EXPIRY_MINUTES: Final[int] = 1440  # 24 hours
+        """Default session expiry in minutes."""
+
+        DEFAULT_MAX_SESSIONS_PER_USER: Final[int] = 5
+        """Default maximum sessions per user."""
+
+        DEFAULT_HASH_ROUNDS: Final[int] = 12
+        """Default bcrypt hash rounds."""
+
+        DEFAULT_JWT_ALGORITHM: Final[str] = "HS256"
+        """Default JWT algorithm."""
+
+        MAX_USERNAME_LENGTH: Final[int] = 255
+        """Maximum username length."""
+
+        MAX_EMAIL_LENGTH: Final[int] = 254
+        """Maximum email length."""
+
+        MIN_PASSWORD_LENGTH: Final[int] = 8
+        """Minimum password length."""
+
+        MAX_PASSWORD_LENGTH: Final[int] = 128
+        """Maximum password length."""
+
+        MAX_TOKEN_LENGTH: Final[int] = 4096
+        """Maximum token length."""
+
+        MAX_SECRET_KEY_LENGTH: Final[int] = 4096
+        """Maximum secret key length."""
+
+        # JWT Configuration
+        DEFAULT_ISSUER: Final[str] = "flext-auth"
+        """Default JWT issuer."""
+        DEFAULT_AUDIENCE: Final[str] = "flext-auth-users"
+        """Default JWT audience."""
+
+        # Hash Configuration
+        HASH_ROUNDS_DEFAULT: Final[int] = 12
+        """Default hash rounds."""
+        HASH_ROUNDS_MIN: Final[int] = 4
+        """Minimum hash rounds."""
+        HASH_ROUNDS_MAX: Final[int] = 31
+        """Maximum hash rounds."""
+
+        # Credential Configuration
+        CREDENTIAL_MIN_LENGTH: Final[int] = 8
+        """Minimum credential length."""
+        CREDENTIAL_MAX_LENGTH: Final[int] = 128
+        """Maximum credential length."""
+
+        # Security Policies
+        MAX_ATTEMPTS_DEFAULT: Final[int] = 5
+        """Default max authentication attempts."""
+        LOCKOUT_DURATION_MINUTES: Final[int] = 30
+        """Lockout duration in minutes."""
+
+        # Session Configuration
+        SESSION_EXPIRY_DEFAULT_MINUTES: Final[int] = 1440  # 24 hours
+        """Default session expiry in minutes."""
+        SESSION_EXPIRY_MAX_MINUTES: Final[int] = 43200  # 30 days
+        """Maximum session expiry in minutes."""
+        MAX_SESSIONS_DEFAULT: Final[int] = 5
+        """Default max sessions per user."""
+
+        # Performance & Rate Limiting
+        PERFORMANCE_THRESHOLD_MS: Final[float] = 1000.0
+        """Performance warning threshold in milliseconds."""
+        MAX_REQUESTS_PER_MINUTE: Final[int] = 60
+        """Max requests per minute."""
+        MAX_REQUESTS_PER_HOUR: Final[int] = 3600
+        """Max requests per hour."""
+
+        # Secret Validation
+        SECRET_MIN_LENGTH: Final[int] = 32
+        """Minimum secret key length."""
+
+        # ═══════════════════════════════════════════════════════════════════
+        # VALIDATION LIMITS: Mappings imutáveis para validação
+        # ═══════════════════════════════════════════════════════════════════
+
+        VALIDATION_LIMITS: Final[Mapping[str, int | float]] = MappingProxyType({
+            "MAX_USERNAME_LENGTH": MAX_USERNAME_LENGTH,
+            "MAX_EMAIL_LENGTH": MAX_EMAIL_LENGTH,
+            "MIN_PASSWORD_LENGTH": MIN_PASSWORD_LENGTH,
+            "MAX_PASSWORD_LENGTH": MAX_PASSWORD_LENGTH,
+            "MAX_TOKEN_LENGTH": MAX_TOKEN_LENGTH,
+            "MAX_SECRET_KEY_LENGTH": MAX_SECRET_KEY_LENGTH,
+            "DEFAULT_TIMEOUT": DEFAULT_TIMEOUT,
+        })
+        """Validation limits mapping."""
+
+        # ═══════════════════════════════════════════════════════════════════
+        # RESPONSE TEMPLATES: Mappings imutáveis
+        # ═══════════════════════════════════════════════════════════════════
+
+        SUCCESS_AUTH_RESPONSE: Final[Mapping[str, str | None]] = MappingProxyType({
+            "status": "success",
+            "message": "Authentication successful",
+            "token_type": None,
+        })
+        """Template for successful authentication responses."""
+
+        ERROR_AUTH_RESPONSE: Final[Mapping[str, str | None]] = MappingProxyType({
+            "status": "error",
+            "message": None,
+            "error_code": None,
+        })
+        """Template for authentication error responses."""
+
+        # ═══════════════════════════════════════════════════════════════════
+        # UTILITY METHODS: Validação avançada com u
+        # ═══════════════════════════════════════════════════════════════════
+
+        @classmethod
+        def validate_token_type_with_result(cls, value: str) -> r[TokenTypes]:
+            """Validate token type using u.Enum.parse."""
+            return u.Enum.parse(cls.TokenTypes, value)
+
+        @classmethod
+        def validate_provider_type_with_result(cls, value: str) -> r[ProviderTypes]:
+            """Validate provider type using u.Enum.parse."""
+            return u.Enum.parse(cls.ProviderTypes, value)
+
+        @classmethod
+        def validate_role_type_with_result(cls, value: str) -> r[RoleTypes]:
+            """Validate role type using u.Enum.parse."""
+            return u.Enum.parse(cls.RoleTypes, value)
+
+        @classmethod
+        def validate_permission_type_with_result(cls, value: str) -> r[PermissionTypes]:
+            """Validate permission type using u.Enum.parse."""
+            return u.Enum.parse(cls.PermissionTypes, value)
+
+        @classmethod
+        def create_token_type_validator(cls) -> Callable[[str], TokenTypes]:
+            """Create BeforeValidator for TokenTypes in Pydantic models."""
+            return u.Enum.coerce_validator(cls.TokenTypes)
+
+        @classmethod
+        def create_provider_type_validator(cls) -> Callable[[str], ProviderTypes]:
+            """Create BeforeValidator for ProviderTypes in Pydantic models."""
+            return u.Enum.coerce_validator(cls.ProviderTypes)
+
+        # ═══════════════════════════════════════════════════════════════════
+        # LITERAL TYPES: PEP 695 strict type aliases (Python 3.13+)
+        # ═══════════════════════════════════════════════════════════════════
+
+        type TokenTypeLiteral = Literal["access", "refresh", "api", "bearer"]
+        """Token type literal - matches TokenTypes StrEnum values exactly."""
+
+        type ProviderTypeLiteral = Literal[
+            "basic",
+            "jwt",
+            "oauth2",
+            "saml",
+            "ldap",
+            "certificate",
+            "kerberos",
+            "apikey",
+        ]
+        """Provider type literal - matches ProviderTypes StrEnum values exactly."""
+
+        type RoleTypeLiteral = Literal[
+            RoleTypes.ADMIN, RoleTypes.USER, RoleTypes.MODERATOR, RoleTypes.GUEST
+        ]
+        """Role type literal - matches RoleTypes StrEnum values exactly."""
+
+        type PermissionTypeLiteral = Literal[
+            PermissionTypes.READ,
+            PermissionTypes.WRITE,
+            PermissionTypes.DELETE,
+            PermissionTypes.ADMIN,
+        ]
+        """Permission type literal - matches PermissionTypes StrEnum values exactly."""
+
+        type AlgorithmLiteral = Literal[
+            Algorithms.HS256, Algorithms.RS256, Algorithms.ES256
+        ]
+        """Algorithm literal - matches Algorithms StrEnum values exactly."""
+
+        # ═══════════════════════════════════════════════════════════════════
+        # JWT CONSTANTS: Nested class for JWT-specific constants
+        # ═══════════════════════════════════════════════════════════════════
+
+        class Jwt:
+            """JWT-specific constants for token generation and validation."""
+
+            DEFAULT_ALGORITHM: Final[str] = "HS256"
+            """Default JWT algorithm."""
+            DEFAULT_EXPIRY_MINUTES: Final[int] = 30
+            """Default JWT expiry in minutes."""
+            MAX_EXPIRY_MINUTES: Final[int] = 1440
+            """Maximum JWT expiry in minutes."""
+            ISSUER_CLAIM: Final[str] = "flext-auth"
+            """Default JWT issuer claim."""
+            AUDIENCE_CLAIM: Final[str] = "flext-users"
+            """Default JWT audience claim."""
+            MIN_SECRET_KEY_LENGTH: Final[int] = 32
+            """Minimum secret key length for JWT."""
+            DEFAULT_TOKEN_TYPE: Final[str] = "Bearer"
+            """Default token type for Authorization header."""
+
+        # ═══════════════════════════════════════════════════════════════════
+        # CREDENTIALS CONSTANTS: Nested class for credential validation
+        # ═══════════════════════════════════════════════════════════════════
+
+        class Credentials:
+            """Credential validation constants."""
+
+        class Username:
+            """Username validation constants."""
+
+            MIN_LENGTH: Final[int] = 3
+            """Minimum username length."""
+            MAX_LENGTH: Final[int] = 50
+            """Maximum username length."""
+
+        class Password:
+            """Password validation constants."""
+
+            MIN_LENGTH: Final[int] = 8
+            """Minimum password length."""
+            MAX_LENGTH: Final[int] = 128
+            """Maximum password length."""
+            MIN_SCORE: Final[int] = 3
+            """Minimum password strength score."""
+            MIN_BCRYPT_HASH_LENGTH: Final[int] = 60
+            """Minimum bcrypt hash length."""
+            BCRYPT_ROUNDS: Final[int] = 12
+            """Default bcrypt rounds."""
+
+        # ═══════════════════════════════════════════════════════════════════
+        # SESSION CONSTANTS: Nested class for session management
+        # ═══════════════════════════════════════════════════════════════════
+
+    class Session:
+        """Session management constants."""
+
+        DEFAULT_EXPIRY_MINUTES: Final[int] = 120
+        """Default session expiry in minutes."""
+        MAX_EXPIRY_MINUTES: Final[int] = 1440
+        """Maximum session expiry in minutes."""
+        MAX_SESSIONS_PER_USER: Final[int] = 5
+        """Maximum sessions per user."""
+        MIN_TOKEN_LENGTH: Final[int] = 32
+        """Minimum session token length."""
+
+        # ═══════════════════════════════════════════════════════════════════
+        # AUTH SECURITY CONSTANTS: Nested class for security policies
+        # ═══════════════════════════════════════════════════════════════════
+
+    class AuthSecurity:
+        """Authentication security constants."""
+
+        MAX_LOGIN_ATTEMPTS: Final[int] = 5
+        """Maximum login attempts before lockout."""
+        LOCKOUT_DURATION_MINUTES: Final[int] = 15
+        """Lockout duration in minutes."""
+        MAX_REQUESTS_PER_MINUTE: Final[int] = 60
+        """Maximum requests per minute."""
+        MAX_REQUESTS_PER_HOUR: Final[int] = 1000
+        """Maximum requests per hour."""
+
+        # ═══════════════════════════════════════════════════════════════════
+        # ERROR CODES CONSTANTS: Nested class for error codes
+        # ═══════════════════════════════════════════════════════════════════
+
+    class ErrorCodes:
+        """Authentication error codes."""
+
+        INVALID_CREDENTIALS: Final[str] = "INVALID_CREDENTIALS"
+        """Invalid credentials error code."""
+        ACCOUNT_LOCKED: Final[str] = "ACCOUNT_LOCKED"
+        """Account locked error code."""
+        ACCOUNT_DISABLED: Final[str] = "ACCOUNT_DISABLED"
+        """Account disabled error code."""
+        TOKEN_EXPIRED: Final[str] = "TOKEN_EXPIRED"
+        """Token expired error code."""
+        INVALID_TOKEN: Final[str] = "INVALID_TOKEN"
+        """Invalid token error code."""
+
+        # ═══════════════════════════════════════════════════════════════════
+        # PERMISSIONS CONSTANTS: Nested class for permissions
+        # ═══════════════════════════════════════════════════════════════════
+
+    class Permissions:
+        """Permission constants."""
+
+        READ: Final[str] = "read"
+        """Read permission."""
+        WRITE: Final[str] = "write"
+        """Write permission."""
+        DELETE: Final[str] = "delete"
+        """Delete permission."""
+        ADMIN: Final[str] = "REDACTED_LDAP_BIND_PASSWORD"
+        """Admin permission."""
+
+        BASIC_USER_PERMISSIONS: Final[list[str]] = [READ, WRITE]
+        """Basic user permissions."""
+        ADMIN_PERMISSIONS: Final[list[str]] = [READ, WRITE, DELETE, ADMIN]
+        """Admin permissions."""
+
+        # ═══════════════════════════════════════════════════════════════════
+        # ROLES CONSTANTS: Nested class for roles
+        # ═══════════════════════════════════════════════════════════════════
+
+    class Roles:
+        """Role constants."""
+
+        ADMIN: Final[str] = "REDACTED_LDAP_BIND_PASSWORD"
+        """Admin role."""
+        USER: Final[str] = "user"
+        """User role."""
+        MODERATOR: Final[str] = "moderator"
+        """Moderator role."""
+        GUEST: Final[str] = "guest"
+        """Guest role."""
+
+        DEFAULT_ROLES: Final[list[str]] = [USER]
+        """Default roles."""
+        VALID_ROLES: Final[list[str]] = [ADMIN, USER, MODERATOR, GUEST]
+        """Valid roles."""
+
+        # ═══════════════════════════════════════════════════════════════════
+        # REFERÊNCIAS A FLEXT-CORE: Explicit references (não aliases)
+        # ═══════════════════════════════════════════════════════════════════
 
     class Inherited:
         """Explicit references to inherited constants from FlextConstants.
