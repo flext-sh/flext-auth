@@ -101,7 +101,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
         self,
         user_id: str,
         expires_in_minutes: int | None = None,
-        token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
+        token_type: str = FlextAuthConstants.Auth.TokenTypes.ACCESS.value,
     ) -> r[str]:
         """Railway-oriented JWT token generation with audit logging."""
         user_result = self.user_manager.get_user(user_id)

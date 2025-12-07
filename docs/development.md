@@ -12,7 +12,7 @@ Development workflow and contributing guidelines for flext-auth with multi-provi
 
 - Python 3.13+
 - Poetry for dependency management
-- [flext-core](../../flext-core/README.md) foundation library
+- [flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md) foundation library
 
 ### Setup Environment
 
@@ -388,4 +388,4 @@ print(f"Registration result: {result}")
 
 ---
 
-This development guide reflects the current implementation state as of September 17, 2025. For additional FLEXT patterns, see [flext-core documentation](../../flext-core/docs/development.md).
+This development guide reflects the current implementation state as of September 17, 2025. For additional FLEXT patterns, see [flext-core documentation](https://github.com/organization/flext/tree/main/flext-core/docs/development.md).

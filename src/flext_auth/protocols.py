@@ -15,13 +15,14 @@ from collections.abc import Mapping
 from datetime import datetime
 from typing import Protocol, runtime_checkable
 
-from flext_core import p, r, t
+from flext_core import FlextTypes
+from flext_core.protocols import FlextProtocols
 
 # Note: Protocols avoid importing models to prevent circular dependencies
 # Protocols use structural typing - models satisfy protocols through attributes
 
 
-class FlextAuthProtocols(p):
+class FlextAuthProtocols(FlextProtocols):
     """Unified authentication protocols following FLEXT domain extension pattern.
 
     This class consolidates authentication-specific protocols while explicitly
@@ -34,13 +35,13 @@ class FlextAuthProtocols(p):
     - STRUCTURAL TYPING: No model imports - protocols define structural contracts
 
     Usage:
-    from flext_auth.protocols import FlextAuthProtocols
+    from flext_auth.protocols import p
 
-    # Foundation access (re-exported)
-    FlextAuthProtocols.Foundation.Result
+    # Foundation access (inherited)
+    p.Result
 
     # Authentication-specific access
-    FlextAuthProtocols.Auth.UserProtocol
+    p.Auth.UserProtocol
     """
 
     # =========================================================================
@@ -57,7 +58,7 @@ class FlextAuthProtocols(p):
         """
 
         @runtime_checkable
-        class IdentityProtocol(p.Service, Protocol):
+        class IdentityProtocol(FlextProtocols.Domain.Service, Protocol):
             """Protocol for identity/user-like objects in authentication.
 
             Structural typing interface for identity objects. Models implement
@@ -95,11 +96,11 @@ class FlextAuthProtocols(p):
                 """Alias for contact property (backward compatibility)."""
                 ...
 
-            def verify_credential(self, credential: str) -> r[bool]:
+            def verify_credential(self, credential: str) -> FlextProtocols.Result[bool]:
                 """Verify credential against stored hash."""
                 ...
 
-            def set_credential(self, credential: str) -> r[bool]:
+            def set_credential(self, credential: str) -> FlextProtocols.Result[bool]:
                 """Set credential with secure hashing."""
                 ...
 
@@ -129,7 +130,7 @@ class FlextAuthProtocols(p):
                 ...
 
         @runtime_checkable
-        class SessionProtocol(p.Service, Protocol):
+        class SessionProtocol(FlextProtocols.Domain.Service, Protocol):
             """Protocol for session-like objects in authentication."""
 
             id: str
@@ -147,7 +148,7 @@ class FlextAuthProtocols(p):
             def extend_session(
                 self,
                 hours: int = 1,
-            ) -> r[bool]:
+            ) -> FlextProtocols.Result[bool]:
                 """Extend session expiration time."""
                 ...
 
@@ -155,12 +156,12 @@ class FlextAuthProtocols(p):
                 """Check if session is valid (active and not expired)."""
                 ...
 
-            def revoke(self) -> r[bool]:
+            def revoke(self) -> FlextProtocols.Result[bool]:
                 """Revoke this session."""
                 ...
 
         @runtime_checkable
-        class TokenProtocol(p.Service, Protocol):
+        class TokenProtocol(FlextProtocols.Domain.Service, Protocol):
             """Protocol for token-like objects in authentication."""
 
             token: str
@@ -180,10 +181,10 @@ class FlextAuthProtocols(p):
             Supports both TypedDict and model implementations.
             """
 
-            user: Mapping[str, t.GeneralValueType]
+            user: Mapping[str, FlextTypes.GeneralValueType]
             """User/identity data."""
 
-            session: Mapping[str, t.GeneralValueType]
+            session: Mapping[str, FlextTypes.GeneralValueType]
             """Session data."""
 
             jwt_token: str
@@ -196,7 +197,7 @@ class FlextAuthProtocols(p):
             """Operation success status."""
 
         @runtime_checkable
-        class ServiceProtocol(p.Service, Protocol):
+        class ServiceProtocol(FlextProtocols.Domain.Service, Protocol):
             """Protocol for authentication service-like objects."""
 
             def register_user(
@@ -206,7 +207,7 @@ class FlextAuthProtocols(p):
                 password: str,
                 full_name: str | None = None,
                 roles: list[str] | None = None,
-            ) -> r[FlextAuthProtocols.Auth.IdentityProtocol]:
+            ) -> FlextProtocols.Result[FlextAuthProtocols.Auth.IdentityProtocol]:
                 """Register new user.
 
                 Returns IdentityProtocol-compatible object through structural typing.
@@ -219,18 +220,18 @@ class FlextAuthProtocols(p):
                 password: str,
                 client_ip: str | None = None,
                 user_agent: str | None = None,
-            ) -> r[FlextAuthProtocols.Auth.IdentityProtocol]:
+            ) -> FlextProtocols.Result[FlextAuthProtocols.Auth.IdentityProtocol]:
                 """Authenticate user and return identity.
 
                 Returns IdentityProtocol-compatible object through structural typing.
                 """
                 ...
 
-            def logout_user(self, session_id: str) -> r[bool]:
+            def logout_user(self, session_id: str) -> FlextProtocols.Result[bool]:
                 """Logout user by session ID.
 
                 Returns:
-                    r[bool]: True if logout successful, False if failed, error on failure
+                    FlextProtocols.Result[bool]: True if logout successful, False if failed, error on failure
 
                 """
                 ...

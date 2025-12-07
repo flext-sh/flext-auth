@@ -5,14 +5,14 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Annotated, TypedDict
 
-from flext_core import t
+from flext_core import FlextTypes
 from pydantic import Field, SecretStr
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.providers.base import FlextAuthBaseProvider
 
 
-class FlextAuthTypes(t):
+class FlextAuthTypes(FlextTypes):
     """Authentication-specific type definitions extending t with composition."""
 
     # =========================================================================
@@ -115,16 +115,16 @@ class FlextAuthTypes(t):
         type Password = Annotated[
             str,
             Field(
-                min_length=FlextAuthConstants.CREDENTIAL_MIN_LENGTH,
-                max_length=FlextAuthConstants.CREDENTIAL_MAX_LENGTH,
+                min_length=FlextAuthConstants.Auth.CREDENTIAL_MIN_LENGTH,
+                max_length=FlextAuthConstants.Auth.CREDENTIAL_MAX_LENGTH,
                 description="Raw credential string",
             ),
         ]
         type Secret = Annotated[
             SecretStr,
             Field(
-                min_length=FlextAuthConstants.CREDENTIAL_MIN_LENGTH,
-                max_length=FlextAuthConstants.CREDENTIAL_MAX_LENGTH,
+                min_length=FlextAuthConstants.Auth.CREDENTIAL_MIN_LENGTH,
+                max_length=FlextAuthConstants.Auth.CREDENTIAL_MAX_LENGTH,
                 description="Protected credential value",
             ),
         ]
@@ -150,7 +150,7 @@ class FlextAuthTypes(t):
         """Token-related type definitions."""
 
         # AuthToken type defined in models.py
-        type TokenType = FlextAuthConstants.TokenTypes
+        type TokenType = FlextAuthConstants.Auth.TokenTypes
         type ClaimMap = t.JsonDict
 
         class Claims(TypedDict, total=False):
@@ -295,9 +295,9 @@ class FlextAuthTypes(t):
     class Domain:
         """Domain-level literals and shortcuts."""
 
-        type ProviderType = FlextAuthConstants.ProviderTypes
-        type Role = FlextAuthConstants.RoleTypes
-        type Permission = FlextAuthConstants.PermissionTypes
+        type ProviderType = FlextAuthConstants.Auth.ProviderTypes
+        type Role = FlextAuthConstants.Auth.RoleTypes
+        type Permission = FlextAuthConstants.Auth.PermissionTypes
 
     class Unit:
         """Unit type for operations that return nothing but may fail."""
@@ -313,6 +313,23 @@ class FlextAuthTypes(t):
 
         # Singleton instance
         UNIT = UnitType()
+
+    class Auth:
+        """Auth types namespace for cross-project access.
+
+        Provides organized access to all Auth types for other FLEXT projects.
+        Usage: Other projects can reference `t.Auth.Providers.*`, `t.Auth.Credentials.*`, etc.
+        This enables consistent namespace patterns for cross-project type access.
+
+        Examples:
+            from flext_auth.typings import t
+            provider_key: t.Auth.Providers.Key = ...
+            credentials: t.Auth.Credentials.Basic = ...
+
+        Note: Namespace composition via inheritance - no aliases needed.
+        Access parent namespaces directly through inheritance.
+
+        """
 
 
 t = FlextAuthTypes  # Runtime alias (not TypeAlias to avoid PYI042)

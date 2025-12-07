@@ -86,10 +86,10 @@ class TestsConstants(FlextAuthConstants):
 
         # Reuse production Literals for consistency (Python 3.13+ best practices)
         # Token type literal (reusing production type)
-        TokenTypeLiteral: TypeAlias = FlextAuthConstants.TokenTypeLiteral
+        TokenTypeLiteral: TypeAlias = FlextAuthConstants.Auth.TokenTypeLiteral
 
         # Provider type literal (reusing production type)
-        ProviderTypeLiteral: TypeAlias = FlextAuthConstants.ProviderTypeLiteral
+        ProviderTypeLiteral: TypeAlias = FlextAuthConstants.Auth.ProviderTypeLiteral
 
         # Role type literal (using RoleType StrEnum values as Literal)
         RoleTypeLiteral: TypeAlias = Literal["REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"]

@@ -38,63 +38,63 @@ class FlextAuthConfig(FlextConfig.AutoConfig):
         description="Generic secret key",
     )
     algorithm: str = Field(
-        default=FlextAuthConstants.DEFAULT_JWT_ALGORITHM,
+        default=FlextAuthConstants.Auth.DEFAULT_JWT_ALGORITHM,
         description="Cryptographic algorithm",
     )
     expiry_minutes: int = Field(
-        default=FlextAuthConstants.DEFAULT_JWT_EXPIRY_MINUTES,
+        default=FlextAuthConstants.Auth.DEFAULT_JWT_EXPIRY_MINUTES,
         ge=1,
         le=10080,  # 7 days in minutes
         description="Default expiry time",
     )
     issuer: str = Field(
-        default=FlextAuthConstants.DEFAULT_ISSUER,
+        default=FlextAuthConstants.Auth.DEFAULT_ISSUER,
         description="Token issuer",
     )
     audience: str = Field(
-        default=FlextAuthConstants.DEFAULT_AUDIENCE,
+        default=FlextAuthConstants.Auth.DEFAULT_AUDIENCE,
         description="Token audience",
     )
 
     # Credential Processing
     hash_rounds: int = Field(
-        default=FlextAuthConstants.HASH_ROUNDS_DEFAULT,
-        ge=FlextAuthConstants.HASH_ROUNDS_MIN,
-        le=FlextAuthConstants.HASH_ROUNDS_MAX,
+        default=FlextAuthConstants.Auth.DEFAULT_HASH_ROUNDS,
+        ge=FlextAuthConstants.Auth.HASH_ROUNDS_MIN,
+        le=FlextAuthConstants.Auth.HASH_ROUNDS_MAX,
         description="Credential hashing rounds",
     )
     min_credential_length: int = Field(
-        default=FlextAuthConstants.CREDENTIAL_MIN_LENGTH,
+        default=FlextAuthConstants.Auth.CREDENTIAL_MIN_LENGTH,
         ge=1,
         description="Minimum credential length",
     )
     max_credential_length: int = Field(
-        default=FlextAuthConstants.CREDENTIAL_MAX_LENGTH,
+        default=FlextAuthConstants.Auth.CREDENTIAL_MAX_LENGTH,
         ge=1,
         description="Maximum credential length",
     )
 
     # Security Policies
     max_attempts: int = Field(
-        default=FlextAuthConstants.MAX_ATTEMPTS_DEFAULT,
+        default=FlextAuthConstants.Auth.DEFAULT_MAX_RETRIES,
         ge=1,
         description="Max attempts before lockout",
     )
     lockout_duration_minutes: int = Field(
-        default=FlextAuthConstants.LOCKOUT_DURATION_MINUTES,
+        default=FlextAuthConstants.Auth.LOCKOUT_DURATION_MINUTES,
         ge=1,
         description="Lockout duration",
     )
 
     # Session Management
     session_expiry_minutes: int = Field(
-        default=FlextAuthConstants.SESSION_EXPIRY_DEFAULT_MINUTES,
+        default=FlextAuthConstants.Auth.SESSION_EXPIRY_DEFAULT_MINUTES,
         ge=1,
-        le=FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES,
+        le=FlextAuthConstants.Auth.SESSION_EXPIRY_MAX_MINUTES,
         description="Session expiry",
     )
     max_sessions_per_identity: int = Field(
-        default=FlextAuthConstants.MAX_SESSIONS_DEFAULT,
+        default=FlextAuthConstants.Auth.MAX_SESSIONS_DEFAULT,
         ge=1,
         description="Max concurrent sessions",
     )
@@ -116,7 +116,7 @@ class FlextAuthConfig(FlextConfig.AutoConfig):
         description="Track performance",
     )
     performance_warning_threshold: float = Field(
-        default=FlextAuthConstants.PERFORMANCE_THRESHOLD_MS,
+        default=FlextAuthConstants.Auth.PERFORMANCE_THRESHOLD_MS,
         ge=0.0,
         description="Performance warning threshold (ms)",
     )
@@ -125,12 +125,12 @@ class FlextAuthConfig(FlextConfig.AutoConfig):
         description="Enable rate limiting",
     )
     max_requests_per_minute: int = Field(
-        default=FlextAuthConstants.MAX_REQUESTS_PER_MINUTE,
+        default=FlextAuthConstants.Auth.MAX_REQUESTS_PER_MINUTE,
         ge=1,
         description="Max requests/minute",
     )
     max_requests_per_hour: int = Field(
-        default=FlextAuthConstants.MAX_REQUESTS_PER_HOUR,
+        default=FlextAuthConstants.Auth.MAX_REQUESTS_PER_HOUR,
         ge=1,
         description="Max requests/hour",
     )
@@ -201,8 +201,11 @@ class FlextAuthConfig(FlextConfig.AutoConfig):
             msg = "Min credential length > max"
             raise ValueError(msg)
 
-        if self.session_expiry_minutes > FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES:
-            msg = f"Session expiry > {FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES}min (30 days)"
+        if (
+            self.session_expiry_minutes
+            > FlextAuthConstants.Auth.SESSION_EXPIRY_MAX_MINUTES
+        ):
+            msg = f"Session expiry > {FlextAuthConstants.Auth.SESSION_EXPIRY_MAX_MINUTES}min (30 days)"
             raise ValueError(msg)
 
         # JWT expiry should not exceed session expiry
@@ -225,8 +228,8 @@ class FlextAuthConfig(FlextConfig.AutoConfig):
             self.model_validate(self.model_dump())
             # Check validation constraints manually
             secret_len = len(self.auth_secret.get_secret_value())
-            if secret_len < FlextAuthConstants.SECRET_MIN_LENGTH:
-                msg = f"Secret must be ≥{FlextAuthConstants.SECRET_MIN_LENGTH} chars, got {secret_len}"
+            if secret_len < FlextAuthConstants.Auth.SECRET_MIN_LENGTH:
+                msg = f"Secret must be ≥{FlextAuthConstants.Auth.SECRET_MIN_LENGTH} chars, got {secret_len}"
                 return r[bool].fail(msg)
 
             if self.min_credential_length > self.max_credential_length:
@@ -234,9 +237,9 @@ class FlextAuthConfig(FlextConfig.AutoConfig):
 
             if (
                 self.session_expiry_minutes
-                > FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES
+                > FlextAuthConstants.Auth.SESSION_EXPIRY_MAX_MINUTES
             ):
-                msg = f"Session expiry > {FlextAuthConstants.SESSION_EXPIRY_MAX_MINUTES}min (30 days)"
+                msg = f"Session expiry > {FlextAuthConstants.Auth.SESSION_EXPIRY_MAX_MINUTES}min (30 days)"
                 return r[bool].fail(msg)
 
             if self.expiry_minutes > self.session_expiry_minutes:

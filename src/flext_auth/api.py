@@ -25,11 +25,11 @@ from flext_auth.providers import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
 from flext_auth.session_service import FlextAuthSessionService
 from flext_auth.token_service import FlextAuthTokenService
-from flext_auth.typings import FlextAuthTypes
+from flext_auth.typings import t
 from flext_auth.user_service import FlextAuthIdentityService
 
 
-class FlextAuth(s[FlextAuthTypes.Responses.Authentication]):
+class FlextAuth(s[t.Responses.Authentication]):
     """Flexible authentication service using flext-core patterns.
 
     Thread-safe singleton service with:
@@ -431,8 +431,8 @@ class FlextAuth(s[FlextAuthTypes.Responses.Authentication]):
         """Revoke a session."""
         return self._session_service.session_manager.end_session_by_id(session_id)
 
-    def execute(self, **_kwargs: object) -> r[FlextAuthTypes.Responses.Authentication]:
+    def execute(self, **_kwargs: object) -> r[t.Responses.Authentication]:
         """Flexible execute implementation with railway orchestration."""
-        return r[FlextAuthTypes.Responses.Authentication].fail(
+        return r[t.Responses.Authentication].fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead",
         )

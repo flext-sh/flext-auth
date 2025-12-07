@@ -14,12 +14,13 @@ from datetime import UTC, datetime, timedelta
 from flext_core import FlextDispatcher, r, s
 from pydantic import ValidationError
 
-from flext_auth import m, u
 from flext_auth.config import FlextAuthConfig
 from flext_auth.managers import (
     FlextAuthManagers,
     ServiceManagerMixin,
 )
+from flext_auth.models import FlextAuthModels as m
+from flext_auth.utilities import FlextAuthUtilities as u
 
 
 class FlextAuthIdentityService(ServiceManagerMixin, s[object]):

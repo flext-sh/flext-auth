@@ -8,7 +8,7 @@ Integration patterns for flext-auth within the FLEXT ecosystem.
 
 ## Overview
 
-flext-auth integrates with the FLEXT ecosystem through [flext-core](../../flext-core/README.md) foundation patterns and provides authentication services to other FLEXT projects.
+flext-auth integrates with the FLEXT ecosystem through [flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md) foundation patterns and provides authentication services to other FLEXT projects.
 
 **Integration Status**: 85% flext-core pattern compliance
 
@@ -16,7 +16,7 @@ flext-auth integrates with the FLEXT ecosystem through [flext-core](../../flext-
 
 ## FLEXT-Core Integration
 
-flext-auth follows **[flext-core](../../flext-core/README.md)** patterns. For complete FlextResult usage patterns, see the flext-core documentation.
+flext-auth follows **[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)** patterns. For complete FlextResult usage patterns, see the flext-core documentation.
 
 ### Authentication-Specific Integration
 

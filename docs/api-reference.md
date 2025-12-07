@@ -4,7 +4,7 @@
 
 Complete API documentation for flext-auth enterprise authentication service with FlextService and h architecture.
 
-For general FLEXT patterns and FlextResult usage, see **[flext-core](../../flext-core/README.md)** documentation.
+For general FLEXT patterns and FlextResult usage, see **[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)** documentation.
 
 **Note**: This API is 100% backward compatible. All existing code continues to work unchanged after the h refactoring.
 

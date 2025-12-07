@@ -43,11 +43,11 @@ Support for diverse authentication technologies through a provider-based archite
 
 ### **Integration Points**
 
-- **[flext-core](../flext-core/README.md)** → Foundation patterns (FlextResult, FlextContainer, FlextModels)
-- **[flext-api](../flext-api/README.md)** → HTTP transport integration (MANDATORY)
-- **[flext-grpc](../flext-grpc/README.md)** → gRPC transport integration (MANDATORY)
-- **[flext-ldap](../flext-ldap/README.md)** → LDAP provider integration (MANDATORY)
-- **[flext-web](../flext-web/README.md)** → Web authentication flows
+- **[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)** → Foundation patterns (FlextResult, FlextContainer, FlextModels)
+- **[flext-api](https://github.com/organization/flext/tree/main/flext-api/README.md)** → HTTP transport integration (MANDATORY)
+- **[flext-grpc](https://github.com/organization/flext/tree/main/flext-grpc/README.md)** → gRPC transport integration (MANDATORY)
+- **[flext-ldap](https://github.com/organization/flext/tree/main/flext-ldap/README.md)** → LDAP provider integration (MANDATORY)
+- **[flext-web](https://github.com/organization/flext/tree/main/flext-web/README.md)** → Web authentication flows
 - **All FLEXT Projects** → Authentication service provider for ecosystem
 
 ---
@@ -418,11 +418,11 @@ pytest --cov=src/flext_auth # Coverage report
 
 ### **Ecosystem Integration**
 
-- **Direct Dependencies**: **[flext-core](../flext-core/README.md)** (foundation patterns)
+- **Direct Dependencies**: **[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)** (foundation patterns)
 - **MANDATORY Integrations**:
-  - **[flext-api](../flext-api/README.md)** - HTTP transport (Phase 4)
-  - **[flext-grpc](../flext-grpc/README.md)** - gRPC transport (Phase 4)
-  - **[flext-ldap](../flext-ldap/README.md)** - LDAP provider (Phase 3)
+  - **[flext-api](https://github.com/organization/flext/tree/main/flext-api/README.md)** - HTTP transport (Phase 4)
+  - **[flext-grpc](https://github.com/organization/flext/tree/main/flext-grpc/README.md)** - gRPC transport (Phase 4)
+  - **[flext-ldap](https://github.com/organization/flext/tree/main/flext-ldap/README.md)** - LDAP provider (Phase 3)
 - **Integration Points**: Authentication provider for entire FLEXT ecosystem
 
 ---
@@ -510,13 +510,10 @@ pytest --cov=src/flext_auth # Coverage report
 
 ## 📚 Documentation
 
-- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - Complete v2.0.0 transformation plan and provider ecosystem design
 - **[Getting Started](docs/getting-started.md)** - Installation and first authentication
 - **[API Reference](docs/api-reference.md)** - Complete API documentation (v1.0.0 + v2.0.0)
-- **[Provider Development](docs/provider-development.md)** - Creating custom authentication providers
 - **[Configuration](docs/configuration.md)** - Settings and environment management
 - **[Development](docs/development.md)** - Contributing and workflows
-- **[Integration](docs/integration.md)** - FLEXT ecosystem integration patterns
 - **[Troubleshooting](docs/troubleshooting.md)** - Common issues and solutions
 
 ---

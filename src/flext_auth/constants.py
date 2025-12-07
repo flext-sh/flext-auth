@@ -21,17 +21,17 @@ from typing import Final, Literal, TypeGuard, TypeIs
 from flext_core import FlextConstants, r, u
 
 # ═══════════════════════════════════════════════════════════════════════════
-# STRENUM + PYDANTIC 2: PADRÃO DEFINITIVO PARA FLEXT-AUTH
+# STRENUM + PYDANTIC 2: DEFINITIVE PATTERN FOR FLEXT-AUTH
 # ═══════════════════════════════════════════════════════════════════════════
 
-# PRINCÍPIO FUNDAMENTAL: StrEnum + Pydantic 2 = Validação Automática!
-# - NÃO precisa criar Literal separado para validação
-# - NÃO precisa criar frozenset para validação
-# - NÃO precisa criar AfterValidator
-# - Pydantic valida automaticamente contra o StrEnum
+# FUNDAMENTAL PRINCIPLE: StrEnum + Pydantic 2 = Automatic Validation!
+# - No need to create separate Literal for validation
+# - No need to create frozenset for validation
+# - No need to create AfterValidator
+# - Pydantic automatically validates against StrEnum
 
-# SUBSETS: Use Literal[TokenTypes.ACCESS, TokenTypes.REFRESH] para aceitar apenas ALGUNS valores.
-# Isso referencia o enum member, não duplica strings!
+# SUBSETS: Use Literal[TokenTypes.ACCESS, TokenTypes.REFRESH] to accept only SOME values.
+# This references the enum member, does not duplicate strings!
 
 
 class FlextAuthConstants(FlextConstants):
@@ -81,7 +81,7 @@ class FlextAuthConstants(FlextConstants):
         """
 
         # ═══════════════════════════════════════════════════════════════════
-        # STRENUM: Única declaração necessária para validação automática
+        # STRENUM: Single declaration needed for automatic validation
         # ═══════════════════════════════════════════════════════════════════
 
         class TokenTypes(StrEnum):
@@ -91,10 +91,14 @@ class FlextAuthConstants(FlextConstants):
                 model_config = ConfigDict(use_enum_values=True)
                 token_type: FlextAuthConstants.Auth.TokenTypes
 
-            Resultado:
-                - Aceita "access", "refresh", etc. ou TokenTypes.ACCESS
-                - Serializa como string
-                - Valida automaticamente (rejeita valores inválidos)
+            Result:
+                - Accepts "access", "refresh", etc. or TokenTypes.ACCESS
+                - Serializes as string
+                - Automatically validates (rejects invalid values)
+
+            DRY Pattern:
+                StrEnum is the single source of truth. Use TokenTypes.ACCESS.value
+                or TokenTypes.ACCESS directly - no base strings needed.
             """
 
             ACCESS = "access"
@@ -103,7 +107,12 @@ class FlextAuthConstants(FlextConstants):
             BEARER = "bearer"
 
         class ProviderTypes(StrEnum):
-            """Provider type enumeration - automatic Pydantic validation."""
+            """Provider type enumeration - automatic Pydantic validation.
+
+            DRY Pattern:
+                StrEnum is the single source of truth. Use ProviderTypes.JWT.value
+                or ProviderTypes.JWT directly - no base strings needed.
+            """
 
             BASIC = "basic"
             JWT = "jwt"
@@ -115,7 +124,12 @@ class FlextAuthConstants(FlextConstants):
             APIKEY = "apikey"
 
         class RoleTypes(StrEnum):
-            """Role type enumeration - automatic Pydantic validation."""
+            """Role type enumeration - automatic Pydantic validation.
+
+            DRY Pattern:
+                StrEnum is the single source of truth. Use RoleTypes.ADMIN.value
+                or RoleTypes.ADMIN directly - no base strings needed.
+            """
 
             ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
             USER = "user"
@@ -123,7 +137,12 @@ class FlextAuthConstants(FlextConstants):
             GUEST = "guest"
 
         class PermissionTypes(StrEnum):
-            """Permission type enumeration - automatic Pydantic validation."""
+            """Permission type enumeration - automatic Pydantic validation.
+
+            DRY Pattern:
+                StrEnum is the single source of truth. Use PermissionTypes.READ.value
+                or PermissionTypes.READ directly - no base strings needed.
+            """
 
             READ = "read"
             WRITE = "write"
@@ -131,17 +150,22 @@ class FlextAuthConstants(FlextConstants):
             ADMIN = "REDACTED_LDAP_BIND_PASSWORD"
 
         class Algorithms(StrEnum):
-            """Algorithm type enumeration."""
+            """Algorithm type enumeration.
+
+            DRY Pattern:
+                StrEnum is the single source of truth. Use Algorithms.HS256.value
+                or Algorithms.HS256 directly - no base strings needed.
+            """
 
             HS256 = "HS256"
             RS256 = "RS256"
             ES256 = "ES256"
 
         # ═══════════════════════════════════════════════════════════════════
-        # SUBSETS: Literal referenciando membros do StrEnum
+        # SUBSETS: Literal referencing StrEnum members
         # ═══════════════════════════════════════════════════════════════════
-        # Use para aceitar apenas ALGUNS valores do enum em métodos
-        # Isso NÃO duplica strings - referencia o enum member!
+        # Use to accept only SOME enum values in methods
+        # This does not duplicate strings - references the enum member!
 
         type AccessTokens = Literal[TokenTypes.ACCESS, TokenTypes.BEARER]
         """Access token types for operations."""
@@ -164,8 +188,11 @@ class FlextAuthConstants(FlextConstants):
 
         @classmethod
         def is_valid_token_type(cls, value: str) -> TypeIs[TokenTypes]:
-            """TypeIs for TokenTypes validation - narrowing in if/else."""
-            return value in cls.TokenTypes._value2member_map_
+            """TypeIs for TokenTypes validation - narrowing in if/else.
+
+            Uses parent Enum utilities for consistency.
+            """
+            return u.Enum.is_member(cls.TokenTypes, value)
 
         @classmethod
         def is_access_token(cls, value: str) -> TypeGuard[AccessTokens]:
@@ -179,8 +206,11 @@ class FlextAuthConstants(FlextConstants):
 
         @classmethod
         def is_valid_provider_type(cls, value: str) -> TypeIs[ProviderTypes]:
-            """TypeIs for ProviderTypes validation."""
-            return value in cls.ProviderTypes._value2member_map_
+            """TypeIs for ProviderTypes validation.
+
+            Uses parent Enum utilities for consistency.
+            """
+            return u.Enum.is_member(cls.ProviderTypes, value)
 
         @classmethod
         def is_jwt_provider(cls, value: str) -> TypeGuard[Literal[ProviderTypes.JWT]]:
@@ -196,8 +226,11 @@ class FlextAuthConstants(FlextConstants):
 
         @classmethod
         def is_valid_role_type(cls, value: str) -> TypeIs[RoleTypes]:
-            """TypeIs for RoleTypes validation."""
-            return value in cls.RoleTypes._value2member_map_
+            """TypeIs for RoleTypes validation.
+
+            Uses parent Enum utilities for consistency.
+            """
+            return u.Enum.is_member(cls.RoleTypes, value)
 
         @classmethod
         def is_REDACTED_LDAP_BIND_PASSWORD_role(cls, value: str) -> TypeGuard[AdminRoles]:
@@ -215,8 +248,11 @@ class FlextAuthConstants(FlextConstants):
 
         @classmethod
         def is_valid_permission_type(cls, value: str) -> TypeIs[PermissionTypes]:
-            """TypeIs for PermissionTypes validation."""
-            return value in cls.PermissionTypes._value2member_map_
+            """TypeIs for PermissionTypes validation.
+
+            Uses parent Enum utilities for consistency.
+            """
+            return u.Enum.is_member(cls.PermissionTypes, value)
 
         @classmethod
         def is_write_permission(cls, value: str) -> TypeGuard[WritePermissions]:
@@ -232,7 +268,7 @@ class FlextAuthConstants(FlextConstants):
             return value == cls.PermissionTypes.ADMIN.value
 
         # ═══════════════════════════════════════════════════════════════════
-        # IMMUTABLE COLLECTIONS: frozenset para O(1) validação
+        # IMMUTABLE COLLECTIONS: frozenset for O(1) validation
         # ═══════════════════════════════════════════════════════════════════
 
         VALID_TOKEN_TYPES: Final[AbstractSet[str]] = frozenset(
@@ -361,7 +397,7 @@ class FlextAuthConstants(FlextConstants):
         """Minimum secret key length."""
 
         # ═══════════════════════════════════════════════════════════════════
-        # VALIDATION LIMITS: Mappings imutáveis para validação
+        # VALIDATION LIMITS: Immutable mappings for validation
         # ═══════════════════════════════════════════════════════════════════
 
         VALIDATION_LIMITS: Final[Mapping[str, int | float]] = MappingProxyType({
@@ -376,7 +412,7 @@ class FlextAuthConstants(FlextConstants):
         """Validation limits mapping."""
 
         # ═══════════════════════════════════════════════════════════════════
-        # RESPONSE TEMPLATES: Mappings imutáveis
+        # RESPONSE TEMPLATES: Immutable mappings
         # ═══════════════════════════════════════════════════════════════════
 
         SUCCESS_AUTH_RESPONSE: Final[Mapping[str, str | None]] = MappingProxyType({
@@ -394,7 +430,7 @@ class FlextAuthConstants(FlextConstants):
         """Template for authentication error responses."""
 
         # ═══════════════════════════════════════════════════════════════════
-        # UTILITY METHODS: Validação avançada com u
+        # UTILITY METHODS: Advanced validation with u
         # ═══════════════════════════════════════════════════════════════════
 
         @classmethod
@@ -430,21 +466,27 @@ class FlextAuthConstants(FlextConstants):
         # ═══════════════════════════════════════════════════════════════════
         # LITERAL TYPES: PEP 695 strict type aliases (Python 3.13+)
         # ═══════════════════════════════════════════════════════════════════
+        # All Literal types reference StrEnum members - NO string duplication!
 
-        type TokenTypeLiteral = Literal["access", "refresh", "api", "bearer"]
-        """Token type literal - matches TokenTypes StrEnum values exactly."""
+        type TokenTypeLiteral = Literal[
+            TokenTypes.ACCESS,
+            TokenTypes.REFRESH,
+            TokenTypes.API,
+            TokenTypes.BEARER,
+        ]
+        """Token type literal - references TokenTypes StrEnum members."""
 
         type ProviderTypeLiteral = Literal[
-            "basic",
-            "jwt",
-            "oauth2",
-            "saml",
-            "ldap",
-            "certificate",
-            "kerberos",
-            "apikey",
+            ProviderTypes.BASIC,
+            ProviderTypes.JWT,
+            ProviderTypes.OAUTH2,
+            ProviderTypes.SAML,
+            ProviderTypes.LDAP,
+            ProviderTypes.CERTIFICATE,
+            ProviderTypes.KERBEROS,
+            ProviderTypes.APIKEY,
         ]
-        """Provider type literal - matches ProviderTypes StrEnum values exactly."""
+        """Provider type literal - references ProviderTypes StrEnum members."""
 
         type RoleTypeLiteral = Literal[
             RoleTypes.ADMIN, RoleTypes.USER, RoleTypes.MODERATOR, RoleTypes.GUEST
@@ -570,56 +612,67 @@ class FlextAuthConstants(FlextConstants):
         # ═══════════════════════════════════════════════════════════════════
 
     class Permissions:
-        """Permission constants."""
+        """Permission constants - matches Auth.PermissionTypes StrEnum values.
 
-        READ: Final[str] = "read"
-        """Read permission."""
-        WRITE: Final[str] = "write"
-        """Write permission."""
-        DELETE: Final[str] = "delete"
-        """Delete permission."""
-        ADMIN: Final[str] = "REDACTED_LDAP_BIND_PASSWORD"
-        """Admin permission."""
+        NOTE: These string literals MUST match Auth.PermissionTypes StrEnum values exactly.
+        To avoid duplication, prefer using Auth.PermissionTypes.READ.value or
+        Auth.PermissionTypes.READ directly instead of Permissions.READ.
+
+        DRY Pattern: Use Auth.PermissionTypes StrEnum as single source of truth!
+        This class is kept for backward compatibility only.
+        """
+
+        # NOTE: Values must match Auth.PermissionTypes StrEnum exactly!
+        READ: Final[str] = "read"  # Matches Auth.PermissionTypes.READ
+        """Read permission - matches PermissionTypes.READ value."""
+        WRITE: Final[str] = "write"  # Matches Auth.PermissionTypes.WRITE
+        """Write permission - matches PermissionTypes.WRITE value."""
+        DELETE: Final[str] = "delete"  # Matches Auth.PermissionTypes.DELETE
+        """Delete permission - matches PermissionTypes.DELETE value."""
+        ADMIN: Final[str] = "REDACTED_LDAP_BIND_PASSWORD"  # Matches Auth.PermissionTypes.ADMIN
+        """Admin permission - matches PermissionTypes.ADMIN value."""
 
         BASIC_USER_PERMISSIONS: Final[list[str]] = [READ, WRITE]
-        """Basic user permissions."""
+        """Basic user permissions - matches PermissionTypes StrEnum values."""
         ADMIN_PERMISSIONS: Final[list[str]] = [READ, WRITE, DELETE, ADMIN]
-        """Admin permissions."""
+        """Admin permissions - matches PermissionTypes StrEnum values."""
 
         # ═══════════════════════════════════════════════════════════════════
         # ROLES CONSTANTS: Nested class for roles
         # ═══════════════════════════════════════════════════════════════════
 
     class Roles:
-        """Role constants."""
+        """Role constants - matches Auth.RoleTypes StrEnum values.
 
-        ADMIN: Final[str] = "REDACTED_LDAP_BIND_PASSWORD"
-        """Admin role."""
-        USER: Final[str] = "user"
-        """User role."""
-        MODERATOR: Final[str] = "moderator"
-        """Moderator role."""
-        GUEST: Final[str] = "guest"
-        """Guest role."""
+        NOTE: These string literals MUST match Auth.RoleTypes StrEnum values exactly.
+        To avoid duplication, prefer using Auth.RoleTypes.ADMIN.value or
+        Auth.RoleTypes.ADMIN directly instead of Roles.ADMIN.
 
-        DEFAULT_ROLES: Final[list[str]] = [USER]
-        """Default roles."""
-        VALID_ROLES: Final[list[str]] = [ADMIN, USER, MODERATOR, GUEST]
-        """Valid roles."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # REFERÊNCIAS A FLEXT-CORE: Explicit references (não aliases)
-        # ═══════════════════════════════════════════════════════════════════
-
-    class Inherited:
-        """Explicit references to inherited constants from FlextConstants.
-
-        Use for documenting which constants from FlextConstants are used
-        in this domain, without creating aliases.
+        DRY Pattern: Use Auth.RoleTypes StrEnum as single source of truth!
+        This class is kept for backward compatibility only.
         """
 
-        # Apenas referências, não aliases
-        # Use FlextConstants.Cqrs.Status diretamente no código
+        # NOTE: Values must match Auth.RoleTypes StrEnum exactly!
+        ADMIN: Final[str] = "REDACTED_LDAP_BIND_PASSWORD"  # Matches Auth.RoleTypes.ADMIN
+        """Admin role - matches RoleTypes.ADMIN value."""
+        USER: Final[str] = "user"  # Matches Auth.RoleTypes.USER
+        """User role - matches RoleTypes.USER value."""
+        MODERATOR: Final[str] = "moderator"  # Matches Auth.RoleTypes.MODERATOR
+        """Moderator role - matches RoleTypes.MODERATOR value."""
+        GUEST: Final[str] = "guest"  # Matches Auth.RoleTypes.GUEST
+        """Guest role - matches RoleTypes.GUEST value."""
+
+        DEFAULT_ROLES: Final[list[str]] = [USER]
+        """Default roles - matches RoleTypes StrEnum values."""
+        VALID_ROLES: Final[list[str]] = [ADMIN, USER, MODERATOR, GUEST]
+        """Valid roles - matches RoleTypes StrEnum values."""
+
+        # ═══════════════════════════════════════════════════════════════════
+        # INHERITED CONSTANTS: Access parent constants directly
+        # ═══════════════════════════════════════════════════════════════════
+        # All constants from FlextConstants are accessible via inheritance.
+        # Use FlextConstants.Cqrs.Status, FlextConstants.Errors.*, etc. directly.
+        # No need for explicit Inherited class - inheritance provides access.
 
 
 c = FlextAuthConstants  # Runtime alias (not TypeAlias to avoid PYI042)

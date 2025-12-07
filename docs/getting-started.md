@@ -12,7 +12,7 @@ Installation and first steps for implementing enterprise authentication in your 
 
 - Python 3.13+
 - Poetry for dependency management
-- **[flext-core](../../flext-core/README.md)** foundation library
+- **[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)** foundation library
 
 ### Installation
 

@@ -218,7 +218,6 @@ vim docs/architecture/adrs/decisions/001-new-decision.md
 ### For Stakeholders
 
 1. Review [System Context](c4-model/context/) for business understanding
-2. Check [Quality Attributes](decisions/quality-attributes.md) for non-functional requirements
 3. Review [Architecture Decisions](adrs/) for important trade-offs
 
 ## 🔧 Maintenance and Updates
@@ -251,8 +250,8 @@ cd docs/architecture
 
 ## 📚 Additional Resources
 
-- [FLEXT Core Architecture](../../flext-core/docs/architecture/)
-- [FLEXT API Architecture](../../flext-api/docs/architecture/)
+- [FLEXT Core Architecture](https://github.com/organization/flext/tree/main/flext-core/docs/architecture/)
+- [FLEXT API Architecture](https://github.com/organization/flext/tree/main/flext-api/docs/architecture/)
 - [C4 Model Website](https://c4model.com/)
 - [PlantUML Documentation](https://plantuml.com/)
 - [ADR GitHub](https://adr.github.io/)

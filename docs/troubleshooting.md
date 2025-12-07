@@ -4,7 +4,7 @@
 
 Common issues and solutions for flext-auth authentication service.
 
-For general FLEXT troubleshooting, see **[flext-core](../../flext-core/README.md)** documentation.
+For general FLEXT troubleshooting, see **[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)** documentation.
 
 ---
 

@@ -13,11 +13,12 @@ from collections import UserDict
 from datetime import UTC, datetime
 from typing import ClassVar, Self
 
-from flext_core import FlextModels, m as m_core, r
+from flext_core import m as m_core, r
 from pydantic import Field, computed_field, model_validator
 
 from flext_auth.constants import FlextAuthConstants
-from flext_auth.utilities import FlextAuthUtilities
+
+# FlextAuthUtilities imported lazily to avoid circular dependency
 
 
 class FlextAuthModels(m_core):
@@ -64,11 +65,11 @@ class FlextAuthModels(m_core):
         iat: int = Field(..., description="Issued at timestamp (UNIX)")
         jti: str = Field(default="", description="Token ID")
         iss: str = Field(
-            default=FlextAuthConstants.DEFAULT_ISSUER,
+            default=FlextAuthConstants.Auth.DEFAULT_ISSUER,
             description="Issuer",
         )
         aud: str = Field(
-            default=FlextAuthConstants.DEFAULT_AUDIENCE,
+            default=FlextAuthConstants.Auth.DEFAULT_AUDIENCE,
             description="Audience",
         )
         session_id: str = Field(default="", description="Session ID")
@@ -77,12 +78,12 @@ class FlextAuthModels(m_core):
         """Generic token generation request (immutable value object)."""
 
         identity_id: str = Field(..., description="Identity ID")
-        token_type: FlextAuthConstants.TokenTypeLiteral | str = Field(
-            default=FlextAuthConstants.TokenTypes.ACCESS.value,
+        token_type: FlextAuthConstants.Auth.TokenTypeLiteral | str = Field(
+            default=FlextAuthConstants.Auth.TokenTypes.ACCESS.value,
             description="Token type",
         )
         expiry_minutes: int = Field(
-            default=FlextAuthConstants.DEFAULT_JWT_EXPIRY_MINUTES,
+            default=FlextAuthConstants.Auth.DEFAULT_JWT_EXPIRY_MINUTES,
             ge=1,
             description="Token expiry",
         )
@@ -107,7 +108,7 @@ class FlextAuthModels(m_core):
         identity_id: str = Field(..., description="Identity ID")
         token: str = Field(..., description="Token value", exclude=True)
         token_type: str = Field(
-            default=FlextAuthConstants.TokenTypes.BEARER.value,
+            default=FlextAuthConstants.Auth.TokenTypes.BEARER.value,
             description="Token type",
         )
         expires_at: datetime = Field(..., description="Expiration time")
@@ -135,7 +136,7 @@ class FlextAuthModels(m_core):
         name: str = Field(
             ...,
             min_length=3,
-            max_length=FlextAuthConstants.MAX_USERNAME_LENGTH,
+            max_length=FlextAuthConstants.Auth.MAX_USERNAME_LENGTH,
             description="Unique identity name",
         )
         contact: str = Field(
@@ -146,13 +147,13 @@ class FlextAuthModels(m_core):
         )
         credential: str = Field(
             ...,
-            min_length=FlextAuthConstants.CREDENTIAL_MIN_LENGTH,
+            min_length=FlextAuthConstants.Auth.CREDENTIAL_MIN_LENGTH,
             description="Credential (password/key)",
             exclude=True,
         )
         full_name: str = Field(default="", description="Full name")
         roles: list[str] = Field(
-            default_factory=lambda: [FlextAuthConstants.RoleTypes.USER.value],
+            default_factory=lambda: [FlextAuthConstants.Auth.RoleTypes.USER.value],
             description="Roles",
         )
 
@@ -162,7 +163,7 @@ class FlextAuthModels(m_core):
         name: str = Field(
             ...,
             min_length=3,
-            max_length=FlextAuthConstants.MAX_USERNAME_LENGTH,
+            max_length=FlextAuthConstants.Auth.MAX_USERNAME_LENGTH,
             description="Unique identity name",
         )
         contact: str = Field(..., description="Contact info")
@@ -174,7 +175,7 @@ class FlextAuthModels(m_core):
         full_name: str = Field(default="", description="Full name")
         is_active: bool = Field(default=True, description="Active status")
         roles: list[str] = Field(
-            default_factory=lambda: [FlextAuthConstants.RoleTypes.USER.value],
+            default_factory=lambda: [FlextAuthConstants.Auth.RoleTypes.USER.value],
             description="Roles",
         )
         permissions: list[str] = Field(default_factory=list, description="Permissions")
@@ -238,6 +239,10 @@ class FlextAuthModels(m_core):
 
         def verify_credential(self, credential: str) -> r[bool]:
             """Verify a credential against stored hash using bcrypt."""
+            from flext_auth.utilities import (
+                FlextAuthUtilities,  # Lazy import
+            )
+
             return FlextAuthUtilities.verify_credential(
                 credential,
                 self.credential_hash,
@@ -245,6 +250,10 @@ class FlextAuthModels(m_core):
 
         def set_credential(self, credential: str) -> r[bool]:
             """Set a new credential with bcrypt hashing."""
+            from flext_auth.utilities import (
+                FlextAuthUtilities,  # Lazy import
+            )
+
             hash_result = FlextAuthUtilities.hash_credential(credential)
             if hash_result.is_success:
                 self.credential_hash = hash_result.unwrap()
@@ -416,31 +425,48 @@ class FlextAuthModels(m_core):
 
 m = FlextAuthModels  # Runtime alias (not TypeAlias to avoid PYI042)
 
-# =============================================================================
-# POPULATE FlextModels.Auth NAMESPACE
-# =============================================================================
-# Copy all models from FlextAuthModels to FlextModels.Auth namespace
-# This allows access via both:
-# - FlextAuthModels.* (backward compatibility, deprecated)
-# - FlextModels.Auth.* (new namespace pattern)
-# - m.Auth.* (convenience alias)
-# =============================================================================
 
-# Get all attributes from FlextAuthModels that are models, classes, or type aliases
-# Exclude private attributes and special methods
-_auth_model_attrs = {
-    name: attr
-    for name, attr in vars(FlextAuthModels).items()
-    if not name.startswith("_")
-    and (
-        isinstance(attr, type)
-        or hasattr(attr, "__origin__")  # TypeAlias
-        or (callable(attr) and not isinstance(attr, type(FlextAuthModels.__init__)))
+# =============================================================================
+# CREATE AND POPULATE FlextModels.Auth NAMESPACE
+# =============================================================================
+# Create namespace if it doesn't exist (no empty class in flext-core)
+# Use lazy import to avoid circular dependency
+def _populate_auth_namespace() -> None:
+    """Populate FlextModels.Auth namespace dynamically."""
+    from flext_core import (
+        FlextModels,  # Lazy import to avoid circular dependency
     )
-}
 
-# Populate FlextModels.Auth namespace
-for name, attr in _auth_model_attrs.items():
-    setattr(FlextModels.Auth, name, attr)
+    if not hasattr(FlextModels, "Auth"):
+
+        class Auth:
+            """Auth project namespace - populated by flext-auth.
+
+            This namespace contains all Auth-specific models from flext-auth.
+            Access via: FlextModels.Auth.ValidationResult, FlextModels.Auth.TokenPayload, etc.
+            Populated by: flext-auth/src/flext_auth/models.py
+            """
+
+        FlextModels.Auth = Auth  # type: ignore[assignment]  # Dynamic namespace creation
+
+    # Get all attributes from FlextAuthModels that are models, classes, or type aliases
+    # Exclude private attributes and special methods
+    auth_model_attrs = {
+        name: attr
+        for name, attr in vars(FlextAuthModels).items()
+        if not name.startswith("_")
+        and (
+            isinstance(attr, type)
+            or hasattr(attr, "__origin__")  # TypeAlias
+            or (callable(attr) and not isinstance(attr, type(FlextAuthModels.__init__)))
+        )
+    }
+
+    # Populate FlextModels.Auth namespace with direct declarations
+    for name, attr in auth_model_attrs.items():
+        setattr(FlextModels.Auth, name, attr)  # type: ignore[attr-defined]  # Dynamic namespace population
+
+
+_populate_auth_namespace()
 
 __all__ = ["FlextAuthModels", "m"]

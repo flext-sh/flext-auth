@@ -16,7 +16,7 @@ from flext_core import r, t
 from flext_core.registry import FlextRegistry
 
 from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_auth.typings import FlextAuthTypes
+from flext_auth.typings import t
 
 
 class FlextAuthRegistry(FlextRegistry):
@@ -28,15 +28,15 @@ class FlextAuthRegistry(FlextRegistry):
 
     def __init__(self) -> None:
         """Flexible initialization with consolidated storage."""
-        self._providers: dict[FlextAuthTypes.Providers.Key, FlextAuthBaseProvider] = {}
-        self._configs: dict[FlextAuthTypes.Providers.Key, t.JsonDict] = {}
+        self._providers: dict[t.Providers.Key, FlextAuthBaseProvider] = {}
+        self._configs: dict[t.Providers.Key, t.JsonDict] = {}
         self._metadata: dict[
-            FlextAuthTypes.Providers.Key,
-            FlextAuthTypes.Providers.Metadata,
+            t.Providers.Key,
+            t.Providers.Metadata,
         ] = {}
         self.logger.info("FlextAuthRegistry initialized")
 
-    def _ensure_provider_exists(self, name: FlextAuthTypes.Providers.Key) -> r[bool]:
+    def _ensure_provider_exists(self, name: t.Providers.Key) -> r[bool]:
         """Check provider exists - single source of truth (eliminates 8+ duplications)."""
         if name not in self._providers:
             available = ", ".join(self.list_providers()) if self._providers else "none"
@@ -55,7 +55,7 @@ class FlextAuthRegistry(FlextRegistry):
         """Railway-oriented provider registration with validation."""
         # Cast parameters to expected types
         config_dict = cast("t.JsonDict | None", configuration)
-        metadata_dict = cast("FlextAuthTypes.Providers.Metadata | None", metadata)
+        metadata_dict = cast("t.Providers.Metadata | None", metadata)
         service_typed = cast("FlextAuthBaseProvider", service)
 
         # Consolidated validation and registration
@@ -105,7 +105,7 @@ class FlextAuthRegistry(FlextRegistry):
     # CONSOLIDATED REGISTRY OPERATIONS
     # =========================================================================
 
-    def unregister(self, name: FlextAuthTypes.Providers.Key) -> r[bool]:
+    def unregister(self, name: t.Providers.Key) -> r[bool]:
         """Railway-oriented provider unregistration."""
         if name not in self._providers:
             return r[bool].fail(f"Provider '{name}' is not registered")
@@ -122,21 +122,21 @@ class FlextAuthRegistry(FlextRegistry):
         )
         return r[bool].ok(True)
 
-    def get(self, name: FlextAuthTypes.Providers.Key) -> r[FlextAuthBaseProvider]:
+    def get(self, name: t.Providers.Key) -> r[FlextAuthBaseProvider]:
         """Railway-oriented provider retrieval with type safety."""
         return self._ensure_provider_exists(name).map(
             lambda _exists: self._providers[name],
         )
 
-    def list_providers(self) -> list[FlextAuthTypes.Providers.Key]:
+    def list_providers(self) -> list[t.Providers.Key]:
         """List registered provider names."""
         return list(self._providers.keys())
 
-    def has_provider(self, name: FlextAuthTypes.Providers.Key) -> bool:
+    def has_provider(self, name: t.Providers.Key) -> bool:
         """Check provider registration status."""
         return name in self._providers
 
-    def get_capabilities(self, name: FlextAuthTypes.Providers.Key) -> r[set[str]]:
+    def get_capabilities(self, name: t.Providers.Key) -> r[set[str]]:
         """Railway-oriented capability retrieval."""
         if name not in self._providers:
             return r.fail(f"Provider '{name}' is not registered")
@@ -145,8 +145,8 @@ class FlextAuthRegistry(FlextRegistry):
 
     def get_metadata(
         self,
-        name: FlextAuthTypes.Providers.Key,
-    ) -> r[FlextAuthTypes.Providers.Metadata]:
+        name: t.Providers.Key,
+    ) -> r[t.Providers.Metadata]:
         """Railway-oriented metadata retrieval."""
         if name not in self._providers:
             return r.fail(f"Provider '{name}' is not registered")
@@ -167,7 +167,7 @@ class FlextAuthRegistry(FlextRegistry):
 
     def validate_config(
         self,
-        name: FlextAuthTypes.Providers.Key,
+        name: t.Providers.Key,
         config: t.JsonDict,
     ) -> r[bool]:
         """Railway-oriented configuration validation."""
@@ -177,7 +177,7 @@ class FlextAuthRegistry(FlextRegistry):
 
     def _validate_provider_config(
         self,
-        name: FlextAuthTypes.Providers.Key,
+        name: t.Providers.Key,
         config: t.JsonDict,
     ) -> r[bool]:
         """Internal configuration validation."""
@@ -218,13 +218,13 @@ class FlextAuthRegistry(FlextRegistry):
 
     def has_capability(
         self,
-        provider_name: FlextAuthTypes.Providers.Key,
-        capability: FlextAuthTypes.Providers.Capability,
+        provider_name: t.Providers.Key,
+        capability: t.Providers.Capability,
     ) -> r[bool]:
         """Railway-oriented capability checking."""
         return self.get_capabilities(provider_name).map(lambda caps: capability in caps)
 
-    def get_config(self, provider_name: FlextAuthTypes.Providers.Key) -> r[t.JsonDict]:
+    def get_config(self, provider_name: t.Providers.Key) -> r[t.JsonDict]:
         """Railway-oriented configuration retrieval."""
         if provider_name not in self._providers:
             return r.fail(f"Provider '{provider_name}' not registered")
@@ -237,7 +237,7 @@ class FlextAuthRegistry(FlextRegistry):
 
     def update_config(
         self,
-        provider_name: FlextAuthTypes.Providers.Key,
+        provider_name: t.Providers.Key,
         new_config: t.JsonDict,
     ) -> r[bool]:
         """Railway-oriented configuration updating."""
@@ -254,16 +254,16 @@ class FlextAuthRegistry(FlextRegistry):
 
     def get_all_metadata(
         self,
-    ) -> r[dict[FlextAuthTypes.Providers.Key, FlextAuthTypes.Providers.Metadata]]:
+    ) -> r[dict[t.Providers.Key, t.Providers.Metadata]]:
         """Get all provider metadata."""
         return r.ok(self._metadata.copy())
 
     def find_providers_with_capability(
         self,
-        capability: FlextAuthTypes.Providers.Capability,
-    ) -> r[list[FlextAuthTypes.Providers.Key]]:
+        capability: t.Providers.Capability,
+    ) -> r[list[t.Providers.Key]]:
         """Find providers with specific capability."""
-        matching: list[FlextAuthTypes.Providers.Key] = []
+        matching: list[t.Providers.Key] = []
         for name in self._providers:
             capability_check = self.has_capability(name, capability)
             if capability_check.is_success and capability_check.unwrap():
@@ -274,18 +274,18 @@ class FlextAuthRegistry(FlextRegistry):
         """Provider count."""
         return len(self._providers)
 
-    def __contains__(self, name: FlextAuthTypes.Providers.Key) -> bool:
+    def __contains__(self, name: t.Providers.Key) -> bool:
         """Provider membership check."""
         return name in self._providers
 
     def _extract_metadata(
         self,
-        name: FlextAuthTypes.Providers.Key,
+        name: t.Providers.Key,
         service: FlextAuthBaseProvider,
-        provided_metadata: FlextAuthTypes.Providers.Metadata | None,
-    ) -> FlextAuthTypes.Providers.Metadata:
+        provided_metadata: t.Providers.Metadata | None,
+    ) -> t.Providers.Metadata:
         """Build metadata payload consolidating provider information."""
-        metadata: FlextAuthTypes.Providers.Metadata = {
+        metadata: t.Providers.Metadata = {
             "name": name,
             "version": "unknown",
             "capabilities": self._provider_capabilities(service),
@@ -308,9 +308,9 @@ class FlextAuthRegistry(FlextRegistry):
 
     def _apply_raw_metadata(
         self,
-        target: FlextAuthTypes.Providers.Metadata,
+        target: t.Providers.Metadata,
         raw_metadata: dict[str, object],
-    ) -> FlextAuthTypes.Providers.Metadata:
+    ) -> t.Providers.Metadata:
         """Normalize raw provider metadata into the structured payload."""
         if not isinstance(raw_metadata, dict):
             return target
@@ -342,12 +342,12 @@ class FlextAuthRegistry(FlextRegistry):
         if isinstance(extras_value, dict):
             result["extras"] = extras_value
 
-        return cast("FlextAuthTypes.Providers.Metadata", result)
+        return cast("t.Providers.Metadata", result)
 
     def _provider_capabilities(
         self,
         provider: FlextAuthBaseProvider,
-    ) -> tuple[FlextAuthTypes.Providers.Capability, ...]:
+    ) -> tuple[t.Providers.Capability, ...]:
         """Safely retrieve provider capabilities."""
         try:
             capabilities = provider.supports()

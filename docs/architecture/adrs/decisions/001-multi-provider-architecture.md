@@ -208,9 +208,6 @@ Implement a provider-centric architecture where authentication protocols are enc
 
 ## Related ADRs
 
-- [ADR-002](../decisions/002-provider-registry-pattern.md) - Provider registry implementation details
-- [ADR-003](../decisions/003-flextresult-error-handling.md) - Error handling patterns
-- [ADR-004](../decisions/004-jwt-provider-implementation.md) - JWT provider as reference implementation
 
 ## References
 
@@ -222,7 +219,7 @@ Implement a provider-centric architecture where authentication protocols are enc
 
 ### Internal References
 
-- [FLEXT Core Patterns](../../flext-core/docs/architecture/)
+- [FLEXT Core Patterns](https://github.com/organization/flext/tree/main/flext-core/docs/architecture/)
 - [Architecture Overview](../../README.md)
 - [Provider Implementations](../../../src/flext_auth/providers/)
 

@@ -37,12 +37,12 @@ class FlextAuthMixins(x):
             if not password:
                 return r[str].fail("Password cannot be empty")
 
-            if len(password) < FlextAuthConstants.CREDENTIAL_MIN_LENGTH:
+            if len(password) < FlextAuthConstants.Auth.CREDENTIAL_MIN_LENGTH:
                 return r[str].fail(
-                    f"Password must be at least {FlextAuthConstants.CREDENTIAL_MIN_LENGTH} characters",
+                    f"Password must be at least {FlextAuthConstants.Auth.CREDENTIAL_MIN_LENGTH} characters",
                 )
 
-            if len(password) > FlextAuthConstants.CREDENTIAL_MAX_LENGTH:
+            if len(password) > FlextAuthConstants.Auth.CREDENTIAL_MAX_LENGTH:
                 return r[str].fail(f"Password must be no more than {128} characters")
 
             # Check for password complexity

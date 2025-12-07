@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import cast
 
-from flext_core import r, s, t
+from flext_core import r, s, t as t_core
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
@@ -30,7 +30,7 @@ from flext_auth.providers import (
 )
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
-from flext_auth.typings import FlextAuthTypes
+from flext_auth.typings import t
 
 
 class FlextAuthProviderService(s[object]):
@@ -59,15 +59,15 @@ class FlextAuthProviderService(s[object]):
             self.logger.error("Configuration is required for provider registration")
             return
 
-        provider_config: t.JsonDict = cast(
-            "t.JsonDict",
+        provider_config: t_core.JsonDict = cast(
+            "t_core.JsonDict",
             self._config.to_provider_config(),
         )
 
         # Provider registration mapping with requirements
         providers: list[
             tuple[
-                FlextAuthTypes.Providers.Key,
+                t.Providers.Key,
                 type[FlextAuthBaseProvider],
                 Callable[[], bool],
             ]
@@ -121,7 +121,7 @@ class FlextAuthProviderService(s[object]):
                 try:
                     # Instantiate provider with config
                     provider = cast(
-                        "Callable[[t.JsonDict], FlextAuthBaseProvider]",
+                        "Callable[[t_core.JsonDict], FlextAuthBaseProvider]",
                         provider_class,
                     )(provider_config)
                     self._providers.register(
@@ -172,7 +172,7 @@ class FlextAuthProviderService(s[object]):
         self,
         user: FlextAuthModels.Identity,
         provider: str = "jwt",
-        token_type: str = FlextAuthConstants.TOKEN_TYPE_ACCESS,
+        token_type: str = FlextAuthConstants.Auth.TokenTypes.ACCESS.value,
         expiry_minutes: int | None = None,
     ) -> r[str]:
         """Railway-oriented token generation with direct provider access."""
