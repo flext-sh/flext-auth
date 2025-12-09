@@ -13,11 +13,13 @@ from flext_core import r, s
 from flext_core.dispatcher import FlextDispatcher
 
 from flext_auth.config import FlextAuthConfig
-from flext_auth.constants import FlextAuthConstants
+from flext_auth.constants import c
 from flext_auth.managers import (
     ServiceManagerMixin,
 )
-from flext_auth.models import FlextAuthModels
+
+# Forward reference to avoid circular import
+# Import FlextAuthModels locally in methods where needed
 from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 
@@ -72,7 +74,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
             username=identity.username,
             token_id=self._short_token(token),
         )
-        return r[FlextAuthModels.Identity].ok(identity)
+        return r["FlextAuthModels.Identity"].ok(identity)
 
     def refresh_token(self, token: str) -> r[FlextAuthModels.AuthToken]:
         """Railway-oriented token refresh with audit logging."""
@@ -86,7 +88,9 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
                 old_token_id=self._short_token(token),
                 reason=error,
             )
-            return r[FlextAuthModels.AuthToken].fail(error or "Token refresh failed")
+            from flext_auth.models import FlextAuthModels
+
+            return r["FlextAuthModels.AuthToken"].fail(error or "Token refresh failed")
 
         refreshed = result.unwrap()
         self.audit_logger.log_token_refresh(
@@ -101,7 +105,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
         self,
         user_id: str,
         expires_in_minutes: int | None = None,
-        token_type: str = FlextAuthConstants.Auth.TokenTypes.ACCESS.value,
+        token_type: str = c.Auth.TokenTypes.ACCESS.value,
     ) -> r[str]:
         """Railway-oriented JWT token generation with audit logging."""
         user_result = self.user_manager.get_user(user_id)

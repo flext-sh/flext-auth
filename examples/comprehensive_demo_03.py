@@ -69,7 +69,7 @@ def demo_password_operations() -> None:
 
     try:
         # Create a user to demonstrate password operations
-        FlextAuthModels.User(
+        FlextAuthModels.Identity(
             id="demo-password-user",
             username="password_demo",
             email="password@demo.com",

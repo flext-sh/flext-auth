@@ -13,6 +13,9 @@ from flext_core import r
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
 
+# Forward reference to avoid circular import
+# Import FlextAuthModels locally in method bodies where needed
+
 
 class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
     """API Key authentication provider.

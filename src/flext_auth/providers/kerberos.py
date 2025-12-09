@@ -18,9 +18,9 @@ from __future__ import annotations
 
 from typing import cast
 
-from flext_core import r, u
+from flext_core import r, u as u_core
 
-from flext_auth.models import FlextAuthModels
+# Forward reference to avoid circular import
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 
 
@@ -77,7 +77,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         # Use u.filter() for unified filtering (DSL pattern)
         missing_fields = cast(
             "list[str]",
-            u.filter(required_fields, lambda field: field not in self._config),
+            u_core.filter(required_fields, lambda field: field not in self._config),
         )
 
         if missing_fields:
@@ -207,7 +207,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         # Kerberos token validation requires implementation
         # Fast fail: implementation not available
         _ = token  # Mark as intentionally unused
-        return r[FlextAuthModels.Identity].fail(
+        return r["FlextAuthModels.Identity"].fail(
             "Kerberos token validation not implemented",
         )
 

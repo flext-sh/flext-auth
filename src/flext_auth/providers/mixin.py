@@ -12,9 +12,10 @@ from __future__ import annotations
 
 from typing import cast
 
-from flext_core import e, r, u
+from flext_core import e, r, u as u_core
 
-from flext_auth.models import FlextAuthModels
+# Forward references to avoid circular import
+# Use string annotations for all FlextAuthModels references
 
 
 class FlextAuthProviderMixin:
@@ -46,6 +47,8 @@ class FlextAuthProviderMixin:
         ValueError: If token cannot be extracted
 
         """
+        from flext_auth.models import FlextAuthModels
+
         if isinstance(token, str):
             return token
 
@@ -78,10 +81,10 @@ class FlextAuthProviderMixin:
         r[bool]: True if valid, False if invalid, error message on failure
 
         """
-        # Use u.filter() for unified filtering (DSL pattern)
+        # Use u_core.filter() for unified filtering (DSL pattern)
         missing_fields = cast(
             "list[str]",
-            u.filter(required_fields, lambda field: field not in credentials),
+            u_core.filter(required_fields, lambda field: field not in credentials),
         )
 
         if missing_fields:

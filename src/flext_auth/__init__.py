@@ -24,7 +24,7 @@ Provider System (Protocol-Based):
   - Capability detection: Query provider capabilities at runtime
   - Configuration validation: Pydantic v2 provider configs
 
-Service Layer (Domain Services):
+Service Layer (Services):
   FlextAuthIdentityService - User management and lifecycle
   FlextAuthTokenService - Token generation, validation, refresh
   FlextAuthSessionService - Session management and lifecycle

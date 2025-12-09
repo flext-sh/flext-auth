@@ -17,10 +17,11 @@ from datetime import UTC, datetime, timedelta
 from typing import cast
 from urllib.parse import urlencode
 
-from flext_core import e, r, u
+from flext_core import e, r, u as u_core
 
-from flext_auth.constants import FlextAuthConstants
-from flext_auth.models import FlextAuthModels
+from flext_auth.constants import c
+
+# Forward reference to avoid circular import
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 
 
@@ -94,7 +95,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         return (
             scope_value
             if isinstance(scope_value, str) and scope_value
-            else FlextAuthConstants.OAuth2.SCOPE_DEFAULT
+            else c.OAuth2.SCOPE_DEFAULT
         )
 
     def _init_flow(self) -> str:
@@ -106,14 +107,13 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             )
             raise ValueError(error_msg)
         if isinstance(flow_value, str) and flow_value:
-            if flow_value not in FlextAuthConstants.OAuth2.FLOWS:
+            if flow_value not in c.OAuth2.FLOWS:
                 error_msg = (
-                    f"OAuth2 'flow' must be one of {FlextAuthConstants.OAuth2.FLOWS}, "
-                    f"got {flow_value}"
+                    f"OAuth2 'flow' must be one of {c.OAuth2.FLOWS}, got {flow_value}"
                 )
                 raise ValueError(error_msg)
             return flow_value
-        return FlextAuthConstants.OAuth2.FLOW_DEFAULT
+        return c.OAuth2.FLOW_DEFAULT
 
     def _init_pkce(self) -> bool:
         """Initialize PKCE configuration."""
@@ -127,7 +127,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         return (
             use_pkce_value
             if isinstance(use_pkce_value, bool)
-            else FlextAuthConstants.OAuth2.USE_PKCE_DEFAULT
+            else c.OAuth2.USE_PKCE_DEFAULT
         )
 
     def _init_token_endpoint_auth_method(self) -> str:
@@ -150,25 +150,25 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         ):
             if (
                 token_endpoint_auth_method_value
-                not in FlextAuthConstants.OAuth2.TOKEN_ENDPOINT_AUTH_METHODS
+                not in c.OAuth2.TOKEN_ENDPOINT_AUTH_METHODS
             ):
                 error_msg = (
                     f"OAuth2 'token_endpoint_auth_method' must be one of "
-                    f"{FlextAuthConstants.OAuth2.TOKEN_ENDPOINT_AUTH_METHODS}, "
+                    f"{c.OAuth2.TOKEN_ENDPOINT_AUTH_METHODS}, "
                     f"got {token_endpoint_auth_method_value}"
                 )
                 raise ValueError(error_msg)
             return token_endpoint_auth_method_value
-        return FlextAuthConstants.OAuth2.TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT
+        return c.OAuth2.TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT
 
     def _validate_configuration(self) -> r[bool]:
         """Railway-oriented configuration validation."""
         # Validate required fields
         required_fields = ["client_id", "token_endpoint"]
-        # Use u.filter() for unified filtering (DSL pattern)
+        # Use u_core.filter() for unified filtering (DSL pattern)
         missing_fields = cast(
             "list[str]",
-            u.filter(required_fields, lambda field: field not in self._config),
+            u_core.filter(required_fields, lambda field: field not in self._config),
         )
 
         if missing_fields:
@@ -446,10 +446,12 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         """Authenticate using OAuth2 flows with delegation."""
         flow_result = self._flow_manager.handle_authorization_code_flow(credentials)
         if flow_result.is_failure:
-            return r[FlextAuthModels.AuthToken].fail(
+            return r["FlextAuthModels.AuthToken"].fail(
                 flow_result.error or "OAuth2 authentication failed",
             )
         # Convert flow result to AuthToken
+        from flext_auth.models import FlextAuthModels
+
         flow_data = flow_result.unwrap()
         return r.ok(
             FlextAuthModels.AuthToken(
@@ -474,10 +476,12 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         token: str | FlextAuthModels.AuthToken,
     ) -> r[FlextAuthModels.AuthToken]:
         """Refresh OAuth2 token using composition."""
+        from flext_auth.models import FlextAuthModels
+
         if isinstance(token, FlextAuthModels.AuthToken) and token.refresh_token:
             token_result = self._token_manager.refresh_access_token(token.refresh_token)
             if token_result.is_failure:
-                return r[FlextAuthModels.AuthToken].fail(
+                return r["FlextAuthModels.AuthToken"].fail(
                     token_result.error or "Token refresh failed",
                 )
             # Convert dict to AuthToken
@@ -490,7 +494,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                     expires_at=token.expires_at,  # Keep original expiry for now
                 ),
             )
-        return r[FlextAuthModels.AuthToken].fail("No refresh token available")
+        return r["FlextAuthModels.AuthToken"].fail("No refresh token available")
 
     def revoke(
         self,
@@ -507,7 +511,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             "name": "oauth2",
             "version": "1.0.0",
             "capabilities": list(self.supports()),
-            "flows": [FlextAuthConstants.OAuth2.FLOW_DEFAULT, "client_credentials"],
+            "flows": [c.OAuth2.FLOW_DEFAULT, "client_credentials"],
             "pkce_supported": self._use_pkce,
         }
 
@@ -516,7 +520,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         # OAuth2 token validation requires implementation
         # Fast fail: implementation not available
         _ = token  # Mark as intentionally unused
-        return r[FlextAuthModels.Identity].fail(
+        return r["FlextAuthModels.Identity"].fail(
             "OAuth2 token validation not implemented",
         )
 

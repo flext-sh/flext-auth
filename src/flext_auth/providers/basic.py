@@ -10,9 +10,10 @@ from abc import ABC
 
 from flext_core import r
 
-from flext_auth.models import FlextAuthModels
 from flext_auth.providers.mixin import FlextAuthProviderMixin
 from flext_auth.providers.rfc import FlextAuthRfcProvider
+
+# Forward reference to avoid circular import
 
 
 class FlextAuthBasicProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):
@@ -45,7 +46,7 @@ class FlextAuthBasicProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):
 
         """
         _ = credentials
-        return r[FlextAuthModels.AuthToken].fail("Not implemented")
+        return r["FlextAuthModels.AuthToken"].fail("Not implemented")
 
     def validate(
         self,

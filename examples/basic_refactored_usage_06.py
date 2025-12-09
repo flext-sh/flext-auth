@@ -20,10 +20,10 @@ from flext_core import FlextResult
 from flext_auth import (
     FlextAuth,
     FlextAuthModels,
-    FlextAuthTypes,
 )
+from flext_auth.typings import t
 
-AuthenticationResponseDict = FlextAuthTypes.AuthenticationResponseDict
+AuthenticationResponseDict = t.AuthenticationResponseDict
 
 
 # Extract Method Pattern - reduce main() complexity from 42 to manageable chunks
@@ -34,11 +34,11 @@ class FlextAuthDemo:
         """Initialize demo with FlextAuth instance."""
         self.auth = FlextAuth()
 
-    def demo_user_registration(self) -> FlextResult[FlextAuthModels.User]:
+    def demo_user_registration(self) -> FlextResult[FlextAuthModels.Identity]:
         """Extract Method: User registration demo.
 
         Returns:
-            FlextResult[FlextAuthModels.User]: Registration result
+            FlextResult[FlextAuthModels.Identity]: Registration result
 
         """
         result = self.auth.register_user(
@@ -79,7 +79,7 @@ def _demo_password_utilities() -> None:
     os.getenv("FLEXT_DEMO_TEST_PASSWORD", "TestPassword123!")
 
     try:
-        FlextAuthModels.User(
+        FlextAuthModels.Identity(
             id="password-util-demo",
             username="util_demo",
             email="util@demo.com",

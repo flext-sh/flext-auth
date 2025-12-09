@@ -217,6 +217,8 @@ class FlextAuthManagers(s[object]):
             filtered_identity_data = {
                 k: v for k, v in identity_data.items() if k in valid_identity_fields
             }
+            from flext_auth.models import FlextAuthModels
+
             return FlextAuthModels.Identity(**filtered_identity_data)
 
         def _apply_list_modification(
@@ -304,8 +306,10 @@ class FlextAuthManagers(s[object]):
             self._users[username] = storage_data
 
             # Create Identity model with only valid fields (no extras)
+            from flext_auth.models import FlextAuthModels
+
             user = FlextAuthModels.Identity(**identity_data)
-            return r[FlextAuthModels.Identity].ok(user)
+            return r["FlextAuthModels.Identity"].ok(user)
 
         def get_user(self, user_id: str) -> r[FlextAuthModels.Identity]:
             """Get user by ID."""
@@ -439,6 +443,8 @@ class FlextAuthManagers(s[object]):
 
             self._sessions[session_id] = session_data
             # Extract required fields for Session model
+            from flext_auth.models import FlextAuthModels
+
             session = FlextAuthModels.Session(
                 identity_id=str(session_data["identity_id"]),
                 session_token=str(session_data["session_token"]),
@@ -448,10 +454,12 @@ class FlextAuthManagers(s[object]):
                 user_agent=str(session_data.get("user_agent", "")),
                 last_accessed=session_data.get("last_accessed", datetime.now(UTC)),
             )
-            return r[FlextAuthModels.Session].ok(session)
+            return r["FlextAuthModels.Session"].ok(session)
 
         def get_active_sessions(self, user_id: str) -> r[list[FlextAuthModels.Session]]:
             """Get all active sessions for a user."""
+            from flext_auth.models import FlextAuthModels
+
             sessions: list[FlextAuthModels.Session] = []
             for session_id, session_data in self._sessions.items():
                 identity_id_value = session_data.get("identity_id")
@@ -476,7 +484,7 @@ class FlextAuthManagers(s[object]):
                     # Set unique_id from session_id
                     session.unique_id = session_id
                     sessions.append(session)
-            return r[list[FlextAuthModels.Session]].ok(sessions)
+            return r[list["FlextAuthModels.Session"]].ok(sessions)
 
         def end_session(self, user_id: str) -> r[bool]:
             """End all sessions for a user."""

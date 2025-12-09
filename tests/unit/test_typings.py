@@ -1,4 +1,4 @@
-"""Tests for FlextAuthTypes.
+"""Tests for t_auth.
 
 Tests the authentication types module following FLEXT standards.
 """
@@ -7,34 +7,34 @@ from __future__ import annotations
 
 from flext_core.typings import t
 
-from flext_auth.typings import FlextAuthTypes
+from flext_auth.typings import t as t_auth
 
 
 class TestFlextAuthTypes:
     """Test FlextAuthTypes class and its nested type classes."""
 
     def test_inherits_from_flext_types(self) -> None:
-        """Test that FlextAuthTypes inherits from t."""
-        assert issubclass(FlextAuthTypes, t)
+        """Test that t_auth inherits from t."""
+        assert issubclass(t_auth, t)
 
     def test_authentication_types_exist(self) -> None:
         """Test that authentication type classes exist."""
-        assert hasattr(FlextAuthTypes, "Authentication")
-        assert hasattr(FlextAuthTypes, "UserManagement")
-        assert hasattr(FlextAuthTypes, "SessionManagement")
-        assert hasattr(FlextAuthTypes, "TokenManagement")
-        assert hasattr(FlextAuthTypes, "Authorization")
-        assert hasattr(FlextAuthTypes, "Security")
+        assert hasattr(t_auth, "Authentication")
+        assert hasattr(t_auth, "UserManagement")
+        assert hasattr(t_auth, "SessionManagement")
+        assert hasattr(t_auth, "TokenManagement")
+        assert hasattr(t_auth, "Authorization")
+        assert hasattr(t_auth, "Security")
 
     def test_typed_dict_classes_exist(self) -> None:
         """Test that TypedDict classes exist."""
-        assert hasattr(FlextAuthTypes, "UserDict")
-        assert hasattr(FlextAuthTypes, "SessionDict")
-        assert hasattr(FlextAuthTypes, "AuthenticationResponseDict")
+        assert hasattr(t_auth, "UserDict")
+        assert hasattr(t_auth, "SessionDict")
+        assert hasattr(t_auth, "AuthenticationResponseDict")
 
     def test_user_dict_structure(self) -> None:
         """Test UserDict TypedDict structure."""
-        user_dict = FlextAuthTypes.UserDict
+        user_dict = t_auth.UserDict
 
         # Check required fields
         assert "id" in user_dict.__annotations__
@@ -49,7 +49,7 @@ class TestFlextAuthTypes:
 
     def test_session_dict_structure(self) -> None:
         """Test SessionDict TypedDict structure."""
-        session_dict = FlextAuthTypes.SessionDict
+        session_dict = t_auth.SessionDict
 
         # Check required fields
         assert "id" in session_dict.__annotations__
@@ -62,7 +62,7 @@ class TestFlextAuthTypes:
 
     def test_authentication_response_dict_structure(self) -> None:
         """Test AuthenticationResponseDict TypedDict structure."""
-        response_dict = FlextAuthTypes.AuthenticationResponseDict
+        response_dict = t_auth.AuthenticationResponseDict
 
         # Check required fields
         assert "user" in response_dict.__annotations__
@@ -76,6 +76,6 @@ class TestFlextAuthTypes:
 
     def test_project_types_exist(self) -> None:
         """Test that project type classes exist."""
-        assert hasattr(FlextAuthTypes, "Project")
-        assert hasattr(FlextAuthTypes.Project, "ProjectType")
-        assert hasattr(FlextAuthTypes.Project, "AuthProjectConfig")
+        assert hasattr(t_auth, "Project")
+        assert hasattr(t_auth.Project, "ProjectType")
+        assert hasattr(t_auth.Project, "AuthProjectConfig")

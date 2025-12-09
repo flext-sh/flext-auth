@@ -25,7 +25,7 @@ def main() -> None:
     """Demonstrate basic authentication functionality."""
     # 1. User Creation Example
     # Create a user (password operations are handled by the auth service)
-    user_creation_result = FlextAuthModels.User(
+    user_creation_result = FlextAuthModels.Identity(
         username="demouser",
         email="demo@example.com",
     )
@@ -53,7 +53,7 @@ def main() -> None:
     auth_service = FlextAuth()
 
     # Create user for token demo
-    token_user_creation = FlextAuthModels.User(
+    token_user_creation = FlextAuthModels.Identity(
         username="tokendemo",
         email="token@example.com",
     )
@@ -105,7 +105,7 @@ def main() -> None:
 
     created_users = []
     for username, email, _pwd in users_data:
-        user_result = FlextAuthModels.User(username=username, email=email)
+        user_result = FlextAuthModels.Identity(username=username, email=email)
         if user_result.is_success:
             created_users.append(user_result.value)
             print(f"✓ Created user: {username}")
@@ -113,7 +113,7 @@ def main() -> None:
             print(f"✗ Failed to create user {username}: {user_result.error}")
 
     # Demonstrate user lookup
-    lookup_result = FlextAuthModels.User.get_by_username("user1")
+    lookup_result = FlextAuthModels.Identity.get_by_username("user1")
     if lookup_result.is_success:
         found_user = lookup_result.value
         print(f"✓ Found user by username: {found_user.username} ({found_user.email})")

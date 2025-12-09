@@ -19,7 +19,9 @@ from pydantic import SecretStr
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.managers import ServiceManagerMixin
-from flext_auth.models import FlextAuthModels
+
+# Forward reference to avoid circular import
+# Import FlextAuthModels locally in methods where needed
 from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
@@ -213,13 +215,13 @@ class FlextAuth(s[t.Responses.Authentication]):
         # Extract username and password from credentials - fast fail if missing
         username_value = credentials.get("username")
         if not isinstance(username_value, str) or not username_value:
-            return r[FlextAuthModels.Identity].fail(
+            return r["FlextAuthModels.Identity"].fail(
                 "Invalid credentials: username is required and must be a non-empty string",
             )
 
         password_value = credentials.get("password")
         if not isinstance(password_value, str) or not password_value:
-            return r[FlextAuthModels.Identity].fail(
+            return r["FlextAuthModels.Identity"].fail(
                 "Invalid credentials: password is required and must be a non-empty string",
             )
 

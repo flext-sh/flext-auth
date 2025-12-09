@@ -15,8 +15,10 @@ from typing import cast
 from flext_core import r, s, t as t_core
 
 from flext_auth.config import FlextAuthConfig
-from flext_auth.constants import FlextAuthConstants
-from flext_auth.models import FlextAuthModels
+from flext_auth.constants import c
+
+# Forward reference to avoid circular import
+# Import FlextAuthModels locally in methods where needed
 from flext_auth.providers import (
     FlextAuthApiKeyProvider,
     FlextAuthBasicProvider,
@@ -172,7 +174,7 @@ class FlextAuthProviderService(s[object]):
         self,
         user: FlextAuthModels.Identity,
         provider: str = "jwt",
-        token_type: str = FlextAuthConstants.Auth.TokenTypes.ACCESS.value,
+        token_type: str = c.Auth.TokenTypes.ACCESS.value,
         expiry_minutes: int | None = None,
     ) -> r[str]:
         """Railway-oriented token generation with direct provider access."""

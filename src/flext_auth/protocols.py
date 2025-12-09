@@ -58,7 +58,7 @@ class FlextAuthProtocols(FlextProtocols):
         """
 
         @runtime_checkable
-        class IdentityProtocol(FlextProtocols.Domain.Service, Protocol):
+        class IdentityProtocol(FlextProtocols.Service, Protocol):
             """Protocol for identity/user-like objects in authentication.
 
             Structural typing interface for identity objects. Models implement
@@ -130,7 +130,7 @@ class FlextAuthProtocols(FlextProtocols):
                 ...
 
         @runtime_checkable
-        class SessionProtocol(FlextProtocols.Domain.Service, Protocol):
+        class SessionProtocol(FlextProtocols.Service, Protocol):
             """Protocol for session-like objects in authentication."""
 
             id: str
@@ -161,7 +161,7 @@ class FlextAuthProtocols(FlextProtocols):
                 ...
 
         @runtime_checkable
-        class TokenProtocol(FlextProtocols.Domain.Service, Protocol):
+        class TokenProtocol(FlextProtocols.Service, Protocol):
             """Protocol for token-like objects in authentication."""
 
             token: str
@@ -197,7 +197,7 @@ class FlextAuthProtocols(FlextProtocols):
             """Operation success status."""
 
         @runtime_checkable
-        class ServiceProtocol(FlextProtocols.Domain.Service, Protocol):
+        class ServiceProtocol(FlextProtocols.Service, Protocol):
             """Protocol for authentication service-like objects."""
 
             def register_user(

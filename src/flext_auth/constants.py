@@ -18,7 +18,7 @@ from enum import StrEnum
 from types import MappingProxyType
 from typing import Final, Literal, TypeGuard, TypeIs
 
-from flext_core import FlextConstants, r, u
+from flext_core import FlextConstants, r, u as u_core
 
 # ═══════════════════════════════════════════════════════════════════════════
 # STRENUM + PYDANTIC 2: DEFINITIVE PATTERN FOR FLEXT-AUTH
@@ -192,7 +192,7 @@ class FlextAuthConstants(FlextConstants):
 
             Uses parent Enum utilities for consistency.
             """
-            return u.Enum.is_member(cls.TokenTypes, value)
+            return u_core.Enum.is_member(cls.TokenTypes, value)
 
         @classmethod
         def is_access_token(cls, value: str) -> TypeGuard[AccessTokens]:
@@ -210,7 +210,7 @@ class FlextAuthConstants(FlextConstants):
 
             Uses parent Enum utilities for consistency.
             """
-            return u.Enum.is_member(cls.ProviderTypes, value)
+            return u_core.Enum.is_member(cls.ProviderTypes, value)
 
         @classmethod
         def is_jwt_provider(cls, value: str) -> TypeGuard[Literal[ProviderTypes.JWT]]:
@@ -230,7 +230,7 @@ class FlextAuthConstants(FlextConstants):
 
             Uses parent Enum utilities for consistency.
             """
-            return u.Enum.is_member(cls.RoleTypes, value)
+            return u_core.Enum.is_member(cls.RoleTypes, value)
 
         @classmethod
         def is_REDACTED_LDAP_BIND_PASSWORD_role(cls, value: str) -> TypeGuard[AdminRoles]:
@@ -252,7 +252,7 @@ class FlextAuthConstants(FlextConstants):
 
             Uses parent Enum utilities for consistency.
             """
-            return u.Enum.is_member(cls.PermissionTypes, value)
+            return u_core.Enum.is_member(cls.PermissionTypes, value)
 
         @classmethod
         def is_write_permission(cls, value: str) -> TypeGuard[WritePermissions]:
@@ -435,33 +435,33 @@ class FlextAuthConstants(FlextConstants):
 
         @classmethod
         def validate_token_type_with_result(cls, value: str) -> r[TokenTypes]:
-            """Validate token type using u.Enum.parse."""
-            return u.Enum.parse(cls.TokenTypes, value)
+            """Validate token type using u_core.Enum.parse."""
+            return u_core.Enum.parse(cls.TokenTypes, value)
 
         @classmethod
         def validate_provider_type_with_result(cls, value: str) -> r[ProviderTypes]:
-            """Validate provider type using u.Enum.parse."""
-            return u.Enum.parse(cls.ProviderTypes, value)
+            """Validate provider type using u_core.Enum.parse."""
+            return u_core.Enum.parse(cls.ProviderTypes, value)
 
         @classmethod
         def validate_role_type_with_result(cls, value: str) -> r[RoleTypes]:
-            """Validate role type using u.Enum.parse."""
-            return u.Enum.parse(cls.RoleTypes, value)
+            """Validate role type using u_core.Enum.parse."""
+            return u_core.Enum.parse(cls.RoleTypes, value)
 
         @classmethod
         def validate_permission_type_with_result(cls, value: str) -> r[PermissionTypes]:
-            """Validate permission type using u.Enum.parse."""
-            return u.Enum.parse(cls.PermissionTypes, value)
+            """Validate permission type using u_core.Enum.parse."""
+            return u_core.Enum.parse(cls.PermissionTypes, value)
 
         @classmethod
         def create_token_type_validator(cls) -> Callable[[str], TokenTypes]:
             """Create BeforeValidator for TokenTypes in Pydantic models."""
-            return u.Enum.coerce_validator(cls.TokenTypes)
+            return u_core.Enum.coerce_validator(cls.TokenTypes)
 
         @classmethod
         def create_provider_type_validator(cls) -> Callable[[str], ProviderTypes]:
             """Create BeforeValidator for ProviderTypes in Pydantic models."""
-            return u.Enum.coerce_validator(cls.ProviderTypes)
+            return u_core.Enum.coerce_validator(cls.ProviderTypes)
 
         # ═══════════════════════════════════════════════════════════════════
         # LITERAL TYPES: PEP 695 strict type aliases (Python 3.13+)
