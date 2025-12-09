@@ -400,39 +400,33 @@ class FlextAuthConstants(FlextConstants):
         # VALIDATION LIMITS: Immutable mappings for validation
         # ═══════════════════════════════════════════════════════════════════
 
-        VALIDATION_LIMITS: Final[Mapping[str, int | float]] = MappingProxyType(
-            {
-                "MAX_USERNAME_LENGTH": MAX_USERNAME_LENGTH,
-                "MAX_EMAIL_LENGTH": MAX_EMAIL_LENGTH,
-                "MIN_PASSWORD_LENGTH": MIN_PASSWORD_LENGTH,
-                "MAX_PASSWORD_LENGTH": MAX_PASSWORD_LENGTH,
-                "MAX_TOKEN_LENGTH": MAX_TOKEN_LENGTH,
-                "MAX_SECRET_KEY_LENGTH": MAX_SECRET_KEY_LENGTH,
-                "DEFAULT_TIMEOUT": DEFAULT_TIMEOUT,
-            }
-        )
+        VALIDATION_LIMITS: Final[Mapping[str, int | float]] = MappingProxyType({
+            "MAX_USERNAME_LENGTH": MAX_USERNAME_LENGTH,
+            "MAX_EMAIL_LENGTH": MAX_EMAIL_LENGTH,
+            "MIN_PASSWORD_LENGTH": MIN_PASSWORD_LENGTH,
+            "MAX_PASSWORD_LENGTH": MAX_PASSWORD_LENGTH,
+            "MAX_TOKEN_LENGTH": MAX_TOKEN_LENGTH,
+            "MAX_SECRET_KEY_LENGTH": MAX_SECRET_KEY_LENGTH,
+            "DEFAULT_TIMEOUT": DEFAULT_TIMEOUT,
+        })
         """Validation limits mapping."""
 
         # ═══════════════════════════════════════════════════════════════════
         # RESPONSE TEMPLATES: Immutable mappings
         # ═══════════════════════════════════════════════════════════════════
 
-        SUCCESS_AUTH_RESPONSE: Final[Mapping[str, str | None]] = MappingProxyType(
-            {
-                "status": "success",
-                "message": "Authentication successful",
-                "token_type": None,
-            }
-        )
+        SUCCESS_AUTH_RESPONSE: Final[Mapping[str, str | None]] = MappingProxyType({
+            "status": "success",
+            "message": "Authentication successful",
+            "token_type": None,
+        })
         """Template for successful authentication responses."""
 
-        ERROR_AUTH_RESPONSE: Final[Mapping[str, str | None]] = MappingProxyType(
-            {
-                "status": "error",
-                "message": None,
-                "error_code": None,
-            }
-        )
+        ERROR_AUTH_RESPONSE: Final[Mapping[str, str | None]] = MappingProxyType({
+            "status": "error",
+            "message": None,
+            "error_code": None,
+        })
         """Template for authentication error responses."""
 
         # ═══════════════════════════════════════════════════════════════════
