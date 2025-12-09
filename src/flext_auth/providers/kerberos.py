@@ -147,10 +147,12 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             """Validate Kerberos ticket."""
             # Simplified implementation - in production would use proper Kerberos validation
             # ticket_data parameter reserved for future Kerberos ticket validation
-            return r[dict[str, object]].ok({
-                "user_id": "kerberos_user",
-                "valid": True,
-            })
+            return r[dict[str, object]].ok(
+                {
+                    "user_id": "kerberos_user",
+                    "valid": True,
+                }
+            )
 
     class _KerberosServiceHandler:
         """SOLID-compliant Kerberos service handler.
@@ -166,10 +168,12 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         def handle_service_ticket(self, ticket: str) -> r[dict[str, object]]:
             """Handle Kerberos service ticket."""
             # Simplified implementation - in production would handle proper service tickets
-            return r[dict[str, object]].ok({
-                "service": "kerberos_service",
-                "ticket": ticket,
-            })
+            return r[dict[str, object]].ok(
+                {
+                    "service": "kerberos_service",
+                    "ticket": ticket,
+                }
+            )
 
     class _KerberosAuthManager:
         """SOLID-compliant Kerberos authentication manager.

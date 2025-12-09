@@ -309,10 +309,12 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         ) -> r[dict[str, object]]:
             """Handle OAuth2 authorization code flow."""
             # Simplified implementation - would validate authorization code
-            return r[dict[str, object]].ok({
-                "user_id": "oauth2_user",
-                "valid": True,
-            })
+            return r[dict[str, object]].ok(
+                {
+                    "user_id": "oauth2_user",
+                    "valid": True,
+                }
+            )
 
     class _OAuth2TokenManager:
         """SOLID-compliant OAuth2 token manager.

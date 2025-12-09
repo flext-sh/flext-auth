@@ -1326,16 +1326,19 @@ _This architecture document is the authoritative reference for the flext-auth v2
 ## Related Documentation
 
 **Within Project**:
+
 - [Getting Started](getting-started.md) - Installation and basic usage
 - [API Reference](api-reference.md) - Complete API documentation
 - [Configuration](configuration.md) - Settings management
 - [Integration](integration.md) - FLEXT ecosystem patterns
 
 **Across Projects**:
+
 - [flext-core Foundation](https://github.com/organization/flext/tree/main/flext-core/docs/architecture/overview.md) - Clean architecture and CQRS patterns
 - [flext-core Service Patterns](https://github.com/organization/flext/tree/main/flext-core/docs/guides/service-patterns.md) - Service patterns and dependency injection
 - [flext-cli Authentication](https://github.com/organization/flext/tree/main/flext-cli/docs/api-reference.md) - CLI authentication patterns
 
 **External Resources**:
+
 - [PEP 257 - Docstring Conventions](https://peps.python.org/pep-0257/)
 - [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)

@@ -387,16 +387,19 @@ This API reference covers the current implementation as of September 17, 2025. F
 ## Related Documentation
 
 **Within Project**:
+
 - [Getting Started](getting-started.md) - Installation and basic usage
 - [Architecture](architecture.md) - Architecture and design patterns
 - [Configuration](configuration.md) - Settings management
 - [Integration](integration.md) - FLEXT ecosystem patterns
 
 **Across Projects**:
+
 - [flext-core Foundation](https://github.com/organization/flext/tree/main/flext-core/docs/api-reference/foundation.md) - Core APIs and patterns
 - [flext-core Railway-Oriented Programming](https://github.com/organization/flext/tree/main/flext-core/docs/guides/railway-oriented-programming.md) - FlextResult patterns
 - [flext-cli Authentication](https://github.com/organization/flext/tree/main/flext-cli/docs/api-reference.md) - CLI authentication patterns
 
 **External Resources**:
+
 - [PEP 257 - Docstring Conventions](https://peps.python.org/pep-0257/)
 - [Google Python Style Guide](https://google.github.io/styleguide/pyguide.html)

@@ -208,7 +208,6 @@ Implement a provider-centric architecture where authentication protocols are enc
 
 ## Related ADRs
 
-
 ## References
 
 ### External References

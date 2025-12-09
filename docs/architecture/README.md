@@ -218,7 +218,7 @@ vim docs/architecture/adrs/decisions/001-new-decision.md
 ### For Stakeholders
 
 1. Review [System Context](c4-model/context/) for business understanding
-3. Review [Architecture Decisions](adrs/) for important trade-offs
+2. Review [Architecture Decisions](adrs/) for important trade-offs
 
 ## 🔧 Maintenance and Updates
 
