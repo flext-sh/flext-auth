@@ -265,7 +265,7 @@ class FlextAuthRegistry(FlextRegistry):
         matching: list[t.Providers.Key] = []
         for name in self._providers:
             capability_check = self.has_capability(name, capability)
-            if capability_check.is_success and capability_check.unwrap():
+            if capability_check.is_success and capability_check.value:
                 matching.append(name)
         return r.ok(matching)
 

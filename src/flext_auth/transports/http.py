@@ -37,7 +37,7 @@ class FlextWebTransportAdapter:
         ...     auth=("client_id", "client_secret"),
         ... )
         >>> if result.is_success:
-        ...     token_data = result.unwrap()
+        ...     token_data = result.value
         ...     print(f"Access token: {token_data['access_token']}")
     """
 
@@ -191,7 +191,7 @@ class FlextWebTransportAdapter:
             ...     access_token="ya29.a0AfH6...",
             ... )
             >>> if result.is_success:
-            ...     userinfo = result.unwrap()
+            ...     userinfo = result.value
             ...     print(f"User ID: {userinfo['sub']}")
 
         """
@@ -284,7 +284,7 @@ class FlextWebTransportAdapter:
         if response.is_failure:
             return r[t_api.ResponseDict].fail(response.error)
 
-        http_response = response.unwrap()
+        http_response = response.value
         body = http_response.body
 
         if body is None:

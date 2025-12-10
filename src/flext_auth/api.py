@@ -78,7 +78,7 @@ class FlextAuth(s[t.Responses.Authentication]):
         for provider_name in self._provider_service.list_providers():
             provider_result = self._provider_service.get_provider(provider_name)
             if provider_result.is_success:
-                self._registry.register(provider_name, provider_result.unwrap())
+                self._registry.register(provider_name, provider_result.value)
         self._identity_service = FlextAuthIdentityService(
             config=self._config,
             dispatcher=self._dispatcher,
@@ -256,11 +256,11 @@ class FlextAuth(s[t.Responses.Authentication]):
 
         # Create session automatically on successful authentication
         if auth_result.is_success:
-            identity = auth_result.unwrap()
+            identity = auth_result.value
             # Generate token for the session
             token_result = self.create_token(identity_id=identity.unique_id)
             if token_result.is_success:
-                token = token_result.unwrap()
+                token = token_result.value
                 # Create session with the token
                 session_result = self._session_service.session_manager.create_session(
                     user_id=identity.unique_id,

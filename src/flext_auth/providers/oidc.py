@@ -31,7 +31,7 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):
         >>> provider = FlextAuthOidcProvider()
         >>> result = provider.authenticate({"id_token": "oidc-token"})
         >>> if result.is_success:
-        ...     token = result.unwrap()
+        ...     token = result.value
         ...     print(f"Authenticated with token: {token.token}")
 
     """

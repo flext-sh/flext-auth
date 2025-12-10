@@ -222,7 +222,7 @@ All operations return r[T]:
   ...     .map(lambda token: format_response(token))
   ... )
   >>> if result.is_success:
-  ...     response = result.unwrap()
+  ...     response = result.value
   ... else:
   ...     error = result.error
 
@@ -247,7 +247,7 @@ Example 1: Basic Authentication with JWT:
   >>> creds = {"username": "user", "password": "pass"}
   >>> result = auth.authenticate(creds)
   >>> if result.is_success:
-  ...     user = result.unwrap()
+  ...     user = result.value
   ...     print(f"User {user.user_id} authenticated")
 
 **Example 2: Multi-Provider Setup**:
@@ -275,12 +275,12 @@ Example 1: Basic Authentication with JWT:
   >>> # Validate token
   >>> validate_result = auth.validate_token(access_token)
   >>> if validate_result.is_success:
-  ...     claims = validate_result.unwrap()
+  ...     claims = validate_result.value
   >>>
   >>> # Refresh token
   >>> refresh_result = auth.refresh_token(refresh_token)
   >>> if refresh_result.is_success:
-  ...     new_token = refresh_result.unwrap()
+  ...     new_token = refresh_result.value
 
 **Example 4: Session Management**:
   >>> from flext_auth import FlextAuth
@@ -291,13 +291,13 @@ Example 1: Basic Authentication with JWT:
   >>> # Create session
   >>> session_result = auth.create_session(user_id)
   >>> if session_result.is_success:
-  ...     session = session_result.unwrap()
+  ...     session = session_result.value
   ...     print(f"Session {session.session_id} created")
   >>>
   >>> # Validate session
   >>> validate_result = auth.validate_session(session.session_id)
   >>> if validate_result.is_success:
-  ...     is_valid = validate_result.unwrap()
+  ...     is_valid = validate_result.value
 
 **Example 5: User Management**:
   >>> from flext_auth import FlextAuth, FlextAuthModels
@@ -312,12 +312,12 @@ Example 1: Basic Authentication with JWT:
   ... }
   >>> register_result = auth.register_user(user_data)
   >>> if register_result.is_success:
-  ...     user = register_result.unwrap()
+  ...     user = register_result.value
   >>>
   >>> # Get user
   >>> get_result = auth.get_user(user.user_id)
   >>> if get_result.is_success:
-  ...     fetched_user = get_result.unwrap()
+  ...     fetched_user = get_result.value
 
 **Example 6: Custom Provider Implementation**:
   >>> from flext_auth import FlextAuthBaseProvider, r, FlextAuthModels

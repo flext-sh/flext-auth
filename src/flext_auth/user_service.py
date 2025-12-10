@@ -135,7 +135,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
             return r[m.Identity].fail(
                 strength_result.error or "Credential strength validation failed",
             )
-        strength_data = strength_result.unwrap()
+        strength_data = strength_result.value
         if not strength_data["is_valid"]:
             errors = strength_data.get("errors", ())
             error_msg = (

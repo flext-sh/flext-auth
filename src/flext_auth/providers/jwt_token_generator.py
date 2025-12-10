@@ -136,7 +136,7 @@ class FlextAuthJwtTokenGenerator:
             # Validate expiry
             expiry_result = self._validate_expiry(
                 expiry_minutes,
-                expiry_config_result.unwrap(),
+                expiry_config_result.value,
             )
             if expiry_result.is_failure:
                 return r[str].fail(expiry_result.error or "Expiry validation error")
@@ -147,21 +147,21 @@ class FlextAuthJwtTokenGenerator:
                 return r[str].fail(audience_result.error or "Audience error")
 
             # Build payload and generate token
-            audience_value = audience_result.unwrap()
+            audience_value = audience_result.value
             # Use None only for payload construction, not in r
             audience: str | None = audience_value or None
 
             payload = self._build_payload(
                 identity_id,
-                expiry_result.unwrap(),
-                issuer_result.unwrap(),
+                expiry_result.value,
+                issuer_result.value,
                 audience,
                 extra_claims,
             )
             token_result = jwt.encode(
                 payload,
-                secret_result.unwrap(),
-                algorithm=algorithm_result.unwrap(),
+                secret_result.value,
+                algorithm=algorithm_result.value,
             )
             # Handle both string and bytes return types from jwt.encode
             if isinstance(token_result, bytes):

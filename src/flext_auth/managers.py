@@ -342,7 +342,7 @@ class FlextAuthManagers(s[object]):
             """Delete user."""
             result = self._find_user_by_id(user_id)
             if result.is_success:
-                username = result.unwrap()[0]
+                username = result.value[0]
                 del self._users[username]
                 return r[bool].ok(True)
             return r[bool].fail(result.error or "Unknown error")

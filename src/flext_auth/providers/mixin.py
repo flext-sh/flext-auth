@@ -125,7 +125,7 @@ class FlextAuthProviderMixin:
 
         Example:
             >>> result = self._check_capability_supported("refresh")
-            >>> if result.is_failure or not result.unwrap():
+            >>> if result.is_failure or not result.value:
             ...     return r[AuthToken].fail("Refresh not supported")
 
         """

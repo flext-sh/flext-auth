@@ -90,7 +90,7 @@ class FlextAuthQuickstart(s[object]):
         if result.is_failure:
             return result
 
-        user_ids = result.unwrap()
+        user_ids = result.value
 
         if create_REDACTED_LDAP_BIND_PASSWORD:
             # Create REDACTED_LDAP_BIND_PASSWORD user

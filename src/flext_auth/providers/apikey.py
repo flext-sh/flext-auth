@@ -29,7 +29,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC
         >>> provider = FlextAuthApiKeyProvider()
         >>> result = provider.authenticate({"api_key": "my-api-key"})
         >>> if result.is_success:
-        ...     token = result.unwrap()
+        ...     token = result.value
         ...     print(f"Authenticated with token: {token.token}")
 
     """

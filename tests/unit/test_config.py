@@ -49,7 +49,7 @@ class TestFlextAuthConfigBasic:
         # This should work with the AutoConfig pattern
         result = FlextAuthConfig.get_or_create_global()
         assert result.is_success
-        config = result.unwrap()
+        config = result.value
         assert isinstance(config, FlextAuthConfig)
 
 
@@ -81,6 +81,6 @@ class TestJwtTokenGenerator:
 
         result = generator.generate_token("user123")
         assert result.is_success
-        token = result.unwrap()
+        token = result.value
         assert isinstance(token, str)
         assert len(token) > 0

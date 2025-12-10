@@ -77,7 +77,7 @@ class FlextAuthBaseProvider(ABC):
             ...     "password": "secure_password",
             ... })
             >>> if result.is_success:
-            ...     token = result.unwrap()
+            ...     token = result.value
             ...     print(f"Authenticated: {token.token}")
 
         """
@@ -102,7 +102,7 @@ class FlextAuthBaseProvider(ABC):
 
         Example:
             >>> result = provider.validate(token_string)
-            >>> if result.is_success and result.unwrap():
+            >>> if result.is_success and result.value:
             ...     print("Token is valid")
 
         """
@@ -130,7 +130,7 @@ class FlextAuthBaseProvider(ABC):
             >>> if "refresh" in provider.supports():
             ...     result = provider.refresh(old_token)
             ...     if result.is_success:
-            ...         new_token = result.unwrap()
+            ...         new_token = result.value
 
         """
         ...
@@ -157,7 +157,7 @@ class FlextAuthBaseProvider(ABC):
         Example:
             >>> if "revoke" in provider.supports():
             ...     result = provider.revoke(token)
-            ...     if result.is_success and result.unwrap():
+            ...     if result.is_success and result.value:
             ...         print("Token revoked successfully")
 
         """

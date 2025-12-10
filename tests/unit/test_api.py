@@ -89,7 +89,7 @@ class TestFlextAuthProcessorRegistration:
         # Verify email was normalized to lowercase
         user_result = auth.get_user_by_username("testuser")
         assert user_result.is_success
-        user = user_result.unwrap()
+        user = user_result.value
         assert user.contact == "test@example.com"  # normalized
 
     def test_password_strength_validation_processor(self) -> None:
@@ -198,7 +198,7 @@ class TestFlextAuthStorageOperations:
         # Verify user can be retrieved (email is stored as contact)
         user_result = auth.get_user_by_username("emailuser")
         assert user_result.is_success
-        user = user_result.unwrap()
+        user = user_result.value
         assert user.contact == "email@example.com"
 
     def test_user_sessions_index_management(self) -> None:
@@ -211,7 +211,7 @@ class TestFlextAuthStorageOperations:
         assert auth_result.is_success
 
         # Verify user sessions can be retrieved
-        user = auth_result.unwrap()
+        user = auth_result.value
         sessions_result = auth.get_user_sessions(user.id)
         assert sessions_result.is_success
 
@@ -248,7 +248,7 @@ class TestFlextAuthSessionManagement:
 
         user_result = auth.get_user_by_username("sessuser")
         assert user_result.is_success
-        user = user_result.unwrap()
+        user = user_result.value
 
         # Get user sessions
         sessions_result = auth.get_user_sessions(user.unique_id)
@@ -264,11 +264,11 @@ class TestFlextAuthSessionManagement:
         assert auth_result.is_success
 
         # Get user from authenticated response
-        user = auth_result.unwrap()
+        user = auth_result.value
         # Get user sessions
         sessions_result = auth.get_user_sessions(user.id)
         assert sessions_result.is_success
-        sessions = sessions_result.unwrap()
+        sessions = sessions_result.value
         assert len(sessions) > 0
         session_id = sessions[0].unique_id
 
@@ -289,12 +289,12 @@ class TestFlextAuthTokenOperations:
         user_result = auth.get_user_by_username("tokenuser")
         assert user_result.is_success
 
-        user = user_result.unwrap()
+        user = user_result.value
 
         # Create token - returns FlextResult[str]
         token_result = auth.create_token(identity_id=user.id)
         assert token_result.is_success
-        token = token_result.unwrap()
+        token = token_result.value
         assert isinstance(token, str)
         assert len(token) > 0
 
@@ -309,12 +309,12 @@ class TestFlextAuthTokenOperations:
             "BearerPass123!",
         )
         assert register_result.is_success
-        identity = register_result.unwrap()
+        identity = register_result.value
 
         # Generate token for the identity
         token_result = auth.create_token(identity_id=identity.unique_id)
         assert token_result.is_success
-        token = token_result.unwrap()
+        token = token_result.value
 
         # Validate with Bearer prefix (strip prefix if present)
         bearer_token = f"Bearer {token}"
@@ -461,7 +461,7 @@ class TestFlextAuth:
         )
 
         assert result.is_success
-        user = result.unwrap()
+        user = result.value
         assert user.name == "testuser"
         assert user.contact == "test@example.com"
         assert "user" in user.roles
@@ -515,7 +515,7 @@ class TestFlextAuth:
         assert auth_result.is_success
 
         # authenticate_user returns Identity, not dict
-        identity = auth_result.unwrap()
+        identity = auth_result.value
         assert isinstance(identity, FlextAuthModels.Identity)
         assert identity.name == username
         assert identity.contact == "auth@example.com"
@@ -543,25 +543,25 @@ class TestFlextAuth:
         # Register and authenticate to get identity
         register_result = auth.register_user(username, "token@example.com", password)
         assert register_result.is_success
-        identity = register_result.unwrap()
+        identity = register_result.value
 
         auth_result = auth.authenticate_user(username, password)
         assert auth_result.is_success
 
         # authenticate_user returns Identity, not dict
-        authenticated_identity = auth_result.unwrap()
+        authenticated_identity = auth_result.value
         assert isinstance(authenticated_identity, FlextAuthModels.Identity)
 
         # Generate token for the identity
         token_result = auth.create_token(identity_id=identity.id)
         assert token_result.is_success
-        access_token = token_result.unwrap()
+        access_token = token_result.value
         assert isinstance(access_token, str)
 
         # Validate token - returns bool, not dict
         validation_result = auth.validate_token(access_token)
         assert validation_result.is_success
-        assert validation_result.unwrap() is True
+        assert validation_result.value is True
 
     def test_token_validation_invalid_token(self) -> None:
         """Test validation of invalid token."""
@@ -580,7 +580,7 @@ class TestFlextAuth:
         # Register and authenticate
         register_result = auth.register_user(username, "bearer@example.com", password)
         assert register_result.is_success
-        identity = register_result.unwrap()
+        identity = register_result.value
 
         auth_result = auth.authenticate_user(username, password)
         assert auth_result.is_success
@@ -588,7 +588,7 @@ class TestFlextAuth:
         # Generate token for the identity
         token_result = auth.create_token(identity_id=identity.unique_id)
         assert token_result.is_success
-        access_token = token_result.unwrap()
+        access_token = token_result.value
         assert isinstance(access_token, str)
 
         # Test with Bearer prefix (strip prefix if present)
@@ -597,7 +597,7 @@ class TestFlextAuth:
         token_to_validate = bearer_token.replace("Bearer ", "").strip()
         bearer_result = auth.validate_token(token_to_validate)
         assert bearer_result.is_success
-        assert bearer_result.unwrap() is True
+        assert bearer_result.value is True
 
     def test_session_management(self) -> None:
         """Test session management functionality."""
@@ -616,13 +616,13 @@ class TestFlextAuth:
         assert auth_result.is_success
 
         # authenticate_user returns Identity
-        identity = auth_result.unwrap()
+        identity = auth_result.value
         assert isinstance(identity, FlextAuthModels.Identity)
 
         # Test get user sessions
         sessions_result = auth.get_user_sessions(identity.unique_id)
         assert sessions_result.is_success
-        sessions = sessions_result.unwrap()
+        sessions = sessions_result.value
         assert isinstance(sessions, list)
         assert len(sessions) >= 0  # Sessions may be empty initially
 
@@ -638,13 +638,13 @@ class TestFlextAuth:
         assert auth_result.is_success
 
         # authenticate_user returns Identity
-        identity = auth_result.unwrap()
+        identity = auth_result.value
         assert isinstance(identity, FlextAuthModels.Identity)
 
         # Get user sessions to find session ID
         sessions_result = auth.get_user_sessions(identity.unique_id)
         if sessions_result.is_success:
-            sessions = sessions_result.unwrap()
+            sessions = sessions_result.value
             if sessions:
                 session_id = sessions[0].unique_id
                 logout_result = auth.logout_user(session_id)
@@ -656,7 +656,7 @@ class TestFlextAuth:
 
         cleanup_result = auth.cleanup_expired_sessions()
         assert cleanup_result.is_success
-        cleaned_count = cleanup_result.unwrap()
+        cleaned_count = cleanup_result.value
         assert isinstance(cleaned_count, int)
         assert cleaned_count >= 0
 
@@ -945,7 +945,7 @@ class TestFlextAuthPasswordMethods:
 
         # set_credential returns FlextResult[bool]
         assert result.is_success
-        assert result.unwrap() is True
+        assert result.value is True
         assert identity.credential_hash != "StrongTestPass123!@#"
         assert len(identity.credential_hash) > 10  # Bcrypt hash should be substantial
 
@@ -972,12 +972,12 @@ class TestFlextAuthPasswordMethods:
         # Test correct credential verification
         verify_result = identity.verify_credential(strong_password)
         assert verify_result.is_success
-        assert verify_result.unwrap() is True
+        assert verify_result.value is True
 
         # Test wrong credential verification
         wrong_result = identity.verify_credential("WrongPassword123!@")
         assert wrong_result.is_success
-        assert wrong_result.unwrap() is False
+        assert wrong_result.value is False
 
 
 class TestFlextAuthTokenMethods:
@@ -994,13 +994,13 @@ class TestFlextAuthTokenMethods:
             password="JWTTestPass123!@#",
         )
         assert user_result.is_success
-        user = user_result.unwrap()
+        user = user_result.value
 
         # Use the correct method name
         result = auth.create_token(identity_id=user.unique_id)
 
         assert result.is_success
-        token = result.unwrap()
+        token = result.value
         assert isinstance(token, str)
         assert len(token) > 50  # JWT tokens are typically longer
 
@@ -1015,7 +1015,7 @@ class TestFlextAuthTokenMethods:
             "TestPassword123!",
         )
         assert register_result.is_success
-        identity = register_result.unwrap()
+        identity = register_result.value
 
         auth_result = auth.authenticate_user("testuser", "TestPassword123!")
         assert auth_result.is_success
@@ -1023,7 +1023,7 @@ class TestFlextAuthTokenMethods:
         # generate_token returns FlextResult[str]
         token_result = auth.create_token(identity_id=identity.unique_id)
         assert token_result.is_success
-        token = token_result.unwrap()
+        token = token_result.value
 
         assert isinstance(token, str)
         assert len(token) > 10  # JWT should be substantial
@@ -1039,23 +1039,23 @@ class TestFlextAuthTokenMethods:
             "TestPassword123!",
         )
         assert register_result.is_success
-        identity = register_result.unwrap()
+        identity = register_result.value
 
         auth_result = auth.authenticate_user("testuser", "TestPassword123!")
         assert auth_result.is_success
-        authenticated_identity = auth_result.unwrap()
+        authenticated_identity = auth_result.value
         assert isinstance(authenticated_identity, FlextAuthModels.Identity)
 
         # Generate a token - returns FlextResult[str]
         token_result = auth.create_token(identity_id=identity.unique_id)
         assert token_result.is_success
-        token = token_result.unwrap()
+        token = token_result.value
         assert isinstance(token, str)
 
         # Validate the generated token - returns FlextResult[bool]
         val_result = auth.validate_token(token)
         assert val_result.is_success
-        assert val_result.unwrap() is True
+        assert val_result.value is True
 
 
 class TestFlextAuthUserMethods:
@@ -1072,12 +1072,12 @@ class TestFlextAuthUserMethods:
             password="GetUserPass123!@",
         )
         assert user_result.is_success
-        user = user_result.unwrap()
+        user = user_result.value
 
         # Get user by ID
         get_result = auth.get_user(user.unique_id)
         assert get_result.is_success
-        retrieved_user = get_result.unwrap()
+        retrieved_user = get_result.value
         assert retrieved_user.unique_id == user.unique_id
 
     def test_get_user_by_username_method(self) -> None:
@@ -1107,18 +1107,18 @@ class TestFlextAuthUserMethods:
             password="TokenUserPass123!@",
         )
         assert user_result.is_success
-        user = user_result.unwrap()
+        user = user_result.value
 
         # Generate token for user - returns FlextResult[str]
         token_result = auth.create_token(identity_id=user.unique_id)
         assert token_result.is_success
-        token = token_result.unwrap()
+        token = token_result.value
         assert isinstance(token, str)
 
         # Get user by token using direct API (validate_token validates, get_user_by_id gets user)
         validate_result = auth.validate_token(token)
         assert validate_result.is_success
-        assert validate_result.unwrap() is True
+        assert validate_result.value is True
 
         # To get user from token, use get_user_by_id with the identity ID
         get_result = auth.get_user(user.unique_id)
@@ -1135,12 +1135,12 @@ class TestFlextAuthUserMethods:
             password="LogoutPass123!@",
         )
         assert user_result.is_success
-        user = user_result.unwrap()
+        user = user_result.value
 
         # Get user sessions to find session ID for logout
         sessions_result = auth.get_user_sessions(user.unique_id)
         if sessions_result.is_success:
-            sessions = sessions_result.unwrap()
+            sessions = sessions_result.value
             if sessions:
                 session_id = sessions[0].unique_id
                 logout_result = auth.logout_user(session_id)
@@ -1240,12 +1240,12 @@ class TestFlextAuthErrorHandlingPaths:
             "TestPassword123!",
         )
         assert user_result.is_success
-        user = user_result.unwrap()
+        user = user_result.value
 
         # Generate token - returns string directly, no expires_in_minutes parameter
         token_result = auth.create_token(identity_id=user.id)
         assert token_result.is_success
-        token = token_result.unwrap()
+        token = token_result.value
         assert isinstance(token, str)
 
         # Validate immediately (should work)
@@ -1289,13 +1289,13 @@ class TestFlextAuthAdditionalCoverage:
         assert auth_result.is_success
 
         # authenticate_user returns Identity
-        identity = auth_result.unwrap()
+        identity = auth_result.value
         assert isinstance(identity, FlextAuthModels.Identity)
 
         # Get user sessions
         sessions_result = auth.get_user_sessions(identity.unique_id)
         if sessions_result.is_success:
-            sessions = sessions_result.unwrap()
+            sessions = sessions_result.value
             # Sessions may exist or be empty
             assert isinstance(sessions, list)
 
@@ -1415,7 +1415,7 @@ class TestAuthModule:
         assert register_result.is_success
 
         # Get user ID from registration result
-        user = register_result.unwrap()
+        user = register_result.value
         user_id = user.id
 
         # Test user retrieval by ID
@@ -1442,13 +1442,13 @@ class TestAuthModule:
         assert auth_result.is_success
 
         # authenticate_user returns Identity
-        identity = auth_result.unwrap()
+        identity = auth_result.value
         assert isinstance(identity, FlextAuthModels.Identity)
 
         # Generate token for the identity
         token_result = auth.create_token(identity_id=identity.unique_id)
         assert token_result.is_success
-        token = token_result.unwrap()
+        token = token_result.value
 
         # Test token validation
         result = auth.validate_token(token)
@@ -1475,7 +1475,7 @@ class TestAuthModule:
         assert auth_result.is_success
 
         # Get user ID
-        user = register_result.unwrap()
+        user = register_result.value
         user_id = user.unique_id
 
         # Test getting user sessions
@@ -1503,13 +1503,13 @@ class TestAuthModule:
         assert auth_result.is_success
 
         # authenticate_user returns Identity
-        identity = auth_result.unwrap()
+        identity = auth_result.value
         assert isinstance(identity, FlextAuthModels.Identity)
 
         # Generate token for the identity
         token_result = auth.create_token(identity_id=identity.unique_id)
         assert token_result.is_success
-        token = token_result.unwrap()
+        token = token_result.value
 
         # Test getting user by token using direct API (validate_token validates, get_user_by_id gets user)
         validate_result = auth.validate_token(token)
@@ -1540,13 +1540,13 @@ class TestAuthModule:
         assert auth_result.is_success
 
         # authenticate_user returns Identity
-        identity = auth_result.unwrap()
+        identity = auth_result.value
         assert isinstance(identity, FlextAuthModels.Identity)
 
         # Get user sessions to find session ID
         sessions_result = auth.get_user_sessions(identity.unique_id)
         if sessions_result.is_success:
-            sessions = sessions_result.unwrap()
+            sessions = sessions_result.value
             if sessions:
                 session_id = sessions[0].unique_id
                 # Test session revocation
@@ -1582,7 +1582,7 @@ class TestAuthModule:
         assert auth_result.is_success
 
         # Test token validation
-        auth_data = auth_result.unwrap()
+        auth_data = auth_result.value
         token = str(auth_data["jwt_token"])
         validate_result = auth.validate_token(token)
         assert isinstance(validate_result, FlextResult)
@@ -1745,20 +1745,20 @@ class TestAuthModule:
         assert auth_result.is_success
 
         # authenticate_user returns Identity
-        authenticated_identity = auth_result.unwrap()
+        authenticated_identity = auth_result.value
         assert isinstance(authenticated_identity, FlextAuthModels.Identity)
 
         # Generate token for authenticated user
         token_result = auth.create_token(identity_id=authenticated_identity.unique_id)
         assert isinstance(token_result, FlextResult)
         assert token_result.is_success
-        token = token_result.unwrap()
+        token = token_result.value
 
         # Validate token
         validate_result = auth.validate_token(token)
         assert isinstance(validate_result, FlextResult)
         assert validate_result.is_success
-        assert validate_result.unwrap() is True
+        assert validate_result.value is True
 
     def test_flext_auth_performance_patterns(self) -> None:
         """Test auth performance patterns."""

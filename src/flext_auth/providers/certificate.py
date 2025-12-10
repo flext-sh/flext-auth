@@ -28,7 +28,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
         >>> provider = FlextAuthCertificateProvider()
         >>> result = provider.authenticate({"certificate": "base64-cert"})
         >>> if result.is_success:
-        ...     token = result.unwrap()
+        ...     token = result.value
         ...     print(f"Authenticated with token: {token.token}")
 
     """

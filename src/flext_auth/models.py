@@ -256,7 +256,7 @@ class FlextAuthModels(FlextModels):
             """Set a new credential with bcrypt hashing."""
             hash_result = FlextAuthUtilities.hash_credential(credential)
             if hash_result.is_success:
-                self.credential_hash = hash_result.unwrap()
+                self.credential_hash = hash_result.value
                 return r[bool].ok(True)
             return r[bool].fail(f"Failed to hash credential: {hash_result.error}")
 

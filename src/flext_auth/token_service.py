@@ -70,7 +70,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
                 reason=error_msg,
             )
             return result
-        identity = result.unwrap()
+        identity = result.value
         self.audit_logger.log_token_validation(
             success=True,
             username=identity.username,
@@ -93,7 +93,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
 
             return r["FlextAuthModels.AuthToken"].fail(error or "Token refresh failed")
 
-        refreshed = result.unwrap()
+        refreshed = result.value
         self.audit_logger.log_token_refresh(
             success=True,
             old_token_id=self._short_token(token),
@@ -120,7 +120,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
             )
             return r[str].fail(error or "User lookup failed")
 
-        user = user_result.unwrap()
+        user = user_result.value
         token_result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.generate_token_for_user(
                 user,
@@ -139,7 +139,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
             )
             return r[str].fail(error or "Token generation failed")
 
-        token_value = token_result.unwrap()
+        token_value = token_result.value
         self.audit_logger.log_token_creation(
             user_id=user_id,
             token_type=token_type,
@@ -163,7 +163,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
         )
         if result.is_failure:
             return result
-        self._jwt_provider_cache = result.unwrap()
+        self._jwt_provider_cache = result.value
         return r.ok(self._jwt_provider_cache)
 
     @staticmethod

@@ -182,7 +182,7 @@ class FlextAuthMiddleware(s):
                         f"Authentication failed: {token_result.error}",
                     )
 
-                token = token_result.unwrap()
+                token = token_result.value
 
                 # Build authorization header value
                 # AuthToken model uses 'token' attribute, not 'access_token'
@@ -267,7 +267,7 @@ class FlextAuthMiddleware(s):
             if auth_result.is_failure:
                 return auth_result
 
-            self._current_token = auth_result.unwrap()
+            self._current_token = auth_result.value
             self.logger.info(
                 "Initial authentication successful",
                 provider=self._provider_name,
@@ -279,7 +279,7 @@ class FlextAuthMiddleware(s):
             if not self._current_token:
                 return False
             validation_result = self._provider.validate(self._current_token)
-            return validation_result.is_success and validation_result.unwrap()
+            return validation_result.is_success and validation_result.value
 
         def _refresh_or_reauthenticate(
             self,
@@ -298,7 +298,7 @@ class FlextAuthMiddleware(s):
 
                 refresh_result = self._provider.refresh(self._current_token)
                 if refresh_result.is_success:
-                    self._current_token = refresh_result.unwrap()
+                    self._current_token = refresh_result.value
                     self.logger.info(
                         "Token refresh successful",
                         provider=self._provider_name,
@@ -314,7 +314,7 @@ class FlextAuthMiddleware(s):
 
                 auth_result = self._provider.authenticate(self._credentials)
                 if auth_result.is_success:
-                    self._current_token = auth_result.unwrap()
+                    self._current_token = auth_result.value
                     return r[FlextAuthModels.AuthToken].ok(self._current_token)
 
             return r[FlextAuthModels.AuthToken].fail(
@@ -442,7 +442,7 @@ class FlextAuthMiddleware(s):
                         f"Token validation failed: {validation_result.error}",
                     )
 
-                if not validation_result.unwrap():
+                if not validation_result.value:
                     return r[object].fail(
                         "Authentication failed: Invalid or expired token",
                     )

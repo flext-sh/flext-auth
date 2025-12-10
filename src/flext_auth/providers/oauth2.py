@@ -452,7 +452,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             )
         # Convert flow result to AuthToken
 
-        flow_data = flow_result.unwrap()
+        flow_data = flow_result.value
         return r.ok(
             FlextAuthModels.AuthToken(
                 identity_id=flow_data.get("user_id", "oauth2_user"),
@@ -483,7 +483,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                     token_result.error or "Token refresh failed",
                 )
             # Convert dict to AuthToken
-            token_data = token_result.unwrap()
+            token_data = token_result.value
             return r.ok(
                 FlextAuthModels.AuthToken(
                     identity_id=token.identity_id,
