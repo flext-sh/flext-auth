@@ -19,6 +19,7 @@ from pydantic import SecretStr
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.managers import ServiceManagerMixin
+from flext_auth.models import FlextAuthModels
 
 # Forward reference to avoid circular import
 # Import FlextAuthModels locally in methods where needed

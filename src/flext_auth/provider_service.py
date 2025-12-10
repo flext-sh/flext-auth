@@ -16,6 +16,7 @@ from flext_core import r, s, t as t_core
 
 from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import c
+from flext_auth.models import FlextAuthModels
 
 # Forward reference to avoid circular import
 # Import FlextAuthModels locally in methods where needed

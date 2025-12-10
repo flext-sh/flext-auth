@@ -16,7 +16,6 @@ from flext_core import r, t
 from flext_core.registry import FlextRegistry
 
 from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_auth.typings import t
 
 
 class FlextAuthRegistry(FlextRegistry):

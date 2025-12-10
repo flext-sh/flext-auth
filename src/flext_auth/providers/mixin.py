@@ -14,6 +14,8 @@ from typing import cast
 
 from flext_core import e, r, u as u_core
 
+from flext_auth.models import FlextAuthModels
+
 # Forward references to avoid circular import
 # Use string annotations for all FlextAuthModels references
 
@@ -47,8 +49,6 @@ class FlextAuthProviderMixin:
         ValueError: If token cannot be extracted
 
         """
-        from flext_auth.models import FlextAuthModels
-
         if isinstance(token, str):
             return token
 

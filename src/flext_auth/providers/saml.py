@@ -1,4 +1,8 @@
-"""FLEXT Auth SAML Provider - SAML 2.0 authentication.
+"""SAML Provider - SAML 2.0 authentication provider.
+
+Implements SAML 2.0 protocol for enterprise single sign-on (SSO) with
+support for SP-initiated and IdP-initiated flows. Handles SAML metadata
+exchange and assertion validation.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -7,6 +11,8 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_core import r
+
+from flext_auth.models import FlextAuthModels
 
 # Forward reference to avoid circular import
 from flext_auth.providers.base import FlextAuthBaseProvider

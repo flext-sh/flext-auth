@@ -1,8 +1,8 @@
-"""OAuth2 authentication provider - SOLID compliant with generic patterns.
+"""OAuth2 Provider - OAuth2 authentication and authorization provider.
 
-Generic OAuth2 implementation using flext-core patterns, Python 3.13+ syntax,
-and minimal line count through consolidation. Single class per module following
-SOLID principles strictly.
+Implements OAuth2 protocol for enterprise authentication with support for
+authorization code flow, implicit flow, and client credentials flow.
+Provides secure token management and user session handling.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -20,6 +20,7 @@ from urllib.parse import urlencode
 from flext_core import e, r, u as u_core
 
 from flext_auth.constants import c
+from flext_auth.models import FlextAuthModels
 
 # Forward reference to avoid circular import
 from flext_auth.providers.rfc import FlextAuthRfcProvider
@@ -450,7 +451,6 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 flow_result.error or "OAuth2 authentication failed",
             )
         # Convert flow result to AuthToken
-        from flext_auth.models import FlextAuthModels
 
         flow_data = flow_result.unwrap()
         return r.ok(
@@ -476,8 +476,6 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         token: str | FlextAuthModels.AuthToken,
     ) -> r[FlextAuthModels.AuthToken]:
         """Refresh OAuth2 token using composition."""
-        from flext_auth.models import FlextAuthModels
-
         if isinstance(token, FlextAuthModels.AuthToken) and token.refresh_token:
             token_result = self._token_manager.refresh_access_token(token.refresh_token)
             if token_result.is_failure:

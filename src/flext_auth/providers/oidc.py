@@ -1,4 +1,8 @@
-"""FLEXT Auth OIDC Provider - OpenID Connect authentication.
+"""OIDC Provider - OpenID Connect authentication provider.
+
+Extends OAuth2 with OpenID Connect capabilities for identity verification
+and standardized user profile information retrieval. Supports OIDC discovery
+and JWT-based identity tokens.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -9,6 +13,8 @@ from __future__ import annotations
 from abc import ABC
 
 from flext_core import r
+
+from flext_auth.models import FlextAuthModels
 
 # Forward reference to avoid circular import
 from flext_auth.providers.mixin import FlextAuthProviderMixin

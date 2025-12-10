@@ -10,6 +10,8 @@ from abc import ABC
 
 from flext_core import r
 
+from flext_auth.models import FlextAuthModels
+
 # Forward reference to avoid circular import
 from flext_auth.providers.mixin import FlextAuthProviderMixin
 from flext_auth.providers.rfc import FlextAuthRfcProvider

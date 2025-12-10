@@ -20,6 +20,8 @@ from typing import cast
 
 from flext_core import r, u as u_core
 
+from flext_auth.models import FlextAuthModels
+
 # Forward reference to avoid circular import
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 
@@ -61,7 +63,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             raise ValueError(msg)
 
         # Initialize components using composition
-        self._ticket_validator = self._KerberosTicketValidator(self)
+        self.ticket_validator = self._KerberosTicketValidator(self)
         self._service_handler = self._KerberosServiceHandler(self)
         self._auth_manager = self._KerberosAuthManager(self)
 
@@ -188,7 +190,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         ) -> r[dict[str, object]]:
             """Authenticate using Kerberos ticket."""
             # Use composition for ticket validation
-            return self.provider._ticket_validator.validate_ticket(ticket_data)
+            return self.provider.ticket_validator.validate_ticket(ticket_data)
 
     def supports(self) -> set[str]:
         """Return Kerberos provider capabilities."""

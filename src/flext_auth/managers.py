@@ -1,11 +1,11 @@
-"""FLEXT Auth Managers - Core business logic managers for authentication.
+"""FLEXT Auth Managers - Authentication and authorization management services.
 
-This module provides the core business logic managers that handle user management,
-session management, audit logging, and rate limiting for the flext-auth library.
+Provides centralized management for authentication tokens, user sessions,
+and authorization policies. Implements Railway-Oriented Programming patterns
+for robust error handling and composable authentication workflows.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
-
 """
 
 from __future__ import annotations
@@ -217,7 +217,6 @@ class FlextAuthManagers(s[object]):
             filtered_identity_data = {
                 k: v for k, v in identity_data.items() if k in valid_identity_fields
             }
-            from flext_auth.models import FlextAuthModels
 
             return FlextAuthModels.Identity(**filtered_identity_data)
 
@@ -306,7 +305,6 @@ class FlextAuthManagers(s[object]):
             self._users[username] = storage_data
 
             # Create Identity model with only valid fields (no extras)
-            from flext_auth.models import FlextAuthModels
 
             user = FlextAuthModels.Identity(**identity_data)
             return r["FlextAuthModels.Identity"].ok(user)
@@ -443,7 +441,6 @@ class FlextAuthManagers(s[object]):
 
             self._sessions[session_id] = session_data
             # Extract required fields for Session model
-            from flext_auth.models import FlextAuthModels
 
             session = FlextAuthModels.Session(
                 identity_id=str(session_data["identity_id"]),
@@ -458,8 +455,6 @@ class FlextAuthManagers(s[object]):
 
         def get_active_sessions(self, user_id: str) -> r[list[FlextAuthModels.Session]]:
             """Get all active sessions for a user."""
-            from flext_auth.models import FlextAuthModels
-
             sessions: list[FlextAuthModels.Session] = []
             for session_id, session_data in self._sessions.items():
                 identity_id_value = session_data.get("identity_id")

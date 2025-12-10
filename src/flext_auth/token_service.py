@@ -1,7 +1,8 @@
-"""FLEXT Auth Token Service - Flexible flext-core patterns with minimal line count.
+"""Token Service - JWT token management and validation service.
 
-Uses Python 3.13+ syntax, railway-oriented programming, and consolidated patterns
-for maximum maintainability. Single FlextAuthTokenService class with composition.
+Provides centralized JWT token operations including creation, validation,
+refresh, and revocation. Implements Railway-Oriented Programming for
+robust token lifecycle management.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -17,6 +18,7 @@ from flext_auth.constants import c
 from flext_auth.managers import (
     ServiceManagerMixin,
 )
+from flext_auth.models import FlextAuthModels
 
 # Forward reference to avoid circular import
 # Import FlextAuthModels locally in methods where needed
@@ -88,7 +90,6 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
                 old_token_id=self._short_token(token),
                 reason=error,
             )
-            from flext_auth.models import FlextAuthModels
 
             return r["FlextAuthModels.AuthToken"].fail(error or "Token refresh failed")
 

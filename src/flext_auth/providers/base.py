@@ -14,6 +14,8 @@ from abc import ABC, abstractmethod
 
 from flext_core import r
 
+from flext_auth.models import FlextAuthModels
+
 # Forward reference to avoid circular import (models.py -> utilities.py -> typings.py -> providers/base.py -> models.py)
 # Use string annotations for all FlextAuthModels references
 
