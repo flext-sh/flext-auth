@@ -248,10 +248,10 @@ def protected_view(request):
 ### High-Performance Configuration
 
 ```python
-from flext_auth import FlextAuthConfig, FlextAuthService
+from flext_auth import FlextAuthSettings, FlextAuthService
 
 # Optimized for high-throughput scenarios
-config = FlextAuthConfig(
+config = FlextAuthSettings(
     bcrypt_rounds=4,  # Faster hashing for development
     access_token_expire_minutes=60,
     max_concurrent_sessions=10
@@ -263,10 +263,10 @@ auth_service = FlextAuthService(config)
 ### Security-Hardened Configuration
 
 ```python
-from flext_auth import FlextAuthConfig, FlextAuthService
+from flext_auth import FlextAuthSettings, FlextAuthService
 
 # Maximum security configuration
-config = FlextAuthConfig(
+config = FlextAuthSettings(
     bcrypt_rounds=12,  # Strong password hashing
     access_token_expire_minutes=15,  # Short token lifetime
     max_failed_attempts=3,  # Strict lockout policy

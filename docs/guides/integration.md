@@ -50,7 +50,7 @@ Use FlextContainer for dependency injection:
 
 ```python
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -69,12 +69,12 @@ from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
-from flext_auth import FlextAuth, FlextAuthConfig
+from flext_auth import FlextAuth, FlextAuthSettings
 
 # Register authentication service
 container = FlextContainer.get_global()
 
-config = FlextAuthConfig()
+config = FlextAuthSettings()
 auth_service = FlextAuth(config=config)
 container.register("auth_service", auth_service)
 
@@ -95,7 +95,7 @@ All domain entities extend FlextModels.Entity:
 
 ```python
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -358,14 +358,14 @@ class RedisSessionStorage:
 Integration with FLEXT environment management:
 
 ```python
-from flext_auth import FlextAuthConfig
+from flext_auth import FlextAuthSettings
 import os
 
 # Environment detection
 flext_env = os.getenv("FLEXT_ENV", "development")
 
 # Create environment-specific configuration
-config_result = FlextAuthConfig()
+config_result = FlextAuthSettings()
 if config_result.is_success:
     auth_config = config_result.unwrap()
     auth = FlextAuth(config=auth_config)
@@ -379,14 +379,14 @@ Integration with FLEXT workspace configuration:
 
 ```python
 # Shared configuration across FLEXT services
-from flext_core import FlextWorkspaceConfig
+from flext_core import FlextWorkspaceSettings
 
-class FlextAuthWorkspaceConfig(FlextWorkspaceConfig):
+class FlextAuthWorkspaceSettings(FlextWorkspaceSettings):
     """Authentication configuration within FLEXT workspace."""
 
     def __init__(self):
         super().__init__()
-        self.auth_config = FlextAuthConfig()
+        self.auth_config = FlextAuthSettings()
 
     def get_auth_service(self) -> FlextResult[FlextAuth]:
         """Get configured authentication service."""

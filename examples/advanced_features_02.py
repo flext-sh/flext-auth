@@ -17,13 +17,13 @@ import string
 
 from flext_core import FlextLogger
 
-from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthModels
+from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings
 
 
 def example_advanced_configuration() -> None:
     """Demonstrate advanced configuration options."""
     # Create custom configuration
-    FlextAuthConfig()
+    FlextAuthSettings()
 
     # Create auth with custom configuration
     FlextAuth()

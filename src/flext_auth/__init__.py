@@ -33,7 +33,7 @@ Service Layer (Services):
   - Integration with FlextContainer dependency injection
 
 Configuration & Constants:
-  FlextAuthConfig - Singleton configuration (Pydantic v2 settings)
+  FlextAuthSettings - Singleton configuration (Pydantic v2 settings)
   FlextAuthConstants - System constants, error codes, defaults
   - Environment variable override support
   - Type-safe configuration access
@@ -126,7 +126,7 @@ LAYER ARCHITECTURE (Clean Architecture)
 
 
 Layer 4: Infrastructure (config.py, middleware.py, transports/)
-    ├─ FlextAuthConfig (Pydantic Settings)
+    ├─ FlextAuthSettings (Pydantic Settings)
     ├─ FlextAuthMiddleware (HTTP middleware)
     └─ Transport implementations (HTTP, gRPC, WebSocket)
     ↓
@@ -204,7 +204,7 @@ Type Safety:
   - TypedDict for complex dictionary structures
 
 Configuration Management:
-  - FlextAuthConfig uses ConfigDict for strict validation
+  - FlextAuthSettings uses ConfigDict for strict validation
   - Environment variable override support
   - Hierarchical configuration with inheritance
   - Validation on initialization (fails fast)
@@ -237,10 +237,10 @@ USAGE EXAMPLES
 
 
 Example 1: Basic Authentication with JWT:
-  >>> from flext_auth import FlextAuth, FlextAuthConfig
+  >>> from flext_auth import FlextAuth, FlextAuthSettings
   >>>
   >>> # Initialize with JWT provider
-  >>> config = FlextAuthConfig(jwt_secret="your-secret-key", jwt_algorithm="HS256")
+  >>> config = FlextAuthSettings(jwt_secret="your-secret-key", jwt_algorithm="HS256")
   >>> auth = FlextAuth(config=config)
   >>>
   >>> # Authenticate user
@@ -344,7 +344,7 @@ Root Import Pattern (Ecosystem Standard)
 Correct - Always use root imports (this module):
   from flext_auth import (
       FlextAuth,
-      FlextAuthConfig,
+      FlextAuthSettings,
       FlextAuthModels,
       FlextAuthTypes,
       FlextAuthConstants,
@@ -354,7 +354,7 @@ Correct - Always use root imports (this module):
 Forbidden - Never use internal module imports:
   from flext_auth.api import FlextAuth                # Breaks ecosystem
   from flext_auth.models import FlextAuthModels       # Breaks ecosystem
-  from flext_auth.config import FlextAuthConfig       # Breaks ecosystem
+  from flext_auth.settings import FlextAuthSettings       # Breaks ecosystem
   from flext_auth.providers.jwt import FlextAuthJwtProvider  # FORBIDDEN
 
 Why: 32+ ecosystem projects rely on root imports. Internal imports break the
@@ -426,7 +426,6 @@ from flext_core import (
 
 from flext_auth.__version__ import __version__, __version_info__
 from flext_auth.api import FlextAuth
-from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.managers import FlextAuthManagers
 from flext_auth.middleware import FlextAuthMiddleware
@@ -450,6 +449,7 @@ from flext_auth.providers import (
 from flext_auth.quickstart import FlextAuthQuickstart
 from flext_auth.registry import FlextAuthRegistry
 from flext_auth.session_service import FlextAuthSessionService
+from flext_auth.settings import FlextAuthSettings
 from flext_auth.token_service import FlextAuthTokenService
 from flext_auth.typings import FlextAuthTypes
 from flext_auth.user_service import FlextAuthIdentityService
@@ -475,7 +475,6 @@ __all__ = [
     "FlextAuthBaseProvider",
     "FlextAuthBasicProvider",
     "FlextAuthCertificateProvider",
-    "FlextAuthConfig",
     "FlextAuthConstants",
     "FlextAuthIdentityService",
     "FlextAuthJwtProvider",
@@ -494,6 +493,7 @@ __all__ = [
     "FlextAuthRegistry",
     "FlextAuthSamlProvider",
     "FlextAuthSessionService",
+    "FlextAuthSettings",
     "FlextAuthTokenService",
     "FlextAuthTypes",
     "FlextAuthUtilities",

@@ -82,7 +82,7 @@ src/flext_auth/
 ├── api.py                      # FlextAuth main orchestrator
 ├── registry.py                 # FlextAuthRegistry (provider management)
 ├── models.py                   # Domain models (User, Session, AuthToken)
-├── config.py                   # FlextAuthConfig with Builder pattern
+├── config.py                   # FlextAuthSettings with Builder pattern
 ├── utilities.py                # Core utilities (password/JWT processing)
 ├── providers/                  # Authentication provider implementations
 │   ├── __init__.py            # Provider exports
@@ -253,7 +253,7 @@ print(f"JWT capabilities: {jwt_capabilities}")
 from flext_auth.providers import FlextAuthBaseProvider, BaseAuthProviderMixin
 from flext_auth import FlextAuthModels
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext

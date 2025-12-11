@@ -10,8 +10,8 @@ from __future__ import annotations
 from flext_core import r, s
 
 from flext_auth.api import FlextAuth
-from flext_auth.config import FlextAuthConfig
 from flext_auth.models import FlextAuthModels
+from flext_auth.settings import FlextAuthSettings
 
 
 class FlextAuthQuickstart(s[object]):
@@ -19,15 +19,15 @@ class FlextAuthQuickstart(s[object]):
 
     This class provides a simplified interface for common authentication operations
     with pre-configured settings for rapid development and testing.
-    Uses newer FlextConfig features for complete integration.
+    Uses newer FlextSettings features for complete integration.
     """
 
-    def __init__(self, config: FlextAuthConfig | None = None) -> None:
+    def __init__(self, config: FlextAuthSettings | None = None) -> None:
         """Initialize quickstart auth service with sensible defaults."""
         super().__init__()
 
         # Use provided config or create default
-        self._config = config if config is not None else FlextAuthConfig()
+        self._config = config if config is not None else FlextAuthSettings()
 
         self._auth = FlextAuth()
 

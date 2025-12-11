@@ -10,7 +10,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-import flext_auth.config
+import flext_auth.settings
 
 # Import and register FlextTestsDocker fixtures if available
 try:
@@ -25,15 +25,15 @@ except ImportError:
 
 @pytest.fixture(autouse=True)
 def clear_auth_config_singleton() -> Generator[None]:
-    """Clear FlextAuthConfig singleton before each test to ensure clean state."""
-    flext_auth.config.FlextAuthConfig._reset_instance()
+    """Clear FlextAuthSettings singleton before each test to ensure clean state."""
+    flext_auth.config.FlextAuthSettings._reset_instance()
     yield
-    flext_auth.config.FlextAuthConfig._reset_instance()
+    flext_auth.config.FlextAuthSettings._reset_instance()
 
 
 @pytest.fixture
 def mock_get_global() -> MagicMock:
-    """Mock for FlextAuthConfig.get_global_instance.
+    """Mock for FlextAuthSettings.get_global_instance.
 
     Returns:
         MagicMock: Mock object for global instance

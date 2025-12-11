@@ -14,7 +14,7 @@ import base64
 import json
 from urllib.parse import urlencode
 
-from flext_api import FlextApiClient, FlextApiConfig, FlextApiModels
+from flext_api import FlextApiClient, FlextApiModels, FlextApiSettings
 from flext_api.typings import t as t_api
 from flext_core import r
 from flext_core.loggings import FlextLogger
@@ -57,7 +57,7 @@ class FlextWebTransportAdapter:
         self._max_retries = max_retries
         self.logger = FlextLogger(__name__)
 
-        config = FlextApiConfig(timeout=timeout, max_retries=max_retries)
+        config = FlextApiSettings(timeout=timeout, max_retries=max_retries)
         self._client = FlextApiClient(config)
 
     def send_request(

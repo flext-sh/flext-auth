@@ -19,9 +19,9 @@ from flext_core import FlextResult
 from pydantic import SecretStr
 
 from flext_auth.api import FlextAuth
-from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
+from flext_auth.settings import FlextAuthSettings
 
 
 class TestFlextAuthServiceInitialization:
@@ -216,7 +216,7 @@ class TestFlextAuthStorageOperations:
         assert sessions_result.is_success
 
 
-class TestFlextAuthConfigurationOverrides:
+class TestFlextAuthSettingsurationOverrides:
     """Test configuration override capabilities."""
 
     def test_create_with_config_overrides_method_exists(self) -> None:
@@ -226,8 +226,8 @@ class TestFlextAuthConfigurationOverrides:
 
     def test_custom_config_initialization(self) -> None:
         """Test initialization with custom configuration."""
-        # Create custom config - create_for_environment returns FlextAuthConfig directly
-        custom_config = FlextAuthConfig()
+        # Create custom config - create_for_environment returns FlextAuthSettings directly
+        custom_config = FlextAuthSettings()
 
         # Create auth with custom config
         auth = FlextAuth(config=custom_config)
@@ -400,7 +400,7 @@ class TestFlextAuthProviderRegistry:
         assert "jwt" in providers
 
 
-class TestFlextAuthModelConfiguration:
+class TestFlextAuthModelSettingsuration:
     """Test Pydantic model configuration."""
 
     def test_model_config_arbitrary_types_allowed(self) -> None:
@@ -413,8 +413,8 @@ class TestFlextAuthModelConfiguration:
     def test_model_config_validate_assignment(self) -> None:
         """Test validate_assignment configuration."""
         # FlextAuth is a service, not a Pydantic model
-        # Config validation is in FlextAuthConfig
-        config = FlextAuthConfig()
+        # Config validation is in FlextAuthSettings
+        config = FlextAuthSettings()
         # Config uses validate_assignment=True by default
         assert config.model_config.get("validate_assignment", False) is True
 
@@ -425,7 +425,7 @@ class TestFlextAuth:
     def test_flext_auth_initialization(self) -> None:
         """Test FlextAuth initialization with different parameters."""
         # Clear singleton to ensure clean test
-        FlextAuthConfig._reset_instance()
+        FlextAuthSettings._reset_instance()
 
         # Test default initialization
         auth: FlextAuth = FlextAuth()
@@ -439,7 +439,7 @@ class TestFlextAuth:
         custom_rounds = 10
         custom_expiry = 60
 
-        custom_config = FlextAuthConfig(
+        custom_config = FlextAuthSettings(
             auth_secret=SecretStr(custom_secret),
             hash_rounds=custom_rounds,
             expiry_minutes=custom_expiry,
@@ -1193,7 +1193,7 @@ class TestFlextAuthQuickStartMethod:
         assert auth.config is not None
 
 
-class TestFlextAuthConfigurationMethods:
+class TestFlextAuthSettingsurationMethods:
     """Test configuration and utility methods."""
 
     def test_get_config_method(self) -> None:

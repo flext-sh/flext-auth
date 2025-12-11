@@ -117,7 +117,7 @@ def authenticate_user(username: str, password: str) -> dict[str, object]:
 ```python
 # ✅ Correct - Extend FlextModels.Entity
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -272,9 +272,9 @@ tests/
 
 ```python
 import pytest
-from flext_auth import FlextAuth, FlextAuthConfig
+from flext_auth import FlextAuth, FlextAuthSettings
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -317,7 +317,7 @@ Follow FLEXT service patterns:
 
 ```python
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext

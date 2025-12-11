@@ -15,7 +15,12 @@ import os
 import secrets
 import string
 
-from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthModels, FlextAuthQuickstart
+from flext_auth import (
+    FlextAuth,
+    FlextAuthModels,
+    FlextAuthQuickstart,
+    FlextAuthSettings,
+)
 
 
 def demo_complete_auth_workflow() -> None:
@@ -146,7 +151,7 @@ def demo_security_features() -> None:
     # Show configuration security settings
     # Note: FlextAuth doesn't have a get_config() method
     # Configuration is passed during initialization
-    FlextAuthConfig()
+    FlextAuthSettings()
     # Note: auth.config.get_security_settings() doesn't exist
 
     # Demonstrate password strength validation by attempting weak passwords

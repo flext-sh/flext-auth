@@ -1,8 +1,8 @@
-"""FLEXT Auth - Example of using FlextConfig as source of truth.
+"""FLEXT Auth - Example of using FlextSettings as source of truth.
 
-This example demonstrates how to use FlextConfig singleton pattern
+This example demonstrates how to use FlextSettings singleton pattern
 in the flext-auth module, showing how parameters can change behavior
-and how FlextConfig serves as the single source of truth.
+and how FlextSettings serves as the single source of truth.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -13,18 +13,18 @@ from __future__ import annotations
 
 import os
 
-from flext_auth import FlextAuth, FlextAuthConfig
+from flext_auth import FlextAuth, FlextAuthSettings
 from flext_auth.constants import FlextAuthConstants
 
 
 def main() -> None:
-    """Demonstrate FlextConfig usage in flext-auth."""
+    """Demonstrate FlextSettings usage in flext-auth."""
     # =========================================================================
     # 1. BASIC SINGLETON USAGE - Get global instance
     # =========================================================================
 
     # Get the global singleton instance (source of truth)
-    FlextAuthConfig.get_global_instance()
+    FlextAuthSettings.get_global_instance()
 
     # =========================================================================
     # 2. ENVIRONMENT VARIABLE OVERRIDES
@@ -45,17 +45,17 @@ def main() -> None:
     )
 
     # Clear global instance to force reload from environment
-    FlextAuthConfig.reset_global_instance()
+    FlextAuthSettings.reset_global_instance()
 
     # Get new instance with environment overrides
-    FlextAuthConfig.get_global_instance()
+    FlextAuthSettings.get_global_instance()
 
     # =========================================================================
     # 3. PARAMETER OVERRIDES - Change behavior with parameters
     # =========================================================================
 
     # Update singleton configuration with specific parameter overrides for production
-    production_config_result = FlextAuthConfig.get_or_create_global(
+    production_config_result = FlextAuthSettings.get_or_create_global(
         jwt_expiry_minutes=FlextAuthConstants.Jwt.DEFAULT_EXPIRY_MINUTES
         // 2,  # Shorter JWT for security
         bcrypt_rounds=FlextAuthConstants.Credentials.Password.BCRYPT_ROUNDS,  # Higher security
@@ -68,7 +68,7 @@ def main() -> None:
         pass
 
     # Update singleton configuration with different parameters for development
-    dev_config_result = FlextAuthConfig.get_or_create_global(
+    dev_config_result = FlextAuthSettings.get_or_create_global(
         jwt_expiry_minutes=FlextAuthConstants.Session.DEFAULT_EXPIRY_MINUTES,  # Longer JWT for development
         bcrypt_rounds=FlextAuthConstants.Credentials.Password.MIN_BCRYPT_ROUNDS,  # Lower rounds for speed
         max_login_attempts=FlextAuthConstants.Session.MAX_SESSIONS_PER_USER
@@ -82,12 +82,12 @@ def main() -> None:
         pass
 
     # =========================================================================
-    # 4. USING CONFIG IN SERVICES - FlextConfig as source of truth
+    # 4. USING CONFIG IN SERVICES - FlextSettings as source of truth
     # =========================================================================
 
-    # Create FlextAuth instances using FlextConfig singleton as source of truth
+    # Create FlextAuth instances using FlextSettings singleton as source of truth
     # Method 1: Use global singleton (default)
-    FlextAuth.quick_start()  # Uses global FlextConfig singleton automatically
+    FlextAuth.quick_start()  # Uses global FlextSettings singleton automatically
 
     # Method 2: Use production configuration singleton
     if production_config_result.is_success:
@@ -104,7 +104,7 @@ def main() -> None:
     # =========================================================================
 
     # Validate singleton configuration
-    current_config = FlextAuthConfig.get_global_instance()
+    current_config = FlextAuthSettings.get_global_instance()
     validation_result = current_config.validate_configuration()
     if validation_result.is_success:
         pass
@@ -114,7 +114,7 @@ def main() -> None:
     # =========================================================================
 
     # Export singleton configuration settings
-    singleton_config = FlextAuthConfig.get_global_instance()
+    singleton_config = FlextAuthSettings.get_global_instance()
 
     # Export security settings
     # Note: get_security_settings() doesn't exist, use direct attributes
@@ -152,13 +152,13 @@ def main() -> None:
     # Demonstrate singleton instance management
 
     # Verify current singleton instance
-    FlextAuthConfig.get_global_instance()
+    FlextAuthSettings.get_global_instance()
 
     # Clear singleton instance
-    FlextAuthConfig.reset_global_instance()
+    FlextAuthSettings.reset_global_instance()
 
     # Get new singleton instance (will be recreated)
-    FlextAuthConfig.get_global_instance()
+    FlextAuthSettings.get_global_instance()
 
     # =========================================================================
     # 8. ENVIRONMENT-SPECIFIC SINGLETON CONFIGURATION
@@ -168,7 +168,7 @@ def main() -> None:
     environments = ["development", "staging", "production"]
 
     for env in environments:
-        config_result = FlextAuthConfig.get_or_create_global(environment=env)
+        config_result = FlextAuthSettings.get_or_create_global(environment=env)
         if config_result.is_success:
             pass
 

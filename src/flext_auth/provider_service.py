@@ -14,7 +14,6 @@ from typing import cast
 
 from flext_core import r, s, t as t_core
 
-from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import c
 from flext_auth.models import FlextAuthModels
 
@@ -33,6 +32,7 @@ from flext_auth.providers import (
 )
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
+from flext_auth.settings import FlextAuthSettings
 from flext_auth.typings import t
 
 
@@ -43,7 +43,7 @@ class FlextAuthProviderService(s[object]):
     Flexible composition with dependency injection and error handling.
     """
 
-    def __init__(self, *, config: FlextAuthConfig) -> None:
+    def __init__(self, *, config: FlextAuthSettings) -> None:
         """Flexible initialization with automatic provider registration."""
         super().__init__()
         self._config, self._providers = config, FlextAuthRegistry()

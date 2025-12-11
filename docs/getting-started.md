@@ -96,10 +96,10 @@ else:
 ### Environment Configuration
 
 ```python
-from flext_auth import FlextAuthConfig
+from flext_auth import FlextAuthSettings
 
 # Development configuration
-config = FlextAuthConfig()
+config = FlextAuthSettings()
 
 if config.is_success:
     dev_config = config.unwrap()
@@ -110,10 +110,10 @@ if config.is_success:
 ### Custom Configuration
 
 ```python
-from flext_auth import FlextAuth, FlextAuthConfig
+from flext_auth import FlextAuth, FlextAuthSettings
 
 # Custom configuration
-config = FlextAuthConfig(
+config = FlextAuthSettings(
     jwt_expiry_minutes=30,          # 30-minute tokens
     bcrypt_rounds=14,               # Higher security
     max_failed_attempts=3,          # Account lockout
@@ -161,7 +161,7 @@ flext-auth manage-config show
 
 ```python
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -208,7 +208,7 @@ if result.is_success:
 
 ```python
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -227,13 +227,13 @@ from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
-from flext_auth import FlextAuth, FlextAuthConfig
+from flext_auth import FlextAuth, FlextAuthSettings
 
 # Register authentication service in container
 container = FlextContainer.get_global()
 
 # Configure and register
-config = FlextAuthConfig()
+config = FlextAuthSettings()
 auth_service = FlextAuth(config=config)
 container.register("auth_service", auth_service)
 

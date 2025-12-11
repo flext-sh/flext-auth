@@ -130,7 +130,7 @@ build-clean: clean build ## Clean and build
 
 .PHONY: auth-validate
 auth-validate: ## Validate auth configuration
-	PYTHONPATH=$(SRC_DIR) $(POETRY) run python -c "from flext_auth.config import FlextAuthConfig; print('Auth config valid')"
+	PYTHONPATH=$(SRC_DIR) $(POETRY) run python -c "from flext_auth.settings import FlextAuthSettings; print('Auth config valid')"
 
 .PHONY: jwt-test
 jwt-test: ## Test JWT operations

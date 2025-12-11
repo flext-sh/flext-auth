@@ -35,9 +35,9 @@ auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 ### Constructor
 
 ```python
-from flext_auth import FlextAuth, FlextAuthConfig
+from flext_auth import FlextAuth, FlextAuthSettings
 
-config = FlextAuthConfig()
+config = FlextAuthSettings()
 auth = FlextAuth(config=config)
 ```
 
@@ -188,12 +188,12 @@ class UserCreationRequest(BaseModel):
 
 ## Configuration
 
-### FlextAuthConfig
+### FlextAuthSettings
 
-Configuration class extending FlextConfig.
+Configuration class extending FlextSettings.
 
 ```python
-class FlextAuthConfig(FlextConfig):
+class FlextAuthSettings(FlextSettings):
     # JWT Settings
     jwt_secret_key: str = "dev-secret-key"
     jwt_expiry_minutes: int = 60
@@ -209,7 +209,7 @@ class FlextAuthConfig(FlextConfig):
 
 ```python
 @classmethod
-def create_for_environment(cls, env: str) -> FlextResult[FlextAuthConfig]:
+def create_for_environment(cls, env: str) -> FlextResult[FlextAuthSettings]:
 ```
 
 Create configuration for specific environment.
@@ -221,7 +221,7 @@ Create configuration for specific environment.
 **Example**:
 
 ```python
-config_result = FlextAuthConfig()
+config_result = FlextAuthSettings()
 if config_result.is_success:
     config = config_result.unwrap()
 ```
@@ -280,7 +280,7 @@ else:
 
 ```python
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -320,7 +320,7 @@ def complete_auth_flow(username: str, password: str) -> FlextResult[t.Dict]:
 
 ```python
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext

@@ -19,8 +19,8 @@ from flext_core.dispatcher import FlextDispatcher
 from flext_core.loggings import FlextLogger
 from flext_core.registry import FlextRegistry
 
-from flext_auth.config import FlextAuthConfig
 from flext_auth.models import FlextAuthModels
+from flext_auth.settings import FlextAuthSettings
 
 
 class ServiceManagerMixin:
@@ -34,7 +34,7 @@ class ServiceManagerMixin:
 
     def init_managers(
         self,
-        config: FlextAuthConfig,
+        config: FlextAuthSettings,
         dispatcher: FlextDispatcher,
     ) -> None:
         """Initialize all standard managers used by services.
@@ -69,10 +69,10 @@ class FlextAuthManagers(s[object]):
         """User management business logic.
 
         Handles user CRUD operations, role/permission management, and user data persistence.
-        Uses newer FlextConfig features for complete integration.
+        Uses newer FlextSettings features for complete integration.
         """
 
-        def __init__(self, config: FlextAuthConfig) -> None:
+        def __init__(self, config: FlextAuthSettings) -> None:
             """Initialize user manager with configuration."""
             super().__init__()
             self._config = config
@@ -383,10 +383,10 @@ class FlextAuthManagers(s[object]):
         """Session management business logic.
 
         Handles user session creation, validation, and cleanup.
-        Uses newer FlextConfig features for complete integration.
+        Uses newer FlextSettings features for complete integration.
         """
 
-        def __init__(self, config: FlextAuthConfig) -> None:
+        def __init__(self, config: FlextAuthSettings) -> None:
             """Initialize session manager with configuration."""
             super().__init__()
             self._config = config
@@ -530,7 +530,7 @@ class FlextAuthManagers(s[object]):
         """Audit logging business logic.
 
         Records authentication and authorization events for compliance and debugging.
-        Uses newer FlextConfig features for complete integration.
+        Uses newer FlextSettings features for complete integration.
         """
 
         # Event type constants - consolidates 11 methods into constants
@@ -552,7 +552,7 @@ class FlextAuthManagers(s[object]):
 
         def __init__(
             self,
-            config: FlextAuthConfig,
+            config: FlextAuthSettings,
             dispatcher: FlextDispatcher,
         ) -> None:
             """Initialize audit logger with configuration."""
@@ -798,12 +798,12 @@ class FlextAuthManagers(s[object]):
         """Rate limiting business logic.
 
         Prevents brute force attacks by limiting authentication attempts.
-        Uses newer FlextConfig features for complete integration.
+        Uses newer FlextSettings features for complete integration.
         """
 
         def __init__(
             self,
-            config: FlextAuthConfig,
+            config: FlextAuthSettings,
             dispatcher: FlextDispatcher,
         ) -> None:
             """Initialize rate limiter with configuration."""

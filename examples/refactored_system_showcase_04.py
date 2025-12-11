@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from flext_core import FlextResult
 
-from flext_auth import FlextAuth, FlextAuthConfig, FlextAuthQuickstart
+from flext_auth import FlextAuth, FlextAuthQuickstart, FlextAuthSettings
 
 
 def demonstrate_refactoring_benefits() -> None:
@@ -72,7 +72,7 @@ def demonstrate_system_architecture() -> None:
 
     # Note: FlextAuth doesn't have a get_config() method
     # Configuration is passed during initialization
-    FlextAuthConfig()
+    FlextAuthSettings()
 
 
 def demonstrate_error_handling() -> None:

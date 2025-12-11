@@ -18,7 +18,7 @@ import os
 from flext_core import FlextContainer
 
 from flext_auth import FlextAuth, FlextAuthModels
-from flext_auth.config import FlextAuthConfig
+from flext_auth.settings import FlextAuthSettings
 
 
 def main() -> None:
@@ -42,7 +42,7 @@ def main() -> None:
 
     # Configure authentication service through FlextContainer
     container = FlextContainer.get_global()
-    config = FlextAuthConfig.create(
+    config = FlextAuthSettings.create(
         jwt_auth_secret="demo-jwt-secret-key-for-examples-only-not-secure",
         jwt_expiry_minutes=30,
         bcrypt_rounds=4,  # Fast for demo

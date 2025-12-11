@@ -1,6 +1,6 @@
 """FLEXT Auth Configuration - Generic Pydantic configuration with flext-core integration.
 
-Single FlextAuthConfig class using Pydantic ConfigDict with environment variable
+Single FlextAuthSettings class using Pydantic ConfigDict with environment variable
 override support, validation, and SOLID principles.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -11,19 +11,19 @@ from __future__ import annotations
 
 from typing import Self
 
-from flext_core import FlextConfig, r
+from flext_core import FlextSettings, r
 from pydantic import Field, SecretStr, model_validator
 
 from flext_auth.constants import c
 
 
-@FlextConfig.auto_register("auth")
-class FlextAuthConfig(FlextConfig.AutoConfig):
+@FlextSettings.auto_register("auth")
+class FlextAuthSettings(FlextSettings.AutoConfig):
     """Generic authentication configuration using Pydantic and flext-core patterns.
 
     **ARCHITECTURAL PATTERN**: Zero-Boilerplate Auto-Registration
 
-    This class uses FlextConfig.AutoConfig for automatic:
+    This class uses FlextSettings.AutoConfig for automatic:
     - Singleton pattern (thread-safe)
     - Namespace registration (accessible via config.auth)
     - Test reset capability (_reset_instance)
@@ -159,14 +159,14 @@ class FlextAuthConfig(FlextConfig.AutoConfig):
     )
 
     @classmethod
-    def create_with_overrides(cls, **overrides: object) -> r[FlextAuthConfig]:
+    def create_with_overrides(cls, **overrides: object) -> r[FlextAuthSettings]:
         """Create config instance with overrides."""
         try:
             # Create instance with overrides - Pydantic will validate
             instance = cls(**overrides)
-            return r[FlextAuthConfig].ok(instance)
+            return r[FlextAuthSettings].ok(instance)
         except Exception as e:
-            return r[FlextAuthConfig].fail(str(e))
+            return r[FlextAuthSettings].fail(str(e))
 
     def get_jwt_settings(self) -> dict[str, str | int | bool]:
         """Get JWT-specific settings."""
@@ -251,7 +251,7 @@ class FlextAuthConfig(FlextConfig.AutoConfig):
     def get_or_create_global(
         cls,
         **kwargs: str | int | bool | SecretStr | None,
-    ) -> r[FlextAuthConfig]:
+    ) -> r[FlextAuthSettings]:
         """Get or create global instance with optional overrides.
 
         Args:
@@ -301,4 +301,4 @@ class FlextAuthConfig(FlextConfig.AutoConfig):
         return config_dict
 
 
-__all__ = ["FlextAuthConfig"]
+__all__ = ["FlextAuthSettings"]

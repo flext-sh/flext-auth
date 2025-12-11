@@ -110,7 +110,7 @@ validation_result = auth.validate_token(token)
 
    ```python
    # Ensure same secret key is used for generation and validation
-   config = FlextAuthConfig()
+   config = FlextAuthSettings()
    print(f"JWT Secret: {config.jwt_secret_key}")
    ```
 
@@ -123,7 +123,7 @@ validation_result = auth.validate_token(token)
 **Problem**: Configuration not loading correctly
 
 ```python
-config = FlextAuthConfig()
+config = FlextAuthSettings()
 if config.is_failure:
     print(f"Config error: {config.error}")
 ```
@@ -142,14 +142,14 @@ if config.is_failure:
    ```python
    # Use valid environment names
    valid_envs = ["development", "testing", "staging", "production"]
-   config = FlextAuthConfig()
+   config = FlextAuthSettings()
    ```
 
 3. **Manual Configuration**:
 
    ```python
    # Create configuration manually if environment fails
-   config = FlextAuthConfig(
+   config = FlextAuthSettings(
        jwt_secret_key="manual-secret-key",
        jwt_expiry_minutes=60
    )
@@ -162,7 +162,7 @@ if config.is_failure:
 **Check Configuration**:
 
 ```python
-config = FlextAuthConfig()
+config = FlextAuthSettings()
 print(f"JWT Algorithm: {config.jwt_algorithm}")
 print(f"JWT Expiry: {config.jwt_expiry_minutes}")
 print(f"Secret Key Length: {len(config.jwt_secret_key)}")
@@ -213,7 +213,7 @@ print(f"Secret Key Length: {len(config.jwt_secret_key)}")
    @pytest.fixture(autouse=True)
    def reset_global_state():
        """Reset global state between tests."""
-       FlextAuthConfig._global_instance = None
+       FlextAuthSettings._global_instance = None
        yield
    ```
 
@@ -254,7 +254,7 @@ bcrypt_time = time.time() - start
 print(f"Bcrypt hashing took: {bcrypt_time:.3f}s")
 
 # Check bcrypt rounds
-config = FlextAuthConfig()
+config = FlextAuthSettings()
 print(f"Bcrypt rounds: {config.bcrypt_rounds}")
 ```
 
@@ -263,13 +263,13 @@ print(f"Bcrypt rounds: {config.bcrypt_rounds}")
 1. **Reduce bcrypt rounds for development**:
 
    ```python
-   dev_config = FlextAuthConfig(bcrypt_rounds=10)  # Faster for development
+   dev_config = FlextAuthSettings(bcrypt_rounds=10)  # Faster for development
    ```
 
 2. **Use production rounds only in production**:
 
    ```python
-   prod_config = FlextAuthConfig(bcrypt_rounds=14)  # High security
+   prod_config = FlextAuthSettings(bcrypt_rounds=14)  # High security
    ```
 
 ### Memory Usage
@@ -375,8 +375,8 @@ bandit -r src/flext_auth/
 
 # Verify secure configuration
 python -c "
-from flext_auth import FlextAuthConfig
-config = FlextAuthConfig()
+from flext_auth import FlextAuthSettings
+config = FlextAuthSettings()
 print(f'Bcrypt rounds: {config.bcrypt_rounds}')  # Should be >= 12
 print(f'JWT expiry: {config.jwt_expiry_minutes}')  # Should be <= 60
 print(f'Max attempts: {config.max_failed_attempts}')  # Should be <= 5

@@ -77,7 +77,7 @@ def main() -> None:
 
     # 4. Configuration Access
     # Note: config access methods don't exist in current FlextAuth API
-    # Configuration would be accessed through FlextAuthConfig if needed
+    # Configuration would be accessed through FlextAuthSettings if needed
 
     # 5. Flext Constants
 

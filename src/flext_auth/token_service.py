@@ -13,7 +13,6 @@ from __future__ import annotations
 from flext_core import r, s
 from flext_core.dispatcher import FlextDispatcher
 
-from flext_auth.config import FlextAuthConfig
 from flext_auth.constants import c
 from flext_auth.managers import (
     ServiceManagerMixin,
@@ -24,6 +23,7 @@ from flext_auth.models import FlextAuthModels
 # Import FlextAuthModels locally in methods where needed
 from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers.jwt import FlextAuthJwtProvider
+from flext_auth.settings import FlextAuthSettings
 
 
 class FlextAuthTokenService(ServiceManagerMixin, s[object]):
@@ -36,7 +36,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
     def __init__(
         self,
         *,
-        config: FlextAuthConfig,
+        config: FlextAuthSettings,
         provider_service: FlextAuthProviderService,
         dispatcher: FlextDispatcher,
     ) -> None:

@@ -1,6 +1,6 @@
 """Config module tests - basic functionality tests.
 
-Tests for FlextAuthConfig using real functionality without mocks.
+Tests for FlextAuthSettings using real functionality without mocks.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -11,23 +11,23 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from flext_auth import FlextAuthConfig
+from flext_auth import FlextAuthSettings
 from flext_auth.providers.jwt import FlextAuthJwtProvider, FlextAuthJwtTokenGenerator
 
 
-class TestFlextAuthConfigBasic:
-    """Basic tests for FlextAuthConfig functionality."""
+class TestFlextAuthSettingsBasic:
+    """Basic tests for FlextAuthSettings functionality."""
 
     def test_config_creation(self) -> None:
         """Test basic config creation."""
-        config = FlextAuthConfig()
-        assert isinstance(config, FlextAuthConfig)
+        config = FlextAuthSettings()
+        assert isinstance(config, FlextAuthSettings)
         assert config.expiry_minutes > 0
         assert config.algorithm is not None
 
     def test_config_with_custom_values(self) -> None:
         """Test config with custom values."""
-        config = FlextAuthConfig(
+        config = FlextAuthSettings(
             expiry_minutes=60,
             hash_rounds=12,
         )
@@ -37,20 +37,20 @@ class TestFlextAuthConfigBasic:
     def test_config_validation(self) -> None:
         """Test config validation."""
         # Should work with valid values
-        config = FlextAuthConfig(expiry_minutes=30)
+        config = FlextAuthSettings(expiry_minutes=30)
         assert config.expiry_minutes == 30
 
         # Should fail with invalid values
         with pytest.raises(ValidationError):
-            FlextAuthConfig(expiry_minutes=0)  # Too low
+            FlextAuthSettings(expiry_minutes=0)  # Too low
 
     def test_global_instance(self) -> None:
         """Test global instance functionality."""
         # This should work with the AutoConfig pattern
-        result = FlextAuthConfig.get_or_create_global()
+        result = FlextAuthSettings.get_or_create_global()
         assert result.is_success
         config = result.value
-        assert isinstance(config, FlextAuthConfig)
+        assert isinstance(config, FlextAuthSettings)
 
 
 class TestJwtTokenGenerator:

@@ -13,11 +13,10 @@ import threading
 from typing import ClassVar, Self, cast
 
 from flext_core import r, s
-from flext_core.config import FlextConfig
 from flext_core.dispatcher import FlextDispatcher
+from flext_core.settings import FlextSettings
 from pydantic import SecretStr
 
-from flext_auth.config import FlextAuthConfig
 from flext_auth.managers import ServiceManagerMixin
 from flext_auth.models import FlextAuthModels
 
@@ -27,6 +26,7 @@ from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
 from flext_auth.session_service import FlextAuthSessionService
+from flext_auth.settings import FlextAuthSettings
 from flext_auth.token_service import FlextAuthTokenService
 from flext_auth.typings import t
 from flext_auth.user_service import FlextAuthIdentityService
@@ -49,14 +49,14 @@ class FlextAuth(s[t.Responses.Authentication]):
 
     def __init__(
         self,
-        config: FlextAuthConfig | None = None,
+        config: FlextAuthSettings | None = None,
         service_name: str | None = None,
     ) -> None:
         """Initialize with dependency injection and event bus."""
         super().__init__()
         # Use provided config or create default (config is optional for convenience)
-        self._config: FlextAuthConfig = (
-            config if config is not None else FlextAuthConfig()
+        self._config: FlextAuthSettings = (
+            config if config is not None else FlextAuthSettings()
         )
         self._registry = FlextAuthRegistry()
         # Import here to avoid circular dependency
@@ -129,7 +129,7 @@ class FlextAuth(s[t.Responses.Authentication]):
         expiration_hours: int = 24,
     ) -> Self:
         """Factory method with generic configuration."""
-        config = FlextAuthConfig(
+        config = FlextAuthSettings(
             auth_secret=SecretStr(secret_key),
             algorithm=algorithm,
             expiry_minutes=expiration_hours * 60,
@@ -176,16 +176,16 @@ class FlextAuth(s[t.Responses.Authentication]):
         """
         if config_overrides:
             # Apply configuration overrides
-            config = FlextAuthConfig(**config_overrides)
+            config = FlextAuthSettings(**config_overrides)
         else:
-            config = FlextAuthConfig()
+            config = FlextAuthSettings()
 
         return cls(config=config)
 
     @property
-    def config(self) -> FlextConfig:
+    def config(self) -> FlextSettings:
         """Configuration access."""
-        return cast("FlextConfig", self._config)
+        return cast("FlextSettings", self._config)
 
     @property
     def registry(self) -> FlextAuthRegistry:

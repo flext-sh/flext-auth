@@ -18,7 +18,7 @@ import string
 
 from flext_core import FlextLogger
 
-from flext_auth import FlextAuth, FlextAuthConfig
+from flext_auth import FlextAuth, FlextAuthSettings
 
 # Get structured logger instance
 logger = FlextLogger(__name__)
@@ -34,7 +34,7 @@ def example_basic_authentication() -> None:
 
     # Show current configuration
     # Note: FlextAuth doesn't have a get_config() method
-    config = FlextAuthConfig.create()
+    config = FlextAuthSettings.create()
 
     logger.info(
         "Authentication configuration loaded",

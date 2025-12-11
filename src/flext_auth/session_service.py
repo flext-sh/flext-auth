@@ -10,17 +10,17 @@ from __future__ import annotations
 from flext_core import r, s
 from flext_core.dispatcher import FlextDispatcher
 
-from flext_auth.config import FlextAuthConfig
 from flext_auth.managers import (
     FlextAuthManagers,
     ServiceManagerMixin,
 )
+from flext_auth.settings import FlextAuthSettings
 
 
 class FlextAuthSessionService(ServiceManagerMixin, s[object]):
     """Focused service for session management with complete flext-core integration."""
 
-    def __init__(self, config: FlextAuthConfig, dispatcher: FlextDispatcher) -> None:
+    def __init__(self, config: FlextAuthSettings, dispatcher: FlextDispatcher) -> None:
         """Initialize session service with flext-core integration."""
         super().__init__()
         self._init_managers(config, dispatcher)

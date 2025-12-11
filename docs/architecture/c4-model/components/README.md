@@ -133,7 +133,7 @@ flext-auth follows a provider-centric architecture with clear separation of conc
 
 #### Configuration & Infrastructure
 
-##### FlextAuthConfig
+##### FlextAuthSettings
 
 - **Type**: Configuration management
 - **Responsibilities**:
@@ -340,7 +340,7 @@ Container_Boundary(auth_service, "flext-auth Service") {
     Component(http_transport, "FlextWebTransportAdapter", "Python/FastAPI", "HTTP transport and middleware")
     Component(grpc_transport, "GrpcTransportAdapter", "Python/grpcio", "gRPC transport implementation")
 
-    Component(config, "FlextAuthConfig", "Python/Pydantic", "Configuration management")
+    Component(config, "FlextAuthSettings", "Python/Pydantic", "Configuration management")
     Component(constants, "FlextAuthConstants", "Python", "System constants and defaults")
     Component(models, "FlextAuthModels", "Python/Pydantic", "Domain models and schemas")
 }

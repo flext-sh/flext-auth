@@ -352,7 +352,7 @@ class FlextAuthBaseProvider(Protocol):
 from __future__ import annotations
 from flext_core import FlextBus
 
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -373,7 +373,7 @@ from flext_core import t
 from flext_core import u
 
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -505,7 +505,7 @@ class BaseTransportAdapter(Protocol):
 ```python
 from flext_api import FlextApi
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -560,7 +560,7 @@ class FlextWebTransportAdapter(BaseTransportAdapter):
 ```python
 from flext_grpc import FlextGrpc
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -992,7 +992,7 @@ import ldap3          # Use flext-ldap instead
 ```python
 # ✅ CORRECT - Using FLEXT domain libraries
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
@@ -1039,7 +1039,7 @@ All providers and managers extend FlextService for consistency:
 
 ```python
 from flext_core import FlextBus
-from flext_core import FlextConfig
+from flext_core import FlextSettings
 from flext_core import FlextConstants
 from flext_core import FlextContainer
 from flext_core import FlextContext
