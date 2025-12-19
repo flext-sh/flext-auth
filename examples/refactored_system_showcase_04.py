@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_core import FlextResult
+from pydantic_settings import BaseSettings
 
 from flext_auth import FlextAuth, FlextAuthQuickstart, FlextAuthSettings
 
@@ -29,15 +30,23 @@ def demonstrate_refactoring_benefits() -> None:
     auth_result = auth.authenticate_user("modern_user", "ModernPass123!")
     if auth_result.is_success:
         auth_data = auth_result.value
-        user_data = auth_data.get("user", {})
-        user_data.get("username", "Unknown") if isinstance(user_data, dict) else "User"
+        # auth_data is Identity object, access name field directly
+        user_name = auth_data.name
+        print(f"Authenticated user: {user_name}")
 
 
 def demonstrate_quickstart_functionality() -> None:
     """Demonstrate FlextAuthQuickstart convenience functionality."""
     # Quickstart utility for rapid setup
-    quickstart = FlextAuthQuickstart()
-    auth_service: FlextAuth = quickstart.flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    quickstart: FlextAuthQuickstart = FlextAuthQuickstart()
+    # flext_auth_quick_start returns r[list[str]]
+    quickstart_result = quickstart.flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    if quickstart_result.is_success:
+        REDACTED_LDAP_BIND_PASSWORD_credentials = quickstart_result.value
+        print(f"Admin credentials created: {REDACTED_LDAP_BIND_PASSWORD_credentials}")
+
+    # Create a separate FlextAuth instance for the demo
+    auth_service = FlextAuth()
 
     # Standard user registration
     reg_result = auth_service.register_user(
@@ -53,26 +62,29 @@ def demonstrate_quickstart_functionality() -> None:
 def demonstrate_flext_result_integration() -> None:
     """Demonstrate FlextResult pattern integration."""
     # FlextResult pattern usage
-    FlextResult[str].ok("Refactoring successful")
+    _ = FlextResult[str].ok("Refactoring successful")
 
-    FlextResult[str].fail("Example failure case")
+    _ = FlextResult[str].fail("Example failure case")
 
-    # Show real usage in auth operations
+    # Show real usage in auth operations - using authenticate instead
     auth: FlextAuth = FlextAuth()
-    token_result = auth.generate_token_for_user("test_user_id")
+    # FlextAuth doesn't have generate_token_for_user method directly
+    # This would be done through a provider or service
+    auth_result = auth.authenticate_user("test_user", "password")
 
-    if token_result.is_success:
+    if auth_result.is_success:
         pass
 
 
 def demonstrate_system_architecture() -> None:
     """Demonstrate the clean system architecture."""
     # Clean separation of concerns
-    FlextAuth()
+    _ = FlextAuth()
 
     # Note: FlextAuth doesn't have a get_config() method
     # Configuration is passed during initialization
-    FlextAuthSettings()
+    # FlextAuthSettings requires config_class parameter
+    _ = FlextAuthSettings(config_class=BaseSettings)
 
 
 def demonstrate_error_handling() -> None:
