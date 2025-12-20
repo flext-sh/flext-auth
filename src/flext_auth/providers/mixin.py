@@ -80,7 +80,9 @@ class FlextAuthProviderMixin:
 
         """
         # Use u.filter() for unified filtering (DSL pattern)
-        missing_fields = u.filter(required_fields, lambda field: field not in credentials)
+        missing_fields = u.filter(
+            required_fields, lambda field: field not in credentials
+        )
 
         if missing_fields:
             error_msg = f"Missing required fields: {', '.join(missing_fields)}"

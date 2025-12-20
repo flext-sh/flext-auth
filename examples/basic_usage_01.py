@@ -17,6 +17,7 @@ import secrets
 import string
 
 from flext_core import FlextLogger
+from pydantic_settings import BaseSettings
 
 from flext_auth import FlextAuth, FlextAuthSettings
 
@@ -34,7 +35,7 @@ def example_basic_authentication() -> None:
 
     # Show current configuration
     # Note: FlextAuth doesn't have a get_config() method
-    from pydantic_settings import BaseSettings
+
     config = FlextAuthSettings(config_class=BaseSettings)
 
     logger.info(

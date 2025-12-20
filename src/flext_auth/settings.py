@@ -18,6 +18,8 @@ from flext_core import (
 )
 from pydantic import Field, SecretStr, model_validator
 
+from flext_auth.constants import c
+
 
 @FlextSettings.auto_register("auth")
 class FlextAuthSettings(FlextSettings.AutoConfig):
@@ -178,7 +180,7 @@ class FlextAuthSettings(FlextSettings.AutoConfig):
             "issuer": self.issuer,
             "audience": self.audience,
             "secret_configured": len(self.auth_secret.get_secret_value())
-            >= 32,
+            >= c.Auth.SECRET_MIN_LENGTH,
         }
 
     def get_security_settings(self) -> dict[str, int | bool]:
@@ -195,7 +197,7 @@ class FlextAuthSettings(FlextSettings.AutoConfig):
     def _validate_model(self) -> Self:
         """Pydantic model validator for automatic validation."""
         secret_len = len(self.auth_secret.get_secret_value())
-        if secret_len < 32:
+        if secret_len < c.Auth.SECRET_MIN_LENGTH:
             msg = f"Secret must be ≥32 chars, got {secret_len}"
             raise ValueError(msg)
 
@@ -203,8 +205,8 @@ class FlextAuthSettings(FlextSettings.AutoConfig):
             msg = "Min credential length > max"
             raise ValueError(msg)
 
-        if self.session_expiry_minutes > 43200:
-            msg = "Session expiry > 43200min (30 days)"
+        if self.session_expiry_minutes > c.Auth.SESSION_EXPIRY_MAX_MINUTES:
+            msg = f"Session expiry > {c.Auth.SESSION_EXPIRY_MAX_MINUTES}min (30 days)"
             raise ValueError(msg)
 
         # JWT expiry should not exceed session expiry
@@ -227,15 +229,17 @@ class FlextAuthSettings(FlextSettings.AutoConfig):
             self.model_validate(self.model_dump())
             # Check validation constraints manually
             secret_len = len(self.auth_secret.get_secret_value())
-            if secret_len < 32:
-                msg = f"Secret must be ≥32 chars, got {secret_len}"
+            if secret_len < c.Auth.SECRET_MIN_LENGTH:
+                msg = f"Secret must be ≥{c.Auth.SECRET_MIN_LENGTH} chars, got {secret_len}"
                 return r[bool].fail(msg)
 
             if self.min_credential_length > self.max_credential_length:
                 return r[bool].fail("Min credential length > max")
 
-            if self.session_expiry_minutes > 43200:
-                msg = "Session expiry > 43200min (30 days)"
+            if self.session_expiry_minutes > c.Auth.SESSION_EXPIRY_MAX_MINUTES:
+                msg = (
+                    f"Session expiry > {c.Auth.SESSION_EXPIRY_MAX_MINUTES}min (30 days)"
+                )
                 return r[bool].fail(msg)
 
             if self.expiry_minutes > self.session_expiry_minutes:

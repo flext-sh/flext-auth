@@ -47,10 +47,15 @@ class ServiceManagerMixin:
         """
         self._config = config
         self._dispatcher = dispatcher
-        setattr(self, '_user_manager', FlextAuthManagers.FlextAuthUserManager(config))
-        setattr(self, '_session_manager', FlextAuthManagers.FlextAuthSessionManager(config))
-        setattr(self, '_audit_logger', FlextAuthManagers.FlextAuthAuditLogger(config, dispatcher))
-        setattr(self, '_rate_limiter', FlextAuthManagers.FlextAuthRateLimiter(config, dispatcher))
+        setattr(self, "_user_manager", FlextAuthManagers.FlextAuthUserManager(config))
+        setattr(
+            self, "_session_manager", FlextAuthManagers.FlextAuthSessionManager(config)
+        )
+        setattr(
+            self,
+            "_rate_limiter",
+            FlextAuthManagers.FlextAuthRateLimiter(config, dispatcher),
+        )
 
 
 class FlextAuthManagers(s[object]):

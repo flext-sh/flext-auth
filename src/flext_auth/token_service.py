@@ -19,6 +19,7 @@ from flext_core.dispatcher import FlextDispatcher
 
 from flext_auth.constants import FlextAuthConstants as c
 from flext_auth.managers import (
+    FlextAuthManagers,
     ServiceManagerMixin,
 )
 from flext_auth.models import FlextAuthModels
@@ -51,6 +52,11 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
         # Lazy cache for JWT provider (initialized on first access)
         self._jwt_provider_cache: FlextAuthJwtProvider | None = None
 
+    @property
+    def user_manager(self) -> FlextAuthManagers.FlextAuthUserManager:
+        """Direct access to user manager for token operations."""
+        return getattr(self, "_user_manager")
+
     def execute(self) -> r[object]:
         """Railway-oriented execute with focused service pattern."""
         return r[object].fail(
@@ -68,14 +74,15 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
         )
         if result.is_failure:
             error_msg = result.error if result.error is not None else "Unknown error"
-            self.audit_logger.log_token_validation(
+            self.logger.debug(
+                "Token validation",
                 success=False,
                 token_id=self._short_token(token),
                 reason=error_msg,
             )
             return result
         identity = result.value
-        self.audit_logger.log_token_validation(
+        self.logger.log_token_validation(
             success=True,
             username=identity.username,
             token_id=self._short_token(token),
@@ -89,7 +96,8 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
         )
         if result.is_failure:
             error = result.error
-            self.audit_logger.log_token_refresh(
+            self.logger.info(
+                "Token refresh",
                 success=False,
                 old_token_id=self._short_token(token),
                 reason=error,
@@ -98,7 +106,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
             return r[FlextAuthModels.AuthToken].fail(error or "Token refresh failed")
 
         refreshed = result.value
-        self.audit_logger.log_token_refresh(
+        self.logger.log_token_refresh(
             success=True,
             old_token_id=self._short_token(token),
             new_token_id=self._short_token(refreshed.token),
@@ -116,7 +124,8 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
         user_result = self.user_manager.get_user(user_id)
         if user_result.is_failure:
             error = user_result.error
-            self.audit_logger.log_token_creation(
+            self.logger.info(
+                "Token creation",
                 user_id=user_id,
                 token_type=token_type,
                 success=False,
@@ -135,7 +144,8 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
 
         if token_result.is_failure:
             error = token_result.error
-            self.audit_logger.log_token_creation(
+            self.logger.info(
+                "Token creation",
                 user_id=user_id,
                 token_type=token_type,
                 success=False,
@@ -144,7 +154,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
             return r[str].fail(error or "Token generation failed")
 
         token_value = token_result.value
-        self.audit_logger.log_token_creation(
+        self.logger.log_token_creation(
             user_id=user_id,
             token_type=token_type,
             success=True,

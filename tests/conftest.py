@@ -17,15 +17,6 @@ except ImportError:
     FlextTestsDocker = None
 
 
-# TODO: Implement proper singleton cleanup for FlextAuthSettings
-# @pytest.fixture(autouse=True)
-# def clear_auth_config_singleton() -> Generator[None]:
-#     """Clear FlextAuthSettings singleton before each test to ensure clean state."""
-#     # flext_auth.settings.FlextAuthSettings._reset_instance()
-#     yield
-#     # flext_auth.settings.FlextAuthSettings._reset_instance()
-
-
 @pytest.fixture
 def mock_get_global() -> MagicMock:
     """Mock for FlextAuthSettings.get_global_instance.

@@ -20,7 +20,9 @@ import bcrypt
 from flext_core import (
     FlextModels as m,
     FlextResult as r,
+    FlextUtilities as u,
 )
+from flext_core._models.entity import FlextModelsEntity
 from pydantic import ConfigDict, Field, computed_field, model_validator
 
 
@@ -49,7 +51,7 @@ class FlextAuthModels(m):
     def __init_subclass__(cls, **kwargs: object) -> None:
         """Warn when FlextAuthModels is subclassed directly."""
         super().__init_subclass__(**kwargs)
-        flext_u.Deprecation.warn_once(
+        u.Deprecation.warn_once(
             f"subclass:{cls.__name__}",
             "Subclassing FlextAuthModels is deprecated. Use FlextModels directly instead.",
         )
@@ -440,6 +442,17 @@ class FlextAuthModels(m):
             description="Additional data",
         )
 
+
+# Resolve forward references for Pydantic v2 compatibility
+# Required for models inheriting from base classes with forward references
+_types_namespace = {k: v for k, v in globals().items() if k.startswith(("Flext", "m"))}
+_types_namespace["FlextModelsEntity"] = FlextModelsEntity
+FlextAuthModels.Identity.model_rebuild(_types_namespace=_types_namespace)
+FlextAuthModels.IdentityRequest.model_rebuild(_types_namespace=_types_namespace)
+FlextAuthModels.AuthToken.model_rebuild(_types_namespace=_types_namespace)
+FlextAuthModels.Session.model_rebuild(_types_namespace=_types_namespace)
+FlextAuthModels.Role.model_rebuild(_types_namespace=_types_namespace)
+FlextAuthModels.Permission.model_rebuild(_types_namespace=_types_namespace)
 
 # Short aliases
 m = FlextAuthModels

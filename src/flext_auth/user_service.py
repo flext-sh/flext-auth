@@ -20,7 +20,9 @@ from flext_core import (
 from flext_core.dispatcher import FlextDispatcher
 from pydantic import ValidationError
 
+from flext_auth.constants import c
 from flext_auth.managers import (
+    FlextAuthManagers,
     ServiceManagerMixin,
 )
 from flext_auth.models import PasswordUtil
@@ -42,14 +44,14 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
         self.init_managers(config, dispatcher)
 
     @property
-    def identity_manager(self) -> object:
+    def identity_manager(self) -> FlextAuthManagers.FlextAuthUserManager:
         """Direct access to identity manager for client orchestration."""
-        return getattr(self, '_user_manager', None)
+        return getattr(self, "_user_manager", None)
 
     @identity_manager.setter
-    def identity_manager(self, value: object) -> None:
+    def identity_manager(self, value: FlextAuthManagers.FlextAuthUserManager) -> None:
         """Set identity manager (for service composition)."""
-        setattr(self, '_user_manager', value)
+        setattr(self, "_user_manager", value)
 
     def execute(self) -> r[object]:
         """Railway-oriented execute with focused service pattern."""
@@ -135,18 +137,22 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
             return r[m.Identity].fail(str(e))
 
         # Validate credential strength before hashing
-        if len(credential) < 8:
+        if len(credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
             return r[m.Identity].fail("Credential must be at least 8 characters long")
 
         # Create user with basic fields - extra_fields not currently supported
         # due to type constraints in the manager interface
-        return r[str].ok(PasswordUtil.hash_password(credential)).flat_map(
-            lambda ch: self.identity_manager.create_user(
-                username=request.name,
-                email=request.contact,
-                password_hash=ch,
-                roles=request.roles,
-            ),
+        return (
+            r[str]
+            .ok(PasswordUtil.hash_password(credential))
+            .flat_map(
+                lambda ch: self.identity_manager.create_user(
+                    username=request.name,
+                    email=request.contact,
+                    password_hash=ch,
+                    roles=request.roles,
+                ),
+            )
         )
 
     # =========================================================================
@@ -173,13 +179,17 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
             )
             .flat_map(
                 lambda identity: r.ok(identity)
-                if len(new_credential) >= 8
-                else r.fail("New credential must be at least 8 characters long"),
+                if len(new_credential) >= c.Auth.CREDENTIAL_MIN_LENGTH
+                else r.fail(
+                    f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
+                ),
             )
             .flat_map(
                 lambda identity: identity.set_credential(new_credential).map(
                     lambda _: (
-                        self.audit_logger.log_password_change_success(identity.name),
+                        self.logger.info(
+                            "Password change successful", identity=identity.name
+                        ),
                         True,
                     )[1],
                 ),
@@ -192,13 +202,17 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
             self.identity_manager.get_user(identity_id)
             .flat_map(
                 lambda identity: r.ok(identity)
-                if len(new_credential) >= 8
-                else r.fail("New credential must be at least 8 characters long"),
+                if len(new_credential) >= c.Auth.CREDENTIAL_MIN_LENGTH
+                else r.fail(
+                    f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
+                ),
             )
             .flat_map(
                 lambda identity: identity.set_credential(new_credential).map(
                     lambda _: (
-                        self.audit_logger.log_password_reset(identity.name),
+                        self.logger.info(
+                            "Password reset successful", identity=identity.name
+                        ),
                         True,
                     )[1],
                 ),
@@ -217,13 +231,15 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
         if identity.failed_attempts >= max_attempts:
             lockout_duration = timedelta(minutes=self._config.lockout_duration_minutes)
             identity.locked_until = datetime.now(UTC) + lockout_duration
-            self.audit_logger.log_auth_failure(
+            self.logger.warning(
+                "Authentication failure",
                 username=identity.name,
                 provider="internal",
                 reason=f"Account locked after {identity.failed_attempts} failed attempts",
             )
         else:
-            self.audit_logger.log_auth_failure(
+            self.logger.warning(
+                "Authentication failure",
                 username=identity.name,
                 provider="internal",
                 reason=f"Invalid credentials ({identity.failed_attempts}/{max_attempts} attempts)",
@@ -252,7 +268,8 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
             .map(lambda identity: (identity, permission in identity.permissions))
             .map(
                 lambda ip: (
-                    self.audit_logger.log_authorization_check(
+                    self.logger.debug(
+                        "Authorization check",
                         username=ip[0].name,
                         resource=resource if resource is not None else "",
                         action=permission,
