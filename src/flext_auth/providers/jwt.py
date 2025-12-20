@@ -35,7 +35,7 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):
     def authenticate(
         self,
         credentials: dict[str, object],
-    ) -> r[FlextAuthModels.AuthToken]:
+    ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using JWT credentials.
 
         Args:
@@ -46,7 +46,7 @@ class FlextAuthJwtProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):
 
         """
         _ = credentials
-        return r["FlextAuthModels.AuthToken"].fail("Not implemented")
+        return r[p.Auth.TokenProtocol].fail("Not implemented")
 
     def validate(
         self,

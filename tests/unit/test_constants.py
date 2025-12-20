@@ -19,7 +19,7 @@ class TestFlextAuthConstants:
 
     def test_jwt_constants(self) -> None:
         """Test JWT-related constants."""
-        jwt = FlextAuthConstants.Jwt
+        jwt = FlextAuthConstants.Auth.Jwt
 
         assert jwt.DEFAULT_ALGORITHM == "HS256"
         assert jwt.DEFAULT_EXPIRY_MINUTES == 30
@@ -31,7 +31,7 @@ class TestFlextAuthConstants:
 
     def test_credentials_constants(self) -> None:
         """Test credential-related constants."""
-        creds = FlextAuthConstants.Credentials
+        creds = FlextAuthConstants.Auth.Credentials
 
         assert creds.Username.MIN_LENGTH == 3
         assert creds.Username.MAX_LENGTH == 50

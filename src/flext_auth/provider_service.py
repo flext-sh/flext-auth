@@ -16,7 +16,6 @@ from typing import cast
 from flext_core import (
     FlextResult as r,
     FlextService as s,
-    FlextTypes as t,
 )
 
 from flext_auth.constants import FlextAuthConstants as c
@@ -38,6 +37,7 @@ from flext_auth.providers import (
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
 from flext_auth.settings import FlextAuthSettings
+from flext_auth.typings import FlextAuthTypes as t
 
 
 class FlextAuthProviderService(s[object]):
@@ -166,7 +166,7 @@ class FlextAuthProviderService(s[object]):
         username: str,
         password: str,
         provider: str = "basic",
-    ) -> r[FlextAuthModels.AuthToken]:
+    ) -> r[p.Auth.TokenProtocol]:
         """Railway-oriented user authentication with provider selection."""
         return self._providers.get(provider).flat_map(
             lambda p: p.authenticate({"username": username, "password": password}),
@@ -174,7 +174,7 @@ class FlextAuthProviderService(s[object]):
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.Identity,
+        user: FlextAuthModels.AuthIdentity,
         provider: str = "jwt",
         token_type: str = c.Auth.TokenTypes.ACCESS.value,
         expiry_minutes: int | None = None,
@@ -188,7 +188,7 @@ class FlextAuthProviderService(s[object]):
         self,
         token: str,
         provider: str = "jwt",
-    ) -> r[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.AuthIdentity]:
         """Railway-oriented token validation with direct provider access."""
         return self._providers.get(provider).flat_map(lambda p: p.validate_token(token))
 

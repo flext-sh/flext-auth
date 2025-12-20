@@ -22,7 +22,7 @@ from flext_auth.constants import c
 
 
 @FlextSettings.auto_register("auth")
-class FlextAuthSettings(FlextSettings.AutoConfig):
+class FlextAuthSettings(FlextSettings):
     """Generic authentication configuration using Pydantic and flext-core patterns.
 
     **ARCHITECTURAL PATTERN**: Zero-Boilerplate Auto-Registration
@@ -198,7 +198,7 @@ class FlextAuthSettings(FlextSettings.AutoConfig):
         """Pydantic model validator for automatic validation."""
         secret_len = len(self.auth_secret.get_secret_value())
         if secret_len < c.Auth.SECRET_MIN_LENGTH:
-            msg = f"Secret must be ≥32 chars, got {secret_len}"
+            msg = f"Secret must be ≥{c.Auth.SECRET_MIN_LENGTH} chars, got {secret_len}"
             raise ValueError(msg)
 
         if self.min_credential_length > self.max_credential_length:
@@ -269,9 +269,9 @@ class FlextAuthSettings(FlextSettings.AutoConfig):
 
         """
         try:
-            # Use AutoConfig's get_instance() for singleton pattern
+            # Use FlextSettings singleton pattern
             if not kwargs:
-                instance = cls.get_instance()
+                instance = cls()
                 return r.ok(instance)
             # If kwargs provided, create new instance with overrides
             instance = cls(**kwargs)

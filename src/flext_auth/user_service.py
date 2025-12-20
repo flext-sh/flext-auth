@@ -25,7 +25,10 @@ from flext_auth.managers import (
     FlextAuthManagers,
     ServiceManagerMixin,
 )
-from flext_auth.models import PasswordUtil
+from flext_auth.models import (
+    FlextAuthModels,
+    PasswordUtil,
+)
 from flext_auth.settings import FlextAuthSettings
 
 
@@ -63,7 +66,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
         self,
         name: str,
         credential: str,
-    ) -> r[m.Identity]:
+    ) -> r[FlextAuthModels.AuthIdentity]:
         """Railway-oriented identity authentication with account lockout."""
         return (
             self.identity_manager.get_user_by_username(name)
@@ -103,7 +106,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
         contact: str,
         credential: str,
         roles: list[str] | None = None,
-    ) -> r[m.Identity]:
+    ) -> r[FlextAuthModels.AuthIdentity]:
         """Railway-oriented identity creation with credential hashing."""
         if roles is None:
             user_roles: list[str] = []
@@ -111,12 +114,12 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
             user_roles = roles
         # Normalize email to lowercase for consistency
         if not isinstance(contact, str):
-            return r[m.Identity].fail("Contact must be a string")
+            return r[m.AuthIdentity].fail("Contact must be a string")
         normalized_contact = contact.lower()
 
         # Validate using Pydantic model to ensure proper validation errors
         try:
-            request = m.IdentityRequest(
+            request = m.AuthIdentityRequest(
                 name=name,
                 contact=normalized_contact,
                 credential=credential,
@@ -132,13 +135,15 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
                 msg = error.get("msg", "Validation error")
                 error_messages.append(f"{field}: {msg}")
             error_msg = "; ".join(error_messages) if error_messages else str(e)
-            return r[m.Identity].fail(error_msg)
+            return r[m.AuthIdentity].fail(error_msg)
         except Exception as e:
-            return r[m.Identity].fail(str(e))
+            return r[m.AuthIdentity].fail(str(e))
 
         # Validate credential strength before hashing
         if len(credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
-            return r[m.Identity].fail("Credential must be at least 8 characters long")
+            return r[m.AuthIdentity].fail(
+                f"Credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
+            )
 
         # Create user with basic fields - extra_fields not currently supported
         # due to type constraints in the manager interface
@@ -223,7 +228,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     # ACCOUNT LOCKOUT HANDLING
     # =========================================================================
 
-    def _handle_failed_attempt(self, identity: m.Identity) -> r[bool]:
+    def _handle_failed_attempt(self, identity: m.AuthIdentity) -> r[bool]:
         """Handle failed authentication attempt with lockout logic."""
         identity.failed_attempts += 1
         max_attempts = self._config.max_attempts

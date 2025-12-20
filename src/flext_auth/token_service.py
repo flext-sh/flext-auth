@@ -67,7 +67,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
     # ADVANCED TOKEN OPERATIONS WITH RAILWAY PATTERNS
     # =========================================================================
 
-    def validate_token(self, token: str) -> r[FlextAuthModels.Identity]:
+    def validate_token(self, token: str) -> r[FlextAuthModels.AuthIdentity]:
         """Railway-oriented token validation with audit logging."""
         result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.validate_token(token),
@@ -87,7 +87,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
             username=identity.username,
             token_id=self._short_token(token),
         )
-        return r[FlextAuthModels.Identity].ok(identity)
+        return r[FlextAuthModels.AuthIdentity].ok(identity)
 
     def refresh_token(self, token: str) -> r[FlextAuthModels.AuthToken]:
         """Railway-oriented token refresh with audit logging."""

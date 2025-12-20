@@ -153,7 +153,7 @@ class FlextAuthMiddleware(s):
             self._token_prefix = token_prefix
             self._auto_refresh = auto_refresh
             self.logger = FlextLogger(f"flext_auth.middleware.http.{provider_name}")
-            self._current_token: FlextAuthModels.AuthToken | None = None
+            self._current_token: p.Auth.TokenProtocol | None = None
 
         def process_request(
             self,
@@ -256,14 +256,14 @@ class FlextAuthMiddleware(s):
                 return self._authenticate_initial()
 
             if self._is_token_still_valid():
-                return r[FlextAuthModels.AuthToken].ok(self._current_token)
+                return r[p.Auth.TokenProtocol].ok(self._current_token)
 
             return self._refresh_or_reauthenticate()
 
         def _authenticate_initial(self) -> r[FlextAuthModels.AuthToken]:
             """Authenticate using credentials for initial token (SRP: Initial auth only)."""
             if not self._credentials:
-                return r[FlextAuthModels.AuthToken].fail(
+                return r[p.Auth.TokenProtocol].fail(
                     "No authentication token and no credentials provided",
                 )
 
@@ -276,7 +276,7 @@ class FlextAuthMiddleware(s):
                 "Initial authentication successful",
                 provider=self._provider_name,
             )
-            return r[FlextAuthModels.AuthToken].ok(self._current_token)
+            return r[p.Auth.TokenProtocol].ok(self._current_token)
 
         def _is_token_still_valid(self) -> bool:
             """Check if current token is still valid (SRP: Validation check only)."""
@@ -307,7 +307,7 @@ class FlextAuthMiddleware(s):
                         "Token refresh successful",
                         provider=self._provider_name,
                     )
-                    return r[FlextAuthModels.AuthToken].ok(self._current_token)
+                    return r[p.Auth.TokenProtocol].ok(self._current_token)
 
             # Refresh failed or not supported - re-authenticate
             if self._credentials:
@@ -319,7 +319,7 @@ class FlextAuthMiddleware(s):
                 auth_result = self._provider.authenticate(self._credentials)
                 if auth_result.is_success:
                     self._current_token = auth_result.value
-                    return r[FlextAuthModels.AuthToken].ok(self._current_token)
+                    return r[p.Auth.TokenProtocol].ok(self._current_token)
 
             return r[FlextAuthModels.AuthToken].fail(
                 "Token expired and unable to refresh or re-authenticate",

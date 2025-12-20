@@ -10,8 +10,6 @@ from abc import ABC
 
 from flext_core import r
 
-from flext_auth.models import FlextAuthModels
-
 # Forward reference to avoid circular import
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
@@ -36,7 +34,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
     def authenticate(
         self,
         credentials: dict[str, object],
-    ) -> r[FlextAuthModels.AuthToken]:
+    ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using X.509 certificate.
 
         Args:
@@ -47,11 +45,11 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin
 
         """
         _ = credentials
-        return r["FlextAuthModels.AuthToken"].fail("Not implemented")
+        return r[p.Auth.TokenProtocol].fail("Not implemented")
 
     def validate(
         self,
-        token: str | FlextAuthModels.AuthToken,
+        token: str | p.Auth.TokenProtocol,
     ) -> r[bool]:
         """Validate authentication token.
 

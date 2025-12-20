@@ -150,7 +150,7 @@ class FlextAuthManagers(s[object]):
         def _create_identity_from_storage(
             self,
             storage_data: dict[str, object],
-        ) -> FlextAuthModels.Identity:
+        ) -> FlextAuthModels.AuthIdentity:
             """Create Identity model from storage data, filtering out non-model fields."""
             identity_id = self._extract_identity_id(storage_data)
             name_value = self._validate_required_field(storage_data, "name", str)
@@ -227,7 +227,7 @@ class FlextAuthManagers(s[object]):
                 k: v for k, v in identity_data.items() if k in valid_identity_fields
             }
 
-            return FlextAuthModels.Identity(**filtered_identity_data)
+            return FlextAuthModels.AuthIdentity(**filtered_identity_data)
 
         def _apply_list_modification(
             self,

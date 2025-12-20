@@ -135,6 +135,12 @@ class FlextAuthModels(m):
 
         identity_id: str = Field(..., description="Identity ID")
         token: str = Field(..., description="Token value", exclude=True)
+
+        @property
+        def user_id(self) -> str:
+            """User ID property for protocol compatibility."""
+            return self.identity_id
+
         token_type: str = Field(
             default="bearer",
             description="Token type",
@@ -158,7 +164,7 @@ class FlextAuthModels(m):
     # IDENTITY MODELS - Generic identity/user entity
     # =========================================================================
 
-    class IdentityRequest(m.Value):
+    class AuthIdentityRequest(m.Value):
         """Generic identity creation request (immutable value object)."""
 
         name: str = Field(
@@ -185,7 +191,7 @@ class FlextAuthModels(m):
             description="Roles",
         )
 
-    class Identity(m.Entity):
+    class AuthIdentity(m.Entity):
         """Generic identity/user entity with minimal fields."""
 
         name: str = Field(
@@ -447,8 +453,8 @@ class FlextAuthModels(m):
 # Required for models inheriting from base classes with forward references
 _types_namespace = {k: v for k, v in globals().items() if k.startswith(("Flext", "m"))}
 _types_namespace["FlextModelsEntity"] = FlextModelsEntity
-FlextAuthModels.Identity.model_rebuild(_types_namespace=_types_namespace)
-FlextAuthModels.IdentityRequest.model_rebuild(_types_namespace=_types_namespace)
+FlextAuthModels.AuthIdentity.model_rebuild(_types_namespace=_types_namespace)
+FlextAuthModels.AuthIdentityRequest.model_rebuild(_types_namespace=_types_namespace)
 FlextAuthModels.AuthToken.model_rebuild(_types_namespace=_types_namespace)
 FlextAuthModels.Session.model_rebuild(_types_namespace=_types_namespace)
 FlextAuthModels.Role.model_rebuild(_types_namespace=_types_namespace)

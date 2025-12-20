@@ -535,27 +535,27 @@ class FlextAuthConstants(FlextConstants):
         class Credentials:
             """Credential validation constants."""
 
-        class Username:
-            """Username validation constants."""
+            class Username:
+                """Username validation constants."""
 
-            MIN_LENGTH: Final[int] = 3
-            """Minimum username length."""
-            MAX_LENGTH: Final[int] = 50
-            """Maximum username length."""
+                MIN_LENGTH: Final[int] = 3
+                """Minimum username length."""
+                MAX_LENGTH: Final[int] = 50
+                """Maximum username length."""
 
-        class Password:
-            """Password validation constants."""
+            class Password:
+                """Password validation constants."""
 
-            MIN_LENGTH: Final[int] = 8
-            """Minimum password length."""
-            MAX_LENGTH: Final[int] = 128
-            """Maximum password length."""
-            MIN_SCORE: Final[int] = 3
-            """Minimum password strength score."""
-            MIN_BCRYPT_HASH_LENGTH: Final[int] = 60
-            """Minimum bcrypt hash length."""
-            BCRYPT_ROUNDS: Final[int] = 12
-            """Default bcrypt rounds."""
+                MIN_LENGTH: Final[int] = 8
+                """Minimum password length."""
+                MAX_LENGTH: Final[int] = 128
+                """Maximum password length."""
+                MIN_SCORE: Final[int] = 3
+                """Minimum password strength score."""
+                MIN_BCRYPT_HASH_LENGTH: Final[int] = 60
+                """Minimum bcrypt hash length."""
+                BCRYPT_ROUNDS: Final[int] = 12
+                """Default bcrypt rounds."""
 
         # ═══════════════════════════════════════════════════════════════════
         # SESSION CONSTANTS: Nested class for session management

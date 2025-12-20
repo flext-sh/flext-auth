@@ -29,7 +29,7 @@ def main() -> None:
         # This is a demo example - in real applications, get passwords from secure input
         # Use a secure demo password for the example
         test_password = "SecureDemoPassword123!"
-        FlextAuthModels.IdentityRequest(
+        FlextAuthModels.AuthIdentityRequest(
             username="testuser",
             email="test@example.com",
             password=test_password,

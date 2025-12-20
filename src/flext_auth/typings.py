@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Annotated, TypedDict
+from typing import Annotated, Literal, TypedDict
 
 from flext_core import FlextTypes
 from pydantic import Field, SecretStr
@@ -18,7 +18,19 @@ class FlextAuthTypes(FlextTypes):
     # CORE AUTH TYPES - Using dict for pydantic compatibility
     # =========================================================================
 
-    type UserDict = dict[str, t.JsonValue | str | bool | list[str]]
+    class UserDict(TypedDict, total=False):
+        """User dictionary structure."""
+
+        id: str
+        username: str
+        email: str
+        full_name: str
+        is_active: bool
+        roles: list[str]
+        permissions: list[str]
+        created_at: datetime
+        updated_at: datetime
+        last_login: datetime
 
     class SessionDict(TypedDict, total=False):
         """Session dictionary structure for backward compatibility."""
@@ -42,13 +54,59 @@ class FlextAuthTypes(FlextTypes):
         tokens: dict[str, object]
 
     # =========================================================================
+    # AUTHENTICATION DOMAIN TYPE CLASSES
+    # =========================================================================
+
+    class Authentication:
+        """Authentication-related type definitions."""
+
+        type AuthMethod = Literal["basic", "jwt", "oauth2", "apikey"]
+        type AuthStatus = Literal[
+            "authenticated", "unauthenticated", "expired", "invalid"
+        ]
+
+    class UserManagement:
+        """User management type definitions."""
+
+        type UserStatus = Literal["active", "inactive", "locked", "pending"]
+        type UserAction = Literal[
+            "create", "update", "delete", "activate", "deactivate"
+        ]
+
+    class SessionManagement:
+        """Session management type definitions."""
+
+        type SessionStatus = Literal["active", "expired", "revoked"]
+        type SessionAction = Literal["create", "extend", "revoke", "validate"]
+
+    class TokenManagement:
+        """Token management type definitions."""
+
+        type TokenType = Literal["access", "refresh", "api", "bearer"]
+        type TokenStatus = Literal["valid", "expired", "revoked", "invalid"]
+
+    class Authorization:
+        """Authorization type definitions."""
+
+        type Permission = Literal["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"]
+        type Role = Literal["user", "moderator", "REDACTED_LDAP_BIND_PASSWORD", "guest"]
+
+    class Security:
+        """Security-related type definitions."""
+
+        type SecurityEvent = Literal[
+            "login_success", "login_failure", "token_created", "token_revoked"
+        ]
+        type ThreatLevel = Literal["low", "medium", "high", "critical"]
+
+    # =========================================================================
     # PROJECT TYPE CLASSES (for test compatibility)
     # =========================================================================
 
     class Project:
         """Project type namespace."""
 
-        # ProjectType removed - use string literal or define in constants if needed
+        type ProjectType = Literal["flext-auth", "flext-core", "flext-api"]
 
         class AuthProjectConfig(TypedDict, total=False):
             """Project configuration structure."""
@@ -190,16 +248,6 @@ class FlextAuthTypes(FlextTypes):
             occurred_at: datetime
             event: str
             context: t.JsonDict
-
-    class Security:
-        """Security and credential validation types."""
-
-        class CredentialStrength(TypedDict):
-            """Credential strength analysis result."""
-
-            is_valid: bool
-            length: int
-            errors: tuple[str, ...]
 
     class Responses:
         """Response payload abstractions."""

@@ -193,13 +193,13 @@ class FlextAuthUtilities(u):
                     return r[str].fail("Username cannot be empty")
 
                 username = username.strip()
-                if len(username) < FlextAuthConstants.Auth.Username.MIN_LENGTH:
+                if len(username) < FlextAuthConstants.Auth.Credentials.Username.MIN_LENGTH:
                     return r[str].fail(
-                        f"Username too short (min {FlextAuthConstants.Auth.Username.MIN_LENGTH} chars)",
+                        f"Username too short (min {FlextAuthConstants.Auth.Credentials.Username.MIN_LENGTH} chars)",
                     )
-                if len(username) > FlextAuthConstants.Auth.Username.MAX_LENGTH:
+                if len(username) > FlextAuthConstants.Auth.Credentials.Username.MAX_LENGTH:
                     return r[str].fail(
-                        f"Username too long (max {FlextAuthConstants.Auth.Username.MAX_LENGTH} chars)",
+                        f"Username too long (max {FlextAuthConstants.Auth.Credentials.Username.MAX_LENGTH} chars)",
                     )
                 return r[str].ok(username)
 
@@ -226,13 +226,13 @@ class FlextAuthUtilities(u):
                 if not password:
                     return r[str].fail("Password cannot be empty")
 
-                if len(password) < FlextAuthConstants.Auth.Password.MIN_LENGTH:
+                if len(password) < FlextAuthConstants.Auth.Credentials.Password.MIN_LENGTH:
                     return r[str].fail(
-                        f"Password too short (min {FlextAuthConstants.Auth.Password.MIN_LENGTH} chars)",
+                        f"Password too short (min {FlextAuthConstants.Auth.Credentials.Password.MIN_LENGTH} chars)",
                     )
-                if len(password) > FlextAuthConstants.Auth.Password.MAX_LENGTH:
+                if len(password) > FlextAuthConstants.Auth.Credentials.Password.MAX_LENGTH:
                     return r[str].fail(
-                        f"Password too long (max {FlextAuthConstants.Auth.Password.MAX_LENGTH} chars)",
+                        f"Password too long (max {FlextAuthConstants.Auth.Credentials.Password.MAX_LENGTH} chars)",
                     )
 
                 # Note: WEAK_CREDENTIALS not defined - removed check or define constant if needed

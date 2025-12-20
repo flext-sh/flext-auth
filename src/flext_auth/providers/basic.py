@@ -10,7 +10,6 @@ from abc import ABC
 
 from flext_core import r
 
-from flext_auth.models import FlextAuthModels
 from flext_auth.providers.mixin import FlextAuthProviderMixin
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 
@@ -36,7 +35,7 @@ class FlextAuthBasicProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):
     def authenticate(
         self,
         credentials: dict[str, object],
-    ) -> r[FlextAuthModels.AuthToken]:
+    ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using HTTP Basic credentials.
 
         Args:
@@ -47,11 +46,11 @@ class FlextAuthBasicProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):
 
         """
         _ = credentials
-        return r["FlextAuthModels.AuthToken"].fail("Not implemented")
+        return r[p.Auth.TokenProtocol].fail("Not implemented")
 
     def validate(
         self,
-        token: str | FlextAuthModels.AuthToken,
+        token: str | p.Auth.TokenProtocol,
     ) -> r[bool]:
         """Validate authentication token.
 
