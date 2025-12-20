@@ -419,10 +419,10 @@ from flext_core import (
     FlextDecorators,
     FlextExceptions,
     FlextHandlers,
-    FlextMixins,
     FlextResult,
     FlextService,
 )
+from flext_core.mixins import FlextMixins as x
 
 from flext_auth.__version__ import __version__, __version_info__
 from flext_auth.api import FlextAuth
@@ -466,7 +466,6 @@ r = FlextResult  # Shared from flext-core
 e = FlextExceptions  # Shared from flext-core
 d = FlextDecorators  # Shared from flext-core
 s = FlextService  # Shared from flext-core
-x = FlextMixins  # Shared from flext-core
 h = FlextHandlers  # Shared from flext-core
 
 __all__ = [

@@ -10,14 +10,16 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import threading
-from typing import ClassVar, Self, cast
+from typing import ClassVar, Self
 
-from flext_core import r, s
+# FLEXT Standard imports
+from flext_core import (
+    FlextResult as r,
+)
 from flext_core.dispatcher import FlextDispatcher
-from flext_core.settings import FlextSettings
-from pydantic import SecretStr
+from flext_core.loggings import FlextLogger
+from pydantic_settings import BaseSettings
 
-from flext_auth.managers import ServiceManagerMixin
 from flext_auth.models import FlextAuthModels
 
 # Forward reference to avoid circular import
@@ -28,11 +30,10 @@ from flext_auth.registry import FlextAuthRegistry
 from flext_auth.session_service import FlextAuthSessionService
 from flext_auth.settings import FlextAuthSettings
 from flext_auth.token_service import FlextAuthTokenService
-from flext_auth.typings import t
 from flext_auth.user_service import FlextAuthIdentityService
 
 
-class FlextAuth(s[t.Responses.Authentication]):
+class FlextAuth:
     """Flexible authentication service using flext-core patterns.
 
     Thread-safe singleton service with:
@@ -55,9 +56,10 @@ class FlextAuth(s[t.Responses.Authentication]):
         """Initialize with dependency injection and event bus."""
         super().__init__()
         # Use provided config or create default (config is optional for convenience)
-        self._config: FlextAuthSettings = (
-            config if config is not None else FlextAuthSettings()
-        )
+        if config is not None:
+            self._config = config
+        else:
+            self._config = FlextAuthSettings(config_class=BaseSettings)
         self._registry = FlextAuthRegistry()
         # Import here to avoid circular dependency
 
@@ -65,14 +67,13 @@ class FlextAuth(s[t.Responses.Authentication]):
         # Use provided service_name or default (service_name is optional)
         self._service_name = service_name if service_name is not None else "flext_auth"
 
+        # Initialize logger
+        self.logger = FlextLogger(__name__)
+
         # Note: FlextContainer registration removed - use service directly
         # Container integration can be added when FlextContainer.register is available
 
-        # Create shared managers once to ensure data consistency across services
-        shared_managers = ServiceManagerMixin()
-        shared_managers.init_managers(self._config, self._dispatcher)
-
-        # Initialize service dependencies once with shared managers
+        # Initialize service dependencies
         self._provider_service = FlextAuthProviderService(config=self._config)
         # Register providers from provider_service into main registry
         for provider_name in self._provider_service.list_providers():
@@ -80,35 +81,18 @@ class FlextAuth(s[t.Responses.Authentication]):
             if provider_result.is_success:
                 self._registry.register(provider_name, provider_result.value)
         self._identity_service = FlextAuthIdentityService(
-            config=self._config,
-            dispatcher=self._dispatcher,
+            config=self._config, dispatcher=self._dispatcher
         )
-        # Share managers between services to ensure data consistency
-        self._identity_service.user_manager = shared_managers.user_manager
-        self._identity_service.session_manager = shared_managers.session_manager
-        self._identity_service.audit_logger = shared_managers.audit_logger
-        self._identity_service.rate_limiter = shared_managers.rate_limiter
 
         self._token_service = FlextAuthTokenService(
             config=self._config,
             provider_service=self._provider_service,
             dispatcher=self._dispatcher,
         )
-        # Share managers with token service
-        self._token_service.user_manager = shared_managers.user_manager
-        self._token_service.session_manager = shared_managers.session_manager
-        self._token_service.audit_logger = shared_managers.audit_logger
-        self._token_service.rate_limiter = shared_managers.rate_limiter
 
         self._session_service = FlextAuthSessionService(
-            config=self._config,
-            dispatcher=self._dispatcher,
+            config=self._config, dispatcher=self._dispatcher
         )
-        # Share managers with session service
-        self._session_service.user_manager = shared_managers.user_manager
-        self._session_service.session_manager = shared_managers.session_manager
-        self._session_service.audit_logger = shared_managers.audit_logger
-        self._session_service.rate_limiter = shared_managers.rate_limiter
 
     @classmethod
     def get_global(cls) -> FlextAuth:
@@ -120,21 +104,6 @@ class FlextAuth(s[t.Responses.Authentication]):
                 return cls._instance
             cls._instance = cls(service_name="flext_auth")
             return cls._instance
-
-    @classmethod
-    def with_config(
-        cls,
-        secret_key: str,
-        algorithm: str = "HS256",
-        expiration_hours: int = 24,
-    ) -> Self:
-        """Factory method with generic configuration."""
-        config = FlextAuthSettings(
-            auth_secret=SecretStr(secret_key),
-            algorithm=algorithm,
-            expiry_minutes=expiration_hours * 60,
-        )
-        return cls(config=config)
 
     @classmethod
     def quick_start(
@@ -158,34 +127,10 @@ class FlextAuth(s[t.Responses.Authentication]):
             pass
         return instance
 
-    @classmethod
-    def create_with_config_overrides(
-        cls,
-        config_overrides: dict[str, str | int | bool] | None = None,
-        **_kwargs: str | int | bool,
-    ) -> Self:
-        """Create FlextAuth instance with configuration overrides.
-
-        Args:
-        config_overrides: Dictionary of configuration overrides
-        **kwargs: Additional configuration parameters
-
-        Returns:
-        Initialized FlextAuth instance with overridden configuration
-
-        """
-        if config_overrides:
-            # Apply configuration overrides
-            config = FlextAuthSettings(**config_overrides)
-        else:
-            config = FlextAuthSettings()
-
-        return cls(config=config)
-
     @property
-    def config(self) -> FlextSettings:
+    def config(self) -> FlextAuthSettings:
         """Configuration access."""
-        return cast("FlextSettings", self._config)
+        return self._config
 
     @property
     def registry(self) -> FlextAuthRegistry:
@@ -216,13 +161,13 @@ class FlextAuth(s[t.Responses.Authentication]):
         # Extract username and password from credentials - fast fail if missing
         username_value = credentials.get("username")
         if not isinstance(username_value, str) or not username_value:
-            return r["FlextAuthModels.Identity"].fail(
+            return r[FlextAuthModels.Identity].fail(
                 "Invalid credentials: username is required and must be a non-empty string",
             )
 
         password_value = credentials.get("password")
         if not isinstance(password_value, str) or not password_value:
-            return r["FlextAuthModels.Identity"].fail(
+            return r[FlextAuthModels.Identity].fail(
                 "Invalid credentials: password is required and must be a non-empty string",
             )
 
@@ -434,8 +379,8 @@ class FlextAuth(s[t.Responses.Authentication]):
         """Revoke a session."""
         return self._session_service.session_manager.end_session_by_id(session_id)
 
-    def execute(self, **_kwargs: object) -> r[t.Responses.Authentication]:
+    def execute(self) -> r[object]:
         """Flexible execute implementation with railway orchestration."""
-        return r[t.Responses.Authentication].fail(
+        return r[object].fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead",
         )

@@ -10,12 +10,9 @@ from abc import ABC
 
 from flext_core import r
 
-from flext_auth.models import FlextAuthModels
+from flext_auth.protocols import p
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
-
-# Forward reference to avoid circular import
-# Import FlextAuthModels locally in method bodies where needed
 
 
 class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
@@ -37,7 +34,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC
     def authenticate(
         self,
         credentials: dict[str, object],
-    ) -> r[FlextAuthModels.AuthToken]:
+    ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using API key.
 
         Args:
@@ -48,11 +45,11 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC
 
         """
         _ = credentials
-        return r["FlextAuthModels.AuthToken"].fail("Not implemented")
+        return r[p.Auth.TokenProtocol].fail("Not implemented")
 
     def validate(
         self,
-        token: str | FlextAuthModels.AuthToken,
+        token: str | p.Auth.TokenProtocol,
     ) -> r[bool]:
         """Validate authentication token.
 

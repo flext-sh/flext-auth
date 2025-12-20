@@ -12,14 +12,14 @@ from typing import Annotated, TypeIs
 
 import bcrypt
 import jwt
-from flext_core import r, u as u_core
+from flext_core import FlextUtilities as u, r
 from pydantic import BeforeValidator, SecretStr
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.typings import t
 
 
-class FlextAuthUtilities(u_core):
+class FlextAuthUtilities(u):
     """FlextAuth advanced utilities extending u with domain-specific helpers.
 
     Architecture: Advanced utilities with ZERO code bloat through:
@@ -41,7 +41,7 @@ class FlextAuthUtilities(u_core):
 
         Uses parent Enum utilities for consistency.
         """
-        return u_core.Enum.is_member(FlextAuthConstants.Auth.TokenTypes, value)
+        return u.Enum.is_member(FlextAuthConstants.Auth.TokenTypes, value)
 
     @classmethod
     def is_valid_provider_type(
@@ -52,7 +52,7 @@ class FlextAuthUtilities(u_core):
 
         Uses parent Enum utilities for consistency.
         """
-        return u_core.Enum.is_member(FlextAuthConstants.Auth.ProviderTypes, value)
+        return u.Enum.is_member(FlextAuthConstants.Auth.ProviderTypes, value)
 
     @classmethod
     def is_valid_role_type(
@@ -62,7 +62,7 @@ class FlextAuthUtilities(u_core):
 
         Uses parent Enum utilities for consistency.
         """
-        return u_core.Enum.is_member(FlextAuthConstants.Auth.RoleTypes, value)
+        return u.Enum.is_member(FlextAuthConstants.Auth.RoleTypes, value)
 
     @classmethod
     def is_valid_permission_type(
@@ -73,7 +73,7 @@ class FlextAuthUtilities(u_core):
 
         Uses parent Enum utilities for consistency.
         """
-        return u_core.Enum.is_member(FlextAuthConstants.Auth.PermissionTypes, value)
+        return u.Enum.is_member(FlextAuthConstants.Auth.PermissionTypes, value)
 
     # ═══════════════════════════════════════════════════════════════════
     # AUTH NAMESPACE: Project-specific utilities
@@ -92,8 +92,8 @@ class FlextAuthUtilities(u_core):
 
         """
 
-        class Collection(u_core.Collection):
-            """Collection utilities extending u_core.Collection via inheritance.
+        class Collection(u.Collection):
+            """Collection utilities extending u.Collection via inheritance.
 
             Exposes all flext-core Collection methods through inheritance hierarchy.
             Access via u.Auth.Collection.* pattern.
@@ -103,8 +103,8 @@ class FlextAuthUtilities(u_core):
         # ARGS UTILITIES: @validated decorators - ZERO boilerplate
         # ═══════════════════════════════════════════════════════════════════
 
-        class Args(u_core.Args):
-            """Args utilities extending u_core.Args via inheritance.
+        class Args(u.Args):
+            """Args utilities extending u.Args via inheritance.
 
             Exposes all flext-core Args methods through inheritance hierarchy.
             Access via u.Auth.Args.* pattern.
@@ -114,8 +114,8 @@ class FlextAuthUtilities(u_core):
         # MODEL UTILITIES: from_dict, merge_defaults, update - ZERO try/except
         # ═══════════════════════════════════════════════════════════════════
 
-        class Model(u_core.Model):
-            """Model utilities extending u_core.Model via inheritance.
+        class Model(u.Model):
+            """Model utilities extending u.Model via inheritance.
 
             Exposes all flext-core Model methods through inheritance hierarchy.
             Access via u.Auth.Model.* pattern.
@@ -139,7 +139,7 @@ class FlextAuthUtilities(u_core):
                 return Annotated[
                     FlextAuthConstants.Auth.TokenTypes,
                     BeforeValidator(
-                        u_core.Enum.coerce_validator(
+                        u.Enum.coerce_validator(
                             FlextAuthConstants.Auth.TokenTypes,
                         ),
                     ),
@@ -156,7 +156,7 @@ class FlextAuthUtilities(u_core):
                 return Annotated[
                     FlextAuthConstants.Auth.ProviderTypes,
                     BeforeValidator(
-                        u_core.Enum.coerce_validator(
+                        u.Enum.coerce_validator(
                             FlextAuthConstants.Auth.ProviderTypes,
                         ),
                     ),
@@ -173,7 +173,7 @@ class FlextAuthUtilities(u_core):
                 return Annotated[
                     FlextAuthConstants.Auth.RoleTypes,
                     BeforeValidator(
-                        u_core.Enum.coerce_validator(
+                        u.Enum.coerce_validator(
                             FlextAuthConstants.Auth.RoleTypes,
                         ),
                     ),

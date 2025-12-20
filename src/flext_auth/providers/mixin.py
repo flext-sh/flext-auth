@@ -10,9 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import cast
-
-from flext_core import e, r, u as u_core
+from flext_core import FlextUtilities as u, e, r
 
 from flext_auth.models import FlextAuthModels
 
@@ -81,11 +79,8 @@ class FlextAuthProviderMixin:
         r[bool]: True if valid, False if invalid, error message on failure
 
         """
-        # Use u_core.filter() for unified filtering (DSL pattern)
-        missing_fields = cast(
-            "list[str]",
-            u_core.filter(required_fields, lambda field: field not in credentials),
-        )
+        # Use u.filter() for unified filtering (DSL pattern)
+        missing_fields = u.filter(required_fields, lambda field: field not in credentials)
 
         if missing_fields:
             error_msg = f"Missing required fields: {', '.join(missing_fields)}"

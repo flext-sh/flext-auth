@@ -7,7 +7,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import r, s
+# FLEXT Standard imports
+from flext_core import (
+    FlextResult as r,
+    FlextService as s,
+)
 from flext_core.dispatcher import FlextDispatcher
 
 from flext_auth.managers import (
@@ -23,7 +27,7 @@ class FlextAuthSessionService(ServiceManagerMixin, s[object]):
     def __init__(self, config: FlextAuthSettings, dispatcher: FlextDispatcher) -> None:
         """Initialize session service with flext-core integration."""
         super().__init__()
-        self._init_managers(config, dispatcher)
+        self.init_managers(config, dispatcher)
 
     @property
     def session_manager(self) -> FlextAuthManagers.FlextAuthSessionManager:
@@ -35,7 +39,7 @@ class FlextAuthSessionService(ServiceManagerMixin, s[object]):
         """Set session manager (for service composition)."""
         self._session_manager = value
 
-    def execute(self, **_kwargs: object) -> r[object]:
+    def execute(self) -> r[object]:
         """Execute method for FlextService interface.
 
         Session service doesn't use generic execute pattern.

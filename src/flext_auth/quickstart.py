@@ -113,7 +113,7 @@ class FlextAuthQuickstart(s[object]):
         """Get the underlying FlextAuth instance."""
         return self._auth
 
-    def execute(self, **_kwargs: object) -> r[object]:
+    def execute(self) -> r[object]:
         """Execute method for FlextService interface.
 
         Quickstart service doesn't use generic execute pattern.

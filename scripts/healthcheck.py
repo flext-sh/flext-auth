@@ -17,9 +17,6 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-from flext_auth.constants import FlextAuthConstants
-
-
 def main() -> int:
     """Perform health check.
 
@@ -28,7 +25,7 @@ def main() -> int:
 
     """
     try:
-        health_url = f"http://{FlextAuthConstants.Platform.DEFAULT_HOST}:{FlextAuthConstants.Platform.FLEXT_API_PORT}/auth/health"
+        health_url = "http://localhost:8000/auth/health"
 
         # Comprehensive URL scheme validation for security
         parsed_url = urllib.parse.urlparse(health_url)
@@ -51,7 +48,7 @@ def main() -> int:
             health_url,
             timeout=30,  # Use a reasonable timeout instead of constant
         ) as response:
-            if response.status == FlextAuthConstants.Platform.HTTP_STATUS_OK:
+            if response.status == 200:
                 return 0
             return 1
     except urllib.error.URLError:

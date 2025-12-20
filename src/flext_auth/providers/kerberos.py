@@ -16,9 +16,7 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 
 from __future__ import annotations
 
-from typing import cast
-
-from flext_core import r, u as u_core
+from flext_core import FlextUtilities as u, r
 
 from flext_auth.models import FlextAuthModels
 
@@ -77,9 +75,8 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         # Validate required fields
         required_fields = ["realm", "kdc", "service_principal"]
         # Use u.filter() for unified filtering (DSL pattern)
-        missing_fields = cast(
-            "list[str]",
-            u_core.filter(required_fields, lambda field: field not in self._config),
+        missing_fields = u.filter(
+            required_fields, lambda field: field not in self._config
         )
 
         if missing_fields:

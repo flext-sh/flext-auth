@@ -10,10 +10,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import r, s
+# FLEXT Standard imports
+from flext_core import (
+    FlextResult as r,
+    FlextService as s,
+)
 from flext_core.dispatcher import FlextDispatcher
 
-from flext_auth.constants import c
+from flext_auth.constants import FlextAuthConstants as c
 from flext_auth.managers import (
     ServiceManagerMixin,
 )
@@ -42,12 +46,12 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
     ) -> None:
         """Flexible initialization with dependency injection."""
         super().__init__()
-        self._init_managers(config, dispatcher)
+        self.init_managers(config, dispatcher)
         self._provider_service = provider_service
         # Lazy cache for JWT provider (initialized on first access)
         self._jwt_provider_cache: FlextAuthJwtProvider | None = None
 
-    def execute(self, **_kwargs: object) -> r[object]:
+    def execute(self) -> r[object]:
         """Railway-oriented execute with focused service pattern."""
         return r[object].fail(
             "Use specific token methods: validate_token, generate_jwt_token, etc.",
@@ -76,7 +80,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
             username=identity.username,
             token_id=self._short_token(token),
         )
-        return r["FlextAuthModels.Identity"].ok(identity)
+        return r[FlextAuthModels.Identity].ok(identity)
 
     def refresh_token(self, token: str) -> r[FlextAuthModels.AuthToken]:
         """Railway-oriented token refresh with audit logging."""
@@ -91,7 +95,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
                 reason=error,
             )
 
-            return r["FlextAuthModels.AuthToken"].fail(error or "Token refresh failed")
+            return r[FlextAuthModels.AuthToken].fail(error or "Token refresh failed")
 
         refreshed = result.value
         self.audit_logger.log_token_refresh(

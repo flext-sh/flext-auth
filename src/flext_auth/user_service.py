@@ -11,16 +11,20 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from flext_core import FlextDispatcher, r, s
+# FLEXT Standard imports
+from flext_core import (
+    FlextModels as m,
+    FlextResult as r,
+    FlextService as s,
+)
+from flext_core.dispatcher import FlextDispatcher
 from pydantic import ValidationError
 
 from flext_auth.managers import (
-    FlextAuthManagers,
     ServiceManagerMixin,
 )
-from flext_auth.models import FlextAuthModels as m
+from flext_auth.models import PasswordUtil
 from flext_auth.settings import FlextAuthSettings
-from flext_auth.utilities import u
 
 
 class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
@@ -35,19 +39,19 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     ) -> None:
         """Generic initialization with dependency injection."""
         super().__init__()
-        self._init_managers(config, dispatcher)
+        self.init_managers(config, dispatcher)
 
     @property
-    def identity_manager(self) -> FlextAuthManagers.FlextAuthUserManager:
+    def identity_manager(self) -> object:
         """Direct access to identity manager for client orchestration."""
-        return self.user_manager
+        return getattr(self, '_user_manager', None)
 
     @identity_manager.setter
-    def identity_manager(self, value: FlextAuthManagers.FlextAuthUserManager) -> None:
+    def identity_manager(self, value: object) -> None:
         """Set identity manager (for service composition)."""
-        self.user_manager = value
+        setattr(self, '_user_manager', value)
 
-    def execute(self, **_kwargs: object) -> r[object]:
+    def execute(self) -> r[object]:
         """Railway-oriented execute with focused service pattern."""
         return r[object].fail(
             "Use specific identity methods: create_identity, authenticate_identity, etc.",
@@ -60,7 +64,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     ) -> r[m.Identity]:
         """Railway-oriented identity authentication with account lockout."""
         return (
-            self.user_manager.get_user_by_username(name)
+            self.identity_manager.get_user_by_username(name)
             .flat_map(lambda identity: r.ok((identity, credential)))
             .flat_map(
                 lambda ic: (
@@ -97,7 +101,6 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
         contact: str,
         credential: str,
         roles: list[str] | None = None,
-        **_extra_fields: object,
     ) -> r[m.Identity]:
         """Railway-oriented identity creation with credential hashing."""
         if roles is None:
@@ -132,25 +135,13 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
             return r[m.Identity].fail(str(e))
 
         # Validate credential strength before hashing
-        strength_result = u.validate_credential_strength(credential)
-        if strength_result.is_failure:
-            return r[m.Identity].fail(
-                strength_result.error or "Credential strength validation failed",
-            )
-        strength_data = strength_result.value
-        if not strength_data["is_valid"]:
-            errors = strength_data.get("errors", ())
-            error_msg = (
-                "; ".join(errors)
-                if errors
-                else "Credential does not meet strength requirements"
-            )
-            return r[m.Identity].fail(error_msg)
+        if len(credential) < 8:
+            return r[m.Identity].fail("Credential must be at least 8 characters long")
 
         # Create user with basic fields - extra_fields not currently supported
         # due to type constraints in the manager interface
-        return u.hash_credential(credential).flat_map(
-            lambda ch: self.user_manager.create_user(
+        return r[str].ok(PasswordUtil.hash_password(credential)).flat_map(
+            lambda ch: self.identity_manager.create_user(
                 username=request.name,
                 email=request.contact,
                 password_hash=ch,
@@ -170,7 +161,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     ) -> r[bool]:
         """Railway-oriented credential change with validation."""
         return (
-            self.user_manager.get_user(identity_id)
+            self.identity_manager.get_user(identity_id)
             .flat_map(
                 lambda identity: identity.verify_credential(
                     current_credential,
@@ -181,15 +172,9 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
                 ),
             )
             .flat_map(
-                lambda identity: u.validate_credential_strength(
-                    new_credential,
-                ).flat_map(
-                    lambda validation_result: r.ok(identity)
-                    if validation_result["is_valid"]
-                    else r.fail(
-                        "New credential does not meet strength requirements",
-                    ),
-                ),
+                lambda identity: r.ok(identity)
+                if len(new_credential) >= 8
+                else r.fail("New credential must be at least 8 characters long"),
             )
             .flat_map(
                 lambda identity: identity.set_credential(new_credential).map(
@@ -204,17 +189,11 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     def reset_credential(self, identity_id: str, new_credential: str) -> r[bool]:
         """Railway-oriented credential reset for REDACTED_LDAP_BIND_PASSWORD operations."""
         return (
-            self.user_manager.get_user(identity_id)
+            self.identity_manager.get_user(identity_id)
             .flat_map(
-                lambda identity: u.validate_credential_strength(
-                    new_credential,
-                ).flat_map(
-                    lambda validation_result: r.ok(identity)
-                    if validation_result["is_valid"]
-                    else r.fail(
-                        "New credential does not meet strength requirements",
-                    ),
-                ),
+                lambda identity: r.ok(identity)
+                if len(new_credential) >= 8
+                else r.fail("New credential must be at least 8 characters long"),
             )
             .flat_map(
                 lambda identity: identity.set_credential(new_credential).map(
@@ -251,7 +230,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
             )
 
         # Update user in storage
-        return self.user_manager.update_user(
+        return self.identity_manager.update_user(
             identity.unique_id,
             failed_attempts=identity.failed_attempts,
             locked_until=identity.locked_until,
@@ -269,7 +248,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     ) -> r[bool]:
         """Railway-oriented authorization with audit logging."""
         return (
-            self.user_manager.get_user(identity_id)
+            self.identity_manager.get_user(identity_id)
             .map(lambda identity: (identity, permission in identity.permissions))
             .map(
                 lambda ip: (

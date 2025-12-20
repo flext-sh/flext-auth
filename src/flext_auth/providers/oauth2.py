@@ -14,10 +14,9 @@ import hashlib
 import secrets
 from base64 import urlsafe_b64encode
 from datetime import UTC, datetime, timedelta
-from typing import cast
 from urllib.parse import urlencode
 
-from flext_core import e, r, u as u_core
+from flext_core import FlextUtilities as u, e, r
 
 from flext_auth.constants import c
 from flext_auth.models import FlextAuthModels
@@ -166,10 +165,9 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         """Railway-oriented configuration validation."""
         # Validate required fields
         required_fields = ["client_id", "token_endpoint"]
-        # Use u_core.filter() for unified filtering (DSL pattern)
-        missing_fields = cast(
-            "list[str]",
-            u_core.filter(required_fields, lambda field: field not in self._config),
+        # Use u.filter() for unified filtering (DSL pattern)
+        missing_fields = u.filter(
+            required_fields, lambda field: field not in self._config
         )
 
         if missing_fields:
@@ -224,7 +222,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def get_redirect_uri(self) -> str | None:
         """Get redirect URI from configuration."""
-        return cast("str | None", self._redirect_uri)
+        return self._redirect_uri
 
     def get_client_id(self) -> str | None:
         """Get client ID from configuration."""
@@ -357,7 +355,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 # In a real implementation, this would verify the PKCE challenge
                 pass
 
-            return r[dict[str, object]].ok(cast("dict[str, object]", token_response))
+            return r[dict[str, object]].ok(token_response)
 
         def get_client_credentials_token(self) -> r[dict[str, object]]:
             """Get access token using client credentials flow."""
@@ -367,7 +365,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 "expires_in": 3600,
             }
 
-            return r[dict[str, object]].ok(cast("dict[str, object]", token_response))
+            return r[dict[str, object]].ok(token_response)
 
         def refresh_access_token(
             self,
@@ -383,7 +381,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 "refresh_token": f"refresh_token_{secrets.token_hex(16)}",
             }
 
-            return r[dict[str, object]].ok(cast("dict[str, object]", token_response))
+            return r[dict[str, object]].ok(token_response)
 
     class _OAuth2PKCEManager:
         """SOLID-compliant OAuth2 PKCE manager.
@@ -453,7 +451,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         # Convert flow result to AuthToken
 
         flow_data = flow_result.value
-        return r.ok(
+        return r[FlextAuthModels.AuthToken].ok(
             FlextAuthModels.AuthToken(
                 identity_id=flow_data.get("user_id", "oauth2_user"),
                 token=credentials.get("access_token", ""),
@@ -484,7 +482,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 )
             # Convert dict to AuthToken
             token_data = token_result.value
-            return r.ok(
+            return r[FlextAuthModels.AuthToken].ok(
                 FlextAuthModels.AuthToken(
                     identity_id=token.identity_id,
                     token=token_data.get("access_token", ""),

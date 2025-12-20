@@ -12,9 +12,14 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import cast
 
-from flext_core import r, s, t as t_core
+# FLEXT Standard imports
+from flext_core import (
+    FlextResult as r,
+    FlextService as s,
+    FlextTypes as t,
+)
 
-from flext_auth.constants import c
+from flext_auth.constants import FlextAuthConstants as c
 from flext_auth.models import FlextAuthModels
 
 # Forward reference to avoid circular import
@@ -33,7 +38,6 @@ from flext_auth.providers import (
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
 from flext_auth.settings import FlextAuthSettings
-from flext_auth.typings import t
 
 
 class FlextAuthProviderService(s[object]):
@@ -49,7 +53,7 @@ class FlextAuthProviderService(s[object]):
         self._config, self._providers = config, FlextAuthRegistry()
         self._register_builtin_providers()
 
-    def execute(self, **_kwargs: object) -> r[object]:
+    def execute(self) -> r[object]:
         """Railway-oriented execute with focused service pattern."""
         return r[object].fail(
             "Use specific provider methods: get_provider, authenticate_user, etc.",
@@ -62,10 +66,7 @@ class FlextAuthProviderService(s[object]):
             self.logger.error("Configuration is required for provider registration")
             return
 
-        provider_config: t_core.JsonDict = cast(
-            "t_core.JsonDict",
-            self._config.to_provider_config(),
-        )
+        provider_config: t.JsonDict = self._config.to_provider_config()
 
         # Provider registration mapping with requirements
         providers: list[
@@ -124,7 +125,7 @@ class FlextAuthProviderService(s[object]):
                 try:
                     # Instantiate provider with config
                     provider = cast(
-                        "Callable[[t_core.JsonDict], FlextAuthBaseProvider]",
+                        "Callable[[t.JsonDict], FlextAuthBaseProvider]",
                         provider_class,
                     )(provider_config)
                     self._providers.register(

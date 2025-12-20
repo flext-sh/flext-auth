@@ -34,13 +34,14 @@ def example_basic_authentication() -> None:
 
     # Show current configuration
     # Note: FlextAuth doesn't have a get_config() method
-    config = FlextAuthSettings.create()
+    from pydantic_settings import BaseSettings
+    config = FlextAuthSettings(config_class=BaseSettings)
 
     logger.info(
         "Authentication configuration loaded",
-        jwt_expiry_minutes=config.jwt_expiry_minutes,
-        bcrypt_rounds=config.bcrypt_rounds,
-        max_login_attempts=config.max_login_attempts,
+        expiry_minutes=config.expiry_minutes,
+        hash_rounds=config.hash_rounds,
+        max_sessions_per_identity=config.max_sessions_per_identity,
     )
 
 

@@ -14,10 +14,10 @@ from abc import ABC, abstractmethod
 
 from flext_core import r
 
-from flext_auth.models import FlextAuthModels
+from flext_auth.protocols import p
 
-# Forward reference to avoid circular import (models.py -> utilities.py -> typings.py -> providers/base.py -> models.py)
-# Use string annotations for all FlextAuthModels references
+# Use protocols instead of direct model imports to avoid circular dependencies
+# Protocols provide structural typing without requiring model imports
 
 
 class FlextAuthBaseProvider(ABC):
@@ -36,9 +36,7 @@ class FlextAuthBaseProvider(ABC):
 
     Example:
         >>> class FlextAuthMyProvider(FlextAuthBaseProvider):
-        ...     def authenticate(
-        ...         self, credentials: dict
-        ...     ) -> r["FlextAuthModels.AuthToken"]:
+        ...     def authenticate(self, credentials: dict) -> r["p.Auth.TokenProtocol"]:
         ...         # Implementation
         ...         pass
         ...
@@ -51,7 +49,7 @@ class FlextAuthBaseProvider(ABC):
     def authenticate(
         self,
         credentials: dict[str, object],
-    ) -> r[FlextAuthModels.AuthToken]:
+    ) -> r[p.Auth.TokenProtocol]:
         """Authenticate user with provided credentials.
 
         This is the primary authentication method. It should validate the
@@ -86,7 +84,7 @@ class FlextAuthBaseProvider(ABC):
     @abstractmethod
     def validate(
         self,
-        token: str | FlextAuthModels.AuthToken,
+        token: str | p.Auth.TokenProtocol,
     ) -> r[bool]:
         """Validate authentication token.
 
@@ -111,8 +109,8 @@ class FlextAuthBaseProvider(ABC):
     @abstractmethod
     def refresh(
         self,
-        token: str | FlextAuthModels.AuthToken,
-    ) -> r[FlextAuthModels.AuthToken]:
+        token: str | p.Auth.TokenProtocol,
+    ) -> r[p.Auth.TokenProtocol]:
         """Refresh authentication token.
 
         Generate a new token based on an existing valid token. This operation
@@ -138,7 +136,7 @@ class FlextAuthBaseProvider(ABC):
     @abstractmethod
     def revoke(
         self,
-        token: str | FlextAuthModels.AuthToken,
+        token: str | p.Auth.TokenProtocol,
     ) -> r[bool]:
         """Revoke authentication token.
 
@@ -228,7 +226,7 @@ class FlextAuthBaseProvider(ABC):
         ...
 
     @abstractmethod
-    def validate_token(self, token: str) -> r[FlextAuthModels.Identity]:
+    def validate_token(self, token: str) -> r[p.Auth.IdentityProtocol]:
         """Validate a token and return the associated user.
 
         Args:
@@ -243,7 +241,7 @@ class FlextAuthBaseProvider(ABC):
     @abstractmethod
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.Identity,
+        user: p.Auth.IdentityProtocol,
         token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:

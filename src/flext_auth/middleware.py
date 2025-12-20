@@ -30,7 +30,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import r, s
+# FLEXT Standard imports
+from flext_core import (
+    FlextResult as r,
+    FlextService as s,
+)
 from flext_core.loggings import FlextLogger
 
 from flext_auth.models import FlextAuthModels
@@ -79,7 +83,7 @@ class FlextAuthMiddleware(s):
     (flext-web). Following FLEXT pattern: one class per module with nested middleware classes.
     """
 
-    def execute(self, **_kwargs: object) -> r[bool]:
+    def execute(self) -> r[bool]:
         """Execute method for FlextService interface.
 
         FlextAuthMiddleware is a namespace class - use specific middleware classes instead.

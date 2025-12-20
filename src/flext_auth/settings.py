@@ -11,10 +11,12 @@ from __future__ import annotations
 
 from typing import Self
 
-from flext_core import FlextSettings, r
+# FLEXT Standard imports
+from flext_core import (
+    FlextResult as r,
+    FlextSettings,
+)
 from pydantic import Field, SecretStr, model_validator
-
-from flext_auth.constants import c
 
 
 @FlextSettings.auto_register("auth")
@@ -38,63 +40,63 @@ class FlextAuthSettings(FlextSettings.AutoConfig):
         description="Generic secret key",
     )
     algorithm: str = Field(
-        default=c.Auth.DEFAULT_JWT_ALGORITHM,
+        default="HS256",
         description="Cryptographic algorithm",
     )
     expiry_minutes: int = Field(
-        default=c.Auth.DEFAULT_JWT_EXPIRY_MINUTES,
+        default=60,
         ge=1,
         le=10080,  # 7 days in minutes
         description="Default expiry time",
     )
     issuer: str = Field(
-        default=c.Auth.DEFAULT_ISSUER,
+        default="flext-auth",
         description="Token issuer",
     )
     audience: str = Field(
-        default=c.Auth.DEFAULT_AUDIENCE,
+        default="flext-api",
         description="Token audience",
     )
 
     # Credential Processing
     hash_rounds: int = Field(
-        default=c.Auth.DEFAULT_HASH_ROUNDS,
-        ge=c.Auth.HASH_ROUNDS_MIN,
-        le=c.Auth.HASH_ROUNDS_MAX,
+        default=12,
+        ge=4,
+        le=31,
         description="Credential hashing rounds",
     )
     min_credential_length: int = Field(
-        default=c.Auth.CREDENTIAL_MIN_LENGTH,
+        default=8,
         ge=1,
         description="Minimum credential length",
     )
     max_credential_length: int = Field(
-        default=c.Auth.CREDENTIAL_MAX_LENGTH,
+        default=128,
         ge=1,
         description="Maximum credential length",
     )
 
     # Security Policies
     max_attempts: int = Field(
-        default=c.Auth.DEFAULT_MAX_RETRIES,
+        default=3,
         ge=1,
         description="Max attempts before lockout",
     )
     lockout_duration_minutes: int = Field(
-        default=c.Auth.LOCKOUT_DURATION_MINUTES,
+        default=15,
         ge=1,
         description="Lockout duration",
     )
 
     # Session Management
     session_expiry_minutes: int = Field(
-        default=c.Auth.SESSION_EXPIRY_DEFAULT_MINUTES,
+        default=1440,
         ge=1,
-        le=c.Auth.SESSION_EXPIRY_MAX_MINUTES,
+        le=43200,
         description="Session expiry",
     )
     max_sessions_per_identity: int = Field(
-        default=c.Auth.MAX_SESSIONS_DEFAULT,
+        default=5,
         ge=1,
         description="Max concurrent sessions",
     )
@@ -116,7 +118,7 @@ class FlextAuthSettings(FlextSettings.AutoConfig):
         description="Track performance",
     )
     performance_warning_threshold: float = Field(
-        default=c.Auth.PERFORMANCE_THRESHOLD_MS,
+        default=1000,
         ge=0.0,
         description="Performance warning threshold (ms)",
     )
@@ -125,12 +127,12 @@ class FlextAuthSettings(FlextSettings.AutoConfig):
         description="Enable rate limiting",
     )
     max_requests_per_minute: int = Field(
-        default=c.Auth.MAX_REQUESTS_PER_MINUTE,
+        default=60,
         ge=1,
         description="Max requests/minute",
     )
     max_requests_per_hour: int = Field(
-        default=c.Auth.MAX_REQUESTS_PER_HOUR,
+        default=1000,
         ge=1,
         description="Max requests/hour",
     )
@@ -176,7 +178,7 @@ class FlextAuthSettings(FlextSettings.AutoConfig):
             "issuer": self.issuer,
             "audience": self.audience,
             "secret_configured": len(self.auth_secret.get_secret_value())
-            >= c.Auth.SECRET_MIN_LENGTH,
+            >= 32,
         }
 
     def get_security_settings(self) -> dict[str, int | bool]:
@@ -193,16 +195,16 @@ class FlextAuthSettings(FlextSettings.AutoConfig):
     def _validate_model(self) -> Self:
         """Pydantic model validator for automatic validation."""
         secret_len = len(self.auth_secret.get_secret_value())
-        if secret_len < c.Auth.SECRET_MIN_LENGTH:
-            msg = f"Secret must be ≥{c.Auth.SECRET_MIN_LENGTH} chars, got {secret_len}"
+        if secret_len < 32:
+            msg = f"Secret must be ≥32 chars, got {secret_len}"
             raise ValueError(msg)
 
         if self.min_credential_length > self.max_credential_length:
             msg = "Min credential length > max"
             raise ValueError(msg)
 
-        if self.session_expiry_minutes > c.Auth.SESSION_EXPIRY_MAX_MINUTES:
-            msg = f"Session expiry > {c.Auth.SESSION_EXPIRY_MAX_MINUTES}min (30 days)"
+        if self.session_expiry_minutes > 43200:
+            msg = "Session expiry > 43200min (30 days)"
             raise ValueError(msg)
 
         # JWT expiry should not exceed session expiry
@@ -225,17 +227,15 @@ class FlextAuthSettings(FlextSettings.AutoConfig):
             self.model_validate(self.model_dump())
             # Check validation constraints manually
             secret_len = len(self.auth_secret.get_secret_value())
-            if secret_len < c.Auth.SECRET_MIN_LENGTH:
-                msg = f"Secret must be ≥{c.Auth.SECRET_MIN_LENGTH} chars, got {secret_len}"
+            if secret_len < 32:
+                msg = f"Secret must be ≥32 chars, got {secret_len}"
                 return r[bool].fail(msg)
 
             if self.min_credential_length > self.max_credential_length:
                 return r[bool].fail("Min credential length > max")
 
-            if self.session_expiry_minutes > c.Auth.SESSION_EXPIRY_MAX_MINUTES:
-                msg = (
-                    f"Session expiry > {c.Auth.SESSION_EXPIRY_MAX_MINUTES}min (30 days)"
-                )
+            if self.session_expiry_minutes > 43200:
+                msg = "Session expiry > 43200min (30 days)"
                 return r[bool].fail(msg)
 
             if self.expiry_minutes > self.session_expiry_minutes:

@@ -13,7 +13,11 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-from flext_core import r, s
+# FLEXT Standard imports
+from flext_core import (
+    FlextResult as r,
+    FlextService as s,
+)
 from flext_core.context import FlextContext
 from flext_core.dispatcher import FlextDispatcher
 from flext_core.loggings import FlextLogger
@@ -43,10 +47,10 @@ class ServiceManagerMixin:
         """
         self._config = config
         self._dispatcher = dispatcher
-        self.user_manager = FlextAuthManagers.FlextAuthUserManager(config)
-        self.session_manager = FlextAuthManagers.FlextAuthSessionManager(config)
-        self.audit_logger = FlextAuthManagers.FlextAuthAuditLogger(config, dispatcher)
-        self.rate_limiter = FlextAuthManagers.FlextAuthRateLimiter(config, dispatcher)
+        setattr(self, '_user_manager', FlextAuthManagers.FlextAuthUserManager(config))
+        setattr(self, '_session_manager', FlextAuthManagers.FlextAuthSessionManager(config))
+        setattr(self, '_audit_logger', FlextAuthManagers.FlextAuthAuditLogger(config, dispatcher))
+        setattr(self, '_rate_limiter', FlextAuthManagers.FlextAuthRateLimiter(config, dispatcher))
 
 
 class FlextAuthManagers(s[object]):
@@ -56,7 +60,7 @@ class FlextAuthManagers(s[object]):
     providing a single import point while maintaining clean separation of concerns.
     """
 
-    def execute(self, **_kwargs: object) -> r[object]:
+    def execute(self) -> r[object]:
         """Execute method for FlextService interface.
 
         FlextAuthManagers is a namespace class - use specific manager classes instead.
@@ -94,8 +98,8 @@ class FlextAuthManagers(s[object]):
                     or user_data.get("unique_id") == user_id
                     or user_data.get("id") == user_id
                 ):
-                    return r.ok((username, user_data))
-            return r.fail("User not found")
+                    return r[tuple[str, dict[str, object]]].ok((username, user_data))
+            return r[tuple[str, dict[str, object]]].fail("User not found")
 
         def _modify_user_list_field(
             self,
@@ -307,7 +311,7 @@ class FlextAuthManagers(s[object]):
             # Create Identity model with only valid fields (no extras)
 
             user = FlextAuthModels.Identity(**identity_data)
-            return r["FlextAuthModels.Identity"].ok(user)
+            return r[FlextAuthModels.Identity].ok(user)
 
         def get_user(self, user_id: str) -> r[FlextAuthModels.Identity]:
             """Get user by ID."""
@@ -451,7 +455,7 @@ class FlextAuthManagers(s[object]):
                 user_agent=str(session_data.get("user_agent", "")),
                 last_accessed=session_data.get("last_accessed", datetime.now(UTC)),
             )
-            return r["FlextAuthModels.Session"].ok(session)
+            return r[FlextAuthModels.Session].ok(session)
 
         def get_active_sessions(self, user_id: str) -> r[list[FlextAuthModels.Session]]:
             """Get all active sessions for a user."""
@@ -479,7 +483,7 @@ class FlextAuthManagers(s[object]):
                     # Set unique_id from session_id
                     session.unique_id = session_id
                     sessions.append(session)
-            return r[list["FlextAuthModels.Session"]].ok(sessions)
+            return r[list[FlextAuthModels.Session]].ok(sessions)
 
         def end_session(self, user_id: str) -> r[bool]:
             """End all sessions for a user."""

@@ -9,7 +9,6 @@ from flext_core import FlextTypes
 from pydantic import Field, SecretStr
 
 from flext_auth.constants import FlextAuthConstants
-from flext_auth.providers.base import FlextAuthBaseProvider
 
 
 class FlextAuthTypes(FlextTypes):
@@ -96,7 +95,7 @@ class FlextAuthTypes(FlextTypes):
 
             key: FlextAuthTypes.Providers.Key
             provider: (
-                FlextAuthBaseProvider  # Forward reference to avoid circular import
+                object  # Provider instance - typed as object to avoid circular import
             )
             metadata: FlextAuthTypes.Providers.Metadata
             configuration: t.JsonDict
