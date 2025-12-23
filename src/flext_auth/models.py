@@ -291,7 +291,7 @@ class FlextAuthModels(m):
                 return r[bool].fail(f"Failed to hash credential: {e}")
 
     # Backward compatibility alias for tests expecting User model
-    User = Identity
+    User = AuthIdentity
 
     # =========================================================================
     # SESSION MODELS - Generic session entity

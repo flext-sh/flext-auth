@@ -1,4 +1,6 @@
-"""FLEXT Auth Certificate Provider - X.509 certificate authentication.
+"""Certificate authentication provider for FLEXT.
+
+This module provides certificate-based authentication for FLEXT applications.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -6,51 +8,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC
-
 from flext_core import r
 
-# Forward reference to avoid circular import
-from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_auth.providers.mixin import FlextAuthProviderMixin
 
+class FlextAuthCertificateProvider:
+    """Certificate-based authentication provider."""
 
-class FlextAuthCertificateProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
-    """X.509 certificate authentication provider.
-
-    This provider authenticates users using X.509 certificates. It validates
-    certificates against a configured certificate authority and issues tokens
-    upon successful validation.
-
-    Example:
-        >>> provider = FlextAuthCertificateProvider()
-        >>> result = provider.authenticate({"certificate": "base64-cert"})
-        >>> if result.is_success:
-        ...     token = result.value
-        ...     print(f"Authenticated with token: {token.token}")
-
-    """
-
-    def authenticate(
-        self,
-        credentials: dict[str, object],
-    ) -> r[p.Auth.TokenProtocol]:
-        """Authenticate using X.509 certificate.
-
-        Args:
-            credentials: Dictionary containing "certificate" key
-
-        Returns:
-            r[AuthToken]: Authentication token on success, error on failure
-
-        """
-        _ = credentials
-        return r[p.Auth.TokenProtocol].fail("Not implemented")
-
-    def validate(
-        self,
-        token: str | p.Auth.TokenProtocol,
-    ) -> r[bool]:
+    def validate_token(self, token: str) -> r[bool]:
         """Validate authentication token.
 
         Args:

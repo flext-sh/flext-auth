@@ -1,4 +1,7 @@
-"""FLEXT Auth Basic Provider - HTTP Basic authentication.
+"""FLEXT Auth Basic Provider - HTTP Basic authentication provider.
+
+This module provides HTTP Basic authentication for FLEXT applications.
+It implements RFC 7617 for username/password authentication.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -6,45 +9,26 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC
+# FLEXT Standard imports
+from flext_core import (
+    FlextResult as r,
+)
+from flext_core.protocols import FlextProtocols as p
 
-from flext_core import r
-
-from flext_auth.providers.mixin import FlextAuthProviderMixin
-from flext_auth.providers.rfc import FlextAuthRfcProvider
-
-# Forward reference to avoid circular import
+from flext_auth.providers.base import FlextAuthBaseProvider
 
 
-class FlextAuthBasicProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):
-    """HTTP Basic authentication provider (RFC 7617).
+class FlextAuthBasicProvider(FlextAuthBaseProvider):
+    """HTTP Basic authentication provider.
 
-    This provider implements HTTP Basic Authentication as defined in RFC 7617.
-    It validates username/password credentials and issues tokens upon
-    successful validation.
-
-    Example:
-        >>> provider = FlextAuthBasicProvider()
-        >>> result = provider.authenticate({"username": "user", "password": "password"})
-        >>> if result.is_success:
-        ...     token = result.value
-        ...     print(f"Authenticated with token: {token.token}")
-
+    Provides username/password authentication using HTTP Basic Auth (RFC 7617).
     """
 
     def authenticate(
         self,
         credentials: dict[str, object],
     ) -> r[p.Auth.TokenProtocol]:
-        """Authenticate using HTTP Basic credentials.
-
-        Args:
-            credentials: Dictionary containing "username" and "password" keys
-
-        Returns:
-            r[AuthToken]: Authentication token on success, error on failure
-
-        """
+        """Authenticate using HTTP Basic credentials."""
         _ = credentials
         return r[p.Auth.TokenProtocol].fail("Not implemented")
 
@@ -52,15 +36,7 @@ class FlextAuthBasicProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):
         self,
         token: str | p.Auth.TokenProtocol,
     ) -> r[bool]:
-        """Validate authentication token.
-
-        Args:
-            token: Token to validate
-
-        Returns:
-            r[bool]: True if valid, False if invalid, error on failure
-
-        """
+        """Validate authentication token."""
         _ = token
         return r[bool].fail("Not implemented")
 

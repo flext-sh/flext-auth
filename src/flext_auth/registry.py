@@ -10,7 +10,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import cast
 
 # FLEXT Standard imports
 from flext_core import (
@@ -56,10 +55,10 @@ class FlextAuthRegistry(FlextRegistry):
         configuration: object | None = None,
     ) -> r[bool]:
         """Railway-oriented provider registration with validation."""
-        # Cast parameters to expected types
-        config_dict = cast("t.JsonDict | None", configuration)
-        metadata_dict = cast("t.Providers.Metadata | None", metadata)
-        service_typed = cast("FlextAuthBaseProvider", service)
+        # Parameters should already be of correct types
+        config_dict = configuration
+        metadata_dict = metadata
+        service_typed = service
 
         # Consolidated validation and registration
         if not name or not name.strip():
@@ -345,7 +344,7 @@ class FlextAuthRegistry(FlextRegistry):
         if isinstance(extras_value, dict):
             result["extras"] = extras_value
 
-        return cast("t.Providers.Metadata", result)
+        return result
 
     def _provider_capabilities(
         self,

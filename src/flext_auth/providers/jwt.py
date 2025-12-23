@@ -1,4 +1,6 @@
-"""FLEXT Auth JWT Provider - JSON Web Token authentication.
+"""JWT authentication provider for FLEXT.
+
+This module provides JWT-based authentication for FLEXT applications.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -6,52 +8,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC
-
 from flext_core import r
 
-from flext_auth.models import FlextAuthModels
 
-# Forward reference to avoid circular import
-from flext_auth.providers.mixin import FlextAuthProviderMixin
-from flext_auth.providers.rfc import FlextAuthRfcProvider
+class FlextAuthJwtProvider:
+    """JWT-based authentication provider."""
 
-
-class FlextAuthJwtProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):
-    """JSON Web Token (JWT) authentication provider (RFC 7519).
-
-    This provider implements JWT authentication as defined in RFC 7519.
-    It validates JWT tokens and issues new tokens upon successful authentication.
-
-    Example:
-        >>> provider = FlextAuthJwtProvider()
-        >>> result = provider.authenticate({"username": "user", "password": "password"})
-        >>> if result.is_success:
-        ...     token = result.value
-        ...     print(f"Authenticated with token: {token.token}")
-
-    """
-
-    def authenticate(
-        self,
-        credentials: dict[str, object],
-    ) -> r[p.Auth.TokenProtocol]:
-        """Authenticate using JWT credentials.
-
-        Args:
-            credentials: Dictionary containing authentication credentials
-
-        Returns:
-            r[AuthToken]: Authentication token on success, error on failure
-
-        """
-        _ = credentials
-        return r[p.Auth.TokenProtocol].fail("Not implemented")
-
-    def validate(
-        self,
-        token: str | FlextAuthModels.AuthToken,
-    ) -> r[bool]:
+    def validate_token(self, token: str) -> r[bool]:
         """Validate JWT token.
 
         Args:

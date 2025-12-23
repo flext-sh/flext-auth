@@ -2,7 +2,6 @@
 
 Uses Python 3.13+ syntax, railway-oriented programming, and consolidated patterns
 for maximum maintainability. Single FlextAuthProviderService class with composition.
-
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
 """
@@ -10,13 +9,13 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import cast
 
 # FLEXT Standard imports
 from flext_core import (
     FlextResult as r,
     FlextService as s,
 )
+from flext_core.protocols import FlextProtocols as p
 
 from flext_auth.constants import FlextAuthConstants as c
 from flext_auth.models import FlextAuthModels
@@ -65,9 +64,7 @@ class FlextAuthProviderService(s[object]):
         if not self._config:
             self.logger.error("Configuration is required for provider registration")
             return
-
         provider_config: t.JsonDict = self._config.to_provider_config()
-
         # Provider registration mapping with requirements
         providers: list[
             tuple[
@@ -82,52 +79,31 @@ class FlextAuthProviderService(s[object]):
                 FlextAuthJwtProvider,
                 lambda: bool(provider_config.get("secret_key")),
             ),
-            (
-                "ldap",
-                FlextAuthLdapProvider,
-                lambda: bool(
-                    provider_config.get("server") and provider_config.get("base_dn"),
-                ),
+            "ldap",
+            FlextAuthLdapProvider,
+            lambda: bool(
+                provider_config.get("server") and provider_config.get("base_dn"),
             ),
-            (
-                "oauth2",
-                FlextAuthOAuth2Provider,
-                lambda: bool(
-                    provider_config.get("client_id")
-                    and provider_config.get("token_endpoint"),
-                ),
-            ),
-            (
-                "oidc",
-                FlextAuthOidcProvider,
-                lambda: bool(provider_config.get("issuer")),
-            ),
-            (
-                "saml",
-                FlextAuthSamlProvider,
-                lambda: bool(
-                    provider_config.get("entity_id") and provider_config.get("sso_url"),
-                ),
-            ),
-            (
-                "kerberos",
-                FlextAuthKerberosProvider,
-                lambda: bool(
-                    provider_config.get("realm") and provider_config.get("kdc"),
-                ),
-            ),
+            "oauth2",
+            FlextAuthOAuth2Provider,
+            provider_config.get("client_id") and provider_config.get("token_endpoint"),
+            "oidc",
+            FlextAuthOidcProvider,
+            lambda: bool(provider_config.get("issuer")),
+            "saml",
+            FlextAuthSamlProvider,
+            provider_config.get("entity_id") and provider_config.get("sso_url"),
+            "kerberos",
+            FlextAuthKerberosProvider,
+            provider_config.get("realm") and provider_config.get("kdc"),
             ("certificate", FlextAuthCertificateProvider, lambda: True),
             ("apikey", FlextAuthApiKeyProvider, lambda: True),
         ]
-
         for name, provider_class, condition in providers:
             if condition():
                 try:
                     # Instantiate provider with config
-                    provider = cast(
-                        "Callable[[t.JsonDict], FlextAuthBaseProvider]",
-                        provider_class,
-                    )(provider_config)
+                    provider = provider_class(provider_config)
                     self._providers.register(
                         name,
                         provider,
@@ -138,8 +114,6 @@ class FlextAuthProviderService(s[object]):
 
     # =========================================================================
     # CONSOLIDATED PROVIDER MANAGEMENT
-    # =========================================================================
-
     def get_provider(self, name: str) -> r[FlextAuthBaseProvider]:
         """Get registered provider."""
         return self._providers.get(name)
@@ -157,10 +131,7 @@ class FlextAuthProviderService(s[object]):
         """List registered provider names."""
         return self._providers.list_providers()
 
-    # =========================================================================
     # Advanced AUTHENTICATION OPERATIONS
-    # =========================================================================
-
     def authenticate_user(
         self,
         username: str,
