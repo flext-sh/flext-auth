@@ -12,10 +12,10 @@ from __future__ import annotations
 import threading
 from typing import ClassVar, Self
 
+from flext_core import FlextResult as r
 from flext_core.dispatcher import FlextDispatcher
 from flext_core.loggings import FlextLogger
 
-from flext import FlextResult as r
 from flext_auth.models import FlextAuthModels
 from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers import FlextAuthBaseProvider

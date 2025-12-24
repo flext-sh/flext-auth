@@ -20,7 +20,7 @@ from enum import StrEnum
 from types import MappingProxyType
 from typing import Final, Literal
 
-from flext import FlextConstants
+from flext_core import FlextConstants
 
 # ═══════════════════════════════════════════════════════════════════════════
 # STRENUM + PYDANTIC 2: DEFINITIVE PATTERN FOR FLEXT-AUTH
@@ -372,7 +372,10 @@ class FlextAuthConstants(FlextConstants):
         """Provider type literal - references ProviderTypes StrEnum members."""
 
         type RoleTypeLiteral = Literal[
-            RoleTypes.ADMIN, RoleTypes.USER, RoleTypes.MODERATOR, RoleTypes.GUEST,
+            RoleTypes.ADMIN,
+            RoleTypes.USER,
+            RoleTypes.MODERATOR,
+            RoleTypes.GUEST,
         ]
         """Role type literal - matches RoleTypes StrEnum values exactly."""
 
@@ -385,7 +388,9 @@ class FlextAuthConstants(FlextConstants):
         """Permission type literal - matches PermissionTypes StrEnum values exactly."""
 
         type AlgorithmLiteral = Literal[
-            Algorithms.HS256, Algorithms.RS256, Algorithms.ES256,
+            Algorithms.HS256,
+            Algorithms.RS256,
+            Algorithms.ES256,
         ]
         """Algorithm literal - matches Algorithms StrEnum values exactly."""
 

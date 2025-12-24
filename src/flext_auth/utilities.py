@@ -12,9 +12,9 @@ from typing import Annotated, TypeIs
 
 import bcrypt
 import jwt
+from flext_core import FlextUtilities as u, r
 from pydantic import BeforeValidator, SecretStr
 
-from flext import FlextUtilities as u, r
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.typings import t
 
@@ -35,7 +35,8 @@ class FlextAuthUtilities(u):
 
     @classmethod
     def is_valid_token_type(
-        cls, value: str,
+        cls,
+        value: str,
     ) -> TypeIs[FlextAuthConstants.Auth.TokenTypes]:
         """TypeIs for TokenTypes validation - narrowing in if/else.
 
@@ -56,7 +57,8 @@ class FlextAuthUtilities(u):
 
     @classmethod
     def is_valid_role_type(
-        cls, value: str,
+        cls,
+        value: str,
     ) -> TypeIs[FlextAuthConstants.Auth.RoleTypes]:
         """TypeIs for RoleTypes validation.
 

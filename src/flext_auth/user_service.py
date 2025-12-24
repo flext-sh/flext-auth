@@ -11,8 +11,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-# FLEXT Standard imports
-from flext import FlextModels as m,
+from flext_core import  FlextModels as m,
     FlextResult as r,
     FlextService as s
 from flext_core.dispatcher import FlextDispatcher

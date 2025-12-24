@@ -13,9 +13,10 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-# FLEXT Standard imports
-from flext import FlextResult as r,
-    FlextService as s
+from flext_core import (
+    FlextResult as r,
+    FlextService as s,
+)
 from flext_core.context import FlextContext
 from flext_core.dispatcher import FlextDispatcher
 from flext_core.loggings import FlextLogger

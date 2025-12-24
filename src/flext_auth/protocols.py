@@ -15,9 +15,8 @@ from collections.abc import Mapping
 from datetime import datetime
 from typing import Protocol, runtime_checkable
 
+from flext_core import FlextTypes
 from flext_core.protocols import FlextProtocols
-
-from flext import FlextTypes
 
 # Note: Protocols avoid importing models to prevent circular dependencies
 # Protocols use structural typing - models satisfy protocols through attributes

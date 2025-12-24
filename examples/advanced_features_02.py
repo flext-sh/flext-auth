@@ -15,7 +15,8 @@ import os
 import secrets
 import string
 
-from flext import FlextLogger
+from flext_core import FlextLogger
+
 from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings
 
 

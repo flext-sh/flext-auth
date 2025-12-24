@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import Self
 
 # FLEXT Standard imports
-from flext import FlextResult as r,
+from flext_core import  FlextResult as r,
     FlextSettings
 from pydantic import Field, SecretStr, model_validator
 

@@ -17,7 +17,7 @@ from typing import Self
 import bcrypt
 
 # FLEXT Standard imports
-from flext import FlextModels as m,
+from flext_core import  FlextModels as m,
     FlextResult as r,
     FlextUtilities as u
 from flext_core._models.entity import FlextModelsEntity

@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections.abc import Callable
 
 # FLEXT Standard imports
-from flext import FlextResult as r,
+from flext_core import  FlextResult as r,
     FlextTypes as t
 from flext_core.registry import FlextRegistry
 

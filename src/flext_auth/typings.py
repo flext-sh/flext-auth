@@ -5,9 +5,9 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Annotated, Literal, TypedDict
 
+from flext_core import FlextTypes
 from pydantic import Field, SecretStr
 
-from flext import FlextTypes
 from flext_auth.constants import FlextAuthConstants
 
 
@@ -62,7 +62,10 @@ class FlextAuthTypes(FlextTypes):
 
         type AuthMethod = Literal["basic", "jwt", "oauth2", "apikey"]
         type AuthStatus = Literal[
-            "authenticated", "unauthenticated", "expired", "invalid",
+            "authenticated",
+            "unauthenticated",
+            "expired",
+            "invalid",
         ]
 
     class UserManagement:
@@ -70,7 +73,11 @@ class FlextAuthTypes(FlextTypes):
 
         type UserStatus = Literal["active", "inactive", "locked", "pending"]
         type UserAction = Literal[
-            "create", "update", "delete", "activate", "deactivate",
+            "create",
+            "update",
+            "delete",
+            "activate",
+            "deactivate",
         ]
 
     class SessionManagement:
@@ -95,7 +102,10 @@ class FlextAuthTypes(FlextTypes):
         """Security-related type definitions."""
 
         type SecurityEvent = Literal[
-            "login_success", "login_failure", "token_created", "token_revoked",
+            "login_success",
+            "login_failure",
+            "token_created",
+            "token_revoked",
         ]
         type ThreatLevel = Literal["low", "medium", "high", "critical"]
 

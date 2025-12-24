@@ -13,8 +13,8 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 import jwt
+from flext_core import r
 
-from flext import r
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 
 
