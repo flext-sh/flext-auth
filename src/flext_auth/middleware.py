@@ -29,10 +29,8 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 # FLEXT Standard imports
-from flext_core import (
-    FlextResult as r,
-    FlextService as s,
-)
+from flext import FlextResult as r,
+    FlextService as s
 from flext_core.loggings import FlextLogger
 
 from flext_auth.models import FlextAuthModels
@@ -144,7 +142,7 @@ class FlextAuthMiddleware(s):
                 token_result = self._authenticate_or_refresh()
                 if token_result.is_failure:
                     return r[HttpRequest].fail(
-                        token_result.error or "Authentication failed"
+                        token_result.error or "Authentication failed",
                     )
 
             # Add authorization header
@@ -152,7 +150,7 @@ class FlextAuthMiddleware(s):
                 headers = getattr(request, "headers", {})
                 if isinstance(headers, dict):
                     headers["Authorization"] = f"Bearer {self._current_token}"
-                    setattr(request, "headers", headers)
+                    request.headers = headers
 
             return r[HttpRequest].ok(request)
 

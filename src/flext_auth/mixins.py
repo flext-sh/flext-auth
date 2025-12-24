@@ -9,8 +9,7 @@ from __future__ import annotations
 
 import re
 
-from flext_core import r, x
-
+from flext import r, x
 from flext_auth.constants import FlextAuthConstants
 
 # Constants for validation

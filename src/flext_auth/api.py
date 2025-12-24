@@ -12,18 +12,11 @@ from __future__ import annotations
 import threading
 from typing import ClassVar, Self
 
-# FLEXT Standard imports
-from flext_core import (
-    FlextResult as r,
-)
 from flext_core.dispatcher import FlextDispatcher
 from flext_core.loggings import FlextLogger
-from pydantic_settings import BaseSettings
 
+from flext import FlextResult as r
 from flext_auth.models import FlextAuthModels
-
-# Forward reference to avoid circular import
-# Import FlextAuthModels locally in methods where needed
 from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
@@ -59,7 +52,7 @@ class FlextAuth:
         if config is not None:
             self._config = config
         else:
-            self._config = FlextAuthSettings(config_class=BaseSettings)
+            self._config = FlextAuthSettings()
         self._registry = FlextAuthRegistry()
         # Import here to avoid circular dependency
 
@@ -81,7 +74,8 @@ class FlextAuth:
             if provider_result.is_success:
                 self._registry.register(provider_name, provider_result.value)
         self._identity_service = FlextAuthIdentityService(
-            config=self._config, dispatcher=self._dispatcher
+            config=self._config,
+            dispatcher=self._dispatcher,
         )
 
         self._token_service = FlextAuthTokenService(
@@ -91,7 +85,8 @@ class FlextAuth:
         )
 
         self._session_service = FlextAuthSessionService(
-            config=self._config, dispatcher=self._dispatcher
+            config=self._config,
+            dispatcher=self._dispatcher,
         )
 
     @classmethod

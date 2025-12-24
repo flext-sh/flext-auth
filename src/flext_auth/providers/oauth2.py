@@ -16,8 +16,7 @@ from base64 import urlsafe_b64encode
 from datetime import UTC, datetime, timedelta
 from urllib.parse import urlencode
 
-from flext_core import FlextUtilities as u, e, r
-
+from flext import FlextUtilities as u, e, r
 from flext_auth.constants import c
 from flext_auth.models import FlextAuthModels
 
@@ -167,7 +166,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         required_fields = ["client_id", "token_endpoint"]
         # Use u.filter() for unified filtering (DSL pattern)
         missing_fields = u.filter(
-            required_fields, lambda field: field not in self._config
+            required_fields, lambda field: field not in self._config,
         )
 
         if missing_fields:

@@ -17,11 +17,9 @@ from typing import Self
 import bcrypt
 
 # FLEXT Standard imports
-from flext_core import (
-    FlextModels as m,
+from flext import FlextModels as m,
     FlextResult as r,
-    FlextUtilities as u,
-)
+    FlextUtilities as u
 from flext_core._models.entity import FlextModelsEntity
 from pydantic import ConfigDict, Field, computed_field, model_validator
 

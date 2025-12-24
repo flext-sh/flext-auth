@@ -11,10 +11,8 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 # FLEXT Standard imports
-from flext_core import (
-    FlextResult as r,
-    FlextService as s,
-)
+from flext import FlextResult as r,
+    FlextService as s
 from flext_core.dispatcher import FlextDispatcher
 
 from flext_auth.constants import FlextAuthConstants as c
@@ -55,7 +53,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
     @property
     def user_manager(self) -> FlextAuthManagers.FlextAuthUserManager:
         """Direct access to user manager for token operations."""
-        return getattr(self, "_user_manager")
+        return self._user_manager
 
     def execute(self) -> r[object]:
         """Railway-oriented execute with focused service pattern."""

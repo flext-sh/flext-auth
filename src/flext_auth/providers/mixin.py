@@ -10,8 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextUtilities as u, e, r
-
+from flext import FlextUtilities as u, e, r
 from flext_auth.models import FlextAuthModels
 
 # Forward references to avoid circular import
@@ -81,7 +80,7 @@ class FlextAuthProviderMixin:
         """
         # Use u.filter() for unified filtering (DSL pattern)
         missing_fields = u.filter(
-            required_fields, lambda field: field not in credentials
+            required_fields, lambda field: field not in credentials,
         )
 
         if missing_fields:

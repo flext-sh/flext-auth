@@ -12,8 +12,7 @@ from __future__ import annotations
 
 from abc import ABC
 
-from flext_core import r
-
+from flext import r
 from flext_auth.models import FlextAuthModels
 
 # Forward reference to avoid circular import

@@ -16,9 +16,9 @@ import os
 import secrets
 import string
 
-from flext_core import FlextLogger
 from pydantic_settings import BaseSettings
 
+from flext import FlextLogger
 from flext_auth import FlextAuth, FlextAuthSettings
 
 # Get structured logger instance

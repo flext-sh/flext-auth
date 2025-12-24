@@ -16,8 +16,9 @@ from urllib.parse import urlencode
 
 from flext_api import FlextApiClient, FlextApiModels, FlextApiSettings
 from flext_api.typings import t as t_api
-from flext_core import r
 from flext_core.loggings import FlextLogger
+
+from flext import r
 
 
 class FlextWebTransportAdapter:

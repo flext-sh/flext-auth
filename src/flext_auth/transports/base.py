@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from flext_core import r
+from flext import r
 
 
 class BaseTransportAdapter(Protocol):

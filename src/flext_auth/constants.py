@@ -1,11 +1,13 @@
-"""FlextAuth constants - Advanced type-safe constants using StrEnum + Pydantic 2 patterns.
+"""FlextAuth constants - Pure constants using StrEnum + Pydantic 2 patterns.
 
 FLEXT-AUTH domain constants with FlextCore integration. Uses advanced Python 3.13+ features:
 - StrEnum for type-safe enumerations with Pydantic 2 validation
 - PEP 695 type aliases for strict Literal types
 - Nested classes for logical grouping (TokenTypes, ProviderTypes, etc.)
-- TypeIs and TypeGuard for advanced type narrowing
 - Collections.abc for immutable validation sets
+
+NOTE: Validation/TypeGuard methods are in utilities.py, not here.
+Constants classes contain ONLY pure constant definitions.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -13,12 +15,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable, Mapping, Set as AbstractSet
+from collections.abc import Mapping, Set as AbstractSet
 from enum import StrEnum
 from types import MappingProxyType
-from typing import Final, Literal, TypeGuard, TypeIs
+from typing import Final, Literal
 
-from flext_core import FlextConstants, FlextUtilities as u, r
+from flext import FlextConstants
 
 # ═══════════════════════════════════════════════════════════════════════════
 # STRENUM + PYDANTIC 2: DEFINITIVE PATTERN FOR FLEXT-AUTH
@@ -183,91 +185,6 @@ class FlextAuthConstants(FlextConstants):
         """Admin permission types."""
 
         # ═══════════════════════════════════════════════════════════════════
-        # TYPEIS + TYPEGUARD: Advanced type narrowing (Python 3.13+ PEP 742)
-        # ═══════════════════════════════════════════════════════════════════
-
-        @classmethod
-        def is_valid_token_type(cls, value: str) -> TypeIs[TokenTypes]:
-            """TypeIs for TokenTypes validation - narrowing in if/else.
-
-            Uses parent Enum utilities for consistency.
-            """
-            return u.Enum.is_member(cls.TokenTypes, value)
-
-        @classmethod
-        def is_access_token(cls, value: str) -> TypeGuard[AccessTokens]:
-            """TypeGuard for access token subset."""
-            return value in {cls.TokenTypes.ACCESS.value, cls.TokenTypes.BEARER.value}
-
-        @classmethod
-        def is_refresh_token(cls, value: str) -> TypeGuard[RefreshTokens]:
-            """TypeGuard for refresh token subset."""
-            return value == cls.TokenTypes.REFRESH.value
-
-        @classmethod
-        def is_valid_provider_type(cls, value: str) -> TypeIs[ProviderTypes]:
-            """TypeIs for ProviderTypes validation.
-
-            Uses parent Enum utilities for consistency.
-            """
-            return u.Enum.is_member(cls.ProviderTypes, value)
-
-        @classmethod
-        def is_jwt_provider(cls, value: str) -> TypeGuard[Literal[ProviderTypes.JWT]]:
-            """TypeGuard for JWT provider."""
-            return value == cls.ProviderTypes.JWT.value
-
-        @classmethod
-        def is_oauth2_provider(
-            cls, value: str
-        ) -> TypeGuard[Literal[ProviderTypes.OAUTH2]]:
-            """TypeGuard for OAuth2 provider."""
-            return value == cls.ProviderTypes.OAUTH2.value
-
-        @classmethod
-        def is_valid_role_type(cls, value: str) -> TypeIs[RoleTypes]:
-            """TypeIs for RoleTypes validation.
-
-            Uses parent Enum utilities for consistency.
-            """
-            return u.Enum.is_member(cls.RoleTypes, value)
-
-        @classmethod
-        def is_REDACTED_LDAP_BIND_PASSWORD_role(cls, value: str) -> TypeGuard[AdminRoles]:
-            """TypeGuard for REDACTED_LDAP_BIND_PASSWORD role subset."""
-            return value == cls.RoleTypes.ADMIN.value
-
-        @classmethod
-        def is_user_role(cls, value: str) -> TypeGuard[UserRoles]:
-            """TypeGuard for user role subset."""
-            return value in {
-                cls.RoleTypes.USER.value,
-                cls.RoleTypes.MODERATOR.value,
-                cls.RoleTypes.GUEST.value,
-            }
-
-        @classmethod
-        def is_valid_permission_type(cls, value: str) -> TypeIs[PermissionTypes]:
-            """TypeIs for PermissionTypes validation.
-
-            Uses parent Enum utilities for consistency.
-            """
-            return u.Enum.is_member(cls.PermissionTypes, value)
-
-        @classmethod
-        def is_write_permission(cls, value: str) -> TypeGuard[WritePermissions]:
-            """TypeGuard for write permission subset."""
-            return value in {
-                cls.PermissionTypes.WRITE.value,
-                cls.PermissionTypes.DELETE.value,
-            }
-
-        @classmethod
-        def is_REDACTED_LDAP_BIND_PASSWORD_permission(cls, value: str) -> TypeGuard[AdminPermissions]:
-            """TypeGuard for REDACTED_LDAP_BIND_PASSWORD permission subset."""
-            return value == cls.PermissionTypes.ADMIN.value
-
-        # ═══════════════════════════════════════════════════════════════════
         # IMMUTABLE COLLECTIONS: frozenset for O(1) validation
         # ═══════════════════════════════════════════════════════════════════
 
@@ -430,40 +347,6 @@ class FlextAuthConstants(FlextConstants):
         """Template for authentication error responses."""
 
         # ═══════════════════════════════════════════════════════════════════
-        # UTILITY METHODS: Advanced validation with u
-        # ═══════════════════════════════════════════════════════════════════
-
-        @classmethod
-        def validate_token_type_with_result(cls, value: str) -> r[TokenTypes]:
-            """Validate token type using u.Enum.parse."""
-            return u.Enum.parse(cls.TokenTypes, value)
-
-        @classmethod
-        def validate_provider_type_with_result(cls, value: str) -> r[ProviderTypes]:
-            """Validate provider type using u.Enum.parse."""
-            return u.Enum.parse(cls.ProviderTypes, value)
-
-        @classmethod
-        def validate_role_type_with_result(cls, value: str) -> r[RoleTypes]:
-            """Validate role type using u.Enum.parse."""
-            return u.Enum.parse(cls.RoleTypes, value)
-
-        @classmethod
-        def validate_permission_type_with_result(cls, value: str) -> r[PermissionTypes]:
-            """Validate permission type using u.Enum.parse."""
-            return u.Enum.parse(cls.PermissionTypes, value)
-
-        @classmethod
-        def create_token_type_validator(cls) -> Callable[[str], TokenTypes]:
-            """Create BeforeValidator for TokenTypes in Pydantic models."""
-            return u.Enum.coerce_validator(cls.TokenTypes)
-
-        @classmethod
-        def create_provider_type_validator(cls) -> Callable[[str], ProviderTypes]:
-            """Create BeforeValidator for ProviderTypes in Pydantic models."""
-            return u.Enum.coerce_validator(cls.ProviderTypes)
-
-        # ═══════════════════════════════════════════════════════════════════
         # LITERAL TYPES: PEP 695 strict type aliases (Python 3.13+)
         # ═══════════════════════════════════════════════════════════════════
         # All Literal types reference StrEnum members - NO string duplication!
@@ -489,7 +372,7 @@ class FlextAuthConstants(FlextConstants):
         """Provider type literal - references ProviderTypes StrEnum members."""
 
         type RoleTypeLiteral = Literal[
-            RoleTypes.ADMIN, RoleTypes.USER, RoleTypes.MODERATOR, RoleTypes.GUEST
+            RoleTypes.ADMIN, RoleTypes.USER, RoleTypes.MODERATOR, RoleTypes.GUEST,
         ]
         """Role type literal - matches RoleTypes StrEnum values exactly."""
 
@@ -502,7 +385,7 @@ class FlextAuthConstants(FlextConstants):
         """Permission type literal - matches PermissionTypes StrEnum values exactly."""
 
         type AlgorithmLiteral = Literal[
-            Algorithms.HS256, Algorithms.RS256, Algorithms.ES256
+            Algorithms.HS256, Algorithms.RS256, Algorithms.ES256,
         ]
         """Algorithm literal - matches Algorithms StrEnum values exactly."""
 
@@ -608,70 +491,11 @@ class FlextAuthConstants(FlextConstants):
         """Invalid token error code."""
 
         # ═══════════════════════════════════════════════════════════════════
-        # PERMISSIONS CONSTANTS: Nested class for permissions
-        # ═══════════════════════════════════════════════════════════════════
-
-    class Permissions:
-        """Permission constants - matches Auth.PermissionTypes StrEnum values.
-
-        NOTE: These string literals MUST match Auth.PermissionTypes StrEnum values exactly.
-        To avoid duplication, prefer using Auth.PermissionTypes.READ.value or
-        Auth.PermissionTypes.READ directly instead of Permissions.READ.
-
-        DRY Pattern: Use Auth.PermissionTypes StrEnum as single source of truth!
-        This class is kept for backward compatibility only.
-        """
-
-        # NOTE: Values must match Auth.PermissionTypes StrEnum exactly!
-        READ: Final[str] = "read"  # Matches Auth.PermissionTypes.READ
-        """Read permission - matches PermissionTypes.READ value."""
-        WRITE: Final[str] = "write"  # Matches Auth.PermissionTypes.WRITE
-        """Write permission - matches PermissionTypes.WRITE value."""
-        DELETE: Final[str] = "delete"  # Matches Auth.PermissionTypes.DELETE
-        """Delete permission - matches PermissionTypes.DELETE value."""
-        ADMIN: Final[str] = "REDACTED_LDAP_BIND_PASSWORD"  # Matches Auth.PermissionTypes.ADMIN
-        """Admin permission - matches PermissionTypes.ADMIN value."""
-
-        BASIC_USER_PERMISSIONS: Final[list[str]] = [READ, WRITE]
-        """Basic user permissions - matches PermissionTypes StrEnum values."""
-        ADMIN_PERMISSIONS: Final[list[str]] = [READ, WRITE, DELETE, ADMIN]
-        """Admin permissions - matches PermissionTypes StrEnum values."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # ROLES CONSTANTS: Nested class for roles
-        # ═══════════════════════════════════════════════════════════════════
-
-    class Roles:
-        """Role constants - matches Auth.RoleTypes StrEnum values.
-
-        NOTE: These string literals MUST match Auth.RoleTypes StrEnum values exactly.
-        To avoid duplication, prefer using Auth.RoleTypes.ADMIN.value or
-        Auth.RoleTypes.ADMIN directly instead of Roles.ADMIN.
-
-        DRY Pattern: Use Auth.RoleTypes StrEnum as single source of truth!
-        This class is kept for backward compatibility only.
-        """
-
-        # NOTE: Values must match Auth.RoleTypes StrEnum exactly!
-        ADMIN: Final[str] = "REDACTED_LDAP_BIND_PASSWORD"  # Matches Auth.RoleTypes.ADMIN
-        """Admin role - matches RoleTypes.ADMIN value."""
-        USER: Final[str] = "user"  # Matches Auth.RoleTypes.USER
-        """User role - matches RoleTypes.USER value."""
-        MODERATOR: Final[str] = "moderator"  # Matches Auth.RoleTypes.MODERATOR
-        """Moderator role - matches RoleTypes.MODERATOR value."""
-        GUEST: Final[str] = "guest"  # Matches Auth.RoleTypes.GUEST
-        """Guest role - matches RoleTypes.GUEST value."""
-
-        DEFAULT_ROLES: Final[list[str]] = [USER]
-        """Default roles - matches RoleTypes StrEnum values."""
-        VALID_ROLES: Final[list[str]] = [ADMIN, USER, MODERATOR, GUEST]
-        """Valid roles - matches RoleTypes StrEnum values."""
-
-        # ═══════════════════════════════════════════════════════════════════
         # INHERITED CONSTANTS: Access parent constants directly
         # ═══════════════════════════════════════════════════════════════════
         # All constants from FlextConstants are accessible via inheritance.
         # Use FlextConstants.Cqrs.Status, FlextConstants.Errors.*, etc. directly.
+        # Use Auth.PermissionTypes and Auth.RoleTypes StrEnums directly.
         # No need for explicit Inherited class - inheritance provides access.
 
 

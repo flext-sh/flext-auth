@@ -1,7 +1,11 @@
-"""Test constants for flext-auth tests.
+"""Constants for flext-auth tests.
 
-Centralized constants for test fixtures, factories, and test data.
-Does NOT duplicate src/flext_auth/constants.py - only test-specific constants.
+Provides TestsFlextAuthConstants, extending FlextTestsConstants with flext-auth-specific
+constants using COMPOSITION INHERITANCE.
+
+Inheritance hierarchy:
+- FlextTestsConstants (flext_tests) - Provides .Tests.* namespace
+- FlextAuthConstants (production) - Provides .Auth.* namespace
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
 SPDX-License-Identifier: MIT
@@ -11,14 +15,30 @@ from __future__ import annotations
 
 from typing import Final, Literal, TypeAlias
 
+from flext_tests.constants import FlextTestsConstants
+
 from flext_auth.constants import FlextAuthConstants
 
 
-class TestsConstants(FlextAuthConstants):
-    """Test constants extending FlextAuthConstants.
+class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
+    """Constants for flext-auth tests using COMPOSITION INHERITANCE.
 
-    Provides test-specific constants without duplicating parent functionality.
-    All parent constants are accessible via inheritance hierarchy.
+    MANDATORY: Inherits from BOTH:
+    1. FlextTestsConstants - for test infrastructure (.Tests.*)
+    2. FlextAuthConstants - for domain constants (.Auth.*)
+
+    Access patterns:
+    - tc.Tests.Docker.* (container testing)
+    - tc.Tests.Matcher.* (assertion messages)
+    - tc.Tests.Factory.* (test data generation)
+    - tc.Auth.* (domain constants from production)
+    - tc.TestData.* (project-specific test data)
+
+    Rules:
+    - NEVER duplicate constants from FlextTestsConstants or FlextAuthConstants
+    - Only flext-auth-specific constants allowed (not generic for other projects)
+    - All generic constants come from FlextTestsConstants
+    - All production constants come from FlextAuthConstants
     """
 
     class Paths:
@@ -28,7 +48,7 @@ class TestsConstants(FlextAuthConstants):
         TEST_OUTPUT_DIR: Final[str] = "tests/fixtures/data/output"
         TEST_TEMP_PREFIX: Final[str] = "flext_auth_test_"
 
-    class Auth:
+    class TestAuth:
         """Authentication test constants."""
 
         # Test credentials
@@ -45,7 +65,7 @@ class TestsConstants(FlextAuthConstants):
         TEST_SESSION_ID: Final[str] = "test_session_12345"
         TEST_SESSION_TOKEN: Final[str] = "test_session_token_12345"
 
-    class JWT:
+    class TestJWT:
         """JWT test constants."""
 
         TEST_SECRET: Final[str] = "test_secret_key_for_jwt_signing"
@@ -53,7 +73,7 @@ class TestsConstants(FlextAuthConstants):
         TEST_AUDIENCE: Final[str] = "test-audience"
         TEST_ALGORITHM: Final[str] = "HS256"
 
-    class OAuth2:
+    class TestOAuth2:
         """OAuth2 test constants."""
 
         TEST_CLIENT_ID: Final[str] = "test_client_id"
@@ -61,7 +81,7 @@ class TestsConstants(FlextAuthConstants):
         TEST_REDIRECT_URI: Final[str] = "http://localhost:8000/callback"
         TEST_SCOPE: Final[str] = "read write"
 
-    class Roles:
+    class TestRoles:
         """Role test constants."""
 
         TEST_ADMIN_ROLE: Final[str] = "REDACTED_LDAP_BIND_PASSWORD"
@@ -69,7 +89,7 @@ class TestsConstants(FlextAuthConstants):
         TEST_MODERATOR_ROLE: Final[str] = "moderator"
         TEST_GUEST_ROLE: Final[str] = "guest"
 
-    class Permissions:
+    class TestPermissions:
         """Permission test constants."""
 
         TEST_READ_PERMISSION: Final[str] = "read"
@@ -98,7 +118,12 @@ class TestsConstants(FlextAuthConstants):
         PermissionTypeLiteral: TypeAlias = Literal["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"]
 
 
-# Standardized short name for use in tests (same pattern as flext-core)
-c = TestsConstants
+# Short aliases per FLEXT convention
+tc = TestsFlextAuthConstants  # Primary test constants alias
+c = TestsFlextAuthConstants   # Alternative alias for compatibility
 
-__all__ = ["TestsConstants", "c"]
+__all__ = [
+    "TestsFlextAuthConstants",
+    "c",
+    "tc",
+]

@@ -12,10 +12,8 @@ from __future__ import annotations
 from collections.abc import Callable
 
 # FLEXT Standard imports
-from flext_core import (
-    FlextResult as r,
-    FlextTypes as t,
-)
+from flext import FlextResult as r,
+    FlextTypes as t
 from flext_core.registry import FlextRegistry
 
 from flext_auth.providers.base import FlextAuthBaseProvider

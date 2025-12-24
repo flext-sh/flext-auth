@@ -16,8 +16,7 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 
 from __future__ import annotations
 
-from flext_core import FlextUtilities as u, r
-
+from flext import FlextUtilities as u, r
 from flext_auth.models import FlextAuthModels
 
 # Forward reference to avoid circular import
@@ -76,7 +75,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         required_fields = ["realm", "kdc", "service_principal"]
         # Use u.filter() for unified filtering (DSL pattern)
         missing_fields = u.filter(
-            required_fields, lambda field: field not in self._config
+            required_fields, lambda field: field not in self._config,
         )
 
         if missing_fields:

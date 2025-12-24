@@ -10,8 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import r
-
+from flext import r
 from flext_auth.models import FlextAuthModels
 
 # Forward reference to avoid circular import
@@ -58,7 +57,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
         """
         _ = credentials  # Placeholder for SAML 2.0 authentication implementation
         return r["FlextAuthModels.AuthToken"].fail(
-            "SAML provider not yet fully implemented"
+            "SAML provider not yet fully implemented",
         )
 
     def validate(self, token: str) -> r[bool]:

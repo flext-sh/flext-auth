@@ -14,10 +14,8 @@ from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 # FLEXT Standard imports
-from flext_core import (
-    FlextResult as r,
-    FlextService as s,
-)
+from flext import FlextResult as r,
+    FlextService as s
 from flext_core.context import FlextContext
 from flext_core.dispatcher import FlextDispatcher
 from flext_core.loggings import FlextLogger
@@ -47,15 +45,9 @@ class ServiceManagerMixin:
         """
         self._config = config
         self._dispatcher = dispatcher
-        setattr(self, "_user_manager", FlextAuthManagers.FlextAuthUserManager(config))
-        setattr(
-            self, "_session_manager", FlextAuthManagers.FlextAuthSessionManager(config)
-        )
-        setattr(
-            self,
-            "_rate_limiter",
-            FlextAuthManagers.FlextAuthRateLimiter(config, dispatcher),
-        )
+        self._user_manager = FlextAuthManagers.FlextAuthUserManager(config)
+        self._session_manager = FlextAuthManagers.FlextAuthSessionManager(config)
+        self._rate_limiter = FlextAuthManagers.FlextAuthRateLimiter(config, dispatcher)
 
 
 class FlextAuthManagers(s[object]):

@@ -15,8 +15,7 @@ from __future__ import annotations
 
 import os
 
-from flext_core import FlextContainer
-
+from flext import FlextContainer
 from flext_auth import FlextAuth, FlextAuthModels
 from flext_auth.settings import FlextAuthSettings
 

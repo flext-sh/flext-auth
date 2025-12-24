@@ -12,11 +12,9 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 # FLEXT Standard imports
-from flext_core import (
-    FlextModels as m,
+from flext import FlextModels as m,
     FlextResult as r,
-    FlextService as s,
-)
+    FlextService as s
 from flext_core.dispatcher import FlextDispatcher
 from pydantic import ValidationError
 
@@ -40,7 +38,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     """
 
     def __init__(
-        self, *, config: FlextAuthSettings, dispatcher: FlextDispatcher
+        self, *, config: FlextAuthSettings, dispatcher: FlextDispatcher,
     ) -> None:
         """Generic initialization with dependency injection."""
         super().__init__()
@@ -54,7 +52,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     @identity_manager.setter
     def identity_manager(self, value: FlextAuthManagers.FlextAuthUserManager) -> None:
         """Set identity manager (for service composition)."""
-        setattr(self, "_user_manager", value)
+        self._user_manager = value
 
     def execute(self) -> r[object]:
         """Railway-oriented execute with focused service pattern."""
@@ -142,7 +140,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
         # Validate credential strength before hashing
         if len(credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
             return r[m.AuthIdentity].fail(
-                f"Credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
+                f"Credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
             )
 
         # Create user with basic fields - extra_fields not currently supported
@@ -186,14 +184,14 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
                 lambda identity: r.ok(identity)
                 if len(new_credential) >= c.Auth.CREDENTIAL_MIN_LENGTH
                 else r.fail(
-                    f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
+                    f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
                 ),
             )
             .flat_map(
                 lambda identity: identity.set_credential(new_credential).map(
                     lambda _: (
                         self.logger.info(
-                            "Password change successful", identity=identity.name
+                            "Password change successful", identity=identity.name,
                         ),
                         True,
                     )[1],
@@ -209,14 +207,14 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
                 lambda identity: r.ok(identity)
                 if len(new_credential) >= c.Auth.CREDENTIAL_MIN_LENGTH
                 else r.fail(
-                    f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
+                    f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
                 ),
             )
             .flat_map(
                 lambda identity: identity.set_credential(new_credential).map(
                     lambda _: (
                         self.logger.info(
-                            "Password reset successful", identity=identity.name
+                            "Password reset successful", identity=identity.name,
                         ),
                         True,
                     )[1],
