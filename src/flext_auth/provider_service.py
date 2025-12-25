@@ -10,9 +10,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-# FLEXT Standard imports
-from flext_core import  FlextResult as r,
-    FlextService as s
+from flext_core import FlextResult as r, FlextService as s
 from flext_core.protocols import FlextProtocols as p
 
 from flext_auth.constants import FlextAuthConstants as c

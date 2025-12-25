@@ -10,9 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-# FLEXT Standard imports
-from flext_core import  FlextResult as r,
-    FlextService as s
+from flext_core import FlextResult as r, FlextService as s
 from flext_core.dispatcher import FlextDispatcher
 
 from flext_auth.constants import FlextAuthConstants as c
@@ -169,9 +167,11 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
             return r.ok(self._jwt_provider_cache)
 
         result = self._provider_service.get_provider("jwt").flat_map(
-            lambda p: r.ok(p)
-            if isinstance(p, FlextAuthJwtProvider)
-            else r.fail("Invalid JWT provider type"),
+            lambda p: (
+                r.ok(p)
+                if isinstance(p, FlextAuthJwtProvider)
+                else r.fail("Invalid JWT provider type")
+            ),
         )
         if result.is_failure:
             return result

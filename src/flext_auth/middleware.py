@@ -28,9 +28,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-# FLEXT Standard imports
-from flext_core import  FlextResult as r,
-    FlextService as s
+from flext_core import FlextResult as r, FlextService as s
 from flext_core.loggings import FlextLogger
 
 from flext_auth.models import FlextAuthModels

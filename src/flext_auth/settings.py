@@ -11,9 +11,7 @@ from __future__ import annotations
 
 from typing import Self
 
-# FLEXT Standard imports
-from flext_core import  FlextResult as r,
-    FlextSettings
+from flext_core import FlextResult as r, FlextSettings
 from pydantic import Field, SecretStr, model_validator
 
 from flext_auth.constants import c
