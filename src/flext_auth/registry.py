@@ -39,26 +39,38 @@ class FlextAuthRegistry(FlextRegistry):
         configuration: t.JsonDict | None = None,
     ) -> r[bool]:
         """Register provider with optional config and metadata."""
-        result = self.register_plugin(self.PROVIDERS, name, service)
-        if result.is_failure:
-            return result
 
-        if configuration:
-            self._configs[name] = configuration
-        self._metadata[name] = self._build_metadata(name, service, metadata)
-        return r[bool].ok(True)
+        def store_config_and_metadata(_: t.GeneralValueType) -> bool:
+            if configuration:
+                self._configs[name] = configuration
+            self._metadata[name] = self._build_metadata(name, service, metadata)
+            return True
+
+        return self.register_plugin(self.PROVIDERS, name, service).map(
+            store_config_and_metadata,
+        )
 
     def unregister(self, name: str) -> r[bool]:
         """Unregister provider and cleanup auth-specific data."""
-        result = self.unregister_plugin(self.PROVIDERS, name)
-        if result.is_success:
+
+        def cleanup_provider_data(_: t.GeneralValueType) -> bool:
             self._configs.pop(name, None)
             self._metadata.pop(name, None)
-        return result
+            return True
+
+        return self.unregister_plugin(self.PROVIDERS, name).map(cleanup_provider_data)
 
     def get(self, name: str) -> r[FlextAuthBaseProvider]:
         """Get provider by name."""
-        return self.get_plugin(self.PROVIDERS, name)
+
+        def validate_provider(plugin: t.GeneralValueType) -> r[FlextAuthBaseProvider]:
+            if isinstance(plugin, FlextAuthBaseProvider):
+                return r[FlextAuthBaseProvider].ok(plugin)
+            return r[FlextAuthBaseProvider].fail(
+                "Plugin is not a FlextAuthBaseProvider",
+            )
+
+        return self.get_plugin(self.PROVIDERS, name).flat_map(validate_provider)
 
     def list_providers(self) -> list[str]:
         """List registered provider names."""

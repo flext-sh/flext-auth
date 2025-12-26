@@ -17,6 +17,7 @@ from typing import Self
 import bcrypt
 from flext_core import FlextModels as m, FlextResult as r, FlextUtilities as u
 from flext_core._models.entity import FlextModelsEntity
+from flext_core.typings import t
 from pydantic import ConfigDict, Field, computed_field, model_validator
 
 
@@ -42,7 +43,7 @@ class FlextAuthModels(m):
     and SOLID principles. Uses Python 3.13+ syntax and flext-core patterns.
     """
 
-    def __init_subclass__(cls, **kwargs: object) -> None:
+    def __init_subclass__(cls, **kwargs: t.GeneralValueType) -> None:
         """Warn when FlextAuthModels is subclassed directly."""
         super().__init_subclass__(**kwargs)
         u.Deprecation.warn_once(
@@ -58,9 +59,9 @@ class FlextAuthModels(m):
         """Generic validation result for any operation (immutable value object)."""
 
         is_valid: bool = Field(..., description="Validation outcome")
-        data: dict[str, object] = Field(default_factory=dict, description="Result data")
+        data: t.JsonDict = Field(default_factory=dict, description="Result data")
         error: str = Field(default="", description="Error message")
-        metadata: dict[str, object] = Field(
+        metadata: t.JsonDict = Field(
             default_factory=dict,
             description="Additional metadata",
         )
@@ -109,7 +110,7 @@ class FlextAuthModels(m):
             ge=1,
             description="Token expiry",
         )
-        extra_claims: dict[str, object] = Field(
+        extra_claims: t.JsonDict = Field(
             default_factory=dict,
             description="Additional claims",
         )
@@ -242,7 +243,7 @@ class FlextAuthModels(m):
         token: str = Field(default="", description="Associated token", exclude=True)
         session_id: str = Field(default="", description="Session ID")
 
-        def __getitem__(self, key: str) -> object:
+        def __getitem__(self, key: str) -> t.GeneralValueType:
             """Support dictionary-like access for backward compatibility."""
             if key == "user":
                 return {"id": self.id, "username": self.name, "email": self.contact}
@@ -349,14 +350,14 @@ class FlextAuthModels(m):
             """Check if configured."""
             return bool(self.name and self.type)
 
-    class ProviderConfiguration(UserDict[str, object]):
+    class ProviderConfiguration(UserDict[str, t.GeneralValueType]):
         """Provider configuration for authentication providers."""
 
         def __init__(
             self,
-            dict_: dict[str, object] | None = None,
+            dict_: t.JsonDict | None = None,
             /,
-            **kwargs: object,
+            **kwargs: t.GeneralValueType,
         ) -> None:
             """Initialize provider configuration with defaults."""
             if dict_ is not None:
@@ -375,7 +376,7 @@ class FlextAuthModels(m):
         """API key validation request (immutable value object)."""
 
         api_key: str = Field(..., description="API key to validate")
-        metadata: dict[str, object] = Field(
+        metadata: t.JsonDict = Field(
             default_factory=dict,
             description="Additional validation data",
         )
@@ -404,7 +405,7 @@ class FlextAuthModels(m):
 
         username: str = Field(..., description="Username")
         password: str = Field(..., description="Password", exclude=True)
-        metadata: dict[str, object] = Field(
+        metadata: t.JsonDict = Field(
             default_factory=dict,
             description="Additional validation data",
         )
@@ -418,7 +419,7 @@ class FlextAuthModels(m):
 
         credential_type: str = Field(..., description="Credential type")
         value: str = Field(..., description="Credential value", exclude=True)
-        metadata: dict[str, object] = Field(
+        metadata: t.JsonDict = Field(
             default_factory=dict,
             description="Additional data",
         )
@@ -431,13 +432,13 @@ class FlextAuthModels(m):
         """Generic authentication response (immutable value object)."""
 
         success: bool = Field(..., description="Authentication success")
-        identity: object = Field(
+        identity: t.JsonDict = Field(
             default_factory=dict,
             description="Identity data",
         )
         token: str = Field(default="", description="Token", exclude=True)
         message: str = Field(default="", description="Response message")
-        metadata: dict[str, object] = Field(
+        metadata: t.JsonDict = Field(
             default_factory=dict,
             description="Additional data",
         )

@@ -15,6 +15,7 @@ from typing import ClassVar, Self
 from flext_core import FlextResult as r
 from flext_core.dispatcher import FlextDispatcher
 from flext_core.loggings import FlextLogger
+from pydantic import SecretStr
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.provider_service import FlextAuthProviderService
@@ -121,6 +122,24 @@ class FlextAuth:
             # For now, just create the instance
             pass
         return instance
+
+    @classmethod
+    def create_with_config_overrides(
+        cls,
+        **config_overrides: str | bool | float | SecretStr,
+    ) -> Self:
+        """Factory method to create FlextAuth with configuration overrides.
+
+        Args:
+            **config_overrides: Configuration parameters to override defaults
+                (e.g., expiry_minutes=120, hash_rounds=14)
+
+        Returns:
+            Initialized FlextAuth instance with custom configuration
+
+        """
+        custom_config = FlextAuthSettings(**config_overrides)
+        return cls(config=custom_config)
 
     @property
     def config(self) -> FlextAuthSettings:

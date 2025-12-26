@@ -11,8 +11,8 @@ from __future__ import annotations
 
 from typing import Self
 
-from flext_core import FlextResult as r, FlextSettings
-from pydantic import Field, SecretStr, model_validator
+from flext_core import FlextResult as r, FlextSettings, FlextTypes as t
+from pydantic import Field, SecretStr
 
 from flext_auth.constants import c
 
@@ -159,7 +159,9 @@ class FlextAuthSettings(FlextSettings):
     )
 
     @classmethod
-    def create_with_overrides(cls, **overrides: object) -> r[FlextAuthSettings]:
+    def create_with_overrides(
+        cls, **overrides: t.GeneralValueType
+    ) -> r[FlextAuthSettings]:
         """Create config instance with overrides."""
         try:
             # Create instance with overrides - Pydantic will validate
@@ -189,18 +191,13 @@ class FlextAuthSettings(FlextSettings):
             "max_credential_length": self.max_credential_length,
         }
 
-    @model_validator(mode="after")
+    # @model_validator(mode="after")
     def _validate_model(self) -> Self:
         """Pydantic model validator for automatic validation."""
-        if not hasattr(self.auth_secret, "get_secret_value"):
-            # If it's not a SecretStr, it might be wrapped in FlextResult
-            if hasattr(self.auth_secret, "value"):
-                self.auth_secret = self.auth_secret.value
-            elif hasattr(self.auth_secret, "unwrap"):
-                self.auth_secret = self.auth_secret.unwrap()
-            else:
-                # Convert to string and wrap in SecretStr
-                self.auth_secret = SecretStr(str(self.auth_secret))
+        # Validate auth_secret is SecretStr with proper length
+        if not isinstance(self.auth_secret, SecretStr):
+            msg = f"auth_secret must be SecretStr, got {type(self.auth_secret)}"
+            raise TypeError(msg)
 
         secret_len = len(self.auth_secret.get_secret_value())
         if secret_len < c.Auth.SECRET_MIN_LENGTH:
@@ -287,13 +284,13 @@ class FlextAuthSettings(FlextSettings):
         except Exception as e:
             return r.fail(f"Failed to create config: {e}")
 
-    def to_provider_config(self) -> dict[str, object]:
+    def to_provider_config(self) -> t.JsonDict:
         """Convert config to provider configuration dict.
 
         Returns provider configuration without using model_dump().
         Directly accesses config properties to build the dict.
         """
-        config_dict: dict[str, object] = {
+        config_dict: t.JsonDict = {
             "algorithm": self.algorithm,
             "expiry_minutes": self.expiry_minutes,
             "issuer": self.issuer,

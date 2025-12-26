@@ -46,12 +46,12 @@ class FlextAuthTypes(FlextTypes):
     class AuthenticationResponseDict(TypedDict, total=False):
         """Authentication response dictionary structure for backward compatibility."""
 
-        user: dict[str, object]
-        session: dict[str, object]
+        user: FlextAuthTypes.Managers.UserData
+        session: FlextAuthTypes.Managers.SessionData
         jwt_token: str
         authenticated: bool
         success: bool
-        tokens: dict[str, object]
+        tokens: FlextAuthTypes.Tokens.ClaimMap
 
     # =========================================================================
     # AUTHENTICATION DOMAIN TYPE CLASSES
@@ -120,6 +120,68 @@ class FlextAuthTypes(FlextTypes):
 
         class AuthProjectConfig(TypedDict, total=False):
             """Project configuration structure."""
+
+    class ProviderConfig(TypedDict, total=False):
+        """Provider configuration dictionary structure."""
+
+        provider_type: str
+        secret_key: str
+        algorithm: str
+        token_expiry_minutes: int
+        refresh_expiry_days: int
+        client_id: str
+        client_secret: str
+        authorization_url: str
+        token_url: str
+        redirect_uri: str
+        scope: str
+        audience: str
+        issuer: str
+        realm: str
+        kdc_host: str
+        kdc_port: int
+        service_principal: str
+        keytab_path: str
+        entity_id: str
+        sso_url: str
+        slo_url: str
+        x509_cert: str
+        ldap_url: str
+        bind_dn: str
+        base_dn: str
+        search_filter: str
+
+    class OAuth2TokenResponse(TypedDict, total=False):
+        """OAuth2 token response structure."""
+
+        access_token: str
+        token_type: str
+        expires_in: int
+        refresh_token: str
+        scope: str
+        id_token: str
+
+    class KerberosTicketData(TypedDict, total=False):
+        """Kerberos ticket data structure."""
+
+        ticket: str
+        session_key: str
+        principal: str
+        realm: str
+        start_time: datetime
+        end_time: datetime
+        renew_till: datetime
+        flags: list[str]
+
+    class HttpResponseData(TypedDict, total=False):
+        """HTTP response data structure."""
+
+        status_code: int
+        headers: dict[str, str]
+        body: str
+        json: t.JsonDict
+        error: str
+        success: bool
 
     class Providers:
         """Provider-oriented type definitions."""
@@ -267,9 +329,9 @@ class FlextAuthTypes(FlextTypes):
             """Authentication response structure."""
 
             success: bool
-            identity: object  # Will be Identity from models
-            token: object  # Will be AuthToken from models
-            session: object  # Will be Session from models
+            identity: t.JsonDict  # Will be Identity from models
+            token: t.JsonDict  # Will be AuthToken from models
+            session: t.JsonDict  # Will be Session from models
             message: str
             metadata: t.JsonDict
 

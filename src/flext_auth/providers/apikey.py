@@ -10,10 +10,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextResult as r
+from flext_core import FlextResult as r, FlextTypes as t
 
 from flext_auth.protocols import FlextAuthProtocols as p
 from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth.typings import FlextAuthTypes as at
 
 
 class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
@@ -22,9 +23,13 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
     Provides API key-based authentication with token validation.
     """
 
+    def __init__(self, config: at.ProviderConfig) -> None:
+        """Initialize provider with configuration."""
+        _ = config  # Not used for API key
+
     def authenticate(
         self,
-        credentials: dict[str, object],
+        credentials: t.JsonDict,
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using API key credentials."""
         _ = credentials

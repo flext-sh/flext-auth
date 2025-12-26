@@ -10,9 +10,15 @@ from __future__ import annotations
 
 from flext_core import r
 
+from flext_auth.typings import FlextAuthTypes as at
+
 
 class FlextAuthCertificateProvider:
     """Certificate-based authentication provider."""
+
+    def __init__(self, config: at.ProviderConfig) -> None:
+        """Initialize provider with configuration."""
+        _ = config  # Not used for certificate
 
     def validate_token(self, token: str) -> r[bool]:
         """Validate authentication token.

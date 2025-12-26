@@ -15,7 +15,7 @@ import json
 from urllib.parse import urlencode
 
 from flext_api import FlextApiClient, FlextApiModels, FlextApiSettings
-from flext_api.typings import t as t_api
+from flext_api.typings import FlextApiTypes as t_api
 from flext_core import r
 from flext_core.loggings import FlextLogger
 
@@ -64,11 +64,11 @@ class FlextWebTransportAdapter:
         self,
         url: str,
         method: str = "POST",
-        data: t_api.RequestBody | None = None,
+        data: t_api.Api.RequestBody | None = None,
         headers: dict[str, str] | None = None,
-        query: t_api.WebParams | None = None,
+        query: t_api.Api.WebParams | None = None,
         timeout: float | None = None,
-    ) -> r[t_api.ResponseDict]:
+    ) -> r[t_api.Api.ResponseDict]:
         """Send HTTP request using flext-api transport.
 
         Implements BaseTransportAdapter protocol for generic HTTP operations.
@@ -171,7 +171,7 @@ class FlextWebTransportAdapter:
         url: str,
         access_token: str,
         headers: dict[str, str],
-    ) -> r[t_api.ResponseDict]:
+    ) -> r[t_api.Api.ResponseDict]:
         """GET request to OIDC UserInfo endpoint.
 
         Retrieves user information using an OAuth2 access token according
@@ -214,8 +214,8 @@ class FlextWebTransportAdapter:
 
     def _parse_token_response(
         self,
-        response_data: t_api.ResponseDict,
-    ) -> r[t_api.ResponseDict]:
+        response_data: t_api.Api.ResponseDict,
+    ) -> r[t_api.Api.ResponseDict]:
         """Parse OAuth2 token endpoint response.
 
         Validates token response according to RFC 6749 Section 5.1 (success)
@@ -274,24 +274,24 @@ class FlextWebTransportAdapter:
             },
         )
 
-        return r[t_api.ResponseDict].ok(response_data)
+        return r[t_api.Api.ResponseDict].ok(response_data)
 
     def _execute_request(
         self,
         request: FlextApiModels.HttpRequest,
-    ) -> r[t_api.ResponseDict]:
+    ) -> r[t_api.Api.ResponseDict]:
         response = self._client.request(request)
         if response.is_failure:
-            return r[t_api.ResponseDict].fail(response.error)
+            return r[t_api.Api.ResponseDict].fail(response.error)
 
         http_response = response.value
         body = http_response.body
 
         if body is None:
-            return r[t_api.ResponseDict].ok({})
+            return r[t_api.Api.ResponseDict].ok({})
 
         if isinstance(body, dict):
-            return r[t_api.ResponseDict].ok(self._normalize_response_dict(body))
+            return r[t_api.Api.ResponseDict].ok(self._normalize_response_dict(body))
 
         if isinstance(body, (bytes, str)):
             decoded = (
@@ -302,32 +302,32 @@ class FlextWebTransportAdapter:
             try:
                 parsed = json.loads(decoded)
             except json.JSONDecodeError:
-                return r[t_api.ResponseDict].fail(
+                return r[t_api.Api.ResponseDict].fail(
                     "Unable to parse response body as JSON",
                 )
             if isinstance(parsed, dict):
-                return r[t_api.ResponseDict].ok(
+                return r[t_api.Api.ResponseDict].ok(
                     self._normalize_response_dict(parsed),
                 )
-            return r[t_api.ResponseDict].fail(
+            return r[t_api.Api.ResponseDict].fail(
                 f"Unexpected parsed response type: {type(parsed)}",
             )
 
-        return r[t_api.ResponseDict].fail(
+        return r[t_api.Api.ResponseDict].fail(
             f"Unsupported response body type: {type(body)}",
         )
 
     def _normalize_response_dict(
         self,
         payload: dict[str, object],
-    ) -> t_api.ResponseDict:
+    ) -> t_api.Api.ResponseDict:
         return {str(key): value for key, value in payload.items()}
 
     def _resolve_body(
         self,
         method: str,
-        data: t_api.RequestBody | None,
-    ) -> t_api.RequestBody | None:
+        data: t_api.Api.RequestBody | None,
+    ) -> t_api.Api.RequestBody | None:
         if data is None:
             return None
         if method.upper() in {"GET", "DELETE"}:
@@ -337,13 +337,13 @@ class FlextWebTransportAdapter:
     def _resolve_query(
         self,
         method: str,
-        data: t_api.RequestBody | None,
-        query: t_api.WebParams | None,
-    ) -> t_api.WebParams | None:
+        data: t_api.Api.RequestBody | None,
+        query: t_api.Api.WebParams | None,
+    ) -> t_api.Api.WebParams | None:
         if isinstance(data, dict) and method.upper() == "GET":
             query_dict = query if query is not None else {}
             merged_query = {**query_dict, **data}
-            normalized: t_api.WebParams = {}
+            normalized: t_api.Api.WebParams = {}
             for key, value in merged_query.items():
                 if isinstance(value, list):
                     normalized[str(key)] = [str(item) for item in value]
@@ -354,10 +354,10 @@ class FlextWebTransportAdapter:
 
     def _validate_userinfo_response(
         self,
-        payload: t_api.ResponseDict,
-    ) -> r[t_api.ResponseDict]:
+        payload: t_api.Api.ResponseDict,
+    ) -> r[t_api.Api.ResponseDict]:
         if "sub" not in payload:
-            return r[t_api.ResponseDict].fail(
+            return r[t_api.Api.ResponseDict].fail(
                 "UserInfo response missing required 'sub' claim",
             )
 
@@ -365,7 +365,7 @@ class FlextWebTransportAdapter:
             "UserInfo retrieved successfully",
             extra={"subject": payload["sub"]},
         )
-        return r[t_api.ResponseDict].ok(payload)
+        return r[t_api.Api.ResponseDict].ok(payload)
 
 
 __all__ = ["FlextWebTransportAdapter"]

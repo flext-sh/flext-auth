@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from flext_core import FlextResult as r
+from flext_core import FlextResult as r, FlextTypes as t
 
 from flext_auth.protocols import FlextAuthProtocols as p
 
@@ -31,7 +31,7 @@ class FlextAuthBaseProvider(ABC):
     @abstractmethod
     def authenticate(
         self,
-        credentials: dict[str, object],
+        credentials: t.JsonDict,
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate user with provided credentials.
 

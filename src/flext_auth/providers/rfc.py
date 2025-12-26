@@ -27,22 +27,12 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
     and provides common patterns for RFC-compliant implementations.
 
     RFC Standards Supported:
-    - RFC 7617: HTTP Basic Authentication
-    - RFC 6749: OAuth 2.0 Authorization Framework
-    - RFC 7519: JSON Web Token (JWT)
-    - RFC 7662: OAuth 2.0 Token Introspection
-    - RFC 8414: OAuth 2.0 Authorization Server Metadata
-    - RFC 8693: OAuth 2.0 Token Exchange
-
-    Example:
-        class FlextAuthBasicRfcProvider(FlextAuthRfcProvider):
-            \"\"\"RFC 7617 compliant Basic Auth provider.\"\"\"
-
-            def authenticate(
-                self, credentials: dict[str, object]
-            ) -> r[FlextAuthModels.AuthToken]:
-                # RFC 7617 implementation
-                return r[FlextAuthModels.AuthToken].ok(token)
+        - RFC 7617: HTTP Basic Authentication
+        - RFC 6749: OAuth 2.0 Authorization Framework
+        - RFC 7519: JSON Web Token (JWT)
+        - RFC 7662: OAuth 2.0 Token Introspection
+        - RFC 8414: OAuth 2.0 Authorization Server Metadata
+        - RFC 8693: OAuth 2.0 Token Exchange
 
     """
 

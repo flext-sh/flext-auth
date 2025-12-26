@@ -68,45 +68,45 @@ class FlextAuthQuickstart(s[object]):
 
     def create_demo_users(self, count: int = 5) -> r[list[str]]:
         """Create demo users for testing."""
-        user_ids = []
-        for i in range(count):
+        user_ids: list[str] = []
+
+        def create_single_user(i: int) -> r[str]:
             username = f"demo_user_{i}"
             email = f"demo{i}@example.com"
             password = f"DemoPass{i}23!"
+            return self.register_user(username, email, password).map(lambda _: username)
 
-            result = self.register_user(username, email, password)
-            if result.is_success:
-                user_ids.append(username)
-            else:
+        for i in range(count):
+            result = create_single_user(i)
+            if result.is_failure:
                 return r[list[str]].fail(
                     f"Failed to create demo user {i}: {result.error}",
                 )
+            user_ids.append(result.value)
 
         return r[list[str]].ok(user_ids)
 
     def flext_auth_quick_start(self, *, create_REDACTED_LDAP_BIND_PASSWORD: bool = True) -> r[list[str]]:
         """Quick start the auth service with demo users."""
-        result = self.create_demo_users()
-        if result.is_failure:
-            return result
 
-        user_ids = result.value
+        def create_REDACTED_LDAP_BIND_PASSWORD_user(user_ids: list[str]) -> r[list[str]]:
+            if not create_REDACTED_LDAP_BIND_PASSWORD:
+                return r[list[str]].ok(user_ids)
 
-        if create_REDACTED_LDAP_BIND_PASSWORD:
-            # Create REDACTED_LDAP_BIND_PASSWORD user
-            REDACTED_LDAP_BIND_PASSWORD_result = self.register_user(
-                "REDACTED_LDAP_BIND_PASSWORD",
-                "REDACTED_LDAP_BIND_PASSWORD@example.com",
-                "AdminPass123!",
-                ["ADMIN"],
-            )
-            if REDACTED_LDAP_BIND_PASSWORD_result.is_failure:
-                return r[list[str]].fail(
-                    f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {REDACTED_LDAP_BIND_PASSWORD_result.error}",
+            return (
+                self.register_user(
+                    "REDACTED_LDAP_BIND_PASSWORD",
+                    "REDACTED_LDAP_BIND_PASSWORD@example.com",
+                    "AdminPass123!",
+                    ["ADMIN"],
                 )
-            user_ids.append("REDACTED_LDAP_BIND_PASSWORD")
+                .map(lambda _: user_ids + ["REDACTED_LDAP_BIND_PASSWORD"])
+                .map_error(
+                    lambda e: f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {e}",
+                )
+            )
 
-        return r[list[str]].ok(user_ids)
+        return self.create_demo_users().flat_map(create_REDACTED_LDAP_BIND_PASSWORD_user)
 
     @property
     def auth(self) -> FlextAuth:

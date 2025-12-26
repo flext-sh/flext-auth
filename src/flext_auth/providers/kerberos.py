@@ -22,6 +22,7 @@ from flext_auth.models import FlextAuthModels
 
 # Forward reference to avoid circular import
 from flext_auth.providers.rfc import FlextAuthRfcProvider
+from flext_auth.typings import FlextAuthTypes as at
 
 
 class FlextAuthKerberosProvider(FlextAuthRfcProvider):
@@ -45,7 +46,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
     """
 
-    def __init__(self, config: dict[str, object]) -> None:
+    def __init__(self, config: at.ProviderConfig) -> None:
         """Initialize Kerberos provider with SOLID delegation.
 
         Uses composition for Kerberos ticket validation, service ticket handling,
@@ -66,7 +67,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         self._auth_manager = self._KerberosAuthManager(self)
 
         # Runtime state for ticket management
-        self._active_tickets: dict[str, dict[str, object]] = {}
+        self._active_tickets: dict[str, at.KerberosTicketData] = {}
 
         self.logger.info("Kerberos authentication provider initialized")
 
@@ -142,15 +143,16 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
         def validate_ticket(
             self,
-            _ticket_data: dict[str, object],
-        ) -> r[dict[str, object]]:
+            _ticket_data: at.KerberosTicketData,
+        ) -> r[at.KerberosTicketData]:
             """Validate Kerberos ticket."""
             # Simplified implementation - in production would use proper Kerberos validation
             # ticket_data parameter reserved for future Kerberos ticket validation
-            return r[dict[str, object]].ok({
-                "user_id": "kerberos_user",
-                "valid": True,
-            })
+            result: at.KerberosTicketData = {
+                "ticket": "validated_ticket",
+                "principal": "kerberos_user",
+            }
+            return r[at.KerberosTicketData].ok(result)
 
     class _KerberosServiceHandler:
         """SOLID-compliant Kerberos service handler.
@@ -163,13 +165,14 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             self.provider = provider
             # Logger removed - use logging module directly if needed
 
-        def handle_service_ticket(self, ticket: str) -> r[dict[str, object]]:
+        def handle_service_ticket(self, ticket: str) -> r[at.KerberosTicketData]:
             """Handle Kerberos service ticket."""
             # Simplified implementation - in production would handle proper service tickets
-            return r[dict[str, object]].ok({
-                "service": "kerberos_service",
+            result: at.KerberosTicketData = {
                 "ticket": ticket,
-            })
+                "principal": "service_principal",
+            }
+            return r[at.KerberosTicketData].ok(result)
 
     class _KerberosAuthManager:
         """SOLID-compliant Kerberos authentication manager.
@@ -184,8 +187,8 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
         def authenticate_ticket(
             self,
-            ticket_data: dict[str, object],
-        ) -> r[dict[str, object]]:
+            ticket_data: at.KerberosTicketData,
+        ) -> r[at.KerberosTicketData]:
             """Authenticate using Kerberos ticket."""
             # Use composition for ticket validation
             return self.provider.ticket_validator.validate_ticket(ticket_data)
@@ -194,12 +197,12 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         """Return Kerberos provider capabilities."""
         return {"kerberos", "sso", "enterprise", "ticket", "validate"}
 
-    def get_metadata(self) -> dict[str, object]:
+    def get_metadata(self) -> at.Providers.Metadata:
         """Get Kerberos provider metadata."""
         return {
             "name": "kerberos",
             "version": "5",
-            "capabilities": list(self.supports()),
+            "capabilities": tuple(self.supports()),
         }
 
     def validate_token(self, token: str) -> r[FlextAuthModels.Identity]:

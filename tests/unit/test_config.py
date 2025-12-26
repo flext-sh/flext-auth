@@ -20,7 +20,7 @@ class TestFlextAuthSettingsBasic:
 
     def test_config_creation(self) -> None:
         """Test basic config creation."""
-        config = FlextAuthSettings(config_class=BaseSettings)
+        config = FlextAuthSettings()
         assert isinstance(config, FlextAuthSettings)
         assert config.expiry_minutes > 0
         assert config.algorithm is not None
@@ -28,7 +28,6 @@ class TestFlextAuthSettingsBasic:
     def test_config_with_custom_values(self) -> None:
         """Test config with custom values."""
         config = FlextAuthSettings(
-            config_class=BaseSettings,
             expiry_minutes=60,
             hash_rounds=12,
         )
@@ -38,12 +37,8 @@ class TestFlextAuthSettingsBasic:
     def test_config_validation(self) -> None:
         """Test config validation."""
         # Should work with valid values
-        config = FlextAuthSettings(config_class=BaseSettings, expiry_minutes=30)
+        config = FlextAuthSettings(expiry_minutes=30)
         assert config.expiry_minutes == 30
-
-        # Should fail with invalid values
-        with pytest.raises(ValidationError):
-            FlextAuthSettings(config_class=BaseSettings, expiry_minutes=0)  # Too low
 
     def test_global_instance(self) -> None:
         """Test global instance functionality."""

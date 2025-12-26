@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from flext_core import r
+from flext_core import FlextTypes as t, r
 
 
 class BaseTransportAdapter(Protocol):
@@ -42,10 +42,10 @@ class BaseTransportAdapter(Protocol):
         self,
         url: str,
         method: str = "POST",
-        data: dict[str, object] | None = None,
+        data: t.JsonDict | None = None,
         headers: dict[str, str] | None = None,
-        **kwargs: object,
-    ) -> r[dict[str, object]]:
+        **kwargs: t.GeneralValueType,
+    ) -> r[t.JsonDict]:
         """Send a request using this transport.
 
         Args:
