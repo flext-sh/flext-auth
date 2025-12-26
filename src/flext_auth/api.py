@@ -151,18 +151,18 @@ class FlextAuth:
         self,
         credentials: dict[str, str],
         _provider: str | None = None,
-    ) -> r[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.AuthIdentity]:
         """Railway-oriented authentication with chaining."""
         # Extract username and password from credentials - fast fail if missing
         username_value = credentials.get("username")
         if not isinstance(username_value, str) or not username_value:
-            return r[FlextAuthModels.Identity].fail(
+            return r[FlextAuthModels.AuthIdentity].fail(
                 "Invalid credentials: username is required and must be a non-empty string",
             )
 
         password_value = credentials.get("password")
         if not isinstance(password_value, str) or not password_value:
-            return r[FlextAuthModels.Identity].fail(
+            return r[FlextAuthModels.AuthIdentity].fail(
                 "Invalid credentials: password is required and must be a non-empty string",
             )
 
@@ -177,7 +177,7 @@ class FlextAuth:
         password: str,
         _ip_address: str | None = None,
         _user_agent: str | None = None,
-    ) -> r[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.AuthIdentity]:
         """Authenticate user by username and password with optional metadata.
 
         Args:
@@ -233,7 +233,7 @@ class FlextAuth:
         roles: list[str] | None = None,
         role: str | None = None,
         **kwargs: str | int | bool | list[str] | None,
-    ) -> r[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.AuthIdentity]:
         """Register a new user.
 
         Args:
@@ -284,7 +284,7 @@ class FlextAuth:
         username: str,
         email: str,
         password: str,
-    ) -> r[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.AuthIdentity]:
         """Railway-oriented user registration via identity service."""
         return self._identity_service.create_identity(
             name=username,
@@ -317,7 +317,7 @@ class FlextAuth:
         """Railway-oriented token verification with payload extraction."""
 
         def extract_identity_data(
-            identity: FlextAuthModels.Identity,
+            identity: FlextAuthModels.AuthIdentity,
         ) -> dict[str, bool | int | list[str] | str]:
             return {
                 "sub": identity.id,
@@ -333,11 +333,11 @@ class FlextAuth:
     # CONVENIENCE API METHODS (Delegations to services)
     # =========================================================================
 
-    def get_user(self, user_id: str) -> r[FlextAuthModels.Identity]:
+    def get_user(self, user_id: str) -> r[FlextAuthModels.AuthIdentity]:
         """Get identity by ID - delegation to identity_service."""
         return self._identity_service.identity_manager.get_user(user_id)
 
-    def get_user_by_username(self, username: str) -> r[FlextAuthModels.Identity]:
+    def get_user_by_username(self, username: str) -> r[FlextAuthModels.AuthIdentity]:
         """Get identity by username - delegation to identity_service."""
         return self._identity_service.identity_manager.get_user_by_username(username)
 
@@ -345,7 +345,7 @@ class FlextAuth:
         self,
         user_id: str,
         **updates: str | int | bool | list[str] | None,
-    ) -> r[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.AuthIdentity]:
         """Update identity - delegation to identity_service."""
         return self._identity_service.identity_manager.update_user(user_id, **updates)
 

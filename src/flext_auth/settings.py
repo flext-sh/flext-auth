@@ -192,6 +192,16 @@ class FlextAuthSettings(FlextSettings):
     @model_validator(mode="after")
     def _validate_model(self) -> Self:
         """Pydantic model validator for automatic validation."""
+        if not hasattr(self.auth_secret, "get_secret_value"):
+            # If it's not a SecretStr, it might be wrapped in FlextResult
+            if hasattr(self.auth_secret, "value"):
+                self.auth_secret = self.auth_secret.value
+            elif hasattr(self.auth_secret, "unwrap"):
+                self.auth_secret = self.auth_secret.unwrap()
+            else:
+                # Convert to string and wrap in SecretStr
+                self.auth_secret = SecretStr(str(self.auth_secret))
+
         secret_len = len(self.auth_secret.get_secret_value())
         if secret_len < c.Auth.SECRET_MIN_LENGTH:
             msg = f"Secret must be ≥{c.Auth.SECRET_MIN_LENGTH} chars, got {secret_len}"

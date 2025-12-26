@@ -35,7 +35,10 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     """
 
     def __init__(
-        self, *, config: FlextAuthSettings, dispatcher: FlextDispatcher,
+        self,
+        *,
+        config: FlextAuthSettings,
+        dispatcher: FlextDispatcher,
     ) -> None:
         """Generic initialization with dependency injection."""
         super().__init__()
@@ -64,7 +67,8 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     ) -> r[FlextAuthModels.AuthIdentity]:
         """Railway-oriented identity authentication with account lockout."""
         return (
-            self.identity_manager.get_user_by_username(name)
+            self.identity_manager
+            .get_user_by_username(name)
             .flat_map(lambda identity: r.ok((identity, credential)))
             .flat_map(
                 lambda ic: (
@@ -77,20 +81,22 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
                 ),
             )
             .flat_map(
-                lambda ic: ic[0]
-                .verify_credential(ic[1])
-                .flat_map(
-                    lambda is_valid: (
-                        # Success: reset failed attempts and unlock
-                        r.ok(ic[0].with_successful_access())
-                        if is_valid
-                        # Failure: increment failed attempts and lock if threshold reached
-                        else (
-                            self._handle_failed_attempt(ic[0]).flat_map(
-                                lambda _: r.fail("Invalid credentials"),
+                lambda ic: (
+                    ic[0]
+                    .verify_credential(ic[1])
+                    .flat_map(
+                        lambda is_valid: (
+                            # Success: reset failed attempts and unlock
+                            r.ok(ic[0].with_successful_access())
+                            if is_valid
+                            # Failure: increment failed attempts and lock if threshold reached
+                            else (
+                                self._handle_failed_attempt(ic[0]).flat_map(
+                                    lambda _: r.fail("Invalid credentials"),
+                                )
                             )
-                        )
-                    ),
+                        ),
+                    )
                 ),
             )
         )
@@ -167,28 +173,34 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     ) -> r[bool]:
         """Railway-oriented credential change with validation."""
         return (
-            self.identity_manager.get_user(identity_id)
+            self.identity_manager
+            .get_user(identity_id)
             .flat_map(
                 lambda identity: identity.verify_credential(
                     current_credential,
                 ).flat_map(
-                    lambda is_valid: r.ok(identity)
-                    if is_valid
-                    else r.fail("Current credential is incorrect"),
+                    lambda is_valid: (
+                        r.ok(identity)
+                        if is_valid
+                        else r.fail("Current credential is incorrect")
+                    ),
                 ),
             )
             .flat_map(
-                lambda identity: r.ok(identity)
-                if len(new_credential) >= c.Auth.CREDENTIAL_MIN_LENGTH
-                else r.fail(
-                    f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
+                lambda identity: (
+                    r.ok(identity)
+                    if len(new_credential) >= c.Auth.CREDENTIAL_MIN_LENGTH
+                    else r.fail(
+                        f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
+                    )
                 ),
             )
             .flat_map(
                 lambda identity: identity.set_credential(new_credential).map(
                     lambda _: (
                         self.logger.info(
-                            "Password change successful", identity=identity.name,
+                            "Password change successful",
+                            identity=identity.name,
                         ),
                         True,
                     )[1],
@@ -199,19 +211,23 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     def reset_credential(self, identity_id: str, new_credential: str) -> r[bool]:
         """Railway-oriented credential reset for REDACTED_LDAP_BIND_PASSWORD operations."""
         return (
-            self.identity_manager.get_user(identity_id)
+            self.identity_manager
+            .get_user(identity_id)
             .flat_map(
-                lambda identity: r.ok(identity)
-                if len(new_credential) >= c.Auth.CREDENTIAL_MIN_LENGTH
-                else r.fail(
-                    f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
+                lambda identity: (
+                    r.ok(identity)
+                    if len(new_credential) >= c.Auth.CREDENTIAL_MIN_LENGTH
+                    else r.fail(
+                        f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
+                    )
                 ),
             )
             .flat_map(
                 lambda identity: identity.set_credential(new_credential).map(
                     lambda _: (
                         self.logger.info(
-                            "Password reset successful", identity=identity.name,
+                            "Password reset successful",
+                            identity=identity.name,
                         ),
                         True,
                     )[1],
@@ -264,7 +280,8 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     ) -> r[bool]:
         """Railway-oriented authorization with audit logging."""
         return (
-            self.identity_manager.get_user(identity_id)
+            self.identity_manager
+            .get_user(identity_id)
             .map(lambda identity: (identity, permission in identity.permissions))
             .map(
                 lambda ip: (

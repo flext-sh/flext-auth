@@ -51,7 +51,7 @@ u = FlextAuthUtilities  # Utilities (FlextAuthUtilities extends FlextUtilities)
 m = FlextAuthModels  # Models (FlextAuthModels extends FlextModels)
 c = FlextAuthConstants  # Constants (FlextAuthConstants extends FlextConstants)
 t = FlextAuthTypes  # Types (FlextAuthTypes extends FlextTypes)
-p = FlextAuthProtocols  # Protocols (FlextAuthProtocols extends FlextProtocols)
+# p = FlextAuthProtocols  # Protocols (FlextAuthProtocols extends FlextProtocols) - removed to avoid circular import
 
 r = FlextResult  # Shared from flext-core
 e = FlextExceptions  # Shared from flext-core
@@ -96,7 +96,6 @@ __all__ = [
     "e",
     "h",
     "m",
-    "p",
     "r",
     "s",
     "t",

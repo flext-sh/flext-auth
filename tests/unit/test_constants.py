@@ -5,7 +5,7 @@ Tests the authentication constants module following FLEXT standards.
 
 from __future__ import annotations
 
-from flext import FlextConstants
+from flext_core import FlextConstants
 
 from flext_auth.constants import FlextAuthConstants
 

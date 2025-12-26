@@ -11,10 +11,10 @@ from __future__ import annotations
 from collections.abc import Callable
 
 from flext_core import FlextResult as r, FlextService as s
-from flext_core.protocols import FlextProtocols as p
 
 from flext_auth.constants import FlextAuthConstants as c
 from flext_auth.models import FlextAuthModels
+from flext_auth.protocols import FlextAuthProtocols as p
 
 # Forward reference to avoid circular import
 # Import FlextAuthModels locally in methods where needed

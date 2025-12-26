@@ -15,7 +15,7 @@ import time
 from datetime import UTC, datetime
 
 import pytest
-from flext import FlextResult
+from flext_core import FlextResult
 from pydantic import SecretStr
 
 from flext_auth.api import FlextAuth
