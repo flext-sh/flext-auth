@@ -19,6 +19,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import urlopen
 
+from flext_core import FlextTypes as t
+
 try:
     import requests
 except ImportError:
@@ -39,7 +41,7 @@ class DocumentationAuditor:
         """Initialize documentation auditor with project root."""
         self.project_root = project_root
         self.docs_dir = project_root / "docs"
-        self.results: dict[str, object] = {
+        self.results: dict[str, t.GeneralValueType] = {
             "timestamp": datetime.now(UTC).isoformat(),
             "project": "flext-auth",
             "audit_results": {},
@@ -77,7 +79,7 @@ class DocumentationAuditor:
 
         return active_docs
 
-    def analyze_content_quality(self, docs_files: list[Path]) -> dict[str, object]:
+    def analyze_content_quality(self, docs_files: list[Path]) -> dict[str, t.GeneralValueType]:
         """Analyze content quality metrics."""
         quality_analysis = {
             "file_metrics": [],
@@ -134,7 +136,7 @@ class DocumentationAuditor:
 
         return quality_analysis
 
-    def _analyze_single_file(self, file_path: Path, content: str) -> dict[str, object]:
+    def _analyze_single_file(self, file_path: Path, content: str) -> dict[str, t.GeneralValueType]:
         """Analyze a single documentation file."""
         lines = content.split("\n")
         word_count = len(re.findall(r"\b\w+\b", content))
@@ -174,7 +176,7 @@ class DocumentationAuditor:
             return "stale"
         return "outdated"
 
-    def _analyze_structure(self, content: str) -> dict[str, object]:
+    def _analyze_structure(self, content: str) -> dict[str, t.GeneralValueType]:
         """Analyze document structure."""
         lines = content.split("\n")
 
@@ -211,7 +213,7 @@ class DocumentationAuditor:
             else "needs_attention",
         }
 
-    def _check_completeness(self, content: str, filename: str) -> dict[str, object]:
+    def _check_completeness(self, content: str, filename: str) -> dict[str, t.GeneralValueType]:
         """Check documentation completeness."""
         checks = {
             "has_frontmatter": bool(re.search(r"^---\s*$", content, re.MULTILINE)),
@@ -252,7 +254,7 @@ class DocumentationAuditor:
 
         return checks
 
-    async def validate_links(self, docs_files: list[Path]) -> dict[str, object]:
+    async def validate_links(self, docs_files: list[Path]) -> dict[str, t.GeneralValueType]:
         """Validate all links in documentation."""
         link_validation = {
             "internal_links": [],
@@ -426,7 +428,7 @@ class DocumentationAuditor:
         except Exception:
             return False
 
-    def check_style_consistency(self, docs_files: list[Path]) -> dict[str, object]:
+    def check_style_consistency(self, docs_files: list[Path]) -> dict[str, t.GeneralValueType]:
         """Check style consistency across documentation."""
         style_issues = {
             "inconsistent_headers": [],
@@ -497,7 +499,7 @@ class DocumentationAuditor:
 
         return style_issues
 
-    def generate_report(self) -> dict[str, object]:
+    def generate_report(self) -> dict[str, t.GeneralValueType]:
         """Generate comprehensive audit report."""
         # Calculate quality score
         self.results["discovery"]["total_files"]
@@ -543,7 +545,7 @@ class DocumentationAuditor:
 
         return self.results
 
-    def run_comprehensive_audit(self) -> dict[str, object]:
+    def run_comprehensive_audit(self) -> dict[str, t.GeneralValueType]:
         """Run complete documentation audit."""
         print("🔍 Starting comprehensive documentation audit...")
 

@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextUtilities as u, e, r
+from flext_core import FlextTypes as t, FlextUtilities as u, e, r
 
 from flext_auth.models import FlextAuthModels
 
@@ -66,7 +66,7 @@ class FlextAuthProviderMixin:
 
     def _validate_credentials_dict(
         self,
-        credentials: dict[str, object],
+        credentials: dict[str, t.GeneralValueType],
         required_fields: list[str],
     ) -> r[bool]:
         """Validate that credentials contain required fields.
@@ -135,11 +135,11 @@ class FlextAuthProviderMixin:
 
         return r[bool].ok(True)
 
-    def _get_capability_metadata(self) -> dict[str, object]:
+    def _get_capability_metadata(self) -> dict[str, t.GeneralValueType]:
         """Get metadata about provider capabilities.
 
         Returns:
-            dict[str, object]: Metadata including supported capabilities
+            dict[str, t.GeneralValueType]: Metadata including supported capabilities
 
         Example:
             >>> metadata = provider._get_capability_metadata()

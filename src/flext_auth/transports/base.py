@@ -30,9 +30,9 @@ class BaseTransportAdapter(Protocol):
         ...         self,
         ...         url: str,
         ...         method: str = "POST",
-        ...         data: dict[str, object] | None = None,
+        ...         data: t.JsonDict | None = None,
         ...         headers: dict[str, str] | None = None,
-        ...     ) -> r[dict[str, object]]:
+        ...     ) -> r[t.JsonDict]:
         ...         # HTTP-specific implementation
         ...         pass
 

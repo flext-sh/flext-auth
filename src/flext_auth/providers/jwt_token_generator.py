@@ -13,7 +13,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 import jwt
-from flext_core import r
+from flext_core import FlextTypes as t, r
 
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 
@@ -73,11 +73,11 @@ class FlextAuthJwtTokenGenerator:
         expiry_minutes: int,
         issuer: str,
         audience: str | None,
-        extra_claims: dict[str, object] | None,
-    ) -> dict[str, object]:
+        extra_claims: dict[str, t.GeneralValueType] | None,
+    ) -> dict[str, t.GeneralValueType]:
         """Build JWT token payload."""
         now = datetime.now(UTC)
-        payload: dict[str, object] = {
+        payload: dict[str, t.GeneralValueType] = {
             "sub": identity_id,
             "iat": int(now.timestamp()),
             "exp": int((now + timedelta(minutes=expiry_minutes)).timestamp()),
@@ -93,7 +93,7 @@ class FlextAuthJwtTokenGenerator:
         self,
         identity_id: str,
         expiry_minutes: int | None = None,
-        extra_claims: dict[str, object] | None = None,
+        extra_claims: dict[str, t.GeneralValueType] | None = None,
     ) -> r[str]:
         """Generate JWT token with railway-oriented programming.
 

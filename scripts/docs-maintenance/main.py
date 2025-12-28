@@ -20,6 +20,7 @@ from content_optimizer import ContentOptimizer
 # Import our maintenance modules
 from docs_audit import DocumentationAuditor
 from docs_sync import DocumentationSynchronizer, QualityAssuranceReporter
+from flext_core import FlextTypes as t
 from link_validator import LinkValidator
 
 
@@ -36,12 +37,12 @@ class DocumentationMaintenanceSystem:
         self.qa_reporter = QualityAssuranceReporter(project_root)
 
         # Results storage
-        self.audit_results: dict[str, object] | None = None
-        self.link_results: dict[str, object] | None = None
-        self.optimization_results: dict[str, object] | None = None
-        self.sync_results: dict[str, object] | None = None
+        self.audit_results: dict[str, t.GeneralValueType] | None = None
+        self.link_results: dict[str, t.GeneralValueType] | None = None
+        self.optimization_results: dict[str, t.GeneralValueType] | None = None
+        self.sync_results: dict[str, t.GeneralValueType] | None = None
 
-    def run_comprehensive_maintenance(self) -> dict[str, object]:
+    def run_comprehensive_maintenance(self) -> dict[str, t.GeneralValueType]:
         """Run complete documentation maintenance cycle."""
         print("🚀 Starting comprehensive documentation maintenance...")
         print(f"📁 Project root: {self.project_root}")
@@ -79,7 +80,7 @@ class DocumentationMaintenanceSystem:
 
         return comprehensive_report
 
-    def run_quick_audit(self) -> dict[str, object]:
+    def run_quick_audit(self) -> dict[str, t.GeneralValueType]:
         """Run quick audit for immediate feedback."""
         print("⚡ Running quick documentation audit...")
 
@@ -104,7 +105,7 @@ class DocumentationMaintenanceSystem:
         print(f"📄 Quick audit report saved to: {output_path}")
         return report
 
-    def generate_maintenance_report(self) -> dict[str, object]:
+    def generate_maintenance_report(self) -> dict[str, t.GeneralValueType]:
         """Generate maintenance status report."""
         if not all(
             [

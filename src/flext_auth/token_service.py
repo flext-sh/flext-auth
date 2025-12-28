@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextResult as r, FlextService as s
+from flext_core import FlextLogger, FlextResult as r, FlextService as s
 from flext_core.dispatcher import FlextDispatcher
 
 from flext_auth.constants import FlextAuthConstants as c
@@ -70,7 +70,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
         )
         if result.is_failure:
             error_msg = result.error if result.error is not None else "Unknown error"
-            self.logger.debug(
+            FlextLogger(__name__).debug(
                 "Token validation",
                 success=False,
                 token_id=self._short_token(token),
@@ -78,7 +78,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
             )
             return result
         identity = result.value
-        self.logger.log_token_validation(
+        FlextLogger(__name__).log_token_validation(
             success=True,
             username=identity.username,
             token_id=self._short_token(token),
@@ -92,7 +92,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
         )
         if result.is_failure:
             error = result.error
-            self.logger.info(
+            FlextLogger(__name__).info(
                 "Token refresh",
                 success=False,
                 old_token_id=self._short_token(token),
@@ -102,7 +102,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
             return r[FlextAuthModels.AuthToken].fail(error or "Token refresh failed")
 
         refreshed = result.value
-        self.logger.log_token_refresh(
+        FlextLogger(__name__).log_token_refresh(
             success=True,
             old_token_id=self._short_token(token),
             new_token_id=self._short_token(refreshed.token),
@@ -120,7 +120,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
         user_result = self.user_manager.get_user(user_id)
         if user_result.is_failure:
             error = user_result.error
-            self.logger.info(
+            FlextLogger(__name__).info(
                 "Token creation",
                 user_id=user_id,
                 token_type=token_type,
@@ -140,7 +140,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
 
         if token_result.is_failure:
             error = token_result.error
-            self.logger.info(
+            FlextLogger(__name__).info(
                 "Token creation",
                 user_id=user_id,
                 token_type=token_type,
@@ -150,7 +150,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
             return r[str].fail(error or "Token generation failed")
 
         token_value = token_result.value
-        self.logger.log_token_creation(
+        FlextLogger(__name__).log_token_creation(
             user_id=user_id,
             token_type=token_type,
             success=True,

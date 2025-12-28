@@ -7,7 +7,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextResult as r, FlextService as s
+from flext_core import FlextLogger, FlextResult as r, FlextService as s
 from flext_core.dispatcher import FlextDispatcher
 
 from flext_auth.managers import (
@@ -47,7 +47,7 @@ class FlextAuthSessionService(ServiceManagerMixin, s[object]):
 
     def cleanup_expired_sessions(self) -> r[int]:
         """Railway-oriented cleanup of expired sessions from the system."""
-        self.logger.info("Cleanup of expired sessions requested")
+        FlextLogger(__name__).info("Cleanup of expired sessions requested")
         return self.session_manager.cleanup_expired_sessions()
 
 

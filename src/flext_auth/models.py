@@ -16,7 +16,6 @@ from typing import Self
 # Import password utilities directly
 import bcrypt
 from flext_core import FlextModels as m, FlextResult as r, FlextUtilities as u
-from flext_core._models.entity import FlextModelsEntity
 from flext_core.typings import t
 from pydantic import ConfigDict, Field, computed_field, model_validator
 
@@ -52,241 +51,249 @@ class FlextAuthModels(m):
         )
 
     # =========================================================================
-    # GENERIC VALIDATION RESULT - Single model for all validations
+    # AUTH NAMESPACE - Authentication domain models
     # =========================================================================
 
-    class ValidationResult(m.Value):
-        """Generic validation result for any operation (immutable value object)."""
+    class Auth:
+        """Auth namespace for cross-project access.
 
-        is_valid: bool = Field(..., description="Validation outcome")
-        data: t.JsonDict = Field(default_factory=dict, description="Result data")
-        error: str = Field(default="", description="Error message")
-        metadata: t.JsonDict = Field(
-            default_factory=dict,
-            description="Additional metadata",
-        )
+        All authentication domain models consolidated with validation, composition,
+        and SOLID principles. Uses Python 3.13+ syntax and flext-core patterns.
+        """
 
-        @computed_field
-        @property
-        def status(self) -> str:
-            """Human-readable validation status."""
-            if self.is_valid:
-                return "valid"
-            if not self.error:
-                return "invalid"
-            return f"invalid: {self.error}"
+        # =========================================================================
+        # GENERIC VALIDATION RESULT - Single model for all validations
+        # =========================================================================
 
-    # =========================================================================
-    # TOKEN MODELS - Generic token handling
-    # =========================================================================
+        class ValidationResult(m.Value):
+            """Generic validation result for any operation (immutable value object)."""
 
-    class TokenPayload(m.Value):
-        """Generic JWT token payload (immutable value object)."""
+            is_valid: bool = Field(..., description="Validation outcome")
+            data: t.JsonDict = Field(default_factory=dict, description="Result data")
+            error: str = Field(default="", description="Error message")
+            metadata: t.JsonDict = Field(
+                default_factory=dict,
+                description="Additional metadata",
+            )
 
-        sub: str = Field(..., description="Subject (identity ID)")
-        exp: int = Field(..., description="Expiration timestamp (UNIX)")
-        iat: int = Field(..., description="Issued at timestamp (UNIX)")
-        jti: str = Field(default="", description="Token ID")
-        iss: str = Field(
-            default="flext-auth",
-            description="Issuer",
-        )
-        aud: str = Field(
-            default="flext-api",
-            description="Audience",
-        )
-        session_id: str = Field(default="", description="Session ID")
+            @computed_field
+            @property
+            def status(self) -> str:
+                """Human-readable validation status."""
+                if self.is_valid:
+                    return "valid"
+                if not self.error:
+                    return "invalid"
+                return f"invalid: {self.error}"
 
-    class TokenRequest(m.Value):
-        """Generic token generation request (immutable value object)."""
+        # =========================================================================
+        # TOKEN MODELS - Generic token handling
+        # =========================================================================
 
-        identity_id: str = Field(..., description="Identity ID")
-        token_type: str = Field(
-            default="access",
-            description="Token type",
-        )
-        expiry_minutes: int = Field(
-            default=60,
-            ge=1,
-            description="Token expiry",
-        )
-        extra_claims: t.JsonDict = Field(
-            default_factory=dict,
-            description="Additional claims",
-        )
-        session_id: str = Field(default="", description="Session ID")
+        class TokenPayload(m.Value):
+            """Generic JWT token payload (immutable value object)."""
 
-        @model_validator(mode="after")
-        def validate_token_type(self) -> Self:
-            """Validate token type."""
-            valid_types = {"access", "refresh", "id", "bearer"}
-            if self.token_type not in valid_types:
-                msg = f"Token type must be one of {valid_types}"
-                raise ValueError(msg)
-            return self
+            sub: str = Field(..., description="Subject (identity ID)")
+            exp: int = Field(..., description="Expiration timestamp (UNIX)")
+            iat: int = Field(..., description="Issued at timestamp (UNIX)")
+            jti: str = Field(default="", description="Token ID")
+            iss: str = Field(
+                default="flext-auth",
+                description="Issuer",
+            )
+            aud: str = Field(
+                default="flext-api",
+                description="Audience",
+            )
+            session_id: str = Field(default="", description="Session ID")
 
-    class AuthToken(m.Entity):
-        """Generic authentication token entity."""
+        class TokenRequest(m.Value):
+            """Generic token generation request (immutable value object)."""
 
-        identity_id: str = Field(..., description="Identity ID")
-        token: str = Field(..., description="Token value", exclude=True)
+            identity_id: str = Field(..., description="Identity ID")
+            token_type: str = Field(
+                default="access",
+                description="Token type",
+            )
+            expiry_minutes: int = Field(
+                default=60,
+                ge=1,
+                description="Token expiry",
+            )
+            extra_claims: t.JsonDict = Field(
+                default_factory=dict,
+                description="Additional claims",
+            )
+            session_id: str = Field(default="", description="Session ID")
 
-        @property
-        def user_id(self) -> str:
-            """User ID property for protocol compatibility."""
-            return self.identity_id
+            @model_validator(mode="after")
+            def validate_token_type(self) -> Self:
+                """Validate token type."""
+                valid_types = {"access", "refresh", "id", "bearer"}
+                if self.token_type not in valid_types:
+                    msg = f"Token type must be one of {valid_types}"
+                    raise ValueError(msg)
+                return self
 
-        token_type: str = Field(
-            default="bearer",
-            description="Token type",
-        )
-        expires_at: datetime = Field(..., description="Expiration time")
-        session_id: str = Field(default="", description="Session ID")
-        is_revoked: bool = Field(default=False, description="Revoked status")
-        refresh_token: str = Field(
-            default="",
-            description="Refresh token",
-            exclude=True,
-        )
+        class AuthToken(m.Entity):
+            """Generic authentication token entity."""
 
-        @computed_field
-        @property
-        def is_expired(self) -> bool:
-            """Check if token is expired."""
-            return datetime.now(UTC) > self.expires_at
+            identity_id: str = Field(..., description="Identity ID")
+            token: str = Field(..., description="Token value", exclude=True)
 
-    # =========================================================================
-    # IDENTITY MODELS - Generic identity/user entity
-    # =========================================================================
+            @property
+            def user_id(self) -> str:
+                """User ID property for protocol compatibility."""
+                return self.identity_id
 
-    class AuthIdentityRequest(m.Value):
-        """Generic identity creation request (immutable value object)."""
+            token_type: str = Field(
+                default="bearer",
+                description="Token type",
+            )
+            expires_at: datetime = Field(..., description="Expiration time")
+            session_id: str = Field(default="", description="Session ID")
+            is_revoked: bool = Field(default=False, description="Revoked status")
+            refresh_token: str = Field(
+                default="",
+                description="Refresh token",
+                exclude=True,
+            )
 
-        name: str = Field(
-            ...,
-            min_length=3,
-            max_length=100,
-            description="Unique identity name",
-        )
-        contact: str = Field(
-            ...,
-            min_length=1,
-            pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
-            description="Contact info (email)",
-        )
-        credential: str = Field(
-            ...,
-            min_length=8,
-            description="Credential (password/key)",
-            exclude=True,
-        )
-        full_name: str = Field(default="", description="Full name")
-        roles: list[str] = Field(
-            default_factory=lambda: ["user"],
-            description="Roles",
-        )
+            @computed_field
+            @property
+            def is_expired(self) -> bool:
+                """Check if token is expired."""
+                return datetime.now(UTC) > self.expires_at
 
-    class AuthIdentity(m.Entity):
-        """Generic identity/user entity with minimal fields."""
+        # =========================================================================
+        # IDENTITY MODELS - Generic identity/user entity
+        # =========================================================================
 
-        name: str = Field(
-            ...,
-            min_length=3,
-            max_length=100,
-            description="Unique identity name",
-        )
-        contact: str = Field(..., description="Contact info")
-        credential_hash: str = Field(
-            default="",
-            description="Hashed credential",
-            exclude=True,
-        )
-        full_name: str = Field(default="", description="Full name")
-        is_active: bool = Field(default=True, description="Active status")
-        roles: list[str] = Field(
-            default_factory=lambda: ["user"],
-            description="Roles",
-        )
-        permissions: list[str] = Field(default_factory=list, description="Permissions")
-        failed_attempts: int = Field(default=0, ge=0, description="Failed attempts")
-        locked_until: datetime = Field(
-            default_factory=lambda: datetime.min.replace(tzinfo=UTC),
-            description="Lock time (datetime.min means not locked)",
-        )
-        last_access: datetime = Field(
-            default_factory=lambda: datetime.min.replace(tzinfo=UTC),
-            description="Last access (datetime.min means never accessed)",
-        )
+        class AuthIdentityRequest(m.Value):
+            """Generic identity creation request (immutable value object)."""
 
-        # Backward compatibility aliases for User model expectations
-        @property
-        def id(self) -> str:
-            """Alias for unique_id to support id expectations."""
-            return self.unique_id
+            name: str = Field(
+                ...,
+                min_length=3,
+                max_length=100,
+                description="Unique identity name",
+            )
+            contact: str = Field(
+                ...,
+                min_length=1,
+                pattern=r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+                description="Contact info (email)",
+            )
+            credential: str = Field(
+                ...,
+                min_length=8,
+                description="Credential (password/key)",
+                exclude=True,
+            )
+            full_name: str = Field(default="", description="Full name")
+            roles: list[str] = Field(
+                default_factory=lambda: ["user"],
+                description="Roles",
+            )
 
-        @property
-        def user_id(self) -> str:
-            """Alias for id to support user_id expectations."""
-            return self.id
+        class AuthIdentity(m.Entity):
+            """Generic identity/user entity with minimal fields."""
 
-        @property
-        def username(self) -> str:
-            """Alias for name to support username expectations."""
-            return self.name
+            name: str = Field(
+                ...,
+                min_length=3,
+                max_length=100,
+                description="Unique identity name",
+            )
+            contact: str = Field(..., description="Contact info")
+            credential_hash: str = Field(
+                default="",
+                description="Hashed credential",
+                exclude=True,
+            )
+            full_name: str = Field(default="", description="Full name")
+            is_active: bool = Field(default=True, description="Active status")
+            roles: list[str] = Field(
+                default_factory=lambda: ["user"],
+                description="Roles",
+            )
+            permissions: list[str] = Field(default_factory=list, description="Permissions")
+            failed_attempts: int = Field(default=0, ge=0, description="Failed attempts")
+            locked_until: datetime = Field(
+                default_factory=lambda: datetime.min.replace(tzinfo=UTC),
+                description="Lock time (datetime.min means not locked)",
+            )
+            last_access: datetime = Field(
+                default_factory=lambda: datetime.min.replace(tzinfo=UTC),
+                description="Last access (datetime.min means never accessed)",
+            )
 
-        @property
-        def email(self) -> str:
-            """Alias for contact to support email expectations."""
-            return self.contact
+            # Backward compatibility aliases for User model expectations
+            @property
+            def id(self) -> str:
+                """Alias for unique_id to support id expectations."""
+                return self.unique_id
 
-        # Additional attributes expected by tests
-        token: str = Field(default="", description="Associated token", exclude=True)
-        session_id: str = Field(default="", description="Session ID")
+            @property
+            def user_id(self) -> str:
+                """Alias for id to support user_id expectations."""
+                return self.id
 
-        def __getitem__(self, key: str) -> t.GeneralValueType:
-            """Support dictionary-like access for backward compatibility."""
-            if key == "user":
-                return {"id": self.id, "username": self.name, "email": self.contact}
-            if key == "session":
-                return {"id": self.session_id} if self.session_id else {"id": ""}
-            if key == "jwt_token":
-                return self.token
-            return getattr(self, key)
+            @property
+            def username(self) -> str:
+                """Alias for name to support username expectations."""
+                return self.name
 
-        def with_successful_access(self) -> Self:
-            """Record successful access (fluent interface)."""
-            self.last_access = datetime.now(UTC)
-            self.failed_attempts = 0
-            self.locked_until = datetime.min.replace(tzinfo=UTC)
-            return self
+            @property
+            def email(self) -> str:
+                """Alias for contact to support email expectations."""
+                return self.contact
 
-        def is_locked(self) -> bool:
-            """Check if identity is locked."""
-            if self.locked_until == datetime.min.replace(tzinfo=UTC):
-                return False
-            return datetime.now(UTC) < self.locked_until
+            # Additional attributes expected by tests
+            token: str = Field(default="", description="Associated token", exclude=True)
+            session_id: str = Field(default="", description="Session ID")
 
-        def verify_credential(self, credential: str) -> r[bool]:
-            """Verify a credential against stored hash using bcrypt."""
-            try:
-                is_valid = PasswordUtil.verify_password(
-                    credential,
-                    self.credential_hash,
-                )
-                return r[bool].ok(is_valid)
-            except Exception as e:
-                return r[bool].fail(f"Credential verification failed: {e}")
+            def __getitem__(self, key: str) -> t.GeneralValueType:
+                """Support dictionary-like access for backward compatibility."""
+                if key == "user":
+                    return {"id": self.id, "username": self.name, "email": self.contact}
+                if key == "session":
+                    return {"id": self.session_id} if self.session_id else {"id": ""}
+                if key == "jwt_token":
+                    return self.token
+                return getattr(self, key)
 
-        def set_credential(self, credential: str) -> r[bool]:
-            """Set a new credential with bcrypt hashing."""
-            try:
-                self.credential_hash = PasswordUtil.hash_password(credential)
-                return r[bool].ok(True)
-            except Exception as e:
-                return r[bool].fail(f"Failed to hash credential: {e}")
+            def with_successful_access(self) -> Self:
+                """Record successful access (fluent interface)."""
+                self.last_access = datetime.now(UTC)
+                self.failed_attempts = 0
+                self.locked_until = datetime.min.replace(tzinfo=UTC)
+                return self
 
-    # Backward compatibility alias for tests expecting User model
-    User = AuthIdentity
+            def is_locked(self) -> bool:
+                """Check if identity is locked."""
+                if self.locked_until == datetime.min.replace(tzinfo=UTC):
+                    return False
+                return datetime.now(UTC) < self.locked_until
+
+            def verify_credential(self, credential: str) -> r[bool]:
+                """Verify a credential against stored hash using bcrypt."""
+                try:
+                    is_valid = PasswordUtil.verify_password(
+                        credential,
+                        self.credential_hash,
+                    )
+                    return r[bool].ok(is_valid)
+                except Exception as e:
+                    return r[bool].fail(f"Credential verification failed: {e}")
+
+            def set_credential(self, credential: str) -> r[bool]:
+                """Set a new credential with bcrypt hashing."""
+                try:
+                    self.credential_hash = PasswordUtil.hash_password(credential)
+                    return r[bool].ok(True)
+                except Exception as e:
+                    return r[bool].fail(f"Failed to hash credential: {e}")
 
     # =========================================================================
     # SESSION MODELS - Generic session entity
@@ -443,17 +450,12 @@ class FlextAuthModels(m):
             description="Additional data",
         )
 
+    # Backward compatibility alias for tests expecting User model
+    User = Auth.AuthIdentity
 
-# Resolve forward references for Pydantic v2 compatibility
-# Required for models inheriting from base classes with forward references
-_types_namespace = {k: v for k, v in globals().items() if k.startswith(("Flext", "m"))}
-_types_namespace["FlextModelsEntity"] = FlextModelsEntity
-FlextAuthModels.AuthIdentity.model_rebuild(_types_namespace=_types_namespace)
-FlextAuthModels.AuthIdentityRequest.model_rebuild(_types_namespace=_types_namespace)
-FlextAuthModels.AuthToken.model_rebuild(_types_namespace=_types_namespace)
-FlextAuthModels.Session.model_rebuild(_types_namespace=_types_namespace)
-FlextAuthModels.Role.model_rebuild(_types_namespace=_types_namespace)
-FlextAuthModels.Permission.model_rebuild(_types_namespace=_types_namespace)
+
+# Forward references resolved via from __future__ import annotations at module top
+# This architectural approach avoids runtime model_rebuild() calls
 
 # Short aliases
 m = FlextAuthModels

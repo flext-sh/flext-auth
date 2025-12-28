@@ -67,7 +67,8 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     ) -> r[FlextAuthModels.AuthIdentity]:
         """Railway-oriented identity authentication with account lockout."""
         return (
-            self.identity_manager.get_user_by_username(name)
+            self.identity_manager
+            .get_user_by_username(name)
             .flat_map(lambda identity: r.ok((identity, credential)))
             .flat_map(
                 lambda ic: (
@@ -172,7 +173,8 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     ) -> r[bool]:
         """Railway-oriented credential change with validation."""
         return (
-            self.identity_manager.get_user(identity_id)
+            self.identity_manager
+            .get_user(identity_id)
             .flat_map(
                 lambda identity: identity.verify_credential(
                     current_credential,
@@ -209,7 +211,8 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     def reset_credential(self, identity_id: str, new_credential: str) -> r[bool]:
         """Railway-oriented credential reset for REDACTED_LDAP_BIND_PASSWORD operations."""
         return (
-            self.identity_manager.get_user(identity_id)
+            self.identity_manager
+            .get_user(identity_id)
             .flat_map(
                 lambda identity: (
                     r.ok(identity)
@@ -277,7 +280,8 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     ) -> r[bool]:
         """Railway-oriented authorization with audit logging."""
         return (
-            self.identity_manager.get_user(identity_id)
+            self.identity_manager
+            .get_user(identity_id)
             .map(lambda identity: (identity, permission in identity.permissions))
             .map(
                 lambda ip: (

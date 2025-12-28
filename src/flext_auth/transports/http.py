@@ -16,7 +16,7 @@ from urllib.parse import urlencode
 
 from flext_api import FlextApiClient, FlextApiModels, FlextApiSettings
 from flext_api.typings import FlextApiTypes as t_api
-from flext_core import r
+from flext_core import FlextTypes as t, r
 from flext_core.loggings import FlextLogger
 
 
@@ -108,10 +108,10 @@ class FlextWebTransportAdapter:
     def post_token_request(
         self,
         url: str,
-        data: dict[str, object],
+        data: dict[str, t.GeneralValueType],
         auth: tuple[str, str] | None = None,
         headers: dict[str, str] | None = None,
-    ) -> r[dict[str, object]]:
+    ) -> r[dict[str, t.GeneralValueType]]:
         """POST request to OAuth2 token endpoint.
 
         Specialized method for OAuth2/OIDC token requests with proper
@@ -251,16 +251,16 @@ class FlextWebTransportAdapter:
             if error_uri:
                 error_msg += f" (see {error_uri})"
 
-            return r[dict[str, object]].fail(error_msg)
+            return r[t_api.Api.ResponseDict].fail(error_msg)
 
         # Validate required fields (RFC 6749 Section 5.1)
         if "access_token" not in response_data:
-            return r[dict[str, object]].fail(
+            return r[t_api.Api.ResponseDict].fail(
                 "Token response missing required 'access_token' field",
             )
 
         if "token_type" not in response_data:
-            return r[dict[str, object]].fail(
+            return r[t_api.Api.ResponseDict].fail(
                 "Token response missing required 'token_type' field",
             )
 
@@ -319,7 +319,7 @@ class FlextWebTransportAdapter:
 
     def _normalize_response_dict(
         self,
-        payload: dict[str, object],
+        payload: dict[str, t.GeneralValueType],
     ) -> t_api.Api.ResponseDict:
         return {str(key): value for key, value in payload.items()}
 

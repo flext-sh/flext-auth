@@ -11,7 +11,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import jwt
-from flext_core import r
+from flext_core import FlextTypes as t, r
 
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 
@@ -27,7 +27,7 @@ class FlextAuthJwtTokenValidator:
         """Initialize with provider reference for configuration access."""
         self._provider = provider
 
-    def validate_token(self, token: str) -> r[dict[str, object]]:
+    def validate_token(self, token: str) -> r[dict[str, t.GeneralValueType]]:
         """Validate JWT token with railway-oriented programming.
 
         Args:
@@ -42,18 +42,22 @@ class FlextAuthJwtTokenValidator:
             config = self._provider.config
             secret_key_value = config.get("secret_key")
             if not isinstance(secret_key_value, str) or not secret_key_value:
-                return r[dict[str, object]].fail("JWT secret key not configured")
+                return r[dict[str, t.GeneralValueType]].fail(
+                    "JWT secret key not configured"
+                )
             secret_key = secret_key_value
 
             algorithm_value = config.get("algorithm")
             if not isinstance(algorithm_value, str):
-                return r[dict[str, object]].fail("JWT algorithm not configured")
+                return r[dict[str, t.GeneralValueType]].fail(
+                    "JWT algorithm not configured"
+                )
             algorithm = algorithm_value
 
             audience_value = config.get("audience")
             if audience_value is not None:
                 if not isinstance(audience_value, str):
-                    return r[dict[str, object]].fail(
+                    return r[dict[str, t.GeneralValueType]].fail(
                         "JWT audience must be a string if provided",
                     )
                 audience = audience_value
@@ -78,14 +82,16 @@ class FlextAuthJwtTokenValidator:
                     options=decode_options,
                 )
 
-            return r[dict[str, object]].ok(payload)
+            return r[dict[str, t.GeneralValueType]].ok(payload)
 
         except jwt.ExpiredSignatureError:
-            return r[dict[str, object]].fail("Token has expired")
+            return r[dict[str, t.GeneralValueType]].fail("Token has expired")
         except jwt.InvalidTokenError as e:
-            return r[dict[str, object]].fail(f"Invalid token: {e}")
+            return r[dict[str, t.GeneralValueType]].fail(f"Invalid token: {e}")
         except Exception as e:
-            return r[dict[str, object]].fail(f"Token validation failed: {e}")
+            return r[dict[str, t.GeneralValueType]].fail(
+                f"Token validation failed: {e}"
+            )
 
 
 __all__ = ["FlextAuthJwtTokenValidator"]

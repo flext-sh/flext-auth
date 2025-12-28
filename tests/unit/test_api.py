@@ -15,7 +15,7 @@ import time
 from datetime import UTC, datetime
 
 import pytest
-from flext_core import FlextResult
+from flext_core import FlextTypes as t, FlextResult
 from pydantic import SecretStr
 
 from flext_auth.api import FlextAuth
@@ -1323,7 +1323,7 @@ class TestAuthModule:
         """Nested helper class for test data creation."""
 
         @staticmethod
-        def create_test_user_data() -> dict[str, object]:
+        def create_test_user_data() -> dict[str, t.GeneralValueType]:
             """Create test user data."""
             return {
                 "username": "test_user",
@@ -1333,7 +1333,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_auth_data() -> dict[str, object]:
+        def create_test_auth_data() -> dict[str, t.GeneralValueType]:
             """Create test authentication data."""
             return {
                 "username": "test_user",
@@ -1342,7 +1342,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_session_data() -> dict[str, object]:
+        def create_test_session_data() -> dict[str, t.GeneralValueType]:
             """Create test session data."""
             return {
                 "user_id": "user_123",

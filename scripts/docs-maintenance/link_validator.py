@@ -20,6 +20,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
+from flext_core import FlextTypes as t
+
 try:
     import requests
 except ImportError:
@@ -61,7 +63,7 @@ class LinkValidator:
         self.timeout = timeout
         self.max_retries = max_retries
         self.user_agent = "FLEXT-Docs-Link-Validator/1.0"
-        self.results: dict[str, object] = {
+        self.results: dict[str, t.GeneralValueType] = {
             "timestamp": time.time(),
             "validation_results": {},
             "issues": [],
@@ -372,7 +374,7 @@ class LinkValidator:
         # Filter out archive files
         return [doc for doc in docs_files if "archive" not in str(doc)]
 
-    async def run_link_audit(self) -> dict[str, object]:
+    async def run_link_audit(self) -> dict[str, t.GeneralValueType]:
         """Run comprehensive link audit."""
         print("🔗 Starting comprehensive link validation...")
 
@@ -497,7 +499,7 @@ class LinkValidator:
             "files_with_issues": len(validation_results["issues_by_file"]),
         }
 
-    def generate_report(self) -> dict[str, object]:
+    def generate_report(self) -> dict[str, t.GeneralValueType]:
         """Generate comprehensive validation report."""
         return {
             "summary": {

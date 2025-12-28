@@ -16,6 +16,8 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+from flext_core import FlextTypes as t
+
 
 @dataclass
 class OptimizationSuggestion:
@@ -445,7 +447,7 @@ class ContentOptimizer:
         # Filter out archive files
         return [doc for doc in docs_files if "archive" not in str(doc)]
 
-    def run_optimization_audit(self) -> dict[str, object]:
+    def run_optimization_audit(self) -> dict[str, t.GeneralValueType]:
         """Run comprehensive content optimization audit."""
         print("🔍 Starting content optimization audit...")
 
@@ -539,7 +541,7 @@ class ContentOptimizer:
             overall_quality=max(0, min(100, overall_quality)),
         )
 
-    def generate_report(self) -> dict[str, object]:
+    def generate_report(self) -> dict[str, t.GeneralValueType]:
         """Generate comprehensive optimization report."""
         audit_results = self.run_optimization_audit()
 
@@ -570,7 +572,7 @@ class ContentOptimizer:
             "detailed_suggestions": audit_results["suggestions_by_file"],
         }
 
-    def _generate_recommendations(self, audit_results: dict[str, object]) -> list[str]:
+    def _generate_recommendations(self, audit_results: dict[str, t.GeneralValueType]) -> list[str]:
         """Generate actionable recommendations."""
         recommendations = []
 

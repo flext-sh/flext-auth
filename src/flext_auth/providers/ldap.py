@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from abc import ABC
 
-from flext_core import r
+from flext_core import FlextTypes as t, r
 
 from flext_auth.models import FlextAuthModels
 
@@ -34,7 +34,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
 
     def authenticate(
         self,
-        credentials: dict[str, object],
+        credentials: dict[str, t.GeneralValueType],
     ) -> r[FlextAuthModels.AuthToken]:
         """Authenticate using LDAP credentials.
 

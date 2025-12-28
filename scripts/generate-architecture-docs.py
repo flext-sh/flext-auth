@@ -17,6 +17,8 @@ import traceback
 from datetime import UTC, datetime
 from pathlib import Path
 
+from flext_core import FlextTypes as t
+
 try:
     from plantuml import PlantUML
 except ImportError:
@@ -68,7 +70,7 @@ class ArchitectureDocumentationGenerator:
             QualityAssuranceReporter(project_root) if QualityAssuranceReporter else None
         )
 
-    def run_full_audit(self) -> dict[str, object]:
+    def run_full_audit(self) -> dict[str, t.GeneralValueType]:
         """Run comprehensive documentation audit."""
         print("🔍 Running comprehensive architecture documentation audit...")
 
@@ -171,7 +173,7 @@ class ArchitectureDocumentationGenerator:
             traceback.print_exc()
             return False
 
-    def validate_architecture_docs(self) -> dict[str, object]:
+    def validate_architecture_docs(self) -> dict[str, t.GeneralValueType]:
         """Validate architecture documentation structure and completeness."""
         print("🔍 Validating architecture documentation...")
 
@@ -198,7 +200,7 @@ class ArchitectureDocumentationGenerator:
 
         return validation_results
 
-    def _validate_directory_structure(self) -> dict[str, object]:
+    def _validate_directory_structure(self) -> dict[str, t.GeneralValueType]:
         """Validate that required directory structure exists."""
         required_dirs = [
             "c4-model/context",
@@ -225,7 +227,7 @@ class ArchitectureDocumentationGenerator:
             "score": 100 if len(missing_dirs) == 0 else 50,
         }
 
-    def _validate_content_completeness(self) -> dict[str, object]:
+    def _validate_content_completeness(self) -> dict[str, t.GeneralValueType]:
         """Validate that key documentation files exist and have content."""
         required_files = [
             "README.md",
@@ -261,7 +263,7 @@ class ArchitectureDocumentationGenerator:
             "score": max(0, score),
         }
 
-    def _validate_cross_references(self) -> dict[str, object]:
+    def _validate_cross_references(self) -> dict[str, t.GeneralValueType]:
         """Validate cross-references between documentation sections."""
         # Check for internal links in key files
         key_files = [
@@ -299,7 +301,7 @@ class ArchitectureDocumentationGenerator:
             else max(0, 100 - len(broken_refs) * 10),
         }
 
-    def _validate_diagrams(self) -> dict[str, object]:
+    def _validate_diagrams(self) -> dict[str, t.GeneralValueType]:
         """Validate that diagrams exist and are up to date."""
         plantuml_dir = self.diagrams_dir / "plantuml"
         generated_dir = self.diagrams_dir / "generated"
@@ -341,7 +343,7 @@ class ArchitectureDocumentationGenerator:
             "score": score,
         }
 
-    def _validate_adrs(self) -> dict[str, object]:
+    def _validate_adrs(self) -> dict[str, t.GeneralValueType]:
         """Validate Architecture Decision Records."""
         adrs_dir = self.arch_dir / "adrs" / "decisions"
         template_file = self.arch_dir / "adrs" / "templates" / "adr-template.md"
@@ -538,7 +540,7 @@ python generate-architecture-docs.py --update-index
 
         return index_path
 
-    def run_full_generation(self) -> dict[str, object]:
+    def run_full_generation(self) -> dict[str, t.GeneralValueType]:
         """Run complete architecture documentation generation."""
         print("🚀 Starting comprehensive architecture documentation generation...")
 
@@ -611,7 +613,7 @@ python generate-architecture-docs.py --update-index
 
         return results
 
-    def _print_generation_summary(self, results: dict[str, object]) -> None:
+    def _print_generation_summary(self, results: dict[str, t.GeneralValueType]) -> None:
         """Print a summary of the generation results."""
         print("\n" + "=" * 80)
         print("🏗️  ARCHITECTURE DOCUMENTATION GENERATION SUMMARY")
@@ -653,7 +655,7 @@ python generate-architecture-docs.py --update-index
         print("\n" + "=" * 80)
 
     def _generate_generation_recommendations(
-        self, results: dict[str, object]
+        self, results: dict[str, t.GeneralValueType]
     ) -> list[str]:
         """Generate recommendations based on generation results."""
         recommendations = []
