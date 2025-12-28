@@ -217,7 +217,9 @@ class FlextAuthModels(m):
                 default_factory=lambda: ["user"],
                 description="Roles",
             )
-            permissions: list[str] = Field(default_factory=list, description="Permissions")
+            permissions: list[str] = Field(
+                default_factory=list, description="Permissions"
+            )
             failed_attempts: int = Field(default=0, ge=0, description="Failed attempts")
             locked_until: datetime = Field(
                 default_factory=lambda: datetime.min.replace(tzinfo=UTC),

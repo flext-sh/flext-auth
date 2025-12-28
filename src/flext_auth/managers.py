@@ -344,8 +344,7 @@ class FlextAuthManagers(s[object]):
         def delete_user(self, user_id: str) -> r[bool]:
             """Delete user."""
             return (
-                self
-                ._find_user_by_id(user_id)
+                self._find_user_by_id(user_id)
                 .map(
                     lambda ud: (
                         self._users.__delitem__(ud[0]),

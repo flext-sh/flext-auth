@@ -94,8 +94,7 @@ class FlextAuthQuickstart(s[object]):
                 return r[list[str]].ok(user_ids)
 
             return (
-                self
-                .register_user(
+                self.register_user(
                     "REDACTED_LDAP_BIND_PASSWORD",
                     "REDACTED_LDAP_BIND_PASSWORD@example.com",
                     "AdminPass123!",
