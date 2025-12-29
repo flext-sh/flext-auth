@@ -248,10 +248,10 @@ class FlextAuthManagers(s[object]):
             email: str,
             password_hash: str,
             **extra_fields: str | int | bool | list[str] | datetime | None,
-        ) -> r[FlextAuthModels.Identity]:
+        ) -> r[FlextAuthModels.Auth.AuthIdentity]:
             """Create a new user."""
             if username in self._users:
-                return r[FlextAuthModels.Identity].fail("Identity already exists")
+                return r[FlextAuthModels.Auth.AuthIdentity].fail("Identity already exists")
             # Check for duplicate email (contact)
             normalized_email = email.lower() if isinstance(email, str) else email
             for existing_user_data in self._users.values():
@@ -260,10 +260,10 @@ class FlextAuthManagers(s[object]):
                     isinstance(existing_contact, str)
                     and existing_contact.lower() == normalized_email
                 ):
-                    return r[FlextAuthModels.Identity].fail("Identity already exists")
+                    return r[FlextAuthModels.Auth.AuthIdentity].fail("Identity already exists")
 
             user_id = str(uuid4())
-            # Build user data with only Identity model fields (no extras)
+            # Build user data with only AuthIdentity model fields (no extras)
             # Use unique_id (not id) as that's the Entity field name
             identity_data: dict[str, str | int | bool | list[str] | datetime | None] = {
                 "unique_id": user_id,
@@ -309,29 +309,29 @@ class FlextAuthManagers(s[object]):
 
             # Create Identity model with only valid fields (no extras)
 
-            user = FlextAuthModels.Identity(**identity_data)
-            return r[FlextAuthModels.Identity].ok(user)
+            user = FlextAuthModels.Auth.AuthIdentity(**identity_data)
+            return r[FlextAuthModels.Auth.AuthIdentity].ok(user)
 
-        def get_user(self, user_id: str) -> r[FlextAuthModels.Identity]:
+        def get_user(self, user_id: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
             """Get user by ID."""
             return self._find_user_by_id(user_id).map(
                 lambda ud: self._create_identity_from_storage(ud[1]),
             )
 
-        def get_user_by_username(self, username: str) -> r[FlextAuthModels.Identity]:
+        def get_user_by_username(self, username: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
             """Get user by username."""
             if username not in self._users:
-                return r[FlextAuthModels.Identity].fail("User not found")
+                return r[FlextAuthModels.Auth.AuthIdentity].fail("User not found")
 
             storage_data = self._users[username]
             user = self._create_identity_from_storage(storage_data)
-            return r[FlextAuthModels.Identity].ok(user)
+            return r[FlextAuthModels.Auth.AuthIdentity].ok(user)
 
         def update_user(
             self,
             user_id: str,
             **updates: str | int | bool | list[str] | datetime | None,
-        ) -> r[FlextAuthModels.Identity]:
+        ) -> r[FlextAuthModels.Auth.AuthIdentity]:
             """Update user data."""
             return self._find_user_by_id(user_id).map(
                 lambda ud: (
@@ -380,7 +380,7 @@ class FlextAuthManagers(s[object]):
                 add=False,
             )
 
-        def get_user_by_id(self, user_id: str) -> r[FlextAuthModels.Identity]:
+        def get_user_by_id(self, user_id: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
             """Get a user by their ID."""
             return self._find_user_by_id(user_id).map(
                 lambda ud: self._create_identity_from_storage(ud[1]),

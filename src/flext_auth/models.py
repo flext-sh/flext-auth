@@ -20,21 +20,6 @@ from flext_core.typings import t
 from pydantic import ConfigDict, Field, computed_field, model_validator
 
 
-class PasswordUtil:
-    """Password utilities for authentication."""
-
-    @staticmethod
-    def hash_password(password: str) -> str:
-        """Hash a password using bcrypt."""
-        salt = bcrypt.gensalt(rounds=12)
-        return bcrypt.hashpw(password.encode(), salt).decode()
-
-    @staticmethod
-    def verify_password(password: str, hashed: str) -> bool:
-        """Verify a password against its hash."""
-        return bcrypt.checkpw(password.encode(), hashed.encode())
-
-
 class FlextAuthModels(m):
     """Single generic authentication models class with nested Pydantic models.
 
@@ -60,6 +45,24 @@ class FlextAuthModels(m):
         All authentication domain models consolidated with validation, composition,
         and SOLID principles. Uses Python 3.13+ syntax and flext-core patterns.
         """
+
+        # =========================================================================
+        # PASSWORD UTILITIES - Password hashing and verification
+        # =========================================================================
+
+        class PasswordUtil:
+            """Password utilities for authentication."""
+
+            @staticmethod
+            def hash_password(password: str) -> str:
+                """Hash a password using bcrypt."""
+                salt = bcrypt.gensalt(rounds=12)
+                return bcrypt.hashpw(password.encode(), salt).decode()
+
+            @staticmethod
+            def verify_password(password: str, hashed: str) -> bool:
+                """Verify a password against its hash."""
+                return bcrypt.checkpw(password.encode(), hashed.encode())
 
         # =========================================================================
         # GENERIC VALIDATION RESULT - Single model for all validations
@@ -263,7 +266,25 @@ class FlextAuthModels(m):
                     return {"id": self.session_id} if self.session_id else {"id": ""}
                 if key == "jwt_token":
                     return self.token
-                return getattr(self, key)
+                # Direct attribute access for safe attributes only
+                if key == "id":
+                    return self.id
+                if key == "name":
+                    return self.name
+                if key == "contact":
+                    return self.contact
+                if key == "token":
+                    return self.token
+                if key == "session_id":
+                    return self.session_id
+                if key == "last_access":
+                    return self.last_access
+                if key == "failed_attempts":
+                    return self.failed_attempts
+                if key == "locked_until":
+                    return self.locked_until
+                msg = f"Attribute '{key}' not accessible via __getitem__"
+                raise KeyError(msg)
 
             def with_successful_access(self) -> Self:
                 """Record successful access (fluent interface)."""
@@ -452,8 +473,10 @@ class FlextAuthModels(m):
             description="Additional data",
         )
 
-    # Backward compatibility alias for tests expecting User model
+    # Backward compatibility aliases
     User = Auth.AuthIdentity
+    AuthIdentity = Auth.AuthIdentity
+    AuthIdentityRequest = Auth.AuthIdentityRequest
 
 
 # Forward references resolved via from __future__ import annotations at module top

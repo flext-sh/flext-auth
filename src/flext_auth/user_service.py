@@ -20,10 +20,7 @@ from flext_auth.managers import (
     FlextAuthManagers,
     ServiceManagerMixin,
 )
-from flext_auth.models import (
-    FlextAuthModels,
-    PasswordUtil,
-)
+from flext_auth.models import FlextAuthModels
 from flext_auth.settings import FlextAuthSettings
 
 
@@ -149,7 +146,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
         # due to type constraints in the manager interface
         return (
             r[str]
-            .ok(PasswordUtil.hash_password(credential))
+            .ok(FlextAuthModels.Auth.PasswordUtil.hash_password(credential))
             .flat_map(
                 lambda ch: self.identity_manager.create_user(
                     username=request.name,

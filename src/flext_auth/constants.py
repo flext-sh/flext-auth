@@ -496,6 +496,33 @@ class FlextAuthConstants(FlextConstants):
         """Invalid token error code."""
 
         # ═══════════════════════════════════════════════════════════════════
+        # MODEL VALIDATION CONSTANTS: For Pydantic field constraints
+        # ═══════════════════════════════════════════════════════════════════
+
+    class ModelValidation:
+        """Constants for Pydantic model field validation."""
+
+        # Password hashing
+        BCRYPT_ROUNDS: Final[int] = 12
+        """Bcrypt rounds for password hashing."""
+
+        # Token configuration
+        DEFAULT_TOKEN_EXPIRY_MINUTES: Final[int] = 60
+        """Default token expiry in minutes."""
+
+        # Role validation
+        MAX_ROLE_NAME_LENGTH: Final[int] = 50
+        """Maximum length for role names."""
+        MAX_ROLE_DESCRIPTION_LENGTH: Final[int] = 500
+        """Maximum length for role descriptions."""
+
+        # Permission validation
+        MAX_PERMISSION_NAME_LENGTH: Final[int] = 100
+        """Maximum length for permission names."""
+        MAX_PERMISSION_DESCRIPTION_LENGTH: Final[int] = 500
+        """Maximum length for permission descriptions."""
+
+        # ═══════════════════════════════════════════════════════════════════
         # INHERITED CONSTANTS: Access parent constants directly
         # ═══════════════════════════════════════════════════════════════════
         # All constants from FlextConstants are accessible via inheritance.
