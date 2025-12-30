@@ -12,7 +12,7 @@ import pytest
 
 
 @pytest.fixture
-def mock_get_global():
+def mock_get_global() -> object:
     """Mock for FlextAuthSettings.get_global_instance.
 
     Returns:
@@ -22,7 +22,7 @@ def mock_get_global():
 
     # Use a simple object instead of MagicMock for better type safety
     class MockGlobal:
-        def get_global_instance(self):
+        def get_global_instance(self) -> None:
             return None
 
     return MockGlobal()
