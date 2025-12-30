@@ -15,6 +15,9 @@ from flext_core import r
 
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 
+# Import aliases following order: c -> t -> p -> r -> m -> u
+# Runtime aliases defined at module level per FLEXT standards
+
 
 class FlextAuthPasswordHasher:
     """Dedicated password hashing service.

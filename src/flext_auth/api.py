@@ -17,6 +17,7 @@ from flext_core.dispatcher import FlextDispatcher
 from flext_core.loggings import FlextLogger
 from pydantic import SecretStr
 
+from flext_auth.constants import c
 from flext_auth.models import FlextAuthModels
 from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers import FlextAuthBaseProvider
@@ -132,7 +133,6 @@ class FlextAuth:
 
         Args:
             **config_overrides: Configuration parameters to override defaults
-                (e.g., expiry_minutes=120, hash_rounds=14)
 
         Returns:
             Initialized FlextAuth instance with custom configuration
@@ -273,7 +273,7 @@ class FlextAuth:
         elif role is not None:
             user_roles = [role]
         else:
-            user_roles = ["user"]
+            user_roles = [c.Auth.RoleTypes.USER]
 
         return self._identity_service.create_identity(
             name=username,

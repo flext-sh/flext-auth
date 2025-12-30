@@ -20,6 +20,7 @@ from flext_core import FlextLogger
 from pydantic_settings import BaseSettings
 
 from flext_auth import FlextAuth, FlextAuthSettings
+from flext_auth.constants import c
 
 # Get structured logger instance
 logger = FlextLogger(__name__)
@@ -142,7 +143,7 @@ def example_user_lifecycle() -> None:
 
             logger.info(
                 "Authentication token generated",
-                jwt_token_preview=jwt_token_str[:30] + "..." if jwt_token_str else "",
+                jwt_token_preview=jwt_token_str[:50] + "..." if jwt_token_str else "",
                 session_id=session_id,
             )
 
@@ -191,7 +192,7 @@ def example_direct_auth() -> None:
             access_token = auth_token.token
             logger.info(
                 "Access token generated",
-                token_preview=access_token[:20] + "..." if access_token else "",
+                token_preview=access_token[:50] + "..." if access_token else "",
             )
 
         else:
@@ -307,7 +308,7 @@ def example_complete_workflow() -> None:
         logger.error("Failed to get user information", error=user_info.error)
 
 
-def generate_secure_password(length: int = 16) -> str:
+def generate_secure_password(length: int = c.Auth.CREDENTIAL_MAX_LENGTH) -> str:
     """Generate a secure password.
 
     Returns:

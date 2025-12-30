@@ -2,8 +2,6 @@
 
 Provides authentication framework with multi-provider support.
 
-Core Facade:
-
 """
 
 from flext_core import (
@@ -15,7 +13,6 @@ from flext_core import (
 )
 from flext_core.mixins import FlextMixins as x
 
-from flext_auth.__version__ import __version__, __version_info__
 from flext_auth.api import FlextAuth
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.managers import FlextAuthManagers
@@ -46,19 +43,6 @@ from flext_auth.typings import FlextAuthTypes
 from flext_auth.user_service import FlextAuthIdentityService
 from flext_auth.utilities import FlextAuthUtilities
 
-# Domain-specific aliases (extending flext-core base classes)
-u = FlextAuthUtilities  # Utilities (FlextAuthUtilities extends FlextUtilities)
-m = FlextAuthModels  # Models (FlextAuthModels extends FlextModels)
-c = FlextAuthConstants  # Constants (FlextAuthConstants extends FlextConstants)
-t = FlextAuthTypes  # Types (FlextAuthTypes extends FlextTypes)
-# p = FlextAuthProtocols  # Protocols (FlextAuthProtocols extends FlextProtocols) - removed to avoid circular import
-
-r = FlextResult  # Shared from flext-core
-e = FlextExceptions  # Shared from flext-core
-d = FlextDecorators  # Shared from flext-core
-s = FlextService  # Shared from flext-core
-h = FlextHandlers  # Shared from flext-core
-
 __all__ = [
     "FlextAuth",
     "FlextAuthApiKeyProvider",
@@ -87,18 +71,10 @@ __all__ = [
     "FlextAuthTokenService",
     "FlextAuthTypes",
     "FlextAuthUtilities",
-    "__version__",
-    "__version_info__",
-    # Domain-specific aliases
-    "c",
-    # Global aliases
-    "d",
-    "e",
-    "h",
-    "m",
-    "r",
-    "s",
-    "t",
-    "u",
+    "FlextDecorators",
+    "FlextExceptions",
+    "FlextHandlers",
+    "FlextResult",
+    "FlextService",
     "x",
 ]

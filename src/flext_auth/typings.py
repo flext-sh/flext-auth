@@ -8,7 +8,7 @@ from typing import Annotated, Literal, TypedDict
 from flext_core import FlextTypes
 from pydantic import Field, SecretStr
 
-from flext_auth.constants import FlextAuthConstants
+from flext_auth.constants import FlextAuthConstants as c
 
 
 class FlextAuthTypes(FlextTypes):
@@ -244,16 +244,16 @@ class FlextAuthTypes(FlextTypes):
         type Password = Annotated[
             str,
             Field(
-                min_length=FlextAuthConstants.Auth.CREDENTIAL_MIN_LENGTH,
-                max_length=FlextAuthConstants.Auth.CREDENTIAL_MAX_LENGTH,
+                min_length=c.Auth.CREDENTIAL_MIN_LENGTH,
+                max_length=c.Auth.CREDENTIAL_MAX_LENGTH,
                 description="Raw credential string",
             ),
         ]
         type Secret = Annotated[
             SecretStr,
             Field(
-                min_length=FlextAuthConstants.Auth.CREDENTIAL_MIN_LENGTH,
-                max_length=FlextAuthConstants.Auth.CREDENTIAL_MAX_LENGTH,
+                min_length=c.Auth.CREDENTIAL_MIN_LENGTH,
+                max_length=c.Auth.CREDENTIAL_MAX_LENGTH,
                 description="Protected credential value",
             ),
         ]
@@ -279,7 +279,7 @@ class FlextAuthTypes(FlextTypes):
         """Token-related type definitions."""
 
         # AuthToken type defined in models.py
-        type TokenType = FlextAuthConstants.Auth.TokenTypes
+        type TokenType = c.Auth.TokenTypes
         type ClaimMap = t.JsonDict
 
         class Claims(TypedDict, total=False):
@@ -414,9 +414,72 @@ class FlextAuthTypes(FlextTypes):
     class Domain:
         """Domain-level literals and shortcuts."""
 
-        type ProviderType = FlextAuthConstants.Auth.ProviderTypes
-        type Role = FlextAuthConstants.Auth.RoleTypes
-        type Permission = FlextAuthConstants.Auth.PermissionTypes
+        type ProviderType = c.Auth.ProviderTypes
+        type Role = c.Auth.RoleTypes
+        type Permission = c.Auth.PermissionTypes
+
+        # Literal types moved from constants.py per architecture rules
+        type AccessTokens = Literal[c.Auth.TokenTypes.ACCESS, c.Auth.TokenTypes.BEARER]
+        """Access token types for operations."""
+        type RefreshTokens = Literal[c.Auth.TokenTypes.REFRESH]
+        """Refresh token types."""
+        type BearerTokens = Literal[c.Auth.TokenTypes.BEARER, c.Auth.TokenTypes.ACCESS]
+        """Bearer token types."""
+        type AdminRoles = Literal[c.Auth.RoleTypes.ADMIN]
+        """Admin role types."""
+        type UserRoles = Literal[
+            c.Auth.RoleTypes.USER, c.Auth.RoleTypes.MODERATOR, c.Auth.RoleTypes.GUEST
+        ]
+        """User role types."""
+        type WritePermissions = Literal[
+            c.Auth.PermissionTypes.WRITE, c.Auth.PermissionTypes.DELETE
+        ]
+        """Write permission types."""
+        type AdminPermissions = Literal[c.Auth.PermissionTypes.ADMIN]
+        """Admin permission types."""
+
+        type TokenTypeLiteral = Literal[
+            c.Auth.TokenTypes.ACCESS,
+            c.Auth.TokenTypes.REFRESH,
+            c.Auth.TokenTypes.API,
+            c.Auth.TokenTypes.BEARER,
+        ]
+        """Token type literal - references TokenTypes StrEnum members."""
+
+        type ProviderTypeLiteral = Literal[
+            c.Auth.ProviderTypes.BASIC,
+            c.Auth.ProviderTypes.JWT,
+            c.Auth.ProviderTypes.OAUTH2,
+            c.Auth.ProviderTypes.SAML,
+            c.Auth.ProviderTypes.LDAP,
+            c.Auth.ProviderTypes.CERTIFICATE,
+            c.Auth.ProviderTypes.KERBEROS,
+            c.Auth.ProviderTypes.APIKEY,
+        ]
+        """Provider type literal - references ProviderTypes StrEnum members."""
+
+        type RoleTypeLiteral = Literal[
+            c.Auth.RoleTypes.ADMIN,
+            c.Auth.RoleTypes.USER,
+            c.Auth.RoleTypes.MODERATOR,
+            c.Auth.RoleTypes.GUEST,
+        ]
+        """Role type literal - matches RoleTypes StrEnum values exactly."""
+
+        type PermissionTypeLiteral = Literal[
+            c.Auth.PermissionTypes.READ,
+            c.Auth.PermissionTypes.WRITE,
+            c.Auth.PermissionTypes.DELETE,
+            c.Auth.PermissionTypes.ADMIN,
+        ]
+        """Permission type literal - matches PermissionTypes StrEnum values exactly."""
+
+        type AlgorithmLiteral = Literal[
+            c.Auth.Algorithms.HS256,
+            c.Auth.Algorithms.RS256,
+            c.Auth.Algorithms.ES256,
+        ]
+        """Algorithm literal - matches Algorithms StrEnum values exactly."""
 
     class Unit:
         """Unit type for operations that return nothing but may fail."""

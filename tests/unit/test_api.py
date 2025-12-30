@@ -24,6 +24,14 @@ from flext_auth.models import FlextAuthModels
 from flext_auth.settings import FlextAuthSettings
 
 
+
+# Import aliases following order: c -> t -> p -> r -> m -> u
+# Runtime aliases defined at module level per FLEXT standards
+c = FlextConstants
+t = FlextMeltanoTypes if 'FlextMeltanoTypes' in globals() else None
+p = FlextMeltanoProtocols if 'FlextMeltanoProtocols' in globals() else None
+r = FlextResult
+
 class TestFlextAuthServiceInitialization:
     """Test FlextAuth service initialization."""
 

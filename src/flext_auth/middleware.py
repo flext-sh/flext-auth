@@ -34,6 +34,9 @@ from flext_core.loggings import FlextLogger
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
 
+# Import aliases following order: c -> t -> p -> r -> m -> u
+# Runtime aliases defined at module level per FLEXT standards
+
 
 # Placeholder types for HTTP requests/responses (to avoid circular dependencies)
 class HttpRequest:

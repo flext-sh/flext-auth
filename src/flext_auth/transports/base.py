@@ -14,6 +14,9 @@ from typing import Protocol
 
 from flext_core import FlextTypes as t, r
 
+# Import aliases following order: c -> t -> p -> r -> m -> u
+# Runtime aliases defined at module level per FLEXT standards
+
 
 class BaseTransportAdapter(Protocol):
     """Protocol for transport adapters.

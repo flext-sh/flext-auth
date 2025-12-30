@@ -15,8 +15,13 @@ from collections.abc import Mapping
 from datetime import datetime
 from typing import Protocol, runtime_checkable
 
-from flext_core import FlextTypes
 from flext_core.protocols import FlextProtocols
+from flext_core.typings import FlextTypes
+
+# Import aliases following order: c -> t -> p -> r -> m -> u
+# Runtime aliases defined at module level per FLEXT standards
+t = FlextTypes
+p = FlextProtocols
 
 # Note: Protocols avoid importing models to prevent circular dependencies
 # Protocols use structural typing - models satisfy protocols through attributes
@@ -181,10 +186,10 @@ class FlextAuthProtocols(FlextProtocols):
             Supports both TypedDict and model implementations.
             """
 
-            user: Mapping[str, FlextTypes.GeneralValueType]
+            user: Mapping[str, t.GeneralValueType]
             """User/identity data."""
 
-            session: Mapping[str, FlextTypes.GeneralValueType]
+            session: Mapping[str, t.GeneralValueType]
             """Session data."""
 
             jwt_token: str

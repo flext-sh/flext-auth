@@ -12,14 +12,17 @@ from typing import Annotated, TypeIs
 
 import bcrypt
 import jwt
-from flext_core import FlextUtilities as u, r
+from flext_core import FlextUtilities, r
 from pydantic import BeforeValidator, SecretStr
 
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.typings import t
 
+# Runtime alias for utilities namespace access
+u = FlextUtilities
 
-class FlextAuthUtilities(u):
+
+class FlextAuthUtilities(FlextUtilities):
     """FlextAuth advanced utilities extending u with domain-specific helpers.
 
     Architecture: Advanced utilities with ZERO code bloat through:
@@ -131,7 +134,7 @@ class FlextAuthUtilities(u):
             """Annotated type factories for Pydantic models."""
 
             @staticmethod
-            def coerced_token_type() -> object:
+            def coerced_token_type() -> type:
                 """Return Annotated[TokenTypes, BeforeValidator(...)] type for Pydantic models.
 
                 Note: Return type is object because Annotated types cannot be properly
@@ -148,7 +151,7 @@ class FlextAuthUtilities(u):
                 ]
 
             @staticmethod
-            def coerced_provider_type() -> object:
+            def coerced_provider_type() -> type:
                 """Return Annotated[ProviderTypes, BeforeValidator(...)] type for Pydantic models.
 
                 Note: Return type is object because Annotated types cannot be properly
@@ -165,7 +168,7 @@ class FlextAuthUtilities(u):
                 ]
 
             @staticmethod
-            def coerced_role_type() -> object:
+            def coerced_role_type() -> type:
                 """Return Annotated[RoleTypes, BeforeValidator(...)] type for Pydantic models.
 
                 Note: Return type is object because Annotated types cannot be properly

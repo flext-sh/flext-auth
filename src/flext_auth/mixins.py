@@ -13,6 +13,9 @@ from flext_core import r, x
 
 from flext_auth.constants import FlextAuthConstants
 
+# Import aliases following order: c -> t -> p -> r -> m -> u
+# Runtime aliases defined at module level per FLEXT standards
+
 # Constants for validation
 MAX_USERNAME_LENGTH = 255
 

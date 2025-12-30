@@ -18,9 +18,11 @@ from __future__ import annotations
 from collections.abc import Mapping, Set as AbstractSet
 from enum import StrEnum
 from types import MappingProxyType
-from typing import Final, Literal
+from typing import Final
 
 from flext_core import FlextConstants
+
+# Runtime alias for constants namespace access
 
 # ═══════════════════════════════════════════════════════════════════════════
 # STRENUM + PYDANTIC 2: DEFINITIVE PATTERN FOR FLEXT-AUTH
@@ -32,7 +34,7 @@ from flext_core import FlextConstants
 # - No need to create AfterValidator
 # - Pydantic automatically validates against StrEnum
 
-# SUBSETS: Use Literal[TokenTypes.ACCESS, TokenTypes.REFRESH] to accept only SOME values.
+# SUBSETS: Use type aliases to accept only SOME enum values.
 # This references the enum member, does not duplicate strings!
 
 
@@ -168,21 +170,6 @@ class FlextAuthConstants(FlextConstants):
         # ═══════════════════════════════════════════════════════════════════
         # Use to accept only SOME enum values in methods
         # This does not duplicate strings - references the enum member!
-
-        type AccessTokens = Literal[TokenTypes.ACCESS, TokenTypes.BEARER]
-        """Access token types for operations."""
-        type RefreshTokens = Literal[TokenTypes.REFRESH]
-        """Refresh token types."""
-        type BearerTokens = Literal[TokenTypes.BEARER, TokenTypes.ACCESS]
-        """Bearer token types."""
-        type AdminRoles = Literal[RoleTypes.ADMIN]
-        """Admin role types."""
-        type UserRoles = Literal[RoleTypes.USER, RoleTypes.MODERATOR, RoleTypes.GUEST]
-        """User role types."""
-        type WritePermissions = Literal[PermissionTypes.WRITE, PermissionTypes.DELETE]
-        """Write permission types."""
-        type AdminPermissions = Literal[PermissionTypes.ADMIN]
-        """Admin permission types."""
 
         # ═══════════════════════════════════════════════════════════════════
         # IMMUTABLE COLLECTIONS: frozenset for O(1) validation
@@ -350,49 +337,6 @@ class FlextAuthConstants(FlextConstants):
         # LITERAL TYPES: PEP 695 strict type aliases (Python 3.13+)
         # ═══════════════════════════════════════════════════════════════════
         # All Literal types reference StrEnum members - NO string duplication!
-
-        type TokenTypeLiteral = Literal[
-            TokenTypes.ACCESS,
-            TokenTypes.REFRESH,
-            TokenTypes.API,
-            TokenTypes.BEARER,
-        ]
-        """Token type literal - references TokenTypes StrEnum members."""
-
-        type ProviderTypeLiteral = Literal[
-            ProviderTypes.BASIC,
-            ProviderTypes.JWT,
-            ProviderTypes.OAUTH2,
-            ProviderTypes.SAML,
-            ProviderTypes.LDAP,
-            ProviderTypes.CERTIFICATE,
-            ProviderTypes.KERBEROS,
-            ProviderTypes.APIKEY,
-        ]
-        """Provider type literal - references ProviderTypes StrEnum members."""
-
-        type RoleTypeLiteral = Literal[
-            RoleTypes.ADMIN,
-            RoleTypes.USER,
-            RoleTypes.MODERATOR,
-            RoleTypes.GUEST,
-        ]
-        """Role type literal - matches RoleTypes StrEnum values exactly."""
-
-        type PermissionTypeLiteral = Literal[
-            PermissionTypes.READ,
-            PermissionTypes.WRITE,
-            PermissionTypes.DELETE,
-            PermissionTypes.ADMIN,
-        ]
-        """Permission type literal - matches PermissionTypes StrEnum values exactly."""
-
-        type AlgorithmLiteral = Literal[
-            Algorithms.HS256,
-            Algorithms.RS256,
-            Algorithms.ES256,
-        ]
-        """Algorithm literal - matches Algorithms StrEnum values exactly."""
 
         # ═══════════════════════════════════════════════════════════════════
         # JWT CONSTANTS: Nested class for JWT-specific constants

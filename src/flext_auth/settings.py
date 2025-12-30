@@ -42,9 +42,9 @@ class FlextAuthSettings(FlextSettings):
         description="Cryptographic algorithm",
     )
     expiry_minutes: int = Field(
-        default=60,
+        default=c.Auth.DEFAULT_SESSION_EXPIRY_MINUTES,
         ge=1,
-        le=10080,  # 7 days in minutes
+        le=c.Auth.SESSION_EXPIRY_MAX_MINUTES,
         description="Default expiry time",
     )
     issuer: str = Field(
@@ -58,43 +58,43 @@ class FlextAuthSettings(FlextSettings):
 
     # Credential Processing
     hash_rounds: int = Field(
-        default=12,
-        ge=4,
-        le=31,
+        default=c.Auth.Credentials.Password.BCRYPT_ROUNDS,
+        ge=c.Auth.HASH_ROUNDS_MIN,
+        le=c.Auth.HASH_ROUNDS_MAX,
         description="Credential hashing rounds",
     )
     min_credential_length: int = Field(
-        default=8,
+        default=c.Auth.CREDENTIAL_MIN_LENGTH,
         ge=1,
         description="Minimum credential length",
     )
     max_credential_length: int = Field(
-        default=128,
+        default=c.Auth.CREDENTIAL_MAX_LENGTH,
         ge=1,
         description="Maximum credential length",
     )
 
     # Security Policies
     max_attempts: int = Field(
-        default=3,
+        default=c.Auth.MAX_ATTEMPTS_DEFAULT,
         ge=1,
         description="Max attempts before lockout",
     )
     lockout_duration_minutes: int = Field(
-        default=15,
+        default=c.Auth.LOCKOUT_DURATION_MINUTES,
         ge=1,
         description="Lockout duration",
     )
 
     # Session Management
     session_expiry_minutes: int = Field(
-        default=1440,
+        default=c.Auth.SESSION_EXPIRY_DEFAULT_MINUTES,
         ge=1,
-        le=43200,
+        le=c.Auth.SESSION_EXPIRY_MAX_MINUTES,
         description="Session expiry",
     )
     max_sessions_per_identity: int = Field(
-        default=5,
+        default=c.Auth.MAX_SESSIONS_DEFAULT,
         ge=1,
         description="Max concurrent sessions",
     )
@@ -116,7 +116,7 @@ class FlextAuthSettings(FlextSettings):
         description="Track performance",
     )
     performance_warning_threshold: float = Field(
-        default=1000,
+        default=c.Auth.PERFORMANCE_THRESHOLD_MS,
         ge=0.0,
         description="Performance warning threshold (ms)",
     )
@@ -125,12 +125,12 @@ class FlextAuthSettings(FlextSettings):
         description="Enable rate limiting",
     )
     max_requests_per_minute: int = Field(
-        default=60,
+        default=c.Auth.MAX_REQUESTS_PER_MINUTE,
         ge=1,
         description="Max requests/minute",
     )
     max_requests_per_hour: int = Field(
-        default=1000,
+        default=c.Auth.MAX_REQUESTS_PER_HOUR,
         ge=1,
         description="Max requests/hour",
     )
@@ -141,7 +141,7 @@ class FlextAuthSettings(FlextSettings):
         description="Require complexity",
     )
     min_score: int = Field(
-        default=2,
+        default=c.Auth.Credentials.Password.MIN_SCORE,
         ge=0,
         le=4,
         description="Min complexity score",

@@ -13,6 +13,9 @@ from flext_auth.api import FlextAuth
 from flext_auth.models import FlextAuthModels
 from flext_auth.settings import FlextAuthSettings
 
+# Import aliases following order: c -> t -> p -> r -> m -> u
+# Runtime aliases defined at module level per FLEXT standards
+
 
 class FlextAuthQuickstart(s[object]):
     """Quickstart convenience wrapper for FlextAuth with sensible defaults.

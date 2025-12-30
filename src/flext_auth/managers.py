@@ -26,6 +26,9 @@ from flext_core.typings import t
 from flext_auth.models import FlextAuthModels
 from flext_auth.settings import FlextAuthSettings
 
+# Import aliases following order: c -> t -> p -> r -> m -> u
+# Runtime aliases defined at module level per FLEXT standards
+
 
 class ServiceManagerMixin:
     """Common manager initialization mixin for all auth services.
@@ -132,8 +135,8 @@ class FlextAuthManagers(s[object]):
             self,
             storage_data: t.JsonDict,
             field: str,
-            field_type: type[str | bool | list],
-        ) -> str | bool | list:
+            field_type: type[str | bool | list[str]],
+        ) -> str | bool | list[str]:
             """Validate and extract required field with type checking."""
             value = storage_data.get(field)
             if not isinstance(value, field_type):
@@ -251,7 +254,9 @@ class FlextAuthManagers(s[object]):
         ) -> r[FlextAuthModels.Auth.AuthIdentity]:
             """Create a new user."""
             if username in self._users:
-                return r[FlextAuthModels.Auth.AuthIdentity].fail("Identity already exists")
+                return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                    "Identity already exists"
+                )
             # Check for duplicate email (contact)
             normalized_email = email.lower() if isinstance(email, str) else email
             for existing_user_data in self._users.values():
@@ -260,46 +265,87 @@ class FlextAuthManagers(s[object]):
                     isinstance(existing_contact, str)
                     and existing_contact.lower() == normalized_email
                 ):
-                    return r[FlextAuthModels.Auth.AuthIdentity].fail("Identity already exists")
+                    return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                        "Identity already exists"
+                    )
 
             user_id = str(uuid4())
             # Build user data with only AuthIdentity model fields (no extras)
             # Use unique_id (not id) as that's the Entity field name
-            identity_data: dict[str, str | int | bool | list[str] | datetime | None] = {
-                "unique_id": user_id,
-                "name": username,
-                "contact": email,
-                "credential_hash": password_hash,
-            }
+            # Extract and validate all fields with proper types
+            unique_id: str = str(user_id)
+            name: str = str(username)
+            contact: str = str(email)
+            credential_hash: str = str(password_hash)
 
-            # Add only valid Identity model fields from extra_fields
-            # Filter to ensure only valid fields are included
-            valid_identity_fields = {
-                "is_active",
-                "roles",
-                "permissions",
-                "full_name",
-                "failed_attempts",
-                "locked_until",
-                "last_access",
-            }
-            filtered_extra = {
-                k: v for k, v in extra_fields.items() if k in valid_identity_fields
-            }
-            identity_data.update(filtered_extra)
+            # Extract optional fields with proper type validation
+            full_name: str = ""
+            is_active: bool = True
+            roles: list[str] = []
+            permissions: list[str] = []
+            failed_attempts: int = 0
+            locked_until: datetime = datetime.min.replace(tzinfo=UTC)
+            last_access: datetime = datetime.min.replace(tzinfo=UTC)
+            token: str = ""
+            session_id: str = ""
 
-            # Set defaults for required fields if not provided
-            if "is_active" not in identity_data:
-                identity_data["is_active"] = True
-            if "roles" not in identity_data:
-                identity_data["roles"] = []
-            if "permissions" not in identity_data:
-                identity_data["permissions"] = []
+            # Process extra_fields with type validation
+            for k, v in extra_fields.items():
+                if k == "full_name":
+                    full_name = str(v) if v is not None else ""
+                elif k == "is_active":
+                    is_active = bool(v)
+                elif k == "roles":
+                    roles = [str(item) for item in v] if isinstance(v, list) else []
+                elif k == "permissions":
+                    permissions = (
+                        [str(item) for item in v] if isinstance(v, list) else []
+                    )
+                elif k == "failed_attempts":
+                    failed_attempts = (
+                        int(v) if isinstance(v, (int, str)) and str(v).isdigit() else 0
+                    )
+                elif k == "locked_until":
+                    if isinstance(v, datetime):
+                        locked_until = v
+                    elif isinstance(v, str):
+                        try:
+                            locked_until = datetime.fromisoformat(v)
+                        except ValueError:
+                            locked_until = datetime.min.replace(tzinfo=UTC)
+                    else:
+                        locked_until = datetime.min.replace(tzinfo=UTC)
+                elif k == "last_access":
+                    if isinstance(v, datetime):
+                        last_access = v
+                    elif isinstance(v, str):
+                        try:
+                            last_access = datetime.fromisoformat(v)
+                        except ValueError:
+                            last_access = datetime.min.replace(tzinfo=UTC)
+                    else:
+                        last_access = datetime.min.replace(tzinfo=UTC)
+                elif k == "token":
+                    token = str(v) if v is not None else ""
+                elif k == "session_id":
+                    session_id = str(v) if v is not None else ""
 
             # Store full data with timestamps in internal storage
             # Also store id and identity_id for backward compatibility
             storage_data: t.JsonDict = {
-                **identity_data,
+                "unique_id": unique_id,
+                "name": name,
+                "contact": contact,
+                "credential_hash": credential_hash,
+                "full_name": full_name,
+                "is_active": is_active,
+                "roles": roles,
+                "permissions": permissions,
+                "failed_attempts": failed_attempts,
+                "locked_until": locked_until,
+                "last_access": last_access,
+                "token": token,
+                "session_id": session_id,
                 "id": user_id,  # Store id for backward compatibility
                 "identity_id": user_id,  # Store identity_id for backward compatibility
                 "created_at": datetime.now(UTC),
@@ -308,8 +354,23 @@ class FlextAuthManagers(s[object]):
             self._users[username] = storage_data
 
             # Create Identity model with only valid fields (no extras)
-
-            user = FlextAuthModels.Auth.AuthIdentity(**identity_data)
+            # Use model_validate to construct AuthIdentity with properly typed data
+            identity_dict = {
+                "unique_id": unique_id,
+                "name": name,
+                "contact": contact,
+                "credential_hash": credential_hash,
+                "full_name": full_name,
+                "is_active": is_active,
+                "roles": roles,
+                "permissions": permissions,
+                "failed_attempts": failed_attempts,
+                "locked_until": locked_until,
+                "last_access": last_access,
+                "token": token,
+                "session_id": session_id,
+            }
+            user = FlextAuthModels.Auth.AuthIdentity.model_validate(identity_dict)
             return r[FlextAuthModels.Auth.AuthIdentity].ok(user)
 
         def get_user(self, user_id: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
@@ -318,7 +379,9 @@ class FlextAuthManagers(s[object]):
                 lambda ud: self._create_identity_from_storage(ud[1]),
             )
 
-        def get_user_by_username(self, username: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
+        def get_user_by_username(
+            self, username: str
+        ) -> r[FlextAuthModels.Auth.AuthIdentity]:
             """Get user by username."""
             if username not in self._users:
                 return r[FlextAuthModels.Auth.AuthIdentity].fail("User not found")

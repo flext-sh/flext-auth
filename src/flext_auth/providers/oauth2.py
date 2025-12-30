@@ -21,6 +21,8 @@ from flext_core import FlextTypes as t, FlextUtilities as u, e, r
 from flext_auth.constants import c
 from flext_auth.models import FlextAuthModels
 
+# Import aliases following order: c -> t -> p -> r -> m -> u
+# Runtime aliases defined at module level per FLEXT standards
 # Forward reference to avoid circular import
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 from flext_auth.typings import FlextAuthTypes as at

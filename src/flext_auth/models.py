@@ -15,12 +15,23 @@ from typing import Self
 
 # Import password utilities directly
 import bcrypt
-from flext_core import FlextModels as m, FlextResult as r, FlextUtilities as u
-from flext_core.typings import t
+from flext_core import FlextModels, FlextResult as r, FlextUtilities as u
+from flext_core.typings import FlextTypes
 from pydantic import ConfigDict, Field, computed_field, model_validator
 
+from flext_auth.constants import c
 
-class FlextAuthModels(m):
+# Import aliases following order: c -> t -> p -> r -> m -> u
+# Runtime aliases defined at module level per FLEXT standards
+# c already imported from flext_auth.constants above
+t = FlextTypes
+# p (protocols) not used here
+# r is FlextResult - already imported as r
+m = FlextModels
+# u is utilities - import if needed
+
+
+class FlextAuthModels(FlextModels):
     """Single generic authentication models class with nested Pydantic models.
 
     All authentication domain models consolidated with validation, composition,
@@ -56,7 +67,7 @@ class FlextAuthModels(m):
             @staticmethod
             def hash_password(password: str) -> str:
                 """Hash a password using bcrypt."""
-                salt = bcrypt.gensalt(rounds=12)
+                salt = bcrypt.gensalt(rounds=c.ModelValidation.BCRYPT_ROUNDS)
                 return bcrypt.hashpw(password.encode(), salt).decode()
 
             @staticmethod
@@ -68,7 +79,7 @@ class FlextAuthModels(m):
         # GENERIC VALIDATION RESULT - Single model for all validations
         # =========================================================================
 
-        class ValidationResult(m.Value):
+        class ValidationResult(FlextModels.Value):
             """Generic validation result for any operation (immutable value object)."""
 
             is_valid: bool = Field(..., description="Validation outcome")
@@ -93,7 +104,7 @@ class FlextAuthModels(m):
         # TOKEN MODELS - Generic token handling
         # =========================================================================
 
-        class TokenPayload(m.Value):
+        class TokenPayload(FlextModels.Value):
             """Generic JWT token payload (immutable value object)."""
 
             sub: str = Field(..., description="Subject (identity ID)")
@@ -110,7 +121,7 @@ class FlextAuthModels(m):
             )
             session_id: str = Field(default="", description="Session ID")
 
-        class TokenRequest(m.Value):
+        class TokenRequest(FlextModels.Value):
             """Generic token generation request (immutable value object)."""
 
             identity_id: str = Field(..., description="Identity ID")
@@ -119,7 +130,7 @@ class FlextAuthModels(m):
                 description="Token type",
             )
             expiry_minutes: int = Field(
-                default=60,
+                default=c.ModelValidation.DEFAULT_TOKEN_EXPIRY_MINUTES,
                 ge=1,
                 description="Token expiry",
             )
@@ -138,7 +149,7 @@ class FlextAuthModels(m):
                     raise ValueError(msg)
                 return self
 
-        class AuthToken(m.Entity):
+        class AuthToken(FlextModels.Entity):
             """Generic authentication token entity."""
 
             identity_id: str = Field(..., description="Identity ID")
@@ -172,13 +183,13 @@ class FlextAuthModels(m):
         # IDENTITY MODELS - Generic identity/user entity
         # =========================================================================
 
-        class AuthIdentityRequest(m.Value):
+        class AuthIdentityRequest(FlextModels.Value):
             """Generic identity creation request (immutable value object)."""
 
             name: str = Field(
                 ...,
-                min_length=3,
-                max_length=100,
+                min_length=c.Auth.Credentials.Username.MIN_LENGTH,
+                max_length=c.Auth.Credentials.Username.MAX_LENGTH,
                 description="Unique identity name",
             )
             contact: str = Field(
@@ -189,7 +200,7 @@ class FlextAuthModels(m):
             )
             credential: str = Field(
                 ...,
-                min_length=8,
+                min_length=c.Auth.Credentials.Password.MIN_LENGTH,
                 description="Credential (password/key)",
                 exclude=True,
             )
@@ -199,13 +210,13 @@ class FlextAuthModels(m):
                 description="Roles",
             )
 
-        class AuthIdentity(m.Entity):
+        class AuthIdentity(FlextModels.Entity):
             """Generic identity/user entity with minimal fields."""
 
             name: str = Field(
                 ...,
-                min_length=3,
-                max_length=100,
+                min_length=c.Auth.Credentials.Username.MIN_LENGTH,
+                max_length=c.Auth.Credentials.Username.MAX_LENGTH,
                 description="Unique identity name",
             )
             contact: str = Field(..., description="Contact info")
@@ -322,7 +333,7 @@ class FlextAuthModels(m):
     # SESSION MODELS - Generic session entity
     # =========================================================================
 
-    class Session(m.Entity):
+    class Session(FlextModels.Entity):
         """Generic session entity."""
 
         identity_id: str = Field(..., description="Identity ID")
@@ -346,18 +357,36 @@ class FlextAuthModels(m):
     # ROLE & PERMISSION MODELS - Generic RBAC
     # =========================================================================
 
-    class Role(m.Entity):
+    class Role(FlextModels.Entity):
         """Generic role entity."""
 
-        name: str = Field(..., min_length=1, max_length=50, description="Role name")
-        description: str = Field(default="", max_length=500, description="Description")
+        name: str = Field(
+            ...,
+            min_length=1,
+            max_length=c.ModelValidation.MAX_ROLE_NAME_LENGTH,
+            description="Role name",
+        )
+        description: str = Field(
+            default="",
+            max_length=c.ModelValidation.MAX_ROLE_DESCRIPTION_LENGTH,
+            description="Description",
+        )
         permissions: list[str] = Field(default_factory=list, description="Permissions")
 
-    class Permission(m.Entity):
+    class Permission(FlextModels.Entity):
         """Generic permission entity."""
 
-        name: str = Field(..., min_length=1, max_length=100, description="Permission")
-        description: str = Field(default="", max_length=500, description="Description")
+        name: str = Field(
+            ...,
+            min_length=1,
+            max_length=c.ModelValidation.MAX_PERMISSION_NAME_LENGTH,
+            description="Permission",
+        )
+        description: str = Field(
+            default="",
+            max_length=c.ModelValidation.MAX_PERMISSION_DESCRIPTION_LENGTH,
+            description="Description",
+        )
         resource: str = Field(default="", description="Resource path")
         action: str = Field(default="", description="Action type")
 
@@ -365,7 +394,7 @@ class FlextAuthModels(m):
     # PROVIDER MODELS - Generic provider configuration
     # =========================================================================
 
-    class ProviderConfig(m.Value):
+    class ProviderConfig(FlextModels.Value):
         """Generic provider configuration (immutable value object)."""
 
         model_config = ConfigDict(extra="allow")
@@ -402,7 +431,7 @@ class FlextAuthModels(m):
             if "capabilities" not in self:
                 self["capabilities"] = []
 
-    class ApiKeyValidation(m.Value):
+    class ApiKeyValidation(FlextModels.Value):
         """API key validation request (immutable value object)."""
 
         api_key: str = Field(..., description="API key to validate")
@@ -411,7 +440,7 @@ class FlextAuthModels(m):
             description="Additional validation data",
         )
 
-    class ApiKeyData(m.Value):
+    class ApiKeyData(FlextModels.Value):
         """API key data structure (immutable value object)."""
 
         key_hash: str = Field(..., description="Hashed API key")
@@ -430,7 +459,7 @@ class FlextAuthModels(m):
             description="Creation time",
         )
 
-    class CredentialValidation(m.Value):
+    class CredentialValidation(FlextModels.Value):
         """Credential validation request (immutable value object)."""
 
         username: str = Field(..., description="Username")
@@ -444,7 +473,7 @@ class FlextAuthModels(m):
     # CREDENTIAL MODELS - Generic credential handling
     # =========================================================================
 
-    class Credential(m.Value):
+    class Credential(FlextModels.Value):
         """Generic credential container (immutable value object)."""
 
         credential_type: str = Field(..., description="Credential type")
@@ -458,7 +487,7 @@ class FlextAuthModels(m):
     # AUTHENTICATION RESPONSE - Generic response
     # =========================================================================
 
-    class AuthResponse(m.Value):
+    class AuthResponse(FlextModels.Value):
         """Generic authentication response (immutable value object)."""
 
         success: bool = Field(..., description="Authentication success")

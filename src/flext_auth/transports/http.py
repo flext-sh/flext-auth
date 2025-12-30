@@ -19,6 +19,9 @@ from flext_api.typings import FlextApiTypes as t_api
 from flext_core import FlextTypes as t, r
 from flext_core.loggings import FlextLogger
 
+# Import aliases following order: c -> t -> p -> r -> m -> u
+# Runtime aliases defined at module level per FLEXT standards
+
 
 class FlextWebTransportAdapter:
     """HTTP transport adapter for OAuth2/OIDC authentication operations.
