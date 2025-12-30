@@ -15,7 +15,6 @@ from uuid import uuid4
 
 from flext_core import (
     FlextResult as r,
-    FlextService as s,
 )
 from flext_core.context import FlextContext
 from flext_core.dispatcher import FlextDispatcher
@@ -55,7 +54,7 @@ class ServiceManagerMixin:
         self._rate_limiter = FlextAuthManagers.FlextAuthRateLimiter(config, dispatcher)
 
 
-class FlextAuthManagers(s[object]):
+class FlextAuthManagers:
     """Namespace class for all authentication managers following FLEXT patterns.
 
     This namespace class contains all manager implementations as nested classes,

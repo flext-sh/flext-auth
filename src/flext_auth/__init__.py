@@ -11,7 +11,6 @@ from flext_core import (
     FlextResult,
     FlextService,
 )
-from flext_core.mixins import FlextMixins as x
 
 from flext_auth.api import FlextAuth
 from flext_auth.constants import FlextAuthConstants
