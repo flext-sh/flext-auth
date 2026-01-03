@@ -11,18 +11,15 @@ import pytest
 # Note: flext_tests is an optional test dependency - import may fail in some environments
 
 
+class MockGlobal:
+    """Mock object for FlextAuthSettings.get_global_instance."""
+
+    def get_global_instance(self) -> None:
+        """Return None as mock global instance."""
+        return
+
+
 @pytest.fixture
-def mock_get_global():
-    """Mock for FlextAuthSettings.get_global_instance.
-
-    Returns:
-        Mock object for global instance
-
-    """
-
-    # Use a simple object instead of MagicMock for better type safety
-    class MockGlobal:
-        def get_global_instance(self):
-            return None
-
+def mock_get_global() -> MockGlobal:
+    """Mock for FlextAuthSettings.get_global_instance."""
     return MockGlobal()

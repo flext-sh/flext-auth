@@ -22,10 +22,12 @@
         "pydantic-settings>=2.10.1",
         "pydantic (>=2.12.3)",
         "pyjwt>=2.9.0",
-        "flext-core @ file:../flext-core",
-        "flext-web @ file:../flext-web",
-        "flext-api @ file:../flext-api",
         "pydantic-core (>=2.41.4)",
+        "pytest (>=9.0.2,<10.0.0)",
+        "pytest-cov (>=7.0.0,<8.0.0)",
+        "pytest-randomly (>=4.0.1,<5.0.0)",
+        "pytest-httpx (>=0.36.0,<0.37.0)",
+        "faker (>=40.1.0,<41.0.0)",
     ]
     description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
     keywords = [
@@ -141,10 +143,16 @@
             optional = true
             path = "../flext-quality"
 
-		    [tool.poetry.group.dev.dependencies]
-		        commitizen     = ">=4.8.3"
-		        detect-secrets = ">=1.5.0"
-		        pyrefly        = "^0.34.0"
+            [tool.poetry.group.dev.dependencies]
+                commitizen     = ">=4.8.3"
+                detect-secrets = ">=1.5.0"
+                pyrefly        = "^0.46.3"
+            pytest = "^9.0.2"
+            pytest-httpx = "^0.36.0"
+            opentelemetry-api = ">=1.39.1"
+            opentelemetry-sdk = ">=1.39.1"
+            prompt-toolkit = ">=3.0.52"
+            sqlparse = ">=0.5.5"
 
     [tool.pytest.ini_options]
         addopts = [
