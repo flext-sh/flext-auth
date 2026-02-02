@@ -13,6 +13,7 @@ from flext_core.registry import FlextRegistry
 from pydantic import PrivateAttr
 
 from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth.typings import FlextAuthTypes as at
 
 
 class FlextAuthRegistry(FlextRegistry):
@@ -21,64 +22,57 @@ class FlextAuthRegistry(FlextRegistry):
     PROVIDERS: ClassVar[str] = "auth_providers"
 
     _configs: dict[str, t.JsonDict] = PrivateAttr(default_factory=dict)
-    _metadata: dict[str, t.Providers.Metadata] = PrivateAttr(default_factory=dict)
+    _metadata: dict[str, at.Providers.Metadata] = PrivateAttr(default_factory=dict)
+    _providers: dict[str, FlextAuthBaseProvider] = PrivateAttr(default_factory=dict)
 
-    def __init__(self, **data: t.GeneralValueType) -> None:
+    def __init__(self) -> None:
         """Initialize with FlextRegistry infrastructure."""
-        super().__init__(**data)
-        self._configs = {}
-        self._metadata = {}
+        super().__init__(dispatcher=None)
+        self._configs: dict[str, t.JsonDict] = {}
+        self._metadata: dict[str, at.Providers.Metadata] = {}
+        self._providers: dict[str, FlextAuthBaseProvider] = {}
 
     # Core operations using generic plugin API
 
-    def register(
+    def register_provider(
         self,
         name: str,
-        service: FlextAuthBaseProvider,
-        metadata: t.Providers.Metadata | None = None,
+        provider: FlextAuthBaseProvider,
+        metadata: at.Providers.Metadata | None = None,
         configuration: t.JsonDict | None = None,
     ) -> r[bool]:
-        """Register provider with optional config and metadata."""
-
-        def store_config_and_metadata(_: t.GeneralValueType) -> bool:
-            if configuration:
-                self._configs[name] = configuration
-            self._metadata[name] = self._build_metadata(name, service, metadata)
-            return True
-
-        return self.register_plugin(self.PROVIDERS, name, service).map(
-            store_config_and_metadata,
-        )
+        """Register auth provider with optional config and metadata."""
+        if name in self._providers:
+            return r[bool].fail(f"Provider '{name}' already registered")
+        self._providers[name] = provider
+        if configuration:
+            self._configs[name] = configuration
+        self._metadata[name] = self._build_metadata(name, provider, metadata)
+        return r[bool].ok(True)
 
     def unregister(self, name: str) -> r[bool]:
         """Unregister provider and cleanup auth-specific data."""
-
-        def cleanup_provider_data(_: t.GeneralValueType) -> bool:
-            self._configs.pop(name, None)
-            self._metadata.pop(name, None)
-            return True
-
-        return self.unregister_plugin(self.PROVIDERS, name).map(cleanup_provider_data)
+        if name not in self._providers:
+            return r[bool].fail(f"Provider '{name}' not registered")
+        del self._providers[name]
+        self._configs.pop(name, None)
+        self._metadata.pop(name, None)
+        return r[bool].ok(True)
 
     def get(self, name: str) -> r[FlextAuthBaseProvider]:
         """Get provider by name."""
-
-        def validate_provider(plugin: t.GeneralValueType) -> r[FlextAuthBaseProvider]:
-            if isinstance(plugin, FlextAuthBaseProvider):
-                return r[FlextAuthBaseProvider].ok(plugin)
-            return r[FlextAuthBaseProvider].fail(
-                "Plugin is not a FlextAuthBaseProvider",
-            )
-
-        return self.get_plugin(self.PROVIDERS, name).flat_map(validate_provider)
+        provider = self._providers.get(name)
+        if provider is None:
+            return r[FlextAuthBaseProvider].fail(f"Provider '{name}' not registered")
+        return r[FlextAuthBaseProvider].ok(provider)
 
     def list_providers(self) -> list[str]:
         """List registered provider names."""
-        return self.list_plugins(self.PROVIDERS).value or []
+        return list(self._providers.keys())
 
     def has_provider(self, name: str) -> bool:
         """Check if provider is registered."""
-        return name in self.list_providers()
+        return name in self._providers
 
     # Auth-specific operations
 
@@ -96,11 +90,11 @@ class FlextAuthRegistry(FlextRegistry):
         self._configs[name] = config
         return r[bool].ok(True)
 
-    def get_metadata(self, name: str) -> r[t.Providers.Metadata]:
+    def get_metadata(self, name: str) -> r[at.Providers.Metadata]:
         """Get provider metadata."""
         if not self.has_provider(name):
-            return r[t.Providers.Metadata].fail(f"Provider '{name}' not registered")
-        return r[t.Providers.Metadata].ok(self._metadata.get(name, {}))
+            return r[at.Providers.Metadata].fail(f"Provider '{name}' not registered")
+        return r[at.Providers.Metadata].ok(self._metadata.get(name, {}))
 
     def get_capabilities(self, name: str) -> r[set[str]]:
         """Get provider capabilities."""
@@ -137,25 +131,28 @@ class FlextAuthRegistry(FlextRegistry):
         self,
         name: str,
         service: FlextAuthBaseProvider,
-        provided: t.Providers.Metadata | None,
-    ) -> t.Providers.Metadata:
+        provided: at.Providers.Metadata | None,
+    ) -> at.Providers.Metadata:
         """Build metadata from provider and provided data."""
         try:
             caps = tuple(str(c) for c in service.supports())
-        except Exception:
+        except (AttributeError, TypeError):
             caps = ()
 
-        base: t.Providers.Metadata = {"name": name, "capabilities": caps}
+        base: at.Providers.Metadata = {"name": name, "capabilities": caps}
 
         if provided:
             return {**base, **provided}
 
-        if hasattr(service, "get_metadata"):
+        get_metadata_fn = getattr(service, "get_metadata", None)
+        if callable(get_metadata_fn):
             try:
-                raw = service.get_metadata()
+                raw = get_metadata_fn()
                 if isinstance(raw, dict):
-                    return {**base, **raw}
-            except Exception:
+                    # Type narrowing: raw is now dict[str, ...] for unpacking
+                    base.update(raw)
+                    return base
+            except (AttributeError, TypeError, ValueError):
                 return base
 
         return base

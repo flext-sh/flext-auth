@@ -12,10 +12,9 @@ from __future__ import annotations
 import threading
 from typing import ClassVar, Self
 
-from flext_core import FlextResult as r
+from flext_core import FlextResult as r, FlextTypes as t
 from flext_core.dispatcher import FlextDispatcher
 from flext_core.loggings import FlextLogger
-from pydantic import SecretStr
 
 from flext_auth.constants import c
 from flext_auth.models import FlextAuthModels
@@ -74,7 +73,7 @@ class FlextAuth:
         for provider_name in self._provider_service.list_providers():
             provider_result = self._provider_service.get_provider(provider_name)
             if provider_result.is_success:
-                self._registry.register(provider_name, provider_result.value)
+                self._registry.register_provider(provider_name, provider_result.value)
         self._identity_service = FlextAuthIdentityService(
             config=self._config,
             dispatcher=self._dispatcher,
@@ -127,7 +126,7 @@ class FlextAuth:
     @classmethod
     def create_with_config_overrides(
         cls,
-        **config_overrides: str | bool | float | SecretStr,
+        **config_overrides: t.GeneralValueType,
     ) -> Self:
         """Factory method to create FlextAuth with configuration overrides.
 
@@ -170,18 +169,18 @@ class FlextAuth:
         self,
         credentials: dict[str, str],
         _provider: str | None = None,
-    ) -> r[FlextAuthModels.AuthIdentity]:
+    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
         """Railway-oriented authentication with chaining."""
         # Extract username and password from credentials - fast fail if missing
         username_value = credentials.get("username")
         if not isinstance(username_value, str) or not username_value:
-            return r[FlextAuthModels.AuthIdentity].fail(
+            return r[FlextAuthModels.Auth.AuthIdentity].fail(
                 "Invalid credentials: username is required and must be a non-empty string",
             )
 
         password_value = credentials.get("password")
         if not isinstance(password_value, str) or not password_value:
-            return r[FlextAuthModels.AuthIdentity].fail(
+            return r[FlextAuthModels.Auth.AuthIdentity].fail(
                 "Invalid credentials: password is required and must be a non-empty string",
             )
 
@@ -196,7 +195,7 @@ class FlextAuth:
         password: str,
         _ip_address: str | None = None,
         _user_agent: str | None = None,
-    ) -> r[FlextAuthModels.AuthIdentity]:
+    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
         """Authenticate user by username and password with optional metadata.
 
         Args:
@@ -252,7 +251,7 @@ class FlextAuth:
         roles: list[str] | None = None,
         role: str | None = None,
         **kwargs: str | int | bool | list[str] | None,
-    ) -> r[FlextAuthModels.AuthIdentity]:
+    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
         """Register a new user.
 
         Args:
@@ -273,7 +272,7 @@ class FlextAuth:
         elif role is not None:
             user_roles = [role]
         else:
-            user_roles = [c.Auth.RoleTypes.USER]
+            user_roles = [c.Auth.RoleTypes.USER.value]
 
         return self._identity_service.create_identity(
             name=username,
@@ -289,7 +288,7 @@ class FlextAuth:
         provider: FlextAuthBaseProvider,
     ) -> r[bool]:
         """Railway-oriented provider registration."""
-        return self._registry.register(name, provider)
+        return self._registry.register_provider(name, provider)
 
     def get_provider(
         self,
@@ -303,7 +302,7 @@ class FlextAuth:
         username: str,
         email: str,
         password: str,
-    ) -> r[FlextAuthModels.AuthIdentity]:
+    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
         """Railway-oriented user registration via identity service."""
         return self._identity_service.create_identity(
             name=username,
@@ -332,31 +331,21 @@ class FlextAuth:
             expires_in_minutes=self._config.expiry_minutes,
         )
 
-    def verify_token(self, token: str) -> r[dict[str, str | int | bool | list[str]]]:
-        """Railway-oriented token verification with payload extraction."""
-
-        def extract_identity_data(
-            identity: FlextAuthModels.AuthIdentity,
-        ) -> dict[str, bool | int | list[str] | str]:
-            return {
-                "sub": identity.id,
-                "name": identity.name,
-                "contact": identity.contact,
-                "roles": identity.roles,
-                "permissions": identity.permissions,
-            }
-
-        return self._token_service.validate_token(token).map(extract_identity_data)
+    def verify_token(self, token: str) -> r[bool]:
+        """Verify token validity - delegated to token service."""
+        return self._token_service.validate_token(token)
 
     # =========================================================================
     # CONVENIENCE API METHODS (Delegations to services)
     # =========================================================================
 
-    def get_user(self, user_id: str) -> r[FlextAuthModels.AuthIdentity]:
+    def get_user(self, user_id: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
         """Get identity by ID - delegation to identity_service."""
         return self._identity_service.identity_manager.get_user(user_id)
 
-    def get_user_by_username(self, username: str) -> r[FlextAuthModels.AuthIdentity]:
+    def get_user_by_username(
+        self, username: str
+    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
         """Get identity by username - delegation to identity_service."""
         return self._identity_service.identity_manager.get_user_by_username(username)
 
@@ -364,7 +353,7 @@ class FlextAuth:
         self,
         user_id: str,
         **updates: str | int | bool | list[str] | None,
-    ) -> r[FlextAuthModels.AuthIdentity]:
+    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
         """Update identity - delegation to identity_service."""
         return self._identity_service.identity_manager.update_user(user_id, **updates)
 

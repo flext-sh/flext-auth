@@ -28,6 +28,20 @@ class FlextAuthBaseProvider(ABC):
     OAuth2, SAML, etc.).
     """
 
+    def __init__(self, config: t.JsonDict | None = None) -> None:
+        """Initialize provider with optional configuration.
+
+        Args:
+            config: Provider configuration (optional, provider-specific)
+
+        """
+        self._provider_config = config
+
+    @property
+    def config(self) -> t.JsonDict | None:
+        """Get provider configuration."""
+        return self._provider_config
+
     @abstractmethod
     def authenticate(
         self,
@@ -64,6 +78,29 @@ class FlextAuthBaseProvider(ABC):
             r[bool]: True if valid, False if invalid, error on failure
 
         """
+
+    def generate_token_for_user(
+        self,
+        user: t.JsonDict,
+        token_type: str = "access",
+        expiry_minutes: int | None = None,
+    ) -> r[str]:
+        """Generate authentication token for a user.
+
+        Create a new token for an authenticated user (post-authentication token generation).
+        This is distinct from authenticate() which validates credentials.
+
+        Args:
+            user: User/identity dictionary with user data
+            token_type: Token type (access, refresh, id, bearer)
+            expiry_minutes: Token expiration time in minutes (optional)
+
+        Returns:
+            r[str]: Encoded token string on success, error on failure
+
+        """
+        _ = user, token_type, expiry_minutes  # Silence unused warnings
+        return r[str].fail("Token generation not implemented in this provider")
 
     def refresh(
         self,

@@ -57,7 +57,7 @@ class FlextAuthTypes(FlextTypes):
     # AUTHENTICATION DOMAIN TYPE CLASSES
     # =========================================================================
 
-    class Authentication:
+    class Auth:
         """Authentication-related type definitions."""
 
         type AuthMethod = Literal["basic", "jwt", "oauth2", "apikey"]
@@ -495,23 +495,6 @@ class FlextAuthTypes(FlextTypes):
 
         # Singleton instance
         UNIT = UnitType()
-
-    class Auth:
-        """Auth types namespace for cross-project access.
-
-        Provides organized access to all Auth types for other FLEXT projects.
-        Usage: Other projects can reference `t.Auth.Providers.*`, `t.Auth.Credentials.*`, etc.
-        This enables consistent namespace patterns for cross-project type access.
-
-        Examples:
-            from flext_auth.typings import t
-            provider_key: t.Auth.Providers.Key = ...
-            credentials: t.Auth.Credentials.Basic = ...
-
-        Note: Namespace composition via inheritance - no aliases needed.
-        Access parent namespaces directly through inheritance.
-
-        """
 
 
 t = FlextAuthTypes  # Runtime alias (not TypeAlias to avoid PYI042)

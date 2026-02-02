@@ -41,7 +41,7 @@ class FlextAuthQuickstart(s[object]):
         password: str,
         roles: list[str] | None = None,
         full_name: str | None = None,
-    ) -> r[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
         """Register a new user with default settings."""
         # Call api.register_user with correct parameter mapping
         return self._auth.register_user(
@@ -57,7 +57,7 @@ class FlextAuthQuickstart(s[object]):
         self,
         username: str,
         password: str,
-    ) -> r[FlextAuthModels.Identity]:
+    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
         """Authenticate a user and return identity."""
         return self._auth.authenticate_user(username, password)
 
@@ -65,7 +65,7 @@ class FlextAuthQuickstart(s[object]):
         """Validate an authentication token."""
         return self._auth.validate_token(token)
 
-    def get_user(self, user_id: str) -> r[FlextAuthModels.Identity]:
+    def get_user(self, user_id: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
         """Get user by ID."""
         return self._auth.get_user(user_id)
 
@@ -96,19 +96,15 @@ class FlextAuthQuickstart(s[object]):
             if not create_REDACTED_LDAP_BIND_PASSWORD:
                 return r[list[str]].ok(user_ids)
 
-            return (
-                self
-                .register_user(
-                    "REDACTED_LDAP_BIND_PASSWORD",
-                    "REDACTED_LDAP_BIND_PASSWORD@example.com",
-                    "AdminPass123!",
-                    ["ADMIN"],
-                )
-                .map(lambda _: user_ids + ["REDACTED_LDAP_BIND_PASSWORD"])
-                .map_error(
-                    lambda e: f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {e}",
-                )
+            result = self.register_user(
+                "REDACTED_LDAP_BIND_PASSWORD",
+                "REDACTED_LDAP_BIND_PASSWORD@example.com",
+                "AdminPass123!",
+                ["ADMIN"],
             )
+            if result.is_failure:
+                return r[list[str]].fail(f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {result.error}")
+            return r[list[str]].ok(user_ids + ["REDACTED_LDAP_BIND_PASSWORD"])
 
         return self.create_demo_users().flat_map(create_REDACTED_LDAP_BIND_PASSWORD_user)
 

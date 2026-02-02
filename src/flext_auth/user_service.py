@@ -11,20 +11,17 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from flext_core import FlextModels as m, FlextResult as r, FlextService as s
+from flext_core import FlextResult as r, FlextService as s
 from flext_core.dispatcher import FlextDispatcher
 from pydantic import ValidationError
 
 from flext_auth.constants import c
-from flext_auth.managers import (
-    FlextAuthManagers,
-    ServiceManagerMixin,
-)
-from flext_auth.models import FlextAuthModels
+from flext_auth.managers import FlextAuthManagers, ServiceManagers
+from flext_auth.models import FlextAuthModels as m
 from flext_auth.settings import FlextAuthSettings
 
 
-class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
+class FlextAuthIdentityService(s[object]):
     """Generic identity service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
@@ -39,17 +36,17 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     ) -> None:
         """Generic initialization with dependency injection."""
         super().__init__()
-        self.init_managers(config, dispatcher)
+        self._managers = ServiceManagers(config, dispatcher)
 
     @property
     def identity_manager(self) -> FlextAuthManagers.FlextAuthUserManager:
         """Direct access to identity manager for client orchestration."""
-        return getattr(self, "_user_manager", None)
+        return self._managers.user_manager
 
     @identity_manager.setter
     def identity_manager(self, value: FlextAuthManagers.FlextAuthUserManager) -> None:
         """Set identity manager (for service composition)."""
-        self._user_manager = value
+        self._managers.user_manager = value
 
     def execute(self) -> r[object]:
         """Railway-oriented execute with focused service pattern."""
@@ -61,7 +58,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
         self,
         name: str,
         credential: str,
-    ) -> r[FlextAuthModels.AuthIdentity]:
+    ) -> r[m.Auth.AuthIdentity]:
         """Railway-oriented identity authentication with account lockout."""
         return (
             self.identity_manager
@@ -104,7 +101,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
         contact: str,
         credential: str,
         roles: list[str] | None = None,
-    ) -> r[FlextAuthModels.AuthIdentity]:
+    ) -> r[m.Auth.AuthIdentity]:
         """Railway-oriented identity creation with credential hashing."""
         if roles is None:
             user_roles: list[str] = []
@@ -112,12 +109,12 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
             user_roles = roles
         # Normalize email to lowercase for consistency
         if not isinstance(contact, str):
-            return r[m.AuthIdentity].fail("Contact must be a string")
+            return r[m.Auth.AuthIdentity].fail("Contact must be a string")
         normalized_contact = contact.lower()
 
         # Validate using Pydantic model to ensure proper validation errors
         try:
-            request = m.AuthIdentityRequest(
+            request = m.Auth.AuthIdentityRequest(
                 name=name,
                 contact=normalized_contact,
                 credential=credential,
@@ -133,13 +130,13 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
                 msg = error.get("msg", "Validation error")
                 error_messages.append(f"{field}: {msg}")
             error_msg = "; ".join(error_messages) if error_messages else str(e)
-            return r[m.AuthIdentity].fail(error_msg)
+            return r[m.Auth.AuthIdentity].fail(error_msg)
         except Exception as e:
-            return r[m.AuthIdentity].fail(str(e))
+            return r[m.Auth.AuthIdentity].fail(str(e))
 
         # Validate credential strength before hashing
         if len(credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
-            return r[m.AuthIdentity].fail(
+            return r[m.Auth.AuthIdentity].fail(
                 f"Credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
             )
 
@@ -147,7 +144,7 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
         # due to type constraints in the manager interface
         return (
             r[str]
-            .ok(FlextAuthModels.Auth.PasswordUtil.hash_password(credential))
+            .ok(m.Auth.PasswordUtil.hash_password(credential))
             .flat_map(
                 lambda ch: self.identity_manager.create_user(
                     username=request.name,
@@ -236,13 +233,13 @@ class FlextAuthIdentityService(ServiceManagerMixin, s[object]):
     # ACCOUNT LOCKOUT HANDLING
     # =========================================================================
 
-    def _handle_failed_attempt(self, identity: m.AuthIdentity) -> r[bool]:
+    def _handle_failed_attempt(self, identity: m.Auth.AuthIdentity) -> r[bool]:
         """Handle failed authentication attempt with lockout logic."""
         identity.failed_attempts += 1
-        max_attempts = self._config.max_attempts
+        max_attempts = self._managers.config.max_attempts
 
         if identity.failed_attempts >= max_attempts:
-            lockout_duration = timedelta(minutes=self._config.lockout_duration_minutes)
+            lockout_duration = timedelta(minutes=self._managers.config.lockout_duration_minutes)
             identity.locked_until = datetime.now(UTC) + lockout_duration
             self.logger.warning(
                 "Authentication failure",

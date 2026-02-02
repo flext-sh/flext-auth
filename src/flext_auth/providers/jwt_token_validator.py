@@ -40,6 +40,11 @@ class FlextAuthJwtTokenValidator:
         try:
             # Get configuration from provider
             config = self._provider.config
+            if not config:
+                return r[dict[str, t.GeneralValueType]].fail(
+                    "JWT configuration not provided"
+                )
+
             secret_key_value = config.get("secret_key")
             if not isinstance(secret_key_value, str) or not secret_key_value:
                 return r[dict[str, t.GeneralValueType]].fail(

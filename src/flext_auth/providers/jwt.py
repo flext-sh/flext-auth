@@ -8,17 +8,42 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import r
+from flext_core import FlextResult as r, FlextTypes as t
 
-from flext_auth.typings import FlextAuthTypes as at
+from flext_auth.protocols import FlextAuthProtocols as p
+from flext_auth.providers.base import FlextAuthBaseProvider
 
 
-class FlextAuthJwtProvider:
+class FlextAuthJwtProvider(FlextAuthBaseProvider):
     """JWT-based authentication provider."""
 
-    def __init__(self, config: at.ProviderConfig) -> None:
+    def __init__(self, config: t.JsonDict | None = None) -> None:
         """Initialize provider with configuration."""
-        _ = config  # Not used for JWT
+        super().__init__(config)
+
+    def authenticate(
+        self,
+        credentials: t.JsonDict,
+    ) -> r[p.Auth.TokenProtocol]:
+        """Authenticate using JWT credentials."""
+        _ = credentials
+        return r[p.Auth.TokenProtocol].fail("Not implemented")
+
+    def validate(
+        self,
+        token: str | p.Auth.TokenProtocol,
+    ) -> r[bool]:
+        """Validate JWT token.
+
+        Args:
+            token: Token to validate
+
+        Returns:
+            r[bool]: True if valid, False if invalid, error on failure
+
+        """
+        token_str = token if isinstance(token, str) else str(token)
+        return self.validate_token(token_str)
 
     def validate_token(self, token: str) -> r[bool]:
         """Validate JWT token.

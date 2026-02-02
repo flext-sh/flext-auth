@@ -10,7 +10,7 @@ from abc import ABC
 
 from flext_core import FlextTypes as t, r
 
-from flext_auth.models import FlextAuthModels
+from flext_auth.protocols import FlextAuthProtocols
 
 # Forward reference to avoid circular import
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -34,23 +34,23 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
 
     def authenticate(
         self,
-        credentials: dict[str, t.GeneralValueType],
-    ) -> r[FlextAuthModels.AuthToken]:
+        credentials: t.JsonDict,
+    ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Authenticate using LDAP credentials.
 
         Args:
             credentials: Dictionary containing "username" and "password" keys
 
         Returns:
-            r[AuthToken]: Authentication token on success, error on failure
+            r[TokenProtocol]: Authentication token on success, error on failure
 
         """
         _ = credentials
-        return r["FlextAuthModels.AuthToken"].fail("Not implemented")
+        return r[FlextAuthProtocols.Auth.TokenProtocol].fail("Not implemented")
 
     def validate(
         self,
-        token: str | FlextAuthModels.AuthToken,
+        token: str | FlextAuthProtocols.Auth.TokenProtocol,
     ) -> r[bool]:
         """Validate authentication token.
 

@@ -32,6 +32,8 @@ class FlextAuthJwtTokenGenerator:
     def _get_config_str(self, key: str, error_msg: str) -> r[str]:
         """Get and validate string configuration value."""
         config = self._provider.config
+        if not config:
+            return r[str].fail(error_msg)
         value = config.get(key)
         if not isinstance(value, str) or not value:
             return r[str].fail(error_msg)
@@ -40,6 +42,8 @@ class FlextAuthJwtTokenGenerator:
     def _get_config_int(self, key: str, error_msg: str) -> r[int]:
         """Get and validate integer configuration value."""
         config = self._provider.config
+        if not config:
+            return r[int].fail(error_msg)
         value = config.get(key)
         if not isinstance(value, int):
             return r[int].fail(error_msg)
@@ -51,6 +55,9 @@ class FlextAuthJwtTokenGenerator:
         Returns empty string if not provided (no None in r).
         """
         config = self._provider.config
+        if not config:
+            # Return empty string if config not provided
+            return r[str].ok("")
         value = config.get(key)
         if value is None:
             # Return empty string instead of None - no None in r

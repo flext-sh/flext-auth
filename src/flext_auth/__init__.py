@@ -75,5 +75,4 @@ __all__ = [
     "FlextHandlers",
     "FlextResult",
     "FlextService",
-    "x",
 ]

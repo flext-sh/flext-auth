@@ -14,7 +14,6 @@ from flext_core import FlextResult as r, FlextTypes as t
 
 from flext_auth.protocols import FlextAuthProtocols as p
 from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_auth.typings import FlextAuthTypes as at
 
 
 class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
@@ -23,9 +22,9 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
     Provides API key-based authentication with token validation.
     """
 
-    def __init__(self, config: at.ProviderConfig) -> None:
+    def __init__(self, config: t.JsonDict | None = None) -> None:
         """Initialize provider with configuration."""
-        _ = config  # Not used for API key
+        super().__init__(config)
 
     def authenticate(
         self,

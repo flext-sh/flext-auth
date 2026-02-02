@@ -219,11 +219,14 @@ class FlextAuthSettings(FlextSettings):
 
         return self
 
-    def validate_configuration(self) -> r[bool]:
-        """Validate configuration after initialization.
+    def validate_auth_configuration(self) -> r[bool]:
+        """Validate auth configuration after initialization.
 
         Returns:
             r[bool]: True if valid, False with error message if invalid
+
+        Note: Named validate_auth_configuration to avoid overriding the
+        parent class validate_configuration which returns Self.
 
         """
         try:
@@ -257,7 +260,7 @@ class FlextAuthSettings(FlextSettings):
     @classmethod
     def get_or_create_global(
         cls,
-        **kwargs: str | int | bool | SecretStr | None,
+        **kwargs: t.GeneralValueType,
     ) -> r[FlextAuthSettings]:
         """Get or create global instance with optional overrides.
 

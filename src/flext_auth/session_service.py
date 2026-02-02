@@ -10,30 +10,27 @@ from __future__ import annotations
 from flext_core import FlextLogger, FlextResult as r, FlextService as s
 from flext_core.dispatcher import FlextDispatcher
 
-from flext_auth.managers import (
-    FlextAuthManagers,
-    ServiceManagerMixin,
-)
+from flext_auth.managers import FlextAuthManagers, ServiceManagers
 from flext_auth.settings import FlextAuthSettings
 
 
-class FlextAuthSessionService(ServiceManagerMixin, s[object]):
+class FlextAuthSessionService(s[object]):
     """Focused service for session management with complete flext-core integration."""
 
     def __init__(self, config: FlextAuthSettings, dispatcher: FlextDispatcher) -> None:
         """Initialize session service with flext-core integration."""
         super().__init__()
-        self.init_managers(config, dispatcher)
+        self._managers = ServiceManagers(config, dispatcher)
 
     @property
     def session_manager(self) -> FlextAuthManagers.FlextAuthSessionManager:
         """Direct access to session manager for client orchestration."""
-        return self._session_manager
+        return self._managers.session_manager
 
     @session_manager.setter
     def session_manager(self, value: FlextAuthManagers.FlextAuthSessionManager) -> None:
         """Set session manager (for service composition)."""
-        self._session_manager = value
+        self._managers.session_manager = value
 
     def execute(self) -> r[object]:
         """Execute method for FlextService interface.

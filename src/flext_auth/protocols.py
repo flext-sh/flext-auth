@@ -63,7 +63,7 @@ class FlextAuthProtocols(FlextProtocols):
         """
 
         @runtime_checkable
-        class IdentityProtocol(FlextProtocols.Service, Protocol):
+        class IdentityProtocol(FlextProtocols.Service[object], Protocol):
             """Protocol for identity/user-like objects in authentication.
 
             Structural typing interface for identity objects. Models implement
@@ -135,7 +135,7 @@ class FlextAuthProtocols(FlextProtocols):
                 ...
 
         @runtime_checkable
-        class SessionProtocol(FlextProtocols.Service, Protocol):
+        class SessionProtocol(FlextProtocols.Service[object], Protocol):
             """Protocol for session-like objects in authentication."""
 
             id: str
@@ -166,14 +166,34 @@ class FlextAuthProtocols(FlextProtocols):
                 ...
 
         @runtime_checkable
-        class TokenProtocol(FlextProtocols.Service, Protocol):
-            """Protocol for token-like objects in authentication."""
+        class TokenProtocol(Protocol):
+            """Protocol for token-like objects in authentication.
 
-            token: str
-            user_id: str
-            expires_at: datetime
-            is_revoked: bool
+            Structural typing interface for authentication tokens.
+            Supports both model and token implementations.
+            """
 
+            @property
+            def token(self) -> str:
+                """Token value."""
+                ...
+
+            @property
+            def user_id(self) -> str:
+                """User identifier."""
+                ...
+
+            @property
+            def expires_at(self) -> datetime:
+                """Token expiration time."""
+                ...
+
+            @property
+            def is_revoked(self) -> bool:
+                """Whether token has been revoked."""
+                ...
+
+            @property
             def is_expired(self) -> bool:
                 """Check if token is expired."""
                 ...
@@ -202,7 +222,7 @@ class FlextAuthProtocols(FlextProtocols):
             """Operation success status."""
 
         @runtime_checkable
-        class ServiceProtocol(FlextProtocols.Service, Protocol):
+        class ServiceProtocol(FlextProtocols.Service[object], Protocol):
             """Protocol for authentication service-like objects."""
 
             def register_user(

@@ -16,7 +16,9 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 
 from __future__ import annotations
 
-from flext_core import FlextUtilities as u, r
+from abc import ABC
+
+from flext_core import FlextResult as r, FlextTypes as t, FlextUtilities as u
 
 from flext_auth.models import FlextAuthModels
 
@@ -25,7 +27,7 @@ from flext_auth.providers.rfc import FlextAuthRfcProvider
 from flext_auth.typings import FlextAuthTypes as at
 
 
-class FlextAuthKerberosProvider(FlextAuthRfcProvider):
+class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
     r"""SOLID-compliant Kerberos authentication provider.
 
     Uses composition for Kerberos ticket validation, service ticket handling,
@@ -46,12 +48,13 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
     """
 
-    def __init__(self, config: at.ProviderConfig) -> None:
+    def __init__(self, config: t.JsonDict | None = None) -> None:
         """Initialize Kerberos provider with SOLID delegation.
 
         Uses composition for Kerberos ticket validation, service ticket handling,
         and authentication. Railway-oriented initialization with proper error handling.
         """
+        super().__init__(config)
         # Logger removed - use logging module directly if needed
         self._config = config
 
@@ -69,16 +72,20 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         # Runtime state for ticket management
         self._active_tickets: dict[str, at.KerberosTicketData] = {}
 
-        self.logger.info("Kerberos authentication provider initialized")
-
     def _validate_kerberos_configuration(self) -> r[bool]:
         """Railway-oriented Kerberos configuration validation."""
+        # Guard against None config
+        if self._config is None:
+            return r[bool].fail("Kerberos configuration is required")
+
+        config = self._config  # Local variable for type narrowing
+
         # Validate required fields
         required_fields = ["realm", "kdc", "service_principal"]
         # Use u.filter() for unified filtering (DSL pattern)
         missing_fields = u.filter(
             required_fields,
-            lambda field: field not in self._config,
+            lambda field: field not in config,
         )
 
         if missing_fields:
@@ -124,7 +131,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         ]
 
         for field_name, expected_types, error_msg in validations:
-            field_value = self._config.get(field_name)
+            field_value = config.get(field_name)
             if field_value is not None and not isinstance(field_value, expected_types):
                 return r[bool].fail(f"{error_msg}. Got {type(field_value).__name__}")
 
@@ -205,19 +212,19 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             "capabilities": tuple(self.supports()),
         }
 
-    def validate_token(self, token: str) -> r[FlextAuthModels.Identity]:
+    def validate_token(self, token: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
         """Validate Kerberos token and return user."""
         # Kerberos token validation requires implementation
         # Fast fail: implementation not available
         _ = token  # Mark as intentionally unused
-        return r["FlextAuthModels.Identity"].fail(
+        return r[FlextAuthModels.Auth.AuthIdentity].fail(
             "Kerberos token validation not implemented",
         )
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.Identity,
-        token_type: str = "kerberos_access",
+        user: at.JsonDict,
+        token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
         """Generate Kerberos token for user."""

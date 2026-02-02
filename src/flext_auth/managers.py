@@ -29,29 +29,32 @@ from flext_auth.settings import FlextAuthSettings
 # Runtime aliases defined at module level per FLEXT standards
 
 
-class ServiceManagerMixin:
-    """Common manager initialization mixin for all auth services.
+class ServiceManagers:
+    """Manager composition helper for auth services.
 
-    Eliminates 3x duplication of manager initialization across
-    user_service, token_service, and session_service.
+    Provides centralized manager initialization and access without
+    requiring multiple inheritance. Services use composition pattern
+    instead of mixin inheritance to avoid basedpyright
+    reportUnsafeMultipleInheritance errors.
 
-    This mixin provides the single source of truth for manager setup.
+    Usage:
+        self._managers = ServiceManagers(config, dispatcher)
+        user = self._managers.user_manager.get_user(id)
     """
 
-    def init_managers(
+    __slots__ = ("config", "dispatcher", "rate_limiter", "session_manager", "user_manager")
+
+    def __init__(
         self,
         config: FlextAuthSettings,
         dispatcher: FlextDispatcher,
     ) -> None:
-        """Initialize all standard managers used by services.
-
-        Called by service __init__ methods to set up managers once.
-        """
-        self._config = config
-        self._dispatcher = dispatcher
-        self._user_manager = FlextAuthManagers.FlextAuthUserManager(config)
-        self._session_manager = FlextAuthManagers.FlextAuthSessionManager(config)
-        self._rate_limiter = FlextAuthManagers.FlextAuthRateLimiter(config, dispatcher)
+        """Initialize all standard managers used by services."""
+        self.config = config
+        self.dispatcher = dispatcher
+        self.user_manager = FlextAuthManagers.FlextAuthUserManager(config)
+        self.session_manager = FlextAuthManagers.FlextAuthSessionManager(config)
+        self.rate_limiter = FlextAuthManagers.FlextAuthRateLimiter(config, dispatcher)
 
 
 class FlextAuthManagers:
@@ -77,18 +80,23 @@ class FlextAuthManagers:
         Uses newer FlextSettings features for complete integration.
         """
 
+        # Type annotations for instance variables
+        _config: FlextAuthSettings
+        logger: FlextLogger
+        _context: FlextContext
+        _users: dict[str, dict[str, t.GeneralValueType]]
+
         def __init__(self, config: FlextAuthSettings) -> None:
             """Initialize user manager with configuration."""
             super().__init__()
             self._config = config
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
-            self._users: dict[
-                str,
-                t.JsonDict,
-            ] = {}  # In production, use database (dict for dynamic key access)
+            self._users = {}  # In production, use database (dict for dynamic key access)
 
-        def _find_user_by_id(self, user_id: str) -> r[tuple[str, t.JsonDict]]:
+        def _find_user_by_id(
+            self, user_id: str
+        ) -> r[tuple[str, dict[str, t.GeneralValueType]]]:
             """Find user by ID (either identity_id, unique_id, or id field).
 
             Eliminates duplication across 7 methods.
@@ -99,8 +107,11 @@ class FlextAuthManagers:
                     or user_data.get("unique_id") == user_id
                     or user_data.get("id") == user_id
                 ):
-                    return r[tuple[str, t.JsonDict]].ok((username, user_data))
-            return r[tuple[str, t.JsonDict]].fail("User not found")
+                    return r[tuple[str, dict[str, t.GeneralValueType]]].ok((
+                        username,
+                        user_data,
+                    ))
+            return r[tuple[str, dict[str, t.GeneralValueType]]].fail("User not found")
 
         def _modify_user_list_field(
             self,
@@ -121,7 +132,9 @@ class FlextAuthManagers:
                 )[1],
             )
 
-        def _extract_identity_id(self, storage_data: t.JsonDict) -> str:
+        def _extract_identity_id(
+            self, storage_data: dict[str, t.GeneralValueType]
+        ) -> str:
             """Extract identity ID from storage data with fast fail."""
             for field in ("unique_id", "id", "identity_id"):
                 value = storage_data.get(field)
@@ -132,10 +145,10 @@ class FlextAuthManagers:
 
         def _validate_required_field(
             self,
-            storage_data: t.JsonDict,
+            storage_data: dict[str, t.GeneralValueType],
             field: str,
-            field_type: type[str | bool | list[str]],
-        ) -> str | bool | list[str]:
+            field_type: type[str | bool | list[t.GeneralValueType]],
+        ) -> str | bool | list[t.GeneralValueType]:
             """Validate and extract required field with type checking."""
             value = storage_data.get(field)
             if not isinstance(value, field_type):
@@ -145,8 +158,8 @@ class FlextAuthManagers:
 
         def _create_identity_from_storage(
             self,
-            storage_data: t.JsonDict,
-        ) -> FlextAuthModels.AuthIdentity:
+            storage_data: dict[str, t.GeneralValueType],
+        ) -> FlextAuthModels.Auth.AuthIdentity:
             """Create Identity model from storage data, filtering out non-model fields."""
             identity_id = self._extract_identity_id(storage_data)
             name_value = self._validate_required_field(storage_data, "name", str)
@@ -171,7 +184,7 @@ class FlextAuthManagers:
                 list,
             )
 
-            identity_data: t.JsonDict = {
+            identity_data: dict[str, t.GeneralValueType] = {
                 "unique_id": identity_id,
                 "name": name_value,
                 "contact": contact_value,
@@ -223,11 +236,11 @@ class FlextAuthManagers:
                 k: v for k, v in identity_data.items() if k in valid_identity_fields
             }
 
-            return FlextAuthModels.AuthIdentity(**filtered_identity_data)
+            return FlextAuthModels.Auth.AuthIdentity.model_validate(filtered_identity_data)
 
         def _apply_list_modification(
             self,
-            user_data: t.JsonDict,
+            user_data: dict[str, t.GeneralValueType],
             field: str,
             value: str,
             *,
@@ -331,7 +344,7 @@ class FlextAuthManagers:
 
             # Store full data with timestamps in internal storage
             # Also store id and identity_id for backward compatibility
-            storage_data: t.JsonDict = {
+            storage_data: dict[str, t.GeneralValueType] = {
                 "unique_id": unique_id,
                 "name": name,
                 "contact": contact,
@@ -405,17 +418,12 @@ class FlextAuthManagers:
 
         def delete_user(self, user_id: str) -> r[bool]:
             """Delete user."""
-            return (
-                self
-                ._find_user_by_id(user_id)
-                .map(
-                    lambda ud: (
-                        self._users.__delitem__(ud[0]),
-                        True,
-                    )[1],
-                )
-                .map_error(lambda e: e or "Unknown error")
-            )
+            result = self._find_user_by_id(user_id)
+            if result.is_failure:
+                return r[bool].fail(result.error or "Unknown error")
+            user_key, _ = result.value
+            del self._users[user_key]
+            return r[bool].ok(True)
 
         def add_user_role(self, user_id: str, role: str) -> r[bool]:
             """Add role to user."""
@@ -465,10 +473,12 @@ class FlextAuthManagers:
             self._dispatcher = FlextDispatcher()
             self._sessions: dict[
                 str,
-                t.JsonDict,
+                dict[str, t.GeneralValueType],
             ] = {}  # In production, use Redis/database (dict for dynamic key access)
 
-        def _is_session_active(self, session_data: t.JsonDict) -> bool:
+        def _is_session_active(
+            self, session_data: dict[str, t.GeneralValueType]
+        ) -> bool:
             """Check if session is active and not expired.
 
             Eliminates duplication of expiration check (appeared 2+ times).
@@ -497,7 +507,7 @@ class FlextAuthManagers:
             session_id = str(uuid4())
             expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
 
-            session_data: t.JsonDict = {
+            session_data: dict[str, t.GeneralValueType] = {
                 "id": session_id,
                 "unique_id": session_id,
                 "identity_id": user_id,
@@ -510,17 +520,16 @@ class FlextAuthManagers:
             }
 
             self._sessions[session_id] = session_data
-            # Extract required fields for Session model
-
-            session = FlextAuthModels.Session(
-                identity_id=str(session_data["identity_id"]),
-                session_token=str(session_data["session_token"]),
-                expires_at=session_data["expires_at"],
-                is_active=bool(session_data.get("is_active", True)),
-                ip_address=str(session_data.get("ip_address", "")),
-                user_agent=str(session_data.get("user_agent", "")),
-                last_accessed=session_data.get("last_accessed", datetime.now(UTC)),
-            )
+            # Extract required fields for Session model using model_validate
+            session = FlextAuthModels.Session.model_validate({
+                "identity_id": str(session_data["identity_id"]),
+                "session_token": str(session_data["session_token"]),
+                "expires_at": session_data["expires_at"],
+                "is_active": bool(session_data.get("is_active", True)),
+                "ip_address": str(session_data.get("ip_address", "")),
+                "user_agent": str(session_data.get("user_agent", "")),
+                "last_accessed": session_data.get("last_accessed", datetime.now(UTC)),
+            })
             return r[FlextAuthModels.Session].ok(session)
 
         def get_active_sessions(self, user_id: str) -> r[list[FlextAuthModels.Session]]:
@@ -534,18 +543,18 @@ class FlextAuthManagers:
                     and self._is_session_active(session_data)
                 ):
                     # Extract only fields that Session model accepts
-                    session = FlextAuthModels.Session(
-                        identity_id=str(session_data["identity_id"]),
-                        session_token=str(session_data["session_token"]),
-                        expires_at=session_data["expires_at"],
-                        is_active=bool(session_data.get("is_active", True)),
-                        ip_address=str(session_data.get("ip_address", "")),
-                        user_agent=str(session_data.get("user_agent", "")),
-                        last_accessed=session_data.get(
+                    session = FlextAuthModels.Session.model_validate({
+                        "identity_id": str(session_data["identity_id"]),
+                        "session_token": str(session_data["session_token"]),
+                        "expires_at": session_data["expires_at"],
+                        "is_active": bool(session_data.get("is_active", True)),
+                        "ip_address": str(session_data.get("ip_address", "")),
+                        "user_agent": str(session_data.get("user_agent", "")),
+                        "last_accessed": session_data.get(
                             "last_accessed",
                             datetime.now(UTC),
                         ),
-                    )
+                    })
                     # Set unique_id from session_id
                     session.unique_id = session_id
                     sessions.append(session)
@@ -631,7 +640,9 @@ class FlextAuthManagers:
             self._dispatcher = dispatcher
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
-            self._logs: list[t.JsonDict] = []  # In production, use database
+            self._logs: list[
+                dict[str, t.GeneralValueType]
+            ] = []  # In production, use database
 
         def log_event(
             self,
@@ -798,7 +809,7 @@ class FlextAuthManagers:
             **data: str | int | bool | list[str] | datetime | None,
         ) -> None:
             """Log an audit event."""
-            log_entry: t.JsonDict = {
+            log_entry: dict[str, t.GeneralValueType] = {
                 "id": str(uuid4()),
                 "event_type": event_type,
                 "timestamp": datetime.now(UTC),
@@ -814,10 +825,10 @@ class FlextAuthManagers:
             start_date: datetime | None = None,
             end_date: datetime | None = None,
             limit: int = 100,
-        ) -> r[list[t.JsonDict]]:
+        ) -> r[list[dict[str, t.GeneralValueType]]]:
             """Get audit logs with optional filtering."""
             # Filter logs based on criteria
-            filtered_logs: list[t.JsonDict] = []
+            filtered_logs: list[dict[str, t.GeneralValueType]] = []
 
             for log in self._logs:
                 # Filter by user_id
@@ -862,7 +873,7 @@ class FlextAuthManagers:
                 filtered_logs.append(log)
 
             # Apply limit and return
-            return r[list[t.JsonDict]].ok(filtered_logs[-limit:])
+            return r[list[dict[str, t.GeneralValueType]]].ok(filtered_logs[-limit:])
 
     class FlextAuthRateLimiter:
         """Rate limiting business logic.
@@ -885,7 +896,7 @@ class FlextAuthManagers:
             self._registry = FlextRegistry(dispatcher)
             self._attempts: dict[
                 str,
-                t.JsonDict,
+                dict[str, t.GeneralValueType],
             ] = {}  # username -> attempt data (dict for dynamic key access)
             self._max_attempts = 5
             self._window_minutes = 15

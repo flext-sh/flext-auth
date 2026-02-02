@@ -48,8 +48,8 @@ class FlextAuthProviderService(s[object]):
 
     def __init__(self, *, config: FlextAuthSettings) -> None:
         """Flexible initialization with automatic provider registration."""
-        super().__init__()
-        self._config, self._providers = config, FlextAuthRegistry()
+        super().__init__(config=config)
+        self._providers = FlextAuthRegistry()
         self._register_builtin_providers()
 
     def execute(self) -> r[object]:
@@ -61,7 +61,7 @@ class FlextAuthProviderService(s[object]):
     def _register_builtin_providers(self) -> None:
         """Flexible provider registration with conditional loading."""
         # Fast fail: config is required
-        if not self._config:
+        if not self._config or not isinstance(self._config, FlextAuthSettings):
             self.logger.error("Configuration is required for provider registration")
             return
         provider_config: t.JsonDict = self._config.to_provider_config()
@@ -121,13 +121,13 @@ class FlextAuthProviderService(s[object]):
                 try:
                     # Instantiate provider with config
                     provider = provider_class(provider_config)
-                    self._providers.register(
+                    self._providers.register_provider(
                         name,
                         provider,
                         configuration=provider_config,
                     )
                 except Exception as e:
-                    self.logger.warning("Failed to register %s provider: %s", name, e)
+                    self.logger.warning(f"Failed to register {name} provider: {e}")
 
     # =========================================================================
     # CONSOLIDATED PROVIDER MANAGEMENT
@@ -142,7 +142,7 @@ class FlextAuthProviderService(s[object]):
             r[bool]: True if registered successfully, False if failed, error on failure
 
         """
-        return self._providers.register(name, provider).map(lambda _: True)
+        return self._providers.register_provider(name, provider).map(lambda _: True)
 
     def list_providers(self) -> list[str]:
         """List registered provider names."""
@@ -162,23 +162,25 @@ class FlextAuthProviderService(s[object]):
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.AuthIdentity,
+        user: FlextAuthModels.Auth.AuthIdentity,
         provider: str = "jwt",
         token_type: str = c.Auth.TokenTypes.ACCESS.value,
         expiry_minutes: int | None = None,
     ) -> r[str]:
         """Railway-oriented token generation with direct provider access."""
         return self._providers.get(provider).flat_map(
-            lambda p: p.generate_token_for_user(user, token_type, expiry_minutes),
+            lambda p: p.generate_token_for_user(
+                user.model_dump(), token_type, expiry_minutes
+            ),
         )
 
     def validate_token(
         self,
         token: str,
         provider: str = "jwt",
-    ) -> r[FlextAuthModels.AuthIdentity]:
+    ) -> r[bool]:
         """Railway-oriented token validation with direct provider access."""
-        return self._providers.get(provider).flat_map(lambda p: p.validate_token(token))
+        return self._providers.get(provider).flat_map(lambda p: p.validate(token))
 
 
 __all__ = ["FlextAuthProviderService"]

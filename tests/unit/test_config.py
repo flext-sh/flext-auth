@@ -9,7 +9,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import pytest
-from pydantic import ValidationError
 from pydantic_settings import BaseSettings
 
 from flext_auth import FlextAuthSettings

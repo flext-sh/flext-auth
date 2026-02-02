@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from flext_core import FlextTypes as t, FlextUtilities as u, e, r
 
-from flext_auth.models import FlextAuthModels
+from flext_auth.protocols import FlextAuthProtocols
 
 # Forward references to avoid circular import
 # Use string annotations for all FlextAuthModels references
@@ -33,12 +33,12 @@ class FlextAuthProviderMixin:
 
     def _extract_token_string(
         self,
-        token: str | FlextAuthModels.AuthToken,
+        token: str | FlextAuthProtocols.Auth.TokenProtocol,
     ) -> str:
-        """Extract token string from token or AuthToken object.
+        """Extract token string from token or TokenProtocol object.
 
         Args:
-        token: Token as string or AuthToken object
+        token: Token as string or TokenProtocol object
 
         Returns:
         str: Token string
@@ -50,10 +50,11 @@ class FlextAuthProviderMixin:
         if isinstance(token, str):
             return token
 
-        if isinstance(token, FlextAuthModels.AuthToken):
+        # Structural typing: TokenProtocol requires a 'token' attribute
+        if hasattr(token, 'token'):
             return token.token
 
-        error_msg = f"Invalid token type: expected str or AuthToken, got {type(token)}"
+        error_msg = f"Invalid token type: expected str or TokenProtocol, got {type(token)}"
         raise e.ValidationError(error_msg, field="token", value=str(type(token)))
 
     def supports(self) -> set[str]:

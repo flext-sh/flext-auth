@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import base64
 import json
+from collections.abc import Mapping
 from urllib.parse import urlencode
 
 from flext_api import FlextApiClient, FlextApiModels, FlextApiSettings
@@ -88,16 +89,37 @@ class FlextWebTransportAdapter:
         """
         request_headers = headers if headers is not None else {}
         request_timeout = timeout if timeout is not None else self._timeout
-        return self._execute_request(
-            FlextApiModels.HttpRequest(
-                method=method.upper(),
-                url=url,
-                headers=request_headers,
-                body=self._resolve_body(method, data),
-                query_params=self._resolve_query(method, data, query),
-                timeout=request_timeout,
-            ),
+
+        resolved_body = self._resolve_body(method, data)
+        resolved_query = self._resolve_query(method, data, query)
+
+        # Build request with optional body/query_params
+        request = FlextApiModels.HttpRequest(
+            method=method.upper(),
+            url=url,
+            headers=request_headers,
+            timeout=request_timeout,
         )
+        # Update request with body and query if provided
+        if resolved_body is not None:
+            request = FlextApiModels.HttpRequest(
+                method=request.method,
+                url=request.url,
+                headers=request.headers,
+                body=resolved_body,
+                query_params=resolved_query or {},
+                timeout=request.timeout,
+            )
+        elif resolved_query is not None:
+            request = FlextApiModels.HttpRequest(
+                method=request.method,
+                url=request.url,
+                headers=request.headers,
+                query_params=resolved_query,
+                timeout=request.timeout,
+            )
+
+        return self._execute_request(request)
 
     def get_transport_type(self) -> str:
         """Get the transport type identifier.
@@ -114,7 +136,7 @@ class FlextWebTransportAdapter:
         data: dict[str, t.GeneralValueType],
         auth: tuple[str, str] | None = None,
         headers: dict[str, str] | None = None,
-    ) -> r[dict[str, t.GeneralValueType]]:
+    ) -> r[t_api.Api.ResponseDict]:
         """POST request to OAuth2 token endpoint.
 
         Specialized method for OAuth2/OIDC token requests with proper
@@ -322,9 +344,33 @@ class FlextWebTransportAdapter:
 
     def _normalize_response_dict(
         self,
-        payload: dict[str, t.GeneralValueType],
+        payload: Mapping[str, object],
     ) -> t_api.Api.ResponseDict:
-        return {str(key): value for key, value in payload.items()}
+        # Values from HTTP responses are JSON-compatible (parsed from JSON)
+        # Safe to construct ResponseDict since input comes from json.loads
+        result: dict[str, t.JsonValue] = {}
+        for key, value in payload.items():
+            result[str(key)] = self._to_json_value(value)
+        return result
+
+    def _to_json_value(self, value: object) -> t.JsonValue:
+        """Convert object to JsonValue type (safe for JSON-parsed data)."""
+        if value is None:
+            return None
+        if isinstance(value, str):
+            return value
+        if isinstance(value, bool):  # bool before int (bool is subclass of int)
+            return value
+        if isinstance(value, int):
+            return value
+        if isinstance(value, float):
+            return value
+        if isinstance(value, list):
+            return [self._to_json_value(item) for item in value]
+        if isinstance(value, dict):
+            return {str(k): self._to_json_value(v) for k, v in value.items()}
+        # Fallback for non-JSON types
+        return str(value)
 
     def _resolve_body(
         self,

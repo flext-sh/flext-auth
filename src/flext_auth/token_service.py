@@ -14,10 +14,7 @@ from flext_core import FlextLogger, FlextResult as r, FlextService as s
 from flext_core.dispatcher import FlextDispatcher
 
 from flext_auth.constants import FlextAuthConstants as c
-from flext_auth.managers import (
-    FlextAuthManagers,
-    ServiceManagerMixin,
-)
+from flext_auth.managers import FlextAuthManagers, ServiceManagers
 from flext_auth.models import FlextAuthModels
 
 # Forward reference to avoid circular import
@@ -27,7 +24,7 @@ from flext_auth.providers.jwt import FlextAuthJwtProvider
 from flext_auth.settings import FlextAuthSettings
 
 
-class FlextAuthTokenService(ServiceManagerMixin, s[object]):
+class FlextAuthTokenService(s[object]):
     """Flexible token service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
@@ -43,7 +40,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
     ) -> None:
         """Flexible initialization with dependency injection."""
         super().__init__()
-        self.init_managers(config, dispatcher)
+        self._managers = ServiceManagers(config, dispatcher)
         self._provider_service = provider_service
         # Lazy cache for JWT provider (initialized on first access)
         self._jwt_provider_cache: FlextAuthJwtProvider | None = None
@@ -51,7 +48,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
     @property
     def user_manager(self) -> FlextAuthManagers.FlextAuthUserManager:
         """Direct access to user manager for token operations."""
-        return self._user_manager
+        return self._managers.user_manager
 
     def execute(self) -> r[object]:
         """Railway-oriented execute with focused service pattern."""
@@ -63,7 +60,7 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
     # ADVANCED TOKEN OPERATIONS WITH RAILWAY PATTERNS
     # =========================================================================
 
-    def validate_token(self, token: str) -> r[FlextAuthModels.AuthIdentity]:
+    def validate_token(self, token: str) -> r[bool]:
         """Railway-oriented token validation with audit logging."""
         result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.validate_token(token),
@@ -77,15 +74,11 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
                 reason=error_msg,
             )
             return result
-        identity = result.value
-        FlextLogger(__name__).log_token_validation(
-            success=True,
-            username=identity.username,
-            token_id=self._short_token(token),
-        )
-        return r[FlextAuthModels.AuthIdentity].ok(identity)
+        # Identity extraction not supported by JWT provider
+        # JWT provider only validates, does not return identity
+        return result
 
-    def refresh_token(self, token: str) -> r[FlextAuthModels.AuthToken]:
+    def refresh_token(self, token: str) -> r[FlextAuthModels.Auth.AuthToken]:
         """Railway-oriented token refresh with audit logging."""
         result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.refresh(token),
@@ -99,16 +92,28 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
                 reason=error,
             )
 
-            return r[FlextAuthModels.AuthToken].fail(error or "Token refresh failed")
+            return r[FlextAuthModels.Auth.AuthToken].fail(
+                error or "Token refresh failed"
+            )
 
         refreshed = result.value
-        FlextLogger(__name__).log_token_refresh(
-            success=True,
+        # Type narrowing: ensure we have an AuthToken instance
+        if isinstance(refreshed, FlextAuthModels.Auth.AuthToken):
+            auth_token = refreshed
+        else:
+            # Convert TokenProtocol to AuthToken if needed
+            auth_token = FlextAuthModels.Auth.AuthToken(
+                identity_id=refreshed.user_id,
+                token=refreshed.token,
+                expires_at=refreshed.expires_at,
+                is_revoked=refreshed.is_revoked,
+            )
+        FlextLogger(__name__).debug(
+            "Token refresh successful",
             old_token_id=self._short_token(token),
-            new_token_id=self._short_token(refreshed.token),
-            username=refreshed.identity_id,
+            new_token_id=self._short_token(auth_token.token),
         )
-        return r[FlextAuthModels.AuthToken].ok(refreshed)
+        return r[FlextAuthModels.Auth.AuthToken].ok(auth_token)
 
     def generate_jwt_token(
         self,
@@ -130,9 +135,11 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
             return r[str].fail(error or "User lookup failed")
 
         user = user_result.value
+        # Convert AuthIdentity to JsonDict for provider method
+        user_dict = user.model_dump(exclude={"credential_hash"})
         token_result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.generate_token_for_user(
-                user,
+                user_dict,
                 token_type=token_type,
                 expiry_minutes=expires_in_minutes,
             ),
@@ -150,10 +157,10 @@ class FlextAuthTokenService(ServiceManagerMixin, s[object]):
             return r[str].fail(error or "Token generation failed")
 
         token_value = token_result.value
-        FlextLogger(__name__).log_token_creation(
+        FlextLogger(__name__).debug(
+            "Token creation successful",
             user_id=user_id,
             token_type=token_type,
-            success=True,
         )
         return r[str].ok(token_value)
 

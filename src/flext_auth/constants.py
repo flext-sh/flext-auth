@@ -360,6 +360,30 @@ class FlextAuthConstants(FlextConstants):
             DEFAULT_TOKEN_TYPE: Final[str] = "Bearer"
             """Default token type for Authorization header."""
 
+        class OAuth2:
+            """OAuth2-specific constants for token exchange and flows."""
+
+            SCOPE_DEFAULT: Final[str] = "openid profile email"
+            """Default OAuth2 scope."""
+            FLOWS: Final[AbstractSet[str]] = frozenset([
+                "authorization_code",
+                "client_credentials",
+                "implicit",
+            ])
+            """Supported OAuth2 flows."""
+            FLOW_DEFAULT: Final[str] = "authorization_code"
+            """Default OAuth2 flow."""
+            USE_PKCE_DEFAULT: Final[bool] = True
+            """Whether to use PKCE by default."""
+            TOKEN_ENDPOINT_AUTH_METHODS: Final[AbstractSet[str]] = frozenset([
+                "client_secret_basic",
+                "client_secret_post",
+                "none",
+            ])
+            """Supported token endpoint authentication methods."""
+            TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT: Final[str] = "client_secret_basic"
+            """Default token endpoint authentication method."""
+
         # ═══════════════════════════════════════════════════════════════════
         # CREDENTIALS CONSTANTS: Nested class for credential validation
         # ═══════════════════════════════════════════════════════════════════

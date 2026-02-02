@@ -134,7 +134,7 @@ class FlextAuthUtilities(FlextUtilities):
             """Annotated type factories for Pydantic models."""
 
             @staticmethod
-            def coerced_token_type() -> type:
+            def coerced_token_type() -> object:
                 """Return Annotated[TokenTypes, BeforeValidator(...)] type for Pydantic models.
 
                 Note: Return type is object because Annotated types cannot be properly
@@ -151,7 +151,7 @@ class FlextAuthUtilities(FlextUtilities):
                 ]
 
             @staticmethod
-            def coerced_provider_type() -> type:
+            def coerced_provider_type() -> object:
                 """Return Annotated[ProviderTypes, BeforeValidator(...)] type for Pydantic models.
 
                 Note: Return type is object because Annotated types cannot be properly
@@ -168,7 +168,7 @@ class FlextAuthUtilities(FlextUtilities):
                 ]
 
             @staticmethod
-            def coerced_role_type() -> type:
+            def coerced_role_type() -> object:
                 """Return Annotated[RoleTypes, BeforeValidator(...)] type for Pydantic models.
 
                 Note: Return type is object because Annotated types cannot be properly
@@ -359,7 +359,7 @@ class FlextAuthUtilities(FlextUtilities):
 
         """
         try:
-            token = jwt.encode(payload, secret, algorithm=algorithm)
+            token = jwt.encode(dict(payload), secret, algorithm=algorithm)
             return r[str].ok(token if isinstance(token, str) else token.decode())
         except Exception as e:
             return r[str].fail(f"Encoding failed: {e}")

@@ -213,6 +213,11 @@ class FlextAuthModels(FlextModels):
         class AuthIdentity(FlextModels.Entity):
             """Generic identity/user entity with minimal fields."""
 
+            # Reference to PasswordUtil for use in methods
+            _password_util: type | None = (
+                None  # Will be set to Auth.PasswordUtil at class definition time
+            )
+
             name: str = Field(
                 ...,
                 min_length=c.Auth.Credentials.Username.MIN_LENGTH,
@@ -313,7 +318,7 @@ class FlextAuthModels(FlextModels):
             def verify_credential(self, credential: str) -> r[bool]:
                 """Verify a credential against stored hash using bcrypt."""
                 try:
-                    is_valid = PasswordUtil.verify_password(
+                    is_valid = FlextAuthModels.Auth.PasswordUtil.verify_password(
                         credential,
                         self.credential_hash,
                     )
@@ -324,7 +329,9 @@ class FlextAuthModels(FlextModels):
             def set_credential(self, credential: str) -> r[bool]:
                 """Set a new credential with bcrypt hashing."""
                 try:
-                    self.credential_hash = PasswordUtil.hash_password(credential)
+                    self.credential_hash = (
+                        FlextAuthModels.Auth.PasswordUtil.hash_password(credential)
+                    )
                     return r[bool].ok(True)
                 except Exception as e:
                     return r[bool].fail(f"Failed to hash credential: {e}")

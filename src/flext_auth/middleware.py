@@ -28,6 +28,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import ClassVar
+
 from flext_core import FlextResult as r, FlextService as s
 from flext_core.loggings import FlextLogger
 
@@ -41,6 +43,8 @@ from flext_auth.providers.base import FlextAuthBaseProvider
 # Placeholder types for HTTP requests/responses (to avoid circular dependencies)
 class HttpRequest:
     """Placeholder for HTTP request type."""
+
+    headers: ClassVar[dict[str, str]] = {}
 
 
 class HttpResponse:
@@ -72,7 +76,7 @@ class _MiddlewareControlMixin:
         return self._enabled
 
 
-class FlextAuthMiddleware(s):
+class FlextAuthMiddleware(s[bool]):
     """Authentication middleware adapters following FLEXT standards.
 
     This class provides middleware that adapts FlextAuthBaseProvider implementations
@@ -120,7 +124,7 @@ class FlextAuthMiddleware(s):
             super().__init__()
             self._provider = provider
             self.logger = FlextLogger(f"flext_auth.middleware.http.{provider_name}")
-            self._current_token: FlextAuthModels.AuthToken | None = None
+            self._current_token: FlextAuthModels.Auth.AuthToken | None = None
 
         def process_request(
             self,
@@ -146,19 +150,23 @@ class FlextAuthMiddleware(s):
                         token_result.error or "Authentication failed",
                     )
 
-            # Add authorization header
+            # Add authorization header (if headers is writable)
             if hasattr(request, "headers"):
-                headers = getattr(request, "headers", {})
-                if isinstance(headers, dict):
-                    headers["Authorization"] = f"Bearer {self._current_token}"
-                    request.headers = headers
+                try:
+                    headers = getattr(request, "headers", {})
+                    if isinstance(headers, dict):
+                        headers["Authorization"] = f"Bearer {self._current_token}"
+                        setattr(request, "headers", headers)
+                except (AttributeError, TypeError):
+                    # Headers might be read-only, skip if not writable
+                    pass
 
             return r[HttpRequest].ok(request)
 
-        def _authenticate_or_refresh(self) -> r[FlextAuthModels.AuthToken]:
+        def _authenticate_or_refresh(self) -> r[FlextAuthModels.Auth.AuthToken]:
             """Authenticate using credentials or refresh existing token."""
-            if self._is_token_still_valid():
-                return r[FlextAuthModels.AuthToken].ok(self._current_token)
+            if self._is_token_still_valid() and self._current_token is not None:
+                return r[FlextAuthModels.Auth.AuthToken].ok(self._current_token)
 
             return self._refresh_or_reauthenticate()
 
@@ -166,11 +174,13 @@ class FlextAuthMiddleware(s):
             """Check if current token is still valid."""
             return self._current_token is not None
 
-        def _refresh_or_reauthenticate(self) -> r[FlextAuthModels.AuthToken]:
+        def _refresh_or_reauthenticate(self) -> r[FlextAuthModels.Auth.AuthToken]:
             """Refresh token or re-authenticate if refresh fails."""
             # For now, just mark as needing new authentication
             # In production, implement token refresh logic
-            return r[FlextAuthModels.AuthToken].fail("Token refresh not implemented")
+            return r[FlextAuthModels.Auth.AuthToken].fail(
+                "Token refresh not implemented"
+            )
 
 
 __all__ = ["FlextAuthMiddleware"]

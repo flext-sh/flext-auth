@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from abc import ABC
 
-from flext_core import r
+from flext_core import FlextTypes as t, r
 
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
@@ -36,9 +36,9 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
 
     """
 
-    def __init__(self) -> None:
-        """Initialize RFC provider base class."""
-        super().__init__()
+    def __init__(self, config: t.JsonDict | None = None) -> None:
+        """Initialize RFC provider base class with optional configuration."""
+        super().__init__(config)
 
     def validate_rfc_compliance(self, operation: str) -> r[bool]:
         """Validate that an operation follows RFC standards.

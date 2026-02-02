@@ -15,7 +15,7 @@ import time
 from datetime import UTC, datetime
 
 import pytest
-from flext_core import FlextTypes as t, FlextResult
+from flext_core import FlextResult, FlextTypes as t
 from pydantic import SecretStr
 
 from flext_auth.api import FlextAuth
@@ -23,14 +23,13 @@ from flext_auth.constants import FlextAuthConstants
 from flext_auth.models import FlextAuthModels
 from flext_auth.settings import FlextAuthSettings
 
-
-
 # Import aliases following order: c -> t -> p -> r -> m -> u
 # Runtime aliases defined at module level per FLEXT standards
 c = FlextConstants
 t = FlextMeltanoTypes if 'FlextMeltanoTypes' in globals() else None
 p = FlextMeltanoProtocols if 'FlextMeltanoProtocols' in globals() else None
 r = FlextResult
+
 
 class TestFlextAuthServiceInitialization:
     """Test FlextAuth service initialization."""

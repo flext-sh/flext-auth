@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from flext_core import FlextTypes as t, r
 
-from flext_auth.models import FlextAuthModels
+from flext_auth.protocols import FlextAuthProtocols
 
 # Forward reference to avoid circular import
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -43,25 +43,25 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
 
     def authenticate(
         self,
-        credentials: dict[str, t.GeneralValueType],
-    ) -> r[FlextAuthModels.AuthToken]:
+        credentials: t.JsonDict,
+    ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Authenticate using SAML 2.0 assertion.
 
         Args:
             credentials: SAML assertion data (assertion, signature, etc.)
 
         Returns:
-            r[FlextAuthModels.AuthToken]: Authentication token on success
+            r[FlextAuthModels.Auth.AuthToken]: Authentication token on success
 
         Business Rule: Validates SAML assertion and extracts identity information.
 
         """
         _ = credentials  # Placeholder for SAML 2.0 authentication implementation
-        return r["FlextAuthModels.AuthToken"].fail(
+        return r[FlextAuthProtocols.Auth.TokenProtocol].fail(
             "SAML provider not yet fully implemented",
         )
 
-    def validate(self, token: str) -> r[bool]:
+    def validate(self, token: str | FlextAuthProtocols.Auth.TokenProtocol) -> r[bool]:
         """Validate SAML assertion token.
 
         Args:
