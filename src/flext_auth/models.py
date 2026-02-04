@@ -410,11 +410,57 @@ class FlextAuthModels(FlextModels):
         type: str = Field(..., description="Provider type")
         enabled: bool = Field(default=True, description="Enabled status")
 
+        # Extended configuration fields (migrated from TypedDict)
+        # All optional to support various provider types
+        provider_type: str | None = None
+        secret_key: str | None = None
+        algorithm: str | None = None
+        token_expiry_minutes: int | None = None
+        refresh_expiry_days: int | None = None
+        client_id: str | None = None
+        client_secret: str | None = None
+        authorization_endpoint: str | None = None
+        token_endpoint: str | None = None
+        redirect_uri: str | None = None
+        scope: str | None = None
+        audience: str | None = None
+        issuer: str | None = None
+        realm: str | None = None
+        kdc_host: str | None = None
+        kdc_port: int | None = None
+        service_principal: str | None = None
+        keytab_path: str | None = None
+        entity_id: str | None = None
+        sso_url: str | None = None
+        slo_url: str | None = None
+        x509_cert: str | None = None
+        ldap_url: str | None = None
+        bind_dn: str | None = None
+        base_dn: str | None = None
+        search_filter: str | None = None
+        flow: str | None = None
+        use_pkce: bool | None = None
+        token_endpoint_auth_method: str | None = None
+
         @computed_field
         @property
         def is_configured(self) -> bool:
             """Check if configured."""
             return bool(self.name and self.type)
+
+        def get(
+            self, key: str, default: t.GeneralValueType = None
+        ) -> t.GeneralValueType:
+            """Dict-like get method for backward compatibility."""
+            return getattr(self, key, default)
+
+        def __contains__(self, key: str) -> bool:
+            """Dict-like containment check."""
+            return hasattr(self, key)
+
+        def __getitem__(self, key: str) -> t.GeneralValueType:
+            """Dict-like access."""
+            return getattr(self, key)
 
     class ProviderConfiguration(UserDict[str, t.GeneralValueType]):
         """Provider configuration for authentication providers."""

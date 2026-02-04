@@ -42,7 +42,13 @@ class ServiceManagers:
         user = self._managers.user_manager.get_user(id)
     """
 
-    __slots__ = ("config", "dispatcher", "rate_limiter", "session_manager", "user_manager")
+    __slots__ = (
+        "config",
+        "dispatcher",
+        "rate_limiter",
+        "session_manager",
+        "user_manager",
+    )
 
     def __init__(
         self,
@@ -236,7 +242,9 @@ class FlextAuthManagers:
                 k: v for k, v in identity_data.items() if k in valid_identity_fields
             }
 
-            return FlextAuthModels.Auth.AuthIdentity.model_validate(filtered_identity_data)
+            return FlextAuthModels.Auth.AuthIdentity.model_validate(
+                filtered_identity_data
+            )
 
         def _apply_list_modification(
             self,

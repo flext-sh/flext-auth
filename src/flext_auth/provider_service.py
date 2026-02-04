@@ -46,9 +46,11 @@ class FlextAuthProviderService(s[object]):
     Flexible composition with dependency injection and error handling.
     """
 
-    def __init__(self, *, config: FlextAuthSettings) -> None:
+    def __init__(self, *, config: FlextAuthSettings | None = None) -> None:
         """Flexible initialization with automatic provider registration."""
-        super().__init__(config=config)
+        super().__init__()
+        if config is not None:
+            self._config = config
         self._providers = FlextAuthRegistry()
         self._register_builtin_providers()
 

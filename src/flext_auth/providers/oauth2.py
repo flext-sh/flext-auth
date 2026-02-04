@@ -463,8 +463,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             identity_id=user_id_str,
             token=access_token_str,
             token_type="Bearer",
-            expires_at=datetime.now(UTC)
-            + timedelta(hours=1),  # Default 1 hour expiry
+            expires_at=datetime.now(UTC) + timedelta(hours=1),  # Default 1 hour expiry
         )
         return r[FlextAuthProtocols.Auth.TokenProtocol].ok(token)
 
@@ -489,11 +488,13 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 )
             # Convert dict to AuthToken with explicit protocol typing
             token_data = token_result.value
-            refreshed: FlextAuthProtocols.Auth.TokenProtocol = FlextAuthModels.Auth.AuthToken(
-                identity_id=token.identity_id,
-                token=token_data.get("access_token", ""),
-                token_type=token_data.get("token_type", "Bearer"),
-                expires_at=token.expires_at,  # Keep original expiry for now
+            refreshed: FlextAuthProtocols.Auth.TokenProtocol = (
+                FlextAuthModels.Auth.AuthToken(
+                    identity_id=token.identity_id,
+                    token=token_data.get("access_token", ""),
+                    token_type=token_data.get("token_type", "Bearer"),
+                    expires_at=token.expires_at,  # Keep original expiry for now
+                )
             )
             return r[FlextAuthProtocols.Auth.TokenProtocol].ok(refreshed)
         return r[FlextAuthProtocols.Auth.TokenProtocol].fail(

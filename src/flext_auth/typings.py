@@ -1,57 +1,42 @@
-"""Domain-specific authentication type definitions aligned with flext-core guidance."""
+"""FLEXT Auth Types - Type definitions and aliases.
+
+Uses Pydantic models from flext_auth.models for consolidated type definitions.
+Maintains backward compatibility where possible while enforcing new patterns.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Annotated, Literal, TypedDict
+from typing import Annotated, Literal
 
 from flext_core import FlextTypes
-from pydantic import Field, SecretStr
+from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
-from flext_auth.constants import FlextAuthConstants as c
+from flext_auth.constants import c
+from flext_auth.models import FlextAuthModels as m
+
+# Import aliases following order: c -> t -> p -> r -> m -> u
+# Runtime aliases defined at module level per FLEXT standards
 
 
 class FlextAuthTypes(FlextTypes):
     """Authentication-specific type definitions extending t with composition."""
 
     # =========================================================================
-    # CORE AUTH TYPES - Using dict for pydantic compatibility
+    # CORE AUTH TYPES - Mapped to Pydantic Models
     # =========================================================================
 
-    class UserDict(TypedDict, total=False):
-        """User dictionary structure."""
+    # Core configs mapped to Pydantic models
+    ProviderConfig = m.ProviderConfig
 
-        id: str
-        username: str
-        email: str
-        full_name: str
-        is_active: bool
-        roles: list[str]
-        permissions: list[str]
-        created_at: datetime
-        updated_at: datetime
-        last_login: datetime
-
-    class SessionDict(TypedDict, total=False):
-        """Session dictionary structure for backward compatibility."""
-
-        id: str
-        user_id: str
-        session_token: str
-        expires_at: datetime
-        created_at: datetime
-        last_accessed_at: datetime
-        is_active: bool
-
-    class AuthenticationResponseDict(TypedDict, total=False):
-        """Authentication response dictionary structure for backward compatibility."""
-
-        user: FlextAuthTypes.Managers.UserData
-        session: FlextAuthTypes.Managers.SessionData
-        jwt_token: str
-        authenticated: bool
-        success: bool
-        tokens: FlextAuthTypes.Tokens.ClaimMap
+    # Legacy TypedDicts mapped to Pydantic Models where compatible
+    # NOTE: These are now Pydantic models. Code instantiating them as dicts
+    # must be updated to instantiate the model.
+    UserDict = m.Auth.AuthIdentity
+    SessionDict = m.Session
+    AuthenticationResponseDict = m.AuthResponse
 
     # =========================================================================
     # AUTHENTICATION DOMAIN TYPE CLASSES
@@ -118,70 +103,50 @@ class FlextAuthTypes(FlextTypes):
 
         type ProjectType = Literal["flext-auth", "flext-core", "flext-api"]
 
-        class AuthProjectConfig(TypedDict, total=False):
+        class AuthProjectConfig(BaseModel):
             """Project configuration structure."""
 
-    class ProviderConfig(TypedDict, total=False):
-        """Provider configuration dictionary structure."""
+            model_config = ConfigDict(frozen=False, extra="forbid")
 
-        provider_type: str
-        secret_key: str
-        algorithm: str
-        token_expiry_minutes: int
-        refresh_expiry_days: int
-        client_id: str
-        client_secret: str
-        authorization_url: str
-        token_url: str
-        redirect_uri: str
-        scope: str
-        audience: str
-        issuer: str
-        realm: str
-        kdc_host: str
-        kdc_port: int
-        service_principal: str
-        keytab_path: str
-        entity_id: str
-        sso_url: str
-        slo_url: str
-        x509_cert: str
-        ldap_url: str
-        bind_dn: str
-        base_dn: str
-        search_filter: str
+    # Note: ProviderConfig is now aliased to m.ProviderConfig above
 
-    class OAuth2TokenResponse(TypedDict, total=False):
+    class OAuth2TokenResponse(BaseModel):
         """OAuth2 token response structure."""
 
-        access_token: str
-        token_type: str
-        expires_in: int
-        refresh_token: str
-        scope: str
-        id_token: str
+        model_config = ConfigDict(frozen=False, extra="forbid")
 
-    class KerberosTicketData(TypedDict, total=False):
+        access_token: str = Field(default="")
+        token_type: str = Field(default="")
+        expires_in: int = Field(default=0)
+        refresh_token: str = Field(default="")
+        scope: str = Field(default="")
+        id_token: str = Field(default="")
+
+    class KerberosTicketData(BaseModel):
         """Kerberos ticket data structure."""
 
-        ticket: str
-        session_key: str
-        principal: str
-        realm: str
-        start_time: datetime
-        end_time: datetime
-        renew_till: datetime
-        flags: list[str]
+        model_config = ConfigDict(frozen=False, extra="forbid")
 
-    class HttpResponseData(TypedDict, total=False):
+        ticket: str = Field(default="")
+        session_key: str = Field(default="")
+        principal: str = Field(default="")
+        realm: str = Field(default="")
+        start_time: str = Field(default="")
+        end_time: str = Field(default="")
+        renew_till: str = Field(default="")
+        flags: list[str] = Field(default_factory=list)
+
+    class HttpResponseData(BaseModel):
         """HTTP response data structure."""
 
-        status_code: int
-        headers: dict[str, str]
-        body: str
-        json: t.JsonDict
-        error: str
-        success: bool
+        model_config = ConfigDict(frozen=False, extra="forbid")
+
+        status_code: int = Field(default=0)
+        headers: dict[str, str] = Field(default_factory=dict)
+        body: str = Field(default="")
+        json_data: FlextTypes.JsonDict = Field(default_factory=dict)
+        error: str = Field(default="")
+        success: bool = Field(default=False)
 
     class Providers:
         """Provider-oriented type definitions."""
@@ -209,26 +174,30 @@ class FlextAuthTypes(FlextTypes):
             Field(min_length=1, description="Declared capabilities"),
         ]
 
-        class Metadata(TypedDict, total=False):
+        class Metadata(BaseModel):
             """Provider metadata contract returned by providers."""
 
-            name: FlextAuthTypes.Providers.Key
-            version: str
-            capabilities: tuple[FlextAuthTypes.Providers.Capability, ...]
-            description: str
-            documentation_url: str
-            maintainers: tuple[str, ...]
-            extras: t.JsonDict
+            model_config = ConfigDict(frozen=False, extra="forbid")
 
-        class Registration(TypedDict, total=False):
+            name: str = Field(default="")
+            version: str = Field(default="")
+            capabilities: tuple[str, ...] = Field(default_factory=tuple)
+            description: str = Field(default="")
+            documentation_url: str = Field(default="")
+            maintainers: tuple[str, ...] = Field(default_factory=tuple)
+            extras: FlextTypes.JsonDict = Field(default_factory=dict)
+
+        class Registration(BaseModel):
             """Payload used when registering providers in registries."""
 
-            key: FlextAuthTypes.Providers.Key
-            provider: (
-                object  # Provider instance - typed as object to avoid circular import
-            )
-            metadata: FlextAuthTypes.Providers.Metadata
-            configuration: t.JsonDict
+            model_config = ConfigDict(frozen=False, extra="forbid")
+
+            key: str = Field(default="")
+            provider: object = Field(
+                default=None
+            )  # Provider instance - typed as object to avoid circular import
+            metadata: dict = Field(default_factory=dict)
+            configuration: FlextTypes.JsonDict = Field(default_factory=dict)
 
     class Credentials:
         """Credential payload type definitions."""
@@ -258,53 +227,61 @@ class FlextAuthTypes(FlextTypes):
             ),
         ]
 
-        class Basic(TypedDict, total=False):
+        class Basic(BaseModel):
             """Standard username/password credentials payload."""
 
-            username: FlextAuthTypes.Credentials.Username
-            password: FlextAuthTypes.Credentials.Secret
-            remember_me: bool
-            metadata: t.JsonDict
+            model_config = ConfigDict(frozen=False, extra="forbid")
 
-        class MultiFactor(TypedDict, total=False):
+            username: str = Field(default="")
+            password: str = Field(default="")
+            remember_me: bool = Field(default=False)
+            metadata: FlextTypes.JsonDict = Field(default_factory=dict)
+
+        class MultiFactor(BaseModel):
             """Extended credential payload supporting MFA."""
 
-            username: FlextAuthTypes.Credentials.Username
-            password: FlextAuthTypes.Credentials.Secret
-            factors: tuple[str, ...]
-            otp: str
-            metadata: t.JsonDict
+            model_config = ConfigDict(frozen=False, extra="forbid")
+
+            username: str = Field(default="")
+            password: str = Field(default="")
+            factors: tuple[str, ...] = Field(default_factory=tuple)
+            otp: str = Field(default="")
+            metadata: FlextTypes.JsonDict = Field(default_factory=dict)
 
     class Tokens:
         """Token-related type definitions."""
 
         # AuthToken type defined in models.py
         type TokenType = c.Auth.TokenTypes
-        type ClaimMap = t.JsonDict
+        type ClaimMap = FlextTypes.JsonDict
 
-        class Claims(TypedDict, total=False):
+        class Claims(BaseModel):
             """Normalized token claims representation."""
 
-            subject: str
-            issuer: str
-            audience: tuple[str, ...]
-            scopes: tuple[str, ...]
-            session_id: str
-            issued_at: datetime
-            expires_at: datetime
-            metadata: t.JsonDict
+            model_config = ConfigDict(frozen=False, extra="forbid")
 
-        class Introspection(TypedDict, total=False):
+            subject: str = Field(default="")
+            issuer: str = Field(default="")
+            audience: tuple[str, ...] = Field(default_factory=tuple)
+            scopes: tuple[str, ...] = Field(default_factory=tuple)
+            session_id: str = Field(default="")
+            issued_at: str = Field(default="")
+            expires_at: str = Field(default="")
+            metadata: FlextTypes.JsonDict = Field(default_factory=dict)
+
+        class Introspection(BaseModel):
             """Token introspection response payload."""
 
-            active: bool
-            token_type: FlextAuthTypes.Tokens.TokenType
-            subject: str
-            client_id: str
-            expires_at: datetime
-            issued_at: datetime
-            scope: tuple[str, ...]
-            metadata: t.JsonDict
+            model_config = ConfigDict(frozen=False, extra="forbid")
+
+            active: bool = Field(default=False)
+            token_type: str = Field(default="")
+            subject: str = Field(default="")
+            client_id: str = Field(default="")
+            expires_at: str = Field(default="")
+            issued_at: str = Field(default="")
+            scope: tuple[str, ...] = Field(default_factory=tuple)
+            metadata: FlextTypes.JsonDict = Field(default_factory=dict)
 
     class Sessions:
         """Session-related type definitions."""
@@ -313,103 +290,127 @@ class FlextAuthTypes(FlextTypes):
 
         # Snapshot definitions removed to avoid circular imports
 
-        class Activity(TypedDict, total=False):
+        class Activity(BaseModel):
             """Session activity entry."""
 
-            session_id: str
-            occurred_at: datetime
-            event: str
-            context: t.JsonDict
+            model_config = ConfigDict(frozen=False, extra="forbid")
+
+            session_id: str = Field(default="")
+            occurred_at: str = Field(default="")
+            event: str = Field(default="")
+            context: FlextTypes.JsonDict = Field(default_factory=dict)
 
     class Responses:
         """Response payload abstractions."""
 
         # Authentication response type - defined locally to avoid circular imports
-        class Authentication(TypedDict, total=False):
+        class Authentication(BaseModel):
             """Authentication response structure."""
 
-            success: bool
-            identity: t.JsonDict  # Will be Identity from models
-            token: t.JsonDict  # Will be AuthToken from models
-            session: t.JsonDict  # Will be Session from models
-            message: str
-            metadata: t.JsonDict
+            model_config = ConfigDict(frozen=False, extra="forbid")
 
-        class AuthenticationPayload(TypedDict, total=False):
+            success: bool = Field(default=False)
+            identity: FlextTypes.JsonDict = Field(
+                default_factory=dict
+            )  # Will be Identity from models
+            token: FlextTypes.JsonDict = Field(
+                default_factory=dict
+            )  # Will be AuthToken from models
+            session: FlextTypes.JsonDict = Field(
+                default_factory=dict
+            )  # Will be Session from models
+            message: str = Field(default="")
+            metadata: FlextTypes.JsonDict = Field(default_factory=dict)
+
+        class AuthenticationPayload(BaseModel):
             """Structured authentication response for transports."""
 
-            success: bool
+            model_config = ConfigDict(frozen=False, extra="forbid")
+
+            success: bool = Field(default=False)
             # identity, session, token types defined in models.py
-            issued_at: datetime
-            expires_at: datetime
-            metadata: t.JsonDict
+            issued_at: str = Field(default="")
+            expires_at: str = Field(default="")
+            metadata: FlextTypes.JsonDict = Field(default_factory=dict)
 
     class Managers:
         """Manager-specific supporting types."""
 
-        class UserData(TypedDict, total=False):
+        class UserData(BaseModel):
             """User data structure for storage."""
 
-            unique_id: str
-            id: str
-            identity_id: str
-            name: str
-            contact: str
-            credential_hash: str
-            full_name: str | None
-            is_active: bool
-            roles: list[str]
-            permissions: list[str]
-            failed_attempts: int
-            locked_until: datetime | None
-            last_access: datetime | None
+            model_config = ConfigDict(frozen=False, extra="forbid")
 
-        class SessionData(TypedDict, total=False):
+            unique_id: str = Field(default="")
+            id: str = Field(default="")
+            identity_id: str = Field(default="")
+            name: str = Field(default="")
+            contact: str = Field(default="")
+            credential_hash: str = Field(default="")
+            full_name: str | None = Field(default=None)
+            is_active: bool = Field(default=True)
+            roles: list[str] = Field(default_factory=list)
+            permissions: list[str] = Field(default_factory=list)
+            failed_attempts: int = Field(default=0)
+            locked_until: str | None = Field(default=None)
+            last_access: str | None = Field(default=None)
+
+        class SessionData(BaseModel):
             """Session data structure for storage."""
 
-            id: str
-            unique_id: str
-            identity_id: str
-            session_token: str
-            expires_at: datetime
-            is_active: bool
-            ip_address: str | None
-            user_agent: str | None
-            last_accessed: datetime
+            model_config = ConfigDict(frozen=False, extra="forbid")
 
-        class LogEntry(TypedDict, total=False):
+            id: str = Field(default="")
+            unique_id: str = Field(default="")
+            identity_id: str = Field(default="")
+            session_token: str = Field(default="")
+            expires_at: str = Field(default="")
+            is_active: bool = Field(default=True)
+            ip_address: str | None = Field(default=None)
+            user_agent: str | None = Field(default=None)
+            last_accessed: str = Field(default="")
+
+        class LogEntry(BaseModel):
             """Structured log entry for audit logging."""
 
-            event: str
-            occurred_at: datetime
-            # actor type defined in models.py
-            context: t.JsonDict
-            event_type: str
-            timestamp: datetime
-            metadata: t.JsonDict
+            model_config = ConfigDict(frozen=False, extra="forbid")
 
-        class AuditEntry(TypedDict, total=False):
+            event: str = Field(default="")
+            occurred_at: str = Field(default="")
+            # actor type defined in models.py
+            context: FlextTypes.JsonDict = Field(default_factory=dict)
+            event_type: str = Field(default="")
+            timestamp: str = Field(default="")
+            metadata: FlextTypes.JsonDict = Field(default_factory=dict)
+
+        class AuditEntry(BaseModel):
             """Structured audit log entry."""
 
-            event: str
-            occurred_at: datetime
-            # actor type defined in models.py
-            context: t.JsonDict
+            model_config = ConfigDict(frozen=False, extra="forbid")
 
-        class AttemptData(TypedDict, total=False):
+            event: str = Field(default="")
+            occurred_at: str = Field(default="")
+            # actor type defined in models.py
+            context: FlextTypes.JsonDict = Field(default_factory=dict)
+
+        class AttemptData(BaseModel):
             """Failed attempt data structure."""
 
-            identity_id: str
-            attempts: list[datetime]
-            locked_until: datetime | None
-            last_attempt: datetime | None
+            model_config = ConfigDict(frozen=False, extra="forbid")
 
-        class AttemptWindow(TypedDict, total=False):
+            identity_id: str = Field(default="")
+            attempts: list[str] = Field(default_factory=list)
+            locked_until: str | None = Field(default=None)
+            last_attempt: str | None = Field(default=None)
+
+        class AttemptWindow(BaseModel):
             """Failed attempt tracking window."""
 
-            identity_id: str
-            attempts: tuple[datetime, ...]
-            locked_until: datetime | None
+            model_config = ConfigDict(frozen=False, extra="forbid")
+
+            identity_id: str = Field(default="")
+            attempts: tuple[str, ...] = Field(default_factory=tuple)
+            locked_until: str | None = Field(default=None)
 
     class Domain:
         """Domain-level literals and shortcuts."""
@@ -498,5 +499,6 @@ class FlextAuthTypes(FlextTypes):
 
 
 t = FlextAuthTypes  # Runtime alias (not TypeAlias to avoid PYI042)
+at = FlextAuthTypes
 
-__all__ = ["FlextAuthTypes", "t"]
+__all__ = ["FlextAuthTypes", "at", "t"]

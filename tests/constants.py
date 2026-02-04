@@ -97,24 +97,21 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
         TEST_DELETE_PERMISSION: Final[str] = "delete"
         TEST_ADMIN_PERMISSION: Final[str] = "REDACTED_LDAP_BIND_PASSWORD"
 
-    class Literals:
-        """Literal type aliases for test constants (Python 3.13 pattern).
+    class TestLiterals:
+        """Literal type aliases for test constants."""
 
-        These type aliases reuse production Literals from FlextAuthConstants
-        to ensure consistency between tests and production code.
-        """
-
-        # Reuse production Literals for consistency (Python 3.13+ best practices)
-        # Token type literal (reusing production type)
-        TokenTypeLiteral: TypeAlias = FlextAuthConstants.Auth.TokenTypeLiteral
-
-        # Provider type literal (reusing production type)
-        ProviderTypeLiteral: TypeAlias = FlextAuthConstants.Auth.ProviderTypeLiteral
-
-        # Role type literal (using RoleType StrEnum values as Literal)
+        TokenTypeLiteral: TypeAlias = Literal["access", "refresh", "api", "bearer"]
+        ProviderTypeLiteral: TypeAlias = Literal[
+            "basic",
+            "jwt",
+            "oauth2",
+            "saml",
+            "ldap",
+            "certificate",
+            "kerberos",
+            "apikey",
+        ]
         RoleTypeLiteral: TypeAlias = Literal["REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"]
-
-        # Permission type literal (using PermissionType StrEnum values as Literal)
         PermissionTypeLiteral: TypeAlias = Literal["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"]
 
 

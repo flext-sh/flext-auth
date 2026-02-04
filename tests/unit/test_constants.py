@@ -9,12 +9,7 @@ from flext_core import FlextConstants
 
 from flext_auth.constants import FlextAuthConstants
 
-# Import aliases following order: c -> t -> p -> r -> m -> u
-# Runtime aliases defined at module level per FLEXT standards
-c = FlextConstants
-t = FlextMeltanoTypes if 'FlextMeltanoTypes' in globals() else None
-p = FlextMeltanoProtocols if 'FlextMeltanoProtocols' in globals() else None
-r = FlextResult
+c = FlextAuthConstants
 
 
 class TestFlextAuthConstants:

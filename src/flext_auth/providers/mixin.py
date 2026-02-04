@@ -51,10 +51,12 @@ class FlextAuthProviderMixin:
             return token
 
         # Structural typing: TokenProtocol requires a 'token' attribute
-        if hasattr(token, 'token'):
+        if hasattr(token, "token"):
             return token.token
 
-        error_msg = f"Invalid token type: expected str or TokenProtocol, got {type(token)}"
+        error_msg = (
+            f"Invalid token type: expected str or TokenProtocol, got {type(token)}"
+        )
         raise e.ValidationError(error_msg, field="token", value=str(type(token)))
 
     def supports(self) -> set[str]:
