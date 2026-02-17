@@ -6,6 +6,8 @@
 
 **FLEXT-Auth** is a generic, extensible authentication and authorization library for the FLEXT ecosystem. It utilizes a multi-provider architecture to support various authentication methods—from standard JWTs to enterprise SSO solutions like SAML and OAuth2—all while maintaining a unified, type-safe API.
 
+Part of the [FLEXT](https://github.com/flext/flext) ecosystem.
+
 ## 🚀 Key Features
 
 - **Multi-Provider Support**: A plugin-based architecture for diverse authentication strategies (JWT, OAuth2, OIDC, SAML, API Keys).
