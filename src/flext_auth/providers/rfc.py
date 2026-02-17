@@ -36,7 +36,7 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
 
     """
 
-    def __init__(self, config: t.JsonDict | None = None) -> None:
+    def __init__(self, config: dict[str, t.JsonValue] | None = None) -> None:
         """Initialize RFC provider base class with optional configuration."""
         super().__init__(config)
 

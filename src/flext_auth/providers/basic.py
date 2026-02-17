@@ -21,13 +21,13 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider):
     Provides username/password authentication using HTTP Basic Auth (RFC 7617).
     """
 
-    def __init__(self, config: t.JsonDict | None = None) -> None:
+    def __init__(self, config: dict[str, t.JsonValue] | None = None) -> None:
         """Initialize provider with configuration."""
         super().__init__(config)
 
     def authenticate(
         self,
-        credentials: t.JsonDict,
+        credentials: dict[str, t.JsonValue],
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using HTTP Basic credentials."""
         _ = credentials

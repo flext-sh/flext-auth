@@ -63,15 +63,18 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         self._pkce_manager = self._OAuth2PKCEManager()
 
         # Optional configuration with defaults
-        self._redirect_uri = self._config.get("redirect_uri")
-        if self._redirect_uri is not None and not isinstance(self._redirect_uri, str):
+        redirect_uri_value = self._config.get("redirect_uri")
+        if redirect_uri_value is not None and not isinstance(redirect_uri_value, str):
             error_msg = "OAuth2 provider 'redirect_uri' must be a string or None"
             raise e.ValidationError(
                 error_msg,
                 field="redirect_uri",
                 expected_type="str",
-                actual_type=str(type(self._redirect_uri)),
+                actual_type=str(type(redirect_uri_value)),
             )
+        self._redirect_uri: str | None = (
+            redirect_uri_value if isinstance(redirect_uri_value, str) else None
+        )
 
         # Initialize configuration using helper methods
         self._scope = self._init_scope()
@@ -229,11 +232,13 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def get_client_id(self) -> str | None:
         """Get client ID from configuration."""
-        return self._config.get("client_id")
+        value = self._config.get("client_id")
+        return value if isinstance(value, str) else None
 
     def get_scope(self) -> str | None:
         """Get scope from configuration."""
-        return self._config.get("scope")
+        value = self._config.get("scope")
+        return value if isinstance(value, str) else None
 
     def should_use_pkce(self) -> bool:
         """Check if PKCE should be used."""
@@ -307,11 +312,11 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         def handle_authorization_code_flow(
             self,
-            _credentials: t.JsonDict,
-        ) -> r[t.JsonDict]:
+            _credentials: dict[str, t.JsonValue],
+        ) -> r[dict[str, t.JsonValue]]:
             """Handle OAuth2 authorization code flow."""
             # Simplified implementation - would validate authorization code
-            return r[t.JsonDict].ok({
+            return r[dict[str, t.JsonValue]].ok({
                 "user_id": "oauth2_user",
                 "valid": True,
             })
@@ -347,12 +352,12 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             if not isinstance(scope_value, str):
                 return r[at.OAuth2TokenResponse].fail("OAuth2 scope must be a string")
             scope = scope_value
-            token_response: at.OAuth2TokenResponse = {
-                "access_token": f"access_token_{secrets.token_hex(16)}",
-                "token_type": "Bearer",
-                "expires_in": 3600,
-                "scope": scope,
-            }
+            token_response = at.OAuth2TokenResponse(
+                access_token=f"access_token_{secrets.token_hex(16)}",
+                token_type="Bearer",
+                expires_in=3600,
+                scope=scope,
+            )
 
             if code_verifier:
                 # In a real implementation, this would verify the PKCE challenge
@@ -362,11 +367,11 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         def get_client_credentials_token(self) -> r[at.OAuth2TokenResponse]:
             """Get access token using client credentials flow."""
-            token_response: at.OAuth2TokenResponse = {
-                "access_token": f"access_token_{secrets.token_hex(16)}",
-                "token_type": "Bearer",
-                "expires_in": 3600,
-            }
+            token_response = at.OAuth2TokenResponse(
+                access_token=f"access_token_{secrets.token_hex(16)}",
+                token_type="Bearer",
+                expires_in=3600,
+            )
 
             return r[at.OAuth2TokenResponse].ok(token_response)
 
@@ -377,12 +382,12 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             """Refresh access token using refresh token."""
             # refresh_token parameter reserved for future OAuth2 implementation
             _ = refresh_token  # Mark as intentionally unused for now
-            token_response: at.OAuth2TokenResponse = {
-                "access_token": f"access_token_{secrets.token_hex(16)}",
-                "token_type": "Bearer",
-                "expires_in": 3600,
-                "refresh_token": f"refresh_token_{secrets.token_hex(16)}",
-            }
+            token_response = at.OAuth2TokenResponse(
+                access_token=f"access_token_{secrets.token_hex(16)}",
+                token_type="Bearer",
+                expires_in=3600,
+                refresh_token=f"refresh_token_{secrets.token_hex(16)}",
+            )
 
             return r[at.OAuth2TokenResponse].ok(token_response)
 
@@ -443,7 +448,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def authenticate(
         self,
-        credentials: t.JsonDict,
+        credentials: dict[str, t.JsonValue],
     ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Authenticate using OAuth2 flows with delegation."""
         flow_result = self._flow_manager.handle_authorization_code_flow(credentials)
@@ -491,8 +496,8 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             refreshed: FlextAuthProtocols.Auth.TokenProtocol = (
                 FlextAuthModels.Auth.AuthToken(
                     identity_id=token.identity_id,
-                    token=token_data.get("access_token", ""),
-                    token_type=token_data.get("token_type", "Bearer"),
+                    token=token_data.access_token,
+                    token_type=token_data.token_type or "Bearer",
                     expires_at=token.expires_at,  # Keep original expiry for now
                 )
             )
@@ -512,15 +517,15 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def get_metadata(self) -> at.Providers.Metadata:
         """Get OAuth2 provider metadata using composition."""
-        return {
-            "name": "oauth2",
-            "version": "1.0.0",
-            "capabilities": tuple(self.supports()),
-            "extras": {
+        return at.Providers.Metadata(
+            name="oauth2",
+            version="1.0.0",
+            capabilities=tuple(self.supports()),
+            extras={
                 "flows": [c.Auth.OAuth2.FLOW_DEFAULT, "client_credentials"],
                 "pkce_supported": self._use_pkce,
             },
-        }
+        )
 
     def validate_token(self, token: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
         """Validate OAuth2 token and return user."""
@@ -533,7 +538,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def generate_token_for_user(
         self,
-        user: t.JsonDict,
+        user: dict[str, t.JsonValue],
         token_type: str = "oauth2_access",
         expiry_minutes: int | None = None,
     ) -> r[str]:

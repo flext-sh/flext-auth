@@ -21,14 +21,14 @@ class FlextAuthRegistry(FlextRegistry):
 
     PROVIDERS: ClassVar[str] = "auth_providers"
 
-    _configs: dict[str, t.JsonDict] = PrivateAttr(default_factory=dict)
+    _configs: dict[str, dict[str, t.JsonValue]] = PrivateAttr(default_factory=dict)
     _metadata: dict[str, at.Providers.Metadata] = PrivateAttr(default_factory=dict)
     _providers: dict[str, FlextAuthBaseProvider] = PrivateAttr(default_factory=dict)
 
     def __init__(self) -> None:
         """Initialize with FlextRegistry infrastructure."""
         super().__init__(dispatcher=None)
-        self._configs: dict[str, t.JsonDict] = {}
+        self._configs: dict[str, dict[str, t.JsonValue]] = {}
         self._metadata: dict[str, at.Providers.Metadata] = {}
         self._providers: dict[str, FlextAuthBaseProvider] = {}
 
@@ -39,7 +39,7 @@ class FlextAuthRegistry(FlextRegistry):
         name: str,
         provider: FlextAuthBaseProvider,
         metadata: at.Providers.Metadata | None = None,
-        configuration: t.JsonDict | None = None,
+        configuration: dict[str, t.JsonValue] | None = None,
     ) -> r[bool]:
         """Register auth provider with optional config and metadata."""
         if name in self._providers:
@@ -76,14 +76,14 @@ class FlextAuthRegistry(FlextRegistry):
 
     # Auth-specific operations
 
-    def get_config(self, name: str) -> r[t.JsonDict]:
+    def get_config(self, name: str) -> r[dict[str, t.JsonValue]]:
         """Get provider configuration."""
         if not self.has_provider(name):
-            return r[t.JsonDict].fail(f"Provider '{name}' not registered")
+            return r[dict[str, t.JsonValue]].fail(f"Provider '{name}' not registered")
         config = self._configs.get(name)
-        return r[t.JsonDict].ok(config) if config else r[t.JsonDict].fail("No config")
+        return r[dict[str, t.JsonValue]].ok(config) if config else r[dict[str, t.JsonValue]].fail("No config")
 
-    def update_config(self, name: str, config: t.JsonDict) -> r[bool]:
+    def update_config(self, name: str, config: dict[str, t.JsonValue]) -> r[bool]:
         """Update provider configuration."""
         if not self.has_provider(name):
             return r[bool].fail(f"Provider '{name}' not registered")
@@ -94,7 +94,11 @@ class FlextAuthRegistry(FlextRegistry):
         """Get provider metadata."""
         if not self.has_provider(name):
             return r[at.Providers.Metadata].fail(f"Provider '{name}' not registered")
-        return r[at.Providers.Metadata].ok(self._metadata.get(name, {}))
+        metadata = self._metadata.get(
+            name,
+            at.Providers.Metadata(name=name, capabilities=()),
+        )
+        return r[at.Providers.Metadata].ok(metadata)
 
     def get_capabilities(self, name: str) -> r[set[str]]:
         """Get provider capabilities."""
@@ -139,19 +143,19 @@ class FlextAuthRegistry(FlextRegistry):
         except (AttributeError, TypeError):
             caps = ()
 
-        base: at.Providers.Metadata = {"name": name, "capabilities": caps}
+        base = at.Providers.Metadata(name=name, capabilities=caps)
 
         if provided:
-            return {**base, **provided}
+            return provided
 
         get_metadata_fn = getattr(service, "get_metadata", None)
         if callable(get_metadata_fn):
             try:
                 raw = get_metadata_fn()
+                if isinstance(raw, at.Providers.Metadata):
+                    return raw
                 if isinstance(raw, dict):
-                    # Type narrowing: raw is now dict[str, ...] for unpacking
-                    base.update(raw)
-                    return base
+                    return at.Providers.Metadata.model_validate(raw)
             except (AttributeError, TypeError, ValueError):
                 return base
 

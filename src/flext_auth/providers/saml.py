@@ -43,7 +43,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
 
     def authenticate(
         self,
-        credentials: t.JsonDict,
+        credentials: dict[str, t.JsonValue],
     ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Authenticate using SAML 2.0 assertion.
 

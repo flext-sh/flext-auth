@@ -28,7 +28,7 @@ class FlextAuthBaseProvider(ABC):
     OAuth2, SAML, etc.).
     """
 
-    def __init__(self, config: t.JsonDict | None = None) -> None:
+    def __init__(self, config: dict[str, t.JsonValue] | None = None) -> None:
         """Initialize provider with optional configuration.
 
         Args:
@@ -38,14 +38,14 @@ class FlextAuthBaseProvider(ABC):
         self._provider_config = config
 
     @property
-    def config(self) -> t.JsonDict | None:
+    def config(self) -> dict[str, t.JsonValue] | None:
         """Get provider configuration."""
         return self._provider_config
 
     @abstractmethod
     def authenticate(
         self,
-        credentials: t.JsonDict,
+        credentials: dict[str, t.JsonValue],
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate user with provided credentials.
 
@@ -81,7 +81,7 @@ class FlextAuthBaseProvider(ABC):
 
     def generate_token_for_user(
         self,
-        user: t.JsonDict,
+        user: dict[str, t.JsonValue],
         token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:

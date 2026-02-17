@@ -34,7 +34,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
 
     def authenticate(
         self,
-        credentials: t.JsonDict,
+        credentials: dict[str, t.JsonValue],
     ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Authenticate using LDAP credentials.
 

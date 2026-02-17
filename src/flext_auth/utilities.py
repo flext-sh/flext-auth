@@ -311,7 +311,7 @@ class FlextAuthUtilities(FlextUtilities):
                 token: str | None = None,
                 user_id: str | None = None,
                 expires_at: datetime | None = None,
-            ) -> t.JsonDict:
+            ) -> dict[str, t.JsonValue]:
                 """Build a successful authentication response."""
                 response = {
                     "success": True,
@@ -332,7 +332,7 @@ class FlextAuthUtilities(FlextUtilities):
             def build_auth_error_response(
                 error: str,
                 error_code: str = "AUTH_ERROR",
-            ) -> t.JsonDict:
+            ) -> dict[str, t.JsonValue]:
                 """Build an authentication error response."""
                 return {
                     "success": False,

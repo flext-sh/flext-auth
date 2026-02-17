@@ -48,7 +48,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
 
     """
 
-    def __init__(self, config: t.JsonDict | None = None) -> None:
+    def __init__(self, config: dict[str, t.JsonValue] | None = None) -> None:
         """Initialize Kerberos provider with SOLID delegation.
 
         Uses composition for Kerberos ticket validation, service ticket handling,
@@ -155,10 +155,10 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
             """Validate Kerberos ticket."""
             # Simplified implementation - in production would use proper Kerberos validation
             # ticket_data parameter reserved for future Kerberos ticket validation
-            result: at.KerberosTicketData = {
-                "ticket": "validated_ticket",
-                "principal": "kerberos_user",
-            }
+            result = at.KerberosTicketData(
+                ticket="validated_ticket",
+                principal="kerberos_user",
+            )
             return r[at.KerberosTicketData].ok(result)
 
     class _KerberosServiceHandler:
@@ -175,10 +175,10 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
         def handle_service_ticket(self, ticket: str) -> r[at.KerberosTicketData]:
             """Handle Kerberos service ticket."""
             # Simplified implementation - in production would handle proper service tickets
-            result: at.KerberosTicketData = {
-                "ticket": ticket,
-                "principal": "service_principal",
-            }
+            result = at.KerberosTicketData(
+                ticket=ticket,
+                principal="service_principal",
+            )
             return r[at.KerberosTicketData].ok(result)
 
     class _KerberosAuthManager:
@@ -206,11 +206,11 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
 
     def get_metadata(self) -> at.Providers.Metadata:
         """Get Kerberos provider metadata."""
-        return {
-            "name": "kerberos",
-            "version": "5",
-            "capabilities": tuple(self.supports()),
-        }
+        return at.Providers.Metadata(
+            name="kerberos",
+            version="5",
+            capabilities=tuple(self.supports()),
+        )
 
     def validate_token(self, token: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
         """Validate Kerberos token and return user."""
@@ -223,7 +223,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
 
     def generate_token_for_user(
         self,
-        user: at.JsonDict,
+        user: adict[str, t.JsonValue],
         token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:

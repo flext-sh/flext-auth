@@ -287,13 +287,13 @@ class FlextAuthSettings(FlextSettings):
         except Exception as e:
             return r.fail(f"Failed to create config: {e}")
 
-    def to_provider_config(self) -> t.JsonDict:
+    def to_provider_config(self) -> dict[str, t.JsonValue]:
         """Convert config to provider configuration dict.
 
         Returns provider configuration without using model_dump().
         Directly accesses config properties to build the dict.
         """
-        config_dict: t.JsonDict = {
+        config_dict: dict[str, t.JsonValue] = {
             "algorithm": self.algorithm,
             "expiry_minutes": self.expiry_minutes,
             "issuer": self.issuer,

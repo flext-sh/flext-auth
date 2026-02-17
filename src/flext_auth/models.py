@@ -83,9 +83,9 @@ class FlextAuthModels(FlextModels):
             """Generic validation result for any operation (immutable value object)."""
 
             is_valid: bool = Field(..., description="Validation outcome")
-            data: t.JsonDict = Field(default_factory=dict, description="Result data")
+            data: dict[str, t.JsonValue] = Field(default_factory=dict, description="Result data")
             error: str = Field(default="", description="Error message")
-            metadata: t.JsonDict = Field(
+            metadata: dict[str, t.JsonValue] = Field(
                 default_factory=dict,
                 description="Additional metadata",
             )
@@ -134,7 +134,7 @@ class FlextAuthModels(FlextModels):
                 ge=1,
                 description="Token expiry",
             )
-            extra_claims: t.JsonDict = Field(
+            extra_claims: dict[str, t.JsonValue] = Field(
                 default_factory=dict,
                 description="Additional claims",
             )
@@ -467,7 +467,7 @@ class FlextAuthModels(FlextModels):
 
         def __init__(
             self,
-            dict_: t.JsonDict | None = None,
+            dict_: dict[str, t.JsonValue] | None = None,
             /,
             **kwargs: t.GeneralValueType,
         ) -> None:
@@ -488,7 +488,7 @@ class FlextAuthModels(FlextModels):
         """API key validation request (immutable value object)."""
 
         api_key: str = Field(..., description="API key to validate")
-        metadata: t.JsonDict = Field(
+        metadata: dict[str, t.JsonValue] = Field(
             default_factory=dict,
             description="Additional validation data",
         )
@@ -517,7 +517,7 @@ class FlextAuthModels(FlextModels):
 
         username: str = Field(..., description="Username")
         password: str = Field(..., description="Password", exclude=True)
-        metadata: t.JsonDict = Field(
+        metadata: dict[str, t.JsonValue] = Field(
             default_factory=dict,
             description="Additional validation data",
         )
@@ -531,7 +531,7 @@ class FlextAuthModels(FlextModels):
 
         credential_type: str = Field(..., description="Credential type")
         value: str = Field(..., description="Credential value", exclude=True)
-        metadata: t.JsonDict = Field(
+        metadata: dict[str, t.JsonValue] = Field(
             default_factory=dict,
             description="Additional data",
         )
@@ -544,13 +544,13 @@ class FlextAuthModels(FlextModels):
         """Generic authentication response (immutable value object)."""
 
         success: bool = Field(..., description="Authentication success")
-        identity: t.JsonDict = Field(
+        identity: dict[str, t.JsonValue] = Field(
             default_factory=dict,
             description="Identity data",
         )
         token: str = Field(default="", description="Token", exclude=True)
         message: str = Field(default="", description="Response message")
-        metadata: t.JsonDict = Field(
+        metadata: dict[str, t.JsonValue] = Field(
             default_factory=dict,
             description="Additional data",
         )

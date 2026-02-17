@@ -66,7 +66,7 @@ class FlextAuthProviderService(s[object]):
         if not self._config or not isinstance(self._config, FlextAuthSettings):
             self.logger.error("Configuration is required for provider registration")
             return
-        provider_config: t.JsonDict = self._config.to_provider_config()
+        provider_config: dict[str, t.JsonValue] = self._config.to_provider_config()
         # Provider registration mapping with requirements
         providers: list[
             tuple[

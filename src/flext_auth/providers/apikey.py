@@ -22,13 +22,13 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
     Provides API key-based authentication with token validation.
     """
 
-    def __init__(self, config: t.JsonDict | None = None) -> None:
+    def __init__(self, config: dict[str, t.JsonValue] | None = None) -> None:
         """Initialize provider with configuration."""
         super().__init__(config)
 
     def authenticate(
         self,
-        credentials: t.JsonDict,
+        credentials: dict[str, t.JsonValue],
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using API key credentials."""
         _ = credentials
