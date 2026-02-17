@@ -218,7 +218,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             if field_value is not None and not isinstance(field_value, expected_types):
                 return r[bool].fail(f"{error_msg}. Got {type(field_value).__name__}")
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def get_authorization_endpoint(self) -> str | None:
         """Get authorization endpoint from configuration."""
@@ -478,7 +478,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     ) -> r[bool]:
         """Validate OAuth2 token using composition."""
         self._extract_token_string(token)
-        return r[bool].ok(True)  # Simplified implementation
+        return r[bool].ok(value=True)  # Simplified implementation
 
     def refresh(
         self,
@@ -513,7 +513,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         """Revoke OAuth2 token."""
         # token parameter reserved for future OAuth2 token revocation
         _ = _token  # Mark as intentionally unused for now
-        return r[bool].ok(True)  # Simplified implementation
+        return r[bool].ok(value=True)  # Simplified implementation
 
     def get_metadata(self) -> at.Providers.Metadata:
         """Get OAuth2 provider metadata using composition."""

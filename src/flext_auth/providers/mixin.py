@@ -92,7 +92,7 @@ class FlextAuthProviderMixin:
             error_msg = f"Missing required fields: {', '.join(missing_fields)}"
             return r[bool].fail(error_msg)
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _validate_token_string(self, token: str) -> r[bool]:
         """Validate token string format.
@@ -110,7 +110,7 @@ class FlextAuthProviderMixin:
         if len(token.strip()) == 0:
             return r[bool].fail("Token cannot be empty or whitespace only")
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _check_capability_supported(
         self,
@@ -136,7 +136,7 @@ class FlextAuthProviderMixin:
                 f"Supported capabilities: {', '.join(sorted(self.supports()))}",
             )
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def _get_capability_metadata(self) -> dict[str, t.GeneralValueType]:
         """Get metadata about provider capabilities.

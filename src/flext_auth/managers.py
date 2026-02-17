@@ -431,7 +431,7 @@ class FlextAuthManagers:
                 return r[bool].fail(result.error or "Unknown error")
             user_key, _ = result.value
             del self._users[user_key]
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         def add_user_role(self, user_id: str, role: str) -> r[bool]:
             """Add role to user."""
@@ -578,14 +578,14 @@ class FlextAuthManagers:
                     found = True
 
             if found:
-                return r[bool].ok(True)
+                return r[bool].ok(value=True)
             return r[bool].fail("No sessions found for user")
 
         def end_session_by_id(self, session_id: str) -> r[bool]:
             """End a specific session."""
             if session_id in self._sessions:
                 self._sessions[session_id]["is_active"] = False
-                return r[bool].ok(True)
+                return r[bool].ok(value=True)
 
             return r[bool].fail("Session not found")
 
@@ -937,7 +937,7 @@ class FlextAuthManagers:
             now = datetime.now(UTC)
 
             if username not in self._attempts:
-                return r[bool].ok(True)
+                return r[bool].ok(value=True)
 
             # Filter attempts within the window
             recent_attempts = self._cleanup_window(username, now)
@@ -950,7 +950,7 @@ class FlextAuthManagers:
             if len(recent_attempts) >= self._max_attempts:
                 return r[bool].fail("Too many failed attempts. Please try again later.")
 
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
 
         def record_failed_attempt(self, username: str) -> None:
             """Record a failed authentication attempt."""

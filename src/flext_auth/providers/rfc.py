@@ -55,7 +55,7 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
         """
         # Base implementation - subclasses should override for specific RFCs
         _ = operation  # Mark as intentionally unused in base implementation
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.

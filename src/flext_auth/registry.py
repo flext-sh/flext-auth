@@ -48,7 +48,7 @@ class FlextAuthRegistry(FlextRegistry):
         if configuration:
             self._configs[name] = configuration
         self._metadata[name] = self._build_metadata(name, provider, metadata)
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def unregister(self, name: str) -> r[bool]:
         """Unregister provider and cleanup auth-specific data."""
@@ -57,7 +57,7 @@ class FlextAuthRegistry(FlextRegistry):
         del self._providers[name]
         self._configs.pop(name, None)
         self._metadata.pop(name, None)
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def get(self, name: str) -> r[FlextAuthBaseProvider]:
         """Get provider by name."""
@@ -92,7 +92,7 @@ class FlextAuthRegistry(FlextRegistry):
         if not self.has_provider(name):
             return r[bool].fail(f"Provider '{name}' not registered")
         self._configs[name] = config
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     def get_metadata(self, name: str) -> r[at.Providers.Metadata]:
         """Get provider metadata."""

@@ -98,7 +98,7 @@ Transform flext-auth from a specific JWT/bcrypt authentication implementation in
 │  ├── authenticate(credentials) -> FlextResult[Token]         │
 │  ├── validate(token) -> FlextResult[bool]                    │
 │  ├── refresh(token) -> FlextResult[Token]                    │
-│  ├── revoke(token) -> FlextResult[None]                      │
+│  ├── revoke(token) -> FlextResult[bool]                      │
 │  └── supports() -> set[str]                                  │
 ├─────────────────────────────────────────────────────────────┤
 │  Concrete Providers:                                         │
@@ -202,9 +202,9 @@ class FlextAuthRegistry:
         name: str,
         provider: FlextAuthBaseProvider,
         config: dict[str, object] | None = None
-    ) -> FlextResult[None]
+    ) -> FlextResult[bool]
 
-    def unregister(self, name: str) -> FlextResult[None]
+    def unregister(self, name: str) -> FlextResult[bool]
 
     def get(self, name: str) -> FlextResult[FlextAuthBaseProvider]
 
@@ -218,7 +218,7 @@ class FlextAuthRegistry:
         self,
         name: str,
         config: dict
-    ) -> FlextResult[None]
+    ) -> FlextResult[bool]
 ```
 
 ### 3. Base Provider Protocol (`providers/base.py`)
@@ -253,7 +253,7 @@ class FlextAuthBaseProvider(Protocol):
     def revoke(
         self,
         token: str | AuthToken
-    ) -> FlextResult[None]:
+    ) -> FlextResult[bool]:
         """Revoke authentication token."""
         ...
 
@@ -446,7 +446,7 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
     def revoke(
         self,
         token: str | FlextAuthModels.AuthToken
-    ) -> FlextResult[None]:
+    ) -> FlextResult[bool]:
         """Revoke token if provider supports it."""
         # Implementation
         ...
@@ -899,7 +899,7 @@ class CredentialManager:
         identifier: str,
         credential: dict,
         metadata: dict[str, object] | None = None
-    ) -> FlextResult[None]:
+    ) -> FlextResult[bool]:
         """Store credential with encryption."""
         encrypted = self._cipher.encrypt(credential)
         return self._storage.save(identifier, encrypted, metadata)
@@ -921,7 +921,7 @@ class CredentialManager:
         self,
         identifier: str,
         new_credential: dict
-    ) -> FlextResult[None]:
+    ) -> FlextResult[bool]:
         """Rotate credential with old credential backup."""
         # Archive old credential
         old_result = self.retrieve_credential(identifier)

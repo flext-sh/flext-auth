@@ -251,7 +251,7 @@ class FlextAuthSettings(FlextSettings):
             if self.expiry_minutes > self.session_expiry_minutes:
                 return r[bool].fail("JWT expiry should not exceed session expiry")
 
-            return r[bool].ok(True)
+            return r[bool].ok(value=True)
         except ValueError as e:
             return r[bool].fail(str(e))
         except Exception as e:

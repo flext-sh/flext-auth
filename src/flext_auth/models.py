@@ -334,7 +334,7 @@ class FlextAuthModels(FlextModels):
                     self.credential_hash = (
                         FlextAuthModels.Auth.PasswordUtil.hash_password(credential)
                     )
-                    return r[bool].ok(True)
+                    return r[bool].ok(value=True)
                 except Exception as e:
                     return r[bool].fail(f"Failed to hash credential: {e}")
 

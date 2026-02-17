@@ -136,7 +136,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
             if field_value is not None and not isinstance(field_value, expected_types):
                 return r[bool].fail(f"{error_msg}. Got {type(field_value).__name__}")
 
-        return r[bool].ok(True)
+        return r[bool].ok(value=True)
 
     class _KerberosTicketValidator:
         """SOLID-compliant Kerberos ticket validator.
