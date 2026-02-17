@@ -79,7 +79,9 @@ class DocumentationAuditor:
 
         return active_docs
 
-    def analyze_content_quality(self, docs_files: list[Path]) -> dict[str, t.GeneralValueType]:
+    def analyze_content_quality(
+        self, docs_files: list[Path]
+    ) -> dict[str, t.GeneralValueType]:
         """Analyze content quality metrics."""
         quality_analysis = {
             "file_metrics": [],
@@ -136,7 +138,9 @@ class DocumentationAuditor:
 
         return quality_analysis
 
-    def _analyze_single_file(self, file_path: Path, content: str) -> dict[str, t.GeneralValueType]:
+    def _analyze_single_file(
+        self, file_path: Path, content: str
+    ) -> dict[str, t.GeneralValueType]:
         """Analyze a single documentation file."""
         lines = content.split("\n")
         word_count = len(re.findall(r"\b\w+\b", content))
@@ -213,7 +217,9 @@ class DocumentationAuditor:
             else "needs_attention",
         }
 
-    def _check_completeness(self, content: str, filename: str) -> dict[str, t.GeneralValueType]:
+    def _check_completeness(
+        self, content: str, filename: str
+    ) -> dict[str, t.GeneralValueType]:
         """Check documentation completeness."""
         checks = {
             "has_frontmatter": bool(re.search(r"^---\s*$", content, re.MULTILINE)),
@@ -254,7 +260,9 @@ class DocumentationAuditor:
 
         return checks
 
-    async def validate_links(self, docs_files: list[Path]) -> dict[str, t.GeneralValueType]:
+    async def validate_links(
+        self, docs_files: list[Path]
+    ) -> dict[str, t.GeneralValueType]:
         """Validate all links in documentation."""
         link_validation = {
             "internal_links": [],
@@ -428,7 +436,9 @@ class DocumentationAuditor:
         except Exception:
             return False
 
-    def check_style_consistency(self, docs_files: list[Path]) -> dict[str, t.GeneralValueType]:
+    def check_style_consistency(
+        self, docs_files: list[Path]
+    ) -> dict[str, t.GeneralValueType]:
         """Check style consistency across documentation."""
         style_issues = {
             "inconsistent_headers": [],

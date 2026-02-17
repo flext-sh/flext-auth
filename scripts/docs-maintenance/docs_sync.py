@@ -359,7 +359,9 @@ class QualityAssuranceReporter:
             ),
         }
 
-    def _calculate_audit_score(self, audit_results: dict[str, t.GeneralValueType]) -> int:
+    def _calculate_audit_score(
+        self, audit_results: dict[str, t.GeneralValueType]
+    ) -> int:
         """Calculate audit quality score."""
         total_issues = audit_results.get("issue_summary", {}).get("total_issues", 0)
         high_severity = audit_results.get("issue_summary", {}).get("high_severity", 0)

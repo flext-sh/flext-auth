@@ -10,9 +10,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-cli": {
       "level": 2,
@@ -22,9 +20,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-observability": {
       "level": 2,
@@ -34,9 +30,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-grpc": {
       "level": 2,
@@ -46,9 +40,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-web": {
       "level": 2,
@@ -58,9 +50,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-api": {
       "level": 2,
@@ -70,9 +60,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-auth": {
       "level": 2,
@@ -82,9 +70,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-meltano": {
       "level": 3,
@@ -94,9 +80,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-ldif": {
       "level": 3,
@@ -106,9 +90,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-ldap": {
       "level": 3,
@@ -118,9 +100,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-db-oracle": {
       "level": 3,
@@ -130,9 +110,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-oracle-wms": {
       "level": 3,
@@ -142,9 +120,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-oracle-oic": {
       "level": 3,
@@ -154,9 +130,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-tap-oracle": {
       "level": 4,
@@ -166,9 +140,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-tap-ldap": {
       "level": 4,
@@ -178,9 +150,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-tap-ldif": {
       "level": 4,
@@ -190,9 +160,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-tap-oracle-wms": {
       "level": 4,
@@ -202,9 +170,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-tap-oracle-oic": {
       "level": 4,
@@ -214,9 +180,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-target-oracle": {
       "level": 4,
@@ -226,9 +190,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-target-ldap": {
       "level": 4,
@@ -238,9 +200,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-target-ldif": {
       "level": 4,
@@ -250,9 +210,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-target-oracle-wms": {
       "level": 4,
@@ -262,9 +220,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-target-oracle-oic": {
       "level": 4,
@@ -274,9 +230,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-dbt-oracle": {
       "level": 4,
@@ -286,9 +240,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-dbt-ldap": {
       "level": 4,
@@ -298,9 +250,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-dbt-ldif": {
       "level": 4,
@@ -310,9 +260,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-dbt-oracle-wms": {
       "level": 4,
@@ -322,9 +270,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "flext-plugin": {
       "level": 4,
@@ -334,9 +280,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "client-a-oud-mig": {
       "level": 6,
@@ -346,9 +290,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     },
     "client-b-meltano-native": {
       "level": 6,
@@ -358,9 +300,7 @@
       "mypy_status": "SKIP",
       "test_status": "SKIP",
       "poetry_install": "SKIP",
-      "errors": [
-        "Project not found"
-      ]
+      "errors": ["Project not found"]
     }
   },
   "architecture_violations": {},

@@ -572,7 +572,9 @@ class ContentOptimizer:
             "detailed_suggestions": audit_results["suggestions_by_file"],
         }
 
-    def _generate_recommendations(self, audit_results: dict[str, t.GeneralValueType]) -> list[str]:
+    def _generate_recommendations(
+        self, audit_results: dict[str, t.GeneralValueType]
+    ) -> list[str]:
         """Generate actionable recommendations."""
         recommendations = []
 
