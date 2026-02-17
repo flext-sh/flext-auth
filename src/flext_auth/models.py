@@ -83,7 +83,9 @@ class FlextAuthModels(FlextModels):
             """Generic validation result for any operation (immutable value object)."""
 
             is_valid: bool = Field(..., description="Validation outcome")
-            data: dict[str, t.JsonValue] = Field(default_factory=dict, description="Result data")
+            data: dict[str, t.JsonValue] = Field(
+                default_factory=dict, description="Result data"
+            )
             error: str = Field(default="", description="Error message")
             metadata: dict[str, t.JsonValue] = Field(
                 default_factory=dict,

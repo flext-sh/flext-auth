@@ -81,7 +81,11 @@ class FlextAuthRegistry(FlextRegistry):
         if not self.has_provider(name):
             return r[dict[str, t.JsonValue]].fail(f"Provider '{name}' not registered")
         config = self._configs.get(name)
-        return r[dict[str, t.JsonValue]].ok(config) if config else r[dict[str, t.JsonValue]].fail("No config")
+        return (
+            r[dict[str, t.JsonValue]].ok(config)
+            if config
+            else r[dict[str, t.JsonValue]].fail("No config")
+        )
 
     def update_config(self, name: str, config: dict[str, t.JsonValue]) -> r[bool]:
         """Update provider configuration."""

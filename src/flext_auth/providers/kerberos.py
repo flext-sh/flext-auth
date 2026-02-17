@@ -19,6 +19,7 @@ from __future__ import annotations
 from abc import ABC
 
 from flext_core import FlextResult as r, FlextTypes as t, FlextUtilities as u
+from flext_core.models import m
 
 from flext_auth.models import FlextAuthModels
 
@@ -223,7 +224,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
 
     def generate_token_for_user(
         self,
-        user: adict[str, t.JsonValue],
+        user: m.ConfigMap[str, t.JsonValue],
         token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
