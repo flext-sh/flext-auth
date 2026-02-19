@@ -8,12 +8,11 @@ from __future__ import annotations
 
 from typing import ClassVar
 
+from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth.typings import FlextAuthTypes as at
 from flext_core import FlextResult as r, FlextTypes as t
 from flext_core.registry import FlextRegistry
 from pydantic import PrivateAttr
-
-from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_auth.typings import FlextAuthTypes as at
 
 
 class FlextAuthRegistry(FlextRegistry):

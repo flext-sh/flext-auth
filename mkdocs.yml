@@ -1,132 +1,34 @@
 site_name: FLEXT Auth Documentation
-site_description: Enterprise Authentication Library for the FLEXT Data Integration Ecosystem
-site_author: FLEXT Team
+site_description: Authentication library docs
 site_url: https://github.com/flext-sh/flext
-
-# Repository information
 repo_name: flext-sh/flext
 repo_url: https://github.com/flext-sh/flext
 edit_uri: edit/main/flext-auth/docs/
+docs_dir: docs
+site_dir: .reports/docs/site
 
-# Copyright
-copyright: Copyright &copy; 2025 FLEXT Team
-
-# Configuration
 theme:
   name: material
-  palette:
-    # Light mode
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: blue
-      accent: blue
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    # Dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: blue
-      accent: blue
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
-  features:
-    - navigation.tracking
-    - navigation.tabs
-    - navigation.sections
-    - navigation.expand
-    - navigation.top
-    - search.highlight
-    - search.share
-    - content.code.copy
-    - content.code.annotate
 
-# Extensions
+plugins: []
+
 markdown_extensions:
   - admonition
-  - pymdownx.details
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
-  - pymdownx.tabbed:
-      alternate_style: true
-  - pymdownx.highlight:
-      anchor_linenums: true
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
   - attr_list
-  - md_in_html
   - tables
   - toc:
       permalink: true
 
-# Plugins
-plugins:
-  - search
-  - awesome-pages
-
-# Navigation
 nav:
-  - Home: index.md
-  - Current Status:
-      - TODO & Issues: TODO.md
-      - Roadmap: roadmap.md
-  - Getting Started:
-      - Installation: getting-started/installation.md
-      - Quick Start: getting-started/quickstart.md
-      - Configuration: getting-started/configuration.md
-  - Architecture:
-      - Overview: architecture/overview.md
-      - Clean Architecture: architecture/clean-architecture.md
-      - Domain Modeling: architecture/domain-modeling.md
-      - Integration Points: architecture/integration.md
-  - API Reference:
-      - Core API: api/core.md
-      - Domain Models: api/domain.md
-      - Services: api/services.md
-      - Utilities: api/utilities.md
-  - Integration:
-      - FLEXT Ecosystem: integration/ecosystem.md
-      - FlexCore (Go): integration/flexcore.md
-      - Singer Projects: integration/singer.md
-      - Middleware: integration/middleware.md
-  - Security:
-      - Overview: security/overview.md
-      - Authentication: security/authentication.md
-      - Authorization: security/authorization.md
-      - Best Practices: security/best-practices.md
-  - Development:
-      - Setup: development/setup.md
-      - Testing: development/testing.md
-      - Contributing: development/contributing.md
-      - Quality Standards: development/quality.md
-  - Deployment:
-      - Docker: deployment/docker.md
-      - Kubernetes: deployment/kubernetes.md
-      - Production: deployment/production.md
-      - Monitoring: deployment/monitoring.md
+  - Home: README.md
+  - Getting Started: getting-started.md
+  - Configuration: configuration.md
+  - Development: development.md
+  - API Reference: api-reference.md
+  - Architecture: architecture.md
+  - Troubleshooting: troubleshooting.md
 
-# Extra
-extra:
-  version:
-    provider: mike
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/flext-sh/flext
-  status:
-    new: "New in this version"
-    deprecated: "Deprecated"
-    beta: "Beta - Critical Issues Present"
-
-# Custom CSS
-extra_css:
-  - stylesheets/extra.css
-
-# Watch files for live reload during development
-watch:
-  - ../src/flext_auth/
-  - ../README.md
-  - ../CLAUDE.md
+validation:
+  omitted_files: ignore
+  absolute_links: ignore
+  unrecognized_links: ignore

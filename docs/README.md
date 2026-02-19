@@ -1,5 +1,13 @@
 # flext-auth Documentation
 
+
+<!-- TOC START -->
+- [📚 Documentation Structure](#-documentation-structure)
+- [🎯 Purpose](#-purpose)
+- [🔗 Integration](#-integration)
+- [📦 Archive](#-archive)
+<!-- TOC END -->
+
 **Professional documentation for the FLEXT Authentication & Authorization library.**
 
 ## 📚 Documentation Structure

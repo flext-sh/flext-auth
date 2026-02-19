@@ -1,5 +1,42 @@
 # FLEXT Auth Documentation Maintenance System
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Quick Start](#quick-start)
+  - [Prerequisites](#prerequisites)
+  - [Basic Usage](#basic-usage)
+- [Architecture](#architecture)
+  - [Core Components](#core-components)
+  - [Data Flow](#data-flow)
+- [Detailed Usage](#detailed-usage)
+  - [1. Content Quality Audit (`docs_audit.py`)](#1-content-quality-audit-docsauditpy)
+  - [2. Link Validation (`link_validator.py`)](#2-link-validation-linkvalidatorpy)
+  - [3. Content Optimization (`content_optimizer.py`)](#3-content-optimization-contentoptimizerpy)
+  - [4. Synchronization (`docs_sync.py`)](#4-synchronization-docssyncpy)
+  - [5. Main Orchestrator (`main.py`)](#5-main-orchestrator-mainpy)
+- [Configuration](#configuration)
+  - [Configuration File](#configuration-file)
+  - [Environment Variables](#environment-variables)
+- [Quality Gates](#quality-gates)
+  - [Automatic Quality Checks](#automatic-quality-checks)
+  - [Content Standards](#content-standards)
+- [Integration with CI/CD](#integration-with-cicd)
+  - [GitHub Actions Example](#github-actions-example)
+  - [Pre-commit Hook](#pre-commit-hook)
+- [Troubleshooting](#troubleshooting)
+  - [Common Issues](#common-issues)
+  - [Debug Mode](#debug-mode)
+- [Best Practices](#best-practices)
+  - [Maintenance Schedule](#maintenance-schedule)
+  - [Quality Standards](#quality-standards)
+  - [Automation](#automation)
+- [Contributing](#contributing)
+  - [Adding New Checks](#adding-new-checks)
+  - [Configuration Changes](#configuration-changes)
+- [Support](#support)
+<!-- TOC END -->
+
 Comprehensive automated documentation quality assurance, validation, optimization, and maintenance framework for the flext-auth project.
 
 ## Overview

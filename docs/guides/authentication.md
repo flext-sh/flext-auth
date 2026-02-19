@@ -1,5 +1,31 @@
 # Authentication Implementation Guide
 
+
+<!-- TOC START -->
+- [Authentication Service Implementation](#authentication-service-implementation)
+  - [FlextAuth Main Service](#flextauth-main-service)
+  - [Authentication Models](#authentication-models)
+- [Security Implementation](#security-implementation)
+  - [Password Security](#password-security)
+  - [JWT Token Management](#jwt-token-management)
+  - [Session Management](#session-management)
+- [Authentication Workflows](#authentication-workflows)
+  - [User Registration Flow](#user-registration-flow)
+  - [Authentication Flow](#authentication-flow)
+  - [Token Validation Flow](#token-validation-flow)
+- [Integration Patterns](#integration-patterns)
+  - [CLI Integration](#cli-integration)
+  - [API Integration](#api-integration)
+- [Current Limitations](#current-limitations)
+  - [Storage Limitations](#storage-limitations)
+  - [Missing Authentication Features](#missing-authentication-features)
+  - [Test Infrastructure](#test-infrastructure)
+- [Development Roadmap](#development-roadmap)
+  - [Priority 1: Foundation Stabilization](#priority-1-foundation-stabilization)
+  - [Priority 2: Modern Authentication (2025 Standards)](#priority-2-modern-authentication-2025-standards)
+  - [Priority 3: Advanced Security](#priority-3-advanced-security)
+<!-- TOC END -->
+
 **Version**: 0.9.9 RC | **Updated**: September 17, 2025
 
 This guide covers authentication-specific implementation details for the FLEXT-AUTH library, focusing on security practices and integration patterns specific to authentication workflows.

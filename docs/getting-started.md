@@ -1,5 +1,35 @@
 # Getting Started
 
+
+<!-- TOC START -->
+- [Installation](#installation)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+- [Basic Authentication](#basic-authentication)
+  - [Quick Start Service](#quick-start-service)
+  - [User Authentication](#user-authentication)
+  - [Token Validation](#token-validation)
+- [Configuration](#configuration)
+  - [Environment Configuration](#environment-configuration)
+  - [Custom Configuration](#custom-configuration)
+- [CLI Usage](#cli-usage)
+  - [User Management](#user-management)
+  - [Configuration Management](#configuration-management)
+- [FLEXT Integration Patterns](#flext-integration-patterns)
+  - [FlextResult Error Handling](#flextresult-error-handling)
+  - [Container Integration](#container-integration)
+- [Domain Models](#domain-models)
+  - [Working with User Entities](#working-with-user-entities)
+  - [Session Management](#session-management)
+- [Testing Your Integration](#testing-your-integration)
+  - [Unit Testing with FlextResult](#unit-testing-with-flextresult)
+- [Next Steps](#next-steps)
+  - [Development Environment](#development-environment)
+  - [Documentation](#documentation)
+  - [Production Considerations](#production-considerations)
+- [Related Documentation](#related-documentation)
+<!-- TOC END -->
+
 **Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
 
 Installation and first steps for implementing enterprise authentication in your FLEXT projects using flext-auth with complete FlextService and h integration.

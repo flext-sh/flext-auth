@@ -1,5 +1,32 @@
 # Configuration
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [FlextAuthSettings](#flextauthsettings)
+  - [Default Configuration](#default-configuration)
+  - [Environment-Specific Configuration](#environment-specific-configuration)
+- [Configuration Parameters](#configuration-parameters)
+  - [JWT Settings](#jwt-settings)
+  - [Security Settings](#security-settings)
+  - [Environment Variables](#environment-variables)
+- [Custom Configuration](#custom-configuration)
+  - [Override Specific Parameters](#override-specific-parameters)
+  - [Production Security Settings](#production-security-settings)
+- [Configuration Validation](#configuration-validation)
+  - [Validate Configuration](#validate-configuration)
+  - [CLI Validation](#cli-validation)
+- [Global Configuration](#global-configuration)
+  - [Singleton Pattern](#singleton-pattern)
+  - [Global Instance Access](#global-instance-access)
+- [Security Recommendations](#security-recommendations)
+  - [Production Settings](#production-settings)
+  - [Development Settings](#development-settings)
+- [Configuration Environments](#configuration-environments)
+  - [Available Environments](#available-environments)
+  - [Environment Detection](#environment-detection)
+<!-- TOC END -->
+
 **Version**: 0.9.9 RC | **Updated**: September 17, 2025
 
 Configuration management for flext-auth authentication service.

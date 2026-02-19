@@ -1,5 +1,32 @@
 # Integration
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [FLEXT-Core Integration](#flext-core-integration)
+  - [Authentication-Specific Integration](#authentication-specific-integration)
+  - [FlextContainer Integration](#flextcontainer-integration)
+  - [Domain Modeling](#domain-modeling)
+- [Integration with FLEXT Projects](#integration-with-flext-projects)
+  - [flext-api Integration](#flext-api-integration)
+  - [flext-web Integration](#flext-web-integration)
+  - [flext-cli Integration](#flext-cli-integration)
+- [Service Integration Patterns](#service-integration-patterns)
+  - [Authentication Service Provider](#authentication-service-provider)
+  - [Inter-Service Authentication](#inter-service-authentication)
+- [Database Integration](#database-integration)
+  - [User Storage (Future)](#user-storage-future)
+  - [Session Storage (Future)](#session-storage-future)
+- [Configuration Integration](#configuration-integration)
+  - [Environment-Aware Configuration](#environment-aware-configuration)
+  - [Shared Configuration](#shared-configuration)
+- [Testing Integration](#testing-integration)
+  - [Integration Testing](#integration-testing)
+- [Future Integration Plans](#future-integration-plans)
+  - [Modern Authentication Protocols](#modern-authentication-protocols)
+  - [Enterprise SSO](#enterprise-sso)
+<!-- TOC END -->
+
 **Version**: 0.9.9 RC | **Updated**: September 17, 2025
 
 Integration patterns for flext-auth within the FLEXT ecosystem.

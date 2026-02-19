@@ -10,9 +10,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextLogger, FlextResult as r, FlextService as s
-from flext_core.dispatcher import FlextDispatcher
-
 from flext_auth.constants import FlextAuthConstants as c
 from flext_auth.managers import FlextAuthManagers, ServiceManagers
 from flext_auth.models import FlextAuthModels
@@ -22,6 +19,8 @@ from flext_auth.models import FlextAuthModels
 from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 from flext_auth.settings import FlextAuthSettings
+from flext_core import FlextLogger, FlextResult as r, FlextService as s
+from flext_core.dispatcher import FlextDispatcher
 
 
 class FlextAuthTokenService(s[object]):

@@ -17,15 +17,14 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 from __future__ import annotations
 
 from abc import ABC
-
-from flext_core import FlextResult as r, FlextTypes as t, FlextUtilities as u
-from flext_core.models import m
+from collections.abc import Mapping
 
 from flext_auth.models import FlextAuthModels
 
 # Forward reference to avoid circular import
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 from flext_auth.typings import FlextAuthTypes as at
+from flext_core import FlextResult as r, FlextTypes as t, FlextUtilities as u
 
 
 class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
@@ -224,7 +223,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
 
     def generate_token_for_user(
         self,
-        user: m.ConfigMap[str, t.JsonValue],
+        user: Mapping[str, t.JsonValue],
         token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:

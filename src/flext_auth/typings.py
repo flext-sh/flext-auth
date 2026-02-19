@@ -11,11 +11,10 @@ from __future__ import annotations
 
 from typing import Annotated, Literal
 
-from flext_core import FlextTypes
-from pydantic import BaseModel, ConfigDict, Field, SecretStr
-
 from flext_auth.constants import c
 from flext_auth.models import FlextAuthModels as m
+from flext_core import FlextTypes
+from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
 # Import aliases following order: c -> t -> p -> r -> m -> u
 # Runtime aliases defined at module level per FLEXT standards

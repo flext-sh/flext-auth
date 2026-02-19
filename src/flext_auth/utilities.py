@@ -12,11 +12,10 @@ from typing import Annotated, TypeIs
 
 import bcrypt
 import jwt
-from flext_core import FlextUtilities, r
-from pydantic import BeforeValidator, SecretStr
-
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.typings import t
+from flext_core import FlextUtilities, r
+from pydantic import BeforeValidator, SecretStr
 
 # Runtime alias for utilities namespace access
 u = FlextUtilities
@@ -313,7 +312,7 @@ class FlextAuthUtilities(FlextUtilities):
                 expires_at: datetime | None = None,
             ) -> dict[str, t.JsonValue]:
                 """Build a successful authentication response."""
-                response = {
+                response: dict[str, t.JsonValue] = {
                     "success": True,
                     "message": "Authentication successful",
                     "timestamp": datetime.now(UTC).isoformat(),

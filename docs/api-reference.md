@@ -1,5 +1,37 @@
 # API Reference
 
+
+<!-- TOC START -->
+- [Core API](#core-api)
+  - [flext_auth_quick_start()](#flextauthquickstart)
+- [FlextAuth Service](#flextauth-service)
+  - [Constructor](#constructor)
+  - [register_user()](#registeruser)
+  - [authenticate_user()](#authenticateuser)
+  - [validate_token()](#validatetoken)
+- [Domain Models](#domain-models)
+  - [User](#user)
+  - [Session](#session)
+  - [UserCreationRequest](#usercreationrequest)
+- [Configuration](#configuration)
+  - [FlextAuthSettings](#flextauthsettings)
+- [CLI Interface](#cli-interface)
+  - [create-user](#create-user)
+  - [authenticate](#authenticate)
+  - [validate-config](#validate-config)
+- [Error Handling](#error-handling)
+  - [Success Pattern](#success-pattern)
+  - [Chaining Pattern](#chaining-pattern)
+- [Integration with FLEXT Ecosystem](#integration-with-flext-ecosystem)
+  - [Container Integration](#container-integration)
+  - [FlextResult Usage](#flextresult-usage)
+- [Security Considerations](#security-considerations)
+  - [Password Security](#password-security)
+  - [JWT Security](#jwt-security)
+  - [Session Management](#session-management)
+- [Related Documentation](#related-documentation)
+<!-- TOC END -->
+
 **Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
 
 Complete API documentation for flext-auth enterprise authentication service with FlextService and h architecture.

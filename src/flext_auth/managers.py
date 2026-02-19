@@ -13,6 +13,8 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
+from flext_auth.models import FlextAuthModels
+from flext_auth.settings import FlextAuthSettings
 from flext_core import (
     FlextResult as r,
 )
@@ -21,9 +23,6 @@ from flext_core.dispatcher import FlextDispatcher
 from flext_core.loggings import FlextLogger
 from flext_core.registry import FlextRegistry
 from flext_core.typings import t
-
-from flext_auth.models import FlextAuthModels
-from flext_auth.settings import FlextAuthSettings
 
 # Import aliases following order: c -> t -> p -> r -> m -> u
 # Runtime aliases defined at module level per FLEXT standards

@@ -1,5 +1,32 @@
 # Troubleshooting
 
+
+<!-- TOC START -->
+- [Authentication Issues](#authentication-issues)
+  - [User Registration Failures](#user-registration-failures)
+  - [Authentication Failures](#authentication-failures)
+  - [Token Validation Issues](#token-validation-issues)
+- [Configuration Issues](#configuration-issues)
+  - [Environment Configuration](#environment-configuration)
+  - [JWT Configuration](#jwt-configuration)
+- [Testing Issues](#testing-issues)
+  - [Test Failures](#test-failures)
+  - [Test Environment Setup](#test-environment-setup)
+- [Performance Issues](#performance-issues)
+  - [Slow Authentication](#slow-authentication)
+  - [Memory Usage](#memory-usage)
+- [Development Issues](#development-issues)
+  - [IDE and Type Checking](#ide-and-type-checking)
+  - [Import Issues](#import-issues)
+- [Production Issues](#production-issues)
+  - [Security Concerns](#security-concerns)
+  - [Session Management](#session-management)
+- [Getting Help](#getting-help)
+  - [Debug Mode](#debug-mode)
+  - [Error Information](#error-information)
+  - [Community Support](#community-support)
+<!-- TOC END -->
+
 **Version**: 0.9.9 RC | **Updated**: September 17, 2025
 
 Common issues and solutions for flext-auth authentication service.

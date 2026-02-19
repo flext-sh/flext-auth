@@ -1,5 +1,39 @@
 # FLEXT Auth Unit Tests
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Testing Philosophy](#testing-philosophy)
+  - [Unit Test Characteristics](#unit-test-characteristics)
+  - [Test Organization](#test-organization)
+- [Current Test Coverage](#current-test-coverage)
+  - [Domain Layer Tests](#domain-layer-tests)
+  - [Application Layer Tests](#application-layer-tests)
+  - [Infrastructure Layer Tests](#infrastructure-layer-tests)
+- [Testing Patterns](#testing-patterns)
+  - [Test Structure (Given-When-Then)](#test-structure-given-when-then)
+  - [Mock Strategy](#mock-strategy)
+  - [Test Data Factories](#test-data-factories)
+- [Running Unit Tests](#running-unit-tests)
+  - [Command Line Execution](#command-line-execution)
+  - [IDE Integration](#ide-integration)
+- [Test Quality Standards](#test-quality-standards)
+  - [Coverage Requirements](#coverage-requirements)
+  - [Performance Standards](#performance-standards)
+  - [Quality Metrics](#quality-metrics)
+- [Common Testing Patterns](#common-testing-patterns)
+  - [Testing FlextResult Patterns](#testing-flextresult-patterns)
+  - [Testing Domain Invariants](#testing-domain-invariants)
+  - [Testing Error Handling](#testing-error-handling)
+- [Debugging Unit Tests](#debugging-unit-tests)
+  - [Common Debugging Techniques](#common-debugging-techniques)
+  - [Test Debugging Tips](#test-debugging-tips)
+- [Contributing to Unit Tests](#contributing-to-unit-tests)
+  - [Adding New Tests](#adding-new-tests)
+  - [Test Review Checklist](#test-review-checklist)
+- [Current Status](#current-status)
+<!-- TOC END -->
+
 **Fast, isolated unit tests for individual components with coverage.**
 
 ## Overview

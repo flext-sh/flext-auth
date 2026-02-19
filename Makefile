@@ -1,9 +1,10 @@
 # flext-auth - Authentication Framework
 PROJECT_NAME := flext-auth
-COV_DIR := flext_auth
-MIN_COVERAGE := 90
-
+ifneq ("$(wildcard ../base.mk)", "")
 include ../base.mk
+else
+include base.mk
+endif
 
 # === PROJECT-SPECIFIC TARGETS ===
 .PHONY: test-unit test-integration build shell

@@ -1,5 +1,44 @@
 # FLEXT Auth Test Suite
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Architecture](#architecture)
+  - [Testing Strategy](#testing-strategy)
+  - [Test Organization](#test-organization)
+- [Test Categories](#test-categories)
+  - [1. Unit Tests](#1-unit-tests)
+  - [2. Integration Tests](#2-integration-tests)
+  - [3. End-to-End Tests](#3-end-to-end-tests)
+  - [4. Performance Tests](#4-performance-tests)
+- [Quality Standards](#quality-standards)
+  - [Coverage Requirements](#coverage-requirements)
+  - [Test Quality Metrics](#test-quality-metrics)
+  - [Failure Handling](#failure-handling)
+- [Testing Patterns](#testing-patterns)
+  - [Given-When-Then Pattern](#given-when-then-pattern)
+  - [Factory Pattern for Test Data](#factory-pattern-for-test-data)
+  - [Mock Strategy for External Dependencies](#mock-strategy-for-external-dependencies)
+- [Test Execution](#test-execution)
+  - [Running Tests](#running-tests)
+  - [Coverage Analysis](#coverage-analysis)
+  - [Performance Testing](#performance-testing)
+- [Test Configuration](#test-configuration)
+  - [pytest Configuration](#pytest-configuration)
+  - [Fixtures and Utilities](#fixtures-and-utilities)
+  - [Environment Configuration](#environment-configuration)
+- [Debugging Tests](#debugging-tests)
+  - [Common Issues](#common-issues)
+  - [Debug Tools](#debug-tools)
+- [Contributing to Tests](#contributing-to-tests)
+  - [Adding New Tests](#adding-new-tests)
+  - [Test Review Guidelines](#test-review-guidelines)
+- [Integration with CI/CD](#integration-with-cicd)
+  - [Quality Gates](#quality-gates)
+  - [Automated Testing](#automated-testing)
+- [Current Status](#current-status)
+<!-- TOC END -->
+
 **Testing for authentication library with coverage and quality assurance.**
 
 ## Overview

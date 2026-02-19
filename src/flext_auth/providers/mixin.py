@@ -10,9 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextTypes as t, FlextUtilities as u, e, r
-
 from flext_auth.protocols import FlextAuthProtocols
+from flext_core import FlextTypes as t, FlextUtilities as u, e, r
 
 # Forward references to avoid circular import
 # Use string annotations for all FlextAuthModels references

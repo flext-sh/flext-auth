@@ -14,9 +14,8 @@ import hashlib
 import secrets
 from base64 import urlsafe_b64encode
 from datetime import UTC, datetime, timedelta
+from typing import cast
 from urllib.parse import urlencode
-
-from flext_core import FlextTypes as t, FlextUtilities as u, e, r
 
 from flext_auth.constants import c
 from flext_auth.models import FlextAuthModels
@@ -27,6 +26,7 @@ from flext_auth.protocols import FlextAuthProtocols
 # Forward reference to avoid circular import
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 from flext_auth.typings import FlextAuthTypes as at
+from flext_core import FlextTypes as t, FlextUtilities as u, e, r
 
 
 class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
@@ -464,12 +464,13 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         user_id_str = str(user_id) if user_id else "oauth2_user"
         access_token = credentials.get("access_token", "")
         access_token_str = str(access_token) if access_token else ""
-        token: FlextAuthProtocols.Auth.TokenProtocol = FlextAuthModels.Auth.AuthToken(
+        token_model = FlextAuthModels.Auth.AuthToken(
             identity_id=user_id_str,
             token=access_token_str,
             token_type="Bearer",
             expires_at=datetime.now(UTC) + timedelta(hours=1),  # Default 1 hour expiry
         )
+        token = cast("FlextAuthProtocols.Auth.TokenProtocol", token_model)
         return r[FlextAuthProtocols.Auth.TokenProtocol].ok(token)
 
     def validate(
@@ -493,14 +494,13 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 )
             # Convert dict to AuthToken with explicit protocol typing
             token_data = token_result.value
-            refreshed: FlextAuthProtocols.Auth.TokenProtocol = (
-                FlextAuthModels.Auth.AuthToken(
-                    identity_id=token.identity_id,
-                    token=token_data.access_token,
-                    token_type=token_data.token_type or "Bearer",
-                    expires_at=token.expires_at,  # Keep original expiry for now
-                )
+            refreshed_model = FlextAuthModels.Auth.AuthToken(
+                identity_id=token.identity_id,
+                token=token_data.access_token,
+                token_type=token_data.token_type or "Bearer",
+                expires_at=token.expires_at,  # Keep original expiry for now
             )
+            refreshed = cast("FlextAuthProtocols.Auth.TokenProtocol", refreshed_model)
             return r[FlextAuthProtocols.Auth.TokenProtocol].ok(refreshed)
         return r[FlextAuthProtocols.Auth.TokenProtocol].fail(
             "No refresh token available"

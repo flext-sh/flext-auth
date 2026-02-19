@@ -1,5 +1,47 @@
 # FLEXT Auth Examples
 
+
+<!-- TOC START -->
+- [Overview](#overview)
+- [Simplified Setup](#simplified-setup)
+  - [Traditional Manual Setup](#traditional-manual-setup)
+  - [FLEXT Auth Setup](#flext-auth-setup)
+- [Example Files](#example-files)
+  - [1. Basic Usage (`01_basic_usage.py`)](#1-basic-usage-01basicusagepy)
+  - [2. Advanced Features (`02_advanced_features.py`)](#2-advanced-features-02advancedfeaturespy)
+  - [3. Comprehensive Demo (`03_comprehensive_demo.py`)](#3-comprehensive-demo-03comprehensivedemopy)
+  - [4. Refactored System Showcase (`04_refactored_system_showcase.py`)](#4-refactored-system-showcase-04refactoredsystemshowcasepy)
+  - [5. Basic Auth Example (`05_basic_auth.py`)](#5-basic-auth-example-05basicauthpy)
+  - [6. Debug Auth Issues (`09_debug_auth_issues.py`)](#6-debug-auth-issues-09debugauthissuespy)
+- [Usage Patterns](#usage-patterns)
+  - [Quick Start Pattern](#quick-start-pattern)
+  - [Production Pattern](#production-pattern)
+  - [Development Pattern](#development-pattern)
+  - [API-Optimized Pattern](#api-optimized-pattern)
+- [Integration Examples](#integration-examples)
+  - [FastAPI Integration](#fastapi-integration)
+  - [Flask Integration](#flask-integration)
+  - [Django Integration](#django-integration)
+- [Performance Examples](#performance-examples)
+  - [High-Performance Configuration](#high-performance-configuration)
+  - [Security-Hardened Configuration](#security-hardened-configuration)
+- [Running Examples](#running-examples)
+  - [Prerequisites](#prerequisites)
+  - [Execute Examples](#execute-examples)
+  - [Interactive Examples](#interactive-examples)
+- [Example Development](#example-development)
+  - [Adding New Examples](#adding-new-examples)
+  - [Example Structure Template](#example-structure-template)
+- [Best Practices Demonstrated](#best-practices-demonstrated)
+  - [Security Best Practices](#security-best-practices)
+  - [Performance Best Practices](#performance-best-practices)
+  - [Integration Best Practices](#integration-best-practices)
+- [Troubleshooting Examples](#troubleshooting-examples)
+  - [Common Issues and Solutions](#common-issues-and-solutions)
+  - [Debug Utilities](#debug-utilities)
+- [Current Status](#current-status)
+<!-- TOC END -->
+
 **Practical usage examples for authentication library with common patterns and integrations.**
 
 ## Overview
