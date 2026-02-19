@@ -2,40 +2,40 @@
 
 
 <!-- TOC START -->
-- Overview
-- 📚 Documentation Structure
-- 🏗️ Architectural Frameworks Used
-  - C4 Model
-  - Architecture Decision Records (ADRs)
-  - PlantUML Diagrams
-- 🚀 Quick Start
-  - View Current Architecture
-  - Generate Diagrams
-  - Create New ADR
-- 📋 Key Architectural Views
-  - 1. System Context (C4 Context)
-  - 2. Container Architecture (C4 Containers)
-  - 3. Component Architecture (C4 Components)
-  - 4. Security Architecture
-- 🎯 Quality Attributes
-  - Security
-  - Performance
-  - Maintainability
-  - Reliability
-- 🔄 Architecture Evolution
-  - Current State (v0.9.0)
-  - Planned Evolution
-- 📖 How to Use This Documentation
-  - For Architects
-  - For Developers
-  - For Stakeholders
-- 🔧 Maintenance and Updates
-  - Automated Generation
-  - Manual Updates
-  - Review Process
-- 📚 Additional Resources
-- 🤝 Contributing
-  - Standards
+- [Overview](#overview)
+- [📚 Documentation Structure](#-documentation-structure)
+- [🏗️ Architectural Frameworks Used](#-architectural-frameworks-used)
+  - [C4 Model](#c4-model)
+  - [Architecture Decision Records (ADRs)](#architecture-decision-records-adrs)
+  - [PlantUML Diagrams](#plantuml-diagrams)
+- [🚀 Quick Start](#-quick-start)
+  - [View Current Architecture](#view-current-architecture)
+  - [Generate Diagrams](#generate-diagrams)
+  - [Create New ADR](#create-new-adr)
+- [📋 Key Architectural Views](#-key-architectural-views)
+  - [1. System Context (C4 Context)](#1-system-context-c4-context)
+  - [2. Container Architecture (C4 Containers)](#2-container-architecture-c4-containers)
+  - [3. Component Architecture (C4 Components)](#3-component-architecture-c4-components)
+  - [4. Security Architecture](#4-security-architecture)
+- [🎯 Quality Attributes](#-quality-attributes)
+  - [Security](#security)
+  - [Performance](#performance)
+  - [Maintainability](#maintainability)
+  - [Reliability](#reliability)
+- [🔄 Architecture Evolution](#-architecture-evolution)
+  - [Current State (v0.9.0)](#current-state-v090)
+  - [Planned Evolution](#planned-evolution)
+- [📖 How to Use This Documentation](#-how-to-use-this-documentation)
+  - [For Architects](#for-architects)
+  - [For Developers](#for-developers)
+  - [For Stakeholders](#for-stakeholders)
+- [🔧 Maintenance and Updates](#-maintenance-and-updates)
+  - [Automated Generation](#automated-generation)
+  - [Manual Updates](#manual-updates)
+  - [Review Process](#review-process)
+- [📚 Additional Resources](#-additional-resources)
+- [🤝 Contributing](#-contributing)
+  - [Standards](#standards)
 <!-- TOC END -->
 
 ## Overview

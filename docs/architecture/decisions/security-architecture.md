@@ -2,52 +2,52 @@
 
 
 <!-- TOC START -->
-- Overview
-- Security Principles
-  - Core Security Principles
-  - Security Objectives
-- Authentication Security
-  - Multi-Factor Authentication (MFA)
-  - Password Security
-  - Session Security
-- Authorization Architecture
-  - Role-Based Access Control (RBAC)
-  - Attribute-Based Access Control (ABAC)
-  - API Authorization
-- Token Security
-  - JWT Security
-  - Token Lifecycle
-  - Token Storage
-- Data Protection
-  - Encryption at Rest
-  - Encryption in Transit
-  - Data Classification
-- Provider Security
-  - Security by Provider Type
-- Threat Modeling
-  - STRIDE Threat Categories
-- Security Controls
-  - Preventive Controls
-  - Detective Controls
-  - Corrective Controls
-- Compliance Architecture
-  - Regulatory Compliance
-  - Industry Standards
-  - Audit and Compliance
-- Security Monitoring
-  - Security Event Monitoring
-  - Alerting and Response
-  - Metrics and Reporting
-- Security Testing
-  - Automated Security Testing
-  - Manual Security Testing
-- Security Operations
-  - Security Operations Center (SOC)
-  - Security Awareness
-- Future Security Enhancements
-  - Advanced Security Features
-  - Security Automation
-- Security Architecture Summary
+- [Overview](#overview)
+- [Security Principles](#security-principles)
+  - [Core Security Principles](#core-security-principles)
+  - [Security Objectives](#security-objectives)
+- [Authentication Security](#authentication-security)
+  - [Multi-Factor Authentication (MFA)](#multi-factor-authentication-mfa)
+  - [Password Security](#password-security)
+  - [Session Security](#session-security)
+- [Authorization Architecture](#authorization-architecture)
+  - [Role-Based Access Control (RBAC)](#role-based-access-control-rbac)
+  - [Attribute-Based Access Control (ABAC)](#attribute-based-access-control-abac)
+  - [API Authorization](#api-authorization)
+- [Token Security](#token-security)
+  - [JWT Security](#jwt-security)
+  - [Token Lifecycle](#token-lifecycle)
+  - [Token Storage](#token-storage)
+- [Data Protection](#data-protection)
+  - [Encryption at Rest](#encryption-at-rest)
+  - [Encryption in Transit](#encryption-in-transit)
+  - [Data Classification](#data-classification)
+- [Provider Security](#provider-security)
+  - [Security by Provider Type](#security-by-provider-type)
+- [Threat Modeling](#threat-modeling)
+  - [STRIDE Threat Categories](#stride-threat-categories)
+- [Security Controls](#security-controls)
+  - [Preventive Controls](#preventive-controls)
+  - [Detective Controls](#detective-controls)
+  - [Corrective Controls](#corrective-controls)
+- [Compliance Architecture](#compliance-architecture)
+  - [Regulatory Compliance](#regulatory-compliance)
+  - [Industry Standards](#industry-standards)
+  - [Audit and Compliance](#audit-and-compliance)
+- [Security Monitoring](#security-monitoring)
+  - [Security Event Monitoring](#security-event-monitoring)
+  - [Alerting and Response](#alerting-and-response)
+  - [Metrics and Reporting](#metrics-and-reporting)
+- [Security Testing](#security-testing)
+  - [Automated Security Testing](#automated-security-testing)
+  - [Manual Security Testing](#manual-security-testing)
+- [Security Operations](#security-operations)
+  - [Security Operations Center (SOC)](#security-operations-center-soc)
+  - [Security Awareness](#security-awareness)
+- [Future Security Enhancements](#future-security-enhancements)
+  - [Advanced Security Features](#advanced-security-features)
+  - [Security Automation](#security-automation)
+- [Security Architecture Summary](#security-architecture-summary)
 <!-- TOC END -->
 
 ## Overview

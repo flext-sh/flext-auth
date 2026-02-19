@@ -2,37 +2,37 @@
 
 
 <!-- TOC START -->
-- Development Setup
-  - Prerequisites
-  - Setup Environment
-- Development Commands
-  - Essential Commands
-  - Testing Commands
-- Quality Standards
-  - Production Status
-  - Quality Gates
-- Code Standards
-  - FLEXT Pattern Compliance
-  - Domain Model Patterns
-- Current Development Areas
-  - Priority 1: Test Stabilization
-  - Priority 2: Security Enhancements
-  - Priority 3: Production Features
-- Contributing Workflow
-  - 1. Before Development
-  - 2. Development Process
-  - 3. Before Committing
-  - 4. Contribution Guidelines
-- Testing Strategy
-  - Current Test Structure
-  - Test Categories
-  - Adding Tests
-- Architecture Guidelines
-  - Service Layer
-  - Error Handling
-- Debugging
-  - Common Issues
-  - Debug Mode
+- [Development Setup](#development-setup)
+  - [Prerequisites](#prerequisites)
+  - [Setup Environment](#setup-environment)
+- [Development Commands](#development-commands)
+  - [Essential Commands](#essential-commands)
+  - [Testing Commands](#testing-commands)
+- [Quality Standards](#quality-standards)
+  - [Production Status](#production-status)
+  - [Quality Gates](#quality-gates)
+- [Code Standards](#code-standards)
+  - [FLEXT Pattern Compliance](#flext-pattern-compliance)
+  - [Domain Model Patterns](#domain-model-patterns)
+- [Current Development Areas](#current-development-areas)
+  - [Priority 1: Test Stabilization](#priority-1-test-stabilization)
+  - [Priority 2: Security Enhancements](#priority-2-security-enhancements)
+  - [Priority 3: Production Features](#priority-3-production-features)
+- [Contributing Workflow](#contributing-workflow)
+  - [1. Before Development](#1-before-development)
+  - [2. Development Process](#2-development-process)
+  - [3. Before Committing](#3-before-committing)
+  - [4. Contribution Guidelines](#4-contribution-guidelines)
+- [Testing Strategy](#testing-strategy)
+  - [Current Test Structure](#current-test-structure)
+  - [Test Categories](#test-categories)
+  - [Adding Tests](#adding-tests)
+- [Architecture Guidelines](#architecture-guidelines)
+  - [Service Layer](#service-layer)
+  - [Error Handling](#error-handling)
+- [Debugging](#debugging)
+  - [Common Issues](#common-issues)
+  - [Debug Mode](#debug-mode)
 <!-- TOC END -->
 
 **Version**: 0.9.0 Multi-Provider Implementation | **Updated**: October 10, 2025

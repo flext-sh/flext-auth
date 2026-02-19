@@ -2,30 +2,30 @@
 
 
 <!-- TOC START -->
-- Overview
-- Container Architecture
-  - Technology Choices
-- Deployment Architecture
-  - Single Container Deployment
-  - Microservices Deployment
-  - Kubernetes Deployment
-- Container Relationships
-  - Data Flow
-  - Communication Patterns
-- Technology Stack Details
-  - Runtime Environment
-  - Data Storage
-  - External Integrations
-- Quality Attributes by Container
-  - flext-auth Container
-  - Database Container
-  - External Services
-- Deployment Considerations
-  - Scaling Strategies
-  - High Availability
-  - Security Considerations
-- Related Documentation
-- Diagram
+- [Overview](#overview)
+- [Container Architecture](#container-architecture)
+  - [Technology Choices](#technology-choices)
+- [Deployment Architecture](#deployment-architecture)
+  - [Single Container Deployment](#single-container-deployment)
+  - [Microservices Deployment](#microservices-deployment)
+  - [Kubernetes Deployment](#kubernetes-deployment)
+- [Container Relationships](#container-relationships)
+  - [Data Flow](#data-flow)
+  - [Communication Patterns](#communication-patterns)
+- [Technology Stack Details](#technology-stack-details)
+  - [Runtime Environment](#runtime-environment)
+  - [Data Storage](#data-storage)
+  - [External Integrations](#external-integrations)
+- [Quality Attributes by Container](#quality-attributes-by-container)
+  - [flext-auth Container](#flext-auth-container)
+  - [Database Container](#database-container)
+  - [External Services](#external-services)
+- [Deployment Considerations](#deployment-considerations)
+  - [Scaling Strategies](#scaling-strategies)
+  - [High Availability](#high-availability)
+  - [Security Considerations](#security-considerations)
+- [Related Documentation](#related-documentation)
+- [Diagram](#diagram)
 <!-- TOC END -->
 
 ## Overview

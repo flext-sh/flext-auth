@@ -2,29 +2,29 @@
 
 
 <!-- TOC START -->
-- Overview
-- FlextAuthSettings
-  - Default Configuration
-  - Environment-Specific Configuration
-- Configuration Parameters
-  - JWT Settings
-  - Security Settings
-  - Environment Variables
-- Custom Configuration
-  - Override Specific Parameters
-  - Production Security Settings
-- Configuration Validation
-  - Validate Configuration
-  - CLI Validation
-- Global Configuration
-  - Singleton Pattern
-  - Global Instance Access
-- Security Recommendations
-  - Production Settings
-  - Development Settings
-- Configuration Environments
-  - Available Environments
-  - Environment Detection
+- [Overview](#overview)
+- [FlextAuthSettings](#flextauthsettings)
+  - [Default Configuration](#default-configuration)
+  - [Environment-Specific Configuration](#environment-specific-configuration)
+- [Configuration Parameters](#configuration-parameters)
+  - [JWT Settings](#jwt-settings)
+  - [Security Settings](#security-settings)
+  - [Environment Variables](#environment-variables)
+- [Custom Configuration](#custom-configuration)
+  - [Override Specific Parameters](#override-specific-parameters)
+  - [Production Security Settings](#production-security-settings)
+- [Configuration Validation](#configuration-validation)
+  - [Validate Configuration](#validate-configuration)
+  - [CLI Validation](#cli-validation)
+- [Global Configuration](#global-configuration)
+  - [Singleton Pattern](#singleton-pattern)
+  - [Global Instance Access](#global-instance-access)
+- [Security Recommendations](#security-recommendations)
+  - [Production Settings](#production-settings)
+  - [Development Settings](#development-settings)
+- [Configuration Environments](#configuration-environments)
+  - [Available Environments](#available-environments)
+  - [Environment Detection](#environment-detection)
 <!-- TOC END -->
 
 **Version**: 0.9.9 RC | **Updated**: September 17, 2025

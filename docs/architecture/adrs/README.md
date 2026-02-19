@@ -2,51 +2,51 @@
 
 
 <!-- TOC START -->
-- Overview
-- ADR Process
-  - When to Create an ADR
-  - ADR Template
-- Status
-- Context
-- Decision
-- Consequences
-- Alternatives Considered
-- Related ADRs
-- Notes
-- Current ADRs
-- ADR Categories
-  - Architectural Patterns
-  - Technology Choices
-  - Security Architecture
-  - Performance & Scalability
-  - Quality Attributes
-- ADR Workflow
-  - 1. Proposal Phase
-  - 2. Review Phase
-  - 3. Implementation Phase
-  - 4. Retrospective Phase
-- ADR Maintenance
-  - Regular Reviews
-  - Status Definitions
-  - Linking ADRs
-- Tools and Automation
-  - ADR Management Tools
-  - Automation Scripts
-- ADR Quality Standards
-  - Completeness
-  - Clarity
-  - Maintenance
-- Examples
-  - Good ADR Characteristics
-  - Common ADR Topics
-- Integration with Development
-  - Pull Request Integration
-  - Code Review Integration
-  - Documentation Integration
-- Measuring ADR Effectiveness
-  - Success Metrics
-  - Continuous Improvement
-- Quick Reference
+- [Overview](#overview)
+- [ADR Process](#adr-process)
+  - [When to Create an ADR](#when-to-create-an-adr)
+  - [ADR Template](#adr-template)
+- [Status](#status)
+- [Context](#context)
+- [Decision](#decision)
+- [Consequences](#consequences)
+- [Alternatives Considered](#alternatives-considered)
+- [Related ADRs](#related-adrs)
+- [Notes](#notes)
+- [Current ADRs](#current-adrs)
+- [ADR Categories](#adr-categories)
+  - [Architectural Patterns](#architectural-patterns)
+  - [Technology Choices](#technology-choices)
+  - [Security Architecture](#security-architecture)
+  - [Performance & Scalability](#performance-scalability)
+  - [Quality Attributes](#quality-attributes)
+- [ADR Workflow](#adr-workflow)
+  - [1. Proposal Phase](#1-proposal-phase)
+  - [2. Review Phase](#2-review-phase)
+  - [3. Implementation Phase](#3-implementation-phase)
+  - [4. Retrospective Phase](#4-retrospective-phase)
+- [ADR Maintenance](#adr-maintenance)
+  - [Regular Reviews](#regular-reviews)
+  - [Status Definitions](#status-definitions)
+  - [Linking ADRs](#linking-adrs)
+- [Tools and Automation](#tools-and-automation)
+  - [ADR Management Tools](#adr-management-tools)
+  - [Automation Scripts](#automation-scripts)
+- [ADR Quality Standards](#adr-quality-standards)
+  - [Completeness](#completeness)
+  - [Clarity](#clarity)
+  - [Maintenance](#maintenance)
+- [Examples](#examples)
+  - [Good ADR Characteristics](#good-adr-characteristics)
+  - [Common ADR Topics](#common-adr-topics)
+- [Integration with Development](#integration-with-development)
+  - [Pull Request Integration](#pull-request-integration)
+  - [Code Review Integration](#code-review-integration)
+  - [Documentation Integration](#documentation-integration)
+- [Measuring ADR Effectiveness](#measuring-adr-effectiveness)
+  - [Success Metrics](#success-metrics)
+  - [Continuous Improvement](#continuous-improvement)
+- [Quick Reference](#quick-reference)
 <!-- TOC END -->
 
 ## Overview
