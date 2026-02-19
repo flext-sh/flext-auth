@@ -2,40 +2,40 @@
 
 
 <!-- TOC START -->
-- [Overview](#overview)
-- [📚 Documentation Structure](#-documentation-structure)
-- [🏗️ Architectural Frameworks Used](#-architectural-frameworks-used)
-  - [C4 Model](#c4-model)
-  - [Architecture Decision Records (ADRs)](#architecture-decision-records-adrs)
-  - [PlantUML Diagrams](#plantuml-diagrams)
-- [🚀 Quick Start](#-quick-start)
-  - [View Current Architecture](#view-current-architecture)
-  - [Generate Diagrams](#generate-diagrams)
-  - [Create New ADR](#create-new-adr)
-- [📋 Key Architectural Views](#-key-architectural-views)
-  - [1. System Context (C4 Context)](#1-system-context-c4-context)
-  - [2. Container Architecture (C4 Containers)](#2-container-architecture-c4-containers)
-  - [3. Component Architecture (C4 Components)](#3-component-architecture-c4-components)
-  - [4. Security Architecture](#4-security-architecture)
-- [🎯 Quality Attributes](#-quality-attributes)
-  - [Security](#security)
-  - [Performance](#performance)
-  - [Maintainability](#maintainability)
-  - [Reliability](#reliability)
-- [🔄 Architecture Evolution](#-architecture-evolution)
-  - [Current State (v0.9.0)](#current-state-v090)
-  - [Planned Evolution](#planned-evolution)
-- [📖 How to Use This Documentation](#-how-to-use-this-documentation)
-  - [For Architects](#for-architects)
-  - [For Developers](#for-developers)
-  - [For Stakeholders](#for-stakeholders)
-- [🔧 Maintenance and Updates](#-maintenance-and-updates)
-  - [Automated Generation](#automated-generation)
-  - [Manual Updates](#manual-updates)
-  - [Review Process](#review-process)
-- [📚 Additional Resources](#-additional-resources)
-- [🤝 Contributing](#-contributing)
-  - [Standards](#standards)
+- Overview
+- 📚 Documentation Structure
+- 🏗️ Architectural Frameworks Used
+  - C4 Model
+  - Architecture Decision Records (ADRs)
+  - PlantUML Diagrams
+- 🚀 Quick Start
+  - View Current Architecture
+  - Generate Diagrams
+  - Create New ADR
+- 📋 Key Architectural Views
+  - 1. System Context (C4 Context)
+  - 2. Container Architecture (C4 Containers)
+  - 3. Component Architecture (C4 Components)
+  - 4. Security Architecture
+- 🎯 Quality Attributes
+  - Security
+  - Performance
+  - Maintainability
+  - Reliability
+- 🔄 Architecture Evolution
+  - Current State (v0.9.0)
+  - Planned Evolution
+- 📖 How to Use This Documentation
+  - For Architects
+  - For Developers
+  - For Stakeholders
+- 🔧 Maintenance and Updates
+  - Automated Generation
+  - Manual Updates
+  - Review Process
+- 📚 Additional Resources
+- 🤝 Contributing
+  - Standards
 <!-- TOC END -->
 
 ## Overview
@@ -132,7 +132,7 @@ vim docs/architecture/adrs/decisions/001-new-decision.md
 - FLEXT ecosystem components
 - Infrastructure services
 
-**Diagram**: [System Context](diagrams/generated/system-context.png)
+**Diagram**: System Context
 
 ### 2. Container Architecture (C4 Containers)
 
@@ -146,7 +146,7 @@ vim docs/architecture/adrs/decisions/001-new-decision.md
 - Data persistence layer
 - Transport adapters (HTTP, gRPC)
 
-**Diagram**: [Container Architecture](diagrams/generated/container-architecture.png)
+**Diagram**: Container Architecture
 
 ### 3. Component Architecture (C4 Components)
 
@@ -160,7 +160,7 @@ vim docs/architecture/adrs/decisions/001-new-decision.md
 - Service layer (User, Token, Session services)
 - Transport adapters
 
-**Diagram**: [Component Architecture](diagrams/generated/component-architecture.png)
+**Diagram**: Component Architecture
 
 ### 4. Security Architecture
 
@@ -174,7 +174,7 @@ vim docs/architecture/adrs/decisions/001-new-decision.md
 - Compliance controls
 - Threat model
 
-**Diagram**: [Security Architecture](diagrams/generated/security-architecture.png)
+**Diagram**: Security Architecture
 
 ## 🎯 Quality Attributes
 
@@ -241,22 +241,22 @@ vim docs/architecture/adrs/decisions/001-new-decision.md
 
 ### For Architects
 
-1. Start with [System Context](c4-model/context/) to understand the big picture
-2. Review [Container Architecture](c4-model/containers/) for technology choices
-3. Dive into [Component Details](c4-model/components/) for implementation understanding
-4. Check [ADRs](adrs/) for decision rationale
+1. Start with System Context to understand the big picture
+2. Review Container Architecture for technology choices
+3. Dive into Component Details for implementation understanding
+4. Check ADRs for decision rationale
 
 ### For Developers
 
-1. Review [Component Architecture](c4-model/components/) for system understanding
-2. Check [Code Organization](c4-model/code/) for implementation details
-3. Review [Security Architecture](decisions/security-architecture.md) for secure development
-4. Follow [Development Guidelines](../../development.md)
+1. Review Component Architecture for system understanding
+2. Check Code Organization for implementation details
+3. Review Security Architecture for secure development
+4. Follow Development Guidelines
 
 ### For Stakeholders
 
-1. Review [System Context](c4-model/context/) for business understanding
-2. Review [Architecture Decisions](adrs/) for important trade-offs
+1. Review System Context for business understanding
+2. Review Architecture Decisions for important trade-offs
 
 ## 🔧 Maintenance and Updates
 

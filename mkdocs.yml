@@ -6,6 +6,7 @@ repo_url: https://github.com/flext-sh/flext
 edit_uri: edit/main/flext-auth/docs/
 docs_dir: docs
 site_dir: .reports/docs/site
+exclude_docs: README.md
 
 theme:
   name: material
@@ -20,7 +21,7 @@ markdown_extensions:
       permalink: true
 
 nav:
-  - Home: README.md
+  - Home: index.md
   - Getting Started: getting-started.md
   - Configuration: configuration.md
   - Development: development.md

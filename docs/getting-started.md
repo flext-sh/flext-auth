@@ -2,32 +2,32 @@
 
 
 <!-- TOC START -->
-- [Installation](#installation)
-  - [Prerequisites](#prerequisites)
-  - [Installation](#installation)
-- [Basic Authentication](#basic-authentication)
-  - [Quick Start Service](#quick-start-service)
-  - [User Authentication](#user-authentication)
-  - [Token Validation](#token-validation)
-- [Configuration](#configuration)
-  - [Environment Configuration](#environment-configuration)
-  - [Custom Configuration](#custom-configuration)
-- [CLI Usage](#cli-usage)
-  - [User Management](#user-management)
-  - [Configuration Management](#configuration-management)
-- [FLEXT Integration Patterns](#flext-integration-patterns)
-  - [FlextResult Error Handling](#flextresult-error-handling)
-  - [Container Integration](#container-integration)
-- [Domain Models](#domain-models)
-  - [Working with User Entities](#working-with-user-entities)
-  - [Session Management](#session-management)
-- [Testing Your Integration](#testing-your-integration)
-  - [Unit Testing with FlextResult](#unit-testing-with-flextresult)
-- [Next Steps](#next-steps)
-  - [Development Environment](#development-environment)
-  - [Documentation](#documentation)
-  - [Production Considerations](#production-considerations)
-- [Related Documentation](#related-documentation)
+- Installation
+  - Prerequisites
+  - Installation
+- Basic Authentication
+  - Quick Start Service
+  - User Authentication
+  - Token Validation
+- Configuration
+  - Environment Configuration
+  - Custom Configuration
+- CLI Usage
+  - User Management
+  - Configuration Management
+- FLEXT Integration Patterns
+  - FlextResult Error Handling
+  - Container Integration
+- Domain Models
+  - Working with User Entities
+  - Session Management
+- Testing Your Integration
+  - Unit Testing with FlextResult
+- Next Steps
+  - Development Environment
+  - Documentation
+  - Production Considerations
+- Related Documentation
 <!-- TOC END -->
 
 **Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
@@ -376,10 +376,10 @@ make validate
 
 ### Documentation
 
-- **[Architecture](architecture.md)** - System design and patterns
-- **[API Reference](api-reference.md)** - Complete API documentation
-- **[Configuration](configuration.md)** - Settings management
-- **[Integration](integration.md)** - FLEXT ecosystem patterns
+- **Architecture** - System design and patterns
+- **API Reference** - Complete API documentation
+- **Configuration** - Settings management
+- **Integration** - FLEXT ecosystem patterns
 
 ### Production Considerations
 
@@ -396,10 +396,10 @@ This guide covers basic usage patterns. For production deployment and additional
 
 **Within Project**:
 
-- [Architecture](architecture.md) - Architecture and design patterns
-- [API Reference](api-reference.md) - Complete API documentation
-- [Configuration](configuration.md) - Settings management
-- [Integration](integration.md) - FLEXT ecosystem patterns
+- Architecture - Architecture and design patterns
+- API Reference - Complete API documentation
+- Configuration - Settings management
+- Integration - FLEXT ecosystem patterns
 
 **Across Projects**:
 

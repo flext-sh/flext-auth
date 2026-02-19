@@ -2,10 +2,10 @@
 
 
 <!-- TOC START -->
-- [📚 Documentation Structure](#-documentation-structure)
-- [🎯 Purpose](#-purpose)
-- [🔗 Integration](#-integration)
-- [📦 Archive](#-archive)
+- 📚 Documentation Structure
+- 🎯 Purpose
+- 🔗 Integration
+- 📦 Archive
 <!-- TOC END -->
 
 **Professional documentation for the FLEXT Authentication & Authorization library.**
@@ -14,14 +14,14 @@
 
 This directory contains the complete professional documentation for flext-auth:
 
-- **[Getting Started](getting-started.md)** - Installation, setup, and quick start guide
-- **[API Reference](api-reference.md)** - Complete API documentation and usage examples
-- **[Authentication Guide](authentication.md)** - Authentication patterns and implementation
-- **[Configuration](configuration.md)** - Configuration options and settings
-- **[Architecture](ARCHITECTURE.md)** - System design and architectural patterns
-- **[Integration Guide](integration.md)** - Integration with other FLEXT components
-- **[Development](development.md)** - Contributing guidelines and development workflow
-- **[Troubleshooting](troubleshooting.md)** - Common issues and solutions
+- **Getting Started** - Installation, setup, and quick start guide
+- **API Reference** - Complete API documentation and usage examples
+- **Authentication Guide** - Authentication patterns and implementation
+- **Configuration** - Configuration options and settings
+- **Architecture** - System design and architectural patterns
+- **Integration Guide** - Integration with other FLEXT components
+- **Development** - Contributing guidelines and development workflow
+- **Troubleshooting** - Common issues and solutions
 
 ## 🎯 Purpose
 
@@ -36,7 +36,7 @@ flext-auth provides **enterprise-grade authentication and authorization** for th
 
 ## 🔗 Integration
 
-This documentation is part of the larger [FLEXT Ecosystem Documentation](../../docs/) hub. For comprehensive information about the entire platform, visit the main documentation site.
+This documentation is part of the larger FLEXT Ecosystem Documentation hub. For comprehensive information about the entire platform, visit the main documentation site.
 
 ## 📦 Archive
 

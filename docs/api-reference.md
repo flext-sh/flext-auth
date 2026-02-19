@@ -2,34 +2,34 @@
 
 
 <!-- TOC START -->
-- [Core API](#core-api)
-  - [flext_auth_quick_start()](#flextauthquickstart)
-- [FlextAuth Service](#flextauth-service)
-  - [Constructor](#constructor)
-  - [register_user()](#registeruser)
-  - [authenticate_user()](#authenticateuser)
-  - [validate_token()](#validatetoken)
-- [Domain Models](#domain-models)
-  - [User](#user)
-  - [Session](#session)
-  - [UserCreationRequest](#usercreationrequest)
-- [Configuration](#configuration)
-  - [FlextAuthSettings](#flextauthsettings)
-- [CLI Interface](#cli-interface)
-  - [create-user](#create-user)
-  - [authenticate](#authenticate)
-  - [validate-config](#validate-config)
-- [Error Handling](#error-handling)
-  - [Success Pattern](#success-pattern)
-  - [Chaining Pattern](#chaining-pattern)
-- [Integration with FLEXT Ecosystem](#integration-with-flext-ecosystem)
-  - [Container Integration](#container-integration)
-  - [FlextResult Usage](#flextresult-usage)
-- [Security Considerations](#security-considerations)
-  - [Password Security](#password-security)
-  - [JWT Security](#jwt-security)
-  - [Session Management](#session-management)
-- [Related Documentation](#related-documentation)
+- Core API
+  - flext_auth_quick_start()
+- FlextAuth Service
+  - Constructor
+  - register_user()
+  - authenticate_user()
+  - validate_token()
+- Domain Models
+  - User
+  - Session
+  - UserCreationRequest
+- Configuration
+  - FlextAuthSettings
+- CLI Interface
+  - create-user
+  - authenticate
+  - validate-config
+- Error Handling
+  - Success Pattern
+  - Chaining Pattern
+- Integration with FLEXT Ecosystem
+  - Container Integration
+  - FlextResult Usage
+- Security Considerations
+  - Password Security
+  - JWT Security
+  - Session Management
+- Related Documentation
 <!-- TOC END -->
 
 **Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
@@ -414,16 +414,16 @@ All flext-auth operations follow FlextResult pattern from flext-core:
 
 ---
 
-This API reference covers the current implementation as of September 17, 2025. For usage examples, see [Getting Started](getting-started.md).
+This API reference covers the current implementation as of September 17, 2025. For usage examples, see Getting Started.
 
 ## Related Documentation
 
 **Within Project**:
 
-- [Getting Started](getting-started.md) - Installation and basic usage
-- [Architecture](architecture.md) - Architecture and design patterns
-- [Configuration](configuration.md) - Settings management
-- [Integration](integration.md) - FLEXT ecosystem patterns
+- Getting Started - Installation and basic usage
+- Architecture - Architecture and design patterns
+- Configuration - Settings management
+- Integration - FLEXT ecosystem patterns
 
 **Across Projects**:
 

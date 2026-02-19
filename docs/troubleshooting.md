@@ -2,29 +2,29 @@
 
 
 <!-- TOC START -->
-- [Authentication Issues](#authentication-issues)
-  - [User Registration Failures](#user-registration-failures)
-  - [Authentication Failures](#authentication-failures)
-  - [Token Validation Issues](#token-validation-issues)
-- [Configuration Issues](#configuration-issues)
-  - [Environment Configuration](#environment-configuration)
-  - [JWT Configuration](#jwt-configuration)
-- [Testing Issues](#testing-issues)
-  - [Test Failures](#test-failures)
-  - [Test Environment Setup](#test-environment-setup)
-- [Performance Issues](#performance-issues)
-  - [Slow Authentication](#slow-authentication)
-  - [Memory Usage](#memory-usage)
-- [Development Issues](#development-issues)
-  - [IDE and Type Checking](#ide-and-type-checking)
-  - [Import Issues](#import-issues)
-- [Production Issues](#production-issues)
-  - [Security Concerns](#security-concerns)
-  - [Session Management](#session-management)
-- [Getting Help](#getting-help)
-  - [Debug Mode](#debug-mode)
-  - [Error Information](#error-information)
-  - [Community Support](#community-support)
+- Authentication Issues
+  - User Registration Failures
+  - Authentication Failures
+  - Token Validation Issues
+- Configuration Issues
+  - Environment Configuration
+  - JWT Configuration
+- Testing Issues
+  - Test Failures
+  - Test Environment Setup
+- Performance Issues
+  - Slow Authentication
+  - Memory Usage
+- Development Issues
+  - IDE and Type Checking
+  - Import Issues
+- Production Issues
+  - Security Concerns
+  - Session Management
+- Getting Help
+  - Debug Mode
+  - Error Information
+  - Community Support
 <!-- TOC END -->
 
 **Version**: 0.9.9 RC | **Updated**: September 17, 2025
@@ -469,10 +469,10 @@ if result.is_failure:
 
 ### Community Support
 
-- **Documentation**: Check [Getting Started](getting-started.md) and [API Reference](api-reference.md)
+- **Documentation**: Check Getting Started and API Reference
 - **Issues**: Report bugs in GitHub Issues
 - **Security**: Report security issues privately to maintainers
 
 ---
 
-This troubleshooting guide reflects common issues as of September 17, 2025. For additional help, see the [Development](development.md) guide.
+This troubleshooting guide reflects common issues as of September 17, 2025. For additional help, see the Development guide.

@@ -2,25 +2,25 @@
 
 
 <!-- TOC START -->
-- [Overview](#overview)
-- [System Context](#system-context)
-  - [Key Elements](#key-elements)
-- [System Boundaries](#system-boundaries)
-  - [What flext-auth IS responsible for](#what-flext-auth-is-responsible-for)
-  - [What flext-auth is NOT responsible for](#what-flext-auth-is-not-responsible-for)
-- [External Interfaces](#external-interfaces)
-  - [Authentication Protocols](#authentication-protocols)
-  - [Integration Points](#integration-points)
-- [Quality Attributes in Context](#quality-attributes-in-context)
-  - [Security](#security)
-  - [Performance](#performance)
-  - [Usability](#usability)
-- [Constraints and Assumptions](#constraints-and-assumptions)
-  - [Technical Constraints](#technical-constraints)
-  - [Business Constraints](#business-constraints)
-  - [Environmental Assumptions](#environmental-assumptions)
-- [Related Documentation](#related-documentation)
-- [Diagram](#diagram)
+- Overview
+- System Context
+  - Key Elements
+- System Boundaries
+  - What flext-auth IS responsible for
+  - What flext-auth is NOT responsible for
+- External Interfaces
+  - Authentication Protocols
+  - Integration Points
+- Quality Attributes in Context
+  - Security
+  - Performance
+  - Usability
+- Constraints and Assumptions
+  - Technical Constraints
+  - Business Constraints
+  - Environmental Assumptions
+- Related Documentation
+- Diagram
 <!-- TOC END -->
 
 ## Overview
@@ -142,9 +142,9 @@ flext-auth is a generic, extensible authentication library that provides multi-p
 
 ## Related Documentation
 
-- [Container Architecture](../containers/) - Technology choices and deployment
-- [Security Architecture](../../decisions/security-architecture.md) - Security design principles
-- [Quality Attributes](../../decisions/quality-attributes.md) - Non-functional requirements
+- Container Architecture - Technology choices and deployment
+- Security Architecture - Security design principles
+- Quality Attributes - Non-functional requirements
 
 ## Diagram
 
@@ -177,4 +177,4 @@ Rel(flext_auth, monitoring, "Sends logs/metrics to")
 @enduml
 ```
 
-_Note: This diagram is generated from PlantUML source. See [diagrams/plantuml/system-context.puml](../../../diagrams/plantuml/system-context.puml) for the source file._
+_Note: This diagram is generated from PlantUML source. See diagrams/plantuml/system-context.puml for the source file._

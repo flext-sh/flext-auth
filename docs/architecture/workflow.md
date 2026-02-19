@@ -2,35 +2,35 @@
 
 
 <!-- TOC START -->
-- [Overview](#overview)
-- [Workflow Phases](#workflow-phases)
-  - [1. Architecture Analysis & Discovery](#1-architecture-analysis-discovery)
-  - [2. Documentation Generation](#2-documentation-generation)
-  - [3. Quality Assurance & Validation](#3-quality-assurance-validation)
-  - [4. Review & Approval](#4-review-approval)
-  - [5. Publication & Maintenance](#5-publication-maintenance)
-- [Tool Integration](#tool-integration)
-  - [CI/CD Integration](#cicd-integration)
-  - [Pre-commit Hooks](#pre-commit-hooks)
-- [Decision-Making Framework](#decision-making-framework)
-  - [When to Update Architecture Documentation](#when-to-update-architecture-documentation)
-  - [ADR Creation Guidelines](#adr-creation-guidelines)
-- [Monitoring & Alerts](#monitoring-alerts)
-  - [Automated Monitoring](#automated-monitoring)
-  - [Dashboard Integration](#dashboard-integration)
-- [Troubleshooting](#troubleshooting)
-  - [Common Issues](#common-issues)
-  - [Recovery Procedures](#recovery-procedures)
-- [Best Practices](#best-practices)
-  - [Documentation Standards](#documentation-standards)
-  - [Tool Usage](#tool-usage)
-  - [Team Collaboration](#team-collaboration)
-- [Success Metrics](#success-metrics)
-  - [Quality Metrics](#quality-metrics)
-  - [Process Metrics](#process-metrics)
-- [Resources](#resources)
-  - [Documentation](#documentation)
-  - [Tools](#tools)
+- Overview
+- Workflow Phases
+  - 1. Architecture Analysis & Discovery
+  - 2. Documentation Generation
+  - 3. Quality Assurance & Validation
+  - 4. Review & Approval
+  - 5. Publication & Maintenance
+- Tool Integration
+  - CI/CD Integration
+  - Pre-commit Hooks
+- Decision-Making Framework
+  - When to Update Architecture Documentation
+  - ADR Creation Guidelines
+- Monitoring & Alerts
+  - Automated Monitoring
+  - Dashboard Integration
+- Troubleshooting
+  - Common Issues
+  - Recovery Procedures
+- Best Practices
+  - Documentation Standards
+  - Tool Usage
+  - Team Collaboration
+- Success Metrics
+  - Quality Metrics
+  - Process Metrics
+- Resources
+  - Documentation
+  - Tools
 <!-- TOC END -->
 
 ## Overview
@@ -403,16 +403,16 @@ python main.py comprehensive | grep -A 20 "Link Validation"
 
 ### Documentation
 
-- [Architecture Documentation Guide](../README.md)
+- Architecture Documentation Guide
 - [C4 Model](https://c4model.com/)
 - [ADR Guidelines](https://adr.github.io/)
 - [PlantUML](https://plantuml.com/)
 
 ### Tools
 
-- [Documentation Maintenance Scripts](../../scripts/docs-maintenance/)
-- [Architecture Generation Scripts](../../scripts/generate-architecture-docs.py)
-- [Diagram Generation Scripts](diagrams/generate-diagrams.sh)
+- Documentation Maintenance Scripts
+- Architecture Generation Scripts
+- Diagram Generation Scripts
 
 ---
 

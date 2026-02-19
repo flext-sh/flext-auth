@@ -2,31 +2,31 @@
 
 
 <!-- TOC START -->
-- [Overview](#overview)
-- [Component Architecture](#component-architecture)
-  - [Core Components](#core-components)
-- [Component Relationships](#component-relationships)
-  - [Data Flow Architecture](#data-flow-architecture)
-  - [Key Interaction Patterns](#key-interaction-patterns)
-- [Design Patterns Used](#design-patterns-used)
-  - [Provider Pattern (Strategy)](#provider-pattern-strategy)
-  - [Registry Pattern](#registry-pattern)
-  - [Facade Pattern](#facade-pattern)
-  - [Railway-Oriented Programming](#railway-oriented-programming)
-- [Component Boundaries](#component-boundaries)
-  - [Clear Responsibilities](#clear-responsibilities)
-  - [Dependency Direction](#dependency-direction)
-  - [Interface Segregation](#interface-segregation)
-- [Quality Attributes by Component](#quality-attributes-by-component)
-  - [Security](#security)
-  - [Performance](#performance)
-  - [Maintainability](#maintainability)
-- [Testing Strategy by Component](#testing-strategy-by-component)
-  - [Unit Testing](#unit-testing)
-  - [Integration Testing](#integration-testing)
-  - [End-to-End Testing](#end-to-end-testing)
-- [Related Documentation](#related-documentation)
-- [Diagram](#diagram)
+- Overview
+- Component Architecture
+  - Core Components
+- Component Relationships
+  - Data Flow Architecture
+  - Key Interaction Patterns
+- Design Patterns Used
+  - Provider Pattern (Strategy)
+  - Registry Pattern
+  - Facade Pattern
+  - Railway-Oriented Programming
+- Component Boundaries
+  - Clear Responsibilities
+  - Dependency Direction
+  - Interface Segregation
+- Quality Attributes by Component
+  - Security
+  - Performance
+  - Maintainability
+- Testing Strategy by Component
+  - Unit Testing
+  - Integration Testing
+  - End-to-End Testing
+- Related Documentation
+- Diagram
 <!-- TOC END -->
 
 ## Overview
@@ -340,9 +340,9 @@ Infrastructure ↑ ↑ ↑ ↑
 
 ## Related Documentation
 
-- [Code Architecture](../code/) - Implementation details and code organization
-- [Security Architecture](../../decisions/security-architecture.md) - Security design and controls
-- [Quality Attributes](../../decisions/quality-attributes.md) - Component quality requirements
+- Code Architecture - Implementation details and code organization
+- Security Architecture - Security design and controls
+- Quality Attributes - Component quality requirements
 
 ## Diagram
 
@@ -407,4 +407,4 @@ Rel(api_facade, monitoring, "Sends metrics/logs")
 @enduml
 ```
 
-_Note: This diagram is generated from PlantUML source. See [diagrams/plantuml/component-architecture.puml](../../../diagrams/plantuml/component-architecture.puml) for the source file._
+_Note: This diagram is generated from PlantUML source. See diagrams/plantuml/component-architecture.puml for the source file._

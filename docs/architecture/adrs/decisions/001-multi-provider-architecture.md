@@ -2,41 +2,41 @@
 
 
 <!-- TOC START -->
-- [Status](#status)
-- [Context](#context)
-  - [Problem Statement](#problem-statement)
-  - [Background](#background)
-  - [Current State](#current-state)
-  - [Constraints](#constraints)
-  - [Stakeholders](#stakeholders)
-- [Decision](#decision)
-  - [Decision Statement](#decision-statement)
-  - [Implementation Approach](#implementation-approach)
-  - [Scope](#scope)
-- [Consequences](#consequences)
-  - [Positive Consequences](#positive-consequences)
-  - [Negative Consequences](#negative-consequences)
-  - [Trade-offs](#trade-offs)
-- [Alternatives Considered](#alternatives-considered)
-  - [Option 1: Monolithic Protocol Support](#option-1-monolithic-protocol-support)
-  - [Option 2: Plugin System with Duck Typing](#option-2-plugin-system-with-duck-typing)
-  - [Option 3: Strategy Pattern per Protocol](#option-3-strategy-pattern-per-protocol)
-- [Implementation Plan](#implementation-plan)
-  - [Phase 1: Foundation & Registry (✅ Complete)](#phase-1-foundation-registry-complete)
-  - [Phase 2: Core Providers (✅ Complete)](#phase-2-core-providers-complete)
-  - [Phase 3: Advanced Providers (✅ Mostly Complete)](#phase-3-advanced-providers-mostly-complete)
-  - [Phase 4: Transport & Protocol (⚠️ Partial)](#phase-4-transport-protocol-partial)
-- [Success Metrics](#success-metrics)
-  - [Quantitative Metrics](#quantitative-metrics)
-  - [Qualitative Metrics](#qualitative-metrics)
-- [Related ADRs](#related-adrs)
-- [References](#references)
-  - [External References](#external-references)
-  - [Internal References](#internal-references)
-- [Notes](#notes)
-  - [Implementation Challenges](#implementation-challenges)
-  - [Future Considerations](#future-considerations)
-  - [Lessons Learned](#lessons-learned)
+- Status
+- Context
+  - Problem Statement
+  - Background
+  - Current State
+  - Constraints
+  - Stakeholders
+- Decision
+  - Decision Statement
+  - Implementation Approach
+  - Scope
+- Consequences
+  - Positive Consequences
+  - Negative Consequences
+  - Trade-offs
+- Alternatives Considered
+  - Option 1: Monolithic Protocol Support
+  - Option 2: Plugin System with Duck Typing
+  - Option 3: Strategy Pattern per Protocol
+- Implementation Plan
+  - Phase 1: Foundation & Registry (✅ Complete)
+  - Phase 2: Core Providers (✅ Complete)
+  - Phase 3: Advanced Providers (✅ Mostly Complete)
+  - Phase 4: Transport & Protocol (⚠️ Partial)
+- Success Metrics
+  - Quantitative Metrics
+  - Qualitative Metrics
+- Related ADRs
+- References
+  - External References
+  - Internal References
+- Notes
+  - Implementation Challenges
+  - Future Considerations
+  - Lessons Learned
 <!-- TOC END -->
 
 ## Status
@@ -258,8 +258,8 @@ Implement a provider-centric architecture where authentication protocols are enc
 ### Internal References
 
 - [FLEXT Core Patterns](https://github.com/organization/flext/tree/main/flext-core/docs/architecture/)
-- [Architecture Overview](../../README.md)
-- [Provider Implementations](../../../src/flext_auth/providers/)
+- Architecture Overview
+- Provider Implementations
 
 ## Notes
 

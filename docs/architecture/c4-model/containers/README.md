@@ -2,30 +2,30 @@
 
 
 <!-- TOC START -->
-- [Overview](#overview)
-- [Container Architecture](#container-architecture)
-  - [Technology Choices](#technology-choices)
-- [Deployment Architecture](#deployment-architecture)
-  - [Single Container Deployment](#single-container-deployment)
-  - [Microservices Deployment](#microservices-deployment)
-  - [Kubernetes Deployment](#kubernetes-deployment)
-- [Container Relationships](#container-relationships)
-  - [Data Flow](#data-flow)
-  - [Communication Patterns](#communication-patterns)
-- [Technology Stack Details](#technology-stack-details)
-  - [Runtime Environment](#runtime-environment)
-  - [Data Storage](#data-storage)
-  - [External Integrations](#external-integrations)
-- [Quality Attributes by Container](#quality-attributes-by-container)
-  - [flext-auth Container](#flext-auth-container)
-  - [Database Container](#database-container)
-  - [External Services](#external-services)
-- [Deployment Considerations](#deployment-considerations)
-  - [Scaling Strategies](#scaling-strategies)
-  - [High Availability](#high-availability)
-  - [Security Considerations](#security-considerations)
-- [Related Documentation](#related-documentation)
-- [Diagram](#diagram)
+- Overview
+- Container Architecture
+  - Technology Choices
+- Deployment Architecture
+  - Single Container Deployment
+  - Microservices Deployment
+  - Kubernetes Deployment
+- Container Relationships
+  - Data Flow
+  - Communication Patterns
+- Technology Stack Details
+  - Runtime Environment
+  - Data Storage
+  - External Integrations
+- Quality Attributes by Container
+  - flext-auth Container
+  - Database Container
+  - External Services
+- Deployment Considerations
+  - Scaling Strategies
+  - High Availability
+  - Security Considerations
+- Related Documentation
+- Diagram
 <!-- TOC END -->
 
 ## Overview
@@ -260,9 +260,9 @@ flext-auth is deployed as a Python-based container with external dependencies fo
 
 ## Related Documentation
 
-- [Component Architecture](../components/) - Internal component structure
-- [Security Architecture](../../decisions/security-architecture.md) - Security design
-- [Data Architecture](../../decisions/data-architecture.md) - Data storage patterns
+- Component Architecture - Internal component structure
+- Security Architecture - Security design
+- Data Architecture - Data storage patterns
 
 ## Diagram
 
@@ -300,4 +300,4 @@ Rel(auth_service, flext_core, "Uses foundation patterns", "Python imports")
 @enduml
 ```
 
-_Note: This diagram is generated from PlantUML source. See [diagrams/plantuml/container-architecture.puml](../../../diagrams/plantuml/container-architecture.puml) for the source file._
+_Note: This diagram is generated from PlantUML source. See diagrams/plantuml/container-architecture.puml for the source file._
