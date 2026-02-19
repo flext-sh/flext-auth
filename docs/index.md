@@ -1,8 +1,9 @@
 # FLEXT Auth
 
-
 <!-- TOC START -->
+
 - No sections found
+
 <!-- TOC END -->
 
 Welcome to the `flext-auth` documentation.

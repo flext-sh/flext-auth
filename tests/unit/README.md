@@ -1,7 +1,7 @@
 # FLEXT Auth Unit Tests
 
-
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Testing Philosophy](#testing-philosophy)
   - [Unit Test Characteristics](#unit-test-characteristics)
@@ -32,6 +32,7 @@
   - [Adding New Tests](#adding-new-tests)
   - [Test Review Checklist](#test-review-checklist)
 - [Current Status](#current-status)
+
 <!-- TOC END -->
 
 **Fast, isolated unit tests for individual components with coverage.**
@@ -324,20 +325,20 @@ pytest tests/unit/ --log-cli-level=DEBUG
 ### Test Debugging Tips
 
 1. **Use Descriptive Test Names**: Test name should describe the scenario
-2. **Clear Assertions**: Use specific assertion messages
-3. **Small Test Scope**: Focus on single behavior per test
-4. **Good Test Data**: Use realistic but controlled test data
-5. **Proper Mocking**: Mock only external dependencies
+1. **Clear Assertions**: Use specific assertion messages
+1. **Small Test Scope**: Focus on single behavior per test
+1. **Good Test Data**: Use realistic but controlled test data
+1. **Proper Mocking**: Mock only external dependencies
 
 ## Contributing to Unit Tests
 
 ### Adding New Tests
 
 1. **Identify the Component**: Determine which layer (domain/application/infrastructure)
-2. **Create Test File**: Follow naming convention `test_[component_name].py`
-3. **Write Tests**: Follow Given-When-Then pattern
-4. **Add Fixtures**: Create reusable test fixtures in conftest.py
-5. **Verify Coverage**: Ensure 95% coverage is maintained
+1. **Create Test File**: Follow naming convention `test_[component_name].py`
+1. **Write Tests**: Follow Given-When-Then pattern
+1. **Add Fixtures**: Create reusable test fixtures in conftest.py
+1. **Verify Coverage**: Ensure 95% coverage is maintained
 
 ### Test Review Checklist
 
@@ -350,11 +351,11 @@ pytest tests/unit/ --log-cli-level=DEBUG
 
 ## Current Status
 
-**Unit Test Coverage**: 🔄 Being restored after import issue resolution  
-**Test Infrastructure**: ✅ Comprehensive testing patterns documented  
-**Quality Standards**: ✅ Enterprise-grade testing standards established  
+**Unit Test Coverage**: 🔄 Being restored after import issue resolution\
+**Test Infrastructure**: ✅ Comprehensive testing patterns documented\
+**Quality Standards**: ✅ Enterprise-grade testing standards established\
 **Performance**: ✅ Fast execution requirements documented
 
----
+______________________________________________________________________
 
 _Unit tests form the foundation of our testing strategy, providing fast feedback and ensuring component reliability._

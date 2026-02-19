@@ -168,7 +168,17 @@ per_rule_ignores.DEP002 = [
 ]
 
 [tool.pytest]
-ini_options.addopts = [ "--strict-config", "--strict-markers", "--tb=short", "-p no:sugar", "-q", "-ra" ]
+ini_options.addopts = [
+  "--strict-config",
+  "--strict-markers",
+  "--tb=short",
+  "-p no:sugar",
+  "-q",
+  "-ra",
+  "--timeout=30",
+  "--timeout-method=signal",
+  "--durations=0",
+]
 ini_options.markers = [
   "concurrency: marks tests as concurrency tests",
   "e2e: marks tests as end-to-end tests",

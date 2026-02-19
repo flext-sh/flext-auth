@@ -1,7 +1,7 @@
 # C4 Containers: Container Architecture Diagram
 
-
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Container Architecture](#container-architecture)
   - [Technology Choices](#technology-choices)
@@ -26,6 +26,7 @@
   - [Security Considerations](#security-considerations)
 - [Related Documentation](#related-documentation)
 - [Diagram](#diagram)
+
 <!-- TOC END -->
 
 ## Overview
@@ -175,12 +176,12 @@ flext-auth is deployed as a Python-based container with external dependencies fo
 ### Data Flow
 
 1. **Authentication Request** → flext-auth container
-2. **Provider Selection** → Identity provider lookup
-3. **Credential Verification** → External identity provider
-4. **Token Generation** → Internal JWT creation
-5. **Session Storage** → Database/Redis persistence
-6. **Audit Logging** → Database storage
-7. **Metrics Export** → Monitoring system
+1. **Provider Selection** → Identity provider lookup
+1. **Credential Verification** → External identity provider
+1. **Token Generation** → Internal JWT creation
+1. **Session Storage** → Database/Redis persistence
+1. **Audit Logging** → Database storage
+1. **Metrics Export** → Monitoring system
 
 ### Communication Patterns
 

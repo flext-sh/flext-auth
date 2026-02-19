@@ -1,7 +1,7 @@
 # Troubleshooting
 
-
 <!-- TOC START -->
+
 - [Authentication Issues](#authentication-issues)
   - [User Registration Failures](#user-registration-failures)
   - [Authentication Failures](#authentication-failures)
@@ -25,6 +25,7 @@
   - [Debug Mode](#debug-mode)
   - [Error Information](#error-information)
   - [Community Support](#community-support)
+
 <!-- TOC END -->
 
 **Version**: 0.9.9 RC | **Updated**: September 17, 2025
@@ -33,7 +34,7 @@ Common issues and solutions for flext-auth authentication service.
 
 For general FLEXT troubleshooting, see **[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)** documentation.
 
----
+______________________________________________________________________
 
 ## Authentication Issues
 
@@ -55,14 +56,14 @@ result = auth.register_user("user", "invalid-email", "weak")
    result = auth.register_user("user", "user@example.com", "password123")
    ```
 
-2. **Password Requirements**:
+1. **Password Requirements**:
 
    ```python
    # Use stronger password (current implementation has basic validation)
    result = auth.register_user("user", "user@example.com", "SecurePassword123!")
    ```
 
-3. **Username Uniqueness**:
+1. **Username Uniqueness**:
 
    ```python
    # Check if user already exists
@@ -97,8 +98,8 @@ else:
 **Common Causes**:
 
 1. **Case sensitivity**: Usernames are case-sensitive
-2. **Password hashing**: Ensure bcrypt is working correctly
-3. **User state**: Check if user is active
+1. **Password hashing**: Ensure bcrypt is working correctly
+1. **User state**: Check if user is active
 
 ### Token Validation Issues
 
@@ -120,7 +121,7 @@ validation_result = auth.validate_token(token)
    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
    ```
 
-2. **Token Expiration**:
+1. **Token Expiration**:
 
    ```python
    import jwt
@@ -133,7 +134,7 @@ validation_result = auth.validate_token(token)
        print(f"Token error: {e}")
    ```
 
-3. **Secret Key Mismatch**:
+1. **Secret Key Mismatch**:
 
    ```python
    # Ensure same secret key is used for generation and validation
@@ -141,7 +142,7 @@ validation_result = auth.validate_token(token)
    print(f"JWT Secret: {config.jwt_secret_key}")
    ```
 
----
+______________________________________________________________________
 
 ## Configuration Issues
 
@@ -164,7 +165,7 @@ if config.is_failure:
    # Should show AUTH_* variables if set
    ```
 
-2. **Valid Environment Names**:
+1. **Valid Environment Names**:
 
    ```python
    # Use valid environment names
@@ -172,7 +173,7 @@ if config.is_failure:
    config = FlextAuthSettings()
    ```
 
-3. **Manual Configuration**:
+1. **Manual Configuration**:
 
    ```python
    # Create configuration manually if environment fails
@@ -201,7 +202,7 @@ print(f"Secret Key Length: {len(config.jwt_secret_key)}")
 - Secret key should be at least 32 characters
 - Reasonable expiry time (15-60 minutes)
 
----
+______________________________________________________________________
 
 ## Testing Issues
 
@@ -223,7 +224,7 @@ print(f"Secret Key Length: {len(config.jwt_secret_key)}")
    # Solution: Ensure proper test fixtures
    ```
 
-2. **Configuration Tests**:
+1. **Configuration Tests**:
 
    ```bash
    # Run configuration tests
@@ -233,7 +234,7 @@ print(f"Secret Key Length: {len(config.jwt_secret_key)}")
    # Solution: Reset global config in test fixtures
    ```
 
-3. **Mock Issues**:
+1. **Mock Issues**:
 
    ```python
    # In test fixtures
@@ -261,7 +262,7 @@ PYTHONPATH=src pytest tests/ -v
 pytest --cov=src/flext_auth tests/
 ```
 
----
+______________________________________________________________________
 
 ## Performance Issues
 
@@ -293,7 +294,7 @@ print(f"Bcrypt rounds: {config.bcrypt_rounds}")
    dev_config = FlextAuthSettings(bcrypt_rounds=10)  # Faster for development
    ```
 
-2. **Use production rounds only in production**:
+1. **Use production rounds only in production**:
 
    ```python
    prod_config = FlextAuthSettings(bcrypt_rounds=14)  # High security
@@ -331,7 +332,7 @@ def cleanup_expired_sessions():
     pass
 ```
 
----
+______________________________________________________________________
 
 ## Development Issues
 
@@ -363,7 +364,7 @@ mypy src/flext_auth/
        pass
    ```
 
-2. **FlextResult Types**:
+1. **FlextResult Types**:
 
    ```python
    # Specify generic type for FlextResult
@@ -386,7 +387,7 @@ if TYPE_CHECKING:
 # Or restructure imports to avoid cycles
 ```
 
----
+______________________________________________________________________
 
 ## Production Issues
 
@@ -428,7 +429,7 @@ print(f'Max attempts: {config.max_failed_attempts}')  # Should be <= 5
        pass
    ```
 
-2. **External session storage** (future):
+1. **External session storage** (future):
 
    ```python
    # Future Redis integration
@@ -438,7 +439,7 @@ print(f'Max attempts: {config.max_failed_attempts}')  # Should be <= 5
            pass
    ```
 
----
+______________________________________________________________________
 
 ## Getting Help
 
@@ -473,6 +474,6 @@ if result.is_failure:
 - **Issues**: Report bugs in GitHub Issues
 - **Security**: Report security issues privately to maintainers
 
----
+______________________________________________________________________
 
 This troubleshooting guide reflects common issues as of September 17, 2025. For additional help, see the Development guide.

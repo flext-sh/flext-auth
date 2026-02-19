@@ -1,7 +1,7 @@
 # Integration
 
-
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [FLEXT-Core Integration](#flext-core-integration)
   - [Authentication-Specific Integration](#authentication-specific-integration)
@@ -25,13 +25,14 @@
 - [Future Integration Plans](#future-integration-plans)
   - [Modern Authentication Protocols](#modern-authentication-protocols)
   - [Enterprise SSO](#enterprise-sso)
+
 <!-- TOC END -->
 
 **Version**: 0.9.9 RC | **Updated**: September 17, 2025
 
 Integration patterns for flext-auth within the FLEXT ecosystem.
 
----
+______________________________________________________________________
 
 ## Overview
 
@@ -39,7 +40,7 @@ flext-auth integrates with the FLEXT ecosystem through [flext-core](https://gith
 
 **Integration Status**: 85% flext-core pattern compliance
 
----
+______________________________________________________________________
 
 ## FLEXT-Core Integration
 
@@ -155,7 +156,7 @@ if password_result.is_success:
     print("Password set successfully")
 ```
 
----
+______________________________________________________________________
 
 ## Integration with FLEXT Projects
 
@@ -263,7 +264,7 @@ def login(ctx, username, password):
         ctx.exit(1)
 ```
 
----
+______________________________________________________________________
 
 ## Service Integration Patterns
 
@@ -320,7 +321,7 @@ class ServiceA:
             return FlextResult[t.Dict].fail(f"Service call failed: {response.text}")
 ```
 
----
+______________________________________________________________________
 
 ## Database Integration
 
@@ -376,7 +377,7 @@ class RedisSessionStorage:
             return FlextResult[bool].fail(f"Session storage failed: {e}")
 ```
 
----
+______________________________________________________________________
 
 ## Configuration Integration
 
@@ -423,7 +424,7 @@ class FlextAuthWorkspaceSettings(FlextWorkspaceSettings):
             return FlextResult[FlextAuth].fail("Auth configuration failed")
 ```
 
----
+______________________________________________________________________
 
 ## Testing Integration
 
@@ -457,7 +458,7 @@ class TestAuthIntegration:
         assert api_result.is_success
 ```
 
----
+______________________________________________________________________
 
 ## Future Integration Plans
 
@@ -502,6 +503,6 @@ class SAMLProvider:
         pass
 ```
 
----
+______________________________________________________________________
 
 This integration guide reflects the current implementation and planned integrations as of September 17, 2025.

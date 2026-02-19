@@ -1,41 +1,42 @@
 # FLEXT Auth Architecture Documentation
 
-
 <!-- TOC START -->
+
 - [Overview](#overview)
-- [📚 Documentation Structure](#-documentation-structure)
-- [🏗️ Architectural Frameworks Used](#-architectural-frameworks-used)
+- [📚 Documentation Structure](#documentation-structure)
+- [🏗️ Architectural Frameworks Used](#architectural-frameworks-used)
   - [C4 Model](#c4-model)
   - [Architecture Decision Records (ADRs)](#architecture-decision-records-adrs)
   - [PlantUML Diagrams](#plantuml-diagrams)
-- [🚀 Quick Start](#-quick-start)
+- [🚀 Quick Start](#quick-start)
   - [View Current Architecture](#view-current-architecture)
   - [Generate Diagrams](#generate-diagrams)
   - [Create New ADR](#create-new-adr)
-- [📋 Key Architectural Views](#-key-architectural-views)
+- [📋 Key Architectural Views](#key-architectural-views)
   - [1. System Context (C4 Context)](#1-system-context-c4-context)
   - [2. Container Architecture (C4 Containers)](#2-container-architecture-c4-containers)
   - [3. Component Architecture (C4 Components)](#3-component-architecture-c4-components)
   - [4. Security Architecture](#4-security-architecture)
-- [🎯 Quality Attributes](#-quality-attributes)
+- [🎯 Quality Attributes](#quality-attributes)
   - [Security](#security)
   - [Performance](#performance)
   - [Maintainability](#maintainability)
   - [Reliability](#reliability)
-- [🔄 Architecture Evolution](#-architecture-evolution)
+- [🔄 Architecture Evolution](#architecture-evolution)
   - [Current State (v0.9.0)](#current-state-v090)
   - [Planned Evolution](#planned-evolution)
-- [📖 How to Use This Documentation](#-how-to-use-this-documentation)
+- [📖 How to Use This Documentation](#how-to-use-this-documentation)
   - [For Architects](#for-architects)
   - [For Developers](#for-developers)
   - [For Stakeholders](#for-stakeholders)
-- [🔧 Maintenance and Updates](#-maintenance-and-updates)
+- [🔧 Maintenance and Updates](#maintenance-and-updates)
   - [Automated Generation](#automated-generation)
   - [Manual Updates](#manual-updates)
   - [Review Process](#review-process)
-- [📚 Additional Resources](#-additional-resources)
-- [🤝 Contributing](#-contributing)
+- [📚 Additional Resources](#additional-resources)
+- [🤝 Contributing](#contributing)
   - [Standards](#standards)
+
 <!-- TOC END -->
 
 ## Overview
@@ -242,21 +243,21 @@ vim docs/architecture/adrs/decisions/001-new-decision.md
 ### For Architects
 
 1. Start with System Context to understand the big picture
-2. Review Container Architecture for technology choices
-3. Dive into Component Details for implementation understanding
-4. Check ADRs for decision rationale
+1. Review Container Architecture for technology choices
+1. Dive into Component Details for implementation understanding
+1. Check ADRs for decision rationale
 
 ### For Developers
 
 1. Review Component Architecture for system understanding
-2. Check Code Organization for implementation details
-3. Review Security Architecture for secure development
-4. Follow Development Guidelines
+1. Check Code Organization for implementation details
+1. Review Security Architecture for secure development
+1. Follow Development Guidelines
 
 ### For Stakeholders
 
 1. Review System Context for business understanding
-2. Review Architecture Decisions for important trade-offs
+1. Review Architecture Decisions for important trade-offs
 
 ## 🔧 Maintenance and Updates
 
@@ -282,9 +283,9 @@ cd docs/architecture
 ### Review Process
 
 1. Architecture changes require diagram updates
-2. New components need C4 model documentation
-3. Significant decisions require ADR creation
-4. Regular reviews ensure documentation accuracy
+1. New components need C4 model documentation
+1. Significant decisions require ADR creation
+1. Regular reviews ensure documentation accuracy
 
 ## 📚 Additional Resources
 
@@ -299,9 +300,9 @@ cd docs/architecture
 When making architectural changes:
 
 1. Update relevant C4 diagrams
-2. Create ADRs for significant decisions
-3. Update quality attribute documentation
-4. Ensure diagrams are regenerated and committed
+1. Create ADRs for significant decisions
+1. Update quality attribute documentation
+1. Ensure diagrams are regenerated and committed
 
 ### Standards
 
@@ -311,7 +312,7 @@ When making architectural changes:
 - Keep diagrams in source control
 - Use consistent naming conventions
 
----
+______________________________________________________________________
 
 **Last Updated**: October 10, 2025
 **Version**: v0.9.0

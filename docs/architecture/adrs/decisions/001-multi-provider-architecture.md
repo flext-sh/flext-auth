@@ -1,7 +1,7 @@
 # ADR-001: Multi-Provider Authentication Architecture
 
-
 <!-- TOC START -->
+
 - [Status](#status)
 - [Context](#context)
   - [Problem Statement](#problem-statement)
@@ -37,6 +37,7 @@
   - [Implementation Challenges](#implementation-challenges)
   - [Future Considerations](#future-considerations)
   - [Lessons Learned](#lessons-learned)
+
 <!-- TOC END -->
 
 ## Status
@@ -98,10 +99,10 @@ Implement a provider-centric architecture where authentication protocols are enc
 ### Implementation Approach
 
 1. **Provider Protocol**: Define `FlextAuthBaseProvider` abstract interface
-2. **Registry System**: Implement `FlextAuthRegistry` for provider management
-3. **Provider Implementations**: Extract JWT to `FlextAuthJwtProvider`, create stubs for other protocols
-4. **Facade Pattern**: Maintain `FlextAuth` as clean API facade
-5. **Backward Compatibility**: Preserve existing API while adding new capabilities
+1. **Registry System**: Implement `FlextAuthRegistry` for provider management
+1. **Provider Implementations**: Extract JWT to `FlextAuthJwtProvider`, create stubs for other protocols
+1. **Facade Pattern**: Maintain `FlextAuth` as clean API facade
+1. **Backward Compatibility**: Preserve existing API while adding new capabilities
 
 ### Scope
 
@@ -235,7 +236,7 @@ Implement a provider-centric architecture where authentication protocols are enc
 
 - 9+ authentication providers implemented
 - 70%+ test coverage across providers
-- <100ms average authentication response time
+- \<100ms average authentication response time
 - 99.9% uptime in production deployments
 
 ### Qualitative Metrics

@@ -1,7 +1,7 @@
 # C4 Context: System Context Diagram
 
-
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [System Context](#system-context)
   - [Key Elements](#key-elements)
@@ -21,6 +21,7 @@
   - [Environmental Assumptions](#environmental-assumptions)
 - [Related Documentation](#related-documentation)
 - [Diagram](#diagram)
+
 <!-- TOC END -->
 
 ## Overview
@@ -106,7 +107,7 @@ flext-auth is a generic, extensible authentication library that provides multi-p
 
 ### Performance
 
-- **Response Time**: Fast authentication decisions (<100ms typical)
+- **Response Time**: Fast authentication decisions (\<100ms typical)
 - **Throughput**: Handle high-volume authentication requests
 - **Scalability**: Support growing user bases and request volumes
 - **Efficiency**: Minimal resource usage for authentication operations

@@ -1,11 +1,12 @@
 # flext-auth Documentation
 
-
 <!-- TOC START -->
-- [📚 Documentation Structure](#-documentation-structure)
-- [🎯 Purpose](#-purpose)
-- [🔗 Integration](#-integration)
-- [📦 Archive](#-archive)
+
+- [📚 Documentation Structure](#documentation-structure)
+- [🎯 Purpose](#purpose)
+- [🔗 Integration](#integration)
+- [📦 Archive](#archive)
+
 <!-- TOC END -->
 
 **Professional documentation for the FLEXT Authentication & Authorization library.**
@@ -42,6 +43,6 @@ This documentation is part of the larger FLEXT Ecosystem Documentation hub. For 
 
 The `archive/development/` directory contains historical development reports, migration guides, and internal documentation that may be useful for reference but are not part of the official user-facing documentation.
 
----
+______________________________________________________________________
 
 _Last Updated: 2025-10-05 | Version: 1.0.0_

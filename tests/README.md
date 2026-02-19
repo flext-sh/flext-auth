@@ -1,7 +1,7 @@
 # FLEXT Auth Test Suite
 
-
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Architecture](#architecture)
   - [Testing Strategy](#testing-strategy)
@@ -37,6 +37,7 @@
   - [Quality Gates](#quality-gates)
   - [Automated Testing](#automated-testing)
 - [Current Status](#current-status)
+
 <!-- TOC END -->
 
 **Testing for authentication library with coverage and quality assurance.**
@@ -306,9 +307,9 @@ Test-specific environment variables:
 ### Common Issues
 
 1. **Import Errors**: Verify all dependencies are installed
-2. **Database Issues**: Ensure test database is properly configured
-3. **Issues**: Use proper test patterns
-4. **Mock Issues**: Verify mock configurations match actual interfaces
+1. **Database Issues**: Ensure test database is properly configured
+1. **Issues**: Use proper test patterns
+1. **Mock Issues**: Verify mock configurations match actual interfaces
 
 ### Debug Tools
 
@@ -331,10 +332,10 @@ pytest tests/ --durations=10
 ### Adding New Tests
 
 1. **Identify Coverage Gaps**: Use coverage reports to find untested code
-2. **Choose Test Type**: Unit, integration, or e2e based on scope
-3. **Follow Patterns**: Use established testing patterns and utilities
-4. **Document Purpose**: Clear test names and docstrings
-5. **Validate Coverage**: Ensure new tests increase coverage
+1. **Choose Test Type**: Unit, integration, or e2e based on scope
+1. **Follow Patterns**: Use established testing patterns and utilities
+1. **Document Purpose**: Clear test names and docstrings
+1. **Validate Coverage**: Ensure new tests increase coverage
 
 ### Test Review Guidelines
 
@@ -369,6 +370,6 @@ Tests must pass before code can be merged:
 **Import Issues**: 🔄 Resolving import errors for test execution
 **Coverage Restoration**: 🔄 Re-establishing 95% coverage requirement
 
----
+______________________________________________________________________
 
 _This README serves as the comprehensive guide for FLEXT Auth testing. It should be updated as testing patterns and requirements evolve._

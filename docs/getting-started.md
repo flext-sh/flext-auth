@@ -1,7 +1,7 @@
 # Getting Started
 
-
 <!-- TOC START -->
+
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
@@ -28,13 +28,14 @@
   - [Documentation](#documentation)
   - [Production Considerations](#production-considerations)
 - [Related Documentation](#related-documentation)
+
 <!-- TOC END -->
 
 **Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
 
 Installation and first steps for implementing enterprise authentication in your FLEXT projects using flext-auth with complete FlextService and h integration.
 
----
+______________________________________________________________________
 
 ## Installation
 
@@ -57,7 +58,7 @@ poetry install
 python -c "from flext_auth import flext_auth_quick_start; print('flext-auth ready')"
 ```
 
----
+______________________________________________________________________
 
 ## Basic Authentication
 
@@ -119,7 +120,7 @@ else:
     print(f"Token invalid: {validation_result.error}")
 ```
 
----
+______________________________________________________________________
 
 ## Configuration
 
@@ -154,7 +155,7 @@ config = FlextAuthSettings(
 auth = FlextAuth(config=config)
 ```
 
----
+______________________________________________________________________
 
 ## CLI Usage
 
@@ -183,7 +184,7 @@ flext-auth validate-config
 flext-auth manage-config show
 ```
 
----
+______________________________________________________________________
 
 ## FLEXT Integration Patterns
 
@@ -274,7 +275,7 @@ if auth_result.is_success:
     # Use authentication service
 ```
 
----
+______________________________________________________________________
 
 ## Domain Models
 
@@ -318,7 +319,7 @@ if session.is_active and datetime.utcnow() < session.expires_at:
     print("Session is valid")
 ```
 
----
+______________________________________________________________________
 
 ## Testing Your Integration
 
@@ -356,7 +357,7 @@ def test_authentication_workflow():
     assert token_result.is_success
 ```
 
----
+______________________________________________________________________
 
 ## Next Steps
 
@@ -388,7 +389,7 @@ make validate
 - Implement monitoring and logging
 - Set up proper secret management
 
----
+______________________________________________________________________
 
 This guide covers basic usage patterns. For production deployment and additional features, see the documentation.
 

@@ -1,7 +1,7 @@
 # C4 Components: Component Architecture Diagram
 
-
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Component Architecture](#component-architecture)
   - [Core Components](#core-components)
@@ -27,6 +27,7 @@
   - [End-to-End Testing](#end-to-end-testing)
 - [Related Documentation](#related-documentation)
 - [Diagram](#diagram)
+
 <!-- TOC END -->
 
 ## Overview
@@ -216,29 +217,29 @@ Response ← FlextWebTransportAdapter
 #### Provider Registration
 
 1. **Startup**: FlextAuthRegistry loads available providers
-2. **Configuration**: Provider-specific settings are validated
-3. **Registration**: Providers register capabilities and metadata
-4. **Discovery**: Runtime provider selection based on requirements
+1. **Configuration**: Provider-specific settings are validated
+1. **Registration**: Providers register capabilities and metadata
+1. **Discovery**: Runtime provider selection based on requirements
 
 #### Authentication Flow
 
 1. **Request**: Authentication request received
-2. **Validation**: Input validation and sanitization
-3. **Provider Selection**: Registry selects appropriate provider
-4. **Authentication**: Delegate to provider implementation
-5. **Token Generation**: Create authentication tokens
-6. **Session Creation**: Establish user session
-7. **Response**: Return authentication result
+1. **Validation**: Input validation and sanitization
+1. **Provider Selection**: Registry selects appropriate provider
+1. **Authentication**: Delegate to provider implementation
+1. **Token Generation**: Create authentication tokens
+1. **Session Creation**: Establish user session
+1. **Response**: Return authentication result
 
 #### Token Validation Flow
 
 1. **Request**: Token validation request
-2. **Parsing**: Extract token claims
-3. **Verification**: Validate token signature and claims
-4. **User Lookup**: Retrieve user information
-5. **Session Check**: Validate session status
-6. **Authorization**: Check permissions and roles
-7. **Response**: Return validation result
+1. **Parsing**: Extract token claims
+1. **Verification**: Validate token signature and claims
+1. **User Lookup**: Retrieve user information
+1. **Session Check**: Validate session status
+1. **Authorization**: Check permissions and roles
+1. **Response**: Return validation result
 
 ## Design Patterns Used
 

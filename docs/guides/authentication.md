@@ -1,7 +1,7 @@
 # Authentication Implementation Guide
 
-
 <!-- TOC START -->
+
 - [Authentication Service Implementation](#authentication-service-implementation)
   - [FlextAuth Main Service](#flextauth-main-service)
   - [Authentication Models](#authentication-models)
@@ -24,13 +24,14 @@
   - [Priority 1: Foundation Stabilization](#priority-1-foundation-stabilization)
   - [Priority 2: Modern Authentication (2025 Standards)](#priority-2-modern-authentication-2025-standards)
   - [Priority 3: Advanced Security](#priority-3-advanced-security)
+
 <!-- TOC END -->
 
 **Version**: 0.9.9 RC | **Updated**: September 17, 2025
 
 This guide covers authentication-specific implementation details for the FLEXT-AUTH library, focusing on security practices and integration patterns specific to authentication workflows.
 
----
+______________________________________________________________________
 
 ## Authentication Service Implementation
 
@@ -70,7 +71,7 @@ The main authentication orchestrator handles all authentication operations:
 - Role-based access control foundation
 - Session timeout management
 
----
+______________________________________________________________________
 
 ## Security Implementation
 
@@ -104,9 +105,9 @@ def set_password(self, password: str):
 **Token Lifecycle**:
 
 1. Generate token on successful authentication
-2. Include user claims and expiration
-3. Validate signature and expiration on requests
-4. Revoke through session management
+1. Include user claims and expiration
+1. Validate signature and expiration on requests
+1. Revoke through session management
 
 ### Session Management
 
@@ -124,35 +125,35 @@ def set_password(self, password: str):
 - Session revocation capabilities
 - User session mapping
 
----
+______________________________________________________________________
 
 ## Authentication Workflows
 
 ### User Registration Flow
 
 1. **Input Validation**: Username/email uniqueness, password strength
-2. **Password Processing**: bcrypt hashing with salt generation
-3. **User Creation**: Domain entity creation with validation
-4. **Storage**: In-memory dictionary (development mode)
-5. **Response**: Success confirmation or validation errors
+1. **Password Processing**: bcrypt hashing with salt generation
+1. **User Creation**: Domain entity creation with validation
+1. **Storage**: In-memory dictionary (development mode)
+1. **Response**: Success confirmation or validation errors
 
 ### Authentication Flow
 
 1. **User Lookup**: Find user by username (case-insensitive)
-2. **Password Verification**: bcrypt password checking
-3. **Session Creation**: Generate session with expiration
-4. **Token Generation**: Create JWT token with user claims
-5. **Response**: Authentication success with token and session
+1. **Password Verification**: bcrypt password checking
+1. **Session Creation**: Generate session with expiration
+1. **Token Generation**: Create JWT token with user claims
+1. **Response**: Authentication success with token and session
 
 ### Token Validation Flow
 
 1. **Token Extraction**: Parse Bearer token from request
-2. **Signature Validation**: Verify JWT signature with secret
-3. **Expiration Check**: Validate token has not expired
-4. **Claims Extraction**: Extract user information from payload
-5. **Session Validation**: Verify associated session is active
+1. **Signature Validation**: Verify JWT signature with secret
+1. **Expiration Check**: Validate token has not expired
+1. **Claims Extraction**: Extract user information from payload
+1. **Session Validation**: Verify associated session is active
 
----
+______________________________________________________________________
 
 ## Integration Patterns
 
@@ -189,7 +190,7 @@ if auth_result.is_success:
     # Return authentication success
 ```
 
----
+______________________________________________________________________
 
 ## Current Limitations
 
@@ -241,7 +242,7 @@ if auth_result.is_success:
 - Configuration test isolation
 - Integration test coverage
 
----
+______________________________________________________________________
 
 ## Development Roadmap
 
@@ -293,6 +294,6 @@ if auth_result.is_success:
 - Advanced audit logging
 - Security event monitoring
 
----
+______________________________________________________________________
 
 This authentication guide provides implementation-specific details without duplicating general FLEXT patterns documented elsewhere.

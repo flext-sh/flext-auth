@@ -1,7 +1,7 @@
 # Architecture Decision Records (ADRs)
 
-
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [ADR Process](#adr-process)
   - [When to Create an ADR](#when-to-create-an-adr)
@@ -47,6 +47,7 @@
   - [Success Metrics](#success-metrics)
   - [Continuous Improvement](#continuous-improvement)
 - [Quick Reference](#quick-reference)
+
 <!-- TOC END -->
 
 ## Overview
@@ -103,11 +104,11 @@ All ADRs follow a consistent template:
 
 ## Current ADRs
 
-| ADR                                                 | Title                                            | Status   | Date       |
-| --------------------------------------------------- | ------------------------------------------------ | -------- | ---------- |
+| ADR | Title                                            | Status   | Date       |
+| --- | ------------------------------------------------ | -------- | ---------- |
 | 001 | Multi-Provider Authentication Architecture       | Accepted | 2025-10-10 |
-| 002   | Provider Registry Pattern Implementation         | Accepted | 2025-10-10 |
-| 003  | Railway-Oriented Error Handling with FlextResult | Accepted | 2025-10-10 |
+| 002 | Provider Registry Pattern Implementation         | Accepted | 2025-10-10 |
+| 003 | Railway-Oriented Error Handling with FlextResult | Accepted | 2025-10-10 |
 | 004 | JWT Provider as Production-Ready Reference       | Accepted | 2025-10-10 |
 
 ## ADR Categories
@@ -147,30 +148,30 @@ All ADRs follow a consistent template:
 ### 1. Proposal Phase
 
 1. **Identify Decision**: Recognize need for architectural decision
-2. **Gather Context**: Collect requirements, constraints, and stakeholders
-3. **Research Options**: Identify and evaluate alternative approaches
-4. **Create ADR**: Write ADR in "Proposed" status
+1. **Gather Context**: Collect requirements, constraints, and stakeholders
+1. **Research Options**: Identify and evaluate alternative approaches
+1. **Create ADR**: Write ADR in "Proposed" status
 
 ### 2. Review Phase
 
 1. **Technical Review**: Present to architecture and technical leads
-2. **Stakeholder Input**: Gather feedback from affected teams
-3. **Risk Assessment**: Evaluate technical and business risks
-4. **Decision Making**: Reach consensus on final decision
+1. **Stakeholder Input**: Gather feedback from affected teams
+1. **Risk Assessment**: Evaluate technical and business risks
+1. **Decision Making**: Reach consensus on final decision
 
 ### 3. Implementation Phase
 
 1. **Update Status**: Change ADR status to "Accepted"
-2. **Implementation**: Execute the chosen approach
-3. **Documentation**: Update related documentation
-4. **Communication**: Inform stakeholders of decision and rationale
+1. **Implementation**: Execute the chosen approach
+1. **Documentation**: Update related documentation
+1. **Communication**: Inform stakeholders of decision and rationale
 
 ### 4. Retrospective Phase
 
 1. **Monitor Outcomes**: Track decision effectiveness
-2. **Gather Feedback**: Collect implementation experience
-3. **Update if Needed**: Modify ADR based on new information
-4. **Archive**: Mark as complete or update status
+1. **Gather Feedback**: Collect implementation experience
+1. **Update if Needed**: Modify ADR based on new information
+1. **Archive**: Mark as complete or update status
 
 ## ADR Maintenance
 
@@ -298,7 +299,7 @@ adr generate index
 - **Tool Enhancement**: Add automation for common ADR tasks
 - **Training Updates**: Update team training based on lessons learned
 
----
+______________________________________________________________________
 
 ## Quick Reference
 

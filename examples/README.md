@@ -1,7 +1,7 @@
 # FLEXT Auth Examples
 
-
 <!-- TOC START -->
+
 - [Overview](#overview)
 - [Simplified Setup](#simplified-setup)
   - [Traditional Manual Setup](#traditional-manual-setup)
@@ -40,6 +40,7 @@
   - [Common Issues and Solutions](#common-issues-and-solutions)
   - [Debug Utilities](#debug-utilities)
 - [Current Status](#current-status)
+
 <!-- TOC END -->
 
 **Practical usage examples for authentication library with common patterns and integrations.**
@@ -361,10 +362,10 @@ python examples/09_debug_auth_issues.py --debug
 ### Adding New Examples
 
 1. **Identify Use Case**: Determine what authentication scenario to demonstrate
-2. **Choose Complexity**: Select appropriate complexity level for target audience
-3. **Follow Patterns**: Use established example patterns and structure
-4. **Document Purpose**: Clear explanation of what the example demonstrates
-5. **Test Thoroughly**: Ensure example works correctly and handles errors
+1. **Choose Complexity**: Select appropriate complexity level for target audience
+1. **Follow Patterns**: Use established example patterns and structure
+1. **Document Purpose**: Clear explanation of what the example demonstrates
+1. **Test Thoroughly**: Ensure example works correctly and handles errors
 
 ### Example Structure Template
 
@@ -438,9 +439,9 @@ if __name__ == "__main__":
 ### Common Issues and Solutions
 
 1. **Import Errors**: Verify FLEXT Auth installation
-2. **Configuration Issues**: Check environment variables
-3. **Database Issues**: Ensure database connectivity
-4. **Performance Issues**: Review configuration settings
+1. **Configuration Issues**: Check environment variables
+1. **Database Issues**: Ensure database connectivity
+1. **Performance Issues**: Review configuration settings
 
 ### Debug Utilities
 
@@ -455,11 +456,11 @@ auth = flext_auth_dev()  # Debug-friendly configuration
 
 ## Current Status
 
-**Example Documentation**: ✅ Comprehensive documentation completed  
-**Usage Patterns**: ✅ All major patterns documented  
-**Integration Examples**: 🔄 Framework integration examples being enhanced  
+**Example Documentation**: ✅ Comprehensive documentation completed\
+**Usage Patterns**: ✅ All major patterns documented\
+**Integration Examples**: 🔄 Framework integration examples being enhanced\
 **Performance Examples**: 🔄 Optimization examples being developed
 
----
+______________________________________________________________________
 
 _These examples serve as the primary learning resources for FLEXT Auth. They should be kept current with the latest features and best practices._

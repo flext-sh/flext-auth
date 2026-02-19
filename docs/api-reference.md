@@ -1,7 +1,7 @@
 # API Reference
 
-
 <!-- TOC START -->
+
 - [Core API](#core-api)
   - [flext_auth_quick_start()](#flextauthquickstart)
 - [FlextAuth Service](#flextauth-service)
@@ -30,6 +30,7 @@
   - [JWT Security](#jwt-security)
   - [Session Management](#session-management)
 - [Related Documentation](#related-documentation)
+
 <!-- TOC END -->
 
 **Version**: 1.0.0 Production Ready | **Updated**: October 1, 2025
@@ -40,7 +41,7 @@ For general FLEXT patterns and FlextResult usage, see **[flext-core](https://git
 
 **Note**: This API is 100% backward compatible. All existing code continues to work unchanged after the h refactoring.
 
----
+______________________________________________________________________
 
 ## Core API
 
@@ -60,7 +61,7 @@ auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
 **Returns**: `FlextAuth` instance
 
----
+______________________________________________________________________
 
 ## FlextAuth Service
 
@@ -155,7 +156,7 @@ if validation_result.is_success:
     username = token_data['username']
 ```
 
----
+______________________________________________________________________
 
 ## Domain Models
 
@@ -216,7 +217,7 @@ class UserCreationRequest(BaseModel):
     roles: t.StringList = Field(default_factory=list)
 ```
 
----
+______________________________________________________________________
 
 ## Configuration
 
@@ -258,7 +259,7 @@ if config_result.is_success:
     config = config_result.unwrap()
 ```
 
----
+______________________________________________________________________
 
 ## CLI Interface
 
@@ -291,7 +292,7 @@ Validate current configuration.
 flext-auth validate-config
 ```
 
----
+______________________________________________________________________
 
 ## Error Handling
 
@@ -344,7 +345,7 @@ def complete_auth_flow(username: str, password: str) -> FlextResult[t.Dict]:
     )
 ```
 
----
+______________________________________________________________________
 
 ## Integration with FLEXT Ecosystem
 
@@ -389,7 +390,7 @@ All flext-auth operations follow FlextResult pattern from flext-core:
 - Use `.error` to get error message on failure
 - Chain operations with `.flat_map()` and `.map()`
 
----
+______________________________________________________________________
 
 ## Security Considerations
 
@@ -412,7 +413,7 @@ All flext-auth operations follow FlextResult pattern from flext-core:
 - Session tokens are cryptographically secure
 - Expired sessions are automatically invalid
 
----
+______________________________________________________________________
 
 This API reference covers the current implementation as of September 17, 2025. For usage examples, see Getting Started.
 

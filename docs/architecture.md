@@ -1,46 +1,46 @@
 # FLEXT-AUTH ARCHITECTURE v2.0.0
 
-
 <!-- TOC START -->
+
 - [Generic Authentication API Framework](#generic-authentication-api-framework)
-- [📋 TABLE OF CONTENTS](#-table-of-contents)
-- [🎯 EXECUTIVE SUMMARY](#-executive-summary)
+- [📋 TABLE OF CONTENTS](#table-of-contents)
+- [🎯 EXECUTIVE SUMMARY](#executive-summary)
   - [Mission](#mission)
   - [Current State (v1.0.0)](#current-state-v100)
   - [Target State (v2.0.0)](#target-state-v200)
-- [🏗️ ARCHITECTURAL VISION](#-architectural-vision)
+- [🏗️ ARCHITECTURAL VISION](#architectural-vision)
   - [Design Principles](#design-principles)
   - [Architectural Layers](#architectural-layers)
-- [🔧 CORE COMPONENTS](#-core-components)
+- [🔧 CORE COMPONENTS](#core-components)
   - [1. FlextAuth Facade (`api.py`)](#1-flextauth-facade-apipy)
   - [2. FlextAuthRegistry (`registry.py`)](#2-flextauthregistry-registrypy)
   - [3. Base Provider Protocol (`providers/base.py`)](#3-base-provider-protocol-providersbasepy)
-- [🔌 PROVIDER ECOSYSTEM](#-provider-ecosystem)
+- [🔌 PROVIDER ECOSYSTEM](#provider-ecosystem)
   - [Provider Categories](#provider-categories)
   - [Provider Implementation Pattern](#provider-implementation-pattern)
-- [🚀 TRANSPORT LAYER](#-transport-layer)
+- [🚀 TRANSPORT LAYER](#transport-layer)
   - [Transport Abstraction (`transports/base.py`)](#transport-abstraction-transportsbasepy)
   - [HTTP Transport (`transports/http.py`)](#http-transport-transportshttppy)
   - [gRPC Transport (`transports/grpc.py`)](#grpc-transport-transportsgrpcpy)
   - [WebSocket Transport (`transports/websocket.py`)](#websocket-transport-transportswebsocketpy)
-- [📡 PROTOCOL HANDLERS](#-protocol-handlers)
+- [📡 PROTOCOL HANDLERS](#protocol-handlers)
   - [Protocol Handler Base (`protocol_handlers/base.py`)](#protocol-handler-base-protocolhandlersbasepy)
   - [REST Protocol Handler (`protocol_handlers/rest.py`)](#rest-protocol-handler-protocolhandlersrestpy)
   - [SOAP Protocol Handler (`protocol_handlers/soap.py`)](#soap-protocol-handler-protocolhandlerssoappy)
-- [🎫 TOKEN MANAGEMENT](#-token-management)
+- [🎫 TOKEN MANAGEMENT](#token-management)
   - [Token Manager (`tokens/manager.py`)](#token-manager-tokensmanagerpy)
   - [Token Retry Logic (`tokens/retry.py`)](#token-retry-logic-tokensretrypy)
   - [Token Cache (`tokens/cache.py`)](#token-cache-tokenscachepy)
-- [🔐 SECURITY ARCHITECTURE](#-security-architecture)
+- [🔐 SECURITY ARCHITECTURE](#security-architecture)
   - [Security Principles](#security-principles)
   - [Credential Management (`credentials/manager.py`)](#credential-management-credentialsmanagerpy)
   - [Security Validations](#security-validations)
-- [🔗 FLEXT INTEGRATION](#-flext-integration)
+- [🔗 FLEXT INTEGRATION](#flext-integration)
   - [Mandatory FLEXT Domain Library Usage](#mandatory-flext-domain-library-usage)
   - [FlextService Integration](#flextservice-integration)
-- [📘 API DESIGN](#-api-design)
+- [📘 API DESIGN](#api-design)
   - [Public API Patterns](#public-api-patterns)
-- [🏗️ IMPLEMENTATION PHASES](#-implementation-phases)
+- [🏗️ IMPLEMENTATION PHASES](#implementation-phases)
   - [Phase 1: Foundation & Registry (Week 1) ✅ COMPLETE](#phase-1-foundation-registry-week-1-complete)
   - [Phase 2: Core Providers (Week 2) ✅ COMPLETE](#phase-2-core-providers-week-2-complete)
   - [Phase 3: Advanced Providers (Week 3) ✅ MOSTLY COMPLETE](#phase-3-advanced-providers-week-3-mostly-complete)
@@ -48,14 +48,15 @@
   - [Phase 5: Token & Credential Management (Week 5)](#phase-5-token-credential-management-week-5)
   - [Phase 6: Documentation (Week 6)](#phase-6-documentation-week-6)
   - [Phase 7: QA & Release (Week 7)](#phase-7-qa-release-week-7)
-- [✅ QUALITY STANDARDS](#-quality-standards)
+- [✅ QUALITY STANDARDS](#quality-standards)
   - [Quality Gates (MANDATORY after each phase)](#quality-gates-mandatory-after-each-phase)
   - [Coverage Requirements](#coverage-requirements)
   - [Performance Standards](#performance-standards)
-- [📝 APPENDIX](#-appendix)
+- [📝 APPENDIX](#appendix)
   - [Technology Stack Summary](#technology-stack-summary)
   - [Backward Compatibility Timeline](#backward-compatibility-timeline)
 - [Related Documentation](#related-documentation)
+
 <!-- TOC END -->
 
 ## Generic Authentication API Framework
@@ -65,25 +66,25 @@
 **Last Updated**: 2025-10-01
 **Parent**: FLEXT Workspace
 
----
+______________________________________________________________________
 
 ## 📋 TABLE OF CONTENTS
 
 1. Executive Summary
-2. Architectural Vision
-3. Core Components
-4. Provider Ecosystem
-5. Transport Layer
-6. Protocol Handlers
-7. Token Management
-8. Session Management
-9. Security Architecture
-10. FLEXT Integration
-11. API Design
-12. Implementation Phases
-13. Quality Standards
+1. Architectural Vision
+1. Core Components
+1. Provider Ecosystem
+1. Transport Layer
+1. Protocol Handlers
+1. Token Management
+1. Session Management
+1. Security Architecture
+1. FLEXT Integration
+1. API Design
+1. Implementation Phases
+1. Quality Standards
 
----
+______________________________________________________________________
 
 ## 🎯 EXECUTIVE SUMMARY
 
@@ -108,20 +109,20 @@ Transform flext-auth from a specific JWT/bcrypt authentication implementation in
 - **CLI**: Removed (pure library)
 - **Quality**: 100% backward compatible, all quality gates passing
 
----
+______________________________________________________________________
 
 ## 🏗️ ARCHITECTURAL VISION
 
 ### Design Principles
 
 1. **Provider-Centric**: Authentication logic encapsulated in providers
-2. **Registry-Based**: Dynamic provider registration and discovery
-3. **Transport-Agnostic**: Works over HTTP, gRPC, WebSocket, etc.
-4. **Protocol-Agnostic**: Supports REST, SOAP, GraphQL, etc.
-5. **FLEXT-Native**: Mandatory use of FLEXT domain libraries
-6. **Type-Safe**: Complete type annotations, MyPy strict mode
-7. **Railway-Oriented**: FlextResult for all operations
-8. **Zero-CLI**: Pure library with no CLI dependencies
+1. **Registry-Based**: Dynamic provider registration and discovery
+1. **Transport-Agnostic**: Works over HTTP, gRPC, WebSocket, etc.
+1. **Protocol-Agnostic**: Supports REST, SOAP, GraphQL, etc.
+1. **FLEXT-Native**: Mandatory use of FLEXT domain libraries
+1. **Type-Safe**: Complete type annotations, MyPy strict mode
+1. **Railway-Oriented**: FlextResult for all operations
+1. **Zero-CLI**: Pure library with no CLI dependencies
 
 ### Architectural Layers
 
@@ -185,7 +186,7 @@ Transform flext-auth from a specific JWT/bcrypt authentication implementation in
 └───────────────┘  └────────────┘  └────────────────┘
 ```
 
----
+______________________________________________________________________
 
 ## 🔧 CORE COMPONENTS
 
@@ -324,7 +325,7 @@ class FlextAuthBaseProvider(Protocol):
         ...
 ```
 
----
+______________________________________________________________________
 
 ## 🔌 PROVIDER ECOSYSTEM
 
@@ -523,7 +524,7 @@ class FlextAuthExampleProvider(FlextAuthBaseProvider):
         }
 ```
 
----
+______________________________________________________________________
 
 ## 🚀 TRANSPORT LAYER
 
@@ -688,7 +689,7 @@ class WebSocketTransportAdapter(BaseTransportAdapter):
         ...
 ```
 
----
+______________________________________________________________________
 
 ## 📡 PROTOCOL HANDLERS
 
@@ -770,7 +771,7 @@ class SoapProtocolHandler(BaseProtocolHandler):
         ...
 ```
 
----
+______________________________________________________________________
 
 ## 🎫 TOKEN MANAGEMENT
 
@@ -924,18 +925,18 @@ class TokenCache:
         self._backend.delete(cache_key)
 ```
 
----
+______________________________________________________________________
 
 ## 🔐 SECURITY ARCHITECTURE
 
 ### Security Principles
 
 1. **Defense in Depth**: Multiple layers of security validation
-2. **Least Privilege**: Minimum required permissions
-3. **Fail Secure**: Errors result in denial, not bypass
-4. **Audit Logging**: All authentication events logged
-5. **Secure Storage**: Encrypted credentials at rest
-6. **Token Expiration**: Automatic token lifecycle management
+1. **Least Privilege**: Minimum required permissions
+1. **Fail Secure**: Errors result in denial, not bypass
+1. **Audit Logging**: All authentication events logged
+1. **Secure Storage**: Encrypted credentials at rest
+1. **Token Expiration**: Automatic token lifecycle management
 
 ### Credential Management (`credentials/manager.py`)
 
@@ -1016,7 +1017,7 @@ class SecurityValidator:
         ...
 ```
 
----
+______________________________________________________________________
 
 ## 🔗 FLEXT INTEGRATION
 
@@ -1126,7 +1127,7 @@ class FlextAuthJwtProvider(FlextService[AuthToken]):
         self.logger = FlextLogger(__name__)
 ```
 
----
+______________________________________________________________________
 
 ## 📘 API DESIGN
 
@@ -1218,7 +1219,7 @@ token = token_mgr.get_with_retry(
 )
 ```
 
----
+______________________________________________________________________
 
 ## 🏗️ IMPLEMENTATION PHASES
 
@@ -1320,7 +1321,7 @@ token = token_mgr.get_with_retry(
 
 **Success Criteria**: All quality gates passing, security audit passed, ready for release
 
----
+______________________________________________________________________
 
 ## ✅ QUALITY STANDARDS
 
@@ -1343,12 +1344,12 @@ make test             # Tests: 100% pass rate
 
 ### Performance Standards
 
-- **Overhead**: <5% performance overhead vs v1.0.0
-- **Token Operations**: <10ms for token generation/validation
-- **Provider Switching**: <1ms overhead for registry lookup
+- **Overhead**: \<5% performance overhead vs v1.0.0
+- **Token Operations**: \<10ms for token generation/validation
+- **Provider Switching**: \<1ms overhead for registry lookup
 - **Memory**: No memory leaks, efficient caching
 
----
+______________________________________________________________________
 
 ## 📝 APPENDIX
 
@@ -1371,13 +1372,13 @@ make test             # Tests: 100% pass rate
 - **v2.5.0** (+6 months): Final warnings
 - **v3.0.0** (+12 months): Remove v1 API completely
 
----
+______________________________________________________________________
 
 **Document Status**: ✅ Multi-Provider Architecture - Implementation Complete (Phases 1-3), Transport Layer In Progress (Phase 4)
 **Next Review**: After test suite stabilization and Phase 4 completion
 **Maintained By**: FLEXT Auth Team
 
----
+______________________________________________________________________
 
 _This architecture document is the authoritative reference for the flext-auth v2.0.0 transformation. All implementation must follow these patterns and principles._
 
