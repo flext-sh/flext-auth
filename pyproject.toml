@@ -1,33 +1,27 @@
 [build-system]
     build-backend = "poetry.core.masonry.api"
     requires = [
-        "poetry-core>=1.9.0",
+        "poetry-core>=2",
     ]
 
 [project]
     classifiers = [
-        "Development Status :: 5 - Production/Stable",
-        "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-        "Programming Language :: Python :: 3 :: Only",
-        "Programming Language :: Python :: 3.13",
-        "Topic :: Software Development :: Libraries :: Python Modules",
-        "Topic :: System :: Systems Administration :: Authentication/Directory",
-        "Typing :: Typed",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Systems Administration :: Authentication/Directory",
+    "Typing :: Typed"
     ]
     dependencies = [
-        "bcrypt>=4.3.0",
-        "cryptography>=45.0.5",
-        "pydantic-settings>=2.10.1",
-        "pydantic (>=2.12.3)",
-        "pyjwt>=2.9.0",
-        "pydantic-core (>=2.41.4)",
-        "pytest (>=9.0.2,<10.0.0)",
-        "pytest-cov (>=7.0.0,<8.0.0)",
-        "pytest-randomly (>=4.0.1,<5.0.0)",
-        "pytest-httpx (>=0.36.0,<0.37.0)",
-        "faker (>=40.1.0,<41.0.0)",
+    "bcrypt>=4.3.0",
+    "cryptography>=45.0.5",
+    "pydantic-settings>=2.10.1",
+    "pydantic (>=2.12.3)",
+    "pyjwt>=2.9.0",
+    "pydantic-core (>=2.41.4)"
     ]
     description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
     keywords = [
@@ -43,6 +37,7 @@
     readme = "README.md"
     requires-python = ">=3.13,<3.14"
     version = "0.10.0-dev"
+    license = "MIT"
 
     [[project.authors]]
         email = "team@flext.sh"
@@ -51,9 +46,6 @@
     [[project.maintainers]]
         email = "team@flext.sh"
         name  = "FLEXT Team"
-
-    [project.license]
-        text = "MIT"
 
     [project.urls]
         Documentation = "https://github.com/flext-sh/flext/blob/main/README.md"
@@ -132,6 +124,8 @@
     [tool.deptry.per_rule_ignores]
         DEP002 = [
             # CLI tools (invoked from command line, not imported)
+            # Type stubs
+            # Runtime deps used indirectly (via pydantic, flext-core)
             "autoflake",
             "bandit",
             "black",
@@ -148,7 +142,6 @@
             "radon",
             "ruff",
             "vulture",
-            # Type stubs
             "django-stubs",
             "types-ldap3",
             "types-passlib",
@@ -162,13 +155,7 @@
             "types-requests",
             "types-setuptools",
             "types-toml",
-            # Runtime deps used indirectly (via pydantic, flext-core)
-            "faker",
-            "pydantic-core",
-            "pytest",
-            "pytest-cov",
-            "pytest-httpx",
-            "pytest-randomly",
+            "pydantic-core"
         ]
 
     [tool.poetry]
@@ -206,14 +193,12 @@
 
     [tool.pytest.ini_options]
         addopts = [
-            "--cov-report=term-missing",
-            "--cov=src/",
-            "--strict-config",
-            "--strict-markers",
-            "--tb=short",
-            "-p no:sugar",
-            "-q",
-            "-ra",
+    "--strict-config",
+    "--strict-markers",
+    "--tb=short",
+    "-p no:sugar",
+    "-q",
+    "-ra"
         ]
         markers = [
             "concurrency: marks tests as concurrency tests",
@@ -245,6 +230,8 @@
 
     [tool.pyrefly]
         search-path = [
+            "../typings",
+            "../typings/generated",
             "src",
             "tests",
             "examples",
@@ -261,3 +248,13 @@
             known-first-party = [
                 "flext_auth",
             ]
+
+[tool.coverage.run]
+source = ["src/flext_auth"]
+
+[tool.coverage.report]
+fail_under = 90
+precision = 2
+
+[tool.bandit]
+skips = ["B404", "B603", "B607", "B105", "B608"]

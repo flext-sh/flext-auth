@@ -338,7 +338,7 @@
         "Project not found"
       ]
     },
-    "client-a-oud-mig": {
+    "flext-oud-mig": {
       "level": 6,
       "has_makefile": false,
       "has_pyproject": false,
@@ -350,7 +350,7 @@
         "Project not found"
       ]
     },
-    "client-b-meltano-native": {
+    "flext-meltano-native": {
       "level": 6,
       "has_makefile": false,
       "has_pyproject": false,

@@ -1,8 +1,5 @@
 # flext-auth - Authentication Framework
 PROJECT_NAME := flext-auth
-COV_DIR := flext_auth
-MIN_COVERAGE := 90
-
 include ../base.mk
 
 # === PROJECT-SPECIFIC TARGETS ===
