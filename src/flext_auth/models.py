@@ -18,7 +18,7 @@ import bcrypt
 from flext_auth.constants import c
 from flext_core import FlextModels, FlextResult as r, FlextUtilities as u
 from flext_core.typings import FlextTypes
-from pydantic import ConfigDict, Field, computed_field, model_validator
+from pydantic import ConfigDict, Field, model_validator
 
 # Import aliases following order: c -> t -> p -> r -> m -> u
 # Runtime aliases defined at module level per FLEXT standards
@@ -26,7 +26,6 @@ from pydantic import ConfigDict, Field, computed_field, model_validator
 t = FlextTypes
 # p (protocols) not used here
 # r is FlextResult - already imported as r
-m = FlextModels
 # u is utilities - import if needed
 
 
@@ -91,7 +90,6 @@ class FlextAuthModels(FlextModels):
                 description="Additional metadata",
             )
 
-            @computed_field
             @property
             def status(self) -> str:
                 """Human-readable validation status."""
@@ -174,7 +172,6 @@ class FlextAuthModels(FlextModels):
                 exclude=True,
             )
 
-            @computed_field
             @property
             def is_expired(self) -> bool:
                 """Check if token is expired."""
@@ -355,7 +352,6 @@ class FlextAuthModels(FlextModels):
             description="Last access",
         )
 
-        @computed_field
         @property
         def is_expired(self) -> bool:
             """Check if session is expired."""
@@ -443,7 +439,6 @@ class FlextAuthModels(FlextModels):
         use_pkce: bool | None = None
         token_endpoint_auth_method: str | None = None
 
-        @computed_field
         @property
         def is_configured(self) -> bool:
             """Check if configured."""

@@ -14,7 +14,6 @@ import hashlib
 import secrets
 from base64 import urlsafe_b64encode
 from datetime import UTC, datetime, timedelta
-from typing import cast
 from urllib.parse import urlencode
 
 from flext_auth.constants import c
@@ -36,7 +35,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     Uses flext-core patterns and Python 3.13+ features for maximum maintainability.
     """
 
-    def __init__(self, config: at.ProviderConfig) -> None:
+    def __init__(self, config: FlextAuthModels.ProviderConfig) -> None:
         """Initialize OAuth2 authentication provider with SOLID principles.
 
         Railway-oriented initialization with proper error handling.
@@ -181,14 +180,14 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             )
 
         # Validate field types
-        validations = [
-            ("client_id", str, "OAuth2 client_id must be a string"),
+        validations: list[tuple[str, tuple[type[object], ...], str]] = [
+            ("client_id", (str,), "OAuth2 client_id must be a string"),
             (
                 "client_secret",
                 (str, type(None)),
                 "OAuth2 client_secret must be a string or None",
             ),
-            ("token_endpoint", str, "OAuth2 token_endpoint must be a string"),
+            ("token_endpoint", (str,), "OAuth2 token_endpoint must be a string"),
             (
                 "authorization_endpoint",
                 (str, type(None)),
@@ -470,8 +469,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             token_type="Bearer",
             expires_at=datetime.now(UTC) + timedelta(hours=1),  # Default 1 hour expiry
         )
-        token = cast("FlextAuthProtocols.Auth.TokenProtocol", token_model)
-        return r[FlextAuthProtocols.Auth.TokenProtocol].ok(token)
+        return r[FlextAuthProtocols.Auth.TokenProtocol].ok(token_model)
 
     def validate(
         self,
@@ -500,8 +498,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 token_type=token_data.token_type or "Bearer",
                 expires_at=token.expires_at,  # Keep original expiry for now
             )
-            refreshed = cast("FlextAuthProtocols.Auth.TokenProtocol", refreshed_model)
-            return r[FlextAuthProtocols.Auth.TokenProtocol].ok(refreshed)
+            return r[FlextAuthProtocols.Auth.TokenProtocol].ok(refreshed_model)
         return r[FlextAuthProtocols.Auth.TokenProtocol].fail(
             "No refresh token available"
         )

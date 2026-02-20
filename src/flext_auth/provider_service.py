@@ -25,7 +25,6 @@ from flext_auth.providers import (
     FlextAuthBasicProvider,
     FlextAuthCertificateProvider,
     FlextAuthJwtProvider,
-    FlextAuthKerberosProvider,
     FlextAuthLdapProvider,
     FlextAuthOAuth2Provider,
     FlextAuthOidcProvider,
@@ -105,13 +104,6 @@ class FlextAuthProviderService(s[object]):
                 FlextAuthSamlProvider,
                 lambda: bool(
                     provider_config.get("entity_id") and provider_config.get("sso_url"),
-                ),
-            ),
-            (
-                "kerberos",
-                FlextAuthKerberosProvider,
-                lambda: bool(
-                    provider_config.get("realm") and provider_config.get("kdc"),
                 ),
             ),
             ("certificate", FlextAuthCertificateProvider, lambda: True),

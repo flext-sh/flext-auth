@@ -88,11 +88,15 @@ class FlextAuthQuickstart(s[object]):
 
         return r[list[str]].ok(user_ids)
 
-    def flext_auth_quick_start(self, *, create_REDACTED_LDAP_BIND_PASSWORD: bool = True) -> r[list[str]]:
+    def flext_auth_quick_start(
+        self,
+        *,
+        create_admin_user: bool = True,
+    ) -> r[list[str]]:
         """Quick start the auth service with demo users."""
 
-        def create_REDACTED_LDAP_BIND_PASSWORD_user(user_ids: list[str]) -> r[list[str]]:
-            if not create_REDACTED_LDAP_BIND_PASSWORD:
+        def create_admin_demo_user(user_ids: list[str]) -> r[list[str]]:
+            if not create_admin_user:
                 return r[list[str]].ok(user_ids)
 
             result = self.register_user(
@@ -102,10 +106,12 @@ class FlextAuthQuickstart(s[object]):
                 ["ADMIN"],
             )
             if result.is_failure:
-                return r[list[str]].fail(f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {result.error}")
+                return r[list[str]].fail(
+                    f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {result.error}",
+                )
             return r[list[str]].ok(user_ids + ["REDACTED_LDAP_BIND_PASSWORD"])
 
-        return self.create_demo_users().flat_map(create_REDACTED_LDAP_BIND_PASSWORD_user)
+        return self.create_demo_users().flat_map(create_admin_demo_user)
 
     @property
     def auth(self) -> FlextAuth:

@@ -110,8 +110,12 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
             "kerberos",
             "apikey",
         ]
-        RoleTypeLiteral: TypeAlias = Literal["REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"]
-        PermissionTypeLiteral: TypeAlias = Literal["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"]
+        RoleTypeLiteral: TypeAlias = Literal[
+            "REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"
+        ]
+        PermissionTypeLiteral: TypeAlias = Literal[
+            "read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"
+        ]
 
 
 # Short aliases per FLEXT convention

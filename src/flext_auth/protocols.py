@@ -21,7 +21,7 @@ from flext_core.typings import FlextTypes
 # Import aliases following order: c -> t -> p -> r -> m -> u
 # Runtime aliases defined at module level per FLEXT standards
 t = FlextTypes
-p = FlextProtocols
+core_protocols = FlextProtocols
 
 # Note: Protocols avoid importing models to prevent circular dependencies
 # Protocols use structural typing - models satisfy protocols through attributes

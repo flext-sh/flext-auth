@@ -131,11 +131,25 @@ class FlextAuthManagers:
             Generic list field modifier - eliminates duplication in 4 methods.
             """
             return self._find_user_by_id(user_id).map(
-                lambda ud: (
-                    self._apply_list_modification(ud[1], field, value, add=add),
-                    True,
-                )[1],
+                lambda ud: self._apply_list_modification_and_return_true(
+                    ud[1],
+                    field,
+                    value,
+                    add=add,
+                ),
             )
+
+        def _apply_list_modification_and_return_true(
+            self,
+            user_data: dict[str, t.GeneralValueType],
+            field: str,
+            value: str,
+            *,
+            add: bool,
+        ) -> bool:
+            """Apply list mutation and return success sentinel."""
+            self._apply_list_modification(user_data, field, value, add=add)
+            return True
 
         def _extract_identity_id(
             self, storage_data: dict[str, t.GeneralValueType]
@@ -148,12 +162,12 @@ class FlextAuthManagers:
             msg = "Storage data missing required 'unique_id', 'id', or 'identity_id' field"
             raise ValueError(msg)
 
-        def _validate_required_field(
+        def _validate_required_field[T](
             self,
             storage_data: dict[str, t.GeneralValueType],
             field: str,
-            field_type: type[str | bool | list[t.GeneralValueType]],
-        ) -> str | bool | list[t.GeneralValueType]:
+            field_type: type[T],
+        ) -> T:
             """Validate and extract required field with type checking."""
             value = storage_data.get(field)
             if not isinstance(value, field_type):

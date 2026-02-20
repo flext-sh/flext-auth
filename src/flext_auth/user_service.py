@@ -53,6 +53,29 @@ class FlextAuthIdentityService(s[object]):
             "Use specific identity methods: create_identity, authenticate_identity, etc.",
         )
 
+    def _log_success(self, message: str, identity_name: str) -> bool:
+        """Log service success message and return truthy sentinel."""
+        self.logger.info(message, identity=identity_name)
+        return True
+
+    def _log_authorization_result(
+        self,
+        identity: m.Auth.AuthIdentity,
+        permission: str,
+        resource: str | None,
+        *,
+        allowed: bool,
+    ) -> bool:
+        """Log authorization result and return decision."""
+        self.logger.debug(
+            "Authorization check",
+            username=identity.name,
+            resource=resource if resource is not None else "",
+            action=permission,
+            allowed=allowed,
+        )
+        return allowed
+
     def authenticate_identity(
         self,
         name: str,
@@ -190,13 +213,10 @@ class FlextAuthIdentityService(s[object]):
             )
             .flat_map(
                 lambda identity: identity.set_credential(new_credential).map(
-                    lambda _: (
-                        self.logger.info(
-                            "Password change successful",
-                            identity=identity.name,
-                        ),
-                        True,
-                    )[1],
+                    lambda _: self._log_success(
+                        "Password change successful",
+                        identity.name,
+                    ),
                 ),
             )
         )
@@ -217,13 +237,10 @@ class FlextAuthIdentityService(s[object]):
             )
             .flat_map(
                 lambda identity: identity.set_credential(new_credential).map(
-                    lambda _: (
-                        self.logger.info(
-                            "Password reset successful",
-                            identity=identity.name,
-                        ),
-                        True,
-                    )[1],
+                    lambda _: self._log_success(
+                        "Password reset successful",
+                        identity.name,
+                    ),
                 ),
             )
         )
@@ -279,16 +296,12 @@ class FlextAuthIdentityService(s[object]):
             .get_user(identity_id)
             .map(lambda identity: (identity, permission in identity.permissions))
             .map(
-                lambda ip: (
-                    self.logger.debug(
-                        "Authorization check",
-                        username=ip[0].name,
-                        resource=resource if resource is not None else "",
-                        action=permission,
-                        allowed=ip[1],
-                    ),
-                    ip[1],
-                )[1],
+                lambda ip: self._log_authorization_result(
+                    ip[0],
+                    permission,
+                    resource,
+                    allowed=ip[1],
+                ),
             )
         )
 

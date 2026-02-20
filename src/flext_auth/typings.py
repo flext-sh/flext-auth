@@ -79,7 +79,9 @@ class FlextAuthTypes(FlextTypes):
     class Authorization:
         """Authorization type definitions."""
 
-        type Permission = Literal["read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"]
+        type Permission = Literal[
+            "read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"
+        ]
         type Role = Literal["user", "moderator", "REDACTED_LDAP_BIND_PASSWORD", "guest"]
 
     class Security:

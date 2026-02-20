@@ -125,7 +125,12 @@ def demo_user_management() -> None:
 
     # Register multiple users with different roles
     users_data = [
-        ("REDACTED_LDAP_BIND_PASSWORD_user", "REDACTED_LDAP_BIND_PASSWORD@example.com", "AdminPass123!", ["REDACTED_LDAP_BIND_PASSWORD", "user"]),
+        (
+            "REDACTED_LDAP_BIND_PASSWORD_user",
+            "REDACTED_LDAP_BIND_PASSWORD@example.com",
+            "AdminPass123!",
+            ["REDACTED_LDAP_BIND_PASSWORD", "user"],
+        ),
         ("regular_user", "regular@example.com", "RegularPass123!", ["user"]),
         ("guest_user", "guest@example.com", "GuestPass123!", ["guest"]),
     ]

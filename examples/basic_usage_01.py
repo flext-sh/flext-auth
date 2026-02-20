@@ -222,11 +222,14 @@ def example_advanced_registration() -> None:
             "Admin user registered successfully",
             username=user_data.username,
             roles=user_data.roles,
-            has_REDACTED_LDAP_BIND_PASSWORD_role="REDACTED_LDAP_BIND_PASSWORD" in user_data.roles,
+            has_REDACTED_LDAP_BIND_PASSWORD_role="REDACTED_LDAP_BIND_PASSWORD"
+            in user_data.roles,
             is_active=user_data.is_active,
         )
     else:
-        logger.error("Admin registration failed", error=REDACTED_LDAP_BIND_PASSWORD_result.error)
+        logger.error(
+            "Admin registration failed", error=REDACTED_LDAP_BIND_PASSWORD_result.error
+        )
 
     # Register regular user
     user_result = auth.register_user(
@@ -243,7 +246,8 @@ def example_advanced_registration() -> None:
             "Regular user registered successfully",
             username=user_data.username,
             roles=user_data.roles,
-            has_REDACTED_LDAP_BIND_PASSWORD_role="REDACTED_LDAP_BIND_PASSWORD" in user_data.roles,
+            has_REDACTED_LDAP_BIND_PASSWORD_role="REDACTED_LDAP_BIND_PASSWORD"
+            in user_data.roles,
         )
     else:
         logger.error("User registration failed", error=user_result.error)

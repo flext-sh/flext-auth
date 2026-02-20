@@ -94,10 +94,14 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
             )
 
         # Validate field types
-        validations = [
-            ("realm", str, "Kerberos realm must be a string"),
-            ("kdc", str, "Kerberos kdc must be a string"),
-            ("service_principal", str, "Kerberos service_principal must be a string"),
+        validations: list[tuple[str, tuple[type[object], ...], str]] = [
+            ("realm", (str,), "Kerberos realm must be a string"),
+            ("kdc", (str,), "Kerberos kdc must be a string"),
+            (
+                "service_principal",
+                (str,),
+                "Kerberos service_principal must be a string",
+            ),
             (
                 "keytab_path",
                 (str, type(None)),

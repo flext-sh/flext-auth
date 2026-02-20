@@ -39,7 +39,9 @@ def demonstrate_quickstart_functionality() -> None:
     # Quickstart utility for rapid setup
     quickstart: FlextAuthQuickstart = FlextAuthQuickstart()
     # flext_auth_quick_start returns r[list[str]]
-    quickstart_result = quickstart.flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    quickstart_result = quickstart.flext_auth_quick_start(
+        create_REDACTED_LDAP_BIND_PASSWORD=False
+    )
     if quickstart_result.is_success:
         REDACTED_LDAP_BIND_PASSWORD_credentials = quickstart_result.value
         print(f"Admin credentials created: {REDACTED_LDAP_BIND_PASSWORD_credentials}")

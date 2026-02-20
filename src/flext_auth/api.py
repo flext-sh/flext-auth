@@ -104,19 +104,19 @@ class FlextAuth:
     def quick_start(
         cls,
         *,
-        create_REDACTED_LDAP_BIND_PASSWORD: bool = True,
+        create_admin_user: bool = True,
     ) -> Self:
         """Quick start factory with default configuration.
 
         Args:
-        create_REDACTED_LDAP_BIND_PASSWORD: Reserved for future REDACTED_LDAP_BIND_PASSWORD creation functionality
+        create_admin_user: Reserved for future admin creation functionality
 
         Returns:
         Initialized FlextAuth instance
 
         """
         instance = cls()
-        if create_REDACTED_LDAP_BIND_PASSWORD:
+        if create_admin_user:
             # Admin creation logic would go here
             # For now, just create the instance
             pass

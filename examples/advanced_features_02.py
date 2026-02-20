@@ -70,7 +70,12 @@ def example_role_based_access() -> None:
 
     # Create users with different roles
     users_data = [
-        ("REDACTED_LDAP_BIND_PASSWORD", "REDACTED_LDAP_BIND_PASSWORD@company.com", "AdminPass123!", ["REDACTED_LDAP_BIND_PASSWORD", "user"]),
+        (
+            "REDACTED_LDAP_BIND_PASSWORD",
+            "REDACTED_LDAP_BIND_PASSWORD@company.com",
+            "AdminPass123!",
+            ["REDACTED_LDAP_BIND_PASSWORD", "user"],
+        ),
         ("manager", "manager@company.com", "ManagerPass123!", ["manager", "user"]),
         ("employee", "employee@company.com", "EmployeePass123!", ["user"]),
     ]
