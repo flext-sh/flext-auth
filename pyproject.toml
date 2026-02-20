@@ -1,12 +1,10 @@
 [build-system]
 build-backend = "poetry.core.masonry.api"
-requires = [
-  "poetry-core>=2",
-]
+requires = [ "poetry-core>=2.0", "poetry-core>=2" ]
 
 [project]
 name = "flext-auth"
-version = "0.10.0-dev"
+version = "0.10.0"
 description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
 readme = "README.md"
 keywords = [
@@ -19,18 +17,19 @@ keywords = [
   "typed",
 ]
 license = "MIT"
-maintainers = [ { email = "team@flext.sh", name = "FLEXT Team" } ]
-authors = [ { email = "team@flext.sh", name = "FLEXT Team" } ]
+maintainers = [ {email = "team@flext.sh", name = "FLEXT Team"} ]
+authors = [ {email = "team@flext.sh", name = "FLEXT Team"} ]
 requires-python = ">=3.13,<3.14"
 classifiers = [
-  "Development Status :: 5 - Production/Stable",
+  "Development Status :: 4 - Beta",
   "Intended Audience :: Developers",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.13",
   "Topic :: Software Development :: Libraries :: Python Modules",
-  "Topic :: System :: Systems Administration :: Authentication/Directory",
   "Typing :: Typed",
+  "Development Status :: 5 - Production/Stable",
+  "Topic :: System :: Systems Administration :: Authentication/Directory",
 ]
 dependencies = [
   "bcrypt>=4.3",
@@ -38,7 +37,7 @@ dependencies = [
   "pydantic>=2.12.3",
   "pydantic-core>=2.41.4",
   "pydantic-settings>=2.10.1",
-  "pyjwt>=2.9"
+  "pyjwt>=2.9",
 ]
 optional-dependencies.dev = [
   "autoflake>=2.3.1",
@@ -113,11 +112,11 @@ group.dev.dependencies.opentelemetry-api = ">=1.39.1"
 group.dev.dependencies.opentelemetry-sdk = ">=1.39.1"
 group.dev.dependencies.prompt-toolkit = ">=3.0.52"
 group.dev.dependencies.sqlparse = ">=0.5.5"
-packages = [ { from = "src", include = "flext_auth" } ]
+packages = [ {from = "src", include = "flext_auth"} ]
 
 [tool.ruff]
+exclude = [ "scripts/" ]       # Exclude maintenance scripts from lint
 extend = "../ruff-shared.toml"
-exclude = [ "scripts/" ]  # Exclude maintenance scripts from lint
 
 [tool.deptry]
 known_first_party = [
@@ -164,7 +163,7 @@ per_rule_ignores.DEP002 = [
   "types-requests",
   "types-setuptools",
   "types-toml",
-  "pydantic-core"
+  "pydantic-core",
 ]
 
 [tool.pytest]
@@ -208,11 +207,12 @@ ini_options.testpaths = [
 ]
 
 [tool.coverage]
-run.source = [ "src/flext_auth" ]
 report.fail_under = 100
 report.precision = 2
+run.source = [ "src/flext_auth" ]
 
 [tool.pyrefly]
+project-excludes = [ "**/*_pb2*.py", "**/*_pb2_grpc*.py" ]
 search-path = [
   "../typings",
   "../typings/generated",
