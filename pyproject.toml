@@ -4,7 +4,7 @@ requires = [ "poetry-core>=2.0", "poetry-core>=2" ]
 
 [project]
 name = "flext-auth"
-version = "0.11.0"
+version = "0.12.0-dev"
 description = "FLEXT Auth - Enterprise Authentication & Authorization Service"
 readme = "README.md"
 keywords = [
