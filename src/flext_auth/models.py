@@ -16,7 +16,7 @@ from typing import Self
 # Import password utilities directly
 import bcrypt
 from flext_auth.constants import c
-from flext_core import FlextModels, r, u
+from flext_core import FlextModels, r
 from flext_core.typings import FlextTypes
 from pydantic import ConfigDict, Field, model_validator
 
@@ -35,14 +35,6 @@ class FlextAuthModels(FlextModels):
     All authentication domain models consolidated with validation, composition,
     and SOLID principles. Uses Python 3.13+ syntax and flext-core patterns.
     """
-
-    def __init_subclass__(cls, **kwargs: t.GeneralValueType) -> None:
-        """Warn when FlextAuthModels is subclassed directly."""
-        super().__init_subclass__(**kwargs)
-        u.Deprecation.warn_once(
-            f"subclass:{cls.__name__}",
-            "Subclassing FlextAuthModels is deprecated. Use FlextModels directly instead.",
-        )
 
     # =========================================================================
     # AUTH NAMESPACE - Authentication domain models
