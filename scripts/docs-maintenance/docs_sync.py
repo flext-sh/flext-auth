@@ -14,7 +14,7 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
-from flext_core import FlextTypes as t
+from flext_core import t
 from git import InvalidGitRepositoryError, Repo
 
 

@@ -21,7 +21,7 @@ from flext_auth.session_service import FlextAuthSessionService
 from flext_auth.settings import FlextAuthSettings
 from flext_auth.token_service import FlextAuthTokenService
 from flext_auth.user_service import FlextAuthIdentityService
-from flext_core import FlextResult as r, FlextTypes as t
+from flext_core import r, t
 from flext_core.dispatcher import FlextDispatcher
 from flext_core.loggings import FlextLogger
 

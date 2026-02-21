@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from flext_core import FlextTypes as t
+from flext_core import t
 
 
 @dataclass

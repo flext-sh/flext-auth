@@ -19,7 +19,7 @@ from flext_auth.models import FlextAuthModels
 from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 from flext_auth.settings import FlextAuthSettings
-from flext_core import FlextLogger, FlextResult as r, FlextService as s
+from flext_core import FlextLogger, FlextService as s, r
 from flext_core.dispatcher import FlextDispatcher
 
 

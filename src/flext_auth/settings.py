@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import Self
 
 from flext_auth.constants import c
-from flext_core import FlextResult as r, FlextSettings, FlextTypes as t
+from flext_core import FlextSettings, r, t
 from pydantic import Field, SecretStr
 
 

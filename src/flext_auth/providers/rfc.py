@@ -16,7 +16,8 @@ from abc import ABC
 
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
-from flext_core import FlextTypes as t, r
+from flext_auth.typings import t
+from flext_core import r
 
 
 class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):

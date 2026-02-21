@@ -16,7 +16,7 @@ from typing import Self
 # Import password utilities directly
 import bcrypt
 from flext_auth.constants import c
-from flext_core import FlextModels, FlextResult as r, FlextUtilities as u
+from flext_core import FlextModels, r, u
 from flext_core.typings import FlextTypes
 from pydantic import ConfigDict, Field, model_validator
 

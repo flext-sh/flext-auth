@@ -20,7 +20,7 @@ from content_optimizer import ContentOptimizer
 # Import our maintenance modules
 from docs_audit import DocumentationAuditor
 from docs_sync import DocumentationSynchronizer, QualityAssuranceReporter
-from flext_core import FlextTypes as t
+from flext_core import t
 from link_validator import LinkValidator
 
 

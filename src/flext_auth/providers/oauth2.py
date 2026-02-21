@@ -24,8 +24,8 @@ from flext_auth.protocols import FlextAuthProtocols
 # Runtime aliases defined at module level per FLEXT standards
 # Forward reference to avoid circular import
 from flext_auth.providers.rfc import FlextAuthRfcProvider
-from flext_auth.typings import FlextAuthTypes as at
-from flext_core import FlextTypes as t, FlextUtilities as u, e, r
+from flext_auth.typings import FlextAuthTypes as at, t
+from flext_core import e, r, u
 
 
 class FlextAuthOAuth2Provider(FlextAuthRfcProvider):

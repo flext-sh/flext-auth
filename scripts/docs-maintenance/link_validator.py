@@ -20,7 +20,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
-from flext_core import FlextTypes as t
+from flext_core import t
 
 try:
     import requests

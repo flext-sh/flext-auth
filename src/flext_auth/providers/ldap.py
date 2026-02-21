@@ -13,7 +13,8 @@ from flext_auth.protocols import FlextAuthProtocols
 # Forward reference to avoid circular import
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
-from flext_core import FlextTypes as t, r
+from flext_auth.typings import t
+from flext_core import r
 
 
 class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):

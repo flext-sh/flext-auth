@@ -12,7 +12,8 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from flext_core import FlextTypes as t, r
+from flext_auth.typings import t
+from flext_core import r
 
 # Import aliases following order: c -> t -> p -> r -> m -> u
 # Runtime aliases defined at module level per FLEXT standards

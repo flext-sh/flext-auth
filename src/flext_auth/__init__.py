@@ -30,7 +30,7 @@ from flext_auth.registry import FlextAuthRegistry
 from flext_auth.session_service import FlextAuthSessionService
 from flext_auth.settings import FlextAuthSettings
 from flext_auth.token_service import FlextAuthTokenService
-from flext_auth.typings import FlextAuthTypes
+from flext_auth.typings import FlextAuthTypes, t
 from flext_auth.user_service import FlextAuthIdentityService
 from flext_auth.utilities import FlextAuthUtilities
 from flext_core import (
@@ -74,4 +74,5 @@ __all__ = [
     "FlextHandlers",
     "FlextResult",
     "FlextService",
+    "t",
 ]

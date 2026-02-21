@@ -34,7 +34,7 @@ from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
 from flext_auth.settings import FlextAuthSettings
 from flext_auth.typings import FlextAuthTypes as t
-from flext_core import FlextResult as r, FlextService as s
+from flext_core import FlextService as s, r
 
 
 class FlextAuthProviderService(s[object]):

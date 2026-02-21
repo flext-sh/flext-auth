@@ -16,7 +16,7 @@ from uuid import uuid4
 from flext_auth.models import FlextAuthModels
 from flext_auth.settings import FlextAuthSettings
 from flext_core import (
-    FlextResult as r,
+    r,
 )
 from flext_core.context import FlextContext
 from flext_core.dispatcher import FlextDispatcher

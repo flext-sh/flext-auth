@@ -17,7 +17,8 @@ from urllib.parse import urlencode
 
 from flext_api import FlextApiClient, FlextApiModels, FlextApiSettings
 from flext_api.typings import FlextApiTypes as t_api
-from flext_core import FlextTypes as t, r
+from flext_auth.typings import t
+from flext_core import r
 from flext_core.loggings import FlextLogger
 
 # Import aliases following order: c -> t -> p -> r -> m -> u
