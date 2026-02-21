@@ -551,17 +551,11 @@ class FlextAuthModels(FlextModels):
             description="Additional data",
         )
 
-    # Backward compatibility aliases
-    User = Auth.AuthIdentity
-    AuthIdentity = Auth.AuthIdentity
-    AuthIdentityRequest = Auth.AuthIdentityRequest
-
 
 # Forward references resolved via from __future__ import annotations at module top
 # This architectural approach avoids runtime model_rebuild() calls
 
 # Short aliases
 m = FlextAuthModels
-m_auth = FlextAuthModels
 
-__all__ = ["FlextAuthModels", "m", "m_auth"]
+__all__ = ["FlextAuthModels", "m"]

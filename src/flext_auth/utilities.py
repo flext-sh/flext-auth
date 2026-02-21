@@ -17,9 +17,6 @@ from flext_auth.typings import t
 from flext_core import FlextUtilities, r
 from pydantic import BeforeValidator, SecretStr
 
-# Runtime alias for core utilities namespace access
-u = FlextUtilities
-
 
 class FlextAuthUtilities(FlextUtilities):
     """FlextAuth advanced utilities extending u with domain-specific helpers.
@@ -44,7 +41,7 @@ class FlextAuthUtilities(FlextUtilities):
 
         Uses parent Enum utilities for consistency.
         """
-        return u.Enum.is_member(FlextAuthConstants.Auth.TokenTypes, value)
+        return FlextUtilities.Enum.is_member(FlextAuthConstants.Auth.TokenTypes, value)
 
     @classmethod
     def is_valid_provider_type(
@@ -55,7 +52,9 @@ class FlextAuthUtilities(FlextUtilities):
 
         Uses parent Enum utilities for consistency.
         """
-        return u.Enum.is_member(FlextAuthConstants.Auth.ProviderTypes, value)
+        return FlextUtilities.Enum.is_member(
+            FlextAuthConstants.Auth.ProviderTypes, value
+        )
 
     @classmethod
     def is_valid_role_type(
@@ -66,7 +65,7 @@ class FlextAuthUtilities(FlextUtilities):
 
         Uses parent Enum utilities for consistency.
         """
-        return u.Enum.is_member(FlextAuthConstants.Auth.RoleTypes, value)
+        return FlextUtilities.Enum.is_member(FlextAuthConstants.Auth.RoleTypes, value)
 
     @classmethod
     def is_valid_permission_type(
@@ -77,7 +76,7 @@ class FlextAuthUtilities(FlextUtilities):
 
         Uses parent Enum utilities for consistency.
         """
-        return u.Enum.is_member(
+        return FlextUtilities.Enum.is_member(
             FlextAuthConstants.Auth.PermissionTypes,
             value,
         )
@@ -99,7 +98,7 @@ class FlextAuthUtilities(FlextUtilities):
 
         """
 
-    class Collection(u.Collection):
+    class Collection(FlextUtilities.Collection):
         """Collection utilities extending u.Collection via inheritance.
 
         Exposes all flext-core Collection methods through inheritance hierarchy.
@@ -110,7 +109,7 @@ class FlextAuthUtilities(FlextUtilities):
         # ARGS UTILITIES: @validated decorators - ZERO boilerplate
         # ═══════════════════════════════════════════════════════════════════
 
-    class Args(u.Args):
+    class Args(FlextUtilities.Args):
         """Args utilities extending u.Args via inheritance.
 
         Exposes all flext-core Args methods through inheritance hierarchy.
@@ -121,7 +120,7 @@ class FlextAuthUtilities(FlextUtilities):
         # MODEL UTILITIES: from_dict, merge_defaults, update - ZERO try/except
         # ═══════════════════════════════════════════════════════════════════
 
-    class Model(u.Model):
+    class Model(FlextUtilities.Model):
         """Model utilities extending u.Model via inheritance.
 
         Exposes all flext-core Model methods through inheritance hierarchy.
@@ -146,7 +145,7 @@ class FlextAuthUtilities(FlextUtilities):
                 return Annotated[
                     FlextAuthConstants.Auth.TokenTypes,
                     BeforeValidator(
-                        u.Enum.coerce_validator(
+                        FlextUtilities.Enum.coerce_validator(
                             FlextAuthConstants.Auth.TokenTypes,
                         ),
                     ),
@@ -163,7 +162,7 @@ class FlextAuthUtilities(FlextUtilities):
                 return Annotated[
                     FlextAuthConstants.Auth.ProviderTypes,
                     BeforeValidator(
-                        u.Enum.coerce_validator(
+                        FlextUtilities.Enum.coerce_validator(
                             FlextAuthConstants.Auth.ProviderTypes,
                         ),
                     ),
@@ -180,7 +179,7 @@ class FlextAuthUtilities(FlextUtilities):
                 return Annotated[
                     FlextAuthConstants.Auth.RoleTypes,
                     BeforeValidator(
-                        u.Enum.coerce_validator(
+                        FlextUtilities.Enum.coerce_validator(
                             FlextAuthConstants.Auth.RoleTypes,
                         ),
                     ),

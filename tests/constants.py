@@ -27,11 +27,11 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
     2. FlextAuthConstants - for domain constants (.Auth.*)
 
     Access patterns:
-    - tc.Tests.Docker.* (container testing)
-    - tc.Tests.Matcher.* (assertion messages)
-    - tc.Tests.Factory.* (test data generation)
-    - tc.Auth.* (domain constants from production)
-    - tc.TestData.* (project-specific test data)
+    - c.Tests.Docker.* (container testing)
+    - c.Tests.Matcher.* (assertion messages)
+    - c.Tests.Factory.* (test data generation)
+    - c.Auth.* (domain constants from production)
+    - c.TestData.* (project-specific test data)
 
     Rules:
     - NEVER duplicate constants from FlextTestsConstants or FlextAuthConstants
