@@ -3198,4 +3198,4 @@ typings = ["django-stubs", "types-ldap3", "types-passlib", "types-protobuf", "ty
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.13,<3.14"
-content-hash = "308489febd769d6856463b4c8ef9a5efed89be7c65448e566a6e5b84b4a38895"
+content-hash = "9cf85d2ee4f0dff0dbab27061b7f007c03e629f9e71fc695aa2a8ca3ebc79872"
