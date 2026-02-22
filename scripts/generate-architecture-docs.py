@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3  # noqa: N999
 """FLEXT Auth Architecture Documentation Generator.
 
 Comprehensive automation script for generating, updating, and validating

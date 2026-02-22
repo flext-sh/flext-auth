@@ -15,8 +15,9 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from flext_auth.protocols import FlextAuthProtocols as p
 from flext_core import r, t
+
+from flext_auth.protocols import FlextAuthProtocols as p
 
 
 class FlextAuthBaseProvider(ABC):

@@ -495,16 +495,14 @@ class ContentOptimizer:
             file_path = str(suggestion.file_path.relative_to(self.project_root))
             if file_path not in results["suggestions_by_file"]:
                 results["suggestions_by_file"][file_path] = []
-            results["suggestions_by_file"][file_path].append(
-                {
-                    "line": suggestion.line_number,
-                    "type": suggestion.content_type,
-                    "issue": suggestion.issue,
-                    "suggestion": suggestion.suggestion,
-                    "severity": suggestion.severity,
-                    "auto_fixable": suggestion.auto_fixable,
-                }
-            )
+            results["suggestions_by_file"][file_path].append({
+                "line": suggestion.line_number,
+                "type": suggestion.content_type,
+                "issue": suggestion.issue,
+                "suggestion": suggestion.suggestion,
+                "severity": suggestion.severity,
+                "auto_fixable": suggestion.auto_fixable,
+            })
 
         print(
             f"✅ Optimization audit complete! Found {len(all_suggestions)} suggestions across {len(docs_files)} files"

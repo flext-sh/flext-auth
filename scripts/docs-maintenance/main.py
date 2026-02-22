@@ -107,14 +107,12 @@ class DocumentationMaintenanceSystem:
 
     def generate_maintenance_report(self) -> dict[str, t.GeneralValueType]:
         """Generate maintenance status report."""
-        if not all(
-            [
-                self.audit_results,
-                self.link_results,
-                self.optimization_results,
-                self.sync_results,
-            ]
-        ):
+        if not all([
+            self.audit_results,
+            self.link_results,
+            self.optimization_results,
+            self.sync_results,
+        ]):
             print(
                 "❌ Cannot generate maintenance report - run comprehensive maintenance first"
             )

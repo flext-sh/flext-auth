@@ -12,10 +12,11 @@ from typing import Annotated, TypeIs
 
 import bcrypt
 import jwt
-from flext_auth.constants import FlextAuthConstants
-from flext_auth.typings import t
 from flext_core import FlextUtilities, r
 from pydantic import BeforeValidator, SecretStr
+
+from flext_auth.constants import FlextAuthConstants
+from flext_auth.typings import t
 
 
 class FlextAuthUtilities(FlextUtilities):

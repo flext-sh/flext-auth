@@ -10,9 +10,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth import FlextAuth, FlextAuthQuickstart, FlextAuthSettings
 from flext_core import FlextResult
 from pydantic_settings import BaseSettings
+
+from flext_auth import FlextAuth, FlextAuthQuickstart, FlextAuthSettings
 
 
 def demonstrate_refactoring_benefits() -> None:
@@ -43,8 +44,8 @@ def demonstrate_quickstart_functionality() -> None:
         create_REDACTED_LDAP_BIND_PASSWORD=False
     )
     if quickstart_result.is_success:
-        REDACTED_LDAP_BIND_PASSWORD_credentials = quickstart_result.value
-        print(f"Admin credentials created: {REDACTED_LDAP_BIND_PASSWORD_credentials}")
+        admin_credentials = quickstart_result.value
+        print(f"Admin credentials created: {admin_credentials}")
 
     # Create a separate FlextAuth instance for the demo
     auth_service = FlextAuth()

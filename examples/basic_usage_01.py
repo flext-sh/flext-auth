@@ -16,10 +16,11 @@ import os
 import secrets
 import string
 
-from flext_auth import FlextAuth, FlextAuthSettings
-from flext_auth.constants import c
 from flext_core import FlextLogger
 from pydantic_settings import BaseSettings
+
+from flext_auth import FlextAuth, FlextAuthSettings
+from flext_auth.constants import c
 
 # Get structured logger instance
 logger = FlextLogger(__name__)
@@ -207,8 +208,8 @@ def example_advanced_registration() -> None:
     auth: FlextAuth = FlextAuth()
     password = os.getenv("FLEXT_DEMO_ADVANCED_PASSWORD", "AdvancedPass123!")
 
-    # Register REDACTED_LDAP_BIND_PASSWORD user
-    REDACTED_LDAP_BIND_PASSWORD_result = auth.register_user(
+    # Register admin user (placeholder name redacted)
+    register_result = auth.register_user(
         username="REDACTED_LDAP_BIND_PASSWORD",
         email="REDACTED_LDAP_BIND_PASSWORD@company.com",
         password=password,
@@ -216,8 +217,8 @@ def example_advanced_registration() -> None:
         roles=["REDACTED_LDAP_BIND_PASSWORD", "user"],
     )
 
-    if REDACTED_LDAP_BIND_PASSWORD_result.is_success:
-        user_data = REDACTED_LDAP_BIND_PASSWORD_result.value
+    if register_result.is_success:
+        user_data = register_result.value
         logger.info(
             "Admin user registered successfully",
             username=user_data.username,
@@ -227,9 +228,7 @@ def example_advanced_registration() -> None:
             is_active=user_data.is_active,
         )
     else:
-        logger.error(
-            "Admin registration failed", error=REDACTED_LDAP_BIND_PASSWORD_result.error
-        )
+        logger.error("Admin registration failed", error=register_result.error)
 
     # Register regular user
     user_result = auth.register_user(

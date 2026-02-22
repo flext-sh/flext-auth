@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
+from flext_core import FlextService as s, r
+
 from flext_auth.constants import FlextAuthConstants as c
 from flext_auth.models import FlextAuthModels
 from flext_auth.protocols import FlextAuthProtocols as p
@@ -34,7 +36,6 @@ from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
 from flext_auth.settings import FlextAuthSettings
 from flext_auth.typings import FlextAuthTypes as t
-from flext_core import FlextService as s, r
 
 
 class FlextAuthProviderService(s[object]):
