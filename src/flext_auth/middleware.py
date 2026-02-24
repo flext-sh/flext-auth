@@ -32,7 +32,7 @@ from typing import ClassVar
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_core import FlextRuntime, FlextService as s, r
+from flext_core import FlextService as s, FlextUtilities as u, r
 from flext_core.loggings import FlextLogger
 
 # Import aliases following order: c -> t -> p -> r -> m -> u

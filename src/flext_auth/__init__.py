@@ -37,11 +37,25 @@ from flext_core import (
     FlextDecorators,
     FlextExceptions,
     FlextHandlers,
+    FlextMixins,
     FlextResult,
     FlextService,
 )
 
+# Standard aliases (11 total)
+c = FlextAuthConstants
+d = FlextDecorators
+e = FlextExceptions
+h = FlextHandlers
+m = FlextAuthModels
+p = FlextAuthProtocols
+r = FlextResult
+s = FlextService
+u = FlextAuthUtilities
+x = FlextMixins
+
 __all__ = [
+    # Full class names (backward compatibility)
     "FlextAuth",
     "FlextAuthApiKeyProvider",
     "FlextAuthBaseProvider",
@@ -74,5 +88,16 @@ __all__ = [
     "FlextHandlers",
     "FlextResult",
     "FlextService",
+    # Standard aliases (11 total)
+    "c",
+    "d",
+    "e",
+    "h",
+    "m",
+    "p",
+    "r",
+    "s",
     "t",
+    "u",
+    "x",
 ]

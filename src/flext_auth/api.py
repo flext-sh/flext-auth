@@ -22,7 +22,7 @@ from flext_auth.session_service import FlextAuthSessionService
 from flext_auth.settings import FlextAuthSettings
 from flext_auth.token_service import FlextAuthTokenService
 from flext_auth.user_service import FlextAuthIdentityService
-from flext_core import r, t, u
+from flext_core import r, t
 from flext_core.dispatcher import FlextDispatcher
 from flext_core.loggings import FlextLogger
 
@@ -173,16 +173,22 @@ class FlextAuth:
         """Railway-oriented authentication with chaining."""
         # Extract username and password from credentials - fast fail if missing
         username_value = credentials.get("username")
-        if not u.Guards._is_str(username_value) or not username_value:
-            return r[FlextAuthModels.Auth.AuthIdentity].fail(
-                "Invalid credentials: username is required and must be a non-empty string",
-            )
+        match username_value:
+            case str() as username if username:
+                username_value = username
+            case _:
+                return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                    "Invalid credentials: username is required and must be a non-empty string",
+                )
 
         password_value = credentials.get("password")
-        if not u.Guards._is_str(password_value) or not password_value:
-            return r[FlextAuthModels.Auth.AuthIdentity].fail(
-                "Invalid credentials: password is required and must be a non-empty string",
-            )
+        match password_value:
+            case str() as password if password:
+                password_value = password
+            case _:
+                return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                    "Invalid credentials: password is required and must be a non-empty string",
+                )
 
         return self._identity_service.authenticate_identity(
             username_value,
@@ -322,8 +328,11 @@ class FlextAuth:
             extra_claims: Reserved for future extra claims support
 
         """
-        if not identity_id or not u.Guards._is_str(identity_id):
-            return r[str].fail("Identity ID must be a non-empty string")
+        match identity_id:
+            case str() as identity if identity:
+                identity_id = identity
+            case _:
+                return r[str].fail("Identity ID must be a non-empty string")
 
         _ = extra_claims  # Reserved for future use
         return self._token_service.generate_jwt_token(

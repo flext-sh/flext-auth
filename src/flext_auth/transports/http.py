@@ -18,7 +18,7 @@ from urllib.parse import urlencode
 from flext_api import FlextApiClient, FlextApiModels, FlextApiSettings
 from flext_api.typings import FlextApiTypes as t_api
 from flext_auth.typings import t
-from flext_core import FlextRuntime, r
+from flext_core import r, u
 from flext_core.loggings import FlextLogger
 
 # Import aliases following order: c -> t -> p -> r -> m -> u
@@ -257,19 +257,18 @@ class FlextWebTransportAdapter:
         # Check for OAuth2 error response (RFC 6749 Section 5.2)
         if "error" in response_data:
             error_code_value = response_data.get("error")
-            if not u.Guards._is_str(error_code_value) or not error_code_value:
-                error_code = "unknown_error"
-            else:
-                error_code = error_code_value
+            match error_code_value:
+                case str() as code if code:
+                    error_code = code
+                case _:
+                    error_code = "unknown_error"
 
             error_description_value = response_data.get("error_description")
-            if (
-                not u.Guards._is_str(error_description_value)
-                or not error_description_value
-            ):
-                error_description = "No error description"
-            else:
-                error_description = error_description_value
+            match error_description_value:
+                case str() as description if description:
+                    error_description = description
+                case _:
+                    error_description = "No error description"
 
             error_uri = response_data.get("error_uri")
 
@@ -321,28 +320,28 @@ class FlextWebTransportAdapter:
                 self._normalize_response_dict(dict(body))
             )
 
-        if u.Guards._is_bytes(body) or u.Guards._is_str(body):
-            decoded = (
-                body.decode("utf-8", errors="replace")
-                if u.Guards._is_bytes(body)
-                else body
-            )
-            try:
-                parsed = json.loads(decoded)
-            except json.JSONDecodeError:
+        match body:
+            case bytes() as body_bytes:
+                decoded = body_bytes.decode("utf-8", errors="replace")
+            case str() as body_text:
+                decoded = body_text
+            case _:
                 return r[t_api.Api.ResponseDict].fail(
-                    "Unable to parse response body as JSON",
+                    f"Unsupported response body type: {type(body)}",
                 )
-            if u.is_dict_like(parsed):
-                return r[t_api.Api.ResponseDict].ok(
-                    self._normalize_response_dict(dict(parsed)),
-                )
-            return r[t_api.Api.ResponseDict].fail(
-                f"Unexpected parsed response type: {type(parsed)}",
-            )
 
+        try:
+            parsed = json.loads(decoded)
+        except json.JSONDecodeError:
+            return r[t_api.Api.ResponseDict].fail(
+                "Unable to parse response body as JSON",
+            )
+        if u.is_dict_like(parsed):
+            return r[t_api.Api.ResponseDict].ok(
+                self._normalize_response_dict(dict(parsed)),
+            )
         return r[t_api.Api.ResponseDict].fail(
-            f"Unsupported response body type: {type(body)}",
+            f"Unexpected parsed response type: {type(parsed)}",
         )
 
     def _normalize_response_dict(
@@ -360,14 +359,17 @@ class FlextWebTransportAdapter:
         """Convert object to JsonValue type (safe for JSON-parsed data)."""
         if value is None:
             return None
-        if u.Guards._is_str(value):
-            return value
-        if u.Guards._is_bool(value):  # bool before int (bool is subclass of int)
-            return value
-        if u.Guards._is_int(value):
-            return value
-        if u.Guards._is_float(value):
-            return value
+        match value:
+            case str() as text:
+                return text
+            case bool() as boolean:  # bool before int (bool is subclass of int)
+                return boolean
+            case int() as integer:
+                return integer
+            case float() as decimal:
+                return decimal
+            case _:
+                pass
         if u.Guards.is_list(value):
             return [self._to_json_value(item) for item in value]
         if u.is_dict_like(value):

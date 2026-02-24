@@ -15,7 +15,7 @@ from collections.abc import Mapping
 import jwt
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 from flext_auth.typings import t
-from flext_core import r, u
+from flext_core import r
 
 
 class FlextAuthJwtTokenValidator:
@@ -48,26 +48,32 @@ class FlextAuthJwtTokenValidator:
                 )
 
             secret_key_value = config.get("secret_key")
-            if not u.Guards._is_str(secret_key_value) or not secret_key_value:
-                return r[Mapping[str, t.GeneralValueType]].fail(
-                    "JWT secret key not configured"
-                )
-            secret_key = secret_key_value
+            match secret_key_value:
+                case str() as secret if secret:
+                    secret_key = secret
+                case _:
+                    return r[Mapping[str, t.GeneralValueType]].fail(
+                        "JWT secret key not configured"
+                    )
 
             algorithm_value = config.get("algorithm")
-            if not u.Guards._is_str(algorithm_value):
-                return r[Mapping[str, t.GeneralValueType]].fail(
-                    "JWT algorithm not configured"
-                )
-            algorithm = algorithm_value
+            match algorithm_value:
+                case str() as algorithm_str:
+                    algorithm = algorithm_str
+                case _:
+                    return r[Mapping[str, t.GeneralValueType]].fail(
+                        "JWT algorithm not configured"
+                    )
 
             audience_value = config.get("audience")
             if audience_value is not None:
-                if not u.Guards._is_str(audience_value):
-                    return r[Mapping[str, t.GeneralValueType]].fail(
-                        "JWT audience must be a string if provided",
-                    )
-                audience = audience_value
+                match audience_value:
+                    case str() as audience_str:
+                        audience = audience_str
+                    case _:
+                        return r[Mapping[str, t.GeneralValueType]].fail(
+                            "JWT audience must be a string if provided",
+                        )
             else:
                 audience = None
 

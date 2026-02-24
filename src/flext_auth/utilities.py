@@ -15,7 +15,7 @@ import bcrypt
 import jwt
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.typings import t
-from flext_core import FlextRuntime, FlextUtilities, r
+from flext_core import FlextUtilities, r
 from pydantic import BeforeValidator, SecretStr
 
 
@@ -362,7 +362,13 @@ class FlextAuthUtilities(FlextUtilities):
         """
         try:
             token = jwt.encode(dict(payload), secret, algorithm=algorithm)
-            return r[str].ok(token if u.Guards._is_str(token) else token.decode())
+            match token:
+                case str() as token_str:
+                    return r[str].ok(token_str)
+                case bytes() as token_bytes:
+                    return r[str].ok(token_bytes.decode())
+                case _:
+                    return r[str].ok(str(token))
         except Exception as e:
             return r[str].fail(f"Encoding failed: {e}")
 

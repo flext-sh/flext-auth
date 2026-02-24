@@ -16,7 +16,7 @@ from datetime import UTC, datetime, timedelta
 import jwt
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 from flext_auth.typings import t
-from flext_core import r, u
+from flext_core import r
 
 
 class FlextAuthJwtTokenGenerator:
@@ -36,9 +36,11 @@ class FlextAuthJwtTokenGenerator:
         if not config:
             return r[str].fail(error_msg)
         value = config.get(key)
-        if not u.Guards._is_str(value) or not value:
-            return r[str].fail(error_msg)
-        return r[str].ok(value)
+        match value:
+            case str() as text if text:
+                return r[str].ok(text)
+            case _:
+                return r[str].fail(error_msg)
 
     def _get_config_int(self, key: str, error_msg: str) -> r[int]:
         """Get and validate integer configuration value."""
@@ -46,9 +48,11 @@ class FlextAuthJwtTokenGenerator:
         if not config:
             return r[int].fail(error_msg)
         value = config.get(key)
-        if not u.Guards._is_int(value):
-            return r[int].fail(error_msg)
-        return r[int].ok(value)
+        match value:
+            case int() as number:
+                return r[int].ok(number)
+            case _:
+                return r[int].fail(error_msg)
 
     def _get_optional_config_str(self, key: str) -> r[str]:
         """Get optional string configuration value.
@@ -63,17 +67,21 @@ class FlextAuthJwtTokenGenerator:
         if value is None:
             # Return empty string instead of None - no None in r
             return r[str].ok("")
-        if not u.Guards._is_str(value):
-            return r[str].fail(f"{key} must be a string if provided")
-        return r[str].ok(value)
+        match value:
+            case str() as text:
+                return r[str].ok(text)
+            case _:
+                return r[str].fail(f"{key} must be a string if provided")
 
     def _validate_expiry(self, expiry_minutes: int | None, default: int) -> r[int]:
         """Validate and determine expiry time."""
         if expiry_minutes is None:
             return r[int].ok(default)
-        if not u.Guards._is_int(expiry_minutes) or expiry_minutes <= 0:
-            return r[int].fail("expiry_minutes must be a positive integer")
-        return r[int].ok(expiry_minutes)
+        match expiry_minutes:
+            case int() as minutes if minutes > 0:
+                return r[int].ok(minutes)
+            case _:
+                return r[int].fail("expiry_minutes must be a positive integer")
 
     def _build_payload(
         self,
@@ -172,10 +180,13 @@ class FlextAuthJwtTokenGenerator:
                 algorithm=algorithm_result.value,
             )
             # Handle both string and bytes return types from jwt.encode
-            if u.Guards._is_bytes(token_result):
-                token = token_result.decode("utf-8")
-            else:
-                token = str(token_result)
+            match token_result:
+                case bytes() as token_bytes:
+                    token = token_bytes.decode("utf-8")
+                case str() as token_str:
+                    token = token_str
+                case _:
+                    token = str(token_result)
             return r[str].ok(token)
 
         except Exception as e:

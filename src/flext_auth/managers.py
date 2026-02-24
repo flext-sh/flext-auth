@@ -17,9 +17,8 @@ from uuid import uuid4
 from flext_auth.models import FlextAuthModels
 from flext_auth.settings import FlextAuthSettings
 from flext_core import (
-    u,
-    FlextRuntime,
     r,
+    u,
 )
 from flext_core.context import FlextContext
 from flext_core.dispatcher import FlextDispatcher
@@ -162,8 +161,11 @@ class FlextAuthManagers:
             """Extract identity ID from storage data with fast fail."""
             for field in ("unique_id", "id", "identity_id"):
                 value = storage_data.get(field)
-                if u.Guards._is_str(value) and value:
-                    return value
+                match value:
+                    case str() as identity_id if identity_id:
+                        return identity_id
+                    case _:
+                        pass
             msg = "Storage data missing required 'unique_id', 'id', or 'identity_id' field"
             raise ValueError(msg)
 
@@ -296,16 +298,20 @@ class FlextAuthManagers:
                     "Identity already exists"
                 )
             # Check for duplicate email (contact)
-            normalized_email = email.lower() if u.Guards._is_str(email) else email
+            match email:
+                case str() as email_str:
+                    normalized_email = email_str.lower()
+                case _:
+                    normalized_email = email
             for existing_user_data in self._users.values():
                 existing_contact = existing_user_data.get("contact", "")
-                if (
-                    u.Guards._is_str(existing_contact)
-                    and existing_contact.lower() == normalized_email
-                ):
-                    return r[FlextAuthModels.Auth.AuthIdentity].fail(
-                        "Identity already exists"
-                    )
+                match existing_contact:
+                    case str() as contact if contact.lower() == normalized_email:
+                        return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                            "Identity already exists"
+                        )
+                    case _:
+                        pass
 
             user_id = str(uuid4())
             # Build user data with only AuthIdentity model fields (no extras)
@@ -340,34 +346,41 @@ class FlextAuthManagers:
                         [str(item) for item in v] if u.Guards.is_list(v) else []
                     )
                 elif k == "failed_attempts":
-                    failed_attempts = (
-                        int(v)
-                        if (
-                            u.Guards._is_int(v)
-                            or (u.Guards._is_str(v) and str(v).isdigit())
-                        )
-                        else 0
-                    )
+                    match v:
+                        case int() as int_value:
+                            failed_attempts = int(int_value)
+                        case str() as str_value if str_value.isdigit():
+                            failed_attempts = int(str_value)
+                        case _:
+                            failed_attempts = 0
                 elif k == "locked_until":
                     if u.Guards.is_type(v, datetime):
                         locked_until = v
-                    elif u.Guards._is_str(v):
-                        try:
-                            locked_until = datetime.fromisoformat(v)
-                        except ValueError:
-                            locked_until = datetime.min.replace(tzinfo=UTC)
                     else:
-                        locked_until = datetime.min.replace(tzinfo=UTC)
+                        match v:
+                            case str() as locked_until_str:
+                                try:
+                                    locked_until = datetime.fromisoformat(
+                                        locked_until_str
+                                    )
+                                except ValueError:
+                                    locked_until = datetime.min.replace(tzinfo=UTC)
+                            case _:
+                                locked_until = datetime.min.replace(tzinfo=UTC)
                 elif k == "last_access":
                     if u.Guards.is_type(v, datetime):
                         last_access = v
-                    elif u.Guards._is_str(v):
-                        try:
-                            last_access = datetime.fromisoformat(v)
-                        except ValueError:
-                            last_access = datetime.min.replace(tzinfo=UTC)
                     else:
-                        last_access = datetime.min.replace(tzinfo=UTC)
+                        match v:
+                            case str() as last_access_str:
+                                try:
+                                    last_access = datetime.fromisoformat(
+                                        last_access_str
+                                    )
+                                except ValueError:
+                                    last_access = datetime.min.replace(tzinfo=UTC)
+                            case _:
+                                last_access = datetime.min.replace(tzinfo=UTC)
                 elif k == "token":
                     token = str(v) if v is not None else ""
                 elif k == "session_id":
@@ -520,9 +533,11 @@ class FlextAuthManagers:
             expires_at = expires_at_value
 
             is_active_value = session_data.get("is_active")
-            if not u.Guards._is_bool(is_active_value):
-                return False
-            is_active = is_active_value
+            match is_active_value:
+                case bool() as active:
+                    is_active = active
+                case _:
+                    return False
 
             return is_active and expires_at > datetime.now(UTC)
 
@@ -568,27 +583,29 @@ class FlextAuthManagers:
             sessions: list[FlextAuthModels.Session] = []
             for session_id, session_data in self._sessions.items():
                 identity_id_value = session_data.get("identity_id")
-                if (
-                    u.Guards._is_str(identity_id_value)
-                    and identity_id_value == user_id
-                    and self._is_session_active(session_data)
-                ):
-                    # Extract only fields that Session model accepts
-                    session = FlextAuthModels.Session.model_validate({
-                        "identity_id": str(session_data["identity_id"]),
-                        "session_token": str(session_data["session_token"]),
-                        "expires_at": session_data["expires_at"],
-                        "is_active": bool(session_data.get("is_active", True)),
-                        "ip_address": str(session_data.get("ip_address", "")),
-                        "user_agent": str(session_data.get("user_agent", "")),
-                        "last_accessed": session_data.get(
-                            "last_accessed",
-                            datetime.now(UTC),
-                        ),
-                    })
-                    # Set unique_id from session_id
-                    session.unique_id = session_id
-                    sessions.append(session)
+                match identity_id_value:
+                    case str() as identity_id_value_str if (
+                        identity_id_value_str == user_id
+                        and self._is_session_active(session_data)
+                    ):
+                        # Extract only fields that Session model accepts
+                        session = FlextAuthModels.Session.model_validate({
+                            "identity_id": str(session_data["identity_id"]),
+                            "session_token": str(session_data["session_token"]),
+                            "expires_at": session_data["expires_at"],
+                            "is_active": bool(session_data.get("is_active", True)),
+                            "ip_address": str(session_data.get("ip_address", "")),
+                            "user_agent": str(session_data.get("user_agent", "")),
+                            "last_accessed": session_data.get(
+                                "last_accessed",
+                                datetime.now(UTC),
+                            ),
+                        })
+                        # Set unique_id from session_id
+                        session.unique_id = session_id
+                        sessions.append(session)
+                    case _:
+                        pass
             return r[list[FlextAuthModels.Session]].ok(sessions)
 
         def end_session(self, user_id: str) -> r[bool]:
@@ -596,9 +613,14 @@ class FlextAuthManagers:
             found = False
             for session_data in self._sessions.values():
                 identity_id_value = session_data.get("identity_id")
-                if u.Guards._is_str(identity_id_value) and identity_id_value == user_id:
-                    session_data["is_active"] = False
-                    found = True
+                match identity_id_value:
+                    case str() as identity_id_value_str if (
+                        identity_id_value_str == user_id
+                    ):
+                        session_data["is_active"] = False
+                        found = True
+                    case _:
+                        pass
 
             if found:
                 return r[bool].ok(value=True)
@@ -866,22 +888,27 @@ class FlextAuthManagers:
                 if user_id is not None:
                     username_value = log.get("username")
                     log_user_id_value = log.get("user_id")
-                    if not (
-                        u.Guards._is_str(username_value) and username_value == user_id
-                    ) and not (
-                        u.Guards._is_str(log_user_id_value)
-                        and log_user_id_value == user_id
-                    ):
+                    match username_value:
+                        case str() as username if username == user_id:
+                            username_matches = True
+                        case _:
+                            username_matches = False
+                    match log_user_id_value:
+                        case str() as log_user_id if log_user_id == user_id:
+                            log_user_matches = True
+                        case _:
+                            log_user_matches = False
+                    if not username_matches and not log_user_matches:
                         continue
 
                 # Filter by event_type
                 if event_type is not None:
                     log_event_type = log.get("event_type")
-                    if (
-                        not u.Guards._is_str(log_event_type)
-                        or log_event_type != event_type
-                    ):
-                        continue
+                    match log_event_type:
+                        case str() as log_event if log_event == event_type:
+                            pass
+                        case _:
+                            continue
 
                 # Filter by start_date
                 if start_date is not None:

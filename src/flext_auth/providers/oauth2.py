@@ -26,7 +26,7 @@ from flext_auth.protocols import FlextAuthProtocols
 # Forward reference to avoid circular import
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 from flext_auth.typings import FlextAuthTypes as at, t
-from flext_core import FlextRuntime, e, r, u
+from flext_core import e, r, u, x
 
 
 class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
@@ -64,17 +64,19 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         # Optional configuration with defaults
         redirect_uri_value = self._config.get("redirect_uri")
-        if redirect_uri_value is not None and not u.Guards._is_str(redirect_uri_value):
-            error_msg = "OAuth2 provider 'redirect_uri' must be a string or None"
-            raise e.ValidationError(
-                error_msg,
-                field="redirect_uri",
-                expected_type="str",
-                actual_type=str(type(redirect_uri_value)),
-            )
-        self._redirect_uri: str | None = (
-            redirect_uri_value if u.Guards._is_str(redirect_uri_value) else None
-        )
+        match redirect_uri_value:
+            case None:
+                self._redirect_uri = None
+            case str() as redirect_uri:
+                self._redirect_uri = redirect_uri
+            case _:
+                error_msg = "OAuth2 provider 'redirect_uri' must be a string or None"
+                raise e.ValidationError(
+                    error_msg,
+                    field="redirect_uri",
+                    expected_type="str",
+                    actual_type=str(type(redirect_uri_value)),
+                )
 
         # Initialize configuration using helper methods
         self._scope = self._init_scope()
@@ -92,76 +94,70 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def _init_scope(self) -> str:
         """Initialize scope configuration."""
         scope_value = self._config.get("scope")
-        if scope_value is not None and not u.Guards._is_str(scope_value):
-            error_msg = (
-                f"OAuth2 'scope' must be str or None, got {type(scope_value).__name__}"
-            )
-            raise ValueError(error_msg)
-        return (
-            scope_value
-            if u.Guards._is_str(scope_value) and scope_value
-            else c.Auth.OAuth2.SCOPE_DEFAULT
-        )
+        match scope_value:
+            case None:
+                return c.Auth.OAuth2.SCOPE_DEFAULT
+            case str() as scope if scope:
+                return scope
+            case str():
+                return c.Auth.OAuth2.SCOPE_DEFAULT
+            case _:
+                error_msg = f"OAuth2 'scope' must be str or None, got {type(scope_value).__name__}"
+                raise ValueError(error_msg)
 
     def _init_flow(self) -> str:
         """Initialize flow configuration."""
         flow_value = self._config.get("flow")
-        if flow_value is not None and not u.Guards._is_str(flow_value):
-            error_msg = (
-                f"OAuth2 'flow' must be str or None, got {type(flow_value).__name__}"
-            )
-            raise ValueError(error_msg)
-        if u.Guards._is_str(flow_value) and flow_value:
-            if flow_value not in c.Auth.OAuth2.FLOWS:
-                error_msg = f"OAuth2 'flow' must be one of {c.Auth.OAuth2.FLOWS}, got {flow_value}"
+        match flow_value:
+            case None | "":
+                return c.Auth.OAuth2.FLOW_DEFAULT
+            case str() as flow:
+                if flow not in c.Auth.OAuth2.FLOWS:
+                    error_msg = f"OAuth2 'flow' must be one of {c.Auth.OAuth2.FLOWS}, got {flow}"
+                    raise ValueError(error_msg)
+                return flow
+            case _:
+                error_msg = f"OAuth2 'flow' must be str or None, got {type(flow_value).__name__}"
                 raise ValueError(error_msg)
-            return flow_value
-        return c.Auth.OAuth2.FLOW_DEFAULT
 
     def _init_pkce(self) -> bool:
         """Initialize PKCE configuration."""
         use_pkce_value = self._config.get("use_pkce")
-        if use_pkce_value is not None and not u.Guards._is_bool(use_pkce_value):
-            error_msg = (
-                f"OAuth2 'use_pkce' must be bool or None, "
-                f"got {type(use_pkce_value).__name__}"
-            )
-            raise ValueError(error_msg)
-        return (
-            use_pkce_value
-            if u.Guards._is_bool(use_pkce_value)
-            else c.Auth.OAuth2.USE_PKCE_DEFAULT
-        )
+        match use_pkce_value:
+            case None:
+                return c.Auth.OAuth2.USE_PKCE_DEFAULT
+            case bool() as use_pkce:
+                return use_pkce
+            case _:
+                error_msg = (
+                    f"OAuth2 'use_pkce' must be bool or None, "
+                    f"got {type(use_pkce_value).__name__}"
+                )
+                raise ValueError(error_msg)
 
     def _init_token_endpoint_auth_method(self) -> str:
         """Initialize token endpoint auth method configuration."""
         token_endpoint_auth_method_value = self._config.get(
             "token_endpoint_auth_method",
         )
-        if token_endpoint_auth_method_value is not None and not u.Guards._is_str(
-            token_endpoint_auth_method_value
-        ):
-            error_msg = (
-                f"OAuth2 'token_endpoint_auth_method' must be str or None, "
-                f"got {type(token_endpoint_auth_method_value).__name__}"
-            )
-            raise ValueError(error_msg)
-        if (
-            u.Guards._is_str(token_endpoint_auth_method_value)
-            and token_endpoint_auth_method_value
-        ):
-            if (
-                token_endpoint_auth_method_value
-                not in c.Auth.OAuth2.TOKEN_ENDPOINT_AUTH_METHODS
-            ):
+        match token_endpoint_auth_method_value:
+            case None | "":
+                return c.Auth.OAuth2.TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT
+            case str() as auth_method:
+                if auth_method not in c.Auth.OAuth2.TOKEN_ENDPOINT_AUTH_METHODS:
+                    error_msg = (
+                        f"OAuth2 'token_endpoint_auth_method' must be one of "
+                        f"{c.Auth.OAuth2.TOKEN_ENDPOINT_AUTH_METHODS}, "
+                        f"got {auth_method}"
+                    )
+                    raise ValueError(error_msg)
+                return auth_method
+            case _:
                 error_msg = (
-                    f"OAuth2 'token_endpoint_auth_method' must be one of "
-                    f"{c.Auth.OAuth2.TOKEN_ENDPOINT_AUTH_METHODS}, "
-                    f"got {token_endpoint_auth_method_value}"
+                    f"OAuth2 'token_endpoint_auth_method' must be str or None, "
+                    f"got {type(token_endpoint_auth_method_value).__name__}"
                 )
                 raise ValueError(error_msg)
-            return token_endpoint_auth_method_value
-        return c.Auth.OAuth2.TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT
 
     def _validate_configuration(self) -> r[bool]:
         """Railway-oriented configuration validation."""
@@ -225,8 +221,11 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def get_authorization_endpoint(self) -> str | None:
         """Get authorization endpoint from configuration."""
         value = self._config.get("authorization_endpoint")
-        # Type narrowing: config values are typically strings or None
-        return value if u.Guards._is_str(value) else None
+        match value:
+            case str() as endpoint:
+                return endpoint
+            case _:
+                return None
 
     def get_redirect_uri(self) -> str | None:
         """Get redirect URI from configuration."""
@@ -235,12 +234,20 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def get_client_id(self) -> str | None:
         """Get client ID from configuration."""
         value = self._config.get("client_id")
-        return value if u.Guards._is_str(value) else None
+        match value:
+            case str() as client_id:
+                return client_id
+            case _:
+                return None
 
     def get_scope(self) -> str | None:
         """Get scope from configuration."""
         value = self._config.get("scope")
-        return value if u.Guards._is_str(value) else None
+        match value:
+            case str() as scope:
+                return scope
+            case _:
+                return None
 
     def should_use_pkce(self) -> bool:
         """Check if PKCE should be used."""
@@ -270,11 +277,13 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 return r[str].fail("Authorization endpoint not configured")
 
             redirect_uri_value = self.provider.get_redirect_uri()
-            if redirect_uri_value is None:
-                return r[str].fail("OAuth2 redirect_uri is required")
-            if not u.Guards._is_str(redirect_uri_value) or not redirect_uri_value:
-                return r[str].fail("OAuth2 redirect_uri must be a non-empty string")
-            redirect_uri = redirect_uri_value
+            match redirect_uri_value:
+                case None:
+                    return r[str].fail("OAuth2 redirect_uri is required")
+                case str() as uri if uri:
+                    redirect_uri = uri
+                case _:
+                    return r[str].fail("OAuth2 redirect_uri must be a non-empty string")
             params = {
                 "client_id": self.provider.get_client_id(),
                 "response_type": "code",
@@ -293,8 +302,11 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
             # Add any additional parameters
             for key, value in kwargs.items():
-                if u.Guards._is_str(value):
-                    params[str(key)] = value
+                match value:
+                    case str() as text:
+                        params[str(key)] = text
+                    case _:
+                        pass
 
             return r[str].ok(f"{auth_endpoint}?{urlencode(params)}")
 
@@ -349,11 +361,15 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             # This would typically make an HTTP request to the token endpoint
             # For now, we'll simulate the response structure
             scope_value = self.provider.get_scope()
-            if scope_value is None:
-                return r[at.OAuth2TokenResponse].fail("OAuth2 scope is required")
-            if not u.Guards._is_str(scope_value):
-                return r[at.OAuth2TokenResponse].fail("OAuth2 scope must be a string")
-            scope = scope_value
+            match scope_value:
+                case None:
+                    return r[at.OAuth2TokenResponse].fail("OAuth2 scope is required")
+                case str() as scope_str:
+                    scope = scope_str
+                case _:
+                    return r[at.OAuth2TokenResponse].fail(
+                        "OAuth2 scope must be a string"
+                    )
             token_response = at.OAuth2TokenResponse(
                 access_token=f"access_token_{secrets.token_hex(16)}",
                 token_type="Bearer",
@@ -440,11 +456,11 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             capabilities.add("pkce")
 
         authorization_endpoint_value = self._config.get("authorization_endpoint")
-        if (
-            u.Guards._is_str(authorization_endpoint_value)
-            and authorization_endpoint_value
-        ):
-            capabilities.add("authorization_url")
+        match authorization_endpoint_value:
+            case str() as authorization_endpoint if authorization_endpoint:
+                capabilities.add("authorization_url")
+            case _:
+                pass
 
         return capabilities
 

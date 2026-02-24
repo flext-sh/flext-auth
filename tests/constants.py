@@ -119,11 +119,10 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
 
 
 # Short aliases per FLEXT convention
-tc = TestsFlextAuthConstants  # Primary test constants alias
+c = TestsFlextAuthConstants  # Primary test constants alias
 c = TestsFlextAuthConstants  # Alternative alias for compatibility
 
 __all__ = [
     "TestsFlextAuthConstants",
     "c",
-    "tc",
 ]
