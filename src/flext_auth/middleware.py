@@ -30,11 +30,10 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from flext_core import FlextService as s, r
-from flext_core.loggings import FlextLogger
-
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_core import FlextService as s, r
+from flext_core.loggings import FlextLogger
 
 # Import aliases following order: c -> t -> p -> r -> m -> u
 # Runtime aliases defined at module level per FLEXT standards

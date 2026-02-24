@@ -4,14 +4,6 @@ Provides authentication framework with multi-provider support.
 
 """
 
-from flext_core import (
-    FlextDecorators,
-    FlextExceptions,
-    FlextHandlers,
-    FlextResult,
-    FlextService,
-)
-
 from flext_auth.api import FlextAuth
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.managers import FlextAuthManagers
@@ -41,6 +33,13 @@ from flext_auth.token_service import FlextAuthTokenService
 from flext_auth.typings import FlextAuthTypes, t
 from flext_auth.user_service import FlextAuthIdentityService
 from flext_auth.utilities import FlextAuthUtilities
+from flext_core import (
+    FlextDecorators,
+    FlextExceptions,
+    FlextHandlers,
+    FlextResult,
+    FlextService,
+)
 
 __all__ = [
     "FlextAuth",

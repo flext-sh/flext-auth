@@ -15,9 +15,8 @@ import os
 import secrets
 import string
 
-from flext_core import FlextLogger
-
 from flext_auth import FlextAuth, FlextAuthModels, FlextAuthSettings
+from flext_core import FlextLogger
 
 
 def example_advanced_configuration() -> None:

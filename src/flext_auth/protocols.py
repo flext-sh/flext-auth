@@ -16,7 +16,6 @@ from datetime import datetime
 from typing import Protocol, runtime_checkable
 
 from flext_core.protocols import FlextProtocols
-from flext_core.typings import FlextTypes
 
 # Note: Protocols avoid importing models to prevent circular dependencies
 # Protocols use structural typing - models satisfy protocols through attributes
@@ -57,8 +56,11 @@ class FlextAuthProtocols(FlextProtocols):
         structural typing - no model imports required.
         """
 
+        AuthScalar = str | int | float | bool | None
+        AuthValue = AuthScalar | list[str]
+
         @runtime_checkable
-        class IdentityProtocol(FlextProtocols.Service[object], Protocol):
+        class IdentityProtocol(FlextProtocols.Service[bool], Protocol):
             """Protocol for identity/user-like objects in authentication.
 
             Structural typing interface for identity objects. Models implement
@@ -130,7 +132,7 @@ class FlextAuthProtocols(FlextProtocols):
                 ...
 
         @runtime_checkable
-        class SessionProtocol(FlextProtocols.Service[object], Protocol):
+        class SessionProtocol(FlextProtocols.Service[bool], Protocol):
             """Protocol for session-like objects in authentication."""
 
             id: str
@@ -201,10 +203,10 @@ class FlextAuthProtocols(FlextProtocols):
             Supports both TypedDict and model implementations.
             """
 
-            user: Mapping[str, FlextTypes.GeneralValueType]
+            user: Mapping[str, FlextAuthProtocols.Auth.AuthValue]
             """User/identity data."""
 
-            session: Mapping[str, FlextTypes.GeneralValueType]
+            session: Mapping[str, FlextAuthProtocols.Auth.AuthValue]
             """Session data."""
 
             jwt_token: str
@@ -217,7 +219,7 @@ class FlextAuthProtocols(FlextProtocols):
             """Operation success status."""
 
         @runtime_checkable
-        class ServiceProtocol(FlextProtocols.Service[object], Protocol):
+        class ServiceProtocol(FlextProtocols.Service[bool], Protocol):
             """Protocol for authentication service-like objects."""
 
             def register_user(
@@ -230,7 +232,7 @@ class FlextAuthProtocols(FlextProtocols):
             ) -> FlextProtocols.Result[FlextAuthProtocols.Auth.IdentityProtocol]:
                 """Register new user.
 
-                Returns IdentityProtocol-compatible object through structural typing.
+                Returns IdentityProtocol-compatible identity through structural typing.
                 """
                 ...
 
@@ -243,7 +245,7 @@ class FlextAuthProtocols(FlextProtocols):
             ) -> FlextProtocols.Result[FlextAuthProtocols.Auth.IdentityProtocol]:
                 """Authenticate user and return identity.
 
-                Returns IdentityProtocol-compatible object through structural typing.
+                Returns IdentityProtocol-compatible identity through structural typing.
                 """
                 ...
 

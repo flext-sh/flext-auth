@@ -10,9 +10,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_core import FlextLogger, FlextService as s, r
-from flext_core.dispatcher import FlextDispatcher
-
 from flext_auth.constants import FlextAuthConstants as c
 from flext_auth.managers import FlextAuthManagers, ServiceManagers
 from flext_auth.models import FlextAuthModels
@@ -22,9 +19,11 @@ from flext_auth.models import FlextAuthModels
 from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 from flext_auth.settings import FlextAuthSettings
+from flext_core import FlextLogger, FlextService as s, r
+from flext_core.dispatcher import FlextDispatcher
 
 
-class FlextAuthTokenService(s[object]):
+class FlextAuthTokenService(s[bool]):
     """Flexible token service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
@@ -50,9 +49,9 @@ class FlextAuthTokenService(s[object]):
         """Direct access to user manager for token operations."""
         return self._managers.user_manager
 
-    def execute(self) -> r[object]:
+    def execute(self) -> r[bool]:
         """Railway-oriented execute with focused service pattern."""
-        return r[object].fail(
+        return r[bool].fail(
             "Use specific token methods: validate_token, generate_jwt_token, etc.",
         )
 
@@ -97,17 +96,12 @@ class FlextAuthTokenService(s[object]):
             )
 
         refreshed = result.value
-        # Type narrowing: ensure we have an AuthToken instance
-        if isinstance(refreshed, FlextAuthModels.Auth.AuthToken):
-            auth_token = refreshed
-        else:
-            # Convert TokenProtocol to AuthToken if needed
-            auth_token = FlextAuthModels.Auth.AuthToken(
-                identity_id=refreshed.user_id,
-                token=refreshed.token,
-                expires_at=refreshed.expires_at,
-                is_revoked=refreshed.is_revoked,
-            )
+        auth_token = FlextAuthModels.Auth.AuthToken(
+            identity_id=refreshed.user_id,
+            token=refreshed.token,
+            expires_at=refreshed.expires_at,
+            is_revoked=refreshed.is_revoked,
+        )
         FlextLogger(__name__).debug(
             "Token refresh successful",
             old_token_id=self._short_token(token),
@@ -173,13 +167,7 @@ class FlextAuthTokenService(s[object]):
         if self._jwt_provider_cache is not None:
             return r.ok(self._jwt_provider_cache)
 
-        result = self._provider_service.get_provider("jwt").flat_map(
-            lambda p: (
-                r.ok(p)
-                if isinstance(p, FlextAuthJwtProvider)
-                else r.fail("Invalid JWT provider type")
-            ),
-        )
+        result = self._provider_service.get_jwt_provider()
         if result.is_failure:
             return result
         self._jwt_provider_cache = result.value

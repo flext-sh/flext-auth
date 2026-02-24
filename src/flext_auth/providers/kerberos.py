@@ -19,13 +19,12 @@ from __future__ import annotations
 from abc import ABC
 from collections.abc import Mapping
 
-from flext_core import r, t, u
-
 from flext_auth.models import FlextAuthModels
 
 # Forward reference to avoid circular import
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 from flext_auth.typings import FlextAuthTypes as at
+from flext_core import r, t, u
 
 
 class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):

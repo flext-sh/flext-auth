@@ -12,14 +12,13 @@ from __future__ import annotations
 
 from abc import ABC
 
-from flext_core import r
-
 from flext_auth.protocols import FlextAuthProtocols
 
 # Forward reference to avoid circular import
 from flext_auth.providers.mixin import FlextAuthProviderMixin
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 from flext_auth.typings import t
+from flext_core import r
 
 
 class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):

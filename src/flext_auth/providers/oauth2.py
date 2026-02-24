@@ -16,8 +16,6 @@ from base64 import urlsafe_b64encode
 from datetime import UTC, datetime, timedelta
 from urllib.parse import urlencode
 
-from flext_core import e, r, u
-
 from flext_auth.constants import c
 from flext_auth.models import FlextAuthModels
 from flext_auth.protocols import FlextAuthProtocols
@@ -27,6 +25,7 @@ from flext_auth.protocols import FlextAuthProtocols
 # Forward reference to avoid circular import
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 from flext_auth.typings import FlextAuthTypes as at, t
+from flext_core import e, r, u
 
 
 class FlextAuthOAuth2Provider(FlextAuthRfcProvider):

@@ -10,8 +10,6 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from flext_core import FlextService as s, r
-
 from flext_auth.constants import FlextAuthConstants as c
 from flext_auth.models import FlextAuthModels
 from flext_auth.protocols import FlextAuthProtocols as p
@@ -36,9 +34,10 @@ from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
 from flext_auth.settings import FlextAuthSettings
 from flext_auth.typings import FlextAuthTypes as t
+from flext_core import FlextService as s, r
 
 
-class FlextAuthProviderService(s[object]):
+class FlextAuthProviderService(s[bool]):
     """Flexible provider service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
@@ -53,19 +52,19 @@ class FlextAuthProviderService(s[object]):
         self._providers = FlextAuthRegistry()
         self._register_builtin_providers()
 
-    def execute(self) -> r[object]:
+    def execute(self) -> r[bool]:
         """Railway-oriented execute with focused service pattern."""
-        return r[object].fail(
+        return r[bool].fail(
             "Use specific provider methods: get_provider, authenticate_user, etc.",
         )
 
     def _register_builtin_providers(self) -> None:
         """Flexible provider registration with conditional loading."""
         # Fast fail: config is required
-        if not self._config or not isinstance(self._config, FlextAuthSettings):
+        if type(self._config) is not FlextAuthSettings:
             self.logger.error("Configuration is required for provider registration")
             return
-        provider_config: dict[str, t.JsonValue] = self._config.to_provider_config()
+        provider_config = self._config.to_provider_config()
         # Provider registration mapping with requirements
         providers: list[
             tuple[
@@ -128,6 +127,16 @@ class FlextAuthProviderService(s[object]):
     def get_provider(self, name: str) -> r[FlextAuthBaseProvider]:
         """Get registered provider."""
         return self._providers.get(name)
+
+    def get_jwt_provider(self) -> r[FlextAuthJwtProvider]:
+        """Get registered JWT provider with strict provider type."""
+        return self._providers.get("jwt").flat_map(
+            lambda provider: (
+                r[FlextAuthJwtProvider].ok(provider)
+                if type(provider) is FlextAuthJwtProvider
+                else r[FlextAuthJwtProvider].fail("Invalid JWT provider type")
+            ),
+        )
 
     def register_provider(self, name: str, provider: FlextAuthBaseProvider) -> r[bool]:
         """Register custom provider.

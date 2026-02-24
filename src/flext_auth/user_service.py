@@ -11,17 +11,16 @@ from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
 
-from flext_core import FlextService as s, r
-from flext_core.dispatcher import FlextDispatcher
-from pydantic import ValidationError
-
 from flext_auth.constants import c
 from flext_auth.managers import FlextAuthManagers, ServiceManagers
 from flext_auth.models import FlextAuthModels as m
 from flext_auth.settings import FlextAuthSettings
+from flext_core import FlextService as s, r
+from flext_core.dispatcher import FlextDispatcher
+from pydantic import ValidationError
 
 
-class FlextAuthIdentityService(s[object]):
+class FlextAuthIdentityService(s[bool]):
     """Generic identity service using flext-core patterns and railway-oriented programming.
 
     Python 3.13+ features, minimal line count through consolidated operations.
@@ -48,9 +47,9 @@ class FlextAuthIdentityService(s[object]):
         """Set identity manager (for service composition)."""
         self._managers.user_manager = value
 
-    def execute(self) -> r[object]:
+    def execute(self) -> r[bool]:
         """Railway-oriented execute with focused service pattern."""
-        return r[object].fail(
+        return r[bool].fail(
             "Use specific identity methods: create_identity, authenticate_identity, etc.",
         )
 
@@ -131,8 +130,6 @@ class FlextAuthIdentityService(s[object]):
         else:
             user_roles = roles
         # Normalize email to lowercase for consistency
-        if not isinstance(contact, str):
-            return r[m.Auth.AuthIdentity].fail("Contact must be a string")
         normalized_contact = contact.lower()
 
         # Validate using Pydantic model to ensure proper validation errors

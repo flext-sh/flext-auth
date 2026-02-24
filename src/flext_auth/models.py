@@ -15,11 +15,10 @@ from typing import Self
 
 # Import password utilities directly
 import bcrypt
+from flext_auth.constants import c
 from flext_core import FlextModels, r
 from flext_core.typings import FlextTypes
 from pydantic import ConfigDict, Field, model_validator
-
-from flext_auth.constants import c
 
 # Import aliases following order: c -> t -> p -> r -> m -> u
 # Runtime aliases defined at module level per FLEXT standards

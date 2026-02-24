@@ -7,14 +7,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_auth.managers import FlextAuthManagers, ServiceManagers
+from flext_auth.settings import FlextAuthSettings
 from flext_core import FlextLogger, FlextService as s, r
 from flext_core.dispatcher import FlextDispatcher
 
-from flext_auth.managers import FlextAuthManagers, ServiceManagers
-from flext_auth.settings import FlextAuthSettings
 
-
-class FlextAuthSessionService(s[object]):
+class FlextAuthSessionService(s[bool]):
     """Focused service for session management with complete flext-core integration."""
 
     def __init__(self, config: FlextAuthSettings, dispatcher: FlextDispatcher) -> None:
@@ -32,13 +31,13 @@ class FlextAuthSessionService(s[object]):
         """Set session manager (for service composition)."""
         self._managers.session_manager = value
 
-    def execute(self) -> r[object]:
+    def execute(self) -> r[bool]:
         """Execute method for FlextService interface.
 
         Session service doesn't use generic execute pattern.
         Use specific session methods instead.
         """
-        return r[object].fail(
+        return r[bool].fail(
             "FlextAuthSessionService is focused - use session_manager property or cleanup_expired_sessions()",
         )
 

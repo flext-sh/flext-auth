@@ -11,9 +11,8 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import bcrypt
-from flext_core import r
-
 from flext_auth.providers.jwt import FlextAuthJwtProvider
+from flext_core import r
 
 # Import aliases following order: c -> t -> p -> r -> m -> u
 # Runtime aliases defined at module level per FLEXT standards
