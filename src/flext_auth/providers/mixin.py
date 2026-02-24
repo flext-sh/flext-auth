@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from flext_auth.protocols import FlextAuthProtocols
 from flext_auth.typings import t
 from flext_core import e, r, u
@@ -47,12 +49,10 @@ class FlextAuthProviderMixin:
         ValueError: If token cannot be extracted
 
         """
-        if isinstance(token, str):
-            return token
-
-        # Structural typing: TokenProtocol requires a 'token' attribute
-        if hasattr(token, "token"):
-            return token.token
+        token_value = getattr(token, "token", token)
+        token_text = str(token_value)
+        if token_text:
+            return token_text
 
         error_msg = (
             f"Invalid token type: expected str or TokenProtocol, got {type(token)}"
@@ -69,7 +69,7 @@ class FlextAuthProviderMixin:
 
     def _validate_credentials_dict(
         self,
-        credentials: dict[str, t.GeneralValueType],
+        credentials: Mapping[str, t.GeneralValueType],
         required_fields: list[str],
     ) -> r[bool]:
         """Validate that credentials contain required fields.
@@ -104,7 +104,7 @@ class FlextAuthProviderMixin:
         r[bool]: True if valid, False if invalid, error message on failure
 
         """
-        if not token or not isinstance(token, str):
+        if not token:
             return r[bool].fail("Token must be a non-empty string")
 
         if len(token.strip()) == 0:
@@ -138,11 +138,11 @@ class FlextAuthProviderMixin:
 
         return r[bool].ok(value=True)
 
-    def _get_capability_metadata(self) -> dict[str, t.GeneralValueType]:
+    def _get_capability_metadata(self) -> Mapping[str, t.GeneralValueType]:
         """Get metadata about provider capabilities.
 
         Returns:
-            dict[str, t.GeneralValueType]: Metadata including supported capabilities
+            Mapping[str, t.GeneralValueType]: Metadata including supported capabilities
 
         Example:
             >>> metadata = provider._get_capability_metadata()

@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import ABC
+from collections.abc import Mapping
 
 from flext_auth.protocols import FlextAuthProtocols
 
@@ -34,7 +35,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
 
     def authenticate(
         self,
-        credentials: dict[str, t.JsonValue],
+        credentials: Mapping[str, t.JsonValue],
     ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Authenticate using LDAP credentials.
 

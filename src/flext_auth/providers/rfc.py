@@ -13,6 +13,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from abc import ABC
+from collections.abc import Mapping
 
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
@@ -36,7 +37,7 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
 
     """
 
-    def __init__(self, config: dict[str, t.JsonValue] | None = None) -> None:
+    def __init__(self, config: Mapping[str, t.JsonValue] | None = None) -> None:
         """Initialize RFC provider base class with optional configuration."""
         super().__init__(config)
 

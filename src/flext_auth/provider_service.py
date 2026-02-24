@@ -133,7 +133,7 @@ class FlextAuthProviderService(s[bool]):
         return self._providers.get("jwt").flat_map(
             lambda provider: (
                 r[FlextAuthJwtProvider].ok(provider)
-                if type(provider) is FlextAuthJwtProvider
+                if provider.__class__ is FlextAuthJwtProvider
                 else r[FlextAuthJwtProvider].fail("Invalid JWT provider type")
             ),
         )

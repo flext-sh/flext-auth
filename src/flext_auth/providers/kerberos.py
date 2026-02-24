@@ -48,7 +48,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
 
     """
 
-    def __init__(self, config: dict[str, t.JsonValue] | None = None) -> None:
+    def __init__(self, config: Mapping[str, t.JsonValue] | None = None) -> None:
         """Initialize Kerberos provider with SOLID delegation.
 
         Uses composition for Kerberos ticket validation, service ticket handling,
@@ -136,7 +136,10 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
 
         for field_name, expected_types, error_msg in validations:
             field_value = config.get(field_name)
-            if field_value is not None and not isinstance(field_value, expected_types):
+            if field_value is not None and not any(
+                u.Guards.is_type(field_value, expected_type)
+                for expected_type in expected_types
+            ):
                 return r[bool].fail(f"{error_msg}. Got {type(field_value).__name__}")
 
         return r[bool].ok(value=True)

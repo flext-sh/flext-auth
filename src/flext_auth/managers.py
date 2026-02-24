@@ -10,12 +10,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.settings import FlextAuthSettings
 from flext_core import (
+    u,
+    FlextRuntime,
     r,
 )
 from flext_core.context import FlextContext
@@ -101,7 +104,7 @@ class FlextAuthManagers:
 
         def _find_user_by_id(
             self, user_id: str
-        ) -> r[tuple[str, dict[str, t.GeneralValueType]]]:
+        ) -> r[tuple[str, Mapping[str, t.GeneralValueType]]]:
             """Find user by ID (either identity_id, unique_id, or id field).
 
             Eliminates duplication across 7 methods.
@@ -112,11 +115,13 @@ class FlextAuthManagers:
                     or user_data.get("unique_id") == user_id
                     or user_data.get("id") == user_id
                 ):
-                    return r[tuple[str, dict[str, t.GeneralValueType]]].ok((
+                    return r[tuple[str, Mapping[str, t.GeneralValueType]]].ok((
                         username,
                         user_data,
                     ))
-            return r[tuple[str, dict[str, t.GeneralValueType]]].fail("User not found")
+            return r[tuple[str, Mapping[str, t.GeneralValueType]]].fail(
+                "User not found"
+            )
 
         def _modify_user_list_field(
             self,
@@ -141,7 +146,7 @@ class FlextAuthManagers:
 
         def _apply_list_modification_and_return_true(
             self,
-            user_data: dict[str, t.GeneralValueType],
+            user_data: Mapping[str, t.GeneralValueType],
             field: str,
             value: str,
             *,
@@ -152,32 +157,32 @@ class FlextAuthManagers:
             return True
 
         def _extract_identity_id(
-            self, storage_data: dict[str, t.GeneralValueType]
+            self, storage_data: Mapping[str, t.GeneralValueType]
         ) -> str:
             """Extract identity ID from storage data with fast fail."""
             for field in ("unique_id", "id", "identity_id"):
                 value = storage_data.get(field)
-                if isinstance(value, str) and value:
+                if u.Guards._is_str(value) and value:
                     return value
             msg = "Storage data missing required 'unique_id', 'id', or 'identity_id' field"
             raise ValueError(msg)
 
         def _validate_required_field[T](
             self,
-            storage_data: dict[str, t.GeneralValueType],
+            storage_data: Mapping[str, t.GeneralValueType],
             field: str,
             field_type: type[T],
         ) -> T:
             """Validate and extract required field with type checking."""
             value = storage_data.get(field)
-            if not isinstance(value, field_type):
+            if not u.Guards.is_type(value, field_type):
                 msg = f"Storage data '{field}' must be a {field_type.__name__}"
                 raise TypeError(msg)
             return value
 
         def _create_identity_from_storage(
             self,
-            storage_data: dict[str, t.GeneralValueType],
+            storage_data: Mapping[str, t.GeneralValueType],
         ) -> FlextAuthModels.Auth.AuthIdentity:
             """Create Identity model from storage data, filtering out non-model fields."""
             identity_id = self._extract_identity_id(storage_data)
@@ -240,7 +245,7 @@ class FlextAuthManagers:
                         else (int if field == "failed_attempts" else datetime)
                     )
                     field_value = storage_data.get(field)
-                    if isinstance(field_value, field_type):
+                    if u.Guards.is_type(field_value, field_type):
                         # For datetime fields, ensure they're not None
                         if field in {"locked_until", "last_access"}:
                             # If None in storage, use datetime.min as default
@@ -261,7 +266,7 @@ class FlextAuthManagers:
 
         def _apply_list_modification(
             self,
-            user_data: dict[str, t.GeneralValueType],
+            user_data: Mapping[str, t.GeneralValueType],
             field: str,
             value: str,
             *,
@@ -269,7 +274,7 @@ class FlextAuthManagers:
         ) -> None:
             """Apply list modification atomically."""
             field_list_value = user_data.get(field)
-            if not isinstance(field_list_value, list):
+            if not u.Guards.is_list(field_list_value):
                 msg = f"Field '{field}' must be a list for modification"
                 raise TypeError(msg)
             field_list = field_list_value
@@ -291,11 +296,11 @@ class FlextAuthManagers:
                     "Identity already exists"
                 )
             # Check for duplicate email (contact)
-            normalized_email = email.lower() if isinstance(email, str) else email
+            normalized_email = email.lower() if u.Guards._is_str(email) else email
             for existing_user_data in self._users.values():
                 existing_contact = existing_user_data.get("contact", "")
                 if (
-                    isinstance(existing_contact, str)
+                    u.Guards._is_str(existing_contact)
                     and existing_contact.lower() == normalized_email
                 ):
                     return r[FlextAuthModels.Auth.AuthIdentity].fail(
@@ -329,19 +334,24 @@ class FlextAuthManagers:
                 elif k == "is_active":
                     is_active = bool(v)
                 elif k == "roles":
-                    roles = [str(item) for item in v] if isinstance(v, list) else []
+                    roles = [str(item) for item in v] if u.Guards.is_list(v) else []
                 elif k == "permissions":
                     permissions = (
-                        [str(item) for item in v] if isinstance(v, list) else []
+                        [str(item) for item in v] if u.Guards.is_list(v) else []
                     )
                 elif k == "failed_attempts":
                     failed_attempts = (
-                        int(v) if isinstance(v, (int, str)) and str(v).isdigit() else 0
+                        int(v)
+                        if (
+                            u.Guards._is_int(v)
+                            or (u.Guards._is_str(v) and str(v).isdigit())
+                        )
+                        else 0
                     )
                 elif k == "locked_until":
-                    if isinstance(v, datetime):
+                    if u.Guards.is_type(v, datetime):
                         locked_until = v
-                    elif isinstance(v, str):
+                    elif u.Guards._is_str(v):
                         try:
                             locked_until = datetime.fromisoformat(v)
                         except ValueError:
@@ -349,9 +359,9 @@ class FlextAuthManagers:
                     else:
                         locked_until = datetime.min.replace(tzinfo=UTC)
                 elif k == "last_access":
-                    if isinstance(v, datetime):
+                    if u.Guards.is_type(v, datetime):
                         last_access = v
-                    elif isinstance(v, str):
+                    elif u.Guards._is_str(v):
                         try:
                             last_access = datetime.fromisoformat(v)
                         except ValueError:
@@ -498,19 +508,19 @@ class FlextAuthManagers:
             ] = {}  # In production, use Redis/database (dict for dynamic key access)
 
         def _is_session_active(
-            self, session_data: dict[str, t.GeneralValueType]
+            self, session_data: Mapping[str, t.GeneralValueType]
         ) -> bool:
             """Check if session is active and not expired.
 
             Eliminates duplication of expiration check (appeared 2+ times).
             """
             expires_at_value = session_data.get("expires_at")
-            if not isinstance(expires_at_value, datetime):
+            if not u.Guards.is_type(expires_at_value, datetime):
                 return False
             expires_at = expires_at_value
 
             is_active_value = session_data.get("is_active")
-            if not isinstance(is_active_value, bool):
+            if not u.Guards._is_bool(is_active_value):
                 return False
             is_active = is_active_value
 
@@ -559,7 +569,7 @@ class FlextAuthManagers:
             for session_id, session_data in self._sessions.items():
                 identity_id_value = session_data.get("identity_id")
                 if (
-                    isinstance(identity_id_value, str)
+                    u.Guards._is_str(identity_id_value)
                     and identity_id_value == user_id
                     and self._is_session_active(session_data)
                 ):
@@ -586,7 +596,7 @@ class FlextAuthManagers:
             found = False
             for session_data in self._sessions.values():
                 identity_id_value = session_data.get("identity_id")
-                if isinstance(identity_id_value, str) and identity_id_value == user_id:
+                if u.Guards._is_str(identity_id_value) and identity_id_value == user_id:
                     session_data["is_active"] = False
                     found = True
 
@@ -846,7 +856,7 @@ class FlextAuthManagers:
             start_date: datetime | None = None,
             end_date: datetime | None = None,
             limit: int = 100,
-        ) -> r[list[dict[str, t.GeneralValueType]]]:
+        ) -> r[list[Mapping[str, t.GeneralValueType]]]:
             """Get audit logs with optional filtering."""
             # Filter logs based on criteria
             filtered_logs: list[dict[str, t.GeneralValueType]] = []
@@ -857,9 +867,9 @@ class FlextAuthManagers:
                     username_value = log.get("username")
                     log_user_id_value = log.get("user_id")
                     if not (
-                        isinstance(username_value, str) and username_value == user_id
+                        u.Guards._is_str(username_value) and username_value == user_id
                     ) and not (
-                        isinstance(log_user_id_value, str)
+                        u.Guards._is_str(log_user_id_value)
                         and log_user_id_value == user_id
                     ):
                         continue
@@ -868,7 +878,7 @@ class FlextAuthManagers:
                 if event_type is not None:
                     log_event_type = log.get("event_type")
                     if (
-                        not isinstance(log_event_type, str)
+                        not u.Guards._is_str(log_event_type)
                         or log_event_type != event_type
                     ):
                         continue
@@ -877,7 +887,7 @@ class FlextAuthManagers:
                 if start_date is not None:
                     log_timestamp = log.get("timestamp")
                     if (
-                        not isinstance(log_timestamp, datetime)
+                        not u.Guards.is_type(log_timestamp, datetime)
                         or log_timestamp < start_date
                     ):
                         continue
@@ -886,7 +896,7 @@ class FlextAuthManagers:
                 if end_date is not None:
                     log_timestamp = log.get("timestamp")
                     if (
-                        not isinstance(log_timestamp, datetime)
+                        not u.Guards.is_type(log_timestamp, datetime)
                         or log_timestamp > end_date
                     ):
                         continue
@@ -894,7 +904,7 @@ class FlextAuthManagers:
                 filtered_logs.append(log)
 
             # Apply limit and return
-            return r[list[dict[str, t.GeneralValueType]]].ok(filtered_logs[-limit:])
+            return r[list[Mapping[str, t.GeneralValueType]]].ok(filtered_logs[-limit:])
 
     class FlextAuthRateLimiter:
         """Rate limiting business logic.
@@ -929,15 +939,15 @@ class FlextAuthManagers:
             """
             window_start = now - timedelta(minutes=self._window_minutes)
             attempt_data = self._attempts.get(username)
-            if not isinstance(attempt_data, dict):
+            if not u.is_dict_like(attempt_data):
                 return []
             attempts_value = attempt_data.get("attempts")
-            if not isinstance(attempts_value, list):
+            if not u.Guards.is_list(attempts_value):
                 return []
             return [
                 attempt
                 for attempt in attempts_value
-                if isinstance(attempt, datetime) and attempt > window_start
+                if u.Guards.is_type(attempt, datetime) and attempt > window_start
             ]
 
         def check_rate_limit(self, username: str) -> r[bool]:
@@ -973,7 +983,7 @@ class FlextAuthManagers:
                 self._attempts[username] = {"attempts": []}
 
             attempts_list = self._attempts[username].get("attempts")
-            if not isinstance(attempts_list, list):
+            if not u.Guards.is_list(attempts_list):
                 attempts_list = []
                 self._attempts[username]["attempts"] = attempts_list
             attempts_list.append(now)

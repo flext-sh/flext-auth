@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import threading
+from collections.abc import Mapping
 from typing import ClassVar, Self
 
 from flext_auth.constants import c
@@ -21,7 +22,7 @@ from flext_auth.session_service import FlextAuthSessionService
 from flext_auth.settings import FlextAuthSettings
 from flext_auth.token_service import FlextAuthTokenService
 from flext_auth.user_service import FlextAuthIdentityService
-from flext_core import r, t
+from flext_core import r, t, u
 from flext_core.dispatcher import FlextDispatcher
 from flext_core.loggings import FlextLogger
 
@@ -166,19 +167,19 @@ class FlextAuth:
 
     def authenticate(
         self,
-        credentials: dict[str, str],
+        credentials: Mapping[str, str],
         _provider: str | None = None,
     ) -> r[FlextAuthModels.Auth.AuthIdentity]:
         """Railway-oriented authentication with chaining."""
         # Extract username and password from credentials - fast fail if missing
         username_value = credentials.get("username")
-        if not isinstance(username_value, str) or not username_value:
+        if not u.Guards._is_str(username_value) or not username_value:
             return r[FlextAuthModels.Auth.AuthIdentity].fail(
                 "Invalid credentials: username is required and must be a non-empty string",
             )
 
         password_value = credentials.get("password")
-        if not isinstance(password_value, str) or not password_value:
+        if not u.Guards._is_str(password_value) or not password_value:
             return r[FlextAuthModels.Auth.AuthIdentity].fail(
                 "Invalid credentials: password is required and must be a non-empty string",
             )
@@ -312,7 +313,7 @@ class FlextAuth:
     def create_token(
         self,
         identity_id: str,
-        extra_claims: dict[str, str | int | bool] | None = None,
+        extra_claims: Mapping[str, str | int | bool] | None = None,
     ) -> r[str]:
         """Railway-oriented token creation.
 
@@ -321,7 +322,7 @@ class FlextAuth:
             extra_claims: Reserved for future extra claims support
 
         """
-        if not identity_id or not isinstance(identity_id, str):
+        if not identity_id or not u.Guards._is_str(identity_id):
             return r[str].fail("Identity ID must be a non-empty string")
 
         _ = extra_claims  # Reserved for future use

@@ -9,6 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from collections import UserDict
 from datetime import UTC, datetime
 from typing import Self
@@ -444,7 +445,7 @@ class FlextAuthModels(FlextModels):
 
         def __contains__(self, key: str) -> bool:
             """Dict-like containment check."""
-            return hasattr(self, key)
+            return key in self.__class__.model_fields
 
         def __getitem__(self, key: str) -> t.GeneralValueType:
             """Dict-like access."""
@@ -455,7 +456,7 @@ class FlextAuthModels(FlextModels):
 
         def __init__(
             self,
-            dict_: dict[str, t.JsonValue] | None = None,
+            dict_: Mapping[str, t.JsonValue] | None = None,
             /,
             **kwargs: t.GeneralValueType,
         ) -> None:

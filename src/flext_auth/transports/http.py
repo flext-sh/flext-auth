@@ -18,7 +18,7 @@ from urllib.parse import urlencode
 from flext_api import FlextApiClient, FlextApiModels, FlextApiSettings
 from flext_api.typings import FlextApiTypes as t_api
 from flext_auth.typings import t
-from flext_core import r
+from flext_core import FlextRuntime, r
 from flext_core.loggings import FlextLogger
 
 # Import aliases following order: c -> t -> p -> r -> m -> u
@@ -70,7 +70,7 @@ class FlextWebTransportAdapter:
         url: str,
         method: str = "POST",
         data: t_api.Api.RequestBody | None = None,
-        headers: dict[str, str] | None = None,
+        headers: Mapping[str, str] | None = None,
         query: t_api.Api.WebParams | None = None,
         timeout: float | None = None,
     ) -> r[t_api.Api.ResponseDict]:
@@ -88,7 +88,7 @@ class FlextWebTransportAdapter:
         FlextResult containing response data or error
 
         """
-        request_headers = headers if headers is not None else {}
+        request_headers = dict(headers) if headers is not None else {}
         request_timeout = timeout if timeout is not None else self._timeout
 
         resolved_body = self._resolve_body(method, data)
@@ -134,9 +134,9 @@ class FlextWebTransportAdapter:
     def post_token_request(
         self,
         url: str,
-        data: dict[str, t.GeneralValueType],
+        data: Mapping[str, t.GeneralValueType],
         auth: tuple[str, str] | None = None,
-        headers: dict[str, str] | None = None,
+        headers: Mapping[str, str] | None = None,
     ) -> r[t_api.Api.ResponseDict]:
         """POST request to OAuth2 token endpoint.
 
@@ -160,7 +160,7 @@ class FlextWebTransportAdapter:
             ... )
 
         """
-        request_headers = headers.copy() if headers else {}
+        request_headers = dict(headers) if headers else {}
 
         # OAuth2 requires application/x-www-form-urlencoded (RFC 6749 Section 4.1.3)
         if "Content-Type" not in request_headers:
@@ -196,7 +196,7 @@ class FlextWebTransportAdapter:
         self,
         url: str,
         access_token: str,
-        headers: dict[str, str],
+        headers: Mapping[str, str],
     ) -> r[t_api.Api.ResponseDict]:
         """GET request to OIDC UserInfo endpoint.
 
@@ -221,7 +221,7 @@ class FlextWebTransportAdapter:
             ...     print(f"User ID: {userinfo['sub']}")
 
         """
-        request_headers = headers.copy() if headers else {}
+        request_headers = dict(headers) if headers else {}
 
         # OIDC requires Bearer token authentication
         request_headers["Authorization"] = f"Bearer {access_token}"
@@ -257,14 +257,14 @@ class FlextWebTransportAdapter:
         # Check for OAuth2 error response (RFC 6749 Section 5.2)
         if "error" in response_data:
             error_code_value = response_data.get("error")
-            if not isinstance(error_code_value, str) or not error_code_value:
+            if not u.Guards._is_str(error_code_value) or not error_code_value:
                 error_code = "unknown_error"
             else:
                 error_code = error_code_value
 
             error_description_value = response_data.get("error_description")
             if (
-                not isinstance(error_description_value, str)
+                not u.Guards._is_str(error_description_value)
                 or not error_description_value
             ):
                 error_description = "No error description"
@@ -316,13 +316,15 @@ class FlextWebTransportAdapter:
         if body is None:
             return r[t_api.Api.ResponseDict].ok({})
 
-        if isinstance(body, dict):
-            return r[t_api.Api.ResponseDict].ok(self._normalize_response_dict(body))
+        if u.is_dict_like(body):
+            return r[t_api.Api.ResponseDict].ok(
+                self._normalize_response_dict(dict(body))
+            )
 
-        if isinstance(body, (bytes, str)):
+        if u.Guards._is_bytes(body) or u.Guards._is_str(body):
             decoded = (
                 body.decode("utf-8", errors="replace")
-                if isinstance(body, bytes)
+                if u.Guards._is_bytes(body)
                 else body
             )
             try:
@@ -331,9 +333,9 @@ class FlextWebTransportAdapter:
                 return r[t_api.Api.ResponseDict].fail(
                     "Unable to parse response body as JSON",
                 )
-            if isinstance(parsed, dict):
+            if u.is_dict_like(parsed):
                 return r[t_api.Api.ResponseDict].ok(
-                    self._normalize_response_dict(parsed),
+                    self._normalize_response_dict(dict(parsed)),
                 )
             return r[t_api.Api.ResponseDict].fail(
                 f"Unexpected parsed response type: {type(parsed)}",
@@ -358,18 +360,20 @@ class FlextWebTransportAdapter:
         """Convert object to JsonValue type (safe for JSON-parsed data)."""
         if value is None:
             return None
-        if isinstance(value, str):
+        if u.Guards._is_str(value):
             return value
-        if isinstance(value, bool):  # bool before int (bool is subclass of int)
+        if u.Guards._is_bool(value):  # bool before int (bool is subclass of int)
             return value
-        if isinstance(value, int):
+        if u.Guards._is_int(value):
             return value
-        if isinstance(value, float):
+        if u.Guards._is_float(value):
             return value
-        if isinstance(value, list):
+        if u.Guards.is_list(value):
             return [self._to_json_value(item) for item in value]
-        if isinstance(value, dict):
-            return {str(k): self._to_json_value(v) for k, v in value.items()}
+        if u.is_dict_like(value):
+            return {
+                str(key): self._to_json_value(item) for key, item in dict(value).items()
+            }
         # Fallback for non-JSON types
         return str(value)
 
@@ -390,12 +394,12 @@ class FlextWebTransportAdapter:
         data: t_api.Api.RequestBody | None,
         query: t_api.Api.WebParams | None,
     ) -> t_api.Api.WebParams | None:
-        if isinstance(data, dict) and method.upper() == "GET":
+        if u.is_dict_like(data) and method.upper() == "GET":
             query_dict = query if query is not None else {}
-            merged_query = {**query_dict, **data}
+            merged_query = {**query_dict, **dict(data)}
             normalized: t_api.Api.WebParams = {}
             for key, value in merged_query.items():
-                if isinstance(value, list):
+                if u.Guards.is_list(value):
                     normalized[str(key)] = [str(item) for item in value]
                 else:
                     normalized[str(key)] = str(value)

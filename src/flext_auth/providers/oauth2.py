@@ -13,6 +13,7 @@ from __future__ import annotations
 import hashlib
 import secrets
 from base64 import urlsafe_b64encode
+from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from urllib.parse import urlencode
 
@@ -25,7 +26,7 @@ from flext_auth.protocols import FlextAuthProtocols
 # Forward reference to avoid circular import
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 from flext_auth.typings import FlextAuthTypes as at, t
-from flext_core import e, r, u
+from flext_core import FlextRuntime, e, r, u
 
 
 class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
@@ -63,7 +64,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         # Optional configuration with defaults
         redirect_uri_value = self._config.get("redirect_uri")
-        if redirect_uri_value is not None and not isinstance(redirect_uri_value, str):
+        if redirect_uri_value is not None and not u.Guards._is_str(redirect_uri_value):
             error_msg = "OAuth2 provider 'redirect_uri' must be a string or None"
             raise e.ValidationError(
                 error_msg,
@@ -72,7 +73,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 actual_type=str(type(redirect_uri_value)),
             )
         self._redirect_uri: str | None = (
-            redirect_uri_value if isinstance(redirect_uri_value, str) else None
+            redirect_uri_value if u.Guards._is_str(redirect_uri_value) else None
         )
 
         # Initialize configuration using helper methods
@@ -91,26 +92,26 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def _init_scope(self) -> str:
         """Initialize scope configuration."""
         scope_value = self._config.get("scope")
-        if scope_value is not None and not isinstance(scope_value, str):
+        if scope_value is not None and not u.Guards._is_str(scope_value):
             error_msg = (
                 f"OAuth2 'scope' must be str or None, got {type(scope_value).__name__}"
             )
             raise ValueError(error_msg)
         return (
             scope_value
-            if isinstance(scope_value, str) and scope_value
+            if u.Guards._is_str(scope_value) and scope_value
             else c.Auth.OAuth2.SCOPE_DEFAULT
         )
 
     def _init_flow(self) -> str:
         """Initialize flow configuration."""
         flow_value = self._config.get("flow")
-        if flow_value is not None and not isinstance(flow_value, str):
+        if flow_value is not None and not u.Guards._is_str(flow_value):
             error_msg = (
                 f"OAuth2 'flow' must be str or None, got {type(flow_value).__name__}"
             )
             raise ValueError(error_msg)
-        if isinstance(flow_value, str) and flow_value:
+        if u.Guards._is_str(flow_value) and flow_value:
             if flow_value not in c.Auth.OAuth2.FLOWS:
                 error_msg = f"OAuth2 'flow' must be one of {c.Auth.OAuth2.FLOWS}, got {flow_value}"
                 raise ValueError(error_msg)
@@ -120,7 +121,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def _init_pkce(self) -> bool:
         """Initialize PKCE configuration."""
         use_pkce_value = self._config.get("use_pkce")
-        if use_pkce_value is not None and not isinstance(use_pkce_value, bool):
+        if use_pkce_value is not None and not u.Guards._is_bool(use_pkce_value):
             error_msg = (
                 f"OAuth2 'use_pkce' must be bool or None, "
                 f"got {type(use_pkce_value).__name__}"
@@ -128,7 +129,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             raise ValueError(error_msg)
         return (
             use_pkce_value
-            if isinstance(use_pkce_value, bool)
+            if u.Guards._is_bool(use_pkce_value)
             else c.Auth.OAuth2.USE_PKCE_DEFAULT
         )
 
@@ -137,9 +138,8 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         token_endpoint_auth_method_value = self._config.get(
             "token_endpoint_auth_method",
         )
-        if token_endpoint_auth_method_value is not None and not isinstance(
-            token_endpoint_auth_method_value,
-            str,
+        if token_endpoint_auth_method_value is not None and not u.Guards._is_str(
+            token_endpoint_auth_method_value
         ):
             error_msg = (
                 f"OAuth2 'token_endpoint_auth_method' must be str or None, "
@@ -147,7 +147,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             )
             raise ValueError(error_msg)
         if (
-            isinstance(token_endpoint_auth_method_value, str)
+            u.Guards._is_str(token_endpoint_auth_method_value)
             and token_endpoint_auth_method_value
         ):
             if (
@@ -214,7 +214,10 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         for field_name, expected_types, error_msg in validations:
             field_value = self._config.get(field_name)
-            if field_value is not None and not isinstance(field_value, expected_types):
+            if field_value is not None and not any(
+                u.Guards.is_type(field_value, expected_type)
+                for expected_type in expected_types
+            ):
                 return r[bool].fail(f"{error_msg}. Got {type(field_value).__name__}")
 
         return r[bool].ok(value=True)
@@ -223,7 +226,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         """Get authorization endpoint from configuration."""
         value = self._config.get("authorization_endpoint")
         # Type narrowing: config values are typically strings or None
-        return value if isinstance(value, str) else None
+        return value if u.Guards._is_str(value) else None
 
     def get_redirect_uri(self) -> str | None:
         """Get redirect URI from configuration."""
@@ -232,12 +235,12 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def get_client_id(self) -> str | None:
         """Get client ID from configuration."""
         value = self._config.get("client_id")
-        return value if isinstance(value, str) else None
+        return value if u.Guards._is_str(value) else None
 
     def get_scope(self) -> str | None:
         """Get scope from configuration."""
         value = self._config.get("scope")
-        return value if isinstance(value, str) else None
+        return value if u.Guards._is_str(value) else None
 
     def should_use_pkce(self) -> bool:
         """Check if PKCE should be used."""
@@ -269,7 +272,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             redirect_uri_value = self.provider.get_redirect_uri()
             if redirect_uri_value is None:
                 return r[str].fail("OAuth2 redirect_uri is required")
-            if not isinstance(redirect_uri_value, str) or not redirect_uri_value:
+            if not u.Guards._is_str(redirect_uri_value) or not redirect_uri_value:
                 return r[str].fail("OAuth2 redirect_uri must be a non-empty string")
             redirect_uri = redirect_uri_value
             params = {
@@ -290,7 +293,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
             # Add any additional parameters
             for key, value in kwargs.items():
-                if isinstance(value, str):
+                if u.Guards._is_str(value):
                     params[str(key)] = value
 
             return r[str].ok(f"{auth_endpoint}?{urlencode(params)}")
@@ -311,11 +314,11 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         def handle_authorization_code_flow(
             self,
-            _credentials: dict[str, t.JsonValue],
-        ) -> r[dict[str, t.JsonValue]]:
+            _credentials: Mapping[str, t.JsonValue],
+        ) -> r[Mapping[str, t.JsonValue]]:
             """Handle OAuth2 authorization code flow."""
             # Simplified implementation - would validate authorization code
-            return r[dict[str, t.JsonValue]].ok({
+            return r[Mapping[str, t.JsonValue]].ok({
                 "user_id": "oauth2_user",
                 "valid": True,
             })
@@ -348,7 +351,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             scope_value = self.provider.get_scope()
             if scope_value is None:
                 return r[at.OAuth2TokenResponse].fail("OAuth2 scope is required")
-            if not isinstance(scope_value, str):
+            if not u.Guards._is_str(scope_value):
                 return r[at.OAuth2TokenResponse].fail("OAuth2 scope must be a string")
             scope = scope_value
             token_response = at.OAuth2TokenResponse(
@@ -438,7 +441,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         authorization_endpoint_value = self._config.get("authorization_endpoint")
         if (
-            isinstance(authorization_endpoint_value, str)
+            u.Guards._is_str(authorization_endpoint_value)
             and authorization_endpoint_value
         ):
             capabilities.add("authorization_url")
@@ -447,7 +450,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def authenticate(
         self,
-        credentials: dict[str, t.JsonValue],
+        credentials: Mapping[str, t.JsonValue],
     ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Authenticate using OAuth2 flows with delegation."""
         flow_result = self._flow_manager.handle_authorization_code_flow(credentials)
@@ -484,7 +487,11 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         token: str | FlextAuthProtocols.Auth.TokenProtocol,
     ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Refresh OAuth2 token using composition."""
-        if isinstance(token, FlextAuthModels.Auth.AuthToken) and token.refresh_token:
+        if (
+            x.is_base_model(token)
+            and token.__class__ is FlextAuthModels.Auth.AuthToken
+            and token.refresh_token
+        ):
             token_result = self._token_manager.refresh_access_token(token.refresh_token)
             if token_result.is_failure:
                 return r[FlextAuthProtocols.Auth.TokenProtocol].fail(
@@ -535,7 +542,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def generate_token_for_user(
         self,
-        user: dict[str, t.JsonValue],
+        user: Mapping[str, t.JsonValue],
         token_type: str = "oauth2_access",
         expiry_minutes: int | None = None,
     ) -> r[str]:

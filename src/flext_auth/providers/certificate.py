@@ -8,6 +8,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from flext_auth.protocols import FlextAuthProtocols as p
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_core import r, t
@@ -16,13 +18,13 @@ from flext_core import r, t
 class FlextAuthCertificateProvider(FlextAuthBaseProvider):
     """Certificate-based authentication provider."""
 
-    def __init__(self, config: dict[str, t.JsonValue] | None = None) -> None:
+    def __init__(self, config: Mapping[str, t.JsonValue] | None = None) -> None:
         """Initialize provider with configuration."""
         super().__init__(config)
 
     def authenticate(
         self,
-        credentials: dict[str, t.JsonValue],
+        credentials: Mapping[str, t.JsonValue],
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using certificate credentials."""
         _ = credentials
@@ -41,8 +43,8 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider):
             r[bool]: True if valid, False if invalid, error on failure
 
         """
-        token_str = token if isinstance(token, str) else str(token)
-        return self.validate_token(token_str)
+        token_value = getattr(token, "token", token)
+        return self.validate_token(str(token_value))
 
     def validate_token(self, token: str) -> r[bool]:
         """Validate authentication token.

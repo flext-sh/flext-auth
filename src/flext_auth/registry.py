@@ -6,6 +6,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import ClassVar
 
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -38,14 +39,14 @@ class FlextAuthRegistry(FlextRegistry):
         name: str,
         provider: FlextAuthBaseProvider,
         metadata: at.Providers.Metadata | None = None,
-        configuration: dict[str, t.JsonValue] | None = None,
+        configuration: Mapping[str, t.JsonValue] | None = None,
     ) -> r[bool]:
         """Register auth provider with optional config and metadata."""
         if name in self._providers:
             return r[bool].fail(f"Provider '{name}' already registered")
         self._providers[name] = provider
         if configuration:
-            self._configs[name] = configuration
+            self._configs[name] = dict(configuration)
         self._metadata[name] = self._build_metadata(name, provider, metadata)
         return r[bool].ok(value=True)
 
@@ -75,22 +76,24 @@ class FlextAuthRegistry(FlextRegistry):
 
     # Auth-specific operations
 
-    def get_config(self, name: str) -> r[dict[str, t.JsonValue]]:
+    def get_config(self, name: str) -> r[Mapping[str, t.JsonValue]]:
         """Get provider configuration."""
         if not self.has_provider(name):
-            return r[dict[str, t.JsonValue]].fail(f"Provider '{name}' not registered")
+            return r[Mapping[str, t.JsonValue]].fail(
+                f"Provider '{name}' not registered"
+            )
         config = self._configs.get(name)
         return (
-            r[dict[str, t.JsonValue]].ok(config)
+            r[Mapping[str, t.JsonValue]].ok(config)
             if config
-            else r[dict[str, t.JsonValue]].fail("No config")
+            else r[Mapping[str, t.JsonValue]].fail("No config")
         )
 
-    def update_config(self, name: str, config: dict[str, t.JsonValue]) -> r[bool]:
+    def update_config(self, name: str, config: Mapping[str, t.JsonValue]) -> r[bool]:
         """Update provider configuration."""
         if not self.has_provider(name):
             return r[bool].fail(f"Provider '{name}' not registered")
-        self._configs[name] = config
+        self._configs[name] = dict(config)
         return r[bool].ok(value=True)
 
     def get_metadata(self, name: str) -> r[at.Providers.Metadata]:
@@ -155,10 +158,7 @@ class FlextAuthRegistry(FlextRegistry):
         if callable(get_metadata_fn):
             try:
                 raw = get_metadata_fn()
-                if isinstance(raw, at.Providers.Metadata):
-                    return raw
-                if isinstance(raw, dict):
-                    return at.Providers.Metadata.model_validate(raw)
+                return at.Providers.Metadata.model_validate(raw)
             except (AttributeError, TypeError, ValueError):
                 return base
 

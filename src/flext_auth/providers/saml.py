@@ -10,6 +10,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from flext_auth.protocols import FlextAuthProtocols
 
 # Forward reference to avoid circular import
@@ -43,7 +45,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
 
     def authenticate(
         self,
-        credentials: dict[str, t.JsonValue],
+        credentials: Mapping[str, t.JsonValue],
     ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Authenticate using SAML 2.0 assertion.
 
@@ -87,11 +89,11 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
         """
         return {"authenticate", "validate"}
 
-    def get_metadata(self) -> dict[str, t.GeneralValueType]:
+    def get_metadata(self) -> Mapping[str, t.GeneralValueType]:
         """Get provider metadata.
 
         Returns:
-            dict[str, t.GeneralValueType]: Provider metadata (name, version, capabilities, etc.)
+            Mapping[str, t.GeneralValueType]: Provider metadata (name, version, capabilities, etc.)
 
         Business Rule: Returns metadata for provider discovery and configuration.
 

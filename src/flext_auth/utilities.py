@@ -7,14 +7,15 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import secrets
+from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
-from typing import Annotated, TypeIs
+from typing import Annotated
 
 import bcrypt
 import jwt
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.typings import t
-from flext_core import FlextUtilities, r
+from flext_core import FlextRuntime, FlextUtilities, r
 from pydantic import BeforeValidator, SecretStr
 
 
@@ -22,22 +23,22 @@ class FlextAuthUtilities(FlextUtilities):
     """FlextAuth advanced utilities extending u with domain-specific helpers.
 
     Architecture: Advanced utilities with ZERO code bloat through:
-    - TypeIs/TypeGuard for narrowing (PEP 742)
+    - Unified guard APIs for runtime validation
     - BeforeValidator factories for Pydantic coercion
     - @validated decorators eliminating manual validation
     - Generic parsing utilities for StrEnums
     """
 
     # ═══════════════════════════════════════════════════════════════════
-    # TYPEIS + TYPEGUARD: Advanced type narrowing (Python 3.13+ PEP 742)
+    # AUTH TYPE VALIDATION HELPERS
     # ═══════════════════════════════════════════════════════════════════
 
     @classmethod
     def is_valid_token_type(
         cls,
         value: str,
-    ) -> TypeIs[FlextAuthConstants.Auth.TokenTypes]:
-        """TypeIs for TokenTypes validation - narrowing in if/else.
+    ) -> bool:
+        """Validate TokenTypes membership.
 
         Uses parent Enum utilities for consistency.
         """
@@ -47,8 +48,8 @@ class FlextAuthUtilities(FlextUtilities):
     def is_valid_provider_type(
         cls,
         value: str,
-    ) -> TypeIs[FlextAuthConstants.Auth.ProviderTypes]:
-        """TypeIs for ProviderTypes validation.
+    ) -> bool:
+        """Validate ProviderTypes membership.
 
         Uses parent Enum utilities for consistency.
         """
@@ -60,8 +61,8 @@ class FlextAuthUtilities(FlextUtilities):
     def is_valid_role_type(
         cls,
         value: str,
-    ) -> TypeIs[FlextAuthConstants.Auth.RoleTypes]:
-        """TypeIs for RoleTypes validation.
+    ) -> bool:
+        """Validate RoleTypes membership.
 
         Uses parent Enum utilities for consistency.
         """
@@ -71,8 +72,8 @@ class FlextAuthUtilities(FlextUtilities):
     def is_valid_permission_type(
         cls,
         value: str,
-    ) -> TypeIs[FlextAuthConstants.Auth.PermissionTypes]:
-        """TypeIs for PermissionTypes validation.
+    ) -> bool:
+        """Validate PermissionTypes membership.
 
         Uses parent Enum utilities for consistency.
         """
@@ -312,7 +313,7 @@ class FlextAuthUtilities(FlextUtilities):
                 token: str | None = None,
                 user_id: str | None = None,
                 expires_at: datetime | None = None,
-            ) -> dict[str, t.JsonValue]:
+            ) -> Mapping[str, t.JsonValue]:
                 """Build a successful authentication response."""
                 response: dict[str, t.JsonValue] = {
                     "success": True,
@@ -333,7 +334,7 @@ class FlextAuthUtilities(FlextUtilities):
             def build_auth_error_response(
                 error: str,
                 error_code: str = "AUTH_ERROR",
-            ) -> dict[str, t.JsonValue]:
+            ) -> Mapping[str, t.JsonValue]:
                 """Build an authentication error response."""
                 return {
                     "success": False,
@@ -361,7 +362,7 @@ class FlextAuthUtilities(FlextUtilities):
         """
         try:
             token = jwt.encode(dict(payload), secret, algorithm=algorithm)
-            return r[str].ok(token if isinstance(token, str) else token.decode())
+            return r[str].ok(token if u.Guards._is_str(token) else token.decode())
         except Exception as e:
             return r[str].fail(f"Encoding failed: {e}")
 
@@ -396,13 +397,13 @@ class FlextAuthUtilities(FlextUtilities):
                 algorithms=algorithms_list,
                 options={"verify_signature": verify},
             )
-            if not isinstance(payload, dict):
+            if not u.is_dict_like(payload):
                 return r[t.Tokens.ClaimMap].fail(
                     "Decoded token payload is not a dictionary",
                 )
 
             typed_payload: t.Tokens.ClaimMap = {
-                str(key): value for key, value in payload.items()
+                str(key): value for key, value in dict(payload).items()
             }
             return r[t.Tokens.ClaimMap].ok(typed_payload)
         except jwt.InvalidTokenError as e:

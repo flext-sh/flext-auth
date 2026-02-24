@@ -32,7 +32,7 @@ from typing import ClassVar
 
 from flext_auth.models import FlextAuthModels
 from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_core import FlextService as s, r
+from flext_core import FlextRuntime, FlextService as s, r
 from flext_core.loggings import FlextLogger
 
 # Import aliases following order: c -> t -> p -> r -> m -> u
@@ -150,15 +150,15 @@ class FlextAuthMiddleware(s[bool]):
                     )
 
             # Add authorization header (if headers is writable)
-            if hasattr(request, "headers"):
-                try:
-                    headers = getattr(request, "headers", {})
-                    if isinstance(headers, dict):
-                        headers["Authorization"] = f"Bearer {self._current_token}"
-                        setattr(request, "headers", headers)
-                except (AttributeError, TypeError):
-                    # Headers might be read-only, skip if not writable
-                    pass
+            try:
+                headers = getattr(request, "headers", {})
+                if u.is_dict_like(headers):
+                    mutable_headers = dict(headers)
+                    mutable_headers["Authorization"] = f"Bearer {self._current_token}"
+                    setattr(request, "headers", mutable_headers)
+            except (AttributeError, TypeError):
+                # Headers might be read-only, skip if not writable
+                pass
 
             return r[HttpRequest].ok(request)
 

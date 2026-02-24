@@ -9,6 +9,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Self
 
 from flext_auth.constants import c
@@ -169,7 +170,7 @@ class FlextAuthSettings(FlextSettings):
         except Exception as e:
             return r[FlextAuthSettings].fail(str(e))
 
-    def get_jwt_settings(self) -> dict[str, str | int | bool]:
+    def get_jwt_settings(self) -> Mapping[str, str | int | bool]:
         """Get JWT-specific settings."""
         return {
             "algorithm": self.algorithm,
@@ -180,7 +181,7 @@ class FlextAuthSettings(FlextSettings):
             >= c.Auth.SECRET_MIN_LENGTH,
         }
 
-    def get_security_settings(self) -> dict[str, int | bool]:
+    def get_security_settings(self) -> Mapping[str, int | bool]:
         """Get security-related settings."""
         return {
             "hash_rounds": self.hash_rounds,
@@ -193,12 +194,14 @@ class FlextAuthSettings(FlextSettings):
     # @model_validator(mode="after")
     def _validate_model(self) -> Self:
         """Pydantic model validator for automatic validation."""
-        # Validate auth_secret is SecretStr with proper length
-        if not isinstance(self.auth_secret, SecretStr):
-            msg = f"auth_secret must be SecretStr, got {type(self.auth_secret)}"
-            raise TypeError(msg)
+        # Validate auth_secret exposes SecretStr API with proper length
+        try:
+            secret_value = self.auth_secret.get_secret_value()
+        except AttributeError as exc:
+            msg = "auth_secret must expose get_secret_value()"
+            raise TypeError(msg) from exc
 
-        secret_len = len(self.auth_secret.get_secret_value())
+        secret_len = len(secret_value)
         if secret_len < c.Auth.SECRET_MIN_LENGTH:
             msg = f"Secret must be ≥{c.Auth.SECRET_MIN_LENGTH} chars, got {secret_len}"
             raise ValueError(msg)
@@ -286,7 +289,7 @@ class FlextAuthSettings(FlextSettings):
         except Exception as e:
             return r.fail(f"Failed to create config: {e}")
 
-    def to_provider_config(self) -> dict[str, t.JsonValue]:
+    def to_provider_config(self) -> Mapping[str, t.JsonValue]:
         """Convert config to provider configuration dict.
 
         Returns provider configuration without using model_dump().

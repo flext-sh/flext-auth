@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Protocol
 
 from flext_auth.typings import t
@@ -46,10 +47,10 @@ class BaseTransportAdapter(Protocol):
         self,
         url: str,
         method: str = "POST",
-        data: dict[str, t.JsonValue] | None = None,
-        headers: dict[str, str] | None = None,
+        data: Mapping[str, t.JsonValue] | None = None,
+        headers: Mapping[str, str] | None = None,
         **kwargs: t.GeneralValueType,
-    ) -> r[dict[str, t.JsonValue]]:
+    ) -> r[Mapping[str, t.JsonValue]]:
         """Send a request using this transport.
 
         Args:

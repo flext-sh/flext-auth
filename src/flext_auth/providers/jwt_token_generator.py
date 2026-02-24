@@ -10,12 +10,13 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 
 import jwt
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 from flext_auth.typings import t
-from flext_core import r
+from flext_core import r, u
 
 
 class FlextAuthJwtTokenGenerator:
@@ -35,7 +36,7 @@ class FlextAuthJwtTokenGenerator:
         if not config:
             return r[str].fail(error_msg)
         value = config.get(key)
-        if not isinstance(value, str) or not value:
+        if not u.Guards._is_str(value) or not value:
             return r[str].fail(error_msg)
         return r[str].ok(value)
 
@@ -45,7 +46,7 @@ class FlextAuthJwtTokenGenerator:
         if not config:
             return r[int].fail(error_msg)
         value = config.get(key)
-        if not isinstance(value, int):
+        if not u.Guards._is_int(value):
             return r[int].fail(error_msg)
         return r[int].ok(value)
 
@@ -62,7 +63,7 @@ class FlextAuthJwtTokenGenerator:
         if value is None:
             # Return empty string instead of None - no None in r
             return r[str].ok("")
-        if not isinstance(value, str):
+        if not u.Guards._is_str(value):
             return r[str].fail(f"{key} must be a string if provided")
         return r[str].ok(value)
 
@@ -70,7 +71,7 @@ class FlextAuthJwtTokenGenerator:
         """Validate and determine expiry time."""
         if expiry_minutes is None:
             return r[int].ok(default)
-        if not isinstance(expiry_minutes, int) or expiry_minutes <= 0:
+        if not u.Guards._is_int(expiry_minutes) or expiry_minutes <= 0:
             return r[int].fail("expiry_minutes must be a positive integer")
         return r[int].ok(expiry_minutes)
 
@@ -80,8 +81,8 @@ class FlextAuthJwtTokenGenerator:
         expiry_minutes: int,
         issuer: str,
         audience: str | None,
-        extra_claims: dict[str, t.GeneralValueType] | None,
-    ) -> dict[str, t.GeneralValueType]:
+        extra_claims: Mapping[str, t.GeneralValueType] | None,
+    ) -> Mapping[str, t.GeneralValueType]:
         """Build JWT token payload."""
         now = datetime.now(UTC)
         payload: dict[str, t.GeneralValueType] = {
@@ -100,7 +101,7 @@ class FlextAuthJwtTokenGenerator:
         self,
         identity_id: str,
         expiry_minutes: int | None = None,
-        extra_claims: dict[str, t.GeneralValueType] | None = None,
+        extra_claims: Mapping[str, t.GeneralValueType] | None = None,
     ) -> r[str]:
         """Generate JWT token with railway-oriented programming.
 
@@ -171,7 +172,7 @@ class FlextAuthJwtTokenGenerator:
                 algorithm=algorithm_result.value,
             )
             # Handle both string and bytes return types from jwt.encode
-            if isinstance(token_result, bytes):
+            if u.Guards._is_bytes(token_result):
                 token = token_result.decode("utf-8")
             else:
                 token = str(token_result)
