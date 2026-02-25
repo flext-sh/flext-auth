@@ -121,8 +121,10 @@ class FlextAuthBaseProvider(ABC):
                                    error if refresh not supported or failed
 
         """
-        msg = "Token refresh not implemented in base provider"
-        raise NotImplementedError(msg)
+        _ = token  # Silence unused warning
+        return r[p.Auth.TokenProtocol].fail(
+            "Token refresh not supported by this provider"
+        )
 
     def revoke(
         self,

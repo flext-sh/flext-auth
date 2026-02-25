@@ -12,14 +12,14 @@ from __future__ import annotations
 from collections import UserDict
 from collections.abc import Mapping
 from datetime import UTC, datetime
-from typing import Self
+from typing import Literal, Self
 
 # Import password utilities directly
 import bcrypt
 from flext_auth.constants import c
 from flext_core import FlextModels, r
 from flext_core.typings import FlextTypes
-from pydantic import ConfigDict, Field, model_validator
+from pydantic import ConfigDict, Field
 
 # Import aliases following order: c -> t -> p -> r -> m -> u
 # Runtime aliases defined at module level per FLEXT standards
@@ -117,7 +117,7 @@ class FlextAuthModels(FlextModels):
             """Generic token generation request (immutable value object)."""
 
             identity_id: str = Field(..., description="Identity ID")
-            token_type: str = Field(
+            token_type: Literal["access", "refresh", "id", "bearer"] = Field(
                 default="access",
                 description="Token type",
             )
@@ -131,15 +131,6 @@ class FlextAuthModels(FlextModels):
                 description="Additional claims",
             )
             session_id: str = Field(default="", description="Session ID")
-
-            @model_validator(mode="after")
-            def validate_token_type(self) -> Self:
-                """Validate token type."""
-                valid_types = {"access", "refresh", "id", "bearer"}
-                if self.token_type not in valid_types:
-                    msg = f"Token type must be one of {valid_types}"
-                    raise ValueError(msg)
-                return self
 
         class AuthToken(FlextModels.Entity):
             """Generic authentication token entity."""

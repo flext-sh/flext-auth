@@ -45,8 +45,8 @@ class FlextAuthPasswordHasher:
             hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
             return r.ok(hashed.decode("utf-8"))
 
-        except Exception as e:
-            return r.fail(f"Password hashing failed: {e}")
+        except (ValueError, TypeError) as e:
+            return r.fail(f"Password hashing failed: {type(e).__name__}: {e}")
 
     def verify_password(self, password: str, hashed_password: str) -> r[bool]:
         """Verify password against hash using bcrypt.
@@ -66,8 +66,8 @@ class FlextAuthPasswordHasher:
             )
             return r.ok(result)
 
-        except Exception as e:
-            return r.fail(f"Password verification failed: {e}")
+        except (ValueError, TypeError) as e:
+            return r.fail(f"Password verification failed: {type(e).__name__}: {e}")
 
 
 __all__ = ["FlextAuthPasswordHasher"]

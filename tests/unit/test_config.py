@@ -8,10 +8,10 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-import pytest
 from pydantic_settings import BaseSettings
 
-from flext_auth import FlextAuthSettings
+from flext_auth import FlextAuthJwtProvider, FlextAuthSettings
+from flext_auth.providers.jwt_token_generator import FlextAuthJwtTokenGenerator
 
 
 class TestFlextAuthSettingsBasic:
@@ -51,12 +51,38 @@ class TestFlextAuthSettingsBasic:
 class TestJwtTokenGenerator:
     """Test JWT token generator functionality."""
 
-    @pytest.mark.skip(reason="Requires concrete JWT provider implementation")
     def test_generate_token_missing_config(self) -> None:
         """Test token generation with missing configuration."""
-        # TODO: Implement when concrete JWT provider is available
+        # Arrange: provider with no config
+        provider = FlextAuthJwtProvider(config=None)
+        generator = FlextAuthJwtTokenGenerator(provider)
 
-    @pytest.mark.skip(reason="Requires concrete JWT provider implementation")
+        # Act
+        result = generator.generate_token(identity_id="user-123")
+
+        # Assert: should fail due to missing secret_key
+        assert result.is_failure
+        assert "not configured" in (result.error or "").lower()
+
     def test_generate_token_success(self) -> None:
         """Test successful token generation."""
-        # TODO: Implement when concrete JWT provider is available
+        # Arrange: provider with valid JWT config
+        config = {
+            "secret_key": "test-secret-key-for-jwt",
+            "algorithm": "HS256",
+            "expiry_minutes": 30,
+            "issuer": "flext-auth-test",
+        }
+        provider = FlextAuthJwtProvider(config=config)
+        generator = FlextAuthJwtTokenGenerator(provider)
+
+        # Act
+        result = generator.generate_token(identity_id="user-456")
+
+        # Assert: should succeed with a JWT string
+        assert result.is_success
+        token = result.value
+        assert isinstance(token, str)
+        assert len(token) > 0
+        # JWT tokens have 3 dot-separated parts
+        assert token.count(".") == 2
