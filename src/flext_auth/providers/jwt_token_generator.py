@@ -189,7 +189,7 @@ class FlextAuthJwtTokenGenerator:
                     token = str(token_result)
             return r[str].ok(token)
 
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
             return r[str].fail(f"Token generation failed: {e}")
 
 

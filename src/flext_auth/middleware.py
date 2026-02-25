@@ -141,20 +141,25 @@ class FlextAuthMiddleware(s[bool]):
             if not self._enabled:
                 return r[HttpRequest].ok(request)
 
-            # Ensure we have a valid token
-            if not self._current_token:
+            if not self._is_token_still_valid():
                 token_result = self._authenticate_or_refresh()
                 if token_result.is_failure:
                     return r[HttpRequest].fail(
                         token_result.error or "Authentication failed",
                     )
+                self._current_token = token_result.value
+
+            if self._current_token is None:
+                return r[HttpRequest].fail("Authentication token is not available")
 
             # Add authorization header (if headers is writable)
             try:
                 headers = getattr(request, "headers", {})
                 if u.is_dict_like(headers):
                     mutable_headers = dict(headers)
-                    mutable_headers["Authorization"] = f"Bearer {self._current_token}"
+                    mutable_headers["Authorization"] = (
+                        f"Bearer {self._current_token.token}"
+                    )
                     setattr(request, "headers", mutable_headers)
             except (AttributeError, TypeError):
                 # Headers might be read-only, skip if not writable
@@ -171,15 +176,74 @@ class FlextAuthMiddleware(s[bool]):
 
         def _is_token_still_valid(self) -> bool:
             """Check if current token is still valid."""
-            return self._current_token is not None
+            token = self._current_token
+            if token is None:
+                return False
+
+            if token.is_expired or token.is_revoked:
+                return False
+
+            validation_result = self._provider.validate(token.token)
+            if validation_result.is_failure:
+                return False
+
+            return validation_result.value
 
         def _refresh_or_reauthenticate(self) -> r[FlextAuthModels.Auth.AuthToken]:
             """Refresh token or re-authenticate if refresh fails."""
-            # For now, just mark as needing new authentication
-            # In production, implement token refresh logic
-            return r[FlextAuthModels.Auth.AuthToken].fail(
-                "Token refresh not implemented"
-            )
+            current_token = self._current_token
+            if current_token is None:
+                return r[FlextAuthModels.Auth.AuthToken].fail(
+                    "No token available for refresh",
+                )
+
+            refresh_input = current_token.refresh_token or current_token.token
+            if not refresh_input:
+                return r[FlextAuthModels.Auth.AuthToken].fail(
+                    "No refresh token available",
+                )
+
+            validation_result = self._provider.validate(refresh_input)
+            if validation_result.is_failure:
+                return r[FlextAuthModels.Auth.AuthToken].fail(
+                    validation_result.error or "Refresh source token is invalid",
+                )
+            if not validation_result.value:
+                return r[FlextAuthModels.Auth.AuthToken].fail(
+                    "Refresh source token is invalid",
+                )
+
+            refresh_result = self._provider.refresh(refresh_input)
+            if refresh_result.is_failure:
+                return r[FlextAuthModels.Auth.AuthToken].fail(
+                    refresh_result.error or "Token refresh failed",
+                )
+
+            refreshed_payload = refresh_result.value
+            identity_id_value = getattr(refreshed_payload, "identity_id", "")
+            if not isinstance(identity_id_value, str) or not identity_id_value:
+                user_id_value = getattr(refreshed_payload, "user_id", "")
+                if isinstance(user_id_value, str) and user_id_value:
+                    identity_id_value = user_id_value
+                else:
+                    identity_id_value = current_token.identity_id
+
+            try:
+                refreshed_token = FlextAuthModels.Auth.AuthToken(
+                    identity_id=identity_id_value,
+                    token=refreshed_payload.token,
+                    token_type=getattr(refreshed_payload, "token_type", "Bearer"),
+                    expires_at=refreshed_payload.expires_at,
+                    is_revoked=bool(getattr(refreshed_payload, "is_revoked", False)),
+                    refresh_token=getattr(refreshed_payload, "refresh_token", ""),
+                )
+            except (AttributeError, TypeError, ValueError):
+                return r[FlextAuthModels.Auth.AuthToken].fail(
+                    "Provider refresh returned invalid token payload",
+                )
+
+            self._current_token = refreshed_token
+            return r[FlextAuthModels.Auth.AuthToken].ok(refreshed_token)
 
 
 __all__ = ["FlextAuthMiddleware"]

@@ -11,11 +11,14 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 import hashlib
+import json
 import secrets
-from base64 import urlsafe_b64encode
+from base64 import b64encode, urlsafe_b64encode
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
 from flext_auth.constants import c
 from flext_auth.models import FlextAuthModels
@@ -26,7 +29,7 @@ from flext_auth.protocols import FlextAuthProtocols
 # Forward reference to avoid circular import
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 from flext_auth.typings import FlextAuthTypes as at, t
-from flext_core import e, r, u, x
+from flext_core import e, r, u
 
 
 class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
@@ -36,15 +39,29 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     Uses flext-core patterns and Python 3.13+ features for maximum maintainability.
     """
 
-    def __init__(self, config: FlextAuthModels.ProviderConfig) -> None:
+    def __init__(
+        self,
+        config: FlextAuthModels.ProviderConfig | Mapping[str, t.JsonValue],
+    ) -> None:
         """Initialize OAuth2 authentication provider with SOLID principles.
 
         Railway-oriented initialization with proper error handling.
         Uses composition for better separation of concerns.
         """
-        super().__init__()
+        if isinstance(config, Mapping):
+            normalized_config: dict[str, t.JsonValue] = dict(config)
+        else:
+            model_dump_callable = getattr(config, "model_dump", None)
+            dumped_config = (
+                model_dump_callable() if callable(model_dump_callable) else {}
+            )
+            normalized_config = (
+                dict(dumped_config) if isinstance(dumped_config, Mapping) else {}
+            )
+
+        super().__init__(normalized_config)
         # Logger removed - use logging module directly if needed
-        self._config = config
+        self._config = normalized_config
 
         # Use railway-oriented validation
         validation_result = self._validate_configuration()
@@ -466,10 +483,26 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def authenticate(
         self,
-        credentials: Mapping[str, t.JsonValue],
+        credentials: FlextAuthModels.CredentialValidation | Mapping[str, t.JsonValue],
     ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Authenticate using OAuth2 flows with delegation."""
-        flow_result = self._flow_manager.handle_authorization_code_flow(credentials)
+        credential_payload: dict[str, t.JsonValue]
+        if isinstance(credentials, Mapping):
+            credential_payload = dict(credentials)
+        else:
+            metadata_value = credentials.metadata
+            metadata_payload = (
+                metadata_value if isinstance(metadata_value, dict) else {}
+            )
+            credential_payload = {
+                "username": credentials.username,
+                "password": credentials.password,
+                "metadata": metadata_payload,
+            }
+
+        flow_result = self._flow_manager.handle_authorization_code_flow(
+            credential_payload,
+        )
         if flow_result.is_failure:
             return r[FlextAuthProtocols.Auth.TokenProtocol].fail(
                 flow_result.error or "OAuth2 authentication failed",
@@ -480,7 +513,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         # Extract string values from flow_data with proper type narrowing
         user_id = flow_data.get("user_id", "oauth2_user")
         user_id_str = str(user_id) if user_id else "oauth2_user"
-        access_token = credentials.get("access_token", "")
+        access_token = credential_payload.get("access_token", "")
         access_token_str = str(access_token) if access_token else ""
         token_model = FlextAuthModels.Auth.AuthToken(
             identity_id=user_id_str,
@@ -495,36 +528,69 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         token: str | FlextAuthProtocols.Auth.TokenProtocol,
     ) -> r[bool]:
         """Validate OAuth2 token using composition."""
-        self._extract_token_string(token)
-        return r[bool].ok(value=True)  # Simplified implementation
+        token_text = self._extract_token_string(token)
+        identity_result = self.validate_token(token_text)
+        if identity_result.is_failure:
+            return r[bool].fail(
+                identity_result.error or "OAuth2 token validation failed"
+            )
+
+        return r[bool].ok(value=True)
 
     def refresh(
         self,
         token: str | FlextAuthProtocols.Auth.TokenProtocol,
     ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Refresh OAuth2 token using composition."""
-        if (
-            x.is_base_model(token)
-            and token.__class__ is FlextAuthModels.Auth.AuthToken
-            and token.refresh_token
-        ):
-            token_result = self._token_manager.refresh_access_token(token.refresh_token)
-            if token_result.is_failure:
-                return r[FlextAuthProtocols.Auth.TokenProtocol].fail(
-                    token_result.error or "Token refresh failed",
-                )
-            # Convert dict to AuthToken with explicit protocol typing
-            token_data = token_result.value
-            refreshed_model = FlextAuthModels.Auth.AuthToken(
-                identity_id=token.identity_id,
-                token=token_data.access_token,
-                token_type=token_data.token_type or "Bearer",
-                expires_at=token.expires_at,  # Keep original expiry for now
+        token_text = self._extract_token_string(token)
+
+        refresh_token_value = getattr(token, "refresh_token", "")
+        if isinstance(refresh_token_value, str) and refresh_token_value:
+            refresh_source = refresh_token_value
+
+            identity_candidate = getattr(token, "identity_id", "")
+            if not isinstance(identity_candidate, str) or not identity_candidate:
+                user_id_candidate = getattr(token, "user_id", "")
+                if isinstance(user_id_candidate, str) and user_id_candidate:
+                    identity_candidate = user_id_candidate
+
+            if isinstance(identity_candidate, str) and identity_candidate:
+                identity_id = identity_candidate
+            else:
+                identity_id = "oauth2_user"
+        else:
+            refresh_source = token_text
+            identity_id_result = self._decode_token_claims(token_text).flat_map(
+                self._extract_identity_id,
             )
-            return r[FlextAuthProtocols.Auth.TokenProtocol].ok(refreshed_model)
-        return r[FlextAuthProtocols.Auth.TokenProtocol].fail(
-            "No refresh token available"
+            if identity_id_result.is_success:
+                identity_id = identity_id_result.value
+            else:
+                identity_id = "oauth2_user"
+
+        if not refresh_source:
+            return r[FlextAuthProtocols.Auth.TokenProtocol].fail(
+                "No refresh token available",
+            )
+
+        token_result = self._token_manager.refresh_access_token(refresh_source)
+        if token_result.is_failure:
+            return r[FlextAuthProtocols.Auth.TokenProtocol].fail(
+                token_result.error or "Token refresh failed",
+            )
+
+        token_data = token_result.value
+        expires_in_seconds = (
+            token_data.expires_in if token_data.expires_in > 0 else 3600
         )
+        refreshed_model = FlextAuthModels.Auth.AuthToken(
+            identity_id=identity_id,
+            token=token_data.access_token,
+            token_type=token_data.token_type or "Bearer",
+            expires_at=datetime.now(UTC) + timedelta(seconds=expires_in_seconds),
+            refresh_token=token_data.refresh_token,
+        )
+        return r[FlextAuthProtocols.Auth.TokenProtocol].ok(refreshed_model)
 
     def revoke(
         self,
@@ -547,27 +613,258 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             },
         )
 
+    def _introspection_endpoint(self) -> r[str]:
+        for key in ("introspection_endpoint", "token_introspection_endpoint"):
+            endpoint_value = self._config.get(key)
+            if isinstance(endpoint_value, str) and endpoint_value:
+                return r[str].ok(endpoint_value)
+
+        return r[str].fail("OAuth2 introspection endpoint is not configured")
+
+    def _build_introspection_headers(self) -> r[dict[str, str]]:
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+        auth_method = self._token_endpoint_auth_method
+        if auth_method != "client_secret_basic":
+            return r[dict[str, str]].ok(headers)
+
+        client_id = self.get_client_id()
+        client_secret_value = self._config.get("client_secret")
+        client_secret = (
+            client_secret_value if isinstance(client_secret_value, str) else ""
+        )
+
+        if not client_id or not client_secret:
+            return r[dict[str, str]].fail(
+                "OAuth2 client_id and client_secret are required for client_secret_basic",
+            )
+
+        auth_input = f"{client_id}:{client_secret}".encode()
+        encoded_auth = b64encode(auth_input).decode("ascii")
+        headers["Authorization"] = f"Basic {encoded_auth}"
+        return r[dict[str, str]].ok(headers)
+
+    def _build_introspection_form_data(self, token: str) -> r[str]:
+        if not token.strip():
+            return r[str].fail("OAuth2 token must be a non-empty string")
+
+        form_payload: dict[str, str] = {
+            "token": token,
+            "token_type_hint": "access_token",
+        }
+
+        auth_method = self._token_endpoint_auth_method
+        client_id = self.get_client_id()
+        client_secret_value = self._config.get("client_secret")
+        client_secret = (
+            client_secret_value if isinstance(client_secret_value, str) else ""
+        )
+
+        match auth_method:
+            case "client_secret_post":
+                if not client_id or not client_secret:
+                    return r[str].fail(
+                        "OAuth2 client_id and client_secret are required for client_secret_post",
+                    )
+                form_payload["client_id"] = client_id
+                form_payload["client_secret"] = client_secret
+            case "none":
+                if client_id:
+                    form_payload["client_id"] = client_id
+            case "client_secret_basic":
+                pass
+            case _:
+                return r[str].fail(
+                    f"Unsupported token endpoint auth method: {auth_method}",
+                )
+
+        return r[str].ok(urlencode(form_payload))
+
+    def _introspect_token(self, token: str) -> r[Mapping[str, object]]:
+        endpoint_result = self._introspection_endpoint()
+        if endpoint_result.is_failure:
+            return r[Mapping[str, object]].fail(
+                endpoint_result.error or "OAuth2 introspection endpoint is required",
+            )
+
+        headers_result = self._build_introspection_headers()
+        if headers_result.is_failure:
+            return r[Mapping[str, object]].fail(
+                headers_result.error or "OAuth2 introspection headers are invalid",
+            )
+
+        body_result = self._build_introspection_form_data(token)
+        if body_result.is_failure:
+            return r[Mapping[str, object]].fail(
+                body_result.error or "OAuth2 introspection payload is invalid",
+            )
+
+        request = Request(
+            endpoint_result.value,
+            data=body_result.value.encode("utf-8"),
+            headers=headers_result.value,
+            method="POST",
+        )
+
+        try:
+            with urlopen(request, timeout=10.0) as response:  # noqa: S310
+                response_payload = response.read().decode("utf-8")
+        except HTTPError as exc:
+            try:
+                error_body = exc.read().decode("utf-8")
+            except (
+                ValueError,
+                TypeError,
+                OSError,
+                RuntimeError,
+                AttributeError,
+            ):
+                error_body = ""
+
+            error_message = (
+                f"OAuth2 introspection request failed with status {exc.code}: {error_body}"
+                if error_body
+                else f"OAuth2 introspection request failed with status {exc.code}"
+            )
+            return r[Mapping[str, object]].fail(error_message)
+        except URLError as exc:
+            return r[Mapping[str, object]].fail(
+                f"OAuth2 introspection network failure: {exc}",
+            )
+        except (
+            ValueError,
+            TypeError,
+            OSError,
+            RuntimeError,
+            AttributeError,
+        ) as exc:
+            return r[Mapping[str, object]].fail(
+                f"OAuth2 introspection request failed: {exc}",
+            )
+
+        try:
+            parsed_payload = json.loads(response_payload)
+        except json.JSONDecodeError as exc:
+            return r[Mapping[str, object]].fail(
+                f"OAuth2 introspection payload is not valid JSON: {exc}",
+            )
+
+        if not isinstance(parsed_payload, Mapping):
+            return r[Mapping[str, object]].fail(
+                "OAuth2 introspection payload must be a mapping",
+            )
+
+        return r[Mapping[str, object]].ok(parsed_payload)
+
+    def _map_token_payload_to_identity(
+        self,
+        payload: Mapping[str, object],
+    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
+        identity_result = self._extract_identity_id(payload)
+        if identity_result.is_failure:
+            username_value = payload.get("username")
+            if isinstance(username_value, str) and username_value:
+                identity_id = username_value
+            else:
+                return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                    identity_result.error or "OAuth2 token subject is missing",
+                )
+        else:
+            identity_id = identity_result.value
+
+        name_value = payload.get("name")
+        if isinstance(name_value, str) and name_value:
+            name = name_value
+        else:
+            preferred_name = payload.get("preferred_username")
+            if isinstance(preferred_name, str) and preferred_name:
+                name = preferred_name
+            else:
+                username_value = payload.get("username")
+                name = (
+                    username_value if isinstance(username_value, str) else identity_id
+                )
+
+        contact_value = payload.get("contact")
+        if isinstance(contact_value, str) and contact_value:
+            contact = contact_value
+        else:
+            email_value = payload.get("email")
+            contact = (
+                email_value
+                if isinstance(email_value, str) and email_value
+                else f"{identity_id}@oauth.local"
+            )
+
+        roles_value = payload.get("roles")
+        if isinstance(roles_value, list):
+            roles = [role for role in roles_value if isinstance(role, str) and role]
+        else:
+            scope_value = payload.get("scope")
+            if isinstance(scope_value, str) and scope_value:
+                roles = [scope for scope in scope_value.split(" ") if scope]
+            else:
+                roles = ["user"]
+
+        try:
+            identity = FlextAuthModels.Auth.AuthIdentity(
+                unique_id=identity_id,
+                name=name,
+                contact=contact,
+                roles=roles,
+                failed_attempts=0,
+                locked_until=datetime.min.replace(tzinfo=UTC),
+                last_access=datetime.now(UTC),
+            )
+        except (ValueError, TypeError) as exc:
+            return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                f"OAuth2 identity mapping failed: {exc}",
+            )
+
+        return r[FlextAuthModels.Auth.AuthIdentity].ok(identity)
+
     def validate_token(self, token: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
         """Validate OAuth2 token and return user."""
-        # OAuth2 token validation requires implementation
-        # Fast fail: implementation not available
-        _ = token  # Mark as intentionally unused
-        return r[FlextAuthModels.Auth.AuthIdentity].fail(
-            "OAuth2 token validation not implemented",
-        )
+        introspection_endpoint_result = self._introspection_endpoint()
+        if introspection_endpoint_result.is_success:
+            introspection_result = self._introspect_token(token)
+            if introspection_result.is_failure:
+                return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                    introspection_result.error
+                    or "OAuth2 introspection token validation failed",
+                )
+
+            active_value = introspection_result.value.get("active")
+            is_active = bool(active_value) if isinstance(active_value, bool) else False
+            if not is_active:
+                return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                    "OAuth2 token is inactive",
+                )
+
+            return self._map_token_payload_to_identity(introspection_result.value)
+
+        claims_result = self._decode_token_claims(token)
+        if claims_result.is_failure:
+            return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                claims_result.error or "OAuth2 token validation failed",
+            )
+
+        return self._map_token_payload_to_identity(claims_result.value)
 
     def generate_token_for_user(
         self,
-        user: Mapping[str, t.JsonValue],
+        user: FlextAuthModels.Auth.AuthIdentity | Mapping[str, object],
         token_type: str = "oauth2_access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
         """Generate OAuth2 token for user."""
-        # user, token_type, expiry_minutes parameters reserved for future implementation
-        _ = user  # Mark as intentionally unused for now
-        _ = token_type  # Mark as intentionally unused for now
-        _ = expiry_minutes  # Mark as intentionally unused for now
-        return r[str].fail("OAuth2 token generation requires HTTP transport")
+        return super().generate_token_for_user(
+            user=user,
+            token_type=token_type,
+            expiry_minutes=expiry_minutes,
+        )
 
 
 __all__ = ["FlextAuthOAuth2Provider"]

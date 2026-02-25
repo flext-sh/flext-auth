@@ -12,16 +12,21 @@ from __future__ import annotations
 
 import threading
 import time
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
+import jwt
 import pytest
-from flext_core import FlextConstants, FlextResult
-from pydantic import SecretStr
-
 from flext_auth.api import FlextAuth
 from flext_auth.constants import FlextAuthConstants
+from flext_auth.middleware import FlextAuthMiddleware, HttpRequest
 from flext_auth.models import FlextAuthModels
+from flext_auth.protocols import FlextAuthProtocols as p
+from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth.providers.kerberos import FlextAuthKerberosProvider
+from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
 from flext_auth.settings import FlextAuthSettings
+from flext_core import FlextResult, t
+from pydantic import SecretStr
 
 c = FlextAuthConstants
 r = FlextResult
@@ -268,7 +273,9 @@ class TestFlextAuthSessionManagement:
         sessions_result = auth.get_user_sessions(user.id)
         assert sessions_result.is_success
         sessions = sessions_result.value
-        assert len(sessions) == 0  # No sessions: JWT provider token generation not implemented
+        assert (
+            len(sessions) == 0
+        )  # No sessions: JWT provider token generation not implemented
 
         # Revoke with non-existent session ID — should fail gracefully
         revoke_result = auth.revoke_session("nonexistent_session_id")
@@ -821,9 +828,7 @@ class TestFlextAuthInitializationCoverage:
         auth = FlextAuth.create_with_config_overrides(
             expiry_minutes=120,
             hash_rounds=10,
-            auth_secret=SecretStr(
-                "test-secret-key-with-minimum-32-characters-length",
-            ),
+            auth_secret="test-secret-key-with-minimum-32-characters-length",
         )
 
         assert auth._config.expiry_minutes == 120
@@ -1472,6 +1477,7 @@ class TestAuthModule:
         token_result = auth.create_token(identity_id=identity.unique_id)
         assert not token_result.is_success
         assert token_result.error is not None
+
     def test_flext_auth_error_handling(self) -> None:
         """Test auth module error handling patterns."""
         auth = FlextAuth()
@@ -1697,3 +1703,217 @@ class TestAuthModule:
         # All results should be FlextResult instances
         for result in results:
             assert isinstance(result, FlextResult)
+
+
+class _BaseTokenProviderForFlowTests(FlextAuthBaseProvider):
+    def authenticate(
+        self,
+        credentials: FlextAuthModels.CredentialValidation,
+    ) -> FlextResult[p.Auth.TokenProtocol]:
+        _ = credentials
+        return FlextResult[p.Auth.TokenProtocol].fail("Not used in this test")
+
+    def validate(
+        self,
+        token: str,
+    ) -> FlextResult[bool]:
+        _ = token
+        return FlextResult[bool].ok(True)
+
+
+class _RefreshCapableProviderForFlowTests(FlextAuthBaseProvider):
+    def __init__(self) -> None:
+        super().__init__(config={})
+        self.last_refresh_input: str | None = None
+
+    def authenticate(
+        self,
+        credentials: FlextAuthModels.CredentialValidation,
+    ) -> FlextResult[p.Auth.TokenProtocol]:
+        _ = credentials
+        return FlextResult[p.Auth.TokenProtocol].fail("Not used in this test")
+
+    def validate(
+        self,
+        token: str,
+    ) -> FlextResult[bool]:
+        _ = token
+        return FlextResult[bool].ok(True)
+
+    def refresh(
+        self,
+        token: str,
+    ) -> FlextResult[p.Auth.TokenProtocol]:
+        self.last_refresh_input = token
+        refreshed_token = FlextAuthModels.Auth.AuthToken(
+            identity_id="middleware-user",
+            token="refreshed-token",
+            token_type="Bearer",
+            expires_at=datetime.now(UTC) + timedelta(hours=1),
+            refresh_token="refresh-next",
+        )
+        return FlextResult[p.Auth.TokenProtocol].ok(refreshed_token)
+
+
+class _ConcreteKerberosProviderForFlowTests(FlextAuthKerberosProvider):
+    def authenticate(
+        self,
+        credentials: FlextAuthModels.CredentialValidation,
+    ) -> FlextResult[p.Auth.TokenProtocol]:
+        _ = credentials
+        return FlextResult[p.Auth.TokenProtocol].fail("Not used in this test")
+
+    def validate(
+        self,
+        token: str,
+    ) -> FlextResult[bool]:
+        return self.validate_token(token).map(lambda _identity: True)
+
+
+class TestProviderTokenFlows:
+    def test_base_provider_generate_token_for_user(self) -> None:
+        provider = _BaseTokenProviderForFlowTests(
+            config={
+                "secret_key": "unit-test-secret-key-for-base-provider-12345",
+                "algorithm": "HS256",
+                "issuer": "flext-auth-tests",
+                "audience": "flext-auth-tests",
+                "expiry_minutes": 60,
+            },
+        )
+
+        token_result = provider.generate_token_for_user(
+            user=_build_identity_for_flow_tests(
+                identity_id="base-user-123",
+                name="Base User",
+                contact="base@example.com",
+                roles=["user"],
+            ),
+            token_type="access",
+            expiry_minutes=5,
+        )
+
+        assert token_result.is_success
+        payload = jwt.decode(
+            token_result.value,
+            "unit-test-secret-key-for-base-provider-12345",
+            algorithms=["HS256"],
+            audience="flext-auth-tests",
+            issuer="flext-auth-tests",
+        )
+        assert payload["sub"] == "base-user-123"
+        assert payload["token_type"] == "access"
+        assert payload["name"] == "Base User"
+
+    def test_middleware_refreshes_expired_token(self) -> None:
+        provider = _RefreshCapableProviderForFlowTests()
+        middleware = FlextAuthMiddleware.FlextWebAuthMiddleware(provider)
+        middleware._current_token = FlextAuthModels.Auth.AuthToken(
+            identity_id="middleware-user",
+            token="expired-token",
+            token_type="Bearer",
+            expires_at=datetime.now(UTC) - timedelta(minutes=1),
+            refresh_token="refresh-source-token",
+        )
+
+        HttpRequest.headers = {}
+        request = HttpRequest()
+        result = middleware.process_request(request)
+
+        assert result.is_success
+        assert request.headers.get("Authorization") == "Bearer refreshed-token"
+        assert provider.last_refresh_input == "refresh-source-token"
+
+    def test_kerberos_generate_and_validate_token(self) -> None:
+        provider = _ConcreteKerberosProviderForFlowTests(
+            config={
+                "realm": "EXAMPLE.COM",
+                "kdc": "kdc.example.com",
+                "service_principal": "HTTP/api.example.com@EXAMPLE.COM",
+                "secret_key": "unit-test-secret-key-for-kerberos-provider-12345",
+                "algorithm": "HS256",
+                "issuer": "flext-auth-tests",
+                "audience": "flext-auth-tests",
+                "expiry_minutes": 30,
+            },
+        )
+
+        token_result = provider.generate_token_for_user(
+            user={
+                "identity_id": "kerberos-user",
+                "name": "Kerberos User",
+                "contact": "kerberos@example.com",
+                "roles": ["user"],
+            },
+            token_type="kerberos",
+            expiry_minutes=10,
+        )
+
+        assert token_result.is_success
+        identity_result = provider.validate_token(token_result.value)
+        assert identity_result.is_success
+        identity = identity_result.value
+        assert identity.name == "Kerberos User"
+        assert identity.contact == "kerberos@example.com"
+        assert identity.roles == ["user"]
+
+    def test_oauth2_validate_token_returns_identity(self) -> None:
+        provider = FlextAuthOAuth2Provider(
+            {
+                "client_id": "oauth-test-client",
+                "token_endpoint": "https://auth.example.com/token",
+                "secret_key": "unit-test-secret-key-for-oauth-provider-12345",
+                "algorithm": "HS256",
+                "issuer": "flext-auth-tests",
+                "audience": "flext-auth-tests",
+            },
+        )
+
+        now = datetime.now(UTC)
+        encoded_token = jwt.encode(
+            {
+                "sub": "oauth-user-123",
+                "name": "OAuth User",
+                "email": "oauth@example.com",
+                "roles": ["user"],
+                "iat": int(now.timestamp()),
+                "exp": int((now + timedelta(minutes=30)).timestamp()),
+                "iss": "flext-auth-tests",
+                "aud": "flext-auth-tests",
+            },
+            "unit-test-secret-key-for-oauth-provider-12345",
+            algorithm="HS256",
+        )
+
+        match encoded_token:
+            case str() as token:
+                token_value = token
+            case bytes() as token_bytes:
+                token_value = token_bytes.decode("utf-8")
+            case _:
+                token_value = str(encoded_token)
+
+        result = provider.validate_token(token_value)
+        assert result.is_success
+        identity = result.value
+        assert identity.id == "oauth-user-123"
+        assert identity.name == "OAuth User"
+        assert identity.contact == "oauth@example.com"
+
+
+def _build_identity_for_flow_tests(
+    *,
+    identity_id: str,
+    name: str,
+    contact: str,
+    roles: list[str],
+) -> FlextAuthModels.Auth.AuthIdentity:
+    return FlextAuthModels.Auth.AuthIdentity(
+        unique_id=identity_id,
+        name=name,
+        contact=contact,
+        roles=roles,
+        failed_attempts=0,
+        locked_until=datetime.min.replace(tzinfo=UTC),
+        last_access=datetime.min.replace(tzinfo=UTC),
+    )

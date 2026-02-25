@@ -17,7 +17,8 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 from __future__ import annotations
 
 from abc import ABC
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
+from datetime import UTC, datetime
 
 from flext_auth.models import FlextAuthModels
 
@@ -207,6 +208,67 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
             # Use composition for ticket validation
             return self.provider.ticket_validator.validate_ticket(ticket_data)
 
+    def _map_identity_payload(
+        self,
+        claims: Mapping[str, object],
+    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
+        identity_result = self._extract_identity_id(claims)
+        if identity_result.is_failure:
+            return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                identity_result.error or "Kerberos token subject is missing",
+            )
+
+        identity_id = identity_result.value
+
+        name_value = claims.get("name")
+        name = name_value if isinstance(name_value, str) and name_value else identity_id
+
+        contact_value = claims.get("contact")
+        if isinstance(contact_value, str) and contact_value:
+            contact = contact_value
+        else:
+            email_value = claims.get("email")
+            if isinstance(email_value, str) and email_value:
+                contact = email_value
+            else:
+                contact = f"{identity_id}@kerberos.local"
+
+        roles_value = claims.get("roles")
+        if isinstance(roles_value, list):
+            roles = [role for role in roles_value if isinstance(role, str) and role]
+        else:
+            roles = ["user"]
+
+        try:
+            identity = FlextAuthModels.Auth.AuthIdentity(
+                unique_id=identity_id,
+                name=name,
+                contact=contact,
+                roles=roles,
+                failed_attempts=0,
+                locked_until=datetime.min.replace(tzinfo=UTC),
+                last_access=datetime.now(UTC),
+            )
+        except (ValueError, TypeError) as exc:
+            return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                f"Kerberos identity mapping failed: {exc}",
+            )
+
+        return r[FlextAuthModels.Auth.AuthIdentity].ok(identity)
+
+    def _ticket_validator_callable(
+        self,
+    ) -> Callable[[str], object] | None:
+        config = self._config
+        if config is None:
+            return None
+
+        validator_candidate = config.get("ticket_validator")
+        if callable(validator_candidate):
+            return validator_candidate
+
+        return None
+
     def supports(self) -> set[str]:
         """Return Kerberos provider capabilities."""
         return {"kerberos", "sso", "enterprise", "ticket", "validate"}
@@ -221,25 +283,70 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
 
     def validate_token(self, token: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
         """Validate Kerberos token and return user."""
-        # Kerberos token validation requires implementation
-        # Fast fail: implementation not available
-        _ = token  # Mark as intentionally unused
+        if not token.strip():
+            return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                "Kerberos token must be a non-empty string",
+            )
+
+        validator = self._ticket_validator_callable()
+        if validator is not None:
+            try:
+                validator_result = validator(token)
+            except (
+                ValueError,
+                TypeError,
+                KeyError,
+                AttributeError,
+                OSError,
+                RuntimeError,
+                ImportError,
+            ) as exc:
+                return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                    f"Kerberos ticket validator execution failed: {exc}",
+                )
+
+            if isinstance(validator_result, FlextAuthModels.Auth.AuthIdentity):
+                return r[FlextAuthModels.Auth.AuthIdentity].ok(validator_result)
+
+            if isinstance(validator_result, Mapping):
+                return self._map_identity_payload(validator_result)
+
+            if isinstance(validator_result, at.KerberosTicketData):
+                principal_value = validator_result.principal
+                principal = principal_value or "kerberos-user"
+                identity_map: dict[str, object] = {
+                    "identity_id": principal,
+                    "name": principal,
+                    "contact": f"{principal}@kerberos.local",
+                    "roles": ["user"],
+                }
+                return self._map_identity_payload(identity_map)
+
+            return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                "Kerberos ticket validator returned unsupported payload",
+            )
+
+        claims_result = self._decode_token_claims(token)
+        if claims_result.is_success:
+            return self._map_identity_payload(claims_result.value)
+
         return r[FlextAuthModels.Auth.AuthIdentity].fail(
-            "Kerberos token validation not implemented",
+            "Kerberos validation requires a configured ticket_validator callback "
+            "or JWT bridge settings (secret_key/issuer/audience)",
         )
 
     def generate_token_for_user(
         self,
-        user: Mapping[str, t.JsonValue],
+        user: FlextAuthModels.Auth.AuthIdentity | Mapping[str, object],
         token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
         """Generate Kerberos token for user."""
-        # user, token_type, expiry_minutes parameters reserved for future implementation
-        _ = user  # Mark as intentionally unused for now
-        _ = token_type  # Mark as intentionally unused for now
-        _ = expiry_minutes  # Mark as intentionally unused for now
-        return r[str].fail("Kerberos token generation not implemented in this refactor")
+        return super().generate_token_for_user(
+            user=user,
+            token_type=token_type,
+            expiry_minutes=expiry_minutes,
+        )
 
 
 __all__ = ["FlextAuthKerberosProvider"]

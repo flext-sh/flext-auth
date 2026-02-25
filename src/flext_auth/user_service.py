@@ -151,7 +151,7 @@ class FlextAuthIdentityService(s[bool]):
                 error_messages.append(f"{field}: {msg}")
             error_msg = "; ".join(error_messages) if error_messages else str(e)
             return r[m.Auth.AuthIdentity].fail(error_msg)
-        except Exception as e:
+        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
             return r[m.Auth.AuthIdentity].fail(str(e))
 
         # Validate credential strength before hashing
