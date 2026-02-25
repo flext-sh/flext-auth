@@ -114,7 +114,15 @@ class FlextAuthRegistry(FlextRegistry):
         try:
             caps = provider_result.value.supports()
             return r[set[str]].ok({str(c) for c in caps})
-        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError):
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ):
             return r[set[str]].ok(set())
 
     def has_capability(self, name: str, capability: str) -> r[bool]:

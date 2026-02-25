@@ -305,7 +305,15 @@ class FlextAuthModels(FlextModels):
                         self.credential_hash,
                     )
                     return r[bool].ok(is_valid)
-                except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
+                except (
+                    ValueError,
+                    TypeError,
+                    KeyError,
+                    AttributeError,
+                    OSError,
+                    RuntimeError,
+                    ImportError,
+                ) as e:
                     return r[bool].fail(f"Credential verification failed: {e}")
 
             def set_credential(self, credential: str) -> r[bool]:
@@ -315,7 +323,15 @@ class FlextAuthModels(FlextModels):
                         FlextAuthModels.Auth.PasswordUtil.hash_password(credential)
                     )
                     return r[bool].ok(value=True)
-                except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
+                except (
+                    ValueError,
+                    TypeError,
+                    KeyError,
+                    AttributeError,
+                    OSError,
+                    RuntimeError,
+                    ImportError,
+                ) as e:
                     return r[bool].fail(f"Failed to hash credential: {e}")
 
     # =========================================================================

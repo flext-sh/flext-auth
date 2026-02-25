@@ -167,7 +167,15 @@ class FlextAuthSettings(FlextSettings):
             # Create instance with overrides - Pydantic will validate
             instance = cls(**overrides)
             return r[FlextAuthSettings].ok(instance)
-        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
             return r[FlextAuthSettings].fail(str(e))
 
     def get_jwt_settings(self) -> Mapping[str, str | int | bool]:
@@ -256,7 +264,15 @@ class FlextAuthSettings(FlextSettings):
             return r[bool].ok(value=True)
         except ValueError as e:
             return r[bool].fail(str(e))
-        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
             return r[bool].fail(f"Validation error: {e}")
 
     @classmethod
@@ -286,7 +302,15 @@ class FlextAuthSettings(FlextSettings):
             # Note: AutoConfig manages singleton internally, but we can't override it here
             # For overrides, return the new instance (caller should use get_instance() for singleton)
             return r.ok(instance)
-        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
             return r.fail(f"Failed to create config: {e}")
 
     def to_provider_config(self) -> Mapping[str, t.JsonValue]:

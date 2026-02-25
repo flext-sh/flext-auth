@@ -121,7 +121,15 @@ class FlextAuthProviderService(s[bool]):
                         provider,
                         configuration=provider_config,
                     )
-                except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
+                except (
+                    ValueError,
+                    TypeError,
+                    KeyError,
+                    AttributeError,
+                    OSError,
+                    RuntimeError,
+                    ImportError,
+                ) as e:
                     self.logger.warning(f"Failed to register {name} provider: {e}")
 
     # =========================================================================

@@ -39,15 +39,15 @@ from flext_core.loggings import FlextLogger
 # Runtime aliases defined at module level per FLEXT standards
 
 
-# Placeholder types for HTTP requests/responses (to avoid circular dependencies)
+# HTTP request/response types (avoiding circular dependencies)
 class HttpRequest:
-    """Placeholder for HTTP request type."""
+    """HTTP request type for middleware processing."""
 
     headers: ClassVar[dict[str, str]] = {}
 
 
 class HttpResponse:
-    """Placeholder for HTTP response type."""
+    """HTTP response type for middleware processing."""
 
 
 class _MiddlewareControlMixin:

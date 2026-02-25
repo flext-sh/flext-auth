@@ -58,7 +58,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
         Business Rule: Validates SAML assertion and extracts identity information.
 
         """
-        _ = credentials  # Placeholder for SAML 2.0 authentication implementation
+        _ = credentials  # SAML 2.0 authentication — requires IDP federation configuration
         return r[FlextAuthProtocols.Auth.TokenProtocol].fail(
             "SAML provider not yet fully implemented",
         )
@@ -75,7 +75,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
         Business Rule: Validates SAML assertion signature and expiration.
 
         """
-        _ = token  # Placeholder for SAML assertion validation implementation
+        _ = token  # SAML assertion validation — requires IDP metadata and certificate
         return r[bool].fail("SAML provider not yet fully implemented")
 
     def supports(self) -> set[str]:

@@ -369,7 +369,15 @@ class FlextAuthUtilities(FlextUtilities):
                     return r[str].ok(token_bytes.decode())
                 case _:
                     return r[str].ok(str(token))
-        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
             return r[str].fail(f"Encoding failed: {e}")
 
     @staticmethod
@@ -414,7 +422,15 @@ class FlextAuthUtilities(FlextUtilities):
             return r[t.Tokens.ClaimMap].ok(typed_payload)
         except jwt.InvalidTokenError as e:
             return r[t.Tokens.ClaimMap].fail(f"Invalid token: {e}")
-        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
             return r[t.Tokens.ClaimMap].fail(f"Decoding failed: {e}")
 
 

@@ -101,7 +101,15 @@ class FlextAuthJwtTokenValidator:
             return r[Mapping[str, t.GeneralValueType]].fail("Token has expired")
         except jwt.InvalidTokenError as e:
             return r[Mapping[str, t.GeneralValueType]].fail(f"Invalid token: {e}")
-        except (ValueError, TypeError, KeyError, AttributeError, OSError, RuntimeError, ImportError) as e:
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
             return r[Mapping[str, t.GeneralValueType]].fail(
                 f"Token validation failed: {e}"
             )
