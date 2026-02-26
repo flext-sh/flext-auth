@@ -565,15 +565,15 @@ class FlextAuthManagers:
 
             self._sessions[session_id] = session_data
             # Extract required fields for Session model using model_validate
-            session = FlextAuthModels.Session.model_validate({
-                "identity_id": str(session_data["identity_id"]),
-                "session_token": str(session_data["session_token"]),
-                "expires_at": session_data["expires_at"],
-                "is_active": bool(session_data.get("is_active", True)),
-                "ip_address": str(session_data.get("ip_address", "")),
-                "user_agent": str(session_data.get("user_agent", "")),
-                "last_accessed": session_data.get("last_accessed", datetime.now(UTC)),
-            })
+            session = FlextAuthModels.Session(
+                identity_id=str(session_data["identity_id"]),
+                session_token=str(session_data["session_token"]),
+                expires_at=session_data["expires_at"],
+                is_active=bool(session_data.get("is_active", True)),
+                ip_address=str(session_data.get("ip_address", "")),
+                user_agent=str(session_data.get("user_agent", "")),
+                last_accessed=session_data.get("last_accessed", datetime.now(UTC)),
+            )
             return r[FlextAuthModels.Session].ok(session)
 
         def get_active_sessions(self, user_id: str) -> r[list[FlextAuthModels.Session]]:
@@ -587,18 +587,18 @@ class FlextAuthManagers:
                         and self._is_session_active(session_data)
                     ):
                         # Extract only fields that Session model accepts
-                        session = FlextAuthModels.Session.model_validate({
-                            "identity_id": str(session_data["identity_id"]),
-                            "session_token": str(session_data["session_token"]),
-                            "expires_at": session_data["expires_at"],
-                            "is_active": bool(session_data.get("is_active", True)),
-                            "ip_address": str(session_data.get("ip_address", "")),
-                            "user_agent": str(session_data.get("user_agent", "")),
-                            "last_accessed": session_data.get(
+                        session = FlextAuthModels.Session(
+                            identity_id=str(session_data["identity_id"]),
+                            session_token=str(session_data["session_token"]),
+                            expires_at=session_data["expires_at"],
+                            is_active=bool(session_data.get("is_active", True)),
+                            ip_address=str(session_data.get("ip_address", "")),
+                            user_agent=str(session_data.get("user_agent", "")),
+                            last_accessed=session_data.get(
                                 "last_accessed",
                                 datetime.now(UTC),
                             ),
-                        })
+                        )
                         # Set unique_id from session_id
                         session.unique_id = session_id
                         sessions.append(session)
