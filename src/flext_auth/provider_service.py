@@ -8,7 +8,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 
 from flext_auth.constants import FlextAuthConstants as c
 from flext_auth.models import FlextAuthModels
@@ -114,8 +114,11 @@ class FlextAuthProviderService(s[bool]):
         for name, provider_class, condition in providers:
             if condition():
                 try:
+                    provider_init_config = self._build_provider_init_config(
+                        provider_config
+                    )
                     # Instantiate provider with config
-                    provider = provider_class(provider_config)
+                    provider = provider_class(provider_init_config)
                     self._providers.register_provider(
                         name,
                         provider,
@@ -132,6 +135,18 @@ class FlextAuthProviderService(s[bool]):
                 ) as e:
                     self.logger.warning(f"Failed to register {name} provider: {e}")
 
+    @staticmethod
+    def _build_provider_init_config(
+        provider_config: Mapping[str, t.JsonValue],
+    ) -> dict[str, str | int | bool]:
+        """Normalize provider config to base-provider scalar contract."""
+        normalized: dict[str, str | int | bool] = {
+            key: value
+            for key, value in provider_config.items()
+            if isinstance(value, (bool, int, str))
+        }
+        return normalized
+
     # =========================================================================
     # CONSOLIDATED PROVIDER MANAGEMENT
     def get_provider(self, name: str) -> r[FlextAuthBaseProvider]:
@@ -140,13 +155,15 @@ class FlextAuthProviderService(s[bool]):
 
     def get_jwt_provider(self) -> r[FlextAuthJwtProvider]:
         """Get registered JWT provider with strict provider type."""
-        return self._providers.get("jwt").flat_map(
-            lambda provider: (
-                r[FlextAuthJwtProvider].ok(provider)
-                if provider.__class__ is FlextAuthJwtProvider
-                else r[FlextAuthJwtProvider].fail("Invalid JWT provider type")
-            ),
-        )
+        provider_result = self._providers.get("jwt")
+        if provider_result.is_failure:
+            return r[FlextAuthJwtProvider].fail(
+                provider_result.error or "JWT provider is not registered",
+            )
+        provider = provider_result.value
+        if not isinstance(provider, FlextAuthJwtProvider):
+            return r[FlextAuthJwtProvider].fail("Invalid JWT provider type")
+        return r[FlextAuthJwtProvider].ok(provider)
 
     def register_provider(self, name: str, provider: FlextAuthBaseProvider) -> r[bool]:
         """Register custom provider.
@@ -169,8 +186,12 @@ class FlextAuthProviderService(s[bool]):
         provider: str = "basic",
     ) -> r[p.Auth.TokenProtocol]:
         """Railway-oriented user authentication with provider selection."""
+        credentials = FlextAuthModels.CredentialValidation(
+            username=username,
+            password=password,
+        )
         return self._providers.get(provider).flat_map(
-            lambda p: p.authenticate({"username": username, "password": password}),
+            lambda auth_provider: auth_provider.authenticate(credentials),
         )
 
     def generate_token_for_user(

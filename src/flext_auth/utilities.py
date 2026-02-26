@@ -16,7 +16,7 @@ import jwt
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.typings import t
 from flext_core import FlextUtilities, r
-from pydantic import BeforeValidator, SecretStr
+from pydantic import BeforeValidator, SecretStr, TypeAdapter, ValidationError
 
 
 class FlextAuthUtilities(FlextUtilities):
@@ -411,17 +411,19 @@ class FlextAuthUtilities(FlextUtilities):
                 algorithms=algorithms_list,
                 options={"verify_signature": verify},
             )
-            if not u.is_dict_like(payload):
+            if not FlextUtilities.is_dict_like(payload):
                 return r[t.Tokens.ClaimMap].fail(
                     "Decoded token payload is not a dictionary",
                 )
 
-            typed_payload: t.Tokens.ClaimMap = {
-                str(key): value for key, value in dict(payload).items()
-            }
+            typed_payload = TypeAdapter(t.Tokens.ClaimMap).validate_python(payload)
             return r[t.Tokens.ClaimMap].ok(typed_payload)
         except jwt.InvalidTokenError as e:
             return r[t.Tokens.ClaimMap].fail(f"Invalid token: {e}")
+        except ValidationError as e:
+            return r[t.Tokens.ClaimMap].fail(
+                f"Decoded token payload validation failed: {e}"
+            )
         except (
             ValueError,
             TypeError,

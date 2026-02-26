@@ -22,15 +22,12 @@ def debug_password_operations() -> None:
 
     # Test password hashing using User model
     try:
-        debug_user = FlextAuthModels.User(
-            id="debug-user",
-            username="debug_user",
-            email="debug@example.com",
+        _ = FlextAuthModels.Auth.AuthIdentityRequest(
+            name="debug_user",
+            contact="debug@example.com",
+            credential=password,
             full_name="Debug User",
-            is_active=True,
-            failed_login_attempts=0,
-            locked_until=None,
-            last_login=None,
+            roles=["user"],
         )
 
         # Note: Password operations should be done through the auth service
@@ -60,11 +57,11 @@ def debug_jwt_operations() -> None:
     user = user_result.value
 
     # Test JWT token generation
-    token_result = auth.generate_jwt_token(user.id)
+    token_result = auth.create_token(identity_id=user.unique_id)
     if token_result.is_failure:
         return
 
-    token = token_result.value.token
+    token = token_result.value
 
     # Test token validation
     validate_result = auth.validate_token(token)

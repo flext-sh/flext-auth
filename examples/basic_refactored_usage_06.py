@@ -33,7 +33,7 @@ class FlextAuthDemo:
         """Initialize demo with FlextAuth instance."""
         self.auth = FlextAuth()
 
-    def demo_user_registration(self) -> FlextResult[FlextAuthModels.Identity]:
+    def demo_user_registration(self) -> FlextResult[FlextAuthModels.Auth.AuthIdentity]:
         """Extract Method: User registration demo.
 
         Returns:
@@ -52,7 +52,9 @@ class FlextAuthDemo:
 
         return result
 
-    def demo_user_authentication(self) -> FlextResult[FlextAuthModels.AuthToken]:
+    def demo_user_authentication(
+        self,
+    ) -> FlextResult[FlextAuthModels.Auth.AuthIdentity]:
         """Extract Method: User authentication demo.
 
         Returns:
@@ -67,7 +69,7 @@ class FlextAuthDemo:
 
         return result
 
-    def _print_token_info(self, auth_data: FlextAuthModels.AuthToken) -> None:
+    def _print_token_info(self, auth_data: FlextAuthModels.Auth.AuthIdentity) -> None:
         """Helper: Print token information."""
         token_length = len(str(auth_data.token)) if auth_data.token else 0
         print(f"Token length: {token_length}")
@@ -78,15 +80,12 @@ def _demo_password_utilities() -> None:
     os.getenv("FLEXT_DEMO_TEST_PASSWORD", "TestPassword123!")
 
     try:
-        FlextAuthModels.Identity(
-            id="password-util-demo",
-            username="util_demo",
-            email="util@demo.com",
+        FlextAuthModels.Auth.AuthIdentityRequest(
+            name="util_demo",
+            contact="util@demo.com",
+            credential="TestPassword123!",
             full_name="Util Demo User",
-            is_active=True,
-            failed_login_attempts=0,
-            locked_until=None,
-            last_login=None,
+            roles=["user"],
         )
 
         # Note: Password operations should be done through the auth service
@@ -151,11 +150,9 @@ def _demo_jwt_operations(demo: FlextAuthDemo) -> None:
     if jwt_user_result.is_success:
         user = jwt_user_result.value
         user_id = user.user_id or user.username
-        token_result = demo.auth.generate_jwt_token(user_id)
+        token_result = demo.auth.create_token(identity_id=user_id)
         if token_result.is_success:
-            token = token_result.value
-            # Extract token string for validation
-            token_string = token.token if hasattr(token, "token") else str(token)
+            token_string = token_result.value
             token_validation = demo.auth.validate_token(token_string)
             if token_validation.is_success:
                 pass

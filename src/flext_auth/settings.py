@@ -165,7 +165,7 @@ class FlextAuthSettings(FlextSettings):
         """Create config instance with overrides."""
         try:
             # Create instance with overrides - Pydantic will validate
-            instance = cls(**overrides)
+            instance = cls.model_validate(overrides)
             return r[FlextAuthSettings].ok(instance)
         except (
             ValueError,
@@ -296,7 +296,7 @@ class FlextAuthSettings(FlextSettings):
                 instance = cls()
                 return r.ok(instance)
             # If kwargs provided, create new instance with overrides
-            instance = cls(**kwargs)
+            instance = cls.model_validate(kwargs)
             # Note: AutoConfig manages singleton internally, but we can't override it here
             # For overrides, return the new instance (caller should use get_instance() for singleton)
             return r.ok(instance)

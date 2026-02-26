@@ -8,8 +8,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from pydantic_settings import BaseSettings
-
 from flext_auth import FlextAuthJwtProvider, FlextAuthSettings
 from flext_auth.providers.jwt_token_generator import FlextAuthJwtTokenGenerator
 
@@ -42,7 +40,7 @@ class TestFlextAuthSettingsBasic:
     def test_global_instance(self) -> None:
         """Test global instance functionality."""
         # This should work with the AutoConfig pattern
-        result = FlextAuthSettings.get_or_create_global(config_class=BaseSettings)
+        result = FlextAuthSettings.get_or_create_global()
         assert result.is_success
         config = result.value
         assert isinstance(config, FlextAuthSettings)

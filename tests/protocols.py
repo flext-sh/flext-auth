@@ -22,18 +22,10 @@ class TestsFlextAuthProtocols(FlextTestsProtocols, FlextAuthProtocols):
     - p.Auth.* (from FlextAuthProtocols)
     """
 
-    class Tests:
-        """Project-specific test protocols.
-
-        Extends FlextTestsProtocols.Tests with Auth-specific protocols.
-        """
-
-        class Auth:
-            """Auth-specific test protocols."""
+    pass
 
 
 # Runtime aliases
-p = TestsFlextAuthProtocols
 p = TestsFlextAuthProtocols
 
 __all__ = ["TestsFlextAuthProtocols", "p"]

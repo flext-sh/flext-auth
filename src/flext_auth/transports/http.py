@@ -18,7 +18,7 @@ from urllib.parse import urlencode
 from flext_api import FlextApiClient, FlextApiModels, FlextApiSettings
 from flext_api.typings import FlextApiTypes as t_api
 from flext_auth.typings import t
-from flext_core import r, u
+from flext_core import r
 from flext_core.loggings import FlextLogger
 
 # Import aliases following order: c -> t -> p -> r -> m -> u
@@ -315,10 +315,11 @@ class FlextWebTransportAdapter:
         if body is None:
             return r[t_api.Api.ResponseDict].ok({})
 
-        if u.is_dict_like(body):
-            return r[t_api.Api.ResponseDict].ok(
-                self._normalize_response_dict(dict(body))
-            )
+        if isinstance(body, Mapping):
+            normalized_body: t_api.Api.ResponseDict = {
+                str(key): self._to_json_value(value) for key, value in body.items()
+            }
+            return r[t_api.Api.ResponseDict].ok(normalized_body)
 
         match body:
             case bytes() as body_bytes:
@@ -336,24 +337,16 @@ class FlextWebTransportAdapter:
             return r[t_api.Api.ResponseDict].fail(
                 "Unable to parse response body as JSON",
             )
-        if u.is_dict_like(parsed):
+        if isinstance(parsed, Mapping):
+            normalized_parsed: t_api.Api.ResponseDict = {
+                str(key): self._to_json_value(value) for key, value in parsed.items()
+            }
             return r[t_api.Api.ResponseDict].ok(
-                self._normalize_response_dict(dict(parsed)),
+                normalized_parsed,
             )
         return r[t_api.Api.ResponseDict].fail(
             f"Unexpected parsed response type: {type(parsed)}",
         )
-
-    def _normalize_response_dict(
-        self,
-        payload: Mapping[str, object],
-    ) -> t_api.Api.ResponseDict:
-        # Values from HTTP responses are JSON-compatible (parsed from JSON)
-        # Safe to construct ResponseDict since input comes from json.loads
-        result: dict[str, t.JsonValue] = {}
-        for key, value in payload.items():
-            result[str(key)] = self._to_json_value(value)
-        return result
 
     def _to_json_value(self, value: object) -> t.JsonValue:
         """Convert object to JsonValue type (safe for JSON-parsed data)."""
@@ -370,12 +363,10 @@ class FlextWebTransportAdapter:
                 return decimal
             case _:
                 pass
-        if u.Guards.is_list(value):
+        if isinstance(value, list | tuple):
             return [self._to_json_value(item) for item in value]
-        if u.is_dict_like(value):
-            return {
-                str(key): self._to_json_value(item) for key, item in dict(value).items()
-            }
+        if isinstance(value, Mapping):
+            return {str(key): self._to_json_value(item) for key, item in value.items()}
         # Fallback for non-JSON types
         return str(value)
 
@@ -396,12 +387,18 @@ class FlextWebTransportAdapter:
         data: t_api.Api.RequestBody | None,
         query: t_api.Api.WebParams | None,
     ) -> t_api.Api.WebParams | None:
-        if u.is_dict_like(data) and method.upper() == "GET":
+        if isinstance(data, Mapping) and method.upper() == "GET":
+            data_mapping: dict[str, t.GeneralValueType] = {
+                str(key): value for key, value in data.items()
+            }
             query_dict = query if query is not None else {}
-            merged_query = {**query_dict, **dict(data)}
+            merged_query = {
+                **query_dict,
+                **{str(key): value for key, value in data_mapping.items()},
+            }
             normalized: t_api.Api.WebParams = {}
             for key, value in merged_query.items():
-                if u.Guards.is_list(value):
+                if isinstance(value, list | tuple):
                     normalized[str(key)] = [str(item) for item in value]
                 else:
                     normalized[str(key)] = str(value)

@@ -59,7 +59,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 dict(dumped_config) if isinstance(dumped_config, Mapping) else {}
             )
 
-        super().__init__(normalized_config)
+        super().__init__(self._to_scalar_config(normalized_config))
         # Logger removed - use logging module directly if needed
         self._config = normalized_config
 
@@ -107,6 +107,18 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         # HTTP client for token endpoint requests (MANDATORY: uses flext-api)
         # Transport layer not yet stable
         self._http_client = None  # HttpTransportAdapter(timeout=30.0)
+
+    @staticmethod
+    def _to_scalar_config(
+        config: Mapping[str, t.JsonValue],
+    ) -> dict[str, str | int | bool]:
+        """Project OAuth2 config to RFC base scalar contract."""
+        scalar_config: dict[str, str | int | bool] = {
+            key: value
+            for key, value in config.items()
+            if isinstance(value, (bool, int, str))
+        }
+        return scalar_config
 
     def _init_scope(self) -> str:
         """Initialize scope configuration."""

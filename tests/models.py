@@ -27,12 +27,7 @@ class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
     - FlextTestsModels.Tests.* - Generic test utilities
     """
 
-    class Tests:
-        """Test fixtures namespace for flext-auth.
-
-        Contains test-specific models and fixtures that should not
-        be part of production code.
-        """
+    pass
 
 
 # Short aliases for tests

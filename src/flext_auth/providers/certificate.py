@@ -10,21 +10,22 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
+from flext_auth.models import FlextAuthModels as m
 from flext_auth.protocols import FlextAuthProtocols as p
 from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_core import r, t
+from flext_core import r
 
 
 class FlextAuthCertificateProvider(FlextAuthBaseProvider):
     """Certificate-based authentication provider."""
 
-    def __init__(self, config: Mapping[str, t.JsonValue] | None = None) -> None:
+    def __init__(self, config: Mapping[str, str | int | bool] | None = None) -> None:
         """Initialize provider with configuration."""
         super().__init__(config)
 
     def authenticate(
         self,
-        credentials: Mapping[str, t.JsonValue],
+        credentials: m.CredentialValidation,
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using certificate credentials."""
         _ = credentials
@@ -43,7 +44,11 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider):
             r[bool]: True if valid, False if invalid, error on failure
 
         """
-        token_value = token.token if hasattr(token, "token") else token
+        if isinstance(token, str):
+            token_value = token
+        else:
+            token_protocol: p.Auth.TokenProtocol = token
+            token_value = token_protocol.token
         return self.validate_token(str(token_value))
 
     def validate_token(self, token: str) -> r[bool]:

@@ -74,15 +74,12 @@ def demo_password_operations() -> None:
 
     try:
         # Create a user to demonstrate password operations
-        FlextAuthModels.Identity(
-            id="demo-password-user",
-            username="password_demo",
-            email="password@demo.com",
+        FlextAuthModels.Auth.AuthIdentityRequest(
+            name="password_demo",
+            contact="password@demo.com",
+            credential="DemoPassword123!",
             full_name="Password Demo User",
-            is_active=True,
-            failed_login_attempts=0,
-            locked_until=None,
-            last_login=None,
+            roles=["user"],
         )
 
         # Note: Password operations should be done through the auth service
@@ -107,11 +104,9 @@ def demo_jwt_operations() -> None:
 
     # Generate JWT token
     user_id = user.user_id or user.username
-    token_result = auth.generate_jwt_token(user_id)
+    token_result = auth.create_token(identity_id=user_id)
     if token_result.is_success:
-        token = token_result.value
-        # Extract token string for validation
-        token_string = token.token if hasattr(token, "token") else str(token)
+        token_string = token_result.value
 
         # Validate token
         validation_result = auth.validate_token(token_string)
@@ -218,7 +213,7 @@ def main() -> None:
 
     # Quick start demo
     quickstart = FlextAuthQuickstart()
-    quickstart.flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
+    quickstart.flext_auth_quick_start(create_admin_user=False)
 
 
 if __name__ == "__main__":

@@ -29,10 +29,10 @@ def main() -> None:
         # This is a demo example - in real applications, get passwords from secure input
         # Use a secure demo password for the example
         test_password = "SecureDemoPassword123!"
-        FlextAuthModels.AuthIdentityRequest(
-            username="testuser",
-            email="test@example.com",
-            password=test_password,
+        FlextAuthModels.Auth.AuthIdentityRequest(
+            name="testuser",
+            contact="test@example.com",
+            credential=test_password,
         )
 
         # Register user (includes password hashing)
@@ -69,8 +69,8 @@ def main() -> None:
             auth_data = auth_result.value
 
             # Get JWT token
-            str(auth_data.get("jwt_token", ""))
-            auth_data.get("session_id")
+            _ = str(auth_data.token)
+            _ = auth_data.session_id
 
             # Note: token validation would be done through AuthToken.verify_jwt_token
             # if needed for a specific use case

@@ -12,7 +12,6 @@ from __future__ import annotations
 
 from flext_auth import FlextAuth, FlextAuthQuickstart, FlextAuthSettings
 from flext_core import FlextResult
-from pydantic_settings import BaseSettings
 
 
 def demonstrate_refactoring_benefits() -> None:
@@ -39,9 +38,7 @@ def demonstrate_quickstart_functionality() -> None:
     # Quickstart utility for rapid setup
     quickstart: FlextAuthQuickstart = FlextAuthQuickstart()
     # flext_auth_quick_start returns r[list[str]]
-    quickstart_result = quickstart.flext_auth_quick_start(
-        create_REDACTED_LDAP_BIND_PASSWORD=False
-    )
+    quickstart_result = quickstart.flext_auth_quick_start(create_admin_user=False)
     if quickstart_result.is_success:
         admin_credentials = quickstart_result.value
         print(f"Admin credentials created: {admin_credentials}")
@@ -84,8 +81,7 @@ def demonstrate_system_architecture() -> None:
 
     # Note: FlextAuth doesn't have a get_config() method
     # Configuration is passed during initialization
-    # FlextAuthSettings requires config_class parameter
-    _ = FlextAuthSettings(config_class=BaseSettings)
+    _ = FlextAuthSettings()
 
 
 def demonstrate_error_handling() -> None:

@@ -12,9 +12,10 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
+from flext_auth.models import FlextAuthModels as m
 from flext_auth.protocols import FlextAuthProtocols as p
 from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_core import r, t
+from flext_core import r
 
 
 class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
@@ -23,13 +24,13 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
     Provides API key-based authentication with token validation.
     """
 
-    def __init__(self, config: Mapping[str, t.JsonValue] | None = None) -> None:
+    def __init__(self, config: Mapping[str, str | int | bool] | None = None) -> None:
         """Initialize provider with configuration."""
         super().__init__(config)
 
     def authenticate(
         self,
-        credentials: Mapping[str, t.JsonValue],
+        credentials: m.CredentialValidation,
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using API key credentials."""
         _ = credentials

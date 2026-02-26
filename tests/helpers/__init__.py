@@ -14,17 +14,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from .models import TestsModels, m
 from .protocols import TestsProtocols, p
 from .typings import TestsTypings, t
 from .utilities import TestsUtilities, u
 
 __all__ = [
-    "TestsModels",
     "TestsProtocols",
     "TestsTypings",
     "TestsUtilities",
-    "m",
     "p",
     "t",
     "u",

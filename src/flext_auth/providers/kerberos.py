@@ -55,7 +55,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
         Uses composition for Kerberos ticket validation, service ticket handling,
         and authentication. Railway-oriented initialization with proper error handling.
         """
-        super().__init__(config)
+        super().__init__(self._to_scalar_config(config))
         # Logger removed - use logging module directly if needed
         self._config = config
 
@@ -72,6 +72,20 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
 
         # Runtime state for ticket management
         self._active_tickets: dict[str, at.KerberosTicketData] = {}
+
+    @staticmethod
+    def _to_scalar_config(
+        config: Mapping[str, t.JsonValue] | None,
+    ) -> dict[str, str | int | bool] | None:
+        """Project provider config into RFC base scalar contract."""
+        if config is None:
+            return None
+        scalar_config: dict[str, str | int | bool] = {
+            key: value
+            for key, value in config.items()
+            if isinstance(value, (bool, int, str))
+        }
+        return scalar_config
 
     def _validate_kerberos_configuration(self) -> r[bool]:
         """Railway-oriented Kerberos configuration validation."""

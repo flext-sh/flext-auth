@@ -142,38 +142,14 @@ def example_password_security() -> None:
     # Demonstrate password hashing with different rounds
     os.getenv("TEST_PASSWORD", "TestPassword123!")
 
-    # Show current hashing using User model
-    try:
-        # Create users to demonstrate password hashing
-        FlextAuthModels.User(
-            id="security-demo-user1",
-            username="security_demo1",
-            email="security1@demo.com",
-            full_name="Security Demo User 1",
-            is_active=True,
-            failed_login_attempts=0,
-            locked_until=None,
-            last_login=None,
-        )
-        FlextAuthModels.User(
-            id="security-demo-user2",
-            username="security_demo2",
-            email="security2@demo.com",
-            full_name="Security Demo User 2",
-            is_active=True,
-            failed_login_attempts=0,
-            locked_until=None,
-            last_login=None,
-        )
-
-        # Note: Password hashing should be done through the auth service, not directly on the model
-
-    except Exception as e:
-        # Handle password hashing error
-        # Log error for debugging
-        error_message = f"Password hashing failed: {e}"
-        # In production, this would be logged properly
-        del error_message  # Clean up
+    # Current API pattern: credentials are always handled by register/authenticate flows
+    _ = FlextAuthModels.Auth.AuthIdentityRequest(
+        name="security_demo_request",
+        contact="security@demo.com",
+        credential="StrongPassword123!",
+        full_name="Security Demo Request",
+        roles=["user"],
+    )
 
 
 def example_token_validation() -> None:
@@ -189,7 +165,7 @@ def example_token_validation() -> None:
 
     # Generate token - use user_id or fallback to username
     user_id = user.user_id or user.username
-    token_result = auth.generate_token_for_user(user_id)
+    token_result = auth.create_token(identity_id=user_id)
     if token_result.is_failure:
         return
 
@@ -197,8 +173,8 @@ def example_token_validation() -> None:
 
     # Test various token formats
     test_tokens = [
-        ("Valid token", auth_token.token),
-        ("Bearer token", f"Bearer {auth_token.token}"),
+        ("Valid token", auth_token),
+        ("Bearer token", f"Bearer {auth_token}"),
         ("Invalid format", "invalid.token.format"),
         ("Empty token", ""),
         ("Malformed JWT", "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.invalid"),
