@@ -461,6 +461,6 @@ auth = flext_auth_dev()  # Debug-friendly configuration
 **Integration Examples**: 🔄 Framework integration examples being enhanced\
 **Performance Examples**: 🔄 Optimization examples being developed
 
-______________________________________________________________________
+---
 
 _These examples serve as the primary learning resources for FLEXT Auth. They should be kept current with the latest features and best practices._

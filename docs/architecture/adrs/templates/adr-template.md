@@ -168,7 +168,7 @@
 
 [object additional notes, implementation details, or future considerations]
 
-______________________________________________________________________
+---
 
 **ADR Template Version**: 1.0
 **Template Source**: docs/architecture/adrs/templates/adr-template.md

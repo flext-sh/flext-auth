@@ -415,7 +415,7 @@ python main.py comprehensive | grep -A 20 "Link Validation"
 - Architecture Generation Scripts
 - Diagram Generation Scripts
 
-______________________________________________________________________
+---
 
 **Last Updated**: October 10, 2025
 **Version**: 1.0

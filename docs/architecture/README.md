@@ -312,7 +312,7 @@ When making architectural changes:
 - Keep diagrams in source control
 - Use consistent naming conventions
 
-______________________________________________________________________
+---
 
 **Last Updated**: October 10, 2025
 **Version**: v0.9.0

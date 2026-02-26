@@ -31,7 +31,7 @@
 
 This guide covers authentication-specific implementation details for the FLEXT-AUTH library, focusing on security practices and integration patterns specific to authentication workflows.
 
-______________________________________________________________________
+---
 
 ## Authentication Service Implementation
 
@@ -71,7 +71,7 @@ The main authentication orchestrator handles all authentication operations:
 - Role-based access control foundation
 - Session timeout management
 
-______________________________________________________________________
+---
 
 ## Security Implementation
 
@@ -125,7 +125,7 @@ def set_password(self, password: str):
 - Session revocation capabilities
 - User session mapping
 
-______________________________________________________________________
+---
 
 ## Authentication Workflows
 
@@ -153,7 +153,7 @@ ______________________________________________________________________
 1. **Claims Extraction**: Extract user information from payload
 1. **Session Validation**: Verify associated session is active
 
-______________________________________________________________________
+---
 
 ## Integration Patterns
 
@@ -190,7 +190,7 @@ if auth_result.is_success:
     # Return authentication success
 ```
 
-______________________________________________________________________
+---
 
 ## Current Limitations
 
@@ -242,7 +242,7 @@ ______________________________________________________________________
 - Configuration test isolation
 - Integration test coverage
 
-______________________________________________________________________
+---
 
 ## Development Roadmap
 
@@ -294,6 +294,6 @@ ______________________________________________________________________
 - Advanced audit logging
 - Security event monitoring
 
-______________________________________________________________________
+---
 
 This authentication guide provides implementation-specific details without duplicating general FLEXT patterns documented elsewhere.

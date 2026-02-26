@@ -356,6 +356,6 @@ pytest tests/unit/ --log-cli-level=DEBUG
 **Quality Standards**: ✅ Enterprise-grade testing standards established\
 **Performance**: ✅ Fast execution requirements documented
 
-______________________________________________________________________
+---
 
 _Unit tests form the foundation of our testing strategy, providing fast feedback and ensuring component reliability._
