@@ -40,7 +40,7 @@
 
 Development workflow and contributing guidelines for flext-auth with multi-provider authentication architecture. Implementation complete for Phases 1-3, transport layer in progress.
 
----
+______________________________________________________________________
 
 ## Development Setup
 
@@ -66,7 +66,7 @@ make setup
 python -c "from flext_auth import FlextAuth; print('Development setup complete')"
 ```
 
----
+______________________________________________________________________
 
 ## Development Commands
 
@@ -102,7 +102,7 @@ pytest -m security          # Security tests
 pytest --cov=src/flext_auth --cov-report=term-missing
 ```
 
----
+______________________________________________________________________
 
 ## Quality Standards
 
@@ -123,7 +123,7 @@ All contributions must pass:
 1. **Security**: No security vulnerabilities
 1. **Tests**: All new tests must pass
 
----
+______________________________________________________________________
 
 ## Code Standards
 
@@ -188,7 +188,7 @@ class User:
         self.email = email
 ```
 
----
+______________________________________________________________________
 
 ## Current Development Areas
 
@@ -232,7 +232,7 @@ pytest tests/unit/test_config_coverage.py -v
 - Connection pooling
 - Migration strategies
 
----
+______________________________________________________________________
 
 ## Contributing Workflow
 
@@ -280,7 +280,7 @@ make format
 - Add tests for new functionality
 - Update documentation for API changes
 
----
+______________________________________________________________________
 
 ## Testing Strategy
 
@@ -343,7 +343,7 @@ class TestNewFeature:
         assert result.unwrap() == expected_result
 ```
 
----
+______________________________________________________________________
 
 ## Architecture Guidelines
 
@@ -399,7 +399,7 @@ def complete_auth_flow(username: str, password: str) -> FlextResult[t.Dict]:
     )
 ```
 
----
+______________________________________________________________________
 
 ## Debugging
 
@@ -422,6 +422,6 @@ result = auth.register_user("test", "test@example.com", "password123")
 print(f"Registration result: {result}")
 ```
 
----
+______________________________________________________________________
 
 This development guide reflects the current implementation state as of September 17, 2025. For additional FLEXT patterns, see [flext-core documentation](https://github.com/organization/flext/tree/main/flext-core/docs/development.md).

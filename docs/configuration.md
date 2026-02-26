@@ -32,13 +32,13 @@
 
 Configuration management for flext-auth authentication service.
 
----
+______________________________________________________________________
 
 ## Overview
 
 flext-auth uses FlextAuthSettings class extending [flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md) FlextSettings patterns for environment-aware configuration management.
 
----
+______________________________________________________________________
 
 ## FlextAuthSettings
 
@@ -66,7 +66,7 @@ if prod_config.is_success:
     config = prod_config.unwrap()
 ```
 
----
+______________________________________________________________________
 
 ## Configuration Parameters
 
@@ -98,7 +98,7 @@ export AUTH_MAX_FAILED_ATTEMPTS=3
 export AUTH_SESSION_TIMEOUT_MINUTES=60
 ```
 
----
+______________________________________________________________________
 
 ## Custom Configuration
 
@@ -127,7 +127,7 @@ prod_config = FlextAuthSettings(
 )
 ```
 
----
+______________________________________________________________________
 
 ## Configuration Validation
 
@@ -149,7 +149,7 @@ flext-auth validate-config
 flext-auth manage-config show
 ```
 
----
+______________________________________________________________________
 
 ## Global Configuration
 
@@ -174,7 +174,7 @@ global_config = FlextAuthSettings.get_global_instance()
 print(f"Current JWT expiry: {global_config.jwt_expiry_minutes}")
 ```
 
----
+______________________________________________________________________
 
 ## Security Recommendations
 
@@ -206,7 +206,7 @@ FlextAuthSettings(
 )
 ```
 
----
+______________________________________________________________________
 
 ## Configuration Environments
 
@@ -226,6 +226,6 @@ env = os.getenv("FLEXT_ENV", "development")
 config = FlextAuthSettings()
 ```
 
----
+______________________________________________________________________
 
 This configuration guide covers the current implementation as of September 17, 2025. For usage examples, see Getting Started.

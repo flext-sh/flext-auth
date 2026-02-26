@@ -34,7 +34,7 @@ Common issues and solutions for flext-auth authentication service.
 
 For general FLEXT troubleshooting, see **[flext-core](https://github.com/organization/flext/tree/main/flext-core/README.md)** documentation.
 
----
+______________________________________________________________________
 
 ## Authentication Issues
 
@@ -142,7 +142,7 @@ validation_result = auth.validate_token(token)
    print(f"JWT Secret: {config.jwt_secret_key}")
    ```
 
----
+______________________________________________________________________
 
 ## Configuration Issues
 
@@ -202,7 +202,7 @@ print(f"Secret Key Length: {len(config.jwt_secret_key)}")
 - Secret key should be at least 32 characters
 - Reasonable expiry time (15-60 minutes)
 
----
+______________________________________________________________________
 
 ## Testing Issues
 
@@ -262,7 +262,7 @@ PYTHONPATH=src pytest tests/ -v
 pytest --cov=src/flext_auth tests/
 ```
 
----
+______________________________________________________________________
 
 ## Performance Issues
 
@@ -332,7 +332,7 @@ def cleanup_expired_sessions():
     pass
 ```
 
----
+______________________________________________________________________
 
 ## Development Issues
 
@@ -387,7 +387,7 @@ if TYPE_CHECKING:
 # Or restructure imports to avoid cycles
 ```
 
----
+______________________________________________________________________
 
 ## Production Issues
 
@@ -439,7 +439,7 @@ print(f'Max attempts: {config.max_failed_attempts}')  # Should be <= 5
            pass
    ```
 
----
+______________________________________________________________________
 
 ## Getting Help
 
@@ -474,6 +474,6 @@ if result.is_failure:
 - **Issues**: Report bugs in GitHub Issues
 - **Security**: Report security issues privately to maintainers
 
----
+______________________________________________________________________
 
 This troubleshooting guide reflects common issues as of September 17, 2025. For additional help, see the Development guide.

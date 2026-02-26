@@ -299,7 +299,7 @@ adr generate index
 - **Tool Enhancement**: Add automation for common ADR tasks
 - **Training Updates**: Update team training based on lessons learned
 
----
+______________________________________________________________________
 
 ## Quick Reference
 
