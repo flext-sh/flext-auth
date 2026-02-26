@@ -268,6 +268,7 @@ class FlextAuthBaseProvider(ABC):
         token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
+        """Generate a signed JWT token from the provided payload."""
         settings_result = self._token_settings()
         if settings_result.is_failure:
             return r[str].fail(settings_result.error or "Token settings are invalid")

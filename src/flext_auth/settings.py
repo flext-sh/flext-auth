@@ -262,8 +262,6 @@ class FlextAuthSettings(FlextSettings):
                 return r[bool].fail("JWT expiry should not exceed session expiry")
 
             return r[bool].ok(value=True)
-        except ValueError as e:
-            return r[bool].fail(str(e))
         except (
             ValueError,
             TypeError,

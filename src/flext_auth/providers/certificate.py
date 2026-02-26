@@ -43,7 +43,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider):
             r[bool]: True if valid, False if invalid, error on failure
 
         """
-        token_value = getattr(token, "token", token)
+        token_value = token.token if hasattr(token, "token") else token
         return self.validate_token(str(token_value))
 
     def validate_token(self, token: str) -> r[bool]:

@@ -154,7 +154,7 @@ class FlextAuthMiddleware(s[bool]):
 
             # Add authorization header (if headers is writable)
             try:
-                headers = getattr(request, "headers", {})
+                headers = request.headers if hasattr(request, "headers") else {}
                 if u.is_dict_like(headers):
                     mutable_headers = dict(headers)
                     mutable_headers["Authorization"] = (
@@ -220,9 +220,17 @@ class FlextAuthMiddleware(s[bool]):
                 )
 
             refreshed_payload = refresh_result.value
-            identity_id_value = getattr(refreshed_payload, "identity_id", "")
+            identity_id_value = (
+                refreshed_payload.identity_id
+                if hasattr(refreshed_payload, "identity_id")
+                else ""
+            )
             if not isinstance(identity_id_value, str) or not identity_id_value:
-                user_id_value = getattr(refreshed_payload, "user_id", "")
+                user_id_value = (
+                    refreshed_payload.user_id
+                    if hasattr(refreshed_payload, "user_id")
+                    else ""
+                )
                 if isinstance(user_id_value, str) and user_id_value:
                     identity_id_value = user_id_value
                 else:
@@ -232,10 +240,18 @@ class FlextAuthMiddleware(s[bool]):
                 refreshed_token = FlextAuthModels.Auth.AuthToken(
                     identity_id=identity_id_value,
                     token=refreshed_payload.token,
-                    token_type=getattr(refreshed_payload, "token_type", "Bearer"),
+                    token_type=refreshed_payload.token_type
+                    if hasattr(refreshed_payload, "token_type")
+                    else "Bearer",
                     expires_at=refreshed_payload.expires_at,
-                    is_revoked=bool(getattr(refreshed_payload, "is_revoked", False)),
-                    refresh_token=getattr(refreshed_payload, "refresh_token", ""),
+                    is_revoked=bool(
+                        refreshed_payload.is_revoked
+                        if hasattr(refreshed_payload, "is_revoked")
+                        else False
+                    ),
+                    refresh_token=refreshed_payload.refresh_token
+                    if hasattr(refreshed_payload, "refresh_token")
+                    else "",
                 )
             except (AttributeError, TypeError, ValueError):
                 return r[FlextAuthModels.Auth.AuthToken].fail(

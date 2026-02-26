@@ -448,7 +448,7 @@ class FlextAuthModels(FlextModels):
             self, key: str, default: t.GeneralValueType = None
         ) -> t.GeneralValueType:
             """Dict-like get method for backward compatibility."""
-            return getattr(self, key, default)
+            return self.__dict__.get(key, default) if hasattr(self, key) else default
 
         def __contains__(self, key: str) -> bool:
             """Dict-like containment check."""
@@ -456,7 +456,7 @@ class FlextAuthModels(FlextModels):
 
         def __getitem__(self, key: str) -> t.GeneralValueType:
             """Dict-like access."""
-            return getattr(self, key)
+            return self.__dict__.get(key) if hasattr(self, key) else None
 
     class ProviderConfiguration(UserDict[str, t.GeneralValueType]):
         """Provider configuration for authentication providers."""

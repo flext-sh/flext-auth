@@ -1561,7 +1561,7 @@ class TestAuthModule:
 
         for method_name in expected_methods:
             assert hasattr(auth, method_name), f"Method {method_name} should exist"
-            method = getattr(auth, method_name)
+            method = auth.__getattribute__(method_name) if hasattr(auth, method_name) else None
             assert callable(method), f"Method {method_name} should be callable"
 
     def test_flext_auth_with_real_data(self) -> None:

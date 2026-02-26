@@ -162,7 +162,9 @@ class FlextAuthRegistry(FlextRegistry):
         if provided:
             return provided
 
-        get_metadata_fn = getattr(service, "get_metadata", None)
+        get_metadata_fn = (
+            service.get_metadata if hasattr(service, "get_metadata") else None
+        )
         if callable(get_metadata_fn):
             try:
                 raw = get_metadata_fn()

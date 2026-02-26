@@ -61,7 +61,7 @@ class FlextAuthProviderService(s[bool]):
     def _register_builtin_providers(self) -> None:
         """Flexible provider registration with conditional loading."""
         # Fast fail: config is required
-        match getattr(self, "_config", None):
+        match self._config if hasattr(self, "_config") else None:
             case FlextAuthSettings() as cfg:
                 provider_config = cfg.to_provider_config()
             case _:
