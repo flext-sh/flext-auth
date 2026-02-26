@@ -1,8 +1,12 @@
+"""Tests for token real flows in authentication.
+
+Copyright (c) 2025 FLEXT Team. All rights reserved.
+SPDX-License-Identifier: MIT
+"""
+
 from __future__ import annotations
 
-from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
-
 
 import pytest
 from flext_auth.middleware import FlextAuthMiddleware, HttpRequest
@@ -88,6 +92,8 @@ class _KerberosProviderForTokenTests(FlextAuthKerberosProvider):
 
 
 class TestTokenRealFlows:
+    """Tests for real-world authentication token flows including refresh and validation."""
+
     def test_base_provider_generate_token_with_real_jwt_claims(self) -> None:
         provider = _BaseProviderForTokenTests(
             config={
@@ -99,7 +105,9 @@ class TestTokenRealFlows:
             },
         )
 
-        generate_token = provider.generate_token if hasattr(provider, "generate_token") else None
+        generate_token = (
+            provider.generate_token if hasattr(provider, "generate_token") else None
+        )
         assert callable(generate_token)
         generate_token_callable = generate_token
 

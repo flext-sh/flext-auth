@@ -651,17 +651,17 @@ class TestFlextAuthQuickStart:
         auth = FlextAuth.quick_start()
         assert isinstance(auth, FlextAuth)
 
-    def test_quick_start_with_REDACTED_LDAP_BIND_PASSWORD(self) -> None:
+    def test_quick_start_with_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start with REDACTED_LDAP_BIND_PASSWORD user creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         assert isinstance(auth, FlextAuth)
 
-    def test_quick_start_custom_REDACTED_LDAP_BIND_PASSWORD(self) -> None:
+    def test_quick_start_custom_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start with custom REDACTED_LDAP_BIND_PASSWORD credentials."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         assert isinstance(auth, FlextAuth)
 
-    def test_quick_start_no_REDACTED_LDAP_BIND_PASSWORD(self) -> None:
+    def test_quick_start_no_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start without REDACTED_LDAP_BIND_PASSWORD user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         assert isinstance(auth, FlextAuth)
@@ -770,7 +770,7 @@ class TestFlextAuthQuickStartFunction:
         assert auth.config is not None
         assert auth.registry is not None
 
-    def test_flext_auth_quick_start_no_REDACTED_LDAP_BIND_PASSWORD(self) -> None:
+    def test_flext_auth_quick_start_no_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start() without creating REDACTED_LDAP_BIND_PASSWORD user."""
         auth = FlextAuth.quick_start(create_admin_user=False)
         assert isinstance(auth, FlextAuth)
@@ -781,7 +781,7 @@ class TestFlextAuthQuickStartFunction:
         assert nonexistent_result.error is not None
         assert "not found" in nonexistent_result.error.lower()
 
-    def test_flext_auth_quick_start_custom_REDACTED_LDAP_BIND_PASSWORD(self) -> None:
+    def test_flext_auth_quick_start_custom_redacted_ldap_bind_password(self) -> None:
         """Test FlextAuth.quick_start() with REDACTED_LDAP_BIND_PASSWORD creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
         assert isinstance(auth, FlextAuth)
@@ -809,7 +809,7 @@ class TestFlextAuthInitializationCoverage:
             # Other exceptions should be properly handled, not ignored
             pytest.fail(f"Unexpected exception during FlextAuth creation: {e}")
 
-    def test_quick_start_REDACTED_LDAP_BIND_PASSWORD_creation_failure(self) -> None:
+    def test_quick_start_redacted_ldap_bind_password_creation_failure(self) -> None:
         """Test quick_start with REDACTED_LDAP_BIND_PASSWORD creation (reserved for future)."""
         # Admin creation is reserved for future functionality
         auth = FlextAuth.quick_start(create_admin_user=True)
@@ -1112,14 +1112,14 @@ class TestFlextAuthSessionMethods:
 class TestFlextAuthQuickStartMethod:
     """Test FlextAuth.quick_start class method."""
 
-    def test_quick_start_with_REDACTED_LDAP_BIND_PASSWORD(self) -> None:
+    def test_quick_start_with_redacted_ldap_bind_password(self) -> None:
         """Test quick_start class method with REDACTED_LDAP_BIND_PASSWORD creation."""
         auth = FlextAuth.quick_start(create_admin_user=True)
 
         assert isinstance(auth, FlextAuth)
         assert auth.config is not None
 
-    def test_quick_start_without_REDACTED_LDAP_BIND_PASSWORD(self) -> None:
+    def test_quick_start_without_redacted_ldap_bind_password(self) -> None:
         """Test quick_start class method without REDACTED_LDAP_BIND_PASSWORD creation."""
         auth = FlextAuth.quick_start(create_admin_user=False)
 
@@ -1561,7 +1561,11 @@ class TestAuthModule:
 
         for method_name in expected_methods:
             assert hasattr(auth, method_name), f"Method {method_name} should exist"
-            method = auth.__getattribute__(method_name) if hasattr(auth, method_name) else None
+            method = (
+                auth.__getattribute__(method_name)
+                if hasattr(auth, method_name)
+                else None
+            )
             assert callable(method), f"Method {method_name} should be callable"
 
     def test_flext_auth_with_real_data(self) -> None:
@@ -1771,6 +1775,8 @@ class _ConcreteKerberosProviderForFlowTests(FlextAuthKerberosProvider):
 
 
 class TestProviderTokenFlows:
+    """Test token flows for base providers."""
+
     def test_base_provider_generate_token_for_user(self) -> None:
         provider = _BaseTokenProviderForFlowTests(
             config={

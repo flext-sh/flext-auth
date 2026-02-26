@@ -5,9 +5,9 @@ Tests the authentication constants module following FLEXT standards.
 
 from __future__ import annotations
 
-from flext_core import FlextConstants
-
+import pytest
 from flext_auth.constants import FlextAuthConstants
+from flext_core import FlextConstants
 
 c = FlextAuthConstants
 
@@ -155,7 +155,7 @@ class TestFlextAuthConstants:
         """Test configuration default constants."""
         auth = FlextAuthConstants.Auth
 
-        assert auth.DEFAULT_TIMEOUT == 30.0
+        assert pytest.approx(30.0) == auth.DEFAULT_TIMEOUT
         assert auth.DEFAULT_MAX_RETRIES == 3
         assert auth.DEFAULT_JWT_EXPIRY_MINUTES == 1440
         assert auth.DEFAULT_SESSION_EXPIRY_MINUTES == 1440
