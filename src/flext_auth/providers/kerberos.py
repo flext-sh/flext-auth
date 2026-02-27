@@ -16,7 +16,6 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 
 from __future__ import annotations
 
-from abc import ABC
 from collections.abc import Callable, Mapping
 from datetime import UTC, datetime
 
@@ -28,7 +27,7 @@ from flext_auth.typings import FlextAuthTypes as at
 from flext_core import r, t, u
 
 
-class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
+class FlextAuthKerberosProvider(FlextAuthRfcProvider::
     r"""SOLID-compliant Kerberos authentication provider.
 
     Uses composition for Kerberos ticket validation, service ticket handling,
@@ -56,6 +55,10 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider, ABC):
         and authentication. Railway-oriented initialization with proper error handling.
         """
         super().__init__(self._to_scalar_config(config))
+
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-kerberos"
         # Logger removed - use logging module directly if needed
         self._config = config
 

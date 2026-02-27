@@ -10,7 +10,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC
 
 from flext_auth.models import FlextAuthModels as m
 from flext_auth.protocols import FlextAuthProtocols
@@ -21,7 +20,7 @@ from flext_auth.providers.rfc import FlextAuthRfcProvider
 from flext_core import r
 
 
-class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):
+class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin::
     """OpenID Connect (OIDC) authentication provider.
 
     This provider implements OpenID Connect authentication. It validates
@@ -41,6 +40,10 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin, ABC):
         credentials: m.CredentialValidation,
     ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Authenticate using OIDC credentials.
+
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-oidc"
 
         Args:
             credentials: Dictionary containing OIDC authentication data

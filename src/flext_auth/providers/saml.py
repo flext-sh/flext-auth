@@ -41,6 +41,10 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
     Status: Basic implementation - can be extended with full SAML 2.0 support
     """
 
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-saml"
+
     def authenticate(
         self,
         credentials: m.CredentialValidation,

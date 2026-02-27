@@ -23,6 +23,10 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider):
         """Initialize provider with configuration."""
         super().__init__(config)
 
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-certificate"
+
     def authenticate(
         self,
         credentials: m.CredentialValidation,

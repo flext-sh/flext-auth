@@ -12,7 +12,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC
 from collections.abc import Mapping
 
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -20,7 +19,7 @@ from flext_auth.providers.mixin import FlextAuthProviderMixin
 from flext_core import r
 
 
-class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
+class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin::
     """Base class for RFC-compliant authentication providers.
 
     This class extends FlextAuthBaseProvider with RFC-specific functionality
@@ -39,6 +38,10 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
     def __init__(self, config: Mapping[str, str | int | bool] | None = None) -> None:
         """Initialize RFC provider base class with optional configuration."""
         super().__init__(config)
+
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-rfc"
 
     def validate_rfc_compliance(self, operation: str) -> r[bool]:
         """Validate that an operation follows RFC standards.

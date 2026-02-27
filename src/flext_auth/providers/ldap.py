@@ -6,7 +6,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC
 
 from flext_auth.models import FlextAuthModels as m
 from flext_auth.protocols import FlextAuthProtocols
@@ -17,7 +16,7 @@ from flext_auth.providers.mixin import FlextAuthProviderMixin
 from flext_core import r
 
 
-class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
+class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin::
     """LDAP/Active Directory authentication provider.
 
     This provider authenticates users against LDAP or Active Directory servers.
@@ -37,6 +36,10 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin, ABC):
         credentials: m.CredentialValidation,
     ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Authenticate using LDAP credentials.
+
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-ldap"
 
         Args:
             credentials: Dictionary containing "username" and "password" keys
