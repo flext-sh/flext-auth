@@ -9,13 +9,22 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from flext_auth.middleware import FlextAuthMiddleware, HttpRequest
+from flext_auth.middleware import FlextAuthMiddleware
 from flext_auth.models import FlextAuthModels as m
 from flext_auth.protocols import FlextAuthProtocols as p
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.kerberos import FlextAuthKerberosProvider
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
 from flext_core import r
+
+
+class HttpRequest:
+    """Minimal HTTP request fixture for middleware tests."""
+
+    headers: dict[str, str] = {}
+
+    def __init__(self) -> None:
+        self.headers = dict(self.__class__.headers)
 
 
 class _BaseProviderForTokenTests(FlextAuthBaseProvider):
@@ -32,6 +41,10 @@ class _BaseProviderForTokenTests(FlextAuthBaseProvider):
     ) -> r[bool]:
         return self._decode_token_claims(token).map(lambda _claims: True)
 
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-test-base"
+
 
 class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
     def __init__(self) -> None:
@@ -45,6 +58,10 @@ class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
             },
         )
         self.refresh_called = False
+
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-test-middleware-refresh"
 
     def authenticate(
         self,
@@ -89,6 +106,10 @@ class _KerberosProviderForTokenTests(FlextAuthKerberosProvider):
         token: str,
     ) -> r[bool]:
         return self.validate_token(token).map(lambda _identity: True)
+
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-test-kerberos"
 
 
 class TestTokenRealFlows:

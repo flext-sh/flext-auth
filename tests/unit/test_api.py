@@ -18,7 +18,7 @@ import jwt
 import pytest
 from flext_auth.api import FlextAuth
 from flext_auth.constants import FlextAuthConstants
-from flext_auth.middleware import FlextAuthMiddleware, HttpRequest
+from flext_auth.middleware import FlextAuthMiddleware
 from flext_auth.models import FlextAuthModels
 from flext_auth.protocols import FlextAuthProtocols as p
 from flext_auth.providers.base import FlextAuthBaseProvider
@@ -30,6 +30,14 @@ from pydantic import SecretStr
 
 c = FlextAuthConstants
 r = FlextResult
+
+class HttpRequest:
+    """Minimal HTTP request fixture for middleware tests."""
+
+    headers: dict[str, str] = {}
+
+    def __init__(self) -> None:
+        self.headers = dict(self.__class__.headers)
 
 
 class TestFlextAuthServiceInitialization:
@@ -1724,11 +1732,19 @@ class _BaseTokenProviderForFlowTests(FlextAuthBaseProvider):
         _ = token
         return FlextResult[bool].ok(True)
 
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-test-base-flow"
+
 
 class _RefreshCapableProviderForFlowTests(FlextAuthBaseProvider):
     def __init__(self) -> None:
         super().__init__(config={})
         self.last_refresh_input: str | None = None
+
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-test-refresh-flow"
 
     def authenticate(
         self,
@@ -1772,6 +1788,10 @@ class _ConcreteKerberosProviderForFlowTests(FlextAuthKerberosProvider):
         token: str,
     ) -> FlextResult[bool]:
         return self.validate_token(token).map(lambda _identity: True)
+
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-test-kerberos-flow"
 
 
 class TestProviderTokenFlows:

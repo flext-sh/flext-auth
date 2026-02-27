@@ -20,7 +20,7 @@ from flext_auth.providers.rfc import FlextAuthRfcProvider
 from flext_core import r
 
 
-class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin::
+class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
     """OpenID Connect (OIDC) authentication provider.
 
     This provider implements OpenID Connect authentication. It validates
@@ -35,15 +35,15 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin::
 
     """
 
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-oidc"
+
     def authenticate(
         self,
         credentials: m.CredentialValidation,
     ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Authenticate using OIDC credentials.
-
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-oidc"
 
         Args:
             credentials: Dictionary containing OIDC authentication data

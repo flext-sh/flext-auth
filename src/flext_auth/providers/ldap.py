@@ -16,7 +16,7 @@ from flext_auth.providers.mixin import FlextAuthProviderMixin
 from flext_core import r
 
 
-class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin::
+class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     """LDAP/Active Directory authentication provider.
 
     This provider authenticates users against LDAP or Active Directory servers.
@@ -31,15 +31,15 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin::
 
     """
 
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-ldap"
+
     def authenticate(
         self,
         credentials: m.CredentialValidation,
     ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Authenticate using LDAP credentials.
-
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-ldap"
 
         Args:
             credentials: Dictionary containing "username" and "password" keys

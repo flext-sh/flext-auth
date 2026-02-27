@@ -39,6 +39,10 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     Uses flext-core patterns and Python 3.13+ features for maximum maintainability.
     """
 
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-oauth2"
+
     def __init__(
         self,
         config: FlextAuthModels.ProviderConfig | Mapping[str, t.JsonValue],
@@ -61,9 +65,6 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         super().__init__(self._to_scalar_config(normalized_config))
 
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-oauth2"
         # Logger removed - use logging module directly if needed
         self._config = normalized_config
 

@@ -19,7 +19,7 @@ from flext_auth.providers.mixin import FlextAuthProviderMixin
 from flext_core import r
 
 
-class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin::
+class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     """Base class for RFC-compliant authentication providers.
 
     This class extends FlextAuthBaseProvider with RFC-specific functionality

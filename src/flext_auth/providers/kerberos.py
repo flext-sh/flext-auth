@@ -27,7 +27,7 @@ from flext_auth.typings import FlextAuthTypes as at
 from flext_core import r, t, u
 
 
-class FlextAuthKerberosProvider(FlextAuthRfcProvider::
+class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     r"""SOLID-compliant Kerberos authentication provider.
 
     Uses composition for Kerberos ticket validation, service ticket handling,
@@ -48,6 +48,10 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider::
 
     """
 
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-kerberos"
+
     def __init__(self, config: Mapping[str, t.JsonValue] | None = None) -> None:
         """Initialize Kerberos provider with SOLID delegation.
 
@@ -55,10 +59,6 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider::
         and authentication. Railway-oriented initialization with proper error handling.
         """
         super().__init__(self._to_scalar_config(config))
-
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-kerberos"
         # Logger removed - use logging module directly if needed
         self._config = config
 
