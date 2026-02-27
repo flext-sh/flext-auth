@@ -32,7 +32,7 @@ classifiers = [
 dependencies = [
   "bcrypt>=4.3",
   "cryptography>=45.0.5",
-  "flext-core @ ../flext-core",
+  "flext-core @ file://../flext-core",
   "pydantic>=2.12.3",
   "pydantic-core>=2.41.4",
   "pydantic-settings>=2.10.1",
