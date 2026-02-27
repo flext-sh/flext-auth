@@ -7,7 +7,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from typing import ClassVar
 
 import pytest
 from flext_auth.middleware import FlextAuthMiddleware
@@ -22,11 +21,9 @@ from flext_core import r
 class HttpRequest:
     """Minimal HTTP request fixture for middleware tests."""
 
-    headers: ClassVar[dict[str, str]] = {}
-
     def __init__(self) -> None:
-        """Initialize with copy of class-level headers."""
-        self.headers = dict(self.__class__.headers)
+        """Initialize with empty headers."""
+        self.headers: dict[str, str] = {}
 
 
 class _BaseProviderForTokenTests(FlextAuthBaseProvider):
