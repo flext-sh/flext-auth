@@ -7,46 +7,23 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import ClassVar
 
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.typings import FlextAuthTypes as at
 from flext_core import r, t
-from flext_core.registry import FlextRegistry
 
 
-class _ConfigWrapper:  # noqa: B903
+class _ConfigWrapper:
     """Protocol-conformant wrapper for config data."""
 
-    def __init__(self, category: str, data: dict[str, t.JsonValue]) -> None:
-        self._category = category
+    def __init__(
+        self, *, category: str, data: Mapping[str, t.GeneralValueType]
+    ) -> None:
+        self.category = category
         self.data = data
 
-    def _protocol_name(self) -> str:
-        return self._category
-
-
-class _MetadataWrapper:  # noqa: B903
-    """Protocol-conformant wrapper for metadata."""
-
-    def __init__(self, category: str, data: at.Providers.Metadata) -> None:
-        self._category = category
-        self.data = data
-
-    def _protocol_name(self) -> str:
-        return self._category
-
-
-class FlextAuthRegistry(FlextRegistry):
-    """Auth provider registry using FlextRegistry generic plugin API."""
-
-    PROVIDERS: ClassVar[str] = "auth_providers"
-
-    def __init__(self) -> None:
-        """Initialize with FlextRegistry infrastructure."""
-        super().__init__(dispatcher=None)
-
-    # Core operations using generic plugin API
+    def flext_auth_registry_config_wrapper_protocol_dn(self) -> str:
+        return f"config::{self.category}".str
 
     def register_provider(
         self,

@@ -718,7 +718,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 body_result.error or "OAuth2 introspection payload is invalid",
             )
 
-        request = Request(  # noqa: S310
+        request = Request(
             endpoint_result.value,
             data=body_result.value.encode("utf-8"),
             headers=headers_result.value,
@@ -726,7 +726,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         )
 
         try:
-            with urlopen(request, timeout=10.0) as response:  # noqa: S310  # nosec B310
+            with urlopen(request, timeout=10.0) as response:
                 response_payload = response.read().decode("utf-8")
         except HTTPError as exc:
             try:
