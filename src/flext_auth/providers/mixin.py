@@ -11,12 +11,12 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import override
 
-from flext_auth.protocols import FlextAuthProtocols
+from flext_auth.protocols import p
 from flext_auth.typings import t
 from flext_core import e, r, u
 
-from typing import override
 # Forward references to avoid circular import
 # Use string annotations for all FlextAuthModels references
 
@@ -36,7 +36,7 @@ class FlextAuthProviderMixin:
 
     def _extract_token_string(
         self,
-        token: str | FlextAuthProtocols.Auth.TokenProtocol,
+        token: str | p.Auth.TokenProtocol,
     ) -> str:
         """Extract token string from token or TokenProtocol object.
 

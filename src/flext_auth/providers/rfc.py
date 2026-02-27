@@ -13,13 +13,13 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import override
 
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
 from flext_core import r
 
 
-from typing import override
 class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     """Base class for RFC-compliant authentication providers.
 

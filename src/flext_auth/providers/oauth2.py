@@ -16,21 +16,18 @@ import secrets
 from base64 import b64encode, urlsafe_b64encode
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
+from typing import override
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from flext_auth.constants import c
-from flext_auth.models import FlextAuthModels
+from flext_auth.models import m
 from flext_auth.protocols import FlextAuthProtocols
-
-from typing import override
-# Import aliases following order: c -> t -> p -> r -> m -> u
-# Runtime aliases defined at module level per FLEXT standards
-# Forward reference to avoid circular import
 from flext_auth.providers.rfc import FlextAuthRfcProvider
-from flext_auth.typings import FlextAuthTypes as at, t
-from flext_core import e, r, u
+from flext_auth.typings import t
+from flext_auth.utilities import u
+from flext_core import e, r
 
 
 class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
@@ -47,7 +44,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
     def __init__(
         self,
-        config: FlextAuthModels.ProviderConfig | Mapping[str, t.JsonValue],
+        config: m.Auth.ProviderConfig | Mapping[str, t.JsonValue],
     ) -> None:
         """Initialize OAuth2 authentication provider with SOLID principles.
 
@@ -387,7 +384,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             code: str,
             code_verifier: str | None = None,
             redirect_uri: str | None = None,
-        ) -> r[at.OAuth2TokenResponse]:
+        ) -> r[t.OAuth2TokenResponse]:
             """Exchange authorization code for access token."""
             # code, code_verifier, redirect_uri parameters reserved for future
             # OAuth2 implementation
@@ -399,14 +396,14 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             scope_value = self.provider.get_scope()
             match scope_value:
                 case None:
-                    return r[at.OAuth2TokenResponse].fail("OAuth2 scope is required")
+                    return r[t.OAuth2TokenResponse].fail("OAuth2 scope is required")
                 case str() as scope_str:
                     scope = scope_str
                 case _:
-                    return r[at.OAuth2TokenResponse].fail(
+                    return r[t.OAuth2TokenResponse].fail(
                         "OAuth2 scope must be a string"
                     )
-            token_response = at.OAuth2TokenResponse(
+            token_response = t.OAuth2TokenResponse(
                 access_token=f"access_token_{secrets.token_hex(16)}",
                 token_type="Bearer",
                 expires_in=3600,
@@ -417,33 +414,33 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 # In a real implementation, this would verify the PKCE challenge
                 pass
 
-            return r[at.OAuth2TokenResponse].ok(token_response)
+            return r[t.OAuth2TokenResponse].ok(token_response)
 
-        def get_client_credentials_token(self) -> r[at.OAuth2TokenResponse]:
+        def get_client_credentials_token(self) -> r[t.OAuth2TokenResponse]:
             """Get access token using client credentials flow."""
-            token_response = at.OAuth2TokenResponse(
+            token_response = t.OAuth2TokenResponse(
                 access_token=f"access_token_{secrets.token_hex(16)}",
                 token_type="Bearer",
                 expires_in=3600,
             )
 
-            return r[at.OAuth2TokenResponse].ok(token_response)
+            return r[t.OAuth2TokenResponse].ok(token_response)
 
         def refresh_access_token(
             self,
             refresh_token: str,
-        ) -> r[at.OAuth2TokenResponse]:
+        ) -> r[t.OAuth2TokenResponse]:
             """Refresh access token using refresh token."""
             # refresh_token parameter reserved for future OAuth2 implementation
             _ = refresh_token  # Mark as intentionally unused for now
-            token_response = at.OAuth2TokenResponse(
+            token_response = t.OAuth2TokenResponse(
                 access_token=f"access_token_{secrets.token_hex(16)}",
                 token_type="Bearer",
                 expires_in=3600,
                 refresh_token=f"refresh_token_{secrets.token_hex(16)}",
             )
 
-            return r[at.OAuth2TokenResponse].ok(token_response)
+            return r[t.OAuth2TokenResponse].ok(token_response)
 
     class _OAuth2PKCEManager:
         """SOLID-compliant OAuth2 PKCE manager.
@@ -505,7 +502,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     @override
     def authenticate(
         self,
-        credentials: FlextAuthModels.CredentialValidation | Mapping[str, t.JsonValue],
+        credentials: m.Auth.CredentialValidation | Mapping[str, t.JsonValue],
     ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
         """Authenticate using OAuth2 flows with delegation."""
         credential_payload: dict[str, t.JsonValue]
@@ -537,7 +534,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         user_id_str = str(user_id) if user_id else "oauth2_user"
         access_token = credential_payload.get("access_token", "")
         access_token_str = str(access_token) if access_token else ""
-        token_model = FlextAuthModels.Auth.AuthToken(
+        token_model = m.Auth.AuthToken(
             identity_id=user_id_str,
             token=access_token_str,
             token_type="Bearer",
@@ -607,7 +604,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         expires_in_seconds = (
             token_data.expires_in if token_data.expires_in > 0 else 3600
         )
-        refreshed_model = FlextAuthModels.Auth.AuthToken(
+        refreshed_model = m.Auth.AuthToken(
             identity_id=identity_id,
             token=token_data.access_token,
             token_type=token_data.token_type or "Bearer",
@@ -626,9 +623,9 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         _ = _token  # Mark as intentionally unused for now
         return r[bool].ok(value=True)  # Simplified implementation
 
-    def get_metadata(self) -> at.Providers.Metadata:
+    def get_metadata(self) -> t.Providers.Metadata:
         """Get OAuth2 provider metadata using composition."""
-        return at.Providers.Metadata(
+        return t.Providers.Metadata(
             name="oauth2",
             version="1.0.0",
             capabilities=tuple(self.supports()),
@@ -786,14 +783,14 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     def _map_token_payload_to_identity(
         self,
         payload: Mapping[str, object],
-    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
+    ) -> r[m.Auth.AuthIdentity]:
         identity_result = self._extract_identity_id(payload)
         if identity_result.is_failure:
             username_value = payload.get("username")
             if isinstance(username_value, str) and username_value:
                 identity_id = username_value
             else:
-                return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                return r[m.Auth.AuthIdentity].fail(
                     identity_result.error or "OAuth2 token subject is missing",
                 )
         else:
@@ -834,7 +831,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 roles = ["user"]
 
         try:
-            identity = FlextAuthModels.Auth.AuthIdentity(
+            identity = m.Auth.AuthIdentity(
                 unique_id=identity_id,
                 name=name,
                 contact=contact,
@@ -844,19 +841,19 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 last_access=datetime.now(UTC),
             )
         except (ValueError, TypeError) as exc:
-            return r[FlextAuthModels.Auth.AuthIdentity].fail(
+            return r[m.Auth.AuthIdentity].fail(
                 f"OAuth2 identity mapping failed: {exc}",
             )
 
-        return r[FlextAuthModels.Auth.AuthIdentity].ok(identity)
+        return r[m.Auth.AuthIdentity].ok(identity)
 
-    def validate_token(self, token: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
+    def validate_token(self, token: str) -> r[m.Auth.AuthIdentity]:
         """Validate OAuth2 token and return user."""
         introspection_endpoint_result = self._introspection_endpoint()
         if introspection_endpoint_result.is_success:
             introspection_result = self._introspect_token(token)
             if introspection_result.is_failure:
-                return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                return r[m.Auth.AuthIdentity].fail(
                     introspection_result.error
                     or "OAuth2 introspection token validation failed",
                 )
@@ -864,7 +861,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             active_value = introspection_result.value.get("active")
             is_active = bool(active_value) if isinstance(active_value, bool) else False
             if not is_active:
-                return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                return r[m.Auth.AuthIdentity].fail(
                     "OAuth2 token is inactive",
                 )
 
@@ -872,7 +869,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         claims_result = self._decode_token_claims(token)
         if claims_result.is_failure:
-            return r[FlextAuthModels.Auth.AuthIdentity].fail(
+            return r[m.Auth.AuthIdentity].fail(
                 claims_result.error or "OAuth2 token validation failed",
             )
 
@@ -881,7 +878,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     @override
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.Auth.AuthIdentity | Mapping[str, object],
+        user: m.Auth.AuthIdentity | Mapping[str, object],
         token_type: str = "oauth2_access",
         expiry_minutes: int | None = None,
     ) -> r[str]:

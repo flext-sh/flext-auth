@@ -28,13 +28,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import override
+
 from flext_auth.models import m
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.utilities import u
 from flext_core import FlextLogger, r, s
 
 
-from typing import override
 class _MiddlewareControlMixin:
     """Shared enable/disable functionality for middleware classes.
 

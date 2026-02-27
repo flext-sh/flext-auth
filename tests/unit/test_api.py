@@ -20,7 +20,7 @@ from flext_auth.api import FlextAuth
 from flext_auth.constants import FlextAuthConstants
 from flext_auth.middleware import FlextAuthMiddleware
 from flext_auth.models import FlextAuthModels
-from flext_auth.protocols import FlextAuthProtocols as p
+from flext_auth.protocols import p
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.kerberos import FlextAuthKerberosProvider
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider

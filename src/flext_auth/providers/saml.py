@@ -10,13 +10,14 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.models import FlextAuthModels as m
-from flext_auth.protocols import FlextAuthProtocols
+from typing import override
+
+from flext_auth.models import m
+from flext_auth.protocols import p
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_core import r
 
 
-from typing import override
 class FlextAuthSamlProvider(FlextAuthBaseProvider):
     """SAML 2.0 authentication provider.
 
@@ -48,8 +49,8 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
     @override
     def authenticate(
         self,
-        credentials: m.CredentialValidation,
-    ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
+        credentials: m.Auth.CredentialValidation,
+    ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using SAML 2.0 assertion.
 
         Args:
@@ -62,12 +63,12 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
 
         """
         _ = credentials  # SAML 2.0 authentication — requires IDP federation configuration
-        return r[FlextAuthProtocols.Auth.TokenProtocol].fail(
+        return r[p.Auth.TokenProtocol].fail(
             "SAML provider not yet fully implemented",
         )
 
     @override
-    def validate(self, token: str | FlextAuthProtocols.Auth.TokenProtocol) -> r[bool]:
+    def validate(self, token: str | p.Auth.TokenProtocol) -> r[bool]:
         """Validate SAML assertion token.
 
         Args:

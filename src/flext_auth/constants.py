@@ -20,10 +20,10 @@ from enum import StrEnum
 from types import MappingProxyType
 from typing import Final
 
-from flext_core import FlextConstants
+from flext_api import FlextApiConstants
 
 
-class FlextAuthConstants(FlextConstants):
+class FlextAuthConstants(FlextApiConstants):
     """FlextAuth domain constants extending FlextConstants.
 
     Architecture: Layer 1 (Domain Constants - Extends Core)

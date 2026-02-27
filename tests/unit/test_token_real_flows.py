@@ -10,8 +10,8 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from flext_auth.middleware import FlextAuthMiddleware
-from flext_auth.models import FlextAuthModels as m
-from flext_auth.protocols import FlextAuthProtocols as p
+from flext_auth.models import m
+from flext_auth.protocols import p
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.kerberos import FlextAuthKerberosProvider
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider

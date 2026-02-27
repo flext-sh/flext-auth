@@ -6,14 +6,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.models import FlextAuthModels as m
-from flext_auth.protocols import FlextAuthProtocols
+from typing import override
+
+from flext_auth.models import m
+from flext_auth.protocols import p
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
 from flext_core import r
 
 
-from typing import override
 class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     """LDAP/Active Directory authentication provider.
 
@@ -37,8 +38,8 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     @override
     def authenticate(
         self,
-        credentials: m.CredentialValidation,
-    ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
+        credentials: m.Auth.CredentialValidation,
+    ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using LDAP credentials.
 
         Args:
@@ -49,12 +50,12 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
         """
         _ = credentials
-        return r[FlextAuthProtocols.Auth.TokenProtocol].fail("Not implemented")
+        return r[p.Auth.TokenProtocol].fail("Not implemented")
 
     @override
     def validate(
         self,
-        token: str | FlextAuthProtocols.Auth.TokenProtocol,
+        token: str | p.Auth.TokenProtocol,
     ) -> r[bool]:
         """Validate authentication token.
 

@@ -10,14 +10,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.models import FlextAuthModels as m
-from flext_auth.protocols import FlextAuthProtocols
+from typing import override
+
+from flext_auth.models import m
+from flext_auth.protocols import p
 from flext_auth.providers.mixin import FlextAuthProviderMixin
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 from flext_core import r
 
 
-from typing import override
 class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
     """OpenID Connect (OIDC) authentication provider.
 
@@ -41,8 +42,8 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
     @override
     def authenticate(
         self,
-        credentials: m.CredentialValidation,
-    ) -> r[FlextAuthProtocols.Auth.TokenProtocol]:
+        credentials: m.Auth.CredentialValidation,
+    ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using OIDC credentials.
 
         Args:
@@ -53,12 +54,12 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
 
         """
         _ = credentials
-        return r[FlextAuthProtocols.Auth.TokenProtocol].fail("Not implemented")
+        return r[p.Auth.TokenProtocol].fail("Not implemented")
 
     @override
     def validate(
         self,
-        token: str | FlextAuthProtocols.Auth.TokenProtocol,
+        token: str | p.Auth.TokenProtocol,
     ) -> r[bool]:
         """Validate OIDC token.
 

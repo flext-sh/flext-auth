@@ -11,14 +11,14 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
+from typing import override
 
-from flext_auth.models import FlextAuthModels as m
-from flext_auth.protocols import FlextAuthProtocols as p
+from flext_auth.models import m
+from flext_auth.protocols import p
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_core import r
 
 
-from typing import override
 class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
     """API key authentication provider.
 
@@ -37,7 +37,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
     @override
     def authenticate(
         self,
-        credentials: m.CredentialValidation,
+        credentials: m.Auth.CredentialValidation,
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using API key credentials."""
         _ = credentials

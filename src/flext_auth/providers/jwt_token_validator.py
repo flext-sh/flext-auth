@@ -18,7 +18,6 @@ from flext_auth.typings import t
 from flext_core import r
 
 
-from typing import override
 class FlextAuthJwtTokenValidator:
     """Dedicated JWT token validator service.
 

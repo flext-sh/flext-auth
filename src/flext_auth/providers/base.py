@@ -15,15 +15,14 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
-from typing import Protocol, runtime_checkable
+from typing import Protocol, override, runtime_checkable
 
 import jwt
-from flext_auth.models import FlextAuthModels as m
-from flext_auth.protocols import FlextAuthProtocols as p
+from flext_auth.models import m
+from flext_auth.protocols import p
 from flext_core import r
 
 
-from typing import override
 @runtime_checkable
 class FlextAuthBaseProvider(Protocol):
     """Base protocol for all authentication providers.
@@ -57,7 +56,7 @@ class FlextAuthBaseProvider(Protocol):
     @override
     def authenticate(
         self,
-        credentials: m.CredentialValidation,
+        credentials: m.Auth.CredentialValidation,
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate user with provided credentials.
 

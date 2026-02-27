@@ -10,6 +10,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import override
 
 from flext_auth.constants import c
 from flext_auth.managers import FlextAuthManagers, ServiceManagers
@@ -20,7 +21,6 @@ from flext_core.protocols import p
 from pydantic import ValidationError
 
 
-from typing import override
 class FlextAuthIdentityService(s[bool]):
     """Generic identity service using flext-core patterns and railway-oriented programming.
 

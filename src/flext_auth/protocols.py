@@ -13,11 +13,9 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import datetime
-from typing import Protocol, runtime_checkable
+from typing import Protocol, override, runtime_checkable
 
 from flext_core import FlextProtocols
-
-from typing import override
 
 
 class FlextAuthProtocols(FlextProtocols):

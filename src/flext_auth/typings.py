@@ -9,16 +9,15 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from typing import Annotated, Literal, override
 
+from flext_api import FlextApiTypes
 from flext_auth.constants import c
 from flext_auth.models import m
-from flext_core import FlextTypes
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
 
-from typing import override
-class FlextAuthTypes(FlextTypes):
+class FlextAuthTypes(FlextApiTypes):
     """Authentication-specific type definitions extending t with composition."""
 
     # =========================================================================
@@ -143,7 +142,7 @@ class FlextAuthTypes(FlextTypes):
         status_code: int = Field(default=0)
         headers: dict[str, str] = Field(default_factory=dict)
         body: str = Field(default="")
-        json_data: FlextTypes.JsonDict = Field(default_factory=dict)
+        json_data: FlextApiTypes.JsonDict = Field(default_factory=dict)
         error: str = Field(default="")
         success: bool = Field(default=False)
 
@@ -184,7 +183,7 @@ class FlextAuthTypes(FlextTypes):
             description: str = Field(default="")
             documentation_url: str = Field(default="")
             maintainers: tuple[str, ...] = Field(default_factory=tuple)
-            extras: FlextTypes.JsonDict = Field(default_factory=dict)
+            extras: FlextApiTypes.JsonDict = Field(default_factory=dict)
 
         class Registration(BaseModel):
             """Payload used when registering providers in registries."""
@@ -196,7 +195,7 @@ class FlextAuthTypes(FlextTypes):
                 default=None
             )  # Provider instance - typed as object to avoid circular import
             metadata: dict = Field(default_factory=dict)
-            configuration: FlextTypes.JsonDict = Field(default_factory=dict)
+            configuration: FlextApiTypes.JsonDict = Field(default_factory=dict)
 
     class Credentials:
         """Credential payload type definitions."""
@@ -234,7 +233,7 @@ class FlextAuthTypes(FlextTypes):
             username: str = Field(default="")
             password: str = Field(default="")
             remember_me: bool = Field(default=False)
-            metadata: FlextTypes.JsonDict = Field(default_factory=dict)
+            metadata: FlextApiTypes.JsonDict = Field(default_factory=dict)
 
         class MultiFactor(BaseModel):
             """Extended credential payload supporting MFA."""
@@ -245,14 +244,14 @@ class FlextAuthTypes(FlextTypes):
             password: str = Field(default="")
             factors: tuple[str, ...] = Field(default_factory=tuple)
             otp: str = Field(default="")
-            metadata: FlextTypes.JsonDict = Field(default_factory=dict)
+            metadata: FlextApiTypes.JsonDict = Field(default_factory=dict)
 
     class Tokens:
         """Token-related type definitions."""
 
         # AuthToken type defined in models.py
         type TokenType = c.Auth.TokenTypes
-        type ClaimMap = FlextTypes.JsonDict
+        type ClaimMap = FlextApiTypes.JsonDict
 
         class Claims(BaseModel):
             """Normalized token claims representation."""
@@ -266,7 +265,7 @@ class FlextAuthTypes(FlextTypes):
             session_id: str = Field(default="")
             issued_at: str = Field(default="")
             expires_at: str = Field(default="")
-            metadata: FlextTypes.JsonDict = Field(default_factory=dict)
+            metadata: FlextApiTypes.JsonDict = Field(default_factory=dict)
 
         class Introspection(BaseModel):
             """Token introspection response payload."""
@@ -280,7 +279,7 @@ class FlextAuthTypes(FlextTypes):
             expires_at: str = Field(default="")
             issued_at: str = Field(default="")
             scope: tuple[str, ...] = Field(default_factory=tuple)
-            metadata: FlextTypes.JsonDict = Field(default_factory=dict)
+            metadata: FlextApiTypes.JsonDict = Field(default_factory=dict)
 
     class Sessions:
         """Session-related type definitions."""
@@ -297,7 +296,7 @@ class FlextAuthTypes(FlextTypes):
             session_id: str = Field(default="")
             occurred_at: str = Field(default="")
             event: str = Field(default="")
-            context: FlextTypes.JsonDict = Field(default_factory=dict)
+            context: FlextApiTypes.JsonDict = Field(default_factory=dict)
 
     class Responses:
         """Response payload abstractions."""
@@ -309,17 +308,17 @@ class FlextAuthTypes(FlextTypes):
             model_config = ConfigDict(frozen=False, extra="forbid")
 
             success: bool = Field(default=False)
-            identity: FlextTypes.JsonDict = Field(
+            identity: FlextApiTypes.JsonDict = Field(
                 default_factory=dict
             )  # Will be Identity from models
-            token: FlextTypes.JsonDict = Field(
+            token: FlextApiTypes.JsonDict = Field(
                 default_factory=dict
             )  # Will be AuthToken from models
-            session: FlextTypes.JsonDict = Field(
+            session: FlextApiTypes.JsonDict = Field(
                 default_factory=dict
             )  # Will be Session from models
             message: str = Field(default="")
-            metadata: FlextTypes.JsonDict = Field(default_factory=dict)
+            metadata: FlextApiTypes.JsonDict = Field(default_factory=dict)
 
         class AuthenticationPayload(BaseModel):
             """Structured authentication response for transports."""
@@ -330,7 +329,7 @@ class FlextAuthTypes(FlextTypes):
             # identity, session, token types defined in models.py
             issued_at: str = Field(default="")
             expires_at: str = Field(default="")
-            metadata: FlextTypes.JsonDict = Field(default_factory=dict)
+            metadata: FlextApiTypes.JsonDict = Field(default_factory=dict)
 
     class Managers:
         """Manager-specific supporting types."""
@@ -377,10 +376,10 @@ class FlextAuthTypes(FlextTypes):
             event: str = Field(default="")
             occurred_at: str = Field(default="")
             # actor type defined in models.py
-            context: FlextTypes.JsonDict = Field(default_factory=dict)
+            context: FlextApiTypes.JsonDict = Field(default_factory=dict)
             event_type: str = Field(default="")
             timestamp: str = Field(default="")
-            metadata: FlextTypes.JsonDict = Field(default_factory=dict)
+            metadata: FlextApiTypes.JsonDict = Field(default_factory=dict)
 
         class AuditEntry(BaseModel):
             """Structured audit log entry."""
@@ -390,7 +389,7 @@ class FlextAuthTypes(FlextTypes):
             event: str = Field(default="")
             occurred_at: str = Field(default="")
             # actor type defined in models.py
-            context: FlextTypes.JsonDict = Field(default_factory=dict)
+            context: FlextApiTypes.JsonDict = Field(default_factory=dict)
 
         class AttemptData(BaseModel):
             """Failed attempt data structure."""

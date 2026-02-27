@@ -10,11 +10,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.constants import FlextAuthConstants as c
+from typing import override
+
+from flext_auth.constants import c
 from flext_auth.managers import FlextAuthManagers, ServiceManagers
 from flext_auth.models import m
 
-from typing import override
 # Forward reference to avoid circular import
 # Import m locally in methods where needed
 from flext_auth.provider_service import FlextAuthProviderService
