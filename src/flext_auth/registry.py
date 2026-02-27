@@ -15,6 +15,28 @@ from flext_core import r, t
 from flext_core.registry import FlextRegistry
 
 
+class _ConfigWrapper:
+    """Protocol-conformant wrapper for config data."""
+
+    def __init__(self, category: str, data: dict[str, t.JsonValue]) -> None:
+        self._category = category
+        self.data = data
+
+    def _protocol_name(self) -> str:
+        return self._category
+
+
+class _MetadataWrapper:
+    """Protocol-conformant wrapper for metadata."""
+
+    def __init__(self, category: str, data: at.Providers.Metadata) -> None:
+        self._category = category
+        self.data = data
+
+    def _protocol_name(self) -> str:
+        return self._category
+
+
 class FlextAuthRegistry(FlextRegistry):
     """Auth provider registry using FlextRegistry generic plugin API."""
 
@@ -41,15 +63,9 @@ class FlextAuthRegistry(FlextRegistry):
 
         # Register config if provided
         if configuration:
-            # Wrap config dict in a simple wrapper with _protocol_name
-            config_wrapper = type(
-                "ConfigWrapper",
-                (),
-                {
-                    "_protocol_name": lambda self: f"{self.PROVIDERS}_config",
-                    "data": dict(configuration),
-                },
-            )()
+            config_wrapper = _ConfigWrapper(
+                f"{self.PROVIDERS}_config", dict(configuration)
+            )
             config_result = self.register_plugin(
                 f"{self.PROVIDERS}_config", name, config_wrapper
             )
@@ -60,15 +76,7 @@ class FlextAuthRegistry(FlextRegistry):
 
         # Register metadata if provided
         if metadata:
-            # metadata is already a Pydantic model, but needs _protocol_name
-            metadata_wrapper = type(
-                "MetadataWrapper",
-                (),
-                {
-                    "_protocol_name": lambda self: f"{self.PROVIDERS}_metadata",
-                    "data": metadata,
-                },
-            )()
+            metadata_wrapper = _MetadataWrapper(f"{self.PROVIDERS}_metadata", metadata)
             metadata_result = self.register_plugin(
                 f"{self.PROVIDERS}_metadata", name, metadata_wrapper
             )
@@ -152,14 +160,7 @@ class FlextAuthRegistry(FlextRegistry):
         self.unregister_plugin(f"{self.PROVIDERS}_config", name)
 
         # Register new config
-        config_wrapper = type(
-            "ConfigWrapper",
-            (),
-            {
-                "_protocol_name": lambda self: f"{self.PROVIDERS}_config",
-                "data": dict(config),
-            },
-        )()
+        config_wrapper = _ConfigWrapper(f"{self.PROVIDERS}_config", dict(config))
         return self.register_plugin(f"{self.PROVIDERS}_config", name, config_wrapper)
 
     def get_metadata(self, name: str) -> r[at.Providers.Metadata]:
