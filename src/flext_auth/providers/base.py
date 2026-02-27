@@ -13,9 +13,9 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
+from typing import Protocol, runtime_checkable
 
 import jwt
 from flext_auth.models import FlextAuthModels as m
@@ -23,13 +23,16 @@ from flext_auth.protocols import FlextAuthProtocols as p
 from flext_core import r
 
 
-class FlextAuthBaseProvider(ABC):
+@runtime_checkable
+class FlextAuthBaseProvider(Protocol):
     """Base protocol for all authentication providers.
 
     All authentication providers must implement this interface to ensure
     consistent behavior across different authentication technologies (JWT,
     OAuth2, SAML, etc.).
     """
+
+    _provider_config: Mapping[str, str | int | bool] | None
 
     def __init__(self, config: Mapping[str, str | int | bool] | None = None) -> None:
         """Initialize provider with optional configuration.
@@ -45,7 +48,10 @@ class FlextAuthBaseProvider(ABC):
         """Get provider configuration."""
         return self._provider_config
 
-    @abstractmethod
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider"
+
     def authenticate(
         self,
         credentials: m.CredentialValidation,
@@ -64,8 +70,8 @@ class FlextAuthBaseProvider(ABC):
                                    error message on failure
 
         """
+        ...
 
-    @abstractmethod
     def validate(
         self,
         token: str,
@@ -81,6 +87,7 @@ class FlextAuthBaseProvider(ABC):
             r[bool]: True if valid, False if invalid, error on failure
 
         """
+        ...
 
     def _token_settings(self) -> r[tuple[str, str, str, str, int]]:
         config = self.config
