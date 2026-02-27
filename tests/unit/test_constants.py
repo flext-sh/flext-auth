@@ -46,7 +46,7 @@ class TestFlextAuthConstants:
 
     def test_session_constants(self) -> None:
         """Test session-related constants."""
-        session = FlextAuthConstants.Session
+        session = FlextAuthConstants.Auth.Session
 
         assert session.DEFAULT_EXPIRY_MINUTES == 120
         assert session.MAX_EXPIRY_MINUTES == 1440
@@ -55,7 +55,7 @@ class TestFlextAuthConstants:
 
     def test_auth_security_constants(self) -> None:
         """Test authentication security constants."""
-        security = FlextAuthConstants.AuthSecurity
+        security = FlextAuthConstants.Auth.AuthSecurity
 
         assert security.MAX_LOGIN_ATTEMPTS == 5
         assert security.LOCKOUT_DURATION_MINUTES == 15
@@ -64,7 +64,7 @@ class TestFlextAuthConstants:
 
     def test_error_codes_constants(self) -> None:
         """Test error code constants."""
-        codes = FlextAuthConstants.ErrorCodes
+        codes = FlextAuthConstants.Auth.ErrorCodes
 
         assert codes.INVALID_CREDENTIALS == "INVALID_CREDENTIALS"
         assert codes.ACCOUNT_LOCKED == "ACCOUNT_LOCKED"
@@ -173,7 +173,7 @@ class TestFlextAuthConstants:
 
     def test_model_validation_constants(self) -> None:
         """Test model validation constants."""
-        mv = FlextAuthConstants.ModelValidation
+        mv = FlextAuthConstants.Auth.ModelValidation
 
         assert mv.BCRYPT_ROUNDS == 12
         assert mv.DEFAULT_TOKEN_EXPIRY_MINUTES == 60

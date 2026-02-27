@@ -112,8 +112,8 @@ class FlextAuthMiddleware(s[bool]):
 
         def process_request(
             self,
-            request: HttpRequest,
-        ) -> r[HttpRequest]:
+            request: object,
+        ) -> r[object]:
             """Process HTTP request by adding authentication headers.
 
             Args:
