@@ -10,16 +10,9 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping
 
-from flext_auth.constants import FlextAuthConstants as c
-from flext_auth.models import FlextAuthModels
-from flext_auth.protocols import FlextAuthProtocols as p
-
-# Import aliases already defined via imports above
-# c = FlextAuthConstants
-# p = FlextAuthProtocols
-# r = FlextResult (via import as r)
-# Forward reference to avoid circular import
-# Import FlextAuthModels locally in methods where needed
+from flext_auth.constants import c
+from flext_auth.models import m
+from flext_auth.protocols import p
 from flext_auth.providers import (
     FlextAuthApiKeyProvider,
     FlextAuthBasicProvider,
@@ -186,7 +179,7 @@ class FlextAuthProviderService(s[bool]):
         provider: str = "basic",
     ) -> r[p.Auth.TokenProtocol]:
         """Railway-oriented user authentication with provider selection."""
-        credentials = FlextAuthModels.CredentialValidation(
+        credentials = m.Auth.CredentialValidation(
             username=username,
             password=password,
         )
@@ -196,7 +189,7 @@ class FlextAuthProviderService(s[bool]):
 
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.Auth.AuthIdentity,
+        user: m.Auth.AuthIdentity,
         provider: str = "jwt",
         token_type: str = c.Auth.TokenTypes.ACCESS.value,
         expiry_minutes: int | None = None,

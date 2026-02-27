@@ -12,12 +12,9 @@ from __future__ import annotations
 from typing import Annotated, Literal
 
 from flext_auth.constants import c
-from flext_auth.models import FlextAuthModels as m
+from flext_auth.models import m
 from flext_core import FlextTypes
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
-
-# Import aliases following order: c -> t -> p -> r -> m -> u
-# Runtime aliases defined at module level per FLEXT standards
 
 
 class FlextAuthTypes(FlextTypes):
@@ -28,14 +25,14 @@ class FlextAuthTypes(FlextTypes):
     # =========================================================================
 
     # Core configs mapped to Pydantic models
-    ProviderConfig = m.ProviderConfig
+    ProviderConfig = m.Auth.ProviderConfig
 
     # Legacy TypedDicts mapped to Pydantic Models where compatible
     # NOTE: These are now Pydantic models. Code instantiating them as dicts
     # must be updated to instantiate the model.
     UserDict = m.Auth.AuthIdentity
-    SessionDict = m.Session
-    AuthenticationResponseDict = m.AuthResponse
+    SessionDict = m.Auth.Session
+    AuthenticationResponseDict = m.Auth.AuthResponse
 
     # =========================================================================
     # AUTHENTICATION DOMAIN TYPE CLASSES

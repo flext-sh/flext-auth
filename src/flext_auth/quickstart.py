@@ -8,12 +8,9 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_auth.api import FlextAuth
-from flext_auth.models import FlextAuthModels
+from flext_auth.models import m
 from flext_auth.settings import FlextAuthSettings
 from flext_core import r, s
-
-# Import aliases following order: c -> t -> p -> r -> m -> u
-# Runtime aliases defined at module level per FLEXT standards
 
 
 class FlextAuthQuickstart(s[object]):
@@ -40,7 +37,7 @@ class FlextAuthQuickstart(s[object]):
         password: str,
         roles: list[str] | None = None,
         full_name: str | None = None,
-    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
+    ) -> r[m.Auth.AuthIdentity]:
         """Register a new user with default settings."""
         # Call api.register_user with correct parameter mapping
         return self._auth.register_user(
@@ -56,7 +53,7 @@ class FlextAuthQuickstart(s[object]):
         self,
         username: str,
         password: str,
-    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
+    ) -> r[m.Auth.AuthIdentity]:
         """Authenticate a user and return identity."""
         return self._auth.authenticate_user(username, password)
 
@@ -64,7 +61,7 @@ class FlextAuthQuickstart(s[object]):
         """Validate an authentication token."""
         return self._auth.validate_token(token)
 
-    def get_user(self, user_id: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
+    def get_user(self, user_id: str) -> r[m.Auth.AuthIdentity]:
         """Get user by ID."""
         return self._auth.get_user(user_id)
 

@@ -22,21 +22,6 @@ from typing import Final
 
 from flext_core import FlextConstants
 
-# Runtime alias for constants namespace access
-
-# ═══════════════════════════════════════════════════════════════════════════
-# STRENUM + PYDANTIC 2: DEFINITIVE PATTERN FOR FLEXT-AUTH
-# ═══════════════════════════════════════════════════════════════════════════
-
-# FUNDAMENTAL PRINCIPLE: StrEnum + Pydantic 2 = Automatic Validation!
-# - No need to create separate Literal for validation
-# - No need to create frozenset for validation
-# - No need to create AfterValidator
-# - Pydantic automatically validates against StrEnum
-
-# SUBSETS: Use type aliases to accept only SOME enum values.
-# This references the enum member, does not duplicate strings!
-
 
 class FlextAuthConstants(FlextConstants):
     """FlextAuth domain constants extending FlextConstants.
@@ -417,86 +402,86 @@ class FlextAuthConstants(FlextConstants):
         # SESSION CONSTANTS: Nested class for session management
         # ═══════════════════════════════════════════════════════════════════
 
-    class Session:
-        """Session management constants."""
+        class Session:
+            """Session management constants."""
 
-        DEFAULT_EXPIRY_MINUTES: Final[int] = 120
-        """Default session expiry in minutes."""
-        MAX_EXPIRY_MINUTES: Final[int] = 1440
-        """Maximum session expiry in minutes."""
-        MAX_SESSIONS_PER_USER: Final[int] = 5
-        """Maximum sessions per user."""
-        MIN_TOKEN_LENGTH: Final[int] = 32
-        """Minimum session token length."""
+            DEFAULT_EXPIRY_MINUTES: Final[int] = 120
+            """Default session expiry in minutes."""
+            MAX_EXPIRY_MINUTES: Final[int] = 1440
+            """Maximum session expiry in minutes."""
+            MAX_SESSIONS_PER_USER: Final[int] = 5
+            """Maximum sessions per user."""
+            MIN_TOKEN_LENGTH: Final[int] = 32
+            """Minimum session token length."""
 
-        # ═══════════════════════════════════════════════════════════════════
-        # AUTH SECURITY CONSTANTS: Nested class for security policies
-        # ═══════════════════════════════════════════════════════════════════
+            # ═══════════════════════════════════════════════════════════════════
+            # AUTH SECURITY CONSTANTS: Nested class for security policies
+            # ═══════════════════════════════════════════════════════════════════
 
-    class AuthSecurity:
-        """Authentication security constants."""
+        class AuthSecurity:
+            """Authentication security constants."""
 
-        MAX_LOGIN_ATTEMPTS: Final[int] = 5
-        """Maximum login attempts before lockout."""
-        LOCKOUT_DURATION_MINUTES: Final[int] = 15
-        """Lockout duration in minutes."""
-        MAX_REQUESTS_PER_MINUTE: Final[int] = 60
-        """Maximum requests per minute."""
-        MAX_REQUESTS_PER_HOUR: Final[int] = 1000
-        """Maximum requests per hour."""
+            MAX_LOGIN_ATTEMPTS: Final[int] = 5
+            """Maximum login attempts before lockout."""
+            LOCKOUT_DURATION_MINUTES: Final[int] = 15
+            """Lockout duration in minutes."""
+            MAX_REQUESTS_PER_MINUTE: Final[int] = 60
+            """Maximum requests per minute."""
+            MAX_REQUESTS_PER_HOUR: Final[int] = 1000
+            """Maximum requests per hour."""
 
-        # ═══════════════════════════════════════════════════════════════════
-        # ERROR CODES CONSTANTS: Nested class for error codes
-        # ═══════════════════════════════════════════════════════════════════
+            # ═══════════════════════════════════════════════════════════════════
+            # ERROR CODES CONSTANTS: Nested class for error codes
+            # ═══════════════════════════════════════════════════════════════════
 
-    class ErrorCodes:
-        """Authentication error codes."""
+        class ErrorCodes:
+            """Authentication error codes."""
 
-        INVALID_CREDENTIALS: Final[str] = "INVALID_CREDENTIALS"
-        """Invalid credentials error code."""
-        ACCOUNT_LOCKED: Final[str] = "ACCOUNT_LOCKED"
-        """Account locked error code."""
-        ACCOUNT_DISABLED: Final[str] = "ACCOUNT_DISABLED"
-        """Account disabled error code."""
-        TOKEN_EXPIRED: Final[str] = "TOKEN_EXPIRED"
-        """Token expired error code."""
-        INVALID_TOKEN: Final[str] = "INVALID_TOKEN"
-        """Invalid token error code."""
+            INVALID_CREDENTIALS: Final[str] = "INVALID_CREDENTIALS"
+            """Invalid credentials error code."""
+            ACCOUNT_LOCKED: Final[str] = "ACCOUNT_LOCKED"
+            """Account locked error code."""
+            ACCOUNT_DISABLED: Final[str] = "ACCOUNT_DISABLED"
+            """Account disabled error code."""
+            TOKEN_EXPIRED: Final[str] = "TOKEN_EXPIRED"
+            """Token expired error code."""
+            INVALID_TOKEN: Final[str] = "INVALID_TOKEN"
+            """Invalid token error code."""
 
-        # ═══════════════════════════════════════════════════════════════════
-        # MODEL VALIDATION CONSTANTS: For Pydantic field constraints
-        # ═══════════════════════════════════════════════════════════════════
+            # ═══════════════════════════════════════════════════════════════════
+            # MODEL VALIDATION CONSTANTS: For Pydantic field constraints
+            # ═══════════════════════════════════════════════════════════════════
 
-    class ModelValidation:
-        """Constants for Pydantic model field validation."""
+        class ModelValidation:
+            """Constants for Pydantic model field validation."""
 
-        # Password hashing
-        BCRYPT_ROUNDS: Final[int] = 12
-        """Bcrypt rounds for password hashing."""
+            # Password hashing
+            BCRYPT_ROUNDS: Final[int] = 12
+            """Bcrypt rounds for password hashing."""
 
-        # Token configuration
-        DEFAULT_TOKEN_EXPIRY_MINUTES: Final[int] = 60
-        """Default token expiry in minutes."""
+            # Token configuration
+            DEFAULT_TOKEN_EXPIRY_MINUTES: Final[int] = 60
+            """Default token expiry in minutes."""
 
-        # Role validation
-        MAX_ROLE_NAME_LENGTH: Final[int] = 50
-        """Maximum length for role names."""
-        MAX_ROLE_DESCRIPTION_LENGTH: Final[int] = 500
-        """Maximum length for role descriptions."""
+            # Role validation
+            MAX_ROLE_NAME_LENGTH: Final[int] = 50
+            """Maximum length for role names."""
+            MAX_ROLE_DESCRIPTION_LENGTH: Final[int] = 500
+            """Maximum length for role descriptions."""
 
-        # Permission validation
-        MAX_PERMISSION_NAME_LENGTH: Final[int] = 100
-        """Maximum length for permission names."""
-        MAX_PERMISSION_DESCRIPTION_LENGTH: Final[int] = 500
-        """Maximum length for permission descriptions."""
+            # Permission validation
+            MAX_PERMISSION_NAME_LENGTH: Final[int] = 100
+            """Maximum length for permission names."""
+            MAX_PERMISSION_DESCRIPTION_LENGTH: Final[int] = 500
+            """Maximum length for permission descriptions."""
 
-        # ═══════════════════════════════════════════════════════════════════
-        # INHERITED CONSTANTS: Access parent constants directly
-        # ═══════════════════════════════════════════════════════════════════
-        # All constants from FlextConstants are accessible via inheritance.
-        # Use FlextConstants.Cqrs.Status, FlextConstants.Errors.*, etc. directly.
-        # Use Auth.PermissionTypes and Auth.RoleTypes StrEnums directly.
-        # No need for explicit Inherited class - inheritance provides access.
+            # ═══════════════════════════════════════════════════════════════════
+            # INHERITED CONSTANTS: Access parent constants directly
+            # ═══════════════════════════════════════════════════════════════════
+            # All constants from FlextConstants are accessible via inheritance.
+            # Use FlextConstants.Cqrs.Status, FlextConstants.Errors.*, etc. directly.
+            # Use Auth.PermissionTypes and Auth.RoleTypes StrEnums directly.
+            # No need for explicit Inherited class - inheritance provides access.
 
 
 c = FlextAuthConstants  # Runtime alias (not TypeAlias to avoid PYI042)

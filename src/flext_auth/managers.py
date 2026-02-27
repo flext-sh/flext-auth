@@ -14,20 +14,17 @@ from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-from flext_auth.models import FlextAuthModels
+from flext_auth.models import m
 from flext_auth.settings import FlextAuthSettings
 from flext_core import (
+    FlextContext,
+    FlextDispatcher,
+    FlextLogger,
+    FlextRegistry,
     r,
+    t,
     u,
 )
-from flext_core.context import FlextContext
-from flext_core.dispatcher import FlextDispatcher
-from flext_core.loggings import FlextLogger
-from flext_core.registry import FlextRegistry
-from flext_core.typings import t
-
-# Import aliases following order: c -> t -> p -> r -> m -> u
-# Runtime aliases defined at module level per FLEXT standards
 
 
 class ServiceManagers:
@@ -183,7 +180,7 @@ class FlextAuthManagers:
         def _create_identity_from_storage(
             self,
             storage_data: Mapping[str, t.GeneralValueType],
-        ) -> FlextAuthModels.Auth.AuthIdentity:
+        ) -> m.Auth.AuthIdentity:
             """Create Identity model from storage data, filtering out non-model fields."""
             identity_id = self._extract_identity_id(storage_data)
             name_value = self._validate_required_field(storage_data, "name", str)
@@ -260,9 +257,7 @@ class FlextAuthManagers:
                 k: v for k, v in identity_data.items() if k in valid_identity_fields
             }
 
-            return FlextAuthModels.Auth.AuthIdentity.model_validate(
-                filtered_identity_data
-            )
+            return m.Auth.AuthIdentity.model_validate(filtered_identity_data)
 
         def _apply_list_modification(
             self,
@@ -289,12 +284,10 @@ class FlextAuthManagers:
             email: str,
             password_hash: str,
             **extra_fields: str | int | bool | list[str] | datetime | None,
-        ) -> r[FlextAuthModels.Auth.AuthIdentity]:
+        ) -> r[m.Auth.AuthIdentity]:
             """Create a new user."""
             if username in self._users:
-                return r[FlextAuthModels.Auth.AuthIdentity].fail(
-                    "Identity already exists"
-                )
+                return r[m.Auth.AuthIdentity].fail("Identity already exists")
             # Check for duplicate email (contact)
             match email:
                 case str() as email_str:
@@ -305,9 +298,7 @@ class FlextAuthManagers:
                 existing_contact = existing_user_data.get("contact", "")
                 match existing_contact:
                     case str() as contact if contact.lower() == normalized_email:
-                        return r[FlextAuthModels.Auth.AuthIdentity].fail(
-                            "Identity already exists"
-                        )
+                        return r[m.Auth.AuthIdentity].fail("Identity already exists")
                     case _:
                         pass
 
@@ -424,31 +415,29 @@ class FlextAuthManagers:
                 "token": token,
                 "session_id": session_id,
             }
-            user = FlextAuthModels.Auth.AuthIdentity.model_validate(identity_dict)
-            return r[FlextAuthModels.Auth.AuthIdentity].ok(user)
+            user = m.Auth.AuthIdentity.model_validate(identity_dict)
+            return r[m.Auth.AuthIdentity].ok(user)
 
-        def get_user(self, user_id: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
+        def get_user(self, user_id: str) -> r[m.Auth.AuthIdentity]:
             """Get user by ID."""
             return self._find_user_by_id(user_id).map(
                 lambda ud: self._create_identity_from_storage(ud[1]),
             )
 
-        def get_user_by_username(
-            self, username: str
-        ) -> r[FlextAuthModels.Auth.AuthIdentity]:
+        def get_user_by_username(self, username: str) -> r[m.Auth.AuthIdentity]:
             """Get user by username."""
             if username not in self._users:
-                return r[FlextAuthModels.Auth.AuthIdentity].fail("User not found")
+                return r[m.Auth.AuthIdentity].fail("User not found")
 
             storage_data = self._users[username]
             user = self._create_identity_from_storage(storage_data)
-            return r[FlextAuthModels.Auth.AuthIdentity].ok(user)
+            return r[m.Auth.AuthIdentity].ok(user)
 
         def update_user(
             self,
             user_id: str,
             **updates: str | int | bool | list[str] | datetime | None,
-        ) -> r[FlextAuthModels.Auth.AuthIdentity]:
+        ) -> r[m.Auth.AuthIdentity]:
             """Update user data."""
             return self._find_user_by_id(user_id).map(
                 lambda ud: (
@@ -493,7 +482,7 @@ class FlextAuthManagers:
                 add=False,
             )
 
-        def get_user_by_id(self, user_id: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
+        def get_user_by_id(self, user_id: str) -> r[m.Auth.AuthIdentity]:
             """Get a user by their ID."""
             return self._find_user_by_id(user_id).map(
                 lambda ud: self._create_identity_from_storage(ud[1]),
@@ -546,7 +535,7 @@ class FlextAuthManagers:
             expires_in_minutes: int = 60,
             ip_address: str | None = None,
             user_agent: str | None = None,
-        ) -> r[FlextAuthModels.Session]:
+        ) -> r[m.Auth.Session]:
             """Create a new session."""
             session_id = str(uuid4())
             expires_at = datetime.now(UTC) + timedelta(minutes=expires_in_minutes)
@@ -565,7 +554,7 @@ class FlextAuthManagers:
 
             self._sessions[session_id] = session_data
             # Extract required fields for Session model using model_validate
-            session = FlextAuthModels.Session(
+            session = m.Auth.Session(
                 identity_id=str(session_data["identity_id"]),
                 session_token=str(session_data["session_token"]),
                 expires_at=session_data["expires_at"],
@@ -574,11 +563,11 @@ class FlextAuthManagers:
                 user_agent=str(session_data.get("user_agent", "")),
                 last_accessed=session_data.get("last_accessed", datetime.now(UTC)),
             )
-            return r[FlextAuthModels.Session].ok(session)
+            return r[m.Auth.Session].ok(session)
 
-        def get_active_sessions(self, user_id: str) -> r[list[FlextAuthModels.Session]]:
+        def get_active_sessions(self, user_id: str) -> r[list[m.Auth.Session]]:
             """Get all active sessions for a user."""
-            sessions: list[FlextAuthModels.Session] = []
+            sessions: list[m.Auth.Session] = []
             for session_id, session_data in self._sessions.items():
                 identity_id_value = session_data.get("identity_id")
                 match identity_id_value:
@@ -587,7 +576,7 @@ class FlextAuthManagers:
                         and self._is_session_active(session_data)
                     ):
                         # Extract only fields that Session model accepts
-                        session = FlextAuthModels.Session(
+                        session = m.Auth.Session(
                             identity_id=str(session_data["identity_id"]),
                             session_token=str(session_data["session_token"]),
                             expires_at=session_data["expires_at"],
@@ -604,7 +593,7 @@ class FlextAuthManagers:
                         sessions.append(session)
                     case _:
                         pass
-            return r[list[FlextAuthModels.Session]].ok(sessions)
+            return r[list[m.Auth.Session]].ok(sessions)
 
         def end_session(self, user_id: str) -> r[bool]:
             """End all sessions for a user."""

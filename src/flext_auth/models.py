@@ -14,20 +14,11 @@ from collections.abc import Mapping
 from datetime import UTC, datetime
 from typing import Literal, Self
 
-# Import password utilities directly
 import bcrypt
 from flext_auth.constants import c
 from flext_core import FlextModels, r
-from flext_core.typings import FlextTypes
+from flext_core.typings import t
 from pydantic import ConfigDict, Field
-
-# Import aliases following order: c -> t -> p -> r -> m -> u
-# Runtime aliases defined at module level per FLEXT standards
-# c already imported from flext_auth.constants above
-t = FlextTypes
-# p (protocols) not used here
-# r is FlextResult - already imported as r
-# u is utilities - import if needed
 
 
 class FlextAuthModels(FlextModels):
@@ -58,7 +49,7 @@ class FlextAuthModels(FlextModels):
             @staticmethod
             def hash_password(password: str) -> str:
                 """Hash a password using bcrypt."""
-                salt = bcrypt.gensalt(rounds=c.ModelValidation.BCRYPT_ROUNDS)
+                salt = bcrypt.gensalt(rounds=c.Auth.ModelValidation.BCRYPT_ROUNDS)
                 return bcrypt.hashpw(password.encode(), salt).decode()
 
             @staticmethod
@@ -122,7 +113,7 @@ class FlextAuthModels(FlextModels):
                 description="Token type",
             )
             expiry_minutes: int = Field(
-                default=c.ModelValidation.DEFAULT_TOKEN_EXPIRY_MINUTES,
+                default=c.Auth.ModelValidation.DEFAULT_TOKEN_EXPIRY_MINUTES,
                 ge=1,
                 description="Token expiry",
             )
@@ -334,222 +325,226 @@ class FlextAuthModels(FlextModels):
                 ) as e:
                     return r[bool].fail(f"Failed to hash credential: {e}")
 
-    # =========================================================================
-    # SESSION MODELS - Generic session entity
-    # =========================================================================
+        # =========================================================================
+        # SESSION MODELS - Generic session entity
+        # =========================================================================
 
-    class Session(FlextModels.Entity):
-        """Generic session entity."""
+        class Session(FlextModels.Entity):
+            """Generic session entity."""
 
-        identity_id: str = Field(..., description="Identity ID")
-        session_token: str = Field(..., description="Session token", exclude=True)
-        expires_at: datetime = Field(..., description="Expiration time")
-        is_active: bool = Field(default=True, description="Active status")
-        ip_address: str = Field(default="", description="IP address")
-        user_agent: str = Field(default="", description="User agent")
-        last_accessed: datetime = Field(
-            default_factory=lambda: datetime.now(UTC),
-            description="Last access",
-        )
+            identity_id: str = Field(..., description="Identity ID")
+            session_token: str = Field(..., description="Session token", exclude=True)
+            expires_at: datetime = Field(..., description="Expiration time")
+            is_active: bool = Field(default=True, description="Active status")
+            ip_address: str = Field(default="", description="IP address")
+            user_agent: str = Field(default="", description="User agent")
+            last_accessed: datetime = Field(
+                default_factory=lambda: datetime.now(UTC),
+                description="Last access",
+            )
 
-        @property
-        def is_expired(self) -> bool:
-            """Check if session is expired."""
-            return datetime.now(UTC) > self.expires_at
+            @property
+            def is_expired(self) -> bool:
+                """Check if session is expired."""
+                return datetime.now(UTC) > self.expires_at
 
-    # =========================================================================
-    # ROLE & PERMISSION MODELS - Generic RBAC
-    # =========================================================================
+        # =========================================================================
+        # ROLE & PERMISSION MODELS - Generic RBAC
+        # =========================================================================
 
-    class Role(FlextModels.Entity):
-        """Generic role entity."""
+        class Role(FlextModels.Entity):
+            """Generic role entity."""
 
-        name: str = Field(
-            ...,
-            min_length=1,
-            max_length=c.ModelValidation.MAX_ROLE_NAME_LENGTH,
-            description="Role name",
-        )
-        description: str = Field(
-            default="",
-            max_length=c.ModelValidation.MAX_ROLE_DESCRIPTION_LENGTH,
-            description="Description",
-        )
-        permissions: list[str] = Field(default_factory=list, description="Permissions")
+            name: str = Field(
+                ...,
+                min_length=1,
+                max_length=c.Auth.ModelValidation.MAX_ROLE_NAME_LENGTH,
+                description="Role name",
+            )
+            description: str = Field(
+                default="",
+                max_length=c.Auth.ModelValidation.MAX_ROLE_DESCRIPTION_LENGTH,
+                description="Description",
+            )
+            permissions: list[str] = Field(
+                default_factory=list, description="Permissions"
+            )
 
-    class Permission(FlextModels.Entity):
-        """Generic permission entity."""
+        class Permission(FlextModels.Entity):
+            """Generic permission entity."""
 
-        name: str = Field(
-            ...,
-            min_length=1,
-            max_length=c.ModelValidation.MAX_PERMISSION_NAME_LENGTH,
-            description="Permission",
-        )
-        description: str = Field(
-            default="",
-            max_length=c.ModelValidation.MAX_PERMISSION_DESCRIPTION_LENGTH,
-            description="Description",
-        )
-        resource: str = Field(default="", description="Resource path")
-        action: str = Field(default="", description="Action type")
+            name: str = Field(
+                ...,
+                min_length=1,
+                max_length=c.Auth.ModelValidation.MAX_PERMISSION_NAME_LENGTH,
+                description="Permission",
+            )
+            description: str = Field(
+                default="",
+                max_length=c.Auth.ModelValidation.MAX_PERMISSION_DESCRIPTION_LENGTH,
+                description="Description",
+            )
+            resource: str = Field(default="", description="Resource path")
+            action: str = Field(default="", description="Action type")
 
-    # =========================================================================
-    # PROVIDER MODELS - Generic provider configuration
-    # =========================================================================
+        # =========================================================================
+        # PROVIDER MODELS - Generic provider configuration
+        # =========================================================================
 
-    class ProviderConfig(FlextModels.Value):
-        """Generic provider configuration (immutable value object)."""
+        class ProviderConfig(FlextModels.Value):
+            """Generic provider configuration (immutable value object)."""
 
-        model_config = ConfigDict(extra="allow")
+            model_config = ConfigDict(extra="allow")
 
-        name: str = Field(..., description="Provider name")
-        type: str = Field(..., description="Provider type")
-        enabled: bool = Field(default=True, description="Enabled status")
+            name: str = Field(..., description="Provider name")
+            type: str = Field(..., description="Provider type")
+            enabled: bool = Field(default=True, description="Enabled status")
 
-        # Extended configuration fields (migrated from TypedDict)
-        # All optional to support various provider types
-        provider_type: str | None = None
-        secret_key: str | None = None
-        algorithm: str | None = None
-        token_expiry_minutes: int | None = None
-        refresh_expiry_days: int | None = None
-        client_id: str | None = None
-        client_secret: str | None = None
-        authorization_endpoint: str | None = None
-        token_endpoint: str | None = None
-        redirect_uri: str | None = None
-        scope: str | None = None
-        audience: str | None = None
-        issuer: str | None = None
-        realm: str | None = None
-        kdc_host: str | None = None
-        kdc_port: int | None = None
-        service_principal: str | None = None
-        keytab_path: str | None = None
-        entity_id: str | None = None
-        sso_url: str | None = None
-        slo_url: str | None = None
-        x509_cert: str | None = None
-        ldap_url: str | None = None
-        bind_dn: str | None = None
-        base_dn: str | None = None
-        search_filter: str | None = None
-        flow: str | None = None
-        use_pkce: bool | None = None
-        token_endpoint_auth_method: str | None = None
+            # Extended configuration fields (migrated from TypedDict)
+            # All optional to support various provider types
+            provider_type: str | None = None
+            secret_key: str | None = None
+            algorithm: str | None = None
+            token_expiry_minutes: int | None = None
+            refresh_expiry_days: int | None = None
+            client_id: str | None = None
+            client_secret: str | None = None
+            authorization_endpoint: str | None = None
+            token_endpoint: str | None = None
+            redirect_uri: str | None = None
+            scope: str | None = None
+            audience: str | None = None
+            issuer: str | None = None
+            realm: str | None = None
+            kdc_host: str | None = None
+            kdc_port: int | None = None
+            service_principal: str | None = None
+            keytab_path: str | None = None
+            entity_id: str | None = None
+            sso_url: str | None = None
+            slo_url: str | None = None
+            x509_cert: str | None = None
+            ldap_url: str | None = None
+            bind_dn: str | None = None
+            base_dn: str | None = None
+            search_filter: str | None = None
+            flow: str | None = None
+            use_pkce: bool | None = None
+            token_endpoint_auth_method: str | None = None
 
-        @property
-        def is_configured(self) -> bool:
-            """Check if configured."""
-            return bool(self.name and self.type)
+            @property
+            def is_configured(self) -> bool:
+                """Check if configured."""
+                return bool(self.name and self.type)
 
-        def get(
-            self, key: str, default: t.GeneralValueType = None
-        ) -> t.GeneralValueType:
-            """Dict-like get method for backward compatibility."""
-            return self.__dict__.get(key, default) if hasattr(self, key) else default
+            def get(
+                self, key: str, default: t.GeneralValueType = None
+            ) -> t.GeneralValueType:
+                """Dict-like get method for backward compatibility."""
+                return (
+                    self.__dict__.get(key, default) if hasattr(self, key) else default
+                )
 
-        def __contains__(self, key: str) -> bool:
-            """Dict-like containment check."""
-            return key in self.__class__.model_fields
+            def __contains__(self, key: str) -> bool:
+                """Dict-like containment check."""
+                return key in self.__class__.model_fields
 
-        def __getitem__(self, key: str) -> t.GeneralValueType:
-            """Dict-like access."""
-            return self.__dict__.get(key) if hasattr(self, key) else None
+            def __getitem__(self, key: str) -> t.GeneralValueType:
+                """Dict-like access."""
+                return self.__dict__.get(key) if hasattr(self, key) else None
 
-    class ProviderConfiguration(UserDict[str, t.GeneralValueType]):
-        """Provider configuration for authentication providers."""
+        class ProviderConfiguration(UserDict[str, t.GeneralValueType]):
+            """Provider configuration for authentication providers."""
 
-        def __init__(
-            self,
-            dict_: Mapping[str, t.JsonValue] | None = None,
-            /,
-            **kwargs: t.GeneralValueType,
-        ) -> None:
-            """Initialize provider configuration with defaults."""
-            if dict_ is not None:
-                super().__init__(dict_, **kwargs)
-            else:
-                super().__init__(**kwargs)
-            # Set defaults if not provided
-            if "name" not in self:
-                self["name"] = "default"
-            if "version" not in self:
-                self["version"] = "1.0.0"
-            if "capabilities" not in self:
-                self["capabilities"] = []
+            def __init__(
+                self,
+                dict_: Mapping[str, t.JsonValue] | None = None,
+                /,
+                **kwargs: t.GeneralValueType,
+            ) -> None:
+                """Initialize provider configuration with defaults."""
+                if dict_ is not None:
+                    super().__init__(dict_, **kwargs)
+                else:
+                    super().__init__(**kwargs)
+                # Set defaults if not provided
+                if "name" not in self:
+                    self["name"] = "default"
+                if "version" not in self:
+                    self["version"] = "1.0.0"
+                if "capabilities" not in self:
+                    self["capabilities"] = []
 
-    class ApiKeyValidation(FlextModels.Value):
-        """API key validation request (immutable value object)."""
+        class ApiKeyValidation(FlextModels.Value):
+            """API key validation request (immutable value object)."""
 
-        api_key: str = Field(..., description="API key to validate")
-        metadata: dict[str, t.JsonValue] = Field(
-            default_factory=dict,
-            description="Additional validation data",
-        )
+            api_key: str = Field(..., description="API key to validate")
+            metadata: dict[str, t.JsonValue] = Field(
+                default_factory=dict,
+                description="Additional validation data",
+            )
 
-    class ApiKeyData(FlextModels.Value):
-        """API key data structure (immutable value object)."""
+        class ApiKeyData(FlextModels.Value):
+            """API key data structure (immutable value object)."""
 
-        key_hash: str = Field(..., description="Hashed API key")
-        name: str = Field(..., description="Key name")
-        permissions: list[str] = Field(
-            default_factory=list,
-            description="Key permissions",
-        )
-        is_active: bool = Field(default=True, description="Key active status")
-        expires_at: datetime = Field(
-            default_factory=lambda: datetime.max.replace(tzinfo=UTC),
-            description="Key expiration (datetime.max means never expires)",
-        )
-        created_at: datetime = Field(
-            default_factory=lambda: datetime.now(UTC),
-            description="Creation time",
-        )
+            key_hash: str = Field(..., description="Hashed API key")
+            name: str = Field(..., description="Key name")
+            permissions: list[str] = Field(
+                default_factory=list,
+                description="Key permissions",
+            )
+            is_active: bool = Field(default=True, description="Key active status")
+            expires_at: datetime = Field(
+                default_factory=lambda: datetime.max.replace(tzinfo=UTC),
+                description="Key expiration (datetime.max means never expires)",
+            )
+            created_at: datetime = Field(
+                default_factory=lambda: datetime.now(UTC),
+                description="Creation time",
+            )
 
-    class CredentialValidation(FlextModels.Value):
-        """Credential validation request (immutable value object)."""
+        class CredentialValidation(FlextModels.Value):
+            """Credential validation request (immutable value object)."""
 
-        username: str = Field(..., description="Username")
-        password: str = Field(..., description="Password", exclude=True)
-        metadata: dict[str, t.JsonValue] = Field(
-            default_factory=dict,
-            description="Additional validation data",
-        )
+            username: str = Field(..., description="Username")
+            password: str = Field(..., description="Password", exclude=True)
+            metadata: dict[str, t.JsonValue] = Field(
+                default_factory=dict,
+                description="Additional validation data",
+            )
 
-    # =========================================================================
-    # CREDENTIAL MODELS - Generic credential handling
-    # =========================================================================
+        # =========================================================================
+        # CREDENTIAL MODELS - Generic credential handling
+        # =========================================================================
 
-    class Credential(FlextModels.Value):
-        """Generic credential container (immutable value object)."""
+        class Credential(FlextModels.Value):
+            """Generic credential container (immutable value object)."""
 
-        credential_type: str = Field(..., description="Credential type")
-        value: str = Field(..., description="Credential value", exclude=True)
-        metadata: dict[str, t.JsonValue] = Field(
-            default_factory=dict,
-            description="Additional data",
-        )
+            credential_type: str = Field(..., description="Credential type")
+            value: str = Field(..., description="Credential value", exclude=True)
+            metadata: dict[str, t.JsonValue] = Field(
+                default_factory=dict,
+                description="Additional data",
+            )
 
-    # =========================================================================
-    # AUTHENTICATION RESPONSE - Generic response
-    # =========================================================================
+        # =========================================================================
+        # AUTHENTICATION RESPONSE - Generic response
+        # =========================================================================
 
-    class AuthResponse(FlextModels.Value):
-        """Generic authentication response (immutable value object)."""
+        class AuthResponse(FlextModels.Value):
+            """Generic authentication response (immutable value object)."""
 
-        success: bool = Field(..., description="Authentication success")
-        identity: dict[str, t.JsonValue] = Field(
-            default_factory=dict,
-            description="Identity data",
-        )
-        token: str = Field(default="", description="Token", exclude=True)
-        message: str = Field(default="", description="Response message")
-        metadata: dict[str, t.JsonValue] = Field(
-            default_factory=dict,
-            description="Additional data",
-        )
+            success: bool = Field(..., description="Authentication success")
+            identity: dict[str, t.JsonValue] = Field(
+                default_factory=dict,
+                description="Identity data",
+            )
+            token: str = Field(default="", description="Token", exclude=True)
+            message: str = Field(default="", description="Response message")
+            metadata: dict[str, t.JsonValue] = Field(
+                default_factory=dict,
+                description="Additional data",
+            )
 
 
 # Forward references resolved via from __future__ import annotations at module top

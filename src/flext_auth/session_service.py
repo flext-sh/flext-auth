@@ -7,6 +7,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from typing import override
+
 from flext_auth.managers import FlextAuthManagers, ServiceManagers
 from flext_auth.settings import FlextAuthSettings
 from flext_core import FlextLogger, FlextService as s, r
@@ -31,6 +33,7 @@ class FlextAuthSessionService(s[bool]):
         """Set session manager (for service composition)."""
         self._managers.session_manager = value
 
+    @override
     def execute(self) -> r[bool]:
         """Execute method for FlextService interface.
 

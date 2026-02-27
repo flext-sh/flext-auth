@@ -28,26 +28,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import ClassVar
-
-from flext_auth.models import FlextAuthModels
+from flext_auth.models import m
+from flext_auth.protocols import p
 from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_core import FlextService as s, FlextUtilities as u, r
-from flext_core.loggings import FlextLogger
-
-# Import aliases following order: c -> t -> p -> r -> m -> u
-# Runtime aliases defined at module level per FLEXT standards
-
-
-# HTTP request/response types (avoiding circular dependencies)
-class HttpRequest:
-    """HTTP request type for middleware processing."""
-
-    headers: ClassVar[dict[str, str]] = {}
-
-
-class HttpResponse:
-    """HTTP response type for middleware processing."""
+from flext_auth.utilities import u
+from flext_core import FlextLogger, r, s
 
 
 class _MiddlewareControlMixin:
@@ -123,7 +108,7 @@ class FlextAuthMiddleware(s[bool]):
             super().__init__()
             self._provider = provider
             self.logger = FlextLogger(f"flext_auth.middleware.http.{provider_name}")
-            self._current_token: FlextAuthModels.Auth.AuthToken | None = None
+            self._current_token: m.Auth.AuthToken | None = None
 
         def process_request(
             self,
@@ -139,18 +124,20 @@ class FlextAuthMiddleware(s[bool]):
 
             """
             if not self._enabled:
-                return r[HttpRequest].ok(request)
+                return r[p.Auth.HttpRequest].ok(request)
 
             if not self._is_token_still_valid():
                 token_result = self._authenticate_or_refresh()
                 if token_result.is_failure:
-                    return r[HttpRequest].fail(
+                    return r[p.Auth.HttpRequest].fail(
                         token_result.error or "Authentication failed",
                     )
                 self._current_token = token_result.value
 
             if self._current_token is None:
-                return r[HttpRequest].fail("Authentication token is not available")
+                return r[p.Auth.HttpRequest].fail(
+                    "Authentication token is not available"
+                )
 
             # Add authorization header (if headers is writable)
             try:
@@ -165,12 +152,12 @@ class FlextAuthMiddleware(s[bool]):
                 # Headers might be read-only, skip if not writable
                 pass
 
-            return r[HttpRequest].ok(request)
+            return r[p.Auth.HttpRequest].ok(request)
 
-        def _authenticate_or_refresh(self) -> r[FlextAuthModels.Auth.AuthToken]:
+        def _authenticate_or_refresh(self) -> r[m.Auth.AuthToken]:
             """Authenticate using credentials or refresh existing token."""
             if self._is_token_still_valid() and self._current_token is not None:
-                return r[FlextAuthModels.Auth.AuthToken].ok(self._current_token)
+                return r[m.Auth.AuthToken].ok(self._current_token)
 
             return self._refresh_or_reauthenticate()
 
@@ -189,33 +176,33 @@ class FlextAuthMiddleware(s[bool]):
 
             return validation_result.value
 
-        def _refresh_or_reauthenticate(self) -> r[FlextAuthModels.Auth.AuthToken]:
+        def _refresh_or_reauthenticate(self) -> r[m.Auth.AuthToken]:
             """Refresh token or re-authenticate if refresh fails."""
             current_token = self._current_token
             if current_token is None:
-                return r[FlextAuthModels.Auth.AuthToken].fail(
+                return r[m.Auth.AuthToken].fail(
                     "No token available for refresh",
                 )
 
             refresh_input = current_token.refresh_token or current_token.token
             if not refresh_input:
-                return r[FlextAuthModels.Auth.AuthToken].fail(
+                return r[m.Auth.AuthToken].fail(
                     "No refresh token available",
                 )
 
             validation_result = self._provider.validate(refresh_input)
             if validation_result.is_failure:
-                return r[FlextAuthModels.Auth.AuthToken].fail(
+                return r[m.Auth.AuthToken].fail(
                     validation_result.error or "Refresh source token is invalid",
                 )
             if not validation_result.value:
-                return r[FlextAuthModels.Auth.AuthToken].fail(
+                return r[m.Auth.AuthToken].fail(
                     "Refresh source token is invalid",
                 )
 
             refresh_result = self._provider.refresh(refresh_input)
             if refresh_result.is_failure:
-                return r[FlextAuthModels.Auth.AuthToken].fail(
+                return r[m.Auth.AuthToken].fail(
                     refresh_result.error or "Token refresh failed",
                 )
 
@@ -237,7 +224,7 @@ class FlextAuthMiddleware(s[bool]):
                     identity_id_value = current_token.identity_id
 
             try:
-                refreshed_token = FlextAuthModels.Auth.AuthToken(
+                refreshed_token = m.Auth.AuthToken(
                     identity_id=identity_id_value,
                     token=refreshed_payload.token,
                     token_type=refreshed_payload.token_type
@@ -254,12 +241,12 @@ class FlextAuthMiddleware(s[bool]):
                     else "",
                 )
             except (AttributeError, TypeError, ValueError):
-                return r[FlextAuthModels.Auth.AuthToken].fail(
+                return r[m.Auth.AuthToken].fail(
                     "Provider refresh returned invalid token payload",
                 )
 
             self._current_token = refreshed_token
-            return r[FlextAuthModels.Auth.AuthToken].ok(refreshed_token)
+            return r[m.Auth.AuthToken].ok(refreshed_token)
 
 
 __all__ = ["FlextAuthMiddleware"]

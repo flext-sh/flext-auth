@@ -13,7 +13,7 @@ from typing import Annotated
 
 import bcrypt
 import jwt
-from flext_auth.constants import FlextAuthConstants
+from flext_auth.constants import c
 from flext_auth.typings import t
 from flext_core import FlextUtilities, r
 from pydantic import BeforeValidator, SecretStr, TypeAdapter, ValidationError
@@ -42,7 +42,7 @@ class FlextAuthUtilities(FlextUtilities):
 
         Uses parent Enum utilities for consistency.
         """
-        return FlextUtilities.Enum.is_member(FlextAuthConstants.Auth.TokenTypes, value)
+        return FlextUtilities.Enum.is_member(c.Auth.TokenTypes, value)
 
     @classmethod
     def is_valid_provider_type(
@@ -53,9 +53,7 @@ class FlextAuthUtilities(FlextUtilities):
 
         Uses parent Enum utilities for consistency.
         """
-        return FlextUtilities.Enum.is_member(
-            FlextAuthConstants.Auth.ProviderTypes, value
-        )
+        return FlextUtilities.Enum.is_member(c.Auth.ProviderTypes, value)
 
     @classmethod
     def is_valid_role_type(
@@ -66,7 +64,7 @@ class FlextAuthUtilities(FlextUtilities):
 
         Uses parent Enum utilities for consistency.
         """
-        return FlextUtilities.Enum.is_member(FlextAuthConstants.Auth.RoleTypes, value)
+        return FlextUtilities.Enum.is_member(c.Auth.RoleTypes, value)
 
     @classmethod
     def is_valid_permission_type(
@@ -78,7 +76,7 @@ class FlextAuthUtilities(FlextUtilities):
         Uses parent Enum utilities for consistency.
         """
         return FlextUtilities.Enum.is_member(
-            FlextAuthConstants.Auth.PermissionTypes,
+            c.Auth.PermissionTypes,
             value,
         )
 
@@ -144,10 +142,10 @@ class FlextAuthUtilities(FlextUtilities):
                 Annotated type suitable for use in Pydantic model field definitions.
                 """
                 return Annotated[
-                    FlextAuthConstants.Auth.TokenTypes,
+                    c.Auth.TokenTypes,
                     BeforeValidator(
                         FlextUtilities.Enum.coerce_validator(
-                            FlextAuthConstants.Auth.TokenTypes,
+                            c.Auth.TokenTypes,
                         ),
                     ),
                 ]
@@ -161,10 +159,10 @@ class FlextAuthUtilities(FlextUtilities):
                 Annotated type suitable for use in Pydantic model field definitions.
                 """
                 return Annotated[
-                    FlextAuthConstants.Auth.ProviderTypes,
+                    c.Auth.ProviderTypes,
                     BeforeValidator(
                         FlextUtilities.Enum.coerce_validator(
-                            FlextAuthConstants.Auth.ProviderTypes,
+                            c.Auth.ProviderTypes,
                         ),
                     ),
                 ]
@@ -178,10 +176,10 @@ class FlextAuthUtilities(FlextUtilities):
                 Annotated type suitable for use in Pydantic model field definitions.
                 """
                 return Annotated[
-                    FlextAuthConstants.Auth.RoleTypes,
+                    c.Auth.RoleTypes,
                     BeforeValidator(
                         FlextUtilities.Enum.coerce_validator(
-                            FlextAuthConstants.Auth.RoleTypes,
+                            c.Auth.RoleTypes,
                         ),
                     ),
                 ]
@@ -200,19 +198,13 @@ class FlextAuthUtilities(FlextUtilities):
                     return r[str].fail("Username cannot be empty")
 
                 username = username.strip()
-                if (
-                    len(username)
-                    < FlextAuthConstants.Auth.Credentials.Username.MIN_LENGTH
-                ):
+                if len(username) < c.Auth.Credentials.Username.MIN_LENGTH:
                     return r[str].fail(
-                        f"Username too short (min {FlextAuthConstants.Auth.Credentials.Username.MIN_LENGTH} chars)",
+                        f"Username too short (min {c.Auth.Credentials.Username.MIN_LENGTH} chars)",
                     )
-                if (
-                    len(username)
-                    > FlextAuthConstants.Auth.Credentials.Username.MAX_LENGTH
-                ):
+                if len(username) > c.Auth.Credentials.Username.MAX_LENGTH:
                     return r[str].fail(
-                        f"Username too long (max {FlextAuthConstants.Auth.Credentials.Username.MAX_LENGTH} chars)",
+                        f"Username too long (max {c.Auth.Credentials.Username.MAX_LENGTH} chars)",
                     )
                 return r[str].ok(username)
 
@@ -223,9 +215,9 @@ class FlextAuthUtilities(FlextUtilities):
                     return r[str].fail("Email cannot be empty")
 
                 email = email.strip()
-                if len(email) > FlextAuthConstants.Auth.MAX_EMAIL_LENGTH:
+                if len(email) > c.Auth.MAX_EMAIL_LENGTH:
                     return r[str].fail(
-                        f"Email too long (max {FlextAuthConstants.Auth.MAX_EMAIL_LENGTH} chars)",
+                        f"Email too long (max {c.Auth.MAX_EMAIL_LENGTH} chars)",
                     )
 
                 if "@" not in email or "." not in email.split("@")[1]:
@@ -239,19 +231,13 @@ class FlextAuthUtilities(FlextUtilities):
                 if not password:
                     return r[str].fail("Password cannot be empty")
 
-                if (
-                    len(password)
-                    < FlextAuthConstants.Auth.Credentials.Password.MIN_LENGTH
-                ):
+                if len(password) < c.Auth.Credentials.Password.MIN_LENGTH:
                     return r[str].fail(
-                        f"Password too short (min {FlextAuthConstants.Auth.Credentials.Password.MIN_LENGTH} chars)",
+                        f"Password too short (min {c.Auth.Credentials.Password.MIN_LENGTH} chars)",
                     )
-                if (
-                    len(password)
-                    > FlextAuthConstants.Auth.Credentials.Password.MAX_LENGTH
-                ):
+                if len(password) > c.Auth.Credentials.Password.MAX_LENGTH:
                     return r[str].fail(
-                        f"Password too long (max {FlextAuthConstants.Auth.Credentials.Password.MAX_LENGTH} chars)",
+                        f"Password too long (max {c.Auth.Credentials.Password.MAX_LENGTH} chars)",
                     )
 
                 # Note: WEAK_CREDENTIALS not defined - removed check or define constant if needed
@@ -292,7 +278,7 @@ class FlextAuthUtilities(FlextUtilities):
             def hash_password(password: str) -> str:
                 """Hash a password using bcrypt."""
                 salt = bcrypt.gensalt(
-                    rounds=FlextAuthConstants.Auth.DEFAULT_HASH_ROUNDS,
+                    rounds=c.Auth.DEFAULT_HASH_ROUNDS,
                 )
                 return bcrypt.hashpw(password.encode(), salt).decode()
 
@@ -347,7 +333,7 @@ class FlextAuthUtilities(FlextUtilities):
     def encode_token(
         payload: t.Tokens.ClaimMap,
         secret: str,
-        algorithm: str = FlextAuthConstants.Auth.DEFAULT_JWT_ALGORITHM,
+        algorithm: str = c.Auth.DEFAULT_JWT_ALGORITHM,
     ) -> r[str]:
         """Generic JWT token encoding.
 
@@ -402,7 +388,7 @@ class FlextAuthUtilities(FlextUtilities):
         try:
             algorithms_list: list[str]
             if algorithms is None:
-                algorithms_list = [FlextAuthConstants.Auth.DEFAULT_JWT_ALGORITHM]
+                algorithms_list = [c.Auth.DEFAULT_JWT_ALGORITHM]
             else:
                 algorithms_list = list(algorithms)
             payload = jwt.decode(

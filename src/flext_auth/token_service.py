@@ -12,10 +12,10 @@ from __future__ import annotations
 
 from flext_auth.constants import FlextAuthConstants as c
 from flext_auth.managers import FlextAuthManagers, ServiceManagers
-from flext_auth.models import FlextAuthModels
+from flext_auth.models import m
 
 # Forward reference to avoid circular import
-# Import FlextAuthModels locally in methods where needed
+# Import m locally in methods where needed
 from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 from flext_auth.settings import FlextAuthSettings
@@ -77,7 +77,7 @@ class FlextAuthTokenService(s[bool]):
         # JWT provider only validates, does not return identity
         return result
 
-    def refresh_token(self, token: str) -> r[FlextAuthModels.Auth.AuthToken]:
+    def refresh_token(self, token: str) -> r[m.Auth.AuthToken]:
         """Railway-oriented token refresh with audit logging."""
         result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.refresh(token),
@@ -91,12 +91,10 @@ class FlextAuthTokenService(s[bool]):
                 reason=error,
             )
 
-            return r[FlextAuthModels.Auth.AuthToken].fail(
-                error or "Token refresh failed"
-            )
+            return r[m.Auth.AuthToken].fail(error or "Token refresh failed")
 
         refreshed = result.value
-        auth_token = FlextAuthModels.Auth.AuthToken(
+        auth_token = m.Auth.AuthToken(
             identity_id=refreshed.user_id,
             token=refreshed.token,
             expires_at=refreshed.expires_at,
@@ -107,7 +105,7 @@ class FlextAuthTokenService(s[bool]):
             old_token_id=self._short_token(token),
             new_token_id=self._short_token(auth_token.token),
         )
-        return r[FlextAuthModels.Auth.AuthToken].ok(auth_token)
+        return r[m.Auth.AuthToken].ok(auth_token)
 
     def generate_jwt_token(
         self,
