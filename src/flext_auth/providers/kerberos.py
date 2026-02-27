@@ -20,8 +20,6 @@ from collections.abc import Callable, Mapping
 from datetime import UTC, datetime
 
 from flext_auth.models import FlextAuthModels
-
-# Forward reference to avoid circular import
 from flext_auth.providers.rfc import FlextAuthRfcProvider
 from flext_auth.typings import FlextAuthTypes as at
 from flext_core import r, t, u

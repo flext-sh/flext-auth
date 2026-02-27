@@ -12,8 +12,6 @@ from __future__ import annotations
 
 from flext_auth.models import FlextAuthModels as m
 from flext_auth.protocols import FlextAuthProtocols
-
-# Forward reference to avoid circular import
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_core import r
 
