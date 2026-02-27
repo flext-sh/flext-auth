@@ -66,7 +66,7 @@ class TestJwtTokenGenerator:
         """Test successful token generation."""
         # Arrange: provider with valid JWT config
         config = {
-            "secret_key": "test-secret-key-for-jwt",
+            "secret_key": "test-secret-key-for-jwt-minimum-32-chars",
             "algorithm": "HS256",
             "expiry_minutes": 30,
             "issuer": "flext-auth-test",
