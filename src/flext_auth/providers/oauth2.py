@@ -726,7 +726,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         )
 
         try:
-            with urlopen(request, timeout=10.0) as response:  # noqa: S310
+            with urlopen(request, timeout=10.0) as response:  # noqa: S310  # nosec B310
                 response_payload = response.read().decode("utf-8")
         except HTTPError as exc:
             try:
