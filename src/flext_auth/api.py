@@ -23,7 +23,8 @@ from flext_auth.settings import FlextAuthSettings
 from flext_auth.token_service import FlextAuthTokenService
 from flext_auth.user_service import FlextAuthIdentityService
 from flext_core import r, t
-from flext_core.dispatcher import FlextDispatcher
+from flext_core import FlextContainer
+from flext_core.protocols import p
 from flext_core.loggings import FlextLogger
 
 
@@ -57,7 +58,7 @@ class FlextAuth:
         self._registry = FlextAuthRegistry()
         # Import here to avoid circular dependency
 
-        self._dispatcher = FlextDispatcher()
+        self._dispatcher = FlextContainer.get_global().get("command_bus").unwrap()
         # Use provided service_name or default (service_name is optional)
         self._service_name = service_name if service_name is not None else "flext_auth"
 

@@ -20,7 +20,8 @@ from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 from flext_auth.settings import FlextAuthSettings
 from flext_core import FlextLogger, FlextService as s, r
-from flext_core.dispatcher import FlextDispatcher
+from flext_core import FlextContainer
+from flext_core.protocols import p
 
 
 class FlextAuthTokenService(s[bool]):
@@ -35,7 +36,7 @@ class FlextAuthTokenService(s[bool]):
         *,
         config: FlextAuthSettings,
         provider_service: FlextAuthProviderService,
-        dispatcher: FlextDispatcher,
+        dispatcher: p.CommandBus,
     ) -> None:
         """Flexible initialization with dependency injection."""
         super().__init__()

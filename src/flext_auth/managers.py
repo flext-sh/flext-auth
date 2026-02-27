@@ -51,7 +51,7 @@ class ServiceManagers:
     def __init__(
         self,
         config: FlextAuthSettings,
-        dispatcher: FlextDispatcher,
+        dispatcher: p.CommandBus,
     ) -> None:
         """Initialize all standard managers used by services."""
         self.config = config
@@ -501,7 +501,7 @@ class FlextAuthManagers:
             self._config = config
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
-            self._dispatcher = FlextDispatcher()
+            self._dispatcher = FlextContainer.get_global().get("command_bus").unwrap()
             self._sessions: dict[
                 str,
                 dict[str, t.GeneralValueType],
@@ -672,7 +672,7 @@ class FlextAuthManagers:
         def __init__(
             self,
             config: FlextAuthSettings,
-            dispatcher: FlextDispatcher,
+            dispatcher: p.CommandBus,
         ) -> None:
             """Initialize audit logger with configuration."""
             super().__init__()
@@ -930,7 +930,7 @@ class FlextAuthManagers:
         def __init__(
             self,
             config: FlextAuthSettings,
-            dispatcher: FlextDispatcher,
+            dispatcher: p.CommandBus,
         ) -> None:
             """Initialize rate limiter with configuration."""
             super().__init__()

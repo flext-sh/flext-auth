@@ -12,13 +12,14 @@ from typing import override
 from flext_auth.managers import FlextAuthManagers, ServiceManagers
 from flext_auth.settings import FlextAuthSettings
 from flext_core import FlextLogger, FlextService as s, r
-from flext_core.dispatcher import FlextDispatcher
+from flext_core import FlextContainer
+from flext_core.protocols import p
 
 
 class FlextAuthSessionService(s[bool]):
     """Focused service for session management with complete flext-core integration."""
 
-    def __init__(self, config: FlextAuthSettings, dispatcher: FlextDispatcher) -> None:
+    def __init__(self, config: FlextAuthSettings, dispatcher: p.CommandBus) -> None:
         """Initialize session service with flext-core integration."""
         super().__init__()
         self._managers = ServiceManagers(config, dispatcher)
