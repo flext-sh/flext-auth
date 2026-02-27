@@ -5,7 +5,7 @@ Provides authentication framework with multi-provider support.
 """
 
 from flext_auth.api import FlextAuth
-from flext_auth.constants import FlextAuthConstants
+from flext_auth.constants import FlextAuthConstants, c
 from flext_auth.managers import FlextAuthManagers
 from flext_auth.middleware import FlextAuthMiddleware
 from flext_auth.mixins import FlextAuthMixins
@@ -43,7 +43,6 @@ from flext_core import (
 )
 
 # Standard aliases (11 total)
-c = FlextAuthConstants
 d = FlextDecorators
 e = FlextExceptions
 h = FlextHandlers
