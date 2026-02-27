@@ -124,18 +124,18 @@ class FlextAuthMiddleware(s[bool]):
 
             """
             if not self._enabled:
-                return r[p.Auth.HttpRequest].ok(request)
+                return r[object].ok(request)
 
             if not self._is_token_still_valid():
                 token_result = self._authenticate_or_refresh()
                 if token_result.is_failure:
-                    return r[p.Auth.HttpRequest].fail(
+                    return r[object].fail(
                         token_result.error or "Authentication failed",
                     )
                 self._current_token = token_result.value
 
             if self._current_token is None:
-                return r[p.Auth.HttpRequest].fail(
+                return r[object].fail(
                     "Authentication token is not available"
                 )
 
@@ -152,7 +152,7 @@ class FlextAuthMiddleware(s[bool]):
                 # Headers might be read-only, skip if not writable
                 pass
 
-            return r[p.Auth.HttpRequest].ok(request)
+            return r[object].ok(request)
 
         def _authenticate_or_refresh(self) -> r[m.Auth.AuthToken]:
             """Authenticate using credentials or refresh existing token."""
