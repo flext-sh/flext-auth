@@ -190,7 +190,6 @@ class TestTokenRealFlows:
             refresh_token="refresh-source-token",
         )
 
-        HttpRequest.headers = {}
         request = HttpRequest()
 
         result = middleware.process_request(request)
