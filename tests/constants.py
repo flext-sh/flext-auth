@@ -67,7 +67,7 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
     class TestJWT:
         """JWT test constants."""
 
-        TEST_SECRET: Final[str] = "test_secret_key_for_jwt_signing"
+        TEST_SECRET: Final[str] = "test_secret_key_for_jwt_signing_32bytes"
         TEST_ISSUER: Final[str] = "test-issuer"
         TEST_AUDIENCE: Final[str] = "test-audience"
         TEST_ALGORITHM: Final[str] = "HS256"
