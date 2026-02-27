@@ -38,34 +38,46 @@ class FlextAuthRegistry(FlextRegistry):
         provider_result = self.register_plugin(self.PROVIDERS, name, provider)
         if provider_result.is_failure:
             return provider_result
-        
+
         # Register config if provided
         if configuration:
             # Wrap config dict in a simple wrapper with _protocol_name
-            config_wrapper = type('ConfigWrapper', (), {
-                '_protocol_name': lambda self: f"{self.PROVIDERS}_config",
-                'data': dict(configuration)
-            })()
-            config_result = self.register_plugin(f"{self.PROVIDERS}_config", name, config_wrapper)
+            config_wrapper = type(
+                "ConfigWrapper",
+                (),
+                {
+                    "_protocol_name": lambda self: f"{self.PROVIDERS}_config",
+                    "data": dict(configuration),
+                },
+            )()
+            config_result = self.register_plugin(
+                f"{self.PROVIDERS}_config", name, config_wrapper
+            )
             if config_result.is_failure:
                 # Rollback provider registration
                 self.unregister_plugin(self.PROVIDERS, name)
                 return config_result
-        
+
         # Register metadata if provided
         if metadata:
             # metadata is already a Pydantic model, but needs _protocol_name
-            metadata_wrapper = type('MetadataWrapper', (), {
-                '_protocol_name': lambda self: f"{self.PROVIDERS}_metadata",
-                'data': metadata
-            })()
-            metadata_result = self.register_plugin(f"{self.PROVIDERS}_metadata", name, metadata_wrapper)
+            metadata_wrapper = type(
+                "MetadataWrapper",
+                (),
+                {
+                    "_protocol_name": lambda self: f"{self.PROVIDERS}_metadata",
+                    "data": metadata,
+                },
+            )()
+            metadata_result = self.register_plugin(
+                f"{self.PROVIDERS}_metadata", name, metadata_wrapper
+            )
             if metadata_result.is_failure:
                 # Rollback previous registrations
                 self.unregister_plugin(self.PROVIDERS, name)
                 self.unregister_plugin(f"{self.PROVIDERS}_config", name)
                 return metadata_result
-        
+
         return r[bool].ok(value=True)
 
     def unregister(self, name: str) -> r[bool]:
@@ -74,11 +86,11 @@ class FlextAuthRegistry(FlextRegistry):
         provider_result = self.unregister_plugin(self.PROVIDERS, name)
         if provider_result.is_failure:
             return r[bool].fail(f"Provider '{name}' not registered")
-        
+
         # Clean up config and metadata (ignore failures - they may not exist)
         self.unregister_plugin(f"{self.PROVIDERS}_config", name)
         self.unregister_plugin(f"{self.PROVIDERS}_metadata", name)
-        
+
         return r[bool].ok(value=True)
 
     def get(self, name: str) -> r[FlextAuthBaseProvider]:
@@ -88,14 +100,14 @@ class FlextAuthRegistry(FlextRegistry):
             return r[FlextAuthBaseProvider].fail(
                 result.error or f"Provider '{name}' not registered"
             )
-        
+
         # Type narrowing
         provider = result.value
         if not isinstance(provider, FlextAuthBaseProvider):
             return r[FlextAuthBaseProvider].fail(
                 f"Provider '{name}' is not a FlextAuthBaseProvider"
             )
-        
+
         return r[FlextAuthBaseProvider].ok(provider)
 
     def list_providers(self) -> list[str]:
@@ -103,7 +115,7 @@ class FlextAuthRegistry(FlextRegistry):
         result = self.list_plugins(self.PROVIDERS)
         if result.is_failure:
             return []
-        return result.value if result.value else []
+        return result.value or []
 
     def has_provider(self, name: str) -> bool:
         """Check if provider is registered."""
@@ -118,56 +130,58 @@ class FlextAuthRegistry(FlextRegistry):
             return r[Mapping[str, t.JsonValue]].fail(
                 f"Provider '{name}' not registered"
             )
-        
+
         config_result = self.get_plugin(f"{self.PROVIDERS}_config", name)
         if config_result.is_failure:
             return r[Mapping[str, t.JsonValue]].fail("No config")
-        
+
         # Extract data from wrapper
         wrapper = config_result.value
-        config = getattr(wrapper, 'data', None)
+        config = getattr(wrapper, "data", None)
         if config is None:
             return r[Mapping[str, t.JsonValue]].fail("Invalid config format")
-        
+
         return r[Mapping[str, t.JsonValue]].ok(config)
 
     def update_config(self, name: str, config: Mapping[str, t.JsonValue]) -> r[bool]:
         """Update provider configuration."""
         if not self.has_provider(name):
             return r[bool].fail(f"Provider '{name}' not registered")
-        
+
         # Unregister old config
         self.unregister_plugin(f"{self.PROVIDERS}_config", name)
-        
+
         # Register new config
-        config_wrapper = type('ConfigWrapper', (), {
-            '_protocol_name': lambda self: f"{self.PROVIDERS}_config",
-            'data': dict(config)
-        })()
-        config_result = self.register_plugin(f"{self.PROVIDERS}_config", name, config_wrapper)
-        
-        return config_result
+        config_wrapper = type(
+            "ConfigWrapper",
+            (),
+            {
+                "_protocol_name": lambda self: f"{self.PROVIDERS}_config",
+                "data": dict(config),
+            },
+        )()
+        return self.register_plugin(f"{self.PROVIDERS}_config", name, config_wrapper)
 
     def get_metadata(self, name: str) -> r[at.Providers.Metadata]:
         """Get provider metadata."""
         if not self.has_provider(name):
             return r[at.Providers.Metadata].fail(f"Provider '{name}' not registered")
-        
+
         metadata_result = self.get_plugin(f"{self.PROVIDERS}_metadata", name)
         if metadata_result.is_failure:
             # Return default metadata
             return r[at.Providers.Metadata].ok(
                 at.Providers.Metadata(name=name, capabilities=())
             )
-        
+
         # Extract data from wrapper
         wrapper = metadata_result.value
-        metadata = getattr(wrapper, 'data', None)
+        metadata = getattr(wrapper, "data", None)
         if metadata is None:
             return r[at.Providers.Metadata].ok(
                 at.Providers.Metadata(name=name, capabilities=())
             )
-        
+
         return r[at.Providers.Metadata].ok(metadata)
 
     def get_capabilities(self, name: str) -> r[set[str]]:

@@ -29,7 +29,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from flext_auth.models import m
-from flext_auth.protocols import p
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.utilities import u
 from flext_core import FlextLogger, r, s
@@ -135,9 +134,7 @@ class FlextAuthMiddleware(s[bool]):
                 self._current_token = token_result.value
 
             if self._current_token is None:
-                return r[object].fail(
-                    "Authentication token is not available"
-                )
+                return r[object].fail("Authentication token is not available")
 
             # Add authorization header (if headers is writable)
             try:

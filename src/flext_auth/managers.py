@@ -20,7 +20,6 @@ from flext_auth.settings import FlextAuthSettings
 from flext_core import (
     FlextContainer,
     FlextContext,
-    FlextDispatcher,
     FlextLogger,
     FlextRegistry,
     r,

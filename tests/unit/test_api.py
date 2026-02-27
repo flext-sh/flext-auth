@@ -13,6 +13,7 @@ from __future__ import annotations
 import threading
 import time
 from datetime import UTC, datetime, timedelta
+from typing import ClassVar
 
 import jwt
 import pytest
@@ -31,12 +32,14 @@ from pydantic import SecretStr
 c = FlextAuthConstants
 r = FlextResult
 
+
 class HttpRequest:
     """Minimal HTTP request fixture for middleware tests."""
 
-    headers: dict[str, str] = {}
+    headers: ClassVar[dict[str, str]] = {}
 
     def __init__(self) -> None:
+        """Initialize with copy of class-level headers."""
         self.headers = dict(self.__class__.headers)
 
 

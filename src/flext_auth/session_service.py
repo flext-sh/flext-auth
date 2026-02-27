@@ -12,7 +12,6 @@ from typing import override
 from flext_auth.managers import FlextAuthManagers, ServiceManagers
 from flext_auth.settings import FlextAuthSettings
 from flext_core import FlextLogger, FlextService as s, r
-from flext_core import FlextContainer
 from flext_core.protocols import p
 
 
