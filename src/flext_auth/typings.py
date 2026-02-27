@@ -17,6 +17,7 @@ from flext_core import FlextTypes
 from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
 
+from typing import override
 class FlextAuthTypes(FlextTypes):
     """Authentication-specific type definitions extending t with composition."""
 
@@ -488,6 +489,7 @@ class FlextAuthTypes(FlextTypes):
 
             __slots__ = ()
 
+            @override
             def __repr__(self) -> str:
                 """Return string representation of Unit type."""
                 return "Unit"

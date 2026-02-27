@@ -20,6 +20,7 @@ from flext_core.protocols import p
 from pydantic import ValidationError
 
 
+from typing import override
 class FlextAuthIdentityService(s[bool]):
     """Generic identity service using flext-core patterns and railway-oriented programming.
 
@@ -47,6 +48,7 @@ class FlextAuthIdentityService(s[bool]):
         """Set identity manager (for service composition)."""
         self._managers.user_manager = value
 
+    @override
     def execute(self) -> r[bool]:
         """Railway-oriented execute with focused service pattern."""
         return r[bool].fail(

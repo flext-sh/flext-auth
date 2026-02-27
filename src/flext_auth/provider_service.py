@@ -14,6 +14,7 @@ from flext_auth.constants import c
 from flext_auth.models import m
 from flext_auth.protocols import p
 from flext_auth.providers import (
+from typing import override
     FlextAuthApiKeyProvider,
     FlextAuthBasicProvider,
     FlextAuthCertificateProvider,
@@ -45,6 +46,7 @@ class FlextAuthProviderService(s[bool]):
         self._providers = FlextAuthRegistry()
         self._register_builtin_providers()
 
+    @override
     def execute(self) -> r[bool]:
         """Railway-oriented execute with focused service pattern."""
         return r[bool].fail(

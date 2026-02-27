@@ -24,6 +24,7 @@ from flext_auth.constants import c
 from flext_auth.models import FlextAuthModels
 from flext_auth.protocols import FlextAuthProtocols
 
+from typing import override
 # Import aliases following order: c -> t -> p -> r -> m -> u
 # Runtime aliases defined at module level per FLEXT standards
 # Forward reference to avoid circular import
@@ -39,6 +40,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     Uses flext-core patterns and Python 3.13+ features for maximum maintainability.
     """
 
+    @override
     def _protocol_name(self) -> str:
         """Return protocol name for registry identification."""
         return "auth-provider-oauth2"
@@ -466,6 +468,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             """Clear stored PKCE code verifier."""
             self._verifiers.pop(state, None)
 
+    @override
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.
 
@@ -475,6 +478,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         """
         return "RFC 6749"
 
+    @override
     def supports(self) -> set[str]:
         """Return OAuth2 provider capabilities using composition."""
         capabilities = {
@@ -498,6 +502,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         return capabilities
 
+    @override
     def authenticate(
         self,
         credentials: FlextAuthModels.CredentialValidation | Mapping[str, t.JsonValue],
@@ -540,6 +545,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         )
         return r[FlextAuthProtocols.Auth.TokenProtocol].ok(token_model)
 
+    @override
     def validate(
         self,
         token: str | FlextAuthProtocols.Auth.TokenProtocol,
@@ -554,6 +560,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         return r[bool].ok(value=True)
 
+    @override
     def refresh(
         self,
         token: str | FlextAuthProtocols.Auth.TokenProtocol,
@@ -609,6 +616,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         )
         return r[FlextAuthProtocols.Auth.TokenProtocol].ok(refreshed_model)
 
+    @override
     def revoke(
         self,
         _token: str | FlextAuthProtocols.Auth.TokenProtocol,
@@ -870,6 +878,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         return self._map_token_payload_to_identity(claims_result.value)
 
+    @override
     def generate_token_for_user(
         self,
         user: FlextAuthModels.Auth.AuthIdentity | Mapping[str, object],

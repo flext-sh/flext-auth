@@ -25,6 +25,7 @@ from flext_auth.typings import FlextAuthTypes as at
 from flext_core import r, t, u
 
 
+from typing import override
 class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     r"""SOLID-compliant Kerberos authentication provider.
 
@@ -46,6 +47,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
     """
 
+    @override
     def _protocol_name(self) -> str:
         """Return protocol name for registry identification."""
         return "auth-provider-kerberos"
@@ -284,6 +286,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
         return None
 
+    @override
     def supports(self) -> set[str]:
         """Return Kerberos provider capabilities."""
         return {"kerberos", "sso", "enterprise", "ticket", "validate"}
@@ -350,6 +353,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             "or JWT bridge settings (secret_key/issuer/audience)",
         )
 
+    @override
     def generate_token_for_user(
         self,
         user: FlextAuthModels.Auth.AuthIdentity | Mapping[str, object],

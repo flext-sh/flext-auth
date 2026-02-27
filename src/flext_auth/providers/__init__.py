@@ -26,6 +26,7 @@ from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
 from flext_auth.providers.oidc import FlextAuthOidcProvider
 from flext_auth.providers.saml import FlextAuthSamlProvider
 
+from typing import override
 __all__: list[str] = [
     "FlextAuthApiKeyProvider",
     "FlextAuthBaseProvider",

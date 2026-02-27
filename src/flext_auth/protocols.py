@@ -15,10 +15,9 @@ from collections.abc import Mapping
 from datetime import datetime
 from typing import Protocol, runtime_checkable
 
-from flext_core.protocols import FlextProtocols
+from flext_core import FlextProtocols
 
-# Note: Protocols avoid importing models to prevent circular dependencies
-# Protocols use structural typing - models satisfy protocols through attributes
+from typing import override
 
 
 class FlextAuthProtocols(FlextProtocols):
@@ -154,6 +153,7 @@ class FlextAuthProtocols(FlextProtocols):
                 """Extend session expiration time."""
                 ...
 
+            @override
             def is_valid(self) -> bool:
                 """Check if session is valid (active and not expired)."""
                 ...

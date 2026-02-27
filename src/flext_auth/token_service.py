@@ -14,6 +14,7 @@ from flext_auth.constants import FlextAuthConstants as c
 from flext_auth.managers import FlextAuthManagers, ServiceManagers
 from flext_auth.models import m
 
+from typing import override
 # Forward reference to avoid circular import
 # Import m locally in methods where needed
 from flext_auth.provider_service import FlextAuthProviderService
@@ -49,6 +50,7 @@ class FlextAuthTokenService(s[bool]):
         """Direct access to user manager for token operations."""
         return self._managers.user_manager
 
+    @override
     def execute(self) -> r[bool]:
         """Railway-oriented execute with focused service pattern."""
         return r[bool].fail(

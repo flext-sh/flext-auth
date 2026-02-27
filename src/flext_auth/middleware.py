@@ -34,6 +34,7 @@ from flext_auth.utilities import u
 from flext_core import FlextLogger, r, s
 
 
+from typing import override
 class _MiddlewareControlMixin:
     """Shared enable/disable functionality for middleware classes.
 
@@ -67,6 +68,7 @@ class FlextAuthMiddleware(s[bool]):
     (flext-web). Following FLEXT pattern: one class per module with nested middleware classes.
     """
 
+    @override
     def execute(self) -> r[bool]:
         """Execute method for FlextService interface.
 

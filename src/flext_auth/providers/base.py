@@ -23,6 +23,7 @@ from flext_auth.protocols import FlextAuthProtocols as p
 from flext_core import r
 
 
+from typing import override
 @runtime_checkable
 class FlextAuthBaseProvider(Protocol):
     """Base protocol for all authentication providers.
@@ -48,10 +49,12 @@ class FlextAuthBaseProvider(Protocol):
         """Get provider configuration."""
         return self._provider_config
 
+    @override
     def _protocol_name(self) -> str:
         """Return protocol name for registry identification."""
         return "auth-provider"
 
+    @override
     def authenticate(
         self,
         credentials: m.CredentialValidation,
@@ -72,6 +75,7 @@ class FlextAuthBaseProvider(Protocol):
         """
         ...
 
+    @override
     def validate(
         self,
         token: str,
@@ -384,6 +388,7 @@ class FlextAuthBaseProvider(Protocol):
 
         return r[str].ok(token)
 
+    @override
     def generate_token_for_user(
         self,
         user: m.Auth.AuthIdentity | Mapping[str, object],
@@ -418,6 +423,7 @@ class FlextAuthBaseProvider(Protocol):
             expiry_minutes=expiry_minutes,
         )
 
+    @override
     def refresh(
         self,
         token: str,
@@ -503,6 +509,7 @@ class FlextAuthBaseProvider(Protocol):
 
         return r[p.Auth.TokenProtocol].ok(refreshed_token)
 
+    @override
     def revoke(
         self,
         _token: str,
@@ -524,6 +531,7 @@ class FlextAuthBaseProvider(Protocol):
         """
         return r[bool].fail("Token revocation not supported")
 
+    @override
     def supports(self) -> set[str]:
         """Return set of capabilities supported by this provider.
 

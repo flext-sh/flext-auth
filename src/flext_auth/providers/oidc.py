@@ -17,6 +17,7 @@ from flext_auth.providers.rfc import FlextAuthRfcProvider
 from flext_core import r
 
 
+from typing import override
 class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
     """OpenID Connect (OIDC) authentication provider.
 
@@ -32,10 +33,12 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
 
     """
 
+    @override
     def _protocol_name(self) -> str:
         """Return protocol name for registry identification."""
         return "auth-provider-oidc"
 
+    @override
     def authenticate(
         self,
         credentials: m.CredentialValidation,
@@ -52,6 +55,7 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
         _ = credentials
         return r[FlextAuthProtocols.Auth.TokenProtocol].fail("Not implemented")
 
+    @override
     def validate(
         self,
         token: str | FlextAuthProtocols.Auth.TokenProtocol,
@@ -68,6 +72,7 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
         _ = token
         return r[bool].fail("Not implemented")
 
+    @override
     def supports(self) -> set[str]:
         """Get supported authentication methods.
 
@@ -77,6 +82,7 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
         """
         return {"oidc", "validate", "refresh"}
 
+    @override
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.
 

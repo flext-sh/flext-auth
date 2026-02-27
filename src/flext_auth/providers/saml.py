@@ -16,6 +16,7 @@ from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_core import r
 
 
+from typing import override
 class FlextAuthSamlProvider(FlextAuthBaseProvider):
     """SAML 2.0 authentication provider.
 
@@ -39,10 +40,12 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
     Status: Basic implementation - can be extended with full SAML 2.0 support
     """
 
+    @override
     def _protocol_name(self) -> str:
         """Return protocol name for registry identification."""
         return "auth-provider-saml"
 
+    @override
     def authenticate(
         self,
         credentials: m.CredentialValidation,
@@ -63,6 +66,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
             "SAML provider not yet fully implemented",
         )
 
+    @override
     def validate(self, token: str | FlextAuthProtocols.Auth.TokenProtocol) -> r[bool]:
         """Validate SAML assertion token.
 
@@ -78,6 +82,7 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
         _ = token  # SAML assertion validation — requires IDP metadata and certificate
         return r[bool].fail("SAML provider not yet fully implemented")
 
+    @override
     def supports(self) -> set[str]:
         """Get supported authentication capabilities.
 

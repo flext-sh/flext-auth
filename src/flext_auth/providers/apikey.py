@@ -18,6 +18,7 @@ from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_core import r
 
 
+from typing import override
 class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
     """API key authentication provider.
 
@@ -28,10 +29,12 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
         """Initialize provider with configuration."""
         super().__init__(config)
 
+    @override
     def _protocol_name(self) -> str:
         """Return protocol name for registry identification."""
         return "auth-provider-apikey"
 
+    @override
     def authenticate(
         self,
         credentials: m.CredentialValidation,
@@ -40,6 +43,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
         _ = credentials
         return r[p.Auth.TokenProtocol].fail("Not implemented")
 
+    @override
     def validate(
         self,
         token: str | p.Auth.TokenProtocol,
@@ -48,6 +52,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
         _ = token
         return r[bool].fail("Not implemented")
 
+    @override
     def supports(self) -> set[str]:
         """Get supported authentication methods.
 

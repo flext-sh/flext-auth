@@ -19,6 +19,7 @@ from flext_auth.providers.mixin import FlextAuthProviderMixin
 from flext_core import r
 
 
+from typing import override
 class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     """Base class for RFC-compliant authentication providers.
 
@@ -39,6 +40,7 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         """Initialize RFC provider base class with optional configuration."""
         super().__init__(config)
 
+    @override
     def _protocol_name(self) -> str:
         """Return protocol name for registry identification."""
         return "auth-provider-rfc"
@@ -60,6 +62,7 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         _ = operation  # Mark as intentionally unused in base implementation
         return r[bool].ok(value=True)
 
+    @override
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.
 

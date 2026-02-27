@@ -13,6 +13,7 @@ from flext_auth.settings import FlextAuthSettings
 from flext_core import r, s
 
 
+from typing import override
 class FlextAuthQuickstart(s[object]):
     """Quickstart convenience wrapper for FlextAuth with sensible defaults.
 
@@ -115,6 +116,7 @@ class FlextAuthQuickstart(s[object]):
         """Get the underlying FlextAuth instance."""
         return self._auth
 
+    @override
     def execute(self) -> r[object]:
         """Execute method for FlextService interface.
 

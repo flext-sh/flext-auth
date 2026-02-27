@@ -14,6 +14,7 @@ import bcrypt
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 from flext_core import r
 
+from typing import override
 # Import aliases following order: c -> t -> p -> r -> m -> u
 # Runtime aliases defined at module level per FLEXT standards
 

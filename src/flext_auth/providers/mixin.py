@@ -16,6 +16,7 @@ from flext_auth.protocols import FlextAuthProtocols
 from flext_auth.typings import t
 from flext_core import e, r, u
 
+from typing import override
 # Forward references to avoid circular import
 # Use string annotations for all FlextAuthModels references
 
@@ -59,6 +60,7 @@ class FlextAuthProviderMixin:
         )
         raise e.ValidationError(error_msg, field="token", value=str(type(token)))
 
+    @override
     def supports(self) -> set[str]:
         """Return set of capabilities supported by this provider.
 

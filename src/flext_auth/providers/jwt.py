@@ -16,6 +16,7 @@ from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_core import r
 
 
+from typing import override
 class FlextAuthJwtProvider(FlextAuthBaseProvider):
     """JWT-based authentication provider."""
 
@@ -23,10 +24,12 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider):
         """Initialize provider with configuration."""
         super().__init__(config)
 
+    @override
     def _protocol_name(self) -> str:
         """Return protocol name for registry identification."""
         return "auth-provider-jwt"
 
+    @override
     def authenticate(
         self,
         credentials: m.CredentialValidation,
@@ -35,6 +38,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider):
         _ = credentials
         return r[p.Auth.TokenProtocol].fail("Not implemented")
 
+    @override
     def validate(
         self,
         token: str,
@@ -63,6 +67,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider):
         _ = token
         return r[bool].fail("Not implemented")
 
+    @override
     def supports(self) -> set[str]:
         """Get supported authentication methods.
 
@@ -72,6 +77,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider):
         """
         return {"jwt", "validate", "refresh"}
 
+    @override
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.
 

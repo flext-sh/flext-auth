@@ -17,6 +17,7 @@ from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_core import r
 
 
+from typing import override
 class FlextAuthBasicProvider(FlextAuthBaseProvider):
     """HTTP Basic authentication provider.
 
@@ -27,10 +28,12 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider):
         """Initialize provider with configuration."""
         super().__init__(config)
 
+    @override
     def _protocol_name(self) -> str:
         """Return protocol name for registry identification."""
         return "auth-provider-basic"
 
+    @override
     def authenticate(
         self,
         credentials: m.CredentialValidation,
@@ -39,6 +42,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider):
         _ = credentials
         return r[p.Auth.TokenProtocol].fail("Not implemented")
 
+    @override
     def validate(
         self,
         token: str | p.Auth.TokenProtocol,
@@ -47,6 +51,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider):
         _ = token
         return r[bool].fail("Not implemented")
 
+    @override
     def supports(self) -> set[str]:
         """Get supported authentication methods.
 
@@ -56,6 +61,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider):
         """
         return {"basic", "validate"}
 
+    @override
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.
 

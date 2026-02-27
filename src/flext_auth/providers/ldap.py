@@ -13,6 +13,7 @@ from flext_auth.providers.mixin import FlextAuthProviderMixin
 from flext_core import r
 
 
+from typing import override
 class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     """LDAP/Active Directory authentication provider.
 
@@ -28,10 +29,12 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     """
 
+    @override
     def _protocol_name(self) -> str:
         """Return protocol name for registry identification."""
         return "auth-provider-ldap"
 
+    @override
     def authenticate(
         self,
         credentials: m.CredentialValidation,
@@ -48,6 +51,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         _ = credentials
         return r[FlextAuthProtocols.Auth.TokenProtocol].fail("Not implemented")
 
+    @override
     def validate(
         self,
         token: str | FlextAuthProtocols.Auth.TokenProtocol,
@@ -64,6 +68,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         _ = token
         return r[bool].fail("Not implemented")
 
+    @override
     def supports(self) -> set[str]:
         """Get supported authentication methods.
 
