@@ -15,8 +15,8 @@ from collections.abc import Mapping
 from datetime import datetime
 from typing import Protocol, TypeAlias, override, runtime_checkable
 
-from flext_core import FlextProtocols, t
 from flext_api import FlextApiProtocols
+from flext_core import FlextProtocols, t
 
 
 class FlextAuthProtocols(FlextApiProtocols):
