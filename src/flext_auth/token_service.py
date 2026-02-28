@@ -21,8 +21,7 @@ from flext_auth.models import m
 from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 from flext_auth.settings import FlextAuthSettings
-from flext_core import FlextLogger, FlextService as s, r
-from flext_core.protocols import p
+from flext_core import FlextLogger, FlextService as s, p, r
 
 
 class FlextAuthTokenService(s[bool]):

@@ -11,8 +11,7 @@ from typing import ClassVar
 
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.typings import FlextAuthTypes as at
-from flext_core import r, t
-from flext_core.registry import FlextRegistry
+from flext_core import FlextRegistry, r, t
 
 
 class _ConfigWrapper:  # noqa: B903

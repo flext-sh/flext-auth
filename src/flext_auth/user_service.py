@@ -16,8 +16,7 @@ from flext_auth.constants import c
 from flext_auth.managers import FlextAuthManagers, ServiceManagers
 from flext_auth.models import m
 from flext_auth.settings import FlextAuthSettings
-from flext_core import FlextService as s, r
-from flext_core.protocols import p
+from flext_core import FlextService as s, p, r
 from pydantic import ValidationError
 
 
