@@ -222,58 +222,9 @@ class FlextAuthModels(FlextApiModels):
                 description="Last access (datetime.min means never accessed)",
             )
 
-            # Backward compatibility aliases for User model expectations
-            @property
-            def id(self) -> str:
-                """Alias for unique_id to support id expectations."""
-                return self.unique_id
-
-            @property
-            def user_id(self) -> str:
-                """Alias for id to support user_id expectations."""
-                return self.id
-
-            @property
-            def username(self) -> str:
-                """Alias for name to support username expectations."""
-                return self.name
-
-            @property
-            def email(self) -> str:
-                """Alias for contact to support email expectations."""
-                return self.contact
-
             # Additional attributes expected by tests
             token: str = Field(default="", description="Associated token", exclude=True)
             session_id: str = Field(default="", description="Session ID")
-
-            def __getitem__(self, key: str) -> t.GeneralValueType:
-                """Support dictionary-like access for backward compatibility."""
-                if key == "user":
-                    return {"id": self.id, "username": self.name, "email": self.contact}
-                if key == "session":
-                    return {"id": self.session_id} if self.session_id else {"id": ""}
-                if key == "jwt_token":
-                    return self.token
-                # Direct attribute access for safe attributes only
-                if key == "id":
-                    return self.id
-                if key == "name":
-                    return self.name
-                if key == "contact":
-                    return self.contact
-                if key == "token":
-                    return self.token
-                if key == "session_id":
-                    return self.session_id
-                if key == "last_access":
-                    return self.last_access
-                if key == "failed_attempts":
-                    return self.failed_attempts
-                if key == "locked_until":
-                    return self.locked_until
-                msg = f"Attribute '{key}' not accessible via __getitem__"
-                raise KeyError(msg)
 
             def with_successful_access(self) -> Self:
                 """Record successful access (fluent interface)."""
@@ -437,21 +388,9 @@ class FlextAuthModels(FlextApiModels):
                 """Check if configured."""
                 return bool(self.name and self.type)
 
-            def get(
-                self, key: str, default: t.GeneralValueType = None
-            ) -> t.GeneralValueType:
-                """Dict-like get method for backward compatibility."""
-                return (
-                    self.__dict__.get(key, default) if hasattr(self, key) else default
-                )
-
             def __contains__(self, key: str) -> bool:
                 """Dict-like containment check."""
                 return key in self.__class__.model_fields
-
-            def __getitem__(self, key: str) -> t.GeneralValueType:
-                """Dict-like access."""
-                return self.__dict__.get(key) if hasattr(self, key) else None
 
         class ProviderConfiguration(UserDict[str, t.GeneralValueType]):
             """Provider configuration for authentication providers."""
@@ -473,7 +412,7 @@ class FlextAuthModels(FlextApiModels):
                 if "version" not in self:
                     self["version"] = "1.0.0"
                 if "capabilities" not in self:
-                    self["capabilities"] = []
+                    self["capabilities"] = list[str]()
 
         class ApiKeyValidation(FlextApiModels.Value):
             """API key validation request (immutable value object)."""

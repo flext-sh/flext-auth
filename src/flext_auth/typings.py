@@ -27,13 +27,6 @@ class FlextAuthTypes(FlextApiTypes):
     # Core configs mapped to Pydantic models
     ProviderConfig = m.Auth.ProviderConfig
 
-    # Legacy TypedDicts mapped to Pydantic Models where compatible
-    # NOTE: These are now Pydantic models. Code instantiating them as dicts
-    # must be updated to instantiate the model.
-    UserDict = m.Auth.AuthIdentity
-    SessionDict = m.Auth.Session
-    AuthenticationResponseDict = m.Auth.AuthResponse
-
     # =========================================================================
     # AUTHENTICATION DOMAIN TYPE CLASSES
     # =========================================================================
