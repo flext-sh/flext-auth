@@ -422,6 +422,6 @@ class FlextAuthUtilities(FlextUtilities):
             return r[t.Tokens.ClaimMap].fail(f"Decoding failed: {e}")
 
 
-u = FlextAuthUtilities  # Runtime alias (not TypeAlias to avoid PYI042)
+u = FlextAuthUtilities
 
 __all__ = ["FlextAuthUtilities", "u"]

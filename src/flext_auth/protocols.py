@@ -15,7 +15,6 @@ from collections.abc import Mapping
 from datetime import datetime
 from typing import Protocol, override, runtime_checkable
 
-
 from flext_core.protocols import FlextProtocols
 from flext_web.protocols import FlextWebProtocols
 
@@ -259,7 +258,7 @@ class FlextAuthProtocols(FlextWebProtocols):
                 ...
 
 
-p = FlextAuthProtocols  # Runtime alias (not TypeAlias to avoid PYI042)
+p = FlextAuthProtocols
 
 __all__ = [
     "FlextAuthProtocols",

@@ -497,6 +497,6 @@ class FlextAuthConstants(FlextApiConstants):
             # No need for explicit Inherited class - inheritance provides access.
 
 
-c = FlextAuthConstants  # Runtime alias (not TypeAlias to avoid PYI042)
+c = FlextAuthConstants
 
 __all__ = ["FlextAuthConstants", "c"]

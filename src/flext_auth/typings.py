@@ -497,7 +497,7 @@ class FlextAuthTypes(FlextApiTypes):
         UNIT = UnitType()
 
 
-t = FlextAuthTypes  # Runtime alias (not TypeAlias to avoid PYI042)
+t = FlextAuthTypes
 at = FlextAuthTypes
 
 __all__ = ["FlextAuthTypes", "at", "t"]
