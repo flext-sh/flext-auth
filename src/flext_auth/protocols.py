@@ -16,10 +16,10 @@ from datetime import datetime
 from typing import Protocol, TypeAlias, override, runtime_checkable
 
 from flext_core import FlextProtocols, t
-from flext_web import FlextWebProtocols
+from flext_api import FlextApiProtocols
 
 
-class FlextAuthProtocols(FlextWebProtocols):
+class FlextAuthProtocols(FlextApiProtocols):
     """Unified authentication protocols following FLEXT domain extension pattern.
 
     This class consolidates authentication-specific protocols while explicitly
