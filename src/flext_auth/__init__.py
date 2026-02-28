@@ -6,45 +6,40 @@ Provides authentication framework with multi-provider support.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from flext_core import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
-    from flext_auth import (
-        FlextAuth,
+    from flext_auth.api import FlextAuth
+    from flext_auth.constants import FlextAuthConstants, FlextAuthConstants as c
+    from flext_auth.managers import FlextAuthManagers, ServiceManagers
+    from flext_auth.middleware import FlextAuthMiddleware
+    from flext_auth.mixins import FlextAuthMixins
+    from flext_auth.models import FlextAuthModels, FlextAuthModels as m
+    from flext_auth.protocols import FlextAuthProtocols, FlextAuthProtocols as p
+    from flext_auth.provider_service import FlextAuthProviderService
+    from flext_auth.providers import (
         FlextAuthApiKeyProvider,
         FlextAuthBaseProvider,
         FlextAuthBasicProvider,
         FlextAuthCertificateProvider,
-        FlextAuthConstants,
-        FlextAuthConstants as c,
-        FlextAuthIdentityService,
         FlextAuthJwtProvider,
         FlextAuthKerberosProvider,
         FlextAuthLdapProvider,
-        FlextAuthManagers,
-        FlextAuthMiddleware,
-        FlextAuthMixins,
-        FlextAuthModels,
-        FlextAuthModels as m,
         FlextAuthOAuth2Provider,
         FlextAuthOidcProvider,
-        FlextAuthProtocols,
-        FlextAuthProtocols as p,
         FlextAuthProviderMixin,
-        FlextAuthProviderService,
-        FlextAuthQuickstart,
-        FlextAuthRegistry,
         FlextAuthSamlProvider,
-        FlextAuthSessionService,
-        FlextAuthSettings,
-        FlextAuthTokenService,
-        FlextAuthTypes,
-        FlextAuthTypes as t,
-        FlextAuthUtilities,
-        FlextAuthUtilities as u,
     )
+    from flext_auth.quickstart import FlextAuthQuickstart
+    from flext_auth.registry import FlextAuthRegistry
+    from flext_auth.session_service import FlextAuthSessionService
+    from flext_auth.settings import FlextAuthSettings
+    from flext_auth.token_service import FlextAuthTokenService
+    from flext_auth.typings import FlextAuthTypes, FlextAuthTypes as t
+    from flext_auth.user_service import FlextAuthIdentityService
+    from flext_auth.utilities import FlextAuthUtilities, FlextAuthUtilities as u
     from flext_core import (
         FlextDecorators,
         FlextDecorators as d,
@@ -65,10 +60,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextAuthApiKeyProvider": ("flext_auth.providers", "FlextAuthApiKeyProvider"),
     "FlextAuthBaseProvider": ("flext_auth.providers", "FlextAuthBaseProvider"),
     "FlextAuthBasicProvider": ("flext_auth.providers", "FlextAuthBasicProvider"),
-    "FlextAuthCertificateProvider": (
-        "flext_auth.providers",
-        "FlextAuthCertificateProvider",
-    ),
+    "FlextAuthCertificateProvider": ("flext_auth.providers", "FlextAuthCertificateProvider"),
     "FlextAuthConstants": ("flext_auth.constants", "FlextAuthConstants"),
     "FlextAuthIdentityService": ("flext_auth.user_service", "FlextAuthIdentityService"),
     "FlextAuthJwtProvider": ("flext_auth.providers", "FlextAuthJwtProvider"),
@@ -82,17 +74,11 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextAuthOidcProvider": ("flext_auth.providers", "FlextAuthOidcProvider"),
     "FlextAuthProtocols": ("flext_auth.protocols", "FlextAuthProtocols"),
     "FlextAuthProviderMixin": ("flext_auth.providers", "FlextAuthProviderMixin"),
-    "FlextAuthProviderService": (
-        "flext_auth.provider_service",
-        "FlextAuthProviderService",
-    ),
+    "FlextAuthProviderService": ("flext_auth.provider_service", "FlextAuthProviderService"),
     "FlextAuthQuickstart": ("flext_auth.quickstart", "FlextAuthQuickstart"),
     "FlextAuthRegistry": ("flext_auth.registry", "FlextAuthRegistry"),
     "FlextAuthSamlProvider": ("flext_auth.providers", "FlextAuthSamlProvider"),
-    "FlextAuthSessionService": (
-        "flext_auth.session_service",
-        "FlextAuthSessionService",
-    ),
+    "FlextAuthSessionService": ("flext_auth.session_service", "FlextAuthSessionService"),
     "FlextAuthSettings": ("flext_auth.settings", "FlextAuthSettings"),
     "FlextAuthTokenService": ("flext_auth.token_service", "FlextAuthTokenService"),
     "FlextAuthTypes": ("flext_auth.typings", "FlextAuthTypes"),
@@ -102,6 +88,7 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "FlextHandlers": ("flext_core", "FlextHandlers"),
     "FlextResult": ("flext_core", "FlextResult"),
     "FlextService": ("flext_core", "FlextService"),
+    "ServiceManagers": ("flext_auth.managers", "ServiceManagers"),
     "c": ("flext_auth.constants", "FlextAuthConstants"),
     "d": ("flext_core", "FlextDecorators"),
     "e": ("flext_core", "FlextExceptions"),
@@ -148,6 +135,7 @@ __all__ = [
     "FlextHandlers",
     "FlextResult",
     "FlextService",
+    "ServiceManagers",
     "c",
     "d",
     "e",
@@ -162,7 +150,7 @@ __all__ = [
 ]
 
 
-def __getattr__(name: str) -> t.GeneralValueType:
+def __getattr__(name: str) -> Any:  # noqa: ANN401
     """Lazy-load module attributes on first access (PEP 562)."""
     return lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
 
