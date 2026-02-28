@@ -15,10 +15,12 @@ from collections.abc import Mapping
 from datetime import datetime
 from typing import Protocol, override, runtime_checkable
 
-from flext_core import FlextProtocols
+
+from flext_core.protocols import FlextProtocols
+from flext_web.protocols import FlextWebProtocols
 
 
-class FlextAuthProtocols(FlextProtocols):
+class FlextAuthProtocols(FlextWebProtocols):
     """Unified authentication protocols following FLEXT domain extension pattern.
 
     This class consolidates authentication-specific protocols while explicitly
