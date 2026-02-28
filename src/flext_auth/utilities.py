@@ -141,14 +141,14 @@ class FlextAuthUtilities(FlextUtilities):
                 annotated in return type signatures. The actual return value is an
                 Annotated type suitable for use in Pydantic model field definitions.
                 """
-                return cast("t.GeneralValueType", Annotated[
+                return Annotated[
                     c.Auth.TokenTypes,
                     BeforeValidator(
                         FlextUtilities.Enum.coerce_validator(
                             c.Auth.TokenTypes,
                         ),
                     ),
-                ])
+                ]
 
             @staticmethod
             def coerced_provider_type() -> t.GeneralValueType:
@@ -158,14 +158,14 @@ class FlextAuthUtilities(FlextUtilities):
                 annotated in return type signatures. The actual return value is an
                 Annotated type suitable for use in Pydantic model field definitions.
                 """
-                return cast("t.GeneralValueType", Annotated[
+                return Annotated[
                     c.Auth.ProviderTypes,
                     BeforeValidator(
                         FlextUtilities.Enum.coerce_validator(
                             c.Auth.ProviderTypes,
                         ),
                     ),
-                ])
+                ]
 
             @staticmethod
             def coerced_role_type() -> t.GeneralValueType:
@@ -175,14 +175,14 @@ class FlextAuthUtilities(FlextUtilities):
                 annotated in return type signatures. The actual return value is an
                 Annotated type suitable for use in Pydantic model field definitions.
                 """
-                return cast("t.GeneralValueType", Annotated[
+                return Annotated[
                     c.Auth.RoleTypes,
                     BeforeValidator(
                         FlextUtilities.Enum.coerce_validator(
                             c.Auth.RoleTypes,
                         ),
                     ),
-                ])
+                ]
 
         # ═══════════════════════════════════════════════════════════════════
         # VALIDATION UTILITIES: Domain-specific validation

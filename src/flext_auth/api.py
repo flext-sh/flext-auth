@@ -56,7 +56,7 @@ class FlextAuth:
         self._registry = FlextAuthRegistry()
         # Import here to avoid circular dependency
 
-        self._dispatcher = cast("p.CommandBus", FlextContainer.get_global().get("command_bus").unwrap())
+        self._dispatcher = FlextContainer.get_global(.get("command_bus").unwrap())
         # Use provided service_name or default (service_name is optional)
         self._service_name = service_name if service_name is not None else "flext_auth"
 

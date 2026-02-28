@@ -104,7 +104,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         # HTTP client for token endpoint requests (MANDATORY: uses flext-api)
         # Transport layer not yet stable
-        self._http_client: object | None = None  # HttpTransportAdapter(timeout=30.0)
+        self._http_client: t.GeneralValueType | None = None  # HttpTransportAdapter(timeout=30.0)
 
     @staticmethod
     def _to_scalar_config(

@@ -378,8 +378,7 @@ class FlextAuthManagers:
                     session_id = str(v) if v is not None else ""
 
             # Store full data with timestamps in internal storage
-            # Also store id and identity_id for backward compatibility
-            storage_data: dict[str, t.GeneralValueType] = {
+                        storage_data: dict[str, t.GeneralValueType] = {
                 "unique_id": unique_id,
                 "name": name,
                 "contact": contact,
@@ -393,9 +392,7 @@ class FlextAuthManagers:
                 "last_access": last_access,
                 "token": token,
                 "session_id": session_id,
-                "id": user_id,  # Store id for backward compatibility
-                "identity_id": user_id,  # Store identity_id for backward compatibility
-                "created_at": datetime.now(UTC),
+                "id": user_id,                  "identity_id": user_id,                  "created_at": datetime.now(UTC),
                 "updated_at": datetime.now(UTC),
             }
             self._users[username] = storage_data
@@ -563,7 +560,7 @@ class FlextAuthManagers:
                 is_active=bool(session_data.get("is_active", True)),
                 ip_address=str(session_data.get("ip_address", "")),
                 user_agent=str(session_data.get("user_agent", "")),
-                last_accessed=cast("datetime", session_data.get("last_accessed", datetime.now(UTC))),
+                last_accessed=session_data.get("last_accessed", datetime.now(UTC)),
             )
             return r[m.Auth.Session].ok(session)
 
@@ -585,7 +582,7 @@ class FlextAuthManagers:
                             is_active=bool(session_data.get("is_active", True)),
                             ip_address=str(session_data.get("ip_address", "")),
                             user_agent=str(session_data.get("user_agent", "")),
-                            last_accessed=cast("datetime", session_data.get("last_accessed", datetime.now(UTC))),
+                            last_accessed=session_data.get("last_accessed", datetime.now(UTC)),
                         )
                         # Set unique_id from session_id
                         session.unique_id = session_id
@@ -696,8 +693,7 @@ class FlextAuthManagers:
             """
             self._log_event(event_type, **data)
 
-        # Convenience shortcuts for backward compatibility (thin wrappers)
-        def log_auth_success(
+                def log_auth_success(
             self,
             username: str,
             provider: str,

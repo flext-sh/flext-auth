@@ -86,8 +86,7 @@ class FlextAuthTypes(FlextApiTypes):
         type ThreatLevel = Literal["low", "medium", "high", "critical"]
 
     # =========================================================================
-    # PROJECT TYPE CLASSES (for test compatibility)
-    # =========================================================================
+        # =========================================================================
 
     class Project:
         """Project type namespace."""

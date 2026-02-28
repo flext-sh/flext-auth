@@ -24,6 +24,18 @@ class TestFlextAuthTypes:
         assert hasattr(t_auth, "Security")
 
     def test_typed_dict_classes_exist(self) -> None:
+        assert hasattr(t_auth, "ProviderConfig")
+        assert hasattr(t_auth.Responses, "Authentication")
+
+    def test_provider_config_structure(self) -> None:
+        config = t_auth.ProviderConfig(name="test", type="basic")
+        assert config.name == "test"
+        assert config.type == "basic"
+
+    def test_authentication_response_structure(self) -> None:
+        response = t_auth.Responses.Authentication(success=True, message="OK")
+        assert response.success is True
+        assert response.message == "OK"
         assert hasattr(t_auth, "UserDict")
         assert hasattr(t_auth, "SessionDict")
         assert hasattr(t_auth, "AuthenticationResponseDict")
