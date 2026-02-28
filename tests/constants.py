@@ -111,10 +111,16 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
             "apikey",
         ]
         RoleTypeLiteral: TypeAlias = Literal[
-            "REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"
+            "REDACTED_LDAP_BIND_PASSWORD",
+            "user",
+            "moderator",
+            "guest",
         ]
         PermissionTypeLiteral: TypeAlias = Literal[
-            "read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"
+            "read",
+            "write",
+            "delete",
+            "REDACTED_LDAP_BIND_PASSWORD",
         ]
 
 

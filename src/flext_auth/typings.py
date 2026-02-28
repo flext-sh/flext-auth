@@ -84,7 +84,10 @@ class FlextAuthTypes(FlextApiTypes):
         """Authorization type definitions."""
 
         type Permission = Literal[
-            "read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"
+            "read",
+            "write",
+            "delete",
+            "REDACTED_LDAP_BIND_PASSWORD",
         ]
         type Role = Literal["user", "moderator", "REDACTED_LDAP_BIND_PASSWORD", "guest"]
 
@@ -198,7 +201,7 @@ class FlextAuthTypes(FlextApiTypes):
 
             key: str = Field(default="")
             provider: t.GeneralValueType = Field(
-                default=None
+                default=None,
             )  # Provider instance - typed as t.GeneralValueType to avoid circular import
             metadata: dict[str, t.GeneralValueType] = Field(default_factory=dict)
             configuration: FlextApiTypes.JsonDict = Field(default_factory=dict)
@@ -315,13 +318,13 @@ class FlextAuthTypes(FlextApiTypes):
 
             success: bool = Field(default=False)
             identity: FlextApiTypes.JsonDict = Field(
-                default_factory=dict
+                default_factory=dict,
             )  # Will be Identity from models
             token: FlextApiTypes.JsonDict = Field(
-                default_factory=dict
+                default_factory=dict,
             )  # Will be AuthToken from models
             session: FlextApiTypes.JsonDict = Field(
-                default_factory=dict
+                default_factory=dict,
             )  # Will be Session from models
             message: str = Field(default="")
             metadata: FlextApiTypes.JsonDict = Field(default_factory=dict)
@@ -433,11 +436,14 @@ class FlextAuthTypes(FlextApiTypes):
         type AdminRoles = Literal[c.Auth.RoleTypes.ADMIN]
         """Admin role types."""
         type UserRoles = Literal[
-            c.Auth.RoleTypes.USER, c.Auth.RoleTypes.MODERATOR, c.Auth.RoleTypes.GUEST
+            c.Auth.RoleTypes.USER,
+            c.Auth.RoleTypes.MODERATOR,
+            c.Auth.RoleTypes.GUEST,
         ]
         """User role types."""
         type WritePermissions = Literal[
-            c.Auth.PermissionTypes.WRITE, c.Auth.PermissionTypes.DELETE
+            c.Auth.PermissionTypes.WRITE,
+            c.Auth.PermissionTypes.DELETE,
         ]
         """Write permission types."""
         type AdminPermissions = Literal[c.Auth.PermissionTypes.ADMIN]

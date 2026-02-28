@@ -66,7 +66,8 @@ class FlextAuthModels(FlextApiModels):
 
             is_valid: bool = Field(..., description="Validation outcome")
             data: dict[str, t.JsonValue] = Field(
-                default_factory=dict, description="Result data"
+                default_factory=dict,
+                description="Result data",
             )
             error: str = Field(default="", description="Error message")
             metadata: dict[str, t.JsonValue] = Field(
@@ -210,7 +211,8 @@ class FlextAuthModels(FlextApiModels):
                 description="Roles",
             )
             permissions: list[str] = Field(
-                default_factory=list, description="Permissions"
+                default_factory=list,
+                description="Permissions",
             )
             failed_attempts: int = Field(default=0, ge=0, description="Failed attempts")
             locked_until: datetime = Field(
@@ -318,7 +320,8 @@ class FlextAuthModels(FlextApiModels):
                 description="Description",
             )
             permissions: list[str] = Field(
-                default_factory=list, description="Permissions"
+                default_factory=list,
+                description="Permissions",
             )
 
         class Permission(FlextApiModels.Entity):

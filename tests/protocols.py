@@ -22,8 +22,6 @@ class TestsFlextAuthProtocols(FlextTestsProtocols, FlextAuthProtocols):
     - p.Auth.* (from FlextAuthProtocols)
     """
 
-    pass
-
 
 # Runtime aliases
 p = TestsFlextAuthProtocols

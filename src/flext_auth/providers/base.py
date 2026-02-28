@@ -228,7 +228,7 @@ class FlextAuthBaseProvider(Protocol):
     def _decode_token_claims(self, token: str) -> r[Mapping[str, t.GeneralValueType]]:
         if not token.strip():
             return r[Mapping[str, t.GeneralValueType]].fail(
-                "Token must be a non-empty string"
+                "Token must be a non-empty string",
             )
 
         settings_result = self._token_settings()
@@ -264,12 +264,12 @@ class FlextAuthBaseProvider(Protocol):
             ImportError,
         ) as exc:
             return r[Mapping[str, t.GeneralValueType]].fail(
-                f"Token validation failed: {exc}"
+                f"Token validation failed: {exc}",
             )
 
         if not isinstance(decoded_payload, Mapping):
             return r[Mapping[str, t.GeneralValueType]].fail(
-                "Decoded token payload must be a mapping"
+                "Decoded token payload must be a mapping",
             )
 
         return r[Mapping[str, t.GeneralValueType]].ok(decoded_payload)
@@ -288,7 +288,7 @@ class FlextAuthBaseProvider(Protocol):
         identity_result = self._extract_identity_id(payload)
         if identity_result.is_failure:
             return r[str].fail(
-                identity_result.error or "Identity identifier is required"
+                identity_result.error or "Identity identifier is required",
             )
 
         secret_key, algorithm_name, issuer_name, audience_name, default_expiry = (
@@ -478,7 +478,7 @@ class FlextAuthBaseProvider(Protocol):
             )
 
         expires_result = self._extract_expiration_datetime(
-            refreshed_claims_result.value
+            refreshed_claims_result.value,
         )
         if expires_result.is_failure:
             return r[p.Auth.TokenProtocol].fail(

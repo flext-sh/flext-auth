@@ -110,7 +110,7 @@ class FlextAuthProviderService(s[bool]):
             if condition():
                 try:
                     provider_init_config = self._build_provider_init_config(
-                        provider_config
+                        provider_config,
                     )
                     # Instantiate provider with config
                     provider = provider_class(provider_init_config)
@@ -128,7 +128,7 @@ class FlextAuthProviderService(s[bool]):
                     RuntimeError,
                     ImportError,
                 ) as e:
-                    self.logger.warning(f"Failed to register {name} provider: {e}")
+                    self.logger.warning("Failed to register %s provider: %s", name, e)
 
     @staticmethod
     def _build_provider_init_config(
@@ -199,7 +199,9 @@ class FlextAuthProviderService(s[bool]):
         """Railway-oriented token generation with direct provider access."""
         return self._providers.get(provider).flat_map(
             lambda p: p.generate_token_for_user(
-                user.model_dump(), token_type, expiry_minutes
+                user.model_dump(),
+                token_type,
+                expiry_minutes,
             ),
         )
 

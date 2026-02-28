@@ -63,10 +63,13 @@ class FlextAuthRegistry(FlextRegistry):
         # Register config if provided
         if configuration:
             config_wrapper = _ConfigWrapper(
-                f"{self.PROVIDERS}_config", dict(configuration)
+                f"{self.PROVIDERS}_config",
+                dict(configuration),
             )
             config_result = self.register_plugin(
-                f"{self.PROVIDERS}_config", name, config_wrapper
+                f"{self.PROVIDERS}_config",
+                name,
+                config_wrapper,
             )
             if config_result.is_failure:
                 # Rollback provider registration
@@ -77,7 +80,9 @@ class FlextAuthRegistry(FlextRegistry):
         if metadata:
             metadata_wrapper = _MetadataWrapper(f"{self.PROVIDERS}_metadata", metadata)
             metadata_result = self.register_plugin(
-                f"{self.PROVIDERS}_metadata", name, metadata_wrapper
+                f"{self.PROVIDERS}_metadata",
+                name,
+                metadata_wrapper,
             )
             if metadata_result.is_failure:
                 # Rollback previous registrations
@@ -105,14 +110,14 @@ class FlextAuthRegistry(FlextRegistry):
         result = self.get_plugin(self.PROVIDERS, name)
         if result.is_failure:
             return r[FlextAuthBaseProvider].fail(
-                result.error or f"Provider '{name}' not registered"
+                result.error or f"Provider '{name}' not registered",
             )
 
         # Type narrowing
         provider = result.value
         if not isinstance(provider, FlextAuthBaseProvider):
             return r[FlextAuthBaseProvider].fail(
-                f"Provider '{name}' is not a FlextAuthBaseProvider"
+                f"Provider '{name}' is not a FlextAuthBaseProvider",
             )
 
         return r[FlextAuthBaseProvider].ok(provider)
@@ -135,7 +140,7 @@ class FlextAuthRegistry(FlextRegistry):
         """Get provider configuration."""
         if not self.has_provider(name):
             return r[Mapping[str, t.JsonValue]].fail(
-                f"Provider '{name}' not registered"
+                f"Provider '{name}' not registered",
             )
 
         config_result = self.get_plugin(f"{self.PROVIDERS}_config", name)
@@ -171,7 +176,7 @@ class FlextAuthRegistry(FlextRegistry):
         if metadata_result.is_failure:
             # Return default metadata
             return r[at.Providers.Metadata].ok(
-                at.Providers.Metadata(name=name, capabilities=())
+                at.Providers.Metadata(name=name, capabilities=()),
             )
 
         # Extract data from wrapper
@@ -179,7 +184,7 @@ class FlextAuthRegistry(FlextRegistry):
         metadata = getattr(wrapper, "data", None)
         if metadata is None:
             return r[at.Providers.Metadata].ok(
-                at.Providers.Metadata(name=name, capabilities=())
+                at.Providers.Metadata(name=name, capabilities=()),
             )
 
         return r[at.Providers.Metadata].ok(metadata)

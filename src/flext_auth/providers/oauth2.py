@@ -393,7 +393,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                     scope = scope_str
                 case _:
                     return r[t.OAuth2TokenResponse].fail(
-                        "OAuth2 scope must be a string"
+                        "OAuth2 scope must be a string",
                     )
             token_response = t.OAuth2TokenResponse(
                 access_token=f"access_token_{secrets.token_hex(16)}",
@@ -544,7 +544,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         identity_result = self.validate_token(token_text)
         if identity_result.is_failure:
             return r[bool].fail(
-                identity_result.error or "OAuth2 token validation failed"
+                identity_result.error or "OAuth2 token validation failed",
             )
 
         return r[bool].ok(value=True)

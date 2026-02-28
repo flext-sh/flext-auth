@@ -98,7 +98,8 @@ class FlextAuthManagers:
             self._users = {}  # In production, use database (dict for dynamic key access)
 
         def _find_user_by_id(
-            self, user_id: str
+            self,
+            user_id: str,
         ) -> r[tuple[str, dict[str, t.GeneralValueType]]]:
             """Find user by ID (either identity_id, unique_id, or id field).
 
@@ -150,7 +151,8 @@ class FlextAuthManagers:
             return True
 
         def _extract_identity_id(
-            self, storage_data: Mapping[str, t.GeneralValueType]
+            self,
+            storage_data: Mapping[str, t.GeneralValueType],
         ) -> str:
             """Extract identity ID from storage data with fast fail."""
             for field in ("unique_id", "id", "identity_id"):
@@ -349,7 +351,7 @@ class FlextAuthManagers:
                             case str() as locked_until_str:
                                 try:
                                     locked_until = datetime.fromisoformat(
-                                        locked_until_str
+                                        locked_until_str,
                                     )
                                 except ValueError:
                                     locked_until = datetime.min.replace(tzinfo=UTC)
@@ -363,7 +365,7 @@ class FlextAuthManagers:
                             case str() as last_access_str:
                                 try:
                                     last_access = datetime.fromisoformat(
-                                        last_access_str
+                                        last_access_str,
                                     )
                                 except ValueError:
                                     last_access = datetime.min.replace(tzinfo=UTC)
@@ -506,7 +508,8 @@ class FlextAuthManagers:
             ] = {}  # In production, use Redis/database (dict for dynamic key access)
 
         def _is_session_active(
-            self, session_data: Mapping[str, t.GeneralValueType]
+            self,
+            session_data: Mapping[str, t.GeneralValueType],
         ) -> bool:
             """Check if session is active and not expired.
 
@@ -587,7 +590,7 @@ class FlextAuthManagers:
                             expires_at=session_data["expires_at"]
                             if isinstance(session_data["expires_at"], datetime)
                             else datetime.fromisoformat(
-                                str(session_data["expires_at"])
+                                str(session_data["expires_at"]),
                             ),
                             is_active=bool(session_data.get("is_active", True)),
                             ip_address=str(session_data.get("ip_address", "")),

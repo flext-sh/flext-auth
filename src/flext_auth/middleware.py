@@ -145,7 +145,7 @@ class FlextAuthMiddleware(s[bool]):
 
             if self._current_token is None:
                 return r[FlextAuthMiddleware.RequestWithHeaders].fail(
-                    "Authentication token is not available"
+                    "Authentication token is not available",
                 )
 
             try:
@@ -155,7 +155,7 @@ class FlextAuthMiddleware(s[bool]):
                     mutable_headers["Authorization"] = (
                         f"Bearer {self._current_token.token}"
                     )
-                    setattr(request, "headers", mutable_headers)
+                    request.headers = mutable_headers
             except (AttributeError, TypeError):
                 pass
 
@@ -241,7 +241,7 @@ class FlextAuthMiddleware(s[bool]):
                     is_revoked=bool(
                         refreshed_payload.is_revoked
                         if hasattr(refreshed_payload, "is_revoked")
-                        else False
+                        else False,
                     ),
                     refresh_token=refreshed_payload.refresh_token
                     if hasattr(refreshed_payload, "refresh_token")

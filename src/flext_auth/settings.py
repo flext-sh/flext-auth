@@ -160,7 +160,8 @@ class FlextAuthSettings(FlextSettings):
 
     @classmethod
     def create_with_overrides(
-        cls, **overrides: t.GeneralValueType
+        cls,
+        **overrides: t.GeneralValueType,
     ) -> r[FlextAuthSettings]:
         """Create config instance with overrides."""
         try:

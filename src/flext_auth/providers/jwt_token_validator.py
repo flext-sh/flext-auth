@@ -44,7 +44,7 @@ class FlextAuthJwtTokenValidator:
             config = self._provider.config
             if not config:
                 return r[Mapping[str, t.GeneralValueType]].fail(
-                    "JWT configuration not provided"
+                    "JWT configuration not provided",
                 )
 
             secret_key_value = config.get("secret_key")
@@ -53,7 +53,7 @@ class FlextAuthJwtTokenValidator:
                     secret_key = secret
                 case _:
                     return r[Mapping[str, t.GeneralValueType]].fail(
-                        "JWT secret key not configured"
+                        "JWT secret key not configured",
                     )
 
             algorithm_value = config.get("algorithm")
@@ -62,7 +62,7 @@ class FlextAuthJwtTokenValidator:
                     algorithm = algorithm_str
                 case _:
                     return r[Mapping[str, t.GeneralValueType]].fail(
-                        "JWT algorithm not configured"
+                        "JWT algorithm not configured",
                     )
 
             audience_value = config.get("audience")
@@ -111,7 +111,7 @@ class FlextAuthJwtTokenValidator:
             ImportError,
         ) as e:
             return r[Mapping[str, t.GeneralValueType]].fail(
-                f"Token validation failed: {e}"
+                f"Token validation failed: {e}",
             )
 
 

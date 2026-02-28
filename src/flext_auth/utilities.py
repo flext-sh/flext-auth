@@ -392,7 +392,7 @@ class FlextAuthUtilities(FlextUtilities):
             return r[t.Tokens.ClaimMap].fail(f"Invalid token: {e}")
         except ValidationError as e:
             return r[t.Tokens.ClaimMap].fail(
-                f"Decoded token payload validation failed: {e}"
+                f"Decoded token payload validation failed: {e}",
             )
         except (
             ValueError,

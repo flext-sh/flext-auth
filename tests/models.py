@@ -27,8 +27,6 @@ class TestsFlextAuthModels(FlextTestsModels, FlextAuthModels):
     - FlextTestsModels.Tests.* - Generic test utilities
     """
 
-    pass
-
 
 # Short aliases for tests
 tm = TestsFlextAuthModels
