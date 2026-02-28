@@ -156,7 +156,7 @@ class FlextWebTransportAdapter:
             ... )
 
         """
-        request_headers = dict(headers) if headers else {}
+        request_headers: dict[str, str] = dict(headers) if headers else {}
 
         # OAuth2 requires application/x-www-form-urlencoded (RFC 6749 Section 4.1.3)
         if "Content-Type" not in request_headers:
@@ -359,7 +359,7 @@ class FlextWebTransportAdapter:
                 return decimal
             case _:
                 pass
-        if isinstance(value, list | tuple):
+        if isinstance(value, (list, tuple)):
             return [self._to_json_value(item) for item in value]
         if isinstance(value, Mapping):
             return {str(key): self._to_json_value(item) for key, item in value.items()}
@@ -394,7 +394,7 @@ class FlextWebTransportAdapter:
             }
             normalized: t.Api.WebParams = {}
             for key, value in merged_query.items():
-                if isinstance(value, list | tuple):
+                if isinstance(value, (list, tuple)):
                     normalized[str(key)] = [str(item) for item in value]
                 else:
                     normalized[str(key)] = str(value)

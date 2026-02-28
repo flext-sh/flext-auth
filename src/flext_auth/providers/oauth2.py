@@ -54,13 +54,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         if isinstance(config, Mapping):
             normalized_config: dict[str, t.JsonValue] = dict(config)
         else:
-            model_dump_callable = getattr(config, "model_dump", None)
-            dumped_config = (
-                model_dump_callable() if callable(model_dump_callable) else {}
-            )
-            normalized_config = (
-                dict(dumped_config) if isinstance(dumped_config, Mapping) else {}
-            )
+            normalized_config = dict(config.model_dump())
 
         super().__init__(self._to_scalar_config(normalized_config))
 
@@ -87,7 +81,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         redirect_uri_value = self._config.get("redirect_uri")
         match redirect_uri_value:
             case None:
-                self._redirect_uri = None
+                self._redirect_uri: str | None = None
             case str() as redirect_uri:
                 self._redirect_uri = redirect_uri
             case _:
@@ -110,7 +104,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         # HTTP client for token endpoint requests (MANDATORY: uses flext-api)
         # Transport layer not yet stable
-        self._http_client = None  # HttpTransportAdapter(timeout=30.0)
+        self._http_client: object | None = None  # HttpTransportAdapter(timeout=30.0)
 
     @staticmethod
     def _to_scalar_config(

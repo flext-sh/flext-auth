@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
+from typing import cast
 from uuid import uuid4
 
 from flext_auth.models import m
@@ -558,11 +559,11 @@ class FlextAuthManagers:
             session = m.Auth.Session(
                 identity_id=str(session_data["identity_id"]),
                 session_token=str(session_data["session_token"]),
-                expires_at=session_data["expires_at"],
+                expires_at=session_data["expires_at"] if isinstance(session_data["expires_at"], datetime) else datetime.fromisoformat(str(session_data["expires_at"])),
                 is_active=bool(session_data.get("is_active", True)),
                 ip_address=str(session_data.get("ip_address", "")),
                 user_agent=str(session_data.get("user_agent", "")),
-                last_accessed=session_data.get("last_accessed", datetime.now(UTC)),
+                last_accessed=cast("datetime", session_data.get("last_accessed", datetime.now(UTC))),
             )
             return r[m.Auth.Session].ok(session)
 
@@ -580,14 +581,11 @@ class FlextAuthManagers:
                         session = m.Auth.Session(
                             identity_id=str(session_data["identity_id"]),
                             session_token=str(session_data["session_token"]),
-                            expires_at=session_data["expires_at"],
+                            expires_at=session_data["expires_at"] if isinstance(session_data["expires_at"], datetime) else datetime.fromisoformat(str(session_data["expires_at"])),
                             is_active=bool(session_data.get("is_active", True)),
                             ip_address=str(session_data.get("ip_address", "")),
                             user_agent=str(session_data.get("user_agent", "")),
-                            last_accessed=session_data.get(
-                                "last_accessed",
-                                datetime.now(UTC),
-                            ),
+                            last_accessed=cast("datetime", session_data.get("last_accessed", datetime.now(UTC))),
                         )
                         # Set unique_id from session_id
                         session.unique_id = session_id

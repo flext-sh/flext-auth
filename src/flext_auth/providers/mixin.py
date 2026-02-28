@@ -11,7 +11,6 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import override
 
 from flext_auth.protocols import p
 from flext_auth.typings import t
@@ -60,7 +59,6 @@ class FlextAuthProviderMixin:
         )
         raise e.ValidationError(error_msg, field="token", value=str(type(token)))
 
-    @override
     def supports(self) -> set[str]:
         """Return set of capabilities supported by this provider.
 

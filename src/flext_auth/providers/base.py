@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
-from typing import Protocol, override, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 import jwt
 from flext_auth.models import m
@@ -48,12 +48,10 @@ class FlextAuthBaseProvider(Protocol):
         """Get provider configuration."""
         return self._provider_config
 
-    @override
     def _protocol_name(self) -> str:
         """Return protocol name for registry identification."""
         return "auth-provider"
 
-    @override
     def authenticate(
         self,
         credentials: m.Auth.CredentialValidation,
@@ -74,7 +72,6 @@ class FlextAuthBaseProvider(Protocol):
         """
         ...
 
-    @override
     def validate(
         self,
         token: str,
@@ -321,7 +318,7 @@ class FlextAuthBaseProvider(Protocol):
         if isinstance(roles_value, list):
             roles = [role for role in roles_value if isinstance(role, str) and role]
         else:
-            roles = []
+            roles: list[str] = []
 
         now = datetime.now(UTC)
         claims: dict[str, t.GeneralValueType] = {}
@@ -387,7 +384,6 @@ class FlextAuthBaseProvider(Protocol):
 
         return r[str].ok(token)
 
-    @override
     def generate_token_for_user(
         self,
         user: m.Auth.AuthIdentity | Mapping[str, t.GeneralValueType],
@@ -422,7 +418,6 @@ class FlextAuthBaseProvider(Protocol):
             expiry_minutes=expiry_minutes,
         )
 
-    @override
     def refresh(
         self,
         token: str,
@@ -508,7 +503,6 @@ class FlextAuthBaseProvider(Protocol):
 
         return r[p.Auth.TokenProtocol].ok(refreshed_token)
 
-    @override
     def revoke(
         self,
         _token: str,
@@ -530,7 +524,6 @@ class FlextAuthBaseProvider(Protocol):
         """
         return r[bool].fail("Token revocation not supported")
 
-    @override
     def supports(self) -> set[str]:
         """Return set of capabilities supported by this provider.
 

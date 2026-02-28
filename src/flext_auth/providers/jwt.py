@@ -77,7 +77,6 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider):
         """
         return {"jwt", "validate", "refresh"}
 
-    @override
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.
 

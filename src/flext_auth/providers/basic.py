@@ -61,7 +61,6 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider):
         """
         return {"basic", "validate"}
 
-    @override
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.
 

@@ -143,7 +143,7 @@ class FlextAuthIdentityService(s[bool]):
             )
         except ValidationError as e:
             # Convert ValidationError to FlextResult with error message
-            error_messages = []
+            error_messages: list[str] = []
             for error in e.errors():
                 field = (
                     error.get("loc", ("unknown",))[0] if error.get("loc") else "unknown"

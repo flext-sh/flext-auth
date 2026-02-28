@@ -9,7 +9,7 @@ from __future__ import annotations
 import secrets
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
-from typing import Annotated
+from typing import Annotated, cast
 
 import bcrypt
 import jwt
@@ -141,14 +141,14 @@ class FlextAuthUtilities(FlextUtilities):
                 annotated in return type signatures. The actual return value is an
                 Annotated type suitable for use in Pydantic model field definitions.
                 """
-                return Annotated[
+                return cast("t.GeneralValueType", Annotated[
                     c.Auth.TokenTypes,
                     BeforeValidator(
                         FlextUtilities.Enum.coerce_validator(
                             c.Auth.TokenTypes,
                         ),
                     ),
-                ]
+                ])
 
             @staticmethod
             def coerced_provider_type() -> t.GeneralValueType:
@@ -158,14 +158,14 @@ class FlextAuthUtilities(FlextUtilities):
                 annotated in return type signatures. The actual return value is an
                 Annotated type suitable for use in Pydantic model field definitions.
                 """
-                return Annotated[
+                return cast("t.GeneralValueType", Annotated[
                     c.Auth.ProviderTypes,
                     BeforeValidator(
                         FlextUtilities.Enum.coerce_validator(
                             c.Auth.ProviderTypes,
                         ),
                     ),
-                ]
+                ])
 
             @staticmethod
             def coerced_role_type() -> t.GeneralValueType:
@@ -175,14 +175,14 @@ class FlextAuthUtilities(FlextUtilities):
                 annotated in return type signatures. The actual return value is an
                 Annotated type suitable for use in Pydantic model field definitions.
                 """
-                return Annotated[
+                return cast("t.GeneralValueType", Annotated[
                     c.Auth.RoleTypes,
                     BeforeValidator(
                         FlextUtilities.Enum.coerce_validator(
                             c.Auth.RoleTypes,
                         ),
                     ),
-                ]
+                ])
 
         # ═══════════════════════════════════════════════════════════════════
         # VALIDATION UTILITIES: Domain-specific validation

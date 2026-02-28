@@ -13,9 +13,10 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import datetime
-from typing import Protocol, override, runtime_checkable
+from typing import Protocol, TypeAlias, override, runtime_checkable
 
 from flext_core.protocols import FlextProtocols
+from flext_core.typings import t
 from flext_web.protocols import FlextWebProtocols
 
 
@@ -54,8 +55,8 @@ class FlextAuthProtocols(FlextWebProtocols):
         structural typing - no model imports required.
         """
 
-        AuthScalar = str | int | float | bool | None
-        AuthValue = AuthScalar | list[str]
+        AuthScalar: TypeAlias = t.ScalarValue
+        AuthValue: TypeAlias = t.GeneralValueType
 
         @runtime_checkable
         class IdentityProtocol(FlextProtocols.Service[bool], Protocol):
@@ -202,10 +203,10 @@ class FlextAuthProtocols(FlextWebProtocols):
             Supports both TypedDict and model implementations.
             """
 
-            user: Mapping[str, FlextAuthProtocols.Auth.AuthValue]
+            user: Mapping[str, t.GeneralValueType]
             """User/identity data."""
 
-            session: Mapping[str, FlextAuthProtocols.Auth.AuthValue]
+            session: Mapping[str, t.GeneralValueType]
             """Session data."""
 
             jwt_token: str

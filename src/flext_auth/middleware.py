@@ -142,7 +142,7 @@ class FlextAuthMiddleware(s[bool]):
 
             # Add authorization header (if headers is writable)
             try:
-                headers = request.headers if hasattr(request, "headers") else {}
+                headers: dict[str, str] = request.headers if hasattr(request, "headers") else {}
                 if u.is_dict_like(headers):
                     mutable_headers = dict(headers)
                     mutable_headers["Authorization"] = (

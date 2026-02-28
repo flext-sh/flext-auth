@@ -11,10 +11,11 @@ from __future__ import annotations
 
 import threading
 from collections.abc import Mapping
-from typing import ClassVar, Self
+from typing import ClassVar, Self, cast
 
 from flext_auth.constants import c
 from flext_auth.models import FlextAuthModels
+from flext_auth.protocols import FlextAuthProtocols as p
 from flext_auth.provider_service import FlextAuthProviderService
 from flext_auth.providers import FlextAuthBaseProvider
 from flext_auth.registry import FlextAuthRegistry
@@ -55,7 +56,7 @@ class FlextAuth:
         self._registry = FlextAuthRegistry()
         # Import here to avoid circular dependency
 
-        self._dispatcher = FlextContainer.get_global().get("command_bus").unwrap()
+        self._dispatcher = cast("p.CommandBus", FlextContainer.get_global().get("command_bus").unwrap())
         # Use provided service_name or default (service_name is optional)
         self._service_name = service_name if service_name is not None else "flext_auth"
 
@@ -381,7 +382,7 @@ class FlextAuth:
         """Logout user by session ID."""
         return self._session_service.session_manager.end_session_by_id(session_id)
 
-    def get_user_sessions(self, user_id: str) -> r[list[FlextAuthModels.Session]]:
+    def get_user_sessions(self, user_id: str) -> r[list[FlextAuthModels.Auth.Session]]:
         """Get user sessions."""
         return self._session_service.session_manager.get_active_sessions(user_id)
 
