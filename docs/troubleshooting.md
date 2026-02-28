@@ -378,13 +378,11 @@ mypy src/flext_auth/
 **Solution**:
 
 ```python
-# Use late imports if needed
-from typing import TYPE_CHECKING
+# Import via namespace alias (TYPE_CHECKING blocks are prohibited in models.py)
+from flext_auth.models import m
 
-if TYPE_CHECKING:
-    from flext_auth.models import User
-
-# Or restructure imports to avoid cycles
+# Access models via namespace
+user = m.Auth.User(...)
 ```
 
 ______________________________________________________________________
