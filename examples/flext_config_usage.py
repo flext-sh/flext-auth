@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from flext_auth import FlextAuth, FlextAuthSettings
-from flext_auth.constants import FlextAuthConstants
+from flext_auth import FlextAuth, FlextAuthConstants, FlextAuthSettings
 
 
 def main() -> None:

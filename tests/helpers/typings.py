@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.typings import FlextAuthTypes
+from flext_auth import FlextAuthTypes
 
 
 class TestsTypings(FlextAuthTypes):

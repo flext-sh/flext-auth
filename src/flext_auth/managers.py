@@ -12,12 +12,9 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
-from typing import cast
 from uuid import uuid4
 
-from flext_auth.models import m
-from flext_auth.protocols import p
-from flext_auth.settings import FlextAuthSettings
+from flext_auth import FlextAuthSettings, m, p
 from flext_core import (
     FlextContainer,
     FlextContext,
@@ -378,7 +375,7 @@ class FlextAuthManagers:
                     session_id = str(v) if v is not None else ""
 
             # Store full data with timestamps in internal storage
-                        storage_data: dict[str, t.GeneralValueType] = {
+            storage_data: dict[str, t.GeneralValueType] = {
                 "unique_id": unique_id,
                 "name": name,
                 "contact": contact,
@@ -392,7 +389,9 @@ class FlextAuthManagers:
                 "last_access": last_access,
                 "token": token,
                 "session_id": session_id,
-                "id": user_id,                  "identity_id": user_id,                  "created_at": datetime.now(UTC),
+                "id": user_id,
+                "identity_id": user_id,
+                "created_at": datetime.now(UTC),
                 "updated_at": datetime.now(UTC),
             }
             self._users[username] = storage_data
@@ -556,11 +555,18 @@ class FlextAuthManagers:
             session = m.Auth.Session(
                 identity_id=str(session_data["identity_id"]),
                 session_token=str(session_data["session_token"]),
-                expires_at=session_data["expires_at"] if isinstance(session_data["expires_at"], datetime) else datetime.fromisoformat(str(session_data["expires_at"])),
+                expires_at=session_data["expires_at"]
+                if isinstance(session_data["expires_at"], datetime)
+                else datetime.fromisoformat(str(session_data["expires_at"])),
                 is_active=bool(session_data.get("is_active", True)),
                 ip_address=str(session_data.get("ip_address", "")),
                 user_agent=str(session_data.get("user_agent", "")),
-                last_accessed=session_data.get("last_accessed", datetime.now(UTC)),
+                last_accessed=(
+                    session_data["last_accessed"]
+                    if "last_accessed" in session_data
+                    and isinstance(session_data["last_accessed"], datetime)
+                    else datetime.now(UTC)
+                ),
             )
             return r[m.Auth.Session].ok(session)
 
@@ -578,11 +584,20 @@ class FlextAuthManagers:
                         session = m.Auth.Session(
                             identity_id=str(session_data["identity_id"]),
                             session_token=str(session_data["session_token"]),
-                            expires_at=session_data["expires_at"] if isinstance(session_data["expires_at"], datetime) else datetime.fromisoformat(str(session_data["expires_at"])),
+                            expires_at=session_data["expires_at"]
+                            if isinstance(session_data["expires_at"], datetime)
+                            else datetime.fromisoformat(
+                                str(session_data["expires_at"])
+                            ),
                             is_active=bool(session_data.get("is_active", True)),
                             ip_address=str(session_data.get("ip_address", "")),
                             user_agent=str(session_data.get("user_agent", "")),
-                            last_accessed=session_data.get("last_accessed", datetime.now(UTC)),
+                            last_accessed=(
+                                session_data["last_accessed"]
+                                if "last_accessed" in session_data
+                                and isinstance(session_data["last_accessed"], datetime)
+                                else datetime.now(UTC)
+                            ),
                         )
                         # Set unique_id from session_id
                         session.unique_id = session_id
@@ -693,7 +708,7 @@ class FlextAuthManagers:
             """
             self._log_event(event_type, **data)
 
-                def log_auth_success(
+        def log_auth_success(
             self,
             username: str,
             provider: str,

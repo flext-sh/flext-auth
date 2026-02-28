@@ -9,9 +9,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 
 import pytest
-from flext_auth.middleware import FlextAuthMiddleware
-from flext_auth.models import m
-from flext_auth.protocols import p
+from flext_auth import FlextAuthMiddleware, m, p
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.kerberos import FlextAuthKerberosProvider
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
@@ -257,7 +255,7 @@ class TestTokenRealFlows:
         assert call_count["count"] == 1
         assert result.is_success
         identity = result.value
-        assert identity.id == "oauth-user-123"
+        assert identity.unique_id == "oauth-user-123"
         assert identity.name == "oauth-user"
         assert identity.contact == "oauth@example.com"
 

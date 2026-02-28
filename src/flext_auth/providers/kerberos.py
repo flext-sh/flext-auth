@@ -20,9 +20,8 @@ from collections.abc import Callable, Mapping
 from datetime import UTC, datetime
 from typing import override
 
-from flext_auth.models import FlextAuthModels
+from flext_auth import FlextAuthModels, FlextAuthTypes as at
 from flext_auth.providers.rfc import FlextAuthRfcProvider
-from flext_auth.typings import FlextAuthTypes as at
 from flext_core import r, t, u
 
 

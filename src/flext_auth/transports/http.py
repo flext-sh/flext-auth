@@ -16,8 +16,7 @@ from collections.abc import Mapping
 from urllib.parse import urlencode
 
 from flext_api import FlextApiClient, FlextApiSettings
-from flext_auth.models import m
-from flext_auth.typings import t
+from flext_auth import m, t
 from flext_core import FlextLogger, r
 
 

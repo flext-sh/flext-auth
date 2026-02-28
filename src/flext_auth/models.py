@@ -16,7 +16,7 @@ from typing import Literal, Self
 
 import bcrypt
 from flext_api import FlextApiModels
-from flext_auth.constants import c
+from flext_auth import c
 from flext_core import r, t
 from pydantic import ConfigDict, Field
 

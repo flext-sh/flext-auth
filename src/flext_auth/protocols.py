@@ -15,9 +15,8 @@ from collections.abc import Mapping
 from datetime import datetime
 from typing import Protocol, TypeAlias, override, runtime_checkable
 
-from flext_core.protocols import FlextProtocols
-from flext_core.typings import t
-from flext_web.protocols import FlextWebProtocols
+from flext_core import FlextProtocols, t
+from flext_web import FlextWebProtocols
 
 
 class FlextAuthProtocols(FlextWebProtocols):
@@ -33,7 +32,7 @@ class FlextAuthProtocols(FlextWebProtocols):
     - STRUCTURAL TYPING: No model imports - protocols define structural contracts
 
     Usage:
-    from flext_auth.protocols import p
+    from flext_auth import p
 
     # Foundation access (inherited)
     p.Result
@@ -178,6 +177,21 @@ class FlextAuthProtocols(FlextWebProtocols):
             @property
             def user_id(self) -> str:
                 """User identifier."""
+                ...
+
+            @property
+            def identity_id(self) -> str:
+                """Identity ID (alias for user_id in token context)."""
+                ...
+
+            @property
+            def token_type(self) -> str:
+                """Token type (e.g. bearer, access)."""
+                ...
+
+            @property
+            def refresh_token(self) -> str:
+                """Refresh token value if applicable."""
                 ...
 
             @property

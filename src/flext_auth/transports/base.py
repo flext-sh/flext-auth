@@ -13,7 +13,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Protocol
 
-from flext_auth.typings import t
+from flext_auth import t
 from flext_core import r
 
 # Import aliases following order: c -> t -> p -> r -> m -> u

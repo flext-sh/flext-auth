@@ -1,6 +1,6 @@
 """FLEXT Auth Types - Type definitions and aliases.
 
-Uses Pydantic models from flext_auth.models for consolidated type definitions.
+Uses Pydantic models from flext_auth for consolidated type definitions.
 Maintains backward compatibility where possible while enforcing new patterns.
 
 Copyright (c) 2025 FLEXT Team. All rights reserved.
@@ -9,12 +9,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import Annotated, Literal, override
 
 from flext_api import FlextApiTypes
-from flext_auth.constants import c
-from flext_auth.models import m
-from pydantic import BaseModel, ConfigDict, Field, SecretStr
+from flext_auth import c, m
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, SecretStr
 
 
 class FlextAuthTypes(FlextApiTypes):
@@ -40,6 +40,20 @@ class FlextAuthTypes(FlextApiTypes):
             "unauthenticated",
             "expired",
             "invalid",
+        ]
+
+        # Coerced enum types for Pydantic Field (Annotated[Enum, BeforeValidator])
+        type CoercedTokenTypes = Annotated[
+            c.Auth.TokenTypes,
+            BeforeValidator[Callable[..., c.Auth.TokenTypes]],
+        ]
+        type CoercedProviderTypes = Annotated[
+            c.Auth.ProviderTypes,
+            BeforeValidator[Callable[..., c.Auth.ProviderTypes]],
+        ]
+        type CoercedRoleTypes = Annotated[
+            c.Auth.RoleTypes,
+            BeforeValidator[Callable[..., c.Auth.RoleTypes]],
         ]
 
     class UserManagement:
@@ -86,7 +100,7 @@ class FlextAuthTypes(FlextApiTypes):
         type ThreatLevel = Literal["low", "medium", "high", "critical"]
 
     # =========================================================================
-        # =========================================================================
+    # =========================================================================
 
     class Project:
         """Project type namespace."""

@@ -142,7 +142,7 @@ from flext_core import FlextRuntime
 from flext_core import FlextService
 from flext_core import t
 from flext_core import u
-from flext_auth.models import FlextAuthModels
+from flext_auth import FlextAuthModels
 
 # User entity follows FLEXT patterns
 user = FlextAuthModels.User(
@@ -332,7 +332,7 @@ Integration with flext-db-oracle for user storage:
 ```python
 # Future integration pattern
 from flext_db_oracle import OracleRepository
-from flext_auth.models import User
+from flext_auth import User
 
 class UserRepository(OracleRepository[User]):
     """User storage using Oracle database."""
@@ -355,7 +355,7 @@ Integration with Redis for session management:
 ```python
 # Future integration pattern
 import redis
-from flext_auth.models import Session
+from flext_auth import Session
 
 class RedisSessionStorage:
     """Session storage using Redis."""

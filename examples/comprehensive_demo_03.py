@@ -17,9 +17,9 @@ import string
 
 from flext_auth import (
     FlextAuth,
-    FlextAuthModels,
     FlextAuthQuickstart,
     FlextAuthSettings,
+    m,
 )
 
 
@@ -55,8 +55,8 @@ def demo_complete_auth_workflow() -> None:
                 pass
 
         # 5. Session management
-        user_id = user.user_id or user.username
-        user_sessions = auth.get_user_sessions(user_id)
+        identity_id: str = user.name
+        user_sessions = auth.get_user_sessions(identity_id)
         if user_sessions.is_success:
             pass
 
@@ -74,7 +74,7 @@ def demo_password_operations() -> None:
 
     try:
         # Create a user to demonstrate password operations
-        FlextAuthModels.Auth.AuthIdentityRequest(
+        m.Auth.AuthIdentityRequest(
             name="password_demo",
             contact="password@demo.com",
             credential="DemoPassword123!",
@@ -103,8 +103,8 @@ def demo_jwt_operations() -> None:
     user = user_result.value
 
     # Generate JWT token
-    user_id = user.user_id or user.username
-    token_result = auth.create_token(identity_id=user_id)
+    identity_id: str = user.name
+    token_result = auth.create_token(identity_id=identity_id)
     if token_result.is_success:
         token_string = token_result.value
 
@@ -139,7 +139,7 @@ def demo_user_management() -> None:
 
     # Demonstrate user lookups
     for user in registered_users:
-        lookup_result = auth.get_user_by_username(user.username)
+        lookup_result = auth.get_user_by_username(user.name)
         if lookup_result.is_success and lookup_result.value:
             pass
 

@@ -16,15 +16,17 @@ from datetime import UTC, datetime, timedelta
 
 import jwt
 import pytest
-from flext_auth.api import FlextAuth
-from flext_auth.constants import FlextAuthConstants
-from flext_auth.middleware import FlextAuthMiddleware
-from flext_auth.models import FlextAuthModels
-from flext_auth.protocols import p
+from flext_auth import (
+    FlextAuth,
+    FlextAuthConstants,
+    FlextAuthMiddleware,
+    FlextAuthModels,
+    FlextAuthSettings,
+    p,
+)
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.kerberos import FlextAuthKerberosProvider
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
-from flext_auth.settings import FlextAuthSettings
 from flext_core import FlextResult, t
 from pydantic import SecretStr
 
@@ -228,7 +230,7 @@ class TestFlextAuthStorageOperations:
 
         # Verify user sessions can be retrieved
         user = auth_result.value
-        sessions_result = auth.get_user_sessions(user.id)
+        sessions_result = auth.get_user_sessions(user.unique_id)
         assert sessions_result.is_success
 
 
@@ -278,7 +280,7 @@ class TestFlextAuthSessionManagement:
         assert auth_result.is_success
         user = auth_result.value
         # Get user sessions — empty because token/session creation is not implemented
-        sessions_result = auth.get_user_sessions(user.id)
+        sessions_result = auth.get_user_sessions(user.unique_id)
         assert sessions_result.is_success
         sessions = sessions_result.value
         assert (
@@ -302,7 +304,7 @@ class TestFlextAuthTokenOperations:
         user = user_result.value
 
         # create_token fails because JWT provider generate_token_for_user is not implemented
-        token_result = auth.create_token(identity_id=user.id)
+        token_result = auth.create_token(identity_id=user.unique_id)
         assert not token_result.is_success
         assert token_result.error is not None
 
@@ -549,7 +551,7 @@ class TestFlextAuth:
         assert auth_result.is_success
         authenticated_identity = auth_result.value
         assert isinstance(authenticated_identity, FlextAuthModels.Auth.AuthIdentity)
-        token_result = auth.create_token(identity_id=identity.id)
+        token_result = auth.create_token(identity_id=identity.unique_id)
         assert not token_result.is_success
         assert token_result.error is not None
 
@@ -1183,7 +1185,7 @@ class TestFlextAuthErrorHandlingPaths:
         assert user_result.is_success
         user = user_result.value
         # create_token fails — JWT provider not implemented
-        token_result = auth.create_token(identity_id=user.id)
+        token_result = auth.create_token(identity_id=user.unique_id)
         assert not token_result.is_success
         assert token_result.error is not None
 
@@ -1344,7 +1346,7 @@ class TestAuthModule:
 
         # Get user ID from registration result
         user = register_result.value
-        user_id = user.id
+        user_id = user.unique_id
 
         # Test user retrieval by ID
         result = auth.get_user(str(user_id))
@@ -1921,7 +1923,7 @@ class TestProviderTokenFlows:
         result = provider.validate_token(token_value)
         assert result.is_success
         identity = result.value
-        assert identity.id == "oauth-user-123"
+        assert identity.unique_id == "oauth-user-123"
         assert identity.name == "OAuth User"
         assert identity.contact == "oauth@example.com"
 

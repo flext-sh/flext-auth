@@ -28,38 +28,11 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from typing import override
+from collections.abc import Mapping
+from typing import Protocol, TypeGuard, override, runtime_checkable
 
-from flext_auth.models import m
-from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_auth.typings import t
-from flext_auth.utilities import u
+from flext_auth import FlextAuthBaseProvider, m, u
 from flext_core import FlextLogger, r, s
-
-
-class _MiddlewareControlMixin:
-    """Shared enable/disable functionality for middleware classes.
-
-    Eliminates duplication of enable/disable pattern (12 lines × 2 classes).
-    This mixin provides the base control functionality for all middleware implementations.
-    """
-
-    def __init__(self) -> None:
-        """Initialize middleware control state."""
-        self._enabled = True
-
-    def enable(self) -> None:
-        """Enable middleware processing."""
-        self._enabled = True
-
-    def disable(self) -> None:
-        """Disable middleware processing."""
-        self._enabled = False
-
-    @property
-    def is_enabled(self) -> bool:
-        """Check if middleware is enabled."""
-        return self._enabled
 
 
 class FlextAuthMiddleware(s[bool]):
@@ -69,6 +42,39 @@ class FlextAuthMiddleware(s[bool]):
     to work with HTTP client middleware (flext-api) and web application middleware
     (flext-web). Following FLEXT pattern: one class per module with nested middleware classes.
     """
+
+    @runtime_checkable
+    class RequestWithHeaders(Protocol):
+        """Protocol for request-like objects with a headers attribute."""
+
+        headers: dict[str, str] | Mapping[str, str]
+
+    @staticmethod
+    def _request_has_headers(
+        req: RequestWithHeaders,
+    ) -> TypeGuard[RequestWithHeaders]:
+        """TypeGuard: request has a headers attribute."""
+        return hasattr(req, "headers")
+
+    class _MiddlewareControlMixin:
+        """Shared enable/disable functionality for middleware classes."""
+
+        def __init__(self) -> None:
+            """Initialize middleware control state."""
+            self._enabled = True
+
+        def enable(self) -> None:
+            """Enable middleware processing."""
+            self._enabled = True
+
+        def disable(self) -> None:
+            """Disable middleware processing."""
+            self._enabled = False
+
+        @property
+        def is_enabled(self) -> bool:
+            """Check if middleware is enabled."""
+            return self._enabled
 
     @override
     def execute(self) -> r[bool]:
@@ -115,45 +121,45 @@ class FlextAuthMiddleware(s[bool]):
 
         def process_request(
             self,
-            request: t.GeneralValueType,
-        ) -> r[t.GeneralValueType]:
+            request: FlextAuthMiddleware.RequestWithHeaders,
+        ) -> r[FlextAuthMiddleware.RequestWithHeaders]:
             """Process HTTP request by adding authentication headers.
 
             Args:
-                request: HTTP request to authenticate
+                request: HTTP request with headers to authenticate
 
             Returns:
                 r with authenticated request or error
 
             """
             if not self._enabled:
-                return r[t.GeneralValueType].ok(request)
+                return r[FlextAuthMiddleware.RequestWithHeaders].ok(request)
 
             if not self._is_token_still_valid():
                 token_result = self._authenticate_or_refresh()
                 if token_result.is_failure:
-                    return r[t.GeneralValueType].fail(
+                    return r[FlextAuthMiddleware.RequestWithHeaders].fail(
                         token_result.error or "Authentication failed",
                     )
                 self._current_token = token_result.value
 
             if self._current_token is None:
-                return r[t.GeneralValueType].fail("Authentication token is not available")
+                return r[FlextAuthMiddleware.RequestWithHeaders].fail(
+                    "Authentication token is not available"
+                )
 
-            # Add authorization header (if headers is writable)
             try:
-                headers: dict[str, str] = request.headers if hasattr(request, "headers") else {}
-                if u.is_dict_like(headers):
-                    mutable_headers = dict(headers)
+                headers_val = request.headers
+                if u.is_dict_like(headers_val):
+                    mutable_headers = dict(headers_val)
                     mutable_headers["Authorization"] = (
                         f"Bearer {self._current_token.token}"
                     )
                     setattr(request, "headers", mutable_headers)
             except (AttributeError, TypeError):
-                # Headers might be read-only, skip if not writable
                 pass
 
-            return r[t.GeneralValueType].ok(request)
+            return r[FlextAuthMiddleware.RequestWithHeaders].ok(request)
 
         def _authenticate_or_refresh(self) -> r[m.Auth.AuthToken]:
             """Authenticate using credentials or refresh existing token."""

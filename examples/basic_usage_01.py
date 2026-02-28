@@ -16,8 +16,7 @@ import os
 import secrets
 import string
 
-from flext_auth import FlextAuth, FlextAuthSettings
-from flext_auth.constants import c
+from flext_auth import FlextAuth, FlextAuthSettings, c
 from flext_core import FlextLogger
 from pydantic_settings import BaseSettings
 
@@ -122,8 +121,8 @@ def example_user_lifecycle() -> None:
         user_data = register_result.value
         logger.info(
             "User registered successfully",
-            username=user_data.username,
-            email=user_data.email,
+            name=user_data.name,
+            contact=user_data.contact,
             roles=user_data.roles,
             active=user_data.is_active,
         )
@@ -218,7 +217,7 @@ def example_advanced_registration() -> None:
         user_data = register_result.value
         logger.info(
             "Admin user registered successfully",
-            username=user_data.username,
+            name=user_data.name,
             roles=user_data.roles,
             has_REDACTED_LDAP_BIND_PASSWORD_role="REDACTED_LDAP_BIND_PASSWORD"
             in user_data.roles,
@@ -240,7 +239,7 @@ def example_advanced_registration() -> None:
         user_data = user_result.value
         logger.info(
             "Regular user registered successfully",
-            username=user_data.username,
+            name=user_data.name,
             roles=user_data.roles,
             has_REDACTED_LDAP_BIND_PASSWORD_role="REDACTED_LDAP_BIND_PASSWORD"
             in user_data.roles,
@@ -270,7 +269,7 @@ def example_complete_workflow() -> None:
         return
 
     user = reg_result.value
-    logger.info("User registered successfully", username=user.username)
+    logger.info("User registered successfully", name=user.name)
 
     # Step 2: Authentication
     logger.info("Step 2: User authentication")
@@ -296,12 +295,11 @@ def example_complete_workflow() -> None:
 
     # Step 4: Get user information
     logger.info("Step 4: Get user information")
-    # Use the user_id from the user object, or fallback to username
-    user_id = user.unique_id or user.name
-    user_info = auth.get_user(user_id)
+    identity_id: str = user.name
+    user_info = auth.get_user(identity_id)
     if user_info.is_success:
         retrieved_user = user_info.value
-        logger.info("User information retrieved", username=retrieved_user.username)
+        logger.info("User information retrieved", name=retrieved_user.name)
     else:
         logger.error("Failed to get user information", error=user_info.error)
 

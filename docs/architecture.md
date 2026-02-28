@@ -452,7 +452,7 @@ from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_auth.models import FlextAuthModels
+from flext_auth import FlextAuthModels
 
 class FlextAuthExampleProvider(FlextAuthBaseProvider):
     """Example authentication provider implementation."""
@@ -1151,7 +1151,7 @@ result = auth.authenticate_user("username", "password")
 
 ```python
 from flext_auth import FlextAuth, FlextAuthRegistry
-from flext_auth.providers import FlextAuthJwtProvider, FlextAuthOAuth2Provider, FlextAuthSamlProvider
+from flext_auth import FlextAuthJwtProvider, FlextAuthOAuth2Provider, FlextAuthSamlProvider
 
 # Create registry
 registry = FlextAuthRegistry()
@@ -1183,8 +1183,8 @@ providers = auth.list_providers()  # ["jwt", "oauth2", "saml"]
 
 ```python
 from flext_auth import FlextAuth
-from flext_auth.providers import FlextAuthOAuth2Provider
-from flext_auth.transports import GrpcTransportAdapter
+from flext_auth import FlextAuthOAuth2Provider
+from flext_auth import GrpcTransportAdapter
 
 # Create provider with gRPC transport
 provider = FlextAuthOAuth2Provider(

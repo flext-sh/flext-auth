@@ -379,7 +379,7 @@ mypy src/flext_auth/
 
 ```python
 # Import via namespace alias (TYPE_CHECKING blocks are prohibited in models.py)
-from flext_auth.models import m
+from flext_auth import m
 
 # Access models via namespace
 user = m.Auth.User(...)

@@ -21,12 +21,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from flext_auth.constants import c
-from flext_auth.models import m
-from flext_auth.protocols import FlextAuthProtocols
+from flext_auth import FlextAuthProtocols, c, m, t, u
 from flext_auth.providers.rfc import FlextAuthRfcProvider
-from flext_auth.typings import t
-from flext_auth.utilities import u
 from flext_core import e, r
 
 
@@ -104,7 +100,9 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         # HTTP client for token endpoint requests (MANDATORY: uses flext-api)
         # Transport layer not yet stable
-        self._http_client: t.GeneralValueType | None = None  # HttpTransportAdapter(timeout=30.0)
+        self._http_client: t.GeneralValueType | None = (
+            None  # HttpTransportAdapter(timeout=30.0)
+        )
 
     @staticmethod
     def _to_scalar_config(

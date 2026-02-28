@@ -282,7 +282,7 @@ ______________________________________________________________________
 ### Working with User Entities
 
 ```python
-from flext_auth.models import FlextAuthModels
+from flext_auth import FlextAuthModels
 
 # Create user entity
 user = FlextAuthModels.User(

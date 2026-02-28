@@ -9,8 +9,8 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from flext_auth.protocols import FlextAuthProtocols
-from flext_tests.protocols import FlextTestsProtocols
+from flext_auth import FlextAuthProtocols
+from flext_tests import FlextTestsProtocols
 
 
 class TestsFlextAuthProtocols(FlextTestsProtocols, FlextAuthProtocols):

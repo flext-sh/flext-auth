@@ -13,8 +13,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 
 import jwt
+from flext_auth import t
 from flext_auth.providers.jwt import FlextAuthJwtProvider
-from flext_auth.typings import t
 from flext_core import r
 
 

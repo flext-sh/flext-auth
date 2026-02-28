@@ -12,10 +12,7 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from typing import override
 
-from flext_auth.constants import c
-from flext_auth.managers import FlextAuthManagers, ServiceManagers
-from flext_auth.models import m
-from flext_auth.settings import FlextAuthSettings
+from flext_auth import FlextAuthManagers, FlextAuthSettings, ServiceManagers, c, m
 from flext_core import FlextService as s, p, r
 from pydantic import ValidationError
 

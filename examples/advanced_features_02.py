@@ -163,9 +163,9 @@ def example_token_validation() -> None:
 
     user = user_result.value
 
-    # Generate token - use user_id or fallback to username
-    user_id = user.user_id or user.username
-    token_result = auth.create_token(identity_id=user_id)
+    # Generate token - use identity name for identity_id
+    identity_id: str = user.name
+    token_result = auth.create_token(identity_id=identity_id)
     if token_result.is_failure:
         return
 

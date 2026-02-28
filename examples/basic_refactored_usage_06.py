@@ -17,12 +17,9 @@ import sys
 
 from flext_auth import (
     FlextAuth,
-    FlextAuthModels,
+    m,
 )
-from flext_auth.typings import t
-from flext_core import FlextResult
-
-AuthenticationResponseDict = FlextAuthModels.Auth.AuthResponse
+from flext_core import r
 
 
 # Extract Method Pattern - reduce main() complexity from 42 to manageable chunks
@@ -31,13 +28,14 @@ class FlextAuthDemo:
 
     def __init__(self) -> None:
         """Initialize demo with FlextAuth instance."""
+        super().__init__()
         self.auth = FlextAuth()
 
-    def demo_user_registration(self) -> FlextResult[FlextAuthModels.Auth.AuthIdentity]:
+    def demo_user_registration(self) -> r[m.Auth.AuthIdentity]:
         """Extract Method: User registration demo.
 
         Returns:
-            FlextResult[FlextAuthModels.Identity]: Registration result
+            r[m.Identity]: Registration result
 
         """
         result = self.auth.register_user(
@@ -54,11 +52,11 @@ class FlextAuthDemo:
 
     def demo_user_authentication(
         self,
-    ) -> FlextResult[FlextAuthModels.Auth.AuthIdentity]:
+    ) -> r[m.Auth.AuthIdentity]:
         """Extract Method: User authentication demo.
 
         Returns:
-            FlextResult[FlextAuthModels.AuthToken]: Authentication result
+            r[m.AuthToken]: Authentication result
 
         """
         result = self.auth.authenticate_user("demouser", "DemoPassword123!")
@@ -69,7 +67,7 @@ class FlextAuthDemo:
 
         return result
 
-    def _print_token_info(self, auth_data: FlextAuthModels.Auth.AuthIdentity) -> None:
+    def _print_token_info(self, auth_data: m.Auth.AuthIdentity) -> None:
         """Helper: Print token information."""
         token_length = len(str(auth_data.token)) if auth_data.token else 0
         print(f"Token length: {token_length}")
@@ -77,10 +75,10 @@ class FlextAuthDemo:
 
 def _demo_password_utilities() -> None:
     """Demo password utilities and validation."""
-    os.getenv("FLEXT_DEMO_TEST_PASSWORD", "TestPassword123!")
+    _ = os.getenv("FLEXT_DEMO_TEST_PASSWORD", "TestPassword123!")
 
     try:
-        FlextAuthModels.Auth.AuthIdentityRequest(
+        _ = m.Auth.AuthIdentityRequest(
             name="util_demo",
             contact="util@demo.com",
             credential="TestPassword123!",
@@ -112,7 +110,7 @@ def _demo_secure_password_generation() -> None:
     all_chars = lowercase + uppercase + digits + special
     secure_password.extend(secrets.choice(all_chars) for _ in range(length - 4))
     secrets.SystemRandom().shuffle(secure_password)
-    "".join(secure_password)
+    _ = "".join(secure_password)
 
 
 def _demo_email_validation() -> None:
@@ -136,7 +134,7 @@ def _demo_email_validation() -> None:
         return ".." not in email
 
     for email in test_emails:
-        validate_email_manual(email)
+        _ = validate_email_manual(email)
 
 
 def _demo_jwt_operations(demo: FlextAuthDemo) -> None:
@@ -149,8 +147,8 @@ def _demo_jwt_operations(demo: FlextAuthDemo) -> None:
 
     if jwt_user_result.is_success:
         user = jwt_user_result.value
-        user_id = user.user_id or user.username
-        token_result = demo.auth.create_token(identity_id=user_id)
+        identity_id: str = user.name
+        token_result = demo.auth.create_token(identity_id=identity_id)
         if token_result.is_success:
             token_string = token_result.value
             token_validation = demo.auth.validate_token(token_string)
@@ -189,6 +187,10 @@ def main() -> None:
         pass
 
     # Demo various utilities
+    _demo_password_utilities()
+    _demo_secure_password_generation()
+    _demo_email_validation()
+    _demo_jwt_operations(demo)
 
 
 if __name__ == "__main__":

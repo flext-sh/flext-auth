@@ -46,7 +46,7 @@ class FlextAuthConstants(FlextApiConstants):
 
     Usage Patterns:
     # Direct access (recommended)
-    >>> from flext_auth.constants import FlextAuthConstants as AuthConst
+    >>> from flext_auth import FlextAuthConstants as AuthConst
     >>> token_type = AuthConst.Auth.TokenTypes.ACCESS
     >>> provider = AuthConst.Auth.ProviderTypes.JWT
 

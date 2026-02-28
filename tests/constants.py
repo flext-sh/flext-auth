@@ -15,8 +15,8 @@ from __future__ import annotations
 
 from typing import Final, Literal, TypeAlias
 
-from flext_auth.constants import FlextAuthConstants
-from flext_tests.constants import FlextTestsConstants
+from flext_auth import FlextAuthConstants
+from flext_tests import FlextTestsConstants
 
 
 class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):

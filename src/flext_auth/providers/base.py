@@ -18,8 +18,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Protocol, runtime_checkable
 
 import jwt
-from flext_auth.models import m
-from flext_auth.protocols import p
+from flext_auth import m, p
 from flext_core import r, t
 
 
@@ -170,7 +169,9 @@ class FlextAuthBaseProvider(Protocol):
         return r[str].fail("User payload must include identity identifier")
 
     @staticmethod
-    def _extract_expiration_datetime(payload: Mapping[str, t.GeneralValueType]) -> r[datetime]:
+    def _extract_expiration_datetime(
+        payload: Mapping[str, t.GeneralValueType],
+    ) -> r[datetime]:
         exp_value = payload.get("exp")
         match exp_value:
             case int() as exp_ts if exp_ts > 0:
@@ -226,7 +227,9 @@ class FlextAuthBaseProvider(Protocol):
 
     def _decode_token_claims(self, token: str) -> r[Mapping[str, t.GeneralValueType]]:
         if not token.strip():
-            return r[Mapping[str, t.GeneralValueType]].fail("Token must be a non-empty string")
+            return r[Mapping[str, t.GeneralValueType]].fail(
+                "Token must be a non-empty string"
+            )
 
         settings_result = self._token_settings()
         if settings_result.is_failure:
@@ -260,7 +263,9 @@ class FlextAuthBaseProvider(Protocol):
             RuntimeError,
             ImportError,
         ) as exc:
-            return r[Mapping[str, t.GeneralValueType]].fail(f"Token validation failed: {exc}")
+            return r[Mapping[str, t.GeneralValueType]].fail(
+                f"Token validation failed: {exc}"
+            )
 
         if not isinstance(decoded_payload, Mapping):
             return r[Mapping[str, t.GeneralValueType]].fail(

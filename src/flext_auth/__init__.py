@@ -8,38 +8,43 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
+from flext_core import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
-    from flext_auth.api import FlextAuth
-    from flext_auth.constants import FlextAuthConstants, FlextAuthConstants as c
-    from flext_auth.managers import FlextAuthManagers
-    from flext_auth.middleware import FlextAuthMiddleware
-    from flext_auth.mixins import FlextAuthMixins
-    from flext_auth.models import FlextAuthModels, FlextAuthModels as m
-    from flext_auth.protocols import FlextAuthProtocols, FlextAuthProtocols as p
-    from flext_auth.provider_service import FlextAuthProviderService
-    from flext_auth.providers import (
+    from flext_auth import (
+        FlextAuth,
         FlextAuthApiKeyProvider,
         FlextAuthBaseProvider,
         FlextAuthBasicProvider,
         FlextAuthCertificateProvider,
+        FlextAuthConstants,
+        FlextAuthConstants as c,
+        FlextAuthIdentityService,
         FlextAuthJwtProvider,
         FlextAuthKerberosProvider,
         FlextAuthLdapProvider,
+        FlextAuthManagers,
+        FlextAuthMiddleware,
+        FlextAuthMixins,
+        FlextAuthModels,
+        FlextAuthModels as m,
         FlextAuthOAuth2Provider,
         FlextAuthOidcProvider,
+        FlextAuthProtocols,
+        FlextAuthProtocols as p,
         FlextAuthProviderMixin,
+        FlextAuthProviderService,
+        FlextAuthQuickstart,
+        FlextAuthRegistry,
         FlextAuthSamlProvider,
+        FlextAuthSessionService,
+        FlextAuthSettings,
+        FlextAuthTokenService,
+        FlextAuthTypes,
+        FlextAuthTypes as t,
+        FlextAuthUtilities,
+        FlextAuthUtilities as u,
     )
-    from flext_auth.quickstart import FlextAuthQuickstart
-    from flext_auth.registry import FlextAuthRegistry
-    from flext_auth.session_service import FlextAuthSessionService
-    from flext_auth.settings import FlextAuthSettings
-    from flext_auth.token_service import FlextAuthTokenService
-    from flext_auth.typings import FlextAuthTypes, FlextAuthTypes as t
-    from flext_auth.user_service import FlextAuthIdentityService
-    from flext_auth.utilities import FlextAuthUtilities, FlextAuthUtilities as u
     from flext_core import (
         FlextDecorators,
         FlextDecorators as d,

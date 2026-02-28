@@ -11,19 +11,20 @@ from __future__ import annotations
 
 import threading
 from collections.abc import Mapping
-from typing import ClassVar, Self, cast
+from typing import ClassVar, Self
 
-from flext_auth.constants import c
-from flext_auth.models import FlextAuthModels
-from flext_auth.protocols import FlextAuthProtocols as p
-from flext_auth.provider_service import FlextAuthProviderService
-from flext_auth.providers import FlextAuthBaseProvider
-from flext_auth.registry import FlextAuthRegistry
-from flext_auth.session_service import FlextAuthSessionService
-from flext_auth.settings import FlextAuthSettings
-from flext_auth.token_service import FlextAuthTokenService
-from flext_auth.user_service import FlextAuthIdentityService
-from flext_core import FlextContainer, FlextLogger, r, t
+from flext_auth import (
+    FlextAuthBaseProvider,
+    FlextAuthIdentityService,
+    FlextAuthProviderService,
+    FlextAuthRegistry,
+    FlextAuthSessionService,
+    FlextAuthSettings,
+    FlextAuthTokenService,
+    c,
+    m,
+)
+from flext_core import FlextContainer, FlextLogger, p, r, t
 
 
 class FlextAuth:
@@ -54,9 +55,11 @@ class FlextAuth:
         else:
             self._config = FlextAuthSettings()
         self._registry = FlextAuthRegistry()
-        # Import here to avoid circular dependency
-
-        self._dispatcher = FlextContainer.get_global(.get("command_bus").unwrap())
+        command_bus_result = FlextContainer.get_global().get("command_bus").unwrap()
+        if not isinstance(command_bus_result, p.CommandBus):
+            err_msg = "command_bus is not a CommandBus"
+            raise TypeError(err_msg)
+        self._dispatcher = command_bus_result
         # Use provided service_name or default (service_name is optional)
         self._service_name = service_name if service_name is not None else "flext_auth"
 
@@ -168,7 +171,7 @@ class FlextAuth:
         self,
         credentials: Mapping[str, str],
         _provider: str | None = None,
-    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
+    ) -> r[m.Auth.AuthIdentity]:
         """Railway-oriented authentication with chaining."""
         # Extract username and password from credentials - fast fail if missing
         username_value = credentials.get("username")
@@ -176,7 +179,7 @@ class FlextAuth:
             case str() as username if username:
                 username_value = username
             case _:
-                return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                return r[m.Auth.AuthIdentity].fail(
                     "Invalid credentials: username is required and must be a non-empty string",
                 )
 
@@ -185,7 +188,7 @@ class FlextAuth:
             case str() as password if password:
                 password_value = password
             case _:
-                return r[FlextAuthModels.Auth.AuthIdentity].fail(
+                return r[m.Auth.AuthIdentity].fail(
                     "Invalid credentials: password is required and must be a non-empty string",
                 )
 
@@ -200,7 +203,7 @@ class FlextAuth:
         password: str,
         _ip_address: str | None = None,
         _user_agent: str | None = None,
-    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
+    ) -> r[m.Auth.AuthIdentity]:
         """Authenticate user by username and password with optional metadata.
 
         Args:
@@ -256,7 +259,7 @@ class FlextAuth:
         roles: list[str] | None = None,
         role: str | None = None,
         **kwargs: str | int | bool | list[str] | None,
-    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
+    ) -> r[m.Auth.AuthIdentity]:
         """Register a new user.
 
         Args:
@@ -307,7 +310,7 @@ class FlextAuth:
         username: str,
         email: str,
         password: str,
-    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
+    ) -> r[m.Auth.AuthIdentity]:
         """Railway-oriented user registration via identity service."""
         return self._identity_service.create_identity(
             name=username,
@@ -347,13 +350,11 @@ class FlextAuth:
     # CONVENIENCE API METHODS (Delegations to services)
     # =========================================================================
 
-    def get_user(self, user_id: str) -> r[FlextAuthModels.Auth.AuthIdentity]:
+    def get_user(self, user_id: str) -> r[m.Auth.AuthIdentity]:
         """Get identity by ID - delegation to identity_service."""
         return self._identity_service.identity_manager.get_user(user_id)
 
-    def get_user_by_username(
-        self, username: str
-    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
+    def get_user_by_username(self, username: str) -> r[m.Auth.AuthIdentity]:
         """Get identity by username - delegation to identity_service."""
         return self._identity_service.identity_manager.get_user_by_username(username)
 
@@ -361,7 +362,7 @@ class FlextAuth:
         self,
         user_id: str,
         **updates: str | int | bool | list[str] | None,
-    ) -> r[FlextAuthModels.Auth.AuthIdentity]:
+    ) -> r[m.Auth.AuthIdentity]:
         """Update identity - delegation to identity_service."""
         return self._identity_service.identity_manager.update_user(user_id, **updates)
 
@@ -382,7 +383,7 @@ class FlextAuth:
         """Logout user by session ID."""
         return self._session_service.session_manager.end_session_by_id(session_id)
 
-    def get_user_sessions(self, user_id: str) -> r[list[FlextAuthModels.Auth.Session]]:
+    def get_user_sessions(self, user_id: str) -> r[list[m.Auth.Session]]:
         """Get user sessions."""
         return self._session_service.session_manager.get_active_sessions(user_id)
 

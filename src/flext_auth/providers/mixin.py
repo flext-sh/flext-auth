@@ -49,7 +49,7 @@ class FlextAuthProviderMixin:
         ValueError: If token cannot be extracted
 
         """
-        token_value = token.token if hasattr(token, "token") else token
+        token_value = token.token if isinstance(token, p.Auth.TokenProtocol) else token
         token_text = str(token_value)
         if token_text:
             return token_text

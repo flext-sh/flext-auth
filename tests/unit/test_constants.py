@@ -6,7 +6,7 @@ Tests the authentication constants module following FLEXT standards.
 from __future__ import annotations
 
 import pytest
-from flext_auth.constants import FlextAuthConstants
+from flext_auth import FlextAuthConstants
 from flext_core import FlextConstants
 
 c = FlextAuthConstants
