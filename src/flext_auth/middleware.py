@@ -32,6 +32,7 @@ from typing import override
 
 from flext_auth.models import m
 from flext_auth.providers.base import FlextAuthBaseProvider
+from flext_auth.typings import t
 from flext_auth.utilities import u
 from flext_core import FlextLogger, r, s
 
@@ -114,8 +115,8 @@ class FlextAuthMiddleware(s[bool]):
 
         def process_request(
             self,
-            request: object,
-        ) -> r[object]:
+            request: t.GeneralValueType,
+        ) -> r[t.GeneralValueType]:
             """Process HTTP request by adding authentication headers.
 
             Args:
@@ -126,18 +127,18 @@ class FlextAuthMiddleware(s[bool]):
 
             """
             if not self._enabled:
-                return r[object].ok(request)
+                return r[t.GeneralValueType].ok(request)
 
             if not self._is_token_still_valid():
                 token_result = self._authenticate_or_refresh()
                 if token_result.is_failure:
-                    return r[object].fail(
+                    return r[t.GeneralValueType].fail(
                         token_result.error or "Authentication failed",
                     )
                 self._current_token = token_result.value
 
             if self._current_token is None:
-                return r[object].fail("Authentication token is not available")
+                return r[t.GeneralValueType].fail("Authentication token is not available")
 
             # Add authorization header (if headers is writable)
             try:
@@ -152,7 +153,7 @@ class FlextAuthMiddleware(s[bool]):
                 # Headers might be read-only, skip if not writable
                 pass
 
-            return r[object].ok(request)
+            return r[t.GeneralValueType].ok(request)
 
         def _authenticate_or_refresh(self) -> r[m.Auth.AuthToken]:
             """Authenticate using credentials or refresh existing token."""

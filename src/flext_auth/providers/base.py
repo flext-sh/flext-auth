@@ -20,7 +20,7 @@ from typing import Protocol, override, runtime_checkable
 import jwt
 from flext_auth.models import m
 from flext_auth.protocols import p
-from flext_core import r
+from flext_core import r, t
 
 
 @runtime_checkable
@@ -149,22 +149,22 @@ class FlextAuthBaseProvider(Protocol):
 
     def _normalize_identity_payload(
         self,
-        user: m.Auth.AuthIdentity | Mapping[str, object],
-    ) -> r[Mapping[str, object]]:
+        user: m.Auth.AuthIdentity | Mapping[str, t.GeneralValueType],
+    ) -> r[Mapping[str, t.GeneralValueType]]:
         if isinstance(user, Mapping):
-            return r[Mapping[str, object]].ok(user)
+            return r[Mapping[str, t.GeneralValueType]].ok(user)
 
         if user.__class__ is m.Auth.AuthIdentity:
-            return r[Mapping[str, object]].ok(
+            return r[Mapping[str, t.GeneralValueType]].ok(
                 user.model_dump(exclude={"credential_hash", "token", "refresh_token"}),
             )
 
-        return r[Mapping[str, object]].fail(
+        return r[Mapping[str, t.GeneralValueType]].fail(
             "User payload must be AuthIdentity or mapping",
         )
 
     @staticmethod
-    def _extract_identity_id(payload: Mapping[str, object]) -> r[str]:
+    def _extract_identity_id(payload: Mapping[str, t.GeneralValueType]) -> r[str]:
         for key in ("identity_id", "unique_id", "id", "user_id", "sub", "name"):
             value = payload.get(key)
             if isinstance(value, str) and value:
@@ -173,7 +173,7 @@ class FlextAuthBaseProvider(Protocol):
         return r[str].fail("User payload must include identity identifier")
 
     @staticmethod
-    def _extract_expiration_datetime(payload: Mapping[str, object]) -> r[datetime]:
+    def _extract_expiration_datetime(payload: Mapping[str, t.GeneralValueType]) -> r[datetime]:
         exp_value = payload.get("exp")
         match exp_value:
             case int() as exp_ts if exp_ts > 0:
@@ -195,7 +195,7 @@ class FlextAuthBaseProvider(Protocol):
             return r[datetime].fail(f"Token exp claim conversion failed: {exc}")
 
     @staticmethod
-    def _normalize_claim_value(value: object) -> object | None:
+    def _normalize_claim_value(value: t.GeneralValueType) -> t.GeneralValueType | None:
         match value:
             case str() | int() | float() | bool() | None:
                 return value
@@ -216,7 +216,7 @@ class FlextAuthBaseProvider(Protocol):
                         normalized_items.append(normalized_item)
                 return normalized_items
             case Mapping() as values:
-                normalized_mapping: dict[str, object] = {}
+                normalized_mapping: dict[str, t.GeneralValueType] = {}
                 for key, item in values.items():
                     if not isinstance(key, str):
                         continue
@@ -227,13 +227,13 @@ class FlextAuthBaseProvider(Protocol):
             case _:
                 return None
 
-    def _decode_token_claims(self, token: str) -> r[Mapping[str, object]]:
+    def _decode_token_claims(self, token: str) -> r[Mapping[str, t.GeneralValueType]]:
         if not token.strip():
-            return r[Mapping[str, object]].fail("Token must be a non-empty string")
+            return r[Mapping[str, t.GeneralValueType]].fail("Token must be a non-empty string")
 
         settings_result = self._token_settings()
         if settings_result.is_failure:
-            return r[Mapping[str, object]].fail(
+            return r[Mapping[str, t.GeneralValueType]].fail(
                 settings_result.error or "Token settings are invalid",
             )
 
@@ -251,9 +251,9 @@ class FlextAuthBaseProvider(Protocol):
                 options={"verify_iat": True, "verify_exp": True},
             )
         except jwt.ExpiredSignatureError:
-            return r[Mapping[str, object]].fail("Token has expired")
+            return r[Mapping[str, t.GeneralValueType]].fail("Token has expired")
         except jwt.InvalidTokenError as exc:
-            return r[Mapping[str, object]].fail(f"Invalid token: {exc}")
+            return r[Mapping[str, t.GeneralValueType]].fail(f"Invalid token: {exc}")
         except (
             ValueError,
             TypeError,
@@ -263,18 +263,18 @@ class FlextAuthBaseProvider(Protocol):
             RuntimeError,
             ImportError,
         ) as exc:
-            return r[Mapping[str, object]].fail(f"Token validation failed: {exc}")
+            return r[Mapping[str, t.GeneralValueType]].fail(f"Token validation failed: {exc}")
 
         if not isinstance(decoded_payload, Mapping):
-            return r[Mapping[str, object]].fail(
+            return r[Mapping[str, t.GeneralValueType]].fail(
                 "Decoded token payload must be a mapping"
             )
 
-        return r[Mapping[str, object]].ok(decoded_payload)
+        return r[Mapping[str, t.GeneralValueType]].ok(decoded_payload)
 
     def generate_token(
         self,
-        payload: Mapping[str, object],
+        payload: Mapping[str, t.GeneralValueType],
         token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:
@@ -324,7 +324,7 @@ class FlextAuthBaseProvider(Protocol):
             roles = []
 
         now = datetime.now(UTC)
-        claims: dict[str, object] = {}
+        claims: dict[str, t.GeneralValueType] = {}
         reserved_claims = {
             "sub",
             "identity_id",
@@ -390,7 +390,7 @@ class FlextAuthBaseProvider(Protocol):
     @override
     def generate_token_for_user(
         self,
-        user: m.Auth.AuthIdentity | Mapping[str, object],
+        user: m.Auth.AuthIdentity | Mapping[str, t.GeneralValueType],
         token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:

@@ -344,7 +344,7 @@ class FlextWebTransportAdapter:
             f"Unexpected parsed response type: {type(parsed)}",
         )
 
-    def _to_json_value(self, value: object) -> t.JsonValue:
+    def _to_json_value(self, value: t.GeneralValueType) -> t.JsonValue:
         """Convert object to JsonValue type (safe for JSON-parsed data)."""
         if value is None:
             return None

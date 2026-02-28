@@ -389,8 +389,8 @@ class FlextAuth:
         """Revoke a session."""
         return self._session_service.session_manager.end_session_by_id(session_id)
 
-    def execute(self) -> r[object]:
+    def execute(self) -> r[t.GeneralValueType]:
         """Flexible execute implementation with railway orchestration."""
-        return r[object].fail(
+        return r[t.GeneralValueType].fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead",
         )

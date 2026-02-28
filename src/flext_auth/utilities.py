@@ -134,10 +134,10 @@ class FlextAuthUtilities(FlextUtilities):
             """Annotated type factories for Pydantic models."""
 
             @staticmethod
-            def coerced_token_type() -> object:
+            def coerced_token_type() -> t.GeneralValueType:
                 """Return Annotated[TokenTypes, BeforeValidator(...)] type for Pydantic models.
 
-                Note: Return type is object because Annotated types cannot be properly
+                Note: Return type is t.GeneralValueType because Annotated types cannot be properly
                 annotated in return type signatures. The actual return value is an
                 Annotated type suitable for use in Pydantic model field definitions.
                 """
@@ -151,10 +151,10 @@ class FlextAuthUtilities(FlextUtilities):
                 ]
 
             @staticmethod
-            def coerced_provider_type() -> object:
+            def coerced_provider_type() -> t.GeneralValueType:
                 """Return Annotated[ProviderTypes, BeforeValidator(...)] type for Pydantic models.
 
-                Note: Return type is object because Annotated types cannot be properly
+                Note: Return type is t.GeneralValueType because Annotated types cannot be properly
                 annotated in return type signatures. The actual return value is an
                 Annotated type suitable for use in Pydantic model field definitions.
                 """
@@ -168,7 +168,7 @@ class FlextAuthUtilities(FlextUtilities):
                 ]
 
             @staticmethod
-            def coerced_role_type() -> object:
+            def coerced_role_type() -> t.GeneralValueType:
                 """Return Annotated[RoleTypes, BeforeValidator(...)] type for Pydantic models.
 
                 Note: Return type is object because Annotated types cannot be properly

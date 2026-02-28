@@ -184,10 +184,10 @@ class FlextAuthTypes(FlextApiTypes):
             model_config = ConfigDict(frozen=False, extra="forbid")
 
             key: str = Field(default="")
-            provider: object = Field(
+            provider: t.GeneralValueType = Field(
                 default=None
-            )  # Provider instance - typed as object to avoid circular import
-            metadata: dict[str, object] = Field(default_factory=dict)
+            )  # Provider instance - typed as t.GeneralValueType to avoid circular import
+            metadata: dict[str, t.GeneralValueType] = Field(default_factory=dict)
             configuration: FlextApiTypes.JsonDict = Field(default_factory=dict)
 
     class Credentials:

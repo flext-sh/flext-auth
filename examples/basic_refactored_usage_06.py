@@ -22,7 +22,7 @@ from flext_auth import (
 from flext_auth.typings import t
 from flext_core import FlextResult
 
-AuthenticationResponseDict = t.AuthenticationResponseDict
+AuthenticationResponseDict = FlextAuthModels.Auth.AuthResponse
 
 
 # Extract Method Pattern - reduce main() complexity from 42 to manageable chunks

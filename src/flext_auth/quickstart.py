@@ -12,10 +12,10 @@ from typing import override
 from flext_auth.api import FlextAuth
 from flext_auth.models import m
 from flext_auth.settings import FlextAuthSettings
-from flext_core import r, s
+from flext_core import r, s, t
 
 
-class FlextAuthQuickstart(s[object]):
+class FlextAuthQuickstart(s[t.GeneralValueType]):
     """Quickstart convenience wrapper for FlextAuth with sensible defaults.
 
     This class provides a simplified interface for common authentication operations
@@ -118,13 +118,13 @@ class FlextAuthQuickstart(s[object]):
         return self._auth
 
     @override
-    def execute(self) -> r[object]:
+    def execute(self) -> r[t.GeneralValueType]:
         """Execute method for FlextService interface.
 
         Quickstart service doesn't use generic execute pattern.
         Use specific quickstart methods instead.
         """
-        return r[object].fail(
+        return r[t.GeneralValueType].fail(
             "FlextAuthQuickstart is focused - use specific quickstart methods like register_user()",
         )
 
