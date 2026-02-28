@@ -452,6 +452,19 @@ class FlextAuthConstants(FlextApiConstants):
             # MODEL VALIDATION CONSTANTS: For Pydantic field constraints
             # ═══════════════════════════════════════════════════════════════════
 
+        # ═══════════════════════════════════════════════════════════════════
+        # VALIDATION CONSTRAINTS: Pydantic field constraints
+        # ═══════════════════════════════════════════════════════════════════
+
+        class Validation:
+            """Validation constraints for Pydantic field definitions."""
+
+            # String length constraints
+            SHORT_NAME_MAX: Final[int] = 64
+            """Maximum length for short names (provider keys, capabilities)."""
+            LONG_NAME_MAX: Final[int] = 255
+            """Maximum length for long names (usernames, descriptions)."""
+
         class ModelValidation:
             """Constants for Pydantic model field validation."""
 

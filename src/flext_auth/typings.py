@@ -153,7 +153,7 @@ class FlextAuthTypes(FlextApiTypes):
             str,
             Field(
                 min_length=1,
-                max_length=64,
+                max_length=c.Auth.Validation.SHORT_NAME_MAX,
                 pattern=r"^[a-z0-9](?:[a-z0-9\-_.]{0,62}[a-z0-9])?$",
                 description="Provider registry key",
             ),
@@ -162,7 +162,7 @@ class FlextAuthTypes(FlextApiTypes):
             str,
             Field(
                 min_length=1,
-                max_length=64,
+                max_length=c.Auth.Validation.SHORT_NAME_MAX,
                 pattern=r"^[a-z][a-z0-9_:-]*$",
                 description="Provider capability identifier",
             ),
@@ -204,7 +204,7 @@ class FlextAuthTypes(FlextApiTypes):
             str,
             Field(
                 min_length=1,  # Use literal value instead of constant access
-                max_length=255,  # Use literal value instead of constant access
+                max_length=c.Auth.Validation.LONG_NAME_MAX,
                 description="Identity username",
             ),
         ]
