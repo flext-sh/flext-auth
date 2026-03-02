@@ -376,7 +376,7 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             code: str,
             code_verifier: str | None = None,
             redirect_uri: str | None = None,
-        ) -> r[t.OAuth2TokenResponse]:
+        ) -> r[t.Auth.OAuth2TokenResponse]:
             """Exchange authorization code for access token."""
             # code, code_verifier, redirect_uri parameters reserved for future
             # OAuth2 implementation
@@ -388,14 +388,14 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             scope_value = self.provider.get_scope()
             match scope_value:
                 case None:
-                    return r[t.OAuth2TokenResponse].fail("OAuth2 scope is required")
+                    return r[t.Auth.OAuth2TokenResponse].fail("OAuth2 scope is required")
                 case str() as scope_str:
                     scope = scope_str
                 case _:
-                    return r[t.OAuth2TokenResponse].fail(
+                    return r[t.Auth.OAuth2TokenResponse].fail(
                         "OAuth2 scope must be a string",
                     )
-            token_response = t.OAuth2TokenResponse(
+            token_response = t.Auth.OAuth2TokenResponse(
                 access_token=f"access_token_{secrets.token_hex(16)}",
                 token_type="Bearer",
                 expires_in=3600,
@@ -406,33 +406,33 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 # In a real implementation, this would verify the PKCE challenge
                 pass
 
-            return r[t.OAuth2TokenResponse].ok(token_response)
+            return r[t.Auth.OAuth2TokenResponse].ok(token_response)
 
-        def get_client_credentials_token(self) -> r[t.OAuth2TokenResponse]:
+        def get_client_credentials_token(self) -> r[t.Auth.OAuth2TokenResponse]:
             """Get access token using client credentials flow."""
-            token_response = t.OAuth2TokenResponse(
+            token_response = t.Auth.OAuth2TokenResponse(
                 access_token=f"access_token_{secrets.token_hex(16)}",
                 token_type="Bearer",
                 expires_in=3600,
             )
 
-            return r[t.OAuth2TokenResponse].ok(token_response)
+            return r[t.Auth.OAuth2TokenResponse].ok(token_response)
 
         def refresh_access_token(
             self,
             refresh_token: str,
-        ) -> r[t.OAuth2TokenResponse]:
+        ) -> r[t.Auth.OAuth2TokenResponse]:
             """Refresh access token using refresh token."""
             # refresh_token parameter reserved for future OAuth2 implementation
             _ = refresh_token  # Mark as intentionally unused for now
-            token_response = t.OAuth2TokenResponse(
+            token_response = t.Auth.OAuth2TokenResponse(
                 access_token=f"access_token_{secrets.token_hex(16)}",
                 token_type="Bearer",
                 expires_in=3600,
                 refresh_token=f"refresh_token_{secrets.token_hex(16)}",
             )
 
-            return r[t.OAuth2TokenResponse].ok(token_response)
+            return r[t.Auth.OAuth2TokenResponse].ok(token_response)
 
     class _OAuth2PKCEManager:
         """SOLID-compliant OAuth2 PKCE manager.
@@ -615,9 +615,9 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         _ = _token  # Mark as intentionally unused for now
         return r[bool].ok(value=True)  # Simplified implementation
 
-    def get_metadata(self) -> t.Providers.Metadata:
+    def get_metadata(self) -> t.Auth.Providers.Metadata:
         """Get OAuth2 provider metadata using composition."""
-        return t.Providers.Metadata(
+        return t.Auth.Providers.Metadata(
             name="oauth2",
             version="1.0.0",
             capabilities=tuple(self.supports()),

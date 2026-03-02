@@ -134,7 +134,7 @@ class FlextAuthUtilities(FlextApiUtilities):
             """Annotated type factories for Pydantic models."""
 
             @staticmethod
-            def coerced_token_type() -> t.Auth.CoercedTokenTypes:
+            def coerced_token_type() -> object:
                 """Return Annotated[TokenTypes, BeforeValidator(...)] for Pydantic Field."""
                 return Annotated[
                     c.Auth.TokenTypes,
@@ -146,7 +146,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 ]
 
             @staticmethod
-            def coerced_provider_type() -> t.Auth.CoercedProviderTypes:
+            def coerced_provider_type() -> object:
                 """Return Annotated[ProviderTypes, BeforeValidator(...)] for Pydantic Field."""
                 return Annotated[
                     c.Auth.ProviderTypes,
@@ -158,7 +158,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 ]
 
             @staticmethod
-            def coerced_role_type() -> t.Auth.CoercedRoleTypes:
+            def coerced_role_type() -> object:
                 """Return Annotated[RoleTypes, BeforeValidator(...)] for Pydantic Field."""
                 return Annotated[
                     c.Auth.RoleTypes,
@@ -316,7 +316,7 @@ class FlextAuthUtilities(FlextApiUtilities):
 
     @staticmethod
     def encode_token(
-        payload: t.Tokens.ClaimMap,
+        payload: t.Auth.Tokens.ClaimMap,
         secret: str,
         algorithm: str = c.Auth.DEFAULT_JWT_ALGORITHM,
     ) -> r[str]:
@@ -355,7 +355,7 @@ class FlextAuthUtilities(FlextApiUtilities):
         *,
         verify: bool = True,
         algorithms: tuple[str, ...] | None = None,
-    ) -> r[t.Tokens.ClaimMap]:
+    ) -> r[t.Auth.Tokens.ClaimMap]:
         """Generic JWT token decoding.
 
         Args:
@@ -380,19 +380,19 @@ class FlextAuthUtilities(FlextApiUtilities):
                 options={"verify_signature": verify},
             )
             if not FlextUtilities.is_dict_like(payload):
-                return r[t.Tokens.ClaimMap].fail(
+                return r[t.Auth.Tokens.ClaimMap].fail(
                     "Decoded token payload is not a dictionary",
                 )
 
             # Payload is validated as dict-like above
             # Convert to dict to ensure it's the right type
-            typed_payload: t.Tokens.ClaimMap = dict(payload)
+            typed_payload: t.Auth.Tokens.ClaimMap = dict(payload)
 
-            return r[t.Tokens.ClaimMap].ok(typed_payload)
+            return r[t.Auth.Tokens.ClaimMap].ok(typed_payload)
         except jwt.InvalidTokenError as e:
-            return r[t.Tokens.ClaimMap].fail(f"Invalid token: {e}")
+            return r[t.Auth.Tokens.ClaimMap].fail(f"Invalid token: {e}")
         except ValidationError as e:
-            return r[t.Tokens.ClaimMap].fail(
+            return r[t.Auth.Tokens.ClaimMap].fail(
                 f"Decoded token payload validation failed: {e}",
             )
         except (
@@ -404,7 +404,7 @@ class FlextAuthUtilities(FlextApiUtilities):
             RuntimeError,
             ImportError,
         ) as e:
-            return r[t.Tokens.ClaimMap].fail(f"Decoding failed: {e}")
+            return r[t.Auth.Tokens.ClaimMap].fail(f"Decoding failed: {e}")
 
 
 u = FlextAuthUtilities

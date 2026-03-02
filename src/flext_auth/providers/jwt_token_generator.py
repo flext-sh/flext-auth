@@ -12,7 +12,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
-from typing import cast
 
 import jwt
 from flext_auth import t
@@ -153,7 +152,7 @@ class FlextAuthJwtTokenGenerator:
             # Validate expiry
             expiry_result = self._validate_expiry(
                 expiry_minutes,
-                cast("int", expiry_config_result.value),
+                expiry_config_result.value,
             )
             if expiry_result.is_failure:
                 return r[str].fail(expiry_result.error or "Expiry validation error")
@@ -166,19 +165,19 @@ class FlextAuthJwtTokenGenerator:
             # Build payload and generate token
             audience_value = audience_result.value
             # Use None only for payload construction, not in r
-            audience: str | None = cast("str", audience_value) or None
+            audience: str | None = audience_value or None
 
             payload = self._build_payload(
                 identity_id,
-                cast("int", expiry_result.value),
-                cast("str", issuer_result.value),
+                expiry_result.value,
+                issuer_result.value,
                 audience,
                 extra_claims,
             )
             token_result = jwt.encode(
                 payload,
-                cast("str", secret_result.value),
-                algorithm=cast("str", algorithm_result.value),
+                secret_result.value,
+                algorithm=algorithm_result.value,
             )
             # Handle both string and bytes return types from jwt.encode
             match token_result:

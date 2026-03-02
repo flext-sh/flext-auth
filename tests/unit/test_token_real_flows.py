@@ -7,6 +7,7 @@ SPDX-License-Identifier: MIT
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from typing import override
 
 import pytest
 from flext_auth import FlextAuthMiddleware, m, p
@@ -25,6 +26,7 @@ class HttpRequest:
 
 
 class _BaseProviderForTokenTests(FlextAuthBaseProvider):
+    @override
     def authenticate(
         self,
         credentials: m.CredentialValidation,
@@ -32,12 +34,14 @@ class _BaseProviderForTokenTests(FlextAuthBaseProvider):
         _ = credentials
         return r[p.Auth.TokenProtocol].fail("Not used in token tests")
 
+    @override
     def validate(
         self,
         token: str,
     ) -> r[bool]:
         return self._decode_token_claims(token).map(lambda _claims: True)
 
+    @override
     def _protocol_name(self) -> str:
         """Return protocol name for registry identification."""
         return "auth-provider-test-base"
@@ -56,10 +60,12 @@ class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
         )
         self.refresh_called = False
 
+    @override
     def _protocol_name(self) -> str:
         """Return protocol name for registry identification."""
         return "auth-provider-test-middleware-refresh"
 
+    @override
     def authenticate(
         self,
         credentials: m.CredentialValidation,
@@ -67,6 +73,7 @@ class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
         _ = credentials
         return r[p.Auth.TokenProtocol].fail("Not used in token tests")
 
+    @override
     def validate(
         self,
         token: str,
@@ -74,6 +81,7 @@ class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
         _ = token
         return r[bool].fail("Refresh source token is invalid")
 
+    @override
     def refresh(
         self,
         token: str,
@@ -91,6 +99,7 @@ class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
 
 
 class _KerberosProviderForTokenTests(FlextAuthKerberosProvider):
+    @override
     def authenticate(
         self,
         credentials: m.CredentialValidation,
@@ -98,12 +107,14 @@ class _KerberosProviderForTokenTests(FlextAuthKerberosProvider):
         _ = credentials
         return r[p.Auth.TokenProtocol].fail("Not used in token tests")
 
+    @override
     def validate(
         self,
         token: str,
     ) -> r[bool]:
         return self.validate_token(token).map(lambda _identity: True)
 
+    @override
     def _protocol_name(self) -> str:
         """Return protocol name for registry identification."""
         return "auth-provider-test-kerberos"

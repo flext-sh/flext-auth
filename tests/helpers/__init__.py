@@ -19,18 +19,18 @@ from typing import TYPE_CHECKING, Any
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
-    from protocols import TestsProtocols, TestsProtocols as p
-    from typings import TestsTypings, t
-    from utilities import TestsUtilities, TestsUtilities as u
+    from tests.protocols import TestsProtocols, TestsProtocols as p
+    from tests.typings import TestsTypings, t
+    from tests.utilities import TestsUtilities, TestsUtilities as u
 
 # Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
-    "TestsProtocols": ("protocols", "TestsProtocols"),
-    "TestsTypings": ("typings", "TestsTypings"),
-    "TestsUtilities": ("utilities", "TestsUtilities"),
-    "p": ("protocols", "TestsProtocols"),
-    "t": ("typings", "t"),
-    "u": ("utilities", "TestsUtilities"),
+    "TestsProtocols": ("tests.protocols", "TestsProtocols"),
+    "TestsTypings": ("tests.typings", "TestsTypings"),
+    "TestsUtilities": ("tests.utilities", "TestsUtilities"),
+    "p": ("tests.protocols", "TestsProtocols"),
+    "t": ("tests.typings", "t"),
+    "u": ("tests.utilities", "TestsUtilities"),
 }
 
 __all__ = [

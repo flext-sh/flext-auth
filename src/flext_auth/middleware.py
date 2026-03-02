@@ -28,7 +28,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Mapping
 from typing import Protocol, TypeGuard, override, runtime_checkable
 
 from flext_auth import FlextAuthBaseProvider, m, u
@@ -47,7 +46,7 @@ class FlextAuthMiddleware(s[bool]):
     class RequestWithHeaders(Protocol):
         """Protocol for request-like objects with a headers attribute."""
 
-        headers: dict[str, str] | Mapping[str, str]
+        headers: dict[str, str]
 
     @staticmethod
     def _request_has_headers(
@@ -151,7 +150,7 @@ class FlextAuthMiddleware(s[bool]):
             try:
                 headers_val = request.headers
                 if u.is_dict_like(headers_val):
-                    mutable_headers = dict(headers_val)
+                    mutable_headers: dict[str, str] = dict(headers_val)
                     mutable_headers["Authorization"] = (
                         f"Bearer {self._current_token.token}"
                     )

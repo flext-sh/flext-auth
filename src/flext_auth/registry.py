@@ -28,7 +28,7 @@ class _ConfigWrapper:  # noqa: B903
 class _MetadataWrapper:  # noqa: B903
     """Protocol-conformant wrapper for metadata."""
 
-    def __init__(self, category: str, data: at.Providers.Metadata) -> None:
+    def __init__(self, category: str, data: at.Auth.Providers.Metadata) -> None:
         self._category = category
         self.data = data
 
@@ -51,7 +51,7 @@ class FlextAuthRegistry(FlextRegistry):
         self,
         name: str,
         provider: FlextAuthBaseProvider,
-        metadata: at.Providers.Metadata | None = None,
+        metadata: at.Auth.Providers.Metadata | None = None,
         configuration: Mapping[str, t.JsonValue] | None = None,
     ) -> r[bool]:
         """Register auth provider with optional config and metadata."""
@@ -167,27 +167,27 @@ class FlextAuthRegistry(FlextRegistry):
         config_wrapper = _ConfigWrapper(f"{self.PROVIDERS}_config", dict(config))
         return self.register_plugin(f"{self.PROVIDERS}_config", name, config_wrapper)
 
-    def get_metadata(self, name: str) -> r[at.Providers.Metadata]:
+    def get_metadata(self, name: str) -> r[at.Auth.Providers.Metadata]:
         """Get provider metadata."""
         if not self.has_provider(name):
-            return r[at.Providers.Metadata].fail(f"Provider '{name}' not registered")
+            return r[at.Auth.Providers.Metadata].fail(f"Provider '{name}' not registered")
 
         metadata_result = self.get_plugin(f"{self.PROVIDERS}_metadata", name)
         if metadata_result.is_failure:
             # Return default metadata
-            return r[at.Providers.Metadata].ok(
-                at.Providers.Metadata(name=name, capabilities=()),
+            return r[at.Auth.Providers.Metadata].ok(
+                at.Auth.Providers.Metadata(name=name, capabilities=()),
             )
 
         # Extract data from wrapper
         wrapper = metadata_result.value
         metadata = getattr(wrapper, "data", None)
         if metadata is None:
-            return r[at.Providers.Metadata].ok(
-                at.Providers.Metadata(name=name, capabilities=()),
+            return r[at.Auth.Providers.Metadata].ok(
+                at.Auth.Providers.Metadata(name=name, capabilities=()),
             )
 
-        return r[at.Providers.Metadata].ok(metadata)
+        return r[at.Auth.Providers.Metadata].ok(metadata)
 
     def get_capabilities(self, name: str) -> r[set[str]]:
         """Get provider capabilities."""
@@ -232,15 +232,15 @@ class FlextAuthRegistry(FlextRegistry):
         self,
         name: str,
         service: FlextAuthBaseProvider,
-        provided: at.Providers.Metadata | None,
-    ) -> at.Providers.Metadata:
+        provided: at.Auth.Providers.Metadata | None,
+    ) -> at.Auth.Providers.Metadata:
         """Build metadata from provider and provided data."""
         try:
             caps = tuple(str(c) for c in service.supports())
         except (AttributeError, TypeError):
             caps = ()
 
-        base = at.Providers.Metadata(name=name, capabilities=caps)
+        base = at.Auth.Providers.Metadata(name=name, capabilities=caps)
 
         if provided:
             return provided
@@ -249,7 +249,7 @@ class FlextAuthRegistry(FlextRegistry):
         if callable(get_metadata_fn):
             try:
                 raw = get_metadata_fn()
-                return at.Providers.Metadata.model_validate(raw)
+                return at.Auth.Providers.Metadata.model_validate(raw)
             except (AttributeError, TypeError, ValueError):
                 return base
 

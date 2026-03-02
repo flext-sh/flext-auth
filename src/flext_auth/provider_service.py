@@ -65,7 +65,7 @@ class FlextAuthProviderService(s[bool]):
         # Provider registration mapping with requirements
         providers: list[
             tuple[
-                t.Providers.Key,
+                t.Auth.Providers.Key,
                 type[FlextAuthBaseProvider],
                 Callable[[], bool],
             ]
@@ -128,7 +128,8 @@ class FlextAuthProviderService(s[bool]):
                     RuntimeError,
                     ImportError,
                 ) as e:
-                    self.logger.warning("Failed to register %s provider: %s", name, e)
+                    error_msg: str = str(e) if e else "Unknown error"
+                    self.logger.warning("Failed to register %s provider: %s", name, error_msg)
 
     @staticmethod
     def _build_provider_init_config(

@@ -73,7 +73,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         self._auth_manager = self._KerberosAuthManager(self)
 
         # Runtime state for ticket management
-        self._active_tickets: dict[str, at.KerberosTicketData] = {}
+        self._active_tickets: dict[str, at.Auth.KerberosTicketData] = {}
 
     @staticmethod
     def _to_scalar_config(
@@ -174,16 +174,16 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
         def validate_ticket(
             self,
-            _ticket_data: at.KerberosTicketData,
-        ) -> r[at.KerberosTicketData]:
+            _ticket_data: at.Auth.KerberosTicketData,
+        ) -> r[at.Auth.KerberosTicketData]:
             """Validate Kerberos ticket."""
             # Simplified implementation - in production would use proper Kerberos validation
             # ticket_data parameter reserved for future Kerberos ticket validation
-            result = at.KerberosTicketData(
+            result = at.Auth.KerberosTicketData(
                 ticket="validated_ticket",
                 principal="kerberos_user",
             )
-            return r[at.KerberosTicketData].ok(result)
+            return r[at.Auth.KerberosTicketData].ok(result)
 
     class _KerberosServiceHandler:
         """SOLID-compliant Kerberos service handler.
@@ -196,14 +196,14 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             self.provider = provider
             # Logger removed - use logging module directly if needed
 
-        def handle_service_ticket(self, ticket: str) -> r[at.KerberosTicketData]:
+        def handle_service_ticket(self, ticket: str) -> r[at.Auth.KerberosTicketData]:
             """Handle Kerberos service ticket."""
             # Simplified implementation - in production would handle proper service tickets
-            result = at.KerberosTicketData(
+            result = at.Auth.KerberosTicketData(
                 ticket=ticket,
                 principal="service_principal",
             )
-            return r[at.KerberosTicketData].ok(result)
+            return r[at.Auth.KerberosTicketData].ok(result)
 
     class _KerberosAuthManager:
         """SOLID-compliant Kerberos authentication manager.
@@ -218,8 +218,8 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
         def authenticate_ticket(
             self,
-            ticket_data: at.KerberosTicketData,
-        ) -> r[at.KerberosTicketData]:
+            ticket_data: at.Auth.KerberosTicketData,
+        ) -> r[at.Auth.KerberosTicketData]:
             """Authenticate using Kerberos ticket."""
             # Use composition for ticket validation
             return self.provider.ticket_validator.validate_ticket(ticket_data)
@@ -290,9 +290,9 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         """Return Kerberos provider capabilities."""
         return {"kerberos", "sso", "enterprise", "ticket", "validate"}
 
-    def get_metadata(self) -> at.Providers.Metadata:
+    def get_metadata(self) -> at.Auth.Providers.Metadata:
         """Get Kerberos provider metadata."""
-        return at.Providers.Metadata(
+        return at.Auth.Providers.Metadata(
             name="kerberos",
             version="5",
             capabilities=tuple(self.supports()),
@@ -328,7 +328,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             if isinstance(validator_result, Mapping):
                 return self._map_identity_payload(validator_result)
 
-            if isinstance(validator_result, at.KerberosTicketData):
+            if isinstance(validator_result, at.Auth.KerberosTicketData):
                 principal_value = validator_result.principal
                 principal = principal_value or "kerberos-user"
                 identity_map: dict[str, t.GeneralValueType] = {

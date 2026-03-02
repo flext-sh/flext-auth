@@ -8,6 +8,12 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
+from flext_tests import FlextTestsUtilities
+
 
 class TestsFlextAuthUtilities(FlextTestsUtilities):
     """Test utilities for flextauth."""
+
+
+u = TestsFlextAuthUtilities
+__all__ = ["TestsFlextAuthUtilities", "u"]

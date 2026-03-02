@@ -9,7 +9,6 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from typing import Annotated, Literal, override
 
 from flext_api import FlextApiTypes
@@ -45,15 +44,15 @@ class FlextAuthTypes(FlextApiTypes):
         # Coerced enum types for Pydantic Field (Annotated[Enum, BeforeValidator])
         type CoercedTokenTypes = Annotated[
             c.Auth.TokenTypes,
-            BeforeValidator[Callable[..., c.Auth.TokenTypes]],
+            BeforeValidator(lambda x: x),
         ]
         type CoercedProviderTypes = Annotated[
             c.Auth.ProviderTypes,
-            BeforeValidator[Callable[..., c.Auth.ProviderTypes]],
+            BeforeValidator(lambda x: x),
         ]
         type CoercedRoleTypes = Annotated[
             c.Auth.RoleTypes,
-            BeforeValidator[Callable[..., c.Auth.RoleTypes]],
+            BeforeValidator(lambda x: x),
         ]
 
         class UserManagement:
@@ -179,7 +178,7 @@ class FlextAuthTypes(FlextApiTypes):
                 ),
             ]
             type CapabilitySet = Annotated[
-                frozenset[FlextAuthTypes.Providers.Capability],
+                frozenset[Capability],
                 Field(min_length=1, description="Declared capabilities"),
             ]
 
