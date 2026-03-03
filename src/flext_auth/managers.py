@@ -112,11 +112,11 @@ class FlextAuthManagers:
                     or user_data.get("unique_id") == user_id
                     or user_data.get("id") == user_id
                 ):
-                    return r[tuple[str, dict[str, t.ContainerValue]]].ok((
+                    return r[tuple[str, t.ConfigurationMapping]].ok((
                         username,
                         user_data,
                     ))
-            return r[tuple[str, dict[str, t.ContainerValue]]].fail("User not found")
+            return r[tuple[str, t.ConfigurationMapping]].fail("User not found")
 
         def _modify_user_list_field(
             self,
