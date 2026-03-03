@@ -54,7 +54,7 @@ class FlextAuthProtocols(FlextApiProtocols):
         structural typing - no model imports required.
         """
 
-        t.ScalarValue: TypeAlias = t.ScalarValue
+        t.Scalar: TypeAlias = t.Scalar
         AuthValue: TypeAlias = t.ContainerValue
 
         @runtime_checkable
