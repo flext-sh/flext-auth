@@ -129,7 +129,7 @@ class FlextAuth:
     @classmethod
     def create_with_config_overrides(
         cls,
-        **config_overrides: t.GeneralValueType,
+        **config_overrides: t.ContainerValue,
     ) -> Self:
         """Factory method to create FlextAuth with configuration overrides.
 
@@ -392,8 +392,8 @@ class FlextAuth:
         """Revoke a session."""
         return self._session_service.session_manager.end_session_by_id(session_id)
 
-    def execute(self) -> r[t.GeneralValueType]:
+    def execute(self) -> r[t.ContainerValue]:
         """Flexible execute implementation with railway orchestration."""
-        return r[t.GeneralValueType].fail(
+        return r[t.ContainerValue].fail(
             "FlextAuth is a focused service - use specific methods like authenticate() instead",
         )

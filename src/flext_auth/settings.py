@@ -162,7 +162,7 @@ class FlextAuthSettings(FlextSettings):
     @classmethod
     def create_with_overrides(
         cls,
-        **overrides: t.GeneralValueType,
+        **overrides: t.ContainerValue,
     ) -> r[FlextAuthSettings]:
         """Create config instance with overrides."""
         try:
@@ -278,7 +278,7 @@ class FlextAuthSettings(FlextSettings):
     @classmethod
     def get_or_create_global(
         cls,
-        **kwargs: t.GeneralValueType,
+        **kwargs: t.ContainerValue,
     ) -> r[FlextAuthSettings]:
         """Get or create global instance with optional overrides.
 

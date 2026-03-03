@@ -1257,7 +1257,7 @@ class TestAuthModule:
         """Nested helper class for test data creation."""
 
         @staticmethod
-        def create_test_user_data() -> dict[str, t.GeneralValueType]:
+        def create_test_user_data() -> dict[str, t.ContainerValue]:
             """Create test user data."""
             return {
                 "username": "test_user",
@@ -1267,7 +1267,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_auth_data() -> dict[str, t.GeneralValueType]:
+        def create_test_auth_data() -> dict[str, t.ContainerValue]:
             """Create test authentication data."""
             return {
                 "username": "test_user",
@@ -1276,7 +1276,7 @@ class TestAuthModule:
             }
 
         @staticmethod
-        def create_test_session_data() -> dict[str, t.GeneralValueType]:
+        def create_test_session_data() -> dict[str, t.ContainerValue]:
             """Create test session data."""
             return {
                 "user_id": "user_123",

@@ -70,7 +70,7 @@ class FlextAuthProviderMixin:
 
     def _validate_credentials_dict(
         self,
-        credentials: Mapping[str, t.GeneralValueType],
+        credentials: Mapping[str, t.ContainerValue],
         required_fields: list[str],
     ) -> r[bool]:
         """Validate that credentials contain required fields.
@@ -139,11 +139,11 @@ class FlextAuthProviderMixin:
 
         return r[bool].ok(value=True)
 
-    def _get_capability_metadata(self) -> Mapping[str, t.GeneralValueType]:
+    def _get_capability_metadata(self) -> Mapping[str, t.ContainerValue]:
         """Get metadata about provider capabilities.
 
         Returns:
-            Mapping[str, t.GeneralValueType]: Metadata including supported capabilities
+            Mapping[str, t.ContainerValue]: Metadata including supported capabilities
 
         Example:
             >>> metadata = provider._get_capability_metadata()

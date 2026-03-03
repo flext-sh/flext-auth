@@ -396,14 +396,14 @@ class FlextAuthModels(FlextApiModels):
                 """Dict-like containment check."""
                 return key in self.__class__.model_fields
 
-        class ProviderConfiguration(UserDict[str, t.GeneralValueType]):
+        class ProviderConfiguration(UserDict[str, t.ContainerValue]):
             """Provider configuration for authentication providers."""
 
             def __init__(
                 self,
                 dict_: Mapping[str, t.JsonValue] | None = None,
                 /,
-                **kwargs: t.GeneralValueType,
+                **kwargs: t.ContainerValue,
             ) -> None:
                 """Initialize provider configuration with defaults."""
                 if dict_ is not None:

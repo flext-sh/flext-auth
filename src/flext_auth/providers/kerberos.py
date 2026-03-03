@@ -112,7 +112,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             )
 
         # Validate field types
-        validations: list[tuple[str, tuple[type[t.GeneralValueType], ...], str]] = [
+        validations: list[tuple[str, tuple[type[t.ContainerValue], ...], str]] = [
             ("realm", (str,), "Kerberos realm must be a string"),
             ("kdc", (str,), "Kerberos kdc must be a string"),
             (
@@ -227,7 +227,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
     def _map_identity_payload(
         self,
-        claims: Mapping[str, t.GeneralValueType],
+        claims: Mapping[str, t.ContainerValue],
     ) -> r[FlextAuthModels.Auth.AuthIdentity]:
         identity_result = self._extract_identity_id(claims)
         if identity_result.is_failure:
@@ -275,7 +275,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
     def _ticket_validator_callable(
         self,
-    ) -> Callable[[str], t.GeneralValueType] | None:
+    ) -> Callable[[str], t.ContainerValue] | None:
         config = self._config
         if config is None:
             return None
@@ -332,7 +332,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             if isinstance(validator_result, at.Auth.KerberosTicketData):
                 principal_value = validator_result.principal
                 principal = principal_value or "kerberos-user"
-                identity_map: dict[str, t.GeneralValueType] = {
+                identity_map: dict[str, t.ContainerValue] = {
                     "identity_id": principal,
                     "name": principal,
                     "contact": f"{principal}@kerberos.local",
@@ -356,7 +356,7 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     @override
     def generate_token_for_user(
         self,
-        user: FlextAuthModels.Auth.AuthIdentity | Mapping[str, t.GeneralValueType],
+        user: FlextAuthModels.Auth.AuthIdentity | t.ConfigurationMapping,
         token_type: str = "access",
         expiry_minutes: int | None = None,
     ) -> r[str]:

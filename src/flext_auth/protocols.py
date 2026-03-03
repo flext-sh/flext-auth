@@ -55,7 +55,7 @@ class FlextAuthProtocols(FlextApiProtocols):
         """
 
         AuthScalar: TypeAlias = t.ScalarValue
-        AuthValue: TypeAlias = t.GeneralValueType
+        AuthValue: TypeAlias = t.ContainerValue
 
         @runtime_checkable
         class IdentityProtocol(FlextProtocols.Service[bool], Protocol):
@@ -217,10 +217,10 @@ class FlextAuthProtocols(FlextApiProtocols):
             Supports both TypedDict and model implementations.
             """
 
-            user: Mapping[str, t.GeneralValueType]
+            user: Mapping[str, t.ContainerValue]
             """User/identity data."""
 
-            session: Mapping[str, t.GeneralValueType]
+            session: Mapping[str, t.ContainerValue]
             """Session data."""
 
             jwt_token: str

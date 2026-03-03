@@ -202,10 +202,10 @@ class FlextAuthTypes(FlextApiTypes):
                 model_config = ConfigDict(frozen=False, extra="forbid")
 
                 key: str = Field(default="")
-                provider: FlextAuthTypes.GeneralValueType = Field(
+                provider: FlextAuthTypes.ContainerValue = Field(
                     default=None,
-                )  # Provider instance - typed as FlextAuthTypes.GeneralValueType to avoid circular import
-                metadata: dict[str, FlextAuthTypes.GeneralValueType] = Field(
+                )  # Provider instance - typed as FlextAuthTypes.ContainerValue to avoid circular import
+                metadata: dict[str, FlextAuthTypes.ContainerValue] = Field(
                     default_factory=dict
                 )
                 configuration: FlextApiTypes.JsonDict = Field(default_factory=dict)
