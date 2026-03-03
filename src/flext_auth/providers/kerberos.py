@@ -20,9 +20,10 @@ from collections.abc import Callable, Mapping
 from datetime import UTC, datetime
 from typing import override
 
+from flext_core import r, t, u
+
 from flext_auth import FlextAuthModels, FlextAuthTypes as at
 from flext_auth.providers.rfc import FlextAuthRfcProvider
-from flext_core import r, t, u
 
 
 class FlextAuthKerberosProvider(FlextAuthRfcProvider):

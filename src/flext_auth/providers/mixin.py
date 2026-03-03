@@ -12,9 +12,10 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 
+from flext_core import e, r, u
+
 from flext_auth.protocols import p
 from flext_auth.typings import t
-from flext_core import e, r, u
 
 # Forward references to avoid circular import
 # Use string annotations for all FlextAuthModels references

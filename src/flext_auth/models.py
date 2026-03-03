@@ -16,9 +16,10 @@ from typing import Literal, Self
 
 import bcrypt
 from flext_api import FlextApiModels
-from flext_auth import c
 from flext_core import r, t
 from pydantic import ConfigDict, Field
+
+from flext_auth import c
 
 
 class FlextAuthModels(FlextApiModels):

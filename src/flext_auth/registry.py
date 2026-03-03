@@ -9,9 +9,10 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import ClassVar
 
+from flext_core import FlextRegistry, r, t
+
 from flext_auth import FlextAuthTypes as at
 from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_core import FlextRegistry, r, t
 
 
 class _ConfigWrapper:  # noqa: B903
@@ -170,7 +171,9 @@ class FlextAuthRegistry(FlextRegistry):
     def get_metadata(self, name: str) -> r[at.Auth.Providers.Metadata]:
         """Get provider metadata."""
         if not self.has_provider(name):
-            return r[at.Auth.Providers.Metadata].fail(f"Provider '{name}' not registered")
+            return r[at.Auth.Providers.Metadata].fail(
+                f"Provider '{name}' not registered"
+            )
 
         metadata_result = self.get_plugin(f"{self.PROVIDERS}_metadata", name)
         if metadata_result.is_failure:

@@ -9,8 +9,9 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import FlextAuth, FlextAuthSettings, m
 from flext_core import r, s, t
+
+from flext_auth import FlextAuth, FlextAuthSettings, m
 
 
 class FlextAuthQuickstart(s[t.GeneralValueType]):

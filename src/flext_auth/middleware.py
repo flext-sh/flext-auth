@@ -30,8 +30,9 @@ from __future__ import annotations
 
 from typing import Protocol, TypeGuard, override, runtime_checkable
 
-from flext_auth import FlextAuthBaseProvider, m, u
 from flext_core import FlextLogger, r, s
+
+from flext_auth import FlextAuthBaseProvider, m, u
 
 
 class FlextAuthMiddleware(s[bool]):

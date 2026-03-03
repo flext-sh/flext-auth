@@ -9,8 +9,9 @@ from __future__ import annotations
 
 import re
 
-from flext_auth import FlextAuthConstants
 from flext_core import r, x
+
+from flext_auth import FlextAuthConstants
 
 # Import aliases following order: c -> t -> p -> r -> m -> u
 # Runtime aliases defined at module level per FLEXT standards

@@ -10,6 +10,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 
 import pytest
+
 from flext_auth import FlextAuth, FlextAuthSettings
 
 # Import FlextTestsDocker fixtures if available (optional dependency)

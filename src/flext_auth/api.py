@@ -13,6 +13,8 @@ import threading
 from collections.abc import Mapping
 from typing import ClassVar, Self
 
+from flext_core import FlextContainer, FlextLogger, p, r, t
+
 from flext_auth import (
     FlextAuthBaseProvider,
     FlextAuthIdentityService,
@@ -24,7 +26,6 @@ from flext_auth import (
     c,
     m,
 )
-from flext_core import FlextContainer, FlextLogger, p, r, t
 
 
 class FlextAuth:

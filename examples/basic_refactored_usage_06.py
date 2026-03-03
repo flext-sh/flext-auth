@@ -15,11 +15,12 @@ import secrets
 import string
 import sys
 
+from flext_core import r
+
 from flext_auth import (
     FlextAuth,
     m,
 )
-from flext_core import r
 
 
 # Extract Method Pattern - reduce main() complexity from 42 to manageable chunks

@@ -12,8 +12,9 @@ from __future__ import annotations
 from typing import Annotated, Literal, override
 
 from flext_api import FlextApiTypes
-from flext_auth import c, m
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, SecretStr
+
+from flext_auth import c, m
 
 
 class FlextAuthTypes(FlextApiTypes):

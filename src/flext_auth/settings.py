@@ -12,9 +12,10 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Self
 
-from flext_auth import c
 from flext_core import FlextSettings, r, t
 from pydantic import Field, SecretStr
+
+from flext_auth import c
 
 
 @FlextSettings.auto_register("auth")

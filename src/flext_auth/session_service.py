@@ -9,8 +9,9 @@ from __future__ import annotations
 
 from typing import override
 
-from flext_auth import FlextAuthManagers, FlextAuthSettings, ServiceManagers
 from flext_core import FlextLogger, FlextService as s, p, r
+
+from flext_auth import FlextAuthManagers, FlextAuthSettings, ServiceManagers
 
 
 class FlextAuthSessionService(s[bool]):

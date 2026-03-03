@@ -16,6 +16,9 @@ from datetime import UTC, datetime, timedelta
 
 import jwt
 import pytest
+from flext_core import FlextResult, t
+from pydantic import SecretStr
+
 from flext_auth import (
     FlextAuth,
     FlextAuthConstants,
@@ -27,8 +30,6 @@ from flext_auth import (
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.kerberos import FlextAuthKerberosProvider
 from flext_auth.providers.oauth2 import FlextAuthOAuth2Provider
-from flext_core import FlextResult, t
-from pydantic import SecretStr
 
 c = FlextAuthConstants
 r = FlextResult

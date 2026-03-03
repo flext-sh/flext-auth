@@ -14,9 +14,10 @@ from typing import Annotated
 import bcrypt
 import jwt
 from flext_api import FlextApiUtilities
-from flext_auth import c, t
 from flext_core import FlextUtilities, r
 from pydantic import BeforeValidator, SecretStr, ValidationError
+
+from flext_auth import c, t
 
 
 class FlextAuthUtilities(FlextApiUtilities):

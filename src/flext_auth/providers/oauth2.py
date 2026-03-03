@@ -21,9 +21,10 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
+from flext_core import e, r
+
 from flext_auth import FlextAuthProtocols, c, m, t, u
 from flext_auth.providers.rfc import FlextAuthRfcProvider
-from flext_core import e, r
 
 
 class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
@@ -388,7 +389,9 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             scope_value = self.provider.get_scope()
             match scope_value:
                 case None:
-                    return r[t.Auth.OAuth2TokenResponse].fail("OAuth2 scope is required")
+                    return r[t.Auth.OAuth2TokenResponse].fail(
+                        "OAuth2 scope is required"
+                    )
                 case str() as scope_str:
                     scope = scope_str
                 case _:

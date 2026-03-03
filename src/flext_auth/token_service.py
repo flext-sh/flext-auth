@@ -12,6 +12,8 @@ from __future__ import annotations
 
 from typing import override
 
+from flext_core import FlextLogger, FlextService as s, p, r
+
 # Forward reference to avoid circular import
 # Import m locally in methods where needed
 from flext_auth import (
@@ -23,7 +25,6 @@ from flext_auth import (
     m,
 )
 from flext_auth.providers.jwt import FlextAuthJwtProvider
-from flext_core import FlextLogger, FlextService as s, p, r
 
 
 class FlextAuthTokenService(s[bool]):

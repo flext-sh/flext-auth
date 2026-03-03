@@ -14,7 +14,6 @@ from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 from uuid import uuid4
 
-from flext_auth import FlextAuthSettings, m, p
 from flext_core import (
     FlextContainer,
     FlextContext,
@@ -24,6 +23,8 @@ from flext_core import (
     t,
     u,
 )
+
+from flext_auth import FlextAuthSettings, m, p
 
 
 class ServiceManagers:

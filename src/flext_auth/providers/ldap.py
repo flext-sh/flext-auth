@@ -8,10 +8,11 @@ from __future__ import annotations
 
 from typing import override
 
+from flext_core import r
+
 from flext_auth import m, p
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
-from flext_core import r
 
 
 class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):

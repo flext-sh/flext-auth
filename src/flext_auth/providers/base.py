@@ -18,8 +18,9 @@ from datetime import UTC, datetime, timedelta
 from typing import Protocol, runtime_checkable
 
 import jwt
-from flext_auth import m, p
 from flext_core import r, t
+
+from flext_auth import m, p
 
 
 @runtime_checkable

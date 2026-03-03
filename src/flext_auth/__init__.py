@@ -11,6 +11,20 @@ from typing import TYPE_CHECKING, Any
 from flext_core.lazy import cleanup_submodule_namespace, lazy_getattr
 
 if TYPE_CHECKING:
+    from flext_core import (
+        FlextDecorators,
+        FlextDecorators as d,
+        FlextExceptions,
+        FlextExceptions as e,
+        FlextHandlers,
+        FlextHandlers as h,
+        FlextMixins as x,
+        FlextResult,
+        FlextResult as r,
+        FlextService,
+        FlextService as s,
+    )
+
     from flext_auth.api import FlextAuth
     from flext_auth.constants import FlextAuthConstants, FlextAuthConstants as c
     from flext_auth.managers import FlextAuthManagers, ServiceManagers
@@ -40,19 +54,6 @@ if TYPE_CHECKING:
     from flext_auth.typings import FlextAuthTypes, FlextAuthTypes as t
     from flext_auth.user_service import FlextAuthIdentityService
     from flext_auth.utilities import FlextAuthUtilities, FlextAuthUtilities as u
-    from flext_core import (
-        FlextDecorators,
-        FlextDecorators as d,
-        FlextExceptions,
-        FlextExceptions as e,
-        FlextHandlers,
-        FlextHandlers as h,
-        FlextMixins as x,
-        FlextResult,
-        FlextResult as r,
-        FlextService,
-        FlextService as s,
-    )
 
 # Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {

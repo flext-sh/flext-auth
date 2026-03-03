@@ -14,9 +14,10 @@ from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
 
 import jwt
+from flext_core import r
+
 from flext_auth import t
 from flext_auth.providers.jwt import FlextAuthJwtProvider
-from flext_core import r
 
 
 class FlextAuthJwtTokenGenerator:

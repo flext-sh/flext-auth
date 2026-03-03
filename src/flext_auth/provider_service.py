@@ -11,6 +11,8 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from typing import override
 
+from flext_core import FlextService as s, r
+
 from flext_auth import (
     FlextAuthApiKeyProvider,
     FlextAuthBasicProvider,
@@ -28,7 +30,6 @@ from flext_auth import (
     t,
 )
 from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_core import FlextService as s, r
 
 
 class FlextAuthProviderService(s[bool]):
@@ -129,7 +130,9 @@ class FlextAuthProviderService(s[bool]):
                     ImportError,
                 ) as e:
                     error_msg: str = str(e) if e else "Unknown error"
-                    self.logger.warning("Failed to register %s provider: %s", name, error_msg)
+                    self.logger.warning(
+                        "Failed to register %s provider: %s", name, error_msg
+                    )
 
     @staticmethod
     def _build_provider_init_config(

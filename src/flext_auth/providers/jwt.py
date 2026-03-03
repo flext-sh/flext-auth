@@ -11,9 +11,10 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import override
 
+from flext_core import r
+
 from flext_auth import m, p
 from flext_auth.providers.base import FlextAuthBaseProvider
-from flext_core import r
 
 
 class FlextAuthJwtProvider(FlextAuthBaseProvider):
