@@ -31,11 +31,6 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
     """
 
     @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-ldap"
-
-    @override
     def authenticate(
         self,
         credentials: m.Auth.CredentialValidation,
@@ -51,6 +46,16 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         """
         _ = credentials
         return r[p.Auth.TokenProtocol].fail("Not implemented")
+
+    @override
+    def supports(self) -> set[str]:
+        """Get supported authentication methods.
+
+        Returns:
+            set[str]: Set of supported methods (e.g., {"ldap", "validate"})
+
+        """
+        return {"ldap", "validate"}
 
     @override
     def validate(
@@ -70,14 +75,9 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         return r[bool].fail("Not implemented")
 
     @override
-    def supports(self) -> set[str]:
-        """Get supported authentication methods.
-
-        Returns:
-            set[str]: Set of supported methods (e.g., {"ldap", "validate"})
-
-        """
-        return {"ldap", "validate"}
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-ldap"
 
 
 __all__ = ["FlextAuthLdapProvider"]

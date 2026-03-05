@@ -25,11 +25,6 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider):
         super().__init__(config)
 
     @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-certificate"
-
-    @override
     def authenticate(
         self,
         credentials: m.Auth.CredentialValidation,
@@ -37,6 +32,16 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider):
         """Authenticate using certificate credentials."""
         _ = credentials
         return r[p.Auth.TokenProtocol].fail("Not implemented")
+
+    @override
+    def supports(self) -> set[str]:
+        """Get supported authentication methods.
+
+        Returns:
+            set[str]: Set of supported methods (e.g., {"certificate", "validate"})
+
+        """
+        return {"certificate", "validate"}
 
     @override
     def validate(
@@ -73,14 +78,9 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider):
         return r[bool].fail("Not implemented")
 
     @override
-    def supports(self) -> set[str]:
-        """Get supported authentication methods.
-
-        Returns:
-            set[str]: Set of supported methods (e.g., {"certificate", "validate"})
-
-        """
-        return {"certificate", "validate"}
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-certificate"
 
 
 __all__ = ["FlextAuthCertificateProvider"]

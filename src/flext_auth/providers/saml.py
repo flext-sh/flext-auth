@@ -42,11 +42,6 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
     """
 
     @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-saml"
-
-    @override
     def authenticate(
         self,
         credentials: m.Auth.CredentialValidation,
@@ -67,6 +62,35 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
             "SAML provider not yet fully implemented",
         )
 
+    def get_metadata(self) -> dict[str, str | list[str]]:
+        """Get provider metadata.
+
+        Returns:
+            Mapping[str, t.ContainerValue]: Provider metadata (name, version, capabilities, etc.)
+
+        Business Rule: Returns metadata for provider discovery and configuration.
+
+        """
+        return {
+            "name": "saml",
+            "version": "1.0.0",
+            "protocol": "SAML 2.0",
+            "capabilities": list(self.supports()),
+            "status": "basic_implementation",
+        }
+
+    @override
+    def supports(self) -> set[str]:
+        """Get supported authentication capabilities.
+
+        Returns:
+            set[str]: Set of supported capabilities
+
+        Business Rule: Returns capabilities supported by SAML provider.
+
+        """
+        return {"authenticate", "validate"}
+
     @override
     def validate(self, token: str | p.Auth.TokenProtocol) -> r[bool]:
         """Validate SAML assertion token.
@@ -84,30 +108,6 @@ class FlextAuthSamlProvider(FlextAuthBaseProvider):
         return r[bool].fail("SAML provider not yet fully implemented")
 
     @override
-    def supports(self) -> set[str]:
-        """Get supported authentication capabilities.
-
-        Returns:
-            set[str]: Set of supported capabilities
-
-        Business Rule: Returns capabilities supported by SAML provider.
-
-        """
-        return {"authenticate", "validate"}
-
-    def get_metadata(self) -> dict[str, str | list[str]]:
-        """Get provider metadata.
-
-        Returns:
-            Mapping[str, t.ContainerValue]: Provider metadata (name, version, capabilities, etc.)
-
-        Business Rule: Returns metadata for provider discovery and configuration.
-
-        """
-        return {
-            "name": "saml",
-            "version": "1.0.0",
-            "protocol": "SAML 2.0",
-            "capabilities": list(self.supports()),
-            "status": "basic_implementation",
-        }
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-saml"

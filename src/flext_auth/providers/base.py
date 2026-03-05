@@ -48,127 +48,6 @@ class FlextAuthBaseProvider(Protocol):
         """Get provider configuration."""
         return self._provider_config
 
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider"
-
-    def authenticate(
-        self,
-        credentials: m.Auth.CredentialValidation,
-    ) -> r[p.Auth.TokenProtocol]:
-        """Authenticate user with provided credentials.
-
-        This is the primary authentication method. It should validate the
-        provided credentials and, if valid, return an authentication token.
-
-        Args:
-            credentials: Dictionary containing authentication credentials.
-                        The exact structure depends on the provider type.
-
-        Returns:
-            r[p.Auth.TokenProtocol]: Authentication token on success,
-                                   error message on failure
-
-        """
-        ...
-
-    def validate(
-        self,
-        token: str,
-    ) -> r[bool]:
-        """Validate authentication token.
-
-        Check if the provided token is valid and has not expired.
-
-        Args:
-            token: Token to validate
-
-        Returns:
-            r[bool]: True if valid, False if invalid, error on failure
-
-        """
-        ...
-
-    def _token_settings(self) -> r[tuple[str, str, str, str, int]]:
-        config = self.config
-        if config is None:
-            return r[tuple[str, str, str, str, int]].fail(
-                "Provider configuration is required for token operations",
-            )
-
-        secret_value = config.get("secret_key")
-        match secret_value:
-            case str() as secret if secret:
-                secret_key = secret
-            case _:
-                return r[tuple[str, str, str, str, int]].fail(
-                    "Token secret_key is not configured",
-                )
-
-        algorithm_value = config.get("algorithm", "HS256")
-        match algorithm_value:
-            case str() as algorithm if algorithm:
-                algorithm_name = algorithm
-            case _:
-                return r[tuple[str, str, str, str, int]].fail(
-                    "Token algorithm is invalid",
-                )
-
-        issuer_value = config.get("issuer", "flext-auth")
-        match issuer_value:
-            case str() as issuer if issuer:
-                issuer_name = issuer
-            case _:
-                issuer_name = "flext-auth"
-
-        audience_value = config.get("audience", "flext-auth")
-        match audience_value:
-            case str() as audience if audience:
-                audience_name = audience
-            case _:
-                audience_name = "flext-auth"
-
-        expiry_value = config.get("expiry_minutes")
-        match expiry_value:
-            case int() as expiry if expiry > 0:
-                default_expiry = expiry
-            case _:
-                token_expiry_value = config.get("token_expiry_minutes")
-                match token_expiry_value:
-                    case int() as token_expiry if token_expiry > 0:
-                        default_expiry = token_expiry
-                    case _:
-                        default_expiry = 60
-
-        return r[tuple[str, str, str, str, int]].ok(
-            (secret_key, algorithm_name, issuer_name, audience_name, default_expiry),
-        )
-
-    def _normalize_identity_payload(
-        self,
-        user: m.Auth.AuthIdentity | t.ConfigurationMapping,
-    ) -> r[Mapping[str, t.ContainerValue]]:
-        if isinstance(user, Mapping):
-            return r[t.ConfigurationMapping].ok(user)
-
-        if user.__class__ is m.Auth.AuthIdentity:
-            return r[t.ConfigurationMapping].ok(
-                user.model_dump(exclude={"credential_hash", "token", "refresh_token"}),
-            )
-
-        return r[t.ConfigurationMapping].fail(
-            "User payload must be AuthIdentity or mapping",
-        )
-
-    @staticmethod
-    def _extract_identity_id(payload: Mapping[str, t.ContainerValue]) -> r[str]:
-        for key in ("identity_id", "unique_id", "id", "user_id", "sub", "name"):
-            value = payload.get(key)
-            if isinstance(value, str) and value:
-                return r[str].ok(value)
-
-        return r[str].fail("User payload must include identity identifier")
-
     @staticmethod
     def _extract_expiration_datetime(
         payload: Mapping[str, t.ContainerValue],
@@ -192,6 +71,15 @@ class FlextAuthBaseProvider(Protocol):
             RuntimeError,
         ) as exc:
             return r[datetime].fail(f"Token exp claim conversion failed: {exc}")
+
+    @staticmethod
+    def _extract_identity_id(payload: Mapping[str, t.ContainerValue]) -> r[str]:
+        for key in ("identity_id", "unique_id", "id", "user_id", "sub", "name"):
+            value = payload.get(key)
+            if isinstance(value, str) and value:
+                return r[str].ok(value)
+
+        return r[str].fail("User payload must include identity identifier")
 
     @staticmethod
     def _normalize_claim_value(value: t.ContainerValue) -> t.ContainerValue | None:
@@ -226,54 +114,25 @@ class FlextAuthBaseProvider(Protocol):
             case _:
                 return None
 
-    def _decode_token_claims(self, token: str) -> r[Mapping[str, t.ContainerValue]]:
-        if not token.strip():
-            return r[t.ConfigurationMapping].fail(
-                "Token must be a non-empty string",
-            )
+    def authenticate(
+        self,
+        credentials: m.Auth.CredentialValidation,
+    ) -> r[p.Auth.TokenProtocol]:
+        """Authenticate user with provided credentials.
 
-        settings_result = self._token_settings()
-        if settings_result.is_failure:
-            return r[t.ConfigurationMapping].fail(
-                settings_result.error or "Token settings are invalid",
-            )
+        This is the primary authentication method. It should validate the
+        provided credentials and, if valid, return an authentication token.
 
-        secret_key, algorithm_name, issuer_name, audience_name, _default_expiry = (
-            settings_result.value
-        )
+        Args:
+            credentials: Dictionary containing authentication credentials.
+                        The exact structure depends on the provider type.
 
-        try:
-            decoded_payload = jwt.decode(
-                token,
-                secret_key,
-                algorithms=[algorithm_name],
-                audience=audience_name,
-                issuer=issuer_name,
-                options={"verify_iat": True, "verify_exp": True},
-            )
-        except jwt.ExpiredSignatureError:
-            return r[t.ConfigurationMapping].fail("Token has expired")
-        except jwt.InvalidTokenError as exc:
-            return r[t.ConfigurationMapping].fail(f"Invalid token: {exc}")
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ) as exc:
-            return r[t.ConfigurationMapping].fail(
-                f"Token validation failed: {exc}",
-            )
+        Returns:
+            r[p.Auth.TokenProtocol]: Authentication token on success,
+                                   error message on failure
 
-        if not isinstance(decoded_payload, Mapping):
-            return r[t.ConfigurationMapping].fail(
-                "Decoded token payload must be a mapping",
-            )
-
-        return r[t.ConfigurationMapping].ok(decoded_payload)
+        """
+        ...
 
     def generate_token(
         self,
@@ -542,6 +401,147 @@ class FlextAuthBaseProvider(Protocol):
 
         """
         return {"authenticate", "validate"}
+
+    def validate(
+        self,
+        token: str,
+    ) -> r[bool]:
+        """Validate authentication token.
+
+        Check if the provided token is valid and has not expired.
+
+        Args:
+            token: Token to validate
+
+        Returns:
+            r[bool]: True if valid, False if invalid, error on failure
+
+        """
+        ...
+
+    def _decode_token_claims(self, token: str) -> r[Mapping[str, t.ContainerValue]]:
+        if not token.strip():
+            return r[t.ConfigurationMapping].fail(
+                "Token must be a non-empty string",
+            )
+
+        settings_result = self._token_settings()
+        if settings_result.is_failure:
+            return r[t.ConfigurationMapping].fail(
+                settings_result.error or "Token settings are invalid",
+            )
+
+        secret_key, algorithm_name, issuer_name, audience_name, _default_expiry = (
+            settings_result.value
+        )
+
+        try:
+            decoded_payload = jwt.decode(
+                token,
+                secret_key,
+                algorithms=[algorithm_name],
+                audience=audience_name,
+                issuer=issuer_name,
+                options={"verify_iat": True, "verify_exp": True},
+            )
+        except jwt.ExpiredSignatureError:
+            return r[t.ConfigurationMapping].fail("Token has expired")
+        except jwt.InvalidTokenError as exc:
+            return r[t.ConfigurationMapping].fail(f"Invalid token: {exc}")
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as exc:
+            return r[t.ConfigurationMapping].fail(
+                f"Token validation failed: {exc}",
+            )
+
+        if not isinstance(decoded_payload, Mapping):
+            return r[t.ConfigurationMapping].fail(
+                "Decoded token payload must be a mapping",
+            )
+
+        return r[t.ConfigurationMapping].ok(decoded_payload)
+
+    def _normalize_identity_payload(
+        self,
+        user: m.Auth.AuthIdentity | t.ConfigurationMapping,
+    ) -> r[Mapping[str, t.ContainerValue]]:
+        if isinstance(user, Mapping):
+            return r[t.ConfigurationMapping].ok(user)
+
+        if user.__class__ is m.Auth.AuthIdentity:
+            return r[t.ConfigurationMapping].ok(
+                user.model_dump(exclude={"credential_hash", "token", "refresh_token"}),
+            )
+
+        return r[t.ConfigurationMapping].fail(
+            "User payload must be AuthIdentity or mapping",
+        )
+
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider"
+
+    def _token_settings(self) -> r[tuple[str, str, str, str, int]]:
+        config = self.config
+        if config is None:
+            return r[tuple[str, str, str, str, int]].fail(
+                "Provider configuration is required for token operations",
+            )
+
+        secret_value = config.get("secret_key")
+        match secret_value:
+            case str() as secret if secret:
+                secret_key = secret
+            case _:
+                return r[tuple[str, str, str, str, int]].fail(
+                    "Token secret_key is not configured",
+                )
+
+        algorithm_value = config.get("algorithm", "HS256")
+        match algorithm_value:
+            case str() as algorithm if algorithm:
+                algorithm_name = algorithm
+            case _:
+                return r[tuple[str, str, str, str, int]].fail(
+                    "Token algorithm is invalid",
+                )
+
+        issuer_value = config.get("issuer", "flext-auth")
+        match issuer_value:
+            case str() as issuer if issuer:
+                issuer_name = issuer
+            case _:
+                issuer_name = "flext-auth"
+
+        audience_value = config.get("audience", "flext-auth")
+        match audience_value:
+            case str() as audience if audience:
+                audience_name = audience
+            case _:
+                audience_name = "flext-auth"
+
+        expiry_value = config.get("expiry_minutes")
+        match expiry_value:
+            case int() as expiry if expiry > 0:
+                default_expiry = expiry
+            case _:
+                token_expiry_value = config.get("token_expiry_minutes")
+                match token_expiry_value:
+                    case int() as token_expiry if token_expiry > 0:
+                        default_expiry = token_expiry
+                    case _:
+                        default_expiry = 60
+
+        return r[tuple[str, str, str, str, int]].ok(
+            (secret_key, algorithm_name, issuer_name, audience_name, default_expiry),
+        )
 
 
 __all__ = ["FlextAuthBaseProvider"]

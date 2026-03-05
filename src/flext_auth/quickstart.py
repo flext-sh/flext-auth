@@ -31,24 +31,10 @@ class FlextAuthQuickstart(s[t.ContainerValue]):
 
         self._auth = FlextAuth()
 
-    def register_user(
-        self,
-        username: str,
-        email: str,
-        password: str,
-        roles: list[str] | None = None,
-        full_name: str | None = None,
-    ) -> r[m.Auth.AuthIdentity]:
-        """Register a new user with default settings."""
-        # Call api.register_user with correct parameter mapping
-        return self._auth.register_user(
-            username=username,
-            email=email,
-            password=password,
-            roles=roles,
-            role=None,  # Use roles parameter instead
-            full_name=full_name,  # Pass as kwarg
-        )
+    @property
+    def auth(self) -> FlextAuth:
+        """Get the underlying FlextAuth instance."""
+        return self._auth
 
     def authenticate_user(
         self,
@@ -57,14 +43,6 @@ class FlextAuthQuickstart(s[t.ContainerValue]):
     ) -> r[m.Auth.AuthIdentity]:
         """Authenticate a user and return identity."""
         return self._auth.authenticate_user(username, password)
-
-    def validate_token(self, token: str) -> r[bool]:
-        """Validate an authentication token."""
-        return self._auth.validate_token(token)
-
-    def get_user(self, user_id: str) -> r[m.Auth.AuthIdentity]:
-        """Get user by ID."""
-        return self._auth.get_user(user_id)
 
     def create_demo_users(self, count: int = 5) -> r[list[str]]:
         """Create demo users for testing."""
@@ -85,6 +63,17 @@ class FlextAuthQuickstart(s[t.ContainerValue]):
             user_ids.append(result.value)
 
         return r[list[str]].ok(user_ids)
+
+    @override
+    def execute(self) -> r[t.ContainerValue]:
+        """Execute method for FlextService interface.
+
+        Quickstart service doesn't use generic execute pattern.
+        Use specific quickstart methods instead.
+        """
+        return r[t.ContainerValue].fail(
+            "FlextAuthQuickstart is focused - use specific quickstart methods like register_user()",
+        )
 
     def flext_auth_quick_start(
         self,
@@ -111,21 +100,32 @@ class FlextAuthQuickstart(s[t.ContainerValue]):
 
         return self.create_demo_users().flat_map(create_admin_demo_user)
 
-    @property
-    def auth(self) -> FlextAuth:
-        """Get the underlying FlextAuth instance."""
-        return self._auth
+    def get_user(self, user_id: str) -> r[m.Auth.AuthIdentity]:
+        """Get user by ID."""
+        return self._auth.get_user(user_id)
 
-    @override
-    def execute(self) -> r[t.ContainerValue]:
-        """Execute method for FlextService interface.
-
-        Quickstart service doesn't use generic execute pattern.
-        Use specific quickstart methods instead.
-        """
-        return r[t.ContainerValue].fail(
-            "FlextAuthQuickstart is focused - use specific quickstart methods like register_user()",
+    def register_user(
+        self,
+        username: str,
+        email: str,
+        password: str,
+        roles: list[str] | None = None,
+        full_name: str | None = None,
+    ) -> r[m.Auth.AuthIdentity]:
+        """Register a new user with default settings."""
+        # Call api.register_user with correct parameter mapping
+        return self._auth.register_user(
+            username=username,
+            email=email,
+            password=password,
+            roles=roles,
+            role=None,  # Use roles parameter instead
+            full_name=full_name,  # Pass as kwarg
         )
+
+    def validate_token(self, token: str) -> r[bool]:
+        """Validate an authentication token."""
+        return self._auth.validate_token(token)
 
 
 __all__ = ["FlextAuthQuickstart"]

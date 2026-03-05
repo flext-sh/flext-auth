@@ -87,25 +87,25 @@ class FlextAuthProtocols(FlextApiProtocols):
             """Lock expiration time (datetime.min means not locked)."""
 
             @property
-            def username(self) -> str:
-                """Alias for name property (backward compatibility)."""
-                ...
-
-            @property
             def email(self) -> str:
                 """Alias for contact property (backward compatibility)."""
                 ...
 
-            def verify_credential(self, credential: str) -> FlextProtocols.Result[bool]:
-                """Verify credential against stored hash."""
+            @property
+            def username(self) -> str:
+                """Alias for name property (backward compatibility)."""
+                ...
+
+            def is_locked(self) -> bool:
+                """Check if identity is locked."""
                 ...
 
             def set_credential(self, credential: str) -> FlextProtocols.Result[bool]:
                 """Set credential with secure hashing."""
                 ...
 
-            def is_locked(self) -> bool:
-                """Check if identity is locked."""
+            def verify_credential(self, credential: str) -> FlextProtocols.Result[bool]:
+                """Verify credential against stored hash."""
                 ...
 
         @runtime_checkable
@@ -121,12 +121,12 @@ class FlextAuthProtocols(FlextApiProtocols):
                 """Check if user can attempt login."""
                 ...
 
-            def record_successful_login(self) -> None:
-                """Record successful login and reset failed attempts."""
-                ...
-
             def record_failed_login(self) -> None:
                 """Record failed login attempt and apply lockout if needed."""
+                ...
+
+            def record_successful_login(self) -> None:
+                """Record successful login and reset failed attempts."""
                 ...
 
         @runtime_checkable
@@ -141,15 +141,15 @@ class FlextAuthProtocols(FlextApiProtocols):
             ip_address: str | None
             user_agent: str | None
 
-            def is_expired(self) -> bool:
-                """Check if session is expired."""
-                ...
-
             def extend_session(
                 self,
                 hours: int = 1,
             ) -> FlextProtocols.Result[bool]:
                 """Extend session expiration time."""
+                ...
+
+            def is_expired(self) -> bool:
+                """Check if session is expired."""
                 ...
 
             @override
@@ -170,13 +170,8 @@ class FlextAuthProtocols(FlextApiProtocols):
             """
 
             @property
-            def token(self) -> str:
-                """Token value."""
-                ...
-
-            @property
-            def user_id(self) -> str:
-                """User identifier."""
+            def expires_at(self) -> datetime:
+                """Token expiration time."""
                 ...
 
             @property
@@ -185,18 +180,8 @@ class FlextAuthProtocols(FlextApiProtocols):
                 ...
 
             @property
-            def token_type(self) -> str:
-                """Token type (e.g. bearer, access)."""
-                ...
-
-            @property
-            def refresh_token(self) -> str:
-                """Refresh token value if applicable."""
-                ...
-
-            @property
-            def expires_at(self) -> datetime:
-                """Token expiration time."""
+            def is_expired(self) -> bool:
+                """Check if token is expired."""
                 ...
 
             @property
@@ -205,8 +190,23 @@ class FlextAuthProtocols(FlextApiProtocols):
                 ...
 
             @property
-            def is_expired(self) -> bool:
-                """Check if token is expired."""
+            def refresh_token(self) -> str:
+                """Refresh token value if applicable."""
+                ...
+
+            @property
+            def token(self) -> str:
+                """Token value."""
+                ...
+
+            @property
+            def token_type(self) -> str:
+                """Token type (e.g. bearer, access)."""
+                ...
+
+            @property
+            def user_id(self) -> str:
+                """User identifier."""
                 ...
 
         @runtime_checkable
@@ -236,20 +236,6 @@ class FlextAuthProtocols(FlextApiProtocols):
         class ServiceProtocol(FlextProtocols.Service[bool], Protocol):
             """Protocol for authentication service-like objects."""
 
-            def register_user(
-                self,
-                username: str,
-                email: str,
-                password: str,
-                full_name: str | None = None,
-                roles: list[str] | None = None,
-            ) -> FlextProtocols.Result[FlextAuthProtocols.Auth.IdentityProtocol]:
-                """Register new user.
-
-                Returns IdentityProtocol-compatible identity through structural typing.
-                """
-                ...
-
             def authenticate_user(
                 self,
                 username: str,
@@ -269,6 +255,20 @@ class FlextAuthProtocols(FlextApiProtocols):
                 Returns:
                     FlextProtocols.Result[bool]: True if logout successful, False if failed, error on failure
 
+                """
+                ...
+
+            def register_user(
+                self,
+                username: str,
+                email: str,
+                password: str,
+                full_name: str | None = None,
+                roles: list[str] | None = None,
+            ) -> FlextProtocols.Result[FlextAuthProtocols.Auth.IdentityProtocol]:
+                """Register new user.
+
+                Returns IdentityProtocol-compatible identity through structural typing.
                 """
                 ...
 

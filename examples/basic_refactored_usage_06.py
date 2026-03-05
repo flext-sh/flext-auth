@@ -32,6 +32,23 @@ class FlextAuthDemo:
         super().__init__()
         self.auth = FlextAuth()
 
+    def demo_user_authentication(
+        self,
+    ) -> r[m.Auth.AuthIdentity]:
+        """Extract Method: User authentication demo.
+
+        Returns:
+            r[m.AuthToken]: Authentication result
+
+        """
+        result = self.auth.authenticate_user("demouser", "DemoPassword123!")
+
+        if result.is_success:
+            auth_data = result.value
+            self._print_token_info(auth_data)
+
+        return result
+
     def demo_user_registration(self) -> r[m.Auth.AuthIdentity]:
         """Extract Method: User registration demo.
 
@@ -48,23 +65,6 @@ class FlextAuthDemo:
 
         if result.is_success:
             pass
-
-        return result
-
-    def demo_user_authentication(
-        self,
-    ) -> r[m.Auth.AuthIdentity]:
-        """Extract Method: User authentication demo.
-
-        Returns:
-            r[m.AuthToken]: Authentication result
-
-        """
-        result = self.auth.authenticate_user("demouser", "DemoPassword123!")
-
-        if result.is_success:
-            auth_data = result.value
-            self._print_token_info(auth_data)
 
         return result
 

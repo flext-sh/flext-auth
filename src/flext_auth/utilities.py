@@ -30,20 +30,19 @@ class FlextAuthUtilities(FlextApiUtilities):
     - Generic parsing utilities for StrEnums
     """
 
-    # ═══════════════════════════════════════════════════════════════════
-    # AUTH TYPE VALIDATION HELPERS
-    # ═══════════════════════════════════════════════════════════════════
-
     @classmethod
-    def is_valid_token_type(
+    def is_valid_permission_type(
         cls,
         value: str,
     ) -> bool:
-        """Validate TokenTypes membership.
+        """Validate PermissionTypes membership.
 
         Uses parent Enum utilities for consistency.
         """
-        return FlextUtilities.Enum.is_member(c.Auth.TokenTypes, value)
+        return FlextUtilities.Enum.is_member(
+            c.Auth.PermissionTypes,
+            value,
+        )
 
     @classmethod
     def is_valid_provider_type(
@@ -67,19 +66,20 @@ class FlextAuthUtilities(FlextApiUtilities):
         """
         return FlextUtilities.Enum.is_member(c.Auth.RoleTypes, value)
 
+    # ═══════════════════════════════════════════════════════════════════
+    # AUTH TYPE VALIDATION HELPERS
+    # ═══════════════════════════════════════════════════════════════════
+
     @classmethod
-    def is_valid_permission_type(
+    def is_valid_token_type(
         cls,
         value: str,
     ) -> bool:
-        """Validate PermissionTypes membership.
+        """Validate TokenTypes membership.
 
         Uses parent Enum utilities for consistency.
         """
-        return FlextUtilities.Enum.is_member(
-            c.Auth.PermissionTypes,
-            value,
-        )
+        return FlextUtilities.Enum.is_member(c.Auth.TokenTypes, value)
 
     # ═══════════════════════════════════════════════════════════════════
     # AUTH NAMESPACE: Project-specific utilities
@@ -135,18 +135,6 @@ class FlextAuthUtilities(FlextApiUtilities):
             """Annotated type factories for Pydantic models."""
 
             @staticmethod
-            def coerced_token_type() -> object:
-                """Return Annotated[TokenTypes, BeforeValidator(...)] for Pydantic Field."""
-                return Annotated[
-                    c.Auth.TokenTypes,
-                    BeforeValidator(
-                        FlextUtilities.Enum.coerce_validator(
-                            c.Auth.TokenTypes,
-                        ),
-                    ),
-                ]
-
-            @staticmethod
             def coerced_provider_type() -> object:
                 """Return Annotated[ProviderTypes, BeforeValidator(...)] for Pydantic Field."""
                 return Annotated[
@@ -170,29 +158,24 @@ class FlextAuthUtilities(FlextApiUtilities):
                     ),
                 ]
 
+            @staticmethod
+            def coerced_token_type() -> object:
+                """Return Annotated[TokenTypes, BeforeValidator(...)] for Pydantic Field."""
+                return Annotated[
+                    c.Auth.TokenTypes,
+                    BeforeValidator(
+                        FlextUtilities.Enum.coerce_validator(
+                            c.Auth.TokenTypes,
+                        ),
+                    ),
+                ]
+
         # ═══════════════════════════════════════════════════════════════════
         # VALIDATION UTILITIES: Domain-specific validation
         # ═══════════════════════════════════════════════════════════════════
 
         class Validation:
             """Domain-specific validation utilities."""
-
-            @staticmethod
-            def validate_username(username: str) -> r[str]:
-                """Validate username with auth-specific rules."""
-                if not username or not username.strip():
-                    return r[str].fail("Username cannot be empty")
-
-                username = username.strip()
-                if len(username) < c.Auth.Credentials.Username.MIN_LENGTH:
-                    return r[str].fail(
-                        f"Username too short (min {c.Auth.Credentials.Username.MIN_LENGTH} chars)",
-                    )
-                if len(username) > c.Auth.Credentials.Username.MAX_LENGTH:
-                    return r[str].fail(
-                        f"Username too long (max {c.Auth.Credentials.Username.MAX_LENGTH} chars)",
-                    )
-                return r[str].ok(username)
 
             @staticmethod
             def validate_email(email: str) -> r[str]:
@@ -231,6 +214,23 @@ class FlextAuthUtilities(FlextApiUtilities):
 
                 return r[str].ok(password)
 
+            @staticmethod
+            def validate_username(username: str) -> r[str]:
+                """Validate username with auth-specific rules."""
+                if not username or not username.strip():
+                    return r[str].fail("Username cannot be empty")
+
+                username = username.strip()
+                if len(username) < c.Auth.Credentials.Username.MIN_LENGTH:
+                    return r[str].fail(
+                        f"Username too short (min {c.Auth.Credentials.Username.MIN_LENGTH} chars)",
+                    )
+                if len(username) > c.Auth.Credentials.Username.MAX_LENGTH:
+                    return r[str].fail(
+                        f"Username too long (max {c.Auth.Credentials.Username.MAX_LENGTH} chars)",
+                    )
+                return r[str].ok(username)
+
         # ═══════════════════════════════════════════════════════════════════
         # TOKEN UTILITIES: Token/session management
         # ═══════════════════════════════════════════════════════════════════
@@ -239,14 +239,14 @@ class FlextAuthUtilities(FlextApiUtilities):
             """Token manipulation utilities."""
 
             @staticmethod
-            def generate_session_id() -> str:
-                """Generate a secure session ID."""
-                return secrets.token_hex(16)
-
-            @staticmethod
             def calculate_expiry_time(minutes: int) -> datetime:
                 """Calculate token/session expiry time."""
                 return datetime.now(UTC) + timedelta(minutes=minutes)
+
+            @staticmethod
+            def generate_session_id() -> str:
+                """Generate a secure session ID."""
+                return secrets.token_hex(16)
 
             @staticmethod
             def is_expired(expiry_time: datetime) -> bool:
@@ -281,6 +281,19 @@ class FlextAuthUtilities(FlextApiUtilities):
             """Utilities for building authentication responses."""
 
             @staticmethod
+            def build_auth_error_response(
+                error: str,
+                error_code: str = "AUTH_ERROR",
+            ) -> Mapping[str, t.JsonValue]:
+                """Build an authentication error response."""
+                return {
+                    "success": False,
+                    "error": error,
+                    "error_code": error_code,
+                    "timestamp": datetime.now(UTC).isoformat(),
+                }
+
+            @staticmethod
             def build_auth_success_response(
                 token: str | None = None,
                 user_id: str | None = None,
@@ -301,53 +314,6 @@ class FlextAuthUtilities(FlextApiUtilities):
                     response["expires_at"] = expires_at.isoformat()
 
                 return response
-
-            @staticmethod
-            def build_auth_error_response(
-                error: str,
-                error_code: str = "AUTH_ERROR",
-            ) -> Mapping[str, t.JsonValue]:
-                """Build an authentication error response."""
-                return {
-                    "success": False,
-                    "error": error,
-                    "error_code": error_code,
-                    "timestamp": datetime.now(UTC).isoformat(),
-                }
-
-    @staticmethod
-    def encode_token(
-        payload: t.Auth.Tokens.ClaimMap,
-        secret: str,
-        algorithm: str = c.Auth.DEFAULT_JWT_ALGORITHM,
-    ) -> r[str]:
-        """Generic JWT token encoding.
-
-        Args:
-        payload: Token payload
-        secret: Secret key for signing
-        algorithm: JWT algorithm
-
-        Returns:
-        FlextResult with encoded token or error
-
-        """
-        try:
-            token = jwt.encode(dict(payload), secret, algorithm=algorithm)
-            if isinstance(token, str):
-                return r[str].ok(token)
-            return r[str].ok(str(token))
-
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ) as e:
-            return r[str].fail(f"Encoding failed: {e}")
 
     @staticmethod
     def decode_token(
@@ -406,6 +372,40 @@ class FlextAuthUtilities(FlextApiUtilities):
             ImportError,
         ) as e:
             return r[t.Auth.Tokens.ClaimMap].fail(f"Decoding failed: {e}")
+
+    @staticmethod
+    def encode_token(
+        payload: t.Auth.Tokens.ClaimMap,
+        secret: str,
+        algorithm: str = c.Auth.DEFAULT_JWT_ALGORITHM,
+    ) -> r[str]:
+        """Generic JWT token encoding.
+
+        Args:
+        payload: Token payload
+        secret: Secret key for signing
+        algorithm: JWT algorithm
+
+        Returns:
+        FlextResult with encoded token or error
+
+        """
+        try:
+            token = jwt.encode(dict(payload), secret, algorithm=algorithm)
+            if isinstance(token, str):
+                return r[str].ok(token)
+            return r[str].ok(str(token))
+
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
+            return r[str].fail(f"Encoding failed: {e}")
 
 
 u = FlextAuthUtilities

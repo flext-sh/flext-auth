@@ -46,6 +46,125 @@ class FlextAuthRegistry(FlextRegistry):
         """Initialize with FlextRegistry infrastructure."""
         super().__init__(dispatcher=None)
 
+    def __len__(self) -> int:
+        """Return number of registered providers."""
+        return len(self.list_providers())
+
+    def __contains__(self, name: str) -> bool:
+        """Check if provider name is registered."""
+        return self.has_provider(name)
+
+    def clear(self) -> None:
+        """Clear all providers."""
+        for name in self.list_providers():
+            self.unregister(name)
+
+    def find_by_capability(self, capability: str) -> r[list[str]]:
+        """Find providers with specific capability."""
+        matching = [
+            name
+            for name in self.list_providers()
+            if self.has_capability(name, capability).value
+        ]
+        return r[list[str]].ok(matching)
+
+    def get(self, name: str) -> r[FlextAuthBaseProvider]:
+        """Get provider by name."""
+        result = self.get_plugin(self.PROVIDERS, name)
+        if result.is_failure:
+            return r[FlextAuthBaseProvider].fail(
+                result.error or f"Provider '{name}' not registered",
+            )
+
+        # Type narrowing
+        provider = result.value
+        if not isinstance(provider, FlextAuthBaseProvider):
+            return r[FlextAuthBaseProvider].fail(
+                f"Provider '{name}' is not a FlextAuthBaseProvider",
+            )
+
+        return r[FlextAuthBaseProvider].ok(provider)
+
+    def get_capabilities(self, name: str) -> r[set[str]]:
+        """Get provider capabilities."""
+        provider_result = self.get(name)
+        if provider_result.is_failure:
+            return r[set[str]].fail(str(provider_result.error))
+        try:
+            caps = provider_result.value.supports()
+            return r[set[str]].ok({str(c) for c in caps})
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ):
+            return r[set[str]].ok(set())
+
+    # Auth-specific operations
+
+    def get_config(self, name: str) -> r[Mapping[str, t.JsonValue]]:
+        """Get provider configuration."""
+        if not self.has_provider(name):
+            return r[Mapping[str, t.JsonValue]].fail(
+                f"Provider '{name}' not registered",
+            )
+
+        config_result = self.get_plugin(f"{self.PROVIDERS}_config", name)
+        if config_result.is_failure:
+            return r[Mapping[str, t.JsonValue]].fail("No config")
+
+        # Extract data from wrapper
+        wrapper = config_result.value
+        config = getattr(wrapper, "data", None)
+        if config is None:
+            return r[Mapping[str, t.JsonValue]].fail("Invalid config format")
+
+        return r[Mapping[str, t.JsonValue]].ok(config)
+
+    def get_metadata(self, name: str) -> r[at.Auth.Providers.Metadata]:
+        """Get provider metadata."""
+        if not self.has_provider(name):
+            return r[at.Auth.Providers.Metadata].fail(
+                f"Provider '{name}' not registered"
+            )
+
+        metadata_result = self.get_plugin(f"{self.PROVIDERS}_metadata", name)
+        if metadata_result.is_failure:
+            # Return default metadata
+            return r[at.Auth.Providers.Metadata].ok(
+                at.Auth.Providers.Metadata(name=name, capabilities=()),
+            )
+
+        # Extract data from wrapper
+        wrapper = metadata_result.value
+        metadata = getattr(wrapper, "data", None)
+        if metadata is None:
+            return r[at.Auth.Providers.Metadata].ok(
+                at.Auth.Providers.Metadata(name=name, capabilities=()),
+            )
+
+        return r[at.Auth.Providers.Metadata].ok(metadata)
+
+    def has_capability(self, name: str, capability: str) -> r[bool]:
+        """Check if provider has capability."""
+        return self.get_capabilities(name).map(lambda caps: capability in caps)
+
+    def has_provider(self, name: str) -> bool:
+        """Check if provider is registered."""
+        result = self.get_plugin(self.PROVIDERS, name)
+        return result.is_success
+
+    def list_providers(self) -> list[str]:
+        """List registered provider names."""
+        result = self.list_plugins(self.PROVIDERS)
+        if result.is_failure:
+            return []
+        return result.value or []
+
     # Core operations using generic plugin API
 
     def register_provider(
@@ -106,56 +225,6 @@ class FlextAuthRegistry(FlextRegistry):
 
         return r[bool].ok(value=True)
 
-    def get(self, name: str) -> r[FlextAuthBaseProvider]:
-        """Get provider by name."""
-        result = self.get_plugin(self.PROVIDERS, name)
-        if result.is_failure:
-            return r[FlextAuthBaseProvider].fail(
-                result.error or f"Provider '{name}' not registered",
-            )
-
-        # Type narrowing
-        provider = result.value
-        if not isinstance(provider, FlextAuthBaseProvider):
-            return r[FlextAuthBaseProvider].fail(
-                f"Provider '{name}' is not a FlextAuthBaseProvider",
-            )
-
-        return r[FlextAuthBaseProvider].ok(provider)
-
-    def list_providers(self) -> list[str]:
-        """List registered provider names."""
-        result = self.list_plugins(self.PROVIDERS)
-        if result.is_failure:
-            return []
-        return result.value or []
-
-    def has_provider(self, name: str) -> bool:
-        """Check if provider is registered."""
-        result = self.get_plugin(self.PROVIDERS, name)
-        return result.is_success
-
-    # Auth-specific operations
-
-    def get_config(self, name: str) -> r[Mapping[str, t.JsonValue]]:
-        """Get provider configuration."""
-        if not self.has_provider(name):
-            return r[Mapping[str, t.JsonValue]].fail(
-                f"Provider '{name}' not registered",
-            )
-
-        config_result = self.get_plugin(f"{self.PROVIDERS}_config", name)
-        if config_result.is_failure:
-            return r[Mapping[str, t.JsonValue]].fail("No config")
-
-        # Extract data from wrapper
-        wrapper = config_result.value
-        config = getattr(wrapper, "data", None)
-        if config is None:
-            return r[Mapping[str, t.JsonValue]].fail("Invalid config format")
-
-        return r[Mapping[str, t.JsonValue]].ok(config)
-
     def update_config(self, name: str, config: Mapping[str, t.JsonValue]) -> r[bool]:
         """Update provider configuration."""
         if not self.has_provider(name):
@@ -167,67 +236,6 @@ class FlextAuthRegistry(FlextRegistry):
         # Register new config
         config_wrapper = _ConfigWrapper(f"{self.PROVIDERS}_config", dict(config))
         return self.register_plugin(f"{self.PROVIDERS}_config", name, config_wrapper)
-
-    def get_metadata(self, name: str) -> r[at.Auth.Providers.Metadata]:
-        """Get provider metadata."""
-        if not self.has_provider(name):
-            return r[at.Auth.Providers.Metadata].fail(
-                f"Provider '{name}' not registered"
-            )
-
-        metadata_result = self.get_plugin(f"{self.PROVIDERS}_metadata", name)
-        if metadata_result.is_failure:
-            # Return default metadata
-            return r[at.Auth.Providers.Metadata].ok(
-                at.Auth.Providers.Metadata(name=name, capabilities=()),
-            )
-
-        # Extract data from wrapper
-        wrapper = metadata_result.value
-        metadata = getattr(wrapper, "data", None)
-        if metadata is None:
-            return r[at.Auth.Providers.Metadata].ok(
-                at.Auth.Providers.Metadata(name=name, capabilities=()),
-            )
-
-        return r[at.Auth.Providers.Metadata].ok(metadata)
-
-    def get_capabilities(self, name: str) -> r[set[str]]:
-        """Get provider capabilities."""
-        provider_result = self.get(name)
-        if provider_result.is_failure:
-            return r[set[str]].fail(str(provider_result.error))
-        try:
-            caps = provider_result.value.supports()
-            return r[set[str]].ok({str(c) for c in caps})
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ):
-            return r[set[str]].ok(set())
-
-    def has_capability(self, name: str, capability: str) -> r[bool]:
-        """Check if provider has capability."""
-        return self.get_capabilities(name).map(lambda caps: capability in caps)
-
-    def find_by_capability(self, capability: str) -> r[list[str]]:
-        """Find providers with specific capability."""
-        matching = [
-            name
-            for name in self.list_providers()
-            if self.has_capability(name, capability).value
-        ]
-        return r[list[str]].ok(matching)
-
-    def clear(self) -> None:
-        """Clear all providers."""
-        for name in self.list_providers():
-            self.unregister(name)
 
     # Internal helpers
 
@@ -257,14 +265,6 @@ class FlextAuthRegistry(FlextRegistry):
                 return base
 
         return base
-
-    def __len__(self) -> int:
-        """Return number of registered providers."""
-        return len(self.list_providers())
-
-    def __contains__(self, name: str) -> bool:
-        """Check if provider name is registered."""
-        return self.has_provider(name)
 
 
 __all__ = ["FlextAuthRegistry"]

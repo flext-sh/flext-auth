@@ -180,6 +180,44 @@ class FlextAuthSettings(FlextSettings):
         ) as e:
             return r[FlextAuthSettings].fail(str(e))
 
+    @classmethod
+    def get_or_create_global(
+        cls,
+        **kwargs: t.ContainerValue,
+    ) -> r[FlextAuthSettings]:
+        """Get or create global instance with optional overrides.
+
+        Args:
+        **kwargs: Configuration overrides with proper types
+
+        Returns:
+        FlextResult containing the config instance
+
+        Note: AutoConfig provides get_instance() for singleton pattern.
+        This method is kept for backward compatibility.
+
+        """
+        try:
+            # Use FlextSettings singleton pattern
+            if not kwargs:
+                instance = cls()
+                return r.ok(instance)
+            # If kwargs provided, create new instance with overrides
+            instance = cls.model_validate(kwargs)
+            # Note: AutoConfig manages singleton internally, but we can't override it here
+            # For overrides, return the new instance (caller should use get_instance() for singleton)
+            return r.ok(instance)
+        except (
+            ValueError,
+            TypeError,
+            KeyError,
+            AttributeError,
+            OSError,
+            RuntimeError,
+            ImportError,
+        ) as e:
+            return r.fail(f"Failed to create config: {e}")
+
     def get_jwt_settings(self) -> Mapping[str, str | int | bool]:
         """Get JWT-specific settings."""
         return {
@@ -201,35 +239,28 @@ class FlextAuthSettings(FlextSettings):
             "max_credential_length": self.max_credential_length,
         }
 
-    # @model_validator(mode="after")
-    def _validate_model(self) -> Self:
-        """Pydantic model validator for automatic validation."""
-        # Validate auth_secret exposes SecretStr API with proper length
-        try:
-            secret_value = self.auth_secret.get_secret_value()
-        except AttributeError as exc:
-            msg = "auth_secret must expose get_secret_value()"
-            raise TypeError(msg) from exc
+    def to_provider_config(self) -> Mapping[str, t.JsonValue]:
+        """Convert config to provider configuration dict.
 
-        secret_len = len(secret_value)
-        if secret_len < c.Auth.SECRET_MIN_LENGTH:
-            msg = f"Secret must be ≥{c.Auth.SECRET_MIN_LENGTH} chars, got {secret_len}"
-            raise ValueError(msg)
+        Returns provider configuration without using model_dump().
+        Directly accesses config properties to build the dict.
+        """
+        config_dict: dict[str, t.JsonValue] = {
+            "algorithm": self.algorithm,
+            "expiry_minutes": self.expiry_minutes,
+            "issuer": self.issuer,
+            "audience": self.audience,
+            "secret_key": self.auth_secret.get_secret_value(),
+            "hash_rounds": self.hash_rounds,
+            "min_credential_length": self.min_credential_length,
+            "max_credential_length": self.max_credential_length,
+            "max_attempts": self.max_attempts,
+            "lockout_duration_minutes": self.lockout_duration_minutes,
+            "session_expiry_minutes": self.session_expiry_minutes,
+            "max_sessions_per_identity": self.max_sessions_per_identity,
+        }
 
-        if self.min_credential_length > self.max_credential_length:
-            msg = "Min credential length > max"
-            raise ValueError(msg)
-
-        if self.session_expiry_minutes > c.Auth.SESSION_EXPIRY_MAX_MINUTES:
-            msg = f"Session expiry > {c.Auth.SESSION_EXPIRY_MAX_MINUTES}min (30 days)"
-            raise ValueError(msg)
-
-        # JWT expiry should not exceed session expiry
-        if self.expiry_minutes > self.session_expiry_minutes:
-            msg = "JWT expiry should not exceed session expiry"
-            raise ValueError(msg)
-
-        return self
+        return config_dict
 
     def validate_auth_configuration(self) -> r[bool]:
         """Validate auth configuration after initialization.
@@ -275,66 +306,35 @@ class FlextAuthSettings(FlextSettings):
         ) as e:
             return r[bool].fail(f"Validation error: {e}")
 
-    @classmethod
-    def get_or_create_global(
-        cls,
-        **kwargs: t.ContainerValue,
-    ) -> r[FlextAuthSettings]:
-        """Get or create global instance with optional overrides.
-
-        Args:
-        **kwargs: Configuration overrides with proper types
-
-        Returns:
-        FlextResult containing the config instance
-
-        Note: AutoConfig provides get_instance() for singleton pattern.
-        This method is kept for backward compatibility.
-
-        """
+    # @model_validator(mode="after")
+    def _validate_model(self) -> Self:
+        """Pydantic model validator for automatic validation."""
+        # Validate auth_secret exposes SecretStr API with proper length
         try:
-            # Use FlextSettings singleton pattern
-            if not kwargs:
-                instance = cls()
-                return r.ok(instance)
-            # If kwargs provided, create new instance with overrides
-            instance = cls.model_validate(kwargs)
-            # Note: AutoConfig manages singleton internally, but we can't override it here
-            # For overrides, return the new instance (caller should use get_instance() for singleton)
-            return r.ok(instance)
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ) as e:
-            return r.fail(f"Failed to create config: {e}")
+            secret_value = self.auth_secret.get_secret_value()
+        except AttributeError as exc:
+            msg = "auth_secret must expose get_secret_value()"
+            raise TypeError(msg) from exc
 
-    def to_provider_config(self) -> Mapping[str, t.JsonValue]:
-        """Convert config to provider configuration dict.
+        secret_len = len(secret_value)
+        if secret_len < c.Auth.SECRET_MIN_LENGTH:
+            msg = f"Secret must be ≥{c.Auth.SECRET_MIN_LENGTH} chars, got {secret_len}"
+            raise ValueError(msg)
 
-        Returns provider configuration without using model_dump().
-        Directly accesses config properties to build the dict.
-        """
-        config_dict: dict[str, t.JsonValue] = {
-            "algorithm": self.algorithm,
-            "expiry_minutes": self.expiry_minutes,
-            "issuer": self.issuer,
-            "audience": self.audience,
-            "secret_key": self.auth_secret.get_secret_value(),
-            "hash_rounds": self.hash_rounds,
-            "min_credential_length": self.min_credential_length,
-            "max_credential_length": self.max_credential_length,
-            "max_attempts": self.max_attempts,
-            "lockout_duration_minutes": self.lockout_duration_minutes,
-            "session_expiry_minutes": self.session_expiry_minutes,
-            "max_sessions_per_identity": self.max_sessions_per_identity,
-        }
+        if self.min_credential_length > self.max_credential_length:
+            msg = "Min credential length > max"
+            raise ValueError(msg)
 
-        return config_dict
+        if self.session_expiry_minutes > c.Auth.SESSION_EXPIRY_MAX_MINUTES:
+            msg = f"Session expiry > {c.Auth.SESSION_EXPIRY_MAX_MINUTES}min (30 days)"
+            raise ValueError(msg)
+
+        # JWT expiry should not exceed session expiry
+        if self.expiry_minutes > self.session_expiry_minutes:
+            msg = "JWT expiry should not exceed session expiry"
+            raise ValueError(msg)
+
+        return self
 
 
 __all__ = ["FlextAuthSettings"]

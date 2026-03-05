@@ -34,11 +34,6 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
     Uses flext-core patterns and Python 3.13+ features for maximum maintainability.
     """
 
-    @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-oauth2"
-
     def __init__(
         self,
         config: m.Auth.ProviderConfig | Mapping[str, t.JsonValue],
@@ -117,19 +112,40 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         }
         return scalar_config
 
-    def _init_scope(self) -> str:
-        """Initialize scope configuration."""
-        scope_value = self._config.get("scope")
-        match scope_value:
-            case None:
-                return c.Auth.OAuth2.SCOPE_DEFAULT
-            case str() as scope if scope:
-                return scope
-            case str():
-                return c.Auth.OAuth2.SCOPE_DEFAULT
+    def get_authorization_endpoint(self) -> str | None:
+        """Get authorization endpoint from configuration."""
+        value = self._config.get("authorization_endpoint")
+        match value:
+            case str() as endpoint:
+                return endpoint
             case _:
-                error_msg = f"OAuth2 'scope' must be str or None, got {type(scope_value).__name__}"
-                raise ValueError(error_msg)
+                return None
+
+    def get_client_id(self) -> str | None:
+        """Get client ID from configuration."""
+        value = self._config.get("client_id")
+        match value:
+            case str() as client_id:
+                return client_id
+            case _:
+                return None
+
+    def get_redirect_uri(self) -> str | None:
+        """Get redirect URI from configuration."""
+        return self._redirect_uri
+
+    def get_scope(self) -> str | None:
+        """Get scope from configuration."""
+        value = self._config.get("scope")
+        match value:
+            case str() as scope:
+                return scope
+            case _:
+                return None
+
+    def should_use_pkce(self) -> bool:
+        """Check if PKCE should be used."""
+        return self._use_pkce
 
     def _init_flow(self) -> str:
         """Initialize flow configuration."""
@@ -161,6 +177,20 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 )
                 raise ValueError(error_msg)
 
+    def _init_scope(self) -> str:
+        """Initialize scope configuration."""
+        scope_value = self._config.get("scope")
+        match scope_value:
+            case None:
+                return c.Auth.OAuth2.SCOPE_DEFAULT
+            case str() as scope if scope:
+                return scope
+            case str():
+                return c.Auth.OAuth2.SCOPE_DEFAULT
+            case _:
+                error_msg = f"OAuth2 'scope' must be str or None, got {type(scope_value).__name__}"
+                raise ValueError(error_msg)
+
     def _init_token_endpoint_auth_method(self) -> str:
         """Initialize token endpoint auth method configuration."""
         token_endpoint_auth_method_value = self._config.get(
@@ -184,6 +214,11 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                     f"got {type(token_endpoint_auth_method_value).__name__}"
                 )
                 raise ValueError(error_msg)
+
+    @override
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-oauth2"
 
     def _validate_configuration(self) -> r[bool]:
         """Railway-oriented configuration validation."""
@@ -244,41 +279,6 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         return r[bool].ok(value=True)
 
-    def get_authorization_endpoint(self) -> str | None:
-        """Get authorization endpoint from configuration."""
-        value = self._config.get("authorization_endpoint")
-        match value:
-            case str() as endpoint:
-                return endpoint
-            case _:
-                return None
-
-    def get_redirect_uri(self) -> str | None:
-        """Get redirect URI from configuration."""
-        return self._redirect_uri
-
-    def get_client_id(self) -> str | None:
-        """Get client ID from configuration."""
-        value = self._config.get("client_id")
-        match value:
-            case str() as client_id:
-                return client_id
-            case _:
-                return None
-
-    def get_scope(self) -> str | None:
-        """Get scope from configuration."""
-        value = self._config.get("scope")
-        match value:
-            case str() as scope:
-                return scope
-            case _:
-                return None
-
-    def should_use_pkce(self) -> bool:
-        """Check if PKCE should be used."""
-        return self._use_pkce
-
     class _OAuth2FlowManager:
         """SOLID-compliant OAuth2 flow manager.
 
@@ -289,6 +289,20 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             """Initialize flow manager."""
             self.provider = provider
             # Logger removed - use logging module directly if needed
+
+        def generate_pkce_challenge(self) -> r[tuple[str, str]]:
+            """Generate PKCE code challenge and verifier."""
+            # Generate code verifier (43-128 characters, URL-safe)
+            code_verifier = secrets.token_urlsafe(32)
+
+            # Generate code challenge using SHA256 (S256)
+            code_challenge = (
+                urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest())
+                .decode()
+                .rstrip("=")
+            )
+
+            return r[tuple[str, str]].ok((code_challenge, code_verifier))
 
         def get_authorization_url(
             self,
@@ -335,20 +349,6 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                         pass
 
             return r[str].ok(f"{auth_endpoint}?{urlencode(params)}")
-
-        def generate_pkce_challenge(self) -> r[tuple[str, str]]:
-            """Generate PKCE code challenge and verifier."""
-            # Generate code verifier (43-128 characters, URL-safe)
-            code_verifier = secrets.token_urlsafe(32)
-
-            # Generate code challenge using SHA256 (S256)
-            code_challenge = (
-                urlsafe_b64encode(hashlib.sha256(code_verifier.encode()).digest())
-                .decode()
-                .rstrip("=")
-            )
-
-            return r[tuple[str, str]].ok((code_challenge, code_verifier))
 
         def handle_authorization_code_flow(
             self,
@@ -448,51 +448,17 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             # Logger removed - use logging module directly if needed
             self._verifiers: dict[str, str] = {}
 
-        def store_verifier(self, state: str, verifier: str) -> None:
-            """Store PKCE code verifier for later use."""
-            self._verifiers[state] = verifier
+        def clear_verifier(self, state: str) -> None:
+            """Clear stored PKCE code verifier."""
+            self._verifiers.pop(state, None)
 
         def get_verifier(self, state: str) -> str | None:
             """Get stored PKCE code verifier."""
             return self._verifiers.get(state)
 
-        def clear_verifier(self, state: str) -> None:
-            """Clear stored PKCE code verifier."""
-            self._verifiers.pop(state, None)
-
-    @override
-    def get_rfc_version(self) -> str:
-        """Get the RFC version this provider implements.
-
-        Returns:
-            str: RFC version (e.g., "RFC 7617", "RFC 6749")
-
-        """
-        return "RFC 6749"
-
-    @override
-    def supports(self) -> set[str]:
-        """Return OAuth2 provider capabilities using composition."""
-        capabilities = {
-            "oauth2",
-            "authorization_code",
-            "client_credentials",
-            "token",
-            "validate",
-            "refresh",
-        }
-
-        if self._use_pkce:
-            capabilities.add("pkce")
-
-        authorization_endpoint_value = self._config.get("authorization_endpoint")
-        match authorization_endpoint_value:
-            case str() as authorization_endpoint if authorization_endpoint:
-                capabilities.add("authorization_url")
-            case _:
-                pass
-
-        return capabilities
+        def store_verifier(self, state: str, verifier: str) -> None:
+            """Store PKCE code verifier for later use."""
+            self._verifiers[state] = verifier
 
     @override
     def authenticate(
@@ -538,19 +504,40 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         return r[FlextAuthProtocols.Auth.TokenProtocol].ok(token_model)
 
     @override
-    def validate(
+    def generate_token_for_user(
         self,
-        token: str | FlextAuthProtocols.Auth.TokenProtocol,
-    ) -> r[bool]:
-        """Validate OAuth2 token using composition."""
-        token_text = self._extract_token_string(token)
-        identity_result = self.validate_token(token_text)
-        if identity_result.is_failure:
-            return r[bool].fail(
-                identity_result.error or "OAuth2 token validation failed",
-            )
+        user: m.Auth.AuthIdentity | t.ConfigurationMapping,
+        token_type: str = "oauth2_access",
+        expiry_minutes: int | None = None,
+    ) -> r[str]:
+        """Generate OAuth2 token for user."""
+        return super().generate_token_for_user(
+            user=user,
+            token_type=token_type,
+            expiry_minutes=expiry_minutes,
+        )
 
-        return r[bool].ok(value=True)
+    def get_metadata(self) -> t.Auth.Providers.Metadata:
+        """Get OAuth2 provider metadata using composition."""
+        return t.Auth.Providers.Metadata(
+            name="oauth2",
+            version="1.0.0",
+            capabilities=tuple(self.supports()),
+            extras={
+                "flows": [c.Auth.OAuth2.FLOW_DEFAULT, "client_credentials"],
+                "pkce_supported": self._use_pkce,
+            },
+        )
+
+    @override
+    def get_rfc_version(self) -> str:
+        """Get the RFC version this provider implements.
+
+        Returns:
+            str: RFC version (e.g., "RFC 7617", "RFC 6749")
+
+        """
+        return "RFC 6749"
 
     @override
     def refresh(
@@ -618,50 +605,72 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
         _ = _token  # Mark as intentionally unused for now
         return r[bool].ok(value=True)  # Simplified implementation
 
-    def get_metadata(self) -> t.Auth.Providers.Metadata:
-        """Get OAuth2 provider metadata using composition."""
-        return t.Auth.Providers.Metadata(
-            name="oauth2",
-            version="1.0.0",
-            capabilities=tuple(self.supports()),
-            extras={
-                "flows": [c.Auth.OAuth2.FLOW_DEFAULT, "client_credentials"],
-                "pkce_supported": self._use_pkce,
-            },
-        )
-
-    def _introspection_endpoint(self) -> r[str]:
-        for key in ("introspection_endpoint", "token_introspection_endpoint"):
-            endpoint_value = self._config.get(key)
-            if isinstance(endpoint_value, str) and endpoint_value:
-                return r[str].ok(endpoint_value)
-
-        return r[str].fail("OAuth2 introspection endpoint is not configured")
-
-    def _build_introspection_headers(self) -> r[dict[str, str]]:
-        headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/x-www-form-urlencoded",
+    @override
+    def supports(self) -> set[str]:
+        """Return OAuth2 provider capabilities using composition."""
+        capabilities = {
+            "oauth2",
+            "authorization_code",
+            "client_credentials",
+            "token",
+            "validate",
+            "refresh",
         }
-        auth_method = self._token_endpoint_auth_method
-        if auth_method != "client_secret_basic":
-            return r[dict[str, str]].ok(headers)
 
-        client_id = self.get_client_id()
-        client_secret_value = self._config.get("client_secret")
-        client_secret = (
-            client_secret_value if isinstance(client_secret_value, str) else ""
-        )
+        if self._use_pkce:
+            capabilities.add("pkce")
 
-        if not client_id or not client_secret:
-            return r[dict[str, str]].fail(
-                "OAuth2 client_id and client_secret are required for client_secret_basic",
+        authorization_endpoint_value = self._config.get("authorization_endpoint")
+        match authorization_endpoint_value:
+            case str() as authorization_endpoint if authorization_endpoint:
+                capabilities.add("authorization_url")
+            case _:
+                pass
+
+        return capabilities
+
+    @override
+    def validate(
+        self,
+        token: str | FlextAuthProtocols.Auth.TokenProtocol,
+    ) -> r[bool]:
+        """Validate OAuth2 token using composition."""
+        token_text = self._extract_token_string(token)
+        identity_result = self.validate_token(token_text)
+        if identity_result.is_failure:
+            return r[bool].fail(
+                identity_result.error or "OAuth2 token validation failed",
             )
 
-        auth_input = f"{client_id}:{client_secret}".encode()
-        encoded_auth = b64encode(auth_input).decode("ascii")
-        headers["Authorization"] = f"Basic {encoded_auth}"
-        return r[dict[str, str]].ok(headers)
+        return r[bool].ok(value=True)
+
+    def validate_token(self, token: str) -> r[m.Auth.AuthIdentity]:
+        """Validate OAuth2 token and return user."""
+        introspection_endpoint_result = self._introspection_endpoint()
+        if introspection_endpoint_result.is_success:
+            introspection_result = self._introspect_token(token)
+            if introspection_result.is_failure:
+                return r[m.Auth.AuthIdentity].fail(
+                    introspection_result.error
+                    or "OAuth2 introspection token validation failed",
+                )
+
+            active_value = introspection_result.value.get("active")
+            is_active = bool(active_value) if isinstance(active_value, bool) else False
+            if not is_active:
+                return r[m.Auth.AuthIdentity].fail(
+                    "OAuth2 token is inactive",
+                )
+
+            return self._map_token_payload_to_identity(introspection_result.value)
+
+        claims_result = self._decode_token_claims(token)
+        if claims_result.is_failure:
+            return r[m.Auth.AuthIdentity].fail(
+                claims_result.error or "OAuth2 token validation failed",
+            )
+
+        return self._map_token_payload_to_identity(claims_result.value)
 
     def _build_introspection_form_data(self, token: str) -> r[str]:
         if not token.strip():
@@ -698,6 +707,31 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                 )
 
         return r[str].ok(urlencode(form_payload))
+
+    def _build_introspection_headers(self) -> r[dict[str, str]]:
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/x-www-form-urlencoded",
+        }
+        auth_method = self._token_endpoint_auth_method
+        if auth_method != "client_secret_basic":
+            return r[dict[str, str]].ok(headers)
+
+        client_id = self.get_client_id()
+        client_secret_value = self._config.get("client_secret")
+        client_secret = (
+            client_secret_value if isinstance(client_secret_value, str) else ""
+        )
+
+        if not client_id or not client_secret:
+            return r[dict[str, str]].fail(
+                "OAuth2 client_id and client_secret are required for client_secret_basic",
+            )
+
+        auth_input = f"{client_id}:{client_secret}".encode()
+        encoded_auth = b64encode(auth_input).decode("ascii")
+        headers["Authorization"] = f"Basic {encoded_auth}"
+        return r[dict[str, str]].ok(headers)
 
     def _introspect_token(self, token: str) -> r[Mapping[str, t.ContainerValue]]:
         endpoint_result = self._introspection_endpoint()
@@ -775,6 +809,14 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
 
         return r[t.ConfigurationMapping].ok(parsed_payload)
 
+    def _introspection_endpoint(self) -> r[str]:
+        for key in ("introspection_endpoint", "token_introspection_endpoint"):
+            endpoint_value = self._config.get(key)
+            if isinstance(endpoint_value, str) and endpoint_value:
+                return r[str].ok(endpoint_value)
+
+        return r[str].fail("OAuth2 introspection endpoint is not configured")
+
     def _map_token_payload_to_identity(
         self,
         payload: Mapping[str, t.ContainerValue],
@@ -841,48 +883,6 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
             )
 
         return r[m.Auth.AuthIdentity].ok(identity)
-
-    def validate_token(self, token: str) -> r[m.Auth.AuthIdentity]:
-        """Validate OAuth2 token and return user."""
-        introspection_endpoint_result = self._introspection_endpoint()
-        if introspection_endpoint_result.is_success:
-            introspection_result = self._introspect_token(token)
-            if introspection_result.is_failure:
-                return r[m.Auth.AuthIdentity].fail(
-                    introspection_result.error
-                    or "OAuth2 introspection token validation failed",
-                )
-
-            active_value = introspection_result.value.get("active")
-            is_active = bool(active_value) if isinstance(active_value, bool) else False
-            if not is_active:
-                return r[m.Auth.AuthIdentity].fail(
-                    "OAuth2 token is inactive",
-                )
-
-            return self._map_token_payload_to_identity(introspection_result.value)
-
-        claims_result = self._decode_token_claims(token)
-        if claims_result.is_failure:
-            return r[m.Auth.AuthIdentity].fail(
-                claims_result.error or "OAuth2 token validation failed",
-            )
-
-        return self._map_token_payload_to_identity(claims_result.value)
-
-    @override
-    def generate_token_for_user(
-        self,
-        user: m.Auth.AuthIdentity | t.ConfigurationMapping,
-        token_type: str = "oauth2_access",
-        expiry_minutes: int | None = None,
-    ) -> r[str]:
-        """Generate OAuth2 token for user."""
-        return super().generate_token_for_user(
-            user=user,
-            token_type=token_type,
-            expiry_minutes=expiry_minutes,
-        )
 
 
 __all__ = ["FlextAuthOAuth2Provider"]

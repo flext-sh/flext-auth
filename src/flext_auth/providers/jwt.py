@@ -25,11 +25,6 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider):
         super().__init__(config)
 
     @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-jwt"
-
-    @override
     def authenticate(
         self,
         credentials: m.Auth.CredentialValidation,
@@ -37,6 +32,25 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider):
         """Authenticate using JWT credentials."""
         _ = credentials
         return r[p.Auth.TokenProtocol].fail("Not implemented")
+
+    def get_rfc_version(self) -> str:
+        """Get the RFC version this provider implements.
+
+        Returns:
+            str: RFC version (RFC 7519 for JWT)
+
+        """
+        return "RFC 7519"
+
+    @override
+    def supports(self) -> set[str]:
+        """Get supported authentication methods.
+
+        Returns:
+            set[str]: Set of supported methods (e.g., {"jwt", "validate", "refresh"})
+
+        """
+        return {"jwt", "validate", "refresh"}
 
     @override
     def validate(
@@ -68,23 +82,9 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider):
         return r[bool].fail("Not implemented")
 
     @override
-    def supports(self) -> set[str]:
-        """Get supported authentication methods.
-
-        Returns:
-            set[str]: Set of supported methods (e.g., {"jwt", "validate", "refresh"})
-
-        """
-        return {"jwt", "validate", "refresh"}
-
-    def get_rfc_version(self) -> str:
-        """Get the RFC version this provider implements.
-
-        Returns:
-            str: RFC version (RFC 7519 for JWT)
-
-        """
-        return "RFC 7519"
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-jwt"
 
 
 __all__ = ["FlextAuthJwtProvider"]

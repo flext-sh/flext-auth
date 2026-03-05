@@ -63,18 +63,18 @@ class FlextAuthMiddleware(s[bool]):
             """Initialize middleware control state."""
             self._enabled = True
 
-        def enable(self) -> None:
-            """Enable middleware processing."""
-            self._enabled = True
+        @property
+        def is_enabled(self) -> bool:
+            """Check if middleware is enabled."""
+            return self._enabled
 
         def disable(self) -> None:
             """Disable middleware processing."""
             self._enabled = False
 
-        @property
-        def is_enabled(self) -> bool:
-            """Check if middleware is enabled."""
-            return self._enabled
+        def enable(self) -> None:
+            """Enable middleware processing."""
+            self._enabled = True
 
     @override
     def execute(self) -> r[bool]:

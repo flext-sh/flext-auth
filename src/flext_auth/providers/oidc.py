@@ -35,11 +35,6 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
     """
 
     @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-oidc"
-
-    @override
     def authenticate(
         self,
         credentials: m.Auth.CredentialValidation,
@@ -55,6 +50,26 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
         """
         _ = credentials
         return r[p.Auth.TokenProtocol].fail("Not implemented")
+
+    @override
+    def get_rfc_version(self) -> str:
+        """Get the RFC version this provider implements.
+
+        Returns:
+            str: RFC version (OpenID Connect Core 1.0)
+
+        """
+        return "OpenID Connect Core 1.0"
+
+    @override
+    def supports(self) -> set[str]:
+        """Get supported authentication methods.
+
+        Returns:
+            set[str]: Set of supported methods (e.g., {"oidc", "validate", "refresh"})
+
+        """
+        return {"oidc", "validate", "refresh"}
 
     @override
     def validate(
@@ -74,24 +89,9 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
         return r[bool].fail("Not implemented")
 
     @override
-    def supports(self) -> set[str]:
-        """Get supported authentication methods.
-
-        Returns:
-            set[str]: Set of supported methods (e.g., {"oidc", "validate", "refresh"})
-
-        """
-        return {"oidc", "validate", "refresh"}
-
-    @override
-    def get_rfc_version(self) -> str:
-        """Get the RFC version this provider implements.
-
-        Returns:
-            str: RFC version (OpenID Connect Core 1.0)
-
-        """
-        return "OpenID Connect Core 1.0"
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-oidc"
 
 
 __all__ = ["FlextAuthOidcProvider"]

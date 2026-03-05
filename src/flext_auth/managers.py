@@ -98,187 +98,18 @@ class FlextAuthManagers:
             self._context = FlextContext()
             self._users = {}  # In production, use database (dict for dynamic key access)
 
-        def _find_user_by_id(
-            self,
-            user_id: str,
-        ) -> r[tuple[str, dict[str, t.ContainerValue]]]:
-            """Find user by ID (either identity_id, unique_id, or id field).
-
-            Eliminates duplication across 7 methods.
-            """
-            for username, user_data in self._users.items():
-                if (
-                    user_data.get("identity_id") == user_id
-                    or user_data.get("unique_id") == user_id
-                    or user_data.get("id") == user_id
-                ):
-                    return r[tuple[str, t.ConfigurationMapping]].ok((
-                        username,
-                        user_data,
-                    ))
-            return r[tuple[str, t.ConfigurationMapping]].fail("User not found")
-
-        def _modify_user_list_field(
-            self,
-            user_id: str,
-            field: str,
-            value: str,
-            *,
-            add: bool = True,
-        ) -> r[bool]:
-            """Add or remove value from user list field (roles/permissions).
-
-            Generic list field modifier - eliminates duplication in 4 methods.
-            """
-            return self._find_user_by_id(user_id).map(
-                lambda ud: self._apply_list_modification_and_return_true(
-                    ud[1],
-                    field,
-                    value,
-                    add=add,
-                ),
-            )
-
-        def _apply_list_modification_and_return_true(
-            self,
-            user_data: dict[str, t.ContainerValue],
-            field: str,
-            value: str,
-            *,
-            add: bool,
-        ) -> bool:
-            """Apply list mutation and return success sentinel."""
-            self._apply_list_modification(user_data, field, value, add=add)
-            return True
-
-        def _extract_identity_id(
-            self,
-            storage_data: Mapping[str, t.ContainerValue],
-        ) -> str:
-            """Extract identity ID from storage data with fast fail."""
-            for field in ("unique_id", "id", "identity_id"):
-                value = storage_data.get(field)
-                match value:
-                    case str() as identity_id if identity_id:
-                        return identity_id
-                    case _:
-                        pass
-            msg = "Storage data missing required 'unique_id', 'id', or 'identity_id' field"
-            raise ValueError(msg)
-
-        def _validate_required_field[T](
-            self,
-            storage_data: Mapping[str, t.ContainerValue],
-            field: str,
-            field_type: type[T],
-        ) -> T:
-            """Validate and extract required field with type checking."""
-            value = storage_data.get(field)
-            if not isinstance(value, field_type):
-                msg = f"Storage data '{field}' must be a {field_type.__name__}"
-                raise TypeError(msg)
-            return value
-
-        def _create_identity_from_storage(
-            self,
-            storage_data: Mapping[str, t.ContainerValue],
-        ) -> m.Auth.AuthIdentity:
-            """Create Identity model from storage data, filtering out non-model fields."""
-            identity_id = self._extract_identity_id(storage_data)
-            name_value = self._validate_required_field(storage_data, "name", str)
-            if not name_value:
-                msg = "Storage data 'name' must be a non-empty string"
-                raise ValueError(msg)
-            contact_value = self._validate_required_field(storage_data, "contact", str)
-            if not contact_value:
-                msg = "Storage data 'contact' must be a non-empty string"
-                raise ValueError(msg)
-
-            credential_hash = self._validate_required_field(
-                storage_data,
-                "credential_hash",
-                str,
-            )
-            is_active = self._validate_required_field(storage_data, "is_active", bool)
-            roles = self._validate_required_field(storage_data, "roles", list)
-            permissions = self._validate_required_field(
-                storage_data,
+        def add_user_permission(self, user_id: str, permission: str) -> r[bool]:
+            """Add permission to user."""
+            return self._modify_user_list_field(
+                user_id,
                 "permissions",
-                list,
+                permission,
+                add=True,
             )
 
-            identity_data: dict[str, t.ContainerValue] = {
-                "unique_id": identity_id,
-                "name": name_value,
-                "contact": contact_value,
-                "credential_hash": credential_hash,
-                "is_active": is_active,
-                "roles": roles,
-                "permissions": permissions,
-            }
-
-            # Add optional fields if present and valid
-            valid_identity_fields = {
-                "unique_id",
-                "name",
-                "contact",
-                "credential_hash",
-                "is_active",
-                "roles",
-                "permissions",
-                "full_name",
-                "failed_attempts",
-                "locked_until",
-                "last_access",
-            }
-            for field in (
-                "full_name",
-                "failed_attempts",
-                "locked_until",
-                "last_access",
-            ):
-                if field in storage_data:
-                    field_type = (
-                        str
-                        if field == "full_name"
-                        else (int if field == "failed_attempts" else datetime)
-                    )
-                    field_value = storage_data.get(field)
-                    if u.Guards.is_type(field_value, field_type):
-                        # For datetime fields, ensure they're not None
-                        if field in {"locked_until", "last_access"}:
-                            # If None in storage, use datetime.min as default
-                            if field_value is None:
-                                identity_data[field] = datetime.min.replace(tzinfo=UTC)
-                            else:
-                                identity_data[field] = field_value
-                        else:
-                            identity_data[field] = field_value
-
-            filtered_identity_data = {
-                k: v for k, v in identity_data.items() if k in valid_identity_fields
-            }
-
-            return m.Auth.AuthIdentity.model_validate(filtered_identity_data)
-
-        def _apply_list_modification(
-            self,
-            user_data: dict[str, t.ContainerValue],
-            field: str,
-            value: str,
-            *,
-            add: bool = True,
-        ) -> None:
-            """Apply list modification atomically."""
-            field_list_value = user_data.get(field)
-            if not u.Guards.is_list(field_list_value):
-                msg = f"Field '{field}' must be a list for modification"
-                raise TypeError(msg)
-            field_list = field_list_value
-            if add and value not in field_list:
-                field_list.append(value)
-            elif not add and value in field_list:
-                field_list.remove(value)
+        def add_user_role(self, user_id: str, role: str) -> r[bool]:
+            """Add role to user."""
+            return self._modify_user_list_field(user_id, "roles", role, add=True)
 
         def create_user(
             self,
@@ -419,8 +250,23 @@ class FlextAuthManagers:
             user = m.Auth.AuthIdentity.model_validate(identity_dict)
             return r[m.Auth.AuthIdentity].ok(user)
 
+        def delete_user(self, user_id: str) -> r[bool]:
+            """Delete user."""
+            result = self._find_user_by_id(user_id)
+            if result.is_failure:
+                return r[bool].fail(result.error or "Unknown error")
+            user_key, _ = result.value
+            del self._users[user_key]
+            return r[bool].ok(value=True)
+
         def get_user(self, user_id: str) -> r[m.Auth.AuthIdentity]:
             """Get user by ID."""
+            return self._find_user_by_id(user_id).map(
+                lambda ud: self._create_identity_from_storage(ud[1]),
+            )
+
+        def get_user_by_id(self, user_id: str) -> r[m.Auth.AuthIdentity]:
+            """Get a user by their ID."""
             return self._find_user_by_id(user_id).map(
                 lambda ud: self._create_identity_from_storage(ud[1]),
             )
@@ -433,6 +279,19 @@ class FlextAuthManagers:
             storage_data = self._users[username]
             user = self._create_identity_from_storage(storage_data)
             return r[m.Auth.AuthIdentity].ok(user)
+
+        def remove_user_permission(self, user_id: str, permission: str) -> r[bool]:
+            """Remove permission from user."""
+            return self._modify_user_list_field(
+                user_id,
+                "permissions",
+                permission,
+                add=False,
+            )
+
+        def remove_user_role(self, user_id: str, role: str) -> r[bool]:
+            """Remove role from user."""
+            return self._modify_user_list_field(user_id, "roles", role, add=False)
 
         def update_user(
             self,
@@ -448,46 +307,187 @@ class FlextAuthManagers:
                 )[2],
             )
 
-        def delete_user(self, user_id: str) -> r[bool]:
-            """Delete user."""
-            result = self._find_user_by_id(user_id)
-            if result.is_failure:
-                return r[bool].fail(result.error or "Unknown error")
-            user_key, _ = result.value
-            del self._users[user_key]
-            return r[bool].ok(value=True)
+        def _apply_list_modification(
+            self,
+            user_data: dict[str, t.ContainerValue],
+            field: str,
+            value: str,
+            *,
+            add: bool = True,
+        ) -> None:
+            """Apply list modification atomically."""
+            field_list_value = user_data.get(field)
+            if not u.Guards.is_list(field_list_value):
+                msg = f"Field '{field}' must be a list for modification"
+                raise TypeError(msg)
+            field_list = field_list_value
+            if add and value not in field_list:
+                field_list.append(value)
+            elif not add and value in field_list:
+                field_list.remove(value)
 
-        def add_user_role(self, user_id: str, role: str) -> r[bool]:
-            """Add role to user."""
-            return self._modify_user_list_field(user_id, "roles", role, add=True)
+        def _apply_list_modification_and_return_true(
+            self,
+            user_data: dict[str, t.ContainerValue],
+            field: str,
+            value: str,
+            *,
+            add: bool,
+        ) -> bool:
+            """Apply list mutation and return success sentinel."""
+            self._apply_list_modification(user_data, field, value, add=add)
+            return True
 
-        def remove_user_role(self, user_id: str, role: str) -> r[bool]:
-            """Remove role from user."""
-            return self._modify_user_list_field(user_id, "roles", role, add=False)
+        def _create_identity_from_storage(
+            self,
+            storage_data: Mapping[str, t.ContainerValue],
+        ) -> m.Auth.AuthIdentity:
+            """Create Identity model from storage data, filtering out non-model fields."""
+            identity_id = self._extract_identity_id(storage_data)
+            name_value = self._validate_required_field(storage_data, "name", str)
+            if not name_value:
+                msg = "Storage data 'name' must be a non-empty string"
+                raise ValueError(msg)
+            contact_value = self._validate_required_field(storage_data, "contact", str)
+            if not contact_value:
+                msg = "Storage data 'contact' must be a non-empty string"
+                raise ValueError(msg)
 
-        def add_user_permission(self, user_id: str, permission: str) -> r[bool]:
-            """Add permission to user."""
-            return self._modify_user_list_field(
-                user_id,
+            credential_hash = self._validate_required_field(
+                storage_data,
+                "credential_hash",
+                str,
+            )
+            is_active = self._validate_required_field(storage_data, "is_active", bool)
+            roles = self._validate_required_field(storage_data, "roles", list)
+            permissions = self._validate_required_field(
+                storage_data,
                 "permissions",
-                permission,
-                add=True,
+                list,
             )
 
-        def remove_user_permission(self, user_id: str, permission: str) -> r[bool]:
-            """Remove permission from user."""
-            return self._modify_user_list_field(
-                user_id,
-                "permissions",
-                permission,
-                add=False,
-            )
+            identity_data: dict[str, t.ContainerValue] = {
+                "unique_id": identity_id,
+                "name": name_value,
+                "contact": contact_value,
+                "credential_hash": credential_hash,
+                "is_active": is_active,
+                "roles": roles,
+                "permissions": permissions,
+            }
 
-        def get_user_by_id(self, user_id: str) -> r[m.Auth.AuthIdentity]:
-            """Get a user by their ID."""
+            # Add optional fields if present and valid
+            valid_identity_fields = {
+                "unique_id",
+                "name",
+                "contact",
+                "credential_hash",
+                "is_active",
+                "roles",
+                "permissions",
+                "full_name",
+                "failed_attempts",
+                "locked_until",
+                "last_access",
+            }
+            for field in (
+                "full_name",
+                "failed_attempts",
+                "locked_until",
+                "last_access",
+            ):
+                if field in storage_data:
+                    field_type = (
+                        str
+                        if field == "full_name"
+                        else (int if field == "failed_attempts" else datetime)
+                    )
+                    field_value = storage_data.get(field)
+                    if u.Guards.is_type(field_value, field_type):
+                        # For datetime fields, ensure they're not None
+                        if field in {"locked_until", "last_access"}:
+                            # If None in storage, use datetime.min as default
+                            if field_value is None:
+                                identity_data[field] = datetime.min.replace(tzinfo=UTC)
+                            else:
+                                identity_data[field] = field_value
+                        else:
+                            identity_data[field] = field_value
+
+            filtered_identity_data = {
+                k: v for k, v in identity_data.items() if k in valid_identity_fields
+            }
+
+            return m.Auth.AuthIdentity.model_validate(filtered_identity_data)
+
+        def _extract_identity_id(
+            self,
+            storage_data: Mapping[str, t.ContainerValue],
+        ) -> str:
+            """Extract identity ID from storage data with fast fail."""
+            for field in ("unique_id", "id", "identity_id"):
+                value = storage_data.get(field)
+                match value:
+                    case str() as identity_id if identity_id:
+                        return identity_id
+                    case _:
+                        pass
+            msg = "Storage data missing required 'unique_id', 'id', or 'identity_id' field"
+            raise ValueError(msg)
+
+        def _find_user_by_id(
+            self,
+            user_id: str,
+        ) -> r[tuple[str, dict[str, t.ContainerValue]]]:
+            """Find user by ID (either identity_id, unique_id, or id field).
+
+            Eliminates duplication across 7 methods.
+            """
+            for username, user_data in self._users.items():
+                if (
+                    user_data.get("identity_id") == user_id
+                    or user_data.get("unique_id") == user_id
+                    or user_data.get("id") == user_id
+                ):
+                    return r[tuple[str, t.ConfigurationMapping]].ok((
+                        username,
+                        user_data,
+                    ))
+            return r[tuple[str, t.ConfigurationMapping]].fail("User not found")
+
+        def _modify_user_list_field(
+            self,
+            user_id: str,
+            field: str,
+            value: str,
+            *,
+            add: bool = True,
+        ) -> r[bool]:
+            """Add or remove value from user list field (roles/permissions).
+
+            Generic list field modifier - eliminates duplication in 4 methods.
+            """
             return self._find_user_by_id(user_id).map(
-                lambda ud: self._create_identity_from_storage(ud[1]),
+                lambda ud: self._apply_list_modification_and_return_true(
+                    ud[1],
+                    field,
+                    value,
+                    add=add,
+                ),
             )
+
+        def _validate_required_field[T](
+            self,
+            storage_data: Mapping[str, t.ContainerValue],
+            field: str,
+            field_type: type[T],
+        ) -> T:
+            """Validate and extract required field with type checking."""
+            value = storage_data.get(field)
+            if not isinstance(value, field_type):
+                msg = f"Storage data '{field}' must be a {field_type.__name__}"
+                raise TypeError(msg)
+            return value
 
     class FlextAuthSessionManager:
         """Session management business logic.
@@ -508,27 +508,17 @@ class FlextAuthManagers:
                 dict[str, t.ContainerValue],
             ] = {}  # In production, use Redis/database (dict for dynamic key access)
 
-        def _is_session_active(
-            self,
-            session_data: Mapping[str, t.ContainerValue],
-        ) -> bool:
-            """Check if session is active and not expired.
-
-            Eliminates duplication of expiration check (appeared 2+ times).
-            """
-            expires_at_value = session_data.get("expires_at")
-            if not isinstance(expires_at_value, datetime):
-                return False
-            expires_at = expires_at_value
-
-            is_active_value = session_data.get("is_active")
-            match is_active_value:
-                case bool() as active:
-                    is_active = active
-                case _:
-                    return False
-
-            return is_active and expires_at > datetime.now(UTC)
+        def cleanup_expired_sessions(self) -> r[int]:
+            """Clean up expired sessions and return count of cleaned sessions."""
+            cleaned_count = 0
+            sessions_to_check = list(self._sessions.keys())
+            for session_id in sessions_to_check:
+                session_data = self._sessions[session_id]
+                if not self._is_session_active(session_data):
+                    end_result = self.end_session_by_id(session_id)
+                    if end_result.is_success:
+                        cleaned_count += 1
+            return r[int].ok(cleaned_count)
 
         def create_session(
             self,
@@ -574,6 +564,36 @@ class FlextAuthManagers:
             )
             return r[m.Auth.Session].ok(session)
 
+        def end_all_sessions(self, user_id: str) -> r[bool]:
+            """End all sessions for a user."""
+            return self.end_session(user_id)
+
+        def end_session(self, user_id: str) -> r[bool]:
+            """End all sessions for a user."""
+            found = False
+            for session_data in self._sessions.values():
+                identity_id_value = session_data.get("identity_id")
+                match identity_id_value:
+                    case str() as identity_id_value_str if (
+                        identity_id_value_str == user_id
+                    ):
+                        session_data["is_active"] = False
+                        found = True
+                    case _:
+                        pass
+
+            if found:
+                return r[bool].ok(value=True)
+            return r[bool].fail("No sessions found for user")
+
+        def end_session_by_id(self, session_id: str) -> r[bool]:
+            """End a specific session."""
+            if session_id in self._sessions:
+                self._sessions[session_id]["is_active"] = False
+                return r[bool].ok(value=True)
+
+            return r[bool].fail("Session not found")
+
         def get_active_sessions(self, user_id: str) -> r[list[m.Auth.Session]]:
             """Get all active sessions for a user."""
             sessions: list[m.Auth.Session] = []
@@ -610,36 +630,6 @@ class FlextAuthManagers:
                         pass
             return r[list[m.Auth.Session]].ok(sessions)
 
-        def end_session(self, user_id: str) -> r[bool]:
-            """End all sessions for a user."""
-            found = False
-            for session_data in self._sessions.values():
-                identity_id_value = session_data.get("identity_id")
-                match identity_id_value:
-                    case str() as identity_id_value_str if (
-                        identity_id_value_str == user_id
-                    ):
-                        session_data["is_active"] = False
-                        found = True
-                    case _:
-                        pass
-
-            if found:
-                return r[bool].ok(value=True)
-            return r[bool].fail("No sessions found for user")
-
-        def end_session_by_id(self, session_id: str) -> r[bool]:
-            """End a specific session."""
-            if session_id in self._sessions:
-                self._sessions[session_id]["is_active"] = False
-                return r[bool].ok(value=True)
-
-            return r[bool].fail("Session not found")
-
-        def end_all_sessions(self, user_id: str) -> r[bool]:
-            """End all sessions for a user."""
-            return self.end_session(user_id)
-
         def get_total_active_sessions(self) -> int:
             """Get total count of active sessions."""
             return sum(
@@ -648,17 +638,27 @@ class FlextAuthManagers:
                 if self._is_session_active(session)
             )
 
-        def cleanup_expired_sessions(self) -> r[int]:
-            """Clean up expired sessions and return count of cleaned sessions."""
-            cleaned_count = 0
-            sessions_to_check = list(self._sessions.keys())
-            for session_id in sessions_to_check:
-                session_data = self._sessions[session_id]
-                if not self._is_session_active(session_data):
-                    end_result = self.end_session_by_id(session_id)
-                    if end_result.is_success:
-                        cleaned_count += 1
-            return r[int].ok(cleaned_count)
+        def _is_session_active(
+            self,
+            session_data: Mapping[str, t.ContainerValue],
+        ) -> bool:
+            """Check if session is active and not expired.
+
+            Eliminates duplication of expiration check (appeared 2+ times).
+            """
+            expires_at_value = session_data.get("expires_at")
+            if not isinstance(expires_at_value, datetime):
+                return False
+            expires_at = expires_at_value
+
+            is_active_value = session_data.get("is_active")
+            match is_active_value:
+                case bool() as active:
+                    is_active = active
+                case _:
+                    return False
+
+            return is_active and expires_at > datetime.now(UTC)
 
     class FlextAuthAuditLogger:
         """Audit logging business logic.
@@ -698,179 +698,6 @@ class FlextAuthManagers:
             self._logs: list[
                 dict[str, t.ContainerValue]
             ] = []  # In production, use database
-
-        def log_event(
-            self,
-            event_type: str,
-            **data: str | int | bool | list[str] | datetime | None,
-        ) -> None:
-            """Generic event logging - single method replaces 11 specific methods.
-
-            Usage:
-                self.log_event(self._EVENT_AUTH_SUCCESS, username="user", provider="jwt")
-                self.log_event(self._EVENT_TOKEN_VALIDATION_FAILURE, reason="expired")
-            """
-            self._log_event(event_type, **data)
-
-        def log_auth_success(
-            self,
-            username: str,
-            provider: str,
-            **extra: str | int | bool | list[str] | datetime | None,
-        ) -> None:
-            """Log successful authentication."""
-            self.log_event(
-                self._EVENT_AUTH_SUCCESS,
-                username=username,
-                provider=provider,
-                **extra,
-            )
-
-        def log_auth_failure(
-            self,
-            username: str,
-            provider: str,
-            reason: str,
-            **extra: str | int | bool | list[str] | datetime | None,
-        ) -> None:
-            """Log failed authentication."""
-            self.log_event(
-                self._EVENT_AUTH_FAILURE,
-                username=username,
-                provider=provider,
-                reason=reason,
-                **extra,
-            )
-
-        def log_token_validation(
-            self,
-            username: str | None = None,
-            *,
-            success: bool = True,
-            **extra: str | int | bool | list[str] | datetime | None,
-        ) -> None:
-            """Log token validation attempt."""
-            event_type = (
-                self._EVENT_TOKEN_VALIDATION_SUCCESS
-                if success
-                else self._EVENT_TOKEN_VALIDATION_FAILURE
-            )
-            self.log_event(event_type, username=username, **extra)
-
-        def log_token_refresh(
-            self,
-            username: str | None = None,
-            *,
-            success: bool = True,
-            **extra: str | int | bool | list[str] | datetime | None,
-        ) -> None:
-            """Log token refresh attempt."""
-            event_type = (
-                self._EVENT_TOKEN_REFRESH_SUCCESS
-                if success
-                else self._EVENT_TOKEN_REFRESH_FAILURE
-            )
-            self.log_event(event_type, username=username, **extra)
-
-        def log_token_creation(
-            self,
-            user_id: str | None = None,
-            token_type: str | None = None,
-            *,
-            success: bool = True,
-            **extra: str | int | bool | list[str] | datetime | None,
-        ) -> None:
-            """Log token creation attempt."""
-            event_type = (
-                self._EVENT_TOKEN_CREATION_SUCCESS
-                if success
-                else self._EVENT_TOKEN_CREATION_FAILURE
-            )
-            self.log_event(event_type, user_id=user_id, token_type=token_type, **extra)
-
-        def log_user_logout(
-            self,
-            username: str,
-            **extra: str | int | bool | list[str] | datetime | None,
-        ) -> None:
-            """Log user logout."""
-            self.log_event(self._EVENT_USER_LOGOUT, username=username, **extra)
-
-        def log_password_change_success(
-            self,
-            username: str,
-            **extra: str | int | bool | list[str] | datetime | None,
-        ) -> None:
-            """Log successful password change."""
-            self.log_event(
-                self._EVENT_PASSWORD_CHANGE_SUCCESS,
-                username=username,
-                **extra,
-            )
-
-        def log_password_change_failure(
-            self,
-            username: str,
-            reason: str,
-            **extra: str | int | bool | list[str] | datetime | None,
-        ) -> None:
-            """Log failed password change."""
-            self.log_event(
-                self._EVENT_PASSWORD_CHANGE_FAILURE,
-                username=username,
-                reason=reason,
-                **extra,
-            )
-
-        def log_password_reset(
-            self,
-            username: str,
-            **extra: str | int | bool | list[str] | datetime | None,
-        ) -> None:
-            """Log password reset."""
-            self.log_event(self._EVENT_PASSWORD_RESET, username=username, **extra)
-
-        def log_authorization_check(
-            self,
-            username: str,
-            resource: str,
-            action: str,
-            *,
-            allowed: bool,
-            **extra: str | int | bool | list[str] | datetime | None,
-        ) -> None:
-            """Log authorization check."""
-            event_type = (
-                self._EVENT_AUTHORIZATION_GRANTED
-                if allowed
-                else self._EVENT_AUTHORIZATION_DENIED
-            )
-            self.log_event(
-                event_type,
-                username=username,
-                resource=resource,
-                action=action,
-                **extra,
-            )
-
-        def get_total_log_entries(self) -> int:
-            """Get total count of log entries."""
-            return len(self._logs)
-
-        def _log_event(
-            self,
-            event_type: str,
-            **data: str | int | bool | list[str] | datetime | None,
-        ) -> None:
-            """Log an audit event."""
-            log_entry: dict[str, t.ContainerValue] = {
-                "id": str(uuid4()),
-                "event_type": event_type,
-                "timestamp": datetime.now(UTC),
-                **data,
-            }
-            self._logs.append(log_entry)
-            self.logger.info("Audit event: %s", event_type)
 
         def get_logs(
             self,
@@ -934,6 +761,179 @@ class FlextAuthManagers:
             # Apply limit and return
             return r[list[t.ConfigurationMapping]].ok(filtered_logs[-limit:])
 
+        def get_total_log_entries(self) -> int:
+            """Get total count of log entries."""
+            return len(self._logs)
+
+        def log_auth_failure(
+            self,
+            username: str,
+            provider: str,
+            reason: str,
+            **extra: str | int | bool | list[str] | datetime | None,
+        ) -> None:
+            """Log failed authentication."""
+            self.log_event(
+                self._EVENT_AUTH_FAILURE,
+                username=username,
+                provider=provider,
+                reason=reason,
+                **extra,
+            )
+
+        def log_auth_success(
+            self,
+            username: str,
+            provider: str,
+            **extra: str | int | bool | list[str] | datetime | None,
+        ) -> None:
+            """Log successful authentication."""
+            self.log_event(
+                self._EVENT_AUTH_SUCCESS,
+                username=username,
+                provider=provider,
+                **extra,
+            )
+
+        def log_authorization_check(
+            self,
+            username: str,
+            resource: str,
+            action: str,
+            *,
+            allowed: bool,
+            **extra: str | int | bool | list[str] | datetime | None,
+        ) -> None:
+            """Log authorization check."""
+            event_type = (
+                self._EVENT_AUTHORIZATION_GRANTED
+                if allowed
+                else self._EVENT_AUTHORIZATION_DENIED
+            )
+            self.log_event(
+                event_type,
+                username=username,
+                resource=resource,
+                action=action,
+                **extra,
+            )
+
+        def log_event(
+            self,
+            event_type: str,
+            **data: str | int | bool | list[str] | datetime | None,
+        ) -> None:
+            """Generic event logging - single method replaces 11 specific methods.
+
+            Usage:
+                self.log_event(self._EVENT_AUTH_SUCCESS, username="user", provider="jwt")
+                self.log_event(self._EVENT_TOKEN_VALIDATION_FAILURE, reason="expired")
+            """
+            self._log_event(event_type, **data)
+
+        def log_password_change_failure(
+            self,
+            username: str,
+            reason: str,
+            **extra: str | int | bool | list[str] | datetime | None,
+        ) -> None:
+            """Log failed password change."""
+            self.log_event(
+                self._EVENT_PASSWORD_CHANGE_FAILURE,
+                username=username,
+                reason=reason,
+                **extra,
+            )
+
+        def log_password_change_success(
+            self,
+            username: str,
+            **extra: str | int | bool | list[str] | datetime | None,
+        ) -> None:
+            """Log successful password change."""
+            self.log_event(
+                self._EVENT_PASSWORD_CHANGE_SUCCESS,
+                username=username,
+                **extra,
+            )
+
+        def log_password_reset(
+            self,
+            username: str,
+            **extra: str | int | bool | list[str] | datetime | None,
+        ) -> None:
+            """Log password reset."""
+            self.log_event(self._EVENT_PASSWORD_RESET, username=username, **extra)
+
+        def log_token_creation(
+            self,
+            user_id: str | None = None,
+            token_type: str | None = None,
+            *,
+            success: bool = True,
+            **extra: str | int | bool | list[str] | datetime | None,
+        ) -> None:
+            """Log token creation attempt."""
+            event_type = (
+                self._EVENT_TOKEN_CREATION_SUCCESS
+                if success
+                else self._EVENT_TOKEN_CREATION_FAILURE
+            )
+            self.log_event(event_type, user_id=user_id, token_type=token_type, **extra)
+
+        def log_token_refresh(
+            self,
+            username: str | None = None,
+            *,
+            success: bool = True,
+            **extra: str | int | bool | list[str] | datetime | None,
+        ) -> None:
+            """Log token refresh attempt."""
+            event_type = (
+                self._EVENT_TOKEN_REFRESH_SUCCESS
+                if success
+                else self._EVENT_TOKEN_REFRESH_FAILURE
+            )
+            self.log_event(event_type, username=username, **extra)
+
+        def log_token_validation(
+            self,
+            username: str | None = None,
+            *,
+            success: bool = True,
+            **extra: str | int | bool | list[str] | datetime | None,
+        ) -> None:
+            """Log token validation attempt."""
+            event_type = (
+                self._EVENT_TOKEN_VALIDATION_SUCCESS
+                if success
+                else self._EVENT_TOKEN_VALIDATION_FAILURE
+            )
+            self.log_event(event_type, username=username, **extra)
+
+        def log_user_logout(
+            self,
+            username: str,
+            **extra: str | int | bool | list[str] | datetime | None,
+        ) -> None:
+            """Log user logout."""
+            self.log_event(self._EVENT_USER_LOGOUT, username=username, **extra)
+
+        def _log_event(
+            self,
+            event_type: str,
+            **data: str | int | bool | list[str] | datetime | None,
+        ) -> None:
+            """Log an audit event."""
+            log_entry: dict[str, t.ContainerValue] = {
+                "id": str(uuid4()),
+                "event_type": event_type,
+                "timestamp": datetime.now(UTC),
+                **data,
+            }
+            self._logs.append(log_entry)
+            self.logger.info("Audit event: %s", event_type)
+
     class FlextAuthRateLimiter:
         """Rate limiting business logic.
 
@@ -960,24 +960,6 @@ class FlextAuthManagers:
             self._max_attempts = 5
             self._window_minutes = 15
 
-        def _cleanup_window(self, username: str, now: datetime) -> list[datetime]:
-            """Clean up attempts outside the time window.
-
-            Generic pattern used in 2 methods - eliminates duplication.
-            """
-            window_start = now - timedelta(minutes=self._window_minutes)
-            attempt_data = self._attempts.get(username)
-            if not isinstance(attempt_data, Mapping):
-                return []
-            attempts_value = attempt_data.get("attempts")
-            if not u.Guards.is_list(attempts_value):
-                return []
-            return [
-                attempt
-                for attempt in attempts_value
-                if isinstance(attempt, datetime) and attempt > window_start
-            ]
-
         def check_rate_limit(self, username: str) -> r[bool]:
             """Check if user is within rate limits.
 
@@ -1003,6 +985,10 @@ class FlextAuthManagers:
 
             return r[bool].ok(value=True)
 
+        def get_total_failed_attempts(self) -> int:
+            """Get total count of failed attempts across all users."""
+            return sum(len(attempts) for attempts in self._attempts.values())
+
         def record_failed_attempt(self, username: str) -> None:
             """Record a failed authentication attempt."""
             now = datetime.now(UTC)
@@ -1020,6 +1006,20 @@ class FlextAuthManagers:
             recent_attempts = self._cleanup_window(username, now)
             self._attempts[username]["attempts"] = recent_attempts
 
-        def get_total_failed_attempts(self) -> int:
-            """Get total count of failed attempts across all users."""
-            return sum(len(attempts) for attempts in self._attempts.values())
+        def _cleanup_window(self, username: str, now: datetime) -> list[datetime]:
+            """Clean up attempts outside the time window.
+
+            Generic pattern used in 2 methods - eliminates duplication.
+            """
+            window_start = now - timedelta(minutes=self._window_minutes)
+            attempt_data = self._attempts.get(username)
+            if not isinstance(attempt_data, Mapping):
+                return []
+            attempts_value = attempt_data.get("attempts")
+            if not u.Guards.is_list(attempts_value):
+                return []
+            return [
+                attempt
+                for attempt in attempts_value
+                if isinstance(attempt, datetime) and attempt > window_start
+            ]

@@ -93,6 +93,48 @@ class FlextAuth:
             dispatcher=self._dispatcher,
         )
 
+    @property
+    def config(self) -> FlextAuthSettings:
+        """Configuration access."""
+        return self._config
+
+    @property
+    def identity_service(self) -> FlextAuthIdentityService:
+        """Identity service access for usage."""
+        return self._identity_service
+
+    @property
+    def registry(self) -> FlextAuthRegistry:
+        """Registry access."""
+        return self._registry
+
+    @property
+    def session_service(self) -> FlextAuthSessionService:
+        """Session service access for usage."""
+        return self._session_service
+
+    @property
+    def token_service(self) -> FlextAuthTokenService:
+        """Token service access for usage."""
+        return self._token_service
+
+    @classmethod
+    def create_with_config_overrides(
+        cls,
+        **config_overrides: t.ContainerValue,
+    ) -> Self:
+        """Factory method to create FlextAuth with configuration overrides.
+
+        Args:
+            **config_overrides: Configuration parameters to override defaults
+
+        Returns:
+            Initialized FlextAuth instance with custom configuration
+
+        """
+        custom_config = FlextAuthSettings.model_validate(config_overrides)
+        return cls(config=custom_config)
+
     @classmethod
     def get_global(cls) -> FlextAuth:
         """Thread-safe singleton pattern with configuration."""
@@ -125,48 +167,6 @@ class FlextAuth:
             # For now, just create the instance
             pass
         return instance
-
-    @classmethod
-    def create_with_config_overrides(
-        cls,
-        **config_overrides: t.ContainerValue,
-    ) -> Self:
-        """Factory method to create FlextAuth with configuration overrides.
-
-        Args:
-            **config_overrides: Configuration parameters to override defaults
-
-        Returns:
-            Initialized FlextAuth instance with custom configuration
-
-        """
-        custom_config = FlextAuthSettings.model_validate(config_overrides)
-        return cls(config=custom_config)
-
-    @property
-    def config(self) -> FlextAuthSettings:
-        """Configuration access."""
-        return self._config
-
-    @property
-    def registry(self) -> FlextAuthRegistry:
-        """Registry access."""
-        return self._registry
-
-    @property
-    def token_service(self) -> FlextAuthTokenService:
-        """Token service access for usage."""
-        return self._token_service
-
-    @property
-    def identity_service(self) -> FlextAuthIdentityService:
-        """Identity service access for usage."""
-        return self._identity_service
-
-    @property
-    def session_service(self) -> FlextAuthSessionService:
-        """Session service access for usage."""
-        return self._session_service
 
     def authenticate(
         self,
@@ -244,13 +244,87 @@ class FlextAuth:
 
         return auth_result
 
-    def validate_token(self, token: str) -> r[bool]:
-        """Flexible token validation with railway pattern."""
-        return self._token_service.validate_token(token).map(lambda _result: True)
+    def cleanup_expired_sessions(self) -> r[int]:
+        """Clean up expired sessions.
+
+        Returns:
+        Number of sessions cleaned up
+
+        """
+        return self._session_service.cleanup_expired_sessions()
+
+    def create_token(
+        self,
+        identity_id: str,
+        extra_claims: Mapping[str, str | int | bool] | None = None,
+    ) -> r[str]:
+        """Railway-oriented token creation.
+
+        Args:
+            identity_id: Identity ID for token subject
+            extra_claims: Reserved for future extra claims support
+
+        """
+        match identity_id:
+            case str() as identity if identity:
+                identity_id = identity
+            case _:
+                return r[str].fail("Identity ID must be a non-empty string")
+
+        _ = extra_claims  # Reserved for future use
+        return self._token_service.generate_jwt_token(
+            user_id=identity_id,
+            expires_in_minutes=self._config.expiry_minutes,
+        )
+
+    def delete_user(self, user_id: str) -> r[bool]:
+        """Delete identity - delegation to identity_service."""
+        return self._identity_service.identity_manager.delete_user(user_id)
+
+    def execute(self) -> r[t.ContainerValue]:
+        """Flexible execute implementation with railway orchestration."""
+        return r[t.ContainerValue].fail(
+            "FlextAuth is a focused service - use specific methods like authenticate() instead",
+        )
+
+    def get_provider(
+        self,
+        name: str,
+    ) -> r[FlextAuthBaseProvider]:
+        """Railway-oriented provider retrieval."""
+        return self._registry.get(name)
+
+    # =========================================================================
+    # CONVENIENCE API METHODS (Delegations to services)
+    # =========================================================================
+
+    def get_user(self, user_id: str) -> r[m.Auth.AuthIdentity]:
+        """Get identity by ID - delegation to identity_service."""
+        return self._identity_service.identity_manager.get_user(user_id)
+
+    def get_user_by_username(self, username: str) -> r[m.Auth.AuthIdentity]:
+        """Get identity by username - delegation to identity_service."""
+        return self._identity_service.identity_manager.get_user_by_username(username)
+
+    def get_user_sessions(self, user_id: str) -> r[list[m.Auth.Session]]:
+        """Get user sessions."""
+        return self._session_service.session_manager.get_active_sessions(user_id)
 
     def list_providers(self) -> list[str]:
         """Provider listing."""
         return self._registry.list_providers()
+
+    def logout_user(self, session_id: str) -> r[bool]:
+        """Logout user by session ID."""
+        return self._session_service.session_manager.end_session_by_id(session_id)
+
+    def register_provider(
+        self,
+        name: str,
+        provider: FlextAuthBaseProvider,
+    ) -> r[bool]:
+        """Railway-oriented provider registration."""
+        return self._registry.register_provider(name, provider)
 
     def register_user(
         self,
@@ -291,21 +365,6 @@ class FlextAuth:
             **kwargs,
         )
 
-    def register_provider(
-        self,
-        name: str,
-        provider: FlextAuthBaseProvider,
-    ) -> r[bool]:
-        """Railway-oriented provider registration."""
-        return self._registry.register_provider(name, provider)
-
-    def get_provider(
-        self,
-        name: str,
-    ) -> r[FlextAuthBaseProvider]:
-        """Railway-oriented provider retrieval."""
-        return self._registry.get(name)
-
     def register_user_simple(
         self,
         username: str,
@@ -319,45 +378,9 @@ class FlextAuth:
             credential=password,
         )
 
-    def create_token(
-        self,
-        identity_id: str,
-        extra_claims: Mapping[str, str | int | bool] | None = None,
-    ) -> r[str]:
-        """Railway-oriented token creation.
-
-        Args:
-            identity_id: Identity ID for token subject
-            extra_claims: Reserved for future extra claims support
-
-        """
-        match identity_id:
-            case str() as identity if identity:
-                identity_id = identity
-            case _:
-                return r[str].fail("Identity ID must be a non-empty string")
-
-        _ = extra_claims  # Reserved for future use
-        return self._token_service.generate_jwt_token(
-            user_id=identity_id,
-            expires_in_minutes=self._config.expiry_minutes,
-        )
-
-    def verify_token(self, token: str) -> r[bool]:
-        """Verify token validity - delegated to token service."""
-        return self._token_service.validate_token(token)
-
-    # =========================================================================
-    # CONVENIENCE API METHODS (Delegations to services)
-    # =========================================================================
-
-    def get_user(self, user_id: str) -> r[m.Auth.AuthIdentity]:
-        """Get identity by ID - delegation to identity_service."""
-        return self._identity_service.identity_manager.get_user(user_id)
-
-    def get_user_by_username(self, username: str) -> r[m.Auth.AuthIdentity]:
-        """Get identity by username - delegation to identity_service."""
-        return self._identity_service.identity_manager.get_user_by_username(username)
+    def revoke_session(self, session_id: str) -> r[bool]:
+        """Revoke a session."""
+        return self._session_service.session_manager.end_session_by_id(session_id)
 
     def update_user(
         self,
@@ -367,33 +390,10 @@ class FlextAuth:
         """Update identity - delegation to identity_service."""
         return self._identity_service.identity_manager.update_user(user_id, **updates)
 
-    def delete_user(self, user_id: str) -> r[bool]:
-        """Delete identity - delegation to identity_service."""
-        return self._identity_service.identity_manager.delete_user(user_id)
+    def validate_token(self, token: str) -> r[bool]:
+        """Flexible token validation with railway pattern."""
+        return self._token_service.validate_token(token).map(lambda _result: True)
 
-    def cleanup_expired_sessions(self) -> r[int]:
-        """Clean up expired sessions.
-
-        Returns:
-        Number of sessions cleaned up
-
-        """
-        return self._session_service.cleanup_expired_sessions()
-
-    def logout_user(self, session_id: str) -> r[bool]:
-        """Logout user by session ID."""
-        return self._session_service.session_manager.end_session_by_id(session_id)
-
-    def get_user_sessions(self, user_id: str) -> r[list[m.Auth.Session]]:
-        """Get user sessions."""
-        return self._session_service.session_manager.get_active_sessions(user_id)
-
-    def revoke_session(self, session_id: str) -> r[bool]:
-        """Revoke a session."""
-        return self._session_service.session_manager.end_session_by_id(session_id)
-
-    def execute(self) -> r[t.ContainerValue]:
-        """Flexible execute implementation with railway orchestration."""
-        return r[t.ContainerValue].fail(
-            "FlextAuth is a focused service - use specific methods like authenticate() instead",
-        )
+    def verify_token(self, token: str) -> r[bool]:
+        """Verify token validity - delegated to token service."""
+        return self._token_service.validate_token(token)

@@ -30,11 +30,6 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
         super().__init__(config)
 
     @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-apikey"
-
-    @override
     def authenticate(
         self,
         credentials: m.Auth.CredentialValidation,
@@ -42,6 +37,16 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
         """Authenticate using API key credentials."""
         _ = credentials
         return r[p.Auth.TokenProtocol].fail("Not implemented")
+
+    @override
+    def supports(self) -> set[str]:
+        """Get supported authentication methods.
+
+        Returns:
+            set[str]: Set of supported methods (e.g., {"api_key", "validate"})
+
+        """
+        return {"api_key", "validate"}
 
     @override
     def validate(
@@ -53,14 +58,9 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
         return r[bool].fail("Not implemented")
 
     @override
-    def supports(self) -> set[str]:
-        """Get supported authentication methods.
-
-        Returns:
-            set[str]: Set of supported methods (e.g., {"api_key", "validate"})
-
-        """
-        return {"api_key", "validate"}
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-apikey"
 
 
 __all__ = ["FlextAuthApiKeyProvider"]

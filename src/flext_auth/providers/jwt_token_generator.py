@@ -31,81 +31,6 @@ class FlextAuthJwtTokenGenerator:
         """Initialize with provider reference for configuration access."""
         self._provider = provider
 
-    def _get_config_str(self, key: str, error_msg: str) -> r[str]:
-        """Get and validate string configuration value."""
-        config = self._provider.config
-        if not config:
-            return r[str].fail(error_msg)
-        value = config.get(key)
-        match value:
-            case str() as text if text:
-                return r[str].ok(text)
-            case _:
-                return r[str].fail(error_msg)
-
-    def _get_config_int(self, key: str, error_msg: str) -> r[int]:
-        """Get and validate integer configuration value."""
-        config = self._provider.config
-        if not config:
-            return r[int].fail(error_msg)
-        value = config.get(key)
-        match value:
-            case int() as number:
-                return r[int].ok(number)
-            case _:
-                return r[int].fail(error_msg)
-
-    def _get_optional_config_str(self, key: str) -> r[str]:
-        """Get optional string configuration value.
-
-        Returns empty string if not provided (no None in r).
-        """
-        config = self._provider.config
-        if not config:
-            # Return empty string if config not provided
-            return r[str].ok("")
-        value = config.get(key)
-        if value is None:
-            # Return empty string instead of None - no None in r
-            return r[str].ok("")
-        match value:
-            case str() as text:
-                return r[str].ok(text)
-            case _:
-                return r[str].fail(f"{key} must be a string if provided")
-
-    def _validate_expiry(self, expiry_minutes: int | None, default: int) -> r[int]:
-        """Validate and determine expiry time."""
-        if expiry_minutes is None:
-            return r[int].ok(default)
-        match expiry_minutes:
-            case int() as minutes if minutes > 0:
-                return r[int].ok(minutes)
-            case _:
-                return r[int].fail("expiry_minutes must be a positive integer")
-
-    def _build_payload(
-        self,
-        identity_id: str,
-        expiry_minutes: int,
-        issuer: str,
-        audience: str | None,
-        extra_claims: Mapping[str, t.ContainerValue] | None,
-    ) -> Mapping[str, t.ContainerValue]:
-        """Build JWT token payload."""
-        now = datetime.now(UTC)
-        payload: dict[str, t.ContainerValue] = {
-            "sub": identity_id,
-            "iat": int(now.timestamp()),
-            "exp": int((now + timedelta(minutes=expiry_minutes)).timestamp()),
-            "iss": issuer,
-        }
-        if audience is not None:
-            payload["aud"] = audience
-        if extra_claims:
-            payload.update(extra_claims)
-        return payload
-
     def generate_token(
         self,
         identity_id: str,
@@ -200,6 +125,81 @@ class FlextAuthJwtTokenGenerator:
             ImportError,
         ) as e:
             return r[str].fail(f"Token generation failed: {e}")
+
+    def _build_payload(
+        self,
+        identity_id: str,
+        expiry_minutes: int,
+        issuer: str,
+        audience: str | None,
+        extra_claims: Mapping[str, t.ContainerValue] | None,
+    ) -> Mapping[str, t.ContainerValue]:
+        """Build JWT token payload."""
+        now = datetime.now(UTC)
+        payload: dict[str, t.ContainerValue] = {
+            "sub": identity_id,
+            "iat": int(now.timestamp()),
+            "exp": int((now + timedelta(minutes=expiry_minutes)).timestamp()),
+            "iss": issuer,
+        }
+        if audience is not None:
+            payload["aud"] = audience
+        if extra_claims:
+            payload.update(extra_claims)
+        return payload
+
+    def _get_config_int(self, key: str, error_msg: str) -> r[int]:
+        """Get and validate integer configuration value."""
+        config = self._provider.config
+        if not config:
+            return r[int].fail(error_msg)
+        value = config.get(key)
+        match value:
+            case int() as number:
+                return r[int].ok(number)
+            case _:
+                return r[int].fail(error_msg)
+
+    def _get_config_str(self, key: str, error_msg: str) -> r[str]:
+        """Get and validate string configuration value."""
+        config = self._provider.config
+        if not config:
+            return r[str].fail(error_msg)
+        value = config.get(key)
+        match value:
+            case str() as text if text:
+                return r[str].ok(text)
+            case _:
+                return r[str].fail(error_msg)
+
+    def _get_optional_config_str(self, key: str) -> r[str]:
+        """Get optional string configuration value.
+
+        Returns empty string if not provided (no None in r).
+        """
+        config = self._provider.config
+        if not config:
+            # Return empty string if config not provided
+            return r[str].ok("")
+        value = config.get(key)
+        if value is None:
+            # Return empty string instead of None - no None in r
+            return r[str].ok("")
+        match value:
+            case str() as text:
+                return r[str].ok(text)
+            case _:
+                return r[str].fail(f"{key} must be a string if provided")
+
+    def _validate_expiry(self, expiry_minutes: int | None, default: int) -> r[int]:
+        """Validate and determine expiry time."""
+        if expiry_minutes is None:
+            return r[int].ok(default)
+        match expiry_minutes:
+            case int() as minutes if minutes > 0:
+                return r[int].ok(minutes)
+            case _:
+                return r[int].fail("expiry_minutes must be a positive integer")
 
 
 __all__ = ["FlextAuthJwtTokenGenerator"]

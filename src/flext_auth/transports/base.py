@@ -44,6 +44,15 @@ class BaseTransportAdapter(Protocol):
 
     """
 
+    def get_transport_type(self) -> str:
+        """Get the transport type identifier.
+
+        Returns:
+            str: Transport type (e.g., "http", "grpc", "websocket")
+
+        """
+        ...
+
     def send_request(
         self,
         url: str,
@@ -63,15 +72,6 @@ class BaseTransportAdapter(Protocol):
 
         Returns:
         FlextResult containing response data or error
-
-        """
-        ...
-
-    def get_transport_type(self) -> str:
-        """Get the transport type identifier.
-
-        Returns:
-            str: Transport type (e.g., "http", "grpc", "websocket")
 
         """
         ...

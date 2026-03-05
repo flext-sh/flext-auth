@@ -41,28 +41,6 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         """Initialize RFC provider base class with optional configuration."""
         super().__init__(config)
 
-    @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-rfc"
-
-    def validate_rfc_compliance(self, operation: str) -> r[bool]:
-        """Validate that an operation follows RFC standards.
-
-        Args:
-            operation: Operation name to validate (e.g., "authenticate", "validate")
-
-        Returns:
-            r[bool]: True if compliant, False if not, error on failure
-
-        This method can be overridden by subclasses to implement
-        RFC-specific validation logic.
-
-        """
-        # Base implementation - subclasses should override for specific RFCs
-        _ = operation  # Mark as intentionally unused in base implementation
-        return r[bool].ok(value=True)
-
     def get_rfc_version(self) -> str:
         """Get the RFC version this provider implements.
 
@@ -89,6 +67,28 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         """
         _ = feature  # Mark as intentionally unused in base implementation
         return False
+
+    def validate_rfc_compliance(self, operation: str) -> r[bool]:
+        """Validate that an operation follows RFC standards.
+
+        Args:
+            operation: Operation name to validate (e.g., "authenticate", "validate")
+
+        Returns:
+            r[bool]: True if compliant, False if not, error on failure
+
+        This method can be overridden by subclasses to implement
+        RFC-specific validation logic.
+
+        """
+        # Base implementation - subclasses should override for specific RFCs
+        _ = operation  # Mark as intentionally unused in base implementation
+        return r[bool].ok(value=True)
+
+    @override
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-rfc"
 
 
 __all__ = ["FlextAuthRfcProvider"]

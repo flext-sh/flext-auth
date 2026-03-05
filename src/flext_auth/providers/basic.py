@@ -29,11 +29,6 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider):
         super().__init__(config)
 
     @override
-    def _protocol_name(self) -> str:
-        """Return protocol name for registry identification."""
-        return "auth-provider-basic"
-
-    @override
     def authenticate(
         self,
         credentials: m.Auth.CredentialValidation,
@@ -42,14 +37,14 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider):
         _ = credentials
         return r[p.Auth.TokenProtocol].fail("Not implemented")
 
-    @override
-    def validate(
-        self,
-        token: str | p.Auth.TokenProtocol,
-    ) -> r[bool]:
-        """Validate authentication token."""
-        _ = token
-        return r[bool].fail("Not implemented")
+    def get_rfc_version(self) -> str:
+        """Get the RFC version this provider implements.
+
+        Returns:
+            str: RFC version (RFC 7617 for Basic Auth)
+
+        """
+        return "RFC 7617"
 
     @override
     def supports(self) -> set[str]:
@@ -61,14 +56,19 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider):
         """
         return {"basic", "validate"}
 
-    def get_rfc_version(self) -> str:
-        """Get the RFC version this provider implements.
+    @override
+    def validate(
+        self,
+        token: str | p.Auth.TokenProtocol,
+    ) -> r[bool]:
+        """Validate authentication token."""
+        _ = token
+        return r[bool].fail("Not implemented")
 
-        Returns:
-            str: RFC version (RFC 7617 for Basic Auth)
-
-        """
-        return "RFC 7617"
+    @override
+    def _protocol_name(self) -> str:
+        """Return protocol name for registry identification."""
+        return "auth-provider-basic"
 
 
 __all__ = ["FlextAuthBasicProvider"]

@@ -53,64 +53,20 @@ class FlextAuthTokenService(s[bool]):
         """Direct access to user manager for token operations."""
         return self._managers.user_manager
 
+    @staticmethod
+    def _short_token(token: str | None, length: int = 10) -> str:
+        if token is None:
+            return "None"
+        if len(token) <= length:
+            return token
+        return f"{token[:length]}..."
+
     @override
     def execute(self) -> r[bool]:
         """Railway-oriented execute with focused service pattern."""
         return r[bool].fail(
             "Use specific token methods: validate_token, generate_jwt_token, etc.",
         )
-
-    # =========================================================================
-    # ADVANCED TOKEN OPERATIONS WITH RAILWAY PATTERNS
-    # =========================================================================
-
-    def validate_token(self, token: str) -> r[bool]:
-        """Railway-oriented token validation with audit logging."""
-        result = self._get_jwt_provider_cached().flat_map(
-            lambda provider: provider.validate_token(token),
-        )
-        if result.is_failure:
-            error_msg = result.error if result.error is not None else "Unknown error"
-            FlextLogger(__name__).debug(
-                "Token validation",
-                success=False,
-                token_id=self._short_token(token),
-                reason=error_msg,
-            )
-            return result
-        # Identity extraction not supported by JWT provider
-        # JWT provider only validates, does not return identity
-        return result
-
-    def refresh_token(self, token: str) -> r[m.Auth.AuthToken]:
-        """Railway-oriented token refresh with audit logging."""
-        result = self._get_jwt_provider_cached().flat_map(
-            lambda provider: provider.refresh(token),
-        )
-        if result.is_failure:
-            error = result.error
-            FlextLogger(__name__).info(
-                "Token refresh",
-                success=False,
-                old_token_id=self._short_token(token),
-                reason=error,
-            )
-
-            return r[m.Auth.AuthToken].fail(error or "Token refresh failed")
-
-        refreshed = result.value
-        auth_token = m.Auth.AuthToken(
-            identity_id=refreshed.user_id,
-            token=refreshed.token,
-            expires_at=refreshed.expires_at,
-            is_revoked=refreshed.is_revoked,
-        )
-        FlextLogger(__name__).debug(
-            "Token refresh successful",
-            old_token_id=self._short_token(token),
-            new_token_id=self._short_token(auth_token.token),
-        )
-        return r[m.Auth.AuthToken].ok(auth_token)
 
     def generate_jwt_token(
         self,
@@ -161,6 +117,58 @@ class FlextAuthTokenService(s[bool]):
         )
         return r[str].ok(token_value)
 
+    def refresh_token(self, token: str) -> r[m.Auth.AuthToken]:
+        """Railway-oriented token refresh with audit logging."""
+        result = self._get_jwt_provider_cached().flat_map(
+            lambda provider: provider.refresh(token),
+        )
+        if result.is_failure:
+            error = result.error
+            FlextLogger(__name__).info(
+                "Token refresh",
+                success=False,
+                old_token_id=self._short_token(token),
+                reason=error,
+            )
+
+            return r[m.Auth.AuthToken].fail(error or "Token refresh failed")
+
+        refreshed = result.value
+        auth_token = m.Auth.AuthToken(
+            identity_id=refreshed.user_id,
+            token=refreshed.token,
+            expires_at=refreshed.expires_at,
+            is_revoked=refreshed.is_revoked,
+        )
+        FlextLogger(__name__).debug(
+            "Token refresh successful",
+            old_token_id=self._short_token(token),
+            new_token_id=self._short_token(auth_token.token),
+        )
+        return r[m.Auth.AuthToken].ok(auth_token)
+
+    # =========================================================================
+    # ADVANCED TOKEN OPERATIONS WITH RAILWAY PATTERNS
+    # =========================================================================
+
+    def validate_token(self, token: str) -> r[bool]:
+        """Railway-oriented token validation with audit logging."""
+        result = self._get_jwt_provider_cached().flat_map(
+            lambda provider: provider.validate_token(token),
+        )
+        if result.is_failure:
+            error_msg = result.error if result.error is not None else "Unknown error"
+            FlextLogger(__name__).debug(
+                "Token validation",
+                success=False,
+                token_id=self._short_token(token),
+                reason=error_msg,
+            )
+            return result
+        # Identity extraction not supported by JWT provider
+        # JWT provider only validates, does not return identity
+        return result
+
     # =========================================================================
     # PRIVATE HELPER METHODS
     # =========================================================================
@@ -175,14 +183,6 @@ class FlextAuthTokenService(s[bool]):
             return result
         self._jwt_provider_cache = result.value
         return r.ok(self._jwt_provider_cache)
-
-    @staticmethod
-    def _short_token(token: str | None, length: int = 10) -> str:
-        if token is None:
-            return "None"
-        if len(token) <= length:
-            return token
-        return f"{token[:length]}..."
 
 
 __all__ = ["FlextAuthTokenService"]

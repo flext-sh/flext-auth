@@ -40,41 +40,6 @@ class FlextAuthIdentityService(s[bool]):
         """Direct access to identity manager for client orchestration."""
         return self._managers.user_manager
 
-    @identity_manager.setter
-    def identity_manager(self, value: FlextAuthManagers.FlextAuthUserManager) -> None:
-        """Set identity manager (for service composition)."""
-        self._managers.user_manager = value
-
-    @override
-    def execute(self) -> r[bool]:
-        """Railway-oriented execute with focused service pattern."""
-        return r[bool].fail(
-            "Use specific identity methods: create_identity, authenticate_identity, etc.",
-        )
-
-    def _log_success(self, message: str, identity_name: str) -> bool:
-        """Log service success message and return truthy sentinel."""
-        self.logger.info(message, identity=identity_name)
-        return True
-
-    def _log_authorization_result(
-        self,
-        identity: m.Auth.AuthIdentity,
-        permission: str,
-        resource: str | None,
-        *,
-        allowed: bool,
-    ) -> bool:
-        """Log authorization result and return decision."""
-        self.logger.debug(
-            "Authorization check",
-            username=identity.name,
-            resource=resource if resource is not None else "",
-            action=permission,
-            allowed=allowed,
-        )
-        return allowed
-
     def authenticate_identity(
         self,
         name: str,
@@ -112,6 +77,75 @@ class FlextAuthIdentityService(s[bool]):
                             )
                         ),
                     )
+                ),
+            )
+        )
+
+    # =========================================================================
+    # COMPLEX AUTHORIZATION WITH AUDIT LOGGING
+    # =========================================================================
+
+    def authorize_identity(
+        self,
+        identity_id: str,
+        permission: str,
+        resource: str | None = None,
+    ) -> r[bool]:
+        """Railway-oriented authorization with audit logging."""
+        return (
+            self.identity_manager
+            .get_user(identity_id)
+            .map(lambda identity: (identity, permission in identity.permissions))
+            .map(
+                lambda ip: self._log_authorization_result(
+                    ip[0],
+                    permission,
+                    resource,
+                    allowed=ip[1],
+                ),
+            )
+        )
+
+    # =========================================================================
+    # COMPLEX CREDENTIAL OPERATIONS (Non-Thin Wrappers)
+    # =========================================================================
+
+    def change_credential(
+        self,
+        identity_id: str,
+        current_credential: str,
+        new_credential: str,
+    ) -> r[bool]:
+        """Railway-oriented credential change with validation."""
+        return (
+            self.identity_manager
+            .get_user(identity_id)
+            .flat_map(
+                lambda identity: identity.verify_credential(
+                    current_credential,
+                ).flat_map(
+                    lambda is_valid: (
+                        r.ok(identity)
+                        if is_valid
+                        else r.fail("Current credential is incorrect")
+                    ),
+                ),
+            )
+            .flat_map(
+                lambda identity: (
+                    r.ok(identity)
+                    if len(new_credential) >= c.Auth.CREDENTIAL_MIN_LENGTH
+                    else r.fail(
+                        f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
+                    )
+                ),
+            )
+            .flat_map(
+                lambda identity: identity.set_credential(new_credential).map(
+                    lambda _: self._log_success(
+                        "Password change successful",
+                        identity.name,
+                    ),
                 ),
             )
         )
@@ -182,49 +216,17 @@ class FlextAuthIdentityService(s[bool]):
             )
         )
 
-    # =========================================================================
-    # COMPLEX CREDENTIAL OPERATIONS (Non-Thin Wrappers)
-    # =========================================================================
-
-    def change_credential(
-        self,
-        identity_id: str,
-        current_credential: str,
-        new_credential: str,
-    ) -> r[bool]:
-        """Railway-oriented credential change with validation."""
-        return (
-            self.identity_manager
-            .get_user(identity_id)
-            .flat_map(
-                lambda identity: identity.verify_credential(
-                    current_credential,
-                ).flat_map(
-                    lambda is_valid: (
-                        r.ok(identity)
-                        if is_valid
-                        else r.fail("Current credential is incorrect")
-                    ),
-                ),
-            )
-            .flat_map(
-                lambda identity: (
-                    r.ok(identity)
-                    if len(new_credential) >= c.Auth.CREDENTIAL_MIN_LENGTH
-                    else r.fail(
-                        f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
-                    )
-                ),
-            )
-            .flat_map(
-                lambda identity: identity.set_credential(new_credential).map(
-                    lambda _: self._log_success(
-                        "Password change successful",
-                        identity.name,
-                    ),
-                ),
-            )
+    @override
+    def execute(self) -> r[bool]:
+        """Railway-oriented execute with focused service pattern."""
+        return r[bool].fail(
+            "Use specific identity methods: create_identity, authenticate_identity, etc.",
         )
+
+    @identity_manager.setter
+    def identity_manager(self, value: FlextAuthManagers.FlextAuthUserManager) -> None:
+        """Set identity manager (for service composition)."""
+        self._managers.user_manager = value
 
     def reset_credential(self, identity_id: str, new_credential: str) -> r[bool]:
         """Railway-oriented credential reset for REDACTED_LDAP_BIND_PASSWORD operations."""
@@ -285,30 +287,28 @@ class FlextAuthIdentityService(s[bool]):
             locked_until=identity.locked_until,
         ).map(lambda _: True)
 
-    # =========================================================================
-    # COMPLEX AUTHORIZATION WITH AUDIT LOGGING
-    # =========================================================================
-
-    def authorize_identity(
+    def _log_authorization_result(
         self,
-        identity_id: str,
+        identity: m.Auth.AuthIdentity,
         permission: str,
-        resource: str | None = None,
-    ) -> r[bool]:
-        """Railway-oriented authorization with audit logging."""
-        return (
-            self.identity_manager
-            .get_user(identity_id)
-            .map(lambda identity: (identity, permission in identity.permissions))
-            .map(
-                lambda ip: self._log_authorization_result(
-                    ip[0],
-                    permission,
-                    resource,
-                    allowed=ip[1],
-                ),
-            )
+        resource: str | None,
+        *,
+        allowed: bool,
+    ) -> bool:
+        """Log authorization result and return decision."""
+        self.logger.debug(
+            "Authorization check",
+            username=identity.name,
+            resource=resource if resource is not None else "",
+            action=permission,
+            allowed=allowed,
         )
+        return allowed
+
+    def _log_success(self, message: str, identity_name: str) -> bool:
+        """Log service success message and return truthy sentinel."""
+        self.logger.info(message, identity=identity_name)
+        return True
 
 
 __all__ = ["FlextAuthIdentityService"]

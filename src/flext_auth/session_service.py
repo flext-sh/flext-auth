@@ -27,10 +27,10 @@ class FlextAuthSessionService(s[bool]):
         """Direct access to session manager for client orchestration."""
         return self._managers.session_manager
 
-    @session_manager.setter
-    def session_manager(self, value: FlextAuthManagers.FlextAuthSessionManager) -> None:
-        """Set session manager (for service composition)."""
-        self._managers.session_manager = value
+    def cleanup_expired_sessions(self) -> r[int]:
+        """Railway-oriented cleanup of expired sessions from the system."""
+        FlextLogger(__name__).info("Cleanup of expired sessions requested")
+        return self.session_manager.cleanup_expired_sessions()
 
     @override
     def execute(self) -> r[bool]:
@@ -43,10 +43,10 @@ class FlextAuthSessionService(s[bool]):
             "FlextAuthSessionService is focused - use session_manager property or cleanup_expired_sessions()",
         )
 
-    def cleanup_expired_sessions(self) -> r[int]:
-        """Railway-oriented cleanup of expired sessions from the system."""
-        FlextLogger(__name__).info("Cleanup of expired sessions requested")
-        return self.session_manager.cleanup_expired_sessions()
+    @session_manager.setter
+    def session_manager(self, value: FlextAuthManagers.FlextAuthSessionManager) -> None:
+        """Set session manager (for service composition)."""
+        self._managers.session_manager = value
 
 
 __all__ = ["FlextAuthSessionService"]

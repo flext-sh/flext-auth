@@ -229,18 +229,29 @@ class FlextAuthModels(FlextApiModels):
             token: str = Field(default="", description="Associated token", exclude=True)
             session_id: str = Field(default="", description="Session ID")
 
-            def with_successful_access(self) -> Self:
-                """Record successful access (fluent interface)."""
-                self.last_access = datetime.now(UTC)
-                self.failed_attempts = 0
-                self.locked_until = datetime.min.replace(tzinfo=UTC)
-                return self
-
             def is_locked(self) -> bool:
                 """Check if identity is locked."""
                 if self.locked_until == datetime.min.replace(tzinfo=UTC):
                     return False
                 return datetime.now(UTC) < self.locked_until
+
+            def set_credential(self, credential: str) -> r[bool]:
+                """Set a new credential with bcrypt hashing."""
+                try:
+                    self.credential_hash = (
+                        FlextAuthModels.Auth.PasswordUtil.hash_password(credential)
+                    )
+                    return r[bool].ok(value=True)
+                except (
+                    ValueError,
+                    TypeError,
+                    KeyError,
+                    AttributeError,
+                    OSError,
+                    RuntimeError,
+                    ImportError,
+                ) as e:
+                    return r[bool].fail(f"Failed to hash credential: {e}")
 
             def verify_credential(self, credential: str) -> r[bool]:
                 """Verify a credential against stored hash using bcrypt."""
@@ -261,23 +272,12 @@ class FlextAuthModels(FlextApiModels):
                 ) as e:
                     return r[bool].fail(f"Credential verification failed: {e}")
 
-            def set_credential(self, credential: str) -> r[bool]:
-                """Set a new credential with bcrypt hashing."""
-                try:
-                    self.credential_hash = (
-                        FlextAuthModels.Auth.PasswordUtil.hash_password(credential)
-                    )
-                    return r[bool].ok(value=True)
-                except (
-                    ValueError,
-                    TypeError,
-                    KeyError,
-                    AttributeError,
-                    OSError,
-                    RuntimeError,
-                    ImportError,
-                ) as e:
-                    return r[bool].fail(f"Failed to hash credential: {e}")
+            def with_successful_access(self) -> Self:
+                """Record successful access (fluent interface)."""
+                self.last_access = datetime.now(UTC)
+                self.failed_attempts = 0
+                self.locked_until = datetime.min.replace(tzinfo=UTC)
+                return self
 
         # =========================================================================
         # SESSION MODELS - Generic session entity
@@ -387,14 +387,14 @@ class FlextAuthModels(FlextApiModels):
             use_pkce: bool | None = None
             token_endpoint_auth_method: str | None = None
 
+            def __contains__(self, key: str) -> bool:
+                """Dict-like containment check."""
+                return key in self.__class__.model_fields
+
             @property
             def is_configured(self) -> bool:
                 """Check if configured."""
                 return bool(self.name and self.type)
-
-            def __contains__(self, key: str) -> bool:
-                """Dict-like containment check."""
-                return key in self.__class__.model_fields
 
         class ProviderConfiguration(UserDict[str, t.ContainerValue]):
             """Provider configuration for authentication providers."""

@@ -61,63 +61,6 @@ class FlextWebTransportAdapter:
         config = FlextApiSettings(timeout=timeout, max_retries=max_retries)
         self._client = FlextApiClient(config)
 
-    def send_request(
-        self,
-        url: str,
-        method: str = "POST",
-        data: t.Api.RequestBody | None = None,
-        headers: Mapping[str, str] | None = None,
-        query: t.Api.WebParams | None = None,
-        timeout: float | None = None,
-    ) -> r[t.Api.ResponseDict]:
-        """Send HTTP request using flext-api transport.
-
-        Implements BaseTransportAdapter protocol for generic HTTP operations.
-
-        Args:
-        url: Target URL for the request
-        method: HTTP method (GET, POST, PUT, DELETE, etc.)
-        data: Request body data
-        headers: Request headers
-
-        Returns:
-        FlextResult containing response data or error
-
-        """
-        request_headers = dict(headers) if headers is not None else {}
-        request_timeout = timeout if timeout is not None else self._timeout
-
-        resolved_body = self._resolve_body(method, data)
-        resolved_query = self._resolve_query(method, data, query)
-
-        # Build request with optional body/query_params
-        request = m.Api.HttpRequest(
-            method=method.upper(),
-            url=url,
-            headers=request_headers,
-            timeout=request_timeout,
-        )
-        # Update request with body and query if provided
-        if resolved_body is not None:
-            request = m.Api.HttpRequest(
-                method=request.method,
-                url=request.url,
-                headers=request.headers,
-                body=resolved_body,
-                query_params=resolved_query or {},
-                timeout=request.timeout,
-            )
-        elif resolved_query is not None:
-            request = m.Api.HttpRequest(
-                method=request.method,
-                url=request.url,
-                headers=request.headers,
-                query_params=resolved_query,
-                timeout=request.timeout,
-            )
-
-        return self._execute_request(request)
-
     def get_transport_type(self) -> str:
         """Get the transport type identifier.
 
@@ -126,6 +69,52 @@ class FlextWebTransportAdapter:
 
         """
         return "http"
+
+    def get_userinfo(
+        self,
+        url: str,
+        access_token: str,
+        headers: Mapping[str, str],
+    ) -> r[t.Api.ResponseDict]:
+        """GET request to OIDC UserInfo endpoint.
+
+        Retrieves user information using an OAuth2 access token according
+        to OpenID Connect Core 1.0 specification.
+
+        Args:
+            url: OIDC UserInfo endpoint URL
+            access_token: OAuth2 access token
+            headers: Optional additional headers
+
+        Returns:
+            FlextResult containing user information or error
+
+        Example:
+            >>> result = adapter.get_userinfo(
+            ...     url="https://oauth.example.com/userinfo",
+            ...     access_token="ya29.a0AfH6...",
+            ... )
+            >>> if result.is_success:
+            ...     userinfo = result.value
+            ...     print(f"User ID: {userinfo['sub']}")
+
+        """
+        request_headers = dict(headers) if headers else {}
+
+        # OIDC requires Bearer token authentication
+        request_headers["Authorization"] = f"Bearer {access_token}"
+
+        self.logger.debug("Requesting UserInfo from %s", url)
+
+        # Use flext-api client for GET request
+        return self._execute_request(
+            m.Api.HttpRequest(
+                method="GET",
+                url=url,
+                headers=request_headers,
+                timeout=self._timeout,
+            ),
+        ).flat_map(self._validate_userinfo_response)
 
     def post_token_request(
         self,
@@ -188,51 +177,109 @@ class FlextWebTransportAdapter:
 
         return response.flat_map(self._parse_token_response)
 
-    def get_userinfo(
+    def send_request(
         self,
         url: str,
-        access_token: str,
-        headers: Mapping[str, str],
+        method: str = "POST",
+        data: t.Api.RequestBody | None = None,
+        headers: Mapping[str, str] | None = None,
+        query: t.Api.WebParams | None = None,
+        timeout: float | None = None,
     ) -> r[t.Api.ResponseDict]:
-        """GET request to OIDC UserInfo endpoint.
+        """Send HTTP request using flext-api transport.
 
-        Retrieves user information using an OAuth2 access token according
-        to OpenID Connect Core 1.0 specification.
+        Implements BaseTransportAdapter protocol for generic HTTP operations.
 
         Args:
-            url: OIDC UserInfo endpoint URL
-            access_token: OAuth2 access token
-            headers: Optional additional headers
+        url: Target URL for the request
+        method: HTTP method (GET, POST, PUT, DELETE, etc.)
+        data: Request body data
+        headers: Request headers
 
         Returns:
-            FlextResult containing user information or error
-
-        Example:
-            >>> result = adapter.get_userinfo(
-            ...     url="https://oauth.example.com/userinfo",
-            ...     access_token="ya29.a0AfH6...",
-            ... )
-            >>> if result.is_success:
-            ...     userinfo = result.value
-            ...     print(f"User ID: {userinfo['sub']}")
+        FlextResult containing response data or error
 
         """
-        request_headers = dict(headers) if headers else {}
+        request_headers = dict(headers) if headers is not None else {}
+        request_timeout = timeout if timeout is not None else self._timeout
 
-        # OIDC requires Bearer token authentication
-        request_headers["Authorization"] = f"Bearer {access_token}"
+        resolved_body = self._resolve_body(method, data)
+        resolved_query = self._resolve_query(method, data, query)
 
-        self.logger.debug("Requesting UserInfo from %s", url)
+        # Build request with optional body/query_params
+        request = m.Api.HttpRequest(
+            method=method.upper(),
+            url=url,
+            headers=request_headers,
+            timeout=request_timeout,
+        )
+        # Update request with body and query if provided
+        if resolved_body is not None:
+            request = m.Api.HttpRequest(
+                method=request.method,
+                url=request.url,
+                headers=request.headers,
+                body=resolved_body,
+                query_params=resolved_query or {},
+                timeout=request.timeout,
+            )
+        elif resolved_query is not None:
+            request = m.Api.HttpRequest(
+                method=request.method,
+                url=request.url,
+                headers=request.headers,
+                query_params=resolved_query,
+                timeout=request.timeout,
+            )
 
-        # Use flext-api client for GET request
-        return self._execute_request(
-            m.Api.HttpRequest(
-                method="GET",
-                url=url,
-                headers=request_headers,
-                timeout=self._timeout,
-            ),
-        ).flat_map(self._validate_userinfo_response)
+        return self._execute_request(request)
+
+    def _execute_request(
+        self,
+        request: m.Api.HttpRequest,
+    ) -> r[t.Api.ResponseDict]:
+        response = self._client.request(request)
+        if response.is_failure:
+            return r[t.Api.ResponseDict].fail(response.error)
+
+        http_response = response.value
+        body = http_response.body
+
+        if body is None:
+            return r[t.Api.ResponseDict].ok({})
+
+        if isinstance(body, Mapping):
+            normalized_body: t.Api.ResponseDict = {
+                str(key): self._to_json_value(value) for key, value in body.items()
+            }
+            return r[t.Api.ResponseDict].ok(normalized_body)
+
+        match body:
+            case bytes() as body_bytes:
+                decoded = body_bytes.decode("utf-8", errors="replace")
+            case str() as body_text:
+                decoded = body_text
+            case _:
+                return r[t.Api.ResponseDict].fail(
+                    f"Unsupported response body type: {type(body)}",
+                )
+
+        try:
+            parsed = json.loads(decoded)
+        except json.JSONDecodeError:
+            return r[t.Api.ResponseDict].fail(
+                "Unable to parse response body as JSON",
+            )
+        if isinstance(parsed, Mapping):
+            normalized_parsed: t.Api.ResponseDict = {
+                str(key): self._to_json_value(value) for key, value in parsed.items()
+            }
+            return r[t.Api.ResponseDict].ok(
+                normalized_parsed,
+            )
+        return r[t.Api.ResponseDict].fail(
+            f"Unexpected parsed response type: {type(parsed)}",
+        )
 
     def _parse_token_response(
         self,
@@ -297,75 +344,6 @@ class FlextWebTransportAdapter:
 
         return r[t.Api.ResponseDict].ok(response_data)
 
-    def _execute_request(
-        self,
-        request: m.Api.HttpRequest,
-    ) -> r[t.Api.ResponseDict]:
-        response = self._client.request(request)
-        if response.is_failure:
-            return r[t.Api.ResponseDict].fail(response.error)
-
-        http_response = response.value
-        body = http_response.body
-
-        if body is None:
-            return r[t.Api.ResponseDict].ok({})
-
-        if isinstance(body, Mapping):
-            normalized_body: t.Api.ResponseDict = {
-                str(key): self._to_json_value(value) for key, value in body.items()
-            }
-            return r[t.Api.ResponseDict].ok(normalized_body)
-
-        match body:
-            case bytes() as body_bytes:
-                decoded = body_bytes.decode("utf-8", errors="replace")
-            case str() as body_text:
-                decoded = body_text
-            case _:
-                return r[t.Api.ResponseDict].fail(
-                    f"Unsupported response body type: {type(body)}",
-                )
-
-        try:
-            parsed = json.loads(decoded)
-        except json.JSONDecodeError:
-            return r[t.Api.ResponseDict].fail(
-                "Unable to parse response body as JSON",
-            )
-        if isinstance(parsed, Mapping):
-            normalized_parsed: t.Api.ResponseDict = {
-                str(key): self._to_json_value(value) for key, value in parsed.items()
-            }
-            return r[t.Api.ResponseDict].ok(
-                normalized_parsed,
-            )
-        return r[t.Api.ResponseDict].fail(
-            f"Unexpected parsed response type: {type(parsed)}",
-        )
-
-    def _to_json_value(self, value: t.ContainerValue) -> t.JsonValue:
-        """Convert object to JsonValue type (safe for JSON-parsed data)."""
-        if value is None:
-            return None
-        match value:
-            case str() as text:
-                return text
-            case bool() as boolean:  # bool before int (bool is subclass of int)
-                return boolean
-            case int() as integer:
-                return integer
-            case float() as decimal:
-                return decimal
-            case _:
-                pass
-        if isinstance(value, (list, tuple)):
-            return [self._to_json_value(item) for item in value]
-        if isinstance(value, Mapping):
-            return {str(key): self._to_json_value(item) for key, item in value.items()}
-        # Fallback for non-JSON types
-        return str(value)
-
     def _resolve_body(
         self,
         method: str,
@@ -400,6 +378,28 @@ class FlextWebTransportAdapter:
                     normalized[str(key)] = str(value)
             return normalized
         return query
+
+    def _to_json_value(self, value: t.ContainerValue) -> t.JsonValue:
+        """Convert object to JsonValue type (safe for JSON-parsed data)."""
+        if value is None:
+            return None
+        match value:
+            case str() as text:
+                return text
+            case bool() as boolean:  # bool before int (bool is subclass of int)
+                return boolean
+            case int() as integer:
+                return integer
+            case float() as decimal:
+                return decimal
+            case _:
+                pass
+        if isinstance(value, (list, tuple)):
+            return [self._to_json_value(item) for item in value]
+        if isinstance(value, Mapping):
+            return {str(key): self._to_json_value(item) for key, item in value.items()}
+        # Fallback for non-JSON types
+        return str(value)
 
     def _validate_userinfo_response(
         self,
