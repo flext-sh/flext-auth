@@ -480,7 +480,7 @@ config = FlextNewlibSettings(new_setting="value")
 
    # Check specific test
    pytest tests/unit/test_specific.py::test_function -v
-````
+    ```
 
 3. **Build Issues**
 
@@ -490,6 +490,7 @@ config = FlextNewlibSettings(new_setting="value")
    make setup
    make build-all
    ```
+````
 
 ## Resources
 
