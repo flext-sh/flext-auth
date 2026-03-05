@@ -516,6 +516,34 @@ class FlextAuthTypes(FlextApiTypes):
             # Singleton instance
             UNIT = UnitType()
 
+    # Compatibility aliases expected by legacy callers/tests.
+    UserManagement = Auth.UserManagement
+    SessionManagement = Auth.SessionManagement
+    TokenManagement = Auth.TokenManagement
+    Authorization = Auth.Authorization
+    Security = Auth.Security
+
+    class Project(FlextApiTypes.Project):
+        """Auth project namespace extending API project namespace."""
+
+        type ProjectType = Literal["flext-auth", "flext-core", "flext-api"]
+
+        class AuthProjectConfig(BaseModel):
+            """Project configuration structure."""
+
+            model_config = ConfigDict(frozen=False, extra="forbid")
+
+    OAuth2TokenResponse = Auth.OAuth2TokenResponse
+    KerberosTicketData = Auth.KerberosTicketData
+    HttpResponseData = Auth.HttpResponseData
+    Providers = Auth.Providers
+    Credentials = Auth.Credentials
+    Tokens = Auth.Tokens
+    Sessions = Auth.Sessions
+    Responses = Auth.Responses
+    Managers = Auth.Managers
+    Domain = Auth.Domain
+
 
 t = FlextAuthTypes
 __all__ = ["FlextAuthTypes", "t"]
