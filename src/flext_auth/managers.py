@@ -256,10 +256,7 @@ class FlextAuthManagers:
             result = self._find_user_by_id(user_id)
             if result.is_failure:
                 return r[bool].fail(result.error or "Unknown error")
-            user_key, _ = cast(
-                "tuple[str, dict[str, t.ContainerValue]]",
-                result.value,
-            )
+            user_key, _ = result.value
             del self._users[user_key]
             return r[bool].ok(value=True)
 
@@ -506,9 +503,8 @@ class FlextAuthManagers:
             self._config = config
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
-            self._dispatcher: t.RegisterableService = cast(
-                "t.RegisterableService",
-                FlextContainer.get_global().get("command_bus").unwrap(),
+            self._dispatcher: t.RegisterableService = (
+                FlextContainer.get_global().get("command_bus").unwrap()
             )
             self._sessions: dict[
                 str,
