@@ -12,6 +12,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
+from typing import cast
 from uuid import uuid4
 
 from flext_core import (
@@ -255,7 +256,10 @@ class FlextAuthManagers:
             result = self._find_user_by_id(user_id)
             if result.is_failure:
                 return r[bool].fail(result.error or "Unknown error")
-            user_key, _ = result.value
+            user_key, _ = cast(
+                "tuple[str, dict[str, t.ContainerValue]]",
+                result.value,
+            )
             del self._users[user_key]
             return r[bool].ok(value=True)
 
@@ -449,11 +453,11 @@ class FlextAuthManagers:
                     or user_data.get("unique_id") == user_id
                     or user_data.get("id") == user_id
                 ):
-                    return r[tuple[str, t.ConfigurationMapping]].ok((
+                    return r[tuple[str, dict[str, t.ContainerValue]]].ok((
                         username,
                         user_data,
                     ))
-            return r[tuple[str, t.ConfigurationMapping]].fail("User not found")
+            return r[tuple[str, dict[str, t.ContainerValue]]].fail("User not found")
 
         def _modify_user_list_field(
             self,
@@ -502,7 +506,10 @@ class FlextAuthManagers:
             self._config = config
             self.logger = FlextLogger(__name__)
             self._context = FlextContext()
-            self._dispatcher = FlextContainer.get_global().get("command_bus").unwrap()
+            self._dispatcher: t.RegisterableService = cast(
+                "t.RegisterableService",
+                FlextContainer.get_global().get("command_bus").unwrap(),
+            )
             self._sessions: dict[
                 str,
                 dict[str, t.ContainerValue],
@@ -996,8 +1003,13 @@ class FlextAuthManagers:
             if username not in self._attempts:
                 self._attempts[username] = {"attempts": []}
 
-            attempts_list = self._attempts[username].get("attempts")
-            if not u.Guards.is_list(attempts_list):
+            attempts_raw = self._attempts[username].get("attempts")
+            if u.Guards.is_list(attempts_raw):
+                attempts_list: list[datetime] = cast(
+                    "list[datetime]",
+                    attempts_raw,
+                )
+            else:
                 attempts_list = []
                 self._attempts[username]["attempts"] = attempts_list
             attempts_list.append(now)
