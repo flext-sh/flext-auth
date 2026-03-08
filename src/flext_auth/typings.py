@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import Annotated, Literal, override
 
 from flext_api import FlextApiTypes
-from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, SecretStr
+from pydantic import BeforeValidator, Field, SecretStr
 
 from flext_auth import c, m
 
@@ -112,50 +112,7 @@ class FlextAuthTypes(FlextApiTypes):
 
             type ProjectType = Literal["flext-auth", "flext-core", "flext-api"]
 
-            class AuthProjectConfig(BaseModel):
-                """Project configuration structure."""
-
-                model_config = ConfigDict(frozen=False, extra="forbid")
-
         # Note: ProviderConfig is now aliased to m.ProviderConfig above
-
-        class OAuth2TokenResponse(BaseModel):
-            """OAuth2 token response structure."""
-
-            model_config = ConfigDict(frozen=False, extra="forbid")
-
-            access_token: str = Field(default="")
-            token_type: str = Field(default="")
-            expires_in: int = Field(default=0)
-            refresh_token: str = Field(default="")
-            scope: str = Field(default="")
-            id_token: str = Field(default="")
-
-        class KerberosTicketData(BaseModel):
-            """Kerberos ticket data structure."""
-
-            model_config = ConfigDict(frozen=False, extra="forbid")
-
-            ticket: str = Field(default="")
-            session_key: str = Field(default="")
-            principal: str = Field(default="")
-            realm: str = Field(default="")
-            start_time: str = Field(default="")
-            end_time: str = Field(default="")
-            renew_till: str = Field(default="")
-            flags: list[str] = Field(default_factory=list)
-
-        class HttpResponseData(BaseModel):
-            """HTTP response data structure."""
-
-            model_config = ConfigDict(frozen=False, extra="forbid")
-
-            status_code: int = Field(default=0)
-            headers: dict[str, str] = Field(default_factory=dict)
-            body: str = Field(default="")
-            json_data: FlextApiTypes.JsonDict = Field(default_factory=dict)
-            error: str = Field(default="")
-            success: bool = Field(default=False)
 
         class Providers:
             """Provider-oriented type definitions."""
@@ -182,33 +139,6 @@ class FlextAuthTypes(FlextApiTypes):
                 frozenset[Capability],
                 Field(min_length=1, description="Declared capabilities"),
             ]
-
-            class Metadata(BaseModel):
-                """Provider metadata contract returned by providers."""
-
-                model_config = ConfigDict(frozen=False, extra="forbid")
-
-                name: str = Field(default="")
-                version: str = Field(default="")
-                capabilities: tuple[str, ...] = Field(default_factory=tuple)
-                description: str = Field(default="")
-                documentation_url: str = Field(default="")
-                maintainers: tuple[str, ...] = Field(default_factory=tuple)
-                extras: FlextApiTypes.JsonDict = Field(default_factory=dict)
-
-            class Registration(BaseModel):
-                """Payload used when registering providers in registries."""
-
-                model_config = ConfigDict(frozen=False, extra="forbid")
-
-                key: str = Field(default="")
-                provider: FlextAuthTypes.ContainerValue = Field(
-                    default=None,
-                )  # Provider instance - typed as FlextAuthTypes.ContainerValue to avoid circular import
-                metadata: dict[str, FlextAuthTypes.ContainerValue] = Field(
-                    default_factory=dict
-                )
-                configuration: FlextApiTypes.JsonDict = Field(default_factory=dict)
 
         class Credentials:
             """Credential payload type definitions."""
@@ -238,61 +168,12 @@ class FlextAuthTypes(FlextApiTypes):
                 ),
             ]
 
-            class Basic(BaseModel):
-                """Standard username/password credentials payload."""
-
-                model_config = ConfigDict(frozen=False, extra="forbid")
-
-                username: str = Field(default="")
-                password: str = Field(default="")
-                remember_me: bool = Field(default=False)
-                metadata: FlextApiTypes.JsonDict = Field(default_factory=dict)
-
-            class MultiFactor(BaseModel):
-                """Extended credential payload supporting MFA."""
-
-                model_config = ConfigDict(frozen=False, extra="forbid")
-
-                username: str = Field(default="")
-                password: str = Field(default="")
-                factors: tuple[str, ...] = Field(default_factory=tuple)
-                otp: str = Field(default="")
-                metadata: FlextApiTypes.JsonDict = Field(default_factory=dict)
-
         class Tokens:
             """Token-related type definitions."""
 
             # AuthToken type defined in models.py
             type TokenType = c.Auth.TokenTypes
             type ClaimMap = FlextApiTypes.JsonDict
-
-            class Claims(BaseModel):
-                """Normalized token claims representation."""
-
-                model_config = ConfigDict(frozen=False, extra="forbid")
-
-                subject: str = Field(default="")
-                issuer: str = Field(default="")
-                audience: tuple[str, ...] = Field(default_factory=tuple)
-                scopes: tuple[str, ...] = Field(default_factory=tuple)
-                session_id: str = Field(default="")
-                issued_at: str = Field(default="")
-                expires_at: str = Field(default="")
-                metadata: FlextApiTypes.JsonDict = Field(default_factory=dict)
-
-            class Introspection(BaseModel):
-                """Token introspection response payload."""
-
-                model_config = ConfigDict(frozen=False, extra="forbid")
-
-                active: bool = Field(default=False)
-                token_type: str = Field(default="")
-                subject: str = Field(default="")
-                client_id: str = Field(default="")
-                expires_at: str = Field(default="")
-                issued_at: str = Field(default="")
-                scope: tuple[str, ...] = Field(default_factory=tuple)
-                metadata: FlextApiTypes.JsonDict = Field(default_factory=dict)
 
         class Sessions:
             """Session-related type definitions."""
@@ -301,127 +182,13 @@ class FlextAuthTypes(FlextApiTypes):
 
             # Snapshot definitions removed to avoid circular imports
 
-            class Activity(BaseModel):
-                """Session activity entry."""
-
-                model_config = ConfigDict(frozen=False, extra="forbid")
-
-                session_id: str = Field(default="")
-                occurred_at: str = Field(default="")
-                event: str = Field(default="")
-                context: FlextApiTypes.JsonDict = Field(default_factory=dict)
-
         class Responses:
             """Response payload abstractions."""
 
             # Authentication response type - defined locally to avoid circular imports
-            class Authentication(BaseModel):
-                """Authentication response structure."""
-
-                model_config = ConfigDict(frozen=False, extra="forbid")
-
-                success: bool = Field(default=False)
-                identity: FlextApiTypes.JsonDict = Field(
-                    default_factory=dict,
-                )  # Will be Identity from models
-                token: FlextApiTypes.JsonDict = Field(
-                    default_factory=dict,
-                )  # Will be AuthToken from models
-                session: FlextApiTypes.JsonDict = Field(
-                    default_factory=dict,
-                )  # Will be Session from models
-                message: str = Field(default="")
-                metadata: FlextApiTypes.JsonDict = Field(default_factory=dict)
-
-            class AuthenticationPayload(BaseModel):
-                """Structured authentication response for transports."""
-
-                model_config = ConfigDict(frozen=False, extra="forbid")
-
-                success: bool = Field(default=False)
-                # identity, session, token types defined in models.py
-                issued_at: str = Field(default="")
-                expires_at: str = Field(default="")
-                metadata: FlextApiTypes.JsonDict = Field(default_factory=dict)
 
         class Managers:
             """Manager-specific supporting types."""
-
-            class UserData(BaseModel):
-                """User data structure for storage."""
-
-                model_config = ConfigDict(frozen=False, extra="forbid")
-
-                unique_id: str = Field(default="")
-                id: str = Field(default="")
-                identity_id: str = Field(default="")
-                name: str = Field(default="")
-                contact: str = Field(default="")
-                credential_hash: str = Field(default="")
-                full_name: str | None = Field(default=None)
-                is_active: bool = Field(default=True)
-                roles: list[str] = Field(default_factory=list)
-                permissions: list[str] = Field(default_factory=list)
-                failed_attempts: int = Field(default=0)
-                locked_until: str | None = Field(default=None)
-                last_access: str | None = Field(default=None)
-
-            class SessionData(BaseModel):
-                """Session data structure for storage."""
-
-                model_config = ConfigDict(frozen=False, extra="forbid")
-
-                id: str = Field(default="")
-                unique_id: str = Field(default="")
-                identity_id: str = Field(default="")
-                session_token: str = Field(default="")
-                expires_at: str = Field(default="")
-                is_active: bool = Field(default=True)
-                ip_address: str | None = Field(default=None)
-                user_agent: str | None = Field(default=None)
-                last_accessed: str = Field(default="")
-
-            class LogEntry(BaseModel):
-                """Structured log entry for audit logging."""
-
-                model_config = ConfigDict(frozen=False, extra="forbid")
-
-                event: str = Field(default="")
-                occurred_at: str = Field(default="")
-                # actor type defined in models.py
-                context: FlextApiTypes.JsonDict = Field(default_factory=dict)
-                event_type: str = Field(default="")
-                timestamp: str = Field(default="")
-                metadata: FlextApiTypes.JsonDict = Field(default_factory=dict)
-
-            class AuditEntry(BaseModel):
-                """Structured audit log entry."""
-
-                model_config = ConfigDict(frozen=False, extra="forbid")
-
-                event: str = Field(default="")
-                occurred_at: str = Field(default="")
-                # actor type defined in models.py
-                context: FlextApiTypes.JsonDict = Field(default_factory=dict)
-
-            class AttemptData(BaseModel):
-                """Failed attempt data structure."""
-
-                model_config = ConfigDict(frozen=False, extra="forbid")
-
-                identity_id: str = Field(default="")
-                attempts: list[str] = Field(default_factory=list)
-                locked_until: str | None = Field(default=None)
-                last_attempt: str | None = Field(default=None)
-
-            class AttemptWindow(BaseModel):
-                """Failed attempt tracking window."""
-
-                model_config = ConfigDict(frozen=False, extra="forbid")
-
-                identity_id: str = Field(default="")
-                attempts: tuple[str, ...] = Field(default_factory=tuple)
-                locked_until: str | None = Field(default=None)
 
         class Domain:
             """Domain-level literals and shortcuts."""
@@ -527,11 +294,6 @@ class FlextAuthTypes(FlextApiTypes):
         """Auth project namespace extending API project namespace."""
 
         type ProjectType = Literal["flext-auth", "flext-core", "flext-api"]
-
-        class AuthProjectConfig(BaseModel):
-            """Project configuration structure."""
-
-            model_config = ConfigDict(frozen=False, extra="forbid")
 
     OAuth2TokenResponse = Auth.OAuth2TokenResponse
     KerberosTicketData = Auth.KerberosTicketData
