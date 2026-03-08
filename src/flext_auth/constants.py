@@ -58,20 +58,12 @@ class FlextAuthConstants(FlextApiConstants):
     >>> token: AuthConst.Auth.TokenTypeLiteral  # Type-safe: "access" | "refresh" | ...
     """
 
-    # =========================================================================
-    # NAMESPACE: .Auth - All Auth domain constants
-    # =========================================================================
-
     class Auth:
         """Auth domain constants namespace.
 
         All Auth-specific constants are organized here for better namespace
         organization and to enable composition with other domain constants.
         """
-
-        # ═══════════════════════════════════════════════════════════════════
-        # STRENUM: Single declaration needed for automatic validation
-        # ═══════════════════════════════════════════════════════════════════
 
         class TokenTypes(StrEnum):
             """Token type enumeration - automatic Pydantic validation.
@@ -150,145 +142,93 @@ class FlextAuthConstants(FlextApiConstants):
             RS256 = "RS256"
             ES256 = "ES256"
 
-        # ═══════════════════════════════════════════════════════════════════
-        # SUBSETS: Literal referencing StrEnum members
-        # ═══════════════════════════════════════════════════════════════════
-        # Use to accept only SOME enum values in methods
-        # This does not duplicate strings - references the enum member!
-
-        # ═══════════════════════════════════════════════════════════════════
-        # IMMUTABLE COLLECTIONS: frozenset for O(1) validation
-        # ═══════════════════════════════════════════════════════════════════
-
         VALID_TOKEN_TYPES: Final[AbstractSet[str]] = frozenset(
             member.value for member in TokenTypes.__members__.values()
         )
-        """Immutable set of all valid token types for O(1) validation."""
-
+        "Immutable set of all valid token types for O(1) validation."
         VALID_PROVIDER_TYPES: Final[AbstractSet[str]] = frozenset(
             member.value for member in ProviderTypes.__members__.values()
         )
-        """Immutable set of all valid provider types."""
-
+        "Immutable set of all valid provider types."
         VALID_ROLE_TYPES: Final[AbstractSet[str]] = frozenset(
             member.value for member in RoleTypes.__members__.values()
         )
-        """Immutable set of all valid role types."""
-
+        "Immutable set of all valid role types."
         VALID_PERMISSION_TYPES: Final[AbstractSet[str]] = frozenset(
             member.value for member in PermissionTypes.__members__.values()
         )
-        """Immutable set of all valid permission types."""
-
+        "Immutable set of all valid permission types."
         ACCESS_TOKEN_TYPES: Final[AbstractSet[str]] = frozenset(
             member.value for member in [TokenTypes.ACCESS, TokenTypes.BEARER]
         )
-        """Access token types for validation."""
-
+        "Access token types for validation."
         USER_ROLE_TYPES: Final[AbstractSet[str]] = frozenset(
             member.value
             for member in [RoleTypes.USER, RoleTypes.MODERATOR, RoleTypes.GUEST]
         )
-        """User role types for validation."""
-
+        "User role types for validation."
         WRITE_PERMISSION_TYPES: Final[AbstractSet[str]] = frozenset(
             member.value for member in [PermissionTypes.WRITE, PermissionTypes.DELETE]
         )
-        """Write permission types for validation."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # CONFIGURATION CONSTANTS: Default values and limits
-        # ═══════════════════════════════════════════════════════════════════
-
+        "Write permission types for validation."
         DEFAULT_TIMEOUT: Final[float] = 30.0
-        """Default request timeout in seconds."""
-
+        "Default request timeout in seconds."
         DEFAULT_MAX_RETRIES: Final[int] = 3
-        """Default maximum retry attempts."""
-
-        DEFAULT_JWT_EXPIRY_MINUTES: Final[int] = 1440  # 24 hours
-        """Default JWT token expiry in minutes."""
-
-        DEFAULT_SESSION_EXPIRY_MINUTES: Final[int] = 1440  # 24 hours
-        """Default session expiry in minutes."""
-
+        "Default maximum retry attempts."
+        DEFAULT_JWT_EXPIRY_MINUTES: Final[int] = 1440
+        "Default JWT token expiry in minutes."
+        DEFAULT_SESSION_EXPIRY_MINUTES: Final[int] = 1440
+        "Default session expiry in minutes."
         DEFAULT_MAX_SESSIONS_PER_USER: Final[int] = 5
-        """Default maximum sessions per user."""
-
+        "Default maximum sessions per user."
         DEFAULT_HASH_ROUNDS: Final[int] = 12
-        """Default bcrypt hash rounds."""
-
+        "Default bcrypt hash rounds."
         DEFAULT_JWT_ALGORITHM: Final[str] = "HS256"
-        """Default JWT algorithm."""
-
+        "Default JWT algorithm."
         MAX_USERNAME_LENGTH: Final[int] = 255
-        """Maximum username length."""
-
+        "Maximum username length."
         MAX_EMAIL_LENGTH: Final[int] = 254
-        """Maximum email length."""
-
+        "Maximum email length."
         MIN_PASSWORD_LENGTH: Final[int] = 8
-        """Minimum password length."""
-
+        "Minimum password length."
         MAX_PASSWORD_LENGTH: Final[int] = 128
-        """Maximum password length."""
-
+        "Maximum password length."
         MAX_TOKEN_LENGTH: Final[int] = 4096
-        """Maximum token length."""
-
+        "Maximum token length."
         MAX_SECRET_KEY_LENGTH: Final[int] = 4096
-        """Maximum secret key length."""
-
-        # JWT Configuration
+        "Maximum secret key length."
         DEFAULT_ISSUER: Final[str] = "flext-auth"
-        """Default JWT issuer."""
+        "Default JWT issuer."
         DEFAULT_AUDIENCE: Final[str] = "flext-auth-users"
-        """Default JWT audience."""
-
-        # Hash Configuration
+        "Default JWT audience."
         HASH_ROUNDS_DEFAULT: Final[int] = 12
-        """Default hash rounds."""
+        "Default hash rounds."
         HASH_ROUNDS_MIN: Final[int] = 4
-        """Minimum hash rounds."""
+        "Minimum hash rounds."
         HASH_ROUNDS_MAX: Final[int] = 31
-        """Maximum hash rounds."""
-
-        # Credential Configuration
+        "Maximum hash rounds."
         CREDENTIAL_MIN_LENGTH: Final[int] = 8
-        """Minimum credential length."""
+        "Minimum credential length."
         CREDENTIAL_MAX_LENGTH: Final[int] = 128
-        """Maximum credential length."""
-
-        # Security Policies
+        "Maximum credential length."
         MAX_ATTEMPTS_DEFAULT: Final[int] = 5
-        """Default max authentication attempts."""
+        "Default max authentication attempts."
         LOCKOUT_DURATION_MINUTES: Final[int] = 30
-        """Lockout duration in minutes."""
-
-        # Session Configuration
-        SESSION_EXPIRY_DEFAULT_MINUTES: Final[int] = 1440  # 24 hours
-        """Default session expiry in minutes."""
-        SESSION_EXPIRY_MAX_MINUTES: Final[int] = 43200  # 30 days
-        """Maximum session expiry in minutes."""
+        "Lockout duration in minutes."
+        SESSION_EXPIRY_DEFAULT_MINUTES: Final[int] = 1440
+        "Default session expiry in minutes."
+        SESSION_EXPIRY_MAX_MINUTES: Final[int] = 43200
+        "Maximum session expiry in minutes."
         MAX_SESSIONS_DEFAULT: Final[int] = 5
-        """Default max sessions per user."""
-
-        # Performance & Rate Limiting
+        "Default max sessions per user."
         PERFORMANCE_THRESHOLD_MS: Final[float] = 1000.0
-        """Performance warning threshold in milliseconds."""
+        "Performance warning threshold in milliseconds."
         MAX_REQUESTS_PER_MINUTE: Final[int] = 60
-        """Max requests per minute."""
+        "Max requests per minute."
         MAX_REQUESTS_PER_HOUR: Final[int] = 3600
-        """Max requests per hour."""
-
-        # Secret Validation
+        "Max requests per hour."
         SECRET_MIN_LENGTH: Final[int] = 32
-        """Minimum secret key length."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # VALIDATION LIMITS: Immutable mappings for validation
-        # ═══════════════════════════════════════════════════════════════════
-
+        "Minimum secret key length."
         VALIDATION_LIMITS: Final[Mapping[str, int | float]] = MappingProxyType({
             "MAX_USERNAME_LENGTH": MAX_USERNAME_LENGTH,
             "MAX_EMAIL_LENGTH": MAX_EMAIL_LENGTH,
@@ -298,80 +238,61 @@ class FlextAuthConstants(FlextApiConstants):
             "MAX_SECRET_KEY_LENGTH": MAX_SECRET_KEY_LENGTH,
             "DEFAULT_TIMEOUT": DEFAULT_TIMEOUT,
         })
-        """Validation limits mapping."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # RESPONSE TEMPLATES: Immutable mappings
-        # ═══════════════════════════════════════════════════════════════════
-
+        "Validation limits mapping."
         SUCCESS_AUTH_RESPONSE: Final[Mapping[str, str | None]] = MappingProxyType({
             "status": "success",
             "message": "Authentication successful",
             "token_type": None,
         })
-        """Template for successful authentication responses."""
-
+        "Template for successful authentication responses."
         ERROR_AUTH_RESPONSE: Final[Mapping[str, str | None]] = MappingProxyType({
             "status": "error",
             "message": None,
             "error_code": None,
         })
-        """Template for authentication error responses."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # LITERAL TYPES: PEP 695 strict type aliases (Python 3.13+)
-        # ═══════════════════════════════════════════════════════════════════
-        # All Literal types reference StrEnum members - NO string duplication!
-
-        # ═══════════════════════════════════════════════════════════════════
-        # JWT CONSTANTS: Nested class for JWT-specific constants
-        # ═══════════════════════════════════════════════════════════════════
+        "Template for authentication error responses."
 
         class Jwt:
             """JWT-specific constants for token generation and validation."""
 
             DEFAULT_ALGORITHM: Final[str] = "HS256"
-            """Default JWT algorithm."""
+            "Default JWT algorithm."
             DEFAULT_EXPIRY_MINUTES: Final[int] = 30
-            """Default JWT expiry in minutes."""
+            "Default JWT expiry in minutes."
             MAX_EXPIRY_MINUTES: Final[int] = 1440
-            """Maximum JWT expiry in minutes."""
+            "Maximum JWT expiry in minutes."
             ISSUER_CLAIM: Final[str] = "flext-auth"
-            """Default JWT issuer claim."""
+            "Default JWT issuer claim."
             AUDIENCE_CLAIM: Final[str] = "flext-users"
-            """Default JWT audience claim."""
+            "Default JWT audience claim."
             MIN_SECRET_KEY_LENGTH: Final[int] = 32
-            """Minimum secret key length for JWT."""
+            "Minimum secret key length for JWT."
             DEFAULT_TOKEN_TYPE: Final[str] = "Bearer"
-            """Default token type for Authorization header."""
+            "Default token type for Authorization header."
 
         class OAuth2:
             """OAuth2-specific constants for token exchange and flows."""
 
             SCOPE_DEFAULT: Final[str] = "openid profile email"
-            """Default OAuth2 scope."""
+            "Default OAuth2 scope."
             FLOWS: Final[AbstractSet[str]] = frozenset([
                 "authorization_code",
                 "client_credentials",
                 "implicit",
             ])
-            """Supported OAuth2 flows."""
+            "Supported OAuth2 flows."
             FLOW_DEFAULT: Final[str] = "authorization_code"
-            """Default OAuth2 flow."""
+            "Default OAuth2 flow."
             USE_PKCE_DEFAULT: Final[bool] = True
-            """Whether to use PKCE by default."""
+            "Whether to use PKCE by default."
             TOKEN_ENDPOINT_AUTH_METHODS: Final[AbstractSet[str]] = frozenset([
                 "client_secret_basic",
                 "client_secret_post",
                 "none",
             ])
-            """Supported token endpoint authentication methods."""
+            "Supported token endpoint authentication methods."
             TOKEN_ENDPOINT_AUTH_METHOD_DEFAULT: Final[str] = "client_secret_basic"
-            """Default token endpoint authentication method."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # CREDENTIALS CONSTANTS: Nested class for credential validation
-        # ═══════════════════════════════════════════════════════════════════
+            "Default token endpoint authentication method."
 
         class Credentials:
             """Credential validation constants."""
@@ -380,123 +301,86 @@ class FlextAuthConstants(FlextApiConstants):
                 """Username validation constants."""
 
                 MIN_LENGTH: Final[int] = 3
-                """Minimum username length."""
+                "Minimum username length."
                 MAX_LENGTH: Final[int] = 50
-                """Maximum username length."""
+                "Maximum username length."
 
             class Password:
                 """Password validation constants."""
 
                 MIN_LENGTH: Final[int] = 8
-                """Minimum password length."""
+                "Minimum password length."
                 MAX_LENGTH: Final[int] = 128
-                """Maximum password length."""
+                "Maximum password length."
                 MIN_SCORE: Final[int] = 3
-                """Minimum password strength score."""
+                "Minimum password strength score."
                 MIN_BCRYPT_HASH_LENGTH: Final[int] = 60
-                """Minimum bcrypt hash length."""
+                "Minimum bcrypt hash length."
                 BCRYPT_ROUNDS: Final[int] = 12
-                """Default bcrypt rounds."""
-
-        # ═══════════════════════════════════════════════════════════════════
-        # SESSION CONSTANTS: Nested class for session management
-        # ═══════════════════════════════════════════════════════════════════
+                "Default bcrypt rounds."
 
         class Session:
             """Session management constants."""
 
             DEFAULT_EXPIRY_MINUTES: Final[int] = 120
-            """Default session expiry in minutes."""
+            "Default session expiry in minutes."
             MAX_EXPIRY_MINUTES: Final[int] = 1440
-            """Maximum session expiry in minutes."""
+            "Maximum session expiry in minutes."
             MAX_SESSIONS_PER_USER: Final[int] = 5
-            """Maximum sessions per user."""
+            "Maximum sessions per user."
             MIN_TOKEN_LENGTH: Final[int] = 32
-            """Minimum session token length."""
-
-            # ═══════════════════════════════════════════════════════════════════
-            # AUTH SECURITY CONSTANTS: Nested class for security policies
-            # ═══════════════════════════════════════════════════════════════════
+            "Minimum session token length."
 
         class AuthSecurity:
             """Authentication security constants."""
 
             MAX_LOGIN_ATTEMPTS: Final[int] = 5
-            """Maximum login attempts before lockout."""
+            "Maximum login attempts before lockout."
             LOCKOUT_DURATION_MINUTES: Final[int] = 15
-            """Lockout duration in minutes."""
+            "Lockout duration in minutes."
             MAX_REQUESTS_PER_MINUTE: Final[int] = 60
-            """Maximum requests per minute."""
+            "Maximum requests per minute."
             MAX_REQUESTS_PER_HOUR: Final[int] = 1000
-            """Maximum requests per hour."""
-
-            # ═══════════════════════════════════════════════════════════════════
-            # ERROR CODES CONSTANTS: Nested class for error codes
-            # ═══════════════════════════════════════════════════════════════════
+            "Maximum requests per hour."
 
         class ErrorCodes:
             """Authentication error codes."""
 
             INVALID_CREDENTIALS: Final[str] = "INVALID_CREDENTIALS"
-            """Invalid credentials error code."""
+            "Invalid credentials error code."
             ACCOUNT_LOCKED: Final[str] = "ACCOUNT_LOCKED"
-            """Account locked error code."""
+            "Account locked error code."
             ACCOUNT_DISABLED: Final[str] = "ACCOUNT_DISABLED"
-            """Account disabled error code."""
+            "Account disabled error code."
             TOKEN_EXPIRED: Final[str] = "TOKEN_EXPIRED"
-            """Token expired error code."""
+            "Token expired error code."
             INVALID_TOKEN: Final[str] = "INVALID_TOKEN"
-            """Invalid token error code."""
-
-            # ═══════════════════════════════════════════════════════════════════
-            # MODEL VALIDATION CONSTANTS: For Pydantic field constraints
-            # ═══════════════════════════════════════════════════════════════════
-
-        # ═══════════════════════════════════════════════════════════════════
-        # VALIDATION CONSTRAINTS: Pydantic field constraints
-        # ═══════════════════════════════════════════════════════════════════
+            "Invalid token error code."
 
         class Validation:
             """Validation constraints for Pydantic field definitions."""
 
-            # String length constraints
             SHORT_NAME_MAX: Final[int] = 64
-            """Maximum length for short names (provider keys, capabilities)."""
+            "Maximum length for short names (provider keys, capabilities)."
             LONG_NAME_MAX: Final[int] = 255
-            """Maximum length for long names (usernames, descriptions)."""
+            "Maximum length for long names (usernames, descriptions)."
 
         class ModelValidation:
             """Constants for Pydantic model field validation."""
 
-            # Password hashing
             BCRYPT_ROUNDS: Final[int] = 12
-            """Bcrypt rounds for password hashing."""
-
-            # Token configuration
+            "Bcrypt rounds for password hashing."
             DEFAULT_TOKEN_EXPIRY_MINUTES: Final[int] = 60
-            """Default token expiry in minutes."""
-
-            # Role validation
+            "Default token expiry in minutes."
             MAX_ROLE_NAME_LENGTH: Final[int] = 50
-            """Maximum length for role names."""
+            "Maximum length for role names."
             MAX_ROLE_DESCRIPTION_LENGTH: Final[int] = 500
-            """Maximum length for role descriptions."""
-
-            # Permission validation
+            "Maximum length for role descriptions."
             MAX_PERMISSION_NAME_LENGTH: Final[int] = 100
-            """Maximum length for permission names."""
+            "Maximum length for permission names."
             MAX_PERMISSION_DESCRIPTION_LENGTH: Final[int] = 500
-            """Maximum length for permission descriptions."""
-
-            # ═══════════════════════════════════════════════════════════════════
-            # INHERITED CONSTANTS: Access parent constants directly
-            # ═══════════════════════════════════════════════════════════════════
-            # All constants from FlextConstants are accessible via inheritance.
-            # Use FlextConstants.Cqrs.Status, FlextConstants.Errors.*, etc. directly.
-            # Use Auth.PermissionTypes and Auth.RoleTypes StrEnums directly.
-            # No need for explicit Inherited class - inheritance provides access.
+            "Maximum length for permission descriptions."
 
 
 c = FlextAuthConstants
-
 __all__ = ["FlextAuthConstants", "c"]

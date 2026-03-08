@@ -26,8 +26,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider):
 
     @override
     def authenticate(
-        self,
-        credentials: m.Auth.CredentialValidation,
+        self, credentials: m.Auth.CredentialValidation
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using JWT credentials."""
         _ = credentials
@@ -53,10 +52,7 @@ class FlextAuthJwtProvider(FlextAuthBaseProvider):
         return {"jwt", "validate", "refresh"}
 
     @override
-    def validate(
-        self,
-        token: str,
-    ) -> r[bool]:
+    def validate(self, token: str) -> r[bool]:
         """Validate JWT token.
 
         Args:

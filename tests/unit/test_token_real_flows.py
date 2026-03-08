@@ -29,17 +29,13 @@ class HttpRequest:
 class _BaseProviderForTokenTests(FlextAuthBaseProvider):
     @override
     def authenticate(
-        self,
-        credentials: m.CredentialValidation,
+        self, credentials: m.CredentialValidation
     ) -> r[p.Auth.TokenProtocol]:
         _ = credentials
         return r[p.Auth.TokenProtocol].fail("Not used in token tests")
 
     @override
-    def validate(
-        self,
-        token: str,
-    ) -> r[bool]:
+    def validate(self, token: str) -> r[bool]:
         return self._decode_token_claims(token).map(lambda _claims: True)
 
     @override
@@ -57,7 +53,7 @@ class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
                 "issuer": "flext-auth-tests",
                 "audience": "flext-auth-tests",
                 "expiry_minutes": 10,
-            },
+            }
         )
         self.refresh_called = False
 
@@ -68,25 +64,18 @@ class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
 
     @override
     def authenticate(
-        self,
-        credentials: m.CredentialValidation,
+        self, credentials: m.CredentialValidation
     ) -> r[p.Auth.TokenProtocol]:
         _ = credentials
         return r[p.Auth.TokenProtocol].fail("Not used in token tests")
 
     @override
-    def validate(
-        self,
-        token: str,
-    ) -> r[bool]:
+    def validate(self, token: str) -> r[bool]:
         _ = token
         return r[bool].fail("Refresh source token is invalid")
 
     @override
-    def refresh(
-        self,
-        token: str,
-    ) -> r[p.Auth.TokenProtocol]:
+    def refresh(self, token: str) -> r[p.Auth.TokenProtocol]:
         _ = token
         self.refresh_called = True
         refreshed = m.Auth.AuthToken(
@@ -102,17 +91,13 @@ class _MiddlewareRefreshProviderForTokenTests(FlextAuthBaseProvider):
 class _KerberosProviderForTokenTests(FlextAuthKerberosProvider):
     @override
     def authenticate(
-        self,
-        credentials: m.CredentialValidation,
+        self, credentials: m.CredentialValidation
     ) -> r[p.Auth.TokenProtocol]:
         _ = credentials
         return r[p.Auth.TokenProtocol].fail("Not used in token tests")
 
     @override
-    def validate(
-        self,
-        token: str,
-    ) -> r[bool]:
+    def validate(self, token: str) -> r[bool]:
         return self.validate_token(token).map(lambda _identity: True)
 
     @override
@@ -132,15 +117,13 @@ class TestTokenRealFlows:
                 "issuer": "flext-auth-tests",
                 "audience": "flext-auth-tests",
                 "expiry_minutes": 30,
-            },
+            }
         )
-
         generate_token = (
             provider.generate_token if hasattr(provider, "generate_token") else None
         )
         assert callable(generate_token)
         generate_token_callable = generate_token
-
         token_result = generate_token_callable(
             payload={
                 "identity_id": "base-token-user",
@@ -149,7 +132,6 @@ class TestTokenRealFlows:
             },
             expiry_minutes=5,
         )
-
         assert token_result.is_success
         claims_result = provider._decode_token_claims(token_result.value)
         assert claims_result.is_success
@@ -166,9 +148,8 @@ class TestTokenRealFlows:
                 "issuer": "flext-auth-tests",
                 "audience": "flext-auth-tests",
                 "expiry_minutes": 15,
-            },
+            }
         )
-
         issued = provider.generate_token_for_user(
             user={
                 "identity_id": "refresh-user",
@@ -180,9 +161,7 @@ class TestTokenRealFlows:
             expiry_minutes=10,
         )
         assert issued.is_success
-
         refresh_result = provider.refresh(issued.value)
-
         assert refresh_result.is_success
         refreshed = refresh_result.value
         assert refreshed.user_id == "refresh-user"
@@ -199,11 +178,8 @@ class TestTokenRealFlows:
             expires_at=datetime.now(UTC) - timedelta(minutes=1),
             refresh_token="refresh-source-token",
         )
-
         request = HttpRequest()
-
         result = middleware.process_request(request)
-
         assert result.is_failure
         assert provider.refresh_called is False
         assert "invalid" in (result.error or "").lower()
@@ -216,54 +192,41 @@ class TestTokenRealFlows:
                 "realm": "EXAMPLE.COM",
                 "kdc": "kdc.example.com",
                 "service_principal": "HTTP/api.example.com@EXAMPLE.COM",
-            },
+            }
         )
-
         result = provider.validate_token("opaque-kerberos-ticket")
-
         assert result.is_failure
         error = (result.error or "").lower()
         assert "kerberos" in error
         assert "validator" in error or "gssapi" in error
 
     def test_oauth2_validate_token_uses_authorization_server_introspection(
-        self,
-        monkeypatch: pytest.MonkeyPatch,
+        self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        provider = FlextAuthOAuth2Provider(
-            {
-                "client_id": "oauth-test-client",
-                "client_secret": "oauth-test-secret",
-                "token_endpoint": "https://auth.example.com/token",
-                "introspection_endpoint": "https://auth.example.com/introspect",
-                "token_endpoint_auth_method": "client_secret_post",
-            },
-        )
-
+        provider = FlextAuthOAuth2Provider({
+            "client_id": "oauth-test-client",
+            "client_secret": "oauth-test-secret",
+            "token_endpoint": "https://auth.example.com/token",
+            "introspection_endpoint": "https://auth.example.com/introspect",
+            "token_endpoint_auth_method": "client_secret_post",
+        })
         call_count = {"count": 0}
 
         def _fake_introspect(token: str) -> r[dict[str, object]]:
             call_count["count"] += 1
             assert token == "opaque-oauth2-token"
-            return r[dict[str, object]].ok(
-                {
-                    "active": True,
-                    "sub": "oauth-user-123",
-                    "username": "oauth-user",
-                    "email": "oauth@example.com",
-                    "scope": "profile email",
-                },
-            )
+            return r[dict[str, object]].ok({
+                "active": True,
+                "sub": "oauth-user-123",
+                "username": "oauth-user",
+                "email": "oauth@example.com",
+                "scope": "profile email",
+            })
 
         monkeypatch.setattr(
-            provider,
-            "_introspect_token",
-            _fake_introspect,
-            raising=False,
+            provider, "_introspect_token", _fake_introspect, raising=False
         )
-
         result = provider.validate_token("opaque-oauth2-token")
-
         assert call_count["count"] == 1
         assert result.is_success
         identity = result.value
@@ -272,27 +235,21 @@ class TestTokenRealFlows:
         assert identity.contact == "oauth@example.com"
 
     def test_oauth2_validate_token_fails_when_introspection_reports_inactive(
-        self,
-        monkeypatch: pytest.MonkeyPatch,
+        self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
-        provider = FlextAuthOAuth2Provider(
-            {
-                "client_id": "oauth-test-client",
-                "client_secret": "oauth-test-secret",
-                "token_endpoint": "https://auth.example.com/token",
-                "introspection_endpoint": "https://auth.example.com/introspect",
-                "token_endpoint_auth_method": "client_secret_post",
-            },
-        )
-
+        provider = FlextAuthOAuth2Provider({
+            "client_id": "oauth-test-client",
+            "client_secret": "oauth-test-secret",
+            "token_endpoint": "https://auth.example.com/token",
+            "introspection_endpoint": "https://auth.example.com/introspect",
+            "token_endpoint_auth_method": "client_secret_post",
+        })
         monkeypatch.setattr(
             provider,
             "_introspect_token",
             lambda _token: r[dict[str, object]].ok({"active": False}),
             raising=False,
         )
-
         result = provider.validate_token("inactive-token")
-
         assert result.is_failure
         assert "inactive" in (result.error or "").lower()

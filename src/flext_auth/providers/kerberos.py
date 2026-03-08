@@ -27,7 +27,7 @@ from flext_auth.providers.rfc import FlextAuthRfcProvider
 
 
 class FlextAuthKerberosProvider(FlextAuthRfcProvider):
-    r"""SOLID-compliant Kerberos authentication provider.
+    """SOLID-compliant Kerberos authentication provider.
 
     Uses composition for Kerberos ticket validation, service ticket handling,
     and authentication. Railway-oriented programming for maximum maintainability.
@@ -54,21 +54,14 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         and authentication. Railway-oriented initialization with proper error handling.
         """
         super().__init__(self._to_scalar_config(config))
-        # Logger removed - use logging module directly if needed
         self._config = config
-
-        # Use railway-oriented validation
         validation_result = self._validate_kerberos_configuration()
         if validation_result.is_failure:
             msg = f"Kerberos configuration validation failed: {validation_result.error}"
             raise ValueError(msg)
-
-        # Initialize components using composition
         self.ticket_validator = self._KerberosTicketValidator(self)
         self._service_handler = self._KerberosServiceHandler(self)
         self._auth_manager = self._KerberosAuthManager(self)
-
-        # Runtime state for ticket management
         self._active_tickets: dict[str, at.Auth.KerberosTicketData] = {}
 
     @staticmethod
@@ -92,26 +85,15 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
 
     def _validate_kerberos_configuration(self) -> r[bool]:
         """Railway-oriented Kerberos configuration validation."""
-        # Guard against None config
         if self._config is None:
             return r[bool].fail("Kerberos configuration is required")
-
-        config = self._config  # Local variable for type narrowing
-
-        # Validate required fields
+        config = self._config
         required_fields = ["realm", "kdc", "service_principal"]
-        # Use u.filter() for unified filtering (DSL pattern)
-        missing_fields = u.filter(
-            required_fields,
-            lambda field: field not in config,
-        )
-
+        missing_fields = u.filter(required_fields, lambda field: field not in config)
         if missing_fields:
             return r[bool].fail(
-                f"Missing required Kerberos configuration fields: {', '.join(missing_fields)}",
+                f"Missing required Kerberos configuration fields: {', '.join(missing_fields)}"
             )
-
-        # Validate field types
         validations: list[tuple[str, tuple[type[t.ContainerValue], ...], str]] = [
             ("realm", (str,), "Kerberos realm must be a string"),
             ("kdc", (str,), "Kerberos kdc must be a string"),
@@ -151,15 +133,15 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 "Kerberos proxiable must be a boolean or None",
             ),
         ]
-
         for field_name, expected_types, error_msg in validations:
             field_value = config.get(field_name)
-            if field_value is not None and not any(
-                u.Guards.is_type(field_value, expected_type)
-                for expected_type in expected_types
+            if field_value is not None and (
+                not any(
+                    u.Guards.is_type(field_value, expected_type)
+                    for expected_type in expected_types
+                )
             ):
                 return r[bool].fail(f"{error_msg}. Got {type(field_value).__name__}")
-
         return r[bool].ok(value=True)
 
     class _KerberosTicketValidator:
@@ -171,18 +153,13 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         def __init__(self, provider: FlextAuthKerberosProvider) -> None:
             """Initialize ticket validator."""
             self.provider = provider
-            # Logger removed - use logging module directly if needed
 
         def validate_ticket(
-            self,
-            _ticket_data: at.Auth.KerberosTicketData,
+            self, _ticket_data: at.Auth.KerberosTicketData
         ) -> r[at.Auth.KerberosTicketData]:
             """Validate Kerberos ticket."""
-            # Simplified implementation - in production would use proper Kerberos validation
-            # ticket_data parameter reserved for future Kerberos ticket validation
             result = at.Auth.KerberosTicketData(
-                ticket="validated_ticket",
-                principal="kerberos_user",
+                ticket="validated_ticket", principal="kerberos_user"
             )
             return r[at.Auth.KerberosTicketData].ok(result)
 
@@ -195,14 +172,11 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         def __init__(self, provider: FlextAuthKerberosProvider) -> None:
             """Initialize service handler."""
             self.provider = provider
-            # Logger removed - use logging module directly if needed
 
         def handle_service_ticket(self, ticket: str) -> r[at.Auth.KerberosTicketData]:
             """Handle Kerberos service ticket."""
-            # Simplified implementation - in production would handle proper service tickets
             result = at.Auth.KerberosTicketData(
-                ticket=ticket,
-                principal="service_principal",
+                ticket=ticket, principal="service_principal"
             )
             return r[at.Auth.KerberosTicketData].ok(result)
 
@@ -215,14 +189,11 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         def __init__(self, provider: FlextAuthKerberosProvider) -> None:
             """Initialize auth manager."""
             self.provider = provider
-            # Logger removed - use logging module directly if needed
 
         def authenticate_ticket(
-            self,
-            ticket_data: at.Auth.KerberosTicketData,
+            self, ticket_data: at.Auth.KerberosTicketData
         ) -> r[at.Auth.KerberosTicketData]:
             """Authenticate using Kerberos ticket."""
-            # Use composition for ticket validation
             return self.provider.ticket_validator.validate_ticket(ticket_data)
 
     @override
@@ -234,17 +205,13 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
     ) -> r[str]:
         """Generate Kerberos token for user."""
         return super().generate_token_for_user(
-            user=user,
-            token_type=token_type,
-            expiry_minutes=expiry_minutes,
+            user=user, token_type=token_type, expiry_minutes=expiry_minutes
         )
 
     def get_metadata(self) -> at.Auth.Providers.Metadata:
         """Get Kerberos provider metadata."""
         return at.Auth.Providers.Metadata(
-            name="kerberos",
-            version="5",
-            capabilities=tuple(self.supports()),
+            name="kerberos", version="5", capabilities=tuple(self.supports())
         )
 
     @override
@@ -256,9 +223,8 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
         """Validate Kerberos token and return user."""
         if not token.strip():
             return r[FlextAuthModels.Auth.AuthIdentity].fail(
-                "Kerberos token must be a non-empty string",
+                "Kerberos token must be a non-empty string"
             )
-
         validator = self._ticket_validator_callable()
         if validator is not None:
             try:
@@ -273,15 +239,12 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 ImportError,
             ) as exc:
                 return r[FlextAuthModels.Auth.AuthIdentity].fail(
-                    f"Kerberos ticket validator execution failed: {exc}",
+                    f"Kerberos ticket validator execution failed: {exc}"
                 )
-
             if isinstance(validator_result, FlextAuthModels.Auth.AuthIdentity):
                 return r[FlextAuthModels.Auth.AuthIdentity].ok(validator_result)
-
             if isinstance(validator_result, Mapping):
                 return self._map_identity_payload(validator_result)
-
             if isinstance(validator_result, at.Auth.KerberosTicketData):
                 principal_value = validator_result.principal
                 principal = principal_value or "kerberos-user"
@@ -292,35 +255,27 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                     "roles": ["user"],
                 }
                 return self._map_identity_payload(identity_map)
-
             return r[FlextAuthModels.Auth.AuthIdentity].fail(
-                "Kerberos ticket validator returned unsupported payload",
+                "Kerberos ticket validator returned unsupported payload"
             )
-
         claims_result = self._decode_token_claims(token)
         if claims_result.is_success:
             return self._map_identity_payload(claims_result.value)
-
         return r[FlextAuthModels.Auth.AuthIdentity].fail(
-            "Kerberos validation requires a configured ticket_validator callback "
-            "or JWT bridge settings (secret_key/issuer/audience)",
+            "Kerberos validation requires a configured ticket_validator callback or JWT bridge settings (secret_key/issuer/audience)"
         )
 
     def _map_identity_payload(
-        self,
-        claims: Mapping[str, t.ContainerValue],
+        self, claims: Mapping[str, t.ContainerValue]
     ) -> r[FlextAuthModels.Auth.AuthIdentity]:
         identity_result = self._extract_identity_id(claims)
         if identity_result.is_failure:
             return r[FlextAuthModels.Auth.AuthIdentity].fail(
-                identity_result.error or "Kerberos token subject is missing",
+                identity_result.error or "Kerberos token subject is missing"
             )
-
         identity_id = identity_result.value
-
         name_value = claims.get("name")
         name = name_value if isinstance(name_value, str) and name_value else identity_id
-
         contact_value = claims.get("contact")
         if isinstance(contact_value, str) and contact_value:
             contact = contact_value
@@ -330,13 +285,11 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
                 contact = email_value
             else:
                 contact = f"{identity_id}@kerberos.local"
-
         roles_value = claims.get("roles")
         if isinstance(roles_value, list):
             roles = [role for role in roles_value if isinstance(role, str) and role]
         else:
             roles = ["user"]
-
         try:
             identity = FlextAuthModels.Auth.AuthIdentity(
                 unique_id=identity_id,
@@ -349,22 +302,17 @@ class FlextAuthKerberosProvider(FlextAuthRfcProvider):
             )
         except (ValueError, TypeError) as exc:
             return r[FlextAuthModels.Auth.AuthIdentity].fail(
-                f"Kerberos identity mapping failed: {exc}",
+                f"Kerberos identity mapping failed: {exc}"
             )
-
         return r[FlextAuthModels.Auth.AuthIdentity].ok(identity)
 
-    def _ticket_validator_callable(
-        self,
-    ) -> Callable[[str], t.ContainerValue] | None:
+    def _ticket_validator_callable(self) -> Callable[[str], t.ContainerValue] | None:
         config = self._config
         if config is None:
             return None
-
         validator_candidate = config.get("ticket_validator")
         if callable(validator_candidate):
             return validator_candidate
-
         return None
 
 

@@ -17,9 +17,6 @@ from flext_core import r
 
 from flext_auth import t
 
-# Import aliases following order: c -> t -> p -> r -> m -> u
-# Runtime aliases defined at module level per FLEXT standards
-
 
 class BaseTransportAdapter(Protocol):
     """Protocol for transport adapters.
@@ -77,6 +74,4 @@ class BaseTransportAdapter(Protocol):
         ...
 
 
-__all__ = [
-    "BaseTransportAdapter",
-]
+__all__ = ["BaseTransportAdapter"]

@@ -22,8 +22,6 @@ if TYPE_CHECKING:
     from tests.protocols import TestsProtocols, TestsProtocols as p
     from tests.typings import TestsTypings, t
     from tests.utilities import TestsUtilities, TestsUtilities as u
-
-# Lazy import mapping: export_name -> (module_path, attr_name)
 _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "TestsProtocols": ("tests.protocols", "TestsProtocols"),
     "TestsTypings": ("tests.typings", "TestsTypings"),
@@ -32,18 +30,10 @@ _LAZY_IMPORTS: dict[str, tuple[str, str]] = {
     "t": ("tests.typings", "t"),
     "u": ("tests.utilities", "TestsUtilities"),
 }
-
-__all__ = [
-    "TestsProtocols",
-    "TestsTypings",
-    "TestsUtilities",
-    "p",
-    "t",
-    "u",
-]
+__all__ = ["TestsProtocols", "TestsTypings", "TestsUtilities", "p", "t", "u"]
 
 
-def __getattr__(name: str) -> Any:  # noqa: ANN401
+def __getattr__(name: str) -> Any:
     """Lazy-load module attributes on first access (PEP 562)."""
     return lazy_getattr(name, _LAZY_IMPORTS, globals(), __name__)
 

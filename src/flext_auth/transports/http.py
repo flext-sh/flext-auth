@@ -42,11 +42,7 @@ class FlextWebTransportAdapter:
         ...     print(f"Access token: {token_data['access_token']}")
     """
 
-    def __init__(
-        self,
-        timeout: float = 30,
-        max_retries: int = 3,
-    ) -> None:
+    def __init__(self, timeout: float = 30, max_retries: int = 3) -> None:
         """Initialize HTTP transport adapter with flext-api client.
 
         Args:
@@ -57,7 +53,6 @@ class FlextWebTransportAdapter:
         self._timeout = timeout
         self._max_retries = max_retries
         self.logger = FlextLogger(__name__)
-
         config = FlextApiSettings(timeout=timeout, max_retries=max_retries)
         self._client = FlextApiClient(config)
 
@@ -71,10 +66,7 @@ class FlextWebTransportAdapter:
         return "http"
 
     def get_userinfo(
-        self,
-        url: str,
-        access_token: str,
-        headers: Mapping[str, str],
+        self, url: str, access_token: str, headers: Mapping[str, str]
     ) -> r[t.Api.ResponseDict]:
         """GET request to OIDC UserInfo endpoint.
 
@@ -100,20 +92,12 @@ class FlextWebTransportAdapter:
 
         """
         request_headers = dict(headers) if headers else {}
-
-        # OIDC requires Bearer token authentication
         request_headers["Authorization"] = f"Bearer {access_token}"
-
         self.logger.debug("Requesting UserInfo from %s", url)
-
-        # Use flext-api client for GET request
         return self._execute_request(
             m.Api.HttpRequest(
-                method="GET",
-                url=url,
-                headers=request_headers,
-                timeout=self._timeout,
-            ),
+                method="GET", url=url, headers=request_headers, timeout=self._timeout
+            )
         ).flat_map(self._validate_userinfo_response)
 
     def post_token_request(
@@ -146,24 +130,17 @@ class FlextWebTransportAdapter:
 
         """
         request_headers: dict[str, str] = dict(headers) if headers else {}
-
-        # OAuth2 requires application/x-www-form-urlencoded (RFC 6749 Section 4.1.3)
         if "Content-Type" not in request_headers:
             request_headers["Content-Type"] = "application/x-www-form-urlencoded"
-
-        # Add HTTP Basic authentication if provided
         if auth:
             credentials = f"{auth[0]}:{auth[1]}"
             encoded = base64.b64encode(credentials.encode()).decode()
             request_headers["Authorization"] = f"Basic {encoded}"
-
         self.logger.debug(
             "Sending token request to %s",
             url,
             extra={"grant_type": data.get("grant_type")},
         )
-
-        # Use flext-api client for POST request
         request_body = urlencode(data, doseq=True)
         response = self._execute_request(
             m.Api.HttpRequest(
@@ -172,9 +149,8 @@ class FlextWebTransportAdapter:
                 headers=request_headers,
                 body=request_body,
                 timeout=self._timeout,
-            ),
+            )
         )
-
         return response.flat_map(self._parse_token_response)
 
     def send_request(
@@ -202,18 +178,14 @@ class FlextWebTransportAdapter:
         """
         request_headers = dict(headers) if headers is not None else {}
         request_timeout = timeout if timeout is not None else self._timeout
-
         resolved_body = self._resolve_body(method, data)
         resolved_query = self._resolve_query(method, data, query)
-
-        # Build request with optional body/query_params
         request = m.Api.HttpRequest(
             method=method.upper(),
             url=url,
             headers=request_headers,
             timeout=request_timeout,
         )
-        # Update request with body and query if provided
         if resolved_body is not None:
             request = m.Api.HttpRequest(
                 method=request.method,
@@ -231,29 +203,21 @@ class FlextWebTransportAdapter:
                 query_params=resolved_query,
                 timeout=request.timeout,
             )
-
         return self._execute_request(request)
 
-    def _execute_request(
-        self,
-        request: m.Api.HttpRequest,
-    ) -> r[t.Api.ResponseDict]:
+    def _execute_request(self, request: m.Api.HttpRequest) -> r[t.Api.ResponseDict]:
         response = self._client.request(request)
         if response.is_failure:
             return r[t.Api.ResponseDict].fail(response.error)
-
         http_response = response.value
         body = http_response.body
-
         if body is None:
             return r[t.Api.ResponseDict].ok({})
-
         if isinstance(body, Mapping):
             normalized_body: t.Api.ResponseDict = {
                 str(key): self._to_json_value(value) for key, value in body.items()
             }
             return r[t.Api.ResponseDict].ok(normalized_body)
-
         match body:
             case bytes() as body_bytes:
                 decoded = body_bytes.decode("utf-8", errors="replace")
@@ -261,29 +225,23 @@ class FlextWebTransportAdapter:
                 decoded = body_text
             case _:
                 return r[t.Api.ResponseDict].fail(
-                    f"Unsupported response body type: {type(body)}",
+                    f"Unsupported response body type: {type(body)}"
                 )
-
         try:
             parsed = json.loads(decoded)
         except json.JSONDecodeError:
-            return r[t.Api.ResponseDict].fail(
-                "Unable to parse response body as JSON",
-            )
+            return r[t.Api.ResponseDict].fail("Unable to parse response body as JSON")
         if isinstance(parsed, Mapping):
             normalized_parsed: t.Api.ResponseDict = {
                 str(key): self._to_json_value(value) for key, value in parsed.items()
             }
-            return r[t.Api.ResponseDict].ok(
-                normalized_parsed,
-            )
+            return r[t.Api.ResponseDict].ok(normalized_parsed)
         return r[t.Api.ResponseDict].fail(
-            f"Unexpected parsed response type: {type(parsed)}",
+            f"Unexpected parsed response type: {type(parsed)}"
         )
 
     def _parse_token_response(
-        self,
-        response_data: t.Api.ResponseDict,
+        self, response_data: t.Api.ResponseDict
     ) -> r[t.Api.ResponseDict]:
         """Parse OAuth2 token endpoint response.
 
@@ -297,7 +255,6 @@ class FlextWebTransportAdapter:
         FlextResult containing validated token data or error
 
         """
-        # Check for OAuth2 error response (RFC 6749 Section 5.2)
         if "error" in response_data:
             error_code_value = response_data.get("error")
             match error_code_value:
@@ -305,34 +262,25 @@ class FlextWebTransportAdapter:
                     error_code = code
                 case _:
                     error_code = "unknown_error"
-
             error_description_value = response_data.get("error_description")
             match error_description_value:
                 case str() as description if description:
                     error_description = description
                 case _:
                     error_description = "No error description"
-
             error_uri = response_data.get("error_uri")
-
             error_msg = f"OAuth2 error: {error_code} - {error_description}"
             if error_uri:
                 error_msg += f" (see {error_uri})"
-
             return r[t.Api.ResponseDict].fail(error_msg)
-
-        # Validate required fields (RFC 6749 Section 5.1)
         if "access_token" not in response_data:
             return r[t.Api.ResponseDict].fail(
-                "Token response missing required 'access_token' field",
+                "Token response missing required 'access_token' field"
             )
-
         if "token_type" not in response_data:
             return r[t.Api.ResponseDict].fail(
-                "Token response missing required 'token_type' field",
+                "Token response missing required 'token_type' field"
             )
-
-        # Optional fields: expires_in, refresh_token, scope
         self.logger.info(
             "Token response validated successfully",
             extra={
@@ -341,13 +289,10 @@ class FlextWebTransportAdapter:
                 "expires_in": response_data.get("expires_in"),
             },
         )
-
         return r[t.Api.ResponseDict].ok(response_data)
 
     def _resolve_body(
-        self,
-        method: str,
-        data: t.Api.RequestBody | None,
+        self, method: str, data: t.Api.RequestBody | None
     ) -> t.Api.RequestBody | None:
         if data is None:
             return None
@@ -356,10 +301,7 @@ class FlextWebTransportAdapter:
         return data
 
     def _resolve_query(
-        self,
-        method: str,
-        data: t.Api.RequestBody | None,
-        query: t.Api.WebParams | None,
+        self, method: str, data: t.Api.RequestBody | None, query: t.Api.WebParams | None
     ) -> t.Api.WebParams | None:
         if isinstance(data, Mapping) and method.upper() == "GET":
             data_mapping: dict[str, t.ContainerValue] = {
@@ -386,7 +328,7 @@ class FlextWebTransportAdapter:
         match value:
             case str() as text:
                 return text
-            case bool() as boolean:  # bool before int (bool is subclass of int)
+            case bool() as boolean:
                 return boolean
             case int() as integer:
                 return integer
@@ -398,21 +340,17 @@ class FlextWebTransportAdapter:
             return [self._to_json_value(item) for item in value]
         if isinstance(value, Mapping):
             return {str(key): self._to_json_value(item) for key, item in value.items()}
-        # Fallback for non-JSON types
         return str(value)
 
     def _validate_userinfo_response(
-        self,
-        payload: t.Api.ResponseDict,
+        self, payload: t.Api.ResponseDict
     ) -> r[t.Api.ResponseDict]:
         if "sub" not in payload:
             return r[t.Api.ResponseDict].fail(
-                "UserInfo response missing required 'sub' claim",
+                "UserInfo response missing required 'sub' claim"
             )
-
         self.logger.info(
-            "UserInfo retrieved successfully",
-            extra={"subject": payload["sub"]},
+            "UserInfo retrieved successfully", extra={"subject": payload["sub"]}
         )
         return r[t.Api.ResponseDict].ok(payload)
 

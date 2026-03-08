@@ -14,8 +14,6 @@ from typing import override
 
 from flext_core import FlextLogger, FlextService as s, p, r
 
-# Forward reference to avoid circular import
-# Import m locally in methods where needed
 from flext_auth import (
     FlextAuthManagers,
     FlextAuthProviderService,
@@ -45,7 +43,6 @@ class FlextAuthTokenService(s[bool]):
         super().__init__()
         self._managers = ServiceManagers(config, dispatcher)
         self._provider_service = provider_service
-        # Lazy cache for JWT provider (initialized on first access)
         self._jwt_provider_cache: FlextAuthJwtProvider | None = None
 
     @property
@@ -65,7 +62,7 @@ class FlextAuthTokenService(s[bool]):
     def execute(self) -> r[bool]:
         """Railway-oriented execute with focused service pattern."""
         return r[bool].fail(
-            "Use specific token methods: validate_token, generate_jwt_token, etc.",
+            "Use specific token methods: validate_token, generate_jwt_token, etc."
         )
 
     def generate_jwt_token(
@@ -86,18 +83,13 @@ class FlextAuthTokenService(s[bool]):
                 reason=error,
             )
             return r[str].fail(error or "User lookup failed")
-
         user = user_result.value
-        # Convert AuthIdentity to JsonDict for provider method
         user_dict = user.model_dump(exclude={"credential_hash"})
         token_result = self._get_jwt_provider_cached().flat_map(
             lambda provider: provider.generate_token_for_user(
-                user_dict,
-                token_type=token_type,
-                expiry_minutes=expires_in_minutes,
-            ),
+                user_dict, token_type=token_type, expiry_minutes=expires_in_minutes
+            )
         )
-
         if token_result.is_failure:
             error = token_result.error
             FlextLogger(__name__).info(
@@ -108,19 +100,16 @@ class FlextAuthTokenService(s[bool]):
                 reason=error,
             )
             return r[str].fail(error or "Token generation failed")
-
         token_value = token_result.value
         FlextLogger(__name__).debug(
-            "Token creation successful",
-            user_id=user_id,
-            token_type=token_type,
+            "Token creation successful", user_id=user_id, token_type=token_type
         )
         return r[str].ok(token_value)
 
     def refresh_token(self, token: str) -> r[m.Auth.AuthToken]:
         """Railway-oriented token refresh with audit logging."""
         result = self._get_jwt_provider_cached().flat_map(
-            lambda provider: provider.refresh(token),
+            lambda provider: provider.refresh(token)
         )
         if result.is_failure:
             error = result.error
@@ -130,9 +119,7 @@ class FlextAuthTokenService(s[bool]):
                 old_token_id=self._short_token(token),
                 reason=error,
             )
-
             return r[m.Auth.AuthToken].fail(error or "Token refresh failed")
-
         refreshed = result.value
         auth_token = m.Auth.AuthToken(
             identity_id=refreshed.user_id,
@@ -147,14 +134,10 @@ class FlextAuthTokenService(s[bool]):
         )
         return r[m.Auth.AuthToken].ok(auth_token)
 
-    # =========================================================================
-    # ADVANCED TOKEN OPERATIONS WITH RAILWAY PATTERNS
-    # =========================================================================
-
     def validate_token(self, token: str) -> r[bool]:
         """Railway-oriented token validation with audit logging."""
         result = self._get_jwt_provider_cached().flat_map(
-            lambda provider: provider.validate_token(token),
+            lambda provider: provider.validate_token(token)
         )
         if result.is_failure:
             error_msg = result.error if result.error is not None else "Unknown error"
@@ -165,19 +148,12 @@ class FlextAuthTokenService(s[bool]):
                 reason=error_msg,
             )
             return result
-        # Identity extraction not supported by JWT provider
-        # JWT provider only validates, does not return identity
         return result
-
-    # =========================================================================
-    # PRIVATE HELPER METHODS
-    # =========================================================================
 
     def _get_jwt_provider_cached(self) -> r[FlextAuthJwtProvider]:
         """Get JWT provider with lazy caching to eliminate repeated lookups."""
         if self._jwt_provider_cache is not None:
             return r.ok(self._jwt_provider_cache)
-
         result = self._provider_service.get_jwt_provider()
         if result.is_failure:
             return result

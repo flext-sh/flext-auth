@@ -30,8 +30,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider):
 
     @override
     def authenticate(
-        self,
-        credentials: m.Auth.CredentialValidation,
+        self, credentials: m.Auth.CredentialValidation
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using HTTP Basic credentials."""
         _ = credentials
@@ -57,10 +56,7 @@ class FlextAuthBasicProvider(FlextAuthBaseProvider):
         return {"basic", "validate"}
 
     @override
-    def validate(
-        self,
-        token: str | p.Auth.TokenProtocol,
-    ) -> r[bool]:
+    def validate(self, token: str | p.Auth.TokenProtocol) -> r[bool]:
         """Validate authentication token."""
         _ = token
         return r[bool].fail("Not implemented")

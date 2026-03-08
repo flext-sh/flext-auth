@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """FLEXT Auth - Basic usage examples with refactored API.
 
 This example demonstrates basic FLEXT Auth usage with the new clean architecture.
@@ -17,13 +16,9 @@ import sys
 
 from flext_core import r
 
-from flext_auth import (
-    FlextAuth,
-    m,
-)
+from flext_auth import FlextAuth, m
 
 
-# Extract Method Pattern - reduce main() complexity from 42 to manageable chunks
 class FlextAuthDemo:
     """Demo class using Extract Method Pattern to reduce complexity."""
 
@@ -32,9 +27,7 @@ class FlextAuthDemo:
         super().__init__()
         self.auth = FlextAuth()
 
-    def demo_user_authentication(
-        self,
-    ) -> r[m.Auth.AuthIdentity]:
+    def demo_user_authentication(self) -> r[m.Auth.AuthIdentity]:
         """Extract Method: User authentication demo.
 
         Returns:
@@ -42,11 +35,9 @@ class FlextAuthDemo:
 
         """
         result = self.auth.authenticate_user("demouser", "DemoPassword123!")
-
         if result.is_success:
             auth_data = result.value
             self._print_token_info(auth_data)
-
         return result
 
     def demo_user_registration(self) -> r[m.Auth.AuthIdentity]:
@@ -62,10 +53,8 @@ class FlextAuthDemo:
             password=os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoPassword123!"),
             roles=["user"],
         )
-
         if result.is_success:
             pass
-
         return result
 
     def _print_token_info(self, auth_data: m.Auth.AuthIdentity) -> None:
@@ -77,7 +66,6 @@ class FlextAuthDemo:
 def _demo_password_utilities() -> None:
     """Demo password utilities and validation."""
     _ = os.getenv("FLEXT_DEMO_TEST_PASSWORD", "TestPassword123!")
-
     try:
         _ = m.Auth.AuthIdentityRequest(
             name="util_demo",
@@ -86,11 +74,9 @@ def _demo_password_utilities() -> None:
             full_name="Util Demo User",
             roles=["user"],
         )
-
-        # Note: Password operations should be done through the auth service
     except Exception as e:
         error_message = f"Password hashing failed: {e}"
-        del error_message  # Clean up
+        del error_message
 
 
 def _demo_secure_password_generation() -> None:
@@ -100,14 +86,12 @@ def _demo_secure_password_generation() -> None:
     uppercase = string.ascii_uppercase
     digits = string.digits
     special = '!@#$%^&*(),.?":{}|<>'
-
     secure_password = [
         secrets.choice(lowercase),
         secrets.choice(uppercase),
         secrets.choice(digits),
         secrets.choice(special),
     ]
-
     all_chars = lowercase + uppercase + digits + special
     secure_password.extend(secrets.choice(all_chars) for _ in range(length - 4))
     secrets.SystemRandom().shuffle(secure_password)
@@ -145,7 +129,6 @@ def _demo_jwt_operations(demo: FlextAuthDemo) -> None:
         email="jwt@example.com",
         password=os.getenv("JWT_PASSWORD", "JWTPassword123!"),
     )
-
     if jwt_user_result.is_success:
         user = jwt_user_result.value
         identity_id: str = user.name
@@ -165,29 +148,18 @@ def main() -> None:
     - Clear separation of concerns
     - Method extraction for maintainability
     """
-    # Extract Method Pattern - create demo instance
     demo = FlextAuthDemo()
-
-    # Railway Pattern - chain operations with early returns on failure
     registration_result = demo.demo_user_registration()
     if registration_result.is_failure:
         return
-
     auth_result = demo.demo_user_authentication()
     if auth_result.is_failure:
         return
-
-    # Extract token for further demos
     auth_data = auth_result.value
-    # auth_data is an AuthToken object, not a dict
     access_token = str(auth_data.token) if auth_data.token else ""
-
-    # Token Validation
     validation_result = demo.auth.validate_token(access_token)
     if validation_result.is_success:
         pass
-
-    # Demo various utilities
     _demo_password_utilities()
     _demo_secure_password_generation()
     _demo_email_validation()

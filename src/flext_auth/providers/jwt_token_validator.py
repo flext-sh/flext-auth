@@ -41,31 +41,25 @@ class FlextAuthJwtTokenValidator:
 
         """
         try:
-            # Get configuration from provider
             config = self._provider.config
             if not config:
-                return r[t.ConfigurationMapping].fail(
-                    "JWT configuration not provided",
-                )
-
+                return r[t.ConfigurationMapping].fail("JWT configuration not provided")
             secret_key_value = config.get("secret_key")
             match secret_key_value:
                 case str() as secret if secret:
                     secret_key = secret
                 case _:
                     return r[t.ConfigurationMapping].fail(
-                        "JWT secret key not configured",
+                        "JWT secret key not configured"
                     )
-
             algorithm_value = config.get("algorithm")
             match algorithm_value:
                 case str() as algorithm_str:
                     algorithm = algorithm_str
                 case _:
                     return r[t.ConfigurationMapping].fail(
-                        "JWT algorithm not configured",
+                        "JWT algorithm not configured"
                     )
-
             audience_value = config.get("audience")
             if audience_value is not None:
                 match audience_value:
@@ -73,12 +67,10 @@ class FlextAuthJwtTokenValidator:
                         audience = audience_str
                     case _:
                         return r[t.ConfigurationMapping].fail(
-                            "JWT audience must be a string if provided",
+                            "JWT audience must be a string if provided"
                         )
             else:
                 audience = None
-
-            # Decode and validate token
             decode_options = {"verify_exp": True, "verify_iat": True}
             if audience is not None:
                 payload = jwt.decode(
@@ -90,14 +82,9 @@ class FlextAuthJwtTokenValidator:
                 )
             else:
                 payload = jwt.decode(
-                    token,
-                    secret_key,
-                    algorithms=[algorithm],
-                    options=decode_options,
+                    token, secret_key, algorithms=[algorithm], options=decode_options
                 )
-
             return r[t.ConfigurationMapping].ok(payload)
-
         except jwt.ExpiredSignatureError:
             return r[t.ConfigurationMapping].fail("Token has expired")
         except jwt.InvalidTokenError as e:
@@ -111,9 +98,7 @@ class FlextAuthJwtTokenValidator:
             RuntimeError,
             ImportError,
         ) as e:
-            return r[t.ConfigurationMapping].fail(
-                f"Token validation failed: {e}",
-            )
+            return r[t.ConfigurationMapping].fail(f"Token validation failed: {e}")
 
 
 __all__ = ["FlextAuthJwtTokenValidator"]

@@ -36,8 +36,7 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
 
     @override
     def authenticate(
-        self,
-        credentials: m.Auth.CredentialValidation,
+        self, credentials: m.Auth.CredentialValidation
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using OIDC credentials.
 
@@ -72,10 +71,7 @@ class FlextAuthOidcProvider(FlextAuthRfcProvider, FlextAuthProviderMixin):
         return {"oidc", "validate", "refresh"}
 
     @override
-    def validate(
-        self,
-        token: str | p.Auth.TokenProtocol,
-    ) -> r[bool]:
+    def validate(self, token: str | p.Auth.TokenProtocol) -> r[bool]:
         """Validate OIDC token.
 
         Args:

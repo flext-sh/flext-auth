@@ -13,9 +13,6 @@ import pytest
 
 from flext_auth import FlextAuth, FlextAuthSettings
 
-# Import FlextTestsDocker fixtures if available (optional dependency)
-# Note: flext_tests is an optional test dependency - import may fail in some environments
-
 
 @pytest.fixture(autouse=True)
 def _reset_singletons() -> Iterator[None]:
@@ -28,7 +25,6 @@ def _reset_singletons() -> Iterator[None]:
     all subsequent tests.
     """
     yield
-    # Teardown: reset singletons after each test
     FlextAuthSettings._reset_instance()
     FlextAuth._instance = None
 
@@ -42,7 +38,6 @@ def mock_get_global() -> object:
 
     """
 
-    # Use a simple object instead of MagicMock for better type safety
     class MockGlobal:
         def get_global_instance(self) -> None:
             return None

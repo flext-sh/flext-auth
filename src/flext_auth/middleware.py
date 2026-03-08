@@ -50,9 +50,7 @@ class FlextAuthMiddleware(s[bool]):
         headers: dict[str, str]
 
     @staticmethod
-    def _request_has_headers(
-        req: RequestWithHeaders,
-    ) -> TypeGuard[RequestWithHeaders]:
+    def _request_has_headers(req: RequestWithHeaders) -> TypeGuard[RequestWithHeaders]:
         """TypeGuard: request has a headers attribute."""
         return hasattr(req, "headers")
 
@@ -83,7 +81,7 @@ class FlextAuthMiddleware(s[bool]):
         FlextAuthMiddleware is a namespace class - use specific middleware classes instead.
         """
         return r[bool].fail(
-            "FlextAuthMiddleware is a namespace class - use specific middleware classes like FlextWebAuthMiddleware",
+            "FlextAuthMiddleware is a namespace class - use specific middleware classes like FlextWebAuthMiddleware"
         )
 
     class FlextWebAuthMiddleware(_MiddlewareControlMixin):
@@ -103,9 +101,7 @@ class FlextAuthMiddleware(s[bool]):
         """
 
         def __init__(
-            self,
-            provider: FlextAuthBaseProvider,
-            provider_name: str = "web",
+            self, provider: FlextAuthBaseProvider, provider_name: str = "web"
         ) -> None:
             """Initialize HTTP client authentication middleware.
 
@@ -120,8 +116,7 @@ class FlextAuthMiddleware(s[bool]):
             self._current_token: m.Auth.AuthToken | None = None
 
         def process_request(
-            self,
-            request: FlextAuthMiddleware.RequestWithHeaders,
+            self, request: FlextAuthMiddleware.RequestWithHeaders
         ) -> r[FlextAuthMiddleware.RequestWithHeaders]:
             """Process HTTP request by adding authentication headers.
 
@@ -134,20 +129,17 @@ class FlextAuthMiddleware(s[bool]):
             """
             if not self._enabled:
                 return r[FlextAuthMiddleware.RequestWithHeaders].ok(request)
-
             if not self._is_token_still_valid():
                 token_result = self._authenticate_or_refresh()
                 if token_result.is_failure:
                     return r[FlextAuthMiddleware.RequestWithHeaders].fail(
-                        token_result.error or "Authentication failed",
+                        token_result.error or "Authentication failed"
                     )
                 self._current_token = token_result.value
-
             if self._current_token is None:
                 return r[FlextAuthMiddleware.RequestWithHeaders].fail(
-                    "Authentication token is not available",
+                    "Authentication token is not available"
                 )
-
             try:
                 headers_val = request.headers
                 if u.is_dict_like(headers_val):
@@ -158,14 +150,12 @@ class FlextAuthMiddleware(s[bool]):
                     request.headers = mutable_headers
             except (AttributeError, TypeError):
                 pass
-
             return r[FlextAuthMiddleware.RequestWithHeaders].ok(request)
 
         def _authenticate_or_refresh(self) -> r[m.Auth.AuthToken]:
             """Authenticate using credentials or refresh existing token."""
             if self._is_token_still_valid() and self._current_token is not None:
                 return r[m.Auth.AuthToken].ok(self._current_token)
-
             return self._refresh_or_reauthenticate()
 
         def _is_token_still_valid(self) -> bool:
@@ -173,46 +163,33 @@ class FlextAuthMiddleware(s[bool]):
             token = self._current_token
             if token is None:
                 return False
-
             if token.is_expired or token.is_revoked:
                 return False
-
             validation_result = self._provider.validate(token.token)
             if validation_result.is_failure:
                 return False
-
             return validation_result.value
 
         def _refresh_or_reauthenticate(self) -> r[m.Auth.AuthToken]:
             """Refresh token or re-authenticate if refresh fails."""
             current_token = self._current_token
             if current_token is None:
-                return r[m.Auth.AuthToken].fail(
-                    "No token available for refresh",
-                )
-
+                return r[m.Auth.AuthToken].fail("No token available for refresh")
             refresh_input = current_token.refresh_token or current_token.token
             if not refresh_input:
-                return r[m.Auth.AuthToken].fail(
-                    "No refresh token available",
-                )
-
+                return r[m.Auth.AuthToken].fail("No refresh token available")
             validation_result = self._provider.validate(refresh_input)
             if validation_result.is_failure:
                 return r[m.Auth.AuthToken].fail(
-                    validation_result.error or "Refresh source token is invalid",
+                    validation_result.error or "Refresh source token is invalid"
                 )
             if not validation_result.value:
-                return r[m.Auth.AuthToken].fail(
-                    "Refresh source token is invalid",
-                )
-
+                return r[m.Auth.AuthToken].fail("Refresh source token is invalid")
             refresh_result = self._provider.refresh(refresh_input)
             if refresh_result.is_failure:
                 return r[m.Auth.AuthToken].fail(
-                    refresh_result.error or "Token refresh failed",
+                    refresh_result.error or "Token refresh failed"
                 )
-
             refreshed_payload = refresh_result.value
             identity_id_value = (
                 refreshed_payload.identity_id
@@ -229,7 +206,6 @@ class FlextAuthMiddleware(s[bool]):
                     identity_id_value = user_id_value
                 else:
                     identity_id_value = current_token.identity_id
-
             try:
                 refreshed_token = m.Auth.AuthToken(
                     identity_id=identity_id_value,
@@ -241,7 +217,7 @@ class FlextAuthMiddleware(s[bool]):
                     is_revoked=bool(
                         refreshed_payload.is_revoked
                         if hasattr(refreshed_payload, "is_revoked")
-                        else False,
+                        else False
                     ),
                     refresh_token=refreshed_payload.refresh_token
                     if hasattr(refreshed_payload, "refresh_token")
@@ -249,9 +225,8 @@ class FlextAuthMiddleware(s[bool]):
                 )
             except (AttributeError, TypeError, ValueError):
                 return r[m.Auth.AuthToken].fail(
-                    "Provider refresh returned invalid token payload",
+                    "Provider refresh returned invalid token payload"
                 )
-
             self._current_token = refreshed_token
             return r[m.Auth.AuthToken].ok(refreshed_token)
 

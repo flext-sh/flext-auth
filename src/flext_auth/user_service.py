@@ -25,12 +25,7 @@ class FlextAuthIdentityService(s[bool]):
     SOLID principles with dependency injection and railway error handling.
     """
 
-    def __init__(
-        self,
-        *,
-        config: FlextAuthSettings,
-        dispatcher: p.CommandBus,
-    ) -> None:
+    def __init__(self, *, config: FlextAuthSettings, dispatcher: p.CommandBus) -> None:
         """Generic initialization with dependency injection."""
         super().__init__()
         self._managers = ServiceManagers(config, dispatcher)
@@ -41,9 +36,7 @@ class FlextAuthIdentityService(s[bool]):
         return self._managers.user_manager
 
     def authenticate_identity(
-        self,
-        name: str,
-        credential: str,
+        self, name: str, credential: str
     ) -> r[m.Auth.AuthIdentity]:
         """Railway-oriented identity authentication with account lockout."""
         return (
@@ -52,13 +45,10 @@ class FlextAuthIdentityService(s[bool]):
             .flat_map(lambda identity: r.ok((identity, credential)))
             .flat_map(
                 lambda ic: (
-                    # Check if account is locked
-                    r.fail(
-                        "Account is locked due to too many failed attempts",
-                    )
+                    r.fail("Account is locked due to too many failed attempts")
                     if ic[0].is_locked()
                     else r.ok(ic)
-                ),
+                )
             )
             .flat_map(
                 lambda ic: (
@@ -66,30 +56,19 @@ class FlextAuthIdentityService(s[bool]):
                     .verify_credential(ic[1])
                     .flat_map(
                         lambda is_valid: (
-                            # Success: reset failed attempts and unlock
                             r.ok(ic[0].with_successful_access())
                             if is_valid
-                            # Failure: increment failed attempts and lock if threshold reached
-                            else (
-                                self._handle_failed_attempt(ic[0]).flat_map(
-                                    lambda _: r.fail("Invalid credentials"),
-                                )
+                            else self._handle_failed_attempt(ic[0]).flat_map(
+                                lambda _: r.fail("Invalid credentials")
                             )
-                        ),
+                        )
                     )
-                ),
+                )
             )
         )
 
-    # =========================================================================
-    # COMPLEX AUTHORIZATION WITH AUDIT LOGGING
-    # =========================================================================
-
     def authorize_identity(
-        self,
-        identity_id: str,
-        permission: str,
-        resource: str | None = None,
+        self, identity_id: str, permission: str, resource: str | None = None
     ) -> r[bool]:
         """Railway-oriented authorization with audit logging."""
         return (
@@ -98,23 +77,13 @@ class FlextAuthIdentityService(s[bool]):
             .map(lambda identity: (identity, permission in identity.permissions))
             .map(
                 lambda ip: self._log_authorization_result(
-                    ip[0],
-                    permission,
-                    resource,
-                    allowed=ip[1],
-                ),
+                    ip[0], permission, resource, allowed=ip[1]
+                )
             )
         )
 
-    # =========================================================================
-    # COMPLEX CREDENTIAL OPERATIONS (Non-Thin Wrappers)
-    # =========================================================================
-
     def change_credential(
-        self,
-        identity_id: str,
-        current_credential: str,
-        new_credential: str,
+        self, identity_id: str, current_credential: str, new_credential: str
     ) -> r[bool]:
         """Railway-oriented credential change with validation."""
         return (
@@ -122,50 +91,42 @@ class FlextAuthIdentityService(s[bool]):
             .get_user(identity_id)
             .flat_map(
                 lambda identity: identity.verify_credential(
-                    current_credential,
+                    current_credential
                 ).flat_map(
                     lambda is_valid: (
                         r.ok(identity)
                         if is_valid
                         else r.fail("Current credential is incorrect")
-                    ),
-                ),
+                    )
+                )
             )
             .flat_map(
                 lambda identity: (
                     r.ok(identity)
                     if len(new_credential) >= c.Auth.CREDENTIAL_MIN_LENGTH
                     else r.fail(
-                        f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
+                        f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
                     )
-                ),
+                )
             )
             .flat_map(
                 lambda identity: identity.set_credential(new_credential).map(
                     lambda _: self._log_success(
-                        "Password change successful",
-                        identity.name,
-                    ),
-                ),
+                        "Password change successful", identity.name
+                    )
+                )
             )
         )
 
     def create_identity(
-        self,
-        name: str,
-        contact: str,
-        credential: str,
-        roles: list[str] | None = None,
+        self, name: str, contact: str, credential: str, roles: list[str] | None = None
     ) -> r[m.Auth.AuthIdentity]:
         """Railway-oriented identity creation with credential hashing."""
         if roles is None:
             user_roles: list[str] = []
         else:
             user_roles = roles
-        # Normalize email to lowercase for consistency
         normalized_contact = contact.lower()
-
-        # Validate using Pydantic model to ensure proper validation errors
         try:
             request = m.Auth.AuthIdentityRequest(
                 name=name,
@@ -174,7 +135,6 @@ class FlextAuthIdentityService(s[bool]):
                 roles=user_roles,
             )
         except ValidationError as e:
-            # Convert ValidationError to FlextResult with error message
             error_messages: list[str] = []
             for error in e.errors():
                 field = (
@@ -194,15 +154,10 @@ class FlextAuthIdentityService(s[bool]):
             ImportError,
         ) as e:
             return r[m.Auth.AuthIdentity].fail(str(e))
-
-        # Validate credential strength before hashing
         if len(credential) < c.Auth.CREDENTIAL_MIN_LENGTH:
             return r[m.Auth.AuthIdentity].fail(
-                f"Credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
+                f"Credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
             )
-
-        # Create user with basic fields - extra_fields not currently supported
-        # due to type constraints in the manager interface
         return (
             r[str]
             .ok(m.Auth.PasswordUtil.hash_password(credential))
@@ -212,7 +167,7 @@ class FlextAuthIdentityService(s[bool]):
                     email=request.contact,
                     password_hash=ch,
                     roles=request.roles,
-                ),
+                )
             )
         )
 
@@ -220,7 +175,7 @@ class FlextAuthIdentityService(s[bool]):
     def execute(self) -> r[bool]:
         """Railway-oriented execute with focused service pattern."""
         return r[bool].fail(
-            "Use specific identity methods: create_identity, authenticate_identity, etc.",
+            "Use specific identity methods: create_identity, authenticate_identity, etc."
         )
 
     @identity_manager.setter
@@ -238,32 +193,26 @@ class FlextAuthIdentityService(s[bool]):
                     r.ok(identity)
                     if len(new_credential) >= c.Auth.CREDENTIAL_MIN_LENGTH
                     else r.fail(
-                        f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long",
+                        f"New credential must be at least {c.Auth.CREDENTIAL_MIN_LENGTH} characters long"
                     )
-                ),
+                )
             )
             .flat_map(
                 lambda identity: identity.set_credential(new_credential).map(
                     lambda _: self._log_success(
-                        "Password reset successful",
-                        identity.name,
-                    ),
-                ),
+                        "Password reset successful", identity.name
+                    )
+                )
             )
         )
-
-    # =========================================================================
-    # ACCOUNT LOCKOUT HANDLING
-    # =========================================================================
 
     def _handle_failed_attempt(self, identity: m.Auth.AuthIdentity) -> r[bool]:
         """Handle failed authentication attempt with lockout logic."""
         identity.failed_attempts += 1
         max_attempts = self._managers.config.max_attempts
-
         if identity.failed_attempts >= max_attempts:
             lockout_duration = timedelta(
-                minutes=self._managers.config.lockout_duration_minutes,
+                minutes=self._managers.config.lockout_duration_minutes
             )
             identity.locked_until = datetime.now(UTC) + lockout_duration
             self.logger.warning(
@@ -279,8 +228,6 @@ class FlextAuthIdentityService(s[bool]):
                 provider="internal",
                 reason=f"Invalid credentials ({identity.failed_attempts}/{max_attempts} attempts)",
             )
-
-        # Update user in storage
         return self.identity_manager.update_user(
             identity.unique_id,
             failed_attempts=identity.failed_attempts,

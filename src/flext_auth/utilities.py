@@ -31,24 +31,15 @@ class FlextAuthUtilities(FlextApiUtilities):
     """
 
     @classmethod
-    def is_valid_permission_type(
-        cls,
-        value: str,
-    ) -> bool:
+    def is_valid_permission_type(cls, value: str) -> bool:
         """Validate PermissionTypes membership.
 
         Uses parent Enum utilities for consistency.
         """
-        return FlextUtilities.Enum.is_member(
-            c.Auth.PermissionTypes,
-            value,
-        )
+        return FlextUtilities.Enum.is_member(c.Auth.PermissionTypes, value)
 
     @classmethod
-    def is_valid_provider_type(
-        cls,
-        value: str,
-    ) -> bool:
+    def is_valid_provider_type(cls, value: str) -> bool:
         """Validate ProviderTypes membership.
 
         Uses parent Enum utilities for consistency.
@@ -56,34 +47,20 @@ class FlextAuthUtilities(FlextApiUtilities):
         return FlextUtilities.Enum.is_member(c.Auth.ProviderTypes, value)
 
     @classmethod
-    def is_valid_role_type(
-        cls,
-        value: str,
-    ) -> bool:
+    def is_valid_role_type(cls, value: str) -> bool:
         """Validate RoleTypes membership.
 
         Uses parent Enum utilities for consistency.
         """
         return FlextUtilities.Enum.is_member(c.Auth.RoleTypes, value)
 
-    # ═══════════════════════════════════════════════════════════════════
-    # AUTH TYPE VALIDATION HELPERS
-    # ═══════════════════════════════════════════════════════════════════
-
     @classmethod
-    def is_valid_token_type(
-        cls,
-        value: str,
-    ) -> bool:
+    def is_valid_token_type(cls, value: str) -> bool:
         """Validate TokenTypes membership.
 
         Uses parent Enum utilities for consistency.
         """
         return FlextUtilities.Enum.is_member(c.Auth.TokenTypes, value)
-
-    # ═══════════════════════════════════════════════════════════════════
-    # AUTH NAMESPACE: Project-specific utilities
-    # ═══════════════════════════════════════════════════════════════════
 
     class Auth:
         """Auth-specific utility namespace.
@@ -105,10 +82,6 @@ class FlextAuthUtilities(FlextApiUtilities):
         Access via u.Auth.Collection.* pattern.
         """
 
-        # ═══════════════════════════════════════════════════════════════════
-        # ARGS UTILITIES: @validated decorators - ZERO boilerplate
-        # ═══════════════════════════════════════════════════════════════════
-
     class Args(FlextUtilities.Args):
         """Args utilities extending u.Args via inheritance.
 
@@ -116,20 +89,12 @@ class FlextAuthUtilities(FlextApiUtilities):
         Access via u.Auth.Args.* pattern.
         """
 
-        # ═══════════════════════════════════════════════════════════════════
-        # MODEL UTILITIES: from_dict, merge_defaults, update - ZERO try/except
-        # ═══════════════════════════════════════════════════════════════════
-
     class Model(FlextUtilities.Model):
         """Model utilities extending u.Model via inheritance.
 
         Exposes all flext-core Model methods through inheritance hierarchy.
         Access via u.Auth.Model.* pattern.
         """
-
-        # ═══════════════════════════════════════════════════════════════════
-        # PYDANTIC UTILITIES: Annotated types factories
-        # ═══════════════════════════════════════════════════════════════════
 
         class Pydantic:
             """Annotated type factories for Pydantic models."""
@@ -140,9 +105,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 return Annotated[
                     c.Auth.ProviderTypes,
                     BeforeValidator(
-                        FlextUtilities.Enum.coerce_validator(
-                            c.Auth.ProviderTypes,
-                        ),
+                        FlextUtilities.Enum.coerce_validator(c.Auth.ProviderTypes)
                     ),
                 ]
 
@@ -152,9 +115,7 @@ class FlextAuthUtilities(FlextApiUtilities):
                 return Annotated[
                     c.Auth.RoleTypes,
                     BeforeValidator(
-                        FlextUtilities.Enum.coerce_validator(
-                            c.Auth.RoleTypes,
-                        ),
+                        FlextUtilities.Enum.coerce_validator(c.Auth.RoleTypes)
                     ),
                 ]
 
@@ -164,15 +125,9 @@ class FlextAuthUtilities(FlextApiUtilities):
                 return Annotated[
                     c.Auth.TokenTypes,
                     BeforeValidator(
-                        FlextUtilities.Enum.coerce_validator(
-                            c.Auth.TokenTypes,
-                        ),
+                        FlextUtilities.Enum.coerce_validator(c.Auth.TokenTypes)
                     ),
                 ]
-
-        # ═══════════════════════════════════════════════════════════════════
-        # VALIDATION UTILITIES: Domain-specific validation
-        # ═══════════════════════════════════════════════════════════════════
 
         class Validation:
             """Domain-specific validation utilities."""
@@ -182,16 +137,13 @@ class FlextAuthUtilities(FlextApiUtilities):
                 """Validate email format."""
                 if not email or not email.strip():
                     return r[str].fail("Email cannot be empty")
-
                 email = email.strip()
                 if len(email) > c.Auth.MAX_EMAIL_LENGTH:
                     return r[str].fail(
-                        f"Email too long (max {c.Auth.MAX_EMAIL_LENGTH} chars)",
+                        f"Email too long (max {c.Auth.MAX_EMAIL_LENGTH} chars)"
                     )
-
                 if "@" not in email or "." not in email.split("@")[1]:
                     return r[str].fail("Invalid email format")
-
                 return r[str].ok(email)
 
             @staticmethod
@@ -199,19 +151,14 @@ class FlextAuthUtilities(FlextApiUtilities):
                 """Validate password strength."""
                 if not password:
                     return r[str].fail("Password cannot be empty")
-
                 if len(password) < c.Auth.Credentials.Password.MIN_LENGTH:
                     return r[str].fail(
-                        f"Password too short (min {c.Auth.Credentials.Password.MIN_LENGTH} chars)",
+                        f"Password too short (min {c.Auth.Credentials.Password.MIN_LENGTH} chars)"
                     )
                 if len(password) > c.Auth.Credentials.Password.MAX_LENGTH:
                     return r[str].fail(
-                        f"Password too long (max {c.Auth.Credentials.Password.MAX_LENGTH} chars)",
+                        f"Password too long (max {c.Auth.Credentials.Password.MAX_LENGTH} chars)"
                     )
-
-                # Note: WEAK_CREDENTIALS not defined - removed check or define constant if needed
-                # Additional password strength validation can be added here if needed
-
                 return r[str].ok(password)
 
             @staticmethod
@@ -219,21 +166,16 @@ class FlextAuthUtilities(FlextApiUtilities):
                 """Validate username with auth-specific rules."""
                 if not username or not username.strip():
                     return r[str].fail("Username cannot be empty")
-
                 username = username.strip()
                 if len(username) < c.Auth.Credentials.Username.MIN_LENGTH:
                     return r[str].fail(
-                        f"Username too short (min {c.Auth.Credentials.Username.MIN_LENGTH} chars)",
+                        f"Username too short (min {c.Auth.Credentials.Username.MIN_LENGTH} chars)"
                     )
                 if len(username) > c.Auth.Credentials.Username.MAX_LENGTH:
                     return r[str].fail(
-                        f"Username too long (max {c.Auth.Credentials.Username.MAX_LENGTH} chars)",
+                        f"Username too long (max {c.Auth.Credentials.Username.MAX_LENGTH} chars)"
                     )
                 return r[str].ok(username)
-
-        # ═══════════════════════════════════════════════════════════════════
-        # TOKEN UTILITIES: Token/session management
-        # ═══════════════════════════════════════════════════════════════════
 
         class Token:
             """Token manipulation utilities."""
@@ -253,19 +195,13 @@ class FlextAuthUtilities(FlextApiUtilities):
                 """Check if a timestamp is expired."""
                 return datetime.now(UTC) > expiry_time
 
-        # ═══════════════════════════════════════════════════════════════════
-        # PASSWORD UTILITIES: Secure password handling
-        # ═══════════════════════════════════════════════════════════════════
-
         class Password:
             """Password hashing utilities using best practices."""
 
             @staticmethod
             def hash_password(password: str) -> str:
                 """Hash a password using bcrypt."""
-                salt = bcrypt.gensalt(
-                    rounds=c.Auth.DEFAULT_HASH_ROUNDS,
-                )
+                salt = bcrypt.gensalt(rounds=c.Auth.DEFAULT_HASH_ROUNDS)
                 return bcrypt.hashpw(password.encode(), salt).decode()
 
             @staticmethod
@@ -273,17 +209,12 @@ class FlextAuthUtilities(FlextApiUtilities):
                 """Verify a password against its hash."""
                 return bcrypt.checkpw(password.encode(), hashed.encode())
 
-        # ═══════════════════════════════════════════════════════════════════
-        # RESPONSE UTILITIES: Response building
-        # ═══════════════════════════════════════════════════════════════════
-
         class Response:
             """Utilities for building authentication responses."""
 
             @staticmethod
             def build_auth_error_response(
-                error: str,
-                error_code: str = "AUTH_ERROR",
+                error: str, error_code: str = "AUTH_ERROR"
             ) -> Mapping[str, t.JsonValue]:
                 """Build an authentication error response."""
                 return {
@@ -305,14 +236,12 @@ class FlextAuthUtilities(FlextApiUtilities):
                     "message": "Authentication successful",
                     "timestamp": datetime.now(UTC).isoformat(),
                 }
-
                 if token:
                     response["token"] = token
                 if user_id:
                     response["user_id"] = user_id
                 if expires_at:
                     response["expires_at"] = expires_at.isoformat()
-
                 return response
 
     @staticmethod
@@ -348,19 +277,15 @@ class FlextAuthUtilities(FlextApiUtilities):
             )
             if not FlextUtilities.is_dict_like(payload):
                 return r[t.Auth.Tokens.ClaimMap].fail(
-                    "Decoded token payload is not a dictionary",
+                    "Decoded token payload is not a dictionary"
                 )
-
-            # Payload is validated as dict-like above
-            # Convert to dict to ensure it's the right type
             typed_payload: t.Auth.Tokens.ClaimMap = dict(payload)
-
             return r[t.Auth.Tokens.ClaimMap].ok(typed_payload)
         except jwt.InvalidTokenError as e:
             return r[t.Auth.Tokens.ClaimMap].fail(f"Invalid token: {e}")
         except ValidationError as e:
             return r[t.Auth.Tokens.ClaimMap].fail(
-                f"Decoded token payload validation failed: {e}",
+                f"Decoded token payload validation failed: {e}"
             )
         except (
             ValueError,
@@ -395,7 +320,6 @@ class FlextAuthUtilities(FlextApiUtilities):
             if isinstance(token, str):
                 return r[str].ok(token)
             return r[str].ok(str(token))
-
         except (
             ValueError,
             TypeError,
@@ -409,5 +333,4 @@ class FlextAuthUtilities(FlextApiUtilities):
 
 
 u = FlextAuthUtilities
-
 __all__ = ["FlextAuthUtilities", "u"]

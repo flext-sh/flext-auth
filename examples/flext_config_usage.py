@@ -10,7 +10,6 @@ def main() -> None:
     base = FlextAuthSettings()
     if base.expiry_minutes < 1:
         return
-
     production_result = FlextAuthSettings.get_or_create_global(
         expiry_minutes=FlextAuthConstants.Auth.Jwt.DEFAULT_EXPIRY_MINUTES // 2,
         hash_rounds=FlextAuthConstants.Auth.Credentials.Password.BCRYPT_ROUNDS,
@@ -20,16 +19,12 @@ def main() -> None:
     )
     if production_result.is_failure:
         return
-
     production = production_result.value
     validation = production.validate_auth_configuration()
     if validation.is_failure:
         return
-
     _ = production.get_security_settings()
     _ = production.get_jwt_settings()
-
-    # Service receives validated settings directly
     _ = FlextAuth(config=production)
 
 

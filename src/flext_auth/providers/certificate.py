@@ -26,8 +26,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider):
 
     @override
     def authenticate(
-        self,
-        credentials: m.Auth.CredentialValidation,
+        self, credentials: m.Auth.CredentialValidation
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using certificate credentials."""
         _ = credentials
@@ -44,10 +43,7 @@ class FlextAuthCertificateProvider(FlextAuthBaseProvider):
         return {"certificate", "validate"}
 
     @override
-    def validate(
-        self,
-        token: str | p.Auth.TokenProtocol,
-    ) -> r[bool]:
+    def validate(self, token: str | p.Auth.TokenProtocol) -> r[bool]:
         """Validate certificate token.
 
         Args:

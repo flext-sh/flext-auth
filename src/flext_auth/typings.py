@@ -20,40 +20,23 @@ from flext_auth import c, m
 class FlextAuthTypes(FlextApiTypes):
     """Authentication-specific type definitions extending t with composition."""
 
-    # =========================================================================
-    # CORE AUTH TYPES - Mapped to Pydantic Models
-    # =========================================================================
-
-    # Core configs mapped to Pydantic models
     ProviderConfig = m.Auth.ProviderConfig
-
-    # =========================================================================
-    # AUTHENTICATION DOMAIN TYPE CLASSES
-    # =========================================================================
 
     class Auth:
         """Authentication-related type definitions."""
 
         type AuthMethod = Literal["basic", "jwt", "oauth2", "apikey"]
         type AuthStatus = Literal[
-            "authenticated",
-            "unauthenticated",
-            "expired",
-            "invalid",
+            "authenticated", "unauthenticated", "expired", "invalid"
         ]
-
-        # Coerced enum types for Pydantic Field (Annotated[Enum, BeforeValidator])
         type CoercedTokenTypes = Annotated[
-            c.Auth.TokenTypes,
-            BeforeValidator(lambda x: x),
+            c.Auth.TokenTypes, BeforeValidator(lambda x: x)
         ]
         type CoercedProviderTypes = Annotated[
-            c.Auth.ProviderTypes,
-            BeforeValidator(lambda x: x),
+            c.Auth.ProviderTypes, BeforeValidator(lambda x: x)
         ]
         type CoercedRoleTypes = Annotated[
-            c.Auth.RoleTypes,
-            BeforeValidator(lambda x: x),
+            c.Auth.RoleTypes, BeforeValidator(lambda x: x)
         ]
 
         class UserManagement:
@@ -61,11 +44,7 @@ class FlextAuthTypes(FlextApiTypes):
 
             type UserStatus = Literal["active", "inactive", "locked", "pending"]
             type UserAction = Literal[
-                "create",
-                "update",
-                "delete",
-                "activate",
-                "deactivate",
+                "create", "update", "delete", "activate", "deactivate"
             ]
 
         class SessionManagement:
@@ -84,10 +63,7 @@ class FlextAuthTypes(FlextApiTypes):
             """Authorization type definitions."""
 
             type Permission = Literal[
-                "read",
-                "write",
-                "delete",
-                "REDACTED_LDAP_BIND_PASSWORD",
+                "read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"
             ]
             type Role = Literal[
                 "user", "moderator", "REDACTED_LDAP_BIND_PASSWORD", "guest"
@@ -97,22 +73,14 @@ class FlextAuthTypes(FlextApiTypes):
             """Security-related type definitions."""
 
             type SecurityEvent = Literal[
-                "login_success",
-                "login_failure",
-                "token_created",
-                "token_revoked",
+                "login_success", "login_failure", "token_created", "token_revoked"
             ]
             type ThreatLevel = Literal["low", "medium", "high", "critical"]
-
-        # =========================================================================
-        # =========================================================================
 
         class Project:
             """Project type namespace."""
 
             type ProjectType = Literal["flext-auth", "flext-core", "flext-api"]
-
-        # Note: ProviderConfig is now aliased to m.ProviderConfig above
 
         class Providers:
             """Provider-oriented type definitions."""
@@ -122,7 +90,7 @@ class FlextAuthTypes(FlextApiTypes):
                 Field(
                     min_length=1,
                     max_length=c.Auth.Validation.SHORT_NAME_MAX,
-                    pattern=r"^[a-z0-9](?:[a-z0-9\-_.]{0,62}[a-z0-9])?$",
+                    pattern="^[a-z0-9](?:[a-z0-9\\-_.]{0,62}[a-z0-9])?$",
                     description="Provider registry key",
                 ),
             ]
@@ -131,7 +99,7 @@ class FlextAuthTypes(FlextApiTypes):
                 Field(
                     min_length=1,
                     max_length=c.Auth.Validation.SHORT_NAME_MAX,
-                    pattern=r"^[a-z][a-z0-9_:-]*$",
+                    pattern="^[a-z][a-z0-9_:-]*$",
                     description="Provider capability identifier",
                 ),
             ]
@@ -146,7 +114,7 @@ class FlextAuthTypes(FlextApiTypes):
             type Username = Annotated[
                 str,
                 Field(
-                    min_length=1,  # Use literal value instead of constant access
+                    min_length=1,
                     max_length=c.Auth.Validation.LONG_NAME_MAX,
                     description="Identity username",
                 ),
@@ -171,21 +139,14 @@ class FlextAuthTypes(FlextApiTypes):
         class Tokens:
             """Token-related type definitions."""
 
-            # AuthToken type defined in models.py
             type TokenType = c.Auth.TokenTypes
             type ClaimMap = FlextApiTypes.JsonDict
 
         class Sessions:
             """Session-related type definitions."""
 
-            # Session type defined in models.py
-
-            # Snapshot definitions removed to avoid circular imports
-
         class Responses:
             """Response payload abstractions."""
-
-            # Authentication response type - defined locally to avoid circular imports
 
         class Managers:
             """Manager-specific supporting types."""
@@ -196,42 +157,37 @@ class FlextAuthTypes(FlextApiTypes):
             type ProviderType = c.Auth.ProviderTypes
             type Role = c.Auth.RoleTypes
             type Permission = c.Auth.PermissionTypes
-
-            # Literal types moved from constants.py per architecture rules
             type AccessTokens = Literal[
                 c.Auth.TokenTypes.ACCESS, c.Auth.TokenTypes.BEARER
             ]
-            """Access token types for operations."""
+            "Access token types for operations."
             type RefreshTokens = Literal[c.Auth.TokenTypes.REFRESH]
-            """Refresh token types."""
+            "Refresh token types."
             type BearerTokens = Literal[
                 c.Auth.TokenTypes.BEARER, c.Auth.TokenTypes.ACCESS
             ]
-            """Bearer token types."""
+            "Bearer token types."
             type AdminRoles = Literal[c.Auth.RoleTypes.ADMIN]
-            """Admin role types."""
+            "Admin role types."
             type UserRoles = Literal[
                 c.Auth.RoleTypes.USER,
                 c.Auth.RoleTypes.MODERATOR,
                 c.Auth.RoleTypes.GUEST,
             ]
-            """User role types."""
+            "User role types."
             type WritePermissions = Literal[
-                c.Auth.PermissionTypes.WRITE,
-                c.Auth.PermissionTypes.DELETE,
+                c.Auth.PermissionTypes.WRITE, c.Auth.PermissionTypes.DELETE
             ]
-            """Write permission types."""
+            "Write permission types."
             type AdminPermissions = Literal[c.Auth.PermissionTypes.ADMIN]
-            """Admin permission types."""
-
+            "Admin permission types."
             type TokenTypeLiteral = Literal[
                 c.Auth.TokenTypes.ACCESS,
                 c.Auth.TokenTypes.REFRESH,
                 c.Auth.TokenTypes.API,
                 c.Auth.TokenTypes.BEARER,
             ]
-            """Token type literal - references TokenTypes StrEnum members."""
-
+            "Token type literal - references TokenTypes StrEnum members."
             type ProviderTypeLiteral = Literal[
                 c.Auth.ProviderTypes.BASIC,
                 c.Auth.ProviderTypes.JWT,
@@ -242,30 +198,27 @@ class FlextAuthTypes(FlextApiTypes):
                 c.Auth.ProviderTypes.KERBEROS,
                 c.Auth.ProviderTypes.APIKEY,
             ]
-            """Provider type literal - references ProviderTypes StrEnum members."""
-
+            "Provider type literal - references ProviderTypes StrEnum members."
             type RoleTypeLiteral = Literal[
                 c.Auth.RoleTypes.ADMIN,
                 c.Auth.RoleTypes.USER,
                 c.Auth.RoleTypes.MODERATOR,
                 c.Auth.RoleTypes.GUEST,
             ]
-            """Role type literal - matches RoleTypes StrEnum values exactly."""
-
+            "Role type literal - matches RoleTypes StrEnum values exactly."
             type PermissionTypeLiteral = Literal[
                 c.Auth.PermissionTypes.READ,
                 c.Auth.PermissionTypes.WRITE,
                 c.Auth.PermissionTypes.DELETE,
                 c.Auth.PermissionTypes.ADMIN,
             ]
-            """Permission type literal - matches PermissionTypes StrEnum values exactly."""
-
+            "Permission type literal - matches PermissionTypes StrEnum values exactly."
             type AlgorithmLiteral = Literal[
                 c.Auth.Algorithms.HS256,
                 c.Auth.Algorithms.RS256,
                 c.Auth.Algorithms.ES256,
             ]
-            """Algorithm literal - matches Algorithms StrEnum values exactly."""
+            "Algorithm literal - matches Algorithms StrEnum values exactly."
 
         class Unit:
             """Unit type for operations that return nothing but may fail."""
@@ -280,10 +233,8 @@ class FlextAuthTypes(FlextApiTypes):
                     """Return string representation of Unit type."""
                     return "Unit"
 
-            # Singleton instance
             UNIT = UnitType()
 
-    # Compatibility aliases expected by legacy callers/tests.
     UserManagement = Auth.UserManagement
     SessionManagement = Auth.SessionManagement
     TokenManagement = Auth.TokenManagement

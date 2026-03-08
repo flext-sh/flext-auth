@@ -15,9 +15,6 @@ from flext_core import r
 
 from flext_auth.providers.jwt import FlextAuthJwtProvider
 
-# Import aliases following order: c -> t -> p -> r -> m -> u
-# Runtime aliases defined at module level per FLEXT standards
-
 
 class FlextAuthPasswordHasher:
     """Dedicated password hashing service.
@@ -45,7 +42,6 @@ class FlextAuthPasswordHasher:
             salt = bcrypt.gensalt(rounds=salt_rounds)
             hashed = bcrypt.hashpw(password.encode("utf-8"), salt)
             return r.ok(hashed.decode("utf-8"))
-
         except (ValueError, TypeError) as e:
             return r.fail(f"Password hashing failed: {type(e).__name__}: {e}")
 
@@ -62,11 +58,9 @@ class FlextAuthPasswordHasher:
         """
         try:
             result = bcrypt.checkpw(
-                password.encode("utf-8"),
-                hashed_password.encode("utf-8"),
+                password.encode("utf-8"), hashed_password.encode("utf-8")
             )
             return r.ok(result)
-
         except (ValueError, TypeError) as e:
             return r.fail(f"Password verification failed: {type(e).__name__}: {e}")
 

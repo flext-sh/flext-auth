@@ -25,10 +25,7 @@ class FlextAuthQuickstart(s[t.ContainerValue]):
     def __init__(self, config: FlextAuthSettings | None = None) -> None:
         """Initialize quickstart auth service with sensible defaults."""
         super().__init__()
-
-        # Use provided config or create default
         self._config = config if config is not None else FlextAuthSettings()
-
         self._auth = FlextAuth()
 
     @property
@@ -36,11 +33,7 @@ class FlextAuthQuickstart(s[t.ContainerValue]):
         """Get the underlying FlextAuth instance."""
         return self._auth
 
-    def authenticate_user(
-        self,
-        username: str,
-        password: str,
-    ) -> r[m.Auth.AuthIdentity]:
+    def authenticate_user(self, username: str, password: str) -> r[m.Auth.AuthIdentity]:
         """Authenticate a user and return identity."""
         return self._auth.authenticate_user(username, password)
 
@@ -58,10 +51,9 @@ class FlextAuthQuickstart(s[t.ContainerValue]):
             result = create_single_user(i)
             if result.is_failure:
                 return r[list[str]].fail(
-                    f"Failed to create demo user {i}: {result.error}",
+                    f"Failed to create demo user {i}: {result.error}"
                 )
             user_ids.append(result.value)
-
         return r[list[str]].ok(user_ids)
 
     @override
@@ -72,20 +64,15 @@ class FlextAuthQuickstart(s[t.ContainerValue]):
         Use specific quickstart methods instead.
         """
         return r[t.ContainerValue].fail(
-            "FlextAuthQuickstart is focused - use specific quickstart methods like register_user()",
+            "FlextAuthQuickstart is focused - use specific quickstart methods like register_user()"
         )
 
-    def flext_auth_quick_start(
-        self,
-        *,
-        create_admin_user: bool = True,
-    ) -> r[list[str]]:
+    def flext_auth_quick_start(self, *, create_admin_user: bool = True) -> r[list[str]]:
         """Quick start the auth service with demo users."""
 
         def create_admin_demo_user(user_ids: list[str]) -> r[list[str]]:
             if not create_admin_user:
                 return r[list[str]].ok(user_ids)
-
             result = self.register_user(
                 "REDACTED_LDAP_BIND_PASSWORD",
                 "REDACTED_LDAP_BIND_PASSWORD@example.com",
@@ -94,7 +81,7 @@ class FlextAuthQuickstart(s[t.ContainerValue]):
             )
             if result.is_failure:
                 return r[list[str]].fail(
-                    f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {result.error}",
+                    f"Failed to create REDACTED_LDAP_BIND_PASSWORD: {result.error}"
                 )
             return r[list[str]].ok(user_ids + ["REDACTED_LDAP_BIND_PASSWORD"])
 
@@ -113,14 +100,13 @@ class FlextAuthQuickstart(s[t.ContainerValue]):
         full_name: str | None = None,
     ) -> r[m.Auth.AuthIdentity]:
         """Register a new user with default settings."""
-        # Call api.register_user with correct parameter mapping
         return self._auth.register_user(
             username=username,
             email=email,
             password=password,
             roles=roles,
-            role=None,  # Use roles parameter instead
-            full_name=full_name,  # Pass as kwarg
+            role=None,
+            full_name=full_name,
         )
 
     def validate_token(self, token: str) -> r[bool]:

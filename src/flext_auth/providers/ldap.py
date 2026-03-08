@@ -32,8 +32,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
 
     @override
     def authenticate(
-        self,
-        credentials: m.Auth.CredentialValidation,
+        self, credentials: m.Auth.CredentialValidation
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using LDAP credentials.
 
@@ -58,10 +57,7 @@ class FlextAuthLdapProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         return {"ldap", "validate"}
 
     @override
-    def validate(
-        self,
-        token: str | p.Auth.TokenProtocol,
-    ) -> r[bool]:
+    def validate(self, token: str | p.Auth.TokenProtocol) -> r[bool]:
         """Validate authentication token.
 
         Args:

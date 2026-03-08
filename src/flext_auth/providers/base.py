@@ -60,16 +60,9 @@ class FlextAuthBaseProvider(Protocol):
                 timestamp = exp_ts
             case _:
                 return r[datetime].fail("Token payload must include a valid exp claim")
-
         try:
             return r[datetime].ok(datetime.fromtimestamp(timestamp, UTC))
-        except (
-            ValueError,
-            OSError,
-            OverflowError,
-            TypeError,
-            RuntimeError,
-        ) as exc:
+        except (ValueError, OSError, OverflowError, TypeError, RuntimeError) as exc:
             return r[datetime].fail(f"Token exp claim conversion failed: {exc}")
 
     @staticmethod
@@ -78,7 +71,6 @@ class FlextAuthBaseProvider(Protocol):
             value = payload.get(key)
             if isinstance(value, str) and value:
                 return r[str].ok(value)
-
         return r[str].fail("User payload must include identity identifier")
 
     @staticmethod
@@ -115,8 +107,7 @@ class FlextAuthBaseProvider(Protocol):
                 return None
 
     def authenticate(
-        self,
-        credentials: m.Auth.CredentialValidation,
+        self, credentials: m.Auth.CredentialValidation
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate user with provided credentials.
 
@@ -144,17 +135,14 @@ class FlextAuthBaseProvider(Protocol):
         settings_result = self._token_settings()
         if settings_result.is_failure:
             return r[str].fail(settings_result.error or "Token settings are invalid")
-
         identity_result = self._extract_identity_id(payload)
         if identity_result.is_failure:
             return r[str].fail(
-                identity_result.error or "Identity identifier is required",
+                identity_result.error or "Identity identifier is required"
             )
-
         secret_key, algorithm_name, issuer_name, audience_name, default_expiry = (
             settings_result.value
         )
-
         effective_expiry: int
         match expiry_minutes:
             case None:
@@ -163,11 +151,9 @@ class FlextAuthBaseProvider(Protocol):
                 effective_expiry = custom_expiry
             case _:
                 return r[str].fail("expiry_minutes must be a positive integer")
-
         identity_id = identity_result.value
         name_value = payload.get("name")
         name = name_value if isinstance(name_value, str) and name_value else identity_id
-
         contact_value = payload.get("contact")
         if isinstance(contact_value, str) and contact_value:
             contact = contact_value
@@ -178,13 +164,11 @@ class FlextAuthBaseProvider(Protocol):
                 if isinstance(email_value, str) and email_value
                 else f"{identity_id}@local"
             )
-
         roles_value = payload.get("roles")
         if isinstance(roles_value, list):
             roles = [role for role in roles_value if isinstance(role, str) and role]
         else:
             roles: list[str] = []
-
         now = datetime.now(UTC)
         claims: dict[str, t.ContainerValue] = {}
         reserved_claims = {
@@ -202,11 +186,9 @@ class FlextAuthBaseProvider(Protocol):
         for key, value in payload.items():
             if not isinstance(key, str) or key in reserved_claims:
                 continue
-
             normalized_value = self._normalize_claim_value(value)
             if normalized_value is not None:
                 claims[key] = normalized_value
-
         claims.update({
             "sub": identity_id,
             "identity_id": identity_id,
@@ -219,13 +201,8 @@ class FlextAuthBaseProvider(Protocol):
             "iss": issuer_name,
             "aud": audience_name,
         })
-
         try:
-            encoded_token = jwt.encode(
-                claims,
-                secret_key,
-                algorithm=algorithm_name,
-            )
+            encoded_token = jwt.encode(claims, secret_key, algorithm=algorithm_name)
         except jwt.PyJWTError as exc:
             return r[str].fail(f"Token generation failed: {exc}")
         except (
@@ -238,7 +215,6 @@ class FlextAuthBaseProvider(Protocol):
             ImportError,
         ) as exc:
             return r[str].fail(f"Token generation failed: {exc}")
-
         match encoded_token:
             case str() as token_text:
                 token = token_text
@@ -246,7 +222,6 @@ class FlextAuthBaseProvider(Protocol):
                 token = token_bytes.decode("utf-8")
             case _:
                 token = str(encoded_token)
-
         return r[str].ok(token)
 
     def generate_token_for_user(
@@ -272,21 +247,16 @@ class FlextAuthBaseProvider(Protocol):
         settings_result = self._token_settings()
         if settings_result.is_failure:
             return r[str].fail(settings_result.error or "Token settings are invalid")
-
         payload_result = self._normalize_identity_payload(user)
         if payload_result.is_failure:
             return r[str].fail(payload_result.error or "Invalid user payload")
-
         return self.generate_token(
             payload=payload_result.value,
             token_type=token_type,
             expiry_minutes=expiry_minutes,
         )
 
-    def refresh(
-        self,
-        token: str,
-    ) -> r[p.Auth.TokenProtocol]:
+    def refresh(self, token: str) -> r[p.Auth.TokenProtocol]:
         """Refresh authentication token.
 
         Generate a new token based on an existing valid token. This operation
@@ -304,54 +274,45 @@ class FlextAuthBaseProvider(Protocol):
         claims_result = self._decode_token_claims(token)
         if claims_result.is_failure:
             return r[p.Auth.TokenProtocol].fail(
-                claims_result.error or "Source token validation failed",
+                claims_result.error or "Source token validation failed"
             )
-
         source_claims = claims_result.value
         identity_result = self._extract_identity_id(source_claims)
         if identity_result.is_failure:
             return r[p.Auth.TokenProtocol].fail(
-                identity_result.error or "Token subject is missing",
+                identity_result.error or "Token subject is missing"
             )
-
         refresh_type_value = source_claims.get("token_type")
         refresh_type = (
             refresh_type_value
             if isinstance(refresh_type_value, str) and refresh_type_value
             else "access"
         )
-
         generation_result = self.generate_token(
-            payload=source_claims,
-            token_type=refresh_type,
-            expiry_minutes=None,
+            payload=source_claims, token_type=refresh_type, expiry_minutes=None
         )
         if generation_result.is_failure:
             return r[p.Auth.TokenProtocol].fail(
-                generation_result.error or "Token refresh generation failed",
+                generation_result.error or "Token refresh generation failed"
             )
-
         refreshed_claims_result = self._decode_token_claims(generation_result.value)
         if refreshed_claims_result.is_failure:
             return r[p.Auth.TokenProtocol].fail(
-                refreshed_claims_result.error or "Refreshed token validation failed",
+                refreshed_claims_result.error or "Refreshed token validation failed"
             )
-
         expires_result = self._extract_expiration_datetime(
-            refreshed_claims_result.value,
+            refreshed_claims_result.value
         )
         if expires_result.is_failure:
             return r[p.Auth.TokenProtocol].fail(
-                expires_result.error or "Refreshed token exp claim is invalid",
+                expires_result.error or "Refreshed token exp claim is invalid"
             )
-
         refresh_token_value = source_claims.get("refresh_token")
         refresh_token = (
             refresh_token_value
             if isinstance(refresh_token_value, str) and refresh_token_value
             else token
         )
-
         try:
             refreshed_token = m.Auth.AuthToken(
                 identity_id=identity_result.value,
@@ -363,15 +324,11 @@ class FlextAuthBaseProvider(Protocol):
             )
         except (ValueError, TypeError) as exc:
             return r[p.Auth.TokenProtocol].fail(
-                f"Refreshed token model mapping failed: {exc}",
+                f"Refreshed token model mapping failed: {exc}"
             )
-
         return r[p.Auth.TokenProtocol].ok(refreshed_token)
 
-    def revoke(
-        self,
-        _token: str,
-    ) -> r[bool]:
+    def revoke(self, _token: str) -> r[bool]:
         """Revoke authentication token.
 
         Invalidate the provided token, preventing further use. This operation
@@ -402,10 +359,7 @@ class FlextAuthBaseProvider(Protocol):
         """
         return {"authenticate", "validate"}
 
-    def validate(
-        self,
-        token: str,
-    ) -> r[bool]:
+    def validate(self, token: str) -> r[bool]:
         """Validate authentication token.
 
         Check if the provided token is valid and has not expired.
@@ -421,20 +375,15 @@ class FlextAuthBaseProvider(Protocol):
 
     def _decode_token_claims(self, token: str) -> r[Mapping[str, t.ContainerValue]]:
         if not token.strip():
-            return r[t.ConfigurationMapping].fail(
-                "Token must be a non-empty string",
-            )
-
+            return r[t.ConfigurationMapping].fail("Token must be a non-empty string")
         settings_result = self._token_settings()
         if settings_result.is_failure:
             return r[t.ConfigurationMapping].fail(
-                settings_result.error or "Token settings are invalid",
+                settings_result.error or "Token settings are invalid"
             )
-
         secret_key, algorithm_name, issuer_name, audience_name, _default_expiry = (
             settings_result.value
         )
-
         try:
             decoded_payload = jwt.decode(
                 token,
@@ -457,31 +406,24 @@ class FlextAuthBaseProvider(Protocol):
             RuntimeError,
             ImportError,
         ) as exc:
-            return r[t.ConfigurationMapping].fail(
-                f"Token validation failed: {exc}",
-            )
-
+            return r[t.ConfigurationMapping].fail(f"Token validation failed: {exc}")
         if not isinstance(decoded_payload, Mapping):
             return r[t.ConfigurationMapping].fail(
-                "Decoded token payload must be a mapping",
+                "Decoded token payload must be a mapping"
             )
-
         return r[t.ConfigurationMapping].ok(decoded_payload)
 
     def _normalize_identity_payload(
-        self,
-        user: m.Auth.AuthIdentity | t.ConfigurationMapping,
+        self, user: m.Auth.AuthIdentity | t.ConfigurationMapping
     ) -> r[Mapping[str, t.ContainerValue]]:
         if isinstance(user, Mapping):
             return r[t.ConfigurationMapping].ok(user)
-
         if user.__class__ is m.Auth.AuthIdentity:
             return r[t.ConfigurationMapping].ok(
-                user.model_dump(exclude={"credential_hash", "token", "refresh_token"}),
+                user.model_dump(exclude={"credential_hash", "token", "refresh_token"})
             )
-
         return r[t.ConfigurationMapping].fail(
-            "User payload must be AuthIdentity or mapping",
+            "User payload must be AuthIdentity or mapping"
         )
 
     def _protocol_name(self) -> str:
@@ -492,41 +434,36 @@ class FlextAuthBaseProvider(Protocol):
         config = self.config
         if config is None:
             return r[tuple[str, str, str, str, int]].fail(
-                "Provider configuration is required for token operations",
+                "Provider configuration is required for token operations"
             )
-
         secret_value = config.get("secret_key")
         match secret_value:
             case str() as secret if secret:
                 secret_key = secret
             case _:
                 return r[tuple[str, str, str, str, int]].fail(
-                    "Token secret_key is not configured",
+                    "Token secret_key is not configured"
                 )
-
         algorithm_value = config.get("algorithm", "HS256")
         match algorithm_value:
             case str() as algorithm if algorithm:
                 algorithm_name = algorithm
             case _:
                 return r[tuple[str, str, str, str, int]].fail(
-                    "Token algorithm is invalid",
+                    "Token algorithm is invalid"
                 )
-
         issuer_value = config.get("issuer", "flext-auth")
         match issuer_value:
             case str() as issuer if issuer:
                 issuer_name = issuer
             case _:
                 issuer_name = "flext-auth"
-
         audience_value = config.get("audience", "flext-auth")
         match audience_value:
             case str() as audience if audience:
                 audience_name = audience
             case _:
                 audience_name = "flext-auth"
-
         expiry_value = config.get("expiry_minutes")
         match expiry_value:
             case int() as expiry if expiry > 0:
@@ -538,10 +475,13 @@ class FlextAuthBaseProvider(Protocol):
                         default_expiry = token_expiry
                     case _:
                         default_expiry = 60
-
-        return r[tuple[str, str, str, str, int]].ok(
-            (secret_key, algorithm_name, issuer_name, audience_name, default_expiry),
-        )
+        return r[tuple[str, str, str, str, int]].ok((
+            secret_key,
+            algorithm_name,
+            issuer_name,
+            audience_name,
+            default_expiry,
+        ))
 
 
 __all__ = ["FlextAuthBaseProvider"]

@@ -51,17 +51,12 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
     class TestAuth:
         """Authentication test constants."""
 
-        # Test credentials
         TEST_USERNAME: Final[str] = "testuser"
         TEST_PASSWORD: Final[str] = "TestPassword123!"
         TEST_EMAIL: Final[str] = "testuser@example.com"
-
-        # Test tokens
         TEST_TOKEN_PREFIX: Final[str] = "test_token_"
         TEST_ACCESS_TOKEN: Final[str] = "test_access_token_12345"
         TEST_REFRESH_TOKEN: Final[str] = "test_refresh_token_12345"
-
-        # Test sessions
         TEST_SESSION_ID: Final[str] = "test_session_12345"
         TEST_SESSION_TOKEN: Final[str] = "test_session_token_12345"
 
@@ -112,23 +107,12 @@ class TestsFlextAuthConstants(FlextTestsConstants, FlextAuthConstants):
             "apikey",
         ]
         RoleTypeLiteral: TypeAlias = Literal[
-            "REDACTED_LDAP_BIND_PASSWORD",
-            "user",
-            "moderator",
-            "guest",
+            "REDACTED_LDAP_BIND_PASSWORD", "user", "moderator", "guest"
         ]
         PermissionTypeLiteral: TypeAlias = Literal[
-            "read",
-            "write",
-            "delete",
-            "REDACTED_LDAP_BIND_PASSWORD",
+            "read", "write", "delete", "REDACTED_LDAP_BIND_PASSWORD"
         ]
 
 
-# Short aliases per FLEXT convention
-c = TestsFlextAuthConstants  # Primary test constants alias
-
-__all__ = [
-    "TestsFlextAuthConstants",
-    "c",
-]
+c = TestsFlextAuthConstants
+__all__ = ["TestsFlextAuthConstants", "c"]

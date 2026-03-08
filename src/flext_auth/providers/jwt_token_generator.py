@@ -49,50 +49,34 @@ class FlextAuthJwtTokenGenerator:
 
         """
         try:
-            # Get required configuration values
             secret_result = self._get_config_str(
-                "secret_key",
-                "JWT secret key not configured",
+                "secret_key", "JWT secret key not configured"
             )
             if secret_result.is_failure:
                 return r[str].fail(secret_result.error or "Secret key error")
-
             algorithm_result = self._get_config_str(
-                "algorithm",
-                "JWT algorithm not configured",
+                "algorithm", "JWT algorithm not configured"
             )
             if algorithm_result.is_failure:
                 return r[str].fail(algorithm_result.error or "Algorithm error")
-
             expiry_config_result = self._get_config_int(
-                "expiry_minutes",
-                "JWT expiry_minutes not configured",
+                "expiry_minutes", "JWT expiry_minutes not configured"
             )
             if expiry_config_result.is_failure:
                 return r[str].fail(expiry_config_result.error or "Expiry error")
-
             issuer_result = self._get_config_str("issuer", "JWT issuer not configured")
             if issuer_result.is_failure:
                 return r[str].fail(issuer_result.error or "Issuer error")
-
-            # Validate expiry
             expiry_result = self._validate_expiry(
-                expiry_minutes,
-                expiry_config_result.value,
+                expiry_minutes, expiry_config_result.value
             )
             if expiry_result.is_failure:
                 return r[str].fail(expiry_result.error or "Expiry validation error")
-
-            # Get optional audience
             audience_result = self._get_optional_config_str("audience")
             if audience_result.is_failure:
                 return r[str].fail(audience_result.error or "Audience error")
-
-            # Build payload and generate token
             audience_value = audience_result.value
-            # Use None only for payload construction, not in r
             audience: str | None = audience_value or None
-
             payload = self._build_payload(
                 identity_id,
                 expiry_result.value,
@@ -101,11 +85,8 @@ class FlextAuthJwtTokenGenerator:
                 extra_claims,
             )
             token_result = jwt.encode(
-                payload,
-                secret_result.value,
-                algorithm=algorithm_result.value,
+                payload, secret_result.value, algorithm=algorithm_result.value
             )
-            # Handle both string and bytes return types from jwt.encode
             match token_result:
                 case bytes() as token_bytes:
                     token = token_bytes.decode("utf-8")
@@ -114,7 +95,6 @@ class FlextAuthJwtTokenGenerator:
                 case _:
                     token = str(token_result)
             return r[str].ok(token)
-
         except (
             ValueError,
             TypeError,
@@ -179,11 +159,9 @@ class FlextAuthJwtTokenGenerator:
         """
         config = self._provider.config
         if not config:
-            # Return empty string if config not provided
             return r[str].ok("")
         value = config.get(key)
         if value is None:
-            # Return empty string instead of None - no None in r
             return r[str].ok("")
         match value:
             case str() as text:

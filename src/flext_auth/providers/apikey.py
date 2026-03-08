@@ -31,8 +31,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
 
     @override
     def authenticate(
-        self,
-        credentials: m.Auth.CredentialValidation,
+        self, credentials: m.Auth.CredentialValidation
     ) -> r[p.Auth.TokenProtocol]:
         """Authenticate using API key credentials."""
         _ = credentials
@@ -49,10 +48,7 @@ class FlextAuthApiKeyProvider(FlextAuthBaseProvider):
         return {"api_key", "validate"}
 
     @override
-    def validate(
-        self,
-        token: str | p.Auth.TokenProtocol,
-    ) -> r[bool]:
+    def validate(self, token: str | p.Auth.TokenProtocol) -> r[bool]:
         """Validate authentication token."""
         _ = token
         return r[bool].fail("Not implemented")

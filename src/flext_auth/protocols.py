@@ -41,11 +41,6 @@ class FlextAuthProtocols(FlextApiProtocols):
     p.Auth.UserProtocol
     """
 
-    # =========================================================================
-    # AUTHENTICATION-SPECIFIC PROTOCOLS
-    # =========================================================================
-    # Domain-specific protocols for authentication and authorization operations.
-
     class Auth:
         """Authentication domain-specific protocols.
 
@@ -66,25 +61,19 @@ class FlextAuthProtocols(FlextApiProtocols):
             """
 
             id: str
-            """Unique identity identifier."""
-
+            "Unique identity identifier."
             name: str
-            """Identity name/username."""
-
+            "Identity name/username."
             contact: str
-            """Contact information (e.g., email)."""
-
+            "Contact information (e.g., email)."
             is_active: bool
-            """Active status."""
-
+            "Active status."
             roles: list[str]
-            """Identity roles."""
-
+            "Identity roles."
             failed_attempts: int
-            """Failed login attempts count."""
-
+            "Failed login attempts count."
             locked_until: datetime
-            """Lock expiration time (datetime.min means not locked)."""
+            "Lock expiration time (datetime.min means not locked)."
 
             @property
             def email(self) -> str:
@@ -141,10 +130,7 @@ class FlextAuthProtocols(FlextApiProtocols):
             ip_address: str | None
             user_agent: str | None
 
-            def extend_session(
-                self,
-                hours: int = 1,
-            ) -> FlextProtocols.Result[bool]:
+            def extend_session(self, hours: int = 1) -> FlextProtocols.Result[bool]:
                 """Extend session expiration time."""
                 ...
 
@@ -218,19 +204,15 @@ class FlextAuthProtocols(FlextApiProtocols):
             """
 
             user: Mapping[str, t.ContainerValue]
-            """User/identity data."""
-
+            "User/identity data."
             session: Mapping[str, t.ContainerValue]
-            """Session data."""
-
+            "Session data."
             jwt_token: str
-            """JWT token string."""
-
+            "JWT token string."
             authenticated: bool
-            """Authentication status."""
-
+            "Authentication status."
             success: bool
-            """Operation success status."""
+            "Operation success status."
 
         @runtime_checkable
         class ServiceProtocol(FlextProtocols.Service[bool], Protocol):
@@ -274,8 +256,4 @@ class FlextAuthProtocols(FlextApiProtocols):
 
 
 p = FlextAuthProtocols
-
-__all__ = [
-    "FlextAuthProtocols",
-    "p",
-]
+__all__ = ["FlextAuthProtocols", "p"]

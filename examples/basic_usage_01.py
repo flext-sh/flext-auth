@@ -21,23 +21,15 @@ from pydantic_settings import BaseSettings
 
 from flext_auth import FlextAuth, FlextAuthSettings, c
 
-# Get structured logger instance
 logger = FlextLogger(__name__)
 
 
 def example_basic_authentication() -> None:
     """Demonstrate basic authentication with FlextAuth."""
     logger.info("Starting basic authentication example")
-
-    # Create authentication instance
     FlextAuth()
     logger.info("FlextAuth instance created with in-memory storage")
-
-    # Show current configuration
-    # Note: FlextAuth doesn't have a get_config() method
-
     config = FlextAuthSettings(config_class=BaseSettings)
-
     logger.info(
         "Authentication configuration loaded",
         expiry_minutes=config.expiry_minutes,
@@ -49,17 +41,13 @@ def example_basic_authentication() -> None:
 def example_password_operations() -> None:
     """Demonstrate password operations."""
     logger.info("Starting password operations example")
-
     FlextAuth()
-
-    # Note: Password operations should be done through the auth service, not direct model instantiation
     logger.info("Password operations are handled by the auth service")
 
 
 def example_email_validation() -> None:
     """Demonstrate email validation patterns."""
     logger.info("Starting email validation example")
-
     test_emails = [
         "valid@example.com",
         "user.name@domain.co.uk",
@@ -93,7 +81,6 @@ def example_email_validation() -> None:
         if is_valid:
             valid_count += 1
         logger.info("Email validation result", email=email, is_valid=is_valid)
-
     logger.info(
         "Email validation completed",
         valid_emails=valid_count,
@@ -104,11 +91,8 @@ def example_email_validation() -> None:
 def example_user_lifecycle() -> None:
     """Demonstrate complete user lifecycle."""
     logger.info("Starting user lifecycle example")
-
     auth: FlextAuth = FlextAuth()
     password = os.getenv("FLEXT_DEMO_USER_PASSWORD", "StrongPass123!")
-
-    # Register user
     logger.info("Registering user lifecycle example")
     register_result = auth.register_user(
         username="lifecycleuser",
@@ -117,7 +101,6 @@ def example_user_lifecycle() -> None:
         full_name="Lifecycle User",
         roles=["user"],
     )
-
     if register_result.is_success:
         user_data = register_result.value
         logger.info(
@@ -127,33 +110,22 @@ def example_user_lifecycle() -> None:
             roles=user_data.roles,
             active=user_data.is_active,
         )
-
-        # Authenticate user
         logger.info("Authenticating registered user")
         auth_result = auth.authenticate_user("lifecycleuser", password)
-
         if auth_result.is_success:
             logger.info("User authentication successful")
             auth_token = auth_result.value
-
-            # Extract token info
             jwt_token_str = auth_token.token
             session_id = auth_token.session_id
-
             logger.info(
                 "Authentication token generated",
                 jwt_token_preview=jwt_token_str[:50] + "..." if jwt_token_str else "",
                 session_id=session_id,
             )
-
-            # Validate token
             logger.info("Validating JWT token")
             token_result = auth.validate_token(jwt_token_str)
             if token_result.is_success:
-                logger.info(
-                    "Token validation successful",
-                    is_valid=token_result.value,
-                )
+                logger.info("Token validation successful", is_valid=token_result.value)
             else:
                 logger.error("Token validation failed", error=token_result.error)
         else:
@@ -165,33 +137,22 @@ def example_user_lifecycle() -> None:
 def example_direct_auth() -> None:
     """Demonstrate direct authentication workflow."""
     logger.info("Starting direct authentication example")
-
     auth: FlextAuth = FlextAuth()
-
-    # Register and authenticate in sequence
     username = "directuser"
     email = "direct@example.com"
     password = os.getenv("FLEXT_DEMO_PASSWORD", "MySecurePassword123!")
-
-    # Step 1: Register
     reg_result = auth.register_user(username, email, password)
-
     if reg_result.is_success:
         logger.info("User registered successfully", username=username)
-
-        # Step 2: Authenticate
         auth_result = auth.authenticate_user(username, password)
-
         if auth_result.is_success:
             logger.info("User authenticated successfully", username=username)
-
             auth_token = auth_result.value
             access_token = auth_token.token
             logger.info(
                 "Access token generated",
                 token_preview=access_token[:50] + "..." if access_token else "",
             )
-
         else:
             logger.error("Authentication failed", error=auth_result.error)
     else:
@@ -201,11 +162,8 @@ def example_direct_auth() -> None:
 def example_advanced_registration() -> None:
     """Demonstrate advanced user registration with roles."""
     logger.info("Starting advanced registration example")
-
     auth: FlextAuth = FlextAuth()
     password = os.getenv("FLEXT_DEMO_ADVANCED_PASSWORD", "AdvancedPass123!")
-
-    # Register admin user (placeholder name redacted)
     register_result = auth.register_user(
         username="REDACTED_LDAP_BIND_PASSWORD",
         email="REDACTED_LDAP_BIND_PASSWORD@company.com",
@@ -213,7 +171,6 @@ def example_advanced_registration() -> None:
         full_name="Administrator",
         roles=["REDACTED_LDAP_BIND_PASSWORD", "user"],
     )
-
     if register_result.is_success:
         user_data = register_result.value
         logger.info(
@@ -226,8 +183,6 @@ def example_advanced_registration() -> None:
         )
     else:
         logger.error("Admin registration failed", error=register_result.error)
-
-    # Register regular user
     user_result = auth.register_user(
         username="regularuser",
         email="user@company.com",
@@ -235,7 +190,6 @@ def example_advanced_registration() -> None:
         full_name="Regular User",
         roles=["user"],
     )
-
     if user_result.is_success:
         user_data = user_result.value
         logger.info(
@@ -252,11 +206,8 @@ def example_advanced_registration() -> None:
 def example_complete_workflow() -> None:
     """Demonstrate complete authentication workflow."""
     logger.info("Starting complete workflow example")
-
     auth: FlextAuth = FlextAuth()
     password = os.getenv("FLEXT_DEMO_WORKFLOW_PASSWORD", "WorkflowPass123!")
-
-    # Step 1: Register user
     logger.info("Step 1: User registration")
     reg_result = auth.register_user(
         username="workflowuser",
@@ -264,37 +215,25 @@ def example_complete_workflow() -> None:
         password=password,
         full_name="Workflow User",
     )
-
     if reg_result.is_failure:
         logger.error("Registration failed", error=reg_result.error)
         return
-
     user = reg_result.value
     logger.info("User registered successfully", name=user.name)
-
-    # Step 2: Authentication
     logger.info("Step 2: User authentication")
     auth_result = auth.authenticate_user("workflowuser", password)
-
     if auth_result.is_failure:
         logger.error("Authentication failed", error=auth_result.error)
         return
-
     auth_token = auth_result.value
     logger.info("Authentication successful")
-
-    # Step 3: Token operations
     logger.info("Step 3: Token operations")
     jwt_token_str = auth_token.token
-
-    # Validate token
     token_validation = auth.validate_token(jwt_token_str)
     if token_validation.is_success:
         logger.info("Token validation successful", is_valid=token_validation.value)
     else:
         logger.error("Token validation failed", error=token_validation.error)
-
-    # Step 4: Get user information
     logger.info("Step 4: Get user information")
     identity_id: str = user.name
     user_info = auth.get_user(identity_id)
@@ -319,7 +258,6 @@ def generate_secure_password(length: int = c.Auth.CREDENTIAL_MAX_LENGTH) -> str:
 def main() -> None:
     """Run all examples."""
     logger.info("Starting FLEXT Auth comprehensive examples")
-
     try:
         example_basic_authentication()
         example_password_operations()
@@ -328,11 +266,9 @@ def main() -> None:
         example_direct_auth()
         example_advanced_registration()
         example_complete_workflow()
-
         logger.info(
-            "All examples completed successfully - FLEXT Auth is working correctly",
+            "All examples completed successfully - FLEXT Auth is working correctly"
         )
-
     except Exception as e:
         logger.exception("Example execution failed", error=str(e))
         raise

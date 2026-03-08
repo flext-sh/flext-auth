@@ -65,7 +65,7 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         RFC-specific feature support.
 
         """
-        _ = feature  # Mark as intentionally unused in base implementation
+        _ = feature
         return False
 
     def validate_rfc_compliance(self, operation: str) -> r[bool]:
@@ -81,8 +81,7 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         RFC-specific validation logic.
 
         """
-        # Base implementation - subclasses should override for specific RFCs
-        _ = operation  # Mark as intentionally unused in base implementation
+        _ = operation
         return r[bool].ok(value=True)
 
     @override

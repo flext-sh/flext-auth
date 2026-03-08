@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """FLEXT Auth - Comprehensive Demo (Working Version).
 
 This example provides a comprehensive demonstration of FLEXT Auth capabilities
@@ -15,52 +14,33 @@ import os
 import secrets
 import string
 
-from flext_auth import (
-    FlextAuth,
-    FlextAuthQuickstart,
-    FlextAuthSettings,
-    m,
-)
+from flext_auth import FlextAuth, FlextAuthQuickstart, FlextAuthSettings, m
 
 
 def demo_complete_auth_workflow() -> None:
     """Demonstrate complete authentication workflow."""
-    # 1. Initialize auth service
     auth: FlextAuth = FlextAuth()
-
-    # 2. Create user account (using register_user, not create_user)
     username = "demo_user"
     email = "demo@example.com"
     password = os.getenv("FLEXT_DEMO_USER_PASSWORD", "DemoSecurePass123!")
-
     result = auth.register_user(username, email, password, roles=["user"])
     if result.is_success:
         user = result.value
     else:
         return
-
-    # 3. Authenticate user (using authenticate_user, not authenticate)
     auth_result = auth.authenticate_user(username, password)
     if auth_result.is_success:
         auth_data = auth_result.value
-
-        # Extract authentication details - auth_data is an AuthToken object
         session_id = auth_data.session_id
         jwt_token = auth_data.token
-
-        # 4. Validate JWT token
         if jwt_token:
             token_result = auth.validate_token(str(jwt_token))
             if token_result.is_success:
                 pass
-
-        # 5. Session management
         identity_id: str = user.name
         user_sessions = auth.get_user_sessions(identity_id)
         if user_sessions.is_success:
             pass
-
-        # 6. Logout user
         if session_id:
             logout_result = auth.logout_user(str(session_id))
             if logout_result.is_success:
@@ -71,9 +51,7 @@ def demo_password_operations() -> None:
     """Demonstrate password hashing and verification operations."""
     FlextAuth()
     os.getenv("TEST_PASSWORD", "TestPassword123!")
-
     try:
-        # Create a user to demonstrate password operations
         m.Auth.AuthIdentityRequest(
             name="password_demo",
             contact="password@demo.com",
@@ -81,34 +59,22 @@ def demo_password_operations() -> None:
             full_name="Password Demo User",
             roles=["user"],
         )
-
-        # Note: Password operations should be done through the auth service
-
     except Exception as e:
-        # Handle password hashing error
         error_message = f"Password hashing failed: {e}"
-        # In production, this would be logged properly
-        del error_message  # Clean up
+        del error_message
 
 
 def demo_jwt_operations() -> None:
     """Demonstrate JWT token operations."""
     auth: FlextAuth = FlextAuth()
-
-    # Register user for JWT operations
     user_result = auth.register_user("jwtuser", "jwt@example.com", "JWTPassword123!")
     if user_result.is_failure:
         return
-
     user = user_result.value
-
-    # Generate JWT token
     identity_id: str = user.name
     token_result = auth.create_token(identity_id=identity_id)
     if token_result.is_success:
         token_string = token_result.value
-
-        # Validate token
         validation_result = auth.validate_token(token_string)
         if validation_result.is_success:
             pass
@@ -117,8 +83,6 @@ def demo_jwt_operations() -> None:
 def demo_user_management() -> None:
     """Demonstrate user management operations."""
     auth: FlextAuth = FlextAuth()
-
-    # Register multiple users with different roles
     users_data = [
         (
             "REDACTED_LDAP_BIND_PASSWORD_user",
@@ -129,15 +93,12 @@ def demo_user_management() -> None:
         ("regular_user", "regular@example.com", "RegularPass123!", ["user"]),
         ("guest_user", "guest@example.com", "GuestPass123!", ["guest"]),
     ]
-
     registered_users = []
     for username, email, password, roles in users_data:
         result = auth.register_user(username, email, password, roles=roles)
         if result.is_success:
             user = result.value
             registered_users.append(user)
-
-    # Demonstrate user lookups
     for user in registered_users:
         lookup_result = auth.get_user_by_username(user.name)
         if lookup_result.is_success and lookup_result.value:
@@ -147,14 +108,7 @@ def demo_user_management() -> None:
 def demo_security_features() -> None:
     """Demonstrate security features."""
     auth: FlextAuth = FlextAuth()
-
-    # Show configuration security settings
-    # Note: FlextAuth doesn't have a get_config() method
-    # Configuration is passed during initialization
     FlextAuthSettings()
-    # Note: auth.config.get_security_settings() doesn't exist
-
-    # Demonstrate password strength validation by attempting weak passwords
     weak_passwords = ["123", "password", "abc"]
     for weak_pass in weak_passwords:
         weak_result = auth.register_user("weakuser", "weak@example.com", weak_pass)
@@ -165,19 +119,13 @@ def demo_security_features() -> None:
 def demo_error_handling() -> None:
     """Demonstrate comprehensive error handling."""
     auth: FlextAuth = FlextAuth()
-
-    # Test duplicate registration
     auth.register_user("duplicate", "dup@example.com", "DupPass123!")
     dup_result = auth.register_user("duplicate", "dup2@example.com", "DupPass123!")
     if dup_result.is_failure:
         pass
-
-    # Test invalid authentication
     invalid_result = auth.authenticate_user("nonexistent", "password")
     if invalid_result.is_failure:
         pass
-
-    # Test invalid token validation
     invalid_token_result = auth.validate_token("invalid.jwt.token")
     if invalid_token_result.is_failure:
         pass
@@ -200,18 +148,13 @@ def basic_example_runner() -> None:
 
 def main() -> None:
     """Execute comprehensive demonstration."""
-    # Run basic example first
     basic_example_runner()
-
-    # Run comprehensive demos
     demo_complete_auth_workflow()
     demo_password_operations()
     demo_jwt_operations()
     demo_user_management()
     demo_security_features()
     demo_error_handling()
-
-    # Quick start demo
     quickstart = FlextAuthQuickstart()
     quickstart.flext_auth_quick_start(create_admin_user=False)
 
