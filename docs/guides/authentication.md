@@ -83,8 +83,8 @@ ______________________________________________________________________
 # bcrypt hashing with configurable rounds
 def set_password(self, password: str):
     salt = bcrypt.gensalt()
-    password_hash = bcrypt.hashpw(password.encode('utf-8'), salt)
-    self.password_hash = password_hash.decode('utf-8')
+    password_hash = bcrypt.hashpw(password.encode("utf-8"), salt)
+    self.password_hash = password_hash.decode("utf-8")
 ```
 
 **Security Settings**:

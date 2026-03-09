@@ -72,16 +72,14 @@ auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
 # Create user request object
 user_request = FlextAuthModels.UserCreationRequest(
-    username="alice",
-    email="alice@example.com",
-    password="secure123"
+    username="alice", email="alice@example.com", password="secure123"
 )
 
 # Register user (FlextResult pattern)
 result = auth.register_user(
     username=user_request.username,
     email=user_request.email,
-    password=user_request.password
+    password=user_request.password,
 )
 
 if result.is_success:
@@ -145,10 +143,10 @@ from flext_auth import FlextAuth, FlextAuthSettings
 
 # Custom configuration
 config = FlextAuthSettings(
-    jwt_expiry_minutes=30,          # 30-minute tokens
-    bcrypt_rounds=14,               # Higher security
-    max_failed_attempts=3,          # Account lockout
-    session_timeout_minutes=60      # 1-hour sessions
+    jwt_expiry_minutes=30,  # 30-minute tokens
+    bcrypt_rounds=14,  # Higher security
+    max_failed_attempts=3,  # Account lockout
+    session_timeout_minutes=60,  # 1-hour sessions
 )
 
 # Use custom configuration
@@ -212,21 +210,28 @@ from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
-def process_authentication_workflow(username: str, password: str) -> FlextResult[t.Dict]:
+
+def process_authentication_workflow(
+    username: str, password: str
+) -> FlextResult[t.Dict]:
     """Authentication workflow using FlextResult error handling."""
 
     auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
     # Chain operations with FlextResult
     return (
-        auth.authenticate_user(username, password)
-        .flat_map(lambda auth_data: auth.validate_token(auth_data['token']))
-        .map(lambda token_data: {
-            "authenticated": True,
-            "user": token_data['username'],
-            "expires": token_data['exp']
-        })
+        auth
+        .authenticate_user(username, password)
+        .flat_map(lambda auth_data: auth.validate_token(auth_data["token"]))
+        .map(
+            lambda token_data: {
+                "authenticated": True,
+                "user": token_data["username"],
+                "expires": token_data["exp"],
+            }
+        )
     )
+
 
 # Usage
 result = process_authentication_workflow("alice", "secure123")
@@ -288,7 +293,7 @@ from flext_auth import FlextAuthModels
 user = FlextAuthModels.User(
     username="charlie",
     email="charlie@example.com",
-    roles=["user", "REDACTED_LDAP_BIND_PASSWORD"]
+    roles=["user", "REDACTED_LDAP_BIND_PASSWORD"],
 )
 
 # Set password (bcrypt hashing)
@@ -311,7 +316,7 @@ from datetime import datetime, timedelta
 session = FlextAuthModels.Session(
     user_id=user.id,
     session_token="session-token-123",
-    expires_at=datetime.utcnow() + timedelta(hours=2)
+    expires_at=datetime.utcnow() + timedelta(hours=2),
 )
 
 # Check session validity
@@ -329,15 +334,14 @@ ______________________________________________________________________
 import pytest
 from flext_auth import flext_auth_quick_start
 
+
 def test_authentication_workflow():
     """Test complete authentication workflow."""
     auth = flext_auth_quick_start(create_REDACTED_LDAP_BIND_PASSWORD=False)
 
     # Register test user
     register_result = auth.register_user(
-        username="testuser",
-        email="test@example.com",
-        password="testpass123"
+        username="testuser", email="test@example.com", password="testpass123"
     )
 
     assert register_result.is_success

@@ -177,10 +177,7 @@ if config.is_failure:
 
    ```python
    # Create configuration manually if environment fails
-   config = FlextAuthSettings(
-       jwt_secret_key="manual-secret-key",
-       jwt_expiry_minutes=60
-   )
+   config = FlextAuthSettings(jwt_secret_key="manual-secret-key", jwt_expiry_minutes=60)
    ```
 
 ### JWT Configuration
@@ -360,6 +357,7 @@ mypy src/flext_auth/
    # Always use proper type hints
    from typing import Optional
 
+
    def find_user(username: str) -> FlextResult[Optional[User]]:
        pass
    ```
@@ -446,7 +444,6 @@ ______________________________________________________________________
 Enable debug logging:
 
 ```python
-
 logging.basicConfig(level=logging.DEBUG)
 
 # Test authentication with debug output

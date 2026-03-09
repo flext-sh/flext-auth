@@ -106,10 +106,10 @@ ______________________________________________________________________
 
 ```python
 config = FlextAuthSettings(
-    jwt_expiry_minutes=30,          # 30-minute tokens
-    bcrypt_rounds=14,               # Higher security
-    max_failed_attempts=3,          # Stricter lockout
-    session_timeout_minutes=60      # 1-hour sessions
+    jwt_expiry_minutes=30,  # 30-minute tokens
+    bcrypt_rounds=14,  # Higher security
+    max_failed_attempts=3,  # Stricter lockout
+    session_timeout_minutes=60,  # 1-hour sessions
 )
 
 auth = FlextAuth(config=config)
@@ -120,10 +120,10 @@ auth = FlextAuth(config=config)
 ```python
 prod_config = FlextAuthSettings(
     jwt_secret_key="your-production-secret-key",
-    jwt_expiry_minutes=15,          # Short-lived tokens
-    bcrypt_rounds=14,               # High security
-    max_failed_attempts=3,          # Account lockout
-    session_timeout_minutes=30      # Short sessions
+    jwt_expiry_minutes=15,  # Short-lived tokens
+    bcrypt_rounds=14,  # High security
+    max_failed_attempts=3,  # Account lockout
+    session_timeout_minutes=30,  # Short sessions
 )
 ```
 
@@ -185,10 +185,10 @@ For production environments:
 ```python
 FlextAuthSettings(
     jwt_secret_key="strong-random-secret-256-bits",
-    jwt_expiry_minutes=15,          # Short token lifetime
-    bcrypt_rounds=14,               # High security hashing
-    max_failed_attempts=3,          # Account protection
-    session_timeout_minutes=30      # Session security
+    jwt_expiry_minutes=15,  # Short token lifetime
+    bcrypt_rounds=14,  # High security hashing
+    max_failed_attempts=3,  # Account protection
+    session_timeout_minutes=30,  # Session security
 )
 ```
 
@@ -199,10 +199,10 @@ For development environments:
 ```python
 FlextAuthSettings(
     jwt_secret_key="dev-secret-key",
-    jwt_expiry_minutes=60,          # Convenient for testing
-    bcrypt_rounds=12,               # Balanced performance
-    max_failed_attempts=5,          # Less restrictive
-    session_timeout_minutes=120     # Extended sessions
+    jwt_expiry_minutes=60,  # Convenient for testing
+    bcrypt_rounds=12,  # Balanced performance
+    max_failed_attempts=5,  # Less restrictive
+    session_timeout_minutes=120,  # Extended sessions
 )
 ```
 

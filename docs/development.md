@@ -140,6 +140,7 @@ def authenticate_user(username: str, password: str) -> FlextResult[t.Dict]:
     # Authentication logic
     return FlextResult[t.Dict].ok(result)
 
+
 # ❌ Incorrect - Don't use exceptions for business logic
 def authenticate_user(username: str, password: str) -> dict[str, object]:
     if not username:
@@ -173,6 +174,7 @@ from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
+
 class User(FlextModels.Entity):
     username: str
     email: str
@@ -180,6 +182,7 @@ class User(FlextModels.Entity):
     def verify_password(self, password: str) -> FlextResult[bool]:
         # Business logic returning FlextResult
         pass
+
 
 # ❌ Incorrect - Don't create plain classes
 class User:
@@ -330,6 +333,7 @@ from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
+
 class TestNewFeature:
     def test_new_functionality(self):
         # Arrange
@@ -373,6 +377,7 @@ from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
+
 class AuthenticationService(FlextService):
     def __init__(self):
         super().__init__()
@@ -392,7 +397,8 @@ Use FlextResult exclusively:
 # Chain operations with FlextResult
 def complete_auth_flow(username: str, password: str) -> FlextResult[t.Dict]:
     return (
-        self._validate_input(username, password)
+        self
+        ._validate_input(username, password)
         .flat_map(lambda _: self._authenticate_user(username, password))
         .flat_map(lambda user: self._create_session(user))
         .map(lambda session: self._format_response(session))
@@ -412,7 +418,6 @@ ______________________________________________________________________
 ### Debug Mode
 
 ```python
-
 # Enable debug logging
 logging.basicConfig(level=logging.DEBUG)
 

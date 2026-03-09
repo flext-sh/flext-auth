@@ -129,8 +129,8 @@ def authenticate_user(
 auth_result = auth.authenticate_user("demo", "secure123")
 if auth_result.is_success:
     session_data = auth_result.unwrap()
-    token = session_data['token']
-    session = session_data['session']
+    token = session_data["token"]
+    session = session_data["session"]
 ```
 
 ### validate_token()
@@ -153,7 +153,7 @@ def validate_token(self, token: str) -> FlextResult[t.Dict]:
 validation_result = auth.validate_token(token)
 if validation_result.is_success:
     token_data = validation_result.unwrap()
-    username = token_data['username']
+    username = token_data["username"]
 ```
 
 ______________________________________________________________________
@@ -333,15 +333,19 @@ from flext_core import FlextService
 from flext_core import t
 from flext_core import u
 
+
 def complete_auth_flow(username: str, password: str) -> FlextResult[t.Dict]:
     return (
-        auth.authenticate_user(username, password)
-        .flat_map(lambda auth_data: auth.validate_token(auth_data['token']))
-        .map(lambda token_data: {
-            "user": token_data['username'],
-            "authenticated": True,
-            "expires": token_data['exp']
-        })
+        auth
+        .authenticate_user(username, password)
+        .flat_map(lambda auth_data: auth.validate_token(auth_data["token"]))
+        .map(
+            lambda token_data: {
+                "user": token_data["username"],
+                "authenticated": True,
+                "expires": token_data["exp"],
+            }
+        )
     )
 ```
 

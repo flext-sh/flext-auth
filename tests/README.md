@@ -200,7 +200,7 @@ class TestUserFactory:
         username: str = "testuser",
         email: str = "test@example.com",
         password: str = "SecurePass123!",
-        role: str = "user"
+        role: str = "user",
     ) -> FlextUser:
         """Create test user with specified attributes."""
         return FlextUser(
@@ -209,7 +209,7 @@ class TestUserFactory:
             email=email,
             hashed_password=hash_password(password),
             role=FlextUserRole(role),
-            status=FlextUserStatus.ACTIVE
+            status=FlextUserStatus.ACTIVE,
         )
 ```
 
@@ -219,7 +219,7 @@ class TestUserFactory:
 @pytest.fixture
 def mock_password_service():
     """Mock password service for isolated testing."""
-    with patch('flext_auth.services.password_service.FlextPasswordService') as mock:
+    with patch("flext_auth.services.password_service.FlextPasswordService") as mock:
         mock.hash_password.return_value = FlextResult[bool].ok("hashed_password")
         mock.verify_password.return_value = FlextResult[bool].ok(data=True)
         yield mock

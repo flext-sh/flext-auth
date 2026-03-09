@@ -230,10 +230,12 @@ app = FastAPI()
 auth_result = flext_auth_quick_start()
 auth = auth_result.value
 
+
 @app.post("/login")
 def login(username: str, password: str):
     result = auth.authenticate_user(username, password)
     return {"success": result.success}
+
 
 @app.get("/protected")
 @flext_auth_required(auth_service=auth)
@@ -251,13 +253,15 @@ app = Flask(__name__)
 auth_result = flext_auth_quick_start()
 auth = auth_result.value
 
-@app.route('/login', methods=['POST'])
+
+@app.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-    result = auth.authenticate_user(data['username'], data['password'])
+    result = auth.authenticate_user(data["username"], data["password"])
     return jsonify({"success": result.success})
 
-@app.route('/protected')
+
+@app.route("/protected")
 @flext_auth_required(auth_service=auth)
 def protected():
     return jsonify({"message": "Protected resource"})
@@ -273,13 +277,15 @@ from flext_auth import flext_auth_quick_start, flext_auth_required
 auth_result = flext_auth_quick_start()
 auth = auth_result.value
 
+
 @csrf_exempt
 def login(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+    if request.method == "POST":
+        username = request.POST["username"]
+        password = request.POST["password"]
         result = auth.authenticate_user(username, password)
         return JsonResponse({"success": result.success})
+
 
 @flext_auth_required(auth_service=auth)
 def protected_view(request):
@@ -297,7 +303,7 @@ from flext_auth import FlextAuthSettings, FlextAuthService
 config = FlextAuthSettings(
     bcrypt_rounds=4,  # Faster hashing for development
     access_token_expire_minutes=60,
-    max_concurrent_sessions=10
+    max_concurrent_sessions=10,
 )
 
 auth_service = FlextAuthService(config)
@@ -313,7 +319,7 @@ config = FlextAuthSettings(
     bcrypt_rounds=12,  # Strong password hashing
     access_token_expire_minutes=15,  # Short token lifetime
     max_failed_attempts=3,  # Strict lockout policy
-    lockout_duration_minutes=60
+    lockout_duration_minutes=60,
 )
 
 auth_service = FlextAuthService(config)
@@ -451,6 +457,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 # Use debug authentication service
 from flext_auth import flext_auth_dev
+
 auth = flext_auth_dev()  # Debug-friendly configuration
 ```
 

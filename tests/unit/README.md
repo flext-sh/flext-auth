@@ -128,10 +128,7 @@ unit/
 def test_user_authentication_with_valid_credentials():
     """Test user authentication succeeds with valid credentials."""
     # Given: A registered user with valid credentials
-    user = UserFactory.create_active_user(
-        username="john",
-        password="SecurePass123!"
-    )
+    user = UserFactory.create_active_user(username="john", password="SecurePass123!")
     auth_service = create_auth_service_with_mocks()
 
     # When: User attempts to authenticate
@@ -149,15 +146,16 @@ def test_user_authentication_with_valid_credentials():
 @pytest.fixture
 def mock_password_service():
     """Mock password service for isolated testing."""
-    with patch('flext_auth.services.FlextPasswordService') as mock:
+    with patch("flext_auth.services.FlextPasswordService") as mock:
         mock.hash_password.return_value = FlextResult[bool].ok("hashed_password")
         mock.verify_password.return_value = FlextResult[bool].ok(data=True)
         yield mock
 
+
 @pytest.fixture
 def mock_user_repository():
     """Mock user repository for isolated testing."""
-    with patch('flext_auth.user.InMemoryUserRepository') as mock:
+    with patch("flext_auth.user.InMemoryUserRepository") as mock:
         mock.get_by_username.return_value = FlextResult[bool].ok(test_user)
         mock.create.return_value = FlextResult[bool].ok(test_user)
         yield mock
@@ -174,7 +172,7 @@ class UserFactory:
         username: str = "testuser",
         email: str = "test@example.com",
         password: str = "SecurePass123!",
-        role: str = "user"
+        role: str = "user",
     ) -> FlextUser:
         """Create an active test user."""
         return FlextUser(
@@ -185,7 +183,7 @@ class UserFactory:
             role=FlextUserRole(role),
             status=FlextUserStatus.ACTIVE,
             failed_login_attempts=0,
-            locked_until=None
+            locked_until=None,
         )
 ```
 
