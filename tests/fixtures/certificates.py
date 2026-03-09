@@ -7,16 +7,18 @@ Copyright (c) 2025 FLEXT Team. All rights reserved.
 
 from __future__ import annotations
 
-from typing import NamedTuple
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class CertificateFixture(NamedTuple):
+class CertificateFixture(BaseModel):
     """Certificate fixture data."""
 
-    cert_pem: str
-    key_pem: str
-    fingerprint: str
-    subject_cn: str
+    model_config = ConfigDict(frozen=True)
+
+    cert_pem: str = Field(description="PEM-encoded certificate")
+    key_pem: str = Field(description="PEM-encoded private key")
+    fingerprint: str = Field(description="Certificate fingerprint hash")
+    subject_cn: str = Field(description="Certificate subject common name")
 
 
 def generate_self_signed_cert(
