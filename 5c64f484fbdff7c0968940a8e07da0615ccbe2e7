@@ -1,0 +1,23 @@
+tests/fixtures/certificates.py
+  7a8702a10615611c 10,13,16-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.8",
+  "base_commit_sha": "5c64f484fbdff7c0968940a8e07da0615ccbe2e7",
+  "prompts": {
+    "7a8702a10615611c": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_3304f0500ffeBJ0y3REuww4EtV",
+        "model": "anthropic/claude-opus-4-6"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>",
+      "messages": [],
+      "total_additions": 8,
+      "total_deletions": 6,
+      "accepted_lines": 8,
+      "overriden_lines": 0
+    }
+  }
+}
