@@ -1,0 +1,23 @@
+docs/pydantic-v2-modernization/audit_pydantic_v2.py
+  58dfb9439299d7c1 18-19,25-26,29,32-37,40,43-46,48-49,51-52,54-55,57-58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.1.8",
+  "base_commit_sha": "bce357f4b3b497001a9f25146a4c3b67c47a6e7d",
+  "prompts": {
+    "58dfb9439299d7c1": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_32ddd72a0ffenS6osMcl5dhfc7",
+        "model": "anthropic/claude-haiku-4-5"
+      },
+      "human_author": "FLEXT Bot <team@flext.sh>",
+      "messages": [],
+      "total_additions": 30,
+      "total_deletions": 19,
+      "accepted_lines": 24,
+      "overriden_lines": 0
+    }
+  }
+}
