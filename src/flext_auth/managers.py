@@ -12,7 +12,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import UTC, datetime, timedelta
-from typing import cast
 from uuid import uuid4
 
 from flext_core import FlextContainer, FlextContext, FlextLogger, FlextRegistry, r, t, u
@@ -877,8 +876,11 @@ class FlextAuthManagers:
             if username not in self._attempts:
                 self._attempts[username] = {"attempts": []}
             attempts_raw = self._attempts[username].get("attempts")
+            attempts_list: list[datetime]
             if u.Guards.is_list(attempts_raw):
-                attempts_list: list[datetime] = cast("list[datetime]", attempts_raw)
+                attempts_list = [
+                    attempt for attempt in attempts_raw if isinstance(attempt, datetime)
+                ]
             else:
                 attempts_list = []
                 self._attempts[username]["attempts"] = attempts_list
