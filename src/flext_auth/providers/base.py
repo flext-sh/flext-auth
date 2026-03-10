@@ -18,7 +18,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Protocol, runtime_checkable
 
 import jwt
-from flext_core import r, t
+from flext_core import r, t, u
 
 from flext_auth import m, p
 
@@ -60,10 +60,10 @@ class FlextAuthBaseProvider(Protocol):
                 timestamp = exp_ts
             case _:
                 return r[datetime].fail("Token payload must include a valid exp claim")
-        try:
-            return r[datetime].ok(datetime.fromtimestamp(timestamp, UTC))
-        except (ValueError, OSError, OverflowError, TypeError, RuntimeError) as exc:
-            return r[datetime].fail(f"Token exp claim conversion failed: {exc}")
+        return u.try_(
+            lambda: datetime.fromtimestamp(timestamp, UTC),
+            catch=(ValueError, OSError, OverflowError, TypeError, RuntimeError),
+        ).map_error(lambda exc: f"Token exp claim conversion failed: {exc}")
 
     @staticmethod
     def _extract_identity_id(payload: Mapping[str, t.ContainerValue]) -> r[str]:
@@ -91,11 +91,9 @@ class FlextAuthBaseProvider(Protocol):
         if isinstance(value, Mapping):
             normalized_mapping: dict[str, t.ContainerValue] = {}
             for key, item in value.items():
-                # Only include string keys in normalized mapping
-                if type(key) is str:
-                    normalized_item = FlextAuthBaseProvider._normalize_claim_value(item)
-                    if normalized_item is not None:
-                        normalized_mapping[key] = normalized_item
+                normalized_item = FlextAuthBaseProvider._normalize_claim_value(item)
+                if normalized_item is not None:
+                    normalized_mapping[key] = normalized_item
             return normalized_mapping
         return value
 
@@ -194,25 +192,29 @@ class FlextAuthBaseProvider(Protocol):
             "iss": issuer_name,
             "aud": audience_name,
         })
-        try:
+
+        def _encode_token() -> str:
             encoded_token = jwt.encode(claims, secret_key, algorithm=algorithm_name)
-        except jwt.PyJWTError as exc:
-            return r[str].fail(f"Token generation failed: {exc}")
-        except (
-            ValueError,
-            TypeError,
-            KeyError,
-            AttributeError,
-            OSError,
-            RuntimeError,
-            ImportError,
-        ) as exc:
-            return r[str].fail(f"Token generation failed: {exc}")
-        if isinstance(encoded_token, str):
-            token = encoded_token
-        else:
-            token = str(encoded_token)
-        return r[str].ok(token)
+            if isinstance(encoded_token, str):
+                return encoded_token
+            return str(encoded_token)
+
+        encode_result = u.try_(
+            _encode_token,
+            catch=(
+                jwt.PyJWTError,
+                ValueError,
+                TypeError,
+                KeyError,
+                AttributeError,
+                OSError,
+                RuntimeError,
+                ImportError,
+            ),
+        ).map_error(lambda exc: f"Token generation failed: {exc}")
+        if encode_result.is_failure:
+            return encode_result
+        return encode_result
 
     def generate_token_for_user(
         self,
@@ -303,8 +305,9 @@ class FlextAuthBaseProvider(Protocol):
             if isinstance(refresh_token_value, str) and refresh_token_value
             else token
         )
-        try:
-            refreshed_token = m.Auth.AuthToken(
+
+        def _build_refreshed_token() -> p.Auth.TokenProtocol:
+            return m.Auth.AuthToken(
                 identity_id=identity_result.value,
                 token=generation_result.value,
                 token_type=refresh_type,
@@ -312,11 +315,11 @@ class FlextAuthBaseProvider(Protocol):
                 is_revoked=False,
                 refresh_token=refresh_token,
             )
-        except (ValueError, TypeError) as exc:
-            return r[p.Auth.TokenProtocol].fail(
-                f"Refreshed token model mapping failed: {exc}"
-            )
-        return r[p.Auth.TokenProtocol].ok(refreshed_token)
+
+        return u.try_(
+            _build_refreshed_token,
+            catch=(ValueError, TypeError),
+        ).map_error(lambda exc: f"Refreshed token model mapping failed: {exc}")
 
     def revoke(self, _token: str) -> r[bool]:
         """Revoke authentication token.
