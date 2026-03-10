@@ -17,6 +17,7 @@ from typing import override
 
 from flext_core import r
 
+from flext_auth import m, p
 from flext_auth.providers.base import FlextAuthBaseProvider
 from flext_auth.providers.mixin import FlextAuthProviderMixin
 
@@ -83,6 +84,40 @@ class FlextAuthRfcProvider(FlextAuthBaseProvider, FlextAuthProviderMixin):
         """
         _ = operation
         return r[bool].ok(value=True)
+
+    @override
+    def authenticate(
+        self, credentials: m.Auth.CredentialValidation
+    ) -> r[p.Auth.TokenProtocol]:
+        """Authenticate user with provided credentials.
+
+        This is an abstract method that must be implemented by RFC-specific providers.
+
+        Args:
+            credentials: Dictionary containing authentication credentials.
+
+        Returns:
+            r[p.Auth.TokenProtocol]: Authentication token on success, error on failure
+
+        """
+        return r[p.Auth.TokenProtocol].fail(
+            "RFC provider authenticate() must be implemented by subclass"
+        )
+
+    @override
+    def validate(self, token: str) -> r[bool]:
+        """Validate authentication token.
+
+        This is an abstract method that must be implemented by RFC-specific providers.
+
+        Args:
+            token: Token to validate
+
+        Returns:
+            r[bool]: True if valid, False if invalid, error on failure
+
+        """
+        return r[bool].fail("RFC provider validate() must be implemented by subclass")
 
     @override
     def _protocol_name(self) -> str:

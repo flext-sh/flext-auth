@@ -234,9 +234,6 @@ class FlextWebTransportAdapter:
             return r[t.Api.ResponseDict].ok(parsed)
         except json.JSONDecodeError:
             return r[t.Api.ResponseDict].fail("Unable to parse response body as JSON")
-        return r[t.Api.ResponseDict].fail(
-            f"Unexpected parsed response type: {type(parsed)}"
-        )
 
     def _parse_token_response(
         self, response_data: t.Api.ResponseDict

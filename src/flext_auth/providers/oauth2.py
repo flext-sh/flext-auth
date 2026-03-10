@@ -341,6 +341,8 @@ class FlextAuthOAuth2Provider(FlextAuthRfcProvider):
                     )
                 case str() as scope_str:
                     scope = scope_str
+                case _:
+                    scope = ""
             token_response = t.Auth.OAuth2TokenResponse(
                 access_token=f"access_token_{secrets.token_hex(16)}",
                 token_type="Bearer",

@@ -184,67 +184,48 @@ class FlextAuthTypes(FlextApiTypes):
             type ProviderType = c.Auth.ProviderTypes
             type Role = c.Auth.RoleTypes
             type Permission = c.Auth.PermissionTypes
-            type AccessTokens = Literal[
-                c.Auth.TokenTypes.ACCESS, c.Auth.TokenTypes.BEARER
-            ]
+            type AccessTokens = Literal["access", "bearer"]
             "Access token types for operations."
-            type RefreshTokens = Literal[c.Auth.TokenTypes.REFRESH]
+            type RefreshTokens = Literal["refresh"]
             "Refresh token types."
-            type BearerTokens = Literal[
-                c.Auth.TokenTypes.BEARER, c.Auth.TokenTypes.ACCESS
-            ]
+            type BearerTokens = Literal["bearer", "access"]
             "Bearer token types."
-            type AdminRoles = Literal[c.Auth.RoleTypes.ADMIN]
+            type AdminRoles = Literal["REDACTED_LDAP_BIND_PASSWORD"]
             "Admin role types."
-            type UserRoles = Literal[
-                c.Auth.RoleTypes.USER,
-                c.Auth.RoleTypes.MODERATOR,
-                c.Auth.RoleTypes.GUEST,
-            ]
+            type UserRoles = Literal["user", "moderator", "guest"]
             "User role types."
-            type WritePermissions = Literal[
-                c.Auth.PermissionTypes.WRITE, c.Auth.PermissionTypes.DELETE
-            ]
+            type WritePermissions = Literal["write", "delete"]
             "Write permission types."
-            type AdminPermissions = Literal[c.Auth.PermissionTypes.ADMIN]
+            type AdminPermissions = Literal["REDACTED_LDAP_BIND_PASSWORD"]
             "Admin permission types."
-            type TokenTypeLiteral = Literal[
-                c.Auth.TokenTypes.ACCESS,
-                c.Auth.TokenTypes.REFRESH,
-                c.Auth.TokenTypes.API,
-                c.Auth.TokenTypes.BEARER,
-            ]
+            type TokenTypeLiteral = Literal["access", "refresh", "api", "bearer"]
             "Token type literal - references TokenTypes StrEnum members."
             type ProviderTypeLiteral = Literal[
-                c.Auth.ProviderTypes.BASIC,
-                c.Auth.ProviderTypes.JWT,
-                c.Auth.ProviderTypes.OAUTH2,
-                c.Auth.ProviderTypes.SAML,
-                c.Auth.ProviderTypes.LDAP,
-                c.Auth.ProviderTypes.CERTIFICATE,
-                c.Auth.ProviderTypes.KERBEROS,
-                c.Auth.ProviderTypes.APIKEY,
+                "basic",
+                "jwt",
+                "oauth2",
+                "saml",
+                "ldap",
+                "certificate",
+                "kerberos",
+                "apikey",
             ]
             "Provider type literal - references ProviderTypes StrEnum members."
             type RoleTypeLiteral = Literal[
-                c.Auth.RoleTypes.ADMIN,
-                c.Auth.RoleTypes.USER,
-                c.Auth.RoleTypes.MODERATOR,
-                c.Auth.RoleTypes.GUEST,
+                "REDACTED_LDAP_BIND_PASSWORD",
+                "user",
+                "moderator",
+                "guest",
             ]
             "Role type literal - matches RoleTypes StrEnum values exactly."
             type PermissionTypeLiteral = Literal[
-                c.Auth.PermissionTypes.READ,
-                c.Auth.PermissionTypes.WRITE,
-                c.Auth.PermissionTypes.DELETE,
-                c.Auth.PermissionTypes.ADMIN,
+                "read",
+                "write",
+                "delete",
+                "REDACTED_LDAP_BIND_PASSWORD",
             ]
             "Permission type literal - matches PermissionTypes StrEnum values exactly."
-            type AlgorithmLiteral = Literal[
-                c.Auth.Algorithms.HS256,
-                c.Auth.Algorithms.RS256,
-                c.Auth.Algorithms.ES256,
-            ]
+            type AlgorithmLiteral = Literal["HS256", "RS256", "ES256"]
             "Algorithm literal - matches Algorithms StrEnum values exactly."
 
         class Unit:
