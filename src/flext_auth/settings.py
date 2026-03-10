@@ -50,5 +50,9 @@ class FlextAuthSettings(FlextModels.Value):
         description="Password hash rounds",
     )
 
+    @classmethod
+    def _reset_instance(cls) -> None:
+        return None
+
 
 __all__ = ["FlextAuthSettings"]
