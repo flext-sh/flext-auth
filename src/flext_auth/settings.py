@@ -9,4 +9,4 @@ SPDX-License-Identifier: MIT
 
 from __future__ import annotations
 
-__all__ = ["FlextAuthSettings"]
+__all__ = ["FlextAuthSettings"]  # noqa: F822

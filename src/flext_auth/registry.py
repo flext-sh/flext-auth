@@ -15,7 +15,7 @@ from flext_auth import FlextAuthTypes as at
 from flext_auth.providers.base import FlextAuthBaseProvider
 
 
-class _ConfigWrapper:
+class _ConfigWrapper:  # noqa: B903
     """Protocol-conformant wrapper for config data."""
 
     def __init__(self, category: str, data: dict[str, t.JsonValue]) -> None:
@@ -26,7 +26,7 @@ class _ConfigWrapper:
         return self._category
 
 
-class _MetadataWrapper:
+class _MetadataWrapper:  # noqa: B903
     """Protocol-conformant wrapper for metadata."""
 
     def __init__(self, category: str, data: at.Auth.Providers.Metadata) -> None:
